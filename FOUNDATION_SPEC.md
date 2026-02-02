@@ -430,6 +430,206 @@ If built correctly:
 
 ---
 
+## 19. Foundation Database Schema — FROZEN
+
+> ⚠️ **THESE TABLES ARE FROZEN. DO NOT MODIFY.**
+> 
+> Location: `packages/infrastructure/supabase/migrations/001_foundation_users_entitlements.sql`
+
+These tables answer only **TWO questions**:
+1. Who is the user (inside our domain)?
+2. What is the user allowed to access?
+
+**Nothing else.**
+
+### 19.1 `users` Table — Domain Mirror of auth.users
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | uuid (PK) | References auth.users |
+| `email` | text | Duplicated on purpose (avoid joins) |
+| `full_name` | text | Display name |
+| `avatar_url` | text | Profile image |
+| `role` | text | Coarse system roles: user, admin, staff |
+| `is_active` | boolean | Account state |
+| `created_at` | timestamptz | Audit |
+| `updated_at` | timestamptz | Audit |
+
+**Rules**:
+- 1-to-1 with `auth.users`
+- Never deleted directly (soft delete only)
+- **NO product-specific columns**
+
+### 19.2 `entitlements` Table — Universal Access Control
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | uuid (PK) | Unique identifier |
+| `user_id` | uuid (FK) | Who owns this |
+| `resource_type` | text | What kind: product, experience, feature |
+| `resource_id` | uuid | Which specific resource (nullable for global) |
+| `is_active` | boolean | Currently valid |
+| `starts_at` | timestamptz | When access begins |
+| `ends_at` | timestamptz | When access expires (null = perpetual) |
+| `usage_limit` | integer | Max uses (future) |
+| `usage_count` | integer | Current uses (future) |
+| `source` | text | Origin: system, admin, stripe, promo |
+| `created_at` | timestamptz | Audit |
+| `updated_at` | timestamptz | Audit |
+
+**Supports**:
+- ✅ Free access
+- ✅ Trials
+- ✅ Paid access
+- ✅ Admin grants
+- ✅ Time-limited access
+- ✅ Usage-limited access (future)
+
+### 19.3 What You MUST NOT Add
+
+| ❌ FORBIDDEN | Why |
+|--------------|-----|
+| `product_id` in users | Product-specific |
+| `exam_id` in entitlements | Product-specific |
+| `permissions` JSON | Too complex |
+| Role-based logic | Belongs in app layer |
+| Session references | Wrong table |
+| Payment columns | Belongs in billing module |
+
+### 19.4 Sanity Test
+
+If tomorrow you:
+- Delete IELTS entirely
+- Add TOEFL, Math tests, a blog, a mobile app
+
+👉 **These tables remain UNTOUCHED**
+
+---
+
+## 20. Domain Core Structure — FROZEN (Meaning, Not Evolution)
+
+> ⚠️ **AI AGENTS: You may READ these. You do NOT redesign them.**
+>
+> Location: `packages/infrastructure/supabase/migrations/002_domain_core_structure.sql`
+
+### Freeze Policy
+
+| Allowed | Forbidden |
+|---------|-----------|
+| ✅ Add columns | ❌ Rename tables |
+| ✅ Add indexes | ❌ Change meaning |
+| ✅ Add metadata usage | ❌ Mix product logic |
+
+### 20.1 Hierarchy
+
+```
+Product
+  └── Experience
+        └── Section
+              └── Part
+                    └── Content Units (next layer)
+```
+
+### 20.2 Tables
+
+| Table | Purpose | Examples |
+|-------|---------|----------|
+| `products` | Unit of access/entitlement | IELTS Simulator, TOEFL Practice |
+| `experiences` | Structured activity to start | Full IELTS Test, Listening Mock #2 |
+| `sections` | Major divisions | Listening, Reading, Writing |
+| `parts` | Subdivisions | Part 1, Passage A |
+
+### 20.3 Critical Rules
+
+**Nothing in this hierarchy knows about**:
+- ❌ IELTS
+- ❌ Time
+- ❌ Scoring
+- ❌ Users
+
+**That's by design.**
+
+### 20.4 What Comes NEXT (Not in domain core)
+
+These attach ON TOP, never inside:
+- `content_units`
+- `sessions`
+- `responses`
+- `rules`
+- `timing`
+- `evaluation`
+
+---
+
+## 21. Product Data Layer — IELTS Content
+
+> Location: `packages/infrastructure/supabase/migrations/020_ielts/001_content_units.sql`
+
+### Purpose
+
+Static, reusable exam content that exists before any user touches it.
+**This is where IELTS becomes IELTS.**
+
+### `content_units` Table
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | uuid | Primary key |
+| `part_id` | uuid (FK) | Belongs to a Part |
+| `type` | text | instruction, reading_passage, question_*, audio, writing_prompt |
+| `data` | jsonb | Actual content payload (varies by type) |
+| `display_order` | integer | Order within part |
+| `metadata` | jsonb | Tags, difficulty, etc. |
+
+### Freeze Status
+
+| ⚠️ Structure frozen | Content evolves |
+|---------------------|-----------------|
+| Cannot rename columns | Can add new types |
+| Cannot change meaning | Can add content |
+
+---
+
+## 22. Runtime Layer — User Interaction
+
+> Location: `packages/infrastructure/supabase/migrations/020_ielts/002_sessions_responses.sql`
+
+### Purpose
+
+Where real users exist. If product data is a book, runtime is someone reading and writing in it.
+
+### `sessions` Table
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | uuid | Primary key |
+| `user_id` | uuid (FK) | Who is taking this |
+| `experience_id` | uuid (FK) | What experience |
+| `status` | text | created, active, paused, completed, abandoned |
+| `started_at` | timestamptz | When started |
+| `completed_at` | timestamptz | When finished |
+| `metadata` | jsonb | Timing, device, position |
+
+### `responses` Table — IMMUTABLE
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| `id` | uuid | Primary key |
+| `session_id` | uuid (FK) | Which session |
+| `content_unit_id` | uuid (FK) | Which question |
+| `type` | text | text, single_choice, multi_choice, audio, file |
+| `data` | jsonb | User's answer |
+| `submitted_at` | timestamptz | When submitted |
+
+### Immutability Rule (CRITICAL)
+
+| ❌ NEVER | ✅ ALWAYS |
+|----------|-----------|
+| UPDATE responses | New row for changes |
+| DELETE responses | Append-only |
+
+---
+
 ## 🔒 FROZEN STATUS
 
 | Property | Value |
@@ -437,6 +637,31 @@ If built correctly:
 | **Status** | CLOSED FOR CHANGES |
 | **Freeze Date** | 2024-12-25 |
 | **Version** | 1.0.0 |
+
+### Complete Freeze Table
+
+| Layer | Migration | Freeze Type |
+|-------|-----------|-------------|
+| Foundation | `001_foundation_users_entitlements.sql` | 🔒 Full freeze |
+| Domain Core | `002_domain_core_structure.sql` | 🔒 Meaning freeze |
+| Product Data | `020_ielts/001_content_units.sql` | ⚠️ Structure freeze |
+| Runtime | `020_ielts/002_sessions_responses.sql` | ⚠️ Structure freeze |
+| Domain TypeScript | `packages/domain/src/` | 🔒 Full freeze |
+| Architecture Doc | `packages/domain/ARCHITECTURE.md` | 🔒 Full freeze |
+
+### Database Layer Diagram
+
+```
+🔒 FOUNDATION — users, entitlements
+      ↓
+🔒 DOMAIN CORE — products, experiences, sections, parts
+      ↓
+🟧 PRODUCT DATA — content_units
+      ↓
+🟥 RUNTIME — sessions, responses
+      ↓
+⬜ EVALUATION — (next layer)
+```
 
 > **From this point forward, no product requirement may modify the foundation.**
 > All product-specific behavior must be built ON TOP of this layer.
