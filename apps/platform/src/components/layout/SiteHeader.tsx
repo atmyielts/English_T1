@@ -113,8 +113,13 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
           </div>
         </div>
 
-        {mobileOpen ? (
-          <div id={mobileNavId} className="md:hidden mt-3 rounded-2xl border border-[#1f2937] bg-white/90 px-4 py-3 space-y-2">
+        {hasMobileContent ? (
+          <div
+            id={mobileNavId}
+            hidden={!mobileOpen}
+            aria-hidden={!mobileOpen}
+            className={`md:hidden mt-3 rounded-2xl border border-[#1f2937] bg-white/90 px-4 py-3 space-y-2 ${mobileOpen ? 'block' : 'hidden'}`}
+          >
             {navItems.map((item) => (
               <button
                 key={`mobile-${item.id}`}
