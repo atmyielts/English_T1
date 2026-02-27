@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/schood-logo.png" />
+  <link rel="shortcut icon" href="/schood-logo.png" />
+  <link rel="apple-touch-icon" href="/schood-logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schood Platform</title>
+  <style>
+    :root {
+      color-scheme: light;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at 14% 18%, #fef7e8 0%, #f4f6fb 48%, #edf8ff 100%);
+      font-family: "Manrope", "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+      color: #0f172a;
+    }
+
+    #root {
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .boot-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .boot-card {
+      width: min(600px, 100%);
+      border-radius: 24px;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(10px);
+      padding: 28px;
+    }
+
+    .boot-eyebrow {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .boot-top {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .boot-spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid #cbd5e1;
+      border-top-color: #111827;
+      animation: spin 820ms linear infinite;
+      flex-shrink: 0;
+    }
+
+    .boot-title {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+
+    .boot-subtitle {
+      margin: 12px 0 0;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .boot-tip {
+      margin: 10px 0 0;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .boot-progress {
+      margin-top: 18px;
+      height: 7px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(148, 163, 184, 0.25);
+    }
+
+    .boot-progress-bar {
+      width: 38%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #111827, #0ea5e9);
+      animation: sweep 1450ms ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes sweep {
+      0% {
+        transform: translateX(-125%);
+      }
+
+      100% {
+        transform: translateX(360%);
+      }
+    }
+  </style>
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      const root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = `
+            <div style="color: red; padding: 20px; font-family: sans-serif;">
+              <h1>Fatal Script Error</h1>
+              <p><strong>Message:</strong> ${message}</p>
+              <p><strong>Source:</strong> ${source}:${lineno}:${colno}</p>
+              <pre>${error ? error.stack : 'No stack trace'}</pre>
+            </div>
+          `;
+      }
+    };
+  </script>
+</head>
+
+<body>
+  <div id="root">
+    <div class="boot-screen">
+      <div class="boot-card" role="status" aria-live="polite">
+        <p class="boot-eyebrow">Schood platform</p>
+        <div class="boot-top">
+          <span class="boot-spinner" aria-hidden="true"></span>
+          <h1 class="boot-title">Setting up your workspace</h1>
+        </div>
+        <p class="boot-subtitle">Connecting services, restoring your account context, and preparing shortcuts.</p>
+        <p class="boot-tip">Quick systems check. Your coffee can stay warm.</p>
+        <div class="boot-progress" aria-hidden="true">
+          <div class="boot-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

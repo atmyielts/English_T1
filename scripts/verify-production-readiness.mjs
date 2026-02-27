@@ -1,0 +1,94 @@
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { extname } from 'node:path';
+
+const trackedFiles = execSync('git ls-files', { encoding: 'utf8' })
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter(Boolean);
+
+const errors = [];
+
+const blockedEnvFiles = trackedFiles.filter((file) => {
+  const normalized = file.replace(/\\/g, '/');
+  if (/\.env\.example$/i.test(normalized) || /\.env\.local\.example$/i.test(normalized)) return false;
+  return /(^|\/)\.env($|\.)/i.test(normalized);
+});
+
+if (blockedEnvFiles.length) {
+  errors.push(`Tracked secret env files detected: ${blockedEnvFiles.join(', ')}`);
+}
+
+const textExtensions = new Set([
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.json',
+  '.md',
+  '.sql',
+  '.toml',
+  '.yml',
+  '.yaml',
+  '.env',
+  '.example',
+  '.txt',
+  '.css',
+  '.html',
+]);
+
+const secretRules = [
+  { label: 'Supabase service role literal', regex: /\bsb_secret_[A-Za-z0-9_-]{20,}\b/g },
+  { label: 'Supabase publishable literal', regex: /\bsb_publishable_[A-Za-z0-9_-]{20,}\b/g },
+  { label: 'OpenRouter key literal', regex: /\bsk-or-v1-[A-Za-z0-9_-]{20,}\b/g },
+  { label: 'OpenAI key literal', regex: /\bsk-[A-Za-z0-9]{20,}\b/g },
+  { label: 'AWS access key id literal', regex: /\bAKIA[0-9A-Z]{16}\b/g },
+  { label: 'Private key block', regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g },
+];
+
+for (const file of trackedFiles) {
+  const extension = extname(file).toLowerCase();
+  const basename = file.split('/').pop() ?? file.split('\\').pop() ?? file;
+  const likelyText = textExtensions.has(extension) || basename.includes('.env');
+  if (!likelyText) continue;
+
+  let content = '';
+  try {
+    content = readFileSync(file, 'utf8');
+  } catch {
+    continue;
+  }
+
+  for (const rule of secretRules) {
+    if (rule.regex.test(content)) {
+      errors.push(`${rule.label} found in ${file}`);
+      break;
+    }
+  }
+}
+
+const productionExampleFiles = trackedFiles.filter((file) =>
+  file === '.env.example' || file.endsWith('.env.local.example') || file.endsWith('.env.example'),
+);
+
+for (const file of productionExampleFiles) {
+  let content = '';
+  try {
+    content = readFileSync(file, 'utf8');
+  } catch {
+    continue;
+  }
+  if (/(localhost|127\.0\.0\.1)/i.test(content)) {
+    errors.push(`Localhost reference found in production example file: ${file}`);
+  }
+}
+
+if (errors.length) {
+  console.error('Production readiness checks failed:');
+  for (const error of errors) console.error(`- ${error}`);
+  process.exit(1);
+}
+
+console.log('Production readiness checks passed.');

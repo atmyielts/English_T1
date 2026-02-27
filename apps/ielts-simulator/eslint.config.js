@@ -19,5 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // This codebase ingests/produces dynamic JSON payloads (Supabase, Edge Functions).
+      // Enforcing "no explicit any" everywhere creates noise with little runtime value.
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
   },
 ])

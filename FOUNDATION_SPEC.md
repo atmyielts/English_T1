@@ -464,26 +464,30 @@ These tables answer only **TWO questions**:
 
 | Column | Type | Purpose |
 |--------|------|---------|
-| `id` | uuid (PK) | Unique identifier |
-| `user_id` | uuid (FK) | Who owns this |
-| `resource_type` | text | What kind: product, experience, feature |
-| `resource_id` | uuid | Which specific resource (nullable for global) |
-| `is_active` | boolean | Currently valid |
-| `starts_at` | timestamptz | When access begins |
-| `ends_at` | timestamptz | When access expires (null = perpetual) |
-| `usage_limit` | integer | Max uses (future) |
-| `usage_count` | integer | Current uses (future) |
-| `source` | text | Origin: system, admin, stripe, promo |
-| `created_at` | timestamptz | Audit |
-| `updated_at` | timestamptz | Audit |
+| id | uuid (PK) | Unique identifier |
+| tenant_id | uuid (FK) | Which tenant owns access |
+| user_id | uuid (FK) | Optional audit/payer |
+| resource_type | text | What kind: product, experience, feature |
+| resource_id | uuid | Which specific resource (nullable for global) |
+| is_active | boolean | Currently valid |
+| starts_at | timestamptz | When access begins |
+| ends_at | timestamptz | When access expires (null = perpetual) |
+| value | jsonb | Optional metadata/limits |
+| usage_limit | integer | Max uses (future) |
+| usage_count | integer | Current uses (future) |
+| source | text | Origin: system, admin, stripe, promo |
+| created_at | timestamptz | Audit |
+| updated_at | timestamptz | Audit |
 
+Entitlements are **tenant-scoped**. /me resolves effective entitlements via membership.
 **Supports**:
-- ✅ Free access
-- ✅ Trials
-- ✅ Paid access
-- ✅ Admin grants
-- ✅ Time-limited access
-- ✅ Usage-limited access (future)
+- Free access
+- Trials
+- Paid access
+- Admin grants
+- Time-limited access
+- Usage-limited access (future)
+
 
 ### 19.3 What You MUST NOT Add
 

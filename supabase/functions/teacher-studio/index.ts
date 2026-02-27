@@ -1,0 +1,1 @@
+import "../academy/index.ts";

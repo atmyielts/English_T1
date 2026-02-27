@@ -1,128 +1,141 @@
 import { supabase } from '../lib/supabase';
-import type { Session, Response } from '../domain/models';
+import { startSession } from '../lib/platformClient';
+import type { Response } from '../domain/models';
 
-// 1️⃣ Session Creation (ONCE)
+export type CreateSessionResult = { sessionId: string | null; code?: string; capabilityKey?: string; error?: string };
+
+const extractErrorCode = (message: string): string | undefined => {
+  if (message.includes('usage_limit_reached')) return 'usage_limit_reached';
+  if (message.includes('No entitlement')) return 'no_entitlement';
+  return undefined;
+};
+
+const extractJsonFromMessage = (message: string): Record<string, unknown> | null => {
+  const match = message.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[0]) as unknown;
+    return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const createSession = async (
-    userId: string,
-    experienceId: string
-): Promise<string | null> => {
-    if (!supabase) {
-        console.warn('[MockPersistence] createSession', { userId, experienceId });
-        return 'mock-session-id-' + Date.now();
-    }
+  accessToken: string,
+  experienceId: string,
+  metadata?: Record<string, unknown>,
+): Promise<CreateSessionResult> => {
+  try {
+    const body = {
+      experience_id: experienceId,
+      metadata: metadata ?? {},
+    };
 
-    const { data, error } = await supabase
-        .from('sessions')
-        .insert({
-            user_id: userId,
+    const res = await startSession(accessToken, body);
+    return { sessionId: res.session_id ?? null };
+  } catch (err) {
+    // Token can expire between guard check and start-session call; retry once with refreshed session.
+    const status = (err as { status?: number } | null)?.status;
+    if (status === 401) {
+      try {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError && refreshed.session?.access_token) {
+          const retried = await startSession(refreshed.session.access_token, {
             experience_id: experienceId,
-            status: 'active',
-            started_at: new Date().toISOString()
-        })
-        .select('id')
-        .single();
-
-    if (error) {
-        console.error('Failed to create session:', error);
-        return null;
+            metadata: metadata ?? {},
+          });
+          return { sessionId: retried.session_id ?? null };
+        }
+      } catch {
+        // fall through to normalized error handling
+      }
     }
 
-    return data.id;
+    const message = err instanceof Error ? err.message : 'Failed to create session';
+    const details = extractJsonFromMessage(message);
+    const code =
+      typeof details?.code === 'string' ? (details.code as string) : extractErrorCode(message);
+    const capabilityKey = typeof details?.capability_key === 'string' ? (details.capability_key as string) : undefined;
+    return { sessionId: null, error: message, code, capabilityKey };
+  }
 };
 
-// 2️⃣ Response Insertion (MANY)
 export const insertResponse = async (
-    sessionId: string,
-    contentUnitId: string,
-    unitType: string,
-    value: any
+  sessionId: string,
+  contentUnitId: string,
+  unitType: string,
+  value: any,
 ): Promise<void> => {
-    if (!supabase) {
-        console.warn('[MockPersistence] insertResponse', { sessionId, contentUnitId, value });
-        return;
-    }
+  const { error } = await supabase.from('responses').insert({
+    session_id: sessionId,
+    content_unit_id: contentUnitId,
+    type: unitType,
+    data: value,
+    submitted_at: new Date().toISOString(),
+  });
 
-    const { error } = await supabase
-        .from('responses')
-        .insert({
-            session_id: sessionId,
-            content_unit_id: contentUnitId,
-            type: unitType,
-            data: value,
-            submitted_at: new Date().toISOString()
-        });
-
-    if (error) {
-        console.error('Failed to insert response:', error);
-    }
+  if (error) {
+    console.error('Failed to insert response:', error);
+  }
 };
 
-// 3️⃣ Session Finalization (ONE UPDATE)
 export const finalizeSession = async (sessionId: string): Promise<void> => {
-    if (!supabase) {
-        console.warn('[MockPersistence] finalizeSession', { sessionId });
-        return;
-    }
+  const { error } = await supabase
+    .from('sessions')
+    .update({
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId);
 
-    const { error } = await supabase
-        .from('sessions')
-        .update({
-            status: 'completed',
-            completed_at: new Date().toISOString()
-        })
-        .eq('id', sessionId);
-
-    if (error) {
-        console.error('Failed to finalize session:', error);
-    }
+  if (error) {
+    console.error('Failed to finalize session:', error);
+  }
 };
 
-// 4️⃣ Fetch Responses (For Scoring)
+export const abandonSession = async (sessionId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('sessions')
+    .update({
+      status: 'abandoned',
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId);
+
+  if (error) {
+    console.error('Failed to abandon session:', error);
+  }
+};
+
 export const getResponses = async (sessionId: string): Promise<Response[]> => {
-    if (!supabase) {
-        console.warn('[MockPersistence] getResponses', { sessionId });
-        return [];
-    }
+  const { data, error } = await supabase.from('responses').select('*').eq('session_id', sessionId);
 
-    const { data, error } = await supabase
-        .from('responses')
-        .select('*')
-        .eq('session_id', sessionId);
+  if (error) {
+    console.error('Failed to fetch responses:', error);
+    return [];
+  }
 
-    if (error) {
-        console.error('Failed to fetch responses:', error);
-        return [];
-    }
-
-    // Map snake_case to camelCase
-    return data.map((r: any) => ({
-        id: r.id,
-        sessionId: r.session_id,
-        contentUnitId: r.content_unit_id,
-        type: r.type,
-        data: r.data,
-        submittedAt: r.submitted_at
-    }));
+  return (data ?? []).map((r: any) => ({
+    id: r.id,
+    sessionId: r.session_id,
+    contentUnitId: r.content_unit_id,
+    type: r.type,
+    data: r.data,
+    submittedAt: r.submitted_at,
+  }));
 };
 
-// 5️⃣ Persist Evaluation (RESULT)
 export const persistEvaluation = async (sessionId: string, result: any): Promise<void> => {
-    if (!supabase) {
-        console.warn('[MockPersistence] persistEvaluation', { sessionId, result });
-        return;
-    }
+  const { error } = await supabase.from('evaluations').insert({
+    session_id: sessionId,
+    method: 'auto',
+    status: 'completed',
+    result,
+    evaluated_at: new Date().toISOString(),
+  });
 
-    const { error } = await supabase
-        .from('evaluations')
-        .insert({
-            session_id: sessionId,
-            method: 'auto_mock',
-            status: 'completed',
-            result: result,
-            evaluated_at: new Date().toISOString()
-        });
-
-    if (error) {
-        console.error('Failed to persist evaluation:', error);
-    }
+  if (error) {
+    console.error('Failed to persist evaluation:', error);
+  }
 };

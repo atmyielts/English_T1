@@ -39,9 +39,20 @@ export type ContentUnitType =
     | 'instruction'
     | 'reading_passage'
     | 'audio'
+    | 'image'
     | 'question_text'
     | 'question_single_choice'
-    | 'question_multi_choice';
+    | 'question_multi_choice'
+    | 'question_matching'
+    | 'question_true_false_not_given'
+    | 'question_yes_no_not_given'
+    | 'question_matching_headings'
+    | 'question_sentence_endings'
+    | 'question_gap_fill'
+    | 'question_select_from_list'
+    | 'question_table_completion'
+    | 'question_diagram_labeling'
+    | 'question_drag_drop';
 
 export interface ContentUnit {
     id: UUID;
@@ -60,7 +71,7 @@ export type ContentUnitData =
 
 // --- Runtime (Interaction) ---
 
-export type SessionStatus = 'created' | 'active' | 'paused' | 'completed';
+export type SessionStatus = 'created' | 'active' | 'paused' | 'completed' | 'abandoned' | 'expired';
 
 export interface Session {
     id: UUID;

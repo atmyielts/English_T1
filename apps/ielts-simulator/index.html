@@ -3,28 +3,147 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="icon" type="image/png" href="/schood-logo.png" />
+  <link rel="shortcut icon" href="/schood-logo.png" />
+  <link rel="apple-touch-icon" href="/schood-logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ielts-simulator</title>
-  <script>
-    window.onerror = function (message, source, lineno, colno, error) {
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = `
-            <div style="color: red; padding: 20px; font-family: sans-serif;">
-              <h1>Fatal Script Error</h1>
-              <p><strong>Message:</strong> ${message}</p>
-              <p><strong>Source:</strong> ${source}:${lineno}:${colno}</p>
-              <pre>${error ? error.stack : 'No stack trace'}</pre>
-            </div>
-          `;
+  <meta name="referrer" content="no-referrer" />
+  <title>Schood IELTS</title>
+  <style>
+    :root {
+      color-scheme: light;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at 12% 16%, #fff6e5 0%, #f5f6ff 44%, #eef6ff 100%);
+      font-family: "Manrope", "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+      color: #0f172a;
+    }
+
+    #root {
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .boot-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .boot-card {
+      width: min(560px, 100%);
+      border-radius: 24px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.1);
+      padding: 28px 26px;
+    }
+
+    .boot-eyebrow {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .boot-top {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .boot-spinner {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid #cbd5e1;
+      border-top-color: #1d4ed8;
+      animation: spin 900ms linear infinite;
+      flex-shrink: 0;
+    }
+
+    .boot-title {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.2;
+      font-weight: 750;
+      letter-spacing: 0.01em;
+    }
+
+    .boot-subtitle {
+      margin: 10px 0 0;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .boot-tip {
+      margin: 10px 0 0;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .boot-progress {
+      margin-top: 18px;
+      height: 7px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(148, 163, 184, 0.25);
+    }
+
+    .boot-progress-bar {
+      width: 36%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #1d4ed8, #0ea5e9);
+      animation: sweep 1500ms ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
       }
-    };
-  </script>
+    }
+
+    @keyframes sweep {
+      0% {
+        transform: translateX(-130%);
+      }
+
+      100% {
+        transform: translateX(380%);
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root">Loading application...</div>
+  <div id="root">
+    <div class="boot-screen">
+      <div class="boot-card" role="status" aria-live="polite">
+        <p class="boot-eyebrow">IELTS simulator</p>
+        <div class="boot-top">
+          <span class="boot-spinner" aria-hidden="true"></span>
+          <h1 class="boot-title">Warming up your exam desk</h1>
+        </div>
+        <p class="boot-subtitle">Pulling your session, syncing progress, and arranging passages in the right order.</p>
+        <p class="boot-tip">No stress. This usually takes a few seconds.</p>
+        <div class="boot-progress" aria-hidden="true">
+          <div class="boot-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
