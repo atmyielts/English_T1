@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no">
 
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/schood-logo.png" />
   <link rel="shortcut icon" href="/schood-logo.png" />
   <link rel="apple-touch-icon" href="/schood-logo.png" />
+  <meta name="google" content="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Schood Platform</title>
   <style>
@@ -123,21 +124,6 @@
       }
     }
   </style>
-  <script>
-    window.onerror = function (message, source, lineno, colno, error) {
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = `
-            <div style="color: red; padding: 20px; font-family: sans-serif;">
-              <h1>Fatal Script Error</h1>
-              <p><strong>Message:</strong> ${message}</p>
-              <p><strong>Source:</strong> ${source}:${lineno}:${colno}</p>
-              <pre>${error ? error.stack : 'No stack trace'}</pre>
-            </div>
-          `;
-      }
-    };
-  </script>
 </head>
 
 <body>
