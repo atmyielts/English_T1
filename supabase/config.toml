@@ -158,6 +158,9 @@ verify_jwt = false
 [functions.admin-users]
 verify_jwt = false
 
+[functions.admin-products]
+verify_jwt = false
+
 [functions.admin-analytics]
 verify_jwt = false
 
