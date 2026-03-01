@@ -236,27 +236,38 @@ export const AdminProductsPage: React.FC = () => {
   const getValidToken = async (forceRefresh = false): Promise<string | null> => {
     if (!forceRefresh) {
       const { data } = await supabase.auth.getSession();
-      if (data.session?.access_token) {
-        setAccessToken(data.session.access_token);
-        return data.session.access_token;
-      }
+      if (data.session?.access_token) return data.session.access_token;
     }
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError || !refreshed.session?.access_token) return null;
-    setAccessToken(refreshed.session.access_token);
     return refreshed.session.access_token;
   };
 
   const withFreshToken = async <T,>(run: (token: string) => Promise<T>): Promise<T> => {
     const token = await getValidToken();
-    if (!token) throw new Error('Session expired. Please sign in again and retry.');
+    if (!token) {
+      await supabase.auth.signOut();
+      setAccessToken(null);
+      throw new Error('Session expired. Please sign in again and retry.');
+    }
     try {
       return await run(token);
     } catch (err) {
       if (!isUnauthorizedError(err)) throw err;
       const refreshed = await getValidToken(true);
-      if (!refreshed) throw new Error('Session expired. Please sign in again and retry.');
-      return await run(refreshed);
+      if (!refreshed) {
+        await supabase.auth.signOut();
+        setAccessToken(null);
+        throw new Error('Session expired. Please sign in again and retry.');
+      }
+      try {
+        return await run(refreshed);
+      } catch (retryErr) {
+        if (!isUnauthorizedError(retryErr)) throw retryErr;
+        await supabase.auth.signOut();
+        setAccessToken(null);
+        throw new Error('Session expired. Please sign in again and retry.');
+      }
     }
   };
 
