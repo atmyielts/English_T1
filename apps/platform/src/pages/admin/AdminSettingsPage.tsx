@@ -140,6 +140,13 @@ export const AdminSettingsPage: React.FC = () => {
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
           <div className="text-sm font-semibold text-gray-900">Admin security policy</div>
+          <div className="text-xs text-gray-600">
+            Manage authenticator apps and remove old factors in{' '}
+            <Link to="/admin-mfa?returnTo=%2Fadmin%2Fsettings" className="font-semibold underline">
+              Admin MFA
+            </Link>
+            .
+          </div>
           <label className="inline-flex items-center gap-2 text-sm text-gray-700">
             <input
               type="checkbox"

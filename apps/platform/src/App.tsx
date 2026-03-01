@@ -7,29 +7,56 @@ import { AdminIndexRedirect } from './components/platform/AdminIndexRedirect';
 import { UpdatesButton } from './components/platform/UpdatesButton';
 import { useI18n } from './i18n';
 
-const AuthPage = lazy(() => import('./pages/AuthPage').then((m) => ({ default: m.AuthPage })));
-const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
-const AboutPage = lazy(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })));
-const FAQPage = lazy(() => import('./pages/FAQPage').then((m) => ({ default: m.FAQPage })));
-const ContactPage = lazy(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
-const UpdatesPage = lazy(() => import('./pages/UpdatesPage').then((m) => ({ default: m.UpdatesPage })));
-const PlansPage = lazy(() => import('./pages/PlansPage').then((m) => ({ default: m.PlansPage })));
-const PricingPage = lazy(() => import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })));
-const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
-const AccountPage = lazy(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
-const CandidateEntryPage = lazy(() => import('./pages/CandidateEntryPage').then((m) => ({ default: m.CandidateEntryPage })));
-const TeacherOfficePage = lazy(() => import('./pages/TeacherOfficePage').then((m) => ({ default: m.TeacherOfficePage })));
-const AdminMfaPage = lazy(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
-const AdminBillingPage = lazy(() => import('./pages/admin/AdminBillingPage').then((m) => ({ default: m.AdminBillingPage })));
-const AdminProductsPage = lazy(() => import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage })));
-const AdminCouponsPage = lazy(() => import('./pages/admin/AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage })));
-const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })));
-const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
-const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
-const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
-const AdminTrialsPage = lazy(() => import('./pages/admin/AdminTrialsPage').then((m) => ({ default: m.AdminTrialsPage })));
-const AdminSupportPage = lazy(() => import('./pages/admin/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })));
-const AdminAnnouncementsPage = lazy(() => import('./pages/admin/AdminAnnouncementsPage').then((m) => ({ default: m.AdminAnnouncementsPage })));
+const lazyWithChunkRetry = <T extends React.ComponentType<any>>(factory: () => Promise<{ default: T }>) =>
+  lazy(async () => {
+    try {
+      const module = await factory();
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('__schood_chunk_reload__');
+      }
+      return module;
+    } catch (error) {
+      if (typeof window !== 'undefined') {
+        const key = '__schood_chunk_reload__';
+        const alreadyRetried = sessionStorage.getItem(key) === '1';
+        if (!alreadyRetried) {
+          sessionStorage.setItem(key, '1');
+          const refreshUrl = new URL(window.location.href);
+          refreshUrl.searchParams.set('refresh', Date.now().toString());
+          window.location.replace(refreshUrl.toString());
+        } else {
+          sessionStorage.removeItem(key);
+        }
+      }
+      throw error;
+    }
+  });
+
+const AuthPage = lazyWithChunkRetry(() => import('./pages/AuthPage').then((m) => ({ default: m.AuthPage })));
+const HomePage = lazyWithChunkRetry(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
+const AboutPage = lazyWithChunkRetry(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })));
+const FAQPage = lazyWithChunkRetry(() => import('./pages/FAQPage').then((m) => ({ default: m.FAQPage })));
+const ContactPage = lazyWithChunkRetry(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
+const UpdatesPage = lazyWithChunkRetry(() => import('./pages/UpdatesPage').then((m) => ({ default: m.UpdatesPage })));
+const PlansPage = lazyWithChunkRetry(() => import('./pages/PlansPage').then((m) => ({ default: m.PlansPage })));
+const PricingPage = lazyWithChunkRetry(() => import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })));
+const CheckoutPage = lazyWithChunkRetry(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
+const AccountPage = lazyWithChunkRetry(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
+const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEntryPage').then((m) => ({ default: m.CandidateEntryPage })));
+const TeacherOfficePage = lazyWithChunkRetry(() => import('./pages/TeacherOfficePage').then((m) => ({ default: m.TeacherOfficePage })));
+const AdminMfaPage = lazyWithChunkRetry(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
+const AdminBillingPage = lazyWithChunkRetry(() => import('./pages/admin/AdminBillingPage').then((m) => ({ default: m.AdminBillingPage })));
+const AdminProductsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage })));
+const AdminCouponsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage })));
+const AdminPaymentsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })));
+const AdminUsersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
+const AdminAnalyticsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
+const AdminSettingsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
+const AdminTrialsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminTrialsPage').then((m) => ({ default: m.AdminTrialsPage })));
+const AdminSupportPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })));
+const AdminAnnouncementsPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminAnnouncementsPage').then((m) => ({ default: m.AdminAnnouncementsPage })),
+);
 
 const RouteLoading: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useI18n();
