@@ -38,6 +38,7 @@ export const AdminMfaPage: React.FC = () => {
   const [verifyCode, setVerifyCode] = useState('');
   const [enrollCode, setEnrollCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [removingFactorId, setRemovingFactorId] = useState<string | null>(null);
   const [loadingMfa, setLoadingMfa] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -202,6 +203,24 @@ export const AdminMfaPage: React.FC = () => {
     }
   };
 
+  const removeFactor = async (factorId: string) => {
+    setRemovingFactorId(factorId);
+    setError(null);
+    setNotice(null);
+    try {
+      const mfaClient = (supabase.auth as any).mfa;
+      const { error: removeError } = await mfaClient.unenroll({ factorId });
+      if (removeError) throw removeError;
+      setNotice('Authenticator removed.');
+      if (selectedFactorId === factorId) setSelectedFactorId('');
+      await loadMfaState();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove authenticator');
+    } finally {
+      setRemovingFactorId(null);
+    }
+  };
+
   if (checkingAccess) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">Checking admin MFA access...</div>;
   }
@@ -295,6 +314,9 @@ export const AdminMfaPage: React.FC = () => {
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-3">
           <h2 className="text-lg font-semibold text-gray-900">Enroll authenticator app</h2>
+          <p className="text-sm text-gray-600">
+            You can enroll multiple authenticator apps. Add a new one, verify it, then remove old factors below.
+          </p>
           <button
             type="button"
             onClick={() => void startEnrollment()}
@@ -332,6 +354,30 @@ export const AdminMfaPage: React.FC = () => {
             </div>
           ) : null}
         </div>
+
+        {factors.length > 0 ? (
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-3">
+            <h2 className="text-lg font-semibold text-gray-900">Enrolled authenticators</h2>
+            <div className="space-y-2">
+              {factors.map((factor) => (
+                <div key={factor.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-200 px-3 py-2">
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">{factor.friendly_name ?? factor.factor_type ?? 'Authenticator'}</span>{' '}
+                    <span className="text-gray-500">({factor.status ?? 'unknown'})</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void removeFactor(factor.id)}
+                    disabled={busy || loadingMfa || removingFactorId === factor.id}
+                    className="px-3 py-1.5 rounded-lg border border-red-300 text-red-700 text-sm font-medium disabled:opacity-60"
+                  >
+                    {removingFactorId === factor.id ? 'Removing...' : 'Remove'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

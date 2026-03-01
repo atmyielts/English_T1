@@ -54,7 +54,10 @@ export const AuthPage: React.FC = () => {
     }
 
     if (currentMode === 'signin') {
-      if (lower.includes('invalid login credentials') || lower.includes('user not found')) {
+      if (lower.includes('invalid login credentials')) {
+        return t('auth.error.signinGeneric');
+      }
+      if (lower.includes('user not found')) {
         return t('auth.error.signinNoAccount');
       }
       if (status === 429) return t('auth.error.tooManyAttempts');
