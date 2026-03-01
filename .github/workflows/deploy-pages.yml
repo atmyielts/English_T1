@@ -72,6 +72,7 @@ jobs:
           VITE_ACADEMY_URL: https://schood.online/academy
           VITE_PLATFORM_URL: https://schood.online
           VITE_AUTH_COOKIE_DOMAIN: .schood.online
+          VITE_AUTH_SHARED_COOKIE: "true"
           VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}
           VITE_DISABLE_PAYWALL: "false"
           VITE_USE_MOCK_PERSISTENCE: "false"
