@@ -138,7 +138,7 @@ export const FullExamPage: React.FC = () => {
 
           {experiences.length === 0 && !loading ? (
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 text-gray-700">
-              No tests found. Import one in <span className="font-mono">/admin/import</span>.
+              No full mock tests are available right now. Please check back soon or contact support.
             </div>
           ) : null}
 
