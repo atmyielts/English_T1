@@ -16,6 +16,19 @@ type ProductMeta = {
 const TYPE_OPTIONS = ['exam', 'practice', 'tool', 'course'];
 const STATUS_OPTIONS = ['draft', 'active', 'disabled', 'archived'];
 
+const toFriendlyError = (err: unknown, fallback: string): string => {
+  const msg = err instanceof Error ? err.message : '';
+  if (/401|unauthorized|invalid jwt/i.test(msg)) return 'Session expired. Please sign in again and retry.';
+  if (/403|forbidden/i.test(msg)) return 'Admin access is required for this action.';
+  if (/429|rate limit/i.test(msg)) return 'Too many requests. Please wait a moment and retry.';
+  return fallback;
+};
+
+const isUnauthorizedError = (err: unknown): boolean => {
+  const msg = err instanceof Error ? err.message : '';
+  return /401|unauthorized|invalid jwt/i.test(msg);
+};
+
 const parseMeta = (meta: ProductRow['metadata']): ProductMeta => {
   const m = (meta ?? {}) as ProductMeta;
   return {
@@ -220,14 +233,41 @@ export const AdminProductsPage: React.FC = () => {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const load = async (token: string) => {
+  const getValidToken = async (forceRefresh = false): Promise<string | null> => {
+    if (!forceRefresh) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        setAccessToken(data.session.access_token);
+        return data.session.access_token;
+      }
+    }
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session?.access_token) return null;
+    setAccessToken(refreshed.session.access_token);
+    return refreshed.session.access_token;
+  };
+
+  const withFreshToken = async <T,>(run: (token: string) => Promise<T>): Promise<T> => {
+    const token = await getValidToken();
+    if (!token) throw new Error('Session expired. Please sign in again and retry.');
+    try {
+      return await run(token);
+    } catch (err) {
+      if (!isUnauthorizedError(err)) throw err;
+      const refreshed = await getValidToken(true);
+      if (!refreshed) throw new Error('Session expired. Please sign in again and retry.');
+      return await run(refreshed);
+    }
+  };
+
+  const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const { products: rows } = await adminProductsList(token, { limit: 500 });
+      const { products: rows } = await withFreshToken((freshToken) => adminProductsList(freshToken, { limit: 500 }));
       setProducts(rows ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load products');
+      setError(toFriendlyError(e, 'Failed to load products.'));
     } finally {
       setLoading(false);
     }
@@ -235,7 +275,7 @@ export const AdminProductsPage: React.FC = () => {
 
   useEffect(() => {
     if (!accessToken) return;
-    void load(accessToken);
+    void load();
   }, [accessToken]);
 
   const createProduct = async () => {
@@ -250,17 +290,19 @@ export const AdminProductsPage: React.FC = () => {
         tagline: newProduct.tagline,
       });
 
-      const { product } = await adminProductsCreate(accessToken, {
-        name: newProduct.name.trim() || 'New product',
-        type: newProduct.type,
-        status: newProduct.status,
-        description: newProduct.description.trim() || null,
-        metadata: meta,
-      });
+      const { product } = await withFreshToken((token) =>
+        adminProductsCreate(token, {
+          name: newProduct.name.trim() || 'New product',
+          type: newProduct.type,
+          status: newProduct.status,
+          description: newProduct.description.trim() || null,
+          metadata: meta,
+        }),
+      );
       if (product) setProducts((prev) => [product as ProductRow, ...prev]);
       setNewProduct({ name: '', type: 'exam', status: 'draft', description: '', slug: '', app_url: '', short_description: '', tagline: '' });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create product');
+      setError(toFriendlyError(e, 'Failed to create product.'));
     } finally {
       setSaving(false);
     }
@@ -277,10 +319,10 @@ export const AdminProductsPage: React.FC = () => {
     setError(null);
     try {
       const meta = buildMeta(baseMeta, metaDraft);
-      const { product } = await adminProductsUpdate(accessToken, id, { ...patch, metadata: meta });
+      const { product } = await withFreshToken((token) => adminProductsUpdate(token, id, { ...patch, metadata: meta }));
       if (product) setProducts((prev) => prev.map((p) => (p.id === id ? (product as ProductRow) : p)));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to update product');
+      setError(toFriendlyError(e, 'Failed to update product.'));
     } finally {
       setSaving(false);
     }
@@ -311,10 +353,12 @@ export const AdminProductsPage: React.FC = () => {
         meta.archived_from_status = product.status;
       }
 
-      const { product: updated } = await adminProductsUpdate(accessToken, product.id, { status: nextStatus, metadata: meta });
+      const { product: updated } = await withFreshToken((token) =>
+        adminProductsUpdate(token, product.id, { status: nextStatus, metadata: meta }),
+      );
       if (updated) setProducts((prev) => prev.map((p) => (p.id === product.id ? (updated as ProductRow) : p)));
     } catch (e) {
-      setError(e instanceof Error ? e.message : `Failed to ${isArchived ? 'restore' : 'archive'} product`);
+      setError(toFriendlyError(e, `Failed to ${isArchived ? 'restore' : 'archive'} product.`));
     } finally {
       setSaving(false);
     }
