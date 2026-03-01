@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { supabase } from '../../lib/supabase';
+import { clearLocalAuthStorage, supabase } from '../../lib/supabase';
 import { adminProductsCreate, adminProductsList, adminProductsUpdate, type AdminProductRow } from '../../lib/platformClient';
 
 type ProductRow = AdminProductRow;
@@ -233,41 +233,46 @@ export const AdminProductsPage: React.FC = () => {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const getValidToken = async (forceRefresh = false): Promise<string | null> => {
-    if (!forceRefresh) {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.access_token) return data.session.access_token;
-    }
+  const getValidToken = async (): Promise<string | null> => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) return null;
+    const session = data.session;
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = Number(session?.expires_at ?? 0);
+    const shouldRefresh = !session?.access_token || !Number.isFinite(expiresAt) || expiresAt - now < 90;
+    if (!shouldRefresh) return session.access_token;
+
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-    if (refreshError || !refreshed.session?.access_token) return null;
+    if (refreshError || !refreshed.session?.access_token) return session?.access_token ?? null;
     return refreshed.session.access_token;
   };
 
   const withFreshToken = async <T,>(run: (token: string) => Promise<T>): Promise<T> => {
     const token = await getValidToken();
     if (!token) {
-      await supabase.auth.signOut();
+      clearLocalAuthStorage();
       setAccessToken(null);
       throw new Error('Session expired. Please sign in again and retry.');
     }
+
     try {
       return await run(token);
     } catch (err) {
       if (!isUnauthorizedError(err)) throw err;
-      const refreshed = await getValidToken(true);
-      if (!refreshed) {
-        await supabase.auth.signOut();
-        setAccessToken(null);
-        throw new Error('Session expired. Please sign in again and retry.');
+
+      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+      const refreshedToken = refreshError ? null : refreshed.session?.access_token ?? null;
+      if (refreshedToken) {
+        try {
+          return await run(refreshedToken);
+        } catch (retryErr) {
+          if (!isUnauthorizedError(retryErr)) throw retryErr;
+        }
       }
-      try {
-        return await run(refreshed);
-      } catch (retryErr) {
-        if (!isUnauthorizedError(retryErr)) throw retryErr;
-        await supabase.auth.signOut();
-        setAccessToken(null);
-        throw new Error('Session expired. Please sign in again and retry.');
-      }
+
+      clearLocalAuthStorage();
+      setAccessToken(null);
+      throw new Error('Session expired. Please sign in again and retry.');
     }
   };
 
