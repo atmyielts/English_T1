@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { clearLocalAuthStorage, supabase } from './supabase';
 
 type Json = Record<string, unknown> | unknown[];
 
@@ -117,13 +117,12 @@ const isAuthErrorResponse = (status: number, details: unknown): boolean => {
 };
 
 let authExpirySignOutInFlight: Promise<void> | null = null;
+let refreshAccessTokenInFlight: Promise<string | null> | null = null;
 
 const forceLocalSignOut = async (): Promise<void> => {
   if (!authExpirySignOutInFlight) {
-    authExpirySignOutInFlight = supabase.auth
-      .signOut({ scope: 'local' })
-      .then(() => undefined)
-      .catch(() => undefined)
+    authExpirySignOutInFlight = Promise.resolve()
+      .then(() => clearLocalAuthStorage())
       .finally(() => {
         authExpirySignOutInFlight = null;
       });
@@ -132,9 +131,16 @@ const forceLocalSignOut = async (): Promise<void> => {
 };
 
 const tryRefreshAccessToken = async (): Promise<string | null> => {
-  const { data, error } = await supabase.auth.refreshSession();
-  if (error || !data.session?.access_token) return null;
-  return data.session.access_token;
+  if (!refreshAccessTokenInFlight) {
+    refreshAccessTokenInFlight = (async () => {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session?.access_token) return null;
+      return data.session.access_token;
+    })().finally(() => {
+      refreshAccessTokenInFlight = null;
+    });
+  }
+  return refreshAccessTokenInFlight;
 };
 
 export const getMe = async (accessToken: string, opts?: { force?: boolean }): Promise<MeResponse> => {
