@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 type Json = Record<string, unknown> | unknown[];
 
 export type MeResponse = {
@@ -105,6 +107,36 @@ const readJsonOrText = async (res: Response): Promise<unknown> => {
   return res.text();
 };
 
+const authErrorPattern = /unauthorized|invalid jwt|session not found|session_not_found/i;
+
+const isAuthErrorResponse = (status: number, details: unknown): boolean => {
+  if (status === 401) return true;
+  if (status !== 403) return false;
+  const text = typeof details === 'string' ? details : JSON.stringify(details ?? '');
+  return authErrorPattern.test(text);
+};
+
+let authExpirySignOutInFlight: Promise<void> | null = null;
+
+const forceLocalSignOut = async (): Promise<void> => {
+  if (!authExpirySignOutInFlight) {
+    authExpirySignOutInFlight = supabase.auth
+      .signOut({ scope: 'local' })
+      .then(() => undefined)
+      .catch(() => undefined)
+      .finally(() => {
+        authExpirySignOutInFlight = null;
+      });
+  }
+  await authExpirySignOutInFlight;
+};
+
+const tryRefreshAccessToken = async (): Promise<string | null> => {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session?.access_token) return null;
+  return data.session.access_token;
+};
+
 export const getMe = async (accessToken: string, opts?: { force?: boolean }): Promise<MeResponse> => {
   const key = accessToken;
   const now = Date.now();
@@ -118,9 +150,24 @@ export const getMe = async (accessToken: string, opts?: { force?: boolean }): Pr
   }
 
   const p = (async () => {
-    const res = await fetch(`${edgeBase}/me`, { headers: apiHeaders(accessToken) });
+    let activeToken = accessToken;
+    let res = await fetch(`${edgeBase}/me`, { headers: apiHeaders(activeToken) });
+    let details: unknown = null;
+
     if (!res.ok) {
-      const details = await readJsonOrText(res);
+      details = await readJsonOrText(res);
+      if (isAuthErrorResponse(res.status, details)) {
+        const refreshedToken = await tryRefreshAccessToken();
+        if (refreshedToken) {
+          activeToken = refreshedToken;
+          res = await fetch(`${edgeBase}/me`, { headers: apiHeaders(activeToken) });
+          if (!res.ok) details = await readJsonOrText(res);
+        }
+      }
+    }
+
+    if (!res.ok) {
+      if (isAuthErrorResponse(res.status, details)) await forceLocalSignOut();
       const err = new Error(`GET /me failed (${res.status}): ${JSON.stringify(details)}`);
       (err as any).status = res.status;
       (err as any).details = details;
@@ -128,7 +175,7 @@ export const getMe = async (accessToken: string, opts?: { force?: boolean }): Pr
     }
 
     const value = (await res.json()) as MeResponse;
-    meCache.set(key, { at: Date.now(), value });
+    meCache.set(activeToken, { at: Date.now(), value });
     return value;
   })();
 
@@ -148,9 +195,24 @@ export const getAccessEffective = async (
   if (opts?.productId) qs.set('product_id', opts.productId);
   const url = `${edgeBase}/access-effective${qs.toString() ? `?${qs.toString()}` : ''}`;
 
-  const res = await fetch(url, { method: 'GET', headers: apiHeaders(accessToken) });
+  let activeToken = accessToken;
+  let res = await fetch(url, { method: 'GET', headers: apiHeaders(activeToken) });
+  let details: unknown = null;
+
   if (!res.ok) {
-    const details = await readJsonOrText(res);
+    details = await readJsonOrText(res);
+    if (isAuthErrorResponse(res.status, details)) {
+      const refreshedToken = await tryRefreshAccessToken();
+      if (refreshedToken) {
+        activeToken = refreshedToken;
+        res = await fetch(url, { method: 'GET', headers: apiHeaders(activeToken) });
+        if (!res.ok) details = await readJsonOrText(res);
+      }
+    }
+  }
+
+  if (!res.ok) {
+    if (isAuthErrorResponse(res.status, details)) await forceLocalSignOut();
     const err = new Error(`GET /access-effective failed (${res.status}): ${JSON.stringify(details)}`);
     (err as any).status = res.status;
     (err as any).details = details;
