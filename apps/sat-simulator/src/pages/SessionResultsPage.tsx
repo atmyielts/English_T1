@@ -123,6 +123,7 @@ export const SessionResultsPage: React.FC = () => {
   const sections = result ? Object.entries(result.sections) : [];
   const satScores = result?.sat ?? null;
   const hasSatScores = satScores && (satScores.total_score != null || satScores.reading_writing_score != null || satScores.math_score != null);
+  const isSatSession = Boolean(hasSatScores);
   const hasWriting = Object.values(result?.sections ?? {}).some(
     (s: any) => String((s as any)?.type ?? '').toLowerCase() === 'writing',
   );
@@ -138,6 +139,18 @@ export const SessionResultsPage: React.FC = () => {
 
   const ai = (aiEval?.result ?? null) as any;
   const aiTasks = Array.isArray(ai?.tasks) ? (ai.tasks as any[]) : [];
+  const formatSectionType = (value: string): string => {
+    if (value === 'reading_writing') return 'Reading & Writing';
+    if (value === 'math') return 'Math';
+    if (value === 'listening') return 'Listening';
+    if (value === 'reading') return 'Reading';
+    if (value === 'writing') return 'Writing';
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
+  const formatAccuracy = (raw: number, max: number): string => {
+    if (!Number.isFinite(raw) || !Number.isFinite(max) || max <= 0) return 'Not available';
+    return `${Math.round((raw / max) * 100)}%`;
+  };
 
   // Auto-trigger writing grading for sessions that include Writing.
   useEffect(() => {
@@ -184,7 +197,7 @@ export const SessionResultsPage: React.FC = () => {
             <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">Results</div>
             <h1 className="text-2xl font-bold text-gray-900">Session Score</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {hasSatScores
+              {isSatSession
                 ? 'Estimated SAT scoring for Reading & Writing and Math modules.'
                 : 'Objective scoring for auto-gradable questions.'}
             </p>
@@ -199,18 +212,21 @@ export const SessionResultsPage: React.FC = () => {
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border border-gray-200 rounded-xl p-5">
-            <div className="text-xs text-gray-500">{hasSatScores ? ESTIMATED_SAT_SCORE_LABEL : 'Overall band'}</div>
+            <div className="text-xs text-gray-500">{isSatSession ? ESTIMATED_SAT_SCORE_LABEL : 'Overall band'}</div>
             <div className="text-4xl font-bold text-gray-900 mt-1">
-              {hasSatScores ? satScores?.total_score ?? 'N/A' : result?.overall_band ?? 'N/A'}
+              {isSatSession ? satScores?.total_score ?? 'Pending' : result?.overall_band ?? 'N/A'}
             </div>
+            {isSatSession && satScores?.total_score == null ? (
+              <div className="mt-2 text-xs text-gray-500">Complete both modules to see a total score.</div>
+            ) : null}
           </div>
           <div className="border border-gray-200 rounded-xl p-5">
             <div className="text-xs text-gray-500">Reading & Writing</div>
-            <div className="text-4xl font-bold text-gray-900 mt-1">{satScores?.reading_writing_score ?? 'N/A'}</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{satScores?.reading_writing_score ?? 'Pending'}</div>
           </div>
           <div className="border border-gray-200 rounded-xl p-5">
             <div className="text-xs text-gray-500">Math</div>
-            <div className="text-4xl font-bold text-gray-900 mt-1">{satScores?.math_score ?? 'N/A'}</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{satScores?.math_score ?? 'Pending'}</div>
           </div>
           <div className="border border-gray-200 rounded-xl p-5 md:col-span-3">
             <div className="text-xs text-gray-500">Session</div>
@@ -218,7 +234,7 @@ export const SessionResultsPage: React.FC = () => {
               {result?.session_id}
             </div>
             <div className="text-xs text-gray-500 mt-2">Computed at: {result?.computed_at}</div>
-            {hasSatScores ? (
+            {isSatSession ? (
               <div className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">
                 {ESTIMATED_SAT_SCORE_DISCLAIMER}
               </div>
@@ -228,32 +244,63 @@ export const SessionResultsPage: React.FC = () => {
 
         <div className="mt-8">
           <h2 className="text-lg font-bold text-gray-900">Section Breakdown</h2>
+          {isSatSession ? (
+            <div className="mt-2 text-xs text-gray-600">
+              <span className="font-semibold text-gray-700">Correct answers</span> shows how many auto-graded questions you got right.
+              <span className="mx-1">•</span>
+              <span className="font-semibold text-gray-700">Estimated module score</span> is the SAT-style 200-800 converted score.
+            </div>
+          ) : null}
           <div className="mt-4 overflow-x-auto border border-gray-200 rounded-xl">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="text-left p-3 font-semibold">Section</th>
-                  <th className="text-left p-3 font-semibold">Raw</th>
-                  <th className="text-left p-3 font-semibold">Scaled/40</th>
-                  <th className="text-left p-3 font-semibold">Scaled/800</th>
-                  <th className="text-left p-3 font-semibold">Band</th>
+                  {isSatSession ? (
+                    <>
+                      <th className="text-left p-3 font-semibold">Module</th>
+                      <th className="text-left p-3 font-semibold">Correct answers</th>
+                      <th className="text-left p-3 font-semibold">Estimated module score</th>
+                      <th className="text-left p-3 font-semibold">Accuracy</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="text-left p-3 font-semibold">Section</th>
+                      <th className="text-left p-3 font-semibold">Raw</th>
+                      <th className="text-left p-3 font-semibold">Scaled/40</th>
+                      <th className="text-left p-3 font-semibold">Scaled/800</th>
+                      <th className="text-left p-3 font-semibold">Band</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {sections.map(([sectionId, s]) => (
                   <tr key={sectionId} className="border-t border-gray-100">
-                    <td className="p-3 font-medium text-gray-900">{s.type}</td>
-                    <td className="p-3 text-gray-700">
-                      {s.raw_score}/{s.max_score}
-                    </td>
-                    <td className="p-3 text-gray-700">{s.scaled_score_40}</td>
-                    <td className="p-3 text-gray-700">{(s as any).scaled_score_800 ?? 'N/A'}</td>
-                    <td className="p-3 text-gray-900 font-semibold">{s.band ?? 'N/A'}</td>
+                    {isSatSession ? (
+                      <>
+                        <td className="p-3 font-medium text-gray-900">{formatSectionType(s.type)}</td>
+                        <td className="p-3 text-gray-700">
+                          {s.raw_score} of {s.max_score}
+                        </td>
+                        <td className="p-3 text-gray-700">{(s as any).scaled_score_800 ?? 'Not available'}</td>
+                        <td className="p-3 text-gray-900 font-semibold">{formatAccuracy(s.raw_score, s.max_score)}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="p-3 font-medium text-gray-900">{formatSectionType(s.type)}</td>
+                        <td className="p-3 text-gray-700">
+                          {s.raw_score}/{s.max_score}
+                        </td>
+                        <td className="p-3 text-gray-700">{s.scaled_score_40}</td>
+                        <td className="p-3 text-gray-700">{(s as any).scaled_score_800 ?? 'N/A'}</td>
+                        <td className="p-3 text-gray-900 font-semibold">{s.band ?? 'N/A'}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
                 {sections.length === 0 ? (
                   <tr>
-                    <td className="p-3 text-gray-500" colSpan={5}>
+                    <td className="p-3 text-gray-500" colSpan={isSatSession ? 4 : 5}>
                       No section scores found.
                     </td>
                   </tr>
