@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
+import { ESTIMATED_SAT_SCORE_DISCLAIMER } from '../lib/scoreCopy';
 import { supabase } from '../lib/supabase';
 
 type SessionRow = {
@@ -65,6 +66,7 @@ export const ReviewPage: React.FC = () => {
           <div className="text-xs uppercase tracking-[0.12em] text-[#64748b] font-semibold">Session analysis</div>
           <h1 className="text-3xl md:text-4xl font-semibold text-[#0f172a] mt-2">Review</h1>
           <p className="text-[#475569] mt-2">Open a completed session and review your answers.</p>
+          <p className="text-xs text-amber-800 mt-2">{ESTIMATED_SAT_SCORE_DISCLAIMER}</p>
         </div>
 
         {loading ? (

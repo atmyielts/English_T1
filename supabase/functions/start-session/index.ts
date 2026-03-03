@@ -41,6 +41,12 @@ const getBearerToken = (req: Request): string | null => {
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
+const readAdaptivePath = (value: unknown): Record<string, unknown> | null => {
+  if (!isObject(value)) return null;
+  const path = (value as Record<string, unknown>).adaptive_path;
+  return isObject(path) ? { ...path } : null;
+};
+
 const isActiveEntitlement = (row: { starts_at: string | null; ends_at: string | null; is_active: boolean }): boolean => {
   if (!row.is_active) return false;
   const now = Date.now();
@@ -87,7 +93,7 @@ const normalizeSectionIds = (value: unknown): string[] => {
 };
 
 const sessionIncludesWriting = async (
-  sb: ReturnType<typeof createClient>,
+  sb: any,
   experienceId: string,
   metadata: Json,
 ): Promise<boolean> => {
@@ -152,7 +158,7 @@ serve(async (req) => {
 
     const { data: experienceRow, error: expErr } = await sb
       .from("experiences")
-      .select("id, product_id")
+      .select("id, product_id, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -160,6 +166,11 @@ serve(async (req) => {
     if (!experienceRow) return json(404, { error: "Experience not found" });
 
     const productId = String((experienceRow as any).product_id ?? "");
+    const experienceMetadata = isObject((experienceRow as any)?.metadata) ? ((experienceRow as any).metadata as Record<string, unknown>) : {};
+    const adaptivePath = readAdaptivePath(experienceMetadata);
+    if (adaptivePath && !isObject((sessionMetadata as any).adaptive_path)) {
+      (sessionMetadata as any).adaptive_path = adaptivePath;
+    }
 
     const { data: userRow } = await sb.from("users").select("role").eq("id", authedUserId).maybeSingle();
     const isAdmin = String((userRow as any)?.role ?? "").toLowerCase() === "admin";

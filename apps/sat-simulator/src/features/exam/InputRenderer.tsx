@@ -248,7 +248,7 @@ const AudioUnit: React.FC<{
       setPlaying(true);
 
       if (!url && tone) {
-        // Tone-only placeholder audio (useful for local testing without uploaded files).
+        // Optional synthetic tone fallback when no file URL is present.
         if (!startedSentRef.current) {
           startedSentRef.current = true;
           void pushEvent('start');
@@ -416,8 +416,8 @@ const AudioUnit: React.FC<{
         )
       ) : tone ? (
         <div className="text-sm text-gray-600 bg-white/60 border border-blue-200 rounded p-3">
-          Tone-only placeholder audio. Upload a real file in <span className="font-mono">/admin/assets</span> and reference it via{' '}
-          <span className="font-mono">audio.data.storage</span> for realistic listening.
+          No audio file URL is attached for this unit. Upload media in <span className="font-mono">/admin/assets</span> and reference it via{' '}
+          <span className="font-mono">audio.data.storage</span>.
         </div>
       ) : (
         <div className="text-sm text-gray-600 bg-white/60 border border-blue-200 rounded p-3">

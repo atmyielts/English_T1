@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
+import { ESTIMATED_SAT_SCORE_DISCLAIMER, ESTIMATED_SAT_SCORE_LABEL } from '../lib/scoreCopy';
 import { useAccess } from '../lib/useAccess';
 
 export const SessionResultsPage: React.FC = () => {
@@ -184,7 +185,7 @@ export const SessionResultsPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">Session Score</h1>
             <p className="text-sm text-gray-500 mt-1">
               {hasSatScores
-                ? 'Objective scoring for SAT Reading & Writing and Math modules.'
+                ? 'Estimated SAT scoring for Reading & Writing and Math modules.'
                 : 'Objective scoring for auto-gradable questions.'}
             </p>
           </div>
@@ -198,7 +199,7 @@ export const SessionResultsPage: React.FC = () => {
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border border-gray-200 rounded-xl p-5">
-            <div className="text-xs text-gray-500">{hasSatScores ? 'Total score' : 'Overall band'}</div>
+            <div className="text-xs text-gray-500">{hasSatScores ? ESTIMATED_SAT_SCORE_LABEL : 'Overall band'}</div>
             <div className="text-4xl font-bold text-gray-900 mt-1">
               {hasSatScores ? satScores?.total_score ?? 'N/A' : result?.overall_band ?? 'N/A'}
             </div>
@@ -217,6 +218,11 @@ export const SessionResultsPage: React.FC = () => {
               {result?.session_id}
             </div>
             <div className="text-xs text-gray-500 mt-2">Computed at: {result?.computed_at}</div>
+            {hasSatScores ? (
+              <div className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">
+                {ESTIMATED_SAT_SCORE_DISCLAIMER}
+              </div>
+            ) : null}
           </div>
         </div>
 

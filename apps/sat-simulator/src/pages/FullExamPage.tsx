@@ -65,7 +65,10 @@ export const FullExamPage: React.FC = () => {
         return;
       }
 
-      const exps = (expRows ?? []) as ExperienceRow[];
+      const exps = ((expRows ?? []) as ExperienceRow[]).filter((exp) => {
+        const format = String((exp.metadata as any)?.format ?? '').toLowerCase();
+        return format === '' || format === 'digital_sat';
+      });
       setExperiences(exps);
 
       const expIds = exps.map((e) => e.id);

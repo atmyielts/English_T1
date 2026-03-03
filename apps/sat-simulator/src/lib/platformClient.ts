@@ -816,6 +816,8 @@ export type ScoreSessionResponse = {
       reading_writing_score: number | null;
       math_score: number | null;
       total_score: number | null;
+      score_version?: string | null;
+      is_estimated?: boolean;
     } | null;
     sections: Record<
       string,
@@ -1213,7 +1215,7 @@ export type AdminBuilderSnapshot = {
 export type AdminSectionTemplateSummary = {
   template_id: string;
   template_name: string;
-  section_type: 'listening' | 'reading' | 'writing';
+  section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
   latest_version: number;
   latest_version_id: string;
   latest_source_snapshot_id: string | null;
@@ -1226,7 +1228,7 @@ export type AdminSectionTemplatePayload = {
   template_version_id: string;
   template_id: string;
   template_name: string;
-  section_type: 'listening' | 'reading' | 'writing';
+  section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
   version: number;
   source_snapshot_id: string | null;
   section_payload: Json;
@@ -1327,7 +1329,7 @@ export const adminBuilderTemplateUpsert = async (
   body: {
     product_id: string;
     template_name: string;
-    section_type: 'listening' | 'reading' | 'writing';
+    section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
     section_payload: Json;
     template_id?: string | null;
     source_snapshot_id?: string | null;

@@ -678,6 +678,8 @@ serve(async (req) => {
             reading_writing_score: rwScore,
             math_score: mathScore,
             total_score: satTotal,
+            score_version: "sat-estimate-v1",
+            is_estimated: true,
           }
         : null;
 

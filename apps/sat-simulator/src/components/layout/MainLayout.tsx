@@ -119,7 +119,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           title="Platform home"
           aria-label="Platform home"
         >
-          <span className="text-lg font-black">S</span>
+          <img src="/schood-logo.png" alt="" aria-hidden="true" className="h-7 w-7 rounded-lg object-contain" />
         </button>
 
         <div className="mt-5 flex flex-col items-center gap-4">

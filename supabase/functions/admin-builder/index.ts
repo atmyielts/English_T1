@@ -47,7 +47,7 @@ type ImportPayload = {
 type TemplateUpsertPayload = {
   product_id: string;
   template_name: string;
-  section_type: "listening" | "reading" | "writing";
+  section_type: "listening" | "reading" | "writing" | "reading_writing" | "math";
   section_payload: Json;
   template_id?: string | null;
   source_snapshot_id?: string | null;
@@ -303,8 +303,8 @@ serve(async (req) => {
 
       if (!productId) return json(400, { error: "product_id is required" });
       if (!templateName) return json(400, { error: "template_name is required" });
-      if (!["listening", "reading", "writing"].includes(sectionType)) {
-        return json(400, { error: "section_type must be listening|reading|writing" });
+      if (!["listening", "reading", "writing", "reading_writing", "math"].includes(sectionType)) {
+        return json(400, { error: "section_type must be listening|reading|writing|reading_writing|math" });
       }
       if (!isObject(payload.section_payload)) return json(400, { error: "section_payload must be an object" });
 

@@ -8,6 +8,12 @@ type SectionRow = { id: string; name: string; display_order: number; metadata: J
 type PartRow = { id: string; section_id: string; name: string; display_order: number };
 type UnitRow = { id: string; part_id: string; type: string; data: Json; display_order: number; metadata: Json | null };
 type ResponseRow = { content_unit_id: string; data: unknown; submitted_at: string };
+type AnswerKeyRow = { content_unit_id: string; correct: unknown };
+type AdaptiveRule = {
+  source_section_id: string;
+  threshold: number;
+  metric?: string;
+};
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +46,7 @@ const isActiveEntitlement = (row: { starts_at: string | null; ends_at: string | 
 };
 
 const validateTokenSession = async (
-  sb: ReturnType<typeof createClient>,
+  sb: any,
   tokenId: string,
   userId: string,
   experienceId: string,
@@ -52,11 +58,225 @@ const validateTokenSession = async (
     .maybeSingle();
 
   if (error || !tokenRow) return { ok: false, reason: "Invalid candidate session" };
-  if (String(tokenRow.experience_id) !== String(experienceId)) return { ok: false, reason: "Session mismatch" };
-  if (String(tokenRow.claimed_by ?? "") !== String(userId)) return { ok: false, reason: "Unauthorized" };
-  if (String(tokenRow.status) !== "claimed") return { ok: false, reason: "Candidate session is not active" };
+  const token = tokenRow as Record<string, unknown>;
+  if (String(token.experience_id ?? "") !== String(experienceId)) return { ok: false, reason: "Session mismatch" };
+  if (String(token.claimed_by ?? "") !== String(userId)) return { ok: false, reason: "Unauthorized" };
+  if (String(token.status ?? "") !== "claimed") return { ok: false, reason: "Candidate session is not active" };
 
   return { ok: true };
+};
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object" && !Array.isArray(value);
+
+const normalizeText = (raw: string): string =>
+  raw
+    .toLowerCase()
+    .replace(/[â€™`Â´]/g, "'")
+    .trim()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const normalizeChoiceToken = (raw: string): string =>
+  raw
+    .trim()
+    .toUpperCase()
+    .replace(/^OPTION[\s_-]*/i, "")
+    .replace(/[^A-Z0-9_-]+/g, "");
+
+const toCandidateStrings = (value: unknown): string[] => {
+  if (value == null) return [];
+  if (Array.isArray(value)) return value.flatMap((entry) => toCandidateStrings(entry));
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return [String(value)];
+  if (isObject(value)) {
+    if (typeof value.value === "string") return [value.value];
+    if (typeof value.text === "string") return [value.text];
+    if (typeof value.answer === "string") return [value.answer];
+  }
+  return [String(value)];
+};
+
+const arraysEqualAsSets = (a: string[], b: string[]): boolean => {
+  if (a.length !== b.length) return false;
+  const sa = new Set(a);
+  if (sa.size !== a.length) return false;
+  for (const x of b) if (!sa.has(x)) return false;
+  return true;
+};
+
+const scoreUnit = (unitType: string, correct: any, responseData: any): { score: number; max: number } => {
+  if (!correct) return { score: 0, max: 0 };
+
+  if (unitType === "question_single_choice") {
+    const expected = normalizeChoiceToken(String((correct as any).option_id ?? ""));
+    const actualRaw =
+      typeof responseData === "string"
+        ? responseData
+        : String((responseData as any)?.selected_option ?? (responseData as any)?.option_id ?? "");
+    const actual = normalizeChoiceToken(actualRaw);
+    return { score: expected !== "" && actual === expected ? 1 : 0, max: expected !== "" ? 1 : 0 };
+  }
+
+  if (unitType === "question_multi_choice") {
+    const expected: string[] = Array.isArray((correct as any).option_ids)
+      ? (correct as any).option_ids.map((entry: unknown) => normalizeChoiceToken(String(entry))).filter(Boolean)
+      : [];
+    const actual: string[] = Array.isArray(responseData)
+      ? responseData.map((entry: unknown) => normalizeChoiceToken(String(entry))).filter(Boolean)
+      : Array.isArray((responseData as any)?.selected_options)
+        ? (responseData as any).selected_options.map((entry: unknown) => normalizeChoiceToken(String(entry))).filter(Boolean)
+        : [];
+    return { score: expected.length > 0 && arraysEqualAsSets(expected, actual) ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
+  }
+
+  if (unitType === "question_text") {
+    const expected = Array.isArray((correct as any).answers) ? (correct as any).answers.map((entry: unknown) => String(entry)) : [];
+    const actualRaw =
+      typeof responseData === "string" ? responseData : String((responseData as any)?.text ?? (responseData as any)?.answer ?? "");
+    const actual = normalizeText(actualRaw);
+    const ok = expected.some((candidate: string) => normalizeText(candidate) === actual);
+    return { score: ok ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
+  }
+
+  if (unitType === "question_gap_fill" || unitType === "question_select_from_list") {
+    const expected = isObject((correct as any).blanks) ? ((correct as any).blanks as Record<string, unknown>) : null;
+    const actualSource =
+      isObject(responseData) && isObject((responseData as any).blanks)
+        ? ((responseData as any).blanks as Record<string, unknown>)
+        : isObject(responseData)
+          ? (responseData as Record<string, unknown>)
+          : null;
+    if (!expected || !actualSource) return { score: 0, max: expected ? Object.keys(expected).length : 0 };
+
+    let score = 0;
+    const keys = Object.keys(expected);
+    for (const key of keys) {
+      const expectedTokens = toCandidateStrings(expected[key]).map((value) => normalizeText(value)).filter(Boolean);
+      const actualTokens = toCandidateStrings(actualSource[key]).map((value) => normalizeText(value)).filter(Boolean);
+      if (expectedTokens.length > 0 && actualTokens.some((token) => expectedTokens.includes(token))) score += 1;
+    }
+    return { score, max: keys.length };
+  }
+
+  return { score: 0, max: 0 };
+};
+
+const readAdaptivePath = (metadata: Json): Record<string, AdaptiveRule> => {
+  const raw = isObject((metadata as any).adaptive_path) ? ((metadata as any).adaptive_path as Record<string, unknown>) : null;
+  if (!raw) return {};
+  const out: Record<string, AdaptiveRule> = {};
+  for (const [sectionId, candidate] of Object.entries(raw)) {
+    if (!isObject(candidate)) continue;
+    const sourceSectionId = String((candidate as any).source_section_id ?? "").trim();
+    if (!sourceSectionId) continue;
+    const thresholdRaw = Number((candidate as any).threshold ?? 0.7);
+    const threshold = Number.isFinite(thresholdRaw) ? Math.max(0, Math.min(1, thresholdRaw)) : 0.7;
+    out[sectionId] = {
+      source_section_id: sourceSectionId,
+      threshold,
+      metric: typeof (candidate as any).metric === "string" ? String((candidate as any).metric) : "accuracy",
+    };
+  }
+  return out;
+};
+
+const deriveAdaptivePathFromSections = (sections: SectionRow[]): Record<string, AdaptiveRule> => {
+  const out: Record<string, AdaptiveRule> = {};
+  for (const section of sections) {
+    const meta = isObject(section.metadata) ? (section.metadata as Record<string, unknown>) : {};
+    const sourceSectionId = String((meta as any).adaptive_source_section_id ?? "").trim();
+    if (!sourceSectionId) continue;
+    const thresholdRaw = Number((meta as any).adaptive_threshold ?? 0.7);
+    const threshold = Number.isFinite(thresholdRaw) ? Math.max(0, Math.min(1, thresholdRaw)) : 0.7;
+    out[section.id] = {
+      source_section_id: sourceSectionId,
+      threshold,
+      metric: "accuracy",
+    };
+  }
+  return out;
+};
+
+const mergeAdaptivePaths = (
+  existing: Record<string, AdaptiveRule>,
+  derived: Record<string, AdaptiveRule>,
+): Record<string, AdaptiveRule> => ({ ...derived, ...existing });
+
+const readRouteDecisions = (metadata: Json): Record<string, Json> => {
+  const raw = isObject((metadata as any).route_decisions) ? ((metadata as any).route_decisions as Record<string, unknown>) : null;
+  if (!raw) return {};
+  const out: Record<string, Json> = {};
+  for (const [key, val] of Object.entries(raw)) {
+    if (!isObject(val)) continue;
+    out[key] = val as Json;
+  }
+  return out;
+};
+
+const pickDefaultNextSectionId = (currentSection: SectionRow, sectionRows: SectionRow[]): string | null => {
+  const meta = isObject(currentSection.metadata) ? (currentSection.metadata as Record<string, unknown>) : {};
+  const fixed = String((meta as any).default_next_section_id ?? "").trim();
+  if (fixed && sectionRows.some((section) => section.id === fixed)) return fixed;
+  const currentIndex = sectionRows.findIndex((section) => section.id === currentSection.id);
+  return currentIndex >= 0 ? sectionRows[currentIndex + 1]?.id ?? null : null;
+};
+
+const computeSectionAccuracy = async (
+  supabase: any,
+  sessionId: string,
+  sourceSectionId: string,
+): Promise<{ ratio: number | null; raw: number; max: number }> => {
+  const { data: sourceParts, error: partsError } = await supabase
+    .from("parts")
+    .select("id")
+    .eq("section_id", sourceSectionId);
+  if (partsError) return { ratio: null, raw: 0, max: 0 };
+
+  const partIds = (sourceParts ?? []).map((row: any) => String(row.id)).filter(Boolean);
+  if (partIds.length === 0) return { ratio: null, raw: 0, max: 0 };
+
+  const { data: sourceUnits, error: unitsError } = await supabase
+    .from("content_units")
+    .select("id, type")
+    .in("part_id", partIds);
+  if (unitsError) return { ratio: null, raw: 0, max: 0 };
+
+  const units = (sourceUnits ?? []) as Array<{ id: string; type: string }>;
+  const unitIds = units.map((unit) => unit.id);
+  if (unitIds.length === 0) return { ratio: null, raw: 0, max: 0 };
+
+  const { data: keys, error: keysError } = await supabase
+    .from("answer_keys")
+    .select("content_unit_id, correct")
+    .in("content_unit_id", unitIds);
+  if (keysError) return { ratio: null, raw: 0, max: 0 };
+
+  const { data: responses, error: responsesError } = await supabase
+    .from("responses")
+    .select("content_unit_id, data, submitted_at")
+    .eq("session_id", sessionId)
+    .in("content_unit_id", unitIds)
+    .order("submitted_at", { ascending: true });
+  if (responsesError) return { ratio: null, raw: 0, max: 0 };
+
+  const latestResponseByUnit = new Map<string, unknown>();
+  for (const response of (responses ?? []) as ResponseRow[]) latestResponseByUnit.set(response.content_unit_id, response.data);
+
+  const keyByUnit = new Map<string, unknown>();
+  for (const key of (keys ?? []) as AnswerKeyRow[]) keyByUnit.set(key.content_unit_id, key.correct);
+
+  let raw = 0;
+  let max = 0;
+  for (const unit of units) {
+    const correct = keyByUnit.get(unit.id);
+    if (!correct) continue;
+    const responseData = latestResponseByUnit.get(unit.id);
+    const score = scoreUnit(String(unit.type ?? ""), correct, responseData);
+    raw += score.score;
+    max += score.max;
+  }
+  return { ratio: max > 0 ? raw / max : null, raw, max };
 };
 
 serve(async (req) => {
@@ -262,8 +482,7 @@ serve(async (req) => {
       });
     }
 
-    const currentIndex = sectionRows.findIndex((s) => s.id === sectionId);
-    const nextSectionId = currentIndex >= 0 ? sectionRows[currentIndex + 1]?.id ?? null : null;
+    let nextSectionId = pickDefaultNextSectionId(currentSection, sectionRows);
 
     const { data: parts, error: partsError } = await supabase
       .from("parts")
@@ -400,9 +619,52 @@ serve(async (req) => {
     const latestAnswers: Record<string, unknown> = {};
     for (const r of (responses ?? []) as ResponseRow[]) latestAnswers[r.content_unit_id] = r.data;
 
+    const currentMetadata: Json = sessionMetadata;
+    const existingAdaptivePath = readAdaptivePath(currentMetadata);
+    const derivedAdaptivePath = deriveAdaptivePathFromSections(sectionRows);
+    const effectiveAdaptivePath = mergeAdaptivePaths(existingAdaptivePath, derivedAdaptivePath);
+    const routeDecisions = readRouteDecisions(currentMetadata);
+    const adaptiveRule = effectiveAdaptivePath[sectionId] ?? null;
+
+    let adaptiveTier: string | null = null;
+    if (adaptiveRule) {
+      const existingDecision = isObject(routeDecisions[sectionId]) ? (routeDecisions[sectionId] as Record<string, unknown>) : null;
+      const existingTier = existingDecision ? String(existingDecision.tier ?? "").trim().toLowerCase() : "";
+      if (existingTier === "standard" || existingTier === "advanced") {
+        adaptiveTier = existingTier;
+      } else {
+        const accuracy = await computeSectionAccuracy(supabase, sessionId, adaptiveRule.source_section_id);
+        const ratio = typeof accuracy.ratio === "number" ? accuracy.ratio : 0;
+        adaptiveTier = ratio >= adaptiveRule.threshold ? "advanced" : "standard";
+        if (!prefetch) {
+          routeDecisions[sectionId] = {
+            source_section_id: adaptiveRule.source_section_id,
+            threshold: adaptiveRule.threshold,
+            metric: adaptiveRule.metric ?? "accuracy",
+            ratio,
+            raw_score: accuracy.raw,
+            max_score: accuracy.max,
+            tier: adaptiveTier,
+            decided_at: new Date().toISOString(),
+          };
+        }
+      }
+    }
+
+    const visibleUnits = adaptiveTier
+      ? resolvedUnits.filter((unit) => {
+          const tier = String((unit.metadata as any)?.difficulty_tier ?? "").trim().toLowerCase();
+          return tier.length === 0 || tier === adaptiveTier;
+        })
+      : resolvedUnits;
+    const visibleUnitIds = new Set(visibleUnits.map((unit) => unit.id));
+    const visibleAnswers: Record<string, unknown> = {};
+    for (const [unitId, answer] of Object.entries(latestAnswers)) {
+      if (visibleUnitIds.has(unitId)) visibleAnswers[unitId] = answer;
+    }
+
     // Per-section deadline stored in session.metadata.deadlines[section_id]
     const durationSeconds = Number((currentSection.metadata as any)?.duration_seconds ?? 0);
-    const currentMetadata: Json = sessionMetadata;
     const deadlines =
       currentMetadata.deadlines && typeof currentMetadata.deadlines === "object" ? (currentMetadata.deadlines as Json) : {};
     const existingDeadline = deadlines[sectionId];
@@ -415,6 +677,22 @@ serve(async (req) => {
       // Track current section id for resume.
       if (currentMetadata.current_section_id !== sectionId) {
         updatedMetadata = { ...updatedMetadata, current_section_id: sectionId };
+      }
+
+      if (Object.keys(effectiveAdaptivePath).length > 0) {
+        const currentAdaptivePath = isObject((updatedMetadata as any).adaptive_path) ? ((updatedMetadata as any).adaptive_path as Record<string, unknown>) : null;
+        if (JSON.stringify(currentAdaptivePath ?? {}) !== JSON.stringify(effectiveAdaptivePath)) {
+          updatedMetadata = { ...updatedMetadata, adaptive_path: effectiveAdaptivePath };
+        }
+      }
+
+      if (Object.keys(routeDecisions).length > 0) {
+        const currentRouteDecisions = isObject((updatedMetadata as any).route_decisions)
+          ? ((updatedMetadata as any).route_decisions as Record<string, unknown>)
+          : null;
+        if (JSON.stringify(currentRouteDecisions ?? {}) !== JSON.stringify(routeDecisions)) {
+          updatedMetadata = { ...updatedMetadata, route_decisions: routeDecisions };
+        }
       }
 
       // Create the deadline the first time the user enters a section. This must NOT happen during prefetch.
@@ -449,7 +727,7 @@ serve(async (req) => {
         current_section: currentSection,
         next_section_id: nextSectionId,
         deadline_iso: effectiveDeadlineIso,
-        units: resolvedUnits.map((u) => ({
+        units: visibleUnits.map((u) => ({
           id: u.id,
           part_id: u.part_id,
           part_name: partName.get(u.part_id) ?? null,
@@ -459,7 +737,7 @@ serve(async (req) => {
           display_order: u.display_order,
           metadata: u.metadata ?? {},
         })),
-        answers: latestAnswers,
+        answers: visibleAnswers,
         server_time_iso: new Date().toISOString(),
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },

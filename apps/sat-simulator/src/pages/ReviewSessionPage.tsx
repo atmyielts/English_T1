@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
 import { getReviewSession, type ReviewSessionResponse } from '../lib/platformClient';
+import { ESTIMATED_SAT_SCORE_DISCLAIMER } from '../lib/scoreCopy';
 import { useAccess } from '../lib/useAccess';
 
 type UnitRow = ReviewSessionResponse['units'][number];
@@ -353,6 +354,10 @@ export const ReviewSessionPage: React.FC = () => {
         <div className="text-xs text-gray-300">
           Session <span className="font-mono">{data.session.id}</span>
         </div>
+      </div>
+
+      <div className="shrink-0 border-b border-amber-200 bg-amber-50 px-4 sm:px-6 py-2 text-xs text-amber-900">
+        {ESTIMATED_SAT_SCORE_DISCLAIMER}
       </div>
 
       <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 overflow-x-auto">

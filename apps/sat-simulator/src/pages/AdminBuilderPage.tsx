@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../components/admin/AdminLayout';
 import { SAT_PRODUCT_ID } from '../lib/constants';
@@ -70,7 +70,7 @@ type SectionScoreMeter = {
   missingWritingPrompt: boolean;
 };
 
-type CoreSectionType = 'listening' | 'reading' | 'writing';
+type CoreSectionType = 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
 
 type BuilderScaffoldUnit = {
   id: string;
@@ -148,10 +148,16 @@ const logAuthDebug = (event: string, details: Record<string, unknown>): void => 
   console.debug(`[AdminBuilder auth] ${event}`, { at: new Date().toISOString(), ...details });
 };
 
-const SECTION_TYPES: Array<{ value: 'listening' | 'reading' | 'writing'; label: string; defaultDurationSeconds: number }> = [
+const SECTION_TYPES: Array<{
+  value: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
+  label: string;
+  defaultDurationSeconds: number;
+}> = [
   { value: 'listening', label: 'Listening', defaultDurationSeconds: 2400 },
   { value: 'reading', label: 'Reading', defaultDurationSeconds: 3600 },
   { value: 'writing', label: 'Writing', defaultDurationSeconds: 3600 },
+  { value: 'reading_writing', label: 'Reading & Writing (SAT)', defaultDurationSeconds: 1920 },
+  { value: 'math', label: 'Math (SAT)', defaultDurationSeconds: 2100 },
 ];
 
 const DEFAULT_UNIT_DATA: Record<string, Record<string, unknown>> = {
@@ -505,7 +511,7 @@ const newId = (): string => {
   return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
 };
 
-const shortId = (value: string, max = 8): string => {
+const shortId = (value: unknown, max = 8): string => {
   const id = String(value ?? '').trim();
   if (!id) return '';
   return id.length <= max ? id : `${id.slice(0, max)}...`;
@@ -517,6 +523,11 @@ const compactIssueMessage = (message: string): string =>
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
 const normalizeSectionType = (value: unknown): string => String(value ?? '').toLowerCase().trim();
+
+const isScoredSectionType = (sectionType: string): boolean =>
+  sectionType === 'reading' || sectionType === 'listening' || sectionType === 'reading_writing' || sectionType === 'math';
+
+const isWritingSectionType = (sectionType: string): boolean => sectionType === 'writing';
 
 const isQuestionUnitType = (value: unknown): boolean => normalizeSectionType(value).startsWith('question_');
 
@@ -988,6 +999,7 @@ export const AdminBuilderPage: React.FC = () => {
   const [autoSaveError, setAutoSaveError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [editorMode, setEditorMode] = useState<EditorMode>('simple');
+  const saveBuilderRef = useRef<((mode?: 'manual' | 'auto') => Promise<string | null>) | null>(null);
 
   const [assetModal, setAssetModal] = useState<{ open: boolean; unitId: string; kind: 'audio' | 'image' } | null>(null);
   const [assetSearch, setAssetSearch] = useState('');
@@ -1094,7 +1106,7 @@ export const AdminBuilderPage: React.FC = () => {
   useEffect(() => {
     if (!selectedSectionForTemplate) return;
     setTemplateNameDraft(selectedSectionForTemplate.name.trim());
-  }, [selectedSectionForTemplate?.id]);
+  }, [selectedSectionForTemplate]);
 
   useEffect(() => {
     if (!selectedSectionForTemplate) return;
@@ -1359,7 +1371,9 @@ export const AdminBuilderPage: React.FC = () => {
   const sectionTypeRank = (type: string): number => {
     if (type === 'listening') return 0;
     if (type === 'reading') return 1;
-    if (type === 'writing') return 2;
+    if (type === 'reading_writing') return 2;
+    if (type === 'math') return 3;
+    if (type === 'writing') return 4;
     return 99;
   };
 
@@ -1437,6 +1451,64 @@ export const AdminBuilderPage: React.FC = () => {
         return { ...s, metadata };
       }),
     }));
+  };
+
+  const updateSectionMetadata = (
+    sectionId: string,
+    updater: (metadata: Record<string, unknown>) => Record<string, unknown>,
+  ) => {
+    updateBuilder((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) => {
+        if (s.id !== sectionId) return s;
+        const metadata = isObject(s.metadata) ? { ...s.metadata } : {};
+        return { ...s, metadata: updater(metadata) };
+      }),
+    }));
+  };
+
+  const updateSectionModuleNumber = (sectionId: string, moduleValue: string) => {
+    const moduleNumber = moduleValue.trim() ? Number(moduleValue) : NaN;
+    updateSectionMetadata(sectionId, (metadata) => {
+      const next = { ...metadata };
+      if (!Number.isFinite(moduleNumber) || moduleNumber <= 0) {
+        delete (next as any).module;
+      } else {
+        (next as any).module = Math.round(moduleNumber);
+      }
+      return next;
+    });
+  };
+
+  const updateSectionDefaultNext = (sectionId: string, nextSectionId: string) => {
+    updateSectionMetadata(sectionId, (metadata) => {
+      const next = { ...metadata };
+      if (!nextSectionId) delete (next as any).default_next_section_id;
+      else (next as any).default_next_section_id = nextSectionId;
+      return next;
+    });
+  };
+
+  const updateSectionAdaptiveSource = (sectionId: string, sourceSectionId: string) => {
+    updateSectionMetadata(sectionId, (metadata) => {
+      const next = { ...metadata };
+      if (!sourceSectionId) delete (next as any).adaptive_source_section_id;
+      else (next as any).adaptive_source_section_id = sourceSectionId;
+      return next;
+    });
+  };
+
+  const updateSectionAdaptiveThreshold = (sectionId: string, thresholdValue: string) => {
+    const threshold = thresholdValue.trim() ? Number(thresholdValue) : NaN;
+    updateSectionMetadata(sectionId, (metadata) => {
+      const next = { ...metadata };
+      if (!Number.isFinite(threshold)) {
+        delete (next as any).adaptive_threshold;
+      } else {
+        (next as any).adaptive_threshold = Math.max(0, Math.min(1, threshold));
+      }
+      return next;
+    });
   };
 
   const updatePartName = (partId: string, name: string) => {
@@ -1600,8 +1672,8 @@ export const AdminBuilderPage: React.FC = () => {
     const sectionId = newId();
     const sectionMetadata = isObject((sectionData as any).metadata) ? { ...(sectionData as any).metadata } : {};
     const sectionType = normalizeSectionType((sectionMetadata as any).type) || templatePayload.section_type;
-    if (!['listening', 'reading', 'writing'].includes(sectionType)) {
-      setError('Template section type must be listening, reading, or writing.');
+    if (!SECTION_TYPES.some((entry) => entry.value === sectionType)) {
+      setError('Template section type must be one of listening, reading, writing, reading_writing, or math.');
       return;
     }
     (sectionMetadata as any).type = sectionType;
@@ -1649,8 +1721,8 @@ export const AdminBuilderPage: React.FC = () => {
       return;
     }
     const sectionType = normalizeSectionType((isObject(section.metadata) ? section.metadata : {})?.type);
-    if (!['listening', 'reading', 'writing'].includes(sectionType)) {
-      setError('Selected section must have type listening/reading/writing before saving as template.');
+    if (!['listening', 'reading', 'writing', 'reading_writing', 'math'].includes(sectionType)) {
+      setError('Selected section must have type listening/reading/writing/reading_writing/math before saving as template.');
       return;
     }
 
@@ -1672,7 +1744,7 @@ export const AdminBuilderPage: React.FC = () => {
       const response = await adminBuilderTemplateUpsert(accessToken, {
         product_id: SAT_PRODUCT_ID,
         template_name: templateName,
-        section_type: sectionType as 'listening' | 'reading' | 'writing',
+        section_type: sectionType as CoreSectionType,
         section_payload: serialized.payload,
         template_id: opts.templateId ?? null,
         source_snapshot_id: snapshots[0]?.id ?? null,
@@ -2128,7 +2200,7 @@ export const AdminBuilderPage: React.FC = () => {
         sectionName: section.name || `Section ${sectionIndex + 1}`,
         sectionType,
         score: 0,
-        target: sectionType === 'reading' || sectionType === 'listening' ? 40 : 0,
+        target: isScoredSectionType(sectionType) ? 40 : 0,
         missingAnswerUnitIds: [],
         emptyAnswerUnitIds: [],
         invalidAnswerUnitIds: [],
@@ -2163,7 +2235,7 @@ export const AdminBuilderPage: React.FC = () => {
             if (!media.url && (!media.bucket || !media.path)) meter.missingMediaUnitIds.push(unitId);
           }
 
-          if (sectionType === 'writing' && unitType === 'question_text') hasWritingPrompt = true;
+          if (isWritingSectionType(sectionType) && unitType === 'question_text') hasWritingPrompt = true;
           if (!isQuestionUnitType(unitType)) return;
 
           if (!answer) {
@@ -2180,7 +2252,7 @@ export const AdminBuilderPage: React.FC = () => {
         });
       });
 
-      if (sectionType === 'writing') meter.missingWritingPrompt = !hasWritingPrompt;
+      if (isWritingSectionType(sectionType)) meter.missingWritingPrompt = !hasWritingPrompt;
       meters.push(meter);
     });
 
@@ -2304,7 +2376,7 @@ export const AdminBuilderPage: React.FC = () => {
         });
       });
 
-      if (sectionType === 'reading' || sectionType === 'listening') {
+      if (isScoredSectionType(sectionType)) {
         meter.missingAnswerUnitIds.forEach((unitId) => {
           pushIssue({
             id: `missing-answer-${sectionId}-${unitId}`,
@@ -2342,7 +2414,7 @@ export const AdminBuilderPage: React.FC = () => {
         }
       }
 
-      if (sectionType === 'writing' && meter.missingWritingPrompt) {
+      if (isWritingSectionType(sectionType) && meter.missingWritingPrompt) {
         pushIssue({
           id: `writing-prompt-${sectionId}`,
           message: `${sectionLabel} has no Writing prompt (question_text unit).`,
@@ -2361,6 +2433,11 @@ export const AdminBuilderPage: React.FC = () => {
     const warnings: string[] = [];
     const uiErrors: Record<string, UnitUiState> = { ...unitUi };
     const isPublishing = builder.experience.is_active !== false;
+    const knownSectionIds = new Set(
+      builder.sections
+        .map((section) => String(section.id ?? '').trim())
+        .filter(Boolean),
+    );
 
     const nextSections = builder.sections.map((section, sIdx) => {
       const sectionId = section.id || newId();
@@ -2369,7 +2446,7 @@ export const AdminBuilderPage: React.FC = () => {
       const sectionMetadata = isObject(section.metadata) ? { ...section.metadata } : {};
       const type = normalizeSectionType((sectionMetadata as any).type);
       if (!type) {
-        warnings.push(`Section "${section.name || `#${sIdx + 1}`}" is missing a type (listening/reading/writing).`);
+        warnings.push(`Section "${section.name || `#${sIdx + 1}`}" is missing a type (listening/reading/writing/reading_writing/math).`);
         if (isPublishing) errors.push(`Publishing blocked: section "${section.name || `#${sIdx + 1}`}" is missing a type.`);
       } else if (!SECTION_TYPES.some((t) => t.value === type)) {
         warnings.push(`Section "${section.name || `#${sIdx + 1}`}" has an unknown type "${type}".`);
@@ -2379,6 +2456,43 @@ export const AdminBuilderPage: React.FC = () => {
       const durationSeconds = Number((sectionMetadata as any).duration_seconds ?? 0);
       if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
         warnings.push(`Section "${section.name || `#${sIdx + 1}`}" has no duration set.`);
+      }
+
+      const defaultNextSectionId = String((sectionMetadata as any).default_next_section_id ?? '').trim();
+      if (defaultNextSectionId) {
+        if (!knownSectionIds.has(defaultNextSectionId)) {
+          const msg = `Section "${section.name || `#${sIdx + 1}`}" references unknown default_next_section_id "${defaultNextSectionId}".`;
+          warnings.push(msg);
+          if (isPublishing) errors.push(`Publishing blocked: ${msg}`);
+        }
+        if (defaultNextSectionId === sectionId) {
+          const msg = `Section "${section.name || `#${sIdx + 1}`}" cannot point default_next_section_id to itself.`;
+          warnings.push(msg);
+          if (isPublishing) errors.push(`Publishing blocked: ${msg}`);
+        }
+      }
+
+      const adaptiveSourceSectionId = String((sectionMetadata as any).adaptive_source_section_id ?? '').trim();
+      const adaptiveThreshold = Number((sectionMetadata as any).adaptive_threshold ?? NaN);
+      if (adaptiveSourceSectionId) {
+        if (!knownSectionIds.has(adaptiveSourceSectionId)) {
+          const msg = `Section "${section.name || `#${sIdx + 1}`}" references unknown adaptive_source_section_id "${adaptiveSourceSectionId}".`;
+          warnings.push(msg);
+          if (isPublishing) errors.push(`Publishing blocked: ${msg}`);
+        }
+        if (adaptiveSourceSectionId === sectionId) {
+          const msg = `Section "${section.name || `#${sIdx + 1}`}" cannot use itself as adaptive source section.`;
+          warnings.push(msg);
+          if (isPublishing) errors.push(`Publishing blocked: ${msg}`);
+        }
+      }
+      if (Number.isFinite(adaptiveThreshold) && (adaptiveThreshold < 0 || adaptiveThreshold > 1)) {
+        const msg = `Section "${section.name || `#${sIdx + 1}`}" adaptive_threshold must be between 0 and 1.`;
+        warnings.push(msg);
+        if (isPublishing) errors.push(`Publishing blocked: ${msg}`);
+      }
+      if (Number.isFinite(adaptiveThreshold) && !adaptiveSourceSectionId) {
+        warnings.push(`Section "${section.name || `#${sIdx + 1}`}" has adaptive_threshold but no adaptive_source_section_id.`);
       }
 
       let sectionMaxScore = 0;
@@ -2469,7 +2583,7 @@ export const AdminBuilderPage: React.FC = () => {
             }
           }
 
-          if (type === 'writing' && unitType === 'question_text') hasWritingPrompt = true;
+          if (isWritingSectionType(type) && unitType === 'question_text') hasWritingPrompt = true;
           if (isQuestionUnitType(unitType)) {
             questionUnits += 1;
             if (!answer_key) {
@@ -2502,7 +2616,7 @@ export const AdminBuilderPage: React.FC = () => {
 
       if (nextParts.length === 0) errors.push(`Section ${sIdx + 1} has no parts.`);
 
-      if (type === 'reading' || type === 'listening') {
+      if (isScoredSectionType(type)) {
         if (questionUnits === 0) {
           warnings.push(`Section "${section.name || `#${sIdx + 1}`}" has no question units. Auto-scoring will be N/A.`);
         }
@@ -2523,7 +2637,7 @@ export const AdminBuilderPage: React.FC = () => {
         }
       }
 
-      if (type === 'writing' && !hasWritingPrompt) {
+      if (isWritingSectionType(type) && !hasWritingPrompt) {
         warnings.push(`Section "${section.name || `#${sIdx + 1}`}" has no Writing prompt (question_text unit).`);
         if (isPublishing) errors.push(`Publishing blocked: section "${section.name || `#${sIdx + 1}`}" has no Writing prompt.`);
       }
@@ -2699,6 +2813,7 @@ export const AdminBuilderPage: React.FC = () => {
       else setAutoSaving(false);
     }
   };
+  saveBuilderRef.current = saveBuilder;
 
   const handleSave = async () => {
     await saveBuilder('manual');
@@ -2719,11 +2834,13 @@ export const AdminBuilderPage: React.FC = () => {
     if (typeof window === 'undefined') return;
     if (!builder || !dirty) return;
     if (saving || autoSaving || loading) return;
+    const saver = saveBuilderRef.current;
+    if (!saver) return;
     const timer = window.setTimeout(() => {
-      void saveBuilder('auto');
+      void saver('auto');
     }, 12000);
     return () => window.clearTimeout(timer);
-  }, [autoSaving, builder, dirty, loading, saving, selectedExperienceId, saveBuilder]);
+  }, [autoSaving, builder, dirty, loading, saving, selectedExperienceId]);
 
   const handleRollback = async (snapshot: AdminBuilderSnapshot) => {
     if (!accessToken || !snapshot?.id) return;
@@ -4278,12 +4395,26 @@ export const AdminBuilderPage: React.FC = () => {
                   const typeValue = String((section.metadata as any)?.type ?? '').toLowerCase();
                   const durationSeconds = Number((section.metadata as any)?.duration_seconds ?? 0);
                   const durationMinutes = durationSeconds > 0 ? Math.round(durationSeconds / 60) : '';
+                  const moduleNumber = Number((section.metadata as any)?.module ?? NaN);
+                  const moduleValue =
+                    Number.isFinite(moduleNumber) && moduleNumber > 0 ? String(Math.round(moduleNumber)) : '';
+                  const defaultNextSectionId = String((section.metadata as any)?.default_next_section_id ?? '');
+                  const adaptiveSourceSectionId = String((section.metadata as any)?.adaptive_source_section_id ?? '');
+                  const adaptiveThreshold = Number((section.metadata as any)?.adaptive_threshold ?? NaN);
+                  const adaptiveThresholdValue =
+                    Number.isFinite(adaptiveThreshold) && adaptiveThreshold >= 0 ? String(adaptiveThreshold) : '';
+                  const satType = typeValue === 'reading_writing' || typeValue === 'math';
                   const canMoveUp = sectionIndex > 0;
                   const canMoveDown = sectionIndex < (builder?.sections.length ?? 0) - 1;
                   const sectionMetadata = isObject(section.metadata) ? section.metadata : {};
                   const templateRef = isObject((sectionMetadata as any).template_ref)
                     ? ((sectionMetadata as any).template_ref as Record<string, unknown>)
                     : null;
+                  const otherSections = (builder?.sections ?? []).filter((candidate) => candidate.id !== section.id);
+                  const adaptiveSourceCandidates = otherSections.filter((candidate) => {
+                    const candidateType = String((candidate.metadata as any)?.type ?? '').toLowerCase();
+                    return candidateType === typeValue;
+                  });
                   return (
                     <div key={section.id} className="border border-gray-200 rounded-xl p-3 space-y-3">
                     <div className="flex items-center justify-between gap-3">
@@ -4385,6 +4516,65 @@ export const AdminBuilderPage: React.FC = () => {
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500">Module #</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={moduleValue}
+                          onChange={(e) => updateSectionModuleNumber(section.id ?? '', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          placeholder="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500">Default next section</label>
+                        <select
+                          value={defaultNextSectionId}
+                          onChange={(e) => updateSectionDefaultNext(section.id ?? '', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+                        >
+                          <option value="">Follow display order</option>
+                          {otherSections.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                              {candidate.name || shortId(candidate.id)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500">Adaptive source section</label>
+                        <select
+                          value={adaptiveSourceSectionId}
+                          onChange={(e) => updateSectionAdaptiveSource(section.id ?? '', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+                          disabled={!satType}
+                        >
+                          <option value="">{satType ? 'Disabled' : 'SAT type only'}</option>
+                          {adaptiveSourceCandidates.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                              {candidate.name || shortId(candidate.id)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500">Adaptive threshold (0..1)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          value={adaptiveThresholdValue}
+                          onChange={(e) => updateSectionAdaptiveThreshold(section.id ?? '', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                          placeholder={satType ? '0.70' : 'SAT type only'}
+                          disabled={!satType}
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       {section.parts.map((part) => (
                         <div key={part.id} className="border border-gray-100 rounded-lg p-2">
@@ -4450,7 +4640,7 @@ export const AdminBuilderPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-xs text-gray-500">
-                  Resolve blockers, then confirm Reading and Listening score targets before publishing.
+                  Resolve blockers, then confirm score targets for scored sections (Listening, Reading, Reading & Writing, Math) before publishing.
                 </div>
                 {publishChecklist.length === 0 ? (
                   <div className="text-sm text-emerald-700">Everything required for publish is complete.</div>
@@ -4474,7 +4664,7 @@ export const AdminBuilderPage: React.FC = () => {
                   <div className="pt-1 border-t border-gray-100 space-y-2">
                     <div className="text-xs font-semibold tracking-wider uppercase text-gray-500">Section score meter</div>
                     {sectionScoreMeters
-                      .filter((meter) => meter.sectionType === 'reading' || meter.sectionType === 'listening')
+                      .filter((meter) => isScoredSectionType(meter.sectionType))
                       .map((meter) => {
                         const isComplete = meter.score === meter.target && meter.target > 0;
                         return (

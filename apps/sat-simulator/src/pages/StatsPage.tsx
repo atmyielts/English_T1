@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, PieChart } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
+import { ESTIMATED_SAT_SCORE_LABEL } from '../lib/scoreCopy';
 import { supabase } from '../lib/supabase';
 
 type Json = Record<string, unknown>;
@@ -292,7 +293,7 @@ export const StatsPage: React.FC = () => {
               <div>
                 <div className="text-xs font-semibold tracking-wider uppercase text-[#64748b]">Score distribution</div>
                 <div className="text-lg font-semibold text-[#0f172a] mt-1">
-                  {overview.scoreMode === 'sat' ? 'Average total score ' : 'Overall band '}
+                  {overview.scoreMode === 'sat' ? 'Average estimated SAT score ' : 'Overall band '}
                   {overview.avgMetric !== null ? (
                     <span className="text-emerald-700">
                       {overview.scoreMode === 'sat' ? overview.avgMetric : overview.avgMetric.toFixed(1)}
@@ -333,7 +334,7 @@ export const StatsPage: React.FC = () => {
                 </div>
                 <div className="mt-3 text-xs text-gray-500">
                   {overview.scoreMode === 'sat'
-                    ? 'Scores are grouped to the nearest 50 points for display.'
+                    ? 'Estimated SAT scores are grouped to the nearest 50 points for display.'
                     : 'Bands are rounded to the nearest 0.5 for display.'}
                 </div>
               </div>
@@ -394,7 +395,7 @@ export const StatsPage: React.FC = () => {
                       Completed: <span className="font-semibold">{formatDateTime(s.completed_at)}</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {sat !== null ? `Total score: ${sat}` : `Overall band: ${band ?? 'n/a'}`}
+                      {sat !== null ? `${ESTIMATED_SAT_SCORE_LABEL}: ${sat}` : `Overall band: ${band ?? 'n/a'}`}
                     </div>
                   </div>
                   <div className="shrink-0 flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
