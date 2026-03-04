@@ -27,7 +27,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          ZONE_NAME: schood.online
+          ZONE_ID: ce7920583a44835203a0a1afc9a96c87
           CUSTOM_DOMAIN: toefl.schood.online
           CNAME_TARGET: schood-toefl.pages.dev
           PAGES_PROJECT: schood-toefl
@@ -52,16 +52,10 @@ jobs:
           };
 
           const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-          const zoneName = process.env.ZONE_NAME;
+          const zoneId = process.env.ZONE_ID;
           const customDomain = process.env.CUSTOM_DOMAIN;
           const cnameTarget = process.env.CNAME_TARGET;
           const pagesProject = process.env.PAGES_PROJECT;
-
-          const zones = await api("GET", `/zones?name=${encodeURIComponent(zoneName)}&status=active`);
-          if (!Array.isArray(zones) || zones.length === 0) {
-            throw new Error(`Active zone not found for ${zoneName}`);
-          }
-          const zoneId = zones[0].id;
 
           try {
             await api("POST", `/accounts/${accountId}/pages/projects/${pagesProject}/domains`, { name: customDomain });
