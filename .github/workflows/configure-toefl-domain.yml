@@ -62,7 +62,7 @@ jobs:
             console.log(`Added Pages custom domain ${customDomain}`);
           } catch (error) {
             const msg = String(error?.message ?? "");
-            if (msg.includes("already exists")) {
+            if (msg.includes("already exists") || msg.includes("already added")) {
               console.log(`Pages custom domain ${customDomain} already exists`);
             } else {
               throw error;
