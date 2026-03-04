@@ -34,14 +34,12 @@ const getExperience = (s: SessionRow): { id: string; name: string } | null => {
   return Array.isArray(e) ? (e[0] ?? null) : e;
 };
 
-const getOverallBand = (result: any): number | null => {
-  const n = result?.overall_band;
-  return typeof n === 'number' ? n : null;
-};
-
-const getOverallScore = (result: any): number | null => {
-  const n = result?.overall_score;
-  return typeof n === 'number' ? n : null;
+const getRlwComposite = (result: any): number | null => {
+  const toefl = result?.toefl;
+  const composite = toefl?.rlw_composite_score;
+  if (typeof composite === 'number') return composite;
+  const fallback = result?.overall_score;
+  return typeof fallback === 'number' ? fallback : null;
 };
 
 const fmt = (iso: string | null): string => {
@@ -433,8 +431,8 @@ export const Dashboard: React.FC = () => {
             </div>
             <div className="mt-4 space-y-3">
               {recentCompleted.map((s) => {
-                const band = evaluations[s.id] ? getOverallBand(evaluations[s.id].result) : null;
-                const score = evaluations[s.id] ? getOverallScore(evaluations[s.id].result) : null;
+                const composite = evaluations[s.id] ? getRlwComposite(evaluations[s.id].result) : null;
+                const hasToeflComposite = Boolean(evaluations[s.id]?.result?.toefl?.rlw_composite_score != null);
                 return (
                   <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-[#151d2b]/10 bg-white/85">
                     <div className="min-w-0">
@@ -442,7 +440,7 @@ export const Dashboard: React.FC = () => {
                       <div className="text-xs text-gray-500">{fmt(s.completed_at)}</div>
                     </div>
                     <div className="text-sm font-semibold text-orange-800 bg-orange-600/10 border border-orange-700/10 rounded-full px-3 py-1">
-                      {score ?? band ?? 'n/a'}
+                      {composite != null ? (hasToeflComposite ? `${composite}/90` : composite) : 'n/a'}
                     </div>
                   </div>
                 );

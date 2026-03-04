@@ -812,10 +812,22 @@ export type ScoreSessionResponse = {
     session_id: string;
     computed_at: string;
     overall_band: number | null;
+    overall_score?: number | null;
     sat?: {
       reading_writing_score: number | null;
       math_score: number | null;
       total_score: number | null;
+      score_version?: string | null;
+      is_estimated?: boolean;
+    } | null;
+    toefl?: {
+      reading_score: number | null;
+      listening_score: number | null;
+      writing_score: number | null;
+      rlw_composite_score: number | null;
+      score_version: string;
+      is_estimated: boolean;
+      speaking_available: boolean;
     } | null;
     sections: Record<
       string,
@@ -825,6 +837,7 @@ export type ScoreSessionResponse = {
         max_score: number;
         scaled_score_40: number;
         scaled_score_800?: number | null;
+        scaled_score_30?: number | null;
         band: number | null;
       }
     >;

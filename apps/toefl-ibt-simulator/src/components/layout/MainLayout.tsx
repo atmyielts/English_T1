@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -104,10 +104,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     navigate('/platform-home');
   };
 
-  useEffect(() => {
-    setMobileNavOpen(false);
-  }, [location.pathname]);
-
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-[#111827]">
       {/* Desktop rail */}
@@ -188,6 +184,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Link
                     key={item.path}
                     to={item.path}
+                    onClick={() => setMobileNavOpen(false)}
                     className={[
                       'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors',
                       active

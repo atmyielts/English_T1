@@ -30,14 +30,11 @@ const formatDateTime = (iso: string | null): string => {
   return d.toLocaleString();
 };
 
-const getOverallBand = (result: any): number | null => {
-  const n = result?.overall_band;
-  return typeof n === 'number' ? n : null;
-};
-
-const getOverallScore = (result: any): number | null => {
-  const n = result?.overall_score;
-  return typeof n === 'number' ? n : null;
+const getRlwComposite = (result: any): number | null => {
+  const n = result?.toefl?.rlw_composite_score;
+  if (typeof n === 'number') return n;
+  const fallback = result?.overall_score;
+  return typeof fallback === 'number' ? fallback : null;
 };
 
 const getExperience = (s: SessionRow): { id: string; name: string } | null => {
@@ -126,29 +123,18 @@ export const StatsPage: React.FC = () => {
     const inProgressCount = inProgress.length;
 
     const scoreValues: number[] = [];
-    const bandValues: number[] = [];
     for (const s of completed) {
       const ev = evaluations[s.id];
-      const score = ev ? getOverallScore(ev.result) : null;
+      const score = ev ? getRlwComposite(ev.result) : null;
       if (typeof score === 'number' && Number.isFinite(score)) scoreValues.push(score);
-      const band = ev ? getOverallBand(ev.result) : null;
-      if (typeof band === 'number' && Number.isFinite(band)) bandValues.push(band);
     }
-
-    const scoreMode: 'score' | 'band' = scoreValues.length > 0 ? 'score' : 'band';
     const avgMetric =
-      scoreMode === 'score'
-        ? scoreValues.length > 0
-          ? Math.round(scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length)
-          : null
-        : bandValues.length > 0
-          ? Math.round(((bandValues.reduce((a, b) => a + b, 0) / bandValues.length) * 2)) / 2
-          : null;
+      scoreValues.length > 0 ? Math.round(scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length) : null;
 
     const modes = { full: 0, practice: 0, section_only: 0 };
     for (const s of sessions) modes[classifySession(s)] += 1;
 
-    return { total, completedCount, inProgressCount, avgMetric, scoreMode, modes };
+    return { total, completedCount, inProgressCount, avgMetric, modes };
   }, [completed, evaluations, inProgress, sessions]);
 
   const donut = useMemo(() => {
@@ -179,16 +165,9 @@ export const StatsPage: React.FC = () => {
     const counts = new Map<string, number>();
     for (const s of completed) {
       const ev = evaluations[s.id];
-      if (overview.scoreMode === 'score') {
-        const score = ev ? getOverallScore(ev.result) : null;
-        if (typeof score !== 'number' || !Number.isFinite(score)) continue;
-        const bucket = String(Math.round(score / 5) * 5);
-        counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
-        continue;
-      }
-      const band = ev ? getOverallBand(ev.result) : null;
-      if (typeof band !== 'number' || !Number.isFinite(band)) continue;
-      const bucket = (Math.round(band * 2) / 2).toFixed(1);
+      const score = ev ? getRlwComposite(ev.result) : null;
+      if (typeof score !== 'number' || !Number.isFinite(score)) continue;
+      const bucket = String(Math.round(score / 5) * 5);
       counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
     }
 
@@ -198,7 +177,7 @@ export const StatsPage: React.FC = () => {
 
     const max = Math.max(1, ...entries.map((e) => e.count));
     return { entries, max };
-  }, [completed, evaluations, overview.scoreMode]);
+  }, [completed, evaluations]);
 
   const openContinue = (s: SessionRow) => {
     const currentSection = String((s.metadata as any)?.current_section_id ?? '');
@@ -292,10 +271,11 @@ export const StatsPage: React.FC = () => {
               <div>
                 <div className="text-xs font-semibold tracking-wider uppercase text-[#64748b]">Score distribution</div>
                 <div className="text-lg font-semibold text-[#0f172a] mt-1">
-                  {overview.scoreMode === 'score' ? 'Average overall score ' : 'Overall band '}
+                  Average RLW composite
                   {overview.avgMetric !== null ? (
                     <span className="text-emerald-700">
-                      {overview.scoreMode === 'score' ? overview.avgMetric : overview.avgMetric.toFixed(1)}
+                      {' '}
+                      {overview.avgMetric}/90
                     </span>
                   ) : (
                     'n/a'
@@ -323,7 +303,7 @@ export const StatsPage: React.FC = () => {
                           <div
                             className="w-full rounded-2xl bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-300 shadow-sm"
                             style={{ height: `${Math.max(6, pct)}%` }}
-                            title={`${overview.scoreMode === 'score' ? 'Score' : 'Band'} ${e.label}: ${e.count}`}
+                            title={`Composite ${e.label}: ${e.count}`}
                           />
                         </div>
                         <div className="text-[11px] text-gray-600 font-mono">{e.label}</div>
@@ -332,9 +312,7 @@ export const StatsPage: React.FC = () => {
                   })}
                 </div>
                 <div className="mt-3 text-xs text-gray-500">
-                  {overview.scoreMode === 'score'
-                    ? 'Scores are grouped to the nearest 5 points for display.'
-                    : 'Bands are rounded to the nearest 0.5 for display.'}
+                  Composite scores are grouped to the nearest 5 points for display.
                 </div>
               </div>
             )}
@@ -383,8 +361,8 @@ export const StatsPage: React.FC = () => {
           <div className="mt-4 space-y-3">
             {completed.map((s) => {
               const ev = evaluations[s.id];
-              const band = ev ? getOverallBand(ev.result) : null;
-              const score = ev ? getOverallScore(ev.result) : null;
+              const score = ev ? getRlwComposite(ev.result) : null;
+              const hasToeflComposite = Boolean(ev?.result?.toefl?.rlw_composite_score != null);
               return (
                 <div key={s.id} className="bg-white/75 border border-[#151d2b]/12 rounded-3xl shadow-sm p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="min-w-0">
@@ -394,7 +372,7 @@ export const StatsPage: React.FC = () => {
                       Completed: <span className="font-semibold">{formatDateTime(s.completed_at)}</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {score !== null ? `Overall score: ${score}` : `Overall band: ${band ?? 'n/a'}`}
+                      {score !== null ? (hasToeflComposite ? `Estimated RLW composite: ${score}/90` : `Estimated score: ${score}`) : 'Estimated score: n/a'}
                     </div>
                   </div>
                   <div className="shrink-0 flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">

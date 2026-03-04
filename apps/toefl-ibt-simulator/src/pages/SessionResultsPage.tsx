@@ -4,13 +4,49 @@ import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
 
-const toHalfBand = (value: number): number => Math.round(value * 2) / 2;
+const asNumber = (value: unknown): number | null => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
+
+const toToeflSectionScore = (ratio: number): number => {
+  const safeRatio = clamp(ratio, 0, 1);
+  return Math.round(safeRatio * 30);
+};
+
+const toToeflScoreFromBand = (bandValue: number): number => {
+  const safeBand = clamp(bandValue, 0, 9);
+  return Math.round((safeBand / 9) * 30);
+};
+
+const formatSectionLabel = (type: string): string =>
+  type
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+
+const writingTaskLabel = (taskType: unknown): string => {
+  const type = String(taskType ?? '').trim().toLowerCase();
+  if (['integrated', 'integrated_writing', 'task1'].includes(type)) return 'Integrated Writing';
+  if (['academic_discussion', 'discussion', 'task2'].includes(type)) return 'Academic Discussion';
+  return 'Writing Task';
+};
+
+const taskEstimatedScore = (task: any): number | null => {
+  const direct = asNumber(task?.writing_score);
+  if (direct != null) return clamp(Math.round(direct), 0, 30);
+  const band = asNumber(task?.band);
+  if (band != null) return toToeflScoreFromBand(band);
+  return null;
+};
 
 export const SessionResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { accessToken } = useAccess();
+
   const [data, setData] = useState<ScoreSessionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +55,6 @@ export const SessionResultsPage: React.FC = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  // Avoid duplicate automatic grading runs in React StrictMode/dev re-renders.
   const aiRequestedRef = useRef(false);
 
   useEffect(() => {
@@ -44,7 +79,6 @@ export const SessionResultsPage: React.FC = () => {
         const scored = await scoreSession(accessToken, sessionId);
         setData(scored);
 
-        // Best-effort: load any existing AI evaluation without triggering a new grading run.
         const { data: existingAi } = await supabase
           .from('evaluations')
           .select('id, method, status, result, evaluated_at')
@@ -60,120 +94,143 @@ export const SessionResultsPage: React.FC = () => {
       }
     };
 
-    run();
+    void run();
   }, [accessToken, sessionId]);
 
-  const runAiGrading = useCallback(async (force: boolean) => {
-    if (!sessionId) return;
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      if (!accessToken) return;
+  const runAiGrading = useCallback(
+    async (force: boolean) => {
+      if (!sessionId) return;
+      setAiLoading(true);
+      setAiError(null);
+      try {
+        if (!accessToken) return;
 
-      const res = await gradeWriting(accessToken, sessionId, { force });
-      setAiEval(res.evaluation ?? null);
-    } catch (err) {
-      const anyErr = err as any;
-      const details = anyErr?.details;
-      const detailObj = details && typeof details === 'object' ? (details as Record<string, unknown>) : null;
-      const code = detailObj ? String(detailObj.code ?? '') : '';
-      const requestId = detailObj && typeof detailObj.request_id === 'string' ? detailObj.request_id : null;
-      const reason = detailObj && typeof detailObj.reason === 'string' ? detailObj.reason : null;
-      const withRef = (message: string): string => (requestId ? `${message} (ref: ${requestId})` : message);
+        const res = await gradeWriting(accessToken, sessionId, { force });
+        setAiEval(res.evaluation ?? null);
+      } catch (err) {
+        const anyErr = err as any;
+        const details = anyErr?.details;
+        const detailObj = details && typeof details === 'object' ? (details as Record<string, unknown>) : null;
+        const code = detailObj ? String(detailObj.code ?? '') : '';
+        const requestId = detailObj && typeof detailObj.request_id === 'string' ? detailObj.request_id : null;
+        const reason = detailObj && typeof detailObj.reason === 'string' ? detailObj.reason : null;
+        const withRef = (message: string): string => (requestId ? `${message} (ref: ${requestId})` : message);
 
-      if (code === 'no_writing_section' || code === 'no_writing_prompts') {
-        // Nothing to grade for this session; keep UI clean.
-        setAiError(null);
-        setAiEval(null);
-        return;
+        if (code === 'no_writing_section' || code === 'no_writing_prompts') {
+          setAiError(null);
+          setAiEval(null);
+          return;
+        }
+
+        if (code === 'no_writing_answer') {
+          setAiError('No writing response was submitted, so there is nothing to grade.');
+          setAiEval(null);
+          return;
+        }
+
+        if (code === 'ai_not_configured' || code === 'ai_disabled') {
+          setAiError(withRef('AI feedback is currently disabled. Ask an admin to enable it.'));
+          return;
+        }
+
+        if (code === 'ai_limit_reached') {
+          setAiError(withRef('Daily AI feedback limit reached. Please try again tomorrow.'));
+          return;
+        }
+
+        if (code === 'usage_limit_reached') {
+          setAiError('Monthly writing feedback limit reached for your plan.');
+          return;
+        }
+
+        if (reason) {
+          setAiError(withRef(`AI feedback failed: ${reason}`));
+          return;
+        }
+
+        setAiError(withRef('AI feedback is temporarily unavailable. Please try again later.'));
+      } finally {
+        setAiLoading(false);
       }
-
-      if (code === 'no_writing_answer') {
-        setAiError('No writing response was submitted, so there is nothing to grade.');
-        setAiEval(null);
-        return;
-      }
-
-      if (code === 'ai_not_configured' || code === 'ai_disabled') {
-        setAiError(withRef('AI feedback is currently disabled. Ask an admin to enable it.'));
-        return;
-      }
-
-      if (code === 'ai_limit_reached') {
-        setAiError(withRef('Daily AI feedback limit reached. Please try again tomorrow.'));
-        return;
-      }
-
-      if (code === 'usage_limit_reached') {
-        setAiError('Monthly writing feedback limit reached for your plan.');
-        return;
-      }
-
-      if (reason) {
-        setAiError(withRef(`AI feedback failed: ${reason}`));
-        return;
-      }
-
-      setAiError(withRef('AI feedback is temporarily unavailable. Please try again later.'));
-    } finally {
-      setAiLoading(false);
-    }
-  }, [accessToken, sessionId]);
+    },
+    [accessToken, sessionId],
+  );
 
   const result = data?.result;
   const sections = result ? Object.entries(result.sections) : [];
-  const hasWriting = Object.values(result?.sections ?? {}).some(
-    (s: any) => String((s as any)?.type ?? '').toLowerCase() === 'writing',
-  );
+  const hasWriting = Object.values(result?.sections ?? {}).some((s: any) => String((s as any)?.type ?? '').toLowerCase() === 'writing');
   const isCandidate = String((data?.session?.metadata as any)?.exam_mode ?? '') === 'token';
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
   const backPath = isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard';
 
   useEffect(() => {
-    if (isCandidate) {
-      localStorage.removeItem('toefl:candidate_session');
-    }
+    if (isCandidate) localStorage.removeItem('toefl:candidate_session');
   }, [isCandidate, sessionId]);
 
   const ai = (aiEval?.result ?? null) as any;
   const aiTasks = Array.isArray(ai?.tasks) ? (ai.tasks as any[]) : [];
-  const aiOverallBand = typeof ai?.overall_band === 'number' ? ai.overall_band : null;
+  const aiWritingScore = (() => {
+    const fromScore = asNumber(ai?.writing_score);
+    if (fromScore != null) return clamp(Math.round(fromScore), 0, 30);
+    const fromBand = asNumber(ai?.overall_band);
+    if (fromBand != null) return toToeflScoreFromBand(fromBand);
+    return null;
+  })();
 
-  const sectionStats = sections.map(([sectionId, section]) => ({
-    id: sectionId,
-    type: String(section.type ?? '').toLowerCase(),
-    band: typeof section.band === 'number' ? section.band : null,
-  }));
-  const sectionTypeSet = new Set(sectionStats.map((section) => section.type));
-  const completedCoreSections = ['reading', 'listening', 'writing', 'speaking'].filter((type) => sectionTypeSet.has(type));
-  const isPartialCoverage = completedCoreSections.length > 0 && completedCoreSections.length < 4;
+  const toefl = (result as any)?.toefl ?? null;
+  const readingScore = asNumber(toefl?.reading_score);
+  const listeningScore = asNumber(toefl?.listening_score);
+  const writingScore = asNumber(toefl?.writing_score) ?? aiWritingScore;
 
-  const componentBands: number[] = [];
-  for (const section of sectionStats) {
-    if ((section.type === 'reading' || section.type === 'listening') && typeof section.band === 'number') {
-      componentBands.push(section.band);
-    }
-  }
-  if (typeof aiOverallBand === 'number') componentBands.push(aiOverallBand);
+  const rlwComposite =
+    asNumber(toefl?.rlw_composite_score) ??
+    (readingScore != null && listeningScore != null && writingScore != null ? readingScore + listeningScore + writingScore : null);
 
-  const objectiveOverallBand = typeof result?.overall_band === 'number' ? result.overall_band : null;
-  const objectiveOverallScore = typeof (result as any)?.overall_score === 'number' ? (result as any).overall_score : null;
-  const provisionalBand =
-    componentBands.length > 0 ? toHalfBand(componentBands.reduce((sum, score) => sum + score, 0) / componentBands.length) : null;
+  const speakingAvailable = Boolean(toefl?.speaking_available === true);
+  const speakingNote = speakingAvailable
+    ? 'Speaking is enabled for this scoring model.'
+    : 'Speaking is intentionally excluded at launch. RLW composite is scored out of 90.';
 
-  const summaryValue = objectiveOverallScore ?? objectiveOverallBand ?? aiOverallBand ?? provisionalBand;
-  const summaryLabel =
-    objectiveOverallScore != null
-      ? 'Overall score'
-      : objectiveOverallBand != null
-        ? 'Overall band'
-        : aiOverallBand != null
-          ? 'Writing band (AI)'
-          : provisionalBand != null
-            ? 'Provisional band'
-            : 'Result';
+  const sectionTypeSet = new Set(sections.map(([, section]) => String((section as any)?.type ?? '').toLowerCase()));
+  const completedCoreSections = ['reading', 'listening', 'writing'].filter((type) => sectionTypeSet.has(type));
+  const isPartialCoverage = completedCoreSections.length > 0 && completedCoreSections.length < 3;
 
-  // Auto-trigger writing grading for sessions that include Writing.
+  const sectionRows = sections.map(([sectionId, section]) => {
+    const type = String(section.type ?? '').toLowerCase();
+    const raw = Number(section.raw_score ?? 0);
+    const max = Number(section.max_score ?? 0);
+    const scaled40 = asNumber((section as any).scaled_score_40);
+    const accuracy = max > 0 ? Math.round((raw / max) * 100) : null;
+
+    let estimatedScore: number | null = null;
+    if (type === 'reading') estimatedScore = readingScore ?? (max > 0 ? toToeflSectionScore(raw / max) : null);
+    if (type === 'listening') estimatedScore = listeningScore ?? (max > 0 ? toToeflSectionScore(raw / max) : null);
+    if (type === 'writing') estimatedScore = writingScore;
+
+    const notes =
+      type === 'writing' && estimatedScore == null
+        ? aiLoading
+          ? 'AI writing estimate in progress'
+          : 'Waiting for AI writing estimate'
+        : !['reading', 'listening', 'writing'].includes(type)
+          ? 'Not included in RLW launch score'
+          : max <= 0
+            ? 'No auto-scorable items in this section'
+            : scaled40 == null
+              ? 'Scoring data unavailable'
+              : 'Scored';
+
+    return {
+      id: sectionId,
+      type,
+      raw,
+      max,
+      accuracy,
+      estimatedScore,
+      notes,
+    };
+  });
+
   useEffect(() => {
     if (!sessionId) return;
     if (!hasWriting) return;
@@ -212,12 +269,12 @@ export const SessionResultsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+      <div className="w-full max-w-5xl bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">Results</div>
-            <h1 className="text-2xl font-bold text-gray-900">Session Score</h1>
-            <p className="text-sm text-gray-500 mt-1">Objective scoring for auto-gradable sections, plus Writing feedback when available.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Session Results</h1>
+            <p className="text-sm text-gray-500 mt-1">Estimated TOEFL iBT scoring for Reading, Listening, and Writing (RLW).</p>
           </div>
           <button
             onClick={() => navigate(backPath, { replace: true })}
@@ -227,26 +284,41 @@ export const SessionResultsPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="border border-gray-200 rounded-xl p-5">
-            <div className="text-xs text-gray-500">{summaryLabel}</div>
-            <div className="text-4xl font-bold text-gray-900 mt-1">{summaryValue ?? 'N/A'}</div>
-            {summaryValue == null ? (
-              <div className="text-xs text-gray-500 mt-2">Score appears after scorable sections or AI writing feedback.</div>
+            <div className="text-xs text-gray-500">Estimated RLW Composite</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{rlwComposite != null ? `${rlwComposite}/90` : 'Pending'}</div>
+            {rlwComposite == null ? (
+              <div className="text-xs text-gray-500 mt-2">Complete Reading and Listening, then finish Writing AI feedback.</div>
             ) : null}
           </div>
-          <div className="border border-gray-200 rounded-xl p-5 md:col-span-2">
-            <div className="text-xs text-gray-500">Session</div>
-            <div className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 mt-2 break-all">
-              {result?.session_id}
-            </div>
-            <div className="text-xs text-gray-500 mt-2">Computed at: {result?.computed_at}</div>
+          <div className="border border-gray-200 rounded-xl p-5">
+            <div className="text-xs text-gray-500">Reading</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{readingScore != null ? `${readingScore}/30` : 'N/A'}</div>
           </div>
+          <div className="border border-gray-200 rounded-xl p-5">
+            <div className="text-xs text-gray-500">Listening</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{listeningScore != null ? `${listeningScore}/30` : 'N/A'}</div>
+          </div>
+          <div className="border border-gray-200 rounded-xl p-5">
+            <div className="text-xs text-gray-500">Writing</div>
+            <div className="text-4xl font-bold text-gray-900 mt-1">{writingScore != null ? `${writingScore}/30` : aiLoading ? '...' : 'Pending'}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 border border-amber-200 bg-amber-50 rounded-lg p-3 text-sm text-amber-900">
+          Estimated scores are practice indicators, not official ETS TOEFL scores. {speakingNote}
+        </div>
+
+        <div className="mt-4 border border-gray-200 rounded-xl p-4">
+          <div className="text-xs text-gray-500">Session</div>
+          <div className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 mt-2 break-all">{result?.session_id}</div>
+          <div className="text-xs text-gray-500 mt-2">Computed at: {result?.computed_at}</div>
         </div>
 
         {isPartialCoverage ? (
           <div className="mt-4 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3">
-            Partial attempt detected. Only completed sections are included in this report.
+            Partial attempt detected. This report only includes completed sections.
           </div>
         ) : null}
 
@@ -257,37 +329,25 @@ export const SessionResultsPage: React.FC = () => {
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
                   <th className="text-left p-3 font-semibold">Section</th>
-                  <th className="text-left p-3 font-semibold">Raw</th>
-                  <th className="text-left p-3 font-semibold">Scaled</th>
-                  <th className="text-left p-3 font-semibold">Band</th>
+                  <th className="text-left p-3 font-semibold">Correct</th>
+                  <th className="text-left p-3 font-semibold">Accuracy</th>
+                  <th className="text-left p-3 font-semibold">Estimated Score</th>
+                  <th className="text-left p-3 font-semibold">Notes</th>
                 </tr>
               </thead>
               <tbody>
-                {sections.map(([sectionId, s]) => (
-                  <tr key={sectionId} className="border-t border-gray-100">
-                    <td className="p-3 font-medium text-gray-900">{s.type}</td>
-                    <td className="p-3 text-gray-700">
-                      {s.raw_score}/{s.max_score}
-                    </td>
-                    <td className="p-3 text-gray-700">
-                      {(s as any).scaled_score_40 ?? (s as any).scaled_score_120 ?? (s as any).scaled_score_800 ?? 'N/A'}
-                    </td>
-                    <td className="p-3 text-gray-900 font-semibold">
-                      {typeof s.band === 'number'
-                        ? s.band
-                        : String(s.type ?? '').toLowerCase() === 'writing'
-                          ? aiOverallBand != null
-                            ? `${aiOverallBand} (AI)`
-                            : aiLoading
-                              ? 'Pending AI'
-                              : 'N/A'
-                          : 'N/A'}
-                    </td>
+                {sectionRows.map((row) => (
+                  <tr key={row.id} className="border-t border-gray-100">
+                    <td className="p-3 font-medium text-gray-900">{formatSectionLabel(row.type)}</td>
+                    <td className="p-3 text-gray-700">{row.max > 0 ? `${row.raw}/${row.max}` : 'N/A'}</td>
+                    <td className="p-3 text-gray-700">{row.accuracy != null ? `${row.accuracy}%` : 'N/A'}</td>
+                    <td className="p-3 text-gray-900 font-semibold">{row.estimatedScore != null ? `${row.estimatedScore}/30` : 'Pending'}</td>
+                    <td className="p-3 text-gray-600">{row.notes}</td>
                   </tr>
                 ))}
-                {sections.length === 0 ? (
+                {sectionRows.length === 0 ? (
                   <tr>
-                    <td className="p-3 text-gray-500" colSpan={4}>
+                    <td className="p-3 text-gray-500" colSpan={5}>
                       No section scores found.
                     </td>
                   </tr>
@@ -302,7 +362,7 @@ export const SessionResultsPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Writing Feedback</h2>
-                <p className="text-sm text-gray-500 mt-1">AI feedback is generated automatically after you finish Writing.</p>
+                <p className="text-sm text-gray-500 mt-1">AI feedback is generated after your writing responses are submitted.</p>
               </div>
               {aiError ? (
                 <button
@@ -315,9 +375,7 @@ export const SessionResultsPage: React.FC = () => {
               ) : null}
             </div>
 
-            {aiLoading && !aiEval ? (
-              <div className="mt-4 text-sm text-gray-600">Generating feedback...</div>
-            ) : null}
+            {aiLoading && !aiEval ? <div className="mt-4 text-sm text-gray-600">Generating feedback...</div> : null}
 
             {aiError ? (
               <div className="mt-4 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3">{aiError}</div>
@@ -326,8 +384,8 @@ export const SessionResultsPage: React.FC = () => {
             {aiEval ? (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="border border-gray-200 rounded-xl p-5">
-                  <div className="text-xs text-gray-500">AI overall band</div>
-                  <div className="text-4xl font-bold text-gray-900 mt-1">{ai?.overall_band ?? 'N/A'}</div>
+                  <div className="text-xs text-gray-500">Estimated writing score</div>
+                  <div className="text-4xl font-bold text-gray-900 mt-1">{aiWritingScore != null ? `${aiWritingScore}/30` : 'Pending'}</div>
                 </div>
                 <div className="border border-gray-200 rounded-xl p-5 md:col-span-2">
                   <div className="text-xs text-gray-500">Evaluated at</div>
@@ -341,25 +399,23 @@ export const SessionResultsPage: React.FC = () => {
 
             {aiTasks.length > 0 ? (
               <div className="mt-6 space-y-4">
-                {aiTasks.map((t) => (
-                  <div key={String(t.content_unit_id ?? Math.random())} className="border border-gray-200 rounded-xl p-5">
+                {aiTasks.map((task, index) => (
+                  <div key={String(task.content_unit_id ?? index)} className="border border-gray-200 rounded-xl p-5">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="text-sm font-semibold text-gray-900">
-                        {String(t.task_type ?? '').toLowerCase() === 'task1'
-                          ? 'Task 1'
-                          : String(t.task_type ?? '').toLowerCase() === 'task2'
-                            ? 'Task 2'
-                            : 'Task'}
-                        {typeof t.word_count === 'number' ? (
-                          <span className="ml-2 text-xs text-gray-500">({t.word_count} words)</span>
+                        {writingTaskLabel(task.task_type)}
+                        {typeof task.word_count === 'number' ? (
+                          <span className="ml-2 text-xs text-gray-500">({task.word_count} words)</span>
                         ) : null}
                       </div>
-                      <div className="text-sm font-bold text-gray-900">Band {t.band ?? 'N/A'}</div>
+                      <div className="text-sm font-bold text-gray-900">
+                        {taskEstimatedScore(task) != null ? `Estimated ${taskEstimatedScore(task)}/30` : 'Estimate pending'}
+                      </div>
                     </div>
 
-                    {typeof t.feedback === 'string' ? (
+                    {typeof task.feedback === 'string' ? (
                       <div className="mt-4 text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-xl p-4">
-                        {t.feedback}
+                        {task.feedback}
                       </div>
                     ) : null}
                   </div>

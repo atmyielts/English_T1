@@ -115,6 +115,11 @@ const toSatScaledScore = (ratio: number): number => {
   return Math.round(scaled / 10) * 10;
 };
 
+const toToeflScaledScore = (ratio: number): number => {
+  const clamped = Math.max(0, Math.min(1, ratio));
+  return Math.round(clamped * 30);
+};
+
 const roundNumber = (value: number, precision = 2): number => {
   const factor = 10 ** precision;
   return Math.round(value * factor) / factor;
@@ -393,8 +398,10 @@ const computeOverallScore = (
   sectionValues: Array<{ raw_score: number; max_score: number }>,
   overallBand: number | null,
   sat: { total_score: number | null } | null,
+  toefl: { rlw_composite_score: number | null } | null,
 ): number | null => {
   if (sat?.total_score != null) return sat.total_score;
+  if (toefl?.rlw_composite_score != null) return toefl.rlw_composite_score;
   if (overallBand != null) return overallBand;
   const totalRaw = sectionValues.reduce((sum, section) => sum + Number(section.raw_score ?? 0), 0);
   const totalMax = sectionValues.reduce((sum, section) => sum + Number(section.max_score ?? 0), 0);
@@ -519,6 +526,23 @@ serve(async (req) => {
       });
     }
 
+    const { data: productRow, error: productError } = await supabase
+      .from("products")
+      .select("id, name, metadata")
+      .eq("id", String(experienceRow.product_id))
+      .maybeSingle();
+
+    if (productError) {
+      return new Response(JSON.stringify({ error: "Failed to load product", details: productError }), {
+        status: 500,
+        headers: jsonHeaders(requestId),
+      });
+    }
+
+    const productSlug = String((productRow as any)?.metadata?.slug ?? "")
+      .trim()
+      .toLowerCase();
+
     const allowedSectionIdsRaw = (sessionRow as any)?.metadata?.allowed_section_ids;
     const allowedSectionIds =
       Array.isArray(allowedSectionIdsRaw) && allowedSectionIdsRaw.length > 0 ? allowedSectionIdsRaw.map(String) : null;
@@ -633,6 +657,10 @@ serve(async (req) => {
       }
 
       const scaled40 = max > 0 ? (raw / max) * 40 : 0;
+      const scaled30 =
+        max > 0 && (type === "reading" || type === "listening" || type === "writing")
+          ? toToeflScaledScore(raw / max)
+          : null;
       const scaled800 =
         max > 0 && (type === "reading_writing" || type === "math")
           ? toSatScaledScore(raw / max)
@@ -646,6 +674,7 @@ serve(async (req) => {
         raw_score: raw,
         max_score: max,
         scaled_score_40: Math.round(scaled40),
+        scaled_score_30: scaled30,
         scaled_score_800: scaled800,
         band,
       };
@@ -658,6 +687,7 @@ serve(async (req) => {
       raw_score: number;
       max_score: number;
       scaled_score_40: number;
+      scaled_score_30?: number | null;
       scaled_score_800?: number | null;
       band: number | null;
     }>;
@@ -683,8 +713,63 @@ serve(async (req) => {
           }
         : null;
 
+    const reading = sectionValues.filter((section) => section.type === "reading");
+    const listening = sectionValues.filter((section) => section.type === "listening");
+    const writing = sectionValues.filter((section) => section.type === "writing");
+    const readingMax = reading.reduce((sum, section) => sum + section.max_score, 0);
+    const readingRaw = reading.reduce((sum, section) => sum + section.raw_score, 0);
+    const listeningMax = listening.reduce((sum, section) => sum + section.max_score, 0);
+    const listeningRaw = listening.reduce((sum, section) => sum + section.raw_score, 0);
+    const writingMax = writing.reduce((sum, section) => sum + section.max_score, 0);
+    const writingRaw = writing.reduce((sum, section) => sum + section.raw_score, 0);
+
+    const readingScore = readingMax > 0 ? toToeflScaledScore(readingRaw / readingMax) : null;
+    const listeningScore = listeningMax > 0 ? toToeflScaledScore(listeningRaw / listeningMax) : null;
+
+    let writingScore = writingMax > 0 ? toToeflScaledScore(writingRaw / writingMax) : null;
+    const isToeflProduct =
+      productSlug === "toefl-ibt-simulator" ||
+      String(experienceRow.product_id) === "b262ffa8-9912-4eba-93d7-58af3164d1cc";
+
+    if (isToeflProduct && writingScore == null) {
+      const { data: aiEval } = await supabase
+        .from("evaluations")
+        .select("result")
+        .eq("session_id", sessionId)
+        .eq("method", "ai")
+        .maybeSingle();
+
+      const aiResult = (aiEval as any)?.result ?? null;
+      const aiWritingScore = Number((aiResult as any)?.writing_score ?? NaN);
+      if (Number.isFinite(aiWritingScore)) {
+        writingScore = Math.max(0, Math.min(30, Math.round(aiWritingScore)));
+      } else {
+        const aiBand = Number((aiResult as any)?.overall_band ?? NaN);
+        if (Number.isFinite(aiBand)) {
+          writingScore = toToeflScaledScore(Math.max(0, Math.min(9, aiBand)) / 9);
+        }
+      }
+    }
+
+    const rlwComposite =
+      readingScore != null && listeningScore != null && writingScore != null
+        ? readingScore + listeningScore + writingScore
+        : null;
+
+    const toefl = isToeflProduct
+      ? {
+          reading_score: readingScore,
+          listening_score: listeningScore,
+          writing_score: writingScore,
+          rlw_composite_score: rlwComposite,
+          score_version: "toefl-rlw-estimate-v1",
+          is_estimated: true,
+          speaking_available: false,
+        }
+      : null;
+
     const skillBreakdown = buildSkillBreakdown(sectionScores);
-    const overallScore = computeOverallScore(sectionValues, overallBand, sat);
+    const overallScore = computeOverallScore(sectionValues, overallBand, sat, toefl);
     const schemaVersion = "exam.result.v1";
     const computedAtIso = new Date().toISOString();
 
@@ -692,8 +777,10 @@ serve(async (req) => {
       session_id: sessionId,
       computed_at: computedAtIso,
       overall_band: overallBand,
+      overall_score: overallScore,
       sections: sectionScores,
       sat,
+      toefl,
     };
 
     const nowIso = new Date().toISOString();
@@ -798,6 +885,7 @@ serve(async (req) => {
           score: overallScore,
           band: overallBand,
           sat_total: sat?.total_score ?? null,
+          toefl_rlw_composite: toefl?.rlw_composite_score ?? null,
         },
         skill_breakdown: skillBreakdown,
         sections: sectionScores,

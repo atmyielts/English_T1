@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Headphones, Mic, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Headphones, Sparkles } from 'lucide-react';
 import { buildPlatformUrl, hasPlatformBase } from '../lib/platformUrls';
 import { TOEFL_IBT_PRODUCT_ID, TOEFL_IBT_PRODUCT_SLUG } from '../lib/constants';
 import { useAccess } from '../lib/useAccess';
@@ -62,7 +62,7 @@ export const LandingPage: React.FC = () => {
   const features: Feature[] = [
     {
       title: 'Integrated TOEFL flow',
-      description: 'Reading, Listening, Speaking, and Writing in one consistent exam workspace.',
+      description: 'Reading, Listening, and Writing in one consistent exam workspace.',
     },
     {
       title: 'Strict timing + autosave',
@@ -175,7 +175,7 @@ export const LandingPage: React.FC = () => {
             </h1>
 
             <p className="hero-fade hero-fade-3 max-w-xl text-lg text-[#625749]">
-              Practice every core TOEFL skill in a warm, distraction-free interface with realistic timing and clean review flow.
+              Practice TOEFL Reading, Listening, and Writing in a warm, distraction-free interface with realistic timing and clean review flow.
             </p>
 
             <div className="hero-fade hero-fade-3 flex flex-col gap-3 sm:flex-row">
@@ -202,7 +202,7 @@ export const LandingPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[
-                { label: '4 skills', value: 'Reading • Listening • Speaking • Writing' },
+                { label: '3 skills', value: 'Reading - Listening - Writing' },
                 { label: 'Simulation', value: 'Section timers and autosave' },
                 { label: 'Review', value: 'Progress and scoring insights' },
               ].map((item) => (
@@ -234,13 +234,13 @@ export const LandingPage: React.FC = () => {
                 </div>
 
                 <div className="rounded-2xl border border-[#e7dccf] bg-[#fffaf4] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-[#8b7e70]">Speaking task</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[#8b7e70]">Writing task</div>
                   <p className="mt-3 text-sm font-semibold text-[#3f372f]">
-                    Read prompt, prepare, then record your response in the official timing window.
+                    Read source prompts, then submit integrated and academic discussion responses in timed blocks.
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-xs text-[#7a6d5d]">
-                    <Mic size={14} className="text-[#c2410c]" />
-                    Recorder workflow enabled
+                    <CheckCircle2 size={14} className="text-[#c2410c]" />
+                    Two writing tasks per full test
                   </div>
                 </div>
               </div>
@@ -351,3 +351,4 @@ export const LandingPage: React.FC = () => {
     </div>
   );
 };
+

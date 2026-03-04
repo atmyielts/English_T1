@@ -122,12 +122,13 @@ export const PracticePage: React.FC = () => {
   };
 
   const typeLabel = (type: string): string => {
-    if (type === 'reading_writing') return 'Reading & Writing';
-    if (type === 'math') return 'Math';
+    if (type === 'reading') return 'Reading';
+    if (type === 'listening') return 'Listening';
+    if (type === 'writing') return 'Writing';
     return type.replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
   };
 
-  const orderedTypes = useMemo(() => ['reading_writing', 'math'], []);
+  const orderedTypes = useMemo(() => ['reading', 'listening', 'writing'], []);
 
   return (
     <MainLayout>
@@ -135,7 +136,7 @@ export const PracticePage: React.FC = () => {
         <div>
           <div className="text-xs uppercase tracking-[0.12em] text-[#64748b] font-semibold">Module training</div>
           <h1 className="text-3xl md:text-4xl font-semibold text-[#0f172a] mt-2">Practice by section</h1>
-          <p className="text-[#475569] mt-2">Start one TOEFL iBT section at a time: Reading, Listening, Speaking, or Writing.</p>
+          <p className="text-[#475569] mt-2">Start one TOEFL iBT section at a time: Reading, Listening, or Writing.</p>
         </div>
 
         {loading ? (
@@ -154,11 +155,11 @@ export const PracticePage: React.FC = () => {
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {(() => {
-                  const sectionTypes = Array.from(
-                    new Set((sectionsByExperience[exp.id] ?? []).map((s) => sectionType(s)).filter(Boolean)),
-                  );
+                  const sectionTypes = Array.from(new Set((sectionsByExperience[exp.id] ?? []).map((s) => sectionType(s)).filter(Boolean)));
                   const ordered = orderedTypes.filter((type) => sectionTypes.includes(type));
-                  const extras = sectionTypes.filter((type) => !orderedTypes.includes(type));
+                  const extras = sectionTypes.filter(
+                    (type) => !orderedTypes.includes(type) && !['speaking', 'reading_writing', 'math'].includes(type),
+                  );
                   return [...ordered, ...extras].map((type) => (
                     <button
                       key={type}

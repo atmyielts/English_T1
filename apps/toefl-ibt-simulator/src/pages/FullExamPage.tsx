@@ -66,9 +66,10 @@ export const FullExamPage: React.FC = () => {
       }
 
       const exps = (expRows ?? []) as ExperienceRow[];
-      setExperiences(exps);
+      const fullTests = exps.filter((exp) => String((exp.metadata as any)?.catalog ?? '').toLowerCase() !== 'practice_bank');
+      setExperiences(fullTests);
 
-      const expIds = exps.map((e) => e.id);
+      const expIds = fullTests.map((e) => e.id);
       if (expIds.length === 0) {
         setLoading(false);
         return;

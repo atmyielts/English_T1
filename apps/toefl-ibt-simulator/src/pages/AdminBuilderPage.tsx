@@ -1008,7 +1008,7 @@ export const AdminBuilderPage: React.FC = () => {
   const [readingBulkQuestionType, setReadingBulkQuestionType] = useState(DEFAULT_SCAFFOLD_QUESTION_TYPE);
   const [listeningBulkQuestionType, setListeningBulkQuestionType] = useState(DEFAULT_SCAFFOLD_QUESTION_TYPE);
   const [writingTemplateTask1MinWords, setWritingTemplateTask1MinWords] = useState('150');
-  const [writingTemplateTask2MinWords, setWritingTemplateTask2MinWords] = useState('250');
+  const [writingTemplateTask2MinWords, setWritingTemplateTask2MinWords] = useState('120');
   const [templates, setTemplates] = useState<AdminSectionTemplateSummary[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
@@ -1094,7 +1094,7 @@ export const AdminBuilderPage: React.FC = () => {
   useEffect(() => {
     if (!selectedSectionForTemplate) return;
     setTemplateNameDraft(selectedSectionForTemplate.name.trim());
-  }, [selectedSectionForTemplate?.id]);
+  }, [selectedSectionForTemplate]);
 
   useEffect(() => {
     if (!selectedSectionForTemplate) return;
@@ -1850,29 +1850,41 @@ export const AdminBuilderPage: React.FC = () => {
   const addWritingScaffold = () => {
     if (!builder) return;
     const task1MinWords = Number(writingTemplateTask1MinWords) > 0 ? Math.floor(Number(writingTemplateTask1MinWords)) : 150;
-    const task2MinWords = Number(writingTemplateTask2MinWords) > 0 ? Math.floor(Number(writingTemplateTask2MinWords)) : 250;
+    const task2MinWords = Number(writingTemplateTask2MinWords) > 0 ? Math.floor(Number(writingTemplateTask2MinWords)) : 120;
     setWritingTemplateTask1MinWords(String(task1MinWords));
     setWritingTemplateTask2MinWords(String(task2MinWords));
     const newSection = {
       id: newId(),
       name: 'Writing',
-      metadata: { type: 'writing', duration_seconds: 3600 },
+      metadata: { type: 'writing', duration_seconds: 1800 },
       parts: [
         {
           id: newId(),
-          name: 'Task 1',
+          name: 'Integrated Writing',
           content_units: [
             {
               id: newId(),
               type: 'instruction',
-              data: { text: 'Write at least 150 words. Spend about 20 minutes on this task.' },
+              data: {
+                text: `Read the short passage, listen to the lecture, then write at least ${task1MinWords} words in about 20 minutes.`,
+              },
               metadata: {},
               answer_key: null,
             },
             {
               id: newId(),
-              type: 'image',
-              data: { storage: { bucket: '', path: '' }, alt: 'Task 1 chart', caption: 'Task 1 visual prompt' },
+              type: 'reading_passage',
+              data: {
+                title: 'Integrated source passage',
+                text: 'Insert the reading source for Integrated Writing here.',
+              },
+              metadata: {},
+              answer_key: null,
+            },
+            {
+              id: newId(),
+              type: 'audio',
+              data: { play_once: true, auto_start: true, storage: { bucket: '', path: '' } },
               metadata: {},
               answer_key: null,
             },
@@ -1880,8 +1892,9 @@ export const AdminBuilderPage: React.FC = () => {
               id: newId(),
               type: 'question_text',
               data: {
-                prompt: 'Summarise the information by selecting and reporting the main features, and make comparisons where relevant.',
-                task_type: 'task1',
+                prompt:
+                  'Summarize the lecture and explain how it supports or challenges the ideas in the reading passage.',
+                task_type: 'integrated',
                 min_words: task1MinWords,
                 rows: 14,
                 show_word_count: true,
@@ -1893,12 +1906,12 @@ export const AdminBuilderPage: React.FC = () => {
         },
         {
           id: newId(),
-          name: 'Task 2',
+          name: 'Academic Discussion',
           content_units: [
             {
               id: newId(),
               type: 'instruction',
-              data: { text: 'Write at least 250 words. Spend about 40 minutes on this task.' },
+              data: { text: `Write at least ${task2MinWords} words. Spend about 10 minutes on this task.` },
               metadata: {},
               answer_key: null,
             },
@@ -1906,10 +1919,10 @@ export const AdminBuilderPage: React.FC = () => {
               id: newId(),
               type: 'question_text',
               data: {
-                prompt: 'Discuss both views and give your own opinion.',
-                task_type: 'task2',
+                prompt: 'State and support your position in the class discussion prompt.',
+                task_type: 'academic_discussion',
                 min_words: task2MinWords,
-                rows: 18,
+                rows: 10,
                 show_word_count: true,
               },
               metadata: {},
@@ -2715,15 +2728,20 @@ export const AdminBuilderPage: React.FC = () => {
     }
   };
 
+  const saveBuilderRef = React.useRef(saveBuilder);
+  useEffect(() => {
+    saveBuilderRef.current = saveBuilder;
+  });
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!builder || !dirty) return;
     if (saving || autoSaving || loading) return;
     const timer = window.setTimeout(() => {
-      void saveBuilder('auto');
+      void saveBuilderRef.current('auto');
     }, 12000);
     return () => window.clearTimeout(timer);
-  }, [autoSaving, builder, dirty, loading, saving, selectedExperienceId, saveBuilder]);
+  }, [autoSaving, builder, dirty, loading, saving, selectedExperienceId]);
 
   const handleRollback = async (snapshot: AdminBuilderSnapshot) => {
     if (!accessToken || !snapshot?.id) return;
@@ -3187,7 +3205,7 @@ export const AdminBuilderPage: React.FC = () => {
                 value={readString(data.task_type)}
                 onChange={(event) => updateCurrentDataField('task_type', event.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="task1 / task2"
+                placeholder="integrated / academic_discussion"
               />
             </div>
             <div>
@@ -4123,7 +4141,7 @@ export const AdminBuilderPage: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs text-gray-500 block">Task 1 min words</label>
+                        <label className="text-xs text-gray-500 block">Integrated writing min words</label>
                         <input
                           type="number"
                           min={1}
@@ -4133,7 +4151,7 @@ export const AdminBuilderPage: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500 block">Task 2 min words</label>
+                        <label className="text-xs text-gray-500 block">Academic discussion min words</label>
                         <input
                           type="number"
                           min={1}
