@@ -133,7 +133,15 @@ export const TestOverview: React.FC = () => {
         );
         return;
       }
-      setError('Failed to create session');
+      if (result.code === 'concurrent_session_limit_reached') {
+        setError('An active session is already running on another device for this product.');
+        return;
+      }
+      if (result.code === 'device_limit_reached') {
+        setError('Device limit reached for this account. Contact support if this is unexpected.');
+        return;
+      }
+      setError(result.error ?? 'Failed to create session');
       return;
     }
 
@@ -164,7 +172,15 @@ export const TestOverview: React.FC = () => {
         );
         return;
       }
-      setError('Failed to create session');
+      if (result.code === 'concurrent_session_limit_reached') {
+        setError('An active session is already running on another device for this product.');
+        return;
+      }
+      if (result.code === 'device_limit_reached') {
+        setError('Device limit reached for this account. Contact support if this is unexpected.');
+        return;
+      }
+      setError(result.error ?? 'Failed to create session');
       return;
     }
 

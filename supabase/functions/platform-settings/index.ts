@@ -13,6 +13,10 @@ type SettingsUpdate = Partial<{
   trial_product_overrides: Record<string, unknown>;
   writing_ai_enabled: boolean;
   writing_ai_daily_limit: number;
+  anti_sharing_enabled: boolean;
+  anti_sharing_max_concurrent_sessions_per_product: number;
+  anti_sharing_device_window_days: number;
+  anti_sharing_max_devices_per_window: number;
 }>;
 type AdminSecurityPatch = Partial<{
   require_mfa: boolean;
@@ -200,6 +204,22 @@ serve(async (req) => {
       if (typeof body.writing_ai_enabled === "boolean") patch.writing_ai_enabled = body.writing_ai_enabled;
       const writingDailyLimit = normalizeNonNegativeInt(body.writing_ai_daily_limit);
       if (writingDailyLimit != null) patch.writing_ai_daily_limit = writingDailyLimit;
+      if (typeof body.anti_sharing_enabled === "boolean") patch.anti_sharing_enabled = body.anti_sharing_enabled;
+
+      if ("anti_sharing_max_concurrent_sessions_per_product" in body) {
+        const limit = normalizePositiveInt(body.anti_sharing_max_concurrent_sessions_per_product);
+        if (limit != null) patch.anti_sharing_max_concurrent_sessions_per_product = Math.min(10, Math.max(1, limit));
+      }
+
+      if ("anti_sharing_device_window_days" in body) {
+        const days = normalizePositiveInt(body.anti_sharing_device_window_days);
+        if (days != null) patch.anti_sharing_device_window_days = Math.min(365, Math.max(1, days));
+      }
+
+      if ("anti_sharing_max_devices_per_window" in body) {
+        const maxDevices = normalizePositiveInt(body.anti_sharing_max_devices_per_window);
+        if (maxDevices != null) patch.anti_sharing_max_devices_per_window = Math.min(20, Math.max(1, maxDevices));
+      }
 
       // Trial flow is manual claim-based.
       patch.trial_autogrant_on_signup = false;

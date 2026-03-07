@@ -19,9 +19,21 @@ type EntitlementRow = {
   value: Json | null;
 };
 
+type SessionGuardrails = {
+  enabled: boolean;
+  maxConcurrentSessionsPerProduct: number;
+  deviceWindowDays: number;
+  maxDevicesPerWindow: number;
+};
+
+type DeviceRow = {
+  id: string;
+  seen_count: number | null;
+};
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-user-jwt, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-user-jwt, x-client-info, apikey, content-type, x-device-fingerprint",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -40,6 +52,95 @@ const getBearerToken = (req: Request): string | null => {
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+
+const normalizePositiveInt = (value: unknown, fallback: number, min: number, max: number): number => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  const normalized = Math.floor(parsed);
+  if (normalized < min || normalized > max) return fallback;
+  return normalized;
+};
+
+const normalizeText = (value: string | null | undefined, maxLength: number): string | null => {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) return null;
+  return normalized.slice(0, maxLength);
+};
+
+const getClientIp = (req: Request): string | null => {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first) return first;
+  }
+
+  const cfIp = req.headers.get("cf-connecting-ip");
+  if (cfIp?.trim()) return cfIp.trim();
+
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp?.trim()) return realIp.trim();
+
+  return null;
+};
+
+const toHex = (bytes: Uint8Array): string => Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+const sha256Hex = async (value: string): Promise<string> => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return toHex(new Uint8Array(digest));
+};
+
+const deriveDeviceKey = async (req: Request): Promise<string> => {
+  const explicit = normalizeText(req.headers.get("x-device-fingerprint"), 256);
+  if (explicit) return `fp:${explicit.toLowerCase()}`;
+
+  const userAgent = normalizeText(req.headers.get("user-agent"), 500) ?? "unknown";
+  const language = normalizeText(req.headers.get("accept-language"), 120) ?? "";
+  const secUa = normalizeText(req.headers.get("sec-ch-ua"), 220) ?? "";
+  const platform = normalizeText(req.headers.get("sec-ch-ua-platform"), 120) ?? "";
+  return `ua:${await sha256Hex(`${userAgent}|${language}|${secUa}|${platform}`)}`;
+};
+
+const readSessionDeviceKey = (metadata: unknown): string | null => {
+  if (!isObject(metadata)) return null;
+  const raw = (metadata as Record<string, unknown>)._guardrail_device_key;
+  return typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : null;
+};
+
+const isRelationMissingError = (error: unknown): boolean => {
+  const code = String((error as any)?.code ?? "");
+  return code === "42P01" || code === "42703";
+};
+
+const loadSessionGuardrails = async (sb: any): Promise<SessionGuardrails> => {
+  const defaults: SessionGuardrails = {
+    enabled: true,
+    maxConcurrentSessionsPerProduct: 1,
+    deviceWindowDays: 30,
+    maxDevicesPerWindow: 3,
+  };
+
+  const { data, error } = await sb.from("platform_settings").select("*").eq("id", 1).maybeSingle();
+  if (error || !data) return defaults;
+
+  const row = data as Record<string, unknown>;
+  return {
+    enabled: typeof row.anti_sharing_enabled === "boolean" ? row.anti_sharing_enabled : defaults.enabled,
+    maxConcurrentSessionsPerProduct: normalizePositiveInt(
+      row.anti_sharing_max_concurrent_sessions_per_product,
+      defaults.maxConcurrentSessionsPerProduct,
+      1,
+      10,
+    ),
+    deviceWindowDays: normalizePositiveInt(row.anti_sharing_device_window_days, defaults.deviceWindowDays, 1, 365),
+    maxDevicesPerWindow: normalizePositiveInt(
+      row.anti_sharing_max_devices_per_window,
+      defaults.maxDevicesPerWindow,
+      1,
+      20,
+    ),
+  };
+};
 
 const readAdaptivePath = (value: unknown): Record<string, unknown> | null => {
   if (!isObject(value)) return null;
@@ -153,6 +254,9 @@ serve(async (req) => {
     const experienceId = String(body?.experience_id ?? "");
     const metadata = (body?.metadata ?? {}) as Json;
     const sessionMetadata: Json = { ...(metadata ?? {}) };
+    const clientIp = normalizeText(getClientIp(req), 120);
+    const userAgent = normalizeText(req.headers.get("user-agent"), 500);
+    const deviceKey = await deriveDeviceKey(req);
 
     if (!experienceId) return json(400, { error: "experience_id is required" });
 
@@ -191,7 +295,13 @@ serve(async (req) => {
 
     if (!tenantId) return json(403, { error: "No active tenant membership" });
 
+    (sessionMetadata as any)._guardrail_device_key = deviceKey;
+    if (clientIp) (sessionMetadata as any)._guardrail_client_ip = clientIp;
+    if (userAgent) (sessionMetadata as any)._guardrail_user_agent = userAgent;
+
     if (!isAdmin) {
+      const guardrails = await loadSessionGuardrails(sb);
+
       const { data: entitlement, error: entErr } = await sb
         .from("entitlements")
         .select("id, tenant_id, starts_at, ends_at, is_active, value")
@@ -204,6 +314,109 @@ serve(async (req) => {
       if (entErr) return json(500, { error: "Failed to load entitlements", details: entErr });
       if (!entitlement || !isActiveEntitlement(entitlement as EntitlementRow)) {
         return json(403, { error: "No entitlement for product" });
+      }
+
+      if (guardrails.enabled) {
+        const sessionLimit = Math.max(1, guardrails.maxConcurrentSessionsPerProduct);
+        const { data: openSessions, error: openSessionsError } = await sb
+          .from("sessions")
+          .select("id, status, created_at, metadata, experiences!inner(product_id)")
+          .eq("user_id", authedUserId)
+          .eq("experiences.product_id", productId)
+          .in("status", ["created", "active", "paused"])
+          .order("created_at", { ascending: false })
+          .limit(sessionLimit + 2);
+
+        if (openSessionsError) return json(500, { error: "Failed to enforce active session guard", details: openSessionsError });
+        const openRows = (openSessions ?? []) as Array<{ id: string; metadata: unknown }>;
+
+        if (openRows.length >= sessionLimit) {
+          const latest = openRows[0];
+          const latestDeviceKey = readSessionDeviceKey(latest?.metadata);
+          if (latest?.id && (!latestDeviceKey || latestDeviceKey === deviceKey)) {
+            return json(200, { session_id: latest.id, reused: true });
+          }
+
+          return json(409, {
+            error: "Another active session already exists for this product on a different device",
+            code: "concurrent_session_limit_reached",
+          });
+        }
+
+        let ledgerAvailable = true;
+        let deviceRow: DeviceRow | null = null;
+        const { data: knownDevice, error: knownDeviceError } = await sb
+          .from("user_device_activity")
+          .select("id, seen_count")
+          .eq("user_id", authedUserId)
+          .eq("device_key", deviceKey)
+          .maybeSingle();
+
+        if (knownDeviceError) {
+          if (isRelationMissingError(knownDeviceError)) {
+            ledgerAvailable = false;
+          } else {
+            return json(500, { error: "Failed to validate known device", details: knownDeviceError });
+          }
+        } else {
+          deviceRow = (knownDevice as DeviceRow | null) ?? null;
+        }
+
+        if (ledgerAvailable && !deviceRow) {
+          const cutoffIso = new Date(Date.now() - guardrails.deviceWindowDays * 24 * 60 * 60 * 1000).toISOString();
+          const { count, error: countError } = await sb
+            .from("user_device_activity")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", authedUserId)
+            .gte("last_seen_at", cutoffIso);
+
+          if (countError) {
+            if (isRelationMissingError(countError)) {
+              ledgerAvailable = false;
+            } else {
+              return json(500, { error: "Failed to enforce device window limit", details: countError });
+            }
+          } else if ((count ?? 0) >= Math.max(1, guardrails.maxDevicesPerWindow)) {
+            return json(429, {
+              error: `Too many devices used on this account in the last ${guardrails.deviceWindowDays} day(s)`,
+              code: "device_limit_reached",
+            });
+          }
+        }
+
+        if (ledgerAvailable) {
+          const nowIso = new Date().toISOString();
+
+          if (deviceRow?.id) {
+            const seenCount = Number(deviceRow.seen_count ?? 1);
+            const { error: updateDeviceError } = await sb
+              .from("user_device_activity")
+              .update({
+                last_seen_at: nowIso,
+                last_ip: clientIp,
+                last_user_agent: userAgent,
+                last_product_id: productId,
+                seen_count: Number.isFinite(seenCount) && seenCount > 0 ? seenCount + 1 : 1,
+              })
+              .eq("id", deviceRow.id);
+
+            if (updateDeviceError) return json(500, { error: "Failed to update device activity", details: updateDeviceError });
+          } else {
+            const { error: insertDeviceError } = await sb.from("user_device_activity").insert({
+              user_id: authedUserId,
+              device_key: deviceKey,
+              first_seen_at: nowIso,
+              last_seen_at: nowIso,
+              last_ip: clientIp,
+              last_user_agent: userAgent,
+              last_product_id: productId,
+              seen_count: 1,
+              metadata: { source: "start-session" },
+            });
+
+            if (insertDeviceError) return json(500, { error: "Failed to record device activity", details: insertDeviceError });
+          }
+        }
       }
 
       const capabilityKey = determineCapabilityKey(metadata, body?.capability_key ?? null);

@@ -7,6 +7,8 @@ export type CreateSessionResult = { sessionId: string | null; code?: string; cap
 const extractErrorCode = (message: string): string | undefined => {
   if (message.includes('usage_limit_reached')) return 'usage_limit_reached';
   if (message.includes('No entitlement')) return 'no_entitlement';
+  if (message.includes('concurrent_session_limit_reached')) return 'concurrent_session_limit_reached';
+  if (message.includes('device_limit_reached')) return 'device_limit_reached';
   return undefined;
 };
 
