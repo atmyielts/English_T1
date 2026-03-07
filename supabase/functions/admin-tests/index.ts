@@ -180,7 +180,8 @@ serve(async (req) => {
         });
         if (gateErr) {
           const message = String(gateErr.message ?? "Publish gate failed");
-          const status = message.includes("Publish gate") ? 422 : 500;
+          const code = String((gateErr as any)?.code ?? "");
+          const status = message.includes("Publish gate") || code === "P0001" ? 422 : 500;
           return new Response(JSON.stringify({ error: message }), {
             status,
             headers: { "Content-Type": "application/json", ...corsHeaders },

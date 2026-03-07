@@ -25,11 +25,20 @@ const parseActionError = (error: unknown, fallback: string): string => {
         if (parsed.error.includes('Publish gate: image file missing')) {
           return `${parsed.error}. Open Admin Builder and re-upload that image before publishing.`;
         }
+        if (parsed.error.includes('Publish gate: image unit') && parsed.error.includes('missing storage reference')) {
+          return `${parsed.error}. Open Admin Builder and set image url or upload media for that unit before publishing.`;
+        }
         if (parsed.error.includes('Publish gate: audio file missing')) {
           return `${parsed.error}. Open Admin Builder and re-upload that audio before publishing.`;
         }
+        if (parsed.error.includes('Publish gate: audio unit') && parsed.error.includes('missing storage reference')) {
+          return `${parsed.error}. Open Admin Builder and set audio url or upload media for that unit before publishing.`;
+        }
         if (parsed.error.includes('Publish gate: diagram image missing')) {
           return `${parsed.error}. Open Admin Builder and re-upload the diagram image before publishing.`;
+        }
+        if (parsed.error.includes('Publish gate: diagram unit') && parsed.error.includes('missing image storage reference')) {
+          return `${parsed.error}. Open Admin Builder and set diagram image url or upload media for that unit before publishing.`;
         }
         if (
           parsed.error.includes('Cannot delete test with existing sessions') &&
