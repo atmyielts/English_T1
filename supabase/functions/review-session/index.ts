@@ -307,6 +307,7 @@ serve(async (req) => {
     const url = new URL(req.url);
     const sessionId = url.searchParams.get("session_id");
     const onlySectionId = url.searchParams.get("section_id");
+    const expectedProductId = String(url.searchParams.get("product_id") ?? "").trim();
 
     if (!sessionId) {
       return new Response(JSON.stringify({ error: "session_id is required" }), {
@@ -371,6 +372,13 @@ serve(async (req) => {
     }
 
     const productId = experienceRow.product_id as string;
+    if (expectedProductId && expectedProductId !== productId) {
+      return new Response(JSON.stringify({ error: "Session not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const tokenId = String((sessionRow as any)?.token_id ?? "");
     let tokenMode = false;
     if (tokenId) {

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
+import { IELTS_PRODUCT_ID } from '../lib/constants';
 import { getReviewSession, type ReviewSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
 
@@ -227,7 +228,7 @@ export const ReviewSessionPage: React.FC = () => {
       if (!accessToken) return;
 
       try {
-        const res = await getReviewSession(accessToken, sessionId);
+        const res = await getReviewSession(accessToken, sessionId, undefined, IELTS_PRODUCT_ID);
         setData(res);
         setActiveSectionId((prev) => prev ?? res.sections?.[0]?.id ?? null);
         setActivePartId(null);

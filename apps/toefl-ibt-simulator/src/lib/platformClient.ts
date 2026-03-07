@@ -987,9 +987,11 @@ export const getReviewSession = async (
   accessToken: string,
   sessionId: string,
   sectionId?: string | null,
+  productId?: string | null,
 ): Promise<ReviewSessionResponse> => {
   const qs = new URLSearchParams({ session_id: sessionId });
   if (sectionId) qs.set('section_id', sectionId);
+  if (productId) qs.set('product_id', productId);
 
   const res = await fetch(`${edgeBase}/review-session?${qs.toString()}`, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {

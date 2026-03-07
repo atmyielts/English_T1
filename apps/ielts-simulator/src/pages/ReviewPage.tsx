@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
+import { IELTS_PRODUCT_ID } from '../lib/constants';
 import { supabase } from '../lib/supabase';
 
 type SessionRow = {
@@ -39,8 +40,9 @@ export const ReviewPage: React.FC = () => {
 
       const { data, error: sessError } = await supabase
         .from('sessions')
-        .select('id,status,completed_at,created_at,experience_id,experience:experiences(id,name)')
+        .select('id,status,completed_at,created_at,experience_id,experience:experiences!inner(id,name,product_id)')
         .eq('status', 'completed')
+        .eq('experience.product_id', IELTS_PRODUCT_ID)
         .order('completed_at', { ascending: false })
         .limit(50);
 
