@@ -79,6 +79,18 @@ const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => 
 const supabaseUrl = getEnv('VITE_SUPABASE_URL').replace(/\/$/, '');
 const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 const edgeBase = `${supabaseUrl}/functions/v1`;
+const learningProfileEdgeSlug =
+  String(import.meta.env.VITE_USE_LEARNING_PROFILE_V2 ?? '').toLowerCase() === 'true'
+    ? 'learning-profile-v2'
+    : 'learning-profile';
+const scoreSessionEdgeSlug =
+  String(import.meta.env.VITE_USE_SCORE_SESSION_V2 ?? '').toLowerCase() === 'true'
+    ? 'score-session-v2'
+    : 'score-session';
+const gradeWritingEdgeSlug =
+  String(import.meta.env.VITE_USE_GRADE_WRITING_V2 ?? '').toLowerCase() === 'true'
+    ? 'grade-writing-v2'
+    : 'grade-writing';
 
 const apiHeaders = (accessToken: string): HeadersInit => ({
   apikey: supabaseAnonKey,
@@ -874,7 +886,7 @@ export type ScoreSessionResponse = {
 };
 
 export const scoreSession = async (accessToken: string, sessionId: string): Promise<ScoreSessionResponse> => {
-  const res = await fetch(`${edgeBase}/score-session`, {
+  const res = await fetch(`${edgeBase}/${scoreSessionEdgeSlug}`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_id: sessionId, method: 'auto' }),
@@ -1851,11 +1863,11 @@ export const learningProfileSeed = async (
   if (opts?.productId) qs.set('product_id', opts.productId);
   if (typeof opts?.limit === 'number' && Number.isFinite(opts.limit)) qs.set('limit', String(Math.floor(opts.limit)));
 
-  const url = `${edgeBase}/learning-profile${qs.toString() ? `?${qs.toString()}` : ''}`;
+  const url = `${edgeBase}/${learningProfileEdgeSlug}${qs.toString() ? `?${qs.toString()}` : ''}`;
   const res = await fetch(url, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`GET /learning-profile failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(`GET /${learningProfileEdgeSlug} failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as LearningProfileSeedResponse;
 };
@@ -1890,7 +1902,7 @@ export const gradeWriting = async (
   sessionId: string,
   opts?: { force?: boolean },
 ): Promise<GradeWritingResponse> => {
-  const res = await fetch(`${edgeBase}/grade-writing`, {
+  const res = await fetch(`${edgeBase}/${gradeWritingEdgeSlug}`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_id: sessionId, force: opts?.force === true }),
