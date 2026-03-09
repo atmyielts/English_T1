@@ -84,8 +84,34 @@ jobs:
         run: npm --workspace ${{ matrix.workspace }} run build
 
       - name: Deploy ${{ matrix.label }} to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ${{ matrix.dist }} --project-name=${{ matrix.project }} --branch=main --commit-hash=${{ github.sha }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set +e
+          attempt=1
+          max_attempts=5
+          delay=10
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "Deploy attempt ${attempt}/${max_attempts} for ${{ matrix.project }}"
+            output="$(npx --yes wrangler@4.71.0 pages deploy ${{ matrix.dist }} --project-name=${{ matrix.project }} --branch=main --commit-hash=${{ github.sha }} 2>&1)"
+            status=$?
+            echo "$output"
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+
+            if echo "$output" | grep -Eiq "503 Service Unavailable|malformed response|upstream connect error|disconnect/reset before headers|connection termination"; then
+              if [ "$attempt" -lt "$max_attempts" ]; then
+                echo "Transient Cloudflare API failure detected. Retrying in ${delay}s..."
+                sleep "$delay"
+                attempt=$((attempt + 1))
+                delay=$((delay * 2))
+                continue
+              fi
+            fi
+            exit "$status"
+          done
+
+          echo "Cloudflare deploy failed after ${max_attempts} attempts."
+          exit 1
