@@ -251,8 +251,22 @@ additional_redirect_urls = [
   "https://ielts.schood.online/auth",
   "https://sat.schood.online",
   "https://sat.schood.online/auth",
+  "https://toefl.schood.online",
+  "https://toefl.schood.online/auth",
   "https://reading.english.schood.online",
   "https://reading.english.schood.online/auth",
+  "https://writing.english.schood.online",
+  "https://writing.english.schood.online/auth",
+  "https://listening.english.schood.online",
+  "https://listening.english.schood.online/auth",
+  "https://speaking.english.schood.online",
+  "https://speaking.english.schood.online/auth",
+  "https://grammar.english.schood.online",
+  "https://grammar.english.schood.online/auth",
+  "https://vocabulary.english.schood.online",
+  "https://vocabulary.english.schood.online/auth",
+  "https://immersion.english.schood.online",
+  "https://immersion.english.schood.online/auth",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

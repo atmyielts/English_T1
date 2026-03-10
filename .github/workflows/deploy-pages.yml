@@ -33,6 +33,30 @@ jobs:
             workspace: apps/english-reading
             dist: apps/english-reading/dist
             project: schood-reading
+          - label: writing
+            workspace: apps/english-writing
+            dist: apps/english-writing/dist
+            project: schood-writing
+          - label: listening
+            workspace: apps/english-listening
+            dist: apps/english-listening/dist
+            project: schood-listening
+          - label: speaking
+            workspace: apps/english-speaking
+            dist: apps/english-speaking/dist
+            project: schood-speaking
+          - label: grammar
+            workspace: apps/english-grammar
+            dist: apps/english-grammar/dist
+            project: schood-grammar
+          - label: vocabulary
+            workspace: apps/english-vocabulary
+            dist: apps/english-vocabulary/dist
+            project: schood-vocabulary
+          - label: immersion
+            workspace: apps/english-immersion
+            dist: apps/english-immersion/dist
+            project: schood-immersion
 
     steps:
       - name: Checkout
@@ -70,7 +94,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_ALLOWED_RETURN_HOSTS: schood.online,ielts.schood.online,sat.schood.online,toefl.schood.online,reading.english.schood.online
+          VITE_ALLOWED_RETURN_HOSTS: schood.online,ielts.schood.online,sat.schood.online,toefl.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
           VITE_ADMIN_URL: https://schood.online/admin
           VITE_IELTS_URL: https://ielts.schood.online
           VITE_ACADEMY_URL: https://schood.online/academy
