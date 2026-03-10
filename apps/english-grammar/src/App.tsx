@@ -28,6 +28,7 @@ type TaskRow = {
 
 const GRAMMAR_PRODUCT_ID = ((import.meta.env.VITE_GRAMMAR_PRODUCT_ID as string | undefined) ?? '').trim() || '6c4f0566-6f50-4fb4-b176-c4397ecb8ec5';
 const GRAMMAR_PRODUCT_SLUG = 'english-grammar';
+const SERVICE_LABEL = 'English Grammar';
 
 const lessonRows: LessonRow[] = [
   {
@@ -225,6 +226,91 @@ const DashboardPage = ({
 
 
 
+const SignedOutLanding = ({
+  serviceLabel,
+  signInHref,
+  pricingHref,
+  platformWorkspaceHref,
+}: {
+  serviceLabel: string;
+  signInHref: string;
+  pricingHref: string;
+  platformWorkspaceHref: string;
+}) => {
+  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
+  const focusLower = focusTitle.toLowerCase();
+
+  return (
+    <div className="service-landing">
+      <section className="landing-hero">
+        <div className="landing-mosaic">
+          <article className="landing-card landing-stat tilt-left">
+            <div className="landing-stat-head">
+              <strong>174+</strong>
+              <span className="landing-arrow">{'->'}</span>
+            </div>
+            <p>{focusTitle} programs</p>
+            <small>new practice packs every week</small>
+          </article>
+
+          <article className="landing-card landing-team tilt-right">
+            <span className="landing-pill">4.8 review</span>
+            <h3>Mentor team</h3>
+            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
+          </article>
+
+          <article className="landing-card landing-offer tilt-right">
+            <h3>Secrets of {focusLower}</h3>
+            <p className="landing-price">
+              12$ <span>35$</span>
+            </p>
+            <div className="landing-ticket">
+              <div className="landing-ticket-row">
+                <small>24 Jul</small>
+                <small>28 Jul</small>
+              </div>
+              <strong>18:00</strong>
+              <small>35h 20m</small>
+            </div>
+          </article>
+
+          <article className="landing-card landing-showcase tilt-left">
+            <div className="landing-orb" aria-hidden />
+            <h3>{focusTitle} studio</h3>
+            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
+          </article>
+        </div>
+
+        <article className="landing-copy card">
+          <div className="landing-chip">{serviceLabel}</div>
+          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
+          <p>
+            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
+            writing, speaking, grammar, vocabulary, and immersion.
+          </p>
+          <div className="landing-cta-row">
+            <a className="primary-cta" href={signInHref}>Get started</a>
+            <a className="ghost-btn" href={pricingHref}>See pricing</a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
+          </div>
+        </article>
+      </section>
+
+      <section className="landing-proof-grid">
+        <article className="landing-proof card tilt-left">
+          <small>Learner footprint</small>
+          <strong>12k+</strong>
+          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
+        </article>
+        <article className="landing-proof card tilt-right">
+          <small>Practice volume</small>
+          <strong>34k</strong>
+          <p>Total {focusLower} training hours logged by active users on the platform.</p>
+        </article>
+      </section>
+    </div>
+  );
+};
 const App = () => {
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
@@ -385,7 +471,7 @@ const App = () => {
   return (
     <div className="reading-root">
       <div className="ambient-layer" />
-      <div className="app-shell">
+      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''}`}>
         <aside className="left-nav">
           <button
             type="button"
@@ -457,32 +543,33 @@ const App = () => {
           </header>
 
           {status === 'signed_out' ? (
-            <div className="access-banner">
-              <strong>Sign in required.</strong>
-              <span>Sign in with your platform account to sync progress and access paid plans.</span>
-              <a className="ghost-btn" href={signInHref}>Sign in</a>
-            </div>
+            <SignedOutLanding
+              serviceLabel={SERVICE_LABEL}
+              signInHref={signInHref}
+              pricingHref={pricingHref}
+              platformWorkspaceHref={platformWorkspaceHref}
+            />
           ) : null}
-          {checkingAccess ? (
+          {status !== 'signed_out' && checkingAccess ? (
             <div className="access-banner">
               <strong>Checking access...</strong>
               <span>Verifying your active plan for English Grammar.</span>
             </div>
           ) : null}
-          {needsAccess ? (
+          {status !== 'signed_out' && needsAccess ? (
             <div className="access-banner warning">
               <strong>Plan required for full access.</strong>
               <span>Choose a trial or paid plan to unlock this service.</span>
               <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
             </div>
           ) : null}
-          {accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          {status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
-          {view === 'dashboard' && (
+          {status !== 'signed_out' && view === 'dashboard' && (
             <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
           )}
 
-          {view === 'arena-list' && (
+          {status !== 'signed_out' && view === 'arena-list' && (
             <ArenaList
               onSelect={(article: Article) => {
                 setSelectedArticle(article);
@@ -491,7 +578,7 @@ const App = () => {
             />
           )}
 
-          {view === 'arena-reader' && selectedArticle && (
+          {status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
             <ArenaReader
               article={selectedArticle}
               onBack={() => setView('arena-list')}
@@ -571,4 +658,7 @@ const App = () => {
 };
 
 export default App;
+
+
+
 
