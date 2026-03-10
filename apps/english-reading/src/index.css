@@ -1331,11 +1331,13 @@ a {
   border-radius: 999px;
 }
 
-.app-shell.signed-out {
+.app-shell.signed-out,
+.app-shell.landing {
   grid-template-columns: 240px minmax(0, 1fr);
 }
 
-.app-shell.signed-out .right-panel {
+.app-shell.signed-out .right-panel,
+.app-shell.landing .right-panel {
   display: none;
 }
 
@@ -1576,11 +1578,13 @@ a {
 }
 
 @media (max-width: 980px) {
-  .app-shell.signed-out {
+  .app-shell.signed-out,
+.app-shell.landing {
     grid-template-columns: 1fr;
   }
 
-  .app-shell.signed-out .left-nav {
+  .app-shell.signed-out .left-nav,
+  .app-shell.landing .left-nav {
     display: none;
   }
 }

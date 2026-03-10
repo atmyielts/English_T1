@@ -231,11 +231,15 @@ const SignedOutLanding = ({
   signInHref,
   pricingHref,
   platformWorkspaceHref,
+  isSignedIn,
+  onContinue,
 }: {
   serviceLabel: string;
   signInHref: string;
   pricingHref: string;
   platformWorkspaceHref: string;
+  isSignedIn: boolean;
+  onContinue: () => void;
 }) => {
   const focusTitle = serviceLabel.replace(/^English\s+/i, '');
   const focusLower = focusTitle.toLowerCase();
@@ -289,7 +293,11 @@ const SignedOutLanding = ({
             writing, speaking, grammar, vocabulary, and immersion.
           </p>
           <div className="landing-cta-row">
-            <a className="primary-cta" href={signInHref}>Get started</a>
+            {isSignedIn ? (
+              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
+            ) : (
+              <a className="primary-cta" href={signInHref}>Get started</a>
+            )}
             <a className="ghost-btn" href={pricingHref}>See pricing</a>
             <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
           </div>
@@ -322,6 +330,7 @@ const App = () => {
 
   const [view, setView] = useState<ViewState>('dashboard');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [showLanding, setShowLanding] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -342,6 +351,12 @@ const App = () => {
       subscription.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (status !== 'signed_in') {
+      setShowLanding(true);
+    }
+  }, [status]);
 
   useEffect(() => {
     let cancelled = false;
@@ -465,18 +480,22 @@ const App = () => {
   );
 
   const handleSignOut = async () => {
+    setShowLanding(true);
     await supabase.auth.signOut({ scope: 'local' });
   };
 
   return (
     <div className="reading-root">
       <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''}`}>
+      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
         <aside className="left-nav">
           <button
             type="button"
             className="brand-mark"
-            onClick={() => setView('dashboard')}
+            onClick={() => {
+              setView('dashboard');
+              setShowLanding(true);
+            }}
             style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
           >
             <span className="dot" />
@@ -490,14 +509,24 @@ const App = () => {
             <button
               className={`menu-link ${view === 'dashboard' ? 'active' : ''}`}
               type="button"
-              onClick={() => setView('dashboard')}
+              onClick={() => {
+                setView('dashboard');
+                setShowLanding(status !== 'signed_in');
+              }}
             >
               Dashboard
             </button>
             <button
               className={`menu-link ${view === 'arena-list' || view === 'arena-reader' ? 'active' : ''}`}
               type="button"
-              onClick={() => setView('arena-list')}
+              onClick={() => {
+                if (status !== 'signed_in') {
+                  window.location.assign(signInHref);
+                  return;
+                }
+                setShowLanding(false);
+                setView('arena-list');
+              }}
             >
               Immersion Arena
             </button>
@@ -520,8 +549,8 @@ const App = () => {
         <main className="main-column">
           <header className="topbar">
             <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>English Immersion service - exam-focused daily workflow.</p>
+              <h1>{showLanding ? `${SERVICE_LABEL} hub` : 'Welcome back, learner'}</h1>
+              <p>{showLanding ? 'Shared profile, adaptive practice, and one entry point for your English journey.' : `${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -542,34 +571,36 @@ const App = () => {
             </div>
           </header>
 
-          {status === 'signed_out' ? (
+          {showLanding ? (
             <SignedOutLanding
               serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
+              isSignedIn={status === 'signed_in'}
+              onContinue={() => setShowLanding(false)}
             />
           ) : null}
-          {status !== 'signed_out' && checkingAccess ? (
+          {!showLanding && status !== 'signed_out' && checkingAccess ? (
             <div className="access-banner">
               <strong>Checking access...</strong>
               <span>Verifying your active plan for English Immersion.</span>
             </div>
           ) : null}
-          {status !== 'signed_out' && needsAccess ? (
+          {!showLanding && status !== 'signed_out' && needsAccess ? (
             <div className="access-banner warning">
               <strong>Plan required for full access.</strong>
               <span>Choose a trial or paid plan to unlock this service.</span>
               <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
             </div>
           ) : null}
-          {status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
-          {status !== 'signed_out' && view === 'dashboard' && (
+          {!showLanding && status !== 'signed_out' && view === 'dashboard' && (
             <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
           )}
 
-          {status !== 'signed_out' && view === 'arena-list' && (
+          {!showLanding && status !== 'signed_out' && view === 'arena-list' && (
             <ArenaList
               onSelect={(article: Article) => {
                 setSelectedArticle(article);
@@ -578,7 +609,7 @@ const App = () => {
             />
           )}
 
-          {status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
+          {!showLanding && status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
             <ArenaReader
               article={selectedArticle}
               onBack={() => setView('arena-list')}
