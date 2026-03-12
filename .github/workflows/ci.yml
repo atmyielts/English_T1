@@ -46,3 +46,24 @@ jobs:
 
       - name: Build english reading
         run: npm --workspace apps/english-reading run build
+
+      - name: Build english writing
+        run: npm --workspace apps/english-writing run build
+
+      - name: Build english listening
+        run: npm --workspace apps/english-listening run build
+
+      - name: Build english speaking
+        run: npm --workspace apps/english-speaking run build
+
+      - name: Build english grammar
+        run: npm --workspace apps/english-grammar run build
+
+      - name: Build english vocabulary
+        run: npm --workspace apps/english-vocabulary run build
+
+      - name: Build english immersion
+        run: npm --workspace apps/english-immersion run build
+
+      - name: Build english hub
+        run: npm --workspace apps/english-hub run build

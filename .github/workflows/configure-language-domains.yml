@@ -10,6 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - label: reading
+            pages_project: schood-reading
+            custom_domain: reading.english.schood.online
+            cname_target: schood-reading.pages.dev
           - label: writing
             pages_project: schood-writing
             custom_domain: writing.english.schood.online
@@ -34,6 +38,10 @@ jobs:
             pages_project: schood-immersion
             custom_domain: immersion.english.schood.online
             cname_target: schood-immersion.pages.dev
+          - label: english-hub
+            pages_project: schood-english
+            custom_domain: english.schood.online
+            cname_target: schood-english.pages.dev
 
     steps:
       - name: Validate required secrets

@@ -56,6 +56,20 @@
           ]
         }
       },
+      "apps/english-hub": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/node@^24.10.1",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:@vitejs/plugin-react@^5.1.1",
+            "npm:react-dom@^19.2.0",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
       "apps/english-immersion": {
         "packageJson": {
           "dependencies": [

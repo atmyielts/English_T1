@@ -14,6 +14,7 @@
     "apps/english-grammar",
     "apps/english-vocabulary",
     "apps/english-immersion",
+    "apps/english-hub",
     "packages/*"
   ],
   "scripts": {

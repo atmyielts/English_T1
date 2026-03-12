@@ -30,6 +30,19 @@ const SPEAKING_PRODUCT_ID = ((import.meta.env.VITE_SPEAKING_PRODUCT_ID as string
 const SPEAKING_PRODUCT_SLUG = 'english-speaking';
 const SERVICE_LABEL = 'English Speaking';
 
+const ENGLISH_HUB_URL = 'https://english.schood.online';
+const ENGLISH_SERVICE_LINKS = [
+  { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
+  { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
+  { key: 'listening', label: 'Listening', href: 'https://listening.english.schood.online' },
+  { key: 'speaking', label: 'Speaking', href: 'https://speaking.english.schood.online' },
+  { key: 'grammar', label: 'Grammar', href: 'https://grammar.english.schood.online' },
+  { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
+  { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
+] as const;
+const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
+
 const lessonRows: LessonRow[] = [
   {
     id: 'lesson-1',
@@ -535,6 +548,7 @@ const App = () => {
               <a href={buildPlatformUrl('/contact')}>Contact</a>
             </nav>
             <div className="landing-actions">
+              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
               <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
               {status === 'signed_in' ? (
                 <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
@@ -608,6 +622,21 @@ const App = () => {
             </button>
           </nav>
 
+          
+          <section className="service-switcher">
+            <div className="service-switch-head">
+              <span>Switch service</span>
+              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
+            </div>
+            <div className="service-switch-grid">
+              {SERVICE_SWITCH_LINKS.map((service) => (
+                <a key={service.key} className="service-switch-link" href={service.href}>
+                  {service.label}
+                </a>
+              ))}
+            </div>
+          </section>
+
           <div className="left-footer">
             <div className="support-zone">
               <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
@@ -639,6 +668,7 @@ const App = () => {
                 />
               </label>
               <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
+              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
               {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
               {status === 'signed_in' ? (
                 <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
