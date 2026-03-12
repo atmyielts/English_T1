@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://writing.english.schood.online/sitemap.xml
