@@ -511,6 +511,55 @@ const App = () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
+  
+  if (showLanding) {
+    return (
+      <div className="landing-page-root">
+        <div className="ambient-layer" />
+        <div className="landing-page-main">
+          <header className="landing-page-topbar card">
+            <button
+              type="button"
+              className="landing-brand"
+              onClick={() => navigate('/')}
+            >
+              <span className="dot" />
+              <strong>{SERVICE_LABEL}</strong>
+            </button>
+            <nav className="landing-links">
+              <a href={buildPlatformUrl('/about')}>About us</a>
+              <a href={buildPlatformUrl('/programs')}>Programs</a>
+              <a href={buildPlatformUrl('/blog')}>Blog</a>
+              <a href={buildPlatformUrl('/courses')}>Courses</a>
+              <a href={buildPlatformUrl('/faq')}>FAQ</a>
+              <a href={buildPlatformUrl('/contact')}>Contact</a>
+            </nav>
+            <div className="landing-actions">
+              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
+              {status === 'signed_in' ? (
+                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
+              ) : (
+                <a className="icon-btn" href={signInHref}>Log in</a>
+              )}
+              <a className="primary-cta" href={pricingHref}>Sign up</a>
+            </div>
+          </header>
+
+          <SignedOutLanding
+            serviceLabel={SERVICE_LABEL}
+            signInHref={signInHref}
+            pricingHref={pricingHref}
+            platformWorkspaceHref={platformWorkspaceHref}
+            isSignedIn={status === 'signed_in'}
+            onContinue={() => navigate('/dashboard')}
+          />
+        </div>
+        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+          Updates
+        </a>
+      </div>
+    );
+  }
   return (
     <div className="reading-root">
       <div className="ambient-layer" />
