@@ -48,13 +48,13 @@ a {
 
 .ambient-layer {
   position: fixed;
-  inset: 0;
+  inset: -18vh -12vw;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 46%, rgba(255, 255, 255, 0.22) 100%),
-    radial-gradient(circle at 8% 10%, rgba(153, 208, 255, 0.55), transparent 62%),
-    radial-gradient(circle at 95% 12%, rgba(102, 181, 245, 0.42), transparent 58%),
-    radial-gradient(circle at 80% 98%, rgba(139, 198, 245, 0.34), transparent 68%);
+    radial-gradient(120% 90% at 8% 0%, rgba(153, 208, 255, 0.55) 0%, transparent 100%),
+    radial-gradient(105% 80% at 100% 4%, rgba(102, 181, 245, 0.42) 0%, transparent 100%),
+    radial-gradient(130% 95% at 78% 100%, rgba(139, 198, 245, 0.34) 0%, transparent 100%);
+  opacity: 0.9;
 }
 
 .app-shell {
