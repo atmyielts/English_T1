@@ -330,7 +330,23 @@ const App = () => {
 
   const [view, setView] = useState<ViewState>('dashboard');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [showLanding, setShowLanding] = useState(true);
+  const [path, setPath] = useState<'/' | '/dashboard'>(() => {
+    if (typeof window === 'undefined') return '/';
+    return window.location.pathname === '/dashboard' ? '/dashboard' : '/';
+  });
+  const showLanding = path !== '/dashboard';
+
+  const navigate = (nextPath: '/' | '/dashboard', replace = false): void => {
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname !== nextPath) {
+      if (replace) {
+        window.history.replaceState({}, '', nextPath);
+      } else {
+        window.history.pushState({}, '', nextPath);
+      }
+    }
+    setPath(nextPath);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -353,10 +369,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (status !== 'signed_in') {
-      setShowLanding(true);
+    if (typeof window === 'undefined') return;
+    const onPopState = () => {
+      setPath(window.location.pathname === '/dashboard' ? '/dashboard' : '/');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'signed_in' && path === '/dashboard') {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+        window.history.replaceState({}, '', '/');
+      }
+      setPath('/');
     }
-  }, [status]);
+  }, [path, status]);
 
   useEffect(() => {
     let cancelled = false;
@@ -480,7 +508,6 @@ const App = () => {
   );
 
   const handleSignOut = async () => {
-    setShowLanding(true);
     await supabase.auth.signOut({ scope: 'local' });
   };
 
@@ -494,7 +521,7 @@ const App = () => {
             className="brand-mark"
             onClick={() => {
               setView('dashboard');
-              setShowLanding(true);
+              navigate('/dashboard');
             }}
             style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
           >
@@ -511,7 +538,7 @@ const App = () => {
               type="button"
               onClick={() => {
                 setView('dashboard');
-                setShowLanding(status !== 'signed_in');
+                navigate('/dashboard');
               }}
             >
               Dashboard
@@ -524,8 +551,8 @@ const App = () => {
                   window.location.assign(signInHref);
                   return;
                 }
-                setShowLanding(false);
                 setView('arena-list');
+                navigate('/dashboard');
               }}
             >
               Speaking Arena
@@ -547,10 +574,11 @@ const App = () => {
         </aside>
 
         <main className="main-column">
+          {!showLanding ? (
           <header className="topbar">
             <div className="topbar-title">
-              <h1>{showLanding ? `${SERVICE_LABEL} hub` : 'Welcome back, learner'}</h1>
-              <p>{showLanding ? 'Shared profile, adaptive practice, and one entry point for your English journey.' : `${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <h1>Welcome back, learner</h1>
+              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -570,6 +598,7 @@ const App = () => {
               )}
             </div>
           </header>
+          ) : null}
 
           {showLanding ? (
             <SignedOutLanding
@@ -578,7 +607,7 @@ const App = () => {
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => setShowLanding(false)}
+              onContinue={() => navigate('/dashboard')}
             />
           ) : null}
           {!showLanding && status !== 'signed_out' && checkingAccess ? (
