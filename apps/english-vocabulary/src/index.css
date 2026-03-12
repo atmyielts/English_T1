@@ -51,9 +51,10 @@ a {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 8% 10%, rgba(156, 233, 215, 0.55), transparent 35%),
-    radial-gradient(circle at 95% 12%, rgba(109, 210, 186, 0.42), transparent 26%),
-    radial-gradient(circle at 80% 98%, rgba(141, 218, 200, 0.34), transparent 32%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 46%, rgba(255, 255, 255, 0.22) 100%),
+    radial-gradient(circle at 8% 10%, rgba(156, 233, 215, 0.55), transparent 62%),
+    radial-gradient(circle at 95% 12%, rgba(109, 210, 186, 0.42), transparent 58%),
+    radial-gradient(circle at 80% 98%, rgba(141, 218, 200, 0.34), transparent 68%);
 }
 
 .app-shell {
