@@ -14,6 +14,7 @@ import {
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
 type ViewState = 'dashboard' | 'arena-list' | 'arena-reader';
+type AppPath = '/' | '/dashboard' | '/notebook';
 
 type LessonRow = {
   id: string;
@@ -171,6 +172,13 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
+const resolveAppPath = (pathname: string): AppPath => {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (normalized === '/dashboard') return '/dashboard';
+  if (normalized === '/notebook') return '/notebook';
+  return '/';
+};
+
 const formatReviewTime = (value: string | null): string => {
   if (!value) return 'Not scheduled';
   const parsed = new Date(value);
@@ -178,16 +186,138 @@ const formatReviewTime = (value: string | null): string => {
   return parsed.toLocaleString();
 };
 
+const NotebookPanel = ({
+  notebook,
+  className = 'card notebook-card',
+}: {
+  notebook: NotebookModel;
+  className?: string;
+}) => (
+  <section className={className}>
+    <div className="section-head">
+      <h2>Personal Vocabulary Notebook</h2>
+      <button className="ghost-btn" type="button" onClick={() => void notebook.onRefresh()}>
+        Refresh
+      </button>
+    </div>
+    <p className="notebook-meta">
+      {notebook.dueCount} cards due now - {notebook.totalCount} words saved in English scope.
+    </p>
+
+    <form
+      className="notebook-capture-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void notebook.onCapture();
+      }}
+    >
+      <label>
+        Word
+        <input
+          value={notebook.draftWord}
+          onChange={(event) => notebook.onDraftWordChange(event.target.value)}
+          placeholder="Save a word from reading/listening..."
+          maxLength={80}
+        />
+      </label>
+      <label>
+        Definition (optional)
+        <input
+          value={notebook.draftDefinition}
+          onChange={(event) => notebook.onDraftDefinitionChange(event.target.value)}
+          placeholder="Short meaning"
+          maxLength={220}
+        />
+      </label>
+      <label>
+        Example (optional)
+        <input
+          value={notebook.draftExample}
+          onChange={(event) => notebook.onDraftExampleChange(event.target.value)}
+          placeholder="Example sentence"
+          maxLength={260}
+        />
+      </label>
+      <button className="primary-cta" type="submit" disabled={notebook.saving}>
+        {notebook.saving ? 'Saving...' : 'Save to notebook'}
+      </button>
+    </form>
+
+    {notebook.error ? <div className="notebook-error">{notebook.error}</div> : null}
+
+    <div className="notebook-grid">
+      <article className="notebook-column">
+        <h3>Daily Leitner cards (10)</h3>
+        {notebook.loading ? <p className="notebook-empty">Loading daily cards...</p> : null}
+        {!notebook.loading && notebook.dailyCards.length === 0 ? (
+          <p className="notebook-empty">No due cards right now. Add words from other services and come back later today.</p>
+        ) : null}
+        <ul className="notebook-list">
+          {notebook.dailyCards.map((card) => (
+            <li key={card.id}>
+              <div>
+                <strong>{card.word}</strong>
+                <small>Box {card.leitner_box} - Next review {formatReviewTime(card.next_review_at)}</small>
+                {card.definition ? <p>{card.definition}</p> : null}
+                {card.example ? <p className="notebook-example">{card.example}</p> : null}
+              </div>
+              <div className="notebook-actions">
+                <button
+                  className="mini-cta"
+                  type="button"
+                  disabled={notebook.reviewingCardId === card.id}
+                  onClick={() => void notebook.onReview(card.id, 'incorrect')}
+                >
+                  Again
+                </button>
+                <button
+                  className="mini-cta solid"
+                  type="button"
+                  disabled={notebook.reviewingCardId === card.id}
+                  onClick={() => void notebook.onReview(card.id, 'correct')}
+                >
+                  I remembered
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </article>
+
+      <article className="notebook-column">
+        <h3>Recently captured</h3>
+        {notebook.loading ? <p className="notebook-empty">Loading notebook...</p> : null}
+        {!notebook.loading && notebook.recentCards.length === 0 ? (
+          <p className="notebook-empty">No saved words yet. Capture your first word above.</p>
+        ) : null}
+        <ul className="notebook-list compact">
+          {notebook.recentCards.map((card) => (
+            <li key={`${card.id}-recent`}>
+              <div>
+                <strong>{card.word}</strong>
+                <small>{card.source_label || card.source_type || 'manual'}</small>
+                {card.definition ? <p>{card.definition}</p> : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </article>
+    </div>
+  </section>
+);
+
 const DashboardPage = ({
   lessons,
   hasAccess,
   pricingHref,
   notebook,
+  onOpenNotebook,
 }: {
   lessons: LessonRow[];
   hasAccess: boolean;
   pricingHref: string;
   notebook: NotebookModel;
+  onOpenNotebook: () => void;
 }) => (
   <div className="dashboard-stack">
     <section className="hero-card card">
@@ -213,6 +343,21 @@ const DashboardPage = ({
         <div className="wave two" />
         <div className="wave three" />
       </div>
+    </section>
+
+    <section className="card notebook-entry">
+      <div className="section-head">
+        <h2>Personal Vocabulary Notebook</h2>
+        <button className="ghost-btn" type="button" onClick={onOpenNotebook}>
+          Open notebook page
+        </button>
+      </div>
+      <p className="notebook-meta">
+        {notebook.dueCount} cards due now - {notebook.totalCount} words saved in English scope.
+      </p>
+      <p className="notebook-entry-copy">
+        Capture words from reading/listening and review 10 daily cards with Leitner spaced repetition.
+      </p>
     </section>
 
     <section className="kpi-grid">
@@ -269,118 +414,43 @@ const DashboardPage = ({
         </tbody>
       </table>
     </section>
+  </div>
+);
 
-    <section className="card notebook-card">
+const NotebookPage = ({
+  status,
+  signInHref,
+  notebook,
+}: {
+  status: SessionStatus;
+  signInHref: string;
+  notebook: NotebookModel;
+}) => (
+  <div className="dashboard-stack">
+    <section className="card notebook-page-head">
       <div className="section-head">
-        <h2>Personal Vocabulary Notebook</h2>
-        <button className="ghost-btn" type="button" onClick={() => void notebook.onRefresh()}>
-          Refresh
-        </button>
+        <h1>Personal Vocabulary Notebook</h1>
       </div>
       <p className="notebook-meta">
-        {notebook.dueCount} cards due now - {notebook.totalCount} words saved in English scope.
+        Save words from reading/listening, then review 10 daily cards with Leitner spaced repetition.
       </p>
-
-      <form
-        className="notebook-capture-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void notebook.onCapture();
-        }}
-      >
-        <label>
-          Word
-          <input
-            value={notebook.draftWord}
-            onChange={(event) => notebook.onDraftWordChange(event.target.value)}
-            placeholder="Save a word from reading/listening..."
-            maxLength={80}
-          />
-        </label>
-        <label>
-          Definition (optional)
-          <input
-            value={notebook.draftDefinition}
-            onChange={(event) => notebook.onDraftDefinitionChange(event.target.value)}
-            placeholder="Short meaning"
-            maxLength={220}
-          />
-        </label>
-        <label>
-          Example (optional)
-          <input
-            value={notebook.draftExample}
-            onChange={(event) => notebook.onDraftExampleChange(event.target.value)}
-            placeholder="Example sentence"
-            maxLength={260}
-          />
-        </label>
-        <button className="primary-cta" type="submit" disabled={notebook.saving}>
-          {notebook.saving ? 'Saving...' : 'Save to notebook'}
-        </button>
-      </form>
-
-      {notebook.error ? <div className="notebook-error">{notebook.error}</div> : null}
-
-      <div className="notebook-grid">
-        <article className="notebook-column">
-          <h3>Daily Leitner cards (10)</h3>
-          {notebook.loading ? <p className="notebook-empty">Loading daily cards...</p> : null}
-          {!notebook.loading && notebook.dailyCards.length === 0 ? (
-            <p className="notebook-empty">No due cards right now. Add words from other services and come back later today.</p>
-          ) : null}
-          <ul className="notebook-list">
-            {notebook.dailyCards.map((card) => (
-              <li key={card.id}>
-                <div>
-                  <strong>{card.word}</strong>
-                  <small>Box {card.leitner_box} - Next review {formatReviewTime(card.next_review_at)}</small>
-                  {card.definition ? <p>{card.definition}</p> : null}
-                  {card.example ? <p className="notebook-example">{card.example}</p> : null}
-                </div>
-                <div className="notebook-actions">
-                  <button
-                    className="mini-cta"
-                    type="button"
-                    disabled={notebook.reviewingCardId === card.id}
-                    onClick={() => void notebook.onReview(card.id, 'incorrect')}
-                  >
-                    Again
-                  </button>
-                  <button
-                    className="mini-cta solid"
-                    type="button"
-                    disabled={notebook.reviewingCardId === card.id}
-                    onClick={() => void notebook.onReview(card.id, 'correct')}
-                  >
-                    I remembered
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="notebook-column">
-          <h3>Recently captured</h3>
-          {notebook.loading ? <p className="notebook-empty">Loading notebook...</p> : null}
-          {!notebook.loading && notebook.recentCards.length === 0 ? (
-            <p className="notebook-empty">No saved words yet. Capture your first word above.</p>
-          ) : null}
-          <ul className="notebook-list compact">
-            {notebook.recentCards.map((card) => (
-              <li key={`${card.id}-recent`}>
-                <div>
-                  <strong>{card.word}</strong>
-                  <small>{card.source_label || card.source_type || 'manual'}</small>
-                  {card.definition ? <p>{card.definition}</p> : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </div>
     </section>
+
+    {status === 'signed_in' ? (
+      <NotebookPanel notebook={notebook} />
+    ) : (
+      <section className="card notebook-signin-prompt">
+        <p className="notebook-meta">
+          Sign in to save words and open your shared English notebook.
+        </p>
+        <ul className="landing-notebook-list">
+          <li>Reading and listening services can send words here.</li>
+          <li>You review 10 due cards daily.</li>
+          <li>Hub and vocabulary service show the same notebook data.</li>
+        </ul>
+        <a className="primary-cta" href={signInHref}>Sign in to start</a>
+      </section>
+    )}
   </div>
 );
 
@@ -393,6 +463,7 @@ const SignedOutLanding = ({
   platformWorkspaceHref,
   isSignedIn,
   onContinue,
+  onOpenNotebook,
 }: {
   serviceLabel: string;
   signInHref: string;
@@ -400,6 +471,7 @@ const SignedOutLanding = ({
   platformWorkspaceHref: string;
   isSignedIn: boolean;
   onContinue: () => void;
+  onOpenNotebook: () => void;
 }) => {
   const focusTitle = serviceLabel.replace(/^English\s+/i, '');
   const focusLower = focusTitle.toLowerCase();
@@ -481,7 +553,7 @@ const SignedOutLanding = ({
         <div className="section-head">
           <h2>Personal Vocabulary Notebook</h2>
           {isSignedIn ? (
-            <button className="ghost-btn" type="button" onClick={onContinue}>Open dashboard</button>
+            <button className="ghost-btn" type="button" onClick={onOpenNotebook}>Open notebook page</button>
           ) : (
             <a className="ghost-btn" href={signInHref}>Sign in to start</a>
           )}
@@ -520,13 +592,13 @@ const App = () => {
 
   const [view, setView] = useState<ViewState>('dashboard');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [path, setPath] = useState<'/' | '/dashboard'>(() => {
+  const [path, setPath] = useState<AppPath>(() => {
     if (typeof window === 'undefined') return '/';
-    return window.location.pathname === '/dashboard' ? '/dashboard' : '/';
+    return resolveAppPath(window.location.pathname);
   });
-  const showLanding = path !== '/dashboard';
+  const showLanding = path === '/';
 
-  const navigate = (nextPath: '/' | '/dashboard', replace = false): void => {
+  const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
     if (window.location.pathname !== nextPath) {
       if (replace) {
@@ -561,7 +633,7 @@ const App = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const onPopState = () => {
-      setPath(window.location.pathname === '/dashboard' ? '/dashboard' : '/');
+      setPath(resolveAppPath(window.location.pathname));
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -829,6 +901,7 @@ const App = () => {
             platformWorkspaceHref={platformWorkspaceHref}
             isSignedIn={status === 'signed_in'}
             onContinue={() => navigate('/dashboard')}
+            onOpenNotebook={() => navigate('/notebook')}
           />
         </div>
         <a className="updates-fab" href={buildPlatformUrl('/updates')}>
@@ -860,7 +933,7 @@ const App = () => {
 
           <nav className="menu-list">
             <button
-              className={`menu-link ${view === 'dashboard' ? 'active' : ''}`}
+              className={`menu-link ${path === '/dashboard' && view === 'dashboard' ? 'active' : ''}`}
               type="button"
               onClick={() => {
                 setView('dashboard');
@@ -870,7 +943,16 @@ const App = () => {
               Dashboard
             </button>
             <button
-              className={`menu-link ${view === 'arena-list' || view === 'arena-reader' ? 'active' : ''}`}
+              className={`menu-link ${path === '/notebook' ? 'active' : ''}`}
+              type="button"
+              onClick={() => {
+                navigate('/notebook');
+              }}
+            >
+              Notebook
+            </button>
+            <button
+              className={`menu-link ${path === '/dashboard' && (view === 'arena-list' || view === 'arena-reader') ? 'active' : ''}`}
               type="button"
               onClick={() => {
                 if (status !== 'signed_in') {
@@ -927,9 +1009,10 @@ const App = () => {
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
+                  placeholder={path === '/notebook' ? 'Search saved words...' : 'Search classes, sets, tasks...'}
                 />
               </label>
+              <button className="icon-btn" type="button" onClick={() => navigate('/notebook')}>Notebook</button>
               <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
               <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
               {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
@@ -942,16 +1025,6 @@ const App = () => {
           </header>
           ) : null}
 
-          {showLanding ? (
-            <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
-              signInHref={signInHref}
-              pricingHref={pricingHref}
-              platformWorkspaceHref={platformWorkspaceHref}
-              isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
-            />
-          ) : null}
           {!showLanding && status !== 'signed_out' && checkingAccess ? (
             <div className="access-banner">
               <strong>Checking access...</strong>
@@ -967,7 +1040,7 @@ const App = () => {
           ) : null}
           {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
-          {!showLanding && status !== 'signed_out' && view === 'dashboard' && (
+          {!showLanding && path === '/dashboard' && status !== 'signed_out' && view === 'dashboard' && (
             <DashboardPage
               lessons={visibleLessons}
               hasAccess={hasAccess}
@@ -991,10 +1064,11 @@ const App = () => {
                 onReview: handleReviewCard,
                 onRefresh: refreshNotebook,
               }}
+              onOpenNotebook={() => navigate('/notebook')}
             />
           )}
 
-          {!showLanding && status !== 'signed_out' && view === 'arena-list' && (
+          {!showLanding && path === '/dashboard' && status !== 'signed_out' && view === 'arena-list' && (
             <ArenaList
               onSelect={(article: Article) => {
                 setSelectedArticle(article);
@@ -1003,10 +1077,36 @@ const App = () => {
             />
           )}
 
-          {!showLanding && status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
+          {!showLanding && path === '/dashboard' && status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
             <ArenaReader
               article={selectedArticle}
               onBack={() => setView('arena-list')}
+            />
+          )}
+
+          {!showLanding && path === '/notebook' && (
+            <NotebookPage
+              status={status}
+              signInHref={signInHref}
+              notebook={{
+                loading: notebookLoading,
+                saving: notebookSaving,
+                reviewingCardId,
+                error: notebookError,
+                dueCount: notebookDueCount,
+                totalCount: notebookTotalCount,
+                dailyCards: dailyNotebookCards,
+                recentCards: recentNotebookCards,
+                draftWord,
+                draftDefinition,
+                draftExample,
+                onDraftWordChange: setDraftWord,
+                onDraftDefinitionChange: setDraftDefinition,
+                onDraftExampleChange: setDraftExample,
+                onCapture: handleCaptureWord,
+                onReview: handleReviewCard,
+                onRefresh: refreshNotebook,
+              }}
             />
           )}
         </main>

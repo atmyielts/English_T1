@@ -264,6 +264,22 @@ a {
   min-width: 0;
 }
 
+.dashboard-stack > .hero-card {
+  order: 1;
+}
+
+.dashboard-stack > .notebook-card {
+  order: 2;
+}
+
+.dashboard-stack > .kpi-grid {
+  order: 3;
+}
+
+.dashboard-stack > .class-table {
+  order: 4;
+}
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -632,6 +648,30 @@ a {
 .notebook-card {
   display: grid;
   gap: 12px;
+}
+
+.notebook-entry {
+  display: grid;
+  gap: 8px;
+}
+
+.notebook-entry-copy {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.5;
+}
+
+.notebook-page-head h1 {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.1;
+}
+
+.notebook-signin-prompt {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
 }
 
 .notebook-meta {
@@ -1543,6 +1583,19 @@ a {
   gap: 18px;
   align-content: start;
   animation: riseIn 0.45s ease;
+}
+
+.service-landing > .landing-notebook-preview {
+  order: 1;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 247, 229, 0.88) 100%);
+}
+
+.service-landing > .landing-hero {
+  order: 2;
+}
+
+.service-landing > .landing-proof-grid {
+  order: 3;
 }
 
 .landing-hero {
