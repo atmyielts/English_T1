@@ -65,7 +65,7 @@ a {
   border-radius: 0;
   background: rgba(255, 255, 255, 0.82);
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  grid-template-columns: 240px minmax(0, 1fr);
   height: 100%;
   overflow: hidden;
   backdrop-filter: blur(4px);
@@ -1792,3 +1792,4 @@ a {
     justify-content: center;
   }
 }
+

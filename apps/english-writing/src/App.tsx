@@ -19,13 +19,6 @@ type LessonRow = {
   accent: string;
 };
 
-type TaskRow = {
-  id: string;
-  title: string;
-  due: string;
-  priority: 'Low' | 'Medium' | 'High';
-};
-
 const WRITING_PRODUCT_ID = ((import.meta.env.VITE_WRITING_PRODUCT_ID as string | undefined) ?? '').trim() || '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532';
 const WRITING_PRODUCT_SLUG = 'english-writing';
 const SERVICE_LABEL = 'English Writing';
@@ -92,11 +85,9 @@ const weeklyMinutes = [
   { day: 'Sun', minutes: 80 },
 ];
 
-const taskRows: TaskRow[] = [
-  { id: 'task-1', title: 'Complete Section 2 dictation challenge', due: 'Today 17:30', priority: 'High' },
-  { id: 'task-2', title: 'Upload shadowing audio for tutor review', due: 'Tomorrow 10:00', priority: 'Medium' },
-  { id: 'task-3', title: 'Review 20 new collocations from practice set', due: 'Tomorrow 20:00', priority: 'Low' },
-];
+
+
+void weeklyMinutes;
 
 const progressStatusClass = (status: LessonRow['status']): string => {
   if (status === 'Completed') return 'pill done';
@@ -515,10 +506,11 @@ const App = () => {
     return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
   }, [search]);
 
-  const maxMinutes = useMemo(
-    () => weeklyMinutes.reduce((acc, item) => Math.max(acc, item.minutes), 1),
-    [],
-  );
+  
+  void profileName;
+  void profileEmail;
+  void avatarLabel;
+  void accessEndsLabel;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
@@ -724,70 +716,6 @@ const App = () => {
             />
           )}
         </main>
-
-        <aside className="right-panel">
-          {view === 'arena-reader' ? (
-            <div id="arena-sidebar-portal" />
-          ) : (
-            <>
-              <article className="profile-card card">
-                <h2>My profile</h2>
-                <div className="avatar">{avatarLabel}</div>
-                <strong>{profileName ?? profileEmail ?? 'Guest learner'}</strong>
-                {profileName && profileEmail ? <p className="profile-email">{profileEmail}</p> : null}
-                <small>
-                  {status === 'signed_in'
-                    ? hasAccess
-                      ? accessEndsLabel
-                        ? `Access active until ${accessEndsLabel}`
-                        : 'Access active via unified platform'
-                      : checkingAccess
-                        ? 'Checking your plan access...'
-                        : 'Signed in - plan required for full access'
-                    : status === 'checking'
-                      ? 'Checking session...'
-                      : 'Preview mode'}
-                </small>
-                <a className="ghost-btn" href={pricingHref}>{hasAccess ? 'Manage plan' : 'Pricing and trial'}</a>
-              </article>
-
-              <article className="card activity-card">
-                <div className="section-head">
-                  <h2>Activity</h2>
-                  <small>Weekly minutes</small>
-                </div>
-                <div className="bars">
-                  {weeklyMinutes.map((item) => (
-                    <div className="bar-col" key={item.day}>
-                      <div className="bar-track">
-                        <div className="bar-fill" style={{ height: `${Math.max(12, Math.round((item.minutes / maxMinutes) * 100))}%` }} />
-                      </div>
-                      <span>{item.day}</span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="card task-list-card">
-                <div className="section-head">
-                  <h2>List task</h2>
-                  <small>{taskRows.length} open</small>
-                </div>
-                <ul>
-                  {taskRows.map((task) => (
-                    <li key={task.id}>
-                      <div>
-                        <strong>{task.title}</strong>
-                        <small>{task.due}</small>
-                      </div>
-                      <span className={`priority-dot ${task.priority.toLowerCase()}`} />
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </>
-          )}
-        </aside>
       </div>
       <a className="updates-fab" href={buildPlatformUrl('/updates')}>
         Updates
@@ -797,6 +725,9 @@ const App = () => {
 };
 
 export default App;
+
+
+
 
 
 
