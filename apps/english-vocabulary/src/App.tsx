@@ -476,6 +476,25 @@ const SignedOutLanding = ({
           <p>Total {focusLower} training hours logged by active users on the platform.</p>
         </article>
       </section>
+
+      <section className="landing-notebook-preview card">
+        <div className="section-head">
+          <h2>Personal Vocabulary Notebook</h2>
+          {isSignedIn ? (
+            <button className="ghost-btn" type="button" onClick={onContinue}>Open dashboard</button>
+          ) : (
+            <a className="ghost-btn" href={signInHref}>Sign in to start</a>
+          )}
+        </div>
+        <p className="notebook-meta">
+          Save words from reading/listening and review 10 cards daily with Leitner logic.
+        </p>
+        <ul className="landing-notebook-list">
+          <li>Capture words with context, definition, and examples.</li>
+          <li>Review due cards every day in a 5-box spaced repetition cycle.</li>
+          <li>See the same shared notebook data in Schood English hub.</li>
+        </ul>
+      </section>
     </div>
   );
 };
