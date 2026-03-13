@@ -4,6 +4,12 @@ import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { ArenaList, type Article } from './ArenaList';
 import { ArenaReader } from './ArenaReader';
+import {
+  captureNotebookWords,
+  getNotebookSnapshot,
+  reviewNotebookCard,
+  type NotebookCard,
+} from './lib/vocabularyNotebookClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -24,6 +30,26 @@ type TaskRow = {
   title: string;
   due: string;
   priority: 'Low' | 'Medium' | 'High';
+};
+
+type NotebookModel = {
+  loading: boolean;
+  saving: boolean;
+  reviewingCardId: string | null;
+  error: string | null;
+  dueCount: number;
+  totalCount: number;
+  dailyCards: NotebookCard[];
+  recentCards: NotebookCard[];
+  draftWord: string;
+  draftDefinition: string;
+  draftExample: string;
+  onDraftWordChange: (value: string) => void;
+  onDraftDefinitionChange: (value: string) => void;
+  onDraftExampleChange: (value: string) => void;
+  onCapture: () => Promise<void>;
+  onReview: (entryId: string, outcome: 'correct' | 'incorrect') => Promise<void>;
+  onRefresh: () => Promise<void>;
 };
 
 const VOCABULARY_PRODUCT_ID = ((import.meta.env.VITE_VOCABULARY_PRODUCT_ID as string | undefined) ?? '').trim() || 'b1c98e87-84d3-4ddc-8f07-c72bcf7a716a';
@@ -145,14 +171,23 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
+const formatReviewTime = (value: string | null): string => {
+  if (!value) return 'Not scheduled';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString();
+};
+
 const DashboardPage = ({
   lessons,
   hasAccess,
   pricingHref,
+  notebook,
 }: {
   lessons: LessonRow[];
   hasAccess: boolean;
   pricingHref: string;
+  notebook: NotebookModel;
 }) => (
   <div className="dashboard-stack">
     <section className="hero-card card">
@@ -233,6 +268,118 @@ const DashboardPage = ({
           ))}
         </tbody>
       </table>
+    </section>
+
+    <section className="card notebook-card">
+      <div className="section-head">
+        <h2>Personal Vocabulary Notebook</h2>
+        <button className="ghost-btn" type="button" onClick={() => void notebook.onRefresh()}>
+          Refresh
+        </button>
+      </div>
+      <p className="notebook-meta">
+        {notebook.dueCount} cards due now - {notebook.totalCount} words saved in English scope.
+      </p>
+
+      <form
+        className="notebook-capture-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void notebook.onCapture();
+        }}
+      >
+        <label>
+          Word
+          <input
+            value={notebook.draftWord}
+            onChange={(event) => notebook.onDraftWordChange(event.target.value)}
+            placeholder="Save a word from reading/listening..."
+            maxLength={80}
+          />
+        </label>
+        <label>
+          Definition (optional)
+          <input
+            value={notebook.draftDefinition}
+            onChange={(event) => notebook.onDraftDefinitionChange(event.target.value)}
+            placeholder="Short meaning"
+            maxLength={220}
+          />
+        </label>
+        <label>
+          Example (optional)
+          <input
+            value={notebook.draftExample}
+            onChange={(event) => notebook.onDraftExampleChange(event.target.value)}
+            placeholder="Example sentence"
+            maxLength={260}
+          />
+        </label>
+        <button className="primary-cta" type="submit" disabled={notebook.saving}>
+          {notebook.saving ? 'Saving...' : 'Save to notebook'}
+        </button>
+      </form>
+
+      {notebook.error ? <div className="notebook-error">{notebook.error}</div> : null}
+
+      <div className="notebook-grid">
+        <article className="notebook-column">
+          <h3>Daily Leitner cards (10)</h3>
+          {notebook.loading ? <p className="notebook-empty">Loading daily cards...</p> : null}
+          {!notebook.loading && notebook.dailyCards.length === 0 ? (
+            <p className="notebook-empty">No due cards right now. Add words from other services and come back later today.</p>
+          ) : null}
+          <ul className="notebook-list">
+            {notebook.dailyCards.map((card) => (
+              <li key={card.id}>
+                <div>
+                  <strong>{card.word}</strong>
+                  <small>Box {card.leitner_box} - Next review {formatReviewTime(card.next_review_at)}</small>
+                  {card.definition ? <p>{card.definition}</p> : null}
+                  {card.example ? <p className="notebook-example">{card.example}</p> : null}
+                </div>
+                <div className="notebook-actions">
+                  <button
+                    className="mini-cta"
+                    type="button"
+                    disabled={notebook.reviewingCardId === card.id}
+                    onClick={() => void notebook.onReview(card.id, 'incorrect')}
+                  >
+                    Again
+                  </button>
+                  <button
+                    className="mini-cta solid"
+                    type="button"
+                    disabled={notebook.reviewingCardId === card.id}
+                    onClick={() => void notebook.onReview(card.id, 'correct')}
+                  >
+                    I remembered
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="notebook-column">
+          <h3>Recently captured</h3>
+          {notebook.loading ? <p className="notebook-empty">Loading notebook...</p> : null}
+          {!notebook.loading && notebook.recentCards.length === 0 ? (
+            <p className="notebook-empty">No saved words yet. Capture your first word above.</p>
+          ) : null}
+          <ul className="notebook-list compact">
+            {notebook.recentCards.map((card) => (
+              <li key={`${card.id}-recent`}>
+                <div>
+                  <strong>{card.word}</strong>
+                  <small>{card.source_label || card.source_type || 'manual'}</small>
+                  {card.definition ? <p>{card.definition}</p> : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </div>
     </section>
   </div>
 );
@@ -340,6 +487,17 @@ const App = () => {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
+  const [notebookLoading, setNotebookLoading] = useState(false);
+  const [notebookSaving, setNotebookSaving] = useState(false);
+  const [reviewingCardId, setReviewingCardId] = useState<string | null>(null);
+  const [notebookError, setNotebookError] = useState<string | null>(null);
+  const [notebookDueCount, setNotebookDueCount] = useState(0);
+  const [notebookTotalCount, setNotebookTotalCount] = useState(0);
+  const [dailyNotebookCards, setDailyNotebookCards] = useState<NotebookCard[]>([]);
+  const [recentNotebookCards, setRecentNotebookCards] = useState<NotebookCard[]>([]);
+  const [draftWord, setDraftWord] = useState('');
+  const [draftDefinition, setDraftDefinition] = useState('');
+  const [draftExample, setDraftExample] = useState('');
 
   const [view, setView] = useState<ViewState>('dashboard');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -485,6 +643,92 @@ const App = () => {
       cancelled = true;
     };
   }, [session?.user.id, status]);
+
+  const refreshNotebook = async (): Promise<void> => {
+    if (status !== 'signed_in' || !session?.access_token) {
+      setDailyNotebookCards([]);
+      setRecentNotebookCards([]);
+      setNotebookDueCount(0);
+      setNotebookTotalCount(0);
+      setNotebookError(null);
+      return;
+    }
+
+    setNotebookLoading(true);
+    setNotebookError(null);
+    try {
+      const [dailySnapshot, recentSnapshot] = await Promise.all([
+        getNotebookSnapshot(session.access_token, 'daily', 10),
+        getNotebookSnapshot(session.access_token, 'recent', 12),
+      ]);
+
+      setDailyNotebookCards(dailySnapshot.cards ?? []);
+      setRecentNotebookCards(recentSnapshot.cards ?? []);
+      setNotebookDueCount(Number(dailySnapshot.summary?.due_count ?? 0));
+      setNotebookTotalCount(Number(dailySnapshot.summary?.total_count ?? 0));
+    } catch (error) {
+      const statusCode = (error as { status?: number } | null)?.status ?? null;
+      if (statusCode === 401 || statusCode === 403) {
+        try {
+          await supabase.auth.signOut({ scope: 'local' });
+        } catch {
+          // ignore sign-out failures
+        }
+        return;
+      }
+      setNotebookError('Could not load your vocabulary notebook right now.');
+    } finally {
+      setNotebookLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshNotebook();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, status]);
+
+  const handleCaptureWord = async (): Promise<void> => {
+    const word = draftWord.trim();
+    if (!word || !session?.access_token) return;
+
+    setNotebookSaving(true);
+    setNotebookError(null);
+    try {
+      await captureNotebookWords(session.access_token, [
+        {
+          word,
+          definition: draftDefinition.trim() || null,
+          example: draftExample.trim() || null,
+          source_type: 'english-vocabulary.manual',
+          source_product_id: VOCABULARY_PRODUCT_ID,
+          source_label: 'Vocabulary notebook',
+        },
+      ]);
+      setDraftWord('');
+      setDraftDefinition('');
+      setDraftExample('');
+      await refreshNotebook();
+    } catch {
+      setNotebookError('Could not save this word. Please try again.');
+    } finally {
+      setNotebookSaving(false);
+    }
+  };
+
+  const handleReviewCard = async (entryId: string, outcome: 'correct' | 'incorrect'): Promise<void> => {
+    if (!session?.access_token) return;
+
+    setReviewingCardId(entryId);
+    setNotebookError(null);
+    try {
+      await reviewNotebookCard(session.access_token, entryId, outcome);
+      await refreshNotebook();
+    } catch {
+      setNotebookError('Could not update this review card right now.');
+    } finally {
+      setReviewingCardId(null);
+    }
+  };
 
   const returnTo = resolveReturnTo();
   const signInHref = useMemo(
@@ -705,7 +949,30 @@ const App = () => {
           {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
           {!showLanding && status !== 'signed_out' && view === 'dashboard' && (
-            <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
+            <DashboardPage
+              lessons={visibleLessons}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              notebook={{
+                loading: notebookLoading,
+                saving: notebookSaving,
+                reviewingCardId,
+                error: notebookError,
+                dueCount: notebookDueCount,
+                totalCount: notebookTotalCount,
+                dailyCards: dailyNotebookCards,
+                recentCards: recentNotebookCards,
+                draftWord,
+                draftDefinition,
+                draftExample,
+                onDraftWordChange: setDraftWord,
+                onDraftDefinitionChange: setDraftDefinition,
+                onDraftExampleChange: setDraftExample,
+                onCapture: handleCaptureWord,
+                onReview: handleReviewCard,
+                onRefresh: refreshNotebook,
+              }}
+            />
           )}
 
           {!showLanding && status !== 'signed_out' && view === 'arena-list' && (

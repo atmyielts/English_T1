@@ -197,6 +197,9 @@ verify_jwt = false
 [functions.access-effective]
 verify_jwt = false
 
+[functions.vocabulary-notebook]
+verify_jwt = false
+
 # Legacy alias for backward compatibility. Primary endpoint is `academy`.
 [functions.teacher-studio]
 verify_jwt = false

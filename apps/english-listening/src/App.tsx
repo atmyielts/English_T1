@@ -4,6 +4,7 @@ import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { ArenaList, type Article } from './ArenaList';
 import { ArenaReader } from './ArenaReader';
+import { captureNotebookWords } from './lib/vocabularyNotebookClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -24,6 +25,13 @@ type TaskRow = {
   title: string;
   due: string;
   priority: 'Low' | 'Medium' | 'High';
+};
+
+type ServiceWordSeed = {
+  word: string;
+  definition: string;
+  example: string;
+  context: string;
 };
 
 const LISTENING_PRODUCT_ID = ((import.meta.env.VITE_LISTENING_PRODUCT_ID as string | undefined) ?? '').trim() || 'f9c4a14b-d5a2-4a66-9cd8-5b3a0d6e7bf1';
@@ -98,6 +106,69 @@ const taskRows: TaskRow[] = [
   { id: 'task-3', title: 'Review 20 new collocations from practice set', due: 'Tomorrow 20:00', priority: 'Low' },
 ];
 
+const LISTENING_VOCAB_SEEDS: ServiceWordSeed[] = [
+  {
+    word: 'intonation',
+    definition: 'The rise and fall of voice pitch in spoken language.',
+    example: 'Her intonation signaled uncertainty in the final phrase.',
+    context: 'Listening to speaker attitude and meaning shifts.',
+  },
+  {
+    word: 'transcript',
+    definition: 'A written version of spoken audio.',
+    example: 'He checked the transcript after completing the task.',
+    context: 'Post-listening review workflow.',
+  },
+  {
+    word: 'distinguish',
+    definition: 'To recognize the difference between similar sounds or ideas.',
+    example: 'You must distinguish fact from opinion in the lecture.',
+    context: 'Detail and distractor detection.',
+  },
+  {
+    word: 'retention',
+    definition: 'The ability to keep information in memory.',
+    example: 'Short note blocks improved retention across sections.',
+    context: 'Note-taking and memory recovery.',
+  },
+  {
+    word: 'cue',
+    definition: 'A signal that helps predict or identify upcoming information.',
+    example: 'Transition words gave a cue before the main argument.',
+    context: 'Audio structure tracking.',
+  },
+  {
+    word: 'clarify',
+    definition: 'To make something easier to understand.',
+    example: 'The speaker clarified the timeline with dates.',
+    context: 'Understanding reformulation in speech.',
+  },
+  {
+    word: 'accent',
+    definition: 'A characteristic way of pronouncing a language.',
+    example: 'Repeated practice helped her adapt to the new accent.',
+    context: 'Multi-accent listening drills.',
+  },
+  {
+    word: 'paraphrase',
+    definition: 'To express the same meaning using different words.',
+    example: 'The answer used a paraphrase, not the exact wording.',
+    context: 'Matching spoken content to questions.',
+  },
+  {
+    word: 'synthesis',
+    definition: 'Combining separate points into one complete understanding.',
+    example: 'The final question required synthesis of two viewpoints.',
+    context: 'Long-form lecture comprehension.',
+  },
+  {
+    word: 'precision',
+    definition: 'Accuracy and exactness in interpretation or response.',
+    example: 'Precision in note keywords reduced answer errors.',
+    context: 'Time-limited listening response quality.',
+  },
+];
+
 const progressStatusClass = (status: LessonRow['status']): string => {
   if (status === 'Completed') return 'pill done';
   if (status === 'Not started') return 'pill muted';
@@ -149,10 +220,22 @@ const DashboardPage = ({
   lessons,
   hasAccess,
   pricingHref,
+  isSignedIn,
+  signInHref,
+  syncingWords,
+  syncMessage,
+  syncError,
+  onSyncWords,
 }: {
   lessons: LessonRow[];
   hasAccess: boolean;
   pricingHref: string;
+  isSignedIn: boolean;
+  signInHref: string;
+  syncingWords: boolean;
+  syncMessage: string | null;
+  syncError: string | null;
+  onSyncWords: () => void;
 }) => (
   <div className="dashboard-stack">
     <section className="hero-card card">
@@ -233,6 +316,44 @@ const DashboardPage = ({
           ))}
         </tbody>
       </table>
+    </section>
+
+    <section className="card vocab-sync-card">
+      <div className="section-head">
+        <h2>Vocabulary Sync</h2>
+        <button
+          className="ghost-btn"
+          type="button"
+          disabled={syncingWords}
+          onClick={() => {
+            if (!isSignedIn) {
+              window.location.assign(signInHref);
+              return;
+            }
+            onSyncWords();
+          }}
+        >
+          {isSignedIn ? (syncingWords ? 'Syncing...' : 'Send 10 words') : 'Sign in to sync'}
+        </button>
+      </div>
+      <p className="vocab-sync-copy">
+        Save key listening words to the shared English Vocabulary notebook for daily Leitner review.
+      </p>
+      <small className="vocab-sync-copy">
+        Words are deduplicated by language scope, so repeated syncs will not create duplicates.
+      </small>
+      {syncError ? (
+        <div className="access-banner warning">
+          <strong>Sync failed.</strong>
+          <span>{syncError}</span>
+        </div>
+      ) : null}
+      {syncMessage ? (
+        <div className="access-banner">
+          <strong>{syncMessage}</strong>
+          <a className="ghost-btn" href="https://vocabulary.english.schood.online/dashboard">Open vocabulary notebook</a>
+        </div>
+      ) : null}
     </section>
   </div>
 );
@@ -340,6 +461,9 @@ const App = () => {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
+  const [syncingWords, setSyncingWords] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const [view, setView] = useState<ViewState>('dashboard');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -524,6 +648,49 @@ const App = () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
+  const handleSyncWords = async (): Promise<void> => {
+    if (!session?.access_token) {
+      window.location.assign(signInHref);
+      return;
+    }
+
+    setSyncingWords(true);
+    setSyncError(null);
+    setSyncMessage(null);
+    try {
+      const payload = LISTENING_VOCAB_SEEDS.map((seed, index) => ({
+        word: seed.word,
+        definition: seed.definition,
+        example: seed.example,
+        context_text: seed.context,
+        source_type: 'english-listening.sync',
+        source_product_id: LISTENING_PRODUCT_ID,
+        source_label: 'Listening sync',
+        metadata: {
+          pipeline: 'listening_dashboard_sync',
+          rank: index + 1,
+        },
+      }));
+
+      const result = await captureNotebookWords(session.access_token, payload);
+      const savedCount = Number(result.saved ?? payload.length);
+      setSyncMessage(`${savedCount} listening words synced to your vocabulary notebook.`);
+    } catch (error) {
+      const statusCode = (error as { status?: number } | null)?.status ?? null;
+      if (statusCode === 401 || statusCode === 403) {
+        try {
+          await supabase.auth.signOut({ scope: 'local' });
+        } catch {
+          // ignore sign-out failures
+        }
+        return;
+      }
+      setSyncError('Could not sync listening words right now. Please try again.');
+    } finally {
+      setSyncingWords(false);
+    }
+  };
+
   
   if (showLanding) {
     return (
@@ -705,7 +872,19 @@ const App = () => {
           {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
           {!showLanding && status !== 'signed_out' && view === 'dashboard' && (
-            <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
+            <DashboardPage
+              lessons={visibleLessons}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              isSignedIn={status === 'signed_in'}
+              signInHref={signInHref}
+              syncingWords={syncingWords}
+              syncMessage={syncMessage}
+              syncError={syncError}
+              onSyncWords={() => {
+                void handleSyncWords();
+              }}
+            />
           )}
 
           {!showLanding && status !== 'signed_out' && view === 'arena-list' && (

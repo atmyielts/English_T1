@@ -271,7 +271,8 @@ a {
 .connection h3,
 .progress-panel h3,
 .quick-jump h3,
-.insights h3 {
+.insights h3,
+.vocab-preview h3 {
   margin: 0;
   font-family: 'Outfit', sans-serif;
   font-size: 26px;
@@ -295,7 +296,8 @@ a {
 
 .progress-panel,
 .quick-jump,
-.insights {
+.insights,
+.vocab-preview {
   padding: 20px;
 }
 
@@ -342,6 +344,59 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.vocab-preview {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.vocab-preview p {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.5;
+}
+
+.vocab-word-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.vocab-word-list li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 9px 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.vocab-word-list strong {
+  font-size: 15px;
+}
+
+.vocab-word-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vocab-word-head small {
+  color: var(--ink-500);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vocab-word-list span {
+  color: var(--ink-500);
+  font-size: 13px;
 }
 
 .jump-chip {

@@ -624,6 +624,142 @@ a {
   font-size: 12px;
 }
 
+.mini-cta.solid {
+  background: #183a34;
+  color: #fff;
+}
+
+.notebook-card {
+  display: grid;
+  gap: 12px;
+}
+
+.notebook-meta {
+  margin: 0;
+  color: var(--ink-500);
+  font-size: 14px;
+}
+
+.notebook-capture-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.notebook-capture-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+.notebook-capture-form input {
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.notebook-capture-form .primary-cta {
+  min-height: 38px;
+}
+
+.notebook-error {
+  border: 1px solid rgba(201, 86, 66, 0.3);
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: #fff4f0;
+  color: #8f2e1f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.notebook-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.notebook-column {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.notebook-column h3 {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+}
+
+.notebook-empty {
+  margin: 0;
+  color: var(--ink-500);
+  font-size: 13px;
+}
+
+.notebook-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.notebook-list li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fcfffc;
+  display: grid;
+  gap: 8px;
+}
+
+.notebook-list strong {
+  display: block;
+  font-size: 16px;
+}
+
+.notebook-list small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-500);
+  font-size: 12px;
+}
+
+.notebook-list p {
+  margin: 6px 0 0;
+  color: var(--ink-700);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.notebook-example {
+  font-style: italic;
+}
+
+.notebook-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.notebook-actions .mini-cta {
+  margin-top: 0;
+}
+
+.notebook-list.compact li {
+  gap: 4px;
+}
+
 .tag {
   display: inline-flex;
   background: #edf7dc;
@@ -957,8 +1093,17 @@ a {
 
   .kpi-grid,
   .set-grid,
-  .task-board {
+  .task-board,
+  .notebook-grid {
     grid-template-columns: 1fr;
+  }
+
+  .notebook-capture-form {
+    grid-template-columns: 1fr;
+  }
+
+  .notebook-actions {
+    justify-content: flex-start;
   }
 
   .class-table {

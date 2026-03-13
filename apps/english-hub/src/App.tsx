@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
+import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 
 type HubPath = '/' | '/dashboard';
 
@@ -84,8 +87,21 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
+const resolveWordSource = (card: NotebookCard): string => {
+  if (card.source_label) return card.source_label;
+  const normalized = (card.source_type ?? '').replace(/^english-/, '').replace(/[._]+/g, ' ').trim();
+  if (!normalized) return 'English notebook';
+  return normalized.slice(0, 1).toUpperCase() + normalized.slice(1);
+};
+
 const App = () => {
   const [path, setPath] = useState<HubPath>(resolvePath);
+  const [session, setSession] = useState<Session | null>(null);
+  const [notebookLoading, setNotebookLoading] = useState(false);
+  const [notebookError, setNotebookError] = useState<string | null>(null);
+  const [notebookDueCount, setNotebookDueCount] = useState(0);
+  const [notebookTotalCount, setNotebookTotalCount] = useState(0);
+  const [recentNotebookWords, setRecentNotebookWords] = useState<NotebookCard[]>([]);
   const returnTo = resolveReturnTo();
 
   const signInHref = useMemo(
@@ -111,6 +127,60 @@ const App = () => {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setSession(data.session ?? null);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session?.access_token) {
+      setRecentNotebookWords([]);
+      setNotebookDueCount(0);
+      setNotebookTotalCount(0);
+      setNotebookError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const loadNotebook = async () => {
+      setNotebookLoading(true);
+      setNotebookError(null);
+      try {
+        const [dailySnapshot, recentSnapshot] = await Promise.all([
+          getNotebookSnapshot(session.access_token, 'daily', 10),
+          getNotebookSnapshot(session.access_token, 'recent', 8),
+        ]);
+        if (cancelled) return;
+        setNotebookDueCount(Number(dailySnapshot.summary?.due_count ?? 0));
+        setNotebookTotalCount(Number(dailySnapshot.summary?.total_count ?? 0));
+        setRecentNotebookWords(recentSnapshot.cards ?? []);
+      } catch {
+        if (cancelled) return;
+        setNotebookError('Could not load notebook preview right now.');
+      } finally {
+        if (!cancelled) setNotebookLoading(false);
+      }
+    };
+
+    void loadNotebook();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.access_token]);
+
   const navigate = (nextPath: HubPath): void => {
     if (typeof window === 'undefined') return;
 
@@ -120,6 +190,10 @@ const App = () => {
 
     setPath(nextPath);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSignOut = async (): Promise<void> => {
+    await supabase.auth.signOut({ scope: 'local' });
   };
 
   const completedServices = SERVICES.filter((service) => service.progress >= 75).length;
@@ -144,7 +218,11 @@ const App = () => {
 
           <div className="hub-controls">
             <a className="btn btn-ghost" href={workspaceHref}>Platform</a>
-            <a className="btn btn-ghost" href={signInHref}>Sign in</a>
+            {session ? (
+              <button className="btn btn-ghost" type="button" onClick={() => void handleSignOut()}>Sign out</button>
+            ) : (
+              <a className="btn btn-ghost" href={signInHref}>Sign in</a>
+            )}
             <a className="btn btn-solid" href={pricingHref}>Get access</a>
           </div>
         </header>
@@ -224,6 +302,35 @@ const App = () => {
                   ))}
                 </div>
                 <a className="btn btn-ghost" href={workspaceHref}>Open full platform workspace</a>
+              </article>
+
+              <article className="vocab-preview frame">
+                <h3>Shared Vocabulary Notebook</h3>
+                {!session ? <p>Sign in to see your recent saved words from reading/listening and daily due cards.</p> : null}
+                {session ? (
+                  <>
+                    <p>{notebookDueCount} cards due now - {notebookTotalCount} words saved.</p>
+                    {notebookLoading ? <p>Loading notebook preview...</p> : null}
+                    {notebookError ? <p>{notebookError}</p> : null}
+                    {!notebookLoading && recentNotebookWords.length === 0 ? (
+                      <p>No words captured yet. Save words in Vocabulary to see them here.</p>
+                    ) : null}
+                    <ul className="vocab-word-list">
+                      {recentNotebookWords.map((card) => (
+                        <li key={card.id}>
+                          <div className="vocab-word-head">
+                            <strong>{card.word}</strong>
+                            <small>{resolveWordSource(card)}</small>
+                          </div>
+                          {card.definition ? <span>{card.definition}</span> : null}
+                        </li>
+                      ))}
+                    </ul>
+                    <a className="btn btn-ghost" href="https://vocabulary.english.schood.online/dashboard">
+                      Open vocabulary notebook
+                    </a>
+                  </>
+                ) : null}
               </article>
 
               <article className="insights frame">
