@@ -382,7 +382,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (status !== 'signed_in' && path === '/dashboard') {
+    if (status === 'signed_out' && path === '/dashboard') {
       if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.history.replaceState({}, '', '/');
       }
@@ -725,6 +725,7 @@ const App = () => {
 };
 
 export default App;
+
 
 
 

@@ -1585,19 +1585,6 @@ a {
   animation: riseIn 0.45s ease;
 }
 
-.service-landing > .landing-notebook-preview {
-  order: 1;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(238, 247, 229, 0.88) 100%);
-}
-
-.service-landing > .landing-hero {
-  order: 2;
-}
-
-.service-landing > .landing-proof-grid {
-  order: 3;
-}
-
 .landing-hero {
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(430px, 1.2fr);
@@ -1815,12 +1802,6 @@ a {
   margin: 10px 0 0;
   color: var(--ink-700);
   max-width: 42ch;
-}
-
-.landing-notebook-preview {
-  display: grid;
-  gap: 10px;
-  align-content: start;
 }
 
 .landing-notebook-list {

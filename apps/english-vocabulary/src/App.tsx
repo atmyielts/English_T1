@@ -454,7 +454,6 @@ const SignedOutLanding = ({
   platformWorkspaceHref,
   isSignedIn,
   onContinue,
-  onOpenNotebook,
 }: {
   serviceLabel: string;
   signInHref: string;
@@ -462,7 +461,6 @@ const SignedOutLanding = ({
   platformWorkspaceHref: string;
   isSignedIn: boolean;
   onContinue: () => void;
-  onOpenNotebook: () => void;
 }) => {
   const focusTitle = serviceLabel.replace(/^English\s+/i, '');
   const focusLower = focusTitle.toLowerCase();
@@ -539,25 +537,6 @@ const SignedOutLanding = ({
           <p>Total {focusLower} training hours logged by active users on the platform.</p>
         </article>
       </section>
-
-      <section className="landing-notebook-preview card">
-        <div className="section-head">
-          <h2>Personal Vocabulary Notebook</h2>
-          {isSignedIn ? (
-            <button className="ghost-btn" type="button" onClick={onOpenNotebook}>Open notebook page</button>
-          ) : (
-            <a className="ghost-btn" href={signInHref}>Sign in to start</a>
-          )}
-        </div>
-        <p className="notebook-meta">
-          Save words from reading/listening and review 10 cards daily with Leitner logic.
-        </p>
-        <ul className="landing-notebook-list">
-          <li>Capture words with context, definition, and examples.</li>
-          <li>Review due cards every day in a 5-box spaced repetition cycle.</li>
-          <li>See the same shared notebook data in Schood English hub.</li>
-        </ul>
-      </section>
     </div>
   );
 };
@@ -631,7 +610,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (status !== 'signed_in' && path === '/dashboard') {
+    if (status === 'signed_out' && path === '/dashboard') {
       if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.history.replaceState({}, '', '/');
       }
@@ -893,7 +872,6 @@ const App = () => {
             platformWorkspaceHref={platformWorkspaceHref}
             isSignedIn={status === 'signed_in'}
             onContinue={() => navigate('/dashboard')}
-            onOpenNotebook={() => navigate('/notebook')}
           />
         </div>
         <a className="updates-fab" href={buildPlatformUrl('/updates')}>
@@ -1111,6 +1089,7 @@ const App = () => {
 };
 
 export default App;
+
 
 
 
