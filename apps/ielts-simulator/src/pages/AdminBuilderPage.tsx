@@ -350,7 +350,7 @@ const SECTION_JSON_EXAMPLE: Record<string, unknown> = {
 const LISTENING_PART_JSON_EXAMPLE: Record<string, unknown> = {
   section_type: 'listening',
   target_part_index: 1,
-  replace_existing: false,
+  replace_existing: true,
   part_payload: {
     name: 'Part 1',
     metadata: {},
@@ -393,7 +393,7 @@ const LISTENING_PART_JSON_EXAMPLE: Record<string, unknown> = {
 const READING_PASSAGE_JSON_EXAMPLE: Record<string, unknown> = {
   section_type: 'reading',
   target_part_index: 1,
-  replace_existing: false,
+  replace_existing: true,
   part_payload: {
     name: 'Passage 1',
     metadata: {},
@@ -1505,28 +1505,71 @@ export const AdminBuilderPage: React.FC = () => {
   const upsertSectionForType = (sectionType: CoreSectionType, nextSection: AdminBuilderPayload['sections'][number]) => {
     if (!builder) return;
 
-    const removedUnitIds = builder.sections
-      .filter((section) => getSectionType(section) === sectionType)
-      .flatMap((section) => section.parts.flatMap((part) => part.content_units.map((unit) => unit.id ?? '')))
-      .filter(Boolean);
+    const existingSection = builder.sections.find((section) => getSectionType(section) === sectionType) ?? null;
+    const removedPartIds: string[] = [];
+    const removedUnitIds: string[] = [];
+
+    let mergedSection = nextSection;
+    if (existingSection) {
+      const existingParts = existingSection.parts;
+      const mergedParts = nextSection.parts.map((part, partIndex) => {
+        const existingPart = existingParts[partIndex];
+        const existingUnits = existingPart?.content_units ?? [];
+        const mergedUnits = part.content_units.map((unit, unitIndex) => {
+          const existingUnit = existingUnits[unitIndex];
+          return { ...unit, id: existingUnit?.id ?? unit.id ?? newId() };
+        });
+
+        existingUnits.slice(mergedUnits.length).forEach((unit) => {
+          if (unit.id) removedUnitIds.push(unit.id);
+        });
+
+        return {
+          ...part,
+          id: existingPart?.id ?? part.id ?? newId(),
+          content_units: mergedUnits,
+        };
+      });
+
+      existingParts.slice(mergedParts.length).forEach((part) => {
+        if (part.id) removedPartIds.push(part.id);
+        part.content_units.forEach((unit) => {
+          if (unit.id) removedUnitIds.push(unit.id);
+        });
+      });
+
+      mergedSection = {
+        ...nextSection,
+        id: existingSection.id ?? nextSection.id ?? newId(),
+        parts: mergedParts,
+      };
+    }
 
     const remainingSections = builder.sections.filter((section) => getSectionType(section) !== sectionType);
-    const nextSections = [...remainingSections, nextSection].sort(
+    const nextSections = [...remainingSections, mergedSection].sort(
       (a, b) => sectionTypeRank(getSectionType(a)) - sectionTypeRank(getSectionType(b)),
     );
 
     const nextUi = { ...unitUi };
     for (const unitId of removedUnitIds) delete nextUi[unitId];
-    nextSection.parts.forEach((part) => {
+    mergedSection.parts.forEach((part) => {
       part.content_units.forEach((unit) => {
         if (!unit.id) return;
         nextUi[unit.id] = createUnitUi(unit);
       });
     });
 
+    if (removedPartIds.length > 0 || removedUnitIds.length > 0) {
+      setDeleted((prev) => ({
+        section_ids: prev.section_ids,
+        part_ids: Array.from(new Set([...prev.part_ids, ...removedPartIds])),
+        unit_ids: Array.from(new Set([...prev.unit_ids, ...removedUnitIds])),
+      }));
+    }
+
     setBuilder({ ...builder, sections: nextSections });
     setUnitUi(nextUi);
-    setSelectedUnitId(nextSection.parts[0]?.content_units[0]?.id ?? null);
+    setSelectedUnitId(mergedSection.parts[0]?.content_units[0]?.id ?? null);
     markDirty();
   };
 
@@ -1589,11 +1632,19 @@ export const AdminBuilderPage: React.FC = () => {
 
       if (replacementIndex >= 0) {
         const replaced = parts[replacementIndex];
-        if (replaced?.id) removedPartIds.push(replaced.id);
-        replaced?.content_units.forEach((unit) => {
+        const existingUnits = replaced?.content_units ?? [];
+        const mergedUnits = nextPart.content_units.map((unit, unitIndex) => {
+          const existingUnit = existingUnits[unitIndex];
+          return { ...unit, id: existingUnit?.id ?? unit.id ?? newId() };
+        });
+        existingUnits.slice(mergedUnits.length).forEach((unit) => {
           if (unit.id) removedUnitIds.push(unit.id);
         });
-        parts[replacementIndex] = nextPart;
+        parts[replacementIndex] = {
+          ...nextPart,
+          id: replaced?.id ?? nextPart.id ?? newId(),
+          content_units: mergedUnits,
+        };
         insertIndex = replacementIndex;
         action = 'replaced';
       } else {
@@ -1602,15 +1653,11 @@ export const AdminBuilderPage: React.FC = () => {
         action = 'appended';
       }
     } else if (targetPartIndex != null) {
-      if (targetPartIndex < 0 || targetPartIndex > parts.length) {
-        return {
-          ok: false,
-          error: `target_part_index ${targetPartIndex + 1} is out of range for insertion in ${sectionType} (${parts.length} existing part(s)).`,
-        };
-      }
-      parts.splice(targetPartIndex, 0, nextPart);
-      insertIndex = targetPartIndex;
-      action = 'inserted';
+      return {
+        ok: false,
+        error:
+          'Insert-at-index is not supported for part JSON saves yet. Use replace_existing=true with target_part_index, or omit target_part_index to append.',
+      };
     } else {
       parts.push(nextPart);
       insertIndex = parts.length - 1;
@@ -2045,7 +2092,10 @@ export const AdminBuilderPage: React.FC = () => {
     }
 
     const targetPartName = readString((root as any).target_part_name).trim();
-    const replaceExisting = readBoolean((root as any).replace_existing, false);
+    const hasReplaceExistingFlag = typeof (root as any).replace_existing === 'boolean';
+    const replaceExisting = hasReplaceExistingFlag
+      ? readBoolean((root as any).replace_existing, false)
+      : targetPartIndex != null || targetPartName.length > 0;
     const defaultPartLabel = sectionType === 'reading' ? 'Passage' : 'Part';
 
     const nextPart: AdminBuilderPayload['sections'][number]['parts'][number] = {
@@ -4657,6 +4707,10 @@ export const AdminBuilderPage: React.FC = () => {
                     <div className="text-xs text-gray-500">
                       Paste one Listening part or Reading passage JSON. This updates only one part inside the target section
                       (does not replace the whole section).
+                    </div>
+                    <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                      If you set <span className="font-mono">target_part_index</span>, replacement mode is used by default.
+                      For append mode, omit <span className="font-mono">target_part_index</span>.
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <label className="text-xs text-gray-600 space-y-1">
