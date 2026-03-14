@@ -299,6 +299,53 @@ const BUILDER_QUICK_STEPS: string[] = [
   'Save the test and verify in Practice/Full Exam before publishing.',
 ];
 
+const SECTION_JSON_EXAMPLE: Record<string, unknown> = {
+  section_type: 'reading',
+  name: 'Reading',
+  metadata: {
+    type: 'reading',
+    duration_seconds: 3600,
+  },
+  parts: [
+    {
+      name: 'Part 1',
+      metadata: {},
+      content_units: [
+        {
+          type: 'instruction',
+          data: {
+            text: 'Read the passage and answer Questions 1-13.',
+          },
+          metadata: {},
+        },
+        {
+          type: 'reading_passage',
+          data: {
+            title: 'Sample passage',
+            text: 'Paste passage text here...',
+          },
+          metadata: {},
+        },
+        {
+          type: 'question_single_choice',
+          data: {
+            prompt: 'Question 1',
+            options: [
+              { id: 'A', label: 'Option A' },
+              { id: 'B', label: 'Option B' },
+              { id: 'C', label: 'Option C' },
+            ],
+          },
+          metadata: { question_number: 1 },
+          answer_key: {
+            correct: { option_id: 'A' },
+          },
+        },
+      ],
+    },
+  ],
+};
+
 const UNIT_GUIDANCE: Record<string, UnitGuide> = {
   instruction: {
     overview: 'Displays directions, task text, or notes for candidates. No scoring.',
@@ -1016,6 +1063,9 @@ export const AdminBuilderPage: React.FC = () => {
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const [selectedTemplateIdForVersion, setSelectedTemplateIdForVersion] = useState('');
   const [templateActionLoading, setTemplateActionLoading] = useState(false);
+  const [sectionJsonDraft, setSectionJsonDraft] = useState<string>(() => JSON.stringify(SECTION_JSON_EXAMPLE, null, 2));
+  const [sectionJsonApplying, setSectionJsonApplying] = useState(false);
+  const [sectionJsonStatus, setSectionJsonStatus] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedExperienceId(queryId);
@@ -1640,6 +1690,93 @@ export const AdminBuilderPage: React.FC = () => {
     upsertSectionForType(sectionType as CoreSectionType, nextSection);
     setTemplateNameDraft(templatePayload.template_name);
     setSelectedTemplateIdForVersion(templatePayload.template_id);
+  };
+
+  const handleApplySectionJson = () => {
+    if (!builder) {
+      setError('Load or create a test before applying section JSON.');
+      return;
+    }
+
+    const parsed = parseJsonObject(sectionJsonDraft);
+    if (!parsed.value) {
+      setError(parsed.error ?? 'Section JSON is invalid.');
+      return;
+    }
+
+    const root = parsed.value;
+    const sectionData = isObject((root as any).section_payload)
+      ? ((root as any).section_payload as Record<string, unknown>)
+      : root;
+
+    const explicitType = normalizeSectionType(readString((root as any).section_type));
+    const metadataFromInput = isObject((sectionData as any).metadata) ? { ...(sectionData as any).metadata } : {};
+    const sectionTypeRaw = explicitType || normalizeSectionType((metadataFromInput as any).type);
+
+    if (!['listening', 'reading', 'writing'].includes(sectionTypeRaw)) {
+      setError('section_type must be listening, reading, or writing.');
+      return;
+    }
+    const sectionType = sectionTypeRaw as CoreSectionType;
+
+    const rawParts = toObjectRecordArray((sectionData as any).parts);
+    if (rawParts.length === 0) {
+      setError('Section JSON must include a non-empty parts array.');
+      return;
+    }
+
+    (metadataFromInput as any).type = sectionType;
+
+    const nextSection: AdminBuilderPayload['sections'][number] = {
+      id: newId(),
+      name: readString((sectionData as any).name) || sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
+      display_order: readNumber((sectionData as any).display_order),
+      metadata: metadataFromInput,
+      parts: rawParts.map((part, partIndex) => {
+        const rawUnits = toObjectRecordArray((part as any).content_units);
+        return {
+          id: newId(),
+          name: readString((part as any).name) || `Part ${partIndex + 1}`,
+          display_order: readNumber((part as any).display_order),
+          metadata: isObject((part as any).metadata) ? (part as any).metadata : {},
+          content_units: rawUnits.map((unit, unitIndex) => ({
+            id: newId(),
+            type: readString((unit as any).type) || 'instruction',
+            display_order: readNumber((unit as any).display_order, unitIndex + 1),
+            data: isObject((unit as any).data) ? (unit as any).data : {},
+            metadata: isObject((unit as any).metadata) ? (unit as any).metadata : {},
+            answer_key:
+              isObject((unit as any).answer_key) && isObject((unit as any).answer_key.correct)
+                ? {
+                    correct: (unit as any).answer_key.correct as Record<string, unknown>,
+                    metadata: isObject((unit as any).answer_key.metadata)
+                      ? ((unit as any).answer_key.metadata as Record<string, unknown>)
+                      : {},
+                  }
+                : null,
+          })),
+        };
+      }),
+    };
+
+    const unitCount = nextSection.parts.reduce((acc, part) => acc + part.content_units.length, 0);
+    if (unitCount === 0) {
+      setError('Each section must include at least one content unit.');
+      return;
+    }
+
+    setSectionJsonApplying(true);
+    setError(null);
+    setSectionJsonStatus(null);
+
+    try {
+      upsertSectionForType(sectionType, nextSection);
+      setSectionJsonStatus(
+        `Applied ${sectionType} section "${nextSection.name}" (${nextSection.parts.length} part(s), ${unitCount} unit(s)).`,
+      );
+    } finally {
+      setSectionJsonApplying(false);
+    }
   };
 
   const handleCreateTemplateFromCurrentSection = async (opts: { templateId?: string | null }) => {
@@ -4159,6 +4296,47 @@ export const AdminBuilderPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                <details className="rounded-xl border border-gray-200 p-3 space-y-3" open={false}>
+                  <summary className="cursor-pointer text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Section JSON Builder
+                  </summary>
+                  <div className="pt-2 space-y-2">
+                    <div className="text-xs text-gray-500">
+                      Paste one section JSON at a time. Applying replaces the same section type in this test
+                      (reading/listening/writing). After applying all sections, click Save.
+                    </div>
+                    {sectionJsonStatus ? (
+                      <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
+                        {sectionJsonStatus}
+                      </div>
+                    ) : null}
+                    <textarea
+                      value={sectionJsonDraft}
+                      onChange={(event) => setSectionJsonDraft(event.target.value)}
+                      rows={18}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-xs"
+                      placeholder="Paste section JSON here..."
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50 disabled:opacity-60"
+                        onClick={handleApplySectionJson}
+                        disabled={sectionJsonApplying}
+                      >
+                        {sectionJsonApplying ? 'Applying...' : 'Apply section JSON'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50"
+                        onClick={() => setSectionJsonDraft(JSON.stringify(SECTION_JSON_EXAMPLE, null, 2))}
+                      >
+                        Load example JSON
+                      </button>
+                    </div>
+                  </div>
+                </details>
 
                 <details className="rounded-xl border border-gray-200 p-3 space-y-3" open={false}>
                   <summary className="cursor-pointer list-none">
