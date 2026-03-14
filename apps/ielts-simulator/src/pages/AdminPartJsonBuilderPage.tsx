@@ -156,15 +156,12 @@ const applyPartJson = (
   const units = Array.isArray((partPayload as any).content_units) ? ((partPayload as any).content_units as unknown[]) : [];
   if (units.length === 0) return { ok: false, err: 'part_payload.content_units must be a non-empty array.' };
 
+  // UI mode is authoritative so stale JSON flags cannot override the selected behavior.
+  const replace = defaults.mode === 'replace';
   const rawIdx = n((root as any).target_part_index);
-  const targetIndex = rawIdx != null ? Math.floor(rawIdx) - 1 : defaults.targetIndex;
+  const targetIndex = replace ? (rawIdx != null ? Math.floor(rawIdx) - 1 : defaults.targetIndex) : null;
   if (targetIndex != null && targetIndex < 0) return { ok: false, err: 'target_part_index must be positive (1-based).' };
-  const targetName = s((root as any).target_part_name).trim() || defaults.targetName;
-  const replace = typeof (root as any).replace_existing === 'boolean' ? b((root as any).replace_existing, false) : defaults.mode === 'replace';
-
-  if (!replace && (targetIndex != null || targetName)) {
-    return { ok: false, err: 'Append mode does not support target_part_index/target_part_name.' };
-  }
+  const targetName = replace ? s((root as any).target_part_name).trim() || defaults.targetName : '';
 
   const sectionIdx = payload.sections.findIndex((x) => secType(x) === scope);
   const existingSection = sectionIdx >= 0 ? payload.sections[sectionIdx] : null;
@@ -290,6 +287,11 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
     if (!accessToken) return;
     void refreshTests();
   }, [accessToken]);
+
+  useEffect(() => {
+    setError(null);
+    setStatus(null);
+  }, [mode]);
 
   const loadExperience = async (id: string) => {
     if (!accessToken || !id) return;
@@ -507,7 +509,11 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
                 <button type="button" className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50" onClick={() => { setScope('reading'); setJsonDraft(toTemplate('reading', mode, targetIndex, targetName)); }}>Load reading template</button>
                 <button type="button" className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50" onClick={() => setJsonDraft(toTemplate(scope, mode, targetIndex, targetName))}>Regenerate from config</button>
               </div>
-              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">Append mode does not support target fields. Use Replace mode for targeted updates.</div>
+              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                {mode === 'append'
+                  ? 'Append mode ignores target fields and always adds a new part/passage.'
+                  : 'Replace mode uses target index or target name for targeted updates.'}
+              </div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 space-y-3">
