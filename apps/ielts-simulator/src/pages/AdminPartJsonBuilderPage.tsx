@@ -68,6 +68,18 @@ const secType = (section: AdminBuilderPayload['sections'][number]) =>
 const label = (scope: Scope) => (scope === 'listening' ? 'Part' : 'Passage');
 const secLabel = (scope: Scope) => (scope === 'listening' ? 'Listening' : 'Reading');
 const secDuration = (scope: Scope) => (scope === 'listening' ? 2400 : 3600);
+const createDraftPayload = (): AdminBuilderPayload => ({
+  product_id: IELTS_PRODUCT_ID,
+  experience: {
+    name: 'New IELTS Mock Test',
+    display_order: 0,
+    is_active: false,
+    price_amount: null,
+    price_currency: 'UZS',
+    metadata: {},
+  },
+  sections: [],
+});
 
 const normalizeDeleted = (value: unknown): Deleted => ({
   section_ids: Array.isArray((value as any)?.section_ids) ? (value as any).section_ids.map(String) : [],
@@ -264,17 +276,19 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
 
   useEffect(() => setSelectedExperienceId(queryId), [queryId]);
 
+  const refreshTests = async () => {
+    if (!accessToken) return;
+    try {
+      const res = await adminTestsList(accessToken, IELTS_PRODUCT_ID);
+      setTests(res.experiences ?? []);
+    } catch {
+      setTests([]);
+    }
+  };
+
   useEffect(() => {
     if (!accessToken) return;
-    const run = async () => {
-      try {
-        const res = await adminTestsList(accessToken, IELTS_PRODUCT_ID);
-        setTests(res.experiences ?? []);
-      } catch {
-        setTests([]);
-      }
-    };
-    void run();
+    void refreshTests();
   }, [accessToken]);
 
   const loadExperience = async (id: string) => {
@@ -327,8 +341,12 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
 
   const save = async () => {
     if (!accessToken || !payload) return;
-    if (!payload.experience?.id) {
-      setError('Load existing test first.');
+    if (!payload.experience.name.trim()) {
+      setError('Test name is required.');
+      return;
+    }
+    if (!Array.isArray(payload.sections) || payload.sections.length === 0) {
+      setError('Add at least one listening part or reading passage before saving.');
       return;
     }
     setSaving(true);
@@ -336,9 +354,12 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
     setStatus(null);
     try {
       const saved = await adminBuilderSave(accessToken, buildSavePayload(payload, deleted));
+      setStatus(`Saved. Version ${saved.version}.`);
+      setSelectedExperienceId(saved.experience_id);
+      navigate({ pathname: '/admin/part-builder', search: `?experience_id=${encodeURIComponent(saved.experience_id)}` }, { replace: true });
       setDirty(false);
       setDeleted({ section_ids: [], part_ids: [], unit_ids: [] });
-      setStatus(`Saved. Version ${saved.version}.`);
+      await refreshTests();
       await loadExperience(saved.experience_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Save failed.');
@@ -382,11 +403,99 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
               Open test
             </button>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm font-semibold hover:bg-gray-50"
+              onClick={() => {
+                setSelectedExperienceId('');
+                setPayload(createDraftPayload());
+                setDeleted({ section_ids: [], part_ids: [], unit_ids: [] });
+                setDirty(false);
+                setError(null);
+                setStatus('Started a new draft test. Add parts and save.');
+                navigate({ pathname: '/admin/part-builder', search: '' }, { replace: true });
+              }}
+            >
+              New draft test
+            </button>
+          </div>
         </div>
 
         {payload ? (
           <>
             <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-semibold">Test name</span>
+                  <input
+                    value={payload.experience.name}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPayload((prev) => (prev ? { ...prev, experience: { ...prev.experience, name: value } } : prev));
+                      setDirty(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="New IELTS Mock Test"
+                  />
+                </label>
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-semibold">Active</span>
+                  <select
+                    value={payload.experience.is_active ? 'true' : 'false'}
+                    onChange={(e) => {
+                      const value = e.target.value === 'true';
+                      setPayload((prev) => (prev ? { ...prev, experience: { ...prev.experience, is_active: value } } : prev));
+                      setDirty(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
+                  >
+                    <option value="false">Draft</option>
+                    <option value="true">Active</option>
+                  </select>
+                </label>
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-semibold">Price amount</span>
+                  <input
+                    value={payload.experience.price_amount == null ? '' : String(payload.experience.price_amount)}
+                    onChange={(e) => {
+                      const raw = e.target.value.trim();
+                      const next = raw === '' ? null : Number(raw);
+                      setPayload((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              experience: {
+                                ...prev.experience,
+                                price_amount: next == null || Number.isNaN(next) ? null : next,
+                              },
+                            }
+                          : prev,
+                      );
+                      setDirty(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="0"
+                  />
+                </label>
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-semibold">Currency</span>
+                  <input
+                    value={payload.experience.price_currency ?? 'UZS'}
+                    onChange={(e) => {
+                      const value = e.target.value.trim().toUpperCase() || 'UZS';
+                      setPayload((prev) => (prev ? { ...prev, experience: { ...prev.experience, price_currency: value } } : prev));
+                      setDirty(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="UZS"
+                  />
+                </label>
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-semibold">Experience id</span>
+                  <input value={payload.experience.id ?? '(new)'} readOnly className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-xs text-gray-500" />
+                </label>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                 <label className="text-xs text-gray-600 space-y-1"><span className="font-semibold">Section</span><select value={scope} onChange={(e) => setScope(e.target.value as Scope)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"><option value="listening">Listening</option><option value="reading">Reading</option></select></label>
                 <label className="text-xs text-gray-600 space-y-1"><span className="font-semibold">Mode</span><select value={mode} onChange={(e) => setMode(e.target.value as Mode)} className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"><option value="replace">Replace</option><option value="append">Append</option></select></label>
@@ -422,4 +531,3 @@ export const AdminPartJsonBuilderPage: React.FC = () => {
     </AdminLayout>
   );
 };
-
