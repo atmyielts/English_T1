@@ -71,6 +71,7 @@ type SectionScoreMeter = {
 };
 
 type CoreSectionType = 'listening' | 'reading' | 'writing';
+type PartScopeSectionType = 'listening' | 'reading';
 
 type BuilderScaffoldUnit = {
   id: string;
@@ -344,6 +345,88 @@ const SECTION_JSON_EXAMPLE: Record<string, unknown> = {
       ],
     },
   ],
+};
+
+const LISTENING_PART_JSON_EXAMPLE: Record<string, unknown> = {
+  section_type: 'listening',
+  target_part_index: 1,
+  replace_existing: false,
+  part_payload: {
+    name: 'Part 1',
+    metadata: {},
+    content_units: [
+      {
+        type: 'instruction',
+        data: {
+          text: 'Questions 1-10. Listen and answer.',
+        },
+        metadata: {},
+      },
+      {
+        type: 'audio',
+        data: {
+          play_once: true,
+          auto_start: false,
+          storage: { bucket: '', path: '' },
+        },
+        metadata: {},
+      },
+      {
+        type: 'question_single_choice',
+        data: {
+          prompt: 'Question 1',
+          options: [
+            { id: 'A', label: 'Option A' },
+            { id: 'B', label: 'Option B' },
+            { id: 'C', label: 'Option C' },
+          ],
+        },
+        metadata: { question_number: 1 },
+        answer_key: {
+          correct: { option_id: 'A' },
+        },
+      },
+    ],
+  },
+};
+
+const READING_PASSAGE_JSON_EXAMPLE: Record<string, unknown> = {
+  section_type: 'reading',
+  target_part_index: 1,
+  replace_existing: false,
+  part_payload: {
+    name: 'Passage 1',
+    metadata: {},
+    content_units: [
+      {
+        type: 'instruction',
+        data: {
+          text: 'Read Passage 1 and answer Questions 1-13.',
+        },
+        metadata: {},
+      },
+      {
+        type: 'reading_passage',
+        data: {
+          title: 'Sample passage',
+          text: 'Paste passage text here...',
+        },
+        metadata: {},
+      },
+      {
+        type: 'question_gap_fill',
+        data: {
+          prompt: 'Complete the notes below.',
+          text: 'The {{1}} is increasing in urban areas.',
+          blanks: [{ id: '1', placeholder: 'Q1' }],
+        },
+        metadata: { question_number: 1 },
+        answer_key: {
+          correct: { blanks: { '1': ['population'] } },
+        },
+      },
+    ],
+  },
 };
 
 const UNIT_GUIDANCE: Record<string, UnitGuide> = {
@@ -1066,6 +1149,10 @@ export const AdminBuilderPage: React.FC = () => {
   const [sectionJsonDraft, setSectionJsonDraft] = useState<string>(() => JSON.stringify(SECTION_JSON_EXAMPLE, null, 2));
   const [sectionJsonApplying, setSectionJsonApplying] = useState(false);
   const [sectionJsonStatus, setSectionJsonStatus] = useState<string | null>(null);
+  const [partJsonDraft, setPartJsonDraft] = useState<string>(() => JSON.stringify(LISTENING_PART_JSON_EXAMPLE, null, 2));
+  const [partJsonApplying, setPartJsonApplying] = useState(false);
+  const [partJsonStatus, setPartJsonStatus] = useState<string | null>(null);
+  const [partTargetSectionType, setPartTargetSectionType] = useState<PartScopeSectionType>('listening');
 
   useEffect(() => {
     setSelectedExperienceId(queryId);
@@ -1443,6 +1530,145 @@ export const AdminBuilderPage: React.FC = () => {
     markDirty();
   };
 
+  const upsertPartForSectionType = (
+    sectionType: PartScopeSectionType,
+    nextPart: AdminBuilderPayload['sections'][number]['parts'][number],
+    opts?: { targetPartIndex?: number | null; targetPartName?: string; replaceExisting?: boolean },
+  ): { ok: true; action: 'replaced' | 'inserted' | 'appended'; partNumber: number; sectionName: string } | { ok: false; error: string } => {
+    if (!builder) return { ok: false, error: 'Load or create a test before applying part JSON.' };
+
+    const targetPartIndex = typeof opts?.targetPartIndex === 'number' ? opts.targetPartIndex : null;
+    const targetPartName = String(opts?.targetPartName ?? '').trim();
+    const replaceExisting = opts?.replaceExisting === true;
+
+    const sectionIndex = builder.sections.findIndex((section) => getSectionType(section) === sectionType);
+    const existingSection = sectionIndex >= 0 ? builder.sections[sectionIndex] : null;
+
+    const sectionPreset = SECTION_TYPES.find((item) => item.value === sectionType);
+    const defaultSectionName = sectionType === 'reading' ? 'Reading' : 'Listening';
+    const defaultPartLabel = sectionType === 'reading' ? 'Passage' : 'Part';
+
+    const baseSection: AdminBuilderPayload['sections'][number] =
+      existingSection ?? {
+        id: newId(),
+        name: defaultSectionName,
+        metadata: { type: sectionType, duration_seconds: sectionPreset?.defaultDurationSeconds ?? 2400 },
+        parts: [],
+      };
+
+    const sectionMetadata = isObject(baseSection.metadata) ? { ...baseSection.metadata } : {};
+    (sectionMetadata as any).type = sectionType;
+    const durationSeconds = Number((sectionMetadata as any).duration_seconds ?? 0);
+    if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+      (sectionMetadata as any).duration_seconds = sectionPreset?.defaultDurationSeconds ?? 2400;
+    }
+
+    const parts = [...baseSection.parts];
+    const removedPartIds: string[] = [];
+    const removedUnitIds: string[] = [];
+
+    let action: 'replaced' | 'inserted' | 'appended' = 'appended';
+    let insertIndex = parts.length;
+
+    if (replaceExisting) {
+      let replacementIndex = -1;
+      if (targetPartIndex != null) {
+        if (targetPartIndex < 0 || targetPartIndex >= parts.length) {
+          return {
+            ok: false,
+            error: `target_part_index ${targetPartIndex + 1} is out of range for ${sectionType} (${parts.length} existing part(s)).`,
+          };
+        }
+        replacementIndex = targetPartIndex;
+      } else if (targetPartName) {
+        replacementIndex = parts.findIndex((part) => String(part.name ?? '').trim().toLowerCase() === targetPartName.toLowerCase());
+        if (replacementIndex < 0) {
+          return { ok: false, error: `No ${defaultPartLabel.toLowerCase()} named "${targetPartName}" found in ${sectionType}.` };
+        }
+      }
+
+      if (replacementIndex >= 0) {
+        const replaced = parts[replacementIndex];
+        if (replaced?.id) removedPartIds.push(replaced.id);
+        replaced?.content_units.forEach((unit) => {
+          if (unit.id) removedUnitIds.push(unit.id);
+        });
+        parts[replacementIndex] = nextPart;
+        insertIndex = replacementIndex;
+        action = 'replaced';
+      } else {
+        parts.push(nextPart);
+        insertIndex = parts.length - 1;
+        action = 'appended';
+      }
+    } else if (targetPartIndex != null) {
+      if (targetPartIndex < 0 || targetPartIndex > parts.length) {
+        return {
+          ok: false,
+          error: `target_part_index ${targetPartIndex + 1} is out of range for insertion in ${sectionType} (${parts.length} existing part(s)).`,
+        };
+      }
+      parts.splice(targetPartIndex, 0, nextPart);
+      insertIndex = targetPartIndex;
+      action = 'inserted';
+    } else {
+      parts.push(nextPart);
+      insertIndex = parts.length - 1;
+      action = 'appended';
+    }
+
+    const normalizedParts = parts.map((part, partIndex) => ({
+      ...part,
+      display_order: partIndex + 1,
+      name: String(part.name ?? '').trim() || `${defaultPartLabel} ${partIndex + 1}`,
+      content_units: part.content_units.map((unit, unitIndex) => ({
+        ...unit,
+        display_order: unitIndex + 1,
+      })),
+    }));
+
+    const normalizedSection: AdminBuilderPayload['sections'][number] = {
+      ...baseSection,
+      metadata: sectionMetadata,
+      parts: normalizedParts,
+    };
+
+    const remainingSections =
+      sectionIndex >= 0 ? builder.sections.filter((_, idx) => idx !== sectionIndex) : [...builder.sections];
+    const nextSections = [...remainingSections, normalizedSection].sort(
+      (a, b) => sectionTypeRank(getSectionType(a)) - sectionTypeRank(getSectionType(b)),
+    );
+
+    const nextUi = { ...unitUi };
+    removedUnitIds.forEach((unitId) => {
+      delete nextUi[unitId];
+    });
+    nextPart.content_units.forEach((unit) => {
+      if (!unit.id) return;
+      nextUi[unit.id] = createUnitUi(unit);
+    });
+
+    if (removedPartIds.length > 0 || removedUnitIds.length > 0) {
+      setDeleted((prev) => ({
+        section_ids: prev.section_ids,
+        part_ids: Array.from(new Set([...prev.part_ids, ...removedPartIds])),
+        unit_ids: Array.from(new Set([...prev.unit_ids, ...removedUnitIds])),
+      }));
+    }
+
+    setBuilder({ ...builder, sections: nextSections });
+    setUnitUi(nextUi);
+    setSelectedUnitId(nextPart.content_units[0]?.id ?? null);
+    markDirty();
+
+    return {
+      ok: true,
+      action,
+      partNumber: insertIndex + 1,
+      sectionName: normalizedSection.name || defaultSectionName,
+    };
+  };
+
   const updateSectionName = (sectionId: string, name: string) => {
     updateBuilder((prev) => ({
       ...prev,
@@ -1776,6 +2002,91 @@ export const AdminBuilderPage: React.FC = () => {
       );
     } finally {
       setSectionJsonApplying(false);
+    }
+  };
+
+  const handleApplyPartJson = () => {
+    if (!builder) {
+      setError('Load or create a test before applying part JSON.');
+      return;
+    }
+
+    const parsed = parseJsonObject(partJsonDraft);
+    if (!parsed.value) {
+      setError(parsed.error ?? 'Part JSON is invalid.');
+      return;
+    }
+
+    const root = parsed.value;
+    const partData = isObject((root as any).part_payload) ? ((root as any).part_payload as Record<string, unknown>) : root;
+    const explicitType = normalizeSectionType(readString((root as any).section_type));
+
+    if (explicitType && !['listening', 'reading'].includes(explicitType)) {
+      setError('part JSON section_type must be listening or reading.');
+      return;
+    }
+    const sectionType = (explicitType || partTargetSectionType) as PartScopeSectionType;
+
+    const rawUnits = toObjectRecordArray((partData as any).content_units);
+    if (rawUnits.length === 0) {
+      setError('Part JSON must include a non-empty content_units array.');
+      return;
+    }
+
+    const rawTargetIndex = Number((root as any).target_part_index);
+    let targetPartIndex: number | null = null;
+    if (Number.isFinite(rawTargetIndex)) {
+      const rounded = Math.floor(rawTargetIndex);
+      if (rounded <= 0) {
+        setError('target_part_index must be a positive number (1-based).');
+        return;
+      }
+      targetPartIndex = rounded - 1;
+    }
+
+    const targetPartName = readString((root as any).target_part_name).trim();
+    const replaceExisting = readBoolean((root as any).replace_existing, false);
+    const defaultPartLabel = sectionType === 'reading' ? 'Passage' : 'Part';
+
+    const nextPart: AdminBuilderPayload['sections'][number]['parts'][number] = {
+      id: newId(),
+      name: readString((partData as any).name),
+      display_order: readNumber((partData as any).display_order),
+      metadata: isObject((partData as any).metadata) ? (partData as any).metadata : {},
+      content_units: rawUnits.map((unit, unitIndex) => ({
+        id: newId(),
+        type: readString((unit as any).type) || 'instruction',
+        display_order: readNumber((unit as any).display_order, unitIndex + 1),
+        data: isObject((unit as any).data) ? (unit as any).data : {},
+        metadata: isObject((unit as any).metadata) ? (unit as any).metadata : {},
+        answer_key:
+          isObject((unit as any).answer_key) && isObject((unit as any).answer_key.correct)
+            ? {
+                correct: (unit as any).answer_key.correct as Record<string, unknown>,
+                metadata: isObject((unit as any).answer_key.metadata)
+                  ? ((unit as any).answer_key.metadata as Record<string, unknown>)
+                  : {},
+              }
+            : null,
+      })),
+    };
+
+    setPartJsonApplying(true);
+    setError(null);
+    setPartJsonStatus(null);
+
+    try {
+      const result = upsertPartForSectionType(sectionType, nextPart, { targetPartIndex, targetPartName, replaceExisting });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      const appliedPartName = nextPart.name.trim() || `${defaultPartLabel} ${result.partNumber}`;
+      setPartJsonStatus(
+        `Applied ${sectionType} ${defaultPartLabel.toLowerCase()} "${appliedPartName}" as #${result.partNumber} (${nextPart.content_units.length} unit(s), ${result.action}).`,
+      );
+    } finally {
+      setPartJsonApplying(false);
     }
   };
 
@@ -4333,6 +4644,73 @@ export const AdminBuilderPage: React.FC = () => {
                         onClick={() => setSectionJsonDraft(JSON.stringify(SECTION_JSON_EXAMPLE, null, 2))}
                       >
                         Load example JSON
+                      </button>
+                    </div>
+                  </div>
+                </details>
+
+                <details className="rounded-xl border border-gray-200 p-3 space-y-3" open={false}>
+                  <summary className="cursor-pointer text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Part / Passage JSON Builder
+                  </summary>
+                  <div className="pt-2 space-y-2">
+                    <div className="text-xs text-gray-500">
+                      Paste one Listening part or Reading passage JSON. This updates only one part inside the target section
+                      (does not replace the whole section).
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <label className="text-xs text-gray-600 space-y-1">
+                        <span className="font-semibold">Target section</span>
+                        <select
+                          value={partTargetSectionType}
+                          onChange={(event) => setPartTargetSectionType(event.target.value as PartScopeSectionType)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
+                        >
+                          <option value="listening">Listening (Part 1-4)</option>
+                          <option value="reading">Reading (Passage 1-3)</option>
+                        </select>
+                      </label>
+                    </div>
+                    {partJsonStatus ? (
+                      <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
+                        {partJsonStatus}
+                      </div>
+                    ) : null}
+                    <textarea
+                      value={partJsonDraft}
+                      onChange={(event) => setPartJsonDraft(event.target.value)}
+                      rows={16}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-xs"
+                      placeholder="Paste part/passage JSON here..."
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50 disabled:opacity-60"
+                        onClick={handleApplyPartJson}
+                        disabled={partJsonApplying}
+                      >
+                        {partJsonApplying ? 'Applying...' : 'Apply part/passage JSON'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50"
+                        onClick={() => {
+                          setPartTargetSectionType('listening');
+                          setPartJsonDraft(JSON.stringify(LISTENING_PART_JSON_EXAMPLE, null, 2));
+                        }}
+                      >
+                        Load listening part example
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50"
+                        onClick={() => {
+                          setPartTargetSectionType('reading');
+                          setPartJsonDraft(JSON.stringify(READING_PASSAGE_JSON_EXAMPLE, null, 2));
+                        }}
+                      >
+                        Load reading passage example
                       </button>
                     </div>
                   </div>
