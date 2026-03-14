@@ -46,6 +46,16 @@ const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, 
       Builder
     </Link>
     <Link
+      to="/admin/part-builder"
+      onClick={onNavigate}
+      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
+        isActivePath(pathname, '/admin/part-builder') ? activeClass : inactiveClass
+      }`}
+    >
+      <PenTool size={18} />
+      Part JSON
+    </Link>
+    <Link
       to={`/admin/import?returnTo=${encodeURIComponent(returnTo)}`}
       onClick={onNavigate}
       className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
@@ -80,6 +90,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
     const p = location.pathname;
     if (p.startsWith('/admin/tests')) return 'Tests Manager';
     if (p.startsWith('/admin/builder')) return 'Test Builder';
+    if (p.startsWith('/admin/part-builder')) return 'Part JSON Builder';
     if (p.startsWith('/admin/import')) return 'Import';
     if (p.startsWith('/admin/assets')) return 'Assets';
     return 'Admin';

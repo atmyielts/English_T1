@@ -20,6 +20,9 @@ const CandidateHandoff = lazy(() => import('./pages/CandidateHandoff').then((m) 
 
 const AdminTestsPage = lazy(() => import('./pages/AdminTestsPage').then((m) => ({ default: m.AdminTestsPage })));
 const AdminBuilderPage = lazy(() => import('./pages/AdminBuilderPage').then((m) => ({ default: m.AdminBuilderPage })));
+const AdminPartJsonBuilderPage = lazy(() =>
+  import('./pages/AdminPartJsonBuilderPage').then((m) => ({ default: m.AdminPartJsonBuilderPage })),
+);
 const AdminAssetsPage = lazy(() => import('./pages/AdminAssetsPage').then((m) => ({ default: m.AdminAssetsPage })));
 const AdminImportPage = lazy(() => import('./pages/AdminImportPage').then((m) => ({ default: m.AdminImportPage })));
 
@@ -67,6 +70,7 @@ function App() {
           <Route path="/admin/session/:sessionId/:sectionId" element={<ExamPlayer />} />
           <Route path="/admin/session/:sessionId/results" element={<SessionResultsPage />} />
           <Route path="/admin/builder" element={<AdminBuilderPage />} />
+          <Route path="/admin/part-builder" element={<AdminPartJsonBuilderPage />} />
           <Route path="/admin/assets" element={<AdminAssetsPage />} />
           <Route path="/admin/import" element={<AdminImportPage />} />
         </Route>
