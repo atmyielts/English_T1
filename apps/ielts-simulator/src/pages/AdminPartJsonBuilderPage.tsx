@@ -51,7 +51,6 @@ const READING_TEMPLATE = {
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const s = (v: unknown) => (typeof v === 'string' ? v : '');
-const b = (v: unknown, fb = false) => (typeof v === 'boolean' ? v : fb);
 const n = (v: unknown): number | null => {
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   if (typeof v === 'string' && v.trim()) {
