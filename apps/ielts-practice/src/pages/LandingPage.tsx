@@ -1,11 +1,19 @@
 import { Link } from 'react-router-dom';
+import { IELTS_PRACTICE_PRODUCT_SLUG } from '../lib/constants';
+import { buildPlatformUrl } from '../lib/platformUrls';
+import { useAccess } from '../lib/useAccess';
 
-const platformUrl = ((import.meta.env.VITE_PLATFORM_URL as string | undefined) ?? '').trim() || 'https://schood.online';
-
-const authHref = `${platformUrl.replace(/\/$/, '')}/auth?mode=signin&product=ielts-practice&returnTo=${encodeURIComponent('https://practice.ielts.schood.online/dashboard')}`;
-const pricingHref = `${platformUrl.replace(/\/$/, '')}/pricing?product=ielts-practice&returnTo=${encodeURIComponent('https://practice.ielts.schood.online/dashboard')}`;
+const resolveDashboardReturnTo = (): string => {
+  if (typeof window === 'undefined') return '/dashboard';
+  return `${window.location.origin}/dashboard`;
+};
 
 export const LandingPage = () => {
+  const { status } = useAccess();
+  const returnTo = resolveDashboardReturnTo();
+  const authHref = buildPlatformUrl('/auth', returnTo, { mode: 'signin', product: IELTS_PRACTICE_PRODUCT_SLUG });
+  const pricingHref = buildPlatformUrl('/pricing', returnTo, { product: IELTS_PRACTICE_PRODUCT_SLUG });
+
   return (
     <div className="practice-root">
       <header className="top-nav glass">
@@ -17,7 +25,11 @@ export const LandingPage = () => {
           </div>
         </a>
         <div className="top-nav-actions">
-          <a href={authHref} className="btn ghost">Sign in</a>
+          {status === 'authenticated' ? (
+            <Link to="/dashboard" className="btn ghost">Dashboard</Link>
+          ) : (
+            <a href={authHref} className="btn ghost">Sign in</a>
+          )}
           <a href={pricingHref} className="btn solid">Get access</a>
         </div>
       </header>
