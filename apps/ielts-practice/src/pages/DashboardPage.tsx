@@ -11,11 +11,124 @@ import {
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { useAccess } from '../lib/useAccess';
 
-const sectionClass = (section: string): string => {
+type SectionType = 'reading' | 'listening' | 'writing';
+
+type SectionDiagnostic = {
+  section_type: SectionType;
+  samples: number;
+  accuracy_ratio: number | null;
+  average_band: number | null;
+  target_band: number | null;
+  band_gap: number | null;
+};
+
+type QuestionTypeDiagnostic = {
+  section_type: SectionType;
+  question_type: string;
+  samples: number;
+  accuracy_ratio: number | null;
+  weakness_score: number;
+};
+
+type DiagnosticsPayload = {
+  overall: {
+    average_band: number | null;
+    target_band: number | null;
+    band_gap: number | null;
+  };
+  sections: Record<SectionType, SectionDiagnostic>;
+  question_types: QuestionTypeDiagnostic[];
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const toSectionType = (value: unknown): SectionType | null => {
+  const text = String(value ?? '').toLowerCase().trim();
+  if (text === 'reading' || text === 'listening' || text === 'writing') return text;
+  return null;
+};
+
+const normalizeSection = (section: SectionType, raw: unknown): SectionDiagnostic => {
+  const source = isRecord(raw) ? raw : {};
+  return {
+    section_type: section,
+    samples: Math.max(0, Math.floor(toNumber(source.samples) ?? 0)),
+    accuracy_ratio: toNumber(source.accuracy_ratio),
+    average_band: toNumber(source.average_band),
+    target_band: toNumber(source.target_band),
+    band_gap: toNumber(source.band_gap),
+  };
+};
+
+const normalizeDiagnostics = (raw: unknown): DiagnosticsPayload | null => {
+  if (!isRecord(raw)) return null;
+
+  const overallRaw = isRecord(raw.overall) ? raw.overall : {};
+  const sectionsRaw = isRecord(raw.sections) ? raw.sections : {};
+  const questionTypesRaw = Array.isArray(raw.question_types) ? raw.question_types : [];
+
+  const sections: Record<SectionType, SectionDiagnostic> = {
+    reading: normalizeSection('reading', sectionsRaw.reading),
+    listening: normalizeSection('listening', sectionsRaw.listening),
+    writing: normalizeSection('writing', sectionsRaw.writing),
+  };
+
+  const question_types: QuestionTypeDiagnostic[] = questionTypesRaw
+    .map((entry) => {
+      if (!isRecord(entry)) return null;
+      const section = toSectionType(entry.section_type);
+      if (!section) return null;
+      return {
+        section_type: section,
+        question_type: String(entry.question_type ?? 'question_unknown'),
+        samples: Math.max(0, Math.floor(toNumber(entry.samples) ?? 0)),
+        accuracy_ratio: toNumber(entry.accuracy_ratio),
+        weakness_score: toNumber(entry.weakness_score) ?? 0,
+      };
+    })
+    .filter((entry): entry is QuestionTypeDiagnostic => entry != null)
+    .sort((a, b) => b.weakness_score - a.weakness_score);
+
+  return {
+    overall: {
+      average_band: toNumber(overallRaw.average_band),
+      target_band: toNumber(overallRaw.target_band),
+      band_gap: toNumber(overallRaw.band_gap),
+    },
+    sections,
+    question_types,
+  };
+};
+
+const sectionChipClass = (section: SectionType): string => {
   if (section === 'reading') return 'chip reading';
   if (section === 'listening') return 'chip listening';
   return 'chip writing';
 };
+
+const sectionBarClass = (section: SectionType): string => {
+  if (section === 'reading') return 'progress-fill reading';
+  if (section === 'listening') return 'progress-fill listening';
+  return 'progress-fill writing';
+};
+
+const formatQuestionType = (value: string): string =>
+  value
+    .replace(/^question_/i, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (token) => token.toUpperCase());
+
+const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 
 export const DashboardPage = () => {
   const { accessToken, me } = useAccess({ includeEffective: true });
@@ -25,13 +138,17 @@ export const DashboardPage = () => {
   const [averageBand, setAverageBand] = useState<number | null>(null);
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
   const [sharedSignals, setSharedSignals] = useState<number | null>(null);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const displayName = useMemo(() => {
     const raw = String(me?.user.email ?? '').split('@')[0] ?? 'Learner';
     return raw.length > 0 ? raw : 'Learner';
   }, [me?.user.email]);
 
-  const load = async (forceDiagnostics = false): Promise<void> => {
+  const isAdmin = String(me?.user.role ?? '').toLowerCase() === 'admin';
+
+  const load = async (forceDiagnostics = false, autoGenerate = false): Promise<void> => {
     if (!accessToken) return;
     setLoading(true);
     setError(null);
@@ -43,15 +160,20 @@ export const DashboardPage = () => {
         learningProfileV2(accessToken, { productId: IELTS_PRACTICE_PRODUCT_ID, languageCode: 'en' }).catch(() => null),
       ]);
 
-      setTargetBand(Number(goalsRes.goals.target_overall_band ?? null));
+      setTargetBand(toNumber(goalsRes.goals.target_overall_band));
 
-      const diagnostics = diagnosticsRes.diagnostics_snapshot?.diagnostics as Record<string, unknown> | undefined;
-      const overall = diagnostics?.overall as Record<string, unknown> | undefined;
-      setAverageBand(typeof overall?.average_band === 'number' ? overall.average_band : null);
+      const diagnosticPayload = normalizeDiagnostics(diagnosticsRes.diagnostics_snapshot?.diagnostics);
+      setDiagnostics(diagnosticPayload);
+      setAverageBand(diagnosticPayload?.overall.average_band ?? null);
 
-      setPlan(planRes.items ?? []);
+      let todayPlan = planRes.items ?? [];
+      if (todayPlan.length === 0 && autoGenerate) {
+        const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
+        todayPlan = generated.items ?? [];
+      }
+      setPlan(todayPlan);
 
-      const profileSignals = Number((profileRes as any)?.language_projection?.signals_count ?? NaN);
+      const profileSignals = Number((profileRes as { language_projection?: { signals_count?: number } } | null)?.language_projection?.signals_count ?? NaN);
       setSharedSignals(Number.isFinite(profileSignals) ? profileSignals : null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
@@ -62,84 +184,227 @@ export const DashboardPage = () => {
   };
 
   useEffect(() => {
-    void load();
+    void load(false, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
   const handleGenerate = async (): Promise<void> => {
     if (!accessToken) return;
     try {
+      setGenerating(true);
       setError(null);
       await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
-      await load(true);
+      await load(true, false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Plan generation failed';
       setError(message);
+    } finally {
+      setGenerating(false);
     }
   };
 
+  const sectionRows = useMemo(() => {
+    const sections = diagnostics?.sections;
+    return (['reading', 'listening', 'writing'] as const).map((section) => {
+      const row = sections?.[section];
+      const accuracy = row?.accuracy_ratio != null ? Math.max(0, Math.min(1, row.accuracy_ratio)) : 0;
+      return {
+        section,
+        samples: row?.samples ?? 0,
+        targetBand: row?.target_band ?? targetBand,
+        averageBand: row?.average_band ?? null,
+        bandGap: row?.band_gap ?? null,
+        accuracyPct: Math.round(accuracy * 100),
+      };
+    });
+  }, [diagnostics, targetBand]);
+
+  const topWeaknesses = useMemo(
+    () => (diagnostics?.question_types ?? []).slice(0, 6),
+    [diagnostics],
+  );
+
+  const planSummary = useMemo(() => {
+    const total = plan.length;
+    const completed = plan.filter((item) => item.status === 'completed').length;
+    const active = plan.filter((item) => item.status === 'in_progress').length;
+    const pending = Math.max(0, total - completed - active);
+    const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { total, completed, active, pending, completion };
+  }, [plan]);
+
   return (
     <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Schood IELTS Practice</strong>
-            <span>Welcome, {displayName}</span>
+      <div className="practice-workspace">
+        <aside className="practice-sidebar glass">
+          <div className="practice-sidebar-brand">
+            <img src="/schood-logo.png" alt="Schood" />
+            <div>
+              <strong>IELTS Practice</strong>
+              <span>Adaptive training twin</span>
+            </div>
           </div>
-        </Link>
-        <div className="top-nav-actions">
-          <Link to="/plan" className="btn ghost">Daily plan</Link>
-          <button className="btn solid" type="button" onClick={() => void handleGenerate()}>Regenerate plan</button>
-        </div>
-      </header>
 
-      <main className="dashboard-grid">
-        <section className="glass stat-card">
-          <h3>Target band</h3>
-          <div className="band-row">
-            <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
-            <span>Goal</span>
-          </div>
-          <div className="band-row secondary">
-            <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
-            <span>Current average</span>
-          </div>
-        </section>
+          <nav className="practice-sidebar-nav">
+            <Link to="/dashboard" className="sidebar-link active">Dashboard</Link>
+            <Link to="/plan" className="sidebar-link">Plan Builder</Link>
+            <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link">IELTS Simulator</a>
+            {isAdmin ? <Link to="/admin" className="sidebar-link">Admin Panel</Link> : null}
+          </nav>
 
-        <section className="glass stat-card">
-          <h3>Shared English profile</h3>
-          <div className="band-row">
-            <strong>{sharedSignals != null ? sharedSignals : '-'}</strong>
-            <span>Signals aggregated</span>
-          </div>
-          <p className="muted">Practice attempt outcomes are emitting into language-scoped personalization.</p>
-        </section>
+          <section className="sidebar-panel">
+            <h4>Band Target</h4>
+            <div className="sidebar-target-row">
+              <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
+              <span>goal</span>
+            </div>
+            <div className="sidebar-target-row muted">
+              <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
+              <span>current</span>
+            </div>
+          </section>
 
-        <section className="glass stat-card wide">
-          <h3>Today’s adaptive tasks</h3>
-          {loading ? <p>Loading dashboard...</p> : null}
-          {error ? <p className="error-text">{error}</p> : null}
-          {!loading && !error && plan.length === 0 ? (
-            <p>No plan generated for today yet. Click “Regenerate plan”.</p>
-          ) : null}
-          <ul className="task-list">
-            {plan.map((item) => (
-              <li key={item.id} className="task-item">
-                <div>
-                  <span className={sectionClass(item.section_type)}>{item.section_type}</span>
-                  <h4>{item.exercise?.title ?? 'Exercise'}</h4>
-                  <p>{item.rationale ?? 'Adaptive task selected from your weakness vectors.'}</p>
+          <section className="sidebar-panel">
+            <h4>Quick Actions</h4>
+            <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+              {generating ? 'Generating...' : 'Regenerate Plan'}
+            </button>
+            <Link to="/plan" className="btn ghost full">Open Plan Builder</Link>
+          </section>
+        </aside>
+
+        <main className="practice-main">
+          <header className="practice-header glass">
+            <div>
+              <p className="eyebrow">Schood IELTS Practice</p>
+              <h1>Welcome back, {displayName}</h1>
+              <p className="muted">
+                Train Reading, Listening, and Writing with simulator-derived diagnostics and targeted daily tasks.
+              </p>
+            </div>
+            <div className="top-nav-actions">
+              <Link to="/plan" className="btn ghost">Daily Plan</Link>
+              <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+                {generating ? 'Regenerating...' : 'Regenerate'}
+              </button>
+            </div>
+          </header>
+
+          {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
+          {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+
+          <section className="practice-kpi-grid">
+            <article className="glass kpi-card">
+              <h3>Target Band</h3>
+              <div className="kpi-value">{targetBand != null ? targetBand.toFixed(1) : '-'}</div>
+              <p className="muted">Configured objective for IELTS progression.</p>
+            </article>
+            <article className="glass kpi-card">
+              <h3>Current Average</h3>
+              <div className="kpi-value">{averageBand != null ? averageBand.toFixed(1) : '-'}</div>
+              <p className="muted">Derived from your recent simulator outcomes.</p>
+            </article>
+            <article className="glass kpi-card">
+              <h3>Shared Profile Signals</h3>
+              <div className="kpi-value">{sharedSignals != null ? String(sharedSignals) : '-'}</div>
+              <p className="muted">Language-scoped signals already merged in English profile.</p>
+            </article>
+          </section>
+
+          <section className="practice-grid">
+            <article className="glass practice-card section-progress-card">
+              <h3>Section Progress</h3>
+              <div className="section-progress-list">
+                {sectionRows.map((row) => (
+                  <div key={row.section} className="section-progress-row">
+                    <div className="section-progress-head">
+                      <span className={sectionChipClass(row.section)}>{row.section}</span>
+                      <span className="muted">{row.accuracyPct}% accuracy</span>
+                    </div>
+                    <div className="progress-track">
+                      <div className={sectionBarClass(row.section)} style={{ width: `${row.accuracyPct}%` }} />
+                    </div>
+                    <div className="section-progress-meta">
+                      <span>Samples: {row.samples}</span>
+                      <span>Band: {row.averageBand != null ? row.averageBand.toFixed(1) : '-'} / {row.targetBand != null ? row.targetBand.toFixed(1) : '-'}</span>
+                      <span>Gap: {row.bandGap != null ? row.bandGap.toFixed(2) : '-'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="glass practice-card weakness-card">
+              <h3>Top Weaknesses By Question Type</h3>
+              {topWeaknesses.length === 0 ? (
+                <p className="muted">No diagnostic weaknesses yet. Complete simulator attempts or regenerate diagnostics.</p>
+              ) : (
+                <ul className="weakness-list">
+                  {topWeaknesses.map((row) => (
+                    <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">
+                      <div>
+                        <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
+                        <h4>{formatQuestionType(row.question_type)}</h4>
+                      </div>
+                      <div className="weakness-metrics">
+                        <span>Weakness {row.weakness_score.toFixed(2)}</span>
+                        <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
+                        <span>Samples {row.samples}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="glass practice-card task-card">
+              <div className="task-card-head">
+                <h3>Today's Adaptive Exercises</h3>
+                <div className="task-summary">
+                  <span>Total {planSummary.total}</span>
+                  <span>Done {planSummary.completed}</span>
+                  <span>Pending {planSummary.pending}</span>
                 </div>
-                <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
-                  {item.status === 'completed' ? 'View' : 'Start'}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </main>
+              </div>
+
+              <div className="progress-track task-progress">
+                <div className="progress-fill writing" style={{ width: `${planSummary.completion}%` }} />
+              </div>
+
+              {plan.length === 0 ? (
+                <div className="empty-plan">
+                  <p>No exercises are available in today's plan yet.</p>
+                  <div className="inline-actions">
+                    <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+                      Generate Now
+                    </button>
+                    <Link to="/plan" className="btn ghost">Configure Plan</Link>
+                    {isAdmin ? <Link to="/admin" className="btn ghost">Import Exercises</Link> : null}
+                  </div>
+                </div>
+              ) : (
+                <ul className="task-list">
+                  {plan.map((item) => (
+                    <li key={item.id} className="task-item">
+                      <div>
+                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                        <h4>{item.exercise?.title ?? 'Practice Exercise'}</h4>
+                        <p>{item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
+                      </div>
+                      <div className="inline-actions">
+                        <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>
+                        <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
+                          {item.status === 'completed' ? 'Review' : 'Start'}
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          </section>
+        </main>
+      </div>
     </div>
   );
 };
-
