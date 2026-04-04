@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
-import { ArenaList, type Article } from './ArenaList';
-import { ArenaReader } from './ArenaReader';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-type ViewState = 'dashboard' | 'arena-list' | 'arena-reader';
+const FEATURE_PATHS = ['/feature/1', '/feature/2', '/feature/3', '/feature/4'] as const;
+type FeaturePath = (typeof FEATURE_PATHS)[number];
+type AppPath = '/' | '/dashboard' | FeaturePath;
 
 type LessonRow = {
   id: string;
@@ -185,6 +185,13 @@ const buildServiceDashboardHref = (
   return url.toString();
 };
 
+const resolveAppPath = (pathname: string): AppPath => {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (normalized === '/dashboard') return '/dashboard';
+  if (FEATURE_PATHS.includes(normalized as FeaturePath)) return normalized as FeaturePath;
+  return '/';
+};
+
 const DashboardPage = ({
   lessons,
   hasAccess,
@@ -338,6 +345,98 @@ const DashboardPage = ({
 
 
 
+const FeaturePage = ({
+  featurePath,
+  hasAccess,
+  pricingHref,
+  onNavigate,
+}: {
+  featurePath: FeaturePath;
+  hasAccess: boolean;
+  pricingHref: string;
+  onNavigate: (nextPath: AppPath) => void;
+}) => {
+  const featureIndex = FEATURE_PATHS.indexOf(featurePath);
+  const safeIndex = featureIndex >= 0 ? featureIndex : 0;
+  const activeFeature = SERVICE_BLUEPRINT[safeIndex] ?? SERVICE_BLUEPRINT[0];
+
+  return (
+    <div className="dashboard-stack">
+      <section className="hero-card card">
+        <div className="hero-copy">
+          <div className="eyebrow">{SERVICE_LABEL} Feature {safeIndex + 1}</div>
+          <h1>{activeFeature.title}</h1>
+          <p>{activeFeature.detail}</p>
+          <button
+            className="primary-cta"
+            type="button"
+            onClick={() => {
+              if (!hasAccess) {
+                window.location.assign(pricingHref);
+                return;
+              }
+              window.location.assign(buildServiceDashboardHref(CURRENT_SERVICE_KEY, activeFeature.intent, activeFeature.skill, 'feature-page'));
+            }}
+          >
+            {hasAccess ? 'Launch feature module' : 'Unlock full feature access'}
+          </button>
+          {!hasAccess ? <small className="hero-note">This feature requires an active plan or trial.</small> : null}
+        </div>
+        <div className="hero-art" aria-hidden>
+          <div className="wave one" />
+          <div className="wave two" />
+          <div className="wave three" />
+        </div>
+      </section>
+
+      <section className="card cross-service-playbook">
+        <div className="section-head">
+          <h2>Ordered service modules</h2>
+          <small>{safeIndex + 1} / {SERVICE_BLUEPRINT.length}</small>
+        </div>
+        <div className="playbook-grid">
+          {SERVICE_BLUEPRINT.map((item, index) => {
+            const route = FEATURE_PATHS[index] ?? FEATURE_PATHS[0];
+            const isActive = route === featurePath;
+            return (
+              <article
+                key={item.title}
+                className="playbook-card"
+                style={isActive ? { borderColor: 'rgba(24, 36, 30, 0.32)', boxShadow: '0 8px 20px rgba(18, 30, 23, 0.08)' } : undefined}
+              >
+                <small>{'Module ' + (index + 1) + ' - ' + item.skill}</small>
+                <h3>{item.title}</h3>
+                <p>{item.detail}</p>
+                <button className="ghost-btn" type="button" onClick={() => onNavigate(route)}>
+                  {isActive ? 'Current module' : 'Open module'}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="card cross-service-playbook">
+        <div className="section-head">
+          <h2>Cross-service handoffs</h2>
+          <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
+        </div>
+        <div className="handoff-row">
+          {SERVICE_HANDOFFS.map((handoff) => (
+            <a
+              key={handoff.key}
+              className="menu-link muted-link"
+              href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
+            >
+              {handoff.label}
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+};
+
 const SignedOutLanding = ({
   serviceLabel,
   signInHref,
@@ -440,15 +539,13 @@ const App = () => {
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
 
-  const [view, setView] = useState<ViewState>('dashboard');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [path, setPath] = useState<'/' | '/dashboard'>(() => {
+      const [path, setPath] = useState<AppPath>(() => {
     if (typeof window === 'undefined') return '/';
-    return window.location.pathname === '/dashboard' ? '/dashboard' : '/';
+    return resolveAppPath(window.location.pathname);
   });
-  const showLanding = path !== '/dashboard';
+  const showLanding = path === '/';
 
-  const navigate = (nextPath: '/' | '/dashboard', replace = false): void => {
+  const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
     if (window.location.pathname !== nextPath) {
       if (replace) {
@@ -483,14 +580,14 @@ const App = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const onPopState = () => {
-      setPath(window.location.pathname === '/dashboard' ? '/dashboard' : '/');
+      setPath(resolveAppPath(window.location.pathname));
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   useEffect(() => {
-    if (status === 'signed_out' && path === '/dashboard') {
+    if (status === 'signed_out' && path !== '/') {
       if (typeof window !== 'undefined' && window.location.pathname !== '/') {
         window.history.replaceState({}, '', '/');
       }
@@ -683,7 +780,6 @@ const App = () => {
             type="button"
             className="brand-mark"
             onClick={() => {
-              setView('dashboard');
               navigate('/dashboard');
             }}
             style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
@@ -697,29 +793,27 @@ const App = () => {
 
           <nav className="menu-list">
             <button
-              className={`menu-link ${view === 'dashboard' ? 'active' : ''}`}
+              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
               type="button"
               onClick={() => {
-                setView('dashboard');
                 navigate('/dashboard');
               }}
             >
               Dashboard
             </button>
-            <button
-              className={`menu-link ${view === 'arena-list' || view === 'arena-reader' ? 'active' : ''}`}
-              type="button"
-              onClick={() => {
-                if (status !== 'signed_in') {
-                  window.location.assign(signInHref);
-                  return;
-                }
-                setView('arena-list');
-                navigate('/dashboard');
-              }}
-            >
-              Grammar Arena
-            </button>
+            {SERVICE_BLUEPRINT.map((item, index) => {
+              const featurePath = FEATURE_PATHS[index] ?? FEATURE_PATHS[0];
+              return (
+                <button
+                  key={item.intent}
+                  className={'menu-link ' + (path === featurePath ? 'active' : '')}
+                  type="button"
+                  onClick={() => navigate(featurePath)}
+                >
+                  {'Feature ' + (index + 1) + ': ' + item.title}
+                </button>
+              );
+            })}
           </nav>
 
           
@@ -804,23 +898,16 @@ const App = () => {
           ) : null}
           {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
-          {!showLanding && status !== 'signed_out' && view === 'dashboard' && (
+          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
             <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
           )}
 
-          {!showLanding && status !== 'signed_out' && view === 'arena-list' && (
-            <ArenaList
-              onSelect={(article: Article) => {
-                setSelectedArticle(article);
-                setView('arena-reader');
-              }}
-            />
-          )}
-
-          {!showLanding && status !== 'signed_out' && view === 'arena-reader' && selectedArticle && (
-            <ArenaReader
-              article={selectedArticle}
-              onBack={() => setView('arena-list')}
+          {!showLanding && status !== 'signed_out' && FEATURE_PATHS.includes(path as FeaturePath) && (
+            <FeaturePage
+              featurePath={path as FeaturePath}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              onNavigate={navigate}
             />
           )}
         </main>
