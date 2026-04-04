@@ -558,6 +558,119 @@ a {
   gap: 12px;
 }
 
+.writing-workbench {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.workbench-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  color: var(--ink-700);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.workbench-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workbench-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.workbench-card h3 {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+}
+
+.workbench-card p {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.45;
+}
+
+.task-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-chip {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-700);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.task-chip.active {
+  background: linear-gradient(135deg, var(--tea-200) 0%, var(--tea-300) 100%);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.workbench-card textarea {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink-900);
+  background: #fff;
+}
+
+.hint-list,
+.explain-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--ink-700);
+}
+
+.hint-list li strong,
+.explain-list li strong {
+  color: var(--ink-900);
+}
+
+.explain-list li span {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-500);
+  margin-top: 2px;
+}
+
+.rewrite-result {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
 .playbook-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1073,6 +1186,10 @@ a {
   }
 
   .playbook-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workbench-grid {
     grid-template-columns: 1fr;
   }
 }

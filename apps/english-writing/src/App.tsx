@@ -19,6 +19,18 @@ type LessonRow = {
   accent: string;
 };
 
+type WritingTaskTemplate = {
+  id: 'email' | 'opinion' | 'story';
+  label: string;
+  prompt: string;
+};
+
+type CorrectionHint = {
+  before: string;
+  after: string;
+  why: string;
+};
+
 const WRITING_PRODUCT_ID = ((import.meta.env.VITE_WRITING_PRODUCT_ID as string | undefined) ?? '').trim() || '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532';
 const WRITING_PRODUCT_SLUG = 'english-writing';
 const SERVICE_LABEL = 'English Writing';
@@ -68,6 +80,81 @@ const SERVICE_HANDOFFS = [
   { key: 'reading', label: 'Strengthen structure in Reading', intent: 'sentence-breakdown', skill: 'structure', reason: 'writing-handoff' },
   { key: 'vocabulary', label: 'Expand lexical range in Vocabulary', intent: 'context-review', skill: 'vocabulary', reason: 'writing-handoff' },
 ] as const;
+
+const WRITING_TASK_TEMPLATES: WritingTaskTemplate[] = [
+  {
+    id: 'email',
+    label: 'Email task',
+    prompt: 'Write an email to your teacher explaining why you missed class and what plan you will follow this week.',
+  },
+  {
+    id: 'opinion',
+    label: 'Opinion task',
+    prompt: 'Do you agree that online learning is better than classroom learning? Give reasons and examples.',
+  },
+  {
+    id: 'story',
+    label: 'Story task',
+    prompt: 'Write a short story about a time when one small decision changed your day.',
+  },
+];
+
+const DEFAULT_WRITING_TASK: WritingTaskTemplate = {
+  id: 'email',
+  label: 'Email task',
+  prompt: 'Write an email to your teacher explaining why you missed class and what plan you will follow this week.',
+};
+
+const CORRECTION_RULES: Array<{ match: RegExp; replace: string; why: string }> = [
+  {
+    match: /\bI go yesterday\b/gi,
+    replace: 'I went yesterday',
+    why: 'Past time marker "yesterday" requires simple past.',
+  },
+  {
+    match: /\bshe don't\b/gi,
+    replace: "she doesn't",
+    why: 'Third-person singular in present simple takes "does not".',
+  },
+  {
+    match: /\bpeoples\b/gi,
+    replace: 'people',
+    why: '"People" is already plural.',
+  },
+  {
+    match: /\bvery goodly\b/gi,
+    replace: 'very well',
+    why: 'Use an adverb ("well") to modify action quality.',
+  },
+];
+
+const improveSentence = (value: string): string => {
+  let next = value.trim();
+  if (!next) return '';
+  next = next.replace(/\s+/g, ' ');
+  if (/^because\s/i.test(next) && !next.includes(',')) {
+    next = next.replace(/^because\s/i, 'Because ');
+    next = `${next}, I focused on the main point and supported it clearly.`;
+  }
+  if (!/[.!?]$/.test(next)) next = `${next}.`;
+  return next.charAt(0).toUpperCase() + next.slice(1);
+};
+
+const buildCorrectionHints = (draft: string): CorrectionHint[] => {
+  const hints: CorrectionHint[] = [];
+  for (const rule of CORRECTION_RULES) {
+    const matches = draft.match(rule.match);
+    if (!matches || matches.length === 0) continue;
+    for (const before of matches) {
+      hints.push({
+        before,
+        after: before.replace(rule.match, rule.replace),
+        why: rule.why,
+      });
+    }
+  }
+  return hints;
+};
 
 const lessonRows: LessonRow[] = [
   {
@@ -200,6 +287,13 @@ const DashboardPage = ({
   const inboundReason = params.get('reason') ?? '';
   const inboundSourceService = params.get('source_service') ?? '';
   const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
+  const [taskId, setTaskId] = useState<WritingTaskTemplate['id']>('email');
+  const [draftText, setDraftText] = useState('I go yesterday to library because I need finish my essay quickly');
+  const [rewriteSource, setRewriteSource] = useState('because the topic is hard I write many unrelated ideas');
+  const [rewriteResult, setRewriteResult] = useState(() => improveSentence('because the topic is hard I write many unrelated ideas'));
+
+  const selectedTask = WRITING_TASK_TEMPLATES.find((task) => task.id === taskId) ?? DEFAULT_WRITING_TASK;
+  const correctionHints = useMemo(() => buildCorrectionHints(draftText), [draftText]);
 
   return (
     <div className="dashboard-stack">
@@ -247,6 +341,79 @@ const DashboardPage = ({
         </a>
       </section>
     ) : null}
+
+    <section className="card writing-workbench">
+      <div className="section-head">
+        <h2>Writing feature workbench</h2>
+        <span className="workbench-badge">{hasAccess ? 'Live mode' : 'Preview mode'}</span>
+      </div>
+
+      <div className="workbench-grid">
+        <article className="workbench-card">
+          <h3>1. Writing tasks</h3>
+          <div className="task-chip-row">
+            {WRITING_TASK_TEMPLATES.map((task) => (
+              <button
+                key={task.id}
+                type="button"
+                className={`task-chip ${task.id === taskId ? 'active' : ''}`}
+                onClick={() => setTaskId(task.id)}
+              >
+                {task.label}
+              </button>
+            ))}
+          </div>
+          <p>{selectedTask.prompt}</p>
+        </article>
+
+        <article className="workbench-card">
+          <h3>2. Active correction</h3>
+          <textarea
+            value={draftText}
+            onChange={(event) => setDraftText(event.target.value)}
+            placeholder="Write a draft paragraph..."
+          />
+          <ul className="hint-list">
+            {correctionHints.length === 0 ? <li>No obvious grammar flags in this draft.</li> : null}
+            {correctionHints.slice(0, 3).map((hint, index) => (
+              <li key={`${hint.before}-${index}`}>
+                <strong>{hint.before}</strong> → {hint.after}
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="workbench-card">
+          <h3>3. Rewrite task</h3>
+          <textarea
+            value={rewriteSource}
+            onChange={(event) => setRewriteSource(event.target.value)}
+            placeholder="Enter a weak sentence..."
+          />
+          <button
+            type="button"
+            className="ghost-btn"
+            onClick={() => setRewriteResult(improveSentence(rewriteSource))}
+          >
+            Rewrite better
+          </button>
+          <p className="rewrite-result">{rewriteResult || 'Rewrite output appears here.'}</p>
+        </article>
+
+        <article className="workbench-card">
+          <h3>4. Grammar explanation layer</h3>
+          <ul className="explain-list">
+            {correctionHints.length === 0 ? <li>As you write, explanations for each correction appear here.</li> : null}
+            {correctionHints.slice(0, 3).map((hint, index) => (
+              <li key={`${hint.why}-${index}`}>
+                <strong>{hint.after}</strong>
+                <span>{hint.why}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </div>
+    </section>
 
     <section className="kpi-grid">
       <article className="card kpi">
