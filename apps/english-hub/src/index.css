@@ -247,6 +247,15 @@ a {
   min-height: 72px;
 }
 
+.service-role {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--service-accent) 62%, #4f3d2f 38%);
+}
+
 .service-actions {
   display: flex;
   flex-wrap: wrap;
@@ -302,7 +311,151 @@ a {
 }
 
 .progress-panel {
-  grid-row: span 2;
+  grid-row: span 3;
+}
+
+.status-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.status-pill {
+  padding: 10px 14px;
+  border-radius: 16px;
+  color: var(--ink-700);
+  font-weight: 600;
+}
+
+.status-pill.warning {
+  border-color: rgba(175, 59, 44, 0.3);
+  color: #7d2014;
+  background: rgba(255, 230, 225, 0.9);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.panel-head .btn {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.daily-plan,
+.weakness-buckets,
+.timeline-panel {
+  padding: 20px;
+}
+
+.daily-plan h3,
+.weakness-buckets h3,
+.timeline-panel h3 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+}
+
+.plan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.plan-list li {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.plan-list small {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: var(--ink-500);
+  margin-bottom: 4px;
+}
+
+.plan-list strong {
+  display: block;
+  font-size: 16px;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 4px;
+}
+
+.plan-list p {
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 14px;
+}
+
+.plan-list .btn {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.bucket-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.bucket-list li p {
+  margin: 8px 0 0;
+  color: var(--ink-700);
+  line-height: 1.45;
+}
+
+.timeline-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c43a22 0%, #3a9975 100%);
+  box-shadow: 0 0 0 4px rgba(196, 58, 34, 0.14);
+}
+
+.timeline-list strong {
+  display: block;
+  font-size: 15px;
+}
+
+.timeline-list p {
+  margin: 4px 0;
+  color: var(--ink-700);
+}
+
+.timeline-list small {
+  color: var(--ink-500);
+  font-weight: 600;
 }
 
 .progress-list {
@@ -440,6 +593,10 @@ a {
   --service-accent: #537b9f;
 }
 
+.is-fluency {
+  --service-accent: #6b5fb5;
+}
+
 @media (max-width: 1180px) {
   .hub-nav {
     grid-template-columns: auto 1fr;
@@ -470,6 +627,10 @@ a {
 
   .progress-panel {
     grid-row: auto;
+  }
+
+  .plan-list li {
+    grid-template-columns: 1fr;
   }
 }
 

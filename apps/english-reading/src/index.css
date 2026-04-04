@@ -527,6 +527,77 @@ a {
   color: var(--ink-500);
 }
 
+.connected-brief {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.connected-brief h2 {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 20px;
+}
+
+.connected-brief p {
+  margin: 8px 0;
+  color: var(--ink-700);
+}
+
+.connected-brief small {
+  display: block;
+  color: var(--ink-500);
+  font-size: 12px;
+}
+
+.cross-service-playbook {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.playbook-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.playbook-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.playbook-card small {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-500);
+  font-weight: 700;
+}
+
+.playbook-card h3 {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+}
+
+.playbook-card p {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.45;
+}
+
+.handoff-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .vocab-sync-card {
   display: grid;
   gap: 10px;
@@ -1006,6 +1077,14 @@ a {
   .event-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .connected-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .playbook-grid {
+    grid-template-columns: 1fr;
   }
 }
 

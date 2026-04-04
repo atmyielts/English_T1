@@ -44,6 +44,39 @@ const ENGLISH_SERVICE_LINKS = [
 const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
 const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
 
+const SERVICE_BLUEPRINT = [
+  {
+    title: 'Sentence-based listening',
+    detail: 'Train with short clips you can replay quickly for precision listening.',
+    intent: 'sentence-loop',
+    skill: 'comprehension',
+  },
+  {
+    title: 'Dictation mode',
+    detail: 'Type what you hear and compare your draft against the target transcript.',
+    intent: 'dictation',
+    skill: 'accuracy',
+  },
+  {
+    title: 'Slow mode + looping',
+    detail: 'Control playback speed and loop difficult fragments until stable.',
+    intent: 'slow-loop',
+    skill: 'timing',
+  },
+  {
+    title: 'Missed words feedback',
+    detail: 'Track uncaught words and push them to shared vocabulary review.',
+    intent: 'missed-words',
+    skill: 'vocabulary',
+  },
+] as const;
+
+const SERVICE_HANDOFFS = [
+  { key: 'vocabulary', label: 'Push missed words to Vocabulary', intent: 'word-sources', skill: 'retention', reason: 'listening-handoff' },
+  { key: 'speaking', label: 'Apply rhythm in Speaking', intent: 'shadowing', skill: 'fluency', reason: 'listening-handoff' },
+  { key: 'immersion', label: 'Use audio context in Immersion', intent: 'scenario-task', skill: 'communication', reason: 'listening-handoff' },
+] as const;
+
 const lessonRows: LessonRow[] = [
   {
     id: 'lesson-1',
@@ -207,6 +240,22 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
+const buildServiceDashboardHref = (
+  serviceKey: string,
+  intent: string,
+  skill: string,
+  reason: string,
+): string => {
+  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
+  const url = new URL(`${target.href}/dashboard`);
+  url.searchParams.set('from', 'english-hub');
+  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
+  url.searchParams.set('intent', intent);
+  url.searchParams.set('skill', skill);
+  url.searchParams.set('reason', reason);
+  return url.toString();
+};
+
 const DashboardPage = ({
   lessons,
   hasAccess,
@@ -227,8 +276,16 @@ const DashboardPage = ({
   syncMessage: string | null;
   syncError: string | null;
   onSyncWords: () => void;
-}) => (
-  <div className="dashboard-stack">
+}) => {
+  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const inboundIntent = params.get('intent') ?? '';
+  const inboundSkill = params.get('skill') ?? '';
+  const inboundReason = params.get('reason') ?? '';
+  const inboundSourceService = params.get('source_service') ?? '';
+  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
+
+  return (
+    <div className="dashboard-stack">
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Listening Studio</div>
@@ -253,6 +310,26 @@ const DashboardPage = ({
         <div className="wave three" />
       </div>
     </section>
+
+    {hasInboundFocus ? (
+      <section className="card connected-brief">
+        <div>
+          <h2>Focus routed from Schood English</h2>
+          <p>
+            Continue with intent <strong>{inboundIntent || 'sentence-loop'}</strong> on skill{' '}
+            <strong>{inboundSkill || 'comprehension'}</strong>.
+          </p>
+          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
+          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
+        </div>
+        <a
+          className="ghost-btn"
+          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'sentence-loop', inboundSkill || 'comprehension', 'continue-focus')}
+        >
+          Keep this focus
+        </a>
+      </section>
+    ) : null}
 
     <section className="kpi-grid">
       <article className="card kpi">
@@ -309,6 +386,36 @@ const DashboardPage = ({
       </table>
     </section>
 
+    <section className="card cross-service-playbook">
+      <div className="section-head">
+        <h2>Listening service engine</h2>
+        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
+      </div>
+      <div className="playbook-grid">
+        {SERVICE_BLUEPRINT.map((item) => (
+          <article key={item.title} className="playbook-card">
+            <small>{item.skill}</small>
+            <h3>{item.title}</h3>
+            <p>{item.detail}</p>
+            <a className="ghost-btn" href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, item.intent, item.skill, 'service-blueprint')}>
+              Start module
+            </a>
+          </article>
+        ))}
+      </div>
+      <div className="handoff-row">
+        {SERVICE_HANDOFFS.map((handoff) => (
+          <a
+            key={handoff.key}
+            className="menu-link muted-link"
+            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
+          >
+            {handoff.label}
+          </a>
+        ))}
+      </div>
+    </section>
+
     <section className="card vocab-sync-card">
       <div className="section-head">
         <h2>Vocabulary Sync</h2>
@@ -347,7 +454,8 @@ const DashboardPage = ({
       ) : null}
     </section>
   </div>
-);
+  );
+};
 
 
 
