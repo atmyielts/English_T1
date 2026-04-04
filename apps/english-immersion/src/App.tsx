@@ -5,9 +5,7 @@ import { getMe } from './lib/platformClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const FEATURE_PATHS = ['/feature/1', '/feature/2', '/feature/3', '/feature/4'] as const;
-type FeaturePath = (typeof FEATURE_PATHS)[number];
-type AppPath = '/' | '/dashboard' | FeaturePath;
+type AppPath = '/' | '/dashboard';
 
 type LessonRow = {
   id: string;
@@ -188,7 +186,7 @@ const buildServiceDashboardHref = (
 const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
-  if (FEATURE_PATHS.includes(normalized as FeaturePath)) return normalized as FeaturePath;
+  if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
 };
 
@@ -312,17 +310,17 @@ const DashboardPage = ({
 
     <section className="card cross-service-playbook">
       <div className="section-head">
-        <h2>Immersion service engine</h2>
+        <h2>Exercises</h2>
         <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
       </div>
       <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item) => (
+        {SERVICE_BLUEPRINT.map((item, index) => (
           <article key={item.title} className="playbook-card">
-            <small>{item.skill}</small>
+            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
             <h3>{item.title}</h3>
             <p>{item.detail}</p>
             <a className="ghost-btn" href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, item.intent, item.skill, 'service-blueprint')}>
-              Start module
+              Start exercise
             </a>
           </article>
         ))}
@@ -344,98 +342,6 @@ const DashboardPage = ({
 };
 
 
-
-const FeaturePage = ({
-  featurePath,
-  hasAccess,
-  pricingHref,
-  onNavigate,
-}: {
-  featurePath: FeaturePath;
-  hasAccess: boolean;
-  pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
-}) => {
-  const featureIndex = FEATURE_PATHS.indexOf(featurePath);
-  const safeIndex = featureIndex >= 0 ? featureIndex : 0;
-  const activeFeature = SERVICE_BLUEPRINT[safeIndex] ?? SERVICE_BLUEPRINT[0];
-
-  return (
-    <div className="dashboard-stack">
-      <section className="hero-card card">
-        <div className="hero-copy">
-          <div className="eyebrow">{SERVICE_LABEL} Feature {safeIndex + 1}</div>
-          <h1>{activeFeature.title}</h1>
-          <p>{activeFeature.detail}</p>
-          <button
-            className="primary-cta"
-            type="button"
-            onClick={() => {
-              if (!hasAccess) {
-                window.location.assign(pricingHref);
-                return;
-              }
-              window.location.assign(buildServiceDashboardHref(CURRENT_SERVICE_KEY, activeFeature.intent, activeFeature.skill, 'feature-page'));
-            }}
-          >
-            {hasAccess ? 'Launch feature module' : 'Unlock full feature access'}
-          </button>
-          {!hasAccess ? <small className="hero-note">This feature requires an active plan or trial.</small> : null}
-        </div>
-        <div className="hero-art" aria-hidden>
-          <div className="wave one" />
-          <div className="wave two" />
-          <div className="wave three" />
-        </div>
-      </section>
-
-      <section className="card cross-service-playbook">
-        <div className="section-head">
-          <h2>Ordered service modules</h2>
-          <small>{safeIndex + 1} / {SERVICE_BLUEPRINT.length}</small>
-        </div>
-        <div className="playbook-grid">
-          {SERVICE_BLUEPRINT.map((item, index) => {
-            const route = FEATURE_PATHS[index] ?? FEATURE_PATHS[0];
-            const isActive = route === featurePath;
-            return (
-              <article
-                key={item.title}
-                className="playbook-card"
-                style={isActive ? { borderColor: 'rgba(24, 36, 30, 0.32)', boxShadow: '0 8px 20px rgba(18, 30, 23, 0.08)' } : undefined}
-              >
-                <small>{'Module ' + (index + 1) + ' - ' + item.skill}</small>
-                <h3>{item.title}</h3>
-                <p>{item.detail}</p>
-                <button className="ghost-btn" type="button" onClick={() => onNavigate(route)}>
-                  {isActive ? 'Current module' : 'Open module'}
-                </button>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="card cross-service-playbook">
-        <div className="section-head">
-          <h2>Cross-service handoffs</h2>
-          <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-        </div>
-        <div className="handoff-row">
-          {SERVICE_HANDOFFS.map((handoff) => (
-            <a
-              key={handoff.key}
-              className="menu-link muted-link"
-              href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-            >
-              {handoff.label}
-            </a>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-};
 
 const SignedOutLanding = ({
   serviceLabel,
@@ -801,19 +707,6 @@ const App = () => {
             >
               Dashboard
             </button>
-            {SERVICE_BLUEPRINT.map((item, index) => {
-              const featurePath = FEATURE_PATHS[index] ?? FEATURE_PATHS[0];
-              return (
-                <button
-                  key={item.intent}
-                  className={'menu-link ' + (path === featurePath ? 'active' : '')}
-                  type="button"
-                  onClick={() => navigate(featurePath)}
-                >
-                  {'Feature ' + (index + 1) + ': ' + item.title}
-                </button>
-              );
-            })}
           </nav>
 
           
@@ -900,15 +793,6 @@ const App = () => {
 
           {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
             <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
-          )}
-
-          {!showLanding && status !== 'signed_out' && FEATURE_PATHS.includes(path as FeaturePath) && (
-            <FeaturePage
-              featurePath={path as FeaturePath}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-            />
           )}
         </main>
       </div>
