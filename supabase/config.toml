@@ -200,6 +200,12 @@ verify_jwt = false
 [functions.vocabulary-notebook]
 verify_jwt = false
 
+[functions.ielts-practice]
+verify_jwt = false
+
+[functions.admin-ielts-practice]
+verify_jwt = false
+
 # Legacy alias for backward compatibility. Primary endpoint is `academy`.
 [functions.teacher-studio]
 verify_jwt = false
@@ -270,6 +276,8 @@ additional_redirect_urls = [
   "https://vocabulary.english.schood.online/auth",
   "https://immersion.english.schood.online",
   "https://immersion.english.schood.online/auth",
+  "https://practice.ielts.schood.online",
+  "https://practice.ielts.schood.online/auth",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
