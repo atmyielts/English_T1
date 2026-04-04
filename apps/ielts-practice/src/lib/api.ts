@@ -114,6 +114,25 @@ const readBody = async (res: Response): Promise<unknown> => {
   return res.text();
 };
 
+const resolveApiErrorMessage = (status: number, details: unknown): string => {
+  if (typeof details === "string" && details.trim().length > 0) {
+    return details.trim();
+  }
+
+  if (details && typeof details === "object" && !Array.isArray(details)) {
+    const payload = details as Record<string, unknown>;
+    const error = typeof payload.error === "string" ? payload.error : "";
+    const message = typeof payload.message === "string" ? payload.message : "";
+    const hint = typeof payload.hint === "string" ? payload.hint : "";
+    const base = error || message;
+    if (base && hint) return `${base}. ${hint}`;
+    if (base) return base;
+    if (hint) return hint;
+  }
+
+  return `Request failed (${status}). Please try again.`;
+};
+
 const call = async <T>(
   accessToken: string,
   path: string,
@@ -127,7 +146,7 @@ const call = async <T>(
   });
   if (!res.ok) {
     const details = await readBody(res);
-    throw new Error(`${method} ${path} failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(resolveApiErrorMessage(res.status, details));
   }
   return (await res.json()) as T;
 };

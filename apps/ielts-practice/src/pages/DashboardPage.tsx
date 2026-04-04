@@ -130,6 +130,17 @@ const formatQuestionType = (value: string): string =>
 
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 
+const humanizeError = (message: string): string => {
+  const text = message.toLowerCase();
+  if (text.includes('no published exercises')) {
+    return 'Practice content is being prepared. No exercises are available yet.';
+  }
+  if (text.includes('network') || text.includes('failed to fetch')) {
+    return 'Connection issue. Please refresh and try again.';
+  }
+  return message;
+};
+
 export const DashboardPage = () => {
   const { accessToken, me } = useAccess({ includeEffective: true });
   const [loading, setLoading] = useState(true);
@@ -145,8 +156,6 @@ export const DashboardPage = () => {
     const raw = String(me?.user.email ?? '').split('@')[0] ?? 'Learner';
     return raw.length > 0 ? raw : 'Learner';
   }, [me?.user.email]);
-
-  const isAdmin = String(me?.user.role ?? '').toLowerCase() === 'admin';
 
   const load = async (forceDiagnostics = false, autoGenerate = false): Promise<void> => {
     if (!accessToken) return;
@@ -177,7 +186,7 @@ export const DashboardPage = () => {
       setSharedSignals(Number.isFinite(profileSignals) ? profileSignals : null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
-      setError(message);
+      setError(humanizeError(message));
     } finally {
       setLoading(false);
     }
@@ -197,7 +206,7 @@ export const DashboardPage = () => {
       await load(true, false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Plan generation failed';
-      setError(message);
+      setError(humanizeError(message));
     } finally {
       setGenerating(false);
     }
@@ -249,7 +258,6 @@ export const DashboardPage = () => {
             <Link to="/dashboard" className="sidebar-link active">Dashboard</Link>
             <Link to="/plan" className="sidebar-link">Plan Builder</Link>
             <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link">IELTS Simulator</a>
-            {isAdmin ? <Link to="/admin" className="sidebar-link">Admin Panel</Link> : null}
           </nav>
 
           <section className="sidebar-panel">
@@ -379,7 +387,6 @@ export const DashboardPage = () => {
                       Generate Now
                     </button>
                     <Link to="/plan" className="btn ghost">Configure Plan</Link>
-                    {isAdmin ? <Link to="/admin" className="btn ghost">Import Exercises</Link> : null}
                   </div>
                 </div>
               ) : (
