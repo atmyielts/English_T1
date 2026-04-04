@@ -5,7 +5,9 @@ import { getMe } from './lib/platformClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-type AppPath = '/' | '/dashboard';
+const EXERCISE_PATHS = ['/exercise/1', '/exercise/2', '/exercise/3', '/exercise/4'] as const;
+type ExercisePath = (typeof EXERCISE_PATHS)[number];
+type AppPath = '/' | '/dashboard' | ExercisePath;
 
 type LessonRow = {
   id: string;
@@ -273,6 +275,7 @@ const buildServiceDashboardHref = (
 const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
+  if (EXERCISE_PATHS.includes(normalized as ExercisePath)) return normalized as ExercisePath;
   if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
 };
@@ -281,10 +284,12 @@ const DashboardPage = ({
   lessons,
   hasAccess,
   pricingHref,
+  onOpenExercise,
 }: {
   lessons: LessonRow[];
   hasAccess: boolean;
   pricingHref: string;
+  onOpenExercise: (index: number) => void;
 }) => {
   const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
   const inboundIntent = params.get('intent') ?? '';
@@ -292,13 +297,6 @@ const DashboardPage = ({
   const inboundReason = params.get('reason') ?? '';
   const inboundSourceService = params.get('source_service') ?? '';
   const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-  const [taskId, setTaskId] = useState<WritingTaskTemplate['id']>('email');
-  const [draftText, setDraftText] = useState('I go yesterday to library because I need finish my essay quickly');
-  const [rewriteSource, setRewriteSource] = useState('because the topic is hard I write many unrelated ideas');
-  const [rewriteResult, setRewriteResult] = useState(() => improveSentence('because the topic is hard I write many unrelated ideas'));
-
-  const selectedTask = WRITING_TASK_TEMPLATES.find((task) => task.id === taskId) ?? DEFAULT_WRITING_TASK;
-  const correctionHints = useMemo(() => buildCorrectionHints(draftText), [draftText]);
 
   return (
     <div className="dashboard-stack">
@@ -346,80 +344,6 @@ const DashboardPage = ({
         </a>
       </section>
     ) : null}
-
-    <section className="card writing-workbench">
-      <div className="section-head">
-        <h2>Writing feature workbench</h2>
-        <span className="workbench-badge">{hasAccess ? 'Live mode' : 'Preview mode'}</span>
-      </div>
-
-      <div className="workbench-grid">
-        <article className="workbench-card">
-          <h3>1. Writing tasks</h3>
-          <div className="task-chip-row">
-            {WRITING_TASK_TEMPLATES.map((task) => (
-              <button
-                key={task.id}
-                type="button"
-                className={`task-chip ${task.id === taskId ? 'active' : ''}`}
-                onClick={() => setTaskId(task.id)}
-              >
-                {task.label}
-              </button>
-            ))}
-          </div>
-          <p>{selectedTask.prompt}</p>
-        </article>
-
-        <article className="workbench-card">
-          <h3>2. Active correction</h3>
-          <textarea
-            value={draftText}
-            onChange={(event) => setDraftText(event.target.value)}
-            placeholder="Write a draft paragraph..."
-          />
-          <ul className="hint-list">
-            {correctionHints.length === 0 ? <li>No obvious grammar flags in this draft.</li> : null}
-            {correctionHints.slice(0, 3).map((hint, index) => (
-              <li key={`${hint.before}-${index}`}>
-                <strong>{hint.before}</strong> → {hint.after}
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="workbench-card">
-          <h3>3. Rewrite task</h3>
-          <textarea
-            value={rewriteSource}
-            onChange={(event) => setRewriteSource(event.target.value)}
-            placeholder="Enter a weak sentence..."
-          />
-          <button
-            type="button"
-            className="ghost-btn"
-            onClick={() => setRewriteResult(improveSentence(rewriteSource))}
-          >
-            Rewrite better
-          </button>
-          <p className="rewrite-result">{rewriteResult || 'Rewrite output appears here.'}</p>
-        </article>
-
-        <article className="workbench-card">
-          <h3>4. Grammar explanation layer</h3>
-          <ul className="explain-list">
-            {correctionHints.length === 0 ? <li>As you write, explanations for each correction appear here.</li> : null}
-            {correctionHints.slice(0, 3).map((hint, index) => (
-              <li key={`${hint.why}-${index}`}>
-                <strong>{hint.after}</strong>
-                <span>{hint.why}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </div>
-    </section>
-
     <section className="kpi-grid">
       <article className="card kpi">
         <span>Total writing sets</span>
@@ -486,9 +410,9 @@ const DashboardPage = ({
             <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
             <h3>{item.title}</h3>
             <p>{item.detail}</p>
-            <a className="ghost-btn" href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, item.intent, item.skill, 'service-blueprint')}>
-              Start exercise
-            </a>
+            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
+              Open exercise window
+            </button>
           </article>
         ))}
       </div>
@@ -508,6 +432,137 @@ const DashboardPage = ({
   );
 };
 
+
+
+const ExercisePage = ({
+  exercisePath,
+  hasAccess,
+  pricingHref,
+  onNavigate,
+}: {
+  exercisePath: ExercisePath;
+  hasAccess: boolean;
+  pricingHref: string;
+  onNavigate: (nextPath: AppPath) => void;
+}) => {
+  const exerciseIndex = EXERCISE_PATHS.indexOf(exercisePath);
+  const safeIndex = exerciseIndex >= 0 ? exerciseIndex : 0;
+  const currentExercise = SERVICE_BLUEPRINT[safeIndex] ?? SERVICE_BLUEPRINT[0];
+  const defaultTask = WRITING_TASK_TEMPLATES[safeIndex % WRITING_TASK_TEMPLATES.length] ?? DEFAULT_WRITING_TASK;
+
+  const [taskId, setTaskId] = useState<WritingTaskTemplate['id']>(defaultTask.id);
+  const [draftText, setDraftText] = useState('I go yesterday to library because I need finish my essay quickly');
+  const [rewriteSource, setRewriteSource] = useState('because the topic is hard I write many unrelated ideas');
+  const [rewriteResult, setRewriteResult] = useState(() => improveSentence('because the topic is hard I write many unrelated ideas'));
+
+  useEffect(() => {
+    setTaskId(defaultTask.id);
+  }, [defaultTask.id]);
+
+  const selectedTask = WRITING_TASK_TEMPLATES.find((task) => task.id === taskId) ?? DEFAULT_WRITING_TASK;
+  const correctionHints = useMemo(() => buildCorrectionHints(draftText), [draftText]);
+  const previousPath: ExercisePath = (EXERCISE_PATHS[Math.max(0, safeIndex - 1)] ?? EXERCISE_PATHS[0]) as ExercisePath;
+  const nextPath: ExercisePath = (EXERCISE_PATHS[Math.min(EXERCISE_PATHS.length - 1, safeIndex + 1)] ?? EXERCISE_PATHS[EXERCISE_PATHS.length - 1]) as ExercisePath;
+
+  return (
+    <div className="dashboard-stack">
+      <section className="hero-card card">
+        <div className="hero-copy">
+          <div className="eyebrow">{SERVICE_LABEL} Exercise {safeIndex + 1}</div>
+          <h1>{currentExercise.title}</h1>
+          <p>{currentExercise.detail}</p>
+          <button
+            className="primary-cta"
+            type="button"
+            onClick={() => {
+              if (!hasAccess) {
+                window.location.assign(pricingHref);
+              }
+            }}
+          >
+            {hasAccess ? 'Start timed exercise' : 'Unlock exercise access'}
+          </button>
+        </div>
+        <div className="hero-art" aria-hidden>
+          <div className="wave one" />
+          <div className="wave two" />
+          <div className="wave three" />
+        </div>
+      </section>
+
+      <section className="card cross-service-playbook">
+        <div className="section-head">
+          <h2>Exercise windows</h2>
+          <small>{'Exercise ' + (safeIndex + 1) + ' of ' + EXERCISE_PATHS.length}</small>
+        </div>
+
+        <div className="playbook-grid">
+          <article className="playbook-card">
+            <small>Window 1 - Prompt</small>
+            <h3>Writing task</h3>
+            <div className="task-chip-row">
+              {WRITING_TASK_TEMPLATES.map((task) => (
+                <button
+                  key={task.id}
+                  type="button"
+                  className={
+                    'task-chip ' + (task.id === taskId ? 'active' : '')
+                  }
+                  onClick={() => setTaskId(task.id)}
+                >
+                  {task.label}
+                </button>
+              ))}
+            </div>
+            <p>{selectedTask.prompt}</p>
+          </article>
+
+          <article className="playbook-card">
+            <small>Window 2 - Response</small>
+            <h3>Draft + corrections</h3>
+            <textarea
+              value={draftText}
+              onChange={(event) => setDraftText(event.target.value)}
+              placeholder="Write your draft here..."
+              rows={7}
+              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
+            />
+            <ul className="hint-list">
+              {correctionHints.length === 0 ? <li>No obvious grammar flags in this draft.</li> : null}
+              {correctionHints.slice(0, 3).map((hint, index) => (
+                <li key={hint.before + '-' + index}>
+                  <strong>{hint.before}</strong> {'->'} {hint.after}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="playbook-card">
+            <small>Window 3 - Rewrite</small>
+            <h3>Improved version</h3>
+            <textarea
+              value={rewriteSource}
+              onChange={(event) => setRewriteSource(event.target.value)}
+              placeholder="Enter a weak sentence to rewrite..."
+              rows={4}
+              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
+            />
+            <button className="ghost-btn" type="button" onClick={() => setRewriteResult(improveSentence(rewriteSource))}>
+              Rewrite better
+            </button>
+            <p className="rewrite-result">{rewriteResult || 'Rewrite output appears here.'}</p>
+          </article>
+        </div>
+
+        <div className="handoff-row">
+          <button className="menu-link" type="button" onClick={() => onNavigate('/dashboard')}>Back to dashboard</button>
+          <button className="menu-link" type="button" onClick={() => onNavigate(previousPath)} disabled={safeIndex === 0}>Previous exercise</button>
+          <button className="menu-link" type="button" onClick={() => onNavigate(nextPath)} disabled={safeIndex === EXERCISE_PATHS.length - 1}>Next exercise</button>
+        </div>
+      </section>
+    </div>
+  );
+};
 
 
 const SignedOutLanding = ({
@@ -612,11 +667,12 @@ const App = () => {
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
 
-      const [path, setPath] = useState<AppPath>(() => {
+  const [path, setPath] = useState<AppPath>(() => {
     if (typeof window === 'undefined') return '/';
     return resolveAppPath(window.location.pathname);
   });
   const showLanding = path === '/';
+  const activeExercisePath = EXERCISE_PATHS.includes(path as ExercisePath) ? (path as ExercisePath) : null;
 
   const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
@@ -874,6 +930,18 @@ const App = () => {
             >
               Dashboard
             </button>
+            {EXERCISE_PATHS.map((exercisePath, index) => (
+              <button
+                key={exercisePath}
+                className={'menu-link ' + (path === exercisePath ? 'active' : '')}
+                type="button"
+                onClick={() => {
+                  navigate(exercisePath);
+                }}
+              >
+                {'Exercise ' + (index + 1)}
+              </button>
+            ))}
           </nav>
 
           
@@ -959,7 +1027,23 @@ const App = () => {
           {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
 
           {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage lessons={visibleLessons} hasAccess={hasAccess} pricingHref={pricingHref} />
+            <DashboardPage
+              lessons={visibleLessons}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              onOpenExercise={(index) => {
+                const targetPath = (EXERCISE_PATHS[index] ?? EXERCISE_PATHS[0]) as ExercisePath;
+                navigate(targetPath);
+              }}
+            />
+          )}
+          {!showLanding && status !== 'signed_out' && activeExercisePath && (
+            <ExercisePage
+              exercisePath={activeExercisePath}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              onNavigate={navigate}
+            />
           )}
         </main>
       </div>
@@ -971,6 +1055,8 @@ const App = () => {
 };
 
 export default App;
+
+
 
 
 

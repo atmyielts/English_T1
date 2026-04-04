@@ -11,7 +11,9 @@ import {
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-type AppPath = '/' | '/dashboard' | '/notebook';
+const EXERCISE_PATHS = ['/exercise/1', '/exercise/2', '/exercise/3', '/exercise/4'] as const;
+type ExercisePath = (typeof EXERCISE_PATHS)[number];
+type AppPath = '/' | '/dashboard' | '/notebook' | ExercisePath;
 
 type LessonRow = {
   id: string;
@@ -213,6 +215,7 @@ const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
   if (normalized === '/notebook') return '/notebook';
+  if (EXERCISE_PATHS.includes(normalized as ExercisePath)) return normalized as ExercisePath;
   if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
 };
@@ -348,12 +351,14 @@ const DashboardPage = ({
   lessons,
   hasAccess,
   pricingHref,
+  onOpenExercise,
   notebook,
   onOpenNotebook,
 }: {
   lessons: LessonRow[];
   hasAccess: boolean;
   pricingHref: string;
+  onOpenExercise: (index: number) => void;
   notebook: NotebookModel;
   onOpenNotebook: () => void;
 }) => {
@@ -492,9 +497,9 @@ const DashboardPage = ({
             <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
             <h3>{item.title}</h3>
             <p>{item.detail}</p>
-            <a className="ghost-btn" href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, item.intent, item.skill, 'service-blueprint')}>
-              Start exercise
-            </a>
+            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
+              Open exercise window
+            </button>
           </article>
         ))}
       </div>
@@ -511,6 +516,105 @@ const DashboardPage = ({
       </div>
     </section>
   </div>
+  );
+};
+
+
+const ExercisePage = ({
+  exercisePath,
+  hasAccess,
+  pricingHref,
+  onNavigate,
+  onOpenNotebook,
+}: {
+  exercisePath: ExercisePath;
+  hasAccess: boolean;
+  pricingHref: string;
+  onNavigate: (nextPath: AppPath) => void;
+  onOpenNotebook: () => void;
+}) => {
+  const exerciseIndex = EXERCISE_PATHS.indexOf(exercisePath);
+  const safeIndex = exerciseIndex >= 0 ? exerciseIndex : 0;
+  const currentExercise = SERVICE_BLUEPRINT[safeIndex] ?? SERVICE_BLUEPRINT[0];
+  const [response, setResponse] = useState('');
+  const [reviewNotes, setReviewNotes] = useState('');
+  const previousPath: ExercisePath = (EXERCISE_PATHS[Math.max(0, safeIndex - 1)] ?? EXERCISE_PATHS[0]) as ExercisePath;
+  const nextPath: ExercisePath = (EXERCISE_PATHS[Math.min(EXERCISE_PATHS.length - 1, safeIndex + 1)] ?? EXERCISE_PATHS[EXERCISE_PATHS.length - 1]) as ExercisePath;
+
+  return (
+    <div className="dashboard-stack">
+      <section className="hero-card card">
+        <div className="hero-copy">
+          <div className="eyebrow">{SERVICE_LABEL} Exercise {safeIndex + 1}</div>
+          <h1>{currentExercise.title}</h1>
+          <p>{currentExercise.detail}</p>
+          <div className="landing-cta-row">
+            <button
+              className="primary-cta"
+              type="button"
+              onClick={() => {
+                if (!hasAccess) {
+                  window.location.assign(pricingHref);
+                }
+              }}
+            >
+              {hasAccess ? 'Start timed exercise' : 'Unlock exercise access'}
+            </button>
+            <button className="ghost-btn" type="button" onClick={onOpenNotebook}>Open notebook</button>
+          </div>
+        </div>
+        <div className="hero-art" aria-hidden>
+          <div className="wave one" />
+          <div className="wave two" />
+          <div className="wave three" />
+        </div>
+      </section>
+
+      <section className="card cross-service-playbook">
+        <div className="section-head">
+          <h2>Exercise windows</h2>
+          <small>{'Exercise ' + (safeIndex + 1) + ' of ' + EXERCISE_PATHS.length}</small>
+        </div>
+        <div className="playbook-grid">
+          <article className="playbook-card">
+            <small>Window 1 - Prompt</small>
+            <h3>Task brief</h3>
+            <p>{currentExercise.detail}</p>
+            <p>Focus on <strong>{currentExercise.skill}</strong> and use real sentence context.</p>
+          </article>
+
+          <article className="playbook-card">
+            <small>Window 2 - Recall</small>
+            <h3>Answer area</h3>
+            <textarea
+              value={response}
+              onChange={(event) => setResponse(event.target.value)}
+              placeholder="Write the sentence-based answer for this vocabulary exercise..."
+              rows={7}
+              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
+            />
+          </article>
+
+          <article className="playbook-card">
+            <small>Window 3 - Review</small>
+            <h3>Reflection</h3>
+            <textarea
+              value={reviewNotes}
+              onChange={(event) => setReviewNotes(event.target.value)}
+              placeholder="Write what to review in the next repetition cycle..."
+              rows={7}
+              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
+            />
+          </article>
+        </div>
+
+        <div className="handoff-row">
+          <button className="menu-link" type="button" onClick={() => onNavigate('/dashboard')}>Back to dashboard</button>
+          <button className="menu-link" type="button" onClick={() => onNavigate(previousPath)} disabled={safeIndex === 0}>Previous exercise</button>
+          <button className="menu-link" type="button" onClick={() => onNavigate(nextPath)} disabled={safeIndex === EXERCISE_PATHS.length - 1}>Next exercise</button>
+        </div>
+      </section>
+    </div>
   );
 };
 
@@ -667,11 +771,12 @@ const App = () => {
   const [draftDefinition, setDraftDefinition] = useState('');
   const [draftExample, setDraftExample] = useState('');
 
-      const [path, setPath] = useState<AppPath>(() => {
+  const [path, setPath] = useState<AppPath>(() => {
     if (typeof window === 'undefined') return '/';
     return resolveAppPath(window.location.pathname);
   });
   const showLanding = path === '/';
+  const activeExercisePath = EXERCISE_PATHS.includes(path as ExercisePath) ? (path as ExercisePath) : null;
 
   const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
@@ -1015,6 +1120,18 @@ const App = () => {
             >
               Dashboard
             </button>
+            {EXERCISE_PATHS.map((exercisePath, index) => (
+              <button
+                key={exercisePath}
+                className={'menu-link ' + (path === exercisePath ? 'active' : '')}
+                type="button"
+                onClick={() => {
+                  navigate(exercisePath);
+                }}
+              >
+                {'Exercise ' + (index + 1)}
+              </button>
+            ))}
             <button
               className={'menu-link ' + (path === '/notebook' ? 'active' : '')}
               type="button"
@@ -1104,6 +1221,10 @@ const App = () => {
               lessons={visibleLessons}
               hasAccess={hasAccess}
               pricingHref={pricingHref}
+              onOpenExercise={(index) => {
+                const targetPath = (EXERCISE_PATHS[index] ?? EXERCISE_PATHS[0]) as ExercisePath;
+                navigate(targetPath);
+              }}
               notebook={{
                 loading: notebookLoading,
                 saving: notebookSaving,
@@ -1123,6 +1244,15 @@ const App = () => {
                 onReview: handleReviewCard,
                 onRefresh: refreshNotebook,
               }}
+              onOpenNotebook={() => navigate('/notebook')}
+            />
+          )}
+          {!showLanding && status !== 'signed_out' && activeExercisePath && (
+            <ExercisePage
+              exercisePath={activeExercisePath}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              onNavigate={navigate}
               onOpenNotebook={() => navigate('/notebook')}
             />
           )}
@@ -1162,6 +1292,7 @@ const App = () => {
 };
 
 export default App;
+
 
 
 
