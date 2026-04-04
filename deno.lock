@@ -166,6 +166,23 @@
           ]
         }
       },
+      "apps/ielts-practice": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/node@^24.10.1",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:@vitejs/plugin-react@^5.1.1",
+            "npm:lucide-react@0.562",
+            "npm:react-dom@^19.2.0",
+            "npm:react-router-dom@^7.13.1",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
       "apps/ielts-simulator": {
         "packageJson": {
           "dependencies": [

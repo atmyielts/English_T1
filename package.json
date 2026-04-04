@@ -4,6 +4,7 @@
   "workspaces": [
     "apps/platform",
     "apps/ielts-simulator",
+    "apps/ielts-practice",
     "apps/sat-simulator",
     "apps/toefl-ibt-simulator",
     "apps/academy",
