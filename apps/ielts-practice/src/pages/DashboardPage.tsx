@@ -10,6 +10,7 @@ import {
 } from '../lib/api';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { useAccess } from '../lib/useAccess';
+import { supabase } from '../lib/supabase';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -142,7 +143,7 @@ const humanizeError = (message: string): string => {
 };
 
 export const DashboardPage = () => {
-  const { accessToken, me } = useAccess({ includeEffective: true });
+  const { accessToken, me, session } = useAccess({ includeEffective: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
@@ -151,11 +152,58 @@ export const DashboardPage = () => {
   const [sharedSignals, setSharedSignals] = useState<number | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProfileName = async (): Promise<void> => {
+      const userId = session?.user.id;
+      if (!userId) {
+        setProfileNameFromDb(null);
+        return;
+      }
+
+      try {
+        const { data, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('first_name,last_name')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (profileError || !data) {
+          setProfileNameFromDb(null);
+          return;
+        }
+
+        const first = typeof data.first_name === 'string' ? data.first_name.trim() : '';
+        const last = typeof data.last_name === 'string' ? data.last_name.trim() : '';
+        const full = `${first} ${last}`.trim();
+        setProfileNameFromDb(full || null);
+      } catch {
+        if (!cancelled) setProfileNameFromDb(null);
+      }
+    };
+
+    void loadProfileName();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user.id]);
 
   const displayName = useMemo(() => {
+    if (profileNameFromDb) return profileNameFromDb;
+    const first = String(session?.user.user_metadata?.first_name ?? '').trim();
+    const last = String(session?.user.user_metadata?.last_name ?? '').trim();
+    const full = `${first} ${last}`.trim();
+    if (full) return full;
+    const fullName = String(session?.user.user_metadata?.full_name ?? '').trim();
+    if (fullName) return fullName;
     const raw = String(me?.user.email ?? '').split('@')[0] ?? 'Learner';
     return raw.length > 0 ? raw : 'Learner';
-  }, [me?.user.email]);
+  }, [me?.user.email, profileNameFromDb, session?.user.user_metadata]);
 
   const load = async (forceDiagnostics = false, autoGenerate = false): Promise<void> => {
     if (!accessToken) return;
