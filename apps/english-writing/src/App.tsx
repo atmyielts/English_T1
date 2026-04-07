@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISE_PATHS = ['/exercise/1', '/exercise/2', '/exercise/3', '/exercise/4'] as const;
-type ExercisePath = (typeof EXERCISE_PATHS)[number];
-type AppPath = '/' | '/dashboard' | ExercisePath;
+const EXERCISES_PATH = '/exercises' as const;
+type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
 
 type LessonRow = {
   id: string;
@@ -17,18 +16,6 @@ type LessonRow = {
   progress: number;
   status: 'In progress' | 'Not started' | 'Completed';
   accent: string;
-};
-
-type WritingTaskTemplate = {
-  id: 'email' | 'opinion' | 'story';
-  label: string;
-  prompt: string;
-};
-
-type CorrectionHint = {
-  before: string;
-  after: string;
-  why: string;
 };
 
 const WRITING_PRODUCT_ID = ((import.meta.env.VITE_WRITING_PRODUCT_ID as string | undefined) ?? '').trim() || '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532';
@@ -80,81 +67,6 @@ const SERVICE_HANDOFFS = [
   { key: 'reading', label: 'Strengthen structure in Reading', intent: 'sentence-breakdown', skill: 'structure', reason: 'writing-handoff' },
   { key: 'vocabulary', label: 'Expand lexical range in Vocabulary', intent: 'context-review', skill: 'vocabulary', reason: 'writing-handoff' },
 ] as const;
-
-const WRITING_TASK_TEMPLATES: WritingTaskTemplate[] = [
-  {
-    id: 'email',
-    label: 'Email task',
-    prompt: 'Write an email to your teacher explaining why you missed class and what plan you will follow this week.',
-  },
-  {
-    id: 'opinion',
-    label: 'Opinion task',
-    prompt: 'Do you agree that online learning is better than classroom learning? Give reasons and examples.',
-  },
-  {
-    id: 'story',
-    label: 'Story task',
-    prompt: 'Write a short story about a time when one small decision changed your day.',
-  },
-];
-
-const DEFAULT_WRITING_TASK: WritingTaskTemplate = {
-  id: 'email',
-  label: 'Email task',
-  prompt: 'Write an email to your teacher explaining why you missed class and what plan you will follow this week.',
-};
-
-const CORRECTION_RULES: Array<{ match: RegExp; replace: string; why: string }> = [
-  {
-    match: /\bI go yesterday\b/gi,
-    replace: 'I went yesterday',
-    why: 'Past time marker "yesterday" requires simple past.',
-  },
-  {
-    match: /\bshe don't\b/gi,
-    replace: "she doesn't",
-    why: 'Third-person singular in present simple takes "does not".',
-  },
-  {
-    match: /\bpeoples\b/gi,
-    replace: 'people',
-    why: '"People" is already plural.',
-  },
-  {
-    match: /\bvery goodly\b/gi,
-    replace: 'very well',
-    why: 'Use an adverb ("well") to modify action quality.',
-  },
-];
-
-const improveSentence = (value: string): string => {
-  let next = value.trim();
-  if (!next) return '';
-  next = next.replace(/\s+/g, ' ');
-  if (/^because\s/i.test(next) && !next.includes(',')) {
-    next = next.replace(/^because\s/i, 'Because ');
-    next = `${next}, I focused on the main point and supported it clearly.`;
-  }
-  if (!/[.!?]$/.test(next)) next = `${next}.`;
-  return next.charAt(0).toUpperCase() + next.slice(1);
-};
-
-const buildCorrectionHints = (draft: string): CorrectionHint[] => {
-  const hints: CorrectionHint[] = [];
-  for (const rule of CORRECTION_RULES) {
-    const matches = draft.match(rule.match);
-    if (!matches || matches.length === 0) continue;
-    for (const before of matches) {
-      hints.push({
-        before,
-        after: before.replace(rule.match, rule.replace),
-        why: rule.why,
-      });
-    }
-  }
-  return hints;
-};
 
 const lessonRows: LessonRow[] = [
   {
@@ -275,7 +187,7 @@ const buildServiceDashboardHref = (
 const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
-  if (EXERCISE_PATHS.includes(normalized as ExercisePath)) return normalized as ExercisePath;
+  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
   if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
 };
@@ -434,136 +346,192 @@ const DashboardPage = ({
 
 
 
-const ExercisePage = ({
-  exercisePath,
+const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
 }: {
-  exercisePath: ExercisePath;
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
 }) => {
-  const exerciseIndex = EXERCISE_PATHS.indexOf(exercisePath);
-  const safeIndex = exerciseIndex >= 0 ? exerciseIndex : 0;
-  const currentExercise = SERVICE_BLUEPRINT[safeIndex] ?? SERVICE_BLUEPRINT[0];
-  const defaultTask = WRITING_TASK_TEMPLATES[safeIndex % WRITING_TASK_TEMPLATES.length] ?? DEFAULT_WRITING_TASK;
+  type LaneKey = 'todo' | 'in_progress' | 'completed';
 
-  const [taskId, setTaskId] = useState<WritingTaskTemplate['id']>(defaultTask.id);
-  const [draftText, setDraftText] = useState('I go yesterday to library because I need finish my essay quickly');
-  const [rewriteSource, setRewriteSource] = useState('because the topic is hard I write many unrelated ideas');
-  const [rewriteResult, setRewriteResult] = useState(() => improveSentence('because the topic is hard I write many unrelated ideas'));
+  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
+  const [selectedId, setSelectedId] = useState<string>('');
+
+  const exerciseItems = useMemo(
+    () =>
+      SERVICE_BLUEPRINT.map((item, index) => {
+        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
+        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
+
+        return {
+          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
+          lane,
+          priority,
+          due: `${10 + index * 3} days left`,
+          comments: 6 + index * 4,
+          updates: 3 + index * 2,
+          ...item,
+        };
+      }),
+    [],
+  );
 
   useEffect(() => {
-    setTaskId(defaultTask.id);
-  }, [defaultTask.id]);
+    const firstItem = exerciseItems[0];
+    if (!selectedId && firstItem) {
+      setSelectedId(firstItem.id);
+    }
+  }, [exerciseItems, selectedId]);
 
-  const selectedTask = WRITING_TASK_TEMPLATES.find((task) => task.id === taskId) ?? DEFAULT_WRITING_TASK;
-  const correctionHints = useMemo(() => buildCorrectionHints(draftText), [draftText]);
-  const previousPath: ExercisePath = (EXERCISE_PATHS[Math.max(0, safeIndex - 1)] ?? EXERCISE_PATHS[0]) as ExercisePath;
-  const nextPath: ExercisePath = (EXERCISE_PATHS[Math.min(EXERCISE_PATHS.length - 1, safeIndex + 1)] ?? EXERCISE_PATHS[EXERCISE_PATHS.length - 1]) as ExercisePath;
+  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
+
+  const groupedItems = useMemo(
+    () => ({
+      todo: visibleItems.filter((item) => item.lane === 'todo'),
+      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
+      completed: visibleItems.filter((item) => item.lane === 'completed'),
+    }),
+    [visibleItems],
+  );
+
+  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+
+  const laneDefs: Array<{ key: LaneKey; label: string }> = [
+    { key: 'todo', label: 'Todo' },
+    { key: 'in_progress', label: 'In progress' },
+    { key: 'completed', label: 'Completed' },
+  ];
 
   return (
     <div className="dashboard-stack">
-      <section className="hero-card card">
-        <div className="hero-copy">
-          <div className="eyebrow">{SERVICE_LABEL} Exercise {safeIndex + 1}</div>
-          <h1>{currentExercise.title}</h1>
-          <p>{currentExercise.detail}</p>
-          <button
-            className="primary-cta"
-            type="button"
-            onClick={() => {
-              if (!hasAccess) {
-                window.location.assign(pricingHref);
-              }
-            }}
-          >
-            {hasAccess ? 'Start timed exercise' : 'Unlock exercise access'}
-          </button>
-        </div>
-        <div className="hero-art" aria-hidden>
-          <div className="wave one" />
-          <div className="wave two" />
-          <div className="wave three" />
-        </div>
-      </section>
+      <section className="card exercises-workspace">
+        <div className="exercises-grid">
+          <div className="exercises-list-pane">
+            <div className="exercises-list-head">
+              <h2>{SERVICE_LABEL} Exercises</h2>
+              <small>One unified page</small>
+            </div>
 
-      <section className="card cross-service-playbook">
-        <div className="section-head">
-          <h2>Exercise windows</h2>
-          <small>{'Exercise ' + (safeIndex + 1) + ' of ' + EXERCISE_PATHS.length}</small>
-        </div>
-
-        <div className="playbook-grid">
-          <article className="playbook-card">
-            <small>Window 1 - Prompt</small>
-            <h3>Writing task</h3>
-            <div className="task-chip-row">
-              {WRITING_TASK_TEMPLATES.map((task) => (
+            <div className="exercises-filters">
+              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
+                All
+              </button>
+              {laneDefs.map((lane) => (
                 <button
-                  key={task.id}
+                  key={lane.key}
+                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
                   type="button"
-                  className={
-                    'task-chip ' + (task.id === taskId ? 'active' : '')
-                  }
-                  onClick={() => setTaskId(task.id)}
+                  onClick={() => setActiveLane(lane.key)}
                 >
-                  {task.label}
+                  {lane.label}
                 </button>
               ))}
             </div>
-            <p>{selectedTask.prompt}</p>
-          </article>
 
-          <article className="playbook-card">
-            <small>Window 2 - Response</small>
-            <h3>Draft + corrections</h3>
-            <textarea
-              value={draftText}
-              onChange={(event) => setDraftText(event.target.value)}
-              placeholder="Write your draft here..."
-              rows={7}
-              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
-            />
-            <ul className="hint-list">
-              {correctionHints.length === 0 ? <li>No obvious grammar flags in this draft.</li> : null}
-              {correctionHints.slice(0, 3).map((hint, index) => (
-                <li key={hint.before + '-' + index}>
-                  <strong>{hint.before}</strong> {'->'} {hint.after}
-                </li>
-              ))}
-            </ul>
-          </article>
+            {laneDefs.map((lane) => (
+              <section key={lane.key} className="exercise-lane">
+                <header>
+                  <h3>{lane.label}</h3>
+                  <span>{groupedItems[lane.key].length}</span>
+                </header>
 
-          <article className="playbook-card">
-            <small>Window 3 - Rewrite</small>
-            <h3>Improved version</h3>
-            <textarea
-              value={rewriteSource}
-              onChange={(event) => setRewriteSource(event.target.value)}
-              placeholder="Enter a weak sentence to rewrite..."
-              rows={4}
-              style={{ width: '100%', borderRadius: 12, border: '1px solid var(--line)', padding: 12, fontFamily: 'inherit', resize: 'vertical' }}
-            />
-            <button className="ghost-btn" type="button" onClick={() => setRewriteResult(improveSentence(rewriteSource))}>
-              Rewrite better
-            </button>
-            <p className="rewrite-result">{rewriteResult || 'Rewrite output appears here.'}</p>
-          </article>
-        </div>
+                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
 
-        <div className="handoff-row">
-          <button className="menu-link" type="button" onClick={() => onNavigate('/dashboard')}>Back to dashboard</button>
-          <button className="menu-link" type="button" onClick={() => onNavigate(previousPath)} disabled={safeIndex === 0}>Previous exercise</button>
-          <button className="menu-link" type="button" onClick={() => onNavigate(nextPath)} disabled={safeIndex === EXERCISE_PATHS.length - 1}>Next exercise</button>
+                {groupedItems[lane.key].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
+                    onClick={() => setSelectedId(item.id)}
+                  >
+                    <div className="exercise-item-top">
+                      <h4>{item.title}</h4>
+                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
+                    </div>
+                    <p>{item.detail}</p>
+                    <div className="exercise-item-meta">
+                      <span>{item.due}</span>
+                      <span>{item.comments} notes</span>
+                      <span>{item.updates} updates</span>
+                    </div>
+                  </button>
+                ))}
+              </section>
+            ))}
+          </div>
+
+          <div className="exercises-detail-pane">
+            {selectedItem ? (
+              <>
+                <div className="exercise-detail-actions">
+                  <button type="button" className="ghost-btn">Share</button>
+                  <button type="button" className="ghost-btn">Expand</button>
+                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
+                </div>
+
+                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
+                <h2>{selectedItem.title}</h2>
+
+                <div className="exercise-detail-badges">
+                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
+                  <span className="exercise-chip">{selectedItem.due}</span>
+                </div>
+
+                <div className="exercise-timebox">
+                  <span>Focused exercise block</span>
+                  <strong>45:00</strong>
+                </div>
+
+                <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <h3>Execution checklist</h3>
+                  <ul>
+                    <li>Complete the task prompt without switching services.</li>
+                    <li>Write one short reflection before submitting.</li>
+                    <li>Push weak words or patterns into connected services.</li>
+                  </ul>
+                </div>
+
+                <div className="exercise-subsection">
+                  <h3>Comments</h3>
+                  <div className="exercise-comment">
+                    <strong>Coach</strong>
+                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
+                  </div>
+                  <div className="exercise-comment">
+                    <strong>You</strong>
+                    <p>I will repeat this with a shorter time limit after one full run.</p>
+                  </div>
+                </div>
+
+                <div className="exercise-detail-footer">
+                  <button
+                    className="primary-cta"
+                    type="button"
+                    onClick={() => {
+                      if (!hasAccess) {
+                        window.location.assign(pricingHref);
+                      }
+                    }}
+                  >
+                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
+                  </button>
+                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
+                    Back to dashboard
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </section>
     </div>
   );
 };
-
 
 const SignedOutLanding = ({
   serviceLabel,
@@ -672,7 +640,6 @@ const App = () => {
     return resolveAppPath(window.location.pathname);
   });
   const showLanding = path === '/';
-  const activeExercisePath = EXERCISE_PATHS.includes(path as ExercisePath) ? (path as ExercisePath) : null;
 
   const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
@@ -929,20 +896,15 @@ const App = () => {
               }}
             >
               Dashboard
-            </button>
-            {EXERCISE_PATHS.map((exercisePath, index) => (
-              <button
-                key={exercisePath}
-                className={'menu-link ' + (path === exercisePath ? 'active' : '')}
-                type="button"
-                onClick={() => {
-                  navigate(exercisePath);
-                }}
-              >
-                {'Exercise ' + (index + 1)}
-              </button>
-            ))}
-          </nav>
+            </button>            <button
+              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
+              type="button"
+              onClick={() => {
+                navigate(EXERCISES_PATH);
+              }}
+            >
+              Exercises
+            </button>          </nav>
 
           
           <section className="service-switcher">
@@ -1031,15 +993,13 @@ const App = () => {
               lessons={visibleLessons}
               hasAccess={hasAccess}
               pricingHref={pricingHref}
-              onOpenExercise={(index) => {
-                const targetPath = (EXERCISE_PATHS[index] ?? EXERCISE_PATHS[0]) as ExercisePath;
-                navigate(targetPath);
+              onOpenExercise={() => {
+                navigate(EXERCISES_PATH);
               }}
             />
           )}
-          {!showLanding && status !== 'signed_out' && activeExercisePath && (
-            <ExercisePage
-              exercisePath={activeExercisePath}
+          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
+            <ExercisesPage
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
@@ -1055,6 +1015,13 @@ const App = () => {
 };
 
 export default App;
+
+
+
+
+
+
+
 
 
 
