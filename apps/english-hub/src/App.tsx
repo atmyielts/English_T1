@@ -284,6 +284,7 @@ const pickTaskForService = (service: Service, indexSeed: number): { title: strin
 
 const App = () => {
   const [path, setPath] = useState<HubPath>(resolvePath);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
 
   const [notebookLoading, setNotebookLoading] = useState(false);
@@ -321,6 +322,10 @@ const App = () => {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [path]);
 
   useEffect(() => {
     let mounted = true;
@@ -430,6 +435,7 @@ const App = () => {
       window.history.pushState({}, '', nextPath);
     }
     setPath(nextPath);
+    setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -627,12 +633,26 @@ const App = () => {
             </span>
           </a>
 
-          <nav className="hub-links" aria-label="Hub routes">
+          <button
+            className="hub-menu-toggle"
+            type="button"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="hub-nav-panel"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            Menu
+          </button>
+
+          <nav
+            id="hub-nav-panel"
+            className={`hub-links ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}
+            aria-label="Hub routes"
+          >
             <button className={path === '/' ? 'route-btn active' : 'route-btn'} type="button" onClick={() => navigate('/')}>Home</button>
             <button className={path === '/dashboard' ? 'route-btn active' : 'route-btn'} type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
           </nav>
 
-          <div className="hub-controls">
+          <div className={`hub-controls ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
             <a className="btn btn-ghost" href={workspaceHref}>Platform</a>
             {session ? (
               <button className="btn btn-ghost" type="button" onClick={() => void handleSignOut()}>Sign out</button>
