@@ -200,6 +200,9 @@ verify_jwt = false
 [functions.vocabulary-notebook]
 verify_jwt = false
 
+[functions.reading-articles]
+verify_jwt = false
+
 [functions.ielts-practice]
 verify_jwt = false
 

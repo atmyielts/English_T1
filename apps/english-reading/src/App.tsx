@@ -3,11 +3,13 @@ import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
+import { listReadingArticles, type CefrLevel, type ReadingArticle } from './lib/readingArticlesClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
 const EXERCISES_PATH = '/exercises' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
+const ARTICLES_PATH = '/articles' as const;
+type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH | typeof ARTICLES_PATH;
 
 type LessonRow = {
   id: string;
@@ -75,6 +77,8 @@ const SERVICE_HANDOFFS = [
   { key: 'grammar', label: 'Route structure gaps to Grammar', intent: 'pattern-training', skill: 'structure', reason: 'reading-handoff' },
   { key: 'writing', label: 'Transfer structure to Writing', intent: 'rewrite', skill: 'coherence', reason: 'reading-handoff' },
 ] as const;
+
+const CEFR_LEVELS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 const lessonRows: LessonRow[] = [
   {
@@ -258,6 +262,7 @@ const buildServiceDashboardHref = (
 const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
+  if (normalized === ARTICLES_PATH) return ARTICLES_PATH;
   if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
   if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
@@ -650,6 +655,318 @@ const ExercisesPage = ({
             ) : null}
           </div>
         </div>
+      </section>
+    </div>
+  );
+};
+
+const ArticlesPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  onNavigate,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  onNavigate: (nextPath: AppPath) => void;
+}) => {
+  const [articles, setArticles] = useState<ReadingArticle[]>([]);
+  const [libraryCategories, setLibraryCategories] = useState<string[]>([]);
+  const [libraryThemes, setLibraryThemes] = useState<string[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(false);
+  const [articlesError, setArticlesError] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<CefrLevel | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedTheme, setSelectedTheme] = useState<string>('all');
+
+  const loadArticles = async (): Promise<void> => {
+    if (!accessToken) return;
+    setLoadingArticles(true);
+    setArticlesError(null);
+    try {
+      const result = await listReadingArticles(accessToken, { status: 'published', limit: 150 });
+      setArticles(result.articles);
+      setLibraryCategories(result.filters.categories);
+      setLibraryThemes(result.filters.themes);
+    } catch (error) {
+      const statusCode = (error as { status?: number } | null)?.status ?? null;
+      if (statusCode === 401 || statusCode === 403) {
+        setArticlesError('Sign in again to load reading articles.');
+        return;
+      }
+      setArticlesError('Could not load articles right now. Please try again.');
+    } finally {
+      setLoadingArticles(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!accessToken) {
+      setArticles([]);
+      setLibraryCategories([]);
+      setLibraryThemes([]);
+      setLoadingArticles(false);
+      setArticlesError('Sign in to load the reading article library.');
+      return;
+    }
+    void loadArticles();
+  }, [accessToken]);
+
+  const categories = useMemo(() => {
+    if (libraryCategories.length > 0) return ['all', ...libraryCategories];
+    return ['all', ...Array.from(new Set(articles.map((article) => article.category)))];
+  }, [articles, libraryCategories]);
+
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory('all');
+    }
+  }, [categories, selectedCategory]);
+
+  const availableThemes = useMemo(() => {
+    const source =
+      selectedCategory === 'all'
+        ? articles
+        : articles.filter((article) => article.category === selectedCategory);
+    if (source.length > 0) return ['all', ...Array.from(new Set(source.map((article) => article.theme)))];
+
+    const fromFilters = selectedCategory === 'all'
+      ? libraryThemes
+      : libraryThemes.filter(Boolean);
+    return ['all', ...Array.from(new Set(fromFilters))];
+  }, [articles, libraryThemes, selectedCategory]);
+
+  useEffect(() => {
+    if (!availableThemes.includes(selectedTheme)) {
+      setSelectedTheme('all');
+    }
+  }, [availableThemes, selectedTheme]);
+
+  const filteredArticles = useMemo(
+    () =>
+      articles.filter((article) => {
+        if (selectedLevel !== 'all' && article.level !== selectedLevel) return false;
+        if (selectedCategory !== 'all' && article.category !== selectedCategory) return false;
+        if (selectedTheme !== 'all' && article.theme !== selectedTheme) return false;
+        return true;
+      }),
+    [articles, selectedCategory, selectedLevel, selectedTheme],
+  );
+
+  const featuredArticle = filteredArticles[0] ?? null;
+  const sideArticles = featuredArticle ? filteredArticles.slice(1, 4) : filteredArticles.slice(0, 3);
+  const visibleThemes = Array.from(new Set(filteredArticles.map((article) => article.theme))).slice(0, 10);
+
+  const handleArticleOpen = (): void => {
+    if (!hasAccess) {
+      window.location.assign(pricingHref);
+      return;
+    }
+    onNavigate(EXERCISES_PATH);
+  };
+
+  return (
+    <div className="dashboard-stack">
+      <section className="card reading-library-head">
+        <div>
+          <small className="library-label">Reading Library</small>
+          <h2>Tiered articles from A1 to C2 with focused pathways.</h2>
+          <p>
+            Select your level, category, and theme to keep reading practice targeted while staying connected to your
+            English profile.
+          </p>
+        </div>
+        <div className="library-head-actions">
+          <button
+            className="ghost-btn"
+            type="button"
+            onClick={() => {
+              void loadArticles();
+            }}
+            disabled={loadingArticles || !accessToken}
+          >
+            {loadingArticles ? 'Refreshing...' : 'Refresh library'}
+          </button>
+          <button className="ghost-btn" type="button" onClick={() => onNavigate(EXERCISES_PATH)}>
+            Open exercises
+          </button>
+          <button className="primary-cta" type="button" onClick={handleArticleOpen}>
+            {hasAccess ? 'Start reading now' : 'Unlock article access'}
+          </button>
+        </div>
+      </section>
+
+      {loadingArticles ? (
+        <div className="access-banner">
+          <strong>Loading article library...</strong>
+          <span>Fetching latest level and category catalog.</span>
+        </div>
+      ) : null}
+
+      {!loadingArticles && articlesError ? (
+        <div className="access-banner warning">
+          <strong>Article library unavailable.</strong>
+          <span>{articlesError}</span>
+          <button
+            className="ghost-btn"
+            type="button"
+            onClick={() => {
+              void loadArticles();
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : null}
+
+      <section className="card reading-library-filters">
+        <div className="library-filter-block">
+          <small>CEFR level</small>
+          <div className="library-chip-row">
+            <button
+              className={selectedLevel === 'all' ? 'library-chip active' : 'library-chip'}
+              type="button"
+              onClick={() => setSelectedLevel('all')}
+            >
+              All levels
+            </button>
+            {CEFR_LEVELS.map((level) => (
+              <button
+                key={level}
+                className={selectedLevel === level ? 'library-chip active' : 'library-chip'}
+                type="button"
+                onClick={() => setSelectedLevel(level)}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="library-select-grid">
+          <label>
+            <span>Category</span>
+            <select value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)}>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category === 'all' ? 'All categories' : category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Theme</span>
+            <select value={selectedTheme} onChange={(event) => setSelectedTheme(event.target.value)}>
+              {availableThemes.map((theme) => (
+                <option key={theme} value={theme}>
+                  {theme === 'all' ? 'All themes' : theme}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section className="reading-library-grid">
+        {featuredArticle ? (
+          <article className={`card reading-article-feature tone-${featuredArticle.tone}`}>
+            <div className="reading-article-meta">
+              <span>{featuredArticle.category}</span>
+              <span>{featuredArticle.level}</span>
+            </div>
+            <h3>{featuredArticle.title}</h3>
+            <p>{featuredArticle.summary}</p>
+            <div className="reading-article-footer">
+              <small>{featuredArticle.readTimeMinutes} min read</small>
+              {featuredArticle.hot ? <span className="reading-hot-pill">Trending</span> : null}
+            </div>
+            <button className="ghost-btn" type="button" onClick={handleArticleOpen}>
+              Open article
+            </button>
+          </article>
+        ) : (
+          <article className="card reading-library-empty">
+            <h3>No articles match this filter yet.</h3>
+            <p>Adjust level, category, or theme to load another set.</p>
+          </article>
+        )}
+
+        <div className="reading-library-column">
+          {sideArticles.length === 0 ? (
+            <article className="card reading-article-mini">
+              <h4>No secondary cards</h4>
+              <p>Try widening filters to discover more options.</p>
+            </article>
+          ) : (
+            sideArticles.map((article) => (
+              <article key={article.id} className={`card reading-article-mini tone-${article.tone}`}>
+                <div className="reading-article-meta">
+                  <span>{article.category}</span>
+                  <span>{article.level}</span>
+                </div>
+                <h4>{article.title}</h4>
+                <p>{article.summary}</p>
+                <small>{article.readTimeMinutes} min read</small>
+              </article>
+            ))
+          )}
+        </div>
+
+        <article className="card reading-library-topics">
+          <small>Theme map</small>
+          <h4>Popular themes</h4>
+          <div className="library-theme-cloud">
+            {visibleThemes.length === 0 ? (
+              <span className="library-theme-chip muted">No themes available</span>
+            ) : (
+              visibleThemes.map((theme) => (
+                <button
+                  key={theme}
+                  type="button"
+                  className={selectedTheme === theme ? 'library-theme-chip active' : 'library-theme-chip'}
+                  onClick={() => setSelectedTheme(theme)}
+                >
+                  {theme}
+                </button>
+              ))
+            )}
+          </div>
+          <button className="ghost-btn" type="button" onClick={() => setSelectedTheme('all')}>
+            Show all themes
+          </button>
+        </article>
+      </section>
+
+      <section className="card reading-library-catalog">
+        <div className="section-head">
+          <h2>Article catalog</h2>
+          <small>{filteredArticles.length} results</small>
+        </div>
+
+        {filteredArticles.length === 0 ? (
+          <p className="reading-catalog-empty">No articles found for this selection.</p>
+        ) : (
+          <div className="reading-catalog-grid">
+            {filteredArticles.map((article) => (
+              <article key={article.id} className={`reading-catalog-card tone-${article.tone}`}>
+                <div className="reading-article-meta">
+                  <span>{article.category}</span>
+                  <span>{article.level}</span>
+                </div>
+                <h3>{article.title}</h3>
+                <p>{article.summary}</p>
+                <div className="reading-article-footer">
+                  <small>{article.theme}</small>
+                  <small>{article.readTimeMinutes} min</small>
+                </div>
+                <button className="ghost-btn" type="button" onClick={handleArticleOpen}>
+                  {hasAccess ? 'Read article' : 'Unlock to read'}
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -1064,7 +1381,17 @@ const App = () => {
               }}
             >
               Dashboard
-            </button>            <button
+            </button>
+            <button
+              className={'menu-link ' + (path === ARTICLES_PATH ? 'active' : '')}
+              type="button"
+              onClick={() => {
+                navigate(ARTICLES_PATH);
+              }}
+            >
+              Articles
+            </button>
+            <button
               className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
               type="button"
               onClick={() => {
@@ -1072,7 +1399,8 @@ const App = () => {
               }}
             >
               Exercises
-            </button>          </nav>
+            </button>
+          </nav>
 
           
           <section className="service-switcher">
@@ -1172,6 +1500,14 @@ const App = () => {
               onSyncWords={() => {
                 void handleSyncWords();
               }}
+            />
+          )}
+          {!showLanding && status !== 'signed_out' && path === ARTICLES_PATH && (
+            <ArticlesPage
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              accessToken={session?.access_token ?? null}
+              onNavigate={navigate}
             />
           )}
           {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
