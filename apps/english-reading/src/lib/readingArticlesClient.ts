@@ -22,6 +22,7 @@ export type ReadingArticle = {
   slug: string;
   title: string;
   summary: string;
+  contentMarkdown: string | null;
   level: CefrLevel;
   category: string;
   theme: string;
@@ -39,6 +40,10 @@ type ListArticlesResponse = {
     categories?: string[];
     themes?: string[];
   };
+};
+
+type ArticleMutationResponse = {
+  article?: Record<string, unknown>;
 };
 
 const toText = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
@@ -75,6 +80,7 @@ const mapArticle = (input: Record<string, unknown>): ReadingArticle => ({
   slug: toText(input.slug),
   title: toText(input.title),
   summary: toText(input.summary),
+  contentMarkdown: toText(input.content_markdown) || null,
   level: toLevel(input.level),
   category: toText(input.category),
   theme: toText(input.theme),
@@ -145,3 +151,120 @@ export const listReadingArticles = async (
   };
 };
 
+export const getReadingArticleBySlug = async (
+  accessToken: string,
+  slug: string,
+  status?: "draft" | "published" | "archived",
+): Promise<ReadingArticle | null> => {
+  const safeSlug = slug.trim();
+  if (!safeSlug) return null;
+
+  const url = new URL(`${edgeBase}/reading-articles`);
+  url.searchParams.set("language_code", "en");
+  url.searchParams.set("slug", safeSlug);
+  url.searchParams.set("limit", "1");
+  if (status) url.searchParams.set("status", status);
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    const err = new Error(`reading-articles slug lookup failed (${res.status}): ${JSON.stringify(details)}`);
+    (err as { status?: number }).status = res.status;
+    throw err;
+  }
+
+  const payload = (await readJsonOrText(res)) as ListArticlesResponse;
+  const rows = Array.isArray(payload.articles) ? payload.articles : [];
+  const row = rows[0];
+  if (!row || typeof row !== "object") return null;
+  const article = mapArticle(row);
+  return article.id ? article : null;
+};
+
+type ArticleInput = {
+  title: string;
+  slug?: string;
+  summary: string;
+  content_markdown?: string;
+  level: CefrLevel;
+  category: string;
+  theme: string;
+  tone: ReadingArticleTone;
+  read_time_minutes: number;
+  status: "draft" | "published" | "archived";
+  sort_order: number;
+  is_hot: boolean;
+};
+
+const postOrPatch = async (
+  accessToken: string,
+  method: "POST" | "PATCH",
+  body: Record<string, unknown>,
+): Promise<ReadingArticle> => {
+  const res = await fetch(`${edgeBase}/reading-articles`, {
+    method,
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    const err = new Error(`reading-articles ${method} failed (${res.status}): ${JSON.stringify(details)}`);
+    (err as { status?: number }).status = res.status;
+    throw err;
+  }
+
+  const payload = (await readJsonOrText(res)) as ArticleMutationResponse;
+  if (!payload.article || typeof payload.article !== "object") {
+    throw new Error("reading-articles returned empty article payload");
+  }
+  return mapArticle(payload.article);
+};
+
+export const createReadingArticle = async (
+  accessToken: string,
+  input: ArticleInput,
+): Promise<ReadingArticle> => postOrPatch(accessToken, "POST", input);
+
+export const updateReadingArticle = async (
+  accessToken: string,
+  id: string,
+  patch: Partial<ArticleInput>,
+): Promise<ReadingArticle> =>
+  postOrPatch(accessToken, "PATCH", {
+    id,
+    patch,
+  });
+
+export const archiveReadingArticle = async (
+  accessToken: string,
+  id: string,
+): Promise<void> => {
+  const url = new URL(`${edgeBase}/reading-articles`);
+  url.searchParams.set("id", id);
+  const res = await fetch(url.toString(), {
+    method: "DELETE",
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    const err = new Error(`reading-articles DELETE failed (${res.status}): ${JSON.stringify(details)}`);
+    (err as { status?: number }).status = res.status;
+    throw err;
+  }
+};

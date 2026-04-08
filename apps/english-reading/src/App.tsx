@@ -3,13 +3,30 @@ import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
-import { listReadingArticles, type CefrLevel, type ReadingArticle } from './lib/readingArticlesClient';
+import {
+  archiveReadingArticle,
+  createReadingArticle,
+  getReadingArticleBySlug,
+  listReadingArticles,
+  updateReadingArticle,
+  type CefrLevel,
+  type ReadingArticle,
+  type ReadingArticleTone,
+} from './lib/readingArticlesClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
 const EXERCISES_PATH = '/exercises' as const;
 const ARTICLES_PATH = '/articles' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH | typeof ARTICLES_PATH;
+const ARTICLE_DETAIL_PATH = '/article-detail' as const;
+const ADMIN_ARTICLES_PATH = '/admin/articles' as const;
+type AppPath =
+  | '/'
+  | '/dashboard'
+  | typeof EXERCISES_PATH
+  | typeof ARTICLES_PATH
+  | typeof ARTICLE_DETAIL_PATH
+  | typeof ADMIN_ARTICLES_PATH;
 
 type LessonRow = {
   id: string;
@@ -259,10 +276,24 @@ const buildServiceDashboardHref = (
   return url.toString();
 };
 
+const resolveArticleSlug = (pathname: string): string | null => {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (!normalized.startsWith(`${ARTICLES_PATH}/`)) return null;
+  const raw = normalized.slice(`${ARTICLES_PATH}/`.length).trim();
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+};
+
 const resolveAppPath = (pathname: string): AppPath => {
   const normalized = pathname.replace(/\/+$/, '') || '/';
   if (normalized === '/dashboard') return '/dashboard';
+  if (normalized === ADMIN_ARTICLES_PATH) return ADMIN_ARTICLES_PATH;
   if (normalized === ARTICLES_PATH) return ARTICLES_PATH;
+  if (normalized.startsWith(`${ARTICLES_PATH}/`)) return ARTICLE_DETAIL_PATH;
   if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
   if (normalized.startsWith('/feature/')) return '/dashboard';
   return '/';
@@ -665,11 +696,13 @@ const ArticlesPage = ({
   pricingHref,
   accessToken,
   onNavigate,
+  onOpenArticle,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   accessToken: string | null;
   onNavigate: (nextPath: AppPath) => void;
+  onOpenArticle: (slug: string) => void;
 }) => {
   const [articles, setArticles] = useState<ReadingArticle[]>([]);
   const [libraryCategories, setLibraryCategories] = useState<string[]>([]);
@@ -758,9 +791,13 @@ const ArticlesPage = ({
   const sideArticles = featuredArticle ? filteredArticles.slice(1, 4) : filteredArticles.slice(0, 3);
   const visibleThemes = Array.from(new Set(filteredArticles.map((article) => article.theme))).slice(0, 10);
 
-  const handleArticleOpen = (): void => {
+  const handleArticleOpen = (slug?: string): void => {
     if (!hasAccess) {
       window.location.assign(pricingHref);
+      return;
+    }
+    if (slug) {
+      onOpenArticle(slug);
       return;
     }
     onNavigate(EXERCISES_PATH);
@@ -791,7 +828,7 @@ const ArticlesPage = ({
           <button className="ghost-btn" type="button" onClick={() => onNavigate(EXERCISES_PATH)}>
             Open exercises
           </button>
-          <button className="primary-cta" type="button" onClick={handleArticleOpen}>
+          <button className="primary-cta" type="button" onClick={() => handleArticleOpen(featuredArticle?.slug)}>
             {hasAccess ? 'Start reading now' : 'Unlock article access'}
           </button>
         </div>
@@ -881,7 +918,7 @@ const ArticlesPage = ({
               <small>{featuredArticle.readTimeMinutes} min read</small>
               {featuredArticle.hot ? <span className="reading-hot-pill">Trending</span> : null}
             </div>
-            <button className="ghost-btn" type="button" onClick={handleArticleOpen}>
+            <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(featuredArticle.slug)}>
               Open article
             </button>
           </article>
@@ -960,13 +997,589 @@ const ArticlesPage = ({
                   <small>{article.theme}</small>
                   <small>{article.readTimeMinutes} min</small>
                 </div>
-                <button className="ghost-btn" type="button" onClick={handleArticleOpen}>
+                <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(article.slug)}>
                   {hasAccess ? 'Read article' : 'Unlock to read'}
                 </button>
               </article>
             ))}
           </div>
         )}
+      </section>
+    </div>
+  );
+};
+
+const ArticleDetailPage = ({
+  articleSlug,
+  accessToken,
+  hasAccess,
+  pricingHref,
+  onNavigate,
+}: {
+  articleSlug: string | null;
+  accessToken: string | null;
+  hasAccess: boolean;
+  pricingHref: string;
+  onNavigate: (nextPath: AppPath) => void;
+}) => {
+  const [article, setArticle] = useState<ReadingArticle | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!articleSlug) {
+      setArticle(null);
+      setError('Article not found.');
+      setLoading(false);
+      return;
+    }
+    if (!accessToken) {
+      setArticle(null);
+      setError('Sign in to open this article.');
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async (): Promise<void> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getReadingArticleBySlug(accessToken, articleSlug);
+        if (cancelled) return;
+        if (!data) {
+          setArticle(null);
+          setError('This article is unavailable right now.');
+          return;
+        }
+        setArticle(data);
+      } catch {
+        if (cancelled) return;
+        setArticle(null);
+        setError('Could not load this article right now.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, articleSlug]);
+
+  const contentBlocks = useMemo(() => {
+    const source = (article?.contentMarkdown ?? '').trim();
+    if (!source) {
+      return [
+        {
+          type: 'paragraph' as const,
+          text: article?.summary ?? 'This article content is being prepared. Please check back shortly.',
+        },
+      ];
+    }
+
+    return source
+      .split(/\n{2,}/)
+      .map((block) => block.trim())
+      .filter(Boolean)
+      .map((block) => {
+        if (block.startsWith('## ')) return { type: 'heading' as const, text: block.replace(/^##\s+/, '') };
+        if (block.startsWith('> ')) return { type: 'quote' as const, text: block.replace(/^>\s+/, '') };
+        return { type: 'paragraph' as const, text: block };
+      });
+  }, [article?.contentMarkdown, article?.summary]);
+
+  const startPractice = (): void => {
+    if (!hasAccess) {
+      window.location.assign(pricingHref);
+      return;
+    }
+    onNavigate(EXERCISES_PATH);
+  };
+
+  return (
+    <div className="dashboard-stack">
+      <section className={`card article-detail-hero ${article ? `tone-${article.tone}` : ''}`.trim()}>
+        <div>
+          <div className="reading-article-meta">
+            <span>{article?.category ?? 'Reading'}</span>
+            <span>{article?.level ?? 'A1'}</span>
+            <span>{article?.theme ?? 'General'}</span>
+          </div>
+          <h2>{article?.title ?? 'Reading article'}</h2>
+          <p>{article?.summary ?? 'Open focused reading content and connect it with your English profile.'}</p>
+        </div>
+        <div className="article-detail-actions">
+          <button className="ghost-btn" type="button" onClick={() => onNavigate(ARTICLES_PATH)}>
+            Back to library
+          </button>
+          <button className="primary-cta" type="button" onClick={startPractice}>
+            {hasAccess ? 'Open exercises' : 'Unlock access'}
+          </button>
+        </div>
+      </section>
+
+      {loading ? (
+        <div className="access-banner">
+          <strong>Loading article...</strong>
+          <span>Preparing the full reading view.</span>
+        </div>
+      ) : null}
+
+      {!loading && error ? (
+        <div className="access-banner warning">
+          <strong>Could not open article.</strong>
+          <span>{error}</span>
+          <button className="ghost-btn" type="button" onClick={() => onNavigate(ARTICLES_PATH)}>
+            Back to library
+          </button>
+        </div>
+      ) : null}
+
+      {!loading && !error && article ? (
+        <section className="article-detail-layout">
+          <article className="card article-detail-content">
+            {contentBlocks.map((block, index) => {
+              if (block.type === 'heading') {
+                return (
+                  <h3 key={`${block.text}-${index}`} className="article-detail-h3">
+                    {block.text}
+                  </h3>
+                );
+              }
+              if (block.type === 'quote') {
+                return (
+                  <blockquote key={`${block.text}-${index}`} className="article-detail-quote">
+                    {block.text}
+                  </blockquote>
+                );
+              }
+              return (
+                <p key={`${block.text}-${index}`} className="article-detail-paragraph">
+                  {block.text}
+                </p>
+              );
+            })}
+          </article>
+
+          <aside className="card article-detail-side">
+            <h3>Reading panel</h3>
+            <div className="article-detail-kv">
+              <span>Read time</span>
+              <strong>{article.readTimeMinutes} min</strong>
+            </div>
+            <div className="article-detail-kv">
+              <span>Level</span>
+              <strong>{article.level}</strong>
+            </div>
+            <div className="article-detail-kv">
+              <span>Category</span>
+              <strong>{article.category}</strong>
+            </div>
+            <div className="article-detail-kv">
+              <span>Theme</span>
+              <strong>{article.theme}</strong>
+            </div>
+            <button className="ghost-btn" type="button" onClick={startPractice}>
+              Practice this skill
+            </button>
+          </aside>
+        </section>
+      ) : null}
+    </div>
+  );
+};
+
+const ARTICLE_STATUS_OPTIONS = ['draft', 'published', 'archived'] as const;
+type ArticleStatus = (typeof ARTICLE_STATUS_OPTIONS)[number];
+
+const AdminReadingArticlesPage = ({
+  accessToken,
+  isAdmin,
+}: {
+  accessToken: string | null;
+  isAdmin: boolean;
+}) => {
+  const [statusFilter, setStatusFilter] = useState<ArticleStatus | 'all'>('all');
+  const [articles, setArticles] = useState<ReadingArticle[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<{
+    title: string;
+    slug: string;
+    summary: string;
+    contentMarkdown: string;
+    level: CefrLevel;
+    category: string;
+    theme: string;
+    tone: ReadingArticleTone;
+    readTimeMinutes: number;
+    status: ArticleStatus;
+    sortOrder: number;
+    hot: boolean;
+  }>({
+    title: '',
+    slug: '',
+    summary: '',
+    contentMarkdown: '',
+    level: 'B1',
+    category: 'Daily Life',
+    theme: 'Everyday Language',
+    tone: 'mint',
+    readTimeMinutes: 6,
+    status: 'draft',
+    sortOrder: 100,
+    hot: false,
+  });
+
+  const draftFromArticle = (article: ReadingArticle) => ({
+    title: article.title,
+    slug: article.slug,
+    summary: article.summary,
+    contentMarkdown: article.contentMarkdown ?? '',
+    level: article.level,
+    category: article.category,
+    theme: article.theme,
+    tone: article.tone,
+    readTimeMinutes: article.readTimeMinutes,
+    status: article.status,
+    sortOrder: article.sortOrder,
+    hot: article.hot,
+  });
+
+  const loadArticles = async (): Promise<void> => {
+    if (!accessToken || !isAdmin) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const statuses: ArticleStatus[] = statusFilter === 'all' ? [...ARTICLE_STATUS_OPTIONS] : [statusFilter];
+      const responses = await Promise.all(statuses.map((status) => listReadingArticles(accessToken, { status, limit: 200 })));
+      const merged = responses
+        .flatMap((entry) => entry.articles)
+        .sort((a, b) => (a.sortOrder - b.sortOrder) || a.title.localeCompare(b.title));
+      setArticles(merged);
+      if (selectedId && !merged.some((article) => article.id === selectedId)) {
+        setSelectedId(null);
+      }
+    } catch {
+      setError('Could not load admin article catalog.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    void loadArticles();
+  }, [accessToken, isAdmin, statusFilter]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const selected = articles.find((article) => article.id === selectedId);
+    if (!selected) return;
+    setDraft(draftFromArticle(selected));
+  }, [articles, selectedId]);
+
+  const resetDraft = (): void => {
+    setSelectedId(null);
+    setDraft({
+      title: '',
+      slug: '',
+      summary: '',
+      contentMarkdown: '',
+      level: 'B1',
+      category: 'Daily Life',
+      theme: 'Everyday Language',
+      tone: 'mint',
+      readTimeMinutes: 6,
+      status: 'draft',
+      sortOrder: 100,
+      hot: false,
+    });
+    setSuccess(null);
+    setError(null);
+  };
+
+  const onSave = async (): Promise<void> => {
+    if (!accessToken || !isAdmin) return;
+    if (!draft.title.trim() || !draft.summary.trim() || !draft.category.trim() || !draft.theme.trim()) {
+      setError('Title, summary, category, and theme are required.');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      if (selectedId) {
+        await updateReadingArticle(accessToken, selectedId, {
+          title: draft.title,
+          slug: draft.slug,
+          summary: draft.summary,
+          content_markdown: draft.contentMarkdown,
+          level: draft.level,
+          category: draft.category,
+          theme: draft.theme,
+          tone: draft.tone,
+          read_time_minutes: draft.readTimeMinutes,
+          status: draft.status,
+          sort_order: draft.sortOrder,
+          is_hot: draft.hot,
+        });
+        setSuccess('Article updated.');
+      } else {
+        const created = await createReadingArticle(accessToken, {
+          title: draft.title,
+          slug: draft.slug,
+          summary: draft.summary,
+          content_markdown: draft.contentMarkdown,
+          level: draft.level,
+          category: draft.category,
+          theme: draft.theme,
+          tone: draft.tone,
+          read_time_minutes: draft.readTimeMinutes,
+          status: draft.status,
+          sort_order: draft.sortOrder,
+          is_hot: draft.hot,
+        });
+        setSelectedId(created.id);
+        setSuccess('Article created.');
+      }
+      await loadArticles();
+    } catch {
+      setError('Could not save article.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onArchive = async (): Promise<void> => {
+    if (!accessToken || !isAdmin || !selectedId) return;
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await archiveReadingArticle(accessToken, selectedId);
+      setSuccess('Article archived.');
+      await loadArticles();
+    } catch {
+      setError('Could not archive article.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isAdmin) {
+    return (
+      <div className="dashboard-stack">
+        <div className="access-banner warning">
+          <strong>Admin access required.</strong>
+          <span>This area is available only for Reading service admins.</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-stack">
+      <section className="card admin-articles-head">
+        <div>
+          <small>Reading admin</small>
+          <h2>Article Studio</h2>
+          <p>Create, edit, and publish high-quality reading articles with level/category/theme control.</p>
+        </div>
+        <div className="admin-articles-actions">
+          <button className="ghost-btn" type="button" onClick={resetDraft}>
+            New article
+          </button>
+          <button className="primary-cta" type="button" onClick={() => void onSave()} disabled={saving}>
+            {saving ? 'Saving...' : selectedId ? 'Update article' : 'Create article'}
+          </button>
+        </div>
+      </section>
+
+      {error ? (
+        <div className="access-banner warning">
+          <strong>Action failed.</strong>
+          <span>{error}</span>
+        </div>
+      ) : null}
+      {success ? (
+        <div className="access-banner">
+          <strong>{success}</strong>
+        </div>
+      ) : null}
+
+      <section className="card admin-articles-layout">
+        <div className="admin-articles-list">
+          <div className="admin-articles-list-head">
+            <h3>Catalog</h3>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ArticleStatus | 'all')}>
+              <option value="all">All statuses</option>
+              {ARTICLE_STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+          {loading ? <p className="reading-catalog-empty">Loading...</p> : null}
+          <div className="admin-article-list-grid">
+            {articles.map((article) => (
+              <button
+                key={article.id}
+                type="button"
+                className={selectedId === article.id ? 'admin-article-row active' : 'admin-article-row'}
+                onClick={() => {
+                  setSelectedId(article.id);
+                  setDraft(draftFromArticle(article));
+                }}
+              >
+                <div className="reading-article-meta">
+                  <span>{article.level}</span>
+                  <span>{article.status}</span>
+                </div>
+                <strong>{article.title}</strong>
+                <small>{article.category} · {article.theme}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="admin-articles-editor">
+          <h3>{selectedId ? 'Edit article' : 'Create article'}</h3>
+          <div className="admin-form-grid two">
+            <label>
+              <span>Title</span>
+              <input value={draft.title} onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))} />
+            </label>
+            <label>
+              <span>Slug</span>
+              <input value={draft.slug} onChange={(event) => setDraft((prev) => ({ ...prev, slug: event.target.value }))} />
+            </label>
+          </div>
+
+          <label className="admin-form-block">
+            <span>Summary</span>
+            <textarea
+              rows={3}
+              value={draft.summary}
+              onChange={(event) => setDraft((prev) => ({ ...prev, summary: event.target.value }))}
+            />
+          </label>
+
+          <div className="admin-form-grid four">
+            <label>
+              <span>Level</span>
+              <select
+                value={draft.level}
+                onChange={(event) => setDraft((prev) => ({ ...prev, level: event.target.value as CefrLevel }))}
+              >
+                {CEFR_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Tone</span>
+              <select
+                value={draft.tone}
+                onChange={(event) => setDraft((prev) => ({ ...prev, tone: event.target.value as ReadingArticleTone }))}
+              >
+                {['lime', 'mint', 'sky', 'peach', 'lavender', 'sand'].map((tone) => (
+                  <option key={tone} value={tone}>
+                    {tone}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Status</span>
+              <select
+                value={draft.status}
+                onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as ArticleStatus }))}
+              >
+                {ARTICLE_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Read time (min)</span>
+              <input
+                type="number"
+                min={1}
+                max={60}
+                value={draft.readTimeMinutes}
+                onChange={(event) =>
+                  setDraft((prev) => ({ ...prev, readTimeMinutes: Math.max(1, Math.min(60, Number(event.target.value) || 6)) }))
+                }
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-grid two">
+            <label>
+              <span>Category</span>
+              <input value={draft.category} onChange={(event) => setDraft((prev) => ({ ...prev, category: event.target.value }))} />
+            </label>
+            <label>
+              <span>Theme</span>
+              <input value={draft.theme} onChange={(event) => setDraft((prev) => ({ ...prev, theme: event.target.value }))} />
+            </label>
+          </div>
+
+          <div className="admin-form-grid two">
+            <label>
+              <span>Sort order</span>
+              <input
+                type="number"
+                value={draft.sortOrder}
+                onChange={(event) => setDraft((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 100 }))}
+              />
+            </label>
+            <label className="admin-checkbox-row">
+              <input
+                type="checkbox"
+                checked={draft.hot}
+                onChange={(event) => setDraft((prev) => ({ ...prev, hot: event.target.checked }))}
+              />
+              <span>Mark as trending</span>
+            </label>
+          </div>
+
+          <label className="admin-form-block">
+            <span>Article content (markdown)</span>
+            <textarea
+              rows={14}
+              value={draft.contentMarkdown}
+              onChange={(event) => setDraft((prev) => ({ ...prev, contentMarkdown: event.target.value }))}
+              placeholder={'## Intro\nWrite article content here...\n\n## Section\nAdd focused paragraphs.'}
+            />
+          </label>
+
+          <div className="admin-articles-footer">
+            <button className="ghost-btn" type="button" onClick={resetDraft}>
+              Reset
+            </button>
+            {selectedId ? (
+              <button className="ghost-btn" type="button" onClick={() => void onArchive()} disabled={saving}>
+                Archive
+              </button>
+            ) : null}
+            <button className="primary-cta" type="button" onClick={() => void onSave()} disabled={saving}>
+              {saving ? 'Saving...' : selectedId ? 'Save changes' : 'Create article'}
+            </button>
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -1073,6 +1686,7 @@ const App = () => {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [syncingWords, setSyncingWords] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -1080,6 +1694,10 @@ const App = () => {
   const [path, setPath] = useState<AppPath>(() => {
     if (typeof window === 'undefined') return '/';
     return resolveAppPath(window.location.pathname);
+  });
+  const [articleSlug, setArticleSlug] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return resolveArticleSlug(window.location.pathname);
   });
   const showLanding = path === '/';
 
@@ -1093,6 +1711,23 @@ const App = () => {
       }
     }
     setPath(nextPath);
+    if (nextPath !== ARTICLE_DETAIL_PATH) setArticleSlug(null);
+  };
+
+  const navigateToArticle = (slug: string, replace = false): void => {
+    if (typeof window === 'undefined') return;
+    const cleanSlug = slug.trim();
+    if (!cleanSlug) return;
+    const target = `${ARTICLES_PATH}/${encodeURIComponent(cleanSlug)}`;
+    if (window.location.pathname !== target) {
+      if (replace) {
+        window.history.replaceState({}, '', target);
+      } else {
+        window.history.pushState({}, '', target);
+      }
+    }
+    setArticleSlug(cleanSlug);
+    setPath(ARTICLE_DETAIL_PATH);
   };
 
   useEffect(() => {
@@ -1119,6 +1754,7 @@ const App = () => {
     if (typeof window === 'undefined') return;
     const onPopState = () => {
       setPath(resolveAppPath(window.location.pathname));
+      setArticleSlug(resolveArticleSlug(window.location.pathname));
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -1130,6 +1766,7 @@ const App = () => {
         window.history.replaceState({}, '', '/');
       }
       setPath('/');
+      setArticleSlug(null);
     }
   }, [path, status]);
 
@@ -1141,6 +1778,7 @@ const App = () => {
         setAccessStatus('idle');
         setAccessEndsAt(null);
         setAccessError(null);
+        setUserRole(null);
         return;
       }
 
@@ -1150,6 +1788,7 @@ const App = () => {
       try {
         const me = await getMe(session.access_token);
         if (cancelled) return;
+        setUserRole(typeof me.user.role === 'string' ? me.user.role : null);
 
         const entitlement =
           me.entitlements.find(
@@ -1168,10 +1807,12 @@ const App = () => {
             // ignore sign-out failures
           }
           setAccessStatus('idle');
+          setUserRole(null);
           return;
         }
         setAccessStatus('denied');
         setAccessError('Could not verify your service access right now.');
+        setUserRole(null);
       }
     };
 
@@ -1233,6 +1874,7 @@ const App = () => {
   const hasAccess = status === 'signed_in' && accessStatus === 'granted';
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
+  const isAdmin = (userRole ?? '').toLowerCase() === 'admin';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
   const profileEmail = session?.user.email ?? null;
   const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
@@ -1383,7 +2025,7 @@ const App = () => {
               Dashboard
             </button>
             <button
-              className={'menu-link ' + (path === ARTICLES_PATH ? 'active' : '')}
+              className={'menu-link ' + (path === ARTICLES_PATH || path === ARTICLE_DETAIL_PATH ? 'active' : '')}
               type="button"
               onClick={() => {
                 navigate(ARTICLES_PATH);
@@ -1400,6 +2042,17 @@ const App = () => {
             >
               Exercises
             </button>
+            {isAdmin ? (
+              <button
+                className={'menu-link ' + (path === ADMIN_ARTICLES_PATH ? 'active' : '')}
+                type="button"
+                onClick={() => {
+                  navigate(ADMIN_ARTICLES_PATH);
+                }}
+              >
+                Admin articles
+              </button>
+            ) : null}
           </nav>
 
           
@@ -1449,6 +2102,11 @@ const App = () => {
               </label>
               <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
               <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
+              {isAdmin ? (
+                <button className="icon-btn" type="button" onClick={() => navigate(ADMIN_ARTICLES_PATH)}>
+                  Admin
+                </button>
+              ) : null}
               {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
               {status === 'signed_in' ? (
                 <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
@@ -1508,6 +2166,24 @@ const App = () => {
               pricingHref={pricingHref}
               accessToken={session?.access_token ?? null}
               onNavigate={navigate}
+              onOpenArticle={(slug) => {
+                navigateToArticle(slug);
+              }}
+            />
+          )}
+          {!showLanding && status !== 'signed_out' && path === ARTICLE_DETAIL_PATH && (
+            <ArticleDetailPage
+              articleSlug={articleSlug}
+              accessToken={session?.access_token ?? null}
+              hasAccess={hasAccess}
+              pricingHref={pricingHref}
+              onNavigate={navigate}
+            />
+          )}
+          {!showLanding && status !== 'signed_out' && path === ADMIN_ARTICLES_PATH && (
+            <AdminReadingArticlesPage
+              accessToken={session?.access_token ?? null}
+              isAdmin={isAdmin}
             />
           )}
           {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (

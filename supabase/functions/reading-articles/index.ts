@@ -163,6 +163,7 @@ const listArticles = async (sb: any, scope: Scope, url: URL, isAdmin: boolean): 
   const levelFilter = toLevel(url.searchParams.get("level"));
   const categoryFilter = toText(url.searchParams.get("category"), 120);
   const themeFilter = toText(url.searchParams.get("theme"), 120);
+  const slugFilter = slugify(toText(url.searchParams.get("slug"), 140));
   const requestedStatus = toText(url.searchParams.get("status"), 24).toLowerCase();
   const limit = clamp(Math.floor(toNumber(url.searchParams.get("limit")) ?? 120), 1, 500);
 
@@ -183,6 +184,7 @@ const listArticles = async (sb: any, scope: Scope, url: URL, isAdmin: boolean): 
   if (levelFilter) query = query.eq("level", levelFilter);
   if (categoryFilter) query = query.eq("category", categoryFilter);
   if (themeFilter) query = query.eq("theme", themeFilter);
+  if (slugFilter) query = query.eq("slug", slugFilter);
 
   const { data, error } = await query;
   if (error) return json(500, { error: "Failed to load reading articles", details: error.message });
@@ -352,4 +354,3 @@ serve(async (req) => {
     });
   }
 });
-
