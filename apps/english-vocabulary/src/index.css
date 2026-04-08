@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
 
 :root {
   --tea-50: #eafcf8;
@@ -1161,12 +1161,12 @@ a {
   }
 
   .menu-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   
   .service-switch-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .upgrade-card {
@@ -1232,13 +1232,28 @@ a {
 }
 
 @media (max-width: 640px) {
+  .left-nav {
+    padding: 18px 14px;
+    gap: 14px;
+  }
+
+  .service-switch-head {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    row-gap: 4px;
+  }
+
+  .topbar-actions .icon-btn {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
   .menu-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
   
   .service-switch-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
   .section-head {
