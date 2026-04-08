@@ -362,8 +362,17 @@ const App = () => {
         setNotebookDueCount(Number(dailySnapshot.summary?.due_count ?? 0));
         setNotebookTotalCount(Number(dailySnapshot.summary?.total_count ?? 0));
         setRecentNotebookWords(recentSnapshot.cards ?? []);
-      } catch {
+      } catch (error) {
         if (cancelled) return;
+        const status = (error as { status?: number } | null)?.status ?? null;
+        if (status === 401 || status === 403) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {
+            // Ignore sign-out failures.
+          }
+          return;
+        }
         setNotebookError('Could not load notebook preview right now.');
       } finally {
         if (!cancelled) setNotebookLoading(false);
@@ -392,8 +401,17 @@ const App = () => {
         const next = await getLearningProfileSnapshot(session.access_token, { languageCode: 'en', limit: 80 });
         if (cancelled) return;
         setProfileSnapshot(next);
-      } catch {
+      } catch (error) {
         if (cancelled) return;
+        const status = (error as { status?: number } | null)?.status ?? null;
+        if (status === 401 || status === 403) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {
+            // Ignore sign-out failures.
+          }
+          return;
+        }
         setProfileError('Could not load shared English profile right now.');
       } finally {
         if (!cancelled) setProfileLoading(false);

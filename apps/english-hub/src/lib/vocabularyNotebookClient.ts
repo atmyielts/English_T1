@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
   const value = import.meta.env[key] as string | undefined;
   if (!value) throw new Error(`Missing ${key}`);
@@ -12,6 +14,33 @@ const readJsonOrText = async (res: Response): Promise<unknown> => {
   const contentType = res.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) return res.json();
   return res.text();
+};
+
+const runEdgeGet = async (url: string, accessToken: string): Promise<Response> =>
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+const resolveLatestAccessToken = async (): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (!error && data.session?.access_token) return data.session.access_token;
+  } catch {
+    // Ignore and fall through to refresh attempt.
+  }
+
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data.session?.access_token) return data.session.access_token;
+  } catch {
+    // Ignore: caller will handle final 401.
+  }
+
+  return null;
 };
 
 export type NotebookCard = {
@@ -47,16 +76,16 @@ export const getNotebookSnapshot = async (
   mode: 'daily' | 'recent',
   limit: number,
 ): Promise<NotebookSnapshot> => {
-  const res = await fetch(
-    `${edgeBase}/vocabulary-notebook?mode=${encodeURIComponent(mode)}&limit=${encodeURIComponent(String(limit))}&language_code=en`,
-    {
-      method: 'GET',
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  const url = `${edgeBase}/vocabulary-notebook?mode=${encodeURIComponent(mode)}&limit=${encodeURIComponent(String(limit))}&language_code=en`;
+  const primaryToken = accessToken.trim();
+  let res = await runEdgeGet(url, primaryToken);
+
+  if (res.status === 401) {
+    const latestToken = (await resolveLatestAccessToken())?.trim() ?? '';
+    if (latestToken && latestToken !== primaryToken) {
+      res = await runEdgeGet(url, latestToken);
+    }
+  }
 
   if (!res.ok) {
     const details = await readJsonOrText(res);
