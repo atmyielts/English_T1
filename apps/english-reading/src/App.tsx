@@ -1700,9 +1700,17 @@ const App = () => {
     return resolveArticleSlug(window.location.pathname);
   });
   const showLanding = path === '/';
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (showLanding || status === 'signed_out') {
+      setMobileNavOpen(false);
+    }
+  }, [showLanding, status]);
 
   const navigate = (nextPath: AppPath, replace = false): void => {
     if (typeof window === 'undefined') return;
+    setMobileNavOpen(false);
     if (window.location.pathname !== nextPath) {
       if (replace) {
         window.history.replaceState({}, '', nextPath);
@@ -1716,6 +1724,7 @@ const App = () => {
 
   const navigateToArticle = (slug: string, replace = false): void => {
     if (typeof window === 'undefined') return;
+    setMobileNavOpen(false);
     const cleanSlug = slug.trim();
     if (!cleanSlug) return;
     const target = `${ARTICLES_PATH}/${encodeURIComponent(cleanSlug)}`;
@@ -1997,8 +2006,16 @@ const App = () => {
   return (
     <div className="reading-root">
       <div className="ambient-layer" />
+      {mobileNavOpen ? (
+        <button
+          type="button"
+          className="mobile-nav-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      ) : null}
       <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside className="left-nav">
+        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
           <button
             type="button"
             className="brand-mark"
@@ -2082,6 +2099,15 @@ const App = () => {
             </div>
 
             <div className="topbar-actions">
+              <button
+                type="button"
+                className="mobile-nav-toggle"
+                aria-expanded={mobileNavOpen}
+                aria-controls="service-side-nav"
+                onClick={() => setMobileNavOpen((prev) => !prev)}
+              >
+                {mobileNavOpen ? 'Close menu' : 'Menu'}
+              </button>
               <label className="search-box">
                 <input
                   value={search}

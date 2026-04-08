@@ -82,6 +82,25 @@ a {
   min-height: 0;
 }
 
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--ink-900);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-nav-backdrop {
+  display: none;
+}
+
+
 .brand-mark {
   display: flex;
   align-items: center;
@@ -989,10 +1008,40 @@ a {
   }
 
   .left-nav {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    grid-template-columns: 1fr;
-    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(320px, 86vw);
+    max-width: 100%;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+    transform: translateX(-104%);
+    transition: transform 0.24s ease;
+    box-shadow: 0 16px 32px rgba(24, 36, 30, 0.24);
+    overflow-y: auto;
+    z-index: 70;
+    height: 100dvh;
+  }
+
+  .left-nav.open {
+    transform: translateX(0);
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
+    flex: 1 1 100%;
+  }
+
+  .mobile-nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: rgba(19, 30, 24, 0.42);
+    z-index: 60;
   }
 
   .menu-list {
