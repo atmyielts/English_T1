@@ -1192,14 +1192,6 @@ const App = () => {
   return (
     <div className="reading-root">
       <div className="ambient-layer" />
-      {mobileNavOpen ? (
-        <button
-          type="button"
-          className="mobile-nav-backdrop"
-          aria-label="Close navigation"
-          onClick={() => setMobileNavOpen(false)}
-        />
-      ) : null}
       <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
         <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
           <button
@@ -1217,6 +1209,17 @@ const App = () => {
             </div>
           </button>
 
+          <button
+            type="button"
+            className="mobile-nav-inline-toggle"
+            aria-expanded={mobileNavOpen}
+            aria-controls="service-side-nav"
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+          >
+            {mobileNavOpen ? 'Close menu' : 'Menu'}
+          </button>
+
+          <div className="left-nav-body">
           <nav className="menu-list">
             <button
               className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
@@ -1283,6 +1286,7 @@ const App = () => {
               <a className="black-btn" href={pricingHref}>View plans</a>
             </article>
           </div>
+        </div>
         </aside>
 
         <main className="main-column">
@@ -1294,15 +1298,6 @@ const App = () => {
             </div>
 
             <div className="topbar-actions">
-              <button
-                type="button"
-                className="mobile-nav-toggle"
-                aria-expanded={mobileNavOpen}
-                aria-controls="service-side-nav"
-                onClick={() => setMobileNavOpen((prev) => !prev)}
-              >
-                {mobileNavOpen ? 'Close menu' : 'Menu'}
-              </button>
               <label className="search-box">
                 <input
                   value={search}

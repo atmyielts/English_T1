@@ -96,8 +96,27 @@ a {
   cursor: pointer;
 }
 
+.mobile-nav-inline-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  min-height: 42px;
+  padding: 0 16px;
+  background: #fff;
+  color: var(--ink-900);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .mobile-nav-backdrop {
   display: none;
+}
+
+.left-nav-body {
+  display: contents;
 }
 
 
@@ -1178,50 +1197,57 @@ a {
   }
 
   .left-nav {
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    bottom: auto;
-    width: auto;
+    position: static;
+    width: 100%;
     max-width: none;
     border: 1px solid var(--line);
-    border-radius: 24px;
-    transform: translateY(-14px);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: transform 0.22s ease, opacity 0.22s ease, visibility 0.22s ease;
-    box-shadow: 0 18px 36px rgba(24, 36, 30, 0.22);
-    overflow-y: auto;
-    z-index: 70;
-    height: min(80dvh, 660px);
-  }
-
-  .left-nav.open {
-    transform: translateY(0);
+    border-radius: 26px;
+    transform: none;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    transition: none;
+    box-shadow: 0 10px 22px rgba(24, 36, 30, 0.12);
+    overflow: hidden;
+    z-index: auto;
+    height: auto;
+    min-height: 0;
+    padding: 12px;
+    gap: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    background: #f1efe6;
+    margin-bottom: 12px;
+  }
+
+  .left-nav .brand-mark {
+    min-width: 0;
+  }
+
+  .left-nav-body {
+    grid-column: 1 / -1;
+  }
+
+  .left-nav:not(.open) .left-nav-body {
+    display: none;
+  }
+
+  .left-nav.open .left-nav-body {
+    display: grid;
+    gap: 14px;
   }
 
   .mobile-nav-toggle {
+    display: none;
+  }
+
+  .mobile-nav-inline-toggle {
     display: inline-flex;
-    flex: 0 0 auto;
-    min-width: 102px;
-    margin-left: auto;
-    border-radius: 999px;
   }
 
   .mobile-nav-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    border: 0;
-    margin: 0;
-    padding: 0;
-    background: rgba(19, 30, 24, 0.28);
-    z-index: 60;
+    display: none !important;
   }
 
   .menu-list {
@@ -1297,12 +1323,14 @@ a {
 
 @media (max-width: 640px) {
   .left-nav {
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    height: min(84dvh, 680px);
-    padding: 18px 14px;
-    gap: 14px;
+    border-radius: 22px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .mobile-nav-inline-toggle {
+    min-height: 40px;
+    padding: 0 14px;
   }
 
   .service-switch-head {
