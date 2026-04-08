@@ -201,6 +201,11 @@ a {
   gap: 8px;
 }
 
+.mobile-account-zone {
+  display: none;
+  gap: 8px;
+}
+
 .left-footer {
   margin-top: auto;
   display: grid;
@@ -1076,20 +1081,20 @@ a {
     align-items: stretch;
   }
 
-  .search-box {
-    min-width: 0;
-    flex: 1 1 100%;
-  }
-
   .topbar-actions {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
     gap: 8px;
   }
 
+  .topbar-actions .search-box,
   .topbar-actions .icon-btn {
-    flex: 1 1 calc(50% - 4px);
-    min-width: 132px;
+    display: none;
+  }
+
+  .mobile-account-zone {
+    display: grid;
   }
 
   .hero-card {

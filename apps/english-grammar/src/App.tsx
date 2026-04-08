@@ -944,6 +944,17 @@ const App = () => {
               <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
             </div>
 
+            <div className="mobile-account-zone">
+              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
+              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
+              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
+              {status === 'signed_in' ? (
+                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
+              ) : (
+                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
+              )}
+            </div>
+
             <article className="upgrade-card">
               <h3>Premium Grammar Pack</h3>
               <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
