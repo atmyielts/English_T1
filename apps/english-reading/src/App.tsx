@@ -2042,17 +2042,6 @@ const App = () => {
             >
               Exercises
             </button>
-            {isAdmin ? (
-              <button
-                className={'menu-link ' + (path === ADMIN_ARTICLES_PATH ? 'active' : '')}
-                type="button"
-                onClick={() => {
-                  navigate(ADMIN_ARTICLES_PATH);
-                }}
-              >
-                Admin articles
-              </button>
-            ) : null}
           </nav>
 
           
@@ -2102,11 +2091,6 @@ const App = () => {
               </label>
               <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
               <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {isAdmin ? (
-                <button className="icon-btn" type="button" onClick={() => navigate(ADMIN_ARTICLES_PATH)}>
-                  Admin
-                </button>
-              ) : null}
               {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
               {status === 'signed_in' ? (
                 <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
