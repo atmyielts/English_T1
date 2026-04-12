@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Database, UploadCloud, Library, ArrowLeft, User, Menu, X, PenTool } from 'lucide-react';
+import { Database, Library, ArrowLeft, User, Menu, X, PenTool } from 'lucide-react';
 import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platformUrls';
 import { IELTS_PRODUCT_SLUG } from '../../lib/constants';
 
@@ -8,7 +8,6 @@ type Props = { children: React.ReactNode };
 
 type AdminNavProps = {
   pathname: string;
-  returnTo: string;
   inactiveClass: string;
   activeClass: string;
   onNavigate?: () => void;
@@ -16,7 +15,7 @@ type AdminNavProps = {
 
 const isActivePath = (pathname: string, path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, activeClass, onNavigate }) => (
+const AdminNav: React.FC<AdminNavProps> = ({ pathname, inactiveClass, activeClass, onNavigate }) => (
   <nav className="flex-1 py-6 space-y-1">
     <Link to="/" onClick={onNavigate} className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${inactiveClass}`}>
       <ArrowLeft size={18} />
@@ -33,37 +32,27 @@ const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, 
       }`}
     >
       <Database size={18} />
-      Tests
+      Mock Tests
     </Link>
     <Link
-      to="/admin/builder"
+      to="/admin/section-library"
       onClick={onNavigate}
       className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/builder') ? activeClass : inactiveClass
+        isActivePath(pathname, '/admin/section-library') ? activeClass : inactiveClass
+      }`}
+    >
+      <Library size={18} />
+      Section Library
+    </Link>
+    <Link
+      to="/admin/content-library"
+      onClick={onNavigate}
+      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
+        isActivePath(pathname, '/admin/content-library') ? activeClass : inactiveClass
       }`}
     >
       <PenTool size={18} />
-      Builder
-    </Link>
-    <Link
-      to="/admin/part-builder"
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/part-builder') ? activeClass : inactiveClass
-      }`}
-    >
-      <PenTool size={18} />
-      Part JSON
-    </Link>
-    <Link
-      to={`/admin/import?returnTo=${encodeURIComponent(returnTo)}`}
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/import') ? activeClass : inactiveClass
-      }`}
-    >
-      <UploadCloud size={18} />
-      Import JSON
+      Content Library
     </Link>
     <Link
       to="/admin/assets"
@@ -88,10 +77,9 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
 
   const title = useMemo(() => {
     const p = location.pathname;
-    if (p.startsWith('/admin/tests')) return 'Tests Manager';
-    if (p.startsWith('/admin/builder')) return 'Test Builder';
-    if (p.startsWith('/admin/part-builder')) return 'Part JSON Builder';
-    if (p.startsWith('/admin/import')) return 'Import';
+    if (p.startsWith('/admin/tests')) return 'Mock Tests';
+    if (p.startsWith('/admin/section-library')) return 'Section Library';
+    if (p.startsWith('/admin/content-library')) return 'Content Library';
     if (p.startsWith('/admin/assets')) return 'Assets';
     return 'Admin';
   }, [location.pathname]);
@@ -131,7 +119,6 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
 
         <AdminNav
           pathname={location.pathname}
-          returnTo={returnTo}
           inactiveClass={inactiveClass}
           activeClass={activeClass}
         />
@@ -180,7 +167,6 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
 
             <AdminNav
               pathname={location.pathname}
-              returnTo={returnTo}
               inactiveClass={inactiveClass}
               activeClass={activeClass}
               onNavigate={() => setMobileNavOpen(false)}

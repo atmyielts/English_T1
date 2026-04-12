@@ -1288,8 +1288,9 @@ export type AdminBuilderSnapshot = {
 
 export type AdminSectionTemplateSummary = {
   template_id: string;
+  template_key: string;
   template_name: string;
-  section_type: 'listening' | 'reading' | 'writing';
+  section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
   latest_version: number;
   latest_version_id: string;
   latest_source_snapshot_id: string | null;
@@ -1301,8 +1302,9 @@ export type AdminSectionTemplateSummary = {
 export type AdminSectionTemplatePayload = {
   template_version_id: string;
   template_id: string;
+  template_key: string;
   template_name: string;
-  section_type: 'listening' | 'reading' | 'writing';
+  section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
   version: number;
   source_snapshot_id: string | null;
   section_payload: Json;
@@ -1398,18 +1400,45 @@ export const adminBuilderTemplatePayload = async (
   return (await res.json()) as AdminSectionTemplatePayload;
 };
 
+export const adminBuilderTemplateResolve = async (
+  accessToken: string,
+  productId: string,
+  templateKey: string,
+  version?: number | null,
+): Promise<AdminSectionTemplatePayload> => {
+  const qs = new URLSearchParams({ product_id: productId, template_key: templateKey });
+  if (typeof version === 'number' && Number.isFinite(version) && version > 0) {
+    qs.set('version', String(Math.floor(version)));
+  }
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-builder/templates?${qs.toString()}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-builder/templates?template_key' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-builder/templates?template_key failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AdminSectionTemplatePayload;
+};
+
 export const adminBuilderTemplateUpsert = async (
   accessToken: string,
   body: {
     product_id: string;
     template_name: string;
-    section_type: 'listening' | 'reading' | 'writing';
+    template_key?: string | null;
+    section_type: 'listening' | 'reading' | 'writing' | 'reading_writing' | 'math';
     section_payload: Json;
     template_id?: string | null;
     source_snapshot_id?: string | null;
+    auto_split_parts?: boolean;
   },
 ): Promise<{
   template_id: string;
+  template_key: string;
   template_name: string;
   section_type: string;
   version: number;
@@ -1430,11 +1459,141 @@ export const adminBuilderTemplateUpsert = async (
   }
   return (await res.json()) as {
     template_id: string;
+    template_key: string;
     template_name: string;
     section_type: string;
     version: number;
     template_version_id: string;
     source_snapshot_id: string | null;
+  };
+};
+
+export type AdminPartTemplateSummary = {
+  template_id: string;
+  template_key: string;
+  template_name: string;
+  module_type: 'listening' | 'reading' | 'writing';
+  latest_version: number;
+  latest_version_id: string;
+  latest_source_section_template_version_id: string | null;
+  version_count: number;
+  updated_at: string;
+  created_at: string;
+};
+
+export type AdminPartTemplatePayload = {
+  template_version_id: string;
+  template_id: string;
+  template_key: string;
+  template_name: string;
+  module_type: 'listening' | 'reading' | 'writing';
+  version: number;
+  source_section_template_version_id: string | null;
+  part_payload: Json;
+};
+
+export const adminBuilderPartTemplates = async (
+  accessToken: string,
+  productId: string,
+): Promise<{ templates: AdminPartTemplateSummary[] }> => {
+  const qs = new URLSearchParams({ product_id: productId });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-builder/part-templates?${qs.toString()}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-builder/part-templates' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-builder/part-templates failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { templates: AdminPartTemplateSummary[] };
+};
+
+export const adminBuilderPartTemplatePayload = async (
+  accessToken: string,
+  templateVersionId: string,
+): Promise<AdminPartTemplatePayload> => {
+  const qs = new URLSearchParams({ template_version_id: templateVersionId });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-builder/part-templates?${qs.toString()}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-builder/part-templates?template_version_id' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-builder/part-templates?template_version_id failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AdminPartTemplatePayload;
+};
+
+export const adminBuilderPartTemplateResolve = async (
+  accessToken: string,
+  productId: string,
+  templateKey: string,
+  version?: number | null,
+): Promise<AdminPartTemplatePayload> => {
+  const qs = new URLSearchParams({ product_id: productId, template_key: templateKey });
+  if (typeof version === 'number' && Number.isFinite(version) && version > 0) {
+    qs.set('version', String(Math.floor(version)));
+  }
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-builder/part-templates?${qs.toString()}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-builder/part-templates?template_key' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-builder/part-templates?template_key failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AdminPartTemplatePayload;
+};
+
+export const adminBuilderPartTemplateUpsert = async (
+  accessToken: string,
+  body: {
+    product_id: string;
+    template_name: string;
+    template_key?: string | null;
+    module_type: 'listening' | 'reading' | 'writing';
+    part_payload: Json;
+    template_id?: string | null;
+    source_section_template_version_id?: string | null;
+  },
+): Promise<{
+  template_id: string;
+  template_key: string;
+  template_name: string;
+  module_type: string;
+  version: number;
+  template_version_id: string;
+  source_section_template_version_id: string | null;
+}> => {
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-builder/part-templates/upsert`, {
+      method: 'POST',
+      headers: { ...apiHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+    { label: 'POST /admin-builder/part-templates/upsert' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /admin-builder/part-templates/upsert failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as {
+    template_id: string;
+    template_key: string;
+    template_name: string;
+    module_type: string;
+    version: number;
+    template_version_id: string;
+    source_section_template_version_id: string | null;
   };
 };
 

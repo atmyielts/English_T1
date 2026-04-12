@@ -141,7 +141,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
     useEffect(() => {
         // Close drawer only when route changes.
-        setMobileNavOpen(false);
+        const t = window.setTimeout(() => setMobileNavOpen(false), 0);
+        return () => window.clearTimeout(t);
     }, [location.pathname]);
 
     return (

@@ -18,13 +18,13 @@ const ExamPlayer = lazy(() => import('./pages/ExamPlayer').then((m) => ({ defaul
 const SessionResultsPage = lazy(() => import('./pages/SessionResultsPage').then((m) => ({ default: m.SessionResultsPage })));
 const CandidateHandoff = lazy(() => import('./pages/CandidateHandoff').then((m) => ({ default: m.CandidateHandoff })));
 
-const AdminTestsPage = lazy(() => import('./pages/AdminTestsPage').then((m) => ({ default: m.AdminTestsPage })));
-const AdminBuilderPage = lazy(() => import('./pages/AdminBuilderPage').then((m) => ({ default: m.AdminBuilderPage })));
-const AdminPartJsonBuilderPage = lazy(() =>
-  import('./pages/AdminPartJsonBuilderPage').then((m) => ({ default: m.AdminPartJsonBuilderPage })),
-);
+const AdminMockTestsPage = lazy(() => import('./pages/AdminMockTestsPage').then((m) => ({ default: m.AdminMockTestsPage })));
+const AdminContentLibraryPage = lazy(() => import('./pages/AdminContentLibraryPage').then((m) => ({ default: m.AdminContentLibraryPage })));
+const AdminSectionLibraryPage = lazy(() => import('./pages/AdminSectionLibraryPage').then((m) => ({ default: m.AdminSectionLibraryPage })));
 const AdminAssetsPage = lazy(() => import('./pages/AdminAssetsPage').then((m) => ({ default: m.AdminAssetsPage })));
-const AdminImportPage = lazy(() => import('./pages/AdminImportPage').then((m) => ({ default: m.AdminImportPage })));
+const AdminLegacyRedirectPage = lazy(() =>
+  import('./pages/AdminLegacyRedirectPage').then((m) => ({ default: m.AdminLegacyRedirectPage })),
+);
 
 const RouteLoading: React.FC<{ label?: string }> = ({ label }) => (
   <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50/40 flex items-center justify-center p-6">
@@ -65,14 +65,16 @@ function App() {
 
           <Route element={<RequireAdmin />}>
           <Route path="/admin" element={<Navigate to="/admin/tests" replace />} />
-          <Route path="/admin/tests" element={<AdminTestsPage />} />
+          <Route path="/admin/tests" element={<AdminMockTestsPage />} />
+          <Route path="/admin/content-library" element={<AdminContentLibraryPage />} />
+          <Route path="/admin/section-library" element={<AdminSectionLibraryPage />} />
           <Route path="/admin/test/:testId" element={<TestOverview />} />
           <Route path="/admin/session/:sessionId/:sectionId" element={<ExamPlayer />} />
           <Route path="/admin/session/:sessionId/results" element={<SessionResultsPage />} />
-          <Route path="/admin/builder" element={<AdminBuilderPage />} />
-          <Route path="/admin/part-builder" element={<AdminPartJsonBuilderPage />} />
+          <Route path="/admin/builder" element={<AdminLegacyRedirectPage />} />
+          <Route path="/admin/part-builder" element={<AdminLegacyRedirectPage />} />
           <Route path="/admin/assets" element={<AdminAssetsPage />} />
-          <Route path="/admin/import" element={<AdminImportPage />} />
+          <Route path="/admin/import" element={<AdminLegacyRedirectPage />} />
         </Route>
 
           <Route element={<RequireProductEntitlement productId={IELTS_PRODUCT_ID} productSlug={IELTS_PRODUCT_SLUG} />}>

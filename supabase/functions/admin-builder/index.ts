@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authorizeAdminRequest } from "../_shared/admin-access.ts";
 
 type Json = Record<string, unknown>;
+type ModuleType = "listening" | "reading" | "writing";
+type SectionType = ModuleType | "reading_writing" | "math";
 
 type ImportPayload = {
   product_id: string;
@@ -44,13 +46,25 @@ type ImportPayload = {
   answer_key_unit_ids?: string[];
 };
 
-type TemplateUpsertPayload = {
+type SectionTemplateUpsertPayload = {
   product_id: string;
   template_name: string;
-  section_type: "listening" | "reading" | "writing" | "reading_writing" | "math";
+  template_key?: string | null;
+  section_type: SectionType;
   section_payload: Json;
   template_id?: string | null;
   source_snapshot_id?: string | null;
+  auto_split_parts?: boolean;
+};
+
+type PartTemplateUpsertPayload = {
+  product_id: string;
+  template_name: string;
+  template_key?: string | null;
+  module_type: ModuleType;
+  part_payload: Json;
+  template_id?: string | null;
+  source_section_template_version_id?: string | null;
 };
 
 const corsHeaders: Record<string, string> = {
@@ -66,6 +80,14 @@ const getEnv = (key: string): string => {
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+const asObject = (v: unknown): Record<string, unknown> => (isObject(v) ? v : {});
+const asArray = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+const readString = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value ?? null)) as T;
+const slugifyKey = (value: string, fallback: string): string => {
+  const out = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return out || fallback;
+};
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -81,6 +103,229 @@ const statusFromRpcMessage = (message: string): number => {
   if (normalized.includes("not found")) return 404;
   if (normalized.includes("required") || normalized.includes("invalid")) return 400;
   return 500;
+};
+
+const normalizeSectionType = (value: unknown): SectionType | "" => {
+  const clean = readString(value).toLowerCase();
+  return ["listening", "reading", "writing", "reading_writing", "math"].includes(clean)
+    ? (clean as SectionType)
+    : "";
+};
+
+const normalizeModuleType = (value: unknown): ModuleType | "" => {
+  const clean = readString(value).toLowerCase();
+  return ["listening", "reading", "writing"].includes(clean) ? (clean as ModuleType) : "";
+};
+
+const normalizeUnitPayload = (rawUnit: unknown, index: number): Record<string, unknown> => {
+  const unit = asObject(rawUnit);
+  const answerKey = asObject(unit.answer_key);
+  return {
+    type: readString(unit.type) || "instruction",
+    display_order: Number.isFinite(Number(unit.display_order)) ? Math.floor(Number(unit.display_order)) : index + 1,
+    data: cloneJson(asObject(unit.data)),
+    metadata: cloneJson(asObject(unit.metadata)),
+    answer_key:
+      isObject(answerKey.correct)
+        ? {
+            correct: cloneJson(asObject(answerKey.correct)),
+            metadata: cloneJson(asObject(answerKey.metadata)),
+          }
+        : null,
+  };
+};
+
+const normalizePartPayload = (rawPart: unknown, index: number): Record<string, unknown> => {
+  const part = asObject(rawPart);
+  const rawUnits = asArray<unknown>(part.content_units);
+  return {
+    name: readString(part.name) || `Part ${index + 1}`,
+    display_order: Number.isFinite(Number(part.display_order)) ? Math.floor(Number(part.display_order)) : index + 1,
+    metadata: cloneJson(asObject(part.metadata)),
+    content_units: rawUnits.map((unit, unitIndex) => normalizeUnitPayload(unit, unitIndex)),
+  };
+};
+
+const normalizeSectionPayload = (rawSection: unknown, fallbackType?: SectionType): Record<string, unknown> => {
+  const section = asObject(rawSection);
+  const metadata = cloneJson(asObject(section.metadata));
+  const sectionType = normalizeSectionType((metadata as any).type) || fallbackType || "reading";
+  (metadata as any).type = sectionType;
+  const rawParts = asArray<unknown>(section.parts);
+  return {
+    name: readString(section.name) || sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
+    display_order: Number.isFinite(Number(section.display_order)) ? Math.floor(Number(section.display_order)) : 1,
+    metadata,
+    parts: rawParts.map((part, partIndex) => normalizePartPayload(part, partIndex)),
+  };
+};
+
+const resolveSectionTemplateVersion = async (
+  sb: any,
+  productId: string,
+  templateKey: string,
+  versionRaw?: string | null,
+): Promise<Record<string, unknown> | null> => {
+  const { data: template, error: templateError } = await sb
+    .from("section_templates")
+    .select("id, template_key, name, section_type, latest_version")
+    .eq("product_id", productId)
+    .eq("template_key", templateKey)
+    .maybeSingle();
+  if (templateError) throw templateError;
+  if (!template) return null;
+
+  const version = Number.isFinite(Number(versionRaw)) && Number(versionRaw) > 0
+    ? Math.floor(Number(versionRaw))
+    : Number((template as any).latest_version ?? 1);
+
+  const { data: versionRow, error: versionError } = await sb
+    .from("section_template_versions")
+    .select("id, version, source_snapshot_id, section_payload")
+    .eq("template_id", String((template as any).id))
+    .eq("version", version)
+    .maybeSingle();
+  if (versionError) throw versionError;
+  if (!versionRow) return null;
+
+  return {
+    template_version_id: String((versionRow as any).id),
+    template_id: String((template as any).id),
+    template_key: String((template as any).template_key ?? ""),
+    template_name: String((template as any).name ?? ""),
+    section_type: String((template as any).section_type ?? ""),
+    version: Number((versionRow as any).version ?? version),
+    source_snapshot_id: (versionRow as any).source_snapshot_id ?? null,
+    section_payload: (versionRow as any).section_payload ?? {},
+  };
+};
+
+const resolvePartTemplateVersion = async (
+  sb: any,
+  productId: string,
+  templateKey: string,
+  versionRaw?: string | null,
+): Promise<Record<string, unknown> | null> => {
+  const { data: template, error: templateError } = await sb
+    .from("part_templates")
+    .select("id, template_key, name, module_type, latest_version")
+    .eq("product_id", productId)
+    .eq("template_key", templateKey)
+    .maybeSingle();
+  if (templateError) throw templateError;
+  if (!template) return null;
+
+  const version = Number.isFinite(Number(versionRaw)) && Number(versionRaw) > 0
+    ? Math.floor(Number(versionRaw))
+    : Number((template as any).latest_version ?? 1);
+
+  const { data: versionRow, error: versionError } = await sb
+    .from("part_template_versions")
+    .select("id, version, source_section_template_version_id, part_payload")
+    .eq("template_id", String((template as any).id))
+    .eq("version", version)
+    .maybeSingle();
+  if (versionError) throw versionError;
+  if (!versionRow) return null;
+
+  return {
+    template_version_id: String((versionRow as any).id),
+    template_id: String((template as any).id),
+    template_key: String((template as any).template_key ?? ""),
+    template_name: String((template as any).name ?? ""),
+    module_type: String((template as any).module_type ?? ""),
+    version: Number((versionRow as any).version ?? version),
+    source_section_template_version_id: (versionRow as any).source_section_template_version_id ?? null,
+    part_payload: (versionRow as any).part_payload ?? {},
+  };
+};
+
+const lookupSectionTemplateKeyById = async (sb: any, templateId: string | null): Promise<string> => {
+  if (!templateId) return "";
+  const { data, error } = await sb
+    .from("section_templates")
+    .select("template_key")
+    .eq("id", templateId)
+    .maybeSingle();
+  if (error || !data) return "";
+  return String((data as any).template_key ?? "").trim();
+};
+
+const lookupPartTemplateKeyById = async (sb: any, templateId: string | null): Promise<string> => {
+  if (!templateId) return "";
+  const { data, error } = await sb
+    .from("part_templates")
+    .select("template_key")
+    .eq("id", templateId)
+    .maybeSingle();
+  if (error || !data) return "";
+  return String((data as any).template_key ?? "").trim();
+};
+
+const autoSplitSectionToPartTemplates = async (
+  sb: any,
+  authedUserId: string,
+  body: {
+    productId: string;
+    sectionType: SectionType;
+    sectionTemplateKey: string;
+    sectionPayload: Record<string, unknown>;
+  },
+): Promise<Record<string, unknown>> => {
+  const normalized = cloneJson(normalizeSectionPayload(body.sectionPayload, body.sectionType));
+  const moduleType = normalizeModuleType(body.sectionType);
+  if (!moduleType) return normalized;
+
+  const parts = asArray<Record<string, unknown>>((normalized as any).parts).map((part) => cloneJson(part));
+  const nextParts: Array<Record<string, unknown>> = [];
+
+  for (let index = 0; index < parts.length; index += 1) {
+    const part = parts[index];
+    const metadata = cloneJson(asObject(part.metadata));
+    const partRef = asObject((metadata as any).part_template_ref);
+    const partName = readString(part.name) || `Part ${index + 1}`;
+    const templateId = readString((partRef as any).template_id) || null;
+    const explicitTemplateKey = readString((partRef as any).template_key);
+    const existingTemplateKey = explicitTemplateKey || (await lookupPartTemplateKeyById(sb, templateId));
+    const derivedTemplateKey =
+      existingTemplateKey ||
+      slugifyKey(`${body.sectionTemplateKey}-${partName}`, `${body.sectionTemplateKey}-part-${index + 1}`);
+
+    const { data, error } = await sb.rpc("admin_part_template_upsert", {
+      p_product_id: body.productId,
+      p_template_name: partName,
+      p_template_key: derivedTemplateKey,
+      p_module_type: moduleType,
+      p_part_payload: normalizePartPayload(part, index),
+      p_actor: authedUserId,
+      p_template_id: templateId,
+      p_source_section_template_version_id: null,
+    });
+
+    if (error) {
+      const message = String(error.message ?? "Part template save failed");
+      throw new Error(message);
+    }
+
+    (metadata as any).part_template_ref = {
+      template_id: (data as any)?.template_id ?? null,
+      template_key: (data as any)?.template_key ?? derivedTemplateKey,
+      template_version_id: (data as any)?.template_version_id ?? null,
+      template_version: (data as any)?.version ?? null,
+    };
+
+    nextParts.push({
+      ...part,
+      name: partName,
+      metadata,
+      content_units: asArray<unknown>((part as any).content_units).map((unit, unitIndex) => normalizeUnitPayload(unit, unitIndex)),
+    });
+  }
+
+  return {
+    ...normalized,
+    parts: nextParts,
+  };
 };
 
 serve(async (req) => {
@@ -222,7 +467,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && url.pathname.endsWith("/templates")) {
-      const templateVersionId = String(url.searchParams.get("template_version_id") ?? "").trim();
+      const templateVersionId = readString(url.searchParams.get("template_version_id"));
       if (templateVersionId) {
         const { data, error } = await sb.rpc("admin_section_template_get_payload", {
           p_template_version_id: templateVersionId,
@@ -232,13 +477,52 @@ serve(async (req) => {
         return json(200, data[0]);
       }
 
-      const productId = String(url.searchParams.get("product_id") ?? "").trim();
+      const productId = readString(url.searchParams.get("product_id"));
+      const templateKey = readString(url.searchParams.get("template_key"));
+      const version = readString(url.searchParams.get("version"));
+
+      if (productId && templateKey) {
+        const resolved = await resolveSectionTemplateVersion(sb, productId, templateKey, version || null);
+        if (!resolved) return json(404, { error: "Template version not found" });
+        return json(200, resolved);
+      }
+
       if (!productId) return json(400, { error: "product_id is required" });
 
       const { data, error } = await sb.rpc("admin_section_templates_list", {
         p_product_id: productId,
       });
       if (error) return json(500, { error: "Failed to load templates", details: error });
+      return json(200, { templates: data ?? [] });
+    }
+
+    if (req.method === "GET" && url.pathname.endsWith("/part-templates")) {
+      const templateVersionId = readString(url.searchParams.get("template_version_id"));
+      if (templateVersionId) {
+        const { data, error } = await sb.rpc("admin_part_template_get_payload", {
+          p_template_version_id: templateVersionId,
+        });
+        if (error) return json(500, { error: "Failed to load part template payload", details: error });
+        if (!Array.isArray(data) || data.length === 0) return json(404, { error: "Template version not found" });
+        return json(200, data[0]);
+      }
+
+      const productId = readString(url.searchParams.get("product_id"));
+      const templateKey = readString(url.searchParams.get("template_key"));
+      const version = readString(url.searchParams.get("version"));
+
+      if (productId && templateKey) {
+        const resolved = await resolvePartTemplateVersion(sb, productId, templateKey, version || null);
+        if (!resolved) return json(404, { error: "Template version not found" });
+        return json(200, resolved);
+      }
+
+      if (!productId) return json(400, { error: "product_id is required" });
+
+      const { data, error } = await sb.rpc("admin_part_templates_list", {
+        p_product_id: productId,
+      });
+      if (error) return json(500, { error: "Failed to load part templates", details: error });
       return json(200, { templates: data ?? [] });
     }
 
@@ -294,25 +578,39 @@ serve(async (req) => {
       const body = (await req.json()) as unknown;
       if (!isObject(body)) return json(400, { error: "Invalid JSON body" });
 
-      const payload = body as TemplateUpsertPayload;
-      const productId = String(payload.product_id ?? "").trim();
-      const templateName = String(payload.template_name ?? "").trim();
-      const sectionType = String(payload.section_type ?? "").trim().toLowerCase();
-      const templateId = payload.template_id ? String(payload.template_id).trim() : null;
-      const sourceSnapshotId = payload.source_snapshot_id ? String(payload.source_snapshot_id).trim() : null;
+      const payload = body as SectionTemplateUpsertPayload;
+      const productId = readString(payload.product_id);
+      const templateName = readString(payload.template_name);
+      const sectionType = normalizeSectionType(payload.section_type);
+      const templateId = readString(payload.template_id) || null;
+      const sourceSnapshotId = readString(payload.source_snapshot_id) || null;
+      const templateKey =
+        readString(payload.template_key) ||
+        (await lookupSectionTemplateKeyById(sb, templateId)) ||
+        slugifyKey(templateName, "section-template");
 
       if (!productId) return json(400, { error: "product_id is required" });
       if (!templateName) return json(400, { error: "template_name is required" });
-      if (!["listening", "reading", "writing", "reading_writing", "math"].includes(sectionType)) {
-        return json(400, { error: "section_type must be listening|reading|writing|reading_writing|math" });
-      }
+      if (!sectionType) return json(400, { error: "section_type must be listening|reading|writing|reading_writing|math" });
       if (!isObject(payload.section_payload)) return json(400, { error: "section_payload must be an object" });
+
+      const normalizedSectionPayload = normalizeSectionPayload(payload.section_payload, sectionType);
+      const sectionPayload =
+        payload.auto_split_parts === false
+          ? normalizedSectionPayload
+          : await autoSplitSectionToPartTemplates(sb, authedUserId, {
+              productId,
+              sectionType,
+              sectionTemplateKey: templateKey,
+              sectionPayload: normalizedSectionPayload,
+            });
 
       const { data, error } = await sb.rpc("admin_section_template_upsert", {
         p_product_id: productId,
         p_template_name: templateName,
+        p_template_key: templateKey,
         p_section_type: sectionType,
-        p_section_payload: payload.section_payload,
+        p_section_payload: sectionPayload,
         p_actor: authedUserId,
         p_template_id: templateId,
         p_source_snapshot_id: sourceSnapshotId,
@@ -326,11 +624,51 @@ serve(async (req) => {
       return json(200, data ?? {});
     }
 
+    if (req.method === "POST" && url.pathname.endsWith("/part-templates/upsert")) {
+      const body = (await req.json()) as unknown;
+      if (!isObject(body)) return json(400, { error: "Invalid JSON body" });
+
+      const payload = body as PartTemplateUpsertPayload;
+      const productId = readString(payload.product_id);
+      const templateName = readString(payload.template_name);
+      const moduleType = normalizeModuleType(payload.module_type);
+      const templateId = readString(payload.template_id) || null;
+      const templateKey =
+        readString(payload.template_key) ||
+        (await lookupPartTemplateKeyById(sb, templateId)) ||
+        slugifyKey(templateName, "part-template");
+
+      if (!productId) return json(400, { error: "product_id is required" });
+      if (!templateName) return json(400, { error: "template_name is required" });
+      if (!moduleType) return json(400, { error: "module_type must be listening|reading|writing" });
+      if (!isObject(payload.part_payload)) return json(400, { error: "part_payload must be an object" });
+
+      const normalizedPartPayload = normalizePartPayload(payload.part_payload, 0);
+
+      const { data, error } = await sb.rpc("admin_part_template_upsert", {
+        p_product_id: productId,
+        p_template_name: templateName,
+        p_template_key: templateKey,
+        p_module_type: moduleType,
+        p_part_payload: normalizedPartPayload,
+        p_actor: authedUserId,
+        p_template_id: templateId,
+        p_source_section_template_version_id: readString(payload.source_section_template_version_id) || null,
+      });
+
+      if (error) {
+        const message = String(error.message ?? "Part template save failed");
+        return json(statusFromRpcMessage(message), { error: message, details: error });
+      }
+
+      return json(200, data ?? {});
+    }
+
     if (req.method === "POST" && url.pathname.endsWith("/rollback")) {
       const body = (await req.json()) as unknown;
       if (!isObject(body)) return json(400, { error: "Invalid JSON body" });
 
-      const snapshotId = String((body as any).snapshot_id ?? "").trim();
+      const snapshotId = readString((body as any).snapshot_id);
       if (!snapshotId) return json(400, { error: "snapshot_id is required" });
 
       const { data, error } = await sb.rpc("admin_builder_rollback", {
