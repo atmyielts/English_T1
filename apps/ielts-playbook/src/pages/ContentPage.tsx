@@ -16,34 +16,63 @@ export const ContentPage: React.FC = () => {
   useEffect(() => {
     if (!slug) return;
     let active = true;
-    playbookPageGet(slug, accessToken)
-      .then((data) => {
-        if (!active) return;
-        setPayload(data);
-        setError(null);
-        const page = (data as Record<string, unknown>).page as Record<string, unknown>;
-        void playbookTrackEvent(
-          {
-            event_name: 'page_view',
-            page_id: String(page?.id ?? ''),
-            page_type: String(page?.page_type ?? ''),
-            module_key: String(page?.module_key ?? ''),
-          },
-          accessToken,
-        );
-      })
-      .catch((err: Error & { status?: number }) => {
-        if (!active) return;
-        if (err.status === 403) {
-          window.location.assign(buildPlatformUrl('/pricing', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
-          return;
+    const handleLoaded = (data: Record<string, unknown>, token?: string | null) => {
+      if (!active) return;
+      setPayload(data);
+      setError(null);
+      const page = (data.page ?? null) as Record<string, unknown> | null;
+      void playbookTrackEvent(
+        {
+          event_name: 'page_view',
+          page_id: String(page?.id ?? ''),
+          page_type: String(page?.page_type ?? ''),
+          module_key: String(page?.module_key ?? ''),
+        },
+        token,
+      );
+    };
+
+    const redirectForAccessError = (status?: number) => {
+      if (status === 403) {
+        window.location.assign(buildPlatformUrl('/pricing', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
+        return true;
+      }
+      if (status === 401) {
+        window.location.assign(buildPlatformUrl('/auth', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
+        return true;
+      }
+      return false;
+    };
+
+    const load = async () => {
+      try {
+        const publicData = await playbookPageGet(slug);
+        handleLoaded(publicData as unknown as Record<string, unknown>, null);
+        return;
+      } catch (publicErr) {
+        const publicError = publicErr as Error & { status?: number };
+        if ((publicError.status === 401 || publicError.status === 403) && accessToken) {
+          try {
+            const authedData = await playbookPageGet(slug, accessToken);
+            handleLoaded(authedData as unknown as Record<string, unknown>, accessToken);
+            return;
+          } catch (authedErr) {
+            const authedError = authedErr as Error & { status?: number };
+            if (!active) return;
+            if (redirectForAccessError(authedError.status)) return;
+            setError(authedError.message);
+            return;
+          }
         }
-        if (err.status === 401) {
-          window.location.assign(buildPlatformUrl('/auth', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
-          return;
-        }
-        setError(err.message);
-      });
+
+        if (!active) return;
+        if (redirectForAccessError(publicError.status)) return;
+        setError(publicError.message);
+      }
+    };
+
+    void load();
+
     return () => {
       active = false;
     };

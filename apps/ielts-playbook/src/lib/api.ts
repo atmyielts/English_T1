@@ -70,6 +70,7 @@ const authHeaders = (accessToken: string, jsonBody = false): HeadersInit => ({
 
 const publicHeaders = (jsonBody = false): HeadersInit => ({
   apikey: supabaseAnonKey,
+  Authorization: `Bearer ${supabaseAnonKey}`,
   ...(jsonBody ? { 'Content-Type': 'application/json' } : {}),
 });
 
