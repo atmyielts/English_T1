@@ -209,6 +209,12 @@ verify_jwt = false
 [functions.admin-ielts-practice]
 verify_jwt = false
 
+[functions.ielts-playbook]
+verify_jwt = false
+
+[functions.admin-ielts-playbook]
+verify_jwt = false
+
 # Legacy alias for backward compatibility. Primary endpoint is `academy`.
 [functions.teacher-studio]
 verify_jwt = false
