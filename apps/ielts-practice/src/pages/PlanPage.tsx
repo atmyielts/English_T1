@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { practiceGeneratePlan, practiceGoalsGet, practiceGoalsPatch, practiceTodayPlan, type PracticePlanItem } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+
 export const PlanPage = () => {
   const { accessToken } = useAccess();
   const [targetBand, setTargetBand] = useState('6.5');
@@ -85,6 +87,7 @@ export const PlanPage = () => {
         </Link>
         <div className="top-nav-actions">
           <Link to="/dashboard" className="btn ghost">Back</Link>
+          <a href={`${PLAYBOOK_URL}/study-plans?source=practice`} className="btn ghost">Playbook</a>
           <button className="btn solid" type="button" onClick={() => void regenerate()} disabled={saving}>Regenerate</button>
         </div>
       </header>

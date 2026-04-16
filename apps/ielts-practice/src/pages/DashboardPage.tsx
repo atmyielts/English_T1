@@ -130,6 +130,7 @@ const formatQuestionType = (value: string): string =>
     .replace(/\b\w/g, (token) => token.toUpperCase());
 
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
@@ -306,6 +307,7 @@ export const DashboardPage = () => {
             <Link to="/dashboard" className="sidebar-link active">Dashboard</Link>
             <Link to="/plan" className="sidebar-link">Plan Builder</Link>
             <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link">IELTS Simulator</a>
+            <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link">IELTS Playbook</a>
           </nav>
 
           <section className="sidebar-panel">

@@ -5,6 +5,7 @@
     "apps/platform",
     "apps/ielts-simulator",
     "apps/ielts-practice",
+    "apps/ielts-playbook",
     "apps/sat-simulator",
     "apps/toefl-ibt-simulator",
     "apps/academy",

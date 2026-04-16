@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { practiceAttemptGet, type PracticeAttempt, type PracticeExercise } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+
 export const ResultsPage = () => {
   const { attempt_id } = useParams();
   const { accessToken } = useAccess();
@@ -44,6 +46,7 @@ export const ResultsPage = () => {
         </Link>
         <div className="top-nav-actions">
           <Link to="/plan" className="btn ghost">Back to plan</Link>
+          <a href={`${PLAYBOOK_URL}/diagnostic?source=practice&weak_skill=${encodeURIComponent(String(exercise?.section_type ?? 'writing'))}`} className="btn ghost">Open playbook</a>
           {exercise ? <Link to={`/exercise/${exercise.id}`} className="btn solid">Retry</Link> : null}
         </div>
       </header>

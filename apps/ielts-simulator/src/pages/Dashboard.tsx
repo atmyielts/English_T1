@@ -8,6 +8,7 @@ import { IELTS_PRODUCT_ID, IELTS_PRODUCT_SLUG } from '../lib/constants';
 import { useAccess } from '../lib/useAccess';
 
 type Json = Record<string, unknown>;
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
 type SessionRow = {
   id: string;
@@ -246,6 +247,12 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <a
+              href={`${PLAYBOOK_URL}/dashboard?source=simulator`}
+              className="w-full sm:w-auto px-4 py-2 rounded-2xl border border-gray-200 hover:bg-white/70 backdrop-blur font-semibold text-center"
+            >
+              Playbook
+            </a>
             <button
               onClick={() => navigate('/practice')}
               className="w-full sm:w-auto px-4 py-2 rounded-2xl border border-gray-200 hover:bg-white/70 backdrop-blur font-semibold"

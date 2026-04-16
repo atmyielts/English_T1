@@ -5,6 +5,7 @@ import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/pl
 import { useAccess } from '../lib/useAccess';
 
 const toHalfBand = (value: number): number => Math.round(value * 2) / 2;
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
 export const SessionResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -143,6 +144,10 @@ export const SessionResultsPage: React.FC = () => {
     type: String(section.type ?? '').toLowerCase(),
     band: typeof section.band === 'number' ? section.band : null,
   }));
+  const weakestSkill =
+    sectionStats
+      .filter((section) => typeof section.band === 'number')
+      .sort((a, b) => Number(a.band ?? 99) - Number(b.band ?? 99))[0]?.type ?? 'writing';
   const sectionTypeSet = new Set(sectionStats.map((section) => section.type));
   const completedCoreSections = ['listening', 'reading', 'writing'].filter((type) => sectionTypeSet.has(type));
   const missingCoreSections = ['listening', 'reading', 'writing'].filter((type) => !sectionTypeSet.has(type));
@@ -250,6 +255,21 @@ export const SessionResultsPage: React.FC = () => {
 
         <div className="mt-3 text-xs text-gray-500">
           Note: Speaking is not assessed in this simulator yet, so there is no speaking band in this report.
+        </div>
+
+        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold tracking-wider uppercase text-emerald-800">Next step</div>
+            <div className="text-sm text-emerald-900 mt-1">
+              Open the IELTS Playbook with this scored session and turn the weakest skill into a study order.
+            </div>
+          </div>
+          <a
+            href={`${PLAYBOOK_URL}/diagnostic?source=simulator&session_id=${encodeURIComponent(sessionId ?? '')}&overall_band=${encodeURIComponent(String(summaryBand ?? ''))}&weak_skill=${encodeURIComponent(weakestSkill)}`}
+            className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-semibold text-center"
+          >
+            Open playbook
+          </a>
         </div>
 
         <div className="mt-8">

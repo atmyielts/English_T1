@@ -9,6 +9,8 @@ import type { MeResponse } from '../lib/platformClient';
 type Feature = { title: string; description: string };
 type Step = { title: string; description: string };
 
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+
 const hasProductEntitlement = (me: MeResponse | null, productId: string): boolean =>
   Boolean(me?.entitlements?.some((e) => e.resource_type === 'product' && e.resource_id === productId));
 
@@ -183,6 +185,12 @@ export const LandingPage: React.FC = () => {
                 {primaryLabel}
                 <ArrowRight size={16} />
               </button>
+              <a
+                href={`${PLAYBOOK_URL}/essentials?source=simulator`}
+                className="px-6 py-3 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 font-semibold text-center"
+              >
+                Open playbook
+              </a>
               <button
                 onClick={() => navigate('/practice')}
                 className="px-6 py-3 rounded-2xl border border-gray-200 bg-white/70 text-gray-900 font-semibold"
