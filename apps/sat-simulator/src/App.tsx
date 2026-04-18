@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RequireAdmin } from './components/platform/RequireAdmin';
+import { RequireAdminPermission } from './components/platform/RequireAdminPermission';
+import { AdminIndexRedirect } from './components/platform/AdminIndexRedirect';
 import { RequireProductEntitlement } from './components/platform/RequireProductEntitlement';
 import { SAT_PRODUCT_ID, SAT_PRODUCT_SLUG } from './lib/constants';
 import { PlatformRedirect } from './components/platform/PlatformRedirect';
@@ -34,6 +36,7 @@ function App() {
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/auth" element={<PlatformRedirect path="/auth" productSlug={SAT_PRODUCT_SLUG} />} />
+          <Route path="/admin-mfa" element={<PlatformRedirect path="/admin-mfa" productSlug={SAT_PRODUCT_SLUG} />} />
           <Route path="/pricing" element={<PlatformRedirect path="/pricing" productSlug={SAT_PRODUCT_SLUG} />} />
           <Route path="/checkout" element={<PlatformRedirect path="/checkout" productSlug={SAT_PRODUCT_SLUG} />} />
           <Route path="/account" element={<PlatformRedirect path="/account" productSlug={SAT_PRODUCT_SLUG} />} />
@@ -46,15 +49,64 @@ function App() {
           <Route path="/candidate/session/:sessionId/results" element={<SessionResultsPage />} />
 
           <Route element={<RequireAdmin />}>
-          <Route path="/admin" element={<Navigate to="/admin/tests" replace />} />
-          <Route path="/admin/tests" element={<AdminTestsPage />} />
-          <Route path="/admin/test/:testId" element={<TestOverview />} />
-          <Route path="/admin/session/:sessionId/:sectionId" element={<ExamPlayer />} />
-          <Route path="/admin/session/:sessionId/results" element={<SessionResultsPage />} />
-          <Route path="/admin/builder" element={<AdminBuilderPage />} />
-          <Route path="/admin/assets" element={<AdminAssetsPage />} />
-          <Route path="/admin/import" element={<AdminImportPage />} />
-        </Route>
+            <Route path="/admin" element={<AdminIndexRedirect />} />
+            <Route
+              path="/admin/tests"
+              element={
+                <RequireAdminPermission permission="admin.tests.manage" title="Tests">
+                  <AdminTestsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/test/:testId"
+              element={
+                <RequireAdminPermission permission="admin.tests.manage" title="Test overview">
+                  <TestOverview />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/session/:sessionId/:sectionId"
+              element={
+                <RequireAdminPermission permission="admin.tests.manage" title="Admin session player">
+                  <ExamPlayer />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/session/:sessionId/results"
+              element={
+                <RequireAdminPermission permission="admin.tests.manage" title="Admin session results">
+                  <SessionResultsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/builder"
+              element={
+                <RequireAdminPermission permission="admin.builder.manage" title="Builder">
+                  <AdminBuilderPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/assets"
+              element={
+                <RequireAdminPermission permission="admin.assets.manage" title="Assets">
+                  <AdminAssetsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/import"
+              element={
+                <RequireAdminPermission permission="admin.builder.manage" title="Import">
+                  <AdminImportPage />
+                </RequireAdminPermission>
+              }
+            />
+          </Route>
 
           <Route element={<RequireProductEntitlement productId={SAT_PRODUCT_ID} productSlug={SAT_PRODUCT_SLUG} />}>
             <Route path="/dashboard" element={<Dashboard />} />

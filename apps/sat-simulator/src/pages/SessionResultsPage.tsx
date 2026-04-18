@@ -9,7 +9,7 @@ export const SessionResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { accessToken } = useAccess();
+  const { accessToken, status: accessStatus } = useAccess();
   const [data, setData] = useState<ScoreSessionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,11 @@ export const SessionResultsPage: React.FC = () => {
       setAiError(null);
 
       try {
-        if (!accessToken) return;
+        if (accessStatus === 'loading') return;
+        if (!accessToken) {
+          setError('Your session is no longer authenticated. Please sign in again.');
+          return;
+        }
 
         const scored = await scoreSession(accessToken, sessionId);
         setData(scored);
@@ -60,14 +64,17 @@ export const SessionResultsPage: React.FC = () => {
     };
 
     run();
-  }, [accessToken, sessionId]);
+  }, [accessStatus, accessToken, sessionId]);
 
   const runAiGrading = useCallback(async (force: boolean) => {
     if (!sessionId) return;
     setAiLoading(true);
     setAiError(null);
     try {
-      if (!accessToken) return;
+      if (!accessToken) {
+        setAiError('Your session is no longer authenticated. Please sign in again.');
+        return;
+      }
 
       const res = await gradeWriting(accessToken, sessionId, { force });
       setAiEval(res.evaluation ?? null);

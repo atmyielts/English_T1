@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorizeAdminRequest } from "../_shared/admin-access.ts";
 
 type Json = Record<string, unknown>;
 
@@ -7,9 +8,12 @@ type ImportPayload = {
   product_id: string;
   experience: {
     id?: string;
+    version?: number;
     name: string;
     display_order?: number;
     is_active?: boolean;
+    price_amount?: number | null;
+    price_currency?: string | null;
     metadata?: Json;
   };
   sections: Array<{
@@ -28,15 +32,30 @@ type ImportPayload = {
         display_order?: number;
         data: Json;
         metadata?: Json;
-        answer_key?: { correct: Json; metadata?: Json };
+        answer_key?: { correct: Json; metadata?: Json } | null;
       }>;
     }>;
   }>;
 };
 
+type ExistingExperience = {
+  id: string;
+  version: number;
+};
+
+type ExistingTree = {
+  experience: ExistingExperience | null;
+  sectionIds: Set<string>;
+  partIds: Set<string>;
+  unitIds: Set<string>;
+  sectionsByExternalId: Map<string, string>;
+  partsByExternalId: Map<string, string>;
+  unitsByExternalId: Map<string, string>;
+};
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-user-jwt",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -46,72 +65,220 @@ const getEnv = (key: string): string => {
   return value;
 };
 
-const getBearerToken = (req: Request): string | null => {
-  const header = req.headers.get("Authorization") ?? "";
-  if (!header) return null;
-  return header.startsWith("Bearer ") ? header.slice(7) : header;
-};
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object" && !Array.isArray(value);
 
-const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
-const asArray = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+const readString = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
+const cloneJson = <T>(value: T): T => JSON.parse(JSON.stringify(value ?? null)) as T;
 const uuid = (): string => crypto.randomUUID();
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const sanitizeName = (raw: unknown): string => (typeof raw === "string" ? raw.trim() : "");
-const asNumber = (raw: unknown): number | null =>
-  typeof raw === "number" && Number.isFinite(raw) ? raw : null;
-const asBoolean = (raw: unknown): boolean | null => (typeof raw === "boolean" ? raw : null);
-const isUuid = (raw: unknown): raw is string => typeof raw === "string" && UUID_RE.test(raw.trim());
+const sanitizeName = (value: unknown): string => readString(value);
+const asNumber = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
+const asBoolean = (value: unknown): boolean | null => (typeof value === "boolean" ? value : null);
+const isUuid = (value: unknown): value is string => typeof value === "string" && UUID_RE.test(value.trim());
 
-const resolveEntityId = (raw: unknown): { id: string; externalId: string | null } => {
-  const value = sanitizeName(raw);
-  if (!value) return { id: uuid(), externalId: null };
-  if (isUuid(value)) return { id: value, externalId: null };
-  return { id: uuid(), externalId: value };
-};
+const toJsonObject = (value: unknown): Json => (isObject(value) ? cloneJson(value as Json) : {});
 
 const resolveDisplayOrder = (preferred: unknown, fallbackOrder: unknown, indexFallback: number): number => {
-  const a = asNumber(preferred);
-  if (a != null) return a;
-  const b = asNumber(fallbackOrder);
-  if (b != null) return b;
+  const preferredNumber = asNumber(preferred);
+  if (preferredNumber != null) return Math.floor(preferredNumber);
+  const fallbackNumber = asNumber(fallbackOrder);
+  if (fallbackNumber != null) return Math.floor(fallbackNumber);
   return indexFallback;
+};
+
+const normalizeExternalId = (value: unknown): string | null => {
+  const clean = readString(value);
+  if (!clean || isUuid(clean)) return null;
+  return clean;
+};
+
+const readMetadataExternalId = (metadata: Json): string | null => normalizeExternalId((metadata as Record<string, unknown>).external_id);
+
+const withExternalId = (metadata: Json, externalId: string | null): Json => {
+  if (!externalId || readMetadataExternalId(metadata)) return metadata;
+  return { ...metadata, external_id: externalId };
 };
 
 const normalizeAnswerKey = (raw: unknown): { correct: Json; metadata: Json } | null => {
   if (!isObject(raw)) return null;
-  const metadata = isObject((raw as any).metadata) ? ((raw as any).metadata as Json) : {};
 
-  if (isObject((raw as any).correct)) {
-    return { correct: (raw as any).correct as Json, metadata };
+  const metadata = toJsonObject((raw as Record<string, unknown>).metadata);
+  if (isObject((raw as Record<string, unknown>).correct)) {
+    return { correct: cloneJson((raw as Record<string, unknown>).correct as Json), metadata };
   }
 
   const fallback: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(raw)) {
-    if (k === "metadata" || k === "correct") continue;
-    fallback[k] = v;
+  for (const [key, value] of Object.entries(raw)) {
+    if (key === "metadata" || key === "correct") continue;
+    fallback[key] = value;
   }
-  if (!isObject(fallback) || Object.keys(fallback).length === 0) return null;
-  return { correct: fallback as Json, metadata };
+  if (Object.keys(fallback).length === 0) return null;
+  return { correct: cloneJson(fallback as Json), metadata };
 };
 
 const validateUniqueOrder = (label: string, orders: number[]): string | null => {
   const seen = new Set<number>();
-  for (const o of orders) {
-    if (seen.has(o)) return `${label}: duplicate display_order ${o}`;
-    seen.add(o);
+  for (const order of orders) {
+    if (seen.has(order)) return `${label}: duplicate display_order ${order}`;
+    seen.add(order);
   }
   return null;
+};
+
+const statusFromMessage = (message: string): number => {
+  const normalized = message.toLowerCase();
+  if (message.includes("Version conflict")) return 409;
+  if (message.includes("Publish gate")) return 422;
+  if (normalized.includes("method not allowed")) return 405;
+  if (
+    normalized.includes("required") ||
+    normalized.includes("invalid") ||
+    normalized.includes("duplicate display_order") ||
+    normalized.includes("non-empty array") ||
+    normalized.includes("must be") ||
+    normalized.includes("not found") ||
+    normalized.includes("invalid input syntax for type uuid")
+  ) {
+    return 400;
+  }
+  return 500;
+};
+
+const json = (status: number, body: unknown): Response =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+
+const resolveProductId = async (sb: any, productRef: string): Promise<string | null> => {
+  const { data: productById } = await sb.from("products").select("id").eq("id", productRef).maybeSingle();
+  if (productById?.id) return String(productById.id);
+
+  const { data: productBySlug } = await sb
+    .from("products")
+    .select("id")
+    .filter("metadata->>slug", "eq", productRef)
+    .maybeSingle();
+  if (productBySlug?.id) return String(productBySlug.id);
+
+  const { data: productByName } = await sb.from("products").select("id").ilike("name", productRef).maybeSingle();
+  if (productByName?.id) return String(productByName.id);
+
+  return null;
+};
+
+const findExistingExperience = async (
+  sb: any,
+  productId: string,
+  explicitId: string,
+  metadata: Json,
+): Promise<ExistingExperience | null> => {
+  if (isUuid(explicitId)) {
+    const { data } = await sb.from("experiences").select("id, version").eq("id", explicitId).eq("product_id", productId).maybeSingle();
+    if (data?.id) return { id: String(data.id), version: Number((data as Record<string, unknown>).version ?? 1) };
+    return null;
+  }
+
+  const externalId = normalizeExternalId(explicitId) ?? readMetadataExternalId(metadata);
+  if (!externalId) return null;
+
+  const { data } = await sb
+    .from("experiences")
+    .select("id, version")
+    .eq("product_id", productId)
+    .filter("metadata->>external_id", "eq", externalId)
+    .maybeSingle();
+
+  if (!data?.id) return null;
+  return { id: String(data.id), version: Number((data as Record<string, unknown>).version ?? 1) };
+};
+
+const loadExistingTree = async (sb: any, experience: ExistingExperience | null): Promise<ExistingTree> => {
+  const tree: ExistingTree = {
+    experience,
+    sectionIds: new Set<string>(),
+    partIds: new Set<string>(),
+    unitIds: new Set<string>(),
+    sectionsByExternalId: new Map<string, string>(),
+    partsByExternalId: new Map<string, string>(),
+    unitsByExternalId: new Map<string, string>(),
+  };
+
+  if (!experience) return tree;
+
+  const { data: sections, error: sectionsError } = await sb
+    .from("sections")
+    .select("id, metadata")
+    .eq("experience_id", experience.id);
+  if (sectionsError) throw sectionsError;
+
+  const sectionIds = (sections ?? []).map((row: any) => String(row.id ?? "")).filter(Boolean);
+  for (const row of sections ?? []) {
+    const id = String((row as any).id ?? "");
+    if (!id) continue;
+    tree.sectionIds.add(id);
+    const externalId = readMetadataExternalId(toJsonObject((row as any).metadata));
+    if (externalId && !tree.sectionsByExternalId.has(externalId)) {
+      tree.sectionsByExternalId.set(externalId, id);
+    }
+  }
+
+  const { data: parts, error: partsError } =
+    sectionIds.length > 0
+      ? await sb.from("parts").select("id, metadata").in("section_id", sectionIds)
+      : { data: [], error: null };
+  if (partsError) throw partsError;
+
+  const partIds = (parts ?? []).map((row: any) => String(row.id ?? "")).filter(Boolean);
+  for (const row of parts ?? []) {
+    const id = String((row as any).id ?? "");
+    if (!id) continue;
+    tree.partIds.add(id);
+    const externalId = readMetadataExternalId(toJsonObject((row as any).metadata));
+    if (externalId && !tree.partsByExternalId.has(externalId)) {
+      tree.partsByExternalId.set(externalId, id);
+    }
+  }
+
+  const { data: units, error: unitsError } =
+    partIds.length > 0
+      ? await sb.from("content_units").select("id, metadata").in("part_id", partIds)
+      : { data: [], error: null };
+  if (unitsError) throw unitsError;
+
+  for (const row of units ?? []) {
+    const id = String((row as any).id ?? "");
+    if (!id) continue;
+    tree.unitIds.add(id);
+    const externalId = readMetadataExternalId(toJsonObject((row as any).metadata));
+    if (externalId && !tree.unitsByExternalId.has(externalId)) {
+      tree.unitsByExternalId.set(externalId, id);
+    }
+  }
+
+  return tree;
+};
+
+const resolveNestedId = (explicitId: string, metadata: Json, existingIdsByExternalId: Map<string, string>): { id: string; externalId: string | null } => {
+  if (isUuid(explicitId)) return { id: explicitId, externalId: null };
+
+  const externalId = normalizeExternalId(explicitId) ?? readMetadataExternalId(metadata);
+  if (externalId) {
+    return { id: existingIdsByExternalId.get(externalId) ?? uuid(), externalId };
+  }
+
+  return { id: uuid(), externalId: null };
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return json(405, { error: "Method not allowed" });
   }
 
   try {
@@ -120,329 +287,274 @@ serve(async (req) => {
 
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
-
-    const token = getBearerToken(req);
-    if (!token) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
     const sb = createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } });
 
-    const { data: authData, error: authError } = await sb.auth.getUser(token);
-    if (authError || !authData?.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    const authedUserId = authData.user.id;
-    const { data: userRow } = await sb.from("users").select("role").eq("id", authedUserId).maybeSingle();
-    if (String((userRow as any)?.role ?? "").toLowerCase() !== "admin") {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const authz = await authorizeAdminRequest(sb, req, corsHeaders, {
+      requiredPermission: "admin.builder.manage",
+      action: "admin.builder.import",
+    });
+    if (!authz.ok) return authz.response;
+    const authedUserId = authz.context.userId;
 
     const body = (await req.json()) as unknown;
-    if (!isObject(body)) {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    if (!isObject(body)) return json(400, { error: "Invalid JSON body" });
 
-    const payload = body as unknown as ImportPayload;
-    const root = payload as any;
-    const expInputRaw = isObject(root.experience) ? (root.experience as any) : null;
+    const payload = body as ImportPayload;
+    const root = payload as Record<string, unknown>;
+    const expInputRaw = isObject(root.experience) ? (root.experience as Record<string, unknown>) : null;
+    if (!expInputRaw) return json(400, { error: "experience is required" });
 
-    const productRef = sanitizeName(root.product_id ?? expInputRaw?.product_id);
-    if (!productRef) {
-      return new Response(JSON.stringify({ error: "product_id is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const productRef = sanitizeName(root.product_id ?? expInputRaw.product_id);
+    if (!productRef) return json(400, { error: "product_id is required" });
 
-    if (!expInputRaw) {
-      return new Response(JSON.stringify({ error: "experience is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const resolvedProductId = await resolveProductId(sb, productRef);
+    if (!resolvedProductId) return json(400, { error: "Invalid product_id (product not found)" });
 
-    const expInput = expInputRaw;
-    const expName = sanitizeName(expInput.name ?? expInput.title);
-    if (!expName) {
-      return new Response(JSON.stringify({ error: "experience.name is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const expName = sanitizeName(expInputRaw.name ?? expInputRaw.title);
+    if (!expName) return json(400, { error: "experience.name is required" });
 
-    const sectionsInput = asArray<any>(root.sections).length > 0 ? asArray<any>(root.sections) : asArray<any>(expInput.sections);
-    if (sectionsInput.length === 0) {
-      return new Response(JSON.stringify({ error: "sections must be a non-empty array" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const sectionsInput = asArray<Record<string, unknown>>(root.sections).length > 0
+      ? asArray<Record<string, unknown>>(root.sections)
+      : asArray<Record<string, unknown>>(expInputRaw.sections);
+    if (sectionsInput.length === 0) return json(400, { error: "sections must be a non-empty array" });
 
-    // Resolve product by UUID id first, then by metadata.slug, then by name.
-    let resolvedProductId: string | null = null;
-    const { data: productById } = await sb.from("products").select("id").eq("id", productRef).maybeSingle();
-    if (productById?.id) {
-      resolvedProductId = String(productById.id);
-    } else {
-      const { data: productBySlug } = await sb
-        .from("products")
-        .select("id")
-        .filter("metadata->>slug", "eq", productRef)
-        .maybeSingle();
-      if (productBySlug?.id) resolvedProductId = String(productBySlug.id);
-    }
-    if (!resolvedProductId) {
-      const { data: productByName } = await sb.from("products").select("id").ilike("name", productRef).maybeSingle();
-      if (productByName?.id) resolvedProductId = String(productByName.id);
-    }
-    if (!resolvedProductId) {
-      return new Response(JSON.stringify({ error: "Invalid product_id (product not found)" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    const experienceMetadataBase = toJsonObject(expInputRaw.metadata);
+    const explicitExperienceId = readString(expInputRaw.id);
+    const existingExperience = await findExistingExperience(sb, resolvedProductId, explicitExperienceId, experienceMetadataBase);
+    const existingTree = await loadExistingTree(sb, existingExperience);
 
-    const expIdResolved = resolveEntityId(expInput.id);
-    const experienceId = expIdResolved.id;
-    const activeFlag = asBoolean(expInput.is_active);
-    const legacyActive = asBoolean(expInput.active);
-    const version = asNumber(expInput.version);
-    const experienceMetadata = isObject(expInput.metadata) ? { ...(expInput.metadata as Json) } : {};
-    if (expIdResolved.externalId && experienceMetadata.external_id == null) {
-      experienceMetadata.external_id = expIdResolved.externalId;
-    }
-    if (version != null && experienceMetadata.version == null) experienceMetadata.version = version;
-    const experienceRow = {
-      id: experienceId,
-      product_id: resolvedProductId,
-      name: expName,
-      display_order: resolveDisplayOrder(expInput.display_order, expInput.order, 0),
-      is_active: activeFlag ?? legacyActive ?? true,
-      metadata: experienceMetadata,
-    };
-
-    const sectionRows: any[] = [];
-    const partRows: any[] = [];
-    const unitRows: any[] = [];
-    const keyRows: any[] = [];
+    const experienceExternalId = normalizeExternalId(explicitExperienceId) ?? readMetadataExternalId(experienceMetadataBase);
+    const experienceId = isUuid(explicitExperienceId) ? explicitExperienceId : existingExperience?.id ?? uuid();
+    const experienceVersionInput = asNumber(expInputRaw.version);
+    const experienceVersion = existingExperience?.version ?? (experienceVersionInput != null ? Math.max(1, Math.floor(experienceVersionInput)) : undefined);
+    const experienceIsActive = asBoolean(expInputRaw.is_active) ?? asBoolean(expInputRaw.active) ?? true;
+    const experiencePriceAmount = expInputRaw.price_amount === null ? null : asNumber(expInputRaw.price_amount);
+    const experiencePriceCurrency = readString(expInputRaw.price_currency).toUpperCase() || null;
+    const experienceMetadata = withExternalId(experienceMetadataBase, experienceExternalId);
 
     const normalized: ImportPayload = {
       product_id: resolvedProductId,
       experience: {
         id: experienceId,
-        name: experienceRow.name,
-        display_order: experienceRow.display_order,
-        is_active: experienceRow.is_active,
-        metadata: experienceRow.metadata,
+        name: expName,
+        display_order: resolveDisplayOrder(expInputRaw.display_order, expInputRaw.order, 0),
+        is_active: experienceIsActive,
+        metadata: experienceMetadata,
       },
       sections: [],
     };
+    if (experienceVersion != null) normalized.experience.version = experienceVersion;
+    if (experiencePriceAmount != null) normalized.experience.price_amount = experiencePriceAmount;
+    if (experiencePriceCurrency) normalized.experience.price_currency = experiencePriceCurrency;
+
+    const payloadSectionIds = new Set<string>();
+    const payloadPartIds = new Set<string>();
+    const payloadUnitIds = new Set<string>();
+    const answerKeyUnitIds: string[] = [];
 
     const sectionOrders: number[] = [];
+    let partCount = 0;
+    let unitCount = 0;
+    let answerKeyCount = 0;
 
-    sectionsInput.forEach((s: any, sIdx: number) => {
-      if (!isObject(s)) throw new Error(`sections[${sIdx}] must be an object`);
-      const sName = sanitizeName(s.name ?? s.title);
-      if (!sName) throw new Error(`sections[${sIdx}].name is required`);
+    sectionsInput.forEach((sectionInput, sectionIndex) => {
+      if (!isObject(sectionInput)) throw new Error(`sections[${sectionIndex}] must be an object`);
 
-      const sectionIdResolved = resolveEntityId(s.id);
-      const sectionId = sectionIdResolved.id;
-      const sectionDisplayOrder = resolveDisplayOrder(s.display_order, s.order, sIdx + 1);
+      const sectionName = sanitizeName(sectionInput.name ?? sectionInput.title);
+      if (!sectionName) throw new Error(`sections[${sectionIndex}].name is required`);
+
+      const sectionMetadataBase = toJsonObject(sectionInput.metadata);
+      const sectionResolved = resolveNestedId(readString(sectionInput.id), sectionMetadataBase, existingTree.sectionsByExternalId);
+      const sectionMetadata = withExternalId(sectionMetadataBase, sectionResolved.externalId);
+      const sectionDisplayOrder = resolveDisplayOrder(sectionInput.display_order, sectionInput.order, sectionIndex + 1);
       sectionOrders.push(sectionDisplayOrder);
-      const sectionMetadata = isObject(s.metadata) ? { ...(s.metadata as Json) } : {};
-      if (sectionIdResolved.externalId && sectionMetadata.external_id == null) {
-        sectionMetadata.external_id = sectionIdResolved.externalId;
-      }
-      const sectionType = sanitizeName(s.type);
-      if (sectionType && !sectionMetadata.type) sectionMetadata.type = sectionType;
-      const sectionDurationMinutes = asNumber(s.duration_minutes);
-      if (sectionDurationMinutes != null && sectionMetadata.duration_seconds == null) {
-        sectionMetadata.duration_seconds = Math.max(0, Math.floor(sectionDurationMinutes * 60));
-      }
+      payloadSectionIds.add(sectionResolved.id);
 
-      const sectionRow = {
-        id: sectionId,
-        experience_id: experienceId,
-        name: sName,
+      const normalizedSection = {
+        id: sectionResolved.id,
+        name: sectionName,
         display_order: sectionDisplayOrder,
         metadata: sectionMetadata,
-      };
-      sectionRows.push(sectionRow);
-
-      const normalizedSection: any = {
-        id: sectionId,
-        name: sectionRow.name,
-        display_order: sectionRow.display_order,
-        metadata: sectionRow.metadata,
-        parts: [],
+        parts: [] as ImportPayload["sections"][number]["parts"],
       };
 
-      const parts = asArray<any>(s.parts);
-      if (parts.length === 0) throw new Error(`sections[${sIdx}].parts must be a non-empty array`);
+      const partsInput = asArray<Record<string, unknown>>(sectionInput.parts);
+      if (partsInput.length === 0) throw new Error(`sections[${sectionIndex}].parts must be a non-empty array`);
 
       const partOrders: number[] = [];
 
-      parts.forEach((p: any, pIdx: number) => {
-        if (!isObject(p)) throw new Error(`sections[${sIdx}].parts[${pIdx}] must be an object`);
-        const pName = sanitizeName(p.name ?? p.title);
-        if (!pName) throw new Error(`sections[${sIdx}].parts[${pIdx}].name is required`);
+      partsInput.forEach((partInput, partIndex) => {
+        if (!isObject(partInput)) throw new Error(`sections[${sectionIndex}].parts[${partIndex}] must be an object`);
 
-        const partIdResolved = resolveEntityId(p.id);
-        const partId = partIdResolved.id;
-        const partDisplayOrder = resolveDisplayOrder(p.display_order, p.order, pIdx + 1);
+        const partName = sanitizeName(partInput.name ?? partInput.title);
+        if (!partName) throw new Error(`sections[${sectionIndex}].parts[${partIndex}].name is required`);
+
+        const partMetadataBase = toJsonObject(partInput.metadata);
+        const partResolved = resolveNestedId(readString(partInput.id), partMetadataBase, existingTree.partsByExternalId);
+        const partMetadata = withExternalId(partMetadataBase, partResolved.externalId);
+        const partDisplayOrder = resolveDisplayOrder(partInput.display_order, partInput.order, partIndex + 1);
         partOrders.push(partDisplayOrder);
-        const partMetadata = isObject(p.metadata) ? { ...(p.metadata as Json) } : {};
-        if (partIdResolved.externalId && partMetadata.external_id == null) {
-          partMetadata.external_id = partIdResolved.externalId;
-        }
+        payloadPartIds.add(partResolved.id);
+        partCount += 1;
 
-        const partRow = {
-          id: partId,
-          section_id: sectionId,
-          name: pName,
+        const normalizedPart = {
+          id: partResolved.id,
+          name: partName,
           display_order: partDisplayOrder,
           metadata: partMetadata,
-        };
-        partRows.push(partRow);
-
-        const normalizedPart: any = {
-          id: partId,
-          name: partRow.name,
-          display_order: partRow.display_order,
-          metadata: partRow.metadata,
-          content_units: [],
+          content_units: [] as ImportPayload["sections"][number]["parts"][number]["content_units"],
         };
 
-        const units = asArray<any>(p.content_units).length > 0 ? asArray<any>(p.content_units) : asArray<any>(p.units);
-        if (units.length === 0) throw new Error(`sections[${sIdx}].parts[${pIdx}].content_units must be a non-empty array`);
+        const unitsInput = asArray<Record<string, unknown>>(partInput.content_units).length > 0
+          ? asArray<Record<string, unknown>>(partInput.content_units)
+          : asArray<Record<string, unknown>>(partInput.units);
+        if (unitsInput.length === 0) {
+          throw new Error(`sections[${sectionIndex}].parts[${partIndex}].content_units must be a non-empty array`);
+        }
 
         const unitOrders: number[] = [];
 
-        units.forEach((u: any, uIdx: number) => {
-          if (!isObject(u)) throw new Error(`content_units[${uIdx}] must be an object`);
-          const type = sanitizeName(u.type);
-          if (!type) throw new Error(`content_units[${uIdx}].type is required`);
-          if (!isObject(u.data)) throw new Error(`content_units[${uIdx}].data must be an object`);
+        unitsInput.forEach((unitInput, unitIndex) => {
+          if (!isObject(unitInput)) throw new Error(`content_units[${unitIndex}] must be an object`);
 
-          const unitIdResolved = resolveEntityId(u.id);
-          const unitId = unitIdResolved.id;
-          const unitDisplayOrder = resolveDisplayOrder(u.display_order, u.order, uIdx + 1);
+          const type = sanitizeName(unitInput.type);
+          if (!type) throw new Error(`content_units[${unitIndex}].type is required`);
+          if (!isObject(unitInput.data)) throw new Error(`content_units[${unitIndex}].data must be an object`);
+
+          const unitMetadataBase = toJsonObject(unitInput.metadata);
+          const unitResolved = resolveNestedId(readString(unitInput.id), unitMetadataBase, existingTree.unitsByExternalId);
+          const unitMetadata = withExternalId(unitMetadataBase, unitResolved.externalId);
+          const unitDisplayOrder = resolveDisplayOrder(unitInput.display_order, unitInput.order, unitIndex + 1);
           unitOrders.push(unitDisplayOrder);
-          const unitData = { ...(u.data as Json) };
-          if ((type === "question_single_choice" || type === "question_multi_choice") && Array.isArray((unitData as any).options)) {
-            (unitData as any).options = (unitData as any).options.map((opt: any) =>
-              isObject(opt) ? { ...opt, label: sanitizeName(opt.label ?? opt.text) } : opt,
+          payloadUnitIds.add(unitResolved.id);
+          unitCount += 1;
+
+          const unitData = cloneJson(unitInput.data as Json);
+          if ((type === "question_single_choice" || type === "question_multi_choice") && Array.isArray((unitData as Record<string, unknown>).options)) {
+            (unitData as Record<string, unknown>).options = ((unitData as Record<string, unknown>).options as unknown[]).map((option) =>
+              isObject(option)
+                ? { ...option, label: sanitizeName((option as Record<string, unknown>).label ?? (option as Record<string, unknown>).text) }
+                : option
             );
           }
 
-          const unitMetadata = isObject(u.metadata) ? { ...(u.metadata as Json) } : {};
-          if (unitIdResolved.externalId && unitMetadata.external_id == null) {
-            unitMetadata.external_id = unitIdResolved.externalId;
-          }
-
-          const unitRow = {
-            id: unitId,
-            part_id: partId,
+          const normalizedUnit: ImportPayload["sections"][number]["parts"][number]["content_units"][number] = {
+            id: unitResolved.id,
             type,
-            data: unitData,
             display_order: unitDisplayOrder,
+            data: unitData,
             metadata: unitMetadata,
           };
-          unitRows.push(unitRow);
 
-          const normalizedUnit: any = {
-            id: unitId,
-            type: unitRow.type,
-            display_order: unitRow.display_order,
-            data: unitRow.data,
-            metadata: unitRow.metadata,
-          };
-
-          if (isObject(u.answer_key)) {
-            const normalizedKey = normalizeAnswerKey(u.answer_key);
-            if (!normalizedKey) throw new Error(`content_units[${uIdx}].answer_key must be an object`);
-            keyRows.push({
-              content_unit_id: unitId,
-              correct: normalizedKey.correct,
-              metadata: normalizedKey.metadata,
-            });
+          if (isObject(unitInput.answer_key)) {
+            const answerKey = normalizeAnswerKey(unitInput.answer_key);
+            if (!answerKey) throw new Error(`content_units[${unitIndex}].answer_key must be an object`);
             normalizedUnit.answer_key = {
-              correct: normalizedKey.correct,
-              metadata: normalizedKey.metadata,
+              correct: answerKey.correct,
+              metadata: answerKey.metadata,
             };
+            answerKeyUnitIds.push(unitResolved.id);
+            answerKeyCount += 1;
           }
 
           normalizedPart.content_units.push(normalizedUnit);
         });
 
-        const unitOrderErr = validateUniqueOrder(`section[${sIdx}].part[${pIdx}].content_units`, unitOrders);
-        if (unitOrderErr) throw new Error(unitOrderErr);
+        const unitOrderError = validateUniqueOrder(`section[${sectionIndex}].part[${partIndex}].content_units`, unitOrders);
+        if (unitOrderError) throw new Error(unitOrderError);
 
         normalizedSection.parts.push(normalizedPart);
       });
 
-      const partOrderErr = validateUniqueOrder(`section[${sIdx}].parts`, partOrders);
-      if (partOrderErr) throw new Error(partOrderErr);
+      const partOrderError = validateUniqueOrder(`section[${sectionIndex}].parts`, partOrders);
+      if (partOrderError) throw new Error(partOrderError);
 
       normalized.sections.push(normalizedSection);
     });
 
-    const sectionOrderErr = validateUniqueOrder("sections", sectionOrders);
-    if (sectionOrderErr) {
-      return new Response(JSON.stringify({ error: sectionOrderErr }), {
-        status: 400,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+    const sectionOrderError = validateUniqueOrder("sections", sectionOrders);
+    if (sectionOrderError) return json(400, { error: sectionOrderError });
+
+    const deletedSectionIds = Array.from(existingTree.sectionIds).filter((id) => !payloadSectionIds.has(id));
+    const deletedPartIds = Array.from(existingTree.partIds).filter((id) => !payloadPartIds.has(id));
+    const deletedUnitIds = Array.from(existingTree.unitIds).filter((id) => !payloadUnitIds.has(id));
+    const staleCounts = {
+      sections: deletedSectionIds.length,
+      parts: deletedPartIds.length,
+      content_units: deletedUnitIds.length,
+    };
+
+    const counts = {
+      sections: normalized.sections.length,
+      parts: partCount,
+      content_units: unitCount,
+      answer_keys: answerKeyCount,
+    };
+
+    if (dryRun) {
+      return json(200, {
+        experience_id: experienceId,
+        dry_run: true,
+        version: experienceVersion ?? null,
+        counts,
+        stale_counts: staleCounts,
+        normalized,
       });
     }
 
-    if (!dryRun) {
-      // Insert in dependency order.
-      const { error: expErr } = await sb.from("experiences").upsert(experienceRow, { onConflict: "id" });
-      if (expErr) throw expErr;
-
-      const { error: secErr } = await sb.from("sections").upsert(sectionRows, { onConflict: "id" });
-      if (secErr) throw secErr;
-
-      const { error: partErr } = await sb.from("parts").upsert(partRows, { onConflict: "id" });
-      if (partErr) throw partErr;
-
-      const { error: unitErr } = await sb.from("content_units").upsert(unitRows, { onConflict: "id" });
-      if (unitErr) throw unitErr;
-
-      if (keyRows.length > 0) {
-        const { error: keyErr } = await sb.from("answer_keys").upsert(keyRows, { onConflict: "content_unit_id" });
-        if (keyErr) throw keyErr;
-      }
+    const savePayload = cloneJson(normalized) as Record<string, unknown>;
+    if (answerKeyUnitIds.length > 0) {
+      savePayload.answer_key_unit_ids = answerKeyUnitIds;
     }
 
-    return new Response(
-      JSON.stringify({
-        experience_id: experienceId,
-        dry_run: dryRun,
-        counts: {
-          sections: sectionRows.length,
-          parts: partRows.length,
-          content_units: unitRows.length,
-          answer_keys: keyRows.length,
-        },
-        normalized,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
-    );
+    const deleted: Record<string, string[]> = {};
+    if (deletedSectionIds.length > 0) deleted.section_ids = deletedSectionIds;
+    if (deletedPartIds.length > 0) deleted.part_ids = deletedPartIds;
+    if (deletedUnitIds.length > 0) deleted.unit_ids = deletedUnitIds;
+    if (Object.keys(deleted).length > 0) savePayload.deleted = deleted;
+
+    const { data: saveData, error: saveError } = await sb.rpc("admin_builder_save", {
+      p_payload: savePayload,
+      p_actor: authedUserId,
+      p_action: "import",
+    });
+
+    if (saveError) {
+      const message = String(saveError.message ?? "Import failed");
+      return json(statusFromMessage(message), { error: message, details: saveError });
+    }
+
+    const saveResult = (saveData ?? {}) as Record<string, unknown>;
+    const savedExperienceId = readString(saveResult.experience_id) || experienceId;
+    const savedVersion = Number(saveResult.version ?? NaN);
+    if (Number.isFinite(savedVersion)) {
+      normalized.experience.version = Math.floor(savedVersion);
+    }
+
+    let syncErrorMessage: string | null = null;
+    let syncedCount = 0;
+    const syncResult = await sb.rpc("admin_builder_sync_section_instances", {
+      p_experience_id: savedExperienceId,
+      p_sections: normalized.sections,
+      p_actor: authedUserId,
+    });
+    if (syncResult.error) {
+      syncErrorMessage = String(syncResult.error.message ?? "Failed to sync section instances");
+    } else {
+      syncedCount = Number(syncResult.data ?? 0);
+    }
+
+    return json(200, {
+      experience_id: savedExperienceId,
+      version: Number.isFinite(savedVersion) ? Math.floor(savedVersion) : null,
+      snapshot_id: readString(saveResult.snapshot_id) || null,
+      counts: (saveResult.counts as Record<string, unknown> | null) ?? counts,
+      stale_counts: staleCounts,
+      normalized,
+      section_instances_synced: !syncErrorMessage,
+      section_instances_count: syncedCount,
+      section_instances_error: syncErrorMessage,
+    });
   } catch (err) {
     console.error("import-experience error", err);
     const message =
@@ -457,10 +569,6 @@ serve(async (req) => {
               return "Unknown error";
             }
           })();
-    const status = message.toLowerCase().includes("invalid input syntax for type uuid") ? 400 : 500;
-    return new Response(JSON.stringify({ error: message }), {
-      status,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return json(statusFromMessage(message), { error: message });
   }
 });

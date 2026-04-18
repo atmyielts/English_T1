@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# SAT Simulator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SAT practice and full-exam workspace built on React, Vite, Supabase auth, and Supabase Edge Functions.
 
-Currently, two official plugins are available:
+## Local Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `npm run dev` starts the SAT app locally.
+- `npm run build` runs TypeScript build plus the production Vite build.
+- `npm run lint` runs the SAT ESLint config.
+- `npm run test` runs the SAT admin permission smoke test.
 
-## React Compiler
+## Required Environment
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app requires:
 
-## Expanding the ESLint configuration
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Without those values, `src/lib/supabase.ts` and `src/lib/platformClient.ts` will fail fast at runtime.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Use `.env.local.example` as the starting point for local setup.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Admin Model
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+SAT admin access now follows the same model as the platform backend:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- `/me` must report `admin.is_admin`
+- the session must include `admin.portal.access`
+- if the admin security policy requires MFA, the session must be `aal2`
+- route-level SAT admin pages also require their own permissions
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Current SAT admin route mapping:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `admin.tests.manage`: `/admin/tests`, `/admin/test/:id`, admin session review/playback routes
+- `admin.builder.manage`: `/admin/builder`, `/admin/import`
+- `admin.assets.manage`: `/admin/assets` and asset upload actions inside `/admin/import`
+
+## Import Behavior
+
+`supabase/functions/import-experience` now:
+
+- authorizes with the shared admin RBAC + MFA checks
+- normalizes imported JSON into builder payload shape
+- reuses existing experience/section/part/unit ids when `external_id` metadata or existing UUIDs match
+- computes stale rows and removes them during re-import
+- saves through `admin_builder_save` so imports create snapshots and versions
+- syncs section instances after save
+
+Dry runs still return normalized JSON plus write counts before mutating data.
+
+## Verification
+
+Recent local verification for this workspace:
+
+- `npm run build`
+- `npm run lint`
+- `npm run test`
+- `deno check supabase/functions/import-experience/index.ts`
+
+For release validation, use [PRODUCTION_SMOKE_CHECKLIST.md](./PRODUCTION_SMOKE_CHECKLIST.md).

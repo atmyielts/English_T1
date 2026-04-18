@@ -26,11 +26,6 @@ export const CandidateHandoff: React.FC = () => {
       const session = hashParams.get('session_id') ?? queryParams.get('session_id');
       const firstSection = hashParams.get('first_section_id') ?? queryParams.get('first_section_id');
 
-      // Strip tokens from the URL ASAP (history-safe for the current entry).
-      if (typeof window !== 'undefined') {
-        window.history.replaceState({}, '', '/candidate');
-      }
-
       if (!accessToken || !refreshToken || !session) {
         setError('Missing candidate session details. Please request a new access link from your teacher.');
         return;
@@ -44,6 +39,10 @@ export const CandidateHandoff: React.FC = () => {
       if (sessionError) {
         setError('Unable to start your session. Please try again.');
         return;
+      }
+
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/candidate');
       }
 
       const { data: sessionRow, error: loadSessionError } = await supabase

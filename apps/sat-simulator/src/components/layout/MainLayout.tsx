@@ -105,8 +105,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    setMobileNavOpen(false);
-  }, [location.pathname]);
+    if (!mobileNavOpen) return;
+    const timer = window.setTimeout(() => setMobileNavOpen(false), 0);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname, mobileNavOpen]);
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-[#111827]">

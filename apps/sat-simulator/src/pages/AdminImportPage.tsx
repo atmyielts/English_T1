@@ -10,6 +10,7 @@ import {
 } from '../lib/platformClient';
 import { supabase } from '../lib/supabase';
 import { useAccess } from '../lib/useAccess';
+import { useAdminPermission } from '../components/platform/adminAccess';
 
 type Json = Record<string, unknown>;
 type ProductRow = {
@@ -129,6 +130,7 @@ const IMPORT_TEMPLATE = {
 export const AdminImportPage: React.FC = () => {
   const navigate = useNavigate();
   const { accessToken } = useAccess();
+  const canManageAssets = useAdminPermission('admin.assets.manage');
 
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -361,7 +363,7 @@ export const AdminImportPage: React.FC = () => {
   };
 
   const uploadAsset = async () => {
-    if (!assetFile) return;
+    if (!assetFile || !canManageAssets) return;
 
     setUploading(true);
     setError(null);
@@ -412,7 +414,7 @@ export const AdminImportPage: React.FC = () => {
               <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">Admin</div>
               <h1 className="text-2xl font-bold text-gray-900">Import Test Content (JSON)</h1>
               <p className="text-sm text-gray-500 mt-1">
-                Upload a JSON file and import it into `experiences`, `sections`, `parts`, `content_units`, `answer_keys` via an admin-only Edge Function.
+                Upload JSON, normalize it, and save it through the admin builder snapshot flow so re-imports replace stale test content safely.
               </p>
             </div>
             <div />
@@ -589,6 +591,11 @@ export const AdminImportPage: React.FC = () => {
                     <div className="text-xs text-gray-500">
                       Would write: {validation.counts.sections} sections, {validation.counts.parts} parts, {validation.counts.content_units} units, {validation.counts.answer_keys} keys.
                     </div>
+                    {validation.stale_counts ? (
+                      <div className="text-xs text-amber-700">
+                        Would replace stale rows: {validation.stale_counts.sections} sections, {validation.stale_counts.parts} parts, {validation.stale_counts.content_units} units.
+                      </div>
+                    ) : null}
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <button
                         onClick={downloadNormalized}
@@ -628,6 +635,14 @@ export const AdminImportPage: React.FC = () => {
                     <div className="text-xs text-gray-500">
                       Imported: {result.counts.sections} sections, {result.counts.parts} parts, {result.counts.content_units} units.
                     </div>
+                    {typeof result.version === 'number' ? (
+                      <div className="text-xs text-gray-500">Saved version: {result.version}</div>
+                    ) : null}
+                    {result.stale_counts ? (
+                      <div className="text-xs text-amber-700">
+                        Replaced stale rows: {result.stale_counts.sections} sections, {result.stale_counts.parts} parts, {result.stale_counts.content_units} units.
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="mt-3 text-sm text-gray-600">No import yet.</div>
@@ -647,63 +662,71 @@ export const AdminImportPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-3">
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => {
-                  setAssetResult(null);
-                  setError(null);
-                  setAssetFile(e.target.files?.[0] ?? null);
-                }}
-              />
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-xs text-gray-500">
-                  {assetFile ? (
-                    <span>
-                      Selected: <span className="font-mono">{assetFile.name}</span>
-                    </span>
+          {canManageAssets ? (
+            <>
+              <div className="mt-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-3">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => {
+                      setAssetResult(null);
+                      setError(null);
+                      setAssetFile(e.target.files?.[0] ?? null);
+                    }}
+                  />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs text-gray-500">
+                      {assetFile ? (
+                        <span>
+                          Selected: <span className="font-mono">{assetFile.name}</span>
+                        </span>
+                      ) : (
+                        'Select an audio file.'
+                      )}
+                    </div>
+                    <button
+                      onClick={uploadAsset}
+                      disabled={!assetFile || uploading}
+                      className="px-5 py-2.5 bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors"
+                    >
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-2xl p-5 bg-white space-y-3">
+                  <div className="text-sm font-bold text-gray-900">Result</div>
+                  {assetResult ? (
+                    <>
+                      <div className="text-xs text-gray-500">Storage reference</div>
+                      <div className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 break-all">
+                        {assetResult.bucket}/{assetResult.path}
+                      </div>
+                      {assetResult.signed_url ? (
+                        <audio src={assetResult.signed_url} controls preload="none" className="w-full" />
+                      ) : null}
+                    </>
                   ) : (
-                    'Select an audio file.'
+                    <div className="text-sm text-gray-600">No upload yet.</div>
                   )}
                 </div>
-                <button
-                  onClick={uploadAsset}
-                  disabled={!assetFile || uploading}
-                  className="px-5 py-2.5 bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors"
-                >
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </button>
               </div>
-            </div>
 
-            <div className="border border-gray-200 rounded-2xl p-5 bg-white space-y-3">
-              <div className="text-sm font-bold text-gray-900">Result</div>
-              {assetResult ? (
-                <>
-                  <div className="text-xs text-gray-500">Storage reference</div>
-                  <div className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 break-all">
-                    {assetResult.bucket}/{assetResult.path}
-                  </div>
-                  {assetResult.signed_url ? (
-                    <audio src={assetResult.signed_url} controls preload="none" className="w-full" />
-                  ) : null}
-                </>
-              ) : (
-                <div className="text-sm text-gray-600">No upload yet.</div>
-              )}
+              {storageSnippet ? (
+                <div className="mt-6">
+                  <div className="text-sm font-semibold text-gray-900 mb-2">JSON snippet</div>
+                  <pre className="text-xs font-mono p-3 bg-gray-50 border border-gray-200 rounded-xl overflow-x-auto">
+                    {storageSnippet}
+                  </pre>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              Your account can import tests, but audio uploads require the additional <span className="font-mono">admin.assets.manage</span> permission.
             </div>
-          </div>
-
-          {storageSnippet ? (
-            <div className="mt-6">
-              <div className="text-sm font-semibold text-gray-900 mb-2">JSON snippet</div>
-              <pre className="text-xs font-mono p-3 bg-gray-50 border border-gray-200 rounded-xl overflow-x-auto">
-                {storageSnippet}
-              </pre>
-            </div>
-          ) : null}
+          )}
         </div>
       </div>
     </AdminLayout>

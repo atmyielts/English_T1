@@ -3,20 +3,36 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Database, UploadCloud, Library, ArrowLeft, User, Menu, X, PenTool } from 'lucide-react';
 import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platformUrls';
 import { SAT_PRODUCT_SLUG } from '../../lib/constants';
+import { hasAdminPermission, useAdminAccess } from '../platform/adminAccess';
 
 type Props = { children: React.ReactNode };
+
+type AdminNavItem = {
+  path: string;
+  label: string;
+  icon: typeof Database;
+  permission: string;
+};
 
 type AdminNavProps = {
   pathname: string;
   returnTo: string;
   inactiveClass: string;
   activeClass: string;
+  items: AdminNavItem[];
   onNavigate?: () => void;
 };
 
 const isActivePath = (pathname: string, path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, activeClass, onNavigate }) => (
+const navItems: AdminNavItem[] = [
+  { path: '/admin/tests', label: 'Tests', icon: Database, permission: 'admin.tests.manage' },
+  { path: '/admin/builder', label: 'Builder', icon: PenTool, permission: 'admin.builder.manage' },
+  { path: '/admin/import', label: 'Import JSON', icon: UploadCloud, permission: 'admin.builder.manage' },
+  { path: '/admin/assets', label: 'Assets', icon: Library, permission: 'admin.assets.manage' },
+];
+
+const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, activeClass, items, onNavigate }) => (
   <nav className="flex-1 py-6 space-y-1">
     <Link to="/" onClick={onNavigate} className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${inactiveClass}`}>
       <ArrowLeft size={18} />
@@ -25,52 +41,31 @@ const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, 
 
     <div className="mt-2 pt-3 border-t border-white/5" />
 
-    <Link
-      to="/admin/tests"
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/tests') ? activeClass : inactiveClass
-      }`}
-    >
-      <Database size={18} />
-      Tests
-    </Link>
-    <Link
-      to="/admin/builder"
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/builder') ? activeClass : inactiveClass
-      }`}
-    >
-      <PenTool size={18} />
-      Builder
-    </Link>
-    <Link
-      to={`/admin/import?returnTo=${encodeURIComponent(returnTo)}`}
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/import') ? activeClass : inactiveClass
-      }`}
-    >
-      <UploadCloud size={18} />
-      Import JSON
-    </Link>
-    <Link
-      to="/admin/assets"
-      onClick={onNavigate}
-      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
-        isActivePath(pathname, '/admin/assets') ? activeClass : inactiveClass
-      }`}
-    >
-      <Library size={18} />
-      Assets
-    </Link>
+    {items.map((item) => {
+      const Icon = item.icon;
+      const target = item.path === '/admin/import' ? `/admin/import?returnTo=${encodeURIComponent(returnTo)}` : item.path;
+      return (
+        <Link
+          key={item.path}
+          to={target}
+          onClick={onNavigate}
+          className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
+            isActivePath(pathname, item.path) ? activeClass : inactiveClass
+          }`}
+        >
+          <Icon size={18} />
+          {item.label}
+        </Link>
+      );
+    })}
+    {items.length === 0 ? <div className="mx-3 px-3 py-2 text-sm text-zinc-500">No admin tools assigned.</div> : null}
   </nav>
 );
 
 export const AdminLayout: React.FC<Props> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const adminAccess = useAdminAccess();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const activeClass = 'bg-white/10 text-white border border-white/10';
@@ -86,6 +81,10 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
   }, [location.pathname]);
 
   const returnTo = getReturnTo(location);
+  const allowedNavItems = useMemo(() => {
+    if (!adminAccess) return navItems;
+    return navItems.filter((item) => hasAdminPermission(adminAccess.permissions, item.permission));
+  }, [adminAccess]);
 
   const goPlatform = (path: string) => {
     const url = buildPlatformUrl(path, returnTo, { product: SAT_PRODUCT_SLUG });
@@ -123,6 +122,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
           returnTo={returnTo}
           inactiveClass={inactiveClass}
           activeClass={activeClass}
+          items={allowedNavItems}
         />
 
         <div className="p-4 border-t border-white/5 space-y-2">
@@ -169,6 +169,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
               returnTo={returnTo}
               inactiveClass={inactiveClass}
               activeClass={activeClass}
+              items={allowedNavItems}
               onNavigate={() => setMobileNavOpen(false)}
             />
 

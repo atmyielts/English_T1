@@ -15,6 +15,17 @@ export type MeResponse = {
     ends_at: string | null;
     value: Json | null;
   }[];
+  admin?: {
+    is_admin: boolean;
+    permissions: string[];
+    session_aal: string | null;
+    security_policy: {
+      require_mfa: boolean;
+      session_timeout_minutes: number;
+      rate_limit_per_minute: number;
+      ip_allowlist: string[];
+    } | null;
+  } | null;
 };
 
 export type AccessEffectiveResponse = {
@@ -1005,16 +1016,25 @@ export const getReviewSession = async (
 export type ImportExperienceResponse = {
   experience_id: string;
   dry_run?: boolean;
+  version?: number;
+  snapshot_id?: string;
   counts: { sections: number; parts: number; content_units: number; answer_keys: number };
   normalized: unknown;
+  stale_counts?: { sections: number; parts: number; content_units: number };
+  section_instances_synced?: boolean;
+  section_instances_count?: number;
+  section_instances_error?: string | null;
 };
 
 export const importExperience = async (accessToken: string, payload: unknown): Promise<ImportExperienceResponse> => {
-  const res = await fetch(`${edgeBase}/import-experience`, {
-    method: 'POST',
-    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/import-experience`, {
+      method: 'POST',
+      headers: { ...apiHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+    { label: 'POST /import-experience' },
+  );
   if (!res.ok) {
     const details = await readJsonOrText(res);
     throw new Error(`POST /import-experience failed (${res.status}): ${JSON.stringify(details)}`);
@@ -1023,11 +1043,14 @@ export const importExperience = async (accessToken: string, payload: unknown): P
 };
 
 export const validateExperienceImport = async (accessToken: string, payload: unknown): Promise<ImportExperienceResponse> => {
-  const res = await fetch(`${edgeBase}/import-experience?dry_run=true`, {
-    method: 'POST',
-    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/import-experience?dry_run=true`, {
+      method: 'POST',
+      headers: { ...apiHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+    { label: 'POST /import-experience?dry_run=true' },
+  );
   if (!res.ok) {
     const details = await readJsonOrText(res);
     throw new Error(`POST /import-experience?dry_run=true failed (${res.status}): ${JSON.stringify(details)}`);

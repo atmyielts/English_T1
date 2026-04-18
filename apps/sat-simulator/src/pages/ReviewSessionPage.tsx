@@ -202,7 +202,7 @@ const correctSummary = (u: UnitRow): string | null => {
 export const ReviewSessionPage: React.FC = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { accessToken } = useAccess();
+  const { accessToken, status: accessStatus } = useAccess();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -226,7 +226,12 @@ export const ReviewSessionPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      if (!accessToken) return;
+      if (accessStatus === 'loading') return;
+      if (!accessToken) {
+        setError('Your session is no longer authenticated. Please sign in again.');
+        setLoading(false);
+        return;
+      }
 
       try {
         const res = await getReviewSession(accessToken, sessionId, undefined, SAT_PRODUCT_ID);
@@ -242,7 +247,7 @@ export const ReviewSessionPage: React.FC = () => {
     };
 
     run();
-  }, [accessToken, navigate, sessionId]);
+  }, [accessStatus, accessToken, navigate, sessionId]);
 
   const section = useMemo(() => data?.sections.find((s) => s.id === activeSectionId) ?? null, [activeSectionId, data?.sections]);
 
