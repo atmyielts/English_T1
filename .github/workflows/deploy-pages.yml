@@ -155,7 +155,7 @@ jobs:
   configure-itep-domain:
     runs-on: ubuntu-latest
     needs: deploy
-    if: ${{ needs.deploy.result == 'success' }}
+    if: ${{ always() }}
 
     steps:
       - name: Validate required secrets
