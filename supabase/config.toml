@@ -164,6 +164,9 @@ verify_jwt = false
 [functions.admin-analytics]
 verify_jwt = false
 
+[functions.admin-writing-reviews]
+verify_jwt = false
+
 [functions.billing]
 verify_jwt = false
 

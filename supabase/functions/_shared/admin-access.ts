@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 type JsonObject = Record<string, unknown>;
 
 type AdminSecurityPolicy = {
@@ -33,6 +35,22 @@ const defaultSecurityPolicy: AdminSecurityPolicy = {
   session_timeout_minutes: 30,
   rate_limit_per_minute: 120,
   ip_allowlist: [],
+};
+
+let cachedAuthClient: any | null | undefined;
+
+const getAuthClient = (): any | null => {
+  if (cachedAuthClient !== undefined) return cachedAuthClient;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) {
+    cachedAuthClient = null;
+    return cachedAuthClient;
+  }
+  cachedAuthClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return cachedAuthClient;
 };
 
 const jsonResponse = (status: number, body: unknown, corsHeaders: Record<string, string>): Response =>
@@ -286,7 +304,10 @@ export const authorizeAdminRequest = async (
     };
   }
 
-  const { data: authData, error: authError } = await sb.auth.getUser(token);
+  const authClient = getAuthClient();
+  const { data: authData, error: authError } = authClient
+    ? await authClient.auth.getUser(token)
+    : await sb.auth.getUser(token);
   if (authError || !authData?.user) {
     await writeAuditLog(sb, req, {
       userId: null,
