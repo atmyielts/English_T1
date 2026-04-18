@@ -570,6 +570,8 @@ serve(async (req) => {
     }
 
     const authedUserId = authData.user.id;
+    const { data: userRow } = await supabase.from("users").select("role").eq("id", authedUserId).maybeSingle();
+    const isAdmin = String((userRow as any)?.role ?? "").toLowerCase().startsWith("admin");
     const body = (await req.json()) as ScoreSessionInput;
     const sessionId = body.session_id;
     if (!sessionId) {
@@ -603,7 +605,7 @@ serve(async (req) => {
       });
     }
 
-    if (sessionRow.user_id !== authedUserId) {
+    if (sessionRow.user_id !== authedUserId && !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: jsonHeaders(requestId),

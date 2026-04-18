@@ -676,7 +676,10 @@ serve(async (req) => {
       return jsonError(404, "Session not found", "not_found");
     }
 
-    if (sessionRow.user_id !== authedUserId) {
+    const { data: userRow } = await sb.from("users").select("role").eq("id", authedUserId).maybeSingle();
+    const isAdmin = String((userRow as any)?.role ?? "").toLowerCase().startsWith("admin");
+
+    if (sessionRow.user_id !== authedUserId && !isAdmin) {
       return jsonError(403, "Forbidden", "forbidden");
     }
 
@@ -702,9 +705,6 @@ serve(async (req) => {
     }
 
     // Enforce platform-level controls (admin can bypass limits).
-    const { data: userRow } = await sb.from("users").select("role").eq("id", authedUserId).maybeSingle();
-    const isAdmin = String((userRow as any)?.role ?? "").toLowerCase() === "admin";
-
     const { data: settingsRow, error: settingsErr } = await sb
       .from("platform_settings")
       .select("writing_ai_enabled, writing_ai_daily_limit")
@@ -788,7 +788,7 @@ serve(async (req) => {
 
     const tokenId = String((sessionRow as any)?.token_id ?? "");
     let tokenMode = false;
-    if (tokenId) {
+    if (tokenId && !isAdmin) {
       const tokenCheck = await validateTokenSession(sb, tokenId, authedUserId, experienceId);
       if (!tokenCheck.ok) {
         return jsonError(403, tokenCheck.reason ?? "Forbidden", "forbidden");

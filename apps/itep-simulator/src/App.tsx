@@ -20,6 +20,7 @@ const SessionResultsPage = lazy(() => import('./pages/SessionResultsPage').then(
 const CandidateHandoff = lazy(() => import('./pages/CandidateHandoff').then((m) => ({ default: m.CandidateHandoff })));
 
 const AdminTestsPage = lazy(() => import('./pages/AdminTestsPage').then((m) => ({ default: m.AdminTestsPage })));
+const AdminWritingReviewsPage = lazy(() => import('./pages/AdminWritingReviewsPage').then((m) => ({ default: m.AdminWritingReviewsPage })));
 const AdminBuilderPage = lazy(() => import('./pages/AdminBuilderPage').then((m) => ({ default: m.AdminBuilderPage })));
 const AdminAssetsPage = lazy(() => import('./pages/AdminAssetsPage').then((m) => ({ default: m.AdminAssetsPage })));
 const AdminImportPage = lazy(() => import('./pages/AdminImportPage').then((m) => ({ default: m.AdminImportPage })));
@@ -48,7 +49,9 @@ function App() {
           <Route element={<RequireAdmin />}>
           <Route path="/admin" element={<Navigate to="/admin/tests" replace />} />
           <Route path="/admin/tests" element={<AdminTestsPage />} />
+          <Route path="/admin/writing-reviews" element={<AdminWritingReviewsPage />} />
           <Route path="/admin/test/:testId" element={<TestOverview />} />
+          <Route path="/admin/review/:sessionId" element={<ReviewSessionPage />} />
           <Route path="/admin/session/:sessionId/:sectionId" element={<ExamPlayer />} />
           <Route path="/admin/session/:sessionId/results" element={<SessionResultsPage />} />
           <Route path="/admin/builder" element={<AdminBuilderPage />} />

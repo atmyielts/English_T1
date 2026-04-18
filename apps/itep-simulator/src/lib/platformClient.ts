@@ -1457,6 +1457,201 @@ export const adminTestsClone = async (
   return (await res.json()) as { experience_id: string };
 };
 
+export type AdminWritingReviewQueueRow = {
+  session_id: string;
+  session_status: string;
+  created_at: string | null;
+  completed_at: string | null;
+  user_id: string;
+  user_email: string | null;
+  candidate_name: string | null;
+  candidate_email: string | null;
+  experience_id: string;
+  experience_name: string;
+  family: string | null;
+  variant: string | null;
+  review_status: 'awaiting_ai' | 'ai_ready' | 'overridden';
+  ai_score: number | null;
+  ai_evaluated_at: string | null;
+  admin_score: number | null;
+  admin_evaluated_at: string | null;
+  preferred_score: number | null;
+};
+
+export type AdminWritingReviewEvaluation = {
+  id: string;
+  session_id: string;
+  method: string;
+  status: string;
+  result: Json | null;
+  evaluated_at: string;
+  created_at: string | null;
+};
+
+export type AdminWritingReviewDetail = {
+  session: {
+    id: string;
+    user_id: string;
+    experience_id: string;
+    status: string;
+    metadata: Json | null;
+    created_at: string | null;
+    completed_at: string | null;
+  };
+  experience: {
+    id: string;
+    name: string;
+    product_id: string;
+    metadata: Json | null;
+  };
+  candidate: {
+    name: string | null;
+    email: string | null;
+    user_email: string | null;
+    role: string | null;
+  };
+  family: string | null;
+  variant: string | null;
+  review_status: 'awaiting_ai' | 'ai_ready' | 'overridden';
+  evaluations: AdminWritingReviewEvaluation[];
+};
+
+export const adminWritingReviewsList = async (
+  accessToken: string,
+  opts?: {
+    family?: string | null;
+    variant?: string | null;
+    reviewStatus?: string | null;
+    q?: string | null;
+    limit?: number;
+    includeIncomplete?: boolean;
+  },
+): Promise<{ rows: AdminWritingReviewQueueRow[] }> => {
+  const qs = new URLSearchParams();
+  if (opts?.family) qs.set('family', opts.family);
+  if (opts?.variant) qs.set('variant', opts.variant);
+  if (opts?.reviewStatus) qs.set('review_status', opts.reviewStatus);
+  if (opts?.q) qs.set('q', opts.q);
+  if (typeof opts?.limit === 'number' && Number.isFinite(opts.limit)) qs.set('limit', String(Math.floor(opts.limit)));
+  if (opts?.includeIncomplete) qs.set('include_incomplete', 'true');
+
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-writing-reviews${qs.toString() ? `?${qs.toString()}` : ''}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-writing-reviews' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-writing-reviews failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { rows: AdminWritingReviewQueueRow[] };
+};
+
+export const adminWritingReviewDetail = async (
+  accessToken: string,
+  sessionId: string,
+): Promise<AdminWritingReviewDetail> => {
+  const qs = new URLSearchParams({ session_id: sessionId });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-writing-reviews?${qs.toString()}`, {
+      method: 'GET',
+      headers: apiHeaders(token),
+    }),
+    { label: 'GET /admin-writing-reviews?session_id' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-writing-reviews?session_id failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AdminWritingReviewDetail;
+};
+
+export const adminWritingReviewUpsert = async (
+  accessToken: string,
+  body: {
+    session_id: string;
+    evaluation: {
+      overall_score?: number | null;
+      overall_band?: number | null;
+      notes?: string | null;
+      tasks: Array<{
+        content_unit_id: string;
+        task_type?: string | null;
+        word_count?: number | null;
+        score?: number | null;
+        band?: number | null;
+        feedback?: string | null;
+        actionable_feedback?: string[] | null;
+        criteria?: {
+          task_completion?: number | null;
+          organization?: number | null;
+          vocabulary?: number | null;
+          grammar?: number | null;
+        } | null;
+      }>;
+    };
+  },
+): Promise<{
+  ok: boolean;
+  action: string;
+  evaluation: AdminWritingReviewEvaluation | null;
+  score_result: ScoreSessionResponse | null;
+  score_refresh_warning?: string | null;
+}> => {
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-writing-reviews`, {
+      method: 'POST',
+      headers: { ...apiHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+    { label: 'POST /admin-writing-reviews' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /admin-writing-reviews failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as {
+    ok: boolean;
+    action: string;
+    evaluation: AdminWritingReviewEvaluation | null;
+    score_result: ScoreSessionResponse | null;
+    score_refresh_warning?: string | null;
+  };
+};
+
+export const adminWritingReviewClear = async (
+  accessToken: string,
+  sessionId: string,
+): Promise<{
+  ok: boolean;
+  action: string;
+  session_id: string;
+  score_result: ScoreSessionResponse | null;
+  score_refresh_warning?: string | null;
+}> => {
+  const qs = new URLSearchParams({ session_id: sessionId });
+  const res = await fetchWithTokenRetry(accessToken, (token) =>
+    fetch(`${edgeBase}/admin-writing-reviews?${qs.toString()}`, {
+      method: 'DELETE',
+      headers: apiHeaders(token),
+    }),
+    { label: 'DELETE /admin-writing-reviews' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`DELETE /admin-writing-reviews failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as {
+    ok: boolean;
+    action: string;
+    session_id: string;
+    score_result: ScoreSessionResponse | null;
+    score_refresh_warning?: string | null;
+  };
+};
+
 export type AdminUserRow = { id: string; email: string | null; role: string | null; created_at: string };
 export type AdminTenantRow = { id: string; name: string; slug: string; type: string; created_at: string };
 export type AdminMembershipRow = { tenant_id: string; role: string; status: string; created_at: string };

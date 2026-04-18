@@ -302,7 +302,7 @@ serve(async (req) => {
     const authedUserId = authData.user.id;
 
     const { data: userRow } = await supabase.from("users").select("role").eq("id", authedUserId).maybeSingle();
-    const isAdmin = String((userRow as any)?.role ?? "").toLowerCase() === "admin";
+    const isAdmin = String((userRow as any)?.role ?? "").toLowerCase().startsWith("admin");
 
     const url = new URL(req.url);
     const sessionId = url.searchParams.get("session_id");
@@ -336,7 +336,7 @@ serve(async (req) => {
       });
     }
 
-    if (sessionRow.user_id !== authedUserId) {
+    if (sessionRow.user_id !== authedUserId && !isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -381,7 +381,7 @@ serve(async (req) => {
 
     const tokenId = String((sessionRow as any)?.token_id ?? "");
     let tokenMode = false;
-    if (tokenId) {
+    if (tokenId && !isAdmin) {
       const tokenCheck = await validateTokenSession(supabase, tokenId, authedUserId, experienceId);
       if (!tokenCheck.ok) {
         return new Response(JSON.stringify({ error: tokenCheck.reason ?? "Unauthorized" }), {

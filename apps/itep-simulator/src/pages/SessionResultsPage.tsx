@@ -14,6 +14,7 @@ type WritingEvaluationRow = {
 };
 
 const asNumber = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
@@ -169,7 +170,11 @@ export const SessionResultsPage: React.FC = () => {
   const sections = result ? Object.entries(result.sections) : [];
   const isCandidate = String((data?.session?.metadata as any)?.exam_mode ?? '') === 'token';
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
-  const backPath = isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard';
+  const stateBackPath =
+    typeof (location.state as { backPath?: unknown } | null)?.backPath === 'string'
+      ? String((location.state as { backPath?: string } | null)?.backPath)
+      : null;
+  const backPath = stateBackPath ?? (isCandidate ? '/' : isAdminSessionRoute ? '/admin/writing-reviews' : '/dashboard');
 
   useEffect(() => {
     if (isCandidate) localStorage.removeItem('itep:candidate_session');

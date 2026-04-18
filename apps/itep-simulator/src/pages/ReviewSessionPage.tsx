@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
 import { ITEP_PRODUCT_ID } from '../lib/constants';
@@ -200,6 +200,7 @@ const correctSummary = (u: UnitRow): string | null => {
 
 export const ReviewSessionPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { accessToken } = useAccess();
 
@@ -209,6 +210,12 @@ export const ReviewSessionPage: React.FC = () => {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [activePartId, setActivePartId] = useState<string | null>(null);
   const [mobileReadingPane, setMobileReadingPane] = useState<'questions' | 'passage'>('questions');
+  const backPath =
+    typeof (location.state as { backPath?: unknown } | null)?.backPath === 'string'
+      ? String((location.state as { backPath?: string } | null)?.backPath)
+      : location.pathname.startsWith('/admin/')
+        ? '/admin/writing-reviews'
+        : '/review';
 
   useEffect(() => {
     setMobileReadingPane('questions');
@@ -321,7 +328,7 @@ export const ReviewSessionPage: React.FC = () => {
           <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">{error}</div>
           <div className="mt-6 flex gap-2">
             <button
-              onClick={() => navigate('/review', { replace: true })}
+              onClick={() => navigate(backPath, { replace: true })}
               className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 font-medium"
             >
               Back
@@ -341,7 +348,7 @@ export const ReviewSessionPage: React.FC = () => {
       <div className="h-16 bg-gray-900 text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10 shrink-0">
         <div className="flex items-center space-x-4 min-w-0">
           <button
-            onClick={() => navigate('/review')}
+            onClick={() => navigate(backPath)}
             className="text-sm font-semibold px-3 py-2 rounded bg-white/10 hover:bg-white/15 transition-colors"
             type="button"
           >

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Database, UploadCloud, Library, ArrowLeft, User, Menu, X, PenTool } from 'lucide-react';
+import { Database, UploadCloud, Library, ArrowLeft, User, Menu, X, PenTool, FileText } from 'lucide-react';
 import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platformUrls';
 import { ITEP_PRODUCT_SLUG } from '../../lib/constants';
 
@@ -46,6 +46,16 @@ const AdminNav: React.FC<AdminNavProps> = ({ pathname, returnTo, inactiveClass, 
       Builder
     </Link>
     <Link
+      to="/admin/writing-reviews"
+      onClick={onNavigate}
+      className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
+        isActivePath(pathname, '/admin/writing-reviews') ? activeClass : inactiveClass
+      }`}
+    >
+      <FileText size={18} />
+      Writing Reviews
+    </Link>
+    <Link
       to={`/admin/import?returnTo=${encodeURIComponent(returnTo)}`}
       onClick={onNavigate}
       className={`mx-3 flex items-center px-3 py-2.5 rounded-2xl gap-3 text-sm font-medium ${
@@ -79,6 +89,8 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
   const title = useMemo(() => {
     const p = location.pathname;
     if (p.startsWith('/admin/tests')) return 'Tests Manager';
+    if (p.startsWith('/admin/writing-reviews')) return 'Writing Reviews';
+    if (p.startsWith('/admin/review/')) return 'Session Review';
     if (p.startsWith('/admin/builder')) return 'Test Builder';
     if (p.startsWith('/admin/import')) return 'Import';
     if (p.startsWith('/admin/assets')) return 'Assets';

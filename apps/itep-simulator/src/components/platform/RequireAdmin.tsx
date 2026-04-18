@@ -24,7 +24,7 @@ export const RequireAdmin: React.FC = () => {
     return <Navigate to={url} replace />;
   }
 
-  if (!me || String(me.user.role ?? '').toLowerCase() !== 'admin') {
+  if (!me || !String(me.user.role ?? '').toLowerCase().startsWith('admin')) {
     const url = buildPlatformUrl('/account', returnTo);
     if (hasPlatformBase) {
       window.location.assign(url);
