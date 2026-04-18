@@ -1977,6 +1977,7 @@ export type TeacherOfficeResult = {
   session_status: string | null;
   registration_status: string;
   overall_band: number | null;
+  overall_score?: number | null;
   created_at: string;
 };
 
@@ -2062,6 +2063,9 @@ export type CandidateEntryResponse = {
   session_id: string;
   experience_id: string;
   first_section_id: string | null;
+  product_id: string | null;
+  product_slug: string | null;
+  app_url: string | null;
 };
 
 export const candidateEntry = async (body: {

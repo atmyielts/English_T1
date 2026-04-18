@@ -125,6 +125,119 @@ const roundNumber = (value: number, precision = 2): number => {
   return Math.round(value * factor) / factor;
 };
 
+const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
+
+const averageNumbers = (values: number[]): number | null => {
+  if (values.length === 0) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+};
+
+const asObject = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+type ItepCalibrationEntry = {
+  score: number;
+  min_raw?: number | null;
+  max_raw?: number | null;
+  min_ratio?: number | null;
+  max_ratio?: number | null;
+  min_percent?: number | null;
+  max_percent?: number | null;
+};
+
+const asFinite = (value: unknown): number | null => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeItepCalibrationEntries = (value: unknown): ItepCalibrationEntry[] => {
+  if (!Array.isArray(value)) return [];
+  return value.reduce<ItepCalibrationEntry[]>((entries, entry) => {
+    const row = asObject(entry);
+    const score = asFinite(row.score);
+    if (score == null) return entries;
+    entries.push({
+      score,
+      min_raw: asFinite(row.min_raw),
+      max_raw: asFinite(row.max_raw),
+      min_ratio: asFinite(row.min_ratio),
+      max_ratio: asFinite(row.max_ratio),
+      min_percent: asFinite(row.min_percent),
+      max_percent: asFinite(row.max_percent),
+    });
+    return entries;
+  }, []);
+};
+
+const resolveItepCalibrationEntries = (
+  sectionType: string,
+  sectionMetadata: Json | null,
+  experienceMetadata: Json | null,
+): ItepCalibrationEntry[] => {
+  const sectionMeta = asObject(sectionMetadata);
+  const experienceMeta = asObject(experienceMetadata);
+  const sectionScoreProfile = asObject(sectionMeta.score_profile);
+  const experienceScoreProfile = asObject(experienceMeta.score_profile);
+  const experienceCalibration = asObject(experienceScoreProfile.objective_calibration ?? experienceMeta.itep_calibration);
+
+  return normalizeItepCalibrationEntries(
+    sectionScoreProfile.calibration ??
+      sectionMeta.itep_calibration ??
+      experienceCalibration[sectionType] ??
+      asObject(experienceScoreProfile.calibration)[sectionType],
+  );
+};
+
+const resolveItepObjectiveScore = (
+  sectionType: string,
+  rawScore: number,
+  maxScore: number,
+  sectionMetadata: Json | null,
+  experienceMetadata: Json | null,
+): number | null => {
+  if (maxScore <= 0) return null;
+  const ratio = clamp(rawScore / maxScore, 0, 1);
+  const percent = ratio * 100;
+  const calibrationEntries = resolveItepCalibrationEntries(sectionType, sectionMetadata, experienceMetadata);
+
+  const matched = calibrationEntries
+    .filter((entry) => {
+      if (entry.min_raw != null && rawScore < entry.min_raw) return false;
+      if (entry.max_raw != null && rawScore > entry.max_raw) return false;
+      if (entry.min_ratio != null && ratio < entry.min_ratio) return false;
+      if (entry.max_ratio != null && ratio > entry.max_ratio) return false;
+      if (entry.min_percent != null && percent < entry.min_percent) return false;
+      if (entry.max_percent != null && percent > entry.max_percent) return false;
+      return true;
+    })
+    .sort((a, b) => a.score - b.score)
+    .at(-1);
+
+  if (matched) return clamp(roundNumber(matched.score, 1), 0, 6);
+  return clamp(roundNumber(ratio * 6, 1), 0, 6);
+};
+
+const extractWritingEvaluationScore = (result: unknown): number | null => {
+  const row = asObject(result);
+  const direct =
+    asFinite(row.overall_score) ??
+    asFinite(row.itep_score) ??
+    asFinite(row.writing_score) ??
+    asFinite(row.overall_band);
+  if (direct != null) return direct;
+
+  const tasks = Array.isArray(row.tasks) ? row.tasks : [];
+  const taskScores = tasks
+    .map((task) => {
+      const taskRow = asObject(task);
+      return asFinite(taskRow.score) ?? asFinite(taskRow.band) ?? asFinite(taskRow.writing_score);
+    })
+    .filter((value): value is number => value != null);
+
+  const averageTaskScore = averageNumbers(taskScores);
+  return averageTaskScore != null ? roundNumber(averageTaskScore, 1) : null;
+};
+
 const bandFromScaled40 = (sectionType: string, scaledScore: number): number => {
   const s = Math.max(0, Math.min(40, Math.round(scaledScore)));
 
@@ -558,7 +671,7 @@ serve(async (req) => {
     const experienceId = sessionRow.experience_id as string;
     const { data: experienceRow, error: experienceError } = await supabase
       .from("experiences")
-      .select("id, product_id")
+      .select("id, product_id, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -592,6 +705,13 @@ serve(async (req) => {
     const productSlug = String((productRow as any)?.metadata?.slug ?? "")
       .trim()
       .toLowerCase();
+    const isToeflProduct =
+      productSlug === "toefl-ibt-simulator" ||
+      String(experienceRow.product_id) === "b262ffa8-9912-4eba-93d7-58af3164d1cc";
+    const isItepProduct =
+      productSlug === "itep-simulator" ||
+      String(experienceRow.product_id) === "a6c7887c-633c-4d88-8b70-397ed04dbbb1";
+    const experienceMetadata = ((experienceRow as any)?.metadata ?? {}) as Json;
 
     const allowedSectionIdsRaw = (sessionRow as any)?.metadata?.allowed_section_ids;
     const allowedSectionIds =
@@ -678,6 +798,21 @@ serve(async (req) => {
     const latestResponseByUnitId = new Map<string, any>();
     for (const r of responseRows) latestResponseByUnitId.set(r.content_unit_id, r.data);
 
+    let writingEvaluationRows: Array<{ method: string; result: unknown }> = [];
+    if (isToeflProduct || isItepProduct) {
+      const { data: evaluations } = await supabase
+        .from("evaluations")
+        .select("method, result, evaluated_at")
+        .eq("session_id", sessionId)
+        .order("evaluated_at", { ascending: false });
+      writingEvaluationRows = (evaluations ?? []) as Array<{ method: string; result: unknown }>;
+    }
+
+    const preferredWritingEval =
+      writingEvaluationRows.find((row) => ["admin", "manual"].includes(String(row.method ?? "").toLowerCase())) ??
+      writingEvaluationRows.find((row) => String(row.method ?? "").toLowerCase() === "ai") ??
+      null;
+
     const sectionScores: Record<string, any> = {};
     const bands: number[] = [];
 
@@ -715,7 +850,13 @@ serve(async (req) => {
         max > 0 && (type === "reading_writing" || type === "math")
           ? toSatScaledScore(raw / max)
           : null;
-      const band = max > 0 && (type === "listening" || type === "reading") ? bandFromScaled40(type, scaled40) : null;
+      const scaled6 =
+        isItepProduct && (type === "reading" || type === "listening" || type === "grammar")
+          ? resolveItepObjectiveScore(type, raw, max, s.metadata, experienceMetadata)
+          : null;
+      const band =
+        scaled6 ??
+        (max > 0 && (type === "listening" || type === "reading") ? bandFromScaled40(type, scaled40) : null);
 
       if (typeof band === "number") bands.push(band);
 
@@ -726,24 +867,31 @@ serve(async (req) => {
         scaled_score_40: Math.round(scaled40),
         scaled_score_30: scaled30,
         scaled_score_800: scaled800,
+        scaled_score_6: scaled6,
         band,
       };
     }
 
-    const overallBand = bands.length > 0 ? toHalfBand(bands.reduce((a, b) => a + b, 0) / bands.length) : null;
+    let overallBand =
+      bands.length > 0
+        ? isItepProduct
+          ? roundNumber(bands.reduce((a, b) => a + b, 0) / bands.length, 1)
+          : toHalfBand(bands.reduce((a, b) => a + b, 0) / bands.length)
+        : null;
 
-    const sectionValues = Object.values(sectionScores) as Array<{
+    const baseSectionValues = Object.values(sectionScores) as Array<{
       type: string;
       raw_score: number;
       max_score: number;
       scaled_score_40: number;
       scaled_score_30?: number | null;
       scaled_score_800?: number | null;
+      scaled_score_6?: number | null;
       band: number | null;
     }>;
 
-    const rw = sectionValues.filter((section) => section.type === "reading_writing");
-    const math = sectionValues.filter((section) => section.type === "math");
+    const rw = baseSectionValues.filter((section) => section.type === "reading_writing");
+    const math = baseSectionValues.filter((section) => section.type === "math");
     const rwMax = rw.reduce((sum, section) => sum + section.max_score, 0);
     const rwRaw = rw.reduce((sum, section) => sum + section.raw_score, 0);
     const mathMax = math.reduce((sum, section) => sum + section.max_score, 0);
@@ -763,9 +911,9 @@ serve(async (req) => {
           }
         : null;
 
-    const reading = sectionValues.filter((section) => section.type === "reading");
-    const listening = sectionValues.filter((section) => section.type === "listening");
-    const writing = sectionValues.filter((section) => section.type === "writing");
+    const reading = baseSectionValues.filter((section) => section.type === "reading");
+    const listening = baseSectionValues.filter((section) => section.type === "listening");
+    const writing = baseSectionValues.filter((section) => section.type === "writing");
     const readingMax = reading.reduce((sum, section) => sum + section.max_score, 0);
     const readingRaw = reading.reduce((sum, section) => sum + section.raw_score, 0);
     const listeningMax = listening.reduce((sum, section) => sum + section.max_score, 0);
@@ -777,19 +925,9 @@ serve(async (req) => {
     const listeningScore = listeningMax > 0 ? toToeflScaledScore(listeningRaw / listeningMax) : null;
 
     let writingScore = writingMax > 0 ? toToeflScaledScore(writingRaw / writingMax) : null;
-    const isToeflProduct =
-      productSlug === "toefl-ibt-simulator" ||
-      String(experienceRow.product_id) === "b262ffa8-9912-4eba-93d7-58af3164d1cc";
 
     if (isToeflProduct && writingScore == null) {
-      const { data: aiEval } = await supabase
-        .from("evaluations")
-        .select("result")
-        .eq("session_id", sessionId)
-        .eq("method", "ai")
-        .maybeSingle();
-
-      const aiResult = (aiEval as any)?.result ?? null;
+      const aiResult = preferredWritingEval?.result ?? null;
       const aiWritingScore = Number((aiResult as any)?.writing_score ?? NaN);
       if (Number.isFinite(aiWritingScore)) {
         writingScore = Math.max(0, Math.min(30, Math.round(aiWritingScore)));
@@ -818,8 +956,78 @@ serve(async (req) => {
         }
       : null;
 
+    let itep: {
+      reading_score: number | null;
+      listening_score: number | null;
+      grammar_score: number | null;
+      writing_score: number | null;
+      composite_score: number | null;
+      score_version: string;
+      is_estimated: boolean;
+      speaking_available: boolean;
+      visible_scored_sections: string[];
+    } | null = null;
+
+    if (isItepProduct) {
+      const grammar = baseSectionValues.filter((section) => section.type === "grammar");
+      const readingScore6 = averageNumbers(
+        reading.map((section) => asFinite((section as any).scaled_score_6 ?? section.band)).filter((value): value is number => value != null),
+      );
+      const listeningScore6 = averageNumbers(
+        listening
+          .map((section) => asFinite((section as any).scaled_score_6 ?? section.band))
+          .filter((value): value is number => value != null),
+      );
+      const grammarScore6 = averageNumbers(
+        grammar.map((section) => asFinite((section as any).scaled_score_6 ?? section.band)).filter((value): value is number => value != null),
+      );
+      const writingScore6 = preferredWritingEval ? extractWritingEvaluationScore(preferredWritingEval.result) : null;
+
+      if (writingScore6 != null) {
+        for (const [sectionId, section] of Object.entries(sectionScores)) {
+          if (String((section as any)?.type ?? "") !== "writing") continue;
+          (section as any).scaled_score_6 = writingScore6;
+          (section as any).band = writingScore6;
+        }
+      }
+
+      const visibleScores = [
+        { type: "reading", score: readingScore6 },
+        { type: "listening", score: listeningScore6 },
+        { type: "grammar", score: grammarScore6 },
+        { type: "writing", score: writingScore6 },
+      ].filter((entry) => entry.score != null) as Array<{ type: string; score: number }>;
+
+      const compositeScore = averageNumbers(visibleScores.map((entry) => entry.score));
+      overallBand = compositeScore != null ? roundNumber(compositeScore, 1) : overallBand;
+
+      itep = {
+        reading_score: readingScore6 != null ? roundNumber(readingScore6, 1) : null,
+        listening_score: listeningScore6 != null ? roundNumber(listeningScore6, 1) : null,
+        grammar_score: grammarScore6 != null ? roundNumber(grammarScore6, 1) : null,
+        writing_score: writingScore6 != null ? roundNumber(writingScore6, 1) : null,
+        composite_score: overallBand,
+        score_version: "itep-estimate-v1",
+        is_estimated: true,
+        speaking_available: false,
+        visible_scored_sections: visibleScores.map((entry) => entry.type),
+      };
+    }
+
+    const sectionValues = Object.values(sectionScores) as Array<{
+      type: string;
+      raw_score: number;
+      max_score: number;
+      scaled_score_40: number;
+      scaled_score_30?: number | null;
+      scaled_score_800?: number | null;
+      scaled_score_6?: number | null;
+      band: number | null;
+    }>;
     const skillBreakdown = buildSkillBreakdown(sectionScores);
-    const overallScore = computeOverallScore(sectionValues, overallBand, sat, toefl);
+    const overallScore = isItepProduct
+      ? (itep?.composite_score ?? overallBand)
+      : computeOverallScore(sectionValues, overallBand, sat, toefl);
     const schemaVersion = "exam.result.v1";
     const computedAtIso = new Date().toISOString();
 
@@ -831,6 +1039,7 @@ serve(async (req) => {
       sections: sectionScores,
       sat,
       toefl,
+      itep,
     };
 
     const nowIso = new Date().toISOString();

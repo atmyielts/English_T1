@@ -41,6 +41,9 @@ jobs:
       - name: Build TOEFL iBT simulator
         run: npm --workspace apps/toefl-ibt-simulator run build
 
+      - name: Build iTEP simulator
+        run: npm --workspace apps/itep-simulator run build
+
       - name: Build academy
         run: npm --workspace apps/academy run build
 

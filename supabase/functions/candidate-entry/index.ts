@@ -243,6 +243,7 @@ const buildCandidateResponse = (
   sessionId: string,
   experienceId: string,
   firstSectionId: string | null,
+  product: { id: string; slug: string | null; appUrl: string | null } | null,
 ) =>
   json(200, {
     session: {
@@ -254,6 +255,9 @@ const buildCandidateResponse = (
     session_id: sessionId,
     experience_id: experienceId,
     first_section_id: firstSectionId,
+    product_id: product?.id ?? null,
+    product_slug: product?.slug ?? null,
+    app_url: product?.appUrl ?? null,
   });
 
 serve(async (req) => {
@@ -309,12 +313,32 @@ serve(async (req) => {
 
     const { data: experienceRow, error: expErr } = await sbDb
       .from("experiences")
-      .select("id, is_active")
+      .select("id, is_active, product_id")
       .eq("id", tokenRow.experience_id)
       .maybeSingle();
 
     if (expErr) return json(500, { error: "Failed to load test" });
     if (!experienceRow || !experienceRow.is_active) return json(400, { error: "Test is not active" });
+
+    const { data: productRow, error: productErr } = await sbDb
+      .from("products")
+      .select("id, metadata")
+      .eq("id", String((experienceRow as any)?.product_id ?? ""))
+      .maybeSingle();
+
+    if (productErr) return json(500, { error: "Failed to load product" });
+
+    const product = productRow
+      ? {
+          id: String((productRow as any).id),
+          slug: String((productRow as any)?.metadata?.slug ?? "").trim() || null,
+          appUrl: String((productRow as any)?.metadata?.app_url ?? "").trim() || null,
+        }
+      : null;
+
+    if (!product?.appUrl) {
+      return json(400, { error: "Exam app URL is not configured" });
+    }
 
     const { data: firstSection } = await sbDb
       .from("sections")
@@ -386,6 +410,7 @@ serve(async (req) => {
             existingSession.id,
             existingSession.experience_id,
             String(firstSection.id),
+            product,
           );
         }
       }
@@ -453,6 +478,7 @@ serve(async (req) => {
             existingSession.id,
             existingSession.experience_id,
             String(firstSection.id),
+            product,
           );
         }
       }
@@ -521,6 +547,7 @@ serve(async (req) => {
       sessionRow.id,
       tokenRow.experience_id,
       String(firstSection.id),
+      product,
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

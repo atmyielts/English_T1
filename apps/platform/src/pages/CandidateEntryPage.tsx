@@ -4,11 +4,6 @@ import { candidateEntry } from '../lib/platformClient';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 
-const getIeltsBase = (): string | null => {
-  const raw = String(import.meta.env.VITE_IELTS_URL ?? '').trim();
-  return raw ? raw.replace(/\/$/, '') : null;
-};
-
 export const CandidateEntryPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
@@ -38,7 +33,7 @@ export const CandidateEntryPage: React.FC = () => {
     }
     if (/failed to fetch|network|cors/i.test(raw)) return t('candidate.error.network');
     if (/invalid jwt|unauthorized|\b401\b/i.test(raw)) return t('candidate.error.sessionExpired');
-    if (/ielts app url is not configured/i.test(raw)) return t('candidate.error.examRouteMissing');
+    if (/exam app url is not configured/i.test(raw)) return t('candidate.error.examRouteMissing');
     return t('candidate.error.startFailed');
   };
 
@@ -65,8 +60,8 @@ export const CandidateEntryPage: React.FC = () => {
         phone: form.phone,
       });
 
-      const ieltsBase = getIeltsBase();
-      if (!ieltsBase) throw new Error('IELTS app URL is not configured');
+      const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
+      if (!appBase) throw new Error('Exam app URL is not configured');
       const qs = new URLSearchParams({
         access_token: res.session.access_token,
         refresh_token: res.session.refresh_token,
@@ -74,7 +69,7 @@ export const CandidateEntryPage: React.FC = () => {
         session_id: res.session_id,
       });
       if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
-      const target = `${ieltsBase}/candidate?${qs.toString()}`;
+      const target = `${appBase}/candidate?${qs.toString()}`;
       setHandoffUrl(target);
       window.location.assign(target);
     } catch (err) {

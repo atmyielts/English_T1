@@ -271,6 +271,8 @@ additional_redirect_urls = [
   "https://sat.schood.online/auth",
   "https://toefl.schood.online",
   "https://toefl.schood.online/auth",
+  "https://itep.schood.online",
+  "https://itep.schood.online/auth",
   "https://reading.english.schood.online",
   "https://reading.english.schood.online/auth",
   "https://writing.english.schood.online",

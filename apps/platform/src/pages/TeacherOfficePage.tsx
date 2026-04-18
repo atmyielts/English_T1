@@ -611,7 +611,7 @@ export const TeacherOfficePage: React.FC = () => {
                         </td>
                         <td className="py-2 text-gray-700">{row.experience_name ?? t('teacher.fallback.test')}</td>
                         <td className="py-2 text-gray-700">{row.session_status ?? row.registration_status}</td>
-                        <td className="py-2 text-gray-900 font-semibold">{row.overall_band ?? '—'}</td>
+                        <td className="py-2 text-gray-900 font-semibold">{row.overall_score ?? row.overall_band ?? '—'}</td>
                       </tr>
                     ))}
                     {results.length === 0 ? (

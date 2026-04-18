@@ -67,7 +67,7 @@ const isActiveEntitlement = (row: { starts_at: string | null; ends_at: string | 
 };
 
 const validateTokenSession = async (
-  sb: ReturnType<typeof createClient>,
+  sb: any,
   tokenId: string,
   userId: string,
   experienceId: string,
@@ -79,9 +79,10 @@ const validateTokenSession = async (
     .maybeSingle();
 
   if (error || !tokenRow) return { ok: false, reason: "Invalid candidate session" };
-  if (String(tokenRow.experience_id) !== String(experienceId)) return { ok: false, reason: "Session mismatch" };
-  if (String(tokenRow.claimed_by ?? "") !== String(userId)) return { ok: false, reason: "Unauthorized" };
-  if (String(tokenRow.status) !== "claimed") return { ok: false, reason: "Candidate session is not active" };
+  const token = tokenRow as any;
+  if (String(token.experience_id) !== String(experienceId)) return { ok: false, reason: "Session mismatch" };
+  if (String(token.claimed_by ?? "") !== String(userId)) return { ok: false, reason: "Unauthorized" };
+  if (String(token.status) !== "claimed") return { ok: false, reason: "Candidate session is not active" };
 
   return { ok: true };
 };
@@ -159,6 +160,174 @@ const sanitizeProviderError = (value: unknown, maxLen = 280): string => {
   return message.replace(/\s+/g, " ").trim().slice(0, maxLen);
 };
 
+const asFiniteNumber = (value: unknown): number | null => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const average = (values: number[]): number | null => {
+  if (values.length === 0) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+};
+
+type WritingEvaluationProfileKey = "ielts" | "itep";
+
+type WritingEvaluationProfile = {
+  key: WritingEvaluationProfileKey;
+  defaultAppName: string;
+  systemInstruction: string;
+  outputSchema: Json;
+};
+
+const roundNumber = (value: number, precision = 1): number => {
+  const factor = 10 ** precision;
+  return Math.round(value * factor) / factor;
+};
+
+const resolveWritingEvaluationProfile = (productSlug: string): WritingEvaluationProfile => {
+  if (productSlug === "itep-simulator") {
+    return {
+      key: "itep",
+      defaultAppName: "Schood iTEP",
+      systemInstruction: [
+        "You are a Senior iTEP Writing Evaluator.",
+        "Grade STRICTLY using an iTEP-style writing rubric on a 0.0-6.0 scale.",
+        "For each task, score: task_completion, organization, vocabulary, and grammar.",
+        "Use one decimal place when needed.",
+        "Weight the criteria evenly when deciding each task score.",
+        "When task_type is task1 and an image is provided, analyze the visual before grading.",
+        "Be clinical, consistent, and exam-standard. Do not be lenient.",
+        "Return ONLY valid JSON with no markdown and no extra prose.",
+      ].join(" "),
+      outputSchema: {
+        overall_score: 0,
+        overall_band: 0,
+        tasks: [
+          {
+            content_unit_id: "uuid",
+            task_type: "task1|task2|essay|opinion|null",
+            word_count: 0,
+            score: 0,
+            band: 0,
+            criteria: {
+              task_completion: 0,
+              organization: 0,
+              vocabulary: 0,
+              grammar: 0,
+            },
+            strengths: ["short bullet"],
+            improvements: ["short bullet"],
+            actionable_feedback: ["concrete action"],
+            feedback: "short paragraph",
+          },
+        ],
+        notes: "short paragraph",
+      },
+    };
+  }
+
+  return {
+    key: "ielts",
+    defaultAppName: "Schood IELTS",
+    systemInstruction: [
+      "You are a Senior IELTS Writing Examiner.",
+      "Grade STRICTLY using IELTS Academic Writing band descriptors on a 0.0-9.0 scale.",
+      "For each task, score: Task Response (TR), Coherence and Cohesion (CC), Lexical Resource (LR), Grammatical Range and Accuracy (GRA).",
+      "Use 0.5 band increments only.",
+      "When task_type is task1 and an image is provided, analyze the chart/diagram before grading.",
+      "Be clinical and exam-standard. Do not be lenient.",
+      "Return ONLY valid JSON with no markdown and no extra prose.",
+    ].join(" "),
+    outputSchema: {
+      overall_band: 0,
+      tasks: [
+        {
+          content_unit_id: "uuid",
+          task_type: "task1|task2|null",
+          word_count: 0,
+          band: 0,
+          criteria: { TR: 0, CC: 0, LR: 0, GRA: 0 },
+          strengths: ["short bullet"],
+          improvements: ["short bullet"],
+          actionable_feedback: ["concrete action"],
+          feedback: "short paragraph",
+        },
+      ],
+      notes: "short paragraph",
+    },
+  };
+};
+
+const normalizeItepCriteria = (criteriaValue: unknown): Json => {
+  const criteria = isObject(criteriaValue) ? (criteriaValue as Json) : {};
+  const normalized: Record<string, number> = {};
+  const taskCompletion =
+    asFiniteNumber((criteria as any).task_completion) ??
+    asFiniteNumber((criteria as any).taskCompletion) ??
+    asFiniteNumber((criteria as any).task_response) ??
+    asFiniteNumber((criteria as any).TR);
+  const organization =
+    asFiniteNumber((criteria as any).organization) ??
+    asFiniteNumber((criteria as any).coherence) ??
+    asFiniteNumber((criteria as any).CC);
+  const vocabulary =
+    asFiniteNumber((criteria as any).vocabulary) ??
+    asFiniteNumber((criteria as any).lexical_resource) ??
+    asFiniteNumber((criteria as any).LR);
+  const grammar =
+    asFiniteNumber((criteria as any).grammar) ??
+    asFiniteNumber((criteria as any).GRA);
+
+  if (taskCompletion != null) normalized.task_completion = roundNumber(taskCompletion, 1);
+  if (organization != null) normalized.organization = roundNumber(organization, 1);
+  if (vocabulary != null) normalized.vocabulary = roundNumber(vocabulary, 1);
+  if (grammar != null) normalized.grammar = roundNumber(grammar, 1);
+
+  return { ...(criteria as Json), ...normalized };
+};
+
+const normalizeWritingEvaluationResult = (rawResult: Json, profileKey: WritingEvaluationProfileKey): Json => {
+  if (profileKey !== "itep") {
+    return {
+      ...rawResult,
+      rubric: "ielts",
+      score_version: (rawResult as any)?.score_version ?? "ielts-writing-estimate-v1",
+    };
+  }
+
+  const tasks = Array.isArray((rawResult as any)?.tasks)
+    ? ((rawResult as any).tasks as unknown[])
+        .filter((entry) => isObject(entry))
+        .map((entry) => {
+          const task = entry as Json;
+          const score = asFiniteNumber((task as any).score) ?? asFiniteNumber((task as any).band);
+          return {
+            ...task,
+            ...(score != null ? { score: roundNumber(score, 1), band: roundNumber(score, 1) } : {}),
+            criteria: normalizeItepCriteria((task as any).criteria),
+          };
+        })
+    : [];
+
+  const taskScores = tasks
+    .map((task) => asFiniteNumber((task as any).score) ?? asFiniteNumber((task as any).band))
+    .filter((value): value is number => value != null);
+  const overallScore =
+    asFiniteNumber((rawResult as any).overall_score) ??
+    asFiniteNumber((rawResult as any).overall_band) ??
+    average(taskScores);
+  const roundedOverall = overallScore != null ? roundNumber(overallScore, 1) : null;
+
+  return {
+    ...rawResult,
+    overall_score: roundedOverall,
+    overall_band: roundedOverall,
+    tasks,
+    rubric: "itep",
+    score_version: "itep-writing-estimate-v1",
+  };
+};
+
 const parseModelList = (raw: string | null | undefined): string[] =>
   String(raw ?? "")
     .split(",")
@@ -166,7 +335,7 @@ const parseModelList = (raw: string | null | undefined): string[] =>
     .filter((v) => v.length > 0);
 
 const createSignedUrlFromStorage = async (
-  sb: ReturnType<typeof createClient>,
+  sb: any,
   storage: unknown,
   context?: { requestId?: string; userId?: string },
 ): Promise<string | null> => {
@@ -178,7 +347,7 @@ const createSignedUrlFromStorage = async (
 };
 
 const resolveImageUrl = async (
-  sb: ReturnType<typeof createClient>,
+  sb: any,
   data: unknown,
   context?: { requestId?: string; userId?: string },
 ): Promise<string | null> => {
@@ -199,20 +368,13 @@ const callOpenRouterJson = async (
   apiKey: string,
   model: string,
   tasks: WritingTask[],
+  profile: WritingEvaluationProfile,
   opts?: { baseUrl?: string | null; appName?: string | null; referer?: string | null; requestId?: string | null },
 ): Promise<Json> => {
   const baseUrl = (opts?.baseUrl ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
   const endpoint = `${baseUrl}/chat/completions`;
 
-  const systemInstruction = [
-    "You are a Senior IELTS Writing Examiner.",
-    "Grade STRICTLY using IELTS Academic Writing band descriptors on a 0.0-9.0 scale.",
-    "For each task, score: Task Response (TR), Coherence and Cohesion (CC), Lexical Resource (LR), Grammatical Range and Accuracy (GRA).",
-    "Use 0.5 band increments only.",
-    "When task_type is task1 and an image is provided, analyze the chart/diagram before grading.",
-    "Be clinical and exam-standard. Do not be lenient.",
-    "Return ONLY valid JSON with no markdown and no extra prose.",
-  ].join(" ");
+  const systemInstruction = profile.systemInstruction;
 
   const userPayload = {
     tasks: tasks.map((t) => ({
@@ -225,23 +387,7 @@ const callOpenRouterJson = async (
       word_count: t.word_count,
       has_image: Boolean(t.image_url),
     })),
-    output_schema: {
-      overall_band: 0,
-      tasks: [
-        {
-          content_unit_id: "uuid",
-          task_type: "task1|task2|null",
-          word_count: 0,
-          band: 0,
-          criteria: { TR: 0, CC: 0, LR: 0, GRA: 0 },
-          strengths: ["short bullet"],
-          improvements: ["short bullet"],
-          actionable_feedback: ["concrete action"],
-          feedback: "short paragraph",
-        },
-      ],
-      notes: "short paragraph",
-    },
+    output_schema: profile.outputSchema,
   };
 
   const buildUserContent = (includeImages: boolean): Array<Record<string, unknown>> => {
@@ -350,13 +496,14 @@ const callOpenRouterJsonWithFallback = async (
   apiKey: string,
   models: string[],
   tasks: WritingTask[],
+  profile: WritingEvaluationProfile,
   opts?: { baseUrl?: string | null; appName?: string | null; referer?: string | null; requestId?: string | null },
 ): Promise<{ result: Json; model: string; failedAttempts: Array<{ model: string; reason: string }> }> => {
   const failedAttempts: Array<{ model: string; reason: string }> = [];
 
   for (const model of models) {
     try {
-      const result = await callOpenRouterJson(apiKey, model, tasks, opts);
+      const result = await callOpenRouterJson(apiKey, model, tasks, profile, opts);
       return { result, model, failedAttempts };
     } catch (error) {
       const reason = sanitizeProviderError(error);
@@ -504,6 +651,38 @@ serve(async (req) => {
     }
 
     const experienceId = sessionRow.experience_id as string;
+    const { data: experienceRow, error: expErr } = await sb
+      .from("experiences")
+      .select("id, product_id")
+      .eq("id", experienceId)
+      .maybeSingle();
+
+    if (expErr) {
+      console.error("grade-writing: failed to load experience", expErr);
+      return jsonError(500, "Service is temporarily unavailable.", "db_error");
+    }
+
+    const productId = String((experienceRow as any)?.product_id ?? "");
+    if (!productId) {
+      return jsonError(400, "Invalid session product mapping.", "invalid_session_product");
+    }
+
+    const { data: productRow, error: productErr } = await sb
+      .from("products")
+      .select("id, metadata")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (productErr) {
+      console.error("grade-writing: failed to load product", productErr);
+      return jsonError(500, "Service is temporarily unavailable.", "db_error");
+    }
+
+    const productSlug = String((productRow as any)?.metadata?.slug ?? "")
+      .trim()
+      .toLowerCase();
+    const writingProfile = resolveWritingEvaluationProfile(productSlug);
+
     const tokenId = String((sessionRow as any)?.token_id ?? "");
     let tokenMode = false;
     if (tokenId) {
@@ -518,19 +697,6 @@ serve(async (req) => {
 
     // Enforce monthly writing submission limits (tenant + product scoped).
     if (!tokenMode && !isAdmin) {
-      const { data: experienceRow, error: expErr } = await sb
-        .from("experiences")
-        .select("id, product_id")
-        .eq("id", experienceId)
-        .maybeSingle();
-
-      if (expErr) {
-        console.error("grade-writing: failed to load experience", expErr);
-        return jsonError(500, "Service is temporarily unavailable.", "db_error");
-      }
-
-      const productId = String((experienceRow as any)?.product_id ?? "");
-
       const { data: memberships, error: memErr } = await sb
         .from("tenant_memberships")
         .select("tenant_id")
@@ -756,7 +922,7 @@ serve(async (req) => {
     const modelCandidates = Array.from(new Set([primaryModel, ...fallbackModels]));
     const openRouterBaseUrl = getEnv("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1";
     const openRouterReferer = getEnv("OPENROUTER_REFERER");
-    const openRouterAppName = getEnv("OPENROUTER_APP_NAME") ?? "Schood IELTS";
+    const openRouterAppName = getEnv("OPENROUTER_APP_NAME") ?? writingProfile.defaultAppName;
     console.log("grade-writing: model candidates", {
       request_id: requestId,
       user_id: authedUserId,
@@ -768,7 +934,7 @@ serve(async (req) => {
 
     let aiCallResult: { result: Json; model: string; failedAttempts: Array<{ model: string; reason: string }> };
     try {
-      aiCallResult = await callOpenRouterJsonWithFallback(apiKey, modelCandidates, tasks, {
+      aiCallResult = await callOpenRouterJsonWithFallback(apiKey, modelCandidates, tasks, writingProfile, {
         baseUrl: openRouterBaseUrl,
         referer: openRouterReferer,
         appName: openRouterAppName,
@@ -791,7 +957,7 @@ serve(async (req) => {
       throw error;
     }
 
-    const aiResult = aiCallResult.result;
+    const aiResult = normalizeWritingEvaluationResult(aiCallResult.result, writingProfile.key);
     const usedModel = aiCallResult.model;
 
     const nowIso = new Date().toISOString();

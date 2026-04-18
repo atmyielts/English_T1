@@ -280,7 +280,8 @@ serve(async (req) => {
 
       const results = rows.map((row) => {
         const evaluation = evalMap.get(String(row.session_id ?? "")) ?? null;
-        const overallBand = evaluation?.result?.overall_band ?? null;
+        const overallScore = evaluation?.result?.overall_score ?? null;
+        const overallBand = evaluation?.result?.overall_band ?? overallScore ?? null;
         return {
           id: row.id,
           token_id: row.token_id,
@@ -292,6 +293,7 @@ serve(async (req) => {
           session_id: row.session_id,
           session_status: row.sessions?.status ?? null,
           registration_status: row.status,
+          overall_score: overallScore,
           overall_band: overallBand,
           created_at: row.created_at,
         };

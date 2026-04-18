@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authorizeAdminRequest } from "../_shared/admin-access.ts";
 
 type Json = Record<string, unknown>;
-type ModuleType = "listening" | "reading" | "writing";
+type ModuleType = "listening" | "reading" | "grammar" | "writing" | "speaking";
 type SectionType = ModuleType | "reading_writing" | "math";
 
 type ImportPayload = {
@@ -107,14 +107,14 @@ const statusFromRpcMessage = (message: string): number => {
 
 const normalizeSectionType = (value: unknown): SectionType | "" => {
   const clean = readString(value).toLowerCase();
-  return ["listening", "reading", "writing", "reading_writing", "math"].includes(clean)
+  return ["listening", "reading", "grammar", "writing", "speaking", "reading_writing", "math"].includes(clean)
     ? (clean as SectionType)
     : "";
 };
 
 const normalizeModuleType = (value: unknown): ModuleType | "" => {
   const clean = readString(value).toLowerCase();
-  return ["listening", "reading", "writing"].includes(clean) ? (clean as ModuleType) : "";
+  return ["listening", "reading", "grammar", "writing", "speaking"].includes(clean) ? (clean as ModuleType) : "";
 };
 
 const normalizeUnitPayload = (rawUnit: unknown, index: number): Record<string, unknown> => {
@@ -591,7 +591,7 @@ serve(async (req) => {
 
       if (!productId) return json(400, { error: "product_id is required" });
       if (!templateName) return json(400, { error: "template_name is required" });
-      if (!sectionType) return json(400, { error: "section_type must be listening|reading|writing|reading_writing|math" });
+      if (!sectionType) return json(400, { error: "section_type must be listening|reading|grammar|writing|speaking|reading_writing|math" });
       if (!isObject(payload.section_payload)) return json(400, { error: "section_payload must be an object" });
 
       const normalizedSectionPayload = normalizeSectionPayload(payload.section_payload, sectionType);
@@ -640,7 +640,7 @@ serve(async (req) => {
 
       if (!productId) return json(400, { error: "product_id is required" });
       if (!templateName) return json(400, { error: "template_name is required" });
-      if (!moduleType) return json(400, { error: "module_type must be listening|reading|writing" });
+      if (!moduleType) return json(400, { error: "module_type must be listening|reading|grammar|writing|speaking" });
       if (!isObject(payload.part_payload)) return json(400, { error: "part_payload must be an object" });
 
       const normalizedPartPayload = normalizePartPayload(payload.part_payload, 0);
