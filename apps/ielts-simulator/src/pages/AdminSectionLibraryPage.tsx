@@ -60,6 +60,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
   const [editorModuleType, setEditorModuleType] = useState<ModuleType>('listening');
   const [editorTemplateName, setEditorTemplateName] = useState<string>('Listening');
   const [editorTemplateKey, setEditorTemplateKey] = useState<string>('');
+  const [loadedTemplateIdentity, setLoadedTemplateIdentity] = useState<{ templateName: string; templateKey: string } | null>(null);
   const [assemblyModuleType, setAssemblyModuleType] = useState<ModuleType>('listening');
   const [assemblySelections, setAssemblySelections] = useState<string[]>(Array.from({ length: expectedPartCount('listening') }, () => ''));
 
@@ -123,6 +124,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
       if (!opts?.preserveSelection) {
         setSelectedTemplateId(null);
         setSelectedTemplateVersionId(null);
+        setLoadedTemplateIdentity(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load section library.');
@@ -169,6 +171,10 @@ export const AdminSectionLibraryPage: React.FC = () => {
       setEditorTemplateKey(payload.template_key);
       setSelectedTemplateId(payload.template_id);
       setSelectedTemplateVersionId(payload.template_version_id);
+      setLoadedTemplateIdentity({
+        templateName: payload.template_name,
+        templateKey: payload.template_key,
+      });
       setStatus(`Loaded ${payload.template_name} (v${payload.version}).`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load section template.');
@@ -183,6 +189,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
     setEditorTemplateKey('');
     setSelectedTemplateId(null);
     setSelectedTemplateVersionId(null);
+    setLoadedTemplateIdentity(null);
     setStatus(`${moduleLabel(moduleType)} section draft ready.`);
     setError(null);
   };
@@ -238,11 +245,19 @@ export const AdminSectionLibraryPage: React.FC = () => {
       setEditorTemplateKey('');
       setSelectedTemplateId(null);
       setSelectedTemplateVersionId(null);
+      setLoadedTemplateIdentity(null);
       setStatus(`Assembled ${moduleLabel(assemblyModuleType)} section from ${parts.length} saved item(s).`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to assemble section.');
     }
   };
+
+  const editorTemplateNamePreview = editorTemplateName.trim() || moduleLabel(editorModuleType);
+  const editorTemplateKeyPreview = editorTemplateKey.trim() || slugifyTemplateKey(editorTemplateNamePreview, 'section-template');
+  const isDetachedDraft =
+    Boolean(selectedTemplateId) &&
+    Boolean(loadedTemplateIdentity) &&
+    (editorTemplateNamePreview !== loadedTemplateIdentity?.templateName || editorTemplateKeyPreview !== loadedTemplateIdentity?.templateKey);
 
   const saveTemplate = async (opts?: { asNew?: boolean }) => {
     if (!accessToken) return;
@@ -253,10 +268,15 @@ export const AdminSectionLibraryPage: React.FC = () => {
       const canonical = buildEditorCanonical();
       const templateName = canonical.name || moduleLabel(canonical.module_type);
       const templateKey = canonical.template_key?.trim() || slugifyTemplateKey(templateName, 'section-template');
+      const shouldCreateNew =
+        Boolean(opts?.asNew) ||
+        (Boolean(selectedTemplateId) &&
+          Boolean(loadedTemplateIdentity) &&
+          (templateName !== loadedTemplateIdentity?.templateName || templateKey !== loadedTemplateIdentity?.templateKey));
 
       const response = await adminBuilderTemplateUpsert(accessToken, {
         product_id: IELTS_PRODUCT_ID,
-        template_id: opts?.asNew ? null : selectedTemplateId,
+        template_id: shouldCreateNew ? null : selectedTemplateId,
         template_name: templateName,
         template_key: templateKey,
         section_type: canonical.module_type,
@@ -268,8 +288,12 @@ export const AdminSectionLibraryPage: React.FC = () => {
       setEditorTemplateKey(response.template_key);
       setSelectedTemplateId(response.template_id);
       setSelectedTemplateVersionId(response.template_version_id);
+      setLoadedTemplateIdentity({
+        templateName: response.template_name,
+        templateKey: response.template_key,
+      });
       setJsonText(toJson({ ...canonical, name: response.template_name, template_key: response.template_key }));
-      setStatus(`${opts?.asNew ? 'Saved new section' : 'Saved'} ${response.template_name} (v${response.version}).`);
+      setStatus(`${shouldCreateNew ? 'Saved new section' : 'Saved'} ${response.template_name} (v${response.version}).`);
       await loadData({ preserveSelection: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save section template.');
@@ -298,6 +322,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
       setEditorTemplateName(next.name);
       setEditorTemplateKey('');
       setStatus('Duplicate section draft created. Saving will create a new template.');
+      setLoadedTemplateIdentity(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Current JSON is invalid.');
     }
@@ -317,6 +342,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
       setEditorTemplateKey(canonical.template_key ?? '');
       setSelectedTemplateId(null);
       setSelectedTemplateVersionId(null);
+      setLoadedTemplateIdentity(null);
       setStatus(`Imported ${file.name} into the ${moduleLabel(canonical.module_type)} section editor.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to import JSON file.');
@@ -478,7 +504,13 @@ export const AdminSectionLibraryPage: React.FC = () => {
               <label className="text-xs text-gray-600 space-y-1 md:col-span-3">
                 <span className="font-semibold">Loaded state</span>
                 <input
-                  value={selectedTemplateVersionId ? 'Existing section version loaded' : 'New draft'}
+                  value={
+                    isDetachedDraft
+                      ? 'Detached draft from existing section'
+                      : selectedTemplateVersionId
+                        ? 'Existing section version loaded'
+                        : 'New draft'
+                  }
                   readOnly
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50"
                 />
@@ -547,7 +579,7 @@ export const AdminSectionLibraryPage: React.FC = () => {
             />
 
             <div className="text-xs text-gray-500">
-              `Save Section` updates the loaded template. `Save As New` or `Duplicate` keeps the original if you want a new variant.
+              Renaming a loaded section now detaches it into a new draft automatically. `Save Section` updates only when the current name/key still match the loaded section.
             </div>
           </div>
         </div>

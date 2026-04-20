@@ -122,6 +122,7 @@ export const AdminContentLibraryPage: React.FC = () => {
   const [editorModuleType, setEditorModuleType] = useState<ModuleType>('listening');
   const [editorTemplateName, setEditorTemplateName] = useState<string>('Part 1');
   const [editorTemplateKey, setEditorTemplateKey] = useState<string>('');
+  const [loadedTemplateIdentity, setLoadedTemplateIdentity] = useState<{ templateName: string; templateKey: string } | null>(null);
 
   const syncEditorFieldsFromJson = (nextJsonText: string) => {
     try {
@@ -179,6 +180,7 @@ export const AdminContentLibraryPage: React.FC = () => {
       if (!opts?.preserveSelection) {
         setSelectedTemplateId(null);
         setSelectedTemplateVersionId(null);
+        setLoadedTemplateIdentity(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load content library.');
@@ -227,6 +229,10 @@ export const AdminContentLibraryPage: React.FC = () => {
       setEditorTemplateKey(payload.template_key);
       setSelectedTemplateId(payload.template_id);
       setSelectedTemplateVersionId(payload.template_version_id);
+      setLoadedTemplateIdentity({
+        templateName: payload.template_name,
+        templateKey: payload.template_key,
+      });
       setStatus(`Loaded ${payload.template_name} (v${payload.version}).`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load template.');
@@ -241,9 +247,18 @@ export const AdminContentLibraryPage: React.FC = () => {
     setEditorTemplateKey('');
     setSelectedTemplateId(null);
     setSelectedTemplateVersionId(null);
+    setLoadedTemplateIdentity(null);
     setError(null);
     setStatus(`${moduleLabel(moduleType)} draft ready.`);
   };
+
+  const editorTemplateNamePreview =
+    editorTemplateName.trim() || (editorModuleType === 'reading' ? 'Passage 1' : editorModuleType === 'writing' ? 'Task 1' : 'Part 1');
+  const editorTemplateKeyPreview = editorTemplateKey.trim() || slugifyTemplateKey(editorTemplateNamePreview, 'part-template');
+  const isDetachedDraft =
+    Boolean(selectedTemplateId) &&
+    Boolean(loadedTemplateIdentity) &&
+    (editorTemplateNamePreview !== loadedTemplateIdentity?.templateName || editorTemplateKeyPreview !== loadedTemplateIdentity?.templateKey);
 
   const saveTemplate = async (opts?: { asNew?: boolean }) => {
     if (!accessToken) return;
@@ -254,10 +269,15 @@ export const AdminContentLibraryPage: React.FC = () => {
       const canonical = buildEditorCanonical();
       const templateName = canonical.name || `${moduleLabel(editorModuleType)} item`;
       const templateKey = canonical.template_key?.trim() || slugifyTemplateKey(templateName, 'part-template');
+      const shouldCreateNew =
+        Boolean(opts?.asNew) ||
+        (Boolean(selectedTemplateId) &&
+          Boolean(loadedTemplateIdentity) &&
+          (templateName !== loadedTemplateIdentity?.templateName || templateKey !== loadedTemplateIdentity?.templateKey));
 
       const response = await adminBuilderPartTemplateUpsert(accessToken, {
         product_id: IELTS_PRODUCT_ID,
-        template_id: opts?.asNew ? null : selectedTemplateId,
+        template_id: shouldCreateNew ? null : selectedTemplateId,
         template_name: templateName,
         template_key: templateKey,
         module_type: canonical.module_type,
@@ -272,8 +292,12 @@ export const AdminContentLibraryPage: React.FC = () => {
       setEditorTemplateKey(response.template_key);
       setSelectedTemplateId(response.template_id);
       setSelectedTemplateVersionId(response.template_version_id);
+      setLoadedTemplateIdentity({
+        templateName: response.template_name,
+        templateKey: response.template_key,
+      });
       setJsonText(toJson({ ...canonical, name: response.template_name, template_key: response.template_key }));
-      setStatus(`${opts?.asNew ? 'Saved new template' : 'Saved'} ${response.template_name} (v${response.version}).`);
+      setStatus(`${shouldCreateNew ? 'Saved new template' : 'Saved'} ${response.template_name} (v${response.version}).`);
       await loadTemplates({ preserveSelection: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save template.');
@@ -306,6 +330,7 @@ export const AdminContentLibraryPage: React.FC = () => {
       setEditorTemplateKey(canonical.template_key ?? '');
       setSelectedTemplateId(null);
       setSelectedTemplateVersionId(null);
+      setLoadedTemplateIdentity(null);
       setStatus(`Imported ${file.name} into the ${moduleLabel(canonical.module_type)} editor.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to import JSON file.');
@@ -319,6 +344,7 @@ export const AdminContentLibraryPage: React.FC = () => {
       setJsonText(toJson(next));
       setSelectedTemplateId(null);
       setSelectedTemplateVersionId(null);
+      setLoadedTemplateIdentity(null);
       setEditorTemplateKey('');
       setEditorTemplateName(next.name);
       setStatus('Duplicate draft created. Saving will create a new template.');
@@ -482,7 +508,13 @@ export const AdminContentLibraryPage: React.FC = () => {
               <label className="text-xs text-gray-600 space-y-1 md:col-span-3">
                 <span className="font-semibold">Loaded state</span>
                 <input
-                  value={selectedTemplateVersionId ? 'Existing template version loaded' : 'New draft'}
+                  value={
+                    isDetachedDraft
+                      ? 'Detached draft from existing template'
+                      : selectedTemplateVersionId
+                        ? 'Existing template version loaded'
+                        : 'New draft'
+                  }
                   readOnly
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50"
                 />
@@ -503,7 +535,7 @@ export const AdminContentLibraryPage: React.FC = () => {
             />
 
             <div className="text-xs text-gray-500">
-              `Save Template` updates the loaded template. `Save As New` or `Duplicate` keeps the original so you can create Part 1, Part 2, and later assemble them together.
+              Renaming a loaded template now detaches it into a new draft automatically. `Save Template` updates only when the current name/key still match the loaded template.
             </div>
           </div>
         </div>
