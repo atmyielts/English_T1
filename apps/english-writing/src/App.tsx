@@ -2,6 +2,14 @@
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
+import {
+  listWritingPrompts,
+  startWritingDraft,
+  submitWritingDraft,
+  type WritingDraft,
+  type WritingPrompt,
+  type WritingSubmitResult,
+} from './lib/writingWorkbenchClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -130,6 +138,10 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+);
+const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -215,7 +227,7 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Writing Studio</div>
-        <h1>Build real exam writing confidence, one focused session at a time.</h1>
+        <h1>Build stronger written English, one focused revision session at a time.</h1>
         <p>
           Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
         </p>
@@ -350,15 +362,28 @@ const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
+  accessToken,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
 }) => {
   type LaneKey = 'todo' | 'in_progress' | 'completed';
 
   const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [writingPrompts, setWritingPrompts] = useState<WritingPrompt[]>([]);
+  const [writingPromptsLoading, setWritingPromptsLoading] = useState(false);
+  const [writingPromptsError, setWritingPromptsError] = useState<string | null>(null);
+  const [activePromptId, setActivePromptId] = useState<string>('');
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [activeDraft, setActiveDraft] = useState<WritingDraft | null>(null);
+  const [draftText, setDraftText] = useState('');
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitResult, setSubmitResult] = useState<WritingSubmitResult | null>(null);
 
   const exerciseItems = useMemo(
     () =>
@@ -386,6 +411,44 @@ const ExercisesPage = ({
     }
   }, [exerciseItems, selectedId]);
 
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setWritingPrompts([]);
+      setWritingPromptsLoading(false);
+      setWritingPromptsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setWritingPromptsLoading(true);
+    setWritingPromptsError(null);
+
+    void listWritingPrompts(accessToken)
+      .then((prompts) => {
+        if (cancelled) return;
+        setWritingPrompts(prompts);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setWritingPromptsError(error instanceof Error ? error.message : 'Failed to load writing prompts.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setWritingPromptsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  useEffect(() => {
+    const firstPrompt = writingPrompts[0];
+    if (!activePromptId && firstPrompt) {
+      setActivePromptId(firstPrompt.id);
+    }
+  }, [activePromptId, writingPrompts]);
+
   const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
 
   const groupedItems = useMemo(
@@ -398,12 +461,77 @@ const ExercisesPage = ({
   );
 
   const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+  const activePrompt = writingPrompts.find((prompt) => prompt.id === activePromptId) ?? writingPrompts[0] ?? null;
+  const writingPresentation = asMetaRecord(activePrompt?.presentation_meta);
+  const writingSupportModes = readMetaList(writingPresentation?.support_mode_labels);
+  const writingTargetBadges = readMetaList(writingPresentation?.target_badges);
 
   const laneDefs: Array<{ key: LaneKey; label: string }> = [
     { key: 'todo', label: 'Todo' },
     { key: 'in_progress', label: 'In progress' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  useEffect(() => {
+    if (!activePrompt || !accessToken || !hasAccess) return;
+
+    let cancelled = false;
+    setDraftLoading(true);
+    setSubmitError(null);
+
+    void startWritingDraft(accessToken, { prompt_id: activePrompt.id })
+      .then((result) => {
+        if (cancelled) return;
+        setActiveDraft(result.draft);
+        setDraftText(result.draft.current_text ?? '');
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setSubmitError(error instanceof Error ? error.message : 'Failed to open writing draft.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setDraftLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, activePrompt, hasAccess]);
+
+  const handleSelectPrompt = (promptId: string): void => {
+    setActivePromptId(promptId);
+    setActiveDraft(null);
+    setDraftText('');
+    setSubmitResult(null);
+    setSubmitMessage(null);
+    setSubmitError(null);
+  };
+
+  const handleSubmitDraft = async (): Promise<void> => {
+    if (!activeDraft || !accessToken) return;
+    setSubmitLoading(true);
+    setSubmitMessage(null);
+    setSubmitError(null);
+
+    try {
+      const wordCount = draftText.trim().length > 0 ? draftText.trim().split(/\s+/).filter(Boolean).length : 0;
+      const result = await submitWritingDraft(accessToken, {
+        draft_id: activeDraft.id,
+        submission_text: draftText,
+        time_spent_seconds: Math.max(120, wordCount * 8),
+        retry_count: activeDraft.revision_count,
+        hint_usage_count: 0,
+      });
+      setActiveDraft(result.draft);
+      setSubmitResult(result);
+      setSubmitMessage(result.feedback?.summary ?? 'Writing draft submitted.');
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Unable to score this draft right now.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <div className="dashboard-stack">
@@ -486,6 +614,127 @@ const ExercisesPage = ({
                 </div>
 
                 <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <div className="phase2-lab-head">
+                    <div>
+                      <h3>Live Writing Workbench</h3>
+                      <p>Real prompt bank, draft persistence, revision cycles, and shared-core scoring.</p>
+                    </div>
+                    {activePrompt ? <span className="exercise-chip">{activePrompt.level} · {activePrompt.genre}</span> : null}
+                  </div>
+
+                  {activePrompt ? (
+                    <div className="phase2-premium-card">
+                      <small>{readMetaText(writingPresentation?.scene_label) || 'Editorial brief'}</small>
+                      <strong>{readMetaText(writingPresentation?.hero_note) || 'Draft with a clear objective, then tighten one layer at a time: grammar, word choice, and coherence.'}</strong>
+                      <div className="phase2-badge-row">
+                        {writingTargetBadges.map((badge) => (
+                          <span key={`${activePrompt.id}-${badge}`} className="phase2-badge">{badge}</span>
+                        ))}
+                        {writingSupportModes.map((badge) => (
+                          <span key={`${activePrompt.id}-${badge}-support`} className="phase2-badge muted">{badge}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {!hasAccess ? <p className="phase2-status">Unlock access to open the writing backend.</p> : null}
+                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your writing prompts.</p> : null}
+                  {writingPromptsLoading ? <p className="phase2-status">Loading writing prompts...</p> : null}
+                  {writingPromptsError ? <p className="phase2-status error">{writingPromptsError}</p> : null}
+
+                  {activePrompt ? (
+                    <>
+                      <div className="phase2-chip-row">
+                        {writingPrompts.map((prompt) => (
+                          <button
+                            key={prompt.id}
+                            type="button"
+                            className={prompt.id === activePrompt.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
+                            onClick={() => handleSelectPrompt(prompt.id)}
+                          >
+                            {prompt.title}
+                          </button>
+                        ))}
+                      </div>
+
+                      <p className="phase2-lab-copy">{activePrompt.prompt_text}</p>
+                      {activePrompt.guidance_text ? <p className="phase2-hint">{activePrompt.guidance_text}</p> : null}
+
+                      <div className="phase2-inline-meta">
+                        <span>{activePrompt.expected_length_min}-{activePrompt.expected_length_max} words</span>
+                        {activePrompt.target_grammar ? <span>{activePrompt.target_grammar}</span> : null}
+                        {activeDraft ? <span>Revision #{activeDraft.revision_count + 1}</span> : null}
+                      </div>
+
+                      {draftLoading ? <p className="phase2-status">Opening draft...</p> : null}
+
+                      <textarea
+                        className="phase2-textarea"
+                        value={draftText}
+                        onChange={(event) => setDraftText(event.target.value)}
+                        placeholder="Write your response here, then submit it for correction and revision feedback..."
+                        rows={9}
+                      />
+
+                      <div className="phase2-actions">
+                        <button
+                          className="primary-cta"
+                          type="button"
+                          onClick={() => {
+                            void handleSubmitDraft();
+                          }}
+                          disabled={submitLoading || !draftText.trim() || !activeDraft || !hasAccess || !accessToken}
+                        >
+                          {submitLoading ? 'Scoring draft...' : activeDraft?.revision_count ? 'Submit revision' : 'Submit draft'}
+                        </button>
+                      </div>
+
+                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
+                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
+
+                      {submitResult ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Revision feedback</strong>
+                          <p>{submitResult.feedback?.summary ?? 'Feedback is ready.'}</p>
+                          <div className="phase2-inline-meta">
+                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
+                            <span>Draft words: {submitResult.draft.word_count}</span>
+                            {submitResult.revision_cycle?.improvement_ratio != null ? (
+                              <span>Improvement: {Math.round(submitResult.revision_cycle.improvement_ratio * 100)}%</span>
+                            ) : null}
+                          </div>
+                          {Array.isArray(submitResult.raw_issues) && submitResult.raw_issues.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {submitResult.raw_issues.map((issue, index) => (
+                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Fix this issue and resubmit.')}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No major issues were detected in this revision cycle.</p>
+                          )}
+                          <div className="phase2-metric-grid">
+                            <div>
+                              <small>Revision cycle</small>
+                              <strong>{submitResult.draft.revision_count + 1} total passes</strong>
+                            </div>
+                            <div>
+                              <small>Constraint mode</small>
+                              <strong>{writingSupportModes[0] || readMetaText(writingPresentation?.coach_tone) || 'Clarity first'}</strong>
+                            </div>
+                            <div>
+                              <small>Completion note</small>
+                              <strong>{readMetaText(writingPresentation?.celebration_copy) || 'Compare this draft to the last version, then push one weaker pattern into Grammar or Vocabulary.'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
 
                 <div className="exercise-subsection">
                   <h3>Execution checklist</h3>
@@ -971,7 +1220,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily writing workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -1034,6 +1283,7 @@ const App = () => {
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
+              accessToken={session?.access_token ?? null}
             />
           )}
         </main>

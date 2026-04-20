@@ -18,6 +18,7 @@ type ReadingArticleRow = {
   status: string;
   sort_order: number;
   metadata: JsonRecord | null;
+  presentation_meta: JsonRecord | null;
   created_at: string;
   updated_at: string;
 };
@@ -173,7 +174,7 @@ const listArticles = async (sb: any, scope: Scope, url: URL, isAdmin: boolean): 
 
   let query = sb
     .from("reading_articles")
-    .select("id,slug,title,summary,content_markdown,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,metadata,created_at,updated_at")
+    .select("id,slug,title,summary,content_markdown,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,metadata,presentation_meta,created_at,updated_at")
     .eq("product_id", scope.productId)
     .eq("language_id", scope.languageId)
     .eq("status", selectedStatus)
@@ -245,6 +246,7 @@ const createArticle = async (sb: any, scope: Scope, body: JsonRecord, userId: st
     status: toStatus(body.status, "draft"),
     sort_order: Math.floor(toNumber(body.sort_order) ?? 100),
     metadata: isObject(body.metadata) ? body.metadata : {},
+    presentation_meta: isObject(body.presentation_meta) ? body.presentation_meta : {},
     created_by: userId,
     updated_by: userId,
   };
@@ -252,7 +254,7 @@ const createArticle = async (sb: any, scope: Scope, body: JsonRecord, userId: st
   const { data, error } = await sb
     .from("reading_articles")
     .insert(row)
-    .select("id,slug,title,summary,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,updated_at")
+    .select("id,slug,title,summary,content_markdown,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,presentation_meta,updated_at")
     .maybeSingle();
   if (error || !data) return json(500, { error: "Failed to create reading article", details: error?.message ?? null });
   return json(200, { article: data });
@@ -286,12 +288,13 @@ const patchArticle = async (sb: any, body: JsonRecord, userId: string): Promise<
   if (patch.status != null) update.status = toStatus(patch.status, "published");
   if (patch.sort_order != null) update.sort_order = Math.floor(toNumber(patch.sort_order) ?? 100);
   if (patch.metadata != null && isObject(patch.metadata)) update.metadata = patch.metadata;
+  if (patch.presentation_meta != null && isObject(patch.presentation_meta)) update.presentation_meta = patch.presentation_meta;
 
   const { data, error } = await sb
     .from("reading_articles")
     .update(update)
     .eq("id", id)
-    .select("id,slug,title,summary,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,updated_at")
+    .select("id,slug,title,summary,content_markdown,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,presentation_meta,updated_at")
     .maybeSingle();
   if (error || !data) return json(500, { error: "Failed to update reading article", details: error?.message ?? null });
   return json(200, { article: data });

@@ -2,6 +2,12 @@
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
+import {
+  listSpeakingPrompts,
+  submitSpeakingPractice,
+  type SpeakingPrompt,
+  type SpeakingSubmitResult,
+} from './lib/speakingStudioClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -130,6 +136,10 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+);
+const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -215,7 +225,7 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Speaking Studio</div>
-        <h1>Build real exam speaking confidence, one focused session at a time.</h1>
+        <h1>Build fluent spoken English, one focused coaching round at a time.</h1>
         <p>
           Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
         </p>
@@ -351,15 +361,26 @@ const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
+  accessToken,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
 }) => {
   type LaneKey = 'todo' | 'in_progress' | 'completed';
 
   const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [speakingPrompts, setSpeakingPrompts] = useState<SpeakingPrompt[]>([]);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [promptsError, setPromptsError] = useState<string | null>(null);
+  const [activePromptId, setActivePromptId] = useState<string>('');
+  const [responseText, setResponseText] = useState('');
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitResult, setSubmitResult] = useState<SpeakingSubmitResult | null>(null);
 
   const exerciseItems = useMemo(
     () =>
@@ -387,6 +408,44 @@ const ExercisesPage = ({
     }
   }, [exerciseItems, selectedId]);
 
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setSpeakingPrompts([]);
+      setPromptsLoading(false);
+      setPromptsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setPromptsLoading(true);
+    setPromptsError(null);
+
+    void listSpeakingPrompts(accessToken)
+      .then((prompts) => {
+        if (cancelled) return;
+        setSpeakingPrompts(prompts);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setPromptsError(error instanceof Error ? error.message : 'Failed to load speaking prompts.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setPromptsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  useEffect(() => {
+    const firstPrompt = speakingPrompts[0];
+    if (!activePromptId && firstPrompt) {
+      setActivePromptId(firstPrompt.id);
+    }
+  }, [activePromptId, speakingPrompts]);
+
   const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
 
   const groupedItems = useMemo(
@@ -399,12 +458,62 @@ const ExercisesPage = ({
   );
 
   const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+  const activePrompt = speakingPrompts.find((prompt) => prompt.id === activePromptId) ?? speakingPrompts[0] ?? null;
+  const speakingPresentation = asMetaRecord(activePrompt?.presentation_meta);
+  const speakingSupportModes = readMetaList(speakingPresentation?.support_mode_labels);
+  const speakingTargetBadges = readMetaList(speakingPresentation?.target_badges);
 
   const laneDefs: Array<{ key: LaneKey; label: string }> = [
     { key: 'todo', label: 'Todo' },
     { key: 'in_progress', label: 'In progress' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  const playPrompt = (): void => {
+    if (!activePrompt || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(activePrompt.prompt_text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopPrompt = (): void => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+  };
+
+  const handleSelectPrompt = (promptId: string): void => {
+    setActivePromptId(promptId);
+    setResponseText('');
+    setSubmitResult(null);
+    setSubmitMessage(null);
+    setSubmitError(null);
+  };
+
+  const handleSubmitSpeaking = async (): Promise<void> => {
+    if (!activePrompt || !accessToken) return;
+    setSubmitLoading(true);
+    setSubmitMessage(null);
+    setSubmitError(null);
+
+    try {
+      const result = await submitSpeakingPractice(accessToken, {
+        prompt_id: activePrompt.id,
+        response_text: responseText,
+        time_spent_seconds: Math.max(45, activePrompt.target_duration_seconds),
+        retry_count: submitResult ? 1 : 0,
+        hint_usage_count: 0,
+        transcript_source: 'manual',
+      });
+      setSubmitResult(result);
+      setSubmitMessage(result.feedback?.summary ?? 'Speaking response recorded.');
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Unable to score this speaking response right now.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <div className="dashboard-stack">
@@ -487,6 +596,129 @@ const ExercisesPage = ({
                 </div>
 
                 <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <div className="phase2-lab-head">
+                    <div>
+                      <h3>Live Speaking Studio</h3>
+                      <p>Transcript-based speaking practice with prompt selection, structured feedback, and shared-core scoring.</p>
+                    </div>
+                    {activePrompt ? <span className="exercise-chip">{activePrompt.level} · {activePrompt.prompt_type}</span> : null}
+                  </div>
+
+                  {!hasAccess ? <p className="phase2-status">Unlock access to open the speaking backend.</p> : null}
+                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your speaking prompts.</p> : null}
+                  {promptsLoading ? <p className="phase2-status">Loading speaking prompts...</p> : null}
+                  {promptsError ? <p className="phase2-status error">{promptsError}</p> : null}
+
+                  {activePrompt ? (
+                    <>
+                      <div className="phase2-premium-card">
+                        <small>{readMetaText(speakingPresentation?.scene_label) || 'Coaching booth'}</small>
+                        <strong>{readMetaText(speakingPresentation?.hero_note) || 'Treat this like a live coaching pass: answer once, review the transcript, then tighten fluency on the second run.'}</strong>
+                        <div className="phase2-badge-row">
+                          {speakingTargetBadges.map((badge) => (
+                            <span key={`${activePrompt.id}-${badge}`} className="phase2-badge">{badge}</span>
+                          ))}
+                          {speakingSupportModes.map((badge) => (
+                            <span key={`${activePrompt.id}-${badge}-support`} className="phase2-badge muted">{badge}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="phase2-chip-row">
+                        {speakingPrompts.map((prompt) => (
+                          <button
+                            key={prompt.id}
+                            type="button"
+                            className={prompt.id === activePrompt.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
+                            onClick={() => handleSelectPrompt(prompt.id)}
+                          >
+                            {prompt.title}
+                          </button>
+                        ))}
+                      </div>
+
+                      <p className="phase2-lab-copy">{activePrompt.prompt_text}</p>
+                      <div className="phase2-inline-meta">
+                        <span>{activePrompt.target_duration_seconds}s target</span>
+                        {activePrompt.target_grammar ? <span>{activePrompt.target_grammar}</span> : null}
+                        {Array.isArray(activePrompt.target_vocabulary) && activePrompt.target_vocabulary.length > 0 ? (
+                          <span>Target words: {activePrompt.target_vocabulary.slice(0, 3).join(', ')}</span>
+                        ) : null}
+                      </div>
+                      {activePrompt.fluency_objective ? <p className="phase2-hint">{activePrompt.fluency_objective}</p> : null}
+
+                      <div className="phase2-actions">
+                        <button className="ghost-btn" type="button" onClick={playPrompt}>Read prompt aloud</button>
+                        <button className="ghost-btn" type="button" onClick={stopPrompt}>Stop</button>
+                      </div>
+
+                      <textarea
+                        className="phase2-textarea"
+                        value={responseText}
+                        onChange={(event) => setResponseText(event.target.value)}
+                        placeholder="After speaking, paste or type your transcript here so the system can review structure, fluency signals, and grammar."
+                        rows={8}
+                      />
+
+                      <div className="phase2-actions">
+                        <button
+                          className="primary-cta"
+                          type="button"
+                          onClick={() => {
+                            void handleSubmitSpeaking();
+                          }}
+                          disabled={submitLoading || !responseText.trim() || !hasAccess || !accessToken}
+                        >
+                          {submitLoading ? 'Scoring response...' : 'Submit speaking response'}
+                        </button>
+                      </div>
+
+                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
+                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
+
+                      {submitResult ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Speaking feedback</strong>
+                          <p>{submitResult.feedback?.summary ?? 'Speaking feedback is ready.'}</p>
+                          <div className="phase2-inline-meta">
+                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
+                            <span>Accuracy: {Math.round((submitResult.scoring?.correctness_ratio ?? 0) * 100)}%</span>
+                            {submitResult.evaluation?.word_count ? <span>Words: {submitResult.evaluation.word_count}</span> : null}
+                          </div>
+                          {Array.isArray(submitResult.feedback?.issues) && submitResult.feedback.issues.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {submitResult.feedback.issues.map((issue, index) => (
+                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one clearer version.')}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {Array.isArray(submitResult.evaluation?.missed_target_words) && submitResult.evaluation.missed_target_words.length > 0 ? (
+                            <p>Missed target words: {submitResult.evaluation.missed_target_words.join(', ')}</p>
+                          ) : null}
+                          {submitResult.note ? <p>{submitResult.note}</p> : null}
+                          <div className="phase2-metric-grid">
+                            <div>
+                              <small>Target words used</small>
+                              <strong>{submitResult.evaluation?.target_words_used?.length ?? 0} activated</strong>
+                            </div>
+                            <div>
+                              <small>Retry comparison</small>
+                              <strong>{submitResult.evaluation?.comparison ? 'Attempt-to-attempt coaching replay ready' : 'First speaking pass recorded'}</strong>
+                            </div>
+                            <div>
+                              <small>Completion cue</small>
+                              <strong>{readMetaText(speakingPresentation?.celebration_copy) || 'Replay the prompt once more and turn one weak phrase into a cleaner spoken version.'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
 
                 <div className="exercise-subsection">
                   <h3>Execution checklist</h3>
@@ -972,7 +1204,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily speaking workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -1035,6 +1267,7 @@ const App = () => {
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
+              accessToken={session?.access_token ?? null}
             />
           )}
         </main>

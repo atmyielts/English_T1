@@ -128,6 +128,9 @@ verify_jwt = false
 [functions.learning-profile]
 verify_jwt = false
 
+[functions.learning-profile-v2]
+verify_jwt = false
+
 [functions.domain-events]
 verify_jwt = false
 
@@ -204,6 +207,45 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.reading-articles]
+verify_jwt = false
+
+[functions.learning-profile-v3]
+verify_jwt = false
+
+[functions.learning-attempts]
+verify_jwt = false
+
+[functions.feedback-engine]
+verify_jwt = false
+
+[functions.recommendations]
+verify_jwt = false
+
+[functions.hub]
+verify_jwt = false
+
+[functions.content-registry]
+verify_jwt = false
+
+[functions.listening-content]
+verify_jwt = false
+
+[functions.writing-workbench]
+verify_jwt = false
+
+[functions.speaking-studio]
+verify_jwt = false
+
+[functions.grammar-remediation]
+verify_jwt = false
+
+[functions.immersion-missions]
+verify_jwt = false
+
+[functions.admin-english-ops]
+verify_jwt = false
+
+[functions.admin-english-content]
 verify_jwt = false
 
 [functions.ielts-practice]

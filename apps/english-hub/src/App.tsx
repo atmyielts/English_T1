@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/learningProfileClient';
+import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 
 type HubPath = '/' | '/dashboard';
@@ -28,6 +29,7 @@ type DailyPlanTask = {
   title: string;
   reason: string;
   href: string;
+  estimatedMinutes?: number | null;
 };
 
 type WeaknessBucket = {
@@ -296,8 +298,12 @@ const App = () => {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSnapshot, setProfileSnapshot] = useState<LearningProfileSnapshot | null>(null);
+  const [hubPlanLoading, setHubPlanLoading] = useState(false);
+  const [hubPlanError, setHubPlanError] = useState<string | null>(null);
+  const [hubPlanSnapshot, setHubPlanSnapshot] = useState<HubPlanSnapshot | null>(null);
 
   const [planSeed, setPlanSeed] = useState(1);
+  const [selectedPlanTaskId, setSelectedPlanTaskId] = useState<string | null>(null);
   const returnTo = resolveReturnTo();
 
   const signInHref = useMemo(
@@ -429,6 +435,45 @@ const App = () => {
     };
   }, [session?.access_token]);
 
+  useEffect(() => {
+    if (!session?.access_token) {
+      setHubPlanSnapshot(null);
+      setHubPlanError(null);
+      setHubPlanLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const loadPlan = async () => {
+      setHubPlanLoading(true);
+      setHubPlanError(null);
+      try {
+        const next = await getHubPlan(session.access_token, { languageCode: 'en', rebuild: planSeed > 1 });
+        if (cancelled) return;
+        setHubPlanSnapshot(next);
+      } catch (error) {
+        if (cancelled) return;
+        const status = (error as { status?: number } | null)?.status ?? null;
+        if (status === 401 || status === 403) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {
+            // Ignore sign-out failures.
+          }
+          return;
+        }
+        setHubPlanError('Could not load the generated hub plan right now.');
+      } finally {
+        if (!cancelled) setHubPlanLoading(false);
+      }
+    };
+
+    void loadPlan();
+    return () => {
+      cancelled = true;
+    };
+  }, [planSeed, session?.access_token]);
+
   const navigate = (nextPath: HubPath): void => {
     if (typeof window === 'undefined') return;
     if (window.location.pathname !== nextPath) {
@@ -503,6 +548,26 @@ const App = () => {
   }, [serviceScores]);
 
   const dailyPlan = useMemo<DailyPlanTask[]>(() => {
+    const remoteTasks: DailyPlanTask[] = [];
+    for (const task of hubPlanSnapshot?.today_plan?.tasks ?? []) {
+      if (!task?.id || !task?.service_key || !task?.title) continue;
+      remoteTasks.push({
+        id: String(task.id),
+        serviceKey: String(task.service_key) as Service['key'],
+        serviceLabel: String(task.service_label ?? task.service_key),
+        title: String(task.title),
+        reason: String(task.reason ?? 'Generated from your shared English profile.'),
+        href: String(task.href ?? buildTaskHref(FALLBACK_SERVICE, {
+          intent: String(task.intent ?? 'focused-drill'),
+          skill: String(task.skill ?? task.service_key),
+          reason: 'hub-plan-fallback',
+        })),
+        estimatedMinutes: typeof task.estimated_minutes === 'number' ? task.estimated_minutes : null,
+      });
+    }
+
+    if (remoteTasks.length > 0) return remoteTasks;
+
     const base = [...rankedWeakServices];
     const tasks: DailyPlanTask[] = [];
     const now = Date.now() + planSeed;
@@ -561,7 +626,18 @@ const App = () => {
     }
 
     return tasks.slice(0, 6);
-  }, [notebookDueCount, planSeed, rankedWeakServices, serviceScores]);
+  }, [hubPlanSnapshot?.today_plan?.tasks, notebookDueCount, planSeed, rankedWeakServices, serviceScores]);
+
+  useEffect(() => {
+    if (dailyPlan.length === 0) {
+      setSelectedPlanTaskId(null);
+      return;
+    }
+    setSelectedPlanTaskId((current) => {
+      if (current && dailyPlan.some((task) => task.id === current)) return current;
+      return dailyPlan[0]?.id ?? null;
+    });
+  }, [dailyPlan]);
 
   const timelineItems = useMemo<TimelineItem[]>(() => {
     const items: TimelineItem[] = [];
@@ -603,6 +679,14 @@ const App = () => {
   const topWeakService = rankedWeakServices[0]?.service ?? FALLBACK_SERVICE;
   const speakingService = SERVICES.find((service) => service.key === 'speaking') ?? FALLBACK_SERVICE;
   const weakPracticeTask = dailyPlan[0] ?? null;
+  const selectedPlanTask = dailyPlan.find((task) => task.id === selectedPlanTaskId) ?? dailyPlan[0] ?? null;
+  const carryoverTasks = hubPlanSnapshot?.carryover_tasks ?? [];
+  const focusStory = hubPlanSnapshot?.focus_story ?? `Today favors ${topWeakService.label.toLowerCase()} because it currently has the widest gap in your English profile.`;
+  const transferContext = hubPlanSnapshot?.transfer_context
+    ?? 'Your plan balances review, recovery, and one transfer task so today still moves usable English forward.';
+  const celebrationLevel = hubPlanSnapshot?.celebration_level ?? 'steady';
+  const priorityTone = hubPlanSnapshot?.priority_tone ?? 'supportive';
+  const weeklyFocusMap = serviceScores.slice(0, 7);
 
   const doSpeakingHref = useMemo(
     () => buildTaskHref(speakingService, { intent: 'guided-speaking', skill: 'fluency', reason: 'hub-smart-route' }),
@@ -677,6 +761,52 @@ const App = () => {
               </div>
             </section>
 
+            <section className="route-preview frame">
+              <div className="route-preview-head">
+                <div>
+                  <p className="kicker">Today's route</p>
+                  <h3>{focusStory}</h3>
+                </div>
+                <span className={`route-tone route-tone-${priorityTone}`}>{priorityTone}</span>
+              </div>
+              <div className="route-preview-grid">
+                <article>
+                  <small>Strongest recommendation</small>
+                  <strong>{weakPracticeTask?.title ?? `Start with ${topWeakService.label}`}</strong>
+                  <p>{weakPracticeTask?.reason ?? 'Hub is preparing the first focused task for your weakest area.'}</p>
+                </article>
+                <article>
+                  <small>Due reviews</small>
+                  <strong>{notebookDueCount} vocabulary cards ready</strong>
+                  <p>Shared memory review stays inside the route so passive words become usable language.</p>
+                </article>
+                <article>
+                  <small>Transfer challenge</small>
+                  <strong>{transferContext}</strong>
+                  <p>Every premium route mixes one repair task with one real-use follow-up.</p>
+                </article>
+              </div>
+            </section>
+
+            <section className="focus-map frame">
+              <div className="panel-head">
+                <h3>Weekly focus map</h3>
+                <span className="route-tone route-tone-soft">{celebrationLevel}</span>
+              </div>
+              <div className="focus-map-grid">
+                {weeklyFocusMap.map(({ service, score }) => (
+                  <article key={`${service.key}-focus`} className={`focus-map-card ${service.className}`}>
+                    <small>{service.role}</small>
+                    <strong>{service.label}</strong>
+                    <div className="focus-map-track" aria-hidden>
+                      <span style={{ width: `${score}%` }} />
+                    </div>
+                    <p>{score}% current readiness</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
             <section className="services-grid" aria-label="English services">
               {SERVICES.map((service) => (
                 <article className={`service-card frame ${service.className}`} key={service.key}>
@@ -725,10 +855,27 @@ const App = () => {
               </div>
             </section>
 
+            <section className="briefing-strip frame">
+              <article>
+                <small>Focus story</small>
+                <strong>{focusStory}</strong>
+              </article>
+              <article>
+                <small>Transfer context</small>
+                <strong>{transferContext}</strong>
+              </article>
+              <article>
+                <small>Weekly recap</small>
+                <strong>{completedServices} strong services · {carryoverTasks.length} carryover tasks · {notebookDueCount} due cards</strong>
+              </article>
+            </section>
+
             {session ? (
               <section className="status-grid">
                 {profileLoading ? <div className="status-pill frame">Loading shared language profile...</div> : null}
                 {profileError ? <div className="status-pill frame warning">{profileError}</div> : null}
+                {hubPlanLoading ? <div className="status-pill frame">Generating hub plan...</div> : null}
+                {hubPlanError ? <div className="status-pill frame warning">{hubPlanError}</div> : null}
                 {!profileLoading && !profileError && profileSnapshot?.scope?.language_code
                   ? (
                     <div className="status-pill frame">
@@ -765,15 +912,43 @@ const App = () => {
                 <ul className="plan-list">
                   {dailyPlan.map((task) => (
                     <li key={task.id}>
-                      <div>
+                      <button className="plan-brief" type="button" onClick={() => setSelectedPlanTaskId(task.id)}>
                         <small>{task.serviceLabel}</small>
                         <strong>{task.title}</strong>
-                        <p>{task.reason}</p>
+                        <p>{task.reason}{task.estimatedMinutes ? ` · ${task.estimatedMinutes} min` : ''}</p>
+                      </button>
+                      <div className="plan-actions">
+                        <button className="btn btn-ghost" type="button" onClick={() => setSelectedPlanTaskId(task.id)}>Preview</button>
+                        <a className="btn btn-soft" href={task.href}>Start</a>
                       </div>
-                      <a className="btn btn-soft" href={task.href}>Start</a>
                     </li>
                   ))}
                 </ul>
+              </article>
+
+              <article className="plan-drawer frame">
+                <div className="panel-head">
+                  <h3>Task preview drawer</h3>
+                  {selectedPlanTask ? <span className="route-tone route-tone-soft">{selectedPlanTask.serviceLabel}</span> : null}
+                </div>
+                {selectedPlanTask ? (
+                  <div className="plan-drawer-body">
+                    <small>Why this is here</small>
+                    <strong>{selectedPlanTask.title}</strong>
+                    <p>{selectedPlanTask.reason}</p>
+                    <div className="drawer-stats">
+                      <span>Target language: English</span>
+                      <span>Estimated payoff: {selectedPlanTask.serviceLabel} stabilizes the next route decision</span>
+                      <span>{selectedPlanTask.estimatedMinutes ? `${selectedPlanTask.estimatedMinutes} minutes` : 'Short-form task'}</span>
+                    </div>
+                    <div className="hero-actions">
+                      <a className="btn btn-solid" href={selectedPlanTask.href}>Launch task</a>
+                      <button className="btn btn-ghost" type="button" onClick={() => setPlanSeed((seed) => seed + 43)}>Swap this task</button>
+                    </div>
+                  </div>
+                ) : (
+                  <p>Select a plan item to preview its route context.</p>
+                )}
               </article>
 
               <article className="weakness-buckets frame">
@@ -867,6 +1042,24 @@ const App = () => {
                   <li>When listening misses key words, send missed terms into vocabulary review cards.</li>
                   <li>When writing shows coherence issues, route to reading structure and rewrite tasks.</li>
                 </ul>
+              </article>
+
+              <article className="wrap-up frame">
+                <h3>End-of-day wrap-up</h3>
+                <div className="wrap-up-grid">
+                  <div>
+                    <small>Completed</small>
+                    <strong>{Math.max(0, dailyPlan.length - carryoverTasks.length)} route steps ready to close</strong>
+                  </div>
+                  <div>
+                    <small>Carry over</small>
+                    <strong>{carryoverTasks.length} tasks waiting for tomorrow</strong>
+                  </div>
+                  <div>
+                    <small>Unlocked next</small>
+                    <strong>{weeklyFocusMap[0]?.service.label ?? 'Reading'} remains your strongest launchpad</strong>
+                  </div>
+                </div>
               </article>
             </section>
           </>

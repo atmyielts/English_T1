@@ -1,0 +1,2 @@
+-- Intentionally minimal local seed.
+-- Verification suites create their own scoped test data so local resets stay repeatable.

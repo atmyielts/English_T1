@@ -300,6 +300,10 @@ const NotebookPanel = ({
                 <small>Box {card.leitner_box} - Next review {formatReviewTime(card.next_review_at)}</small>
                 {card.definition ? <p>{card.definition}</p> : null}
                 {card.example ? <p className="notebook-example">{card.example}</p> : null}
+                {Array.isArray(card.activation_targets) && card.activation_targets.length > 0 ? (
+                  <p className="notebook-example">Activation targets: {card.activation_targets.join(', ')}</p>
+                ) : null}
+                {card.pronunciation_hint ? <p className="notebook-example">{card.pronunciation_hint}</p> : null}
               </div>
               <div className="notebook-actions">
                 <button
@@ -337,6 +341,9 @@ const NotebookPanel = ({
                 <strong>{card.word}</strong>
                 <small>{card.source_label || card.source_type || 'manual'}</small>
                 {card.definition ? <p>{card.definition}</p> : null}
+                {Array.isArray(card.activation_targets) && card.activation_targets.length > 0 ? (
+                  <p className="notebook-example">Next use: {card.activation_targets.join(', ')}</p>
+                ) : null}
               </div>
             </li>
           ))}
@@ -373,9 +380,9 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Vocabulary Studio</div>
-        <h1>Build real exam vocabulary confidence, one focused session at a time.</h1>
+        <h1>Build living English vocabulary that stays ready for real use.</h1>
         <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
+          Capture language from every English service, review it with memory pressure, and push it back into speaking, writing, reading, and immersion.
         </p>
         <button
           className="primary-cta"
@@ -428,6 +435,20 @@ const DashboardPage = ({
       <p className="notebook-entry-copy">
         Capture words from reading/listening and review 10 daily cards with Leitner spaced repetition.
       </p>
+      {notebook.recentCards[0] ? (
+        <div className="exercise-subsection">
+          <h3>Activation pressure</h3>
+          <p className="notebook-entry-copy">
+            Latest word ready for real use: <strong>{notebook.recentCards[0].word}</strong>
+            {Array.isArray(notebook.recentCards[0].activation_targets) && notebook.recentCards[0].activation_targets.length > 0
+              ? ` -> ${notebook.recentCards[0].activation_targets.join(', ')}`
+              : ''}
+          </p>
+          {notebook.recentCards[0].pronunciation_hint ? (
+            <p className="notebook-entry-copy">{notebook.recentCards[0].pronunciation_hint}</p>
+          ) : null}
+        </div>
+      ) : null}
     </section>
 
     <section className="kpi-grid">
@@ -1294,7 +1315,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily memory workflow.`}</p>
             </div>
 
             <div className="topbar-actions">

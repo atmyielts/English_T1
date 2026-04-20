@@ -2,6 +2,12 @@
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
+import {
+  listImmersionMissions,
+  submitImmersionMission,
+  type ImmersionMission,
+  type ImmersionSubmitResult,
+} from './lib/immersionMissionsClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -130,6 +136,10 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+);
+const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -215,7 +225,7 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Immersion Studio</div>
-        <h1>Build real exam immersion confidence, one focused session at a time.</h1>
+        <h1>Turn practice into real-world English, one guided mission at a time.</h1>
         <p>
           Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
         </p>
@@ -351,15 +361,26 @@ const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
+  accessToken,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
 }) => {
   type LaneKey = 'todo' | 'in_progress' | 'completed';
 
   const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [immersionMissions, setImmersionMissions] = useState<ImmersionMission[]>([]);
+  const [missionsLoading, setMissionsLoading] = useState(false);
+  const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [activeMissionId, setActiveMissionId] = useState<string>('');
+  const [missionResponses, setMissionResponses] = useState<Record<string, string>>({});
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitResult, setSubmitResult] = useState<ImmersionSubmitResult | null>(null);
 
   const exerciseItems = useMemo(
     () =>
@@ -387,6 +408,44 @@ const ExercisesPage = ({
     }
   }, [exerciseItems, selectedId]);
 
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setImmersionMissions([]);
+      setMissionsLoading(false);
+      setMissionsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setMissionsLoading(true);
+    setMissionsError(null);
+
+    void listImmersionMissions(accessToken)
+      .then((missions) => {
+        if (cancelled) return;
+        setImmersionMissions(missions);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setMissionsError(error instanceof Error ? error.message : 'Failed to load immersion missions.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setMissionsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  useEffect(() => {
+    const firstMission = immersionMissions[0];
+    if (!activeMissionId && firstMission) {
+      setActiveMissionId(firstMission.id);
+    }
+  }, [activeMissionId, immersionMissions]);
+
   const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
 
   const groupedItems = useMemo(
@@ -399,12 +458,72 @@ const ExercisesPage = ({
   );
 
   const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+  const activeMission = immersionMissions.find((mission) => mission.id === activeMissionId) ?? immersionMissions[0] ?? null;
+  const activeMissionSteps = Array.isArray(activeMission?.steps) ? activeMission.steps : [];
+  const activeMissionConditions = Array.isArray(activeMission?.success_conditions_json)
+    ? activeMission.success_conditions_json.map((entry) => String(entry ?? '')).filter(Boolean)
+    : [];
+  const missionDurationMinutes = activeMissionSteps.reduce((sum, step) => sum + Math.max(1, Number(step.estimated_minutes ?? 0)), 0);
+  const hasMissionInput = activeMissionSteps.some((step) => (missionResponses[step.id] ?? '').trim().length > 0);
+  const immersionPresentation = asMetaRecord(activeMission?.presentation_meta);
+  const immersionTargetBadges = readMetaList(immersionPresentation?.target_badges);
 
   const laneDefs: Array<{ key: LaneKey; label: string }> = [
     { key: 'todo', label: 'Todo' },
     { key: 'in_progress', label: 'In progress' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  useEffect(() => {
+    if (!activeMission) return;
+    setMissionResponses((prev) => {
+      const next: Record<string, string> = {};
+      activeMissionSteps.forEach((step) => {
+        next[step.id] = prev[step.id] ?? '';
+      });
+      return next;
+    });
+  }, [activeMission, activeMissionSteps]);
+
+  const handleSelectMission = (missionId: string): void => {
+    setActiveMissionId(missionId);
+    setSubmitResult(null);
+    setSubmitMessage(null);
+    setSubmitError(null);
+  };
+
+  const handleMissionResponseChange = (stepId: string, value: string): void => {
+    setMissionResponses((prev) => ({
+      ...prev,
+      [stepId]: value,
+    }));
+  };
+
+  const handleSubmitMission = async (): Promise<void> => {
+    if (!activeMission || !accessToken) return;
+    setSubmitLoading(true);
+    setSubmitMessage(null);
+    setSubmitError(null);
+
+    try {
+      const result = await submitImmersionMission(accessToken, {
+        mission_id: activeMission.id,
+        step_responses: activeMissionSteps.map((step) => ({
+          step_id: step.id,
+          response_text: missionResponses[step.id] ?? '',
+        })),
+        time_spent_seconds: Math.max(600, missionDurationMinutes * 60),
+        retry_count: submitResult ? 1 : 0,
+        hint_usage_count: 0,
+      });
+      setSubmitResult(result);
+      setSubmitMessage(result.feedback?.summary ?? 'Immersion mission recorded.');
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Unable to score this immersion mission right now.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <div className="dashboard-stack">
@@ -483,10 +602,160 @@ const ExercisesPage = ({
 
                 <div className="exercise-timebox">
                   <span>Focused exercise block</span>
-                  <strong>45:00</strong>
+                  <strong>{String(Math.max(15, missionDurationMinutes || 45)).padStart(2, '0')}:00</strong>
                 </div>
 
                 <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <div className="phase2-lab-head">
+                    <div>
+                      <h3>Live Immersion Mission</h3>
+                      <p>Mission-based transfer practice across reading, listening, speaking, and writing with shared-core scoring.</p>
+                    </div>
+                    {activeMission ? <span className="exercise-chip">{activeMission.level} · {activeMission.mission_type}</span> : null}
+                  </div>
+
+                  {!hasAccess ? <p className="phase2-status">Unlock access to open the immersion backend.</p> : null}
+                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your mission catalog.</p> : null}
+                  {missionsLoading ? <p className="phase2-status">Loading immersion missions...</p> : null}
+                  {missionsError ? <p className="phase2-status error">{missionsError}</p> : null}
+
+                  {activeMission ? (
+                    <div className="phase2-stack">
+                      <div className="phase2-premium-card">
+                        <small>{readMetaText(immersionPresentation?.scene_label) || 'Field guide scene'}</small>
+                        <strong>{readMetaText(immersionPresentation?.hero_note) || 'Solve the scenario like a real destination task: keep the stakes clear and let the skill mix work together.'}</strong>
+                        <div className="phase2-badge-row">
+                          {immersionTargetBadges.map((badge) => (
+                            <span key={`${activeMission.id}-${badge}`} className="phase2-badge">{badge}</span>
+                          ))}
+                          {activeMission.mission_type ? <span className="phase2-badge muted">{activeMission.mission_type}</span> : null}
+                        </div>
+                      </div>
+
+                      <div className="phase2-chip-row">
+                        {immersionMissions.map((mission) => (
+                          <button
+                            key={mission.id}
+                            type="button"
+                            className={mission.id === activeMission.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
+                            onClick={() => handleSelectMission(mission.id)}
+                          >
+                            {mission.title}
+                          </button>
+                        ))}
+                      </div>
+
+                      <p className="phase2-lab-copy">{activeMission.context_text}</p>
+                      <p className="phase2-hint">{activeMission.objective_text}</p>
+                      <div className="phase2-inline-meta">
+                        <span>{missionDurationMinutes || 15} min mission</span>
+                        {activeMission.target_grammar ? <span>{activeMission.target_grammar}</span> : null}
+                        {Array.isArray(activeMission.target_vocabulary) && activeMission.target_vocabulary.length > 0 ? (
+                          <span>Target words: {activeMission.target_vocabulary.slice(0, 4).join(', ')}</span>
+                        ) : null}
+                      </div>
+                      {activeMission.cultural_note ? <p className="phase2-hint">{activeMission.cultural_note}</p> : null}
+
+                      {activeMissionConditions.length > 0 ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Mission success conditions</strong>
+                          <ul className="phase2-feedback-list">
+                            {activeMissionConditions.map((condition) => (
+                              <li key={condition}>{condition}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      {activeMissionSteps.map((step) => (
+                        <div key={step.id} className="phase2-feedback-card phase2-step-card">
+                          <strong>{`Step ${step.step_index + 1}: ${step.title}`}</strong>
+                          <p>{step.instructions}</p>
+                          <p className="phase2-hint">{step.prompt_text}</p>
+                          <div className="phase2-inline-meta">
+                            <span>{step.service_key}</span>
+                            <span>{step.estimated_minutes} min</span>
+                            <span>{step.step_type}</span>
+                          </div>
+                          <textarea
+                            className="phase2-textarea"
+                            value={missionResponses[step.id] ?? ''}
+                            onChange={(event) => handleMissionResponseChange(step.id, event.target.value)}
+                            placeholder={`Write your ${step.step_type} response here to complete this mission step.`}
+                            rows={5}
+                          />
+                        </div>
+                      ))}
+
+                      <div className="phase2-actions">
+                        <button
+                          className="primary-cta"
+                          type="button"
+                          onClick={() => {
+                            void handleSubmitMission();
+                          }}
+                          disabled={submitLoading || !hasMissionInput || !hasAccess || !accessToken}
+                        >
+                          {submitLoading ? 'Scoring mission...' : 'Submit immersion mission'}
+                        </button>
+                      </div>
+
+                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
+                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
+
+                      {submitResult ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Immersion feedback</strong>
+                          <p>{submitResult.feedback?.summary ?? 'Immersion feedback is ready.'}</p>
+                          <div className="phase2-inline-meta">
+                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
+                            <span>Completion: {Math.round((submitResult.scoring?.completion_ratio ?? 0) * 100)}%</span>
+                            {submitResult.mastery_reopened_count ? <span>Reopened units: {submitResult.mastery_reopened_count}</span> : null}
+                          </div>
+                          {Array.isArray(submitResult.feedback?.issues) && submitResult.feedback.issues.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {submitResult.feedback.issues.map((issue, index) => (
+                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one clearer mission pass.')}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {Array.isArray(submitResult.step_results) && submitResult.step_results.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {submitResult.step_results.map((step) => (
+                                <li key={step.step_id}>
+                                  <strong>{step.title}</strong>: {Math.round((step.score ?? 0) * 100)}% on {step.service_key}
+                                  {Array.isArray(step.missing_keywords) && step.missing_keywords.length > 0 ? `; missing ${step.missing_keywords.join(', ')}` : ''}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {Array.isArray(submitResult.evaluation?.missed_target_vocabulary) && submitResult.evaluation.missed_target_vocabulary.length > 0 ? (
+                            <p>Missed target vocabulary: {submitResult.evaluation.missed_target_vocabulary.join(', ')}</p>
+                          ) : null}
+                          {submitResult.note ? <p>{submitResult.note}</p> : null}
+                          <div className="phase2-metric-grid">
+                            <div>
+                              <small>Mission result</small>
+                              <strong>{submitResult.mastery_reopened_count ? 'Recovery path reopened' : 'Transfer held under pressure'}</strong>
+                            </div>
+                            <div>
+                              <small>Skill mix</small>
+                              <strong>{Array.isArray(activeMission.skill_mix) && activeMission.skill_mix.length > 0 ? activeMission.skill_mix.join(', ') : 'Mixed English skills'}</strong>
+                            </div>
+                            <div>
+                              <small>Debrief cue</small>
+                              <strong>{readMetaText(immersionPresentation?.celebration_copy) || 'Use the blockers above to decide whether the next step belongs in Grammar, Vocabulary, or another mission pass.'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
 
                 <div className="exercise-subsection">
                   <h3>Execution checklist</h3>
@@ -797,6 +1066,7 @@ const App = () => {
     [returnTo],
   );
   const platformWorkspaceHref = useMemo(() => buildPlatformUrl('/workspace/student'), []);
+  const accessToken = session?.access_token ?? null;
   const hasAccess = status === 'signed_in' && accessStatus === 'granted';
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
@@ -972,7 +1242,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily immersion workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -1035,6 +1305,7 @@ const App = () => {
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
+              accessToken={accessToken}
             />
           )}
         </main>

@@ -4,6 +4,7 @@ import { hasAdminPermission, useAdminAccess } from './adminAccess';
 
 const routeOrder: Array<{ path: string; permission: string }> = [
   { path: '/admin/analytics', permission: 'admin.analytics.view' },
+  { path: '/admin/english', permission: 'admin.analytics.view' },
   { path: '/admin/users', permission: 'admin.users.manage' },
   { path: '/admin/products', permission: 'admin.products.manage' },
   { path: '/admin/billing', permission: 'admin.billing.manage' },

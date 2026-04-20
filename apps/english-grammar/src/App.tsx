@@ -2,6 +2,12 @@
 import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
+import {
+  getGrammarDashboard,
+  submitGrammarDrill,
+  type GrammarDashboard,
+  type GrammarSubmitResult,
+} from './lib/grammarRemediationClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -130,6 +136,10 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+);
+const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -215,7 +225,7 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Grammar Studio</div>
-        <h1>Build real exam grammar confidence, one focused session at a time.</h1>
+        <h1>Repair the grammar that blocks you, one focused drill lane at a time.</h1>
         <p>
           Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
         </p>
@@ -351,15 +361,26 @@ const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
+  accessToken,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
 }) => {
   type LaneKey = 'todo' | 'in_progress' | 'completed';
 
   const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [grammarDashboard, setGrammarDashboard] = useState<GrammarDashboard | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [activeUnitId, setActiveUnitId] = useState<string>('');
+  const [drillResponse, setDrillResponse] = useState('');
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitResult, setSubmitResult] = useState<GrammarSubmitResult | null>(null);
 
   const exerciseItems = useMemo(
     () =>
@@ -387,6 +408,49 @@ const ExercisesPage = ({
     }
   }, [exerciseItems, selectedId]);
 
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setGrammarDashboard(null);
+      setDashboardLoading(false);
+      setDashboardError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setDashboardLoading(true);
+    setDashboardError(null);
+
+    void getGrammarDashboard(accessToken, { rebuild: true })
+      .then((dashboard) => {
+        if (cancelled) return;
+        setGrammarDashboard(dashboard);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setDashboardError(error instanceof Error ? error.message : 'Failed to load grammar remediation.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setDashboardLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  useEffect(() => {
+    const preferredAssignment = grammarDashboard?.assignments?.find((assignment) => assignment.status === 'active');
+    const firstUnit = grammarDashboard?.units?.[0];
+    if (!activeUnitId) {
+      if (preferredAssignment?.grammar_unit_id) {
+        setActiveUnitId(preferredAssignment.grammar_unit_id);
+      } else if (firstUnit?.id) {
+        setActiveUnitId(firstUnit.id);
+      }
+    }
+  }, [activeUnitId, grammarDashboard?.assignments, grammarDashboard?.units]);
+
   const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
 
   const groupedItems = useMemo(
@@ -399,12 +463,53 @@ const ExercisesPage = ({
   );
 
   const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+  const activeUnit = grammarDashboard?.units?.find((unit) => unit.id === activeUnitId) ?? grammarDashboard?.units?.[0] ?? null;
+  const activeAssignment = grammarDashboard?.assignments?.find((assignment) => assignment.grammar_unit_id === activeUnit?.id) ?? null;
+  const activeDrills = grammarDashboard?.drills?.filter((drill) => drill.grammar_unit_id === activeUnit?.id) ?? [];
+  const activeDrill = activeDrills[0] ?? null;
+  const grammarPresentation = asMetaRecord(activeUnit?.presentation_meta);
+  const grammarTargetBadges = readMetaList(grammarPresentation?.target_badges);
 
   const laneDefs: Array<{ key: LaneKey; label: string }> = [
     { key: 'todo', label: 'Todo' },
     { key: 'in_progress', label: 'In progress' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  const handleSelectUnit = (unitId: string): void => {
+    setActiveUnitId(unitId);
+    setDrillResponse('');
+    setSubmitResult(null);
+    setSubmitMessage(null);
+    setSubmitError(null);
+  };
+
+  const handleSubmitDrill = async (): Promise<void> => {
+    if (!activeDrill || !accessToken) return;
+    setSubmitLoading(true);
+    setSubmitMessage(null);
+    setSubmitError(null);
+
+    try {
+      const result = await submitGrammarDrill(accessToken, {
+        drill_id: activeDrill.id,
+        assignment_id: activeAssignment?.id ?? null,
+        response_text: drillResponse,
+        time_spent_seconds: 120,
+        retry_count: submitResult ? 1 : 0,
+        hint_usage_count: 0,
+      });
+      setSubmitResult(result);
+      setSubmitMessage(result.feedback?.summary ?? 'Grammar drill recorded.');
+
+      const refreshed = await getGrammarDashboard(accessToken);
+      setGrammarDashboard(refreshed);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Unable to score this grammar drill right now.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <div className="dashboard-stack">
@@ -487,6 +592,133 @@ const ExercisesPage = ({
                 </div>
 
                 <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <div className="phase2-lab-head">
+                    <div>
+                      <h3>Live Grammar Remediation</h3>
+                      <p>Mapped remediation assignments, micro-lessons, and drill scoring on top of the shared core.</p>
+                    </div>
+                    {activeUnit ? <span className="exercise-chip">{activeUnit.level} · {activeUnit.focus_area}</span> : null}
+                  </div>
+
+                  {!hasAccess ? <p className="phase2-status">Unlock access to open the grammar backend.</p> : null}
+                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your remediation plan.</p> : null}
+                  {dashboardLoading ? <p className="phase2-status">Loading remediation assignments...</p> : null}
+                  {dashboardError ? <p className="phase2-status error">{dashboardError}</p> : null}
+
+                  {activeUnit ? (
+                    <>
+                      <div className="phase2-premium-card">
+                        <small>{readMetaText(grammarPresentation?.scene_label) || 'Repair lane'}</small>
+                        <strong>{readMetaText(grammarPresentation?.hero_note) || 'Repair the pattern here, then transfer it into writing or speaking before the day ends.'}</strong>
+                        <div className="phase2-badge-row">
+                          {grammarTargetBadges.map((badge) => (
+                            <span key={`${activeUnit.id}-${badge}`} className="phase2-badge">{badge}</span>
+                          ))}
+                          {activeAssignment?.reason ? <span className="phase2-badge muted">{activeAssignment.reason}</span> : null}
+                        </div>
+                      </div>
+
+                      <div className="phase2-chip-row">
+                        {grammarDashboard?.units?.map((unit) => (
+                          <button
+                            key={unit.id}
+                            type="button"
+                            className={unit.id === activeUnit.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
+                            onClick={() => handleSelectUnit(unit.id)}
+                          >
+                            {unit.title}
+                          </button>
+                        ))}
+                      </div>
+
+                      {activeAssignment ? <p className="phase2-hint">Active assignment: {activeAssignment.reason}</p> : null}
+                      <p className="phase2-lab-copy">{activeUnit.explanation_text}</p>
+                      {activeUnit.contrast_text ? <p className="phase2-hint">{activeUnit.contrast_text}</p> : null}
+
+                      {Array.isArray(activeUnit.examples_json) && activeUnit.examples_json.length > 0 ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Quick contrast</strong>
+                          <ul className="phase2-feedback-list">
+                            {activeUnit.examples_json.map((example, index) => (
+                              <li key={`${activeUnit.id}-example-${index}`}>
+                                <strong>Bad:</strong> {String(example.bad ?? '')} {' '}
+                                <strong>Good:</strong> {String(example.good ?? '')}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      {activeDrill ? (
+                        <div className="phase2-feedback-card">
+                          <strong>{activeDrill.title}</strong>
+                          <p>{activeDrill.instructions}</p>
+                          <p>{activeDrill.prompt_text}</p>
+                          <textarea
+                            className="phase2-textarea"
+                            value={drillResponse}
+                            onChange={(event) => setDrillResponse(event.target.value)}
+                            placeholder="Type your corrected sentence or answer here..."
+                            rows={4}
+                          />
+                          <div className="phase2-actions">
+                            <button
+                              className="primary-cta"
+                              type="button"
+                              onClick={() => {
+                                void handleSubmitDrill();
+                              }}
+                              disabled={submitLoading || !drillResponse.trim() || !hasAccess || !accessToken}
+                            >
+                              {submitLoading ? 'Checking answer...' : 'Submit drill'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
+                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
+
+                      {submitResult ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Drill feedback</strong>
+                          <p>{submitResult.feedback?.summary ?? 'Grammar feedback is ready.'}</p>
+                          <div className="phase2-inline-meta">
+                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
+                            <span>Accuracy: {Math.round((submitResult.scoring?.correctness_ratio ?? 0) * 100)}%</span>
+                          </div>
+                          {Array.isArray(submitResult.feedback?.issues) && submitResult.feedback.issues.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {submitResult.feedback.issues.map((issue, index) => (
+                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one cleaner correction.')}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>This drill was accepted. Try a transfer task next.</p>
+                          )}
+                          <div className="phase2-metric-grid">
+                            <div>
+                              <small>Repair status</small>
+                              <strong>{submitResult.feedback?.issues?.length ? 'Still unstable' : 'Ready for transfer'}</strong>
+                            </div>
+                            <div>
+                              <small>Next lane</small>
+                              <strong>{activeAssignment?.source_service_key ? `Return to ${activeAssignment.source_service_key}` : 'Move into Writing or Speaking'}</strong>
+                            </div>
+                            <div>
+                              <small>Completion cue</small>
+                              <strong>{readMetaText(grammarPresentation?.celebration_copy) || 'Lock the rule in by using it once in output, not only inside the drill.'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
 
                 <div className="exercise-subsection">
                   <h3>Execution checklist</h3>
@@ -972,7 +1204,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily grammar workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -1035,6 +1267,7 @@ const App = () => {
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
+              accessToken={session?.access_token ?? null}
             />
           )}
         </main>

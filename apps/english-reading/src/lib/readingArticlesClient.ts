@@ -1,12 +1,4 @@
-const getEnv = (key: "VITE_SUPABASE_URL" | "VITE_SUPABASE_ANON_KEY"): string => {
-  const value = import.meta.env[key] as string | undefined;
-  if (!value) throw new Error(`Missing ${key}`);
-  return value;
-};
-
-const supabaseUrl = getEnv("VITE_SUPABASE_URL").replace(/\/$/, "");
-const supabaseAnonKey = getEnv("VITE_SUPABASE_ANON_KEY");
-const edgeBase = `${supabaseUrl}/functions/v1`;
+import { edgeBase, supabaseAnonKey } from "./supabase";
 
 const readJsonOrText = async (res: Response): Promise<unknown> => {
   const contentType = res.headers.get("content-type") ?? "";
@@ -16,6 +8,18 @@ const readJsonOrText = async (res: Response): Promise<unknown> => {
 
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 export type ReadingArticleTone = "lime" | "mint" | "sky" | "peach" | "lavender" | "sand";
+export type PresentationMeta = {
+  scene_label?: string;
+  hero_note?: string;
+  cover_style_key?: string;
+  coach_tone?: string;
+  difficulty_badge?: string;
+  support_mode_labels?: string[];
+  target_badges?: string[];
+  ambient_audio_key?: string;
+  celebration_copy?: string;
+  preview_media_url?: string;
+};
 
 export type ReadingArticle = {
   id: string;
@@ -31,6 +35,7 @@ export type ReadingArticle = {
   hot: boolean;
   status: "draft" | "published" | "archived";
   sortOrder: number;
+  presentationMeta?: PresentationMeta | null;
 };
 
 type ListArticlesResponse = {
@@ -89,6 +94,10 @@ const mapArticle = (input: Record<string, unknown>): ReadingArticle => ({
   hot: input.is_hot === true,
   status: (toText(input.status).toLowerCase() as "draft" | "published" | "archived") || "published",
   sortOrder: Math.floor(toNumber(input.sort_order, 100)),
+  presentationMeta:
+    input.presentation_meta && typeof input.presentation_meta === "object"
+      ? (input.presentation_meta as PresentationMeta)
+      : null,
 });
 
 export const listReadingArticles = async (
@@ -201,6 +210,7 @@ type ArticleInput = {
   status: "draft" | "published" | "archived";
   sort_order: number;
   is_hot: boolean;
+  presentation_meta?: PresentationMeta | null;
 };
 
 const postOrPatch = async (

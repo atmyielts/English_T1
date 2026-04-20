@@ -1,3 +1,5 @@
+import { edgeBase, supabaseAnonKey } from './runtimeConfig';
+
 export type MeResponse = {
   user: { id: string; email: string | null; role?: string | null };
   current_tenant: { id: string; name: string; slug: string; type: string } | null;
@@ -11,16 +13,6 @@ export type MeResponse = {
     value: Record<string, unknown> | unknown[] | null;
   }[];
 };
-
-const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
-  const value = import.meta.env[key] as string | undefined;
-  if (!value) throw new Error(`Missing ${key}`);
-  return value;
-};
-
-const supabaseUrl = getEnv('VITE_SUPABASE_URL').replace(/\/$/, '');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
-const edgeBase = `${supabaseUrl}/functions/v1`;
 
 const readJsonOrText = async (res: Response): Promise<unknown> => {
   const contentType = res.headers.get('content-type') ?? '';

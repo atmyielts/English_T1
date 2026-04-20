@@ -21,8 +21,10 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "npm run test:sat",
+    "test": "npm run test:sat && npm run test:english-core",
+    "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
+    "verify:english": "node scripts/run-english-verifications.mjs",
     "verify:prod": "node scripts/verify-production-readiness.mjs"
   },
   "devDependencies": {

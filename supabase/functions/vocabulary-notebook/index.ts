@@ -150,6 +150,18 @@ const enrichRows = async (
     const meta = asJsonRecord(row.metadata ?? {});
     const localDefinition = toText(meta.definition);
     const localExample = toText(meta.example);
+    const activationTargets = Array.isArray(meta.activation_targets)
+      ? meta.activation_targets.map((entry) => toText(entry)).filter(Boolean)
+      : row.source_type.includes("reading")
+      ? ["speaking", "writing"]
+      : row.source_type.includes("listening")
+      ? ["speaking", "reading"]
+      : row.source_type.includes("speaking")
+      ? ["immersion", "writing"]
+      : ["reading", "speaking"];
+    const pronunciationHint = toText(meta.pronunciation_hint) || (row.word
+      ? `Say "${row.word}" once slowly, then once in a full sentence before you mark it correct.`
+      : "");
 
     return {
       id: row.id,
@@ -169,6 +181,8 @@ const enrichRows = async (
       correct_count: row.correct_count,
       incorrect_count: row.incorrect_count,
       updated_at: row.updated_at,
+      activation_targets: activationTargets,
+      pronunciation_hint: pronunciationHint || null,
     };
   });
 };

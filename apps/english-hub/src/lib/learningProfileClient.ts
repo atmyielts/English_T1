@@ -1,14 +1,4 @@
-import { supabase } from './supabase';
-
-const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
-  const value = import.meta.env[key] as string | undefined;
-  if (!value) throw new Error(`Missing ${key}`);
-  return value;
-};
-
-const supabaseUrl = getEnv('VITE_SUPABASE_URL').replace(/\/$/, '');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
-const edgeBase = `${supabaseUrl}/functions/v1`;
+import { edgeBase, supabase, supabaseAnonKey } from './supabase';
 
 const readJsonOrText = async (res: Response): Promise<unknown> => {
   const contentType = res.headers.get('content-type') ?? '';
@@ -49,11 +39,23 @@ export type LearningProfileSnapshot = {
     language_id?: string | null;
     language_code?: string | null;
     language_name?: string | null;
-    resolved_by?: string | null;
     product_id?: string | null;
   } | null;
+  skill_profile?: Record<string, unknown> | null;
   language_profile?: Record<string, unknown> | null;
   service_breakdown?: Record<string, unknown> | null;
+  skill_scores?: Record<string, number> | null;
+  subskill_scores?: Record<string, unknown> | null;
+  cefr_estimate?: string | null;
+  target_cefr?: string | null;
+  learner_goals?: string[];
+  daily_time_preference_minutes?: number | null;
+  mastery_summary?: Record<string, unknown> | null;
+  recent_error_clusters?: Array<Record<string, unknown>>;
+  recommendation_summary?: {
+    active_count?: number;
+    queue?: Array<Record<string, unknown>>;
+  } | null;
   outcomes?: Array<Record<string, unknown>>;
 };
 
@@ -65,21 +67,26 @@ export const getLearningProfileSnapshot = async (
   params.set('language_code', query.languageCode ?? 'en');
   params.set('limit', String(query.limit ?? 40));
   if (query.productId) params.set('product_id', query.productId);
-  const url = `${edgeBase}/learning-profile-v2?${params.toString()}`;
+  const primaryUrl = `${edgeBase}/learning-profile-v3?${params.toString()}`;
+  const fallbackUrl = `${edgeBase}/learning-profile-v2?${params.toString()}`;
   const primaryToken = accessToken.trim();
 
-  let res = await runEdgeGet(url, primaryToken);
+  let res = await runEdgeGet(primaryUrl, primaryToken);
 
   if (res.status === 401) {
     const latestToken = (await resolveLatestAccessToken())?.trim() ?? '';
     if (latestToken && latestToken !== primaryToken) {
-      res = await runEdgeGet(url, latestToken);
+      res = await runEdgeGet(primaryUrl, latestToken);
     }
+  }
+
+  if (res.status === 404) {
+    res = await runEdgeGet(fallbackUrl, primaryToken);
   }
 
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    const err = new Error(`learning-profile-v2 failed (${res.status}): ${JSON.stringify(details)}`);
+    const err = new Error(`learning-profile failed (${res.status}): ${JSON.stringify(details)}`);
     (err as { status?: number }).status = res.status;
     throw err;
   }

@@ -57,6 +57,18 @@ const AdminSupportPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSup
 const AdminAnnouncementsPage = lazyWithChunkRetry(() =>
   import('./pages/admin/AdminAnnouncementsPage').then((m) => ({ default: m.AdminAnnouncementsPage })),
 );
+const AdminEnglishOverviewPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminEnglishOverviewPage').then((m) => ({ default: m.AdminEnglishOverviewPage })),
+);
+const AdminEnglishContentPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminEnglishContentPage').then((m) => ({ default: m.AdminEnglishContentPage })),
+);
+const AdminEnglishOpsPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminEnglishOpsPage').then((m) => ({ default: m.AdminEnglishOpsPage })),
+);
+const AdminEnglishRulesPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminEnglishRulesPage').then((m) => ({ default: m.AdminEnglishRulesPage })),
+);
 
 const RouteLoading: React.FC<{ label?: string }> = ({ label }) => {
   const { t } = useI18n();
@@ -102,6 +114,38 @@ function App() {
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/admin" element={<AdminIndexRedirect />} />
+            <Route
+              path="/admin/english"
+              element={
+                <RequireAdminPermission permission="admin.analytics.view" title="English">
+                  <AdminEnglishOverviewPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/english/content"
+              element={
+                <RequireAdminPermission permission="admin.products.manage" title="English Content">
+                  <AdminEnglishContentPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/english/ops"
+              element={
+                <RequireAdminPermission permission="admin.analytics.view" title="English Ops">
+                  <AdminEnglishOpsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/english/rules"
+              element={
+                <RequireAdminPermission permission="admin.settings.manage" title="English Rules">
+                  <AdminEnglishRulesPage />
+                </RequireAdminPermission>
+              }
+            />
             <Route
               path="/admin/analytics"
               element={

@@ -3,6 +3,12 @@ import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
+import {
+  listListeningItems,
+  submitListeningPractice,
+  type ListeningItem,
+  type ListeningPracticeResult,
+} from './lib/listeningPracticeClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
@@ -201,6 +207,10 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
+);
+const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -298,7 +308,7 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Listening Studio</div>
-        <h1>Build real exam listening confidence, one focused session at a time.</h1>
+        <h1>Build real-world listening confidence, one focused audio lab at a time.</h1>
         <p>
           Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
         </p>
@@ -472,15 +482,30 @@ const ExercisesPage = ({
   hasAccess,
   pricingHref,
   onNavigate,
+  accessToken,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
 }) => {
   type LaneKey = 'todo' | 'in_progress' | 'completed';
 
   const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [listeningItems, setListeningItems] = useState<ListeningItem[]>([]);
+  const [listeningItemsLoading, setListeningItemsLoading] = useState(false);
+  const [listeningItemsError, setListeningItemsError] = useState<string | null>(null);
+  const [activeListeningItemId, setActiveListeningItemId] = useState<string>('');
+  const [dictationText, setDictationText] = useState('');
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [practiceSubmitting, setPracticeSubmitting] = useState(false);
+  const [practiceMessage, setPracticeMessage] = useState<string | null>(null);
+  const [practiceError, setPracticeError] = useState<string | null>(null);
+  const [practiceResult, setPracticeResult] = useState<ListeningPracticeResult | null>(null);
+  const [syncingMissedWords, setSyncingMissedWords] = useState(false);
+  const [syncMissedWordsMessage, setSyncMissedWordsMessage] = useState<string | null>(null);
+  const [syncMissedWordsError, setSyncMissedWordsError] = useState<string | null>(null);
 
   const exerciseItems = useMemo(
     () =>
@@ -508,6 +533,44 @@ const ExercisesPage = ({
     }
   }, [exerciseItems, selectedId]);
 
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setListeningItems([]);
+      setListeningItemsLoading(false);
+      setListeningItemsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setListeningItemsLoading(true);
+    setListeningItemsError(null);
+
+    void listListeningItems(accessToken)
+      .then((items) => {
+        if (cancelled) return;
+        setListeningItems(items);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setListeningItemsError(error instanceof Error ? error.message : 'Failed to load listening practice.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setListeningItemsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  useEffect(() => {
+    const firstListeningItem = listeningItems[0];
+    if (!activeListeningItemId && firstListeningItem) {
+      setActiveListeningItemId(firstListeningItem.id);
+    }
+  }, [activeListeningItemId, listeningItems]);
+
   const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
 
   const groupedItems = useMemo(
@@ -520,12 +583,100 @@ const ExercisesPage = ({
   );
 
   const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
+  const activeListeningItem = listeningItems.find((item) => item.id === activeListeningItemId) ?? listeningItems[0] ?? null;
+  const listeningPresentation = asMetaRecord(activeListeningItem?.presentation_meta);
+  const listeningSupportModes = readMetaList(listeningPresentation?.support_mode_labels);
+  const listeningTargetBadges = readMetaList(listeningPresentation?.target_badges);
 
   const laneDefs: Array<{ key: LaneKey; label: string }> = [
     { key: 'todo', label: 'Todo' },
     { key: 'in_progress', label: 'In progress' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  const playClip = (slowMode = false): void => {
+    if (!activeListeningItem || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(activeListeningItem.transcript_text);
+    utterance.lang = 'en-US';
+    utterance.rate = slowMode
+      ? 0.8
+      : activeListeningItem.speed_label === 'fast'
+      ? 1.05
+      : activeListeningItem.speed_label === 'slow'
+      ? 0.84
+      : 0.94;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopClip = (): void => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+  };
+
+  const handleSelectListeningItem = (itemId: string): void => {
+    setActiveListeningItemId(itemId);
+    setDictationText('');
+    setShowTranscript(false);
+    setPracticeResult(null);
+    setPracticeMessage(null);
+    setPracticeError(null);
+    setSyncMissedWordsMessage(null);
+    setSyncMissedWordsError(null);
+  };
+
+  const handleSubmitPractice = async (): Promise<void> => {
+    if (!activeListeningItem || !accessToken) return;
+    setPracticeSubmitting(true);
+    setPracticeMessage(null);
+    setPracticeError(null);
+    setSyncMissedWordsMessage(null);
+    setSyncMissedWordsError(null);
+
+    try {
+      const result = await submitListeningPractice(accessToken, {
+        item_id: activeListeningItem.id,
+        response_text: dictationText,
+        time_spent_seconds: Math.max(30, Math.round((activeListeningItem.duration_seconds ?? 20) * 2.2)),
+        retry_count: practiceResult ? 1 : 0,
+        hint_usage_count: 0,
+      });
+      setPracticeResult(result);
+      setPracticeMessage(result.feedback?.summary ?? 'Listening attempt recorded.');
+      setShowTranscript(false);
+    } catch (error) {
+      setPracticeError(error instanceof Error ? error.message : 'Unable to score listening practice right now.');
+    } finally {
+      setPracticeSubmitting(false);
+    }
+  };
+
+  const handleSendMissedWords = async (): Promise<void> => {
+    if (!accessToken || !Array.isArray(practiceResult?.notebook_words) || practiceResult.notebook_words.length === 0) return;
+    setSyncingMissedWords(true);
+    setSyncMissedWordsMessage(null);
+    setSyncMissedWordsError(null);
+
+    try {
+      const result = await captureNotebookWords(
+        accessToken,
+        practiceResult.notebook_words.map((entry) => ({
+          word: String(entry.word ?? ''),
+          definition: typeof entry.definition === 'string' ? entry.definition : null,
+          example: typeof entry.example === 'string' ? entry.example : null,
+          context_text: typeof entry.context_text === 'string' ? entry.context_text : null,
+          source_type: typeof entry.source_type === 'string' ? entry.source_type : 'english.listening.dictation',
+          source_label: typeof entry.source_label === 'string' ? entry.source_label : 'English Listening',
+          metadata: entry.metadata && typeof entry.metadata === 'object' ? entry.metadata as Record<string, unknown> : null,
+        })),
+      );
+      setSyncMissedWordsMessage(`Saved ${result.saved} listening words to Vocabulary.`);
+    } catch (error) {
+      setSyncMissedWordsError(error instanceof Error ? error.message : 'Failed to sync missed words.');
+    } finally {
+      setSyncingMissedWords(false);
+    }
+  };
 
   return (
     <div className="dashboard-stack">
@@ -608,6 +759,153 @@ const ExercisesPage = ({
                 </div>
 
                 <p className="exercise-detail-copy">{selectedItem.detail}</p>
+
+                <div className="exercise-subsection">
+                  <div className="phase2-lab-head">
+                    <div>
+                      <h3>Live Listening Lab</h3>
+                      <p>Real listening items, dictation scoring, and missed-word routing into the shared system.</p>
+                    </div>
+                    {activeListeningItem ? <span className="exercise-chip">{activeListeningItem.level} · {activeListeningItem.speed_label}</span> : null}
+                  </div>
+
+                  {activeListeningItem ? (
+                    <div className="phase2-premium-card">
+                      <small>{readMetaText(listeningPresentation?.scene_label) || 'Audio lab scene'}</small>
+                      <strong>{readMetaText(listeningPresentation?.hero_note) || 'Use the waveform tools to isolate missed sounds, then recover meaning before replaying.'}</strong>
+                      <div className="phase2-badge-row">
+                        {listeningTargetBadges.map((badge) => (
+                          <span key={`${activeListeningItem.id}-${badge}`} className="phase2-badge">{badge}</span>
+                        ))}
+                        {listeningSupportModes.map((badge) => (
+                          <span key={`${activeListeningItem.id}-${badge}-support`} className="phase2-badge muted">{badge}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {!hasAccess ? <p className="phase2-status">Unlock access to open the listening backend.</p> : null}
+                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your listening tasks.</p> : null}
+                  {listeningItemsLoading ? <p className="phase2-status">Loading listening items...</p> : null}
+                  {listeningItemsError ? <p className="phase2-status error">{listeningItemsError}</p> : null}
+
+                  {activeListeningItem ? (
+                    <>
+                      <div className="phase2-chip-row">
+                        {listeningItems.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={item.id === activeListeningItem.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
+                            onClick={() => handleSelectListeningItem(item.id)}
+                          >
+                            {item.title}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="phase2-inline-meta">
+                        <span>{activeListeningItem.category}</span>
+                        <span>{activeListeningItem.accent} accent</span>
+                        <span>{activeListeningItem.duration_seconds}s clip</span>
+                      </div>
+                      <p className="phase2-lab-copy">{activeListeningItem.summary}</p>
+
+                      <div className="phase2-actions">
+                        <button className="ghost-btn" type="button" onClick={() => playClip(false)}>Play clip</button>
+                        <button className="ghost-btn" type="button" onClick={() => playClip(true)}>Slow replay</button>
+                        <button className="ghost-btn" type="button" onClick={stopClip}>Stop</button>
+                        {practiceResult?.evaluation?.expected_transcript ? (
+                          <button className="ghost-btn" type="button" onClick={() => setShowTranscript((prev) => !prev)}>
+                            {showTranscript ? 'Hide transcript' : 'Reveal transcript'}
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <textarea
+                        className="phase2-textarea"
+                        value={dictationText}
+                        onChange={(event) => setDictationText(event.target.value)}
+                        placeholder="Type exactly what you hear from the clip..."
+                        rows={6}
+                      />
+
+                      <div className="phase2-actions">
+                        <button
+                          className="primary-cta"
+                          type="button"
+                          onClick={() => {
+                            void handleSubmitPractice();
+                          }}
+                          disabled={practiceSubmitting || !dictationText.trim() || !hasAccess || !accessToken}
+                        >
+                          {practiceSubmitting ? 'Scoring dictation...' : 'Submit dictation'}
+                        </button>
+                        {Array.isArray(practiceResult?.notebook_words) && practiceResult.notebook_words.length > 0 ? (
+                          <button
+                            className="ghost-btn"
+                            type="button"
+                            onClick={() => {
+                              void handleSendMissedWords();
+                            }}
+                            disabled={syncingMissedWords}
+                          >
+                            {syncingMissedWords ? 'Sending to Vocabulary...' : 'Send missed words to Vocabulary'}
+                          </button>
+                        ) : null}
+                      </div>
+
+                      {practiceMessage ? <p className="phase2-status">{practiceMessage}</p> : null}
+                      {practiceError ? <p className="phase2-status error">{practiceError}</p> : null}
+                      {syncMissedWordsMessage ? <p className="phase2-status">{syncMissedWordsMessage}</p> : null}
+                      {syncMissedWordsError ? <p className="phase2-status error">{syncMissedWordsError}</p> : null}
+
+                      {showTranscript && practiceResult?.evaluation?.expected_transcript ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Transcript review</strong>
+                          <p>{practiceResult.evaluation.expected_transcript}</p>
+                        </div>
+                      ) : null}
+
+                      {practiceResult ? (
+                        <div className="phase2-feedback-card">
+                          <strong>Attempt feedback</strong>
+                          <p>{practiceResult.feedback?.summary ?? 'Listening feedback is ready.'}</p>
+                          <div className="phase2-inline-meta">
+                            <span>Score: {Math.round((practiceResult.scoring?.overall_score ?? 0) * 100)}%</span>
+                            <span>Accuracy: {Math.round((practiceResult.scoring?.correctness_ratio ?? 0) * 100)}%</span>
+                          </div>
+                          {Array.isArray(practiceResult.feedback?.issues) && practiceResult.feedback.issues.length > 0 ? (
+                            <ul className="phase2-feedback-list">
+                              {practiceResult.feedback.issues.map((issue, index) => (
+                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                                  <strong>{String(issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Focus on one smaller retry.')}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                          {Array.isArray(practiceResult.evaluation?.missing_words) && practiceResult.evaluation.missing_words.length > 0 ? (
+                            <p>Missed words: {practiceResult.evaluation.missing_words.join(', ')}</p>
+                          ) : null}
+                          <div className="phase2-metric-grid">
+                            <div>
+                              <small>What you missed</small>
+                              <strong>{practiceResult.evaluation?.missing_words?.length ?? 0} unstable words</strong>
+                            </div>
+                            <div>
+                              <small>Why it matters</small>
+                              <strong>{readMetaText(listeningPresentation?.coach_tone) || 'Detail recall and function-word control feed stronger listening transfer.'}</strong>
+                            </div>
+                            <div>
+                              <small>Where next</small>
+                              <strong>{readMetaText(listeningPresentation?.celebration_copy) || 'Loop the clip once more, then push weak words into Vocabulary or Speaking shadowing.'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
 
                 <div className="exercise-subsection">
                   <h3>Execution checklist</h3>
@@ -1139,7 +1437,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily listening workflow.`}</p>
             </div>
 
             <div className="topbar-actions">
@@ -1210,6 +1508,7 @@ const App = () => {
               hasAccess={hasAccess}
               pricingHref={pricingHref}
               onNavigate={navigate}
+              accessToken={session?.access_token ?? null}
             />
           )}
         </main>

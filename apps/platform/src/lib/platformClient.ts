@@ -1,4 +1,4 @@
-import { clearLocalAuthStorage, supabase } from './supabase';
+import { clearLocalAuthStorage, edgeBase, supabase, supabaseAnonKey } from './supabase';
 
 type Json = Record<string, unknown> | unknown[];
 
@@ -70,15 +70,6 @@ export type BillingPlan = {
   created_at: string;
 };
 
-const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
-  const value = import.meta.env[key] as string | undefined;
-  if (!value) throw new Error(`Missing ${key}`);
-  return value;
-};
-
-const supabaseUrl = getEnv('VITE_SUPABASE_URL').replace(/\/$/, '');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
-const edgeBase = `${supabaseUrl}/functions/v1`;
 const learningProfileEdgeSlug =
   String(import.meta.env.VITE_USE_LEARNING_PROFILE_V2 ?? '').toLowerCase() === 'true'
     ? 'learning-profile-v2'
@@ -537,6 +528,211 @@ export const adminProductsUpdate = async (
     throw new Error(`PATCH /admin-products/update failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as { product: AdminProductRow | null };
+};
+
+export type EnglishPresentationMeta = {
+  scene_label?: string;
+  hero_note?: string;
+  cover_style_key?: string;
+  coach_tone?: string;
+  difficulty_badge?: string;
+  support_mode_labels?: string[];
+  target_badges?: string[];
+  ambient_audio_key?: string;
+  celebration_copy?: string;
+  preview_media_url?: string;
+};
+
+export type AdminEnglishContentSummaryRow = {
+  service_key: string;
+  label: string;
+  total_count: number;
+  published_count: number;
+  draft_count: number;
+  archived_count: number;
+  latest_updated_at: string | null;
+  readiness: string;
+  note?: string;
+};
+
+export type AdminEnglishContentItem = {
+  id: string;
+  service_key: string;
+  item_kind: string;
+  slug?: string;
+  title: string;
+  summary?: string;
+  level?: string;
+  status?: string;
+  sort_order?: number;
+  updated_at?: string | null;
+  presentation_meta?: EnglishPresentationMeta | null;
+  detail_badges?: string[];
+  notes?: string[];
+  metrics?: Record<string, number>;
+  raw?: Record<string, unknown>;
+};
+
+export type AdminEnglishOpsDashboard = {
+  generated_at: string;
+  scope: { language_id: string; language_code: string };
+  overview: {
+    recommendations_30d: number;
+    active_recommendations_now: number;
+    mastery_reopenings_30d: number;
+    mastery_reopenings_7d: number;
+    activation_candidates_now: number;
+    recent_rule_changes_30d: number;
+  };
+  handoff_effectiveness: Array<{
+    recommendation_type: string;
+    generated: number;
+    attempted: number;
+    successful: number;
+    attempt_rate: number;
+    success_rate: number;
+    avg_attempt_score: number | null;
+  }>;
+  mastery_reopenings: {
+    by_service: Array<{ service_key: string; count: number }>;
+    daily: Array<{ day: string; count: number }>;
+  };
+  vocabulary_activation: {
+    activation_candidates_now: number;
+    activation_recommendations_30d: number;
+    productive_followthrough_30d: number;
+    successful_followthrough_30d: number;
+    idle_days_threshold: number;
+  };
+  service_transfer: Array<{
+    source_service_key: string;
+    target_service_key: string;
+    generated: number;
+    attempted: number;
+    successful: number;
+    avg_attempt_score: number | null;
+  }>;
+  recent_rule_changes: Array<{
+    actor_user_id: string | null;
+    rule_key: string;
+    service_key: string;
+    created_at: string;
+  }>;
+  rules?: AdminEnglishRuleConfig[];
+};
+
+export type AdminEnglishRuleConfig = {
+  ruleKey: string;
+  serviceKey: string;
+  enabled: boolean;
+  thresholds: Record<string, unknown>;
+  notes?: string | null;
+};
+
+const callAdminEnglish = async (
+  accessToken: string,
+  pathname: string,
+  init: RequestInit = {},
+): Promise<unknown> => {
+  const res = await fetch(`${edgeBase}${pathname}`, {
+    ...init,
+    headers: {
+      ...apiHeaders(accessToken),
+      'Content-Type': 'application/json',
+      ...(init.headers ?? {}),
+    },
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`${init.method ?? 'GET'} ${pathname} failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return readJsonOrText(res);
+};
+
+export const adminEnglishContentSummary = async (
+  accessToken: string,
+): Promise<{ services: AdminEnglishContentSummaryRow[]; generated_at: string }> =>
+  (await callAdminEnglish(accessToken, '/admin-english-content/summary?language_code=en', {
+    method: 'GET',
+  })) as { services: AdminEnglishContentSummaryRow[]; generated_at: string };
+
+export const adminEnglishContentList = async (
+  accessToken: string,
+  params: { service_key: string; status?: string; limit?: number },
+): Promise<{ service_key: string; label?: string; items: AdminEnglishContentItem[]; note?: string }> => {
+  const query = new URLSearchParams({ language_code: 'en', service_key: params.service_key });
+  if (params.status?.trim()) query.set('status', params.status.trim());
+  if (typeof params.limit === 'number' && Number.isFinite(params.limit)) query.set('limit', String(Math.floor(params.limit)));
+  return (await callAdminEnglish(accessToken, `/admin-english-content/content?${query.toString()}`, {
+    method: 'GET',
+  })) as { service_key: string; label?: string; items: AdminEnglishContentItem[]; note?: string };
+};
+
+export const adminEnglishContentUpdate = async (
+  accessToken: string,
+  body: { service_key: string; id: string; patch: Record<string, unknown> },
+): Promise<{ ok: boolean; item: AdminEnglishContentItem }> =>
+  (await callAdminEnglish(accessToken, '/admin-english-content/content', {
+    method: 'PATCH',
+    body: JSON.stringify({ language_code: 'en', ...body }),
+  })) as { ok: boolean; item: AdminEnglishContentItem };
+
+export const adminEnglishOpsDashboard = async (accessToken: string): Promise<AdminEnglishOpsDashboard> =>
+  (await callAdminEnglish(accessToken, '/admin-english-ops/dashboard?language_code=en', {
+    method: 'GET',
+  })) as AdminEnglishOpsDashboard;
+
+export const adminEnglishRulesGet = async (
+  accessToken: string,
+): Promise<{ rules: AdminEnglishRuleConfig[]; defaults: AdminEnglishRuleConfig[] }> => {
+  const payload = (await callAdminEnglish(accessToken, '/admin-english-ops/rules?language_code=en', {
+    method: 'GET',
+  })) as { rules?: Array<Record<string, unknown>>; defaults?: Array<Record<string, unknown>> };
+  const mapRule = (row: Record<string, unknown>): AdminEnglishRuleConfig => ({
+    ruleKey: String(row.rule_key ?? row.ruleKey ?? ''),
+    serviceKey: String(row.service_key ?? row.serviceKey ?? '*'),
+    enabled: row.enabled !== false,
+    thresholds:
+      row.thresholds && typeof row.thresholds === 'object' && !Array.isArray(row.thresholds)
+        ? (row.thresholds as Record<string, unknown>)
+        : {},
+    notes: typeof row.notes === 'string' ? row.notes : null,
+  });
+  return {
+    rules: Array.isArray(payload.rules) ? payload.rules.map((row) => mapRule(row)) : [],
+    defaults: Array.isArray(payload.defaults) ? payload.defaults.map((row) => mapRule(row)) : [],
+  };
+};
+
+export const adminEnglishRulesPatch = async (
+  accessToken: string,
+  updates: Array<{
+    rule_key: string;
+    service_key: string;
+    enabled: boolean;
+    thresholds: Record<string, unknown>;
+    notes?: string | null;
+  }>,
+): Promise<{ ok: boolean; rules: AdminEnglishRuleConfig[] }> => {
+  const payload = (await callAdminEnglish(accessToken, '/admin-english-ops/rules', {
+    method: 'PATCH',
+    body: JSON.stringify({ language_code: 'en', updates }),
+  })) as { ok: boolean; rules?: Array<Record<string, unknown>> };
+  return {
+    ok: payload.ok === true,
+    rules: Array.isArray(payload.rules)
+      ? payload.rules.map((row) => ({
+          ruleKey: String(row.rule_key ?? row.ruleKey ?? ''),
+          serviceKey: String(row.service_key ?? row.serviceKey ?? '*'),
+          enabled: row.enabled !== false,
+          thresholds:
+            row.thresholds && typeof row.thresholds === 'object' && !Array.isArray(row.thresholds)
+              ? (row.thresholds as Record<string, unknown>)
+              : {},
+          notes: typeof row.notes === 'string' ? row.notes : null,
+        }))
+      : [],
+  };
 };
 
 export const adminBillingPlansList = async (

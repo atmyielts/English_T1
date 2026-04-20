@@ -3,11 +3,13 @@ import type { Session } from '@supabase/supabase-js';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
+import { startLearningAttempt, submitLearningAttempt } from './lib/learningAttemptClient';
 import {
   archiveReadingArticle,
   createReadingArticle,
   getReadingArticleBySlug,
   listReadingArticles,
+  type PresentationMeta,
   updateReadingArticle,
   type CefrLevel,
   type ReadingArticle,
@@ -222,6 +224,40 @@ const progressStatusClass = (status: LessonRow['status']): string => {
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
+const asMetaRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+const readMetaList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : [];
+
+const buildPresentationMeta = (draft: {
+  sceneLabel: string;
+  heroNote: string;
+  coverStyleKey: string;
+  coachTone: string;
+  difficultyBadge: string;
+  supportModeLabels: string;
+  targetBadges: string;
+  ambientAudioKey: string;
+  celebrationCopy: string;
+  previewMediaUrl: string;
+}): PresentationMeta | null => {
+  const meta: PresentationMeta = {};
+  const supportModeLabels = draft.supportModeLabels.split(',').map((entry) => entry.trim()).filter(Boolean);
+  const targetBadges = draft.targetBadges.split(',').map((entry) => entry.trim()).filter(Boolean);
+
+  if (draft.sceneLabel.trim()) meta.scene_label = draft.sceneLabel.trim();
+  if (draft.heroNote.trim()) meta.hero_note = draft.heroNote.trim();
+  if (draft.coverStyleKey.trim()) meta.cover_style_key = draft.coverStyleKey.trim();
+  if (draft.coachTone.trim()) meta.coach_tone = draft.coachTone.trim();
+  if (draft.difficultyBadge.trim()) meta.difficulty_badge = draft.difficultyBadge.trim();
+  if (supportModeLabels.length > 0) meta.support_mode_labels = supportModeLabels;
+  if (targetBadges.length > 0) meta.target_badges = targetBadges;
+  if (draft.ambientAudioKey.trim()) meta.ambient_audio_key = draft.ambientAudioKey.trim();
+  if (draft.celebrationCopy.trim()) meta.celebration_copy = draft.celebrationCopy.trim();
+  if (draft.previewMediaUrl.trim()) meta.preview_media_url = draft.previewMediaUrl.trim();
+
+  return Object.keys(meta).length > 0 ? meta : null;
+};
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
@@ -334,9 +370,10 @@ const DashboardPage = ({
     <section className="hero-card card">
       <div className="hero-copy">
         <div className="eyebrow">English Reading Studio</div>
-        <h1>Build real exam reading confidence, one focused session at a time.</h1>
+        <h1>Build deep reading confidence, one focused English session at a time.</h1>
         <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
+          Move between intensive study and flow reading, track micro-skills, and keep every article connected to your
+          wider English profile.
         </p>
         <button
           className="primary-cta"
@@ -790,6 +827,13 @@ const ArticlesPage = ({
   const featuredArticle = filteredArticles[0] ?? null;
   const sideArticles = featuredArticle ? filteredArticles.slice(1, 4) : filteredArticles.slice(0, 3);
   const visibleThemes = Array.from(new Set(filteredArticles.map((article) => article.theme))).slice(0, 10);
+  const featuredPresentation = asMetaRecord(featuredArticle?.presentationMeta);
+  const featuredBadges = readMetaList(featuredPresentation.target_badges);
+  const featuredSupportModes = readMetaList(featuredPresentation.support_mode_labels);
+  const readingShelves = CEFR_LEVELS.map((level) => ({
+    level,
+    articles: filteredArticles.filter((article) => article.level === level).slice(0, 3),
+  })).filter((entry) => entry.articles.length > 0);
 
   const handleArticleOpen = (slug?: string): void => {
     if (!hasAccess) {
@@ -808,11 +852,20 @@ const ArticlesPage = ({
       <section className="card reading-library-head">
         <div>
           <small className="library-label">Reading Library</small>
-          <h2>Tiered articles from A1 to C2 with focused pathways.</h2>
+          <h2>{readMetaText(featuredPresentation.scene_label) || 'A reading salon with tiered shelves from A1 to C2.'}</h2>
           <p>
-            Select your level, category, and theme to keep reading practice targeted while staying connected to your
-            English profile.
+            {readMetaText(featuredPresentation.hero_note) ||
+              'Choose an article by level, theme, and route. Every passage can feed vocabulary, structure, and summary transfer back into your shared English profile.'}
           </p>
+          {featuredBadges.length > 0 ? (
+            <div className="reading-premium-chip-row">
+              {featuredBadges.map((badge) => (
+                <span key={`featured-badge-${badge}`} className="reading-premium-chip">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="library-head-actions">
           <button
@@ -905,19 +958,92 @@ const ArticlesPage = ({
         </div>
       </section>
 
+      <section className="reading-route-grid">
+        <article className="card reading-route-card">
+          <div className="reading-route-head">
+            <div>
+              <small>Reading route</small>
+              <h3>{featuredArticle ? `${featuredArticle.level} ${featuredArticle.category}` : 'Choose a route'}</h3>
+            </div>
+            {featuredArticle ? <span className="reading-route-mode">{featuredArticle.readTimeMinutes} min</span> : null}
+          </div>
+          <p>
+            {featuredArticle
+              ? `Use ${featuredArticle.title} as today’s anchor text, then transfer its vocabulary and structure into Grammar or Writing.`
+              : 'Pick a published article to unlock an intensive and extensive reading route for today.'}
+          </p>
+          <div className="reading-premium-chip-row">
+            {(featuredSupportModes.length > 0 ? featuredSupportModes : ['Intensive route', 'Flow reading', 'Summary transfer']).map((badge) => (
+              <span key={`route-support-${badge}`} className="reading-premium-chip muted">
+                {badge}
+              </span>
+            ))}
+          </div>
+          <div className="reading-route-stats">
+            <div>
+              <span>Visible shelves</span>
+              <strong>{readingShelves.length || 1}</strong>
+            </div>
+            <div>
+              <span>Theme pressure</span>
+              <strong>{visibleThemes.length || 1}</strong>
+            </div>
+            <div>
+              <span>Transfer targets</span>
+              <strong>{featuredBadges.length || 3}</strong>
+            </div>
+          </div>
+        </article>
+
+        <article className="card reading-shelf-preview">
+          <small>CEFR shelves</small>
+          <h3>Article discovery by level</h3>
+          <div className="reading-shelf-list">
+            {readingShelves.length === 0 ? (
+              <div className="reading-shelf-row muted">
+                <strong>Library quiet right now</strong>
+                <span>Adjust the filters to reveal another shelf.</span>
+              </div>
+            ) : (
+              readingShelves.slice(0, 4).map((shelf) => (
+                <div key={`shelf-${shelf.level}`} className="reading-shelf-row">
+                  <strong>{shelf.level}</strong>
+                  <span>{shelf.articles.map((article) => article.title).join(' · ')}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+      </section>
+
       <section className="reading-library-grid">
         {featuredArticle ? (
           <article className={`card reading-article-feature tone-${featuredArticle.tone}`}>
             <div className="reading-article-meta">
               <span>{featuredArticle.category}</span>
               <span>{featuredArticle.level}</span>
+              {readMetaText(featuredPresentation.difficulty_badge) ? (
+                <span>{readMetaText(featuredPresentation.difficulty_badge)}</span>
+              ) : null}
             </div>
             <h3>{featuredArticle.title}</h3>
             <p>{featuredArticle.summary}</p>
+            {featuredBadges.length > 0 ? (
+              <div className="reading-premium-chip-row">
+                {featuredBadges.slice(0, 4).map((badge) => (
+                  <span key={`${featuredArticle.id}-${badge}`} className="reading-premium-chip">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <div className="reading-article-footer">
               <small>{featuredArticle.readTimeMinutes} min read</small>
               {featuredArticle.hot ? <span className="reading-hot-pill">Trending</span> : null}
             </div>
+            {readMetaText(featuredPresentation.celebration_copy) ? (
+              <strong className="reading-article-note">{readMetaText(featuredPresentation.celebration_copy)}</strong>
+            ) : null}
             <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(featuredArticle.slug)}>
               Open article
             </button>
@@ -941,10 +1067,16 @@ const ArticlesPage = ({
                 <div className="reading-article-meta">
                   <span>{article.category}</span>
                   <span>{article.level}</span>
+                  {readMetaText(asMetaRecord(article.presentationMeta).difficulty_badge) ? (
+                    <span>{readMetaText(asMetaRecord(article.presentationMeta).difficulty_badge)}</span>
+                  ) : null}
                 </div>
                 <h4>{article.title}</h4>
                 <p>{article.summary}</p>
                 <small>{article.readTimeMinutes} min read</small>
+                <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(article.slug)}>
+                  Preview
+                </button>
               </article>
             ))
           )}
@@ -993,6 +1125,15 @@ const ArticlesPage = ({
                 </div>
                 <h3>{article.title}</h3>
                 <p>{article.summary}</p>
+                {readMetaList(asMetaRecord(article.presentationMeta).target_badges).length > 0 ? (
+                  <div className="reading-premium-chip-row">
+                    {readMetaList(asMetaRecord(article.presentationMeta).target_badges).slice(0, 3).map((badge) => (
+                      <span key={`${article.id}-${badge}-catalog`} className="reading-premium-chip">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="reading-article-footer">
                   <small>{article.theme}</small>
                   <small>{article.readTimeMinutes} min</small>
@@ -1025,6 +1166,11 @@ const ArticleDetailPage = ({
   const [article, setArticle] = useState<ReadingArticle | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkInState, setCheckInState] = useState<'idle' | 'saving'>('idle');
+  const [checkInMessage, setCheckInMessage] = useState<string | null>(null);
+  const [checkInError, setCheckInError] = useState<string | null>(null);
+  const [lastCheckInRating, setLastCheckInRating] = useState<'needs-support' | 'good-fit' | 'too-easy' | null>(null);
+  const [focusedBlockIndex, setFocusedBlockIndex] = useState<number>(0);
 
   useEffect(() => {
     if (!articleSlug) {
@@ -1089,6 +1235,36 @@ const ArticleDetailPage = ({
         return { type: 'paragraph' as const, text: block };
       });
   }, [article?.contentMarkdown, article?.summary]);
+  const articlePresentation = asMetaRecord(article?.presentationMeta);
+  const articleSupportModes = readMetaList(articlePresentation.support_mode_labels);
+  const articleTargetBadges = readMetaList(articlePresentation.target_badges);
+  const paragraphStops = contentBlocks
+    .map((block, index) => ({ ...block, index }))
+    .filter((block) => block.type === 'paragraph' || block.type === 'quote');
+  const readingReport = useMemo(() => {
+    if (lastCheckInRating === 'needs-support') {
+      return {
+        gist: 'Building',
+        detail: 'Needs a second pass',
+        inference: 'Use sentence support',
+        note: 'Slow down and use the paragraph ladder before moving into summary transfer.',
+      };
+    }
+    if (lastCheckInRating === 'too-easy') {
+      return {
+        gist: 'Stable',
+        detail: 'Fast recall',
+        inference: 'Ready for a harder text',
+        note: 'Step into a denser article or carry the topic into Writing for summary practice.',
+      };
+    }
+    return {
+      gist: 'On track',
+      detail: 'Balanced',
+      inference: 'Ready for light transfer',
+      note: 'Keep this article as the day’s anchor and transfer one idea into Writing or Vocabulary.',
+    };
+  }, [lastCheckInRating]);
 
   const startPractice = (): void => {
     if (!hasAccess) {
@@ -1096,6 +1272,101 @@ const ArticleDetailPage = ({
       return;
     }
     onNavigate(EXERCISES_PATH);
+  };
+
+  const handleConfidenceCheckIn = async (rating: 'needs-support' | 'good-fit' | 'too-easy'): Promise<void> => {
+    if (!accessToken || !article) {
+      setCheckInError('Sign in to record reading progress.');
+      return;
+    }
+
+    const scorePreset = {
+      'needs-support': {
+        correctness_ratio: 0.48,
+        correction_quality_ratio: 0.54,
+        hint_usage_count: 2,
+        retry_count: 1,
+        issues: [
+          {
+            category: 'reading',
+            subskill_key: 'reading.detail',
+            explanation: 'This article still needs supported rereading for detail and structure.',
+            correction_hint: 'Retry with sentence breakdown and then move to a shorter reading drill.',
+            severity: 0.82,
+          },
+        ],
+      },
+      'good-fit': {
+        correctness_ratio: 0.79,
+        correction_quality_ratio: 0.76,
+        hint_usage_count: 0,
+        retry_count: 0,
+        issues: [],
+      },
+      'too-easy': {
+        correctness_ratio: 0.92,
+        correction_quality_ratio: 0.9,
+        hint_usage_count: 0,
+        retry_count: 0,
+        issues: [],
+      },
+    } as const;
+
+    setCheckInState('saving');
+    setCheckInError(null);
+    setCheckInMessage(null);
+    try {
+      const started = await startLearningAttempt(accessToken, {
+        language_code: 'en',
+        service_key: 'reading',
+        product_id: READING_PRODUCT_ID,
+        content_type: 'reading.article',
+        source_ref: article.slug,
+        title: article.title,
+        description: article.summary,
+        skill_key: 'reading',
+        subskill_keys: ['reading.gist', 'reading.detail', 'reading.inference'],
+        cefr_level: article.level,
+        estimated_minutes: article.readTimeMinutes,
+        learning_objective: article.summary,
+        tags: [article.category, article.theme],
+        payload_json: {
+          tone: article.tone,
+          category: article.category,
+          theme: article.theme,
+        },
+      });
+
+      const preset = scorePreset[rating];
+      const result = await submitLearningAttempt(accessToken, {
+        language_code: 'en',
+        attempt_id: started.attempt.id,
+        response_json: { rating, source: 'article-confidence-checkin' },
+        time_spent_seconds: article.readTimeMinutes * 60,
+        correctness_ratio: preset.correctness_ratio,
+        correction_quality_ratio: preset.correction_quality_ratio,
+        hint_usage_count: preset.hint_usage_count,
+        retry_count: preset.retry_count,
+        issues: preset.issues,
+      });
+
+      setLastCheckInRating(rating);
+      const summary = result.feedback?.summary ?? 'Reading progress recorded in your shared English profile.';
+      setCheckInMessage(summary);
+    } catch (attemptError) {
+      const statusCode = (attemptError as { status?: number } | null)?.status ?? null;
+      if (statusCode === 401 || statusCode === 403) {
+        try {
+          await supabase.auth.signOut({ scope: 'local' });
+        } catch {
+          // Ignore local sign-out failures.
+        }
+        return;
+      }
+      setCheckInError('Could not record reading progress right now. Please try again.');
+    } finally {
+      setCheckInState('idle');
+    }
   };
 
   return (
@@ -1106,9 +1377,19 @@ const ArticleDetailPage = ({
             <span>{article?.category ?? 'Reading'}</span>
             <span>{article?.level ?? 'A1'}</span>
             <span>{article?.theme ?? 'General'}</span>
+            {readMetaText(articlePresentation.scene_label) ? <span>{readMetaText(articlePresentation.scene_label)}</span> : null}
           </div>
           <h2>{article?.title ?? 'Reading article'}</h2>
           <p>{article?.summary ?? 'Open focused reading content and connect it with your English profile.'}</p>
+          {articleTargetBadges.length > 0 ? (
+            <div className="reading-premium-chip-row">
+              {articleTargetBadges.map((badge) => (
+                <span key={`article-detail-${badge}`} className="reading-premium-chip">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="article-detail-actions">
           <button className="ghost-btn" type="button" onClick={() => onNavigate(ARTICLES_PATH)}>
@@ -1140,6 +1421,24 @@ const ArticleDetailPage = ({
       {!loading && !error && article ? (
         <section className="article-detail-layout">
           <article className="card article-detail-content">
+            <div className="article-reading-ribbon">
+              <div>
+                <small>{readMetaText(articlePresentation.scene_label) || 'Focus mode'}</small>
+                <strong>{readMetaText(articlePresentation.hero_note) || 'Use the paragraph ladder to hold structure while you read.'}</strong>
+              </div>
+              <div className="reading-premium-chip-row">
+                {(articleSupportModes.length > 0 ? articleSupportModes : ['Focus mode', 'Margin glossary', 'Summary transfer']).map((mode) => (
+                  <button
+                    key={`${article.id}-${mode}-mode`}
+                    type="button"
+                    className="reading-premium-chip muted"
+                    onClick={() => setFocusedBlockIndex(paragraphStops[0]?.index ?? 0)}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
             {contentBlocks.map((block, index) => {
               if (block.type === 'heading') {
                 return (
@@ -1157,7 +1456,17 @@ const ArticleDetailPage = ({
               }
               return (
                 <p key={`${block.text}-${index}`} className="article-detail-paragraph">
-                  {block.text}
+                  <button
+                    type="button"
+                    className={focusedBlockIndex === index ? 'article-paragraph-bead active' : 'article-paragraph-bead'}
+                    onClick={() => setFocusedBlockIndex(index)}
+                    aria-label={`Focus paragraph ${index + 1}`}
+                  >
+                    {index + 1}
+                  </button>
+                  <span className={focusedBlockIndex === index ? 'article-detail-paragraph-text focused' : 'article-detail-paragraph-text'}>
+                    {block.text}
+                  </span>
                 </p>
               );
             })}
@@ -1181,9 +1490,78 @@ const ArticleDetailPage = ({
               <span>Theme</span>
               <strong>{article.theme}</strong>
             </div>
+            <div className="article-reading-report">
+              <small>Reading report</small>
+              <div className="article-reading-report-grid">
+                <div>
+                  <span>Gist</span>
+                  <strong>{readingReport.gist}</strong>
+                </div>
+                <div>
+                  <span>Detail</span>
+                  <strong>{readingReport.detail}</strong>
+                </div>
+                <div>
+                  <span>Inference</span>
+                  <strong>{readingReport.inference}</strong>
+                </div>
+              </div>
+              <p>{readingReport.note}</p>
+            </div>
+            <div className="article-paragraph-ladder">
+              <small>Paragraph ladder</small>
+              {paragraphStops.length === 0 ? (
+                <p>No paragraph waypoints yet.</p>
+              ) : (
+                paragraphStops.map((block, idx) => (
+                  <button
+                    key={`${article.id}-ladder-${block.index}`}
+                    type="button"
+                    className={focusedBlockIndex === block.index ? 'article-ladder-row active' : 'article-ladder-row'}
+                    onClick={() => setFocusedBlockIndex(block.index)}
+                  >
+                    <strong>{`Step ${idx + 1}`}</strong>
+                    <span>{block.text.slice(0, 72)}</span>
+                  </button>
+                ))
+              )}
+            </div>
             <button className="ghost-btn" type="button" onClick={startPractice}>
               Practice this skill
             </button>
+            <div className="article-detail-checkin">
+              <h4>Reading confidence check-in</h4>
+              <p>Send a quick signal into your shared English profile so the hub can adapt the next plan.</p>
+              <div className="article-detail-checkin-actions">
+                <button
+                  className="ghost-btn"
+                  type="button"
+                  disabled={checkInState === 'saving'}
+                  onClick={() => { void handleConfidenceCheckIn('needs-support'); }}
+                >
+                  Need support
+                </button>
+                <button
+                  className="ghost-btn"
+                  type="button"
+                  disabled={checkInState === 'saving'}
+                  onClick={() => { void handleConfidenceCheckIn('good-fit'); }}
+                >
+                  Good fit
+                </button>
+                <button
+                  className="ghost-btn"
+                  type="button"
+                  disabled={checkInState === 'saving'}
+                  onClick={() => { void handleConfidenceCheckIn('too-easy'); }}
+                >
+                  Too easy
+                </button>
+              </div>
+              {checkInState === 'saving' ? <small>Saving reading signal...</small> : null}
+              {checkInMessage ? <small>{checkInMessage}</small> : null}
+              {checkInError ? <small>{checkInError}</small> : null}
+            </div>
           </aside>
         </section>
       ) : null}
@@ -1221,6 +1599,16 @@ const AdminReadingArticlesPage = ({
     status: ArticleStatus;
     sortOrder: number;
     hot: boolean;
+    sceneLabel: string;
+    heroNote: string;
+    coverStyleKey: string;
+    coachTone: string;
+    difficultyBadge: string;
+    supportModeLabels: string;
+    targetBadges: string;
+    ambientAudioKey: string;
+    celebrationCopy: string;
+    previewMediaUrl: string;
   }>({
     title: '',
     slug: '',
@@ -1234,6 +1622,16 @@ const AdminReadingArticlesPage = ({
     status: 'draft',
     sortOrder: 100,
     hot: false,
+    sceneLabel: '',
+    heroNote: '',
+    coverStyleKey: '',
+    coachTone: '',
+    difficultyBadge: '',
+    supportModeLabels: '',
+    targetBadges: '',
+    ambientAudioKey: '',
+    celebrationCopy: '',
+    previewMediaUrl: '',
   });
 
   const draftFromArticle = (article: ReadingArticle) => ({
@@ -1249,6 +1647,16 @@ const AdminReadingArticlesPage = ({
     status: article.status,
     sortOrder: article.sortOrder,
     hot: article.hot,
+    sceneLabel: readMetaText(article.presentationMeta?.scene_label),
+    heroNote: readMetaText(article.presentationMeta?.hero_note),
+    coverStyleKey: readMetaText(article.presentationMeta?.cover_style_key),
+    coachTone: readMetaText(article.presentationMeta?.coach_tone),
+    difficultyBadge: readMetaText(article.presentationMeta?.difficulty_badge),
+    supportModeLabels: (article.presentationMeta?.support_mode_labels ?? []).join(', '),
+    targetBadges: (article.presentationMeta?.target_badges ?? []).join(', '),
+    ambientAudioKey: readMetaText(article.presentationMeta?.ambient_audio_key),
+    celebrationCopy: readMetaText(article.presentationMeta?.celebration_copy),
+    previewMediaUrl: readMetaText(article.presentationMeta?.preview_media_url),
   });
 
   const loadArticles = async (): Promise<void> => {
@@ -1299,6 +1707,16 @@ const AdminReadingArticlesPage = ({
       status: 'draft',
       sortOrder: 100,
       hot: false,
+      sceneLabel: '',
+      heroNote: '',
+      coverStyleKey: '',
+      coachTone: '',
+      difficultyBadge: '',
+      supportModeLabels: '',
+      targetBadges: '',
+      ambientAudioKey: '',
+      celebrationCopy: '',
+      previewMediaUrl: '',
     });
     setSuccess(null);
     setError(null);
@@ -1315,6 +1733,7 @@ const AdminReadingArticlesPage = ({
     setError(null);
     setSuccess(null);
     try {
+      const presentationMeta = buildPresentationMeta(draft);
       if (selectedId) {
         await updateReadingArticle(accessToken, selectedId, {
           title: draft.title,
@@ -1329,6 +1748,7 @@ const AdminReadingArticlesPage = ({
           status: draft.status,
           sort_order: draft.sortOrder,
           is_hot: draft.hot,
+          presentation_meta: presentationMeta,
         });
         setSuccess('Article updated.');
       } else {
@@ -1345,6 +1765,7 @@ const AdminReadingArticlesPage = ({
           status: draft.status,
           sort_order: draft.sortOrder,
           is_hot: draft.hot,
+          presentation_meta: presentationMeta,
         });
         setSelectedId(created.id);
         setSuccess('Article created.');
@@ -1536,6 +1957,75 @@ const AdminReadingArticlesPage = ({
               <input value={draft.theme} onChange={(event) => setDraft((prev) => ({ ...prev, theme: event.target.value }))} />
             </label>
           </div>
+
+          <section className="admin-presentation-meta">
+            <div className="admin-presentation-meta-head">
+              <div>
+                <small>Presentation meta</small>
+                <h4>Salon styling and learner-facing polish</h4>
+              </div>
+              <span>Optional but recommended</span>
+            </div>
+            <div className="admin-form-grid two">
+              <label>
+                <span>Scene label</span>
+                <input value={draft.sceneLabel} onChange={(event) => setDraft((prev) => ({ ...prev, sceneLabel: event.target.value }))} />
+              </label>
+              <label>
+                <span>Difficulty badge</span>
+                <input value={draft.difficultyBadge} onChange={(event) => setDraft((prev) => ({ ...prev, difficultyBadge: event.target.value }))} />
+              </label>
+            </div>
+            <label className="admin-form-block">
+              <span>Hero note</span>
+              <textarea rows={3} value={draft.heroNote} onChange={(event) => setDraft((prev) => ({ ...prev, heroNote: event.target.value }))} />
+            </label>
+            <div className="admin-form-grid four">
+              <label>
+                <span>Cover style key</span>
+                <input value={draft.coverStyleKey} onChange={(event) => setDraft((prev) => ({ ...prev, coverStyleKey: event.target.value }))} />
+              </label>
+              <label>
+                <span>Coach tone</span>
+                <input value={draft.coachTone} onChange={(event) => setDraft((prev) => ({ ...prev, coachTone: event.target.value }))} />
+              </label>
+              <label>
+                <span>Ambient audio key</span>
+                <input value={draft.ambientAudioKey} onChange={(event) => setDraft((prev) => ({ ...prev, ambientAudioKey: event.target.value }))} />
+              </label>
+              <label>
+                <span>Preview media URL</span>
+                <input value={draft.previewMediaUrl} onChange={(event) => setDraft((prev) => ({ ...prev, previewMediaUrl: event.target.value }))} />
+              </label>
+            </div>
+            <div className="admin-form-grid two">
+              <label>
+                <span>Support mode labels</span>
+                <input
+                  value={draft.supportModeLabels}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, supportModeLabels: event.target.value }))}
+                  placeholder="Focus mode, Margin glossary, Summary transfer"
+                />
+              </label>
+              <label>
+                <span>Target badges</span>
+                <input
+                  value={draft.targetBadges}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, targetBadges: event.target.value }))}
+                  placeholder="Inference, Vocabulary-in-context, Cohesion"
+                />
+              </label>
+            </div>
+            <label className="admin-form-block">
+              <span>Celebration copy</span>
+              <textarea
+                rows={2}
+                value={draft.celebrationCopy}
+                onChange={(event) => setDraft((prev) => ({ ...prev, celebrationCopy: event.target.value }))}
+                placeholder="Carry this article into a summary or vocabulary activation task."
+              />
+            </label>
+          </section>
 
           <div className="admin-form-grid two">
             <label>
@@ -2110,7 +2600,7 @@ const App = () => {
           <header className="topbar">
             <div className="topbar-title">
               <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - exam-focused daily workflow.`}</p>
+              <p>{`${SERVICE_LABEL} service - premium daily reading workflow.`}</p>
             </div>
 
             <div className="topbar-actions">

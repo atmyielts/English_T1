@@ -1,14 +1,4 @@
-import { supabase } from './supabase';
-
-const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
-  const value = import.meta.env[key] as string | undefined;
-  if (!value) throw new Error(`Missing ${key}`);
-  return value;
-};
-
-const supabaseUrl = getEnv('VITE_SUPABASE_URL').replace(/\/$/, '');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
-const edgeBase = `${supabaseUrl}/functions/v1`;
+import { edgeBase, supabase, supabaseAnonKey } from './supabase';
 
 const readJsonOrText = async (res: Response): Promise<unknown> => {
   const contentType = res.headers.get('content-type') ?? '';
