@@ -1,16 +1,43 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import '../../english-shared/src/english-routes.css';
+import {
+  AccessBoundaryCard,
+  EnglishSkillWorkspace,
+  PageHero,
+  RouteContextRibbon,
+  SectionGrid,
+  StatCard,
+} from '../../english-shared/src/ui';
+import {
+  readEnglishRouteContext,
+  type EnglishRouteContext,
+  withEnglishRouteContext,
+} from '../../english-shared/src/routeContext';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
-import { startLearningAttempt, submitLearningAttempt } from './lib/learningAttemptClient';
+import {
+  getLearningAttempt,
+  startLearningAttempt,
+  submitLearningAttempt,
+} from './lib/learningAttemptClient';
 import {
   archiveReadingArticle,
   createReadingArticle,
   getReadingArticleBySlug,
   listReadingArticles,
-  type PresentationMeta,
   updateReadingArticle,
+  type PresentationMeta,
   type CefrLevel,
   type ReadingArticle,
   type ReadingArticleTone,
@@ -18,40 +45,14 @@ import {
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISES_PATH = '/exercises' as const;
-const ARTICLES_PATH = '/articles' as const;
-const ARTICLE_DETAIL_PATH = '/article-detail' as const;
-const ADMIN_ARTICLES_PATH = '/admin/articles' as const;
-type AppPath =
-  | '/'
-  | '/dashboard'
-  | typeof EXERCISES_PATH
-  | typeof ARTICLES_PATH
-  | typeof ARTICLE_DETAIL_PATH
-  | typeof ADMIN_ARTICLES_PATH;
 
-type LessonRow = {
-  id: string;
-  title: string;
-  level: string;
-  schedule: string;
-  progress: number;
-  status: 'In progress' | 'Not started' | 'Completed';
-  accent: string;
-};
-
-type ServiceWordSeed = {
-  word: string;
-  definition: string;
-  example: string;
-  context: string;
-};
-
-const READING_PRODUCT_ID = ((import.meta.env.VITE_READING_PRODUCT_ID as string | undefined) ?? '').trim() || '0e8ad198-6284-4406-9e07-11ba7da0f42d';
+const READING_PRODUCT_ID =
+  ((import.meta.env.VITE_READING_PRODUCT_ID as string | undefined) ?? '').trim() ||
+  '0e8ad198-6284-4406-9e07-11ba7da0f42d';
 const READING_PRODUCT_SLUG = 'english-reading';
 const SERVICE_LABEL = 'English Reading';
-
 const ENGLISH_HUB_URL = 'https://english.schood.online';
+
 const ENGLISH_SERVICE_LINKS = [
   { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
   { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
@@ -61,102 +62,52 @@ const ENGLISH_SERVICE_LINKS = [
   { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
   { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
 ] as const;
-const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
-const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
+
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== 'reading').map((service) => ({
+  ...service,
+  href: `${service.href}/dashboard`,
+}));
 
 const SERVICE_BLUEPRINT = [
   {
-    title: 'Interactive text mode',
-    detail: 'Open passages with click-to-meaning support and direct vocabulary capture.',
+    slug: 'interactive-text',
+    title: 'Interactive text route',
+    detail: 'Read paragraph by paragraph, capture words in context, and keep structure visible while you move.',
     intent: 'interactive-text',
-    skill: 'vocabulary',
+    skill: 'comprehension',
   },
   {
-    title: 'Sentence breakdown',
-    detail: 'Highlight structure and connect clauses so passage logic is easier to parse.',
+    slug: 'sentence-breakdown',
+    title: 'Sentence breakdown lane',
+    detail: 'Slow the passage down, map clauses, and expose why meaning changes with structure.',
     intent: 'sentence-breakdown',
     skill: 'structure',
   },
   {
-    title: 'Cloze tasks',
-    detail: 'Fill targeted gaps to sharpen lexical precision and context reading.',
+    slug: 'cloze-transfer',
+    title: 'Cloze and summary transfer',
+    detail: 'Use targeted gaps and short transfer prompts to move from understanding into control.',
     intent: 'cloze',
-    skill: 'comprehension',
+    skill: 'accuracy',
   },
   {
-    title: 'Dual reading modes',
-    detail: 'Switch between intensive learning and extensive flow reading sessions.',
+    slug: 'extensive-flow',
+    title: 'Extensive flow route',
+    detail: 'Read with minimal interruption, then close with a short report instead of stopping every line.',
     intent: 'reading-modes',
     skill: 'pace',
   },
 ] as const;
 
-const SERVICE_HANDOFFS = [
-  { key: 'vocabulary', label: 'Send captured words to Vocabulary', intent: 'word-sources', skill: 'retention', reason: 'reading-handoff' },
-  { key: 'grammar', label: 'Route structure gaps to Grammar', intent: 'pattern-training', skill: 'structure', reason: 'reading-handoff' },
-  { key: 'writing', label: 'Transfer structure to Writing', intent: 'rewrite', skill: 'coherence', reason: 'reading-handoff' },
-] as const;
-
 const CEFR_LEVELS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const ARTICLE_STATUS_OPTIONS = ['draft', 'published', 'archived'] as const;
+type ArticleStatus = (typeof ARTICLE_STATUS_OPTIONS)[number];
 
-const lessonRows: LessonRow[] = [
-  {
-    id: 'lesson-1',
-    title: 'Daily Conversation Signals',
-    level: 'Beginner',
-    schedule: '08.00 - 09.00',
-    progress: 56,
-    status: 'In progress',
-    accent: '#d3efbd',
-  },
-  {
-    id: 'lesson-2',
-    title: 'University Lecture Mapping',
-    level: 'Intermediate',
-    schedule: '10.00 - 11.30',
-    progress: 81,
-    status: 'In progress',
-    accent: '#edf8dc',
-  },
-  {
-    id: 'lesson-3',
-    title: 'Airport and Travel Announcements',
-    level: 'Beginner',
-    schedule: '14.00 - 15.00',
-    progress: 24,
-    status: 'Not started',
-    accent: '#f6fde9',
-  },
-  {
-    id: 'lesson-4',
-    title: 'IELTS Section 4 Master Drill',
-    level: 'Advanced',
-    schedule: '17.00 - 18.00',
-    progress: 100,
-    status: 'Completed',
-    accent: '#c0e8a4',
-  },
-];
-
-const weeklyMinutes = [
-  { day: 'Mon', minutes: 62 },
-  { day: 'Tue', minutes: 94 },
-  { day: 'Wed', minutes: 71 },
-  { day: 'Thu', minutes: 88 },
-  { day: 'Fri', minutes: 102 },
-  { day: 'Sat', minutes: 74 },
-  { day: 'Sun', minutes: 80 },
-];
-
-
-
-void weeklyMinutes;
-
-const READING_VOCAB_SEEDS: ServiceWordSeed[] = [
+const READING_VOCAB_SEEDS = [
   {
     word: 'inference',
     definition: 'A conclusion reached from evidence rather than direct statement.',
-    example: 'The question required an inference about the writer\'s attitude.',
+    example: 'The question required an inference about the writer’s attitude.',
     context: 'Reading comprehension and author-intent tasks.',
   },
   {
@@ -183,64 +134,145 @@ const READING_VOCAB_SEEDS: ServiceWordSeed[] = [
     example: 'The criticism was implicit, not explicit.',
     context: 'Inference and implication questions.',
   },
+] as const;
+
+const PREVIEW_ARTICLES: ReadingArticle[] = [
   {
-    word: 'contextual',
-    definition: 'Related to the surrounding text or situation.',
-    example: 'Contextual clues helped identify the unknown term.',
-    context: 'Word meaning from context.',
+    id: 'preview-city-garden',
+    slug: 'city-garden-routes',
+    title: 'City Garden Routes',
+    summary: 'A gentle B1 article about public spaces, daily routines, and why people return to the same quiet places.',
+    contentMarkdown:
+      '## Opening scene\nMany city residents do not need a large park. They need one reliable place where the day feels slower.\n\n## Reading angle\nThe article follows how small routines shape comfort, attention, and memory in ordinary spaces.\n\n## Transfer note\nAfter reading, learners can summarize the main point or collect useful words related to place and routine.',
+    level: 'B1',
+    category: 'Daily Life',
+    theme: 'Routine',
+    readTimeMinutes: 6,
+    tone: 'mint',
+    hot: true,
+    status: 'published',
+    sortOrder: 10,
+    presentationMeta: {
+      scene_label: 'Quiet salon route',
+      hero_note: 'Read with a margin glossary, then carry one idea into summary transfer.',
+      difficulty_badge: 'Balanced B1',
+      support_mode_labels: ['Focus mode', 'Margin glossary', 'Summary transfer'],
+      target_badges: ['Inference', 'Vocabulary in context', 'Paragraph flow'],
+      celebration_copy: 'Good article to transfer into Writing after the read.',
+    },
   },
   {
-    word: 'synthesis',
-    definition: 'Combining different ideas into a single coherent understanding.',
-    example: 'The final answer needed synthesis of two paragraphs.',
-    context: 'Multi-source reading tasks.',
+    id: 'preview-night-market',
+    slug: 'night-market-signals',
+    title: 'Night Market Signals',
+    summary: 'A lively article about movement, sound, and the decisions people make quickly in crowded places.',
+    contentMarkdown:
+      '## First layer\nCrowded environments create many small reading clues. A sign, a gesture, and one short instruction may carry the whole meaning.\n\n## Practice direction\nThis route is good for detail, reference, and the difference between explicit and implied information.',
+    level: 'B2',
+    category: 'Travel',
+    theme: 'Movement',
+    readTimeMinutes: 7,
+    tone: 'lime',
+    hot: false,
+    status: 'published',
+    sortOrder: 20,
+    presentationMeta: {
+      scene_label: 'Street signal route',
+      hero_note: 'Use the sentence ladder when detail starts slipping.',
+      difficulty_badge: 'Fast B2',
+      support_mode_labels: ['Sentence ladder', 'Detail focus'],
+      target_badges: ['Detail', 'Reference', 'Signal tracking'],
+    },
   },
   {
-    word: 'distortion',
-    definition: 'A change that misrepresents the original meaning.',
-    example: 'Option C was a distortion of the author\'s claim.',
-    context: 'Trap-option detection.',
-  },
-  {
-    word: 'precision',
-    definition: 'Exactness and accuracy in language or interpretation.',
-    example: 'Precision in word choice improved his summary score.',
-    context: 'Close reading and vocabulary choice.',
-  },
-  {
-    word: 'coherence',
-    definition: 'Logical consistency that makes ideas easy to follow.',
-    example: 'The paragraph lacked coherence after sentence three.',
-    context: 'Paragraph flow evaluation.',
+    id: 'preview-late-lecture',
+    slug: 'late-lecture-notes',
+    title: 'Late Lecture Notes',
+    summary: 'A C1 passage about academic attention, missed context, and rebuilding the main thread of an idea.',
+    contentMarkdown:
+      '## Lecture setup\nStudents often miss not the hardest sentence, but the one that quietly connects two larger ideas.\n\n## Why this matters\nThe article rewards careful summary and helps learners track structure over isolated facts.',
+    level: 'C1',
+    category: 'Study',
+    theme: 'Academic focus',
+    readTimeMinutes: 8,
+    tone: 'sky',
+    hot: true,
+    status: 'published',
+    sortOrder: 30,
+    presentationMeta: {
+      scene_label: 'Academic structure route',
+      hero_note: 'Map structure first, then test summary accuracy.',
+      difficulty_badge: 'High transfer',
+      support_mode_labels: ['Structure map', 'Summary transfer'],
+      target_badges: ['Summary', 'Cohesion', 'Inference'],
+    },
   },
 ];
+const DEFAULT_PREVIEW_ARTICLE: ReadingArticle = PREVIEW_ARTICLES[0]!;
 
-const progressStatusClass = (status: LessonRow['status']): string => {
-  if (status === 'Completed') return 'pill done';
-  if (status === 'Not started') return 'pill muted';
-  return 'pill live';
-};
+const REVIEW_HANDOFFS = [
+  {
+    label: 'Repair structure in Grammar',
+    href: withEnglishRouteContext('https://grammar.english.schood.online/repair-queue', {
+      sourceService: 'reading',
+      intent: 'pattern-training',
+      skill: 'structure',
+      reason: 'reading-report',
+    }),
+  },
+  {
+    label: 'Transfer summary into Writing',
+    href: withEnglishRouteContext('https://writing.english.schood.online/briefs', {
+      sourceService: 'reading',
+      intent: 'writing-task',
+      skill: 'coherence',
+      reason: 'reading-report',
+    }),
+  },
+  {
+    label: 'Activate saved words in Vocabulary',
+    href: withEnglishRouteContext('https://vocabulary.english.schood.online/activation', {
+      sourceService: 'reading',
+      intent: 'word-sources',
+      skill: 'retention',
+      reason: 'reading-report',
+    }),
+  },
+] as const;
+
+const emptyArticleDraft = () => ({
+  title: '',
+  slug: '',
+  summary: '',
+  contentMarkdown: '',
+  level: 'B1' as CefrLevel,
+  category: 'Daily Life',
+  theme: 'Everyday Language',
+  tone: 'mint' as ReadingArticleTone,
+  readTimeMinutes: 6,
+  status: 'draft' as ArticleStatus,
+  sortOrder: 100,
+  hot: false,
+  sceneLabel: '',
+  heroNote: '',
+  coverStyleKey: '',
+  coachTone: '',
+  difficultyBadge: '',
+  supportModeLabels: '',
+  targetBadges: '',
+  ambientAudioKey: '',
+  celebrationCopy: '',
+  previewMediaUrl: '',
+});
 
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
-
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
 const asMetaRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 const readMetaList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : [];
 
-const buildPresentationMeta = (draft: {
-  sceneLabel: string;
-  heroNote: string;
-  coverStyleKey: string;
-  coachTone: string;
-  difficultyBadge: string;
-  supportModeLabels: string;
-  targetBadges: string;
-  ambientAudioKey: string;
-  celebrationCopy: string;
-  previewMediaUrl: string;
-}): PresentationMeta | null => {
+const buildPresentationMeta = (draft: ReturnType<typeof emptyArticleDraft>): PresentationMeta | null => {
   const meta: PresentationMeta = {};
   const supportModeLabels = draft.supportModeLabels.split(',').map((entry) => entry.trim()).filter(Boolean);
   const targetBadges = draft.targetBadges.split(',').map((entry) => entry.trim()).filter(Boolean);
@@ -264,31 +296,10 @@ const resolveProfileName = (session: Session | null): string | null => {
   const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = readMetaText(meta.full_name);
   if (fullName) return fullName;
-
   const firstName = readMetaText(meta.first_name);
   const lastName = readMetaText(meta.last_name);
   const combined = `${firstName} ${lastName}`.trim();
   return combined || null;
-};
-
-const resolveInitials = (name: string | null, email: string | null): string => {
-  if (name) {
-    const parts = name
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const first = parts[0] ?? '';
-    const second = parts[1] ?? '';
-    if (first && second) return `${first.slice(0, 1)}${second.slice(0, 1)}`.toUpperCase();
-    if (first) return first.slice(0, 2).toUpperCase();
-  }
-
-  if (email) {
-    const prefix = email.split('@')[0] ?? '';
-    return prefix.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'GL';
-  }
-
-  return 'GL';
 };
 
 const resolveReturnTo = (): string => {
@@ -296,452 +307,315 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
-const buildServiceDashboardHref = (
-  serviceKey: string,
-  intent: string,
-  skill: string,
-  reason: string,
-): string => {
-  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
-  const url = new URL(`${target.href}/dashboard`);
-  url.searchParams.set('from', 'english-hub');
-  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
-  url.searchParams.set('intent', intent);
-  url.searchParams.set('skill', skill);
-  url.searchParams.set('reason', reason);
-  return url.toString();
+const filterArticlesBySearch = (articles: ReadingArticle[], search: string): ReadingArticle[] => {
+  const query = search.trim().toLowerCase();
+  if (!query) return articles;
+  return articles.filter((article) =>
+    [article.title, article.summary, article.category, article.theme, article.level].some((field) =>
+      field.toLowerCase().includes(query),
+    ),
+  );
 };
 
-const resolveArticleSlug = (pathname: string): string | null => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (!normalized.startsWith(`${ARTICLES_PATH}/`)) return null;
-  const raw = normalized.slice(`${ARTICLES_PATH}/`.length).trim();
-  if (!raw) return null;
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
-  }
-};
-
-const resolveAppPath = (pathname: string): AppPath => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/dashboard') return '/dashboard';
-  if (normalized === ADMIN_ARTICLES_PATH) return ADMIN_ARTICLES_PATH;
-  if (normalized === ARTICLES_PATH) return ARTICLES_PATH;
-  if (normalized.startsWith(`${ARTICLES_PATH}/`)) return ARTICLE_DETAIL_PATH;
-  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
-  if (normalized.startsWith('/feature/')) return '/dashboard';
-  return '/';
-};
-
-const DashboardPage = ({
-  lessons,
-  hasAccess,
-  pricingHref,
-  onOpenExercise,
-  isSignedIn,
+const SignedOutLanding = ({
   signInHref,
-  syncingWords,
-  syncMessage,
-  syncError,
-  onSyncWords,
-}: {
-  lessons: LessonRow[];
-  hasAccess: boolean;
-  pricingHref: string;
-  onOpenExercise: (index: number) => void;
-  isSignedIn: boolean;
-  signInHref: string;
-  syncingWords: boolean;
-  syncMessage: string | null;
-  syncError: string | null;
-  onSyncWords: () => void;
-}) => {
-  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  const inboundIntent = params.get('intent') ?? '';
-  const inboundSkill = params.get('skill') ?? '';
-  const inboundReason = params.get('reason') ?? '';
-  const inboundSourceService = params.get('source_service') ?? '';
-  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-
-  return (
-    <div className="dashboard-stack">
-    <section className="hero-card card">
-      <div className="hero-copy">
-        <div className="eyebrow">English Reading Studio</div>
-        <h1>Build deep reading confidence, one focused English session at a time.</h1>
-        <p>
-          Move between intensive study and flow reading, track micro-skills, and keep every article connected to your
-          wider English profile.
-        </p>
-        <button
-          className="primary-cta"
-          type="button"
-          onClick={() => {
-            if (!hasAccess) window.location.assign(pricingHref);
-          }}
-        >
-          {hasAccess ? 'Start 15-min warmup' : 'Unlock reading access'}
-        </button>
-        {!hasAccess ? <small className="hero-note">Your account is signed in, but this service needs an active plan or trial.</small> : null}
-      </div>
-      <div className="hero-art" aria-hidden>
-        <div className="wave one" />
-        <div className="wave two" />
-        <div className="wave three" />
-      </div>
-    </section>
-
-    {hasInboundFocus ? (
-      <section className="card connected-brief">
-        <div>
-          <h2>Focus routed from Schood English</h2>
-          <p>
-            Continue with intent <strong>{inboundIntent || 'interactive-text'}</strong> on skill{' '}
-            <strong>{inboundSkill || 'comprehension'}</strong>.
-          </p>
-          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
-          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
-        </div>
-        <a
-          className="ghost-btn"
-          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'interactive-text', inboundSkill || 'comprehension', 'continue-focus')}
-        >
-          Keep this focus
-        </a>
-      </section>
-    ) : null}
-
-    <section className="kpi-grid">
-      <article className="card kpi">
-        <span>Total reading sets</span>
-        <strong>48</strong>
-        <small>+6 this month</small>
-      </article>
-      <article className="card kpi">
-        <span>Hours practiced</span>
-        <strong>36.4 h</strong>
-        <small>consistency score: 88</small>
-      </article>
-      <article className="card kpi">
-        <span>Estimated band (Reading)</span>
-        <strong>7.0</strong>
-        <small>target: 7.5</small>
-      </article>
-    </section>
-
-    <section className="card class-table">
-      <div className="section-head">
-        <h2>My class list</h2>
-        <button className="ghost-btn" type="button">See all</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map((lesson) => (
-            <tr key={lesson.id}>
-              <td>
-                <strong>{lesson.title}</strong>
-                <small>{lesson.level} - {lesson.schedule}</small>
-              </td>
-              <td>
-                <div className="progress-row">
-                  <span>{lesson.progress}%</span>
-                  <div className="track">
-                    <div className="fill" style={{ width: `${lesson.progress}%`, background: lesson.accent }} />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span className={progressStatusClass(lesson.status)}>{lesson.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section className="card cross-service-playbook">
-      <div className="section-head">
-        <h2>Exercises</h2>
-        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-      </div>
-      <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item, index) => (
-          <article key={item.title} className="playbook-card">
-            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
-              Open exercise window
-            </button>
-          </article>
-        ))}
-      </div>
-      <div className="handoff-row">
-        {SERVICE_HANDOFFS.map((handoff) => (
-          <a
-            key={handoff.key}
-            className="menu-link muted-link"
-            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-          >
-            {handoff.label}
-          </a>
-        ))}
-      </div>
-    </section>
-
-    <section className="card vocab-sync-card">
-      <div className="section-head">
-        <h2>Vocabulary Sync</h2>
-        <button
-          className="ghost-btn"
-          type="button"
-          disabled={syncingWords}
-          onClick={() => {
-            if (!isSignedIn) {
-              window.location.assign(signInHref);
-              return;
-            }
-            onSyncWords();
-          }}
-        >
-          {isSignedIn ? (syncingWords ? 'Syncing...' : 'Send 10 words') : 'Sign in to sync'}
-        </button>
-      </div>
-      <p className="vocab-sync-copy">
-        Save key reading words to the shared English Vocabulary notebook for daily Leitner review.
-      </p>
-      <small className="vocab-sync-copy">
-        Words are deduplicated by language scope, so repeated syncs will not create duplicates.
-      </small>
-      {syncError ? (
-        <div className="access-banner warning">
-          <strong>Sync failed.</strong>
-          <span>{syncError}</span>
-        </div>
-      ) : null}
-      {syncMessage ? (
-        <div className="access-banner">
-          <strong>{syncMessage}</strong>
-          <a className="ghost-btn" href="https://vocabulary.english.schood.online/dashboard">Open vocabulary notebook</a>
-        </div>
-      ) : null}
-    </section>
-  </div>
-  );
-};
-
-
-
-const ExercisesPage = ({
-  hasAccess,
   pricingHref,
-  onNavigate,
+  platformWorkspaceHref,
+  isSignedIn,
 }: {
-  hasAccess: boolean;
+  signInHref: string;
   pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
-}) => {
-  type LaneKey = 'todo' | 'in_progress' | 'completed';
-
-  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
-  const [selectedId, setSelectedId] = useState<string>('');
-
-  const exerciseItems = useMemo(
-    () =>
-      SERVICE_BLUEPRINT.map((item, index) => {
-        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
-        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
-
-        return {
-          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
-          lane,
-          priority,
-          due: `${10 + index * 3} days left`,
-          comments: 6 + index * 4,
-          updates: 3 + index * 2,
-          ...item,
-        };
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    const firstItem = exerciseItems[0];
-    if (!selectedId && firstItem) {
-      setSelectedId(firstItem.id);
-    }
-  }, [exerciseItems, selectedId]);
-
-  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
-
-  const groupedItems = useMemo(
-    () => ({
-      todo: visibleItems.filter((item) => item.lane === 'todo'),
-      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
-      completed: visibleItems.filter((item) => item.lane === 'completed'),
-    }),
-    [visibleItems],
-  );
-
-  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
-
-  const laneDefs: Array<{ key: LaneKey; label: string }> = [
-    { key: 'todo', label: 'Todo' },
-    { key: 'in_progress', label: 'In progress' },
-    { key: 'completed', label: 'Completed' },
-  ];
-
-  return (
-    <div className="dashboard-stack">
-      <section className="card exercises-workspace">
-        <div className="exercises-grid">
-          <div className="exercises-list-pane">
-            <div className="exercises-list-head">
-              <h2>{SERVICE_LABEL} Exercises</h2>
-              <small>One unified page</small>
-            </div>
-
-            <div className="exercises-filters">
-              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
-                All
-              </button>
-              {laneDefs.map((lane) => (
-                <button
-                  key={lane.key}
-                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
-                  type="button"
-                  onClick={() => setActiveLane(lane.key)}
-                >
-                  {lane.label}
-                </button>
-              ))}
-            </div>
-
-            {laneDefs.map((lane) => (
-              <section key={lane.key} className="exercise-lane">
-                <header>
-                  <h3>{lane.label}</h3>
-                  <span>{groupedItems[lane.key].length}</span>
-                </header>
-
-                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
-
-                {groupedItems[lane.key].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="exercise-item-top">
-                      <h4>{item.title}</h4>
-                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
-                    </div>
-                    <p>{item.detail}</p>
-                    <div className="exercise-item-meta">
-                      <span>{item.due}</span>
-                      <span>{item.comments} notes</span>
-                      <span>{item.updates} updates</span>
-                    </div>
-                  </button>
-                ))}
-              </section>
-            ))}
-          </div>
-
-          <div className="exercises-detail-pane">
-            {selectedItem ? (
-              <>
-                <div className="exercise-detail-actions">
-                  <button type="button" className="ghost-btn">Share</button>
-                  <button type="button" className="ghost-btn">Expand</button>
-                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
-                </div>
-
-                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
-                <h2>{selectedItem.title}</h2>
-
-                <div className="exercise-detail-badges">
-                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
-                  <span className="exercise-chip">{selectedItem.due}</span>
-                </div>
-
-                <div className="exercise-timebox">
-                  <span>Focused exercise block</span>
-                  <strong>45:00</strong>
-                </div>
-
-                <p className="exercise-detail-copy">{selectedItem.detail}</p>
-
-                <div className="exercise-subsection">
-                  <h3>Execution checklist</h3>
-                  <ul>
-                    <li>Complete the task prompt without switching services.</li>
-                    <li>Write one short reflection before submitting.</li>
-                    <li>Push weak words or patterns into connected services.</li>
-                  </ul>
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Comments</h3>
-                  <div className="exercise-comment">
-                    <strong>Coach</strong>
-                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
-                  </div>
-                  <div className="exercise-comment">
-                    <strong>You</strong>
-                    <p>I will repeat this with a shorter time limit after one full run.</p>
-                  </div>
-                </div>
-
-                <div className="exercise-detail-footer">
-                  <button
-                    className="primary-cta"
-                    type="button"
-                    onClick={() => {
-                      if (!hasAccess) {
-                        window.location.assign(pricingHref);
-                      }
-                    }}
-                  >
-                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
-                    Back to dashboard
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </div>
+  platformWorkspaceHref: string;
+  isSignedIn: boolean;
+}) => (
+  <div className="landing-page-root">
+    <div className="ambient-layer" />
+    <div className="landing-page-main">
+      <header className="landing-page-topbar card">
+        <Link className="landing-brand" to="/">
+          <span className="dot" />
+          <strong>{SERVICE_LABEL}</strong>
+        </Link>
+        <nav className="landing-links">
+          <a href={buildPlatformUrl('/about')}>About us</a>
+          <a href={buildPlatformUrl('/programs')}>Programs</a>
+          <a href={buildPlatformUrl('/blog')}>Blog</a>
+          <a href={buildPlatformUrl('/courses')}>Courses</a>
+          <a href={buildPlatformUrl('/faq')}>FAQ</a>
+          <a href={buildPlatformUrl('/contact')}>Contact</a>
+        </nav>
+        <div className="landing-actions">
+          <a className="ghost-btn" href={ENGLISH_HUB_URL}>
+            English hub
+          </a>
+          <a className="ghost-btn" href={platformWorkspaceHref}>
+            Open platform
+          </a>
+          {isSignedIn ? (
+            <Link className="icon-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <a className="icon-btn" href={signInHref}>
+              Log in
+            </a>
+          )}
+          <a className="primary-cta" href={pricingHref}>
+            Sign up
+          </a>
         </div>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-mosaic">
+          <article className="landing-card landing-stat tilt-left">
+            <div className="landing-stat-head">
+              <strong>Shelves</strong>
+              <span className="landing-arrow">{'->'}</span>
+            </div>
+            <p>Library, article, intensive route</p>
+            <small>one job per screen</small>
+          </article>
+
+          <article className="landing-card landing-team tilt-right">
+            <span className="landing-pill">Reading salon</span>
+            <h3>Structured input</h3>
+            <p>Move from discovery to focus reading to report pages without one overloaded workspace trying to do everything.</p>
+          </article>
+
+          <article className="landing-card landing-offer tilt-right">
+            <h3>Premium reading routes</h3>
+            <p className="landing-price">
+              12$ <span>35$</span>
+            </p>
+            <div className="landing-ticket">
+              <div className="landing-ticket-row">
+                <small>Library</small>
+                <small>Report</small>
+              </div>
+              <strong>Read {'->'} analyze {'->'} transfer</strong>
+              <small>with clear separation</small>
+            </div>
+          </article>
+
+          <article className="landing-card landing-showcase tilt-left">
+            <div className="landing-orb" aria-hidden />
+            <h3>Connected English</h3>
+            <p>Reading now sends precise handoffs into Writing, Grammar, and Vocabulary instead of one generic dashboard jump.</p>
+          </article>
+        </div>
+
+        <article className="landing-copy card">
+          <div className="landing-chip">{SERVICE_LABEL}</div>
+          <h2>Reading is now organized like a real learning product, not one crowded page.</h2>
+          <p>Browse the article library, open a focused article route, move into intensive analysis, and finish on a debrief page.</p>
+          <div className="landing-cta-row">
+            <a className="primary-cta" href={isSignedIn ? '/dashboard' : signInHref}>
+              {isSignedIn ? 'Continue' : 'Get started'}
+            </a>
+            <a className="ghost-btn" href={pricingHref}>
+              See pricing
+            </a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>
+              Open platform
+            </a>
+          </div>
+        </article>
       </section>
     </div>
-  );
-};
+    <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+      Updates
+    </a>
+  </div>
+);
 
-const ArticlesPage = ({
+const ReadingDashboardPage = ({
   hasAccess,
   pricingHref,
   accessToken,
-  onNavigate,
-  onOpenArticle,
+  search,
+  context,
 }: {
   hasAccess: boolean;
   pricingHref: string;
   accessToken: string | null;
-  onNavigate: (nextPath: AppPath) => void;
-  onOpenArticle: (slug: string) => void;
+  search: string;
+  context: EnglishRouteContext;
 }) => {
-  const [articles, setArticles] = useState<ReadingArticle[]>([]);
+  const [articles, setArticles] = useState<ReadingArticle[]>(PREVIEW_ARTICLES);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setArticles(PREVIEW_ARTICLES);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void listReadingArticles(accessToken, { status: 'published', limit: 24 })
+      .then((result) => {
+        if (cancelled) return;
+        setArticles(result.articles.length > 0 ? result.articles : PREVIEW_ARTICLES);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setArticles(PREVIEW_ARTICLES);
+        setError('Could not load your live reading catalog right now.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  const filtered = useMemo(() => filterArticlesBySearch(articles, search), [articles, search]);
+  const featured = filtered[0] ?? DEFAULT_PREVIEW_ARTICLE;
+  const featuredMeta = asMetaRecord(featured.presentationMeta);
+  const featuredBadges = readMetaList(featuredMeta.target_badges);
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to="/library">
+            Open library
+          </Link>
+        }
+      />
+
+      <PageHero
+        eyebrow="Reading dashboard"
+        title="Use the dashboard to choose the right route, not to read on the same screen."
+        copy="Reading now separates discovery, live reading, intensive analysis, and debrief so each screen has one job."
+        actions={
+          <>
+            <Link className="primary-cta" to="/library">
+              Browse shelves
+            </Link>
+            <Link className="ghost-btn" to="/intensive">
+              Open intensive route
+            </Link>
+          </>
+        }
+        aside={
+          <div className="route-chip-row">
+            <span className="route-chip">{hasAccess ? 'Live access' : 'Preview mode'}</span>
+            <span className="route-outline-chip">{featured.level}</span>
+            <span className="route-outline-chip">{featured.readTimeMinutes} min</span>
+          </div>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Reading routes are visible in preview mode"
+          message="The route structure is now open to browse, but live articles, scoring, and notebook sync unlock with an active reading plan."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className="route-metric-grid">
+        <StatCard
+          label="Visible shelves"
+          value={String(new Set(filtered.map((article) => article.level)).size || 3)}
+          hint="CEFR shelves stay separate from the live reading page."
+        />
+        <StatCard
+          label="Route anchor"
+          value={featured.title}
+          hint="The highlighted article is today’s best starting point."
+        />
+        <StatCard
+          label="Transfer pressure"
+          value={String(featuredBadges.length || 3)}
+          hint="Reading still connects outward into Writing, Grammar, and Vocabulary."
+        />
+      </section>
+
+      {loading ? <section className="route-empty-state">Loading reading dashboard...</section> : null}
+      {error ? <section className="route-empty-state">{error}</section> : null}
+
+      <section className="route-split-grid">
+        <article className={`card reading-article-feature tone-${featured.tone}`}>
+          <div className="reading-article-meta">
+            <span>{featured.category}</span>
+            <span>{featured.level}</span>
+            {readMetaText(featuredMeta.difficulty_badge) ? <span>{readMetaText(featuredMeta.difficulty_badge)}</span> : null}
+          </div>
+          <h3>{featured.title}</h3>
+          <p>{featured.summary}</p>
+          <div className="reading-premium-chip-row">
+            {(featuredBadges.length > 0 ? featuredBadges : ['Inference', 'Detail', 'Vocabulary']).map((badge) => (
+              <span key={`${featured.id}-${badge}`} className="reading-premium-chip">
+                {badge}
+              </span>
+            ))}
+          </div>
+          <div className="reading-article-footer">
+            <small>{featured.theme}</small>
+            <small>{featured.readTimeMinutes} min read</small>
+          </div>
+          <Link className="ghost-btn" to={`/library/${featured.slug}`}>
+            Open article route
+          </Link>
+        </article>
+
+        <section className="route-queue-card">
+          <div className="route-stage-header">
+            <div>
+              <small className="route-context-kicker">Launch cards</small>
+              <h2>Choose a clean next step</h2>
+            </div>
+          </div>
+          <div className="route-stack-list">
+            <Link className="route-list-row" to="/library">
+              <strong>Library shelves</strong>
+              <span>Discover by level, category, and theme</span>
+            </Link>
+            <Link className="route-list-row" to={`/library/${featured.slug}`}>
+              <strong>Article route</strong>
+              <span>Open one passage on its own page</span>
+            </Link>
+            <Link className="route-list-row" to="/intensive">
+              <strong>Intensive route</strong>
+              <span>Use sentence ladders and structured transfer</span>
+            </Link>
+            <Link className="route-list-row" to="/reports">
+              <strong>Reading report room</strong>
+              <span>Keep feedback and next-step routing separate from the read itself</span>
+            </Link>
+          </div>
+        </section>
+      </section>
+    </SectionGrid>
+  );
+};
+
+const ReadingLibraryPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  search,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  search: string;
+  context: EnglishRouteContext;
+}) => {
+  const [articles, setArticles] = useState<ReadingArticle[]>(PREVIEW_ARTICLES);
   const [libraryCategories, setLibraryCategories] = useState<string[]>([]);
   const [libraryThemes, setLibraryThemes] = useState<string[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -751,37 +625,33 @@ const ArticlesPage = ({
   const [selectedTheme, setSelectedTheme] = useState<string>('all');
 
   const loadArticles = async (): Promise<void> => {
-    if (!accessToken) return;
+    if (!hasAccess || !accessToken) {
+      setArticles(PREVIEW_ARTICLES);
+      setLibraryCategories(Array.from(new Set(PREVIEW_ARTICLES.map((article) => article.category))));
+      setLibraryThemes(Array.from(new Set(PREVIEW_ARTICLES.map((article) => article.theme))));
+      setLoadingArticles(false);
+      setArticlesError(null);
+      return;
+    }
+
     setLoadingArticles(true);
     setArticlesError(null);
     try {
       const result = await listReadingArticles(accessToken, { status: 'published', limit: 150 });
-      setArticles(result.articles);
+      setArticles(result.articles.length > 0 ? result.articles : PREVIEW_ARTICLES);
       setLibraryCategories(result.filters.categories);
       setLibraryThemes(result.filters.themes);
-    } catch (error) {
-      const statusCode = (error as { status?: number } | null)?.status ?? null;
-      if (statusCode === 401 || statusCode === 403) {
-        setArticlesError('Sign in again to load reading articles.');
-        return;
-      }
-      setArticlesError('Could not load articles right now. Please try again.');
+    } catch {
+      setArticles(PREVIEW_ARTICLES);
+      setArticlesError('Could not load live articles right now. Preview shelves are still available.');
     } finally {
       setLoadingArticles(false);
     }
   };
 
   useEffect(() => {
-    if (!accessToken) {
-      setArticles([]);
-      setLibraryCategories([]);
-      setLibraryThemes([]);
-      setLoadingArticles(false);
-      setArticlesError('Sign in to load the reading article library.');
-      return;
-    }
     void loadArticles();
-  }, [accessToken]);
+  }, [accessToken, hasAccess]);
 
   const categories = useMemo(() => {
     if (libraryCategories.length > 0) return ['all', ...libraryCategories];
@@ -800,11 +670,7 @@ const ArticlesPage = ({
         ? articles
         : articles.filter((article) => article.category === selectedCategory);
     if (source.length > 0) return ['all', ...Array.from(new Set(source.map((article) => article.theme)))];
-
-    const fromFilters = selectedCategory === 'all'
-      ? libraryThemes
-      : libraryThemes.filter(Boolean);
-    return ['all', ...Array.from(new Set(fromFilters))];
+    return ['all', ...Array.from(new Set(libraryThemes))];
   }, [articles, libraryThemes, selectedCategory]);
 
   useEffect(() => {
@@ -815,100 +681,65 @@ const ArticlesPage = ({
 
   const filteredArticles = useMemo(
     () =>
-      articles.filter((article) => {
-        if (selectedLevel !== 'all' && article.level !== selectedLevel) return false;
-        if (selectedCategory !== 'all' && article.category !== selectedCategory) return false;
-        if (selectedTheme !== 'all' && article.theme !== selectedTheme) return false;
-        return true;
-      }),
-    [articles, selectedCategory, selectedLevel, selectedTheme],
+      filterArticlesBySearch(
+        articles.filter((article) => {
+          if (selectedLevel !== 'all' && article.level !== selectedLevel) return false;
+          if (selectedCategory !== 'all' && article.category !== selectedCategory) return false;
+          if (selectedTheme !== 'all' && article.theme !== selectedTheme) return false;
+          return true;
+        }),
+        search,
+      ),
+    [articles, search, selectedCategory, selectedLevel, selectedTheme],
   );
 
-  const featuredArticle = filteredArticles[0] ?? null;
-  const sideArticles = featuredArticle ? filteredArticles.slice(1, 4) : filteredArticles.slice(0, 3);
-  const visibleThemes = Array.from(new Set(filteredArticles.map((article) => article.theme))).slice(0, 10);
-  const featuredPresentation = asMetaRecord(featuredArticle?.presentationMeta);
-  const featuredBadges = readMetaList(featuredPresentation.target_badges);
-  const featuredSupportModes = readMetaList(featuredPresentation.support_mode_labels);
+  const featuredArticle = filteredArticles[0] ?? DEFAULT_PREVIEW_ARTICLE;
+  const sideArticles = filteredArticles.slice(1, 4);
   const readingShelves = CEFR_LEVELS.map((level) => ({
     level,
     articles: filteredArticles.filter((article) => article.level === level).slice(0, 3),
   })).filter((entry) => entry.articles.length > 0);
-
-  const handleArticleOpen = (slug?: string): void => {
-    if (!hasAccess) {
-      window.location.assign(pricingHref);
-      return;
-    }
-    if (slug) {
-      onOpenArticle(slug);
-      return;
-    }
-    onNavigate(EXERCISES_PATH);
-  };
+  const featuredPresentation = asMetaRecord(featuredArticle.presentationMeta);
+  const featuredBadges = readMetaList(featuredPresentation.target_badges);
+  const featuredSupportModes = readMetaList(featuredPresentation.support_mode_labels);
 
   return (
-    <div className="dashboard-stack">
-      <section className="card reading-library-head">
-        <div>
-          <small className="library-label">Reading Library</small>
-          <h2>{readMetaText(featuredPresentation.scene_label) || 'A reading salon with tiered shelves from A1 to C2.'}</h2>
-          <p>
-            {readMetaText(featuredPresentation.hero_note) ||
-              'Choose an article by level, theme, and route. Every passage can feed vocabulary, structure, and summary transfer back into your shared English profile.'}
-          </p>
-          {featuredBadges.length > 0 ? (
-            <div className="reading-premium-chip-row">
-              {featuredBadges.map((badge) => (
-                <span key={`featured-badge-${badge}`} className="reading-premium-chip">
-                  {badge}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        <div className="library-head-actions">
-          <button
-            className="ghost-btn"
-            type="button"
-            onClick={() => {
-              void loadArticles();
-            }}
-            disabled={loadingArticles || !accessToken}
-          >
-            {loadingArticles ? 'Refreshing...' : 'Refresh library'}
-          </button>
-          <button className="ghost-btn" type="button" onClick={() => onNavigate(EXERCISES_PATH)}>
-            Open exercises
-          </button>
-          <button className="primary-cta" type="button" onClick={() => handleArticleOpen(featuredArticle?.slug)}>
-            {hasAccess ? 'Start reading now' : 'Unlock article access'}
-          </button>
-        </div>
-      </section>
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to={featuredArticle ? `/library/${featuredArticle.slug}` : '/library'}>
+            Open featured article
+          </Link>
+        }
+      />
 
-      {loadingArticles ? (
-        <div className="access-banner">
-          <strong>Loading article library...</strong>
-          <span>Fetching latest level and category catalog.</span>
-        </div>
+      <PageHero
+        eyebrow="Library shelves"
+        title="Discover articles on their own page before you enter the live reading route."
+        copy="The library owns discovery, filters, and article selection. It does not try to be the live workbench anymore."
+        actions={
+          <>
+            <button className="ghost-btn" type="button" onClick={() => void loadArticles()} disabled={loadingArticles}>
+              {loadingArticles ? 'Refreshing...' : 'Refresh library'}
+            </button>
+            <Link className="primary-cta" to={featuredArticle ? `/library/${featuredArticle.slug}` : '/library'}>
+              Open featured route
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Live library access is locked"
+          message="You can still browse the shelf structure and article previews, but full reading content unlocks with an active plan."
+          ctaHref={pricingHref}
+        />
       ) : null}
 
-      {!loadingArticles && articlesError ? (
-        <div className="access-banner warning">
-          <strong>Article library unavailable.</strong>
-          <span>{articlesError}</span>
-          <button
-            className="ghost-btn"
-            type="button"
-            onClick={() => {
-              void loadArticles();
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      ) : null}
+      {articlesError ? <section className="route-empty-state">{articlesError}</section> : null}
 
       <section className="card reading-library-filters">
         <div className="library-filter-block">
@@ -965,12 +796,10 @@ const ArticlesPage = ({
               <small>Reading route</small>
               <h3>{featuredArticle ? `${featuredArticle.level} ${featuredArticle.category}` : 'Choose a route'}</h3>
             </div>
-            {featuredArticle ? <span className="reading-route-mode">{featuredArticle.readTimeMinutes} min</span> : null}
+            <span className="reading-route-mode">{featuredArticle.readTimeMinutes} min</span>
           </div>
           <p>
-            {featuredArticle
-              ? `Use ${featuredArticle.title} as today’s anchor text, then transfer its vocabulary and structure into Grammar or Writing.`
-              : 'Pick a published article to unlock an intensive and extensive reading route for today.'}
+            Use {featuredArticle.title} as today’s anchor text, then transfer its vocabulary and structure into Grammar or Writing.
           </p>
           <div className="reading-premium-chip-row">
             {(featuredSupportModes.length > 0 ? featuredSupportModes : ['Intensive route', 'Flow reading', 'Summary transfer']).map((badge) => (
@@ -985,8 +814,8 @@ const ArticlesPage = ({
               <strong>{readingShelves.length || 1}</strong>
             </div>
             <div>
-              <span>Theme pressure</span>
-              <strong>{visibleThemes.length || 1}</strong>
+              <span>Results</span>
+              <strong>{filteredArticles.length}</strong>
             </div>
             <div>
               <span>Transfer targets</span>
@@ -1002,7 +831,7 @@ const ArticlesPage = ({
             {readingShelves.length === 0 ? (
               <div className="reading-shelf-row muted">
                 <strong>Library quiet right now</strong>
-                <span>Adjust the filters to reveal another shelf.</span>
+                <span>Adjust filters to reveal another shelf.</span>
               </div>
             ) : (
               readingShelves.slice(0, 4).map((shelf) => (
@@ -1017,94 +846,46 @@ const ArticlesPage = ({
       </section>
 
       <section className="reading-library-grid">
-        {featuredArticle ? (
-          <article className={`card reading-article-feature tone-${featuredArticle.tone}`}>
-            <div className="reading-article-meta">
-              <span>{featuredArticle.category}</span>
-              <span>{featuredArticle.level}</span>
-              {readMetaText(featuredPresentation.difficulty_badge) ? (
-                <span>{readMetaText(featuredPresentation.difficulty_badge)}</span>
-              ) : null}
-            </div>
-            <h3>{featuredArticle.title}</h3>
-            <p>{featuredArticle.summary}</p>
-            {featuredBadges.length > 0 ? (
-              <div className="reading-premium-chip-row">
-                {featuredBadges.slice(0, 4).map((badge) => (
-                  <span key={`${featuredArticle.id}-${badge}`} className="reading-premium-chip">
-                    {badge}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            <div className="reading-article-footer">
-              <small>{featuredArticle.readTimeMinutes} min read</small>
-              {featuredArticle.hot ? <span className="reading-hot-pill">Trending</span> : null}
-            </div>
-            {readMetaText(featuredPresentation.celebration_copy) ? (
-              <strong className="reading-article-note">{readMetaText(featuredPresentation.celebration_copy)}</strong>
-            ) : null}
-            <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(featuredArticle.slug)}>
-              Open article
-            </button>
-          </article>
-        ) : (
-          <article className="card reading-library-empty">
-            <h3>No articles match this filter yet.</h3>
-            <p>Adjust level, category, or theme to load another set.</p>
-          </article>
-        )}
+        <article className={`card reading-article-feature tone-${featuredArticle.tone}`}>
+          <div className="reading-article-meta">
+            <span>{featuredArticle.category}</span>
+            <span>{featuredArticle.level}</span>
+            {readMetaText(featuredPresentation.difficulty_badge) ? <span>{readMetaText(featuredPresentation.difficulty_badge)}</span> : null}
+          </div>
+          <h3>{featuredArticle.title}</h3>
+          <p>{featuredArticle.summary}</p>
+          <div className="reading-premium-chip-row">
+            {(featuredBadges.length > 0 ? featuredBadges : ['Structure', 'Detail', 'Vocabulary']).map((badge) => (
+              <span key={`${featuredArticle.id}-${badge}`} className="reading-premium-chip">
+                {badge}
+              </span>
+            ))}
+          </div>
+          <div className="reading-article-footer">
+            <small>{featuredArticle.readTimeMinutes} min read</small>
+            {featuredArticle.hot ? <span className="reading-hot-pill">Trending</span> : null}
+          </div>
+          <Link className="ghost-btn" to={`/library/${featuredArticle.slug}`}>
+            Open article route
+          </Link>
+        </article>
 
         <div className="reading-library-column">
-          {sideArticles.length === 0 ? (
-            <article className="card reading-article-mini">
-              <h4>No secondary cards</h4>
-              <p>Try widening filters to discover more options.</p>
+          {(sideArticles.length > 0 ? sideArticles : PREVIEW_ARTICLES.slice(1, 3)).map((article) => (
+            <article key={article.id} className={`card reading-article-mini tone-${article.tone}`}>
+              <div className="reading-article-meta">
+                <span>{article.category}</span>
+                <span>{article.level}</span>
+              </div>
+              <h4>{article.title}</h4>
+              <p>{article.summary}</p>
+              <small>{article.readTimeMinutes} min read</small>
+              <Link className="ghost-btn" to={`/library/${article.slug}`}>
+                Preview route
+              </Link>
             </article>
-          ) : (
-            sideArticles.map((article) => (
-              <article key={article.id} className={`card reading-article-mini tone-${article.tone}`}>
-                <div className="reading-article-meta">
-                  <span>{article.category}</span>
-                  <span>{article.level}</span>
-                  {readMetaText(asMetaRecord(article.presentationMeta).difficulty_badge) ? (
-                    <span>{readMetaText(asMetaRecord(article.presentationMeta).difficulty_badge)}</span>
-                  ) : null}
-                </div>
-                <h4>{article.title}</h4>
-                <p>{article.summary}</p>
-                <small>{article.readTimeMinutes} min read</small>
-                <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(article.slug)}>
-                  Preview
-                </button>
-              </article>
-            ))
-          )}
+          ))}
         </div>
-
-        <article className="card reading-library-topics">
-          <small>Theme map</small>
-          <h4>Popular themes</h4>
-          <div className="library-theme-cloud">
-            {visibleThemes.length === 0 ? (
-              <span className="library-theme-chip muted">No themes available</span>
-            ) : (
-              visibleThemes.map((theme) => (
-                <button
-                  key={theme}
-                  type="button"
-                  className={selectedTheme === theme ? 'library-theme-chip active' : 'library-theme-chip'}
-                  onClick={() => setSelectedTheme(theme)}
-                >
-                  {theme}
-                </button>
-              ))
-            )}
-          </div>
-          <button className="ghost-btn" type="button" onClick={() => setSelectedTheme('all')}>
-            Show all themes
-          </button>
-        </article>
       </section>
 
       <section className="card reading-library-catalog">
@@ -1112,7 +893,6 @@ const ArticlesPage = ({
           <h2>Article catalog</h2>
           <small>{filteredArticles.length} results</small>
         </div>
-
         {filteredArticles.length === 0 ? (
           <p className="reading-catalog-empty">No articles found for this selection.</p>
         ) : (
@@ -1125,94 +905,80 @@ const ArticlesPage = ({
                 </div>
                 <h3>{article.title}</h3>
                 <p>{article.summary}</p>
-                {readMetaList(asMetaRecord(article.presentationMeta).target_badges).length > 0 ? (
-                  <div className="reading-premium-chip-row">
-                    {readMetaList(asMetaRecord(article.presentationMeta).target_badges).slice(0, 3).map((badge) => (
-                      <span key={`${article.id}-${badge}-catalog`} className="reading-premium-chip">
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
                 <div className="reading-article-footer">
                   <small>{article.theme}</small>
                   <small>{article.readTimeMinutes} min</small>
                 </div>
-                <button className="ghost-btn" type="button" onClick={() => handleArticleOpen(article.slug)}>
-                  {hasAccess ? 'Read article' : 'Unlock to read'}
-                </button>
+                <Link className="ghost-btn" to={`/library/${article.slug}`}>
+                  {hasAccess ? 'Read article' : 'Preview route'}
+                </Link>
               </article>
             ))}
           </div>
         )}
       </section>
-    </div>
+    </SectionGrid>
   );
 };
 
-const ArticleDetailPage = ({
-  articleSlug,
-  accessToken,
+const ReadingArticlePage = ({
   hasAccess,
   pricingHref,
-  onNavigate,
+  accessToken,
+  context,
 }: {
-  articleSlug: string | null;
-  accessToken: string | null;
   hasAccess: boolean;
   pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
+  accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
+  const navigate = useNavigate();
+  const params = useParams<{ articleSlug?: string }>();
   const [article, setArticle] = useState<ReadingArticle | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [checkInState, setCheckInState] = useState<'idle' | 'saving'>('idle');
-  const [checkInMessage, setCheckInMessage] = useState<string | null>(null);
-  const [checkInError, setCheckInError] = useState<string | null>(null);
-  const [lastCheckInRating, setLastCheckInRating] = useState<'needs-support' | 'good-fit' | 'too-easy' | null>(null);
   const [focusedBlockIndex, setFocusedBlockIndex] = useState<number>(0);
+  const [checkInState, setCheckInState] = useState<'idle' | 'saving'>('idle');
+  const [syncingWords, setSyncingWords] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!articleSlug) {
-      setArticle(null);
-      setError('Article not found.');
+    const preview = PREVIEW_ARTICLES.find((entry) => entry.slug === params.articleSlug) ?? DEFAULT_PREVIEW_ARTICLE;
+    if (!hasAccess || !accessToken || !params.articleSlug) {
+      setArticle(preview);
       setLoading(false);
-      return;
-    }
-    if (!accessToken) {
-      setArticle(null);
-      setError('Sign in to open this article.');
-      setLoading(false);
+      setError(null);
       return;
     }
 
     let cancelled = false;
-    const load = async (): Promise<void> => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getReadingArticleBySlug(accessToken, articleSlug);
+    setLoading(true);
+    setError(null);
+
+    void getReadingArticleBySlug(accessToken, params.articleSlug)
+      .then((data) => {
         if (cancelled) return;
         if (!data) {
-          setArticle(null);
-          setError('This article is unavailable right now.');
+          setArticle(preview);
+          setError('This article is unavailable right now. Showing a preview route instead.');
           return;
         }
         setArticle(data);
-      } catch {
+      })
+      .catch(() => {
         if (cancelled) return;
-        setArticle(null);
-        setError('Could not load this article right now.');
-      } finally {
+        setArticle(preview);
+        setError('Could not load the live article right now. Showing a preview route instead.');
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    };
+      });
 
-    void load();
     return () => {
       cancelled = true;
     };
-  }, [accessToken, articleSlug]);
+  }, [accessToken, hasAccess, params.articleSlug]);
 
   const contentBlocks = useMemo(() => {
     const source = (article?.contentMarkdown ?? '').trim();
@@ -1220,7 +986,7 @@ const ArticleDetailPage = ({
       return [
         {
           type: 'paragraph' as const,
-          text: article?.summary ?? 'This article content is being prepared. Please check back shortly.',
+          text: article?.summary ?? 'This article preview is being prepared.',
         },
       ];
     }
@@ -1235,50 +1001,43 @@ const ArticleDetailPage = ({
         return { type: 'paragraph' as const, text: block };
       });
   }, [article?.contentMarkdown, article?.summary]);
+
   const articlePresentation = asMetaRecord(article?.presentationMeta);
   const articleSupportModes = readMetaList(articlePresentation.support_mode_labels);
   const articleTargetBadges = readMetaList(articlePresentation.target_badges);
   const paragraphStops = contentBlocks
     .map((block, index) => ({ ...block, index }))
     .filter((block) => block.type === 'paragraph' || block.type === 'quote');
-  const readingReport = useMemo(() => {
-    if (lastCheckInRating === 'needs-support') {
-      return {
-        gist: 'Building',
-        detail: 'Needs a second pass',
-        inference: 'Use sentence support',
-        note: 'Slow down and use the paragraph ladder before moving into summary transfer.',
-      };
-    }
-    if (lastCheckInRating === 'too-easy') {
-      return {
-        gist: 'Stable',
-        detail: 'Fast recall',
-        inference: 'Ready for a harder text',
-        note: 'Step into a denser article or carry the topic into Writing for summary practice.',
-      };
-    }
-    return {
-      gist: 'On track',
-      detail: 'Balanced',
-      inference: 'Ready for light transfer',
-      note: 'Keep this article as the day’s anchor and transfer one idea into Writing or Vocabulary.',
-    };
-  }, [lastCheckInRating]);
 
-  const startPractice = (): void => {
-    if (!hasAccess) {
-      window.location.assign(pricingHref);
-      return;
+  const handleWordSync = async (): Promise<void> => {
+    if (!accessToken || !hasAccess) return;
+    setSyncingWords(true);
+    setSyncError(null);
+    setSyncMessage(null);
+    try {
+      const result = await captureNotebookWords(
+        accessToken,
+        READING_VOCAB_SEEDS.map((seed) => ({
+          word: seed.word,
+          definition: seed.definition,
+          example: seed.example,
+          context_text: seed.context,
+          source_type: 'english-reading',
+          source_product_id: READING_PRODUCT_ID,
+          source_label: article?.title ?? 'Reading route',
+          metadata: { article_slug: article?.slug ?? null },
+        })),
+      );
+      setSyncMessage(`Saved ${result.saved} reading words to Vocabulary.`);
+    } catch {
+      setSyncError('Could not sync reading words right now.');
+    } finally {
+      setSyncingWords(false);
     }
-    onNavigate(EXERCISES_PATH);
   };
 
   const handleConfidenceCheckIn = async (rating: 'needs-support' | 'good-fit' | 'too-easy'): Promise<void> => {
-    if (!accessToken || !article) {
-      setCheckInError('Sign in to record reading progress.');
-      return;
-    }
+    if (!accessToken || !article || !hasAccess) return;
 
     const scorePreset = {
       'needs-support': {
@@ -1313,8 +1072,7 @@ const ArticleDetailPage = ({
     } as const;
 
     setCheckInState('saving');
-    setCheckInError(null);
-    setCheckInMessage(null);
+    setError(null);
     try {
       const started = await startLearningAttempt(accessToken, {
         language_code: 'en',
@@ -1350,75 +1108,54 @@ const ArticleDetailPage = ({
         issues: preset.issues,
       });
 
-      setLastCheckInRating(rating);
-      const summary = result.feedback?.summary ?? 'Reading progress recorded in your shared English profile.';
-      setCheckInMessage(summary);
-    } catch (attemptError) {
-      const statusCode = (attemptError as { status?: number } | null)?.status ?? null;
-      if (statusCode === 401 || statusCode === 403) {
-        try {
-          await supabase.auth.signOut({ scope: 'local' });
-        } catch {
-          // Ignore local sign-out failures.
-        }
-        return;
-      }
-      setCheckInError('Could not record reading progress right now. Please try again.');
+      navigate(`/reports/${result.attempt.id}`);
+    } catch {
+      setError('Could not record reading progress right now.');
     } finally {
       setCheckInState('idle');
     }
   };
 
   return (
-    <div className="dashboard-stack">
-      <section className={`card article-detail-hero ${article ? `tone-${article.tone}` : ''}`.trim()}>
-        <div>
-          <div className="reading-article-meta">
-            <span>{article?.category ?? 'Reading'}</span>
-            <span>{article?.level ?? 'A1'}</span>
-            <span>{article?.theme ?? 'General'}</span>
-            {readMetaText(articlePresentation.scene_label) ? <span>{readMetaText(articlePresentation.scene_label)}</span> : null}
-          </div>
-          <h2>{article?.title ?? 'Reading article'}</h2>
-          <p>{article?.summary ?? 'Open focused reading content and connect it with your English profile.'}</p>
-          {articleTargetBadges.length > 0 ? (
-            <div className="reading-premium-chip-row">
-              {articleTargetBadges.map((badge) => (
-                <span key={`article-detail-${badge}`} className="reading-premium-chip">
-                  {badge}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-        <div className="article-detail-actions">
-          <button className="ghost-btn" type="button" onClick={() => onNavigate(ARTICLES_PATH)}>
-            Back to library
-          </button>
-          <button className="primary-cta" type="button" onClick={startPractice}>
-            {hasAccess ? 'Open exercises' : 'Unlock access'}
-          </button>
-        </div>
-      </section>
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to="/intensive">
+            Open intensive route
+          </Link>
+        }
+      />
 
-      {loading ? (
-        <div className="access-banner">
-          <strong>Loading article...</strong>
-          <span>Preparing the full reading view.</span>
-        </div>
+      <PageHero
+        eyebrow="Article route"
+        title={article?.title ?? 'Reading article route'}
+        copy={article?.summary ?? 'Open focused reading content and keep it separate from discovery and debrief.'}
+        actions={
+          <>
+            <Link className="ghost-btn" to="/library">
+              Back to library
+            </Link>
+            <Link className="ghost-btn" to={article ? `/intensive?article=${encodeURIComponent(article.slug)}` : '/intensive'}>
+              Open intensive route
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Live article reading is locked"
+          message="You can preview the route and article framing here, but full reading content, scoring, and vocabulary sync unlock with an active plan."
+          ctaHref={pricingHref}
+        />
       ) : null}
 
-      {!loading && error ? (
-        <div className="access-banner warning">
-          <strong>Could not open article.</strong>
-          <span>{error}</span>
-          <button className="ghost-btn" type="button" onClick={() => onNavigate(ARTICLES_PATH)}>
-            Back to library
-          </button>
-        </div>
-      ) : null}
+      {loading ? <section className="route-empty-state">Loading article route...</section> : null}
+      {error ? <section className="route-empty-state">{error}</section> : null}
 
-      {!loading && !error && article ? (
+      {article ? (
         <section className="article-detail-layout">
           <article className="card article-detail-content">
             <div className="article-reading-ribbon">
@@ -1428,17 +1165,13 @@ const ArticleDetailPage = ({
               </div>
               <div className="reading-premium-chip-row">
                 {(articleSupportModes.length > 0 ? articleSupportModes : ['Focus mode', 'Margin glossary', 'Summary transfer']).map((mode) => (
-                  <button
-                    key={`${article.id}-${mode}-mode`}
-                    type="button"
-                    className="reading-premium-chip muted"
-                    onClick={() => setFocusedBlockIndex(paragraphStops[0]?.index ?? 0)}
-                  >
+                  <span key={`${article.id}-${mode}-mode`} className="reading-premium-chip muted">
                     {mode}
-                  </button>
+                  </span>
                 ))}
               </div>
             </div>
+
             {contentBlocks.map((block, index) => {
               if (block.type === 'heading') {
                 return (
@@ -1490,94 +1223,345 @@ const ArticleDetailPage = ({
               <span>Theme</span>
               <strong>{article.theme}</strong>
             </div>
-            <div className="article-reading-report">
-              <small>Reading report</small>
-              <div className="article-reading-report-grid">
-                <div>
-                  <span>Gist</span>
-                  <strong>{readingReport.gist}</strong>
-                </div>
-                <div>
-                  <span>Detail</span>
-                  <strong>{readingReport.detail}</strong>
-                </div>
-                <div>
-                  <span>Inference</span>
-                  <strong>{readingReport.inference}</strong>
-                </div>
-              </div>
-              <p>{readingReport.note}</p>
-            </div>
             <div className="article-paragraph-ladder">
               <small>Paragraph ladder</small>
-              {paragraphStops.length === 0 ? (
-                <p>No paragraph waypoints yet.</p>
-              ) : (
-                paragraphStops.map((block, idx) => (
-                  <button
-                    key={`${article.id}-ladder-${block.index}`}
-                    type="button"
-                    className={focusedBlockIndex === block.index ? 'article-ladder-row active' : 'article-ladder-row'}
-                    onClick={() => setFocusedBlockIndex(block.index)}
-                  >
-                    <strong>{`Step ${idx + 1}`}</strong>
-                    <span>{block.text.slice(0, 72)}</span>
-                  </button>
-                ))
-              )}
+              {paragraphStops.map((block, idx) => (
+                <button
+                  key={`${article.id}-ladder-${block.index}`}
+                  type="button"
+                  className={focusedBlockIndex === block.index ? 'article-ladder-row active' : 'article-ladder-row'}
+                  onClick={() => setFocusedBlockIndex(block.index)}
+                >
+                  <strong>{`Step ${idx + 1}`}</strong>
+                  <span>{block.text.slice(0, 72)}</span>
+                </button>
+              ))}
             </div>
-            <button className="ghost-btn" type="button" onClick={startPractice}>
-              Practice this skill
-            </button>
+            <div className="reading-premium-chip-row">
+              {(articleTargetBadges.length > 0 ? articleTargetBadges : ['Inference', 'Detail', 'Summary']).map((badge) => (
+                <span key={`${article.id}-${badge}-target`} className="reading-premium-chip">
+                  {badge}
+                </span>
+              ))}
+            </div>
             <div className="article-detail-checkin">
               <h4>Reading confidence check-in</h4>
-              <p>Send a quick signal into your shared English profile so the hub can adapt the next plan.</p>
+              <p>Send a quick signal into your shared English profile so the hub can adapt the next route.</p>
               <div className="article-detail-checkin-actions">
                 <button
                   className="ghost-btn"
                   type="button"
-                  disabled={checkInState === 'saving'}
-                  onClick={() => { void handleConfidenceCheckIn('needs-support'); }}
+                  disabled={!hasAccess || checkInState === 'saving'}
+                  onClick={() => {
+                    void handleConfidenceCheckIn('needs-support');
+                  }}
                 >
                   Need support
                 </button>
                 <button
                   className="ghost-btn"
                   type="button"
-                  disabled={checkInState === 'saving'}
-                  onClick={() => { void handleConfidenceCheckIn('good-fit'); }}
+                  disabled={!hasAccess || checkInState === 'saving'}
+                  onClick={() => {
+                    void handleConfidenceCheckIn('good-fit');
+                  }}
                 >
                   Good fit
                 </button>
                 <button
                   className="ghost-btn"
                   type="button"
-                  disabled={checkInState === 'saving'}
-                  onClick={() => { void handleConfidenceCheckIn('too-easy'); }}
+                  disabled={!hasAccess || checkInState === 'saving'}
+                  onClick={() => {
+                    void handleConfidenceCheckIn('too-easy');
+                  }}
                 >
                   Too easy
                 </button>
               </div>
               {checkInState === 'saving' ? <small>Saving reading signal...</small> : null}
-              {checkInMessage ? <small>{checkInMessage}</small> : null}
-              {checkInError ? <small>{checkInError}</small> : null}
+            </div>
+            <div className="article-detail-checkin">
+              <h4>Vocabulary capture</h4>
+              <p>Push this reading route’s key words into Vocabulary activation.</p>
+              <button className="ghost-btn" type="button" disabled={!hasAccess || syncingWords} onClick={() => void handleWordSync()}>
+                {syncingWords ? 'Syncing...' : 'Send reading words'}
+              </button>
+              {syncMessage ? <small>{syncMessage}</small> : null}
+              {syncError ? <small>{syncError}</small> : null}
             </div>
           </aside>
         </section>
       ) : null}
-    </div>
+    </SectionGrid>
   );
 };
 
-const ARTICLE_STATUS_OPTIONS = ['draft', 'published', 'archived'] as const;
-type ArticleStatus = (typeof ARTICLE_STATUS_OPTIONS)[number];
+const ReadingIntensivePage = ({
+  hasAccess,
+  pricingHref,
+  search,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  search: string;
+  context: EnglishRouteContext;
+}) => {
+  const location = useLocation();
+  const articleSlug = new URLSearchParams(location.search).get('article');
+  const selectedArticle = PREVIEW_ARTICLES.find((article) => article.slug === articleSlug) ?? DEFAULT_PREVIEW_ARTICLE;
+  const visibleLanes = SERVICE_BLUEPRINT.filter((lane) => {
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+    return `${lane.title} ${lane.detail} ${lane.skill}`.toLowerCase().includes(query);
+  });
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to={selectedArticle ? `/library/${selectedArticle.slug}` : '/library'}>
+            Return to article
+          </Link>
+        }
+      />
+
+      <PageHero
+        eyebrow="Intensive route"
+        title="Keep the live workbench on a page that belongs only to analysis and transfer."
+        copy="This is the focused reading lab. Discovery stays in the library, and final feedback stays in the report room."
+        actions={
+          <>
+            <Link className="ghost-btn" to="/library">
+              Back to library
+            </Link>
+            <Link className="ghost-btn" to={selectedArticle ? `/library/${selectedArticle.slug}` : '/library'}>
+              Open anchor article
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Intensive workbench is locked"
+          message="You can inspect the route shape, but the full live analysis workflow unlocks with an active reading plan."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className={'route-stage-card' + (!hasAccess ? ' route-disabled' : '')}>
+        <div className="route-stage-header">
+          <div>
+            <small className="route-context-kicker">Anchor article</small>
+            <h2>{selectedArticle.title}</h2>
+          </div>
+          <span className="route-chip">{selectedArticle.level}</span>
+        </div>
+        <p>{selectedArticle.summary}</p>
+        <div className="route-stack-list">
+          {visibleLanes.map((lane) => (
+            <article key={lane.slug} className="route-list-row static">
+              <strong>{lane.title}</strong>
+              <span>{lane.detail}</span>
+            </article>
+          ))}
+        </div>
+        <div className="route-inline-card">
+          <strong>Execution shape</strong>
+          <p>Notice {'->'} focus one paragraph {'->'} map structure {'->'} summarize {'->'} route weaknesses outward.</p>
+        </div>
+        <div className="route-inline-actions">
+          <Link className="primary-cta" to="/reports">
+            Open report room
+          </Link>
+          <a className="ghost-btn" href={REVIEW_HANDOFFS[0].href}>
+            Repair in Grammar
+          </a>
+        </div>
+      </section>
+    </SectionGrid>
+  );
+};
+
+const ReadingReportPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const params = useParams<{ attemptId?: string }>();
+  const [attempt, setAttempt] = useState<Record<string, unknown> | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.attemptId || !hasAccess || !accessToken) {
+      setAttempt(null);
+      setFeedback(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void getLearningAttempt(accessToken, params.attemptId)
+      .then((result) => {
+        if (cancelled) return;
+        setAttempt(result.attempt ?? null);
+        setFeedback(result.feedback ?? null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError('Could not load this reading report yet.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.attemptId]);
+
+  const issues = Array.isArray(feedback?.issues) ? (feedback?.issues as Array<Record<string, unknown>>) : [];
+  const overallScore = typeof attempt?.overall_score === 'number' ? Math.round((attempt.overall_score as number) * 100) : null;
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to="/library">
+            Return to library
+          </Link>
+        }
+      />
+
+      <PageHero
+        eyebrow="Report room"
+        title="Keep results and next-step routing off the live reading page."
+        copy="The report room owns feedback, issue grouping, and the next connected jump into Vocabulary, Grammar, or Writing."
+        actions={
+          <>
+            <Link className="ghost-btn" to="/intensive">
+              Back to intensive route
+            </Link>
+            <Link className="ghost-btn" to="/library">
+              Open another article
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Report room is preview-only"
+          message="The structure is visible now, but live scores and issue grouping appear after a completed reading route."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className="route-split-grid">
+        <section className="route-debrief-card">
+          {loading ? <div className="route-empty-state">Loading reading report...</div> : null}
+          {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+          {!loading && !attempt ? (
+            <div className="route-empty-state">
+              Complete a reading check-in first. The report room will then hold summary, issues, and cross-service routing.
+            </div>
+          ) : null}
+
+          {attempt ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Latest report</small>
+                  <h2>{typeof feedback?.summary === 'string' && feedback.summary ? feedback.summary : 'Reading route recorded.'}</h2>
+                </div>
+                {overallScore != null ? <span className="route-chip">{overallScore}% score</span> : null}
+              </div>
+              <div className="route-metric-grid">
+                <div className="route-inline-card">
+                  <small className="route-context-kicker">Attempt status</small>
+                  <strong>{String(attempt.status ?? 'completed')}</strong>
+                </div>
+                <div className="route-inline-card">
+                  <small className="route-context-kicker">Overall score</small>
+                  <strong>{overallScore != null ? `${overallScore}%` : 'Recorded'}</strong>
+                </div>
+                <div className="route-inline-card">
+                  <small className="route-context-kicker">Issue count</small>
+                  <strong>{issues.length}</strong>
+                </div>
+              </div>
+              <div className="route-stack-list">
+                {(issues.length > 0
+                  ? issues
+                  : [
+                      {
+                        category: 'reading',
+                        subskill_key: 'reading.transfer',
+                        explanation: 'Use this report to decide whether Reading should hand off to Grammar, Vocabulary, or Writing next.',
+                        correction_hint: 'Choose one explicit next route below instead of returning to a crowded dashboard.',
+                      },
+                    ]
+                ).map((issue, index) => (
+                  <article key={`issue-${index}`} className="route-list-row static">
+                    <strong>{String(issue.subskill_key ?? issue.category ?? 'reading')}</strong>
+                    <span>{String(issue.explanation ?? issue.correction_hint ?? 'Reading report issue.')}</span>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </section>
+
+        <aside className="route-sidebar-card">
+          <div className="route-stage-header">
+            <div>
+              <small className="route-context-kicker">Next routes</small>
+              <h2>Connected handoffs</h2>
+            </div>
+          </div>
+          <div className="route-stack-list">
+            {REVIEW_HANDOFFS.map((handoff) => (
+              <a key={handoff.label} className="route-list-row" href={handoff.href}>
+                <strong>{handoff.label}</strong>
+                <span>Open the exact downstream route</span>
+              </a>
+            ))}
+          </div>
+          <Link className="ghost-btn" to="/library">
+            Read another article
+          </Link>
+        </aside>
+      </section>
+    </SectionGrid>
+  );
+};
 
 const AdminReadingArticlesPage = ({
   accessToken,
   isAdmin,
+  search,
 }: {
   accessToken: string | null;
   isAdmin: boolean;
+  search: string;
 }) => {
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | 'all'>('all');
   const [articles, setArticles] = useState<ReadingArticle[]>([]);
@@ -1586,53 +1570,7 @@ const AdminReadingArticlesPage = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<{
-    title: string;
-    slug: string;
-    summary: string;
-    contentMarkdown: string;
-    level: CefrLevel;
-    category: string;
-    theme: string;
-    tone: ReadingArticleTone;
-    readTimeMinutes: number;
-    status: ArticleStatus;
-    sortOrder: number;
-    hot: boolean;
-    sceneLabel: string;
-    heroNote: string;
-    coverStyleKey: string;
-    coachTone: string;
-    difficultyBadge: string;
-    supportModeLabels: string;
-    targetBadges: string;
-    ambientAudioKey: string;
-    celebrationCopy: string;
-    previewMediaUrl: string;
-  }>({
-    title: '',
-    slug: '',
-    summary: '',
-    contentMarkdown: '',
-    level: 'B1',
-    category: 'Daily Life',
-    theme: 'Everyday Language',
-    tone: 'mint',
-    readTimeMinutes: 6,
-    status: 'draft',
-    sortOrder: 100,
-    hot: false,
-    sceneLabel: '',
-    heroNote: '',
-    coverStyleKey: '',
-    coachTone: '',
-    difficultyBadge: '',
-    supportModeLabels: '',
-    targetBadges: '',
-    ambientAudioKey: '',
-    celebrationCopy: '',
-    previewMediaUrl: '',
-  });
+  const [draft, setDraft] = useState<ReturnType<typeof emptyArticleDraft>>(emptyArticleDraft());
 
   const draftFromArticle = (article: ReadingArticle) => ({
     title: article.title,
@@ -1694,30 +1632,7 @@ const AdminReadingArticlesPage = ({
 
   const resetDraft = (): void => {
     setSelectedId(null);
-    setDraft({
-      title: '',
-      slug: '',
-      summary: '',
-      contentMarkdown: '',
-      level: 'B1',
-      category: 'Daily Life',
-      theme: 'Everyday Language',
-      tone: 'mint',
-      readTimeMinutes: 6,
-      status: 'draft',
-      sortOrder: 100,
-      hot: false,
-      sceneLabel: '',
-      heroNote: '',
-      coverStyleKey: '',
-      coachTone: '',
-      difficultyBadge: '',
-      supportModeLabels: '',
-      targetBadges: '',
-      ambientAudioKey: '',
-      celebrationCopy: '',
-      previewMediaUrl: '',
-    });
+    setDraft(emptyArticleDraft());
     setSuccess(null);
     setError(null);
   };
@@ -1794,46 +1709,44 @@ const AdminReadingArticlesPage = ({
     }
   };
 
+  const visibleArticles = useMemo(
+    () => filterArticlesBySearch(articles, search),
+    [articles, search],
+  );
+
   if (!isAdmin) {
     return (
-      <div className="dashboard-stack">
-        <div className="access-banner warning">
-          <strong>Admin access required.</strong>
-          <span>This area is available only for Reading service admins.</span>
-        </div>
-      </div>
+      <SectionGrid>
+        <PageHero
+          eyebrow="Reading admin"
+          title="Article Studio"
+          copy="This route stays separate from the learner flow, but it is still available inside the same service shell."
+        />
+        <section className="route-empty-state">Admin access required for Reading content authoring.</section>
+      </SectionGrid>
     );
   }
 
   return (
-    <div className="dashboard-stack">
-      <section className="card admin-articles-head">
-        <div>
-          <small>Reading admin</small>
-          <h2>Article Studio</h2>
-          <p>Create, edit, and publish high-quality reading articles with level/category/theme control.</p>
-        </div>
-        <div className="admin-articles-actions">
-          <button className="ghost-btn" type="button" onClick={resetDraft}>
-            New article
-          </button>
-          <button className="primary-cta" type="button" onClick={() => void onSave()} disabled={saving}>
-            {saving ? 'Saving...' : selectedId ? 'Update article' : 'Create article'}
-          </button>
-        </div>
-      </section>
+    <SectionGrid>
+      <PageHero
+        eyebrow="Reading admin"
+        title="Article Studio"
+        copy="Create, edit, and polish reading content without mixing authoring into the learner routes."
+        actions={
+          <>
+            <button className="ghost-btn" type="button" onClick={resetDraft}>
+              New article
+            </button>
+            <button className="primary-cta" type="button" onClick={() => void onSave()} disabled={saving}>
+              {saving ? 'Saving...' : selectedId ? 'Update article' : 'Create article'}
+            </button>
+          </>
+        }
+      />
 
-      {error ? (
-        <div className="access-banner warning">
-          <strong>Action failed.</strong>
-          <span>{error}</span>
-        </div>
-      ) : null}
-      {success ? (
-        <div className="access-banner">
-          <strong>{success}</strong>
-        </div>
-      ) : null}
+      {error ? <section className="route-empty-state">{error}</section> : null}
+      {success ? <section className="route-inline-card"><strong>{success}</strong></section> : null}
 
       <section className="card admin-articles-layout">
         <div className="admin-articles-list">
@@ -1850,7 +1763,7 @@ const AdminReadingArticlesPage = ({
           </div>
           {loading ? <p className="reading-catalog-empty">Loading...</p> : null}
           <div className="admin-article-list-grid">
-            {articles.map((article) => (
+            {visibleArticles.map((article) => (
               <button
                 key={article.id}
                 type="button"
@@ -1886,20 +1799,13 @@ const AdminReadingArticlesPage = ({
 
           <label className="admin-form-block">
             <span>Summary</span>
-            <textarea
-              rows={3}
-              value={draft.summary}
-              onChange={(event) => setDraft((prev) => ({ ...prev, summary: event.target.value }))}
-            />
+            <textarea rows={3} value={draft.summary} onChange={(event) => setDraft((prev) => ({ ...prev, summary: event.target.value }))} />
           </label>
 
           <div className="admin-form-grid four">
             <label>
               <span>Level</span>
-              <select
-                value={draft.level}
-                onChange={(event) => setDraft((prev) => ({ ...prev, level: event.target.value as CefrLevel }))}
-              >
+              <select value={draft.level} onChange={(event) => setDraft((prev) => ({ ...prev, level: event.target.value as CefrLevel }))}>
                 {CEFR_LEVELS.map((level) => (
                   <option key={level} value={level}>
                     {level}
@@ -1909,10 +1815,7 @@ const AdminReadingArticlesPage = ({
             </label>
             <label>
               <span>Tone</span>
-              <select
-                value={draft.tone}
-                onChange={(event) => setDraft((prev) => ({ ...prev, tone: event.target.value as ReadingArticleTone }))}
-              >
+              <select value={draft.tone} onChange={(event) => setDraft((prev) => ({ ...prev, tone: event.target.value as ReadingArticleTone }))}>
                 {['lime', 'mint', 'sky', 'peach', 'lavender', 'sand'].map((tone) => (
                   <option key={tone} value={tone}>
                     {tone}
@@ -1922,10 +1825,7 @@ const AdminReadingArticlesPage = ({
             </label>
             <label>
               <span>Status</span>
-              <select
-                value={draft.status}
-                onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as ArticleStatus }))}
-              >
+              <select value={draft.status} onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as ArticleStatus }))}>
                 {ARTICLE_STATUS_OPTIONS.map((status) => (
                   <option key={status} value={status}>
                     {status}
@@ -2022,7 +1922,6 @@ const AdminReadingArticlesPage = ({
                 rows={2}
                 value={draft.celebrationCopy}
                 onChange={(event) => setDraft((prev) => ({ ...prev, celebrationCopy: event.target.value }))}
-                placeholder="Carry this article into a summary or vocabulary activation task."
               />
             </label>
           </section>
@@ -2030,18 +1929,10 @@ const AdminReadingArticlesPage = ({
           <div className="admin-form-grid two">
             <label>
               <span>Sort order</span>
-              <input
-                type="number"
-                value={draft.sortOrder}
-                onChange={(event) => setDraft((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 100 }))}
-              />
+              <input type="number" value={draft.sortOrder} onChange={(event) => setDraft((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 100 }))} />
             </label>
             <label className="admin-checkbox-row">
-              <input
-                type="checkbox"
-                checked={draft.hot}
-                onChange={(event) => setDraft((prev) => ({ ...prev, hot: event.target.checked }))}
-              />
+              <input type="checkbox" checked={draft.hot} onChange={(event) => setDraft((prev) => ({ ...prev, hot: event.target.checked }))} />
               <span>Mark as trending</span>
             </label>
           </div>
@@ -2071,104 +1962,45 @@ const AdminReadingArticlesPage = ({
           </div>
         </div>
       </section>
-    </div>
+    </SectionGrid>
   );
 };
 
-const SignedOutLanding = ({
-  serviceLabel,
-  signInHref,
+const ReadingWorkspaceRoutes = ({
+  hasAccess,
   pricingHref,
-  platformWorkspaceHref,
-  isSignedIn,
-  onContinue,
+  accessToken,
+  search,
+  isAdmin,
 }: {
-  serviceLabel: string;
-  signInHref: string;
+  hasAccess: boolean;
   pricingHref: string;
-  platformWorkspaceHref: string;
-  isSignedIn: boolean;
-  onContinue: () => void;
+  accessToken: string | null;
+  search: string;
+  isAdmin: boolean;
 }) => {
-  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
-  const focusLower = focusTitle.toLowerCase();
+  const location = useLocation();
+  const context = readEnglishRouteContext(location.search);
 
   return (
-    <div className="service-landing">
-      <section className="landing-hero">
-        <div className="landing-mosaic">
-          <article className="landing-card landing-stat tilt-left">
-            <div className="landing-stat-head">
-              <strong>174+</strong>
-              <span className="landing-arrow">{'->'}</span>
-            </div>
-            <p>{focusTitle} programs</p>
-            <small>new practice packs every week</small>
-          </article>
-
-          <article className="landing-card landing-team tilt-right">
-            <span className="landing-pill">4.8 review</span>
-            <h3>Mentor team</h3>
-            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
-          </article>
-
-          <article className="landing-card landing-offer tilt-right">
-            <h3>Secrets of {focusLower}</h3>
-            <p className="landing-price">
-              12$ <span>35$</span>
-            </p>
-            <div className="landing-ticket">
-              <div className="landing-ticket-row">
-                <small>24 Jul</small>
-                <small>28 Jul</small>
-              </div>
-              <strong>18:00</strong>
-              <small>35h 20m</small>
-            </div>
-          </article>
-
-          <article className="landing-card landing-showcase tilt-left">
-            <div className="landing-orb" aria-hidden />
-            <h3>{focusTitle} studio</h3>
-            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
-          </article>
-        </div>
-
-        <article className="landing-copy card">
-          <div className="landing-chip">{serviceLabel}</div>
-          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
-          <p>
-            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
-            writing, speaking, grammar, vocabulary, and immersion.
-          </p>
-          <div className="landing-cta-row">
-            {isSignedIn ? (
-              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
-            ) : (
-              <a className="primary-cta" href={signInHref}>Get started</a>
-            )}
-            <a className="ghost-btn" href={pricingHref}>See pricing</a>
-            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-          </div>
-        </article>
-      </section>
-
-      <section className="landing-proof-grid">
-        <article className="landing-proof card tilt-left">
-          <small>Learner footprint</small>
-          <strong>12k+</strong>
-          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
-        </article>
-        <article className="landing-proof card tilt-right">
-          <small>Practice volume</small>
-          <strong>34k</strong>
-          <p>Total {focusLower} training hours logged by active users on the platform.</p>
-        </article>
-      </section>
-    </div>
+    <Routes>
+      <Route path="/dashboard" element={<ReadingDashboardPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} search={search} context={context} />} />
+      <Route path="/library" element={<ReadingLibraryPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} search={search} context={context} />} />
+      <Route path="/library/:articleSlug" element={<ReadingArticlePage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />} />
+      <Route path="/intensive" element={<ReadingIntensivePage hasAccess={hasAccess} pricingHref={pricingHref} search={search} context={context} />} />
+      <Route path="/reports" element={<ReadingReportPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />} />
+      <Route path="/reports/:attemptId" element={<ReadingReportPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />} />
+      <Route path="/admin/articles" element={<AdminReadingArticlesPage accessToken={accessToken} isAdmin={isAdmin} search={search} />} />
+      <Route path="/articles" element={<Navigate to="/library" replace />} />
+      <Route path="/article-detail" element={<Navigate to="/library" replace />} />
+      <Route path="/exercises" element={<Navigate to="/intensive" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 };
+
 const App = () => {
+  const location = useLocation();
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
   const [search, setSearch] = useState('');
@@ -2176,58 +2008,7 @@ const App = () => {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [syncingWords, setSyncingWords] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
-
-  const [path, setPath] = useState<AppPath>(() => {
-    if (typeof window === 'undefined') return '/';
-    return resolveAppPath(window.location.pathname);
-  });
-  const [articleSlug, setArticleSlug] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return resolveArticleSlug(window.location.pathname);
-  });
-  const showLanding = path === '/';
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (showLanding || status === 'signed_out') {
-      setMobileNavOpen(false);
-    }
-  }, [showLanding, status]);
-
-  const navigate = (nextPath: AppPath, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    if (window.location.pathname !== nextPath) {
-      if (replace) {
-        window.history.replaceState({}, '', nextPath);
-      } else {
-        window.history.pushState({}, '', nextPath);
-      }
-    }
-    setPath(nextPath);
-    if (nextPath !== ARTICLE_DETAIL_PATH) setArticleSlug(null);
-  };
-
-  const navigateToArticle = (slug: string, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    const cleanSlug = slug.trim();
-    if (!cleanSlug) return;
-    const target = `${ARTICLES_PATH}/${encodeURIComponent(cleanSlug)}`;
-    if (window.location.pathname !== target) {
-      if (replace) {
-        window.history.replaceState({}, '', target);
-      } else {
-        window.history.pushState({}, '', target);
-      }
-    }
-    setArticleSlug(cleanSlug);
-    setPath(ARTICLE_DETAIL_PATH);
-  };
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -2250,26 +2031,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      setPath(resolveAppPath(window.location.pathname));
-      setArticleSlug(resolveArticleSlug(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    if (status === 'signed_out' && path !== '/') {
-      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-        window.history.replaceState({}, '', '/');
-      }
-      setPath('/');
-      setArticleSlug(null);
-    }
-  }, [path, status]);
-
-  useEffect(() => {
     let cancelled = false;
 
     const resolveAccess = async () => {
@@ -2277,7 +2038,7 @@ const App = () => {
         setAccessStatus('idle');
         setAccessEndsAt(null);
         setAccessError(null);
-        setUserRole(null);
+        setIsAdmin(false);
         return;
       }
 
@@ -2287,13 +2048,19 @@ const App = () => {
       try {
         const me = await getMe(session.access_token);
         if (cancelled) return;
-        setUserRole(typeof me.user.role === 'string' ? me.user.role : null);
 
         const entitlement =
           me.entitlements.find(
             (entry) => entry.resource_type === 'product' && entry.resource_id === READING_PRODUCT_ID,
           ) ?? null;
 
+        const adminByUserRole = String(me.user.role ?? '').toLowerCase() === 'admin';
+        const adminByMembership = me.memberships.some((membership) => {
+          const role = String(membership.role ?? '').toLowerCase();
+          return role === 'admin' || role === 'owner';
+        });
+
+        setIsAdmin(adminByUserRole || adminByMembership);
         setAccessEndsAt(entitlement?.ends_at ?? null);
         setAccessStatus(entitlement ? 'granted' : 'denied');
       } catch (error) {
@@ -2306,12 +2073,10 @@ const App = () => {
             // ignore sign-out failures
           }
           setAccessStatus('idle');
-          setUserRole(null);
           return;
         }
         setAccessStatus('denied');
-        setAccessError('Could not verify your service access right now.');
-        setUserRole(null);
+        setAccessError('Could not verify your reading access right now.');
       }
     };
 
@@ -2373,353 +2138,73 @@ const App = () => {
   const hasAccess = status === 'signed_in' && accessStatus === 'granted';
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
-  const isAdmin = (userRole ?? '').toLowerCase() === 'admin';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
-  const profileEmail = session?.user.email ?? null;
-  const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
-  const accessEndsLabel = useMemo(() => {
-    if (!accessEndsAt) return null;
-    const date = new Date(accessEndsAt);
-    if (Number.isNaN(date.getTime())) return accessEndsAt;
-    return date.toLocaleString();
-  }, [accessEndsAt]);
 
-  const visibleLessons = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return lessonRows;
-    return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
-  }, [search]);
-
-  
   void profileName;
-  void profileEmail;
-  void avatarLabel;
-  void accessEndsLabel;
+  void accessEndsAt;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
-  const handleSyncWords = async (): Promise<void> => {
-    if (!session?.access_token) {
-      window.location.assign(signInHref);
-      return;
-    }
-
-    setSyncingWords(true);
-    setSyncError(null);
-    setSyncMessage(null);
-    try {
-      const payload = READING_VOCAB_SEEDS.map((seed, index) => ({
-        word: seed.word,
-        definition: seed.definition,
-        example: seed.example,
-        context_text: seed.context,
-        source_type: 'english-reading.sync',
-        source_product_id: READING_PRODUCT_ID,
-        source_label: 'Reading sync',
-        metadata: {
-          pipeline: 'reading_dashboard_sync',
-          rank: index + 1,
-        },
-      }));
-
-      const result = await captureNotebookWords(session.access_token, payload);
-      const savedCount = Number(result.saved ?? payload.length);
-      setSyncMessage(`${savedCount} reading words synced to your vocabulary notebook.`);
-    } catch (error) {
-      const statusCode = (error as { status?: number } | null)?.status ?? null;
-      if (statusCode === 401 || statusCode === 403) {
-        try {
-          await supabase.auth.signOut({ scope: 'local' });
-        } catch {
-          // ignore sign-out failures
-        }
-        return;
-      }
-      setSyncError('Could not sync reading words right now. Please try again.');
-    } finally {
-      setSyncingWords(false);
-    }
-  };
-
-  
-  if (showLanding) {
+  if (status === 'signed_out' || location.pathname === '/') {
     return (
-      <div className="landing-page-root">
-        <div className="ambient-layer" />
-        <div className="landing-page-main">
-          <header className="landing-page-topbar card">
-            <button
-              type="button"
-              className="landing-brand"
-              onClick={() => navigate('/')}
-            >
-              <span className="dot" />
-              <strong>{SERVICE_LABEL}</strong>
-            </button>
-            <nav className="landing-links">
-              <a href={buildPlatformUrl('/about')}>About us</a>
-              <a href={buildPlatformUrl('/programs')}>Programs</a>
-              <a href={buildPlatformUrl('/blog')}>Blog</a>
-              <a href={buildPlatformUrl('/courses')}>Courses</a>
-              <a href={buildPlatformUrl('/faq')}>FAQ</a>
-              <a href={buildPlatformUrl('/contact')}>Contact</a>
-            </nav>
-            <div className="landing-actions">
-              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Log in</a>
-              )}
-              <a className="primary-cta" href={pricingHref}>Sign up</a>
-            </div>
-          </header>
-
-          <SignedOutLanding
-            serviceLabel={SERVICE_LABEL}
-            signInHref={signInHref}
-            pricingHref={pricingHref}
-            platformWorkspaceHref={platformWorkspaceHref}
-            isSignedIn={status === 'signed_in'}
-            onContinue={() => navigate('/dashboard')}
-          />
-        </div>
-        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-          Updates
-        </a>
-      </div>
-    );
-  }
-  return (
-    <div className="reading-root">
-      <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-          <button
-            type="button"
-            className="brand-mark"
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-            style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-          >
-            <span className="dot" />
-            <div>
-              <strong>ENGLISH READING</strong>
-              <small>Unified auth + payment</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-nav-inline-toggle"
-            aria-expanded={mobileNavOpen}
-            aria-controls="service-side-nav"
-            onClick={() => setMobileNavOpen((prev) => !prev)}
-          >
-            {mobileNavOpen ? 'Close menu' : 'Menu'}
-          </button>
-
-          <div className="left-nav-body">
-          <nav className="menu-list">
-            <button
-              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate('/dashboard');
-              }}
-            >
-              Dashboard
-            </button>
-            <button
-              className={'menu-link ' + (path === ARTICLES_PATH || path === ARTICLE_DETAIL_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(ARTICLES_PATH);
-              }}
-            >
-              Articles
-            </button>
-            <button
-              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            >
-              Exercises
-            </button>
-          </nav>
-
-          
-          <section className="service-switcher">
-            <div className="service-switch-head">
-              <span>Switch service</span>
-              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
-            </div>
-            <div className="service-switch-grid">
-              {SERVICE_SWITCH_LINKS.map((service) => (
-                <a key={service.key} className="service-switch-link" href={service.href}>
-                  {service.label}
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <div className="left-footer">
-            <div className="support-zone">
-              <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
-              <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
-            </div>
-
-            <div className="mobile-account-zone">
-              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
-              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
-              )}
-            </div>
-
-            <article className="upgrade-card">
-              <h3>Premium Reading Pack</h3>
-              <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
-              <a className="black-btn" href={pricingHref}>View plans</a>
-            </article>
-          </div>
-        </div>
-        </aside>
-
-        <main className="main-column">
-          {!showLanding ? (
-          <header className="topbar">
-            <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - premium daily reading workflow.`}</p>
-            </div>
-
-            <div className="topbar-actions">
-              <label className="search-box">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
-                />
-              </label>
-              <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
-              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Sign in</a>
-              )}
-            </div>
-          </header>
-          ) : null}
-
-          {showLanding ? (
+      <Routes>
+        <Route
+          path="/"
+          element={
             <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
             />
-          ) : null}
-          {!showLanding && status !== 'signed_out' && checkingAccess ? (
-            <div className="access-banner">
-              <strong>Checking access...</strong>
-              <span>Verifying your active plan for English Reading.</span>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && needsAccess ? (
-            <div className="access-banner warning">
-              <strong>Plan required for full access.</strong>
-              <span>Choose a trial or paid plan to unlock this service.</span>
-              <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          }
+        />
+        <Route path="*" element={<Navigate to={status === 'signed_in' ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    );
+  }
 
-          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage
-              lessons={visibleLessons}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onOpenExercise={() => {
-                navigate(EXERCISES_PATH);
-              }}
-              isSignedIn={status === 'signed_in'}
-              signInHref={signInHref}
-              syncingWords={syncingWords}
-              syncMessage={syncMessage}
-              syncError={syncError}
-              onSyncWords={() => {
-                void handleSyncWords();
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === ARTICLES_PATH && (
-            <ArticlesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              accessToken={session?.access_token ?? null}
-              onNavigate={navigate}
-              onOpenArticle={(slug) => {
-                navigateToArticle(slug);
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === ARTICLE_DETAIL_PATH && (
-            <ArticleDetailPage
-              articleSlug={articleSlug}
-              accessToken={session?.access_token ?? null}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === ADMIN_ARTICLES_PATH && (
-            <AdminReadingArticlesPage
-              accessToken={session?.access_token ?? null}
-              isAdmin={isAdmin}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
-            <ExercisesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-            />
-          )}
-        </main>
-      </div>
-      <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-        Updates
-      </a>
-    </div>
+  const menuItems = [
+    { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
+    { label: 'Library', href: '/library', active: location.pathname.startsWith('/library') },
+    { label: 'Intensive route', href: '/intensive', active: location.pathname.startsWith('/intensive') },
+    { label: 'Report room', href: '/reports', active: location.pathname.startsWith('/reports') },
+  ];
+
+  return (
+    <EnglishSkillWorkspace
+      serviceName={SERVICE_LABEL}
+      serviceTagline="English Reading service - route-based article library, focused reading, and debrief workflow."
+      menuItems={menuItems}
+      serviceSwitchLinks={SERVICE_SWITCH_LINKS}
+      hubHref={ENGLISH_HUB_URL}
+      platformHref={platformWorkspaceHref}
+      pricingHref={pricingHref}
+      signInHref={signInHref}
+      status={status}
+      needsAccess={needsAccess}
+      checkingAccess={checkingAccess}
+      accessError={accessError}
+      search={search}
+      onSearchChange={setSearch}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+      upgradeTitle="Premium Reading Pack"
+      upgradeCopy="Unlock full article shelves, live reading routes, structured debrief pages, and connected English handoffs."
+      updatesHref={buildPlatformUrl('/updates')}
+    >
+      <ReadingWorkspaceRoutes
+        hasAccess={hasAccess}
+        pricingHref={pricingHref}
+        accessToken={session?.access_token ?? null}
+        search={search}
+        isAdmin={isAdmin}
+      />
+    </EnglishSkillWorkspace>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -44,6 +44,44 @@ serve(async (req) => {
     );
     const products = await resolveEnglishProducts(sb);
 
+    if (req.method === "GET" && route.startsWith("/")) {
+      const attemptId = decodeURIComponent(route.slice(1)).trim();
+      if (!attemptId) return json(404, { error: "Attempt not found" });
+
+      const attemptRes = await sb
+        .from("learning_attempts")
+        .select("*")
+        .eq("id", attemptId)
+        .maybeSingle();
+      if (attemptRes.error || !attemptRes.data?.id) return json(404, { error: "Attempt not found" });
+      const attempt = attemptRes.data as Record<string, unknown>;
+      if (String(attempt.user_id ?? "") !== auth.userId) return json(403, { error: "Forbidden" });
+
+      const [contentRes, feedbackRes] = await Promise.all([
+        sb
+          .from("learning_content_registry_items")
+          .select("*")
+          .eq("id", String(attempt.content_item_id ?? ""))
+          .maybeSingle(),
+        sb
+          .from("learning_attempt_feedback")
+          .select("*")
+          .eq("attempt_id", attemptId)
+          .maybeSingle(),
+      ]);
+
+      return json(200, {
+        ok: true,
+        attempt,
+        content_item: contentRes.data ?? null,
+        feedback: feedbackRes.data ?? null,
+        scope: {
+          language_id: scope.languageId,
+          language_code: scope.languageCode,
+        },
+      });
+    }
+
     if (req.method === "POST" && route === "/start") {
       const serviceKey = normalizeServiceKey(body.service_key);
       if (!serviceKey) return json(422, { error: "service_key is required" });

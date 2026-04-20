@@ -96,6 +96,20 @@ export const listImmersionMissions = async (accessToken: string): Promise<Immers
   return Array.isArray(res.missions) ? res.missions : [];
 };
 
+export const getImmersionMission = async (
+  accessToken: string,
+  identifier: string,
+): Promise<{
+  mission: ImmersionMission;
+  steps: ImmersionMissionStep[];
+}> =>
+  (await call(accessToken, `/missions/${encodeURIComponent(identifier)}?language_code=en`, {
+    method: "GET",
+  })) as {
+    mission: ImmersionMission;
+    steps: ImmersionMissionStep[];
+  };
+
 export const submitImmersionMission = async (
   accessToken: string,
   body: Record<string, unknown>,

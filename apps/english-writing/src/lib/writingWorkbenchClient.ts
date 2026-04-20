@@ -103,3 +103,27 @@ export const submitWritingDraft = async (
     method: "POST",
     body: JSON.stringify(body),
   })) as WritingSubmitResult;
+
+export const getWritingPrompt = async (
+  accessToken: string,
+  identifier: string,
+): Promise<{ prompt: WritingPrompt }> =>
+  (await call(accessToken, `/prompts/${encodeURIComponent(identifier)}`, {
+    method: "GET",
+  })) as { prompt: WritingPrompt };
+
+export const getWritingDraft = async (
+  accessToken: string,
+  draftId: string,
+): Promise<{
+  draft: WritingDraft;
+  prompt: WritingPrompt;
+  revision_cycles?: Array<Record<string, unknown>>;
+}> =>
+  (await call(accessToken, `/drafts/${encodeURIComponent(draftId)}`, {
+    method: "GET",
+  })) as {
+    draft: WritingDraft;
+    prompt: WritingPrompt;
+    revision_cycles?: Array<Record<string, unknown>>;
+  };

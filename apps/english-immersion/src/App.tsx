@@ -1,34 +1,48 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import '../../english-shared/src/english-routes.css';
+import {
+  AccessBoundaryCard,
+  EnglishSkillWorkspace,
+  PageHero,
+  RouteContextRibbon,
+  SectionGrid,
+  StatCard,
+} from '../../english-shared/src/ui';
+import {
+  readEnglishRouteContext,
+  withEnglishRouteContext,
+  type EnglishRouteContext,
+} from '../../english-shared/src/routeContext';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import {
+  getImmersionMission,
   listImmersionMissions,
   submitImmersionMission,
   type ImmersionMission,
-  type ImmersionSubmitResult,
 } from './lib/immersionMissionsClient';
+import { getLearningAttempt } from './lib/learningAttemptClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISES_PATH = '/exercises' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
 
-type LessonRow = {
-  id: string;
-  title: string;
-  level: string;
-  schedule: string;
-  progress: number;
-  status: 'In progress' | 'Not started' | 'Completed';
-  accent: string;
-};
-
-const IMMERSION_PRODUCT_ID = ((import.meta.env.VITE_IMMERSION_PRODUCT_ID as string | undefined) ?? '').trim() || '7ce43052-2f35-42ca-b305-0d9c358f73f0';
+const IMMERSION_PRODUCT_ID =
+  ((import.meta.env.VITE_IMMERSION_PRODUCT_ID as string | undefined) ?? '').trim() ||
+  '7ce43052-2f35-42ca-b305-0d9c358f73f0';
 const IMMERSION_PRODUCT_SLUG = 'english-immersion';
 const SERVICE_LABEL = 'English Immersion';
-
 const ENGLISH_HUB_URL = 'https://english.schood.online';
+
 const ENGLISH_SERVICE_LINKS = [
   { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
   { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
@@ -38,139 +52,28 @@ const ENGLISH_SERVICE_LINKS = [
   { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
   { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
 ] as const;
-const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
-const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
 
-const SERVICE_BLUEPRINT = [
-  {
-    title: 'Scenario tasks',
-    detail: 'Practice realistic contexts like hotel booking, interviews, and meetings.',
-    intent: 'scenario-task',
-    skill: 'communication',
-  },
-  {
-    title: 'Task-based missions',
-    detail: 'Solve a practical problem in English with clear outcomes and constraints.',
-    intent: 'task-mission',
-    skill: 'problem-solving',
-  },
-  {
-    title: 'Mixed-skill loops',
-    detail: 'Combine read + speak + write inside one integrated challenge flow.',
-    intent: 'mixed-skill',
-    skill: 'fluency',
-  },
-  {
-    title: 'Light cultural context',
-    detail: 'Attach concise usage notes so language is accurate in real-world settings.',
-    intent: 'culture-notes',
-    skill: 'appropriacy',
-  },
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== 'immersion');
+
+const REVIEW_HANDOFFS = [
+  { label: 'Repair breakdowns in Grammar', href: 'https://grammar.english.schood.online/repair-queue' },
+  { label: 'Convert outcomes into Writing', href: 'https://writing.english.schood.online/briefs' },
+  { label: 'Prepare mission vocabulary in Vocabulary', href: 'https://vocabulary.english.schood.online/activation' },
 ] as const;
-
-const SERVICE_HANDOFFS = [
-  { key: 'speaking', label: 'Rehearse orally in Speaking', intent: 'conversation-mode', skill: 'confidence', reason: 'immersion-handoff' },
-  { key: 'writing', label: 'Convert outcomes into Writing tasks', intent: 'writing-task', skill: 'coherence', reason: 'immersion-handoff' },
-  { key: 'vocabulary', label: 'Save mission terms to Vocabulary', intent: 'word-sources', skill: 'retention', reason: 'immersion-handoff' },
-] as const;
-
-const lessonRows: LessonRow[] = [
-  {
-    id: 'lesson-1',
-    title: 'Daily Conversation Signals',
-    level: 'Beginner',
-    schedule: '08.00 - 09.00',
-    progress: 56,
-    status: 'In progress',
-    accent: '#d3efbd',
-  },
-  {
-    id: 'lesson-2',
-    title: 'University Lecture Mapping',
-    level: 'Intermediate',
-    schedule: '10.00 - 11.30',
-    progress: 81,
-    status: 'In progress',
-    accent: '#edf8dc',
-  },
-  {
-    id: 'lesson-3',
-    title: 'Airport and Travel Announcements',
-    level: 'Beginner',
-    schedule: '14.00 - 15.00',
-    progress: 24,
-    status: 'Not started',
-    accent: '#f6fde9',
-  },
-  {
-    id: 'lesson-4',
-    title: 'IELTS Section 4 Master Drill',
-    level: 'Advanced',
-    schedule: '17.00 - 18.00',
-    progress: 100,
-    status: 'Completed',
-    accent: '#c0e8a4',
-  },
-];
-
-const weeklyMinutes = [
-  { day: 'Mon', minutes: 62 },
-  { day: 'Tue', minutes: 94 },
-  { day: 'Wed', minutes: 71 },
-  { day: 'Thu', minutes: 88 },
-  { day: 'Fri', minutes: 102 },
-  { day: 'Sat', minutes: 74 },
-  { day: 'Sun', minutes: 80 },
-];
-
-
-
-void weeklyMinutes;
-
-const progressStatusClass = (status: LessonRow['status']): string => {
-  if (status === 'Completed') return 'pill done';
-  if (status === 'Not started') return 'pill muted';
-  return 'pill live';
-};
 
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
-
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
-const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
-);
-const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
+const asMetaRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+const readMetaList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : [];
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
   const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = readMetaText(meta.full_name);
   if (fullName) return fullName;
-
-  const firstName = readMetaText(meta.first_name);
-  const lastName = readMetaText(meta.last_name);
-  const combined = `${firstName} ${lastName}`.trim();
-  return combined || null;
-};
-
-const resolveInitials = (name: string | null, email: string | null): string => {
-  if (name) {
-    const parts = name
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const first = parts[0] ?? '';
-    const second = parts[1] ?? '';
-    if (first && second) return `${first.slice(0, 1)}${second.slice(0, 1)}`.toUpperCase();
-    if (first) return first.slice(0, 2).toUpperCase();
-  }
-
-  if (email) {
-    const prefix = email.split('@')[0] ?? '';
-    return prefix.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'GL';
-  }
-
-  return 'GL';
+  return `${readMetaText(meta.first_name)} ${readMetaText(meta.last_name)}`.trim() || null;
 };
 
 const resolveReturnTo = (): string => {
@@ -178,773 +81,787 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
-const buildServiceDashboardHref = (
-  serviceKey: string,
-  intent: string,
-  skill: string,
-  reason: string,
-): string => {
-  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
-  const url = new URL(`${target.href}/dashboard`);
-  url.searchParams.set('from', 'english-hub');
-  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
-  url.searchParams.set('intent', intent);
-  url.searchParams.set('skill', skill);
-  url.searchParams.set('reason', reason);
-  return url.toString();
-};
-
-const resolveAppPath = (pathname: string): AppPath => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/dashboard') return '/dashboard';
-  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
-  if (normalized.startsWith('/feature/')) return '/dashboard';
-  return '/';
-};
-
-const DashboardPage = ({
-  lessons,
-  hasAccess,
+const SignedOutLanding = ({
+  signInHref,
   pricingHref,
-  onOpenExercise,
+  platformWorkspaceHref,
+  isSignedIn,
 }: {
-  lessons: LessonRow[];
-  hasAccess: boolean;
+  signInHref: string;
   pricingHref: string;
-  onOpenExercise: (index: number) => void;
-}) => {
-  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  const inboundIntent = params.get('intent') ?? '';
-  const inboundSkill = params.get('skill') ?? '';
-  const inboundReason = params.get('reason') ?? '';
-  const inboundSourceService = params.get('source_service') ?? '';
-  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-
-  return (
-    <div className="dashboard-stack">
-    <section className="hero-card card">
-      <div className="hero-copy">
-        <div className="eyebrow">English Immersion Studio</div>
-        <h1>Turn practice into real-world English, one guided mission at a time.</h1>
-        <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
-        </p>
-        <button
-          className="primary-cta"
-          type="button"
-          onClick={() => {
-            if (!hasAccess) window.location.assign(pricingHref);
-          }}
-        >
-          {hasAccess ? 'Start 15-min warmup' : 'Unlock immersion access'}
-        </button>
-        {!hasAccess ? <small className="hero-note">Your account is signed in, but this service needs an active plan or trial.</small> : null}
-      </div>
-      <div className="hero-art" aria-hidden>
-        <div className="wave one" />
-        <div className="wave two" />
-        <div className="wave three" />
-      </div>
-    </section>
-
-    {hasInboundFocus ? (
-      <section className="card connected-brief">
-        <div>
-          <h2>Focus routed from Schood English</h2>
-          <p>
-            Continue with intent <strong>{inboundIntent || 'scenario-task'}</strong> on skill{' '}
-            <strong>{inboundSkill || 'communication'}</strong>.
-          </p>
-          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
-          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
-        </div>
-        <a
-          className="ghost-btn"
-          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'scenario-task', inboundSkill || 'communication', 'continue-focus')}
-        >
-          Keep this focus
-        </a>
-      </section>
-    ) : null}
-
-    <section className="kpi-grid">
-      <article className="card kpi">
-        <span>Total immersion sets</span>
-        <strong>48</strong>
-        <small>+6 this month</small>
-      </article>
-      <article className="card kpi">
-        <span>Hours practiced</span>
-        <strong>36.4 h</strong>
-        <small>consistency score: 88</small>
-      </article>
-      <article className="card kpi">
-        <span>Immersion consistency</span>
-        <strong>7.0</strong>
-        <small>target: 7.5</small>
-      </article>
-    </section>
-
-    <section className="card class-table">
-      <div className="section-head">
-        <h2>My class list</h2>
-        <button className="ghost-btn" type="button">See all</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map((lesson) => (
-            <tr key={lesson.id}>
-              <td>
-                <strong>{lesson.title}</strong>
-                <small>{lesson.level} - {lesson.schedule}</small>
-              </td>
-              <td>
-                <div className="progress-row">
-                  <span>{lesson.progress}%</span>
-                  <div className="track">
-                    <div className="fill" style={{ width: `${lesson.progress}%`, background: lesson.accent }} />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span className={progressStatusClass(lesson.status)}>{lesson.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section className="card cross-service-playbook">
-      <div className="section-head">
-        <h2>Exercises</h2>
-        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-      </div>
-      <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item, index) => (
-          <article key={item.title} className="playbook-card">
-            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
-              Open exercise window
-            </button>
-          </article>
-        ))}
-      </div>
-      <div className="handoff-row">
-        {SERVICE_HANDOFFS.map((handoff) => (
-          <a
-            key={handoff.key}
-            className="menu-link muted-link"
-            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-          >
-            {handoff.label}
+  platformWorkspaceHref: string;
+  isSignedIn: boolean;
+}) => (
+  <div className="landing-page-root">
+    <div className="ambient-layer" />
+    <div className="landing-page-main">
+      <header className="landing-page-topbar card">
+        <Link className="landing-brand" to="/">
+          <span className="dot" />
+          <strong>{SERVICE_LABEL}</strong>
+        </Link>
+        <nav className="landing-links">
+          <a href={buildPlatformUrl('/about')}>About us</a>
+          <a href={buildPlatformUrl('/programs')}>Programs</a>
+          <a href={buildPlatformUrl('/blog')}>Blog</a>
+          <a href={buildPlatformUrl('/courses')}>Courses</a>
+          <a href={buildPlatformUrl('/faq')}>FAQ</a>
+          <a href={buildPlatformUrl('/contact')}>Contact</a>
+        </nav>
+        <div className="landing-actions">
+          <a className="ghost-btn" href={ENGLISH_HUB_URL}>
+            English hub
           </a>
-        ))}
-      </div>
-    </section>
+          <a className="ghost-btn" href={platformWorkspaceHref}>
+            Open platform
+          </a>
+          {isSignedIn ? (
+            <Link className="icon-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <a className="icon-btn" href={signInHref}>
+              Log in
+            </a>
+          )}
+          <a className="primary-cta" href={pricingHref}>
+            Sign up
+          </a>
+        </div>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-mosaic">
+          <article className="landing-card landing-stat tilt-left">
+            <div className="landing-stat-head">
+              <strong>Mission</strong>
+              <span className="landing-arrow">{'->'}</span>
+            </div>
+            <p>Route before execution</p>
+            <small>one mission stage per page</small>
+          </article>
+          <article className="landing-card landing-team tilt-right">
+            <span className="landing-pill">Field guide</span>
+            <h3>Scenario flow</h3>
+            <p>Separate mission selection, live mission steps, and debrief into clear immersive routes.</p>
+          </article>
+          <article className="landing-card landing-offer tilt-right">
+            <h3>Premium immersion routes</h3>
+            <p className="landing-price">
+              12$ <span>35$</span>
+            </p>
+            <div className="landing-ticket">
+              <div className="landing-ticket-row">
+                <small>Mission</small>
+                <small>Debrief</small>
+              </div>
+              <strong>Select {'->'} act {'->'} debrief</strong>
+              <small>step-based journey</small>
+            </div>
+          </article>
+          <article className="landing-card landing-showcase tilt-left">
+            <div className="landing-orb" aria-hidden />
+            <h3>Transfer verification</h3>
+            <p>Immersion now has a dedicated debrief route to show where isolated skill work fails under real use.</p>
+          </article>
+        </div>
+        <article className="landing-copy card">
+          <div className="landing-chip">{SERVICE_LABEL}</div>
+          <h2>Immersion now behaves like a mission deck instead of one overloaded exercises pane.</h2>
+          <p>Choose a mission, complete the steps on a focused route, and enter a separate mission report after submission.</p>
+          <div className="landing-cta-row">
+            <a className="primary-cta" href={isSignedIn ? '/dashboard' : signInHref}>
+              {isSignedIn ? 'Continue' : 'Get started'}
+            </a>
+            <a className="ghost-btn" href={pricingHref}>
+              See pricing
+            </a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>
+              Open platform
+            </a>
+          </div>
+        </article>
+      </section>
+    </div>
+    <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+      Updates
+    </a>
   </div>
-  );
-};
+);
 
-
-
-const ExercisesPage = ({
+const ImmersionDashboardPage = ({
   hasAccess,
   pricingHref,
-  onNavigate,
-  accessToken,
+  context,
 }: {
   hasAccess: boolean;
   pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
+  context: EnglishRouteContext;
+}) => (
+  <SectionGrid>
+    <RouteContextRibbon
+      context={context}
+      cta={
+        <Link className="ghost-btn" to="/missions">
+          Open mission deck
+        </Link>
+      }
+    />
+    <PageHero
+      eyebrow="Immersion dashboard"
+      title="Choose the mission before you step into the scenario."
+      copy="The dashboard now handles orchestration only: next mission, transfer risk, and the follow-up route if real-world use breaks down."
+      actions={
+        <>
+          <Link className="primary-cta" to="/missions">
+            Open missions
+          </Link>
+          <Link className="ghost-btn" to="/debrief">
+            Debrief route
+          </Link>
+        </>
+      }
+      aside={
+        <>
+          <div className="route-chip-row">
+            <span className="route-chip">Missions</span>
+            <span className="route-chip">Steps</span>
+            <span className="route-chip">Debrief</span>
+          </div>
+          <p className="route-muted-copy">
+            {hasAccess ? 'Live mission execution now opens on dedicated mission routes.' : 'Preview the mission architecture now. Live missions unlock with plan access.'}
+          </p>
+        </>
+      }
+    />
+    <div className="route-stat-grid">
+      <StatCard label="Current focus" value="Transfer" hint="Immersion routes validate whether isolated skill gains survive in real tasks." />
+      <StatCard label="Best next route" value="Mission deck" hint="Choose a scenario before you enter the step-by-step mission stage." />
+      <StatCard label="Recovery target" value="Grammar + Vocabulary" hint="Mission failure should reopen precise repair routes, not send users back to a giant mixed page." />
+    </div>
+    {!hasAccess ? (
+      <AccessBoundaryCard
+        hasAccess={false}
+        title="Preview-only immersion routes"
+        message="You can browse mission, step, and debrief pages now. Live mission submission unlocks when the service plan is active."
+        ctaHref={pricingHref}
+      />
+    ) : null}
+  </SectionGrid>
+);
+
+const MissionDeckPage = ({
+  hasAccess,
+  pricingHref,
+  search,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  search: string;
   accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
-  type LaneKey = 'todo' | 'in_progress' | 'completed';
-
-  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
-  const [selectedId, setSelectedId] = useState<string>('');
-  const [immersionMissions, setImmersionMissions] = useState<ImmersionMission[]>([]);
-  const [missionsLoading, setMissionsLoading] = useState(false);
-  const [missionsError, setMissionsError] = useState<string | null>(null);
-  const [activeMissionId, setActiveMissionId] = useState<string>('');
-  const [missionResponses, setMissionResponses] = useState<Record<string, string>>({});
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitResult, setSubmitResult] = useState<ImmersionSubmitResult | null>(null);
-
-  const exerciseItems = useMemo(
-    () =>
-      SERVICE_BLUEPRINT.map((item, index) => {
-        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
-        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
-
-        return {
-          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
-          lane,
-          priority,
-          due: `${10 + index * 3} days left`,
-          comments: 6 + index * 4,
-          updates: 3 + index * 2,
-          ...item,
-        };
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    const firstItem = exerciseItems[0];
-    if (!selectedId && firstItem) {
-      setSelectedId(firstItem.id);
-    }
-  }, [exerciseItems, selectedId]);
+  const params = useParams<{ missionId?: string }>();
+  const [missions, setMissions] = useState<ImmersionMission[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeMission, setActiveMission] = useState<ImmersionMission | null>(null);
 
   useEffect(() => {
     if (!hasAccess || !accessToken) {
-      setImmersionMissions([]);
-      setMissionsLoading(false);
-      setMissionsError(null);
+      setMissions([]);
+      setActiveMission(null);
       return;
     }
-
     let cancelled = false;
-    setMissionsLoading(true);
-    setMissionsError(null);
-
+    setLoading(true);
+    setError(null);
     void listImmersionMissions(accessToken)
-      .then((missions) => {
+      .then((items) => {
         if (cancelled) return;
-        setImmersionMissions(missions);
+        setMissions(items);
       })
-      .catch((error) => {
+      .catch((nextError) => {
         if (cancelled) return;
-        setMissionsError(error instanceof Error ? error.message : 'Failed to load immersion missions.');
+        setError(nextError instanceof Error ? nextError.message : 'Failed to load immersion missions.');
       })
       .finally(() => {
         if (cancelled) return;
-        setMissionsLoading(false);
+        setLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
   }, [accessToken, hasAccess]);
 
   useEffect(() => {
-    const firstMission = immersionMissions[0];
-    if (!activeMissionId && firstMission) {
-      setActiveMissionId(firstMission.id);
+    if (!hasAccess || !accessToken || !params.missionId) return;
+    const existing = missions.find((mission) => mission.id === params.missionId || mission.slug === params.missionId);
+    if (existing) {
+      setActiveMission(existing);
+      return;
     }
-  }, [activeMissionId, immersionMissions]);
-
-  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
-
-  const groupedItems = useMemo(
-    () => ({
-      todo: visibleItems.filter((item) => item.lane === 'todo'),
-      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
-      completed: visibleItems.filter((item) => item.lane === 'completed'),
-    }),
-    [visibleItems],
-  );
-
-  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
-  const activeMission = immersionMissions.find((mission) => mission.id === activeMissionId) ?? immersionMissions[0] ?? null;
-  const activeMissionSteps = Array.isArray(activeMission?.steps) ? activeMission.steps : [];
-  const activeMissionConditions = Array.isArray(activeMission?.success_conditions_json)
-    ? activeMission.success_conditions_json.map((entry) => String(entry ?? '')).filter(Boolean)
-    : [];
-  const missionDurationMinutes = activeMissionSteps.reduce((sum, step) => sum + Math.max(1, Number(step.estimated_minutes ?? 0)), 0);
-  const hasMissionInput = activeMissionSteps.some((step) => (missionResponses[step.id] ?? '').trim().length > 0);
-  const immersionPresentation = asMetaRecord(activeMission?.presentation_meta);
-  const immersionTargetBadges = readMetaList(immersionPresentation?.target_badges);
-
-  const laneDefs: Array<{ key: LaneKey; label: string }> = [
-    { key: 'todo', label: 'Todo' },
-    { key: 'in_progress', label: 'In progress' },
-    { key: 'completed', label: 'Completed' },
-  ];
-
-  useEffect(() => {
-    if (!activeMission) return;
-    setMissionResponses((prev) => {
-      const next: Record<string, string> = {};
-      activeMissionSteps.forEach((step) => {
-        next[step.id] = prev[step.id] ?? '';
+    let cancelled = false;
+    void getImmersionMission(accessToken, params.missionId)
+      .then((result) => {
+        if (cancelled) return;
+        setActiveMission({ ...result.mission, steps: result.steps });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setActiveMission(null);
       });
-      return next;
-    });
-  }, [activeMission, activeMissionSteps]);
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, missions, params.missionId]);
 
-  const handleSelectMission = (missionId: string): void => {
-    setActiveMissionId(missionId);
-    setSubmitResult(null);
-    setSubmitMessage(null);
-    setSubmitError(null);
-  };
+  const previewMissions = useMemo(() => {
+    const base = missions.length > 0
+      ? missions
+      : [
+          {
+            id: 'airport-checkin',
+            slug: 'airport-checkin',
+            title: 'Airport check-in',
+            context_text: 'Travel scenario',
+            objective_text: 'Read, listen, respond, and write to solve a real airport problem.',
+            mission_type: 'travel',
+            level: 'B1',
+            target_vocabulary: ['boarding pass', 'delay'],
+            target_grammar: 'questions',
+            skill_mix: ['reading', 'listening', 'speaking', 'writing'],
+            success_conditions_json: [],
+            cultural_note: null,
+            steps: [
+              {
+                id: 'airport-step-1',
+                mission_id: 'airport-checkin',
+                step_index: 0,
+                service_key: 'reading',
+                step_type: 'instruction',
+                title: 'Read the airport notice',
+                instructions: 'Understand the travel problem.',
+                prompt_text: 'Read the notice and identify what changed.',
+                target_skill_key: 'reading',
+                estimated_minutes: 4,
+              },
+            ],
+            presentation_meta: {
+              scene_label: 'Mission card',
+              hero_note: 'Solve a real travel problem across multiple English skills.',
+              target_badges: ['travel', 'mixed-skill'],
+            },
+          } satisfies ImmersionMission,
+        ];
 
-  const handleMissionResponseChange = (stepId: string, value: string): void => {
-    setMissionResponses((prev) => ({
-      ...prev,
-      [stepId]: value,
-    }));
-  };
+    const normalized = search.trim().toLowerCase();
+    if (!normalized) return base;
+    return base.filter(
+      (mission) =>
+        mission.title.toLowerCase().includes(normalized) ||
+        mission.level.toLowerCase().includes(normalized) ||
+        mission.mission_type.toLowerCase().includes(normalized),
+    );
+  }, [missions, search]);
 
-  const handleSubmitMission = async (): Promise<void> => {
-    if (!activeMission || !accessToken) return;
-    setSubmitLoading(true);
-    setSubmitMessage(null);
-    setSubmitError(null);
-
-    try {
-      const result = await submitImmersionMission(accessToken, {
-        mission_id: activeMission.id,
-        step_responses: activeMissionSteps.map((step) => ({
-          step_id: step.id,
-          response_text: missionResponses[step.id] ?? '',
-        })),
-        time_spent_seconds: Math.max(600, missionDurationMinutes * 60),
-        retry_count: submitResult ? 1 : 0,
-        hint_usage_count: 0,
-      });
-      setSubmitResult(result);
-      setSubmitMessage(result.feedback?.summary ?? 'Immersion mission recorded.');
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Unable to score this immersion mission right now.');
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
+  const selectedMission =
+    activeMission ??
+    previewMissions.find((mission) => mission.id === params.missionId || mission.slug === params.missionId) ??
+    previewMissions[0] ??
+    null;
+  const presentation = asMetaRecord(selectedMission?.presentation_meta);
+  const targetBadges = readMetaList(presentation?.target_badges);
 
   return (
-    <div className="dashboard-stack">
-      <section className="card exercises-workspace">
-        <div className="exercises-grid">
-          <div className="exercises-list-pane">
-            <div className="exercises-list-head">
-              <h2>{SERVICE_LABEL} Exercises</h2>
-              <small>One unified page</small>
-            </div>
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Mission deck"
+        title="Choose the scenario before you step into the live mission."
+        copy="The mission deck now owns discovery: stakes, skill mix, context, and where the live mission route should begin."
+        actions={
+          <>
+            {selectedMission ? (
+              <Link className="primary-cta" to={`/missions/${selectedMission.slug || selectedMission.id}/step/1`}>
+                Open mission
+              </Link>
+            ) : null}
+            <Link className="ghost-btn" to="/dashboard">
+              Back to dashboard
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Mission deck is preview-only"
+          message="You can inspect the mission structure now. Live scenario submission unlocks when the immersion service is active."
+          ctaHref={pricingHref}
+        />
+      ) : null}
 
-            <div className="exercises-filters">
-              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
-                All
-              </button>
-              {laneDefs.map((lane) => (
-                <button
-                  key={lane.key}
-                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
-                  type="button"
-                  onClick={() => setActiveLane(lane.key)}
-                >
-                  {lane.label}
-                </button>
-              ))}
-            </div>
-
-            {laneDefs.map((lane) => (
-              <section key={lane.key} className="exercise-lane">
-                <header>
-                  <h3>{lane.label}</h3>
-                  <span>{groupedItems[lane.key].length}</span>
-                </header>
-
-                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
-
-                {groupedItems[lane.key].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="exercise-item-top">
-                      <h4>{item.title}</h4>
-                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
-                    </div>
-                    <p>{item.detail}</p>
-                    <div className="exercise-item-meta">
-                      <span>{item.due}</span>
-                      <span>{item.comments} notes</span>
-                      <span>{item.updates} updates</span>
-                    </div>
-                  </button>
-                ))}
-              </section>
+      <div className="route-split-grid">
+        <section className="route-list-card">
+          <div className="route-list-head">
+            <h2>Mission cards</h2>
+            <span className="route-outline-chip">{previewMissions.length} missions</span>
+          </div>
+          {loading ? <div className="route-empty-state">Loading mission deck...</div> : null}
+          {error ? <div className="route-empty-state">{error}</div> : null}
+          <div className="route-list-stack">
+            {previewMissions.map((mission) => (
+              <Link
+                key={mission.id}
+                className={'route-list-item' + (selectedMission?.id === mission.id ? ' active' : '')}
+                to={`/missions/${mission.slug || mission.id}`}
+              >
+                <small>{mission.level} · {mission.mission_type}</small>
+                <strong>{mission.title}</strong>
+                <p>{mission.objective_text}</p>
+              </Link>
             ))}
           </div>
+        </section>
 
-          <div className="exercises-detail-pane">
-            {selectedItem ? (
-              <>
-                <div className="exercise-detail-actions">
-                  <button type="button" className="ghost-btn">Share</button>
-                  <button type="button" className="ghost-btn">Expand</button>
-                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
+        <section className="route-stage-card">
+          {selectedMission ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">{readMetaText(presentation?.scene_label) || 'Mission card'}</small>
+                  <h2>{selectedMission.title}</h2>
                 </div>
-
-                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
-                <h2>{selectedItem.title}</h2>
-
-                <div className="exercise-detail-badges">
-                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
-                  <span className="exercise-chip">{selectedItem.due}</span>
+                <span className="route-chip">{selectedMission.level}</span>
+              </div>
+              <p>{readMetaText(presentation?.hero_note) || selectedMission.objective_text}</p>
+              <div className="route-chip-row">
+                <span className="route-chip">{selectedMission.mission_type}</span>
+                {selectedMission.skill_mix?.map((skill) => (
+                  <span key={skill} className="route-outline-chip">
+                    {skill}
+                  </span>
+                ))}
+                {targetBadges.map((badge) => (
+                  <span key={badge} className="route-outline-chip">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+              <div className="route-inline-card">
+                <div className="route-label-row">
+                  <strong>Mission objective</strong>
+                  <span className="route-outline-chip">{selectedMission.steps?.length ?? 0} steps</span>
                 </div>
-
-                <div className="exercise-timebox">
-                  <span>Focused exercise block</span>
-                  <strong>{String(Math.max(15, missionDurationMinutes || 45)).padStart(2, '0')}:00</strong>
-                </div>
-
-                <p className="exercise-detail-copy">{selectedItem.detail}</p>
-
-                <div className="exercise-subsection">
-                  <div className="phase2-lab-head">
-                    <div>
-                      <h3>Live Immersion Mission</h3>
-                      <p>Mission-based transfer practice across reading, listening, speaking, and writing with shared-core scoring.</p>
-                    </div>
-                    {activeMission ? <span className="exercise-chip">{activeMission.level} · {activeMission.mission_type}</span> : null}
-                  </div>
-
-                  {!hasAccess ? <p className="phase2-status">Unlock access to open the immersion backend.</p> : null}
-                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your mission catalog.</p> : null}
-                  {missionsLoading ? <p className="phase2-status">Loading immersion missions...</p> : null}
-                  {missionsError ? <p className="phase2-status error">{missionsError}</p> : null}
-
-                  {activeMission ? (
-                    <div className="phase2-stack">
-                      <div className="phase2-premium-card">
-                        <small>{readMetaText(immersionPresentation?.scene_label) || 'Field guide scene'}</small>
-                        <strong>{readMetaText(immersionPresentation?.hero_note) || 'Solve the scenario like a real destination task: keep the stakes clear and let the skill mix work together.'}</strong>
-                        <div className="phase2-badge-row">
-                          {immersionTargetBadges.map((badge) => (
-                            <span key={`${activeMission.id}-${badge}`} className="phase2-badge">{badge}</span>
-                          ))}
-                          {activeMission.mission_type ? <span className="phase2-badge muted">{activeMission.mission_type}</span> : null}
-                        </div>
-                      </div>
-
-                      <div className="phase2-chip-row">
-                        {immersionMissions.map((mission) => (
-                          <button
-                            key={mission.id}
-                            type="button"
-                            className={mission.id === activeMission.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
-                            onClick={() => handleSelectMission(mission.id)}
-                          >
-                            {mission.title}
-                          </button>
-                        ))}
-                      </div>
-
-                      <p className="phase2-lab-copy">{activeMission.context_text}</p>
-                      <p className="phase2-hint">{activeMission.objective_text}</p>
-                      <div className="phase2-inline-meta">
-                        <span>{missionDurationMinutes || 15} min mission</span>
-                        {activeMission.target_grammar ? <span>{activeMission.target_grammar}</span> : null}
-                        {Array.isArray(activeMission.target_vocabulary) && activeMission.target_vocabulary.length > 0 ? (
-                          <span>Target words: {activeMission.target_vocabulary.slice(0, 4).join(', ')}</span>
-                        ) : null}
-                      </div>
-                      {activeMission.cultural_note ? <p className="phase2-hint">{activeMission.cultural_note}</p> : null}
-
-                      {activeMissionConditions.length > 0 ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Mission success conditions</strong>
-                          <ul className="phase2-feedback-list">
-                            {activeMissionConditions.map((condition) => (
-                              <li key={condition}>{condition}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-
-                      {activeMissionSteps.map((step) => (
-                        <div key={step.id} className="phase2-feedback-card phase2-step-card">
-                          <strong>{`Step ${step.step_index + 1}: ${step.title}`}</strong>
-                          <p>{step.instructions}</p>
-                          <p className="phase2-hint">{step.prompt_text}</p>
-                          <div className="phase2-inline-meta">
-                            <span>{step.service_key}</span>
-                            <span>{step.estimated_minutes} min</span>
-                            <span>{step.step_type}</span>
-                          </div>
-                          <textarea
-                            className="phase2-textarea"
-                            value={missionResponses[step.id] ?? ''}
-                            onChange={(event) => handleMissionResponseChange(step.id, event.target.value)}
-                            placeholder={`Write your ${step.step_type} response here to complete this mission step.`}
-                            rows={5}
-                          />
-                        </div>
-                      ))}
-
-                      <div className="phase2-actions">
-                        <button
-                          className="primary-cta"
-                          type="button"
-                          onClick={() => {
-                            void handleSubmitMission();
-                          }}
-                          disabled={submitLoading || !hasMissionInput || !hasAccess || !accessToken}
-                        >
-                          {submitLoading ? 'Scoring mission...' : 'Submit immersion mission'}
-                        </button>
-                      </div>
-
-                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
-                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
-
-                      {submitResult ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Immersion feedback</strong>
-                          <p>{submitResult.feedback?.summary ?? 'Immersion feedback is ready.'}</p>
-                          <div className="phase2-inline-meta">
-                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
-                            <span>Completion: {Math.round((submitResult.scoring?.completion_ratio ?? 0) * 100)}%</span>
-                            {submitResult.mastery_reopened_count ? <span>Reopened units: {submitResult.mastery_reopened_count}</span> : null}
-                          </div>
-                          {Array.isArray(submitResult.feedback?.issues) && submitResult.feedback.issues.length > 0 ? (
-                            <ul className="phase2-feedback-list">
-                              {submitResult.feedback.issues.map((issue, index) => (
-                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
-                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one clearer mission pass.')}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                          {Array.isArray(submitResult.step_results) && submitResult.step_results.length > 0 ? (
-                            <ul className="phase2-feedback-list">
-                              {submitResult.step_results.map((step) => (
-                                <li key={step.step_id}>
-                                  <strong>{step.title}</strong>: {Math.round((step.score ?? 0) * 100)}% on {step.service_key}
-                                  {Array.isArray(step.missing_keywords) && step.missing_keywords.length > 0 ? `; missing ${step.missing_keywords.join(', ')}` : ''}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                          {Array.isArray(submitResult.evaluation?.missed_target_vocabulary) && submitResult.evaluation.missed_target_vocabulary.length > 0 ? (
-                            <p>Missed target vocabulary: {submitResult.evaluation.missed_target_vocabulary.join(', ')}</p>
-                          ) : null}
-                          {submitResult.note ? <p>{submitResult.note}</p> : null}
-                          <div className="phase2-metric-grid">
-                            <div>
-                              <small>Mission result</small>
-                              <strong>{submitResult.mastery_reopened_count ? 'Recovery path reopened' : 'Transfer held under pressure'}</strong>
-                            </div>
-                            <div>
-                              <small>Skill mix</small>
-                              <strong>{Array.isArray(activeMission.skill_mix) && activeMission.skill_mix.length > 0 ? activeMission.skill_mix.join(', ') : 'Mixed English skills'}</strong>
-                            </div>
-                            <div>
-                              <small>Debrief cue</small>
-                              <strong>{readMetaText(immersionPresentation?.celebration_copy) || 'Use the blockers above to decide whether the next step belongs in Grammar, Vocabulary, or another mission pass.'}</strong>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Execution checklist</h3>
-                  <ul>
-                    <li>Complete the task prompt without switching services.</li>
-                    <li>Write one short reflection before submitting.</li>
-                    <li>Push weak words or patterns into connected services.</li>
-                  </ul>
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Comments</h3>
-                  <div className="exercise-comment">
-                    <strong>Coach</strong>
-                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
-                  </div>
-                  <div className="exercise-comment">
-                    <strong>You</strong>
-                    <p>I will repeat this with a shorter time limit after one full run.</p>
-                  </div>
-                </div>
-
-                <div className="exercise-detail-footer">
-                  <button
-                    className="primary-cta"
-                    type="button"
-                    onClick={() => {
-                      if (!hasAccess) {
-                        window.location.assign(pricingHref);
-                      }
-                    }}
-                  >
-                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
-                    Back to dashboard
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </section>
-    </div>
+                <p>{selectedMission.context_text}</p>
+              </div>
+              <div className="route-cta-row">
+                <Link className="primary-cta" to={`/missions/${selectedMission.slug || selectedMission.id}/step/1`}>
+                  Open mission
+                </Link>
+                <Link className="ghost-btn" to="/debrief">
+                  Mission report
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="route-empty-state">Choose a mission card from the deck to preview the scenario route.</div>
+          )}
+        </section>
+      </div>
+    </SectionGrid>
   );
 };
 
-const SignedOutLanding = ({
-  serviceLabel,
-  signInHref,
+const MissionStepPage = ({
+  hasAccess,
   pricingHref,
-  platformWorkspaceHref,
-  isSignedIn,
-  onContinue,
+  accessToken,
+  context,
 }: {
-  serviceLabel: string;
-  signInHref: string;
+  hasAccess: boolean;
   pricingHref: string;
-  platformWorkspaceHref: string;
-  isSignedIn: boolean;
-  onContinue: () => void;
+  accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
-  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
-  const focusLower = focusTitle.toLowerCase();
+  const navigate = useNavigate();
+  const params = useParams<{ missionId?: string; stepId?: string }>();
+  const [mission, setMission] = useState<ImmersionMission | null>(null);
+  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.missionId || !hasAccess || !accessToken) {
+      setMission(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getImmersionMission(accessToken, params.missionId)
+      .then((result) => {
+        if (cancelled) return;
+        setMission({ ...result.mission, steps: result.steps });
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not open this mission.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.missionId]);
+
+  const steps = mission?.steps ?? [];
+  const activeStepIndex = Math.max(0, Number(params.stepId ?? '1') - 1);
+  const activeStep = steps[activeStepIndex] ?? null;
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!mission || !accessToken) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await submitImmersionMission(accessToken, {
+        mission_id: mission.id,
+        step_responses: steps.map((step) => ({
+          step_id: step.id,
+          response_text: responses[step.id] ?? '',
+        })),
+        time_spent_seconds: Math.max(300, steps.length * 120),
+        retry_count: 0,
+        hint_usage_count: 0,
+      });
+      const attemptId =
+        result && typeof (result as Record<string, unknown>).attempt === 'object'
+          ? String(((result as Record<string, unknown>).attempt as Record<string, unknown>).id ?? '')
+          : '';
+      navigate(attemptId ? `/debrief/${attemptId}` : '/debrief');
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not submit this mission.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="service-landing">
-      <section className="landing-hero">
-        <div className="landing-mosaic">
-          <article className="landing-card landing-stat tilt-left">
-            <div className="landing-stat-head">
-              <strong>174+</strong>
-              <span className="landing-arrow">{'->'}</span>
-            </div>
-            <p>{focusTitle} programs</p>
-            <small>new practice packs every week</small>
-          </article>
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Live mission"
+        title="Keep the scenario itself on a page that belongs only to mission execution."
+        copy="The live mission route owns the step-by-step work. The debrief route owns the report after the mission is submitted."
+        actions={
+          <>
+            <Link className="ghost-btn" to="/missions">
+              Back to mission deck
+            </Link>
+            {mission ? (
+              <Link className="ghost-btn" to={`/debrief`}>
+                Mission report
+              </Link>
+            ) : null}
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Mission execution is locked"
+          message="The live mission route is visible now, but step submission unlocks only when the immersion plan is active."
+          ctaHref={pricingHref}
+        />
+      ) : null}
 
-          <article className="landing-card landing-team tilt-right">
-            <span className="landing-pill">4.8 review</span>
-            <h3>Mentor team</h3>
-            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
-          </article>
-
-          <article className="landing-card landing-offer tilt-right">
-            <h3>Secrets of {focusLower}</h3>
-            <p className="landing-price">
-              12$ <span>35$</span>
-            </p>
-            <div className="landing-ticket">
-              <div className="landing-ticket-row">
-                <small>24 Jul</small>
-                <small>28 Jul</small>
+      <section className={'route-stage-card' + (!hasAccess ? ' route-disabled' : '')}>
+        {loading ? <div className="route-empty-state">Opening mission route...</div> : null}
+        {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+        {!loading && !mission ? <div className="route-empty-state">Choose a mission from the deck to open its live route.</div> : null}
+        {mission && activeStep ? (
+          <>
+            <div className="route-stage-header">
+              <div>
+                <small className="route-context-kicker">Mission step {activeStepIndex + 1} of {steps.length}</small>
+                <h2>{mission.title}</h2>
               </div>
-              <strong>18:00</strong>
-              <small>35h 20m</small>
+              <span className="route-chip">{activeStep.service_key}</span>
             </div>
-          </article>
-
-          <article className="landing-card landing-showcase tilt-left">
-            <div className="landing-orb" aria-hidden />
-            <h3>{focusTitle} studio</h3>
-            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
-          </article>
-        </div>
-
-        <article className="landing-copy card">
-          <div className="landing-chip">{serviceLabel}</div>
-          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
-          <p>
-            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
-            writing, speaking, grammar, vocabulary, and immersion.
-          </p>
-          <div className="landing-cta-row">
-            {isSignedIn ? (
-              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
-            ) : (
-              <a className="primary-cta" href={signInHref}>Get started</a>
-            )}
-            <a className="ghost-btn" href={pricingHref}>See pricing</a>
-            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-          </div>
-        </article>
+            <p>{mission.objective_text}</p>
+            <div className="route-inline-card">
+              <div className="route-label-row">
+                <strong>{activeStep.title}</strong>
+                <span className="route-outline-chip">{activeStep.step_type}</span>
+              </div>
+              <p>{activeStep.instructions}</p>
+              <p className="route-muted-copy">{activeStep.prompt_text}</p>
+            </div>
+            <textarea
+              className="route-textarea"
+              value={responses[activeStep.id] ?? ''}
+              onChange={(event) => setResponses((current) => ({ ...current, [activeStep.id]: event.target.value }))}
+              placeholder="Write the response for this mission step here..."
+            />
+            <div className="route-chip-row">
+              {steps.map((step, index) => (
+                <Link
+                  key={step.id}
+                  className={index === activeStepIndex ? 'route-chip' : 'route-outline-chip'}
+                  to={`/missions/${mission.slug || mission.id}/step/${index + 1}`}
+                >
+                  Step {index + 1}
+                </Link>
+              ))}
+            </div>
+            {error ? <div className="route-empty-state">{error}</div> : null}
+            <div className="route-inline-actions">
+              <button
+                className="primary-cta"
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={!hasAccess || !accessToken || submitting}
+              >
+                {submitting ? 'Submitting mission...' : 'Submit mission'}
+              </button>
+            </div>
+          </>
+        ) : null}
       </section>
-
-      <section className="landing-proof-grid">
-        <article className="landing-proof card tilt-left">
-          <small>Learner footprint</small>
-          <strong>12k+</strong>
-          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
-        </article>
-        <article className="landing-proof card tilt-right">
-          <small>Practice volume</small>
-          <strong>34k</strong>
-          <p>Total {focusLower} training hours logged by active users on the platform.</p>
-        </article>
-      </section>
-    </div>
+    </SectionGrid>
   );
 };
+
+const MissionDebriefPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const params = useParams<{ attemptId?: string }>();
+  const [attempt, setAttempt] = useState<Record<string, unknown> | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, unknown> | null>(null);
+  const [mission, setMission] = useState<ImmersionMission | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.attemptId || !hasAccess || !accessToken) {
+      setAttempt(null);
+      setFeedback(null);
+      setMission(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getLearningAttempt(accessToken, params.attemptId)
+      .then(async (result) => {
+        if (cancelled) return;
+        setAttempt(result.attempt);
+        setFeedback(result.feedback ?? null);
+        const responseJson = result.attempt.response_json as Record<string, unknown> | undefined;
+        const missionId = typeof responseJson?.mission_id === 'string' ? responseJson.mission_id : '';
+        if (missionId) {
+          const missionResult = await getImmersionMission(accessToken, missionId);
+          if (cancelled) return;
+          setMission({ ...missionResult.mission, steps: missionResult.steps });
+        }
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not load this mission report.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.attemptId]);
+
+  const responseJson = (attempt?.response_json as Record<string, unknown> | undefined) ?? {};
+  const missedTargetVocabulary = Array.isArray(responseJson.missed_target_vocabulary)
+    ? responseJson.missed_target_vocabulary.map((entry) => String(entry))
+    : [];
+  const usedTargetVocabulary = Array.isArray(responseJson.used_target_vocabulary)
+    ? responseJson.used_target_vocabulary.map((entry) => String(entry))
+    : [];
+  const issues = Array.isArray(feedback?.issues) ? (feedback.issues as Array<Record<string, unknown>>) : [];
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Mission report"
+        title="Keep mission feedback on a page that belongs only to debrief."
+        copy="The mission report now owns what went well, what broke down, and where the learner should go next to repair transfer."
+        actions={
+          <>
+            <Link className="ghost-btn" to={mission ? `/missions/${mission.slug || mission.id}` : '/missions'}>
+              Back to mission deck
+            </Link>
+            <Link className="ghost-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Mission report is preview-only"
+          message="This route shows where scenario outcomes will live after a real mission attempt."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-debrief-card">
+          {loading ? <div className="route-empty-state">Loading mission report...</div> : null}
+          {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+          {!loading && !attempt ? <div className="route-empty-state">Complete a mission first. The report route will then show blockers and follow-up routes.</div> : null}
+          {attempt ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Latest mission report</small>
+                  <h2>{mission?.title ?? 'Immersion attempt'}</h2>
+                </div>
+                {mission ? <span className="route-chip">{mission.mission_type}</span> : null}
+              </div>
+              <p>{typeof feedback?.summary === 'string' && feedback.summary ? feedback.summary : 'Your mission debrief is ready.'}</p>
+              <div className="phase2-feedback-card">
+                <strong>Transfer blockers</strong>
+                {issues.length > 0 ? (
+                  <ul className="phase2-feedback-list">
+                    {issues.map((issue, index) => (
+                      <li key={`${String(issue.subskill_key ?? issue.category ?? 'issue')}-${index}`}>
+                        <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Repair this pattern in the next route.')}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No major transfer blockers were recorded in the latest mission.</p>
+                )}
+              </div>
+              <div className="route-inline-card">
+                <div className="route-label-row">
+                  <strong>Mission vocabulary</strong>
+                  <span className="route-outline-chip">activation report</span>
+                </div>
+                <p>
+                  Used: {usedTargetVocabulary.length > 0 ? usedTargetVocabulary.join(', ') : 'none'}.
+                  {' '}Missed: {missedTargetVocabulary.length > 0 ? missedTargetVocabulary.join(', ') : 'none'}.
+                </p>
+              </div>
+            </>
+          ) : null}
+        </section>
+
+        <section className="route-summary-card">
+          <div className="route-subhead">
+            <h2>Repair next</h2>
+            <span className="route-outline-chip">handoff</span>
+          </div>
+          <div className="route-next-step-grid">
+            {REVIEW_HANDOFFS.map((handoff) => (
+              <a
+                key={handoff.label}
+                className="route-next-step-card"
+                href={withEnglishRouteContext(handoff.href, {
+                  sourceService: 'immersion',
+                  intent: 'mission-repair',
+                  skill: 'communication',
+                  reason: 'immersion-debrief',
+                })}
+              >
+                <strong>{handoff.label}</strong>
+                <p>Leave the mission report only when the next route directly addresses the blocker you just saw.</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
+    </SectionGrid>
+  );
+};
+
+const ImmersionWorkspaceRoutes = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  search,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  search: string;
+}) => {
+  const location = useLocation();
+  const context = useMemo(() => readEnglishRouteContext(location.search), [location.search]);
+
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<ImmersionDashboardPage hasAccess={hasAccess} pricingHref={pricingHref} context={context} />} />
+      <Route
+        path="/missions"
+        element={<MissionDeckPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/missions/:missionId"
+        element={<MissionDeckPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/missions/:missionId/step/:stepId"
+        element={<MissionStepPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/debrief"
+        element={<MissionDebriefPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/debrief/:attemptId"
+        element={<MissionDebriefPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route path="/exercises" element={<Navigate to="/missions" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+};
+
 const App = () => {
+  const location = useLocation();
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
   const [search, setSearch] = useState('');
   const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
-  const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
-
-  const [path, setPath] = useState<AppPath>(() => {
-    if (typeof window === 'undefined') return '/';
-    return resolveAppPath(window.location.pathname);
-  });
-  const showLanding = path === '/';
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (showLanding || status === 'signed_out') {
-      setMobileNavOpen(false);
-    }
-  }, [showLanding, status]);
-
-  const navigate = (nextPath: AppPath, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    if (window.location.pathname !== nextPath) {
-      if (replace) {
-        window.history.replaceState({}, '', nextPath);
-      } else {
-        window.history.pushState({}, '', nextPath);
-      }
-    }
-    setPath(nextPath);
-  };
 
   useEffect(() => {
     let mounted = true;
-
     void supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session ?? null);
       setStatus(data.session ? 'signed_in' : 'signed_out');
     });
-
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setStatus(nextSession ? 'signed_in' : 'signed_out');
     });
-
     return () => {
       mounted = false;
       subscription.subscription.unsubscribe();
@@ -952,47 +869,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      setPath(resolveAppPath(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    if (status === 'signed_out' && path !== '/') {
-      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-        window.history.replaceState({}, '', '/');
-      }
-      setPath('/');
-    }
-  }, [path, status]);
-
-  useEffect(() => {
     let cancelled = false;
-
     const resolveAccess = async () => {
       if (status !== 'signed_in' || !session?.access_token) {
         setAccessStatus('idle');
-        setAccessEndsAt(null);
         setAccessError(null);
         return;
       }
-
       setAccessStatus('checking');
       setAccessError(null);
-
       try {
         const me = await getMe(session.access_token);
         if (cancelled) return;
-
         const entitlement =
           me.entitlements.find(
             (entry) => entry.resource_type === 'product' && entry.resource_id === IMMERSION_PRODUCT_ID,
           ) ?? null;
-
-        setAccessEndsAt(entitlement?.ends_at ?? null);
         setAccessStatus(entitlement ? 'granted' : 'denied');
       } catch (error) {
         if (cancelled) return;
@@ -1007,12 +899,10 @@ const App = () => {
           return;
         }
         setAccessStatus('denied');
-        setAccessError('Could not verify your service access right now.');
+        setAccessError('Could not verify your immersion access right now.');
       }
     };
-
     void resolveAccess();
-
     return () => {
       cancelled = true;
     };
@@ -1020,37 +910,28 @@ const App = () => {
 
   useEffect(() => {
     let cancelled = false;
-
     const loadProfileName = async () => {
       if (status !== 'signed_in' || !session?.user.id) {
         setProfileNameFromDb(null);
         return;
       }
-
       try {
         const { data, error } = await supabase
           .from('user_profiles')
           .select('first_name,last_name')
           .eq('user_id', session.user.id)
           .maybeSingle();
-
         if (cancelled || error || !data) {
           if (!cancelled) setProfileNameFromDb(null);
           return;
         }
-
         const row = data as Record<string, unknown>;
-        const firstName = readMetaText(row.first_name);
-        const lastName = readMetaText(row.last_name);
-        const combined = `${firstName} ${lastName}`.trim();
-        setProfileNameFromDb(combined || null);
+        setProfileNameFromDb(`${readMetaText(row.first_name)} ${readMetaText(row.last_name)}`.trim() || null);
       } catch {
         if (!cancelled) setProfileNameFromDb(null);
       }
     };
-
     void loadProfileName();
-
     return () => {
       cancelled = true;
     };
@@ -1066,270 +947,72 @@ const App = () => {
     [returnTo],
   );
   const platformWorkspaceHref = useMemo(() => buildPlatformUrl('/workspace/student'), []);
-  const accessToken = session?.access_token ?? null;
   const hasAccess = status === 'signed_in' && accessStatus === 'granted';
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
-  const profileEmail = session?.user.email ?? null;
-  const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
-  const accessEndsLabel = useMemo(() => {
-    if (!accessEndsAt) return null;
-    const date = new Date(accessEndsAt);
-    if (Number.isNaN(date.getTime())) return accessEndsAt;
-    return date.toLocaleString();
-  }, [accessEndsAt]);
-
-  const visibleLessons = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return lessonRows;
-    return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
-  }, [search]);
-
-  
   void profileName;
-  void profileEmail;
-  void avatarLabel;
-  void accessEndsLabel;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
-  
-  if (showLanding) {
+  if (status === 'signed_out' || location.pathname === '/') {
     return (
-      <div className="landing-page-root">
-        <div className="ambient-layer" />
-        <div className="landing-page-main">
-          <header className="landing-page-topbar card">
-            <button
-              type="button"
-              className="landing-brand"
-              onClick={() => navigate('/')}
-            >
-              <span className="dot" />
-              <strong>{SERVICE_LABEL}</strong>
-            </button>
-            <nav className="landing-links">
-              <a href={buildPlatformUrl('/about')}>About us</a>
-              <a href={buildPlatformUrl('/programs')}>Programs</a>
-              <a href={buildPlatformUrl('/blog')}>Blog</a>
-              <a href={buildPlatformUrl('/courses')}>Courses</a>
-              <a href={buildPlatformUrl('/faq')}>FAQ</a>
-              <a href={buildPlatformUrl('/contact')}>Contact</a>
-            </nav>
-            <div className="landing-actions">
-              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Log in</a>
-              )}
-              <a className="primary-cta" href={pricingHref}>Sign up</a>
-            </div>
-          </header>
-
-          <SignedOutLanding
-            serviceLabel={SERVICE_LABEL}
-            signInHref={signInHref}
-            pricingHref={pricingHref}
-            platformWorkspaceHref={platformWorkspaceHref}
-            isSignedIn={status === 'signed_in'}
-            onContinue={() => navigate('/dashboard')}
-          />
-        </div>
-        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-          Updates
-        </a>
-      </div>
-    );
-  }
-  return (
-    <div className="reading-root">
-      <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-          <button
-            type="button"
-            className="brand-mark"
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-            style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-          >
-            <span className="dot" />
-            <div>
-              <strong>ENGLISH IMMERSION</strong>
-              <small>Unified auth + payment</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-nav-inline-toggle"
-            aria-expanded={mobileNavOpen}
-            aria-controls="service-side-nav"
-            onClick={() => setMobileNavOpen((prev) => !prev)}
-          >
-            {mobileNavOpen ? 'Close menu' : 'Menu'}
-          </button>
-
-          <div className="left-nav-body">
-          <nav className="menu-list">
-            <button
-              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate('/dashboard');
-              }}
-            >
-              Dashboard
-            </button>            <button
-              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            >
-              Exercises
-            </button>          </nav>
-
-          
-          <section className="service-switcher">
-            <div className="service-switch-head">
-              <span>Switch service</span>
-              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
-            </div>
-            <div className="service-switch-grid">
-              {SERVICE_SWITCH_LINKS.map((service) => (
-                <a key={service.key} className="service-switch-link" href={service.href}>
-                  {service.label}
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <div className="left-footer">
-            <div className="support-zone">
-              <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
-              <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
-            </div>
-
-            <div className="mobile-account-zone">
-              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
-              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
-              )}
-            </div>
-
-            <article className="upgrade-card">
-              <h3>Premium Immersion Pack</h3>
-              <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
-              <a className="black-btn" href={pricingHref}>View plans</a>
-            </article>
-          </div>
-        </div>
-        </aside>
-
-        <main className="main-column">
-          {!showLanding ? (
-          <header className="topbar">
-            <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - premium daily immersion workflow.`}</p>
-            </div>
-
-            <div className="topbar-actions">
-              <label className="search-box">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
-                />
-              </label>
-              <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
-              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Sign in</a>
-              )}
-            </div>
-          </header>
-          ) : null}
-
-          {showLanding ? (
+      <Routes>
+        <Route
+          path="/"
+          element={
             <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
             />
-          ) : null}
-          {!showLanding && status !== 'signed_out' && checkingAccess ? (
-            <div className="access-banner">
-              <strong>Checking access...</strong>
-              <span>Verifying your active plan for English Immersion.</span>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && needsAccess ? (
-            <div className="access-banner warning">
-              <strong>Plan required for full access.</strong>
-              <span>Choose a trial or paid plan to unlock this service.</span>
-              <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          }
+        />
+        <Route path="*" element={<Navigate to={status === 'signed_in' ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    );
+  }
 
-          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage
-              lessons={visibleLessons}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onOpenExercise={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
-            <ExercisesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-              accessToken={accessToken}
-            />
-          )}
-        </main>
-      </div>
-      <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-        Updates
-      </a>
-    </div>
+  const menuItems = [
+    { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
+    { label: 'Missions', href: '/missions', active: location.pathname.startsWith('/missions') },
+    { label: 'Mission report', href: '/debrief', active: location.pathname.startsWith('/debrief') },
+  ];
+
+  return (
+    <EnglishSkillWorkspace
+      serviceName={SERVICE_LABEL}
+      serviceTagline="English Immersion service - route-based mission deck, live scenario, and debrief workflow."
+      menuItems={menuItems}
+      serviceSwitchLinks={SERVICE_SWITCH_LINKS}
+      hubHref={ENGLISH_HUB_URL}
+      platformHref={platformWorkspaceHref}
+      pricingHref={pricingHref}
+      signInHref={signInHref}
+      status={status}
+      needsAccess={needsAccess}
+      checkingAccess={checkingAccess}
+      accessError={accessError}
+      search={search}
+      onSearchChange={setSearch}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+      upgradeTitle="Premium Immersion Pack"
+      upgradeCopy="Unlock route-based mission execution, scenario debriefs, and transfer repair handoffs."
+      updatesHref={buildPlatformUrl('/updates')}
+    >
+      <ImmersionWorkspaceRoutes
+        hasAccess={hasAccess}
+        pricingHref={pricingHref}
+        accessToken={session?.access_token ?? null}
+        search={search}
+      />
+    </EnglishSkillWorkspace>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

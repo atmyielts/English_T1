@@ -1,8 +1,33 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import '../../english-shared/src/english-routes.css';
+import {
+  AccessBoundaryCard,
+  EnglishSkillWorkspace,
+  PageHero,
+  RouteContextRibbon,
+  SectionGrid,
+  StatCard,
+} from '../../english-shared/src/ui';
+import {
+  readEnglishRouteContext,
+  type EnglishRouteContext,
+  withEnglishRouteContext,
+} from '../../english-shared/src/routeContext';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import {
+  getWritingDraft,
+  getWritingPrompt,
   listWritingPrompts,
   startWritingDraft,
   submitWritingDraft,
@@ -10,27 +35,18 @@ import {
   type WritingPrompt,
   type WritingSubmitResult,
 } from './lib/writingWorkbenchClient';
+import { getLearningAttempt } from './lib/learningAttemptClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISES_PATH = '/exercises' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
 
-type LessonRow = {
-  id: string;
-  title: string;
-  level: string;
-  schedule: string;
-  progress: number;
-  status: 'In progress' | 'Not started' | 'Completed';
-  accent: string;
-};
-
-const WRITING_PRODUCT_ID = ((import.meta.env.VITE_WRITING_PRODUCT_ID as string | undefined) ?? '').trim() || '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532';
+const WRITING_PRODUCT_ID =
+  ((import.meta.env.VITE_WRITING_PRODUCT_ID as string | undefined) ?? '').trim() ||
+  '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532';
 const WRITING_PRODUCT_SLUG = 'english-writing';
 const SERVICE_LABEL = 'English Writing';
-
 const ENGLISH_HUB_URL = 'https://english.schood.online';
+
 const ENGLISH_SERVICE_LINKS = [
   { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
   { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
@@ -40,139 +56,62 @@ const ENGLISH_SERVICE_LINKS = [
   { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
   { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
 ] as const;
-const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
-const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
+
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== 'writing');
 
 const SERVICE_BLUEPRINT = [
   {
-    title: 'Writing tasks',
-    detail: 'Practice structured responses: email, opinion paragraph, and short story tasks.',
+    slug: 'opinion-brief',
+    title: 'Writing briefs',
+    detail: 'Open focused task briefs with genre, target structure, and outcome framing.',
     intent: 'writing-task',
     skill: 'coherence',
   },
   {
-    title: 'Active correction system',
-    detail: 'Highlight mistakes, fix them actively, then compare with a cleaner version.',
+    slug: 'active-correction',
+    title: 'Active correction',
+    detail: 'Revise the same draft in clear cycles instead of reading one flat score report.',
     intent: 'active-correction',
     skill: 'grammar',
   },
   {
+    slug: 'rewrite-lab',
     title: 'Rewrite lab',
-    detail: 'Rewrite weak sentences into stronger, clearer, and more natural English.',
+    detail: 'Push one weak idea through clarity, control, and vocabulary upgrades.',
     intent: 'rewrite',
     skill: 'clarity',
   },
   {
+    slug: 'grammar-layer',
     title: 'Grammar explanation layer',
-    detail: 'Attach quick why-it-was-wrong explanations to each correction cycle.',
+    detail: 'See why a pattern failed before you re-enter the draft lab.',
     intent: 'grammar-explain',
     skill: 'accuracy',
   },
 ] as const;
 
-const SERVICE_HANDOFFS = [
-  { key: 'grammar', label: 'Route sentence errors to Grammar', intent: 'targeted-drill', skill: 'grammar', reason: 'writing-handoff' },
-  { key: 'reading', label: 'Strengthen structure in Reading', intent: 'sentence-breakdown', skill: 'structure', reason: 'writing-handoff' },
-  { key: 'vocabulary', label: 'Expand lexical range in Vocabulary', intent: 'context-review', skill: 'vocabulary', reason: 'writing-handoff' },
+const REVIEW_HANDOFFS = [
+  { label: 'Repair sentence errors in Grammar', href: 'https://grammar.english.schood.online/repair-queue' },
+  { label: 'Strengthen structure in Reading', href: 'https://reading.english.schood.online/intensive' },
+  { label: 'Activate stronger words in Vocabulary', href: 'https://vocabulary.english.schood.online/activation' },
 ] as const;
 
-const lessonRows: LessonRow[] = [
-  {
-    id: 'lesson-1',
-    title: 'Daily Conversation Signals',
-    level: 'Beginner',
-    schedule: '08.00 - 09.00',
-    progress: 56,
-    status: 'In progress',
-    accent: '#d3efbd',
-  },
-  {
-    id: 'lesson-2',
-    title: 'University Lecture Mapping',
-    level: 'Intermediate',
-    schedule: '10.00 - 11.30',
-    progress: 81,
-    status: 'In progress',
-    accent: '#edf8dc',
-  },
-  {
-    id: 'lesson-3',
-    title: 'Airport and Travel Announcements',
-    level: 'Beginner',
-    schedule: '14.00 - 15.00',
-    progress: 24,
-    status: 'Not started',
-    accent: '#f6fde9',
-  },
-  {
-    id: 'lesson-4',
-    title: 'IELTS Section 4 Master Drill',
-    level: 'Advanced',
-    schedule: '17.00 - 18.00',
-    progress: 100,
-    status: 'Completed',
-    accent: '#c0e8a4',
-  },
-];
-
-const weeklyMinutes = [
-  { day: 'Mon', minutes: 62 },
-  { day: 'Tue', minutes: 94 },
-  { day: 'Wed', minutes: 71 },
-  { day: 'Thu', minutes: 88 },
-  { day: 'Fri', minutes: 102 },
-  { day: 'Sat', minutes: 74 },
-  { day: 'Sun', minutes: 80 },
-];
-
-
-
-void weeklyMinutes;
-
-const progressStatusClass = (status: LessonRow['status']): string => {
-  if (status === 'Completed') return 'pill done';
-  if (status === 'Not started') return 'pill muted';
-  return 'pill live';
-};
-
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
-
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
-const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
-);
-const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
+const asMetaRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+const readMetaList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : [];
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
   const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = readMetaText(meta.full_name);
   if (fullName) return fullName;
-
   const firstName = readMetaText(meta.first_name);
   const lastName = readMetaText(meta.last_name);
   const combined = `${firstName} ${lastName}`.trim();
   return combined || null;
-};
-
-const resolveInitials = (name: string | null, email: string | null): string => {
-  if (name) {
-    const parts = name
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const first = parts[0] ?? '';
-    const second = parts[1] ?? '';
-    if (first && second) return `${first.slice(0, 1)}${second.slice(0, 1)}`.toUpperCase();
-    if (first) return first.slice(0, 2).toUpperCase();
-  }
-
-  if (email) {
-    const prefix = email.split('@')[0] ?? '';
-    return prefix.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'GL';
-  }
-
-  return 'GL';
 };
 
 const resolveReturnTo = (): string => {
@@ -180,261 +119,276 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
-const buildServiceDashboardHref = (
-  serviceKey: string,
-  intent: string,
-  skill: string,
-  reason: string,
-): string => {
-  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
-  const url = new URL(`${target.href}/dashboard`);
-  url.searchParams.set('from', 'english-hub');
-  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
-  url.searchParams.set('intent', intent);
-  url.searchParams.set('skill', skill);
-  url.searchParams.set('reason', reason);
-  return url.toString();
-};
-
-const resolveAppPath = (pathname: string): AppPath => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/dashboard') return '/dashboard';
-  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
-  if (normalized.startsWith('/feature/')) return '/dashboard';
-  return '/';
-};
-
-const DashboardPage = ({
-  lessons,
-  hasAccess,
+const SignedOutLanding = ({
+  signInHref,
   pricingHref,
-  onOpenExercise,
+  platformWorkspaceHref,
+  isSignedIn,
 }: {
-  lessons: LessonRow[];
-  hasAccess: boolean;
+  signInHref: string;
   pricingHref: string;
-  onOpenExercise: (index: number) => void;
-}) => {
-  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  const inboundIntent = params.get('intent') ?? '';
-  const inboundSkill = params.get('skill') ?? '';
-  const inboundReason = params.get('reason') ?? '';
-  const inboundSourceService = params.get('source_service') ?? '';
-  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-
-  return (
-    <div className="dashboard-stack">
-    <section className="hero-card card">
-      <div className="hero-copy">
-        <div className="eyebrow">English Writing Studio</div>
-        <h1>Build stronger written English, one focused revision session at a time.</h1>
-        <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
-        </p>
-        <button
-          className="primary-cta"
-          type="button"
-          onClick={() => {
-            if (!hasAccess) window.location.assign(pricingHref);
-          }}
-        >
-          {hasAccess ? 'Start 15-min warmup' : 'Unlock writing access'}
-        </button>
-        {!hasAccess ? <small className="hero-note">Your account is signed in, but this service needs an active plan or trial.</small> : null}
-      </div>
-      <div className="hero-art" aria-hidden>
-        <div className="wave one" />
-        <div className="wave two" />
-        <div className="wave three" />
-      </div>
-    </section>
-
-    {hasInboundFocus ? (
-      <section className="card connected-brief">
-        <div>
-          <h2>Focus routed from Schood English</h2>
-          <p>
-            Continue with intent <strong>{inboundIntent || 'writing-task'}</strong> on skill{' '}
-            <strong>{inboundSkill || 'coherence'}</strong>.
-          </p>
-          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
-          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
-        </div>
-        <a
-          className="ghost-btn"
-          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'writing-task', inboundSkill || 'coherence', 'continue-focus')}
-        >
-          Keep this focus
-        </a>
-      </section>
-    ) : null}
-    <section className="kpi-grid">
-      <article className="card kpi">
-        <span>Total writing sets</span>
-        <strong>48</strong>
-        <small>+6 this month</small>
-      </article>
-      <article className="card kpi">
-        <span>Hours practiced</span>
-        <strong>36.4 h</strong>
-        <small>consistency score: 88</small>
-      </article>
-      <article className="card kpi">
-        <span>Estimated band (Writing)</span>
-        <strong>7.0</strong>
-        <small>target: 7.5</small>
-      </article>
-    </section>
-
-    <section className="card class-table">
-      <div className="section-head">
-        <h2>My class list</h2>
-        <button className="ghost-btn" type="button">See all</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map((lesson) => (
-            <tr key={lesson.id}>
-              <td>
-                <strong>{lesson.title}</strong>
-                <small>{lesson.level} - {lesson.schedule}</small>
-              </td>
-              <td>
-                <div className="progress-row">
-                  <span>{lesson.progress}%</span>
-                  <div className="track">
-                    <div className="fill" style={{ width: `${lesson.progress}%`, background: lesson.accent }} />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span className={progressStatusClass(lesson.status)}>{lesson.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section className="card cross-service-playbook">
-      <div className="section-head">
-        <h2>Exercises</h2>
-        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-      </div>
-      <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item, index) => (
-          <article key={item.title} className="playbook-card">
-            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
-              Open exercise window
-            </button>
-          </article>
-        ))}
-      </div>
-      <div className="handoff-row">
-        {SERVICE_HANDOFFS.map((handoff) => (
-          <a
-            key={handoff.key}
-            className="menu-link muted-link"
-            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-          >
-            {handoff.label}
+  platformWorkspaceHref: string;
+  isSignedIn: boolean;
+}) => (
+  <div className="landing-page-root">
+    <div className="ambient-layer" />
+    <div className="landing-page-main">
+      <header className="landing-page-topbar card">
+        <Link className="landing-brand" to="/">
+          <span className="dot" />
+          <strong>{SERVICE_LABEL}</strong>
+        </Link>
+        <nav className="landing-links">
+          <a href={buildPlatformUrl('/about')}>About us</a>
+          <a href={buildPlatformUrl('/programs')}>Programs</a>
+          <a href={buildPlatformUrl('/blog')}>Blog</a>
+          <a href={buildPlatformUrl('/courses')}>Courses</a>
+          <a href={buildPlatformUrl('/faq')}>FAQ</a>
+          <a href={buildPlatformUrl('/contact')}>Contact</a>
+        </nav>
+        <div className="landing-actions">
+          <a className="ghost-btn" href={ENGLISH_HUB_URL}>
+            English hub
           </a>
-        ))}
-      </div>
-    </section>
+          <a className="ghost-btn" href={platformWorkspaceHref}>
+            Open platform
+          </a>
+          {isSignedIn ? (
+            <Link className="icon-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <a className="icon-btn" href={signInHref}>
+              Log in
+            </a>
+          )}
+          <a className="primary-cta" href={pricingHref}>
+            Sign up
+          </a>
+        </div>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-mosaic">
+          <article className="landing-card landing-stat tilt-left">
+            <div className="landing-stat-head">
+              <strong>Revision-first</strong>
+              <span className="landing-arrow">{'->'}</span>
+            </div>
+            <p>Separate brief, draft, and debrief pages</p>
+            <small>one workflow per screen</small>
+          </article>
+
+          <article className="landing-card landing-team tilt-right">
+            <span className="landing-pill">Writing atelier</span>
+            <h3>Structured output</h3>
+            <p>Move from prompt discovery to draft execution to correction without losing your learning context.</p>
+          </article>
+
+          <article className="landing-card landing-offer tilt-right">
+            <h3>Premium writing routes</h3>
+            <p className="landing-price">
+              12$ <span>35$</span>
+            </p>
+            <div className="landing-ticket">
+              <div className="landing-ticket-row">
+                <small>Brief</small>
+                <small>Debrief</small>
+              </div>
+              <strong>One clean flow</strong>
+              <small>task {'->'} draft {'->'} review</small>
+            </div>
+          </article>
+
+          <article className="landing-card landing-showcase tilt-left">
+            <div className="landing-orb" aria-hidden />
+            <h3>Connected English</h3>
+            <p>Writing outcomes hand off directly into Grammar, Reading, and Vocabulary routes.</p>
+          </article>
+        </div>
+
+        <article className="landing-copy card">
+          <div className="landing-chip">{SERVICE_LABEL}</div>
+          <h2>Organized writing practice built around real drafting, not one overloaded page.</h2>
+          <p>
+            Browse briefs, open a focused draft studio, and return to a dedicated review page when the revision cycle is complete.
+          </p>
+          <div className="landing-cta-row">
+            <a className="primary-cta" href={isSignedIn ? '/dashboard' : signInHref}>
+              {isSignedIn ? 'Continue' : 'Get started'}
+            </a>
+            <a className="ghost-btn" href={pricingHref}>
+              See pricing
+            </a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>
+              Open platform
+            </a>
+          </div>
+        </article>
+      </section>
+    </div>
+    <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+      Updates
+    </a>
   </div>
-  );
-};
+);
 
-
-
-const ExercisesPage = ({
+const WritingDashboardPage = ({
   hasAccess,
   pricingHref,
-  onNavigate,
-  accessToken,
+  context,
 }: {
   hasAccess: boolean;
   pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
+  context: EnglishRouteContext;
+}) => (
+  <SectionGrid>
+    <RouteContextRibbon
+      context={context}
+      cta={
+        <Link className="ghost-btn" to="/briefs">
+          Open routed writing brief
+        </Link>
+      }
+    />
+
+    <PageHero
+      eyebrow="English Writing dashboard"
+      title="Choose the right writing route before you draft."
+      copy="This dashboard is now orchestration-only: current focus, recent instability, and direct launch cards instead of one giant exercises pane."
+      actions={
+        <>
+          <Link className="primary-cta" to="/briefs">
+            Open briefs
+          </Link>
+          <Link className="ghost-btn" to="/drafts">
+            Draft studio
+          </Link>
+          <Link className="ghost-btn" to="/review">
+            Review room
+          </Link>
+        </>
+      }
+      aside={
+        <>
+          <div className="route-chip-row">
+            <span className="route-chip">Briefs</span>
+            <span className="route-chip">Drafting</span>
+            <span className="route-chip">Debrief</span>
+          </div>
+          <p className="route-muted-copy">
+            {hasAccess
+              ? 'Your live writing workbench is available on the drafting route.'
+              : 'Preview the full route structure now. Live drafting unlocks with a trial or paid plan.'}
+          </p>
+        </>
+      }
+    />
+
+    <div className="route-stat-grid">
+      <StatCard label="Current focus" value="Coherence" hint="Connected idea flow across paragraph-level writing tasks." />
+      <StatCard label="Revision rhythm" value="3 passes" hint="Targeted first-pass grammar, second-pass clarity, third-pass polish." />
+      <StatCard label="Next payoff" value="Grammar handoff" hint="Push repeated sentence errors into the grammar repair queue." />
+    </div>
+
+    {!hasAccess ? (
+      <AccessBoundaryCard
+        hasAccess={false}
+        title="Preview-only writing routes"
+        message="You can browse briefs, drafting, and review pages, but submission and scoring stay locked until your plan is active."
+        ctaHref={pricingHref}
+      />
+    ) : null}
+
+    <div className="route-split-grid">
+      <section className="route-summary-card">
+        <div className="route-subhead">
+          <h2>Route map</h2>
+          <span className="route-outline-chip">dashboard {'->'} briefs {'->'} drafts {'->'} review</span>
+        </div>
+        <div className="route-card-stack">
+          {SERVICE_BLUEPRINT.map((item) => (
+            <article key={item.slug} className="route-next-step-card">
+              <small>{item.skill}</small>
+              <strong>{item.title}</strong>
+              <p>{item.detail}</p>
+              <Link className="ghost-btn" to={`/briefs/${item.slug}`}>
+                Open route
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="route-summary-card">
+        <div className="route-subhead">
+          <h2>Direct launches</h2>
+          <span className="route-outline-chip">orchestration only</span>
+        </div>
+        <div className="route-next-step-grid">
+          <Link className="route-next-step-card" to="/briefs">
+            <strong>Browse task briefs</strong>
+            <p>Choose a prompt, review constraints, and see target vocabulary before opening the draft lab.</p>
+          </Link>
+          <Link className="route-next-step-card" to="/drafts">
+            <strong>Enter draft studio</strong>
+            <p>Open the live writing workbench where the response itself is the center of gravity.</p>
+          </Link>
+          <Link className="route-next-step-card" to="/review">
+            <strong>Review the last cycle</strong>
+            <p>See issue grouping, correction targets, and where the writing route hands off next.</p>
+          </Link>
+        </div>
+      </section>
+    </div>
+  </SectionGrid>
+);
+
+const WritingBriefsPage = ({
+  hasAccess,
+  pricingHref,
+  search,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  search: string;
   accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
-  type LaneKey = 'todo' | 'in_progress' | 'completed';
-
-  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
-  const [selectedId, setSelectedId] = useState<string>('');
-  const [writingPrompts, setWritingPrompts] = useState<WritingPrompt[]>([]);
-  const [writingPromptsLoading, setWritingPromptsLoading] = useState(false);
-  const [writingPromptsError, setWritingPromptsError] = useState<string | null>(null);
-  const [activePromptId, setActivePromptId] = useState<string>('');
-  const [draftLoading, setDraftLoading] = useState(false);
-  const [activeDraft, setActiveDraft] = useState<WritingDraft | null>(null);
-  const [draftText, setDraftText] = useState('');
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [submitResult, setSubmitResult] = useState<WritingSubmitResult | null>(null);
-
-  const exerciseItems = useMemo(
-    () =>
-      SERVICE_BLUEPRINT.map((item, index) => {
-        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
-        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
-
-        return {
-          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
-          lane,
-          priority,
-          due: `${10 + index * 3} days left`,
-          comments: 6 + index * 4,
-          updates: 3 + index * 2,
-          ...item,
-        };
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    const firstItem = exerciseItems[0];
-    if (!selectedId && firstItem) {
-      setSelectedId(firstItem.id);
-    }
-  }, [exerciseItems, selectedId]);
+  const navigate = useNavigate();
+  const params = useParams<{ promptId?: string }>();
+  const [prompts, setPrompts] = useState<WritingPrompt[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [previewPrompt, setPreviewPrompt] = useState<WritingPrompt | null>(null);
 
   useEffect(() => {
     if (!hasAccess || !accessToken) {
-      setWritingPrompts([]);
-      setWritingPromptsLoading(false);
-      setWritingPromptsError(null);
+      setPrompts([]);
+      setLoading(false);
+      setError(null);
+      setPreviewPrompt(null);
       return;
     }
 
     let cancelled = false;
-    setWritingPromptsLoading(true);
-    setWritingPromptsError(null);
+    setLoading(true);
+    setError(null);
 
     void listWritingPrompts(accessToken)
-      .then((prompts) => {
+      .then((items) => {
         if (cancelled) return;
-        setWritingPrompts(prompts);
+        setPrompts(items);
       })
-      .catch((error) => {
+      .catch((nextError) => {
         if (cancelled) return;
-        setWritingPromptsError(error instanceof Error ? error.message : 'Failed to load writing prompts.');
+        setError(nextError instanceof Error ? nextError.message : 'Failed to load writing briefs.');
       })
       .finally(() => {
         if (cancelled) return;
-        setWritingPromptsLoading(false);
+        setLoading(false);
       });
 
     return () => {
@@ -443,439 +397,591 @@ const ExercisesPage = ({
   }, [accessToken, hasAccess]);
 
   useEffect(() => {
-    const firstPrompt = writingPrompts[0];
-    if (!activePromptId && firstPrompt) {
-      setActivePromptId(firstPrompt.id);
+    if (!hasAccess || !accessToken || !params.promptId) return;
+
+    const existing = prompts.find((entry) => entry.id === params.promptId || entry.slug === params.promptId);
+    if (existing) {
+      setPreviewPrompt(existing);
+      return;
     }
-  }, [activePromptId, writingPrompts]);
-
-  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
-
-  const groupedItems = useMemo(
-    () => ({
-      todo: visibleItems.filter((item) => item.lane === 'todo'),
-      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
-      completed: visibleItems.filter((item) => item.lane === 'completed'),
-    }),
-    [visibleItems],
-  );
-
-  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
-  const activePrompt = writingPrompts.find((prompt) => prompt.id === activePromptId) ?? writingPrompts[0] ?? null;
-  const writingPresentation = asMetaRecord(activePrompt?.presentation_meta);
-  const writingSupportModes = readMetaList(writingPresentation?.support_mode_labels);
-  const writingTargetBadges = readMetaList(writingPresentation?.target_badges);
-
-  const laneDefs: Array<{ key: LaneKey; label: string }> = [
-    { key: 'todo', label: 'Todo' },
-    { key: 'in_progress', label: 'In progress' },
-    { key: 'completed', label: 'Completed' },
-  ];
-
-  useEffect(() => {
-    if (!activePrompt || !accessToken || !hasAccess) return;
 
     let cancelled = false;
-    setDraftLoading(true);
-    setSubmitError(null);
-
-    void startWritingDraft(accessToken, { prompt_id: activePrompt.id })
+    void getWritingPrompt(accessToken, params.promptId)
       .then((result) => {
         if (cancelled) return;
-        setActiveDraft(result.draft);
-        setDraftText(result.draft.current_text ?? '');
+        setPreviewPrompt(result.prompt);
       })
-      .catch((error) => {
+      .catch(() => {
         if (cancelled) return;
-        setSubmitError(error instanceof Error ? error.message : 'Failed to open writing draft.');
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setDraftLoading(false);
+        setPreviewPrompt(null);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [accessToken, activePrompt, hasAccess]);
+  }, [accessToken, hasAccess, params.promptId, prompts]);
 
-  const handleSelectPrompt = (promptId: string): void => {
-    setActivePromptId(promptId);
-    setActiveDraft(null);
-    setDraftText('');
-    setSubmitResult(null);
-    setSubmitMessage(null);
-    setSubmitError(null);
+  const filteredPrompts = useMemo(() => {
+    const normalized = search.trim().toLowerCase();
+    const base = prompts.length > 0
+      ? prompts
+      : SERVICE_BLUEPRINT.map((item, index) => ({
+          id: item.slug,
+          slug: item.slug,
+          title: item.title,
+          prompt_text: item.detail,
+          guidance_text: 'Preview-only route. Unlock access to start a live draft.',
+          level: ['A2', 'B1', 'B2', 'C1'][index] ?? 'B1',
+          genre: item.skill,
+          target_grammar: item.skill,
+          target_vocabulary: [],
+          target_structure: item.intent,
+          expected_length_min: 80,
+          expected_length_max: 150,
+          presentation_meta: {
+            scene_label: 'Writing brief',
+            hero_note: item.detail,
+            target_badges: [item.skill, item.intent],
+          },
+        } satisfies WritingPrompt));
+
+    if (!normalized) return base;
+    return base.filter(
+      (prompt) =>
+        prompt.title.toLowerCase().includes(normalized) ||
+        prompt.genre.toLowerCase().includes(normalized) ||
+        prompt.level.toLowerCase().includes(normalized),
+    );
+  }, [prompts, search]);
+
+  const activePrompt =
+    previewPrompt ??
+    filteredPrompts.find((entry) => entry.id === params.promptId || entry.slug === params.promptId) ??
+    filteredPrompts[0] ??
+    null;
+  const presentation = asMetaRecord(activePrompt?.presentation_meta);
+  const targetBadges = readMetaList(presentation?.target_badges);
+  const supportBadges = readMetaList(presentation?.support_mode_labels);
+
+  const handleOpenDraft = async (): Promise<void> => {
+    if (!activePrompt) return;
+    if (!hasAccess || !accessToken) {
+      window.location.assign(pricingHref);
+      return;
+    }
+
+    const result = await startWritingDraft(accessToken, { prompt_id: activePrompt.id });
+    navigate(`/drafts/${result.draft.id}`);
   };
 
-  const handleSubmitDraft = async (): Promise<void> => {
-    if (!activeDraft || !accessToken) return;
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Writing briefs"
+        title="Choose a task brief before you enter the draft studio."
+        copy="This route is for selection and framing only: what you are writing, why it matters, and which pattern you are training."
+        actions={
+          <>
+            {activePrompt ? (
+              <button className="primary-cta" type="button" onClick={() => void handleOpenDraft()}>
+                Open draft studio
+              </button>
+            ) : null}
+            <Link className="ghost-btn" to="/dashboard">
+              Back to dashboard
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Preview the route structure"
+          message="You can browse the brief architecture and target metadata here. Live drafting unlocks when this service is active on your account."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-list-card">
+          <div className="route-list-head">
+            <h2>Brief queue</h2>
+            <span className="route-outline-chip">{filteredPrompts.length} briefs</span>
+          </div>
+          <p className="route-list-subcopy">
+            Dashboard cards now launch here first, so learners choose the right brief before they touch the workbench.
+          </p>
+          {loading ? <div className="route-empty-state">Loading live writing briefs...</div> : null}
+          {error ? <div className="route-empty-state">{error}</div> : null}
+          <div className="route-list-stack">
+            {filteredPrompts.map((prompt) => {
+              const active = activePrompt?.id === prompt.id;
+              const href = `/briefs/${prompt.slug || prompt.id}`;
+              return (
+                <Link key={prompt.id} className={'route-list-item' + (active ? ' active' : '')} to={href}>
+                  <small>{prompt.level} · {prompt.genre}</small>
+                  <strong>{prompt.title}</strong>
+                  <p>{prompt.guidance_text ?? prompt.prompt_text.slice(0, 120)}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="route-stage-card">
+          {activePrompt ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">{readMetaText(presentation?.scene_label) || 'Writing brief'}</small>
+                  <h2>{activePrompt.title}</h2>
+                </div>
+                <span className="route-chip">{activePrompt.level}</span>
+              </div>
+              <p>{readMetaText(presentation?.hero_note) || activePrompt.prompt_text}</p>
+              <div className="route-chip-row">
+                {targetBadges.map((badge) => (
+                  <span key={`${activePrompt.id}-${badge}`} className="route-chip">
+                    {badge}
+                  </span>
+                ))}
+                {supportBadges.map((badge) => (
+                  <span key={`${activePrompt.id}-${badge}-support`} className="route-outline-chip">
+                    {badge}
+                  </span>
+                ))}
+                {activePrompt.target_grammar ? <span className="route-outline-chip">{activePrompt.target_grammar}</span> : null}
+              </div>
+              <section className="route-inline-card">
+                <div className="route-label-row">
+                  <strong>Prompt</strong>
+                  <span className="route-outline-chip">
+                    {activePrompt.expected_length_min}-{activePrompt.expected_length_max} words
+                  </span>
+                </div>
+                <p>{activePrompt.prompt_text}</p>
+                {activePrompt.guidance_text ? <p className="route-muted-copy">{activePrompt.guidance_text}</p> : null}
+              </section>
+              <div className="route-cta-row">
+                <button className="primary-cta" type="button" onClick={() => void handleOpenDraft()}>
+                  {hasAccess ? 'Open draft studio' : 'Unlock drafting'}
+                </button>
+                <Link className="ghost-btn" to="/review">
+                  See review room
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="route-empty-state">Choose a brief from the queue to preview its task structure.</div>
+          )}
+        </section>
+      </div>
+    </SectionGrid>
+  );
+};
+
+const WritingDraftPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const navigate = useNavigate();
+  const params = useParams<{ draftId?: string }>();
+  const [draft, setDraft] = useState<WritingDraft | null>(null);
+  const [prompt, setPrompt] = useState<WritingPrompt | null>(null);
+  const [draftText, setDraftText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitResult, setSubmitResult] = useState<WritingSubmitResult | null>(null);
+
+  useEffect(() => {
+    if (!params.draftId || !hasAccess || !accessToken) {
+      setDraft(null);
+      setPrompt(null);
+      setDraftText('');
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void getWritingDraft(accessToken, params.draftId)
+      .then((result) => {
+        if (cancelled) return;
+        setDraft(result.draft);
+        setPrompt(result.prompt);
+        setDraftText(result.draft.current_text ?? '');
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not open this draft.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.draftId]);
+
+  const presentation = asMetaRecord(prompt?.presentation_meta);
+  const supportBadges = readMetaList(presentation?.support_mode_labels);
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!draft || !accessToken) return;
     setSubmitLoading(true);
-    setSubmitMessage(null);
-    setSubmitError(null);
+    setError(null);
 
     try {
-      const wordCount = draftText.trim().length > 0 ? draftText.trim().split(/\s+/).filter(Boolean).length : 0;
       const result = await submitWritingDraft(accessToken, {
-        draft_id: activeDraft.id,
+        draft_id: draft.id,
         submission_text: draftText,
-        time_spent_seconds: Math.max(120, wordCount * 8),
-        retry_count: activeDraft.revision_count,
+        time_spent_seconds: Math.max(120, draftText.trim().split(/\s+/).filter(Boolean).length * 8),
+        retry_count: draft.revision_count,
         hint_usage_count: 0,
       });
-      setActiveDraft(result.draft);
+      setDraft(result.draft);
       setSubmitResult(result);
-      setSubmitMessage(result.feedback?.summary ?? 'Writing draft submitted.');
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Unable to score this draft right now.');
+      navigate(`/review/${result.draft.id}`);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not submit this draft.');
     } finally {
       setSubmitLoading(false);
     }
   };
 
   return (
-    <div className="dashboard-stack">
-      <section className="card exercises-workspace">
-        <div className="exercises-grid">
-          <div className="exercises-list-pane">
-            <div className="exercises-list-head">
-              <h2>{SERVICE_LABEL} Exercises</h2>
-              <small>One unified page</small>
-            </div>
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Draft studio"
+        title="Write on a page that belongs only to drafting."
+        copy="The live workbench now lives here, separate from discovery and review, so the learner can stay focused on the response itself."
+        actions={
+          <>
+            <Link className="ghost-btn" to="/briefs">
+              Back to briefs
+            </Link>
+            <Link className="ghost-btn" to={draft ? `/review/${draft.id}` : '/review'}>
+              Open review room
+            </Link>
+          </>
+        }
+      />
 
-            <div className="exercises-filters">
-              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
-                All
-              </button>
-              {laneDefs.map((lane) => (
-                <button
-                  key={lane.key}
-                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
-                  type="button"
-                  onClick={() => setActiveLane(lane.key)}
-                >
-                  {lane.label}
-                </button>
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Draft studio is locked"
+          message="You can see the dedicated route, but real drafting and scoring unlock with an active writing plan."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className={'route-stage-card' + (!hasAccess ? ' route-disabled' : '')}>
+        {loading ? <div className="route-empty-state">Opening draft studio...</div> : null}
+        {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+        {!loading && !draft ? (
+          <div className="route-empty-state">
+            Choose a brief first so the system can open a dedicated draft studio for that task.
+            <div className="route-cta-row" style={{ marginTop: 12 }}>
+              <Link className="ghost-btn" to="/briefs">
+                Browse briefs
+              </Link>
+            </div>
+          </div>
+        ) : null}
+
+        {draft && prompt ? (
+          <>
+            <div className="route-stage-header">
+              <div>
+                <small className="route-context-kicker">{readMetaText(presentation?.scene_label) || 'Live draft'}</small>
+                <h2>{prompt.title}</h2>
+              </div>
+              <span className="route-chip">Revision #{draft.revision_count + 1}</span>
+            </div>
+            <p>{readMetaText(presentation?.hero_note) || prompt.guidance_text || prompt.prompt_text}</p>
+            <div className="route-chip-row">
+              <span className="route-chip">{prompt.level}</span>
+              <span className="route-outline-chip">{prompt.genre}</span>
+              {supportBadges.map((badge) => (
+                <span key={badge} className="route-outline-chip">
+                  {badge}
+                </span>
               ))}
             </div>
-
-            {laneDefs.map((lane) => (
-              <section key={lane.key} className="exercise-lane">
-                <header>
-                  <h3>{lane.label}</h3>
-                  <span>{groupedItems[lane.key].length}</span>
-                </header>
-
-                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
-
-                {groupedItems[lane.key].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="exercise-item-top">
-                      <h4>{item.title}</h4>
-                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
-                    </div>
-                    <p>{item.detail}</p>
-                    <div className="exercise-item-meta">
-                      <span>{item.due}</span>
-                      <span>{item.comments} notes</span>
-                      <span>{item.updates} updates</span>
-                    </div>
-                  </button>
-                ))}
-              </section>
-            ))}
-          </div>
-
-          <div className="exercises-detail-pane">
-            {selectedItem ? (
-              <>
-                <div className="exercise-detail-actions">
-                  <button type="button" className="ghost-btn">Share</button>
-                  <button type="button" className="ghost-btn">Expand</button>
-                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
-                </div>
-
-                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
-                <h2>{selectedItem.title}</h2>
-
-                <div className="exercise-detail-badges">
-                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
-                  <span className="exercise-chip">{selectedItem.due}</span>
-                </div>
-
-                <div className="exercise-timebox">
-                  <span>Focused exercise block</span>
-                  <strong>45:00</strong>
-                </div>
-
-                <p className="exercise-detail-copy">{selectedItem.detail}</p>
-
-                <div className="exercise-subsection">
-                  <div className="phase2-lab-head">
-                    <div>
-                      <h3>Live Writing Workbench</h3>
-                      <p>Real prompt bank, draft persistence, revision cycles, and shared-core scoring.</p>
-                    </div>
-                    {activePrompt ? <span className="exercise-chip">{activePrompt.level} · {activePrompt.genre}</span> : null}
-                  </div>
-
-                  {activePrompt ? (
-                    <div className="phase2-premium-card">
-                      <small>{readMetaText(writingPresentation?.scene_label) || 'Editorial brief'}</small>
-                      <strong>{readMetaText(writingPresentation?.hero_note) || 'Draft with a clear objective, then tighten one layer at a time: grammar, word choice, and coherence.'}</strong>
-                      <div className="phase2-badge-row">
-                        {writingTargetBadges.map((badge) => (
-                          <span key={`${activePrompt.id}-${badge}`} className="phase2-badge">{badge}</span>
-                        ))}
-                        {writingSupportModes.map((badge) => (
-                          <span key={`${activePrompt.id}-${badge}-support`} className="phase2-badge muted">{badge}</span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {!hasAccess ? <p className="phase2-status">Unlock access to open the writing backend.</p> : null}
-                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your writing prompts.</p> : null}
-                  {writingPromptsLoading ? <p className="phase2-status">Loading writing prompts...</p> : null}
-                  {writingPromptsError ? <p className="phase2-status error">{writingPromptsError}</p> : null}
-
-                  {activePrompt ? (
-                    <>
-                      <div className="phase2-chip-row">
-                        {writingPrompts.map((prompt) => (
-                          <button
-                            key={prompt.id}
-                            type="button"
-                            className={prompt.id === activePrompt.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
-                            onClick={() => handleSelectPrompt(prompt.id)}
-                          >
-                            {prompt.title}
-                          </button>
-                        ))}
-                      </div>
-
-                      <p className="phase2-lab-copy">{activePrompt.prompt_text}</p>
-                      {activePrompt.guidance_text ? <p className="phase2-hint">{activePrompt.guidance_text}</p> : null}
-
-                      <div className="phase2-inline-meta">
-                        <span>{activePrompt.expected_length_min}-{activePrompt.expected_length_max} words</span>
-                        {activePrompt.target_grammar ? <span>{activePrompt.target_grammar}</span> : null}
-                        {activeDraft ? <span>Revision #{activeDraft.revision_count + 1}</span> : null}
-                      </div>
-
-                      {draftLoading ? <p className="phase2-status">Opening draft...</p> : null}
-
-                      <textarea
-                        className="phase2-textarea"
-                        value={draftText}
-                        onChange={(event) => setDraftText(event.target.value)}
-                        placeholder="Write your response here, then submit it for correction and revision feedback..."
-                        rows={9}
-                      />
-
-                      <div className="phase2-actions">
-                        <button
-                          className="primary-cta"
-                          type="button"
-                          onClick={() => {
-                            void handleSubmitDraft();
-                          }}
-                          disabled={submitLoading || !draftText.trim() || !activeDraft || !hasAccess || !accessToken}
-                        >
-                          {submitLoading ? 'Scoring draft...' : activeDraft?.revision_count ? 'Submit revision' : 'Submit draft'}
-                        </button>
-                      </div>
-
-                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
-                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
-
-                      {submitResult ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Revision feedback</strong>
-                          <p>{submitResult.feedback?.summary ?? 'Feedback is ready.'}</p>
-                          <div className="phase2-inline-meta">
-                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
-                            <span>Draft words: {submitResult.draft.word_count}</span>
-                            {submitResult.revision_cycle?.improvement_ratio != null ? (
-                              <span>Improvement: {Math.round(submitResult.revision_cycle.improvement_ratio * 100)}%</span>
-                            ) : null}
-                          </div>
-                          {Array.isArray(submitResult.raw_issues) && submitResult.raw_issues.length > 0 ? (
-                            <ul className="phase2-feedback-list">
-                              {submitResult.raw_issues.map((issue, index) => (
-                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
-                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Fix this issue and resubmit.')}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>No major issues were detected in this revision cycle.</p>
-                          )}
-                          <div className="phase2-metric-grid">
-                            <div>
-                              <small>Revision cycle</small>
-                              <strong>{submitResult.draft.revision_count + 1} total passes</strong>
-                            </div>
-                            <div>
-                              <small>Constraint mode</small>
-                              <strong>{writingSupportModes[0] || readMetaText(writingPresentation?.coach_tone) || 'Clarity first'}</strong>
-                            </div>
-                            <div>
-                              <small>Completion note</small>
-                              <strong>{readMetaText(writingPresentation?.celebration_copy) || 'Compare this draft to the last version, then push one weaker pattern into Grammar or Vocabulary.'}</strong>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Execution checklist</h3>
-                  <ul>
-                    <li>Complete the task prompt without switching services.</li>
-                    <li>Write one short reflection before submitting.</li>
-                    <li>Push weak words or patterns into connected services.</li>
-                  </ul>
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Comments</h3>
-                  <div className="exercise-comment">
-                    <strong>Coach</strong>
-                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
-                  </div>
-                  <div className="exercise-comment">
-                    <strong>You</strong>
-                    <p>I will repeat this with a shorter time limit after one full run.</p>
-                  </div>
-                </div>
-
-                <div className="exercise-detail-footer">
-                  <button
-                    className="primary-cta"
-                    type="button"
-                    onClick={() => {
-                      if (!hasAccess) {
-                        window.location.assign(pricingHref);
-                      }
-                    }}
-                  >
-                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
-                    Back to dashboard
-                  </button>
-                </div>
-              </>
+            <textarea
+              className="route-textarea"
+              value={draftText}
+              onChange={(event) => setDraftText(event.target.value)}
+              placeholder="Write your response here. The review route will own corrections after you submit."
+            />
+            <div className="route-inline-actions">
+              <button
+                className="primary-cta"
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={!hasAccess || !accessToken || !draftText.trim() || submitLoading}
+              >
+                {submitLoading ? 'Submitting draft...' : draft.revision_count > 0 ? 'Submit next revision' : 'Submit first draft'}
+              </button>
+              <Link className="ghost-btn" to={`/review/${draft.id}`}>
+                Review route
+              </Link>
+            </div>
+            {submitResult ? (
+              <div className="route-inline-card">
+                <strong>{submitResult.feedback?.summary ?? 'Draft submitted.'}</strong>
+                <p>Routing you into the review room now so feedback stays off the drafting screen.</p>
+              </div>
             ) : null}
-          </div>
-        </div>
+          </>
+        ) : null}
       </section>
-    </div>
+    </SectionGrid>
   );
 };
 
-const SignedOutLanding = ({
-  serviceLabel,
-  signInHref,
+const WritingReviewPage = ({
+  hasAccess,
   pricingHref,
-  platformWorkspaceHref,
-  isSignedIn,
-  onContinue,
+  accessToken,
+  context,
 }: {
-  serviceLabel: string;
-  signInHref: string;
+  hasAccess: boolean;
   pricingHref: string;
-  platformWorkspaceHref: string;
-  isSignedIn: boolean;
-  onContinue: () => void;
+  accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
-  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
-  const focusLower = focusTitle.toLowerCase();
+  const params = useParams<{ draftId?: string }>();
+  const [draft, setDraft] = useState<WritingDraft | null>(null);
+  const [prompt, setPrompt] = useState<WritingPrompt | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, unknown> | null>(null);
+  const [latestCycle, setLatestCycle] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.draftId || !hasAccess || !accessToken) {
+      setDraft(null);
+      setPrompt(null);
+      setFeedback(null);
+      setLatestCycle(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void getWritingDraft(accessToken, params.draftId)
+      .then(async (result) => {
+        if (cancelled) return;
+        setDraft(result.draft);
+        setPrompt(result.prompt);
+        const cycle = Array.isArray(result.revision_cycles) ? (result.revision_cycles[0] ?? null) : null;
+        setLatestCycle(cycle);
+        const attemptId = typeof cycle?.attempt_id === 'string' ? cycle.attempt_id : null;
+        if (attemptId) {
+          const attempt = await getLearningAttempt(accessToken, attemptId);
+          if (cancelled) return;
+          setFeedback(attempt.feedback ?? null);
+        } else {
+          setFeedback(null);
+        }
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not load this review cycle.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.draftId]);
+
+  const issues = Array.isArray(feedback?.issues)
+    ? (feedback?.issues as Array<Record<string, unknown>>)
+    : Array.isArray(latestCycle?.issues)
+    ? (latestCycle?.issues as Array<Record<string, unknown>>)
+    : [];
 
   return (
-    <div className="service-landing">
-      <section className="landing-hero">
-        <div className="landing-mosaic">
-          <article className="landing-card landing-stat tilt-left">
-            <div className="landing-stat-head">
-              <strong>174+</strong>
-              <span className="landing-arrow">{'->'}</span>
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Review room"
+        title="Keep corrections on a page that belongs only to debrief."
+        copy="This route owns feedback, issue grouping, and next-step handoffs so the learner can return to drafting with a cleaner mind."
+        actions={
+          <>
+            <Link className="ghost-btn" to={draft ? `/drafts/${draft.id}` : '/drafts'}>
+              Back to draft studio
+            </Link>
+            <Link className="ghost-btn" to="/briefs">
+              Browse another brief
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Review route is preview-only"
+          message="The debrief structure is visible now, but real feedback appears after a live draft submission."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-debrief-card">
+          {loading ? <div className="route-empty-state">Loading review data...</div> : null}
+          {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+          {!loading && !draft ? (
+            <div className="route-empty-state">
+              Submit a draft first. The review room will then collect feedback, correction targets, and handoffs in one place.
             </div>
-            <p>{focusTitle} programs</p>
-            <small>new practice packs every week</small>
-          </article>
+          ) : null}
 
-          <article className="landing-card landing-team tilt-right">
-            <span className="landing-pill">4.8 review</span>
-            <h3>Mentor team</h3>
-            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
-          </article>
-
-          <article className="landing-card landing-offer tilt-right">
-            <h3>Secrets of {focusLower}</h3>
-            <p className="landing-price">
-              12$ <span>35$</span>
-            </p>
-            <div className="landing-ticket">
-              <div className="landing-ticket-row">
-                <small>24 Jul</small>
-                <small>28 Jul</small>
+          {draft && prompt ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Latest review cycle</small>
+                  <h2>{prompt.title}</h2>
+                </div>
+                <span className="route-chip">Revision #{draft.revision_count}</span>
               </div>
-              <strong>18:00</strong>
-              <small>35h 20m</small>
-            </div>
-          </article>
+              <p>{typeof feedback?.summary === 'string' && feedback.summary ? feedback.summary : 'Your latest revision cycle is ready for review.'}</p>
+              <div className="route-metric-grid">
+                <div className="route-inline-card">
+                  <small className="route-context-kicker">Word count</small>
+                  <strong>{draft.word_count}</strong>
+                </div>
+                <div className="route-inline-card">
+                  <small className="route-context-kicker">Improvement</small>
+                  <strong>
+                    {typeof latestCycle?.improvement_ratio === 'number'
+                      ? `${Math.round(Number(latestCycle.improvement_ratio) * 100)}%`
+                      : 'First pass'}
+                  </strong>
+                </div>
+              </div>
+              <div className="phase2-feedback-card">
+                <strong>Issue breakdown</strong>
+                {issues.length > 0 ? (
+                  <ul className="phase2-feedback-list">
+                    {issues.map((issue, index) => (
+                      <li key={`${String(issue.subskill_key ?? issue.category ?? 'issue')}-${index}`}>
+                        <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Fix and retry this pattern.')}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No major issues were logged in the latest cycle.</p>
+                )}
+              </div>
+            </>
+          ) : null}
+        </section>
 
-          <article className="landing-card landing-showcase tilt-left">
-            <div className="landing-orb" aria-hidden />
-            <h3>{focusTitle} studio</h3>
-            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
-          </article>
-        </div>
-
-        <article className="landing-copy card">
-          <div className="landing-chip">{serviceLabel}</div>
-          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
-          <p>
-            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
-            writing, speaking, grammar, vocabulary, and immersion.
-          </p>
-          <div className="landing-cta-row">
-            {isSignedIn ? (
-              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
-            ) : (
-              <a className="primary-cta" href={signInHref}>Get started</a>
-            )}
-            <a className="ghost-btn" href={pricingHref}>See pricing</a>
-            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
+        <section className="route-summary-card">
+          <div className="route-subhead">
+            <h2>Next routes</h2>
+            <span className="route-outline-chip">cross-service handoff</span>
           </div>
-        </article>
-      </section>
-
-      <section className="landing-proof-grid">
-        <article className="landing-proof card tilt-left">
-          <small>Learner footprint</small>
-          <strong>12k+</strong>
-          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
-        </article>
-        <article className="landing-proof card tilt-right">
-          <small>Practice volume</small>
-          <strong>34k</strong>
-          <p>Total {focusLower} training hours logged by active users on the platform.</p>
-        </article>
-      </section>
-    </div>
+          <div className="route-next-step-grid">
+            {REVIEW_HANDOFFS.map((handoff) => (
+              <a
+                key={handoff.label}
+                className="route-next-step-card"
+                href={withEnglishRouteContext(handoff.href, {
+                  sourceService: 'writing',
+                  intent: 'review-followup',
+                  skill: 'writing',
+                  reason: 'writing-debrief',
+                })}
+              >
+                <strong>{handoff.label}</strong>
+                <p>Leave the review room only when the next route is specific and deliberate.</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
+    </SectionGrid>
   );
 };
+
+const WritingWorkspaceRoutes = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  search,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  search: string;
+}) => {
+  const location = useLocation();
+  const context = useMemo(() => readEnglishRouteContext(location.search), [location.search]);
+
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<WritingDashboardPage hasAccess={hasAccess} pricingHref={pricingHref} context={context} />} />
+      <Route
+        path="/briefs"
+        element={<WritingBriefsPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/briefs/:promptId"
+        element={<WritingBriefsPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/drafts"
+        element={<WritingDraftPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/drafts/:draftId"
+        element={<WritingDraftPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/review"
+        element={<WritingReviewPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/review/:draftId"
+        element={<WritingReviewPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route path="/exercises" element={<Navigate to="/briefs" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+};
+
 const App = () => {
+  const location = useLocation();
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
   const [search, setSearch] = useState('');
@@ -883,32 +989,6 @@ const App = () => {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
-
-  const [path, setPath] = useState<AppPath>(() => {
-    if (typeof window === 'undefined') return '/';
-    return resolveAppPath(window.location.pathname);
-  });
-  const showLanding = path === '/';
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (showLanding || status === 'signed_out') {
-      setMobileNavOpen(false);
-    }
-  }, [showLanding, status]);
-
-  const navigate = (nextPath: AppPath, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    if (window.location.pathname !== nextPath) {
-      if (replace) {
-        window.history.replaceState({}, '', nextPath);
-      } else {
-        window.history.pushState({}, '', nextPath);
-      }
-    }
-    setPath(nextPath);
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -929,24 +1009,6 @@ const App = () => {
       subscription.subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      setPath(resolveAppPath(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    if (status === 'signed_out' && path !== '/') {
-      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-        window.history.replaceState({}, '', '/');
-      }
-      setPath('/');
-    }
-  }, [path, status]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1049,267 +1111,71 @@ const App = () => {
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
-  const profileEmail = session?.user.email ?? null;
-  const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
-  const accessEndsLabel = useMemo(() => {
-    if (!accessEndsAt) return null;
-    const date = new Date(accessEndsAt);
-    if (Number.isNaN(date.getTime())) return accessEndsAt;
-    return date.toLocaleString();
-  }, [accessEndsAt]);
 
-  const visibleLessons = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return lessonRows;
-    return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
-  }, [search]);
-
-  
   void profileName;
-  void profileEmail;
-  void avatarLabel;
-  void accessEndsLabel;
+  void accessEndsAt;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
-  
-  if (showLanding) {
+  if (status === 'signed_out' || location.pathname === '/') {
     return (
-      <div className="landing-page-root">
-        <div className="ambient-layer" />
-        <div className="landing-page-main">
-          <header className="landing-page-topbar card">
-            <button
-              type="button"
-              className="landing-brand"
-              onClick={() => navigate('/')}
-            >
-              <span className="dot" />
-              <strong>{SERVICE_LABEL}</strong>
-            </button>
-            <nav className="landing-links">
-              <a href={buildPlatformUrl('/about')}>About us</a>
-              <a href={buildPlatformUrl('/programs')}>Programs</a>
-              <a href={buildPlatformUrl('/blog')}>Blog</a>
-              <a href={buildPlatformUrl('/courses')}>Courses</a>
-              <a href={buildPlatformUrl('/faq')}>FAQ</a>
-              <a href={buildPlatformUrl('/contact')}>Contact</a>
-            </nav>
-            <div className="landing-actions">
-              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Log in</a>
-              )}
-              <a className="primary-cta" href={pricingHref}>Sign up</a>
-            </div>
-          </header>
-
-          <SignedOutLanding
-            serviceLabel={SERVICE_LABEL}
-            signInHref={signInHref}
-            pricingHref={pricingHref}
-            platformWorkspaceHref={platformWorkspaceHref}
-            isSignedIn={status === 'signed_in'}
-            onContinue={() => navigate('/dashboard')}
-          />
-        </div>
-        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-          Updates
-        </a>
-      </div>
-    );
-  }
-  return (
-    <div className="reading-root">
-      <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-          <button
-            type="button"
-            className="brand-mark"
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-            style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-          >
-            <span className="dot" />
-            <div>
-              <strong>ENGLISH WRITING</strong>
-              <small>Unified auth + payment</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-nav-inline-toggle"
-            aria-expanded={mobileNavOpen}
-            aria-controls="service-side-nav"
-            onClick={() => setMobileNavOpen((prev) => !prev)}
-          >
-            {mobileNavOpen ? 'Close menu' : 'Menu'}
-          </button>
-
-          <div className="left-nav-body">
-          <nav className="menu-list">
-            <button
-              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate('/dashboard');
-              }}
-            >
-              Dashboard
-            </button>            <button
-              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            >
-              Exercises
-            </button>          </nav>
-
-          
-          <section className="service-switcher">
-            <div className="service-switch-head">
-              <span>Switch service</span>
-              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
-            </div>
-            <div className="service-switch-grid">
-              {SERVICE_SWITCH_LINKS.map((service) => (
-                <a key={service.key} className="service-switch-link" href={service.href}>
-                  {service.label}
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <div className="left-footer">
-            <div className="support-zone">
-              <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
-              <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
-            </div>
-
-            <div className="mobile-account-zone">
-              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
-              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
-              )}
-            </div>
-
-            <article className="upgrade-card">
-              <h3>Premium Writing Pack</h3>
-              <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
-              <a className="black-btn" href={pricingHref}>View plans</a>
-            </article>
-          </div>
-        </div>
-        </aside>
-
-        <main className="main-column">
-          {!showLanding ? (
-          <header className="topbar">
-            <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - premium daily writing workflow.`}</p>
-            </div>
-
-            <div className="topbar-actions">
-              <label className="search-box">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
-                />
-              </label>
-              <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
-              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Sign in</a>
-              )}
-            </div>
-          </header>
-          ) : null}
-
-          {showLanding ? (
+      <Routes>
+        <Route
+          path="/"
+          element={
             <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
             />
-          ) : null}
-          {!showLanding && status !== 'signed_out' && checkingAccess ? (
-            <div className="access-banner">
-              <strong>Checking access...</strong>
-              <span>Verifying your active plan for English Writing.</span>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && needsAccess ? (
-            <div className="access-banner warning">
-              <strong>Plan required for full access.</strong>
-              <span>Choose a trial or paid plan to unlock this service.</span>
-              <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          }
+        />
+        <Route path="*" element={<Navigate to={status === 'signed_in' ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    );
+  }
 
-          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage
-              lessons={visibleLessons}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onOpenExercise={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
-            <ExercisesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-              accessToken={session?.access_token ?? null}
-            />
-          )}
-        </main>
-      </div>
-      <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-        Updates
-      </a>
-    </div>
+  const menuItems = [
+    { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
+    { label: 'Briefs', href: '/briefs', active: location.pathname.startsWith('/briefs') },
+    { label: 'Draft studio', href: '/drafts', active: location.pathname.startsWith('/drafts') },
+    { label: 'Review room', href: '/review', active: location.pathname.startsWith('/review') },
+  ];
+
+  return (
+    <EnglishSkillWorkspace
+      serviceName={SERVICE_LABEL}
+      serviceTagline="English Writing service - route-based drafting and revision workflow."
+      menuItems={menuItems}
+      serviceSwitchLinks={SERVICE_SWITCH_LINKS}
+      hubHref={ENGLISH_HUB_URL}
+      platformHref={platformWorkspaceHref}
+      pricingHref={pricingHref}
+      signInHref={signInHref}
+      status={status}
+      needsAccess={needsAccess}
+      checkingAccess={checkingAccess}
+      accessError={accessError}
+      search={search}
+      onSearchChange={setSearch}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+      upgradeTitle="Premium Writing Pack"
+      upgradeCopy="Unlock full brief banks, route-owned revision labs, and connected English handoffs."
+      updatesHref={buildPlatformUrl('/updates')}
+    >
+      <WritingWorkspaceRoutes
+        hasAccess={hasAccess}
+        pricingHref={pricingHref}
+        accessToken={session?.access_token ?? null}
+        search={search}
+      />
+    </EnglishSkillWorkspace>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

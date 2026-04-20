@@ -73,3 +73,19 @@ export const submitLearningAttempt = async (
     feedback?: { summary?: string | null };
     scoring?: { overall_score?: number | null };
   };
+
+export const getLearningAttempt = async (
+  accessToken: string,
+  attemptId: string,
+): Promise<{
+  attempt: Record<string, unknown>;
+  content_item?: Record<string, unknown> | null;
+  feedback?: Record<string, unknown> | null;
+}> =>
+  (await call(accessToken, `/${encodeURIComponent(attemptId)}`, {
+    method: 'GET',
+  })) as {
+    attempt: Record<string, unknown>;
+    content_item?: Record<string, unknown> | null;
+    feedback?: Record<string, unknown> | null;
+  };

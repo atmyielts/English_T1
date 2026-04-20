@@ -94,6 +94,14 @@ export const getGrammarDashboard = async (
   return (await call(accessToken, `/dashboard${query}`, { method: "GET" })) as GrammarDashboard;
 };
 
+export const getGrammarUnit = async (
+  accessToken: string,
+  identifier: string,
+): Promise<{ unit: GrammarUnit; drills: GrammarDrill[] }> =>
+  (await call(accessToken, `/units/${encodeURIComponent(identifier)}?language_code=en`, {
+    method: "GET",
+  })) as { unit: GrammarUnit; drills: GrammarDrill[] };
+
 export const submitGrammarDrill = async (
   accessToken: string,
   body: Record<string, unknown>,

@@ -1,34 +1,50 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import '../../english-shared/src/english-routes.css';
+import {
+  AccessBoundaryCard,
+  EnglishSkillWorkspace,
+  PageHero,
+  RouteContextRibbon,
+  SectionGrid,
+  StatCard,
+} from '../../english-shared/src/ui';
+import {
+  readEnglishRouteContext,
+  withEnglishRouteContext,
+  type EnglishRouteContext,
+} from '../../english-shared/src/routeContext';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import {
   getGrammarDashboard,
+  getGrammarUnit,
   submitGrammarDrill,
   type GrammarDashboard,
-  type GrammarSubmitResult,
+  type GrammarDrill,
+  type GrammarUnit,
 } from './lib/grammarRemediationClient';
+import { getLearningAttempt } from './lib/learningAttemptClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISES_PATH = '/exercises' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
 
-type LessonRow = {
-  id: string;
-  title: string;
-  level: string;
-  schedule: string;
-  progress: number;
-  status: 'In progress' | 'Not started' | 'Completed';
-  accent: string;
-};
-
-const GRAMMAR_PRODUCT_ID = ((import.meta.env.VITE_GRAMMAR_PRODUCT_ID as string | undefined) ?? '').trim() || '6c4f0566-6f50-4fb4-b176-c4397ecb8ec5';
+const GRAMMAR_PRODUCT_ID =
+  ((import.meta.env.VITE_GRAMMAR_PRODUCT_ID as string | undefined) ?? '').trim() ||
+  '6c4f0566-6f50-4fb4-b176-c4397ecb8ec5';
 const GRAMMAR_PRODUCT_SLUG = 'english-grammar';
 const SERVICE_LABEL = 'English Grammar';
-
 const ENGLISH_HUB_URL = 'https://english.schood.online';
+
 const ENGLISH_SERVICE_LINKS = [
   { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
   { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
@@ -38,139 +54,26 @@ const ENGLISH_SERVICE_LINKS = [
   { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
   { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
 ] as const;
-const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
-const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
 
-const SERVICE_BLUEPRINT = [
-  {
-    title: 'Targeted drills',
-    detail: 'Practice only the grammar pattern that is currently weak for your profile.',
-    intent: 'targeted-drill',
-    skill: 'grammar',
-  },
-  {
-    title: 'Error detection tasks',
-    detail: 'Find and fix the exact error in sentence-level correction sets.',
-    intent: 'error-detection',
-    skill: 'accuracy',
-  },
-  {
-    title: 'Micro-lessons',
-    detail: 'Run short explanation + examples before retrying the same pattern.',
-    intent: 'micro-lesson',
-    skill: 'understanding',
-  },
-  {
-    title: 'Pattern training',
-    detail: 'Repeat high-frequency structures until usage becomes automatic.',
-    intent: 'pattern-training',
-    skill: 'structure',
-  },
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== 'grammar');
+
+const REVIEW_HANDOFFS = [
+  { label: 'Apply in Writing', href: 'https://writing.english.schood.online/briefs' },
+  { label: 'Apply in Speaking', href: 'https://speaking.english.schood.online/studio' },
+  { label: 'Use it in Immersion', href: 'https://immersion.english.schood.online/missions' },
 ] as const;
-
-const SERVICE_HANDOFFS = [
-  { key: 'writing', label: 'Apply fixes in Writing tasks', intent: 'active-correction', skill: 'grammar', reason: 'grammar-handoff' },
-  { key: 'speaking', label: 'Transfer to Speaking fluency', intent: 'guided-speaking', skill: 'accuracy', reason: 'grammar-handoff' },
-  { key: 'immersion', label: 'Use in Immersion scenarios', intent: 'scenario-task', skill: 'communication', reason: 'grammar-handoff' },
-] as const;
-
-const lessonRows: LessonRow[] = [
-  {
-    id: 'lesson-1',
-    title: 'Daily Conversation Signals',
-    level: 'Beginner',
-    schedule: '08.00 - 09.00',
-    progress: 56,
-    status: 'In progress',
-    accent: '#d3efbd',
-  },
-  {
-    id: 'lesson-2',
-    title: 'University Lecture Mapping',
-    level: 'Intermediate',
-    schedule: '10.00 - 11.30',
-    progress: 81,
-    status: 'In progress',
-    accent: '#edf8dc',
-  },
-  {
-    id: 'lesson-3',
-    title: 'Airport and Travel Announcements',
-    level: 'Beginner',
-    schedule: '14.00 - 15.00',
-    progress: 24,
-    status: 'Not started',
-    accent: '#f6fde9',
-  },
-  {
-    id: 'lesson-4',
-    title: 'IELTS Section 4 Master Drill',
-    level: 'Advanced',
-    schedule: '17.00 - 18.00',
-    progress: 100,
-    status: 'Completed',
-    accent: '#c0e8a4',
-  },
-];
-
-const weeklyMinutes = [
-  { day: 'Mon', minutes: 62 },
-  { day: 'Tue', minutes: 94 },
-  { day: 'Wed', minutes: 71 },
-  { day: 'Thu', minutes: 88 },
-  { day: 'Fri', minutes: 102 },
-  { day: 'Sat', minutes: 74 },
-  { day: 'Sun', minutes: 80 },
-];
-
-
-
-void weeklyMinutes;
-
-const progressStatusClass = (status: LessonRow['status']): string => {
-  if (status === 'Completed') return 'pill done';
-  if (status === 'Not started') return 'pill muted';
-  return 'pill live';
-};
 
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
-
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
-const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
-);
-const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
+const asMetaRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
   const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = readMetaText(meta.full_name);
   if (fullName) return fullName;
-
-  const firstName = readMetaText(meta.first_name);
-  const lastName = readMetaText(meta.last_name);
-  const combined = `${firstName} ${lastName}`.trim();
-  return combined || null;
-};
-
-const resolveInitials = (name: string | null, email: string | null): string => {
-  if (name) {
-    const parts = name
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const first = parts[0] ?? '';
-    const second = parts[1] ?? '';
-    if (first && second) return `${first.slice(0, 1)}${second.slice(0, 1)}`.toUpperCase();
-    if (first) return first.slice(0, 2).toUpperCase();
-  }
-
-  if (email) {
-    const prefix = email.split('@')[0] ?? '';
-    return prefix.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'GL';
-  }
-
-  return 'GL';
+  return `${readMetaText(meta.first_name)} ${readMetaText(meta.last_name)}`.trim() || null;
 };
 
 const resolveReturnTo = (): string => {
@@ -178,736 +81,786 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
-const buildServiceDashboardHref = (
-  serviceKey: string,
-  intent: string,
-  skill: string,
-  reason: string,
-): string => {
-  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
-  const url = new URL(`${target.href}/dashboard`);
-  url.searchParams.set('from', 'english-hub');
-  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
-  url.searchParams.set('intent', intent);
-  url.searchParams.set('skill', skill);
-  url.searchParams.set('reason', reason);
-  return url.toString();
-};
-
-const resolveAppPath = (pathname: string): AppPath => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/dashboard') return '/dashboard';
-  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
-  if (normalized.startsWith('/feature/')) return '/dashboard';
-  return '/';
-};
-
-const DashboardPage = ({
-  lessons,
-  hasAccess,
-  pricingHref,
-  onOpenExercise,
-}: {
-  lessons: LessonRow[];
-  hasAccess: boolean;
-  pricingHref: string;
-  onOpenExercise: (index: number) => void;
-}) => {
-  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  const inboundIntent = params.get('intent') ?? '';
-  const inboundSkill = params.get('skill') ?? '';
-  const inboundReason = params.get('reason') ?? '';
-  const inboundSourceService = params.get('source_service') ?? '';
-  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-
-  return (
-    <div className="dashboard-stack">
-    <section className="hero-card card">
-      <div className="hero-copy">
-        <div className="eyebrow">English Grammar Studio</div>
-        <h1>Repair the grammar that blocks you, one focused drill lane at a time.</h1>
-        <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
-        </p>
-        <button
-          className="primary-cta"
-          type="button"
-          onClick={() => {
-            if (!hasAccess) window.location.assign(pricingHref);
-          }}
-        >
-          {hasAccess ? 'Start 15-min warmup' : 'Unlock grammar access'}
-        </button>
-        {!hasAccess ? <small className="hero-note">Your account is signed in, but this service needs an active plan or trial.</small> : null}
-      </div>
-      <div className="hero-art" aria-hidden>
-        <div className="wave one" />
-        <div className="wave two" />
-        <div className="wave three" />
-      </div>
-    </section>
-
-    {hasInboundFocus ? (
-      <section className="card connected-brief">
-        <div>
-          <h2>Focus routed from Schood English</h2>
-          <p>
-            Continue with intent <strong>{inboundIntent || 'targeted-drill'}</strong> on skill{' '}
-            <strong>{inboundSkill || 'grammar'}</strong>.
-          </p>
-          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
-          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
-        </div>
-        <a
-          className="ghost-btn"
-          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'targeted-drill', inboundSkill || 'grammar', 'continue-focus')}
-        >
-          Keep this focus
-        </a>
-      </section>
-    ) : null}
-
-    <section className="kpi-grid">
-      <article className="card kpi">
-        <span>Total grammar sets</span>
-        <strong>48</strong>
-        <small>+6 this month</small>
-      </article>
-      <article className="card kpi">
-        <span>Hours practiced</span>
-        <strong>36.4 h</strong>
-        <small>consistency score: 88</small>
-      </article>
-      <article className="card kpi">
-        <span>Estimated level (Grammar)</span>
-        <strong>7.0</strong>
-        <small>target: 7.5</small>
-      </article>
-    </section>
-
-    <section className="card class-table">
-      <div className="section-head">
-        <h2>My class list</h2>
-        <button className="ghost-btn" type="button">See all</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map((lesson) => (
-            <tr key={lesson.id}>
-              <td>
-                <strong>{lesson.title}</strong>
-                <small>{lesson.level} - {lesson.schedule}</small>
-              </td>
-              <td>
-                <div className="progress-row">
-                  <span>{lesson.progress}%</span>
-                  <div className="track">
-                    <div className="fill" style={{ width: `${lesson.progress}%`, background: lesson.accent }} />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span className={progressStatusClass(lesson.status)}>{lesson.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section className="card cross-service-playbook">
-      <div className="section-head">
-        <h2>Exercises</h2>
-        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-      </div>
-      <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item, index) => (
-          <article key={item.title} className="playbook-card">
-            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
-              Open exercise window
-            </button>
-          </article>
-        ))}
-      </div>
-      <div className="handoff-row">
-        {SERVICE_HANDOFFS.map((handoff) => (
-          <a
-            key={handoff.key}
-            className="menu-link muted-link"
-            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-          >
-            {handoff.label}
-          </a>
-        ))}
-      </div>
-    </section>
-  </div>
-  );
-};
-
-
-
-const ExercisesPage = ({
-  hasAccess,
-  pricingHref,
-  onNavigate,
-  accessToken,
-}: {
-  hasAccess: boolean;
-  pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
-  accessToken: string | null;
-}) => {
-  type LaneKey = 'todo' | 'in_progress' | 'completed';
-
-  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
-  const [selectedId, setSelectedId] = useState<string>('');
-  const [grammarDashboard, setGrammarDashboard] = useState<GrammarDashboard | null>(null);
-  const [dashboardLoading, setDashboardLoading] = useState(false);
-  const [dashboardError, setDashboardError] = useState<string | null>(null);
-  const [activeUnitId, setActiveUnitId] = useState<string>('');
-  const [drillResponse, setDrillResponse] = useState('');
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitResult, setSubmitResult] = useState<GrammarSubmitResult | null>(null);
-
-  const exerciseItems = useMemo(
-    () =>
-      SERVICE_BLUEPRINT.map((item, index) => {
-        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
-        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
-
-        return {
-          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
-          lane,
-          priority,
-          due: `${10 + index * 3} days left`,
-          comments: 6 + index * 4,
-          updates: 3 + index * 2,
-          ...item,
-        };
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    const firstItem = exerciseItems[0];
-    if (!selectedId && firstItem) {
-      setSelectedId(firstItem.id);
-    }
-  }, [exerciseItems, selectedId]);
-
-  useEffect(() => {
-    if (!hasAccess || !accessToken) {
-      setGrammarDashboard(null);
-      setDashboardLoading(false);
-      setDashboardError(null);
-      return;
-    }
-
-    let cancelled = false;
-    setDashboardLoading(true);
-    setDashboardError(null);
-
-    void getGrammarDashboard(accessToken, { rebuild: true })
-      .then((dashboard) => {
-        if (cancelled) return;
-        setGrammarDashboard(dashboard);
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        setDashboardError(error instanceof Error ? error.message : 'Failed to load grammar remediation.');
-      })
-      .finally(() => {
-        if (cancelled) return;
-        setDashboardLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, hasAccess]);
-
-  useEffect(() => {
-    const preferredAssignment = grammarDashboard?.assignments?.find((assignment) => assignment.status === 'active');
-    const firstUnit = grammarDashboard?.units?.[0];
-    if (!activeUnitId) {
-      if (preferredAssignment?.grammar_unit_id) {
-        setActiveUnitId(preferredAssignment.grammar_unit_id);
-      } else if (firstUnit?.id) {
-        setActiveUnitId(firstUnit.id);
-      }
-    }
-  }, [activeUnitId, grammarDashboard?.assignments, grammarDashboard?.units]);
-
-  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
-
-  const groupedItems = useMemo(
-    () => ({
-      todo: visibleItems.filter((item) => item.lane === 'todo'),
-      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
-      completed: visibleItems.filter((item) => item.lane === 'completed'),
-    }),
-    [visibleItems],
-  );
-
-  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
-  const activeUnit = grammarDashboard?.units?.find((unit) => unit.id === activeUnitId) ?? grammarDashboard?.units?.[0] ?? null;
-  const activeAssignment = grammarDashboard?.assignments?.find((assignment) => assignment.grammar_unit_id === activeUnit?.id) ?? null;
-  const activeDrills = grammarDashboard?.drills?.filter((drill) => drill.grammar_unit_id === activeUnit?.id) ?? [];
-  const activeDrill = activeDrills[0] ?? null;
-  const grammarPresentation = asMetaRecord(activeUnit?.presentation_meta);
-  const grammarTargetBadges = readMetaList(grammarPresentation?.target_badges);
-
-  const laneDefs: Array<{ key: LaneKey; label: string }> = [
-    { key: 'todo', label: 'Todo' },
-    { key: 'in_progress', label: 'In progress' },
-    { key: 'completed', label: 'Completed' },
-  ];
-
-  const handleSelectUnit = (unitId: string): void => {
-    setActiveUnitId(unitId);
-    setDrillResponse('');
-    setSubmitResult(null);
-    setSubmitMessage(null);
-    setSubmitError(null);
-  };
-
-  const handleSubmitDrill = async (): Promise<void> => {
-    if (!activeDrill || !accessToken) return;
-    setSubmitLoading(true);
-    setSubmitMessage(null);
-    setSubmitError(null);
-
-    try {
-      const result = await submitGrammarDrill(accessToken, {
-        drill_id: activeDrill.id,
-        assignment_id: activeAssignment?.id ?? null,
-        response_text: drillResponse,
-        time_spent_seconds: 120,
-        retry_count: submitResult ? 1 : 0,
-        hint_usage_count: 0,
-      });
-      setSubmitResult(result);
-      setSubmitMessage(result.feedback?.summary ?? 'Grammar drill recorded.');
-
-      const refreshed = await getGrammarDashboard(accessToken);
-      setGrammarDashboard(refreshed);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Unable to score this grammar drill right now.');
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
-
-  return (
-    <div className="dashboard-stack">
-      <section className="card exercises-workspace">
-        <div className="exercises-grid">
-          <div className="exercises-list-pane">
-            <div className="exercises-list-head">
-              <h2>{SERVICE_LABEL} Exercises</h2>
-              <small>One unified page</small>
-            </div>
-
-            <div className="exercises-filters">
-              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
-                All
-              </button>
-              {laneDefs.map((lane) => (
-                <button
-                  key={lane.key}
-                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
-                  type="button"
-                  onClick={() => setActiveLane(lane.key)}
-                >
-                  {lane.label}
-                </button>
-              ))}
-            </div>
-
-            {laneDefs.map((lane) => (
-              <section key={lane.key} className="exercise-lane">
-                <header>
-                  <h3>{lane.label}</h3>
-                  <span>{groupedItems[lane.key].length}</span>
-                </header>
-
-                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
-
-                {groupedItems[lane.key].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="exercise-item-top">
-                      <h4>{item.title}</h4>
-                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
-                    </div>
-                    <p>{item.detail}</p>
-                    <div className="exercise-item-meta">
-                      <span>{item.due}</span>
-                      <span>{item.comments} notes</span>
-                      <span>{item.updates} updates</span>
-                    </div>
-                  </button>
-                ))}
-              </section>
-            ))}
-          </div>
-
-          <div className="exercises-detail-pane">
-            {selectedItem ? (
-              <>
-                <div className="exercise-detail-actions">
-                  <button type="button" className="ghost-btn">Share</button>
-                  <button type="button" className="ghost-btn">Expand</button>
-                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
-                </div>
-
-                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
-                <h2>{selectedItem.title}</h2>
-
-                <div className="exercise-detail-badges">
-                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
-                  <span className="exercise-chip">{selectedItem.due}</span>
-                </div>
-
-                <div className="exercise-timebox">
-                  <span>Focused exercise block</span>
-                  <strong>45:00</strong>
-                </div>
-
-                <p className="exercise-detail-copy">{selectedItem.detail}</p>
-
-                <div className="exercise-subsection">
-                  <div className="phase2-lab-head">
-                    <div>
-                      <h3>Live Grammar Remediation</h3>
-                      <p>Mapped remediation assignments, micro-lessons, and drill scoring on top of the shared core.</p>
-                    </div>
-                    {activeUnit ? <span className="exercise-chip">{activeUnit.level} · {activeUnit.focus_area}</span> : null}
-                  </div>
-
-                  {!hasAccess ? <p className="phase2-status">Unlock access to open the grammar backend.</p> : null}
-                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your remediation plan.</p> : null}
-                  {dashboardLoading ? <p className="phase2-status">Loading remediation assignments...</p> : null}
-                  {dashboardError ? <p className="phase2-status error">{dashboardError}</p> : null}
-
-                  {activeUnit ? (
-                    <>
-                      <div className="phase2-premium-card">
-                        <small>{readMetaText(grammarPresentation?.scene_label) || 'Repair lane'}</small>
-                        <strong>{readMetaText(grammarPresentation?.hero_note) || 'Repair the pattern here, then transfer it into writing or speaking before the day ends.'}</strong>
-                        <div className="phase2-badge-row">
-                          {grammarTargetBadges.map((badge) => (
-                            <span key={`${activeUnit.id}-${badge}`} className="phase2-badge">{badge}</span>
-                          ))}
-                          {activeAssignment?.reason ? <span className="phase2-badge muted">{activeAssignment.reason}</span> : null}
-                        </div>
-                      </div>
-
-                      <div className="phase2-chip-row">
-                        {grammarDashboard?.units?.map((unit) => (
-                          <button
-                            key={unit.id}
-                            type="button"
-                            className={unit.id === activeUnit.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
-                            onClick={() => handleSelectUnit(unit.id)}
-                          >
-                            {unit.title}
-                          </button>
-                        ))}
-                      </div>
-
-                      {activeAssignment ? <p className="phase2-hint">Active assignment: {activeAssignment.reason}</p> : null}
-                      <p className="phase2-lab-copy">{activeUnit.explanation_text}</p>
-                      {activeUnit.contrast_text ? <p className="phase2-hint">{activeUnit.contrast_text}</p> : null}
-
-                      {Array.isArray(activeUnit.examples_json) && activeUnit.examples_json.length > 0 ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Quick contrast</strong>
-                          <ul className="phase2-feedback-list">
-                            {activeUnit.examples_json.map((example, index) => (
-                              <li key={`${activeUnit.id}-example-${index}`}>
-                                <strong>Bad:</strong> {String(example.bad ?? '')} {' '}
-                                <strong>Good:</strong> {String(example.good ?? '')}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-
-                      {activeDrill ? (
-                        <div className="phase2-feedback-card">
-                          <strong>{activeDrill.title}</strong>
-                          <p>{activeDrill.instructions}</p>
-                          <p>{activeDrill.prompt_text}</p>
-                          <textarea
-                            className="phase2-textarea"
-                            value={drillResponse}
-                            onChange={(event) => setDrillResponse(event.target.value)}
-                            placeholder="Type your corrected sentence or answer here..."
-                            rows={4}
-                          />
-                          <div className="phase2-actions">
-                            <button
-                              className="primary-cta"
-                              type="button"
-                              onClick={() => {
-                                void handleSubmitDrill();
-                              }}
-                              disabled={submitLoading || !drillResponse.trim() || !hasAccess || !accessToken}
-                            >
-                              {submitLoading ? 'Checking answer...' : 'Submit drill'}
-                            </button>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {submitMessage ? <p className="phase2-status">{submitMessage}</p> : null}
-                      {submitError ? <p className="phase2-status error">{submitError}</p> : null}
-
-                      {submitResult ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Drill feedback</strong>
-                          <p>{submitResult.feedback?.summary ?? 'Grammar feedback is ready.'}</p>
-                          <div className="phase2-inline-meta">
-                            <span>Score: {Math.round((submitResult.scoring?.overall_score ?? 0) * 100)}%</span>
-                            <span>Accuracy: {Math.round((submitResult.scoring?.correctness_ratio ?? 0) * 100)}%</span>
-                          </div>
-                          {Array.isArray(submitResult.feedback?.issues) && submitResult.feedback.issues.length > 0 ? (
-                            <ul className="phase2-feedback-list">
-                              {submitResult.feedback.issues.map((issue, index) => (
-                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
-                                  <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one cleaner correction.')}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>This drill was accepted. Try a transfer task next.</p>
-                          )}
-                          <div className="phase2-metric-grid">
-                            <div>
-                              <small>Repair status</small>
-                              <strong>{submitResult.feedback?.issues?.length ? 'Still unstable' : 'Ready for transfer'}</strong>
-                            </div>
-                            <div>
-                              <small>Next lane</small>
-                              <strong>{activeAssignment?.source_service_key ? `Return to ${activeAssignment.source_service_key}` : 'Move into Writing or Speaking'}</strong>
-                            </div>
-                            <div>
-                              <small>Completion cue</small>
-                              <strong>{readMetaText(grammarPresentation?.celebration_copy) || 'Lock the rule in by using it once in output, not only inside the drill.'}</strong>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Execution checklist</h3>
-                  <ul>
-                    <li>Complete the task prompt without switching services.</li>
-                    <li>Write one short reflection before submitting.</li>
-                    <li>Push weak words or patterns into connected services.</li>
-                  </ul>
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Comments</h3>
-                  <div className="exercise-comment">
-                    <strong>Coach</strong>
-                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
-                  </div>
-                  <div className="exercise-comment">
-                    <strong>You</strong>
-                    <p>I will repeat this with a shorter time limit after one full run.</p>
-                  </div>
-                </div>
-
-                <div className="exercise-detail-footer">
-                  <button
-                    className="primary-cta"
-                    type="button"
-                    onClick={() => {
-                      if (!hasAccess) {
-                        window.location.assign(pricingHref);
-                      }
-                    }}
-                  >
-                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
-                    Back to dashboard
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-};
-
 const SignedOutLanding = ({
-  serviceLabel,
   signInHref,
   pricingHref,
   platformWorkspaceHref,
   isSignedIn,
-  onContinue,
 }: {
-  serviceLabel: string;
   signInHref: string;
   pricingHref: string;
   platformWorkspaceHref: string;
   isSignedIn: boolean;
-  onContinue: () => void;
-}) => {
-  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
-  const focusLower = focusTitle.toLowerCase();
+}) => (
+  <div className="landing-page-root">
+    <div className="ambient-layer" />
+    <div className="landing-page-main">
+      <header className="landing-page-topbar card">
+        <Link className="landing-brand" to="/">
+          <span className="dot" />
+          <strong>{SERVICE_LABEL}</strong>
+        </Link>
+        <nav className="landing-links">
+          <a href={buildPlatformUrl('/about')}>About us</a>
+          <a href={buildPlatformUrl('/programs')}>Programs</a>
+          <a href={buildPlatformUrl('/blog')}>Blog</a>
+          <a href={buildPlatformUrl('/courses')}>Courses</a>
+          <a href={buildPlatformUrl('/faq')}>FAQ</a>
+          <a href={buildPlatformUrl('/contact')}>Contact</a>
+        </nav>
+        <div className="landing-actions">
+          <a className="ghost-btn" href={ENGLISH_HUB_URL}>
+            English hub
+          </a>
+          <a className="ghost-btn" href={platformWorkspaceHref}>
+            Open platform
+          </a>
+          {isSignedIn ? (
+            <Link className="icon-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <a className="icon-btn" href={signInHref}>
+              Log in
+            </a>
+          )}
+          <a className="primary-cta" href={pricingHref}>
+            Sign up
+          </a>
+        </div>
+      </header>
 
-  return (
-    <div className="service-landing">
       <section className="landing-hero">
         <div className="landing-mosaic">
           <article className="landing-card landing-stat tilt-left">
             <div className="landing-stat-head">
-              <strong>174+</strong>
+              <strong>Repair</strong>
               <span className="landing-arrow">{'->'}</span>
             </div>
-            <p>{focusTitle} programs</p>
-            <small>new practice packs every week</small>
+            <p>Queue before drill</p>
+            <small>one grammar action per screen</small>
           </article>
-
           <article className="landing-card landing-team tilt-right">
-            <span className="landing-pill">4.8 review</span>
-            <h3>Mentor team</h3>
-            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
+            <span className="landing-pill">Repair lab</span>
+            <h3>Targeted remediation</h3>
+            <p>Separate the repair queue, unit explanation, drill execution, and transfer route.</p>
           </article>
-
           <article className="landing-card landing-offer tilt-right">
-            <h3>Secrets of {focusLower}</h3>
+            <h3>Premium grammar routes</h3>
             <p className="landing-price">
               12$ <span>35$</span>
             </p>
             <div className="landing-ticket">
               <div className="landing-ticket-row">
-                <small>24 Jul</small>
-                <small>28 Jul</small>
+                <small>Queue</small>
+                <small>Transfer</small>
               </div>
-              <strong>18:00</strong>
-              <small>35h 20m</small>
+              <strong>Notice {'->'} fix {'->'} apply</strong>
+              <small>clear remediation ownership</small>
             </div>
           </article>
-
           <article className="landing-card landing-showcase tilt-left">
             <div className="landing-orb" aria-hidden />
-            <h3>{focusTitle} studio</h3>
-            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
+            <h3>Cross-service transfer</h3>
+            <p>After each drill, grammar now points directly into Writing, Speaking, and Immersion routes.</p>
           </article>
         </div>
-
         <article className="landing-copy card">
-          <div className="landing-chip">{serviceLabel}</div>
-          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
-          <p>
-            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
-            writing, speaking, grammar, vocabulary, and immersion.
-          </p>
+          <div className="landing-chip">{SERVICE_LABEL}</div>
+          <h2>Grammar now behaves like a repair system instead of one giant drill screen.</h2>
+          <p>Queue the problem, open the unit, complete the drill, and then transfer the fix into another route.</p>
           <div className="landing-cta-row">
-            {isSignedIn ? (
-              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
-            ) : (
-              <a className="primary-cta" href={signInHref}>Get started</a>
-            )}
-            <a className="ghost-btn" href={pricingHref}>See pricing</a>
-            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
+            <a className="primary-cta" href={isSignedIn ? '/dashboard' : signInHref}>
+              {isSignedIn ? 'Continue' : 'Get started'}
+            </a>
+            <a className="ghost-btn" href={pricingHref}>
+              See pricing
+            </a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>
+              Open platform
+            </a>
           </div>
         </article>
       </section>
-
-      <section className="landing-proof-grid">
-        <article className="landing-proof card tilt-left">
-          <small>Learner footprint</small>
-          <strong>12k+</strong>
-          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
-        </article>
-        <article className="landing-proof card tilt-right">
-          <small>Practice volume</small>
-          <strong>34k</strong>
-          <p>Total {focusLower} training hours logged by active users on the platform.</p>
-        </article>
-      </section>
     </div>
+    <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+      Updates
+    </a>
+  </div>
+);
+
+const useGrammarDashboard = (hasAccess: boolean, accessToken: string | null) => {
+  const [dashboard, setDashboard] = useState<GrammarDashboard | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasAccess || !accessToken) {
+      setDashboard(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getGrammarDashboard(accessToken, { rebuild: true })
+      .then((result) => {
+        if (cancelled) return;
+        setDashboard(result);
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Failed to load grammar dashboard.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess]);
+
+  return { dashboard, loading, error };
+};
+
+const GrammarDashboardPage = ({
+  hasAccess,
+  pricingHref,
+  context,
+  dashboard,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  context: EnglishRouteContext;
+  dashboard: GrammarDashboard | null;
+}) => {
+  const activeAssignments = dashboard?.assignments?.filter((assignment) => assignment.status === 'active') ?? [];
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon
+        context={context}
+        cta={
+          <Link className="ghost-btn" to="/repair-queue">
+            Open repair queue
+          </Link>
+        }
+      />
+      <PageHero
+        eyebrow="Grammar dashboard"
+        title="See what needs repair before you open a drill."
+        copy="The dashboard now orchestrates grammar work instead of containing the work itself: active repairs, fragile units, and transfer targets."
+        actions={
+          <>
+            <Link className="primary-cta" to="/repair-queue">
+              Open repair queue
+            </Link>
+            <Link className="ghost-btn" to="/transfer">
+              Transfer route
+            </Link>
+          </>
+        }
+        aside={
+          <>
+            <div className="route-chip-row">
+              <span className="route-chip">Queue</span>
+              <span className="route-chip">Units</span>
+              <span className="route-chip">Drills</span>
+              <span className="route-chip">Transfer</span>
+            </div>
+            <p className="route-muted-copy">
+              {hasAccess ? 'Drill execution now opens on dedicated routes.' : 'Browse the remediation structure now. Live drills unlock with plan access.'}
+            </p>
+          </>
+        }
+      />
+      <div className="route-stat-grid">
+        <StatCard label="Active repairs" value={String(activeAssignments.length)} hint="Assignments seeded from real learner errors or a warmup path." />
+        <StatCard label="Current pressure" value="Articles / tense" hint="Grammar routes now split explanation, drill, and transfer into different pages." />
+        <StatCard label="Next payoff" value="Writing transfer" hint="Stable drills should hand off into applied writing or speaking work next." />
+      </div>
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Preview-only grammar routes"
+          message="You can browse the queue, units, drills, and transfer pages now. Live drill submission unlocks when the service is active."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+    </SectionGrid>
   );
 };
+
+const GrammarQueuePage = ({
+  hasAccess,
+  pricingHref,
+  dashboard,
+  loading,
+  error,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  dashboard: GrammarDashboard | null;
+  loading: boolean;
+  error: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const params = useParams<{ unitId?: string }>();
+  const assignments = dashboard?.assignments ?? [];
+  const units = dashboard?.units ?? [];
+  const activeAssignment =
+    assignments.find((assignment) => assignment.grammar_unit_id === params.unitId) ??
+    assignments[0] ??
+    null;
+  const activeUnit =
+    units.find((unit) => unit.id === params.unitId || unit.slug === params.unitId || unit.id === activeAssignment?.grammar_unit_id) ??
+    units[0] ??
+    null;
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Repair queue"
+        title="Choose the grammar problem before you open the drill."
+        copy="The queue now owns prioritization: where the instability came from, how urgent it is, and which unit should open next."
+        actions={
+          <>
+            {activeUnit ? (
+              <Link className="primary-cta" to={`/units/${activeUnit.slug || activeUnit.id}`}>
+                Open unit
+              </Link>
+            ) : null}
+            <Link className="ghost-btn" to="/dashboard">
+              Back to dashboard
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Repair queue is preview-only"
+          message="Preview the queue shape now. Live remediation starts when this service is unlocked."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+      <div className="route-split-grid">
+        <section className="route-list-card">
+          <div className="route-list-head">
+            <h2>Assignments</h2>
+            <span className="route-outline-chip">{assignments.length} queued</span>
+          </div>
+          {loading ? <div className="route-empty-state">Loading repair queue...</div> : null}
+          {error ? <div className="route-empty-state">{error}</div> : null}
+          <div className="route-list-stack">
+            {assignments.map((assignment) => {
+              const unit = units.find((entry) => entry.id === assignment.grammar_unit_id);
+              return (
+                <Link
+                  key={assignment.id}
+                  className={'route-list-item' + (activeAssignment?.id === assignment.id ? ' active' : '')}
+                  to={`/repair-queue/${unit?.slug || assignment.grammar_unit_id}`}
+                >
+                  <small>{assignment.source_service_key ?? 'grammar'} · priority {assignment.priority}</small>
+                  <strong>{unit?.title ?? 'Grammar unit'}</strong>
+                  <p>{assignment.reason}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="route-stage-card">
+          {activeUnit ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Repair target</small>
+                  <h2>{activeUnit.title}</h2>
+                </div>
+                <span className="route-chip">{activeUnit.level}</span>
+              </div>
+              <p>{activeAssignment?.reason ?? activeUnit.explanation_text}</p>
+              <div className="route-chip-row">
+                <span className="route-chip">{activeUnit.focus_area}</span>
+                {activeAssignment?.source_service_key ? <span className="route-outline-chip">from {activeAssignment.source_service_key}</span> : null}
+              </div>
+              <div className="route-cta-row">
+                <Link className="primary-cta" to={`/units/${activeUnit.slug || activeUnit.id}`}>
+                  Open unit
+                </Link>
+                <Link className="ghost-btn" to={`/transfer/${activeUnit.slug || activeUnit.id}`}>
+                  Transfer target
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="route-empty-state">Your active grammar queue will appear here after the dashboard loads assignments.</div>
+          )}
+        </section>
+      </div>
+    </SectionGrid>
+  );
+};
+
+const GrammarUnitPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const params = useParams<{ unitId?: string }>();
+  const [unit, setUnit] = useState<GrammarUnit | null>(null);
+  const [drills, setDrills] = useState<GrammarDrill[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.unitId || !hasAccess || !accessToken) {
+      setUnit(null);
+      setDrills([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getGrammarUnit(accessToken, params.unitId)
+      .then((result) => {
+        if (cancelled) return;
+        setUnit(result.unit);
+        setDrills(result.drills);
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not load this grammar unit.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.unitId]);
+
+  const presentation = asMetaRecord(unit?.presentation_meta);
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Unit map"
+        title="Read the rule on a page that belongs only to understanding."
+        copy="The unit route now separates explanation and contrast from drill execution, so the learner arrives at the drill knowing exactly what is being repaired."
+        actions={
+          <>
+            {drills[0] ? (
+              <Link className="primary-cta" to={`/drills/${drills[0].id}`}>
+                Open first drill
+              </Link>
+            ) : null}
+            <Link className="ghost-btn" to="/repair-queue">
+              Back to queue
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Unit route is preview-only"
+          message="Preview the micro-lesson structure now. Live drill work unlocks with plan access."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className="route-stage-card">
+        {loading ? <div className="route-empty-state">Loading grammar unit...</div> : null}
+        {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+        {!loading && !unit ? <div className="route-empty-state">Choose a unit from the repair queue to load its explanation route.</div> : null}
+        {unit ? (
+          <>
+            <div className="route-stage-header">
+              <div>
+                <small className="route-context-kicker">{readMetaText(presentation?.scene_label) || 'Grammar unit'}</small>
+                <h2>{unit.title}</h2>
+              </div>
+              <span className="route-chip">{unit.level}</span>
+            </div>
+            <p>{readMetaText(presentation?.hero_note) || unit.explanation_text}</p>
+            {unit.contrast_text ? (
+              <div className="route-inline-card">
+                <div className="route-label-row">
+                  <strong>Contrast</strong>
+                  <span className="route-outline-chip">{unit.focus_area}</span>
+                </div>
+                <p>{unit.contrast_text}</p>
+              </div>
+            ) : null}
+            {Array.isArray(unit.examples_json) && unit.examples_json.length > 0 ? (
+              <div className="route-card-stack">
+                {unit.examples_json.map((example, index) => (
+                  <article key={`${unit.id}-example-${index}`} className="route-inline-card">
+                    <strong>Example {index + 1}</strong>
+                    <p>Bad: {example.bad ?? '-'}</p>
+                    <p>Good: {example.good ?? '-'}</p>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+            <div className="route-cta-row">
+              {drills[0] ? (
+                <Link className="primary-cta" to={`/drills/${drills[0].id}`}>
+                  Open drill
+                </Link>
+              ) : null}
+              <Link className="ghost-btn" to={`/transfer/${unit.slug || unit.id}`}>
+                Transfer route
+              </Link>
+            </div>
+          </>
+        ) : null}
+      </section>
+    </SectionGrid>
+  );
+};
+
+const GrammarDrillPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const navigate = useNavigate();
+  const params = useParams<{ drillId?: string }>();
+  const { dashboard } = useGrammarDashboard(hasAccess, accessToken);
+  const drill = dashboard?.drills.find((entry) => entry.id === params.drillId) ?? null;
+  const unit = dashboard?.units.find((entry) => entry.id === drill?.grammar_unit_id) ?? null;
+  const assignment = dashboard?.assignments.find((entry) => entry.grammar_unit_id === unit?.id && entry.status === 'active') ?? null;
+  const [responseText, setResponseText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!drill || !accessToken) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await submitGrammarDrill(accessToken, {
+        drill_id: drill.id,
+        response_text: responseText,
+        assignment_id: assignment?.id,
+        time_spent_seconds: 120,
+        retry_count: 0,
+        hint_usage_count: 0,
+      });
+      const attemptId =
+        result && typeof (result as Record<string, unknown>).attempt === 'object'
+          ? String(((result as Record<string, unknown>).attempt as Record<string, unknown>).id ?? '')
+          : '';
+      navigate(unit ? `/transfer/${unit.slug || unit.id}${attemptId ? `?attempt_id=${encodeURIComponent(attemptId)}` : ''}` : '/transfer');
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not submit this grammar drill.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Drill route"
+        title="Keep the correction loop on a page that belongs only to the drill."
+        copy="The drill route now owns response entry and correctness feedback. The transfer route owns what happens next."
+        actions={
+          <>
+            {unit ? (
+              <Link className="ghost-btn" to={`/units/${unit.slug || unit.id}`}>
+                Back to unit
+              </Link>
+            ) : null}
+            <Link className="ghost-btn" to="/repair-queue">
+              Repair queue
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Drill route is locked"
+          message="The drill page structure is visible now, but live correction loops unlock with an active grammar plan."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className={'route-stage-card' + (!hasAccess ? ' route-disabled' : '')}>
+        {!drill ? <div className="route-empty-state">Open a grammar unit first so the drill route knows which pattern to train.</div> : null}
+        {drill ? (
+          <>
+            <div className="route-stage-header">
+              <div>
+                <small className="route-context-kicker">Live drill</small>
+                <h2>{drill.title}</h2>
+              </div>
+              {unit ? <span className="route-chip">{unit.focus_area}</span> : null}
+            </div>
+            <p>{drill.instructions}</p>
+            <div className="route-inline-card">
+              <div className="route-label-row">
+                <strong>Prompt</strong>
+                <span className="route-outline-chip">{drill.drill_type}</span>
+              </div>
+              <p>{drill.prompt_text}</p>
+            </div>
+            <input
+              className="route-input"
+              value={responseText}
+              onChange={(event) => setResponseText(event.target.value)}
+              placeholder="Write the corrected answer here..."
+            />
+            {error ? <div className="route-empty-state">{error}</div> : null}
+            <div className="route-inline-actions">
+              <button
+                className="primary-cta"
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={!hasAccess || !accessToken || !responseText.trim() || submitting}
+              >
+                {submitting ? 'Submitting drill...' : 'Submit drill'}
+              </button>
+            </div>
+          </>
+        ) : null}
+      </section>
+    </SectionGrid>
+  );
+};
+
+const GrammarTransferPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const location = useLocation();
+  const params = useParams<{ unitId?: string }>();
+  const [unit, setUnit] = useState<GrammarUnit | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.unitId || !hasAccess || !accessToken) {
+      setUnit(null);
+      setFeedback(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    const attemptId = new URLSearchParams(location.search).get('attempt_id');
+    void getGrammarUnit(accessToken, params.unitId)
+      .then(async (result) => {
+        if (cancelled) return;
+        setUnit(result.unit);
+        if (attemptId) {
+          const attempt = await getLearningAttempt(accessToken, attemptId);
+          if (cancelled) return;
+          setFeedback(attempt.feedback ?? null);
+        }
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not load this transfer route.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, location.search, params.unitId]);
+
+  const issues = Array.isArray(feedback?.issues) ? (feedback.issues as Array<Record<string, unknown>>) : [];
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Transfer route"
+        title="Leave the drill only when you know where the grammar fix goes next."
+        copy="The transfer page now owns post-drill debrief: what changed, what is still unstable, and where the learner should apply the pattern next."
+        actions={
+          <>
+            {unit ? (
+              <Link className="ghost-btn" to={`/units/${unit.slug || unit.id}`}>
+                Back to unit
+              </Link>
+            ) : null}
+            <Link className="ghost-btn" to="/repair-queue">
+              Repair queue
+            </Link>
+          </>
+        }
+      />
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Transfer route is preview-only"
+          message="Preview the grammar debrief and next-step routing now. Live transfer details appear after a real drill attempt."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-debrief-card">
+          {loading ? <div className="route-empty-state">Loading transfer route...</div> : null}
+          {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+          {!loading && !unit ? (
+            <div className="route-empty-state">Finish a drill or open a unit first so the transfer route knows what pattern to apply next.</div>
+          ) : null}
+          {unit ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Next application target</small>
+                  <h2>{unit.title}</h2>
+                </div>
+                <span className="route-chip">{unit.focus_area}</span>
+              </div>
+              <p>{typeof feedback?.summary === 'string' && feedback.summary ? feedback.summary : 'Use this route to carry the repaired pattern into real communication.'}</p>
+              {issues.length > 0 ? (
+                <div className="phase2-feedback-card">
+                  <strong>Still unstable</strong>
+                  <ul className="phase2-feedback-list">
+                    {issues.map((issue, index) => (
+                      <li key={`${String(issue.subskill_key ?? issue.category ?? 'issue')}-${index}`}>
+                        <strong>{String(issue.subskill_key ?? issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Retry with one smaller correction target.')}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </section>
+
+        <section className="route-summary-card">
+          <div className="route-subhead">
+            <h2>Apply next</h2>
+            <span className="route-outline-chip">cross-service</span>
+          </div>
+          <div className="route-next-step-grid">
+            {REVIEW_HANDOFFS.map((handoff) => (
+              <a
+                key={handoff.label}
+                className="route-next-step-card"
+                href={withEnglishRouteContext(handoff.href, {
+                  sourceService: 'grammar',
+                  intent: 'transfer-apply',
+                  skill: 'grammar',
+                  reason: 'grammar-transfer',
+                })}
+              >
+                <strong>{handoff.label}</strong>
+                <p>Transfer the repaired structure into a real task instead of repeating another abstract drill.</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
+    </SectionGrid>
+  );
+};
+
+const GrammarWorkspaceRoutes = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+}) => {
+  const location = useLocation();
+  const context = useMemo(() => readEnglishRouteContext(location.search), [location.search]);
+  const { dashboard, loading, error } = useGrammarDashboard(hasAccess, accessToken);
+
+  return (
+    <Routes>
+      <Route path="/dashboard" element={<GrammarDashboardPage hasAccess={hasAccess} pricingHref={pricingHref} context={context} dashboard={dashboard} />} />
+      <Route
+        path="/repair-queue"
+        element={<GrammarQueuePage hasAccess={hasAccess} pricingHref={pricingHref} dashboard={dashboard} loading={loading} error={error} context={context} />}
+      />
+      <Route
+        path="/repair-queue/:unitId"
+        element={<GrammarQueuePage hasAccess={hasAccess} pricingHref={pricingHref} dashboard={dashboard} loading={loading} error={error} context={context} />}
+      />
+      <Route
+        path="/units/:unitId"
+        element={<GrammarUnitPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/drills/:drillId"
+        element={<GrammarDrillPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/transfer"
+        element={<GrammarTransferPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/transfer/:unitId"
+        element={<GrammarTransferPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route path="/exercises" element={<Navigate to="/repair-queue" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+};
+
 const App = () => {
+  const location = useLocation();
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
   const [search, setSearch] = useState('');
   const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
-  const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
-
-  const [path, setPath] = useState<AppPath>(() => {
-    if (typeof window === 'undefined') return '/';
-    return resolveAppPath(window.location.pathname);
-  });
-  const showLanding = path === '/';
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (showLanding || status === 'signed_out') {
-      setMobileNavOpen(false);
-    }
-  }, [showLanding, status]);
-
-  const navigate = (nextPath: AppPath, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    if (window.location.pathname !== nextPath) {
-      if (replace) {
-        window.history.replaceState({}, '', nextPath);
-      } else {
-        window.history.pushState({}, '', nextPath);
-      }
-    }
-    setPath(nextPath);
-  };
 
   useEffect(() => {
     let mounted = true;
-
     void supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session ?? null);
       setStatus(data.session ? 'signed_in' : 'signed_out');
     });
-
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setStatus(nextSession ? 'signed_in' : 'signed_out');
     });
-
     return () => {
       mounted = false;
       subscription.subscription.unsubscribe();
@@ -915,47 +868,22 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      setPath(resolveAppPath(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    if (status === 'signed_out' && path !== '/') {
-      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-        window.history.replaceState({}, '', '/');
-      }
-      setPath('/');
-    }
-  }, [path, status]);
-
-  useEffect(() => {
     let cancelled = false;
-
     const resolveAccess = async () => {
       if (status !== 'signed_in' || !session?.access_token) {
         setAccessStatus('idle');
-        setAccessEndsAt(null);
         setAccessError(null);
         return;
       }
-
       setAccessStatus('checking');
       setAccessError(null);
-
       try {
         const me = await getMe(session.access_token);
         if (cancelled) return;
-
         const entitlement =
           me.entitlements.find(
             (entry) => entry.resource_type === 'product' && entry.resource_id === GRAMMAR_PRODUCT_ID,
           ) ?? null;
-
-        setAccessEndsAt(entitlement?.ends_at ?? null);
         setAccessStatus(entitlement ? 'granted' : 'denied');
       } catch (error) {
         if (cancelled) return;
@@ -970,12 +898,10 @@ const App = () => {
           return;
         }
         setAccessStatus('denied');
-        setAccessError('Could not verify your service access right now.');
+        setAccessError('Could not verify your grammar access right now.');
       }
     };
-
     void resolveAccess();
-
     return () => {
       cancelled = true;
     };
@@ -983,37 +909,28 @@ const App = () => {
 
   useEffect(() => {
     let cancelled = false;
-
     const loadProfileName = async () => {
       if (status !== 'signed_in' || !session?.user.id) {
         setProfileNameFromDb(null);
         return;
       }
-
       try {
         const { data, error } = await supabase
           .from('user_profiles')
           .select('first_name,last_name')
           .eq('user_id', session.user.id)
           .maybeSingle();
-
         if (cancelled || error || !data) {
           if (!cancelled) setProfileNameFromDb(null);
           return;
         }
-
         const row = data as Record<string, unknown>;
-        const firstName = readMetaText(row.first_name);
-        const lastName = readMetaText(row.last_name);
-        const combined = `${firstName} ${lastName}`.trim();
-        setProfileNameFromDb(combined || null);
+        setProfileNameFromDb(`${readMetaText(row.first_name)} ${readMetaText(row.last_name)}`.trim() || null);
       } catch {
         if (!cancelled) setProfileNameFromDb(null);
       }
     };
-
     void loadProfileName();
-
     return () => {
       cancelled = true;
     };
@@ -1033,265 +950,63 @@ const App = () => {
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
-  const profileEmail = session?.user.email ?? null;
-  const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
-  const accessEndsLabel = useMemo(() => {
-    if (!accessEndsAt) return null;
-    const date = new Date(accessEndsAt);
-    if (Number.isNaN(date.getTime())) return accessEndsAt;
-    return date.toLocaleString();
-  }, [accessEndsAt]);
-
-  const visibleLessons = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return lessonRows;
-    return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
-  }, [search]);
-
-  
   void profileName;
-  void profileEmail;
-  void avatarLabel;
-  void accessEndsLabel;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
-  
-  if (showLanding) {
+  if (status === 'signed_out' || location.pathname === '/') {
     return (
-      <div className="landing-page-root">
-        <div className="ambient-layer" />
-        <div className="landing-page-main">
-          <header className="landing-page-topbar card">
-            <button
-              type="button"
-              className="landing-brand"
-              onClick={() => navigate('/')}
-            >
-              <span className="dot" />
-              <strong>{SERVICE_LABEL}</strong>
-            </button>
-            <nav className="landing-links">
-              <a href={buildPlatformUrl('/about')}>About us</a>
-              <a href={buildPlatformUrl('/programs')}>Programs</a>
-              <a href={buildPlatformUrl('/blog')}>Blog</a>
-              <a href={buildPlatformUrl('/courses')}>Courses</a>
-              <a href={buildPlatformUrl('/faq')}>FAQ</a>
-              <a href={buildPlatformUrl('/contact')}>Contact</a>
-            </nav>
-            <div className="landing-actions">
-              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Log in</a>
-              )}
-              <a className="primary-cta" href={pricingHref}>Sign up</a>
-            </div>
-          </header>
-
-          <SignedOutLanding
-            serviceLabel={SERVICE_LABEL}
-            signInHref={signInHref}
-            pricingHref={pricingHref}
-            platformWorkspaceHref={platformWorkspaceHref}
-            isSignedIn={status === 'signed_in'}
-            onContinue={() => navigate('/dashboard')}
-          />
-        </div>
-        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-          Updates
-        </a>
-      </div>
-    );
-  }
-  return (
-    <div className="reading-root">
-      <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-          <button
-            type="button"
-            className="brand-mark"
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-            style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-          >
-            <span className="dot" />
-            <div>
-              <strong>ENGLISH GRAMMAR</strong>
-              <small>Unified auth + payment</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-nav-inline-toggle"
-            aria-expanded={mobileNavOpen}
-            aria-controls="service-side-nav"
-            onClick={() => setMobileNavOpen((prev) => !prev)}
-          >
-            {mobileNavOpen ? 'Close menu' : 'Menu'}
-          </button>
-
-          <div className="left-nav-body">
-          <nav className="menu-list">
-            <button
-              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate('/dashboard');
-              }}
-            >
-              Dashboard
-            </button>            <button
-              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            >
-              Exercises
-            </button>          </nav>
-
-          
-          <section className="service-switcher">
-            <div className="service-switch-head">
-              <span>Switch service</span>
-              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
-            </div>
-            <div className="service-switch-grid">
-              {SERVICE_SWITCH_LINKS.map((service) => (
-                <a key={service.key} className="service-switch-link" href={service.href}>
-                  {service.label}
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <div className="left-footer">
-            <div className="support-zone">
-              <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
-              <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
-            </div>
-
-            <div className="mobile-account-zone">
-              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
-              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
-              )}
-            </div>
-
-            <article className="upgrade-card">
-              <h3>Premium Grammar Pack</h3>
-              <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
-              <a className="black-btn" href={pricingHref}>View plans</a>
-            </article>
-          </div>
-        </div>
-        </aside>
-
-        <main className="main-column">
-          {!showLanding ? (
-          <header className="topbar">
-            <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - premium daily grammar workflow.`}</p>
-            </div>
-
-            <div className="topbar-actions">
-              <label className="search-box">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
-                />
-              </label>
-              <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
-              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Sign in</a>
-              )}
-            </div>
-          </header>
-          ) : null}
-
-          {showLanding ? (
+      <Routes>
+        <Route
+          path="/"
+          element={
             <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
             />
-          ) : null}
-          {!showLanding && status !== 'signed_out' && checkingAccess ? (
-            <div className="access-banner">
-              <strong>Checking access...</strong>
-              <span>Verifying your active plan for English Grammar.</span>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && needsAccess ? (
-            <div className="access-banner warning">
-              <strong>Plan required for full access.</strong>
-              <span>Choose a trial or paid plan to unlock this service.</span>
-              <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          }
+        />
+        <Route path="*" element={<Navigate to={status === 'signed_in' ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    );
+  }
 
-          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage
-              lessons={visibleLessons}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onOpenExercise={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
-            <ExercisesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-              accessToken={session?.access_token ?? null}
-            />
-          )}
-        </main>
-      </div>
-      <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-        Updates
-      </a>
-    </div>
+  const menuItems = [
+    { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
+    { label: 'Repair queue', href: '/repair-queue', active: location.pathname.startsWith('/repair-queue') },
+    { label: 'Transfer', href: '/transfer', active: location.pathname.startsWith('/transfer') || location.pathname.startsWith('/units') || location.pathname.startsWith('/drills') },
+  ];
+
+  return (
+    <EnglishSkillWorkspace
+      serviceName={SERVICE_LABEL}
+      serviceTagline="English Grammar service - route-based repair queue, drill, and transfer workflow."
+      menuItems={menuItems}
+      serviceSwitchLinks={SERVICE_SWITCH_LINKS}
+      hubHref={ENGLISH_HUB_URL}
+      platformHref={platformWorkspaceHref}
+      pricingHref={pricingHref}
+      signInHref={signInHref}
+      status={status}
+      needsAccess={needsAccess}
+      checkingAccess={checkingAccess}
+      accessError={accessError}
+      search={search}
+      onSearchChange={setSearch}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+      upgradeTitle="Premium Grammar Pack"
+      upgradeCopy="Unlock route-based remediation, live drill scoring, and transfer handoffs into other English services."
+      updatesHref={buildPlatformUrl('/updates')}
+    >
+      <GrammarWorkspaceRoutes hasAccess={hasAccess} pricingHref={pricingHref} accessToken={session?.access_token ?? null} />
+    </EnglishSkillWorkspace>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

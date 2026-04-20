@@ -355,6 +355,36 @@ serve(async (req) => {
       });
     }
 
+    if (req.method === "GET" && route.startsWith("/drafts/")) {
+      const draftId = decodeURIComponent(route.slice("/drafts/".length)).trim();
+      if (!draftId) return json(404, { error: "Writing draft not found" });
+
+      const draftRes = await sb
+        .from("writing_drafts")
+        .select("*")
+        .eq("id", draftId)
+        .maybeSingle();
+      if (draftRes.error || !draftRes.data?.id) return json(404, { error: "Writing draft not found" });
+      if (String(draftRes.data.user_id ?? "") !== auth.userId) return json(403, { error: "Forbidden" });
+
+      const draft = draftRes.data as Record<string, unknown>;
+      const prompt = await loadPrompt(sb, productId, scope.languageId, String(draft.prompt_id ?? ""));
+      if (!prompt) return json(404, { error: "Writing prompt not found" });
+
+      const cyclesRes = await sb
+        .from("writing_revision_cycles")
+        .select("id, revision_index, feedback_summary, issues, correction_targets, improvement_ratio, attempt_id, created_at")
+        .eq("draft_id", draftId)
+        .order("revision_index", { ascending: false })
+        .limit(12);
+
+      return json(200, {
+        draft,
+        prompt,
+        revision_cycles: cyclesRes.data ?? [],
+      });
+    }
+
     if (req.method === "POST" && route === "/drafts/submit") {
       const draftId = toText(body.draft_id, 120);
       const submissionText = toText(body.submission_text, 12000);

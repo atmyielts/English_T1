@@ -71,6 +71,14 @@ export const listSpeakingPrompts = async (accessToken: string): Promise<Speaking
   return Array.isArray(res.prompts) ? res.prompts : [];
 };
 
+export const getSpeakingPrompt = async (
+  accessToken: string,
+  identifier: string,
+): Promise<{ prompt: SpeakingPrompt }> =>
+  (await call(accessToken, `/prompts/${encodeURIComponent(identifier)}`, {
+    method: "GET",
+  })) as { prompt: SpeakingPrompt };
+
 export const submitSpeakingPractice = async (
   accessToken: string,
   body: Record<string, unknown>,

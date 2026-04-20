@@ -1,42 +1,49 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import '../../english-shared/src/english-routes.css';
+import {
+  AccessBoundaryCard,
+  EnglishSkillWorkspace,
+  PageHero,
+  RouteContextRibbon,
+  SectionGrid,
+  StatCard,
+} from '../../english-shared/src/ui';
+import {
+  readEnglishRouteContext,
+  withEnglishRouteContext,
+  type EnglishRouteContext,
+} from '../../english-shared/src/routeContext';
 import { platformUrl, supabase } from './lib/supabase';
 import { getMe } from './lib/platformClient';
 import { captureNotebookWords } from './lib/vocabularyNotebookClient';
 import {
+  getListeningItem,
   listListeningItems,
   submitListeningPractice,
   type ListeningItem,
-  type ListeningPracticeResult,
 } from './lib/listeningPracticeClient';
+import { getLearningAttempt } from './lib/learningAttemptClient';
 
 type SessionStatus = 'checking' | 'signed_in' | 'signed_out';
 type AccessStatus = 'checking' | 'granted' | 'denied' | 'idle';
-const EXERCISES_PATH = '/exercises' as const;
-type AppPath = '/' | '/dashboard' | typeof EXERCISES_PATH;
 
-type LessonRow = {
-  id: string;
-  title: string;
-  level: string;
-  schedule: string;
-  progress: number;
-  status: 'In progress' | 'Not started' | 'Completed';
-  accent: string;
-};
-
-type ServiceWordSeed = {
-  word: string;
-  definition: string;
-  example: string;
-  context: string;
-};
-
-const LISTENING_PRODUCT_ID = ((import.meta.env.VITE_LISTENING_PRODUCT_ID as string | undefined) ?? '').trim() || 'f9c4a14b-d5a2-4a66-9cd8-5b3a0d6e7bf1';
+const LISTENING_PRODUCT_ID =
+  ((import.meta.env.VITE_LISTENING_PRODUCT_ID as string | undefined) ?? '').trim() ||
+  'f9c4a14b-d5a2-4a66-9cd8-5b3a0d6e7bf1';
 const LISTENING_PRODUCT_SLUG = 'english-listening';
 const SERVICE_LABEL = 'English Listening';
-
 const ENGLISH_HUB_URL = 'https://english.schood.online';
+
 const ENGLISH_SERVICE_LINKS = [
   { key: 'reading', label: 'Reading', href: 'https://reading.english.schood.online' },
   { key: 'writing', label: 'Writing', href: 'https://writing.english.schood.online' },
@@ -46,202 +53,54 @@ const ENGLISH_SERVICE_LINKS = [
   { key: 'vocabulary', label: 'Vocabulary', href: 'https://vocabulary.english.schood.online' },
   { key: 'immersion', label: 'Immersion', href: 'https://immersion.english.schood.online' },
 ] as const;
-const CURRENT_SERVICE_KEY = SERVICE_LABEL.replace(/^English\s+/i, '').toLowerCase();
-const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== CURRENT_SERVICE_KEY);
+
+const SERVICE_SWITCH_LINKS = ENGLISH_SERVICE_LINKS.filter((service) => service.key !== 'listening');
 
 const SERVICE_BLUEPRINT = [
   {
-    title: 'Sentence-based listening',
-    detail: 'Train with short clips you can replay quickly for precision listening.',
+    slug: 'accent-route',
+    title: 'Accent tracks',
+    detail: 'Choose a route by accent, speed, and listening pressure before you start dictation.',
     intent: 'sentence-loop',
     skill: 'comprehension',
   },
   {
-    title: 'Dictation mode',
-    detail: 'Type what you hear and compare your draft against the target transcript.',
+    slug: 'dictation-lab',
+    title: 'Dictation lab',
+    detail: 'Keep replay controls and transcript recovery on a page that belongs only to decoding.',
     intent: 'dictation',
     skill: 'accuracy',
   },
   {
-    title: 'Slow mode + looping',
-    detail: 'Control playback speed and loop difficult fragments until stable.',
-    intent: 'slow-loop',
-    skill: 'timing',
-  },
-  {
-    title: 'Missed words feedback',
-    detail: 'Track uncaught words and push them to shared vocabulary review.',
-    intent: 'missed-words',
+    slug: 'recovery-review',
+    title: 'Recovery review',
+    detail: 'Move missed words and detail gaps into a dedicated debrief screen after submission.',
+    intent: 'review',
     skill: 'vocabulary',
   },
+];
+
+const REVIEW_HANDOFFS = [
+  { label: 'Push missed words to Vocabulary', href: 'https://vocabulary.english.schood.online/activation' },
+  { label: 'Apply rhythm in Speaking', href: 'https://speaking.english.schood.online/shadowing' },
+  { label: 'Use audio context in Immersion', href: 'https://immersion.english.schood.online/missions' },
 ] as const;
-
-const SERVICE_HANDOFFS = [
-  { key: 'vocabulary', label: 'Push missed words to Vocabulary', intent: 'word-sources', skill: 'retention', reason: 'listening-handoff' },
-  { key: 'speaking', label: 'Apply rhythm in Speaking', intent: 'shadowing', skill: 'fluency', reason: 'listening-handoff' },
-  { key: 'immersion', label: 'Use audio context in Immersion', intent: 'scenario-task', skill: 'communication', reason: 'listening-handoff' },
-] as const;
-
-const lessonRows: LessonRow[] = [
-  {
-    id: 'lesson-1',
-    title: 'Daily Conversation Signals',
-    level: 'Beginner',
-    schedule: '08.00 - 09.00',
-    progress: 56,
-    status: 'In progress',
-    accent: '#d3efbd',
-  },
-  {
-    id: 'lesson-2',
-    title: 'University Lecture Mapping',
-    level: 'Intermediate',
-    schedule: '10.00 - 11.30',
-    progress: 81,
-    status: 'In progress',
-    accent: '#edf8dc',
-  },
-  {
-    id: 'lesson-3',
-    title: 'Airport and Travel Announcements',
-    level: 'Beginner',
-    schedule: '14.00 - 15.00',
-    progress: 24,
-    status: 'Not started',
-    accent: '#f6fde9',
-  },
-  {
-    id: 'lesson-4',
-    title: 'IELTS Section 4 Master Drill',
-    level: 'Advanced',
-    schedule: '17.00 - 18.00',
-    progress: 100,
-    status: 'Completed',
-    accent: '#c0e8a4',
-  },
-];
-
-const weeklyMinutes = [
-  { day: 'Mon', minutes: 62 },
-  { day: 'Tue', minutes: 94 },
-  { day: 'Wed', minutes: 71 },
-  { day: 'Thu', minutes: 88 },
-  { day: 'Fri', minutes: 102 },
-  { day: 'Sat', minutes: 74 },
-  { day: 'Sun', minutes: 80 },
-];
-
-
-
-void weeklyMinutes;
-
-const LISTENING_VOCAB_SEEDS: ServiceWordSeed[] = [
-  {
-    word: 'intonation',
-    definition: 'The rise and fall of voice pitch in spoken language.',
-    example: 'Her intonation signaled uncertainty in the final phrase.',
-    context: 'Listening to speaker attitude and meaning shifts.',
-  },
-  {
-    word: 'transcript',
-    definition: 'A written version of spoken audio.',
-    example: 'He checked the transcript after completing the task.',
-    context: 'Post-listening review workflow.',
-  },
-  {
-    word: 'distinguish',
-    definition: 'To recognize the difference between similar sounds or ideas.',
-    example: 'You must distinguish fact from opinion in the lecture.',
-    context: 'Detail and distractor detection.',
-  },
-  {
-    word: 'retention',
-    definition: 'The ability to keep information in memory.',
-    example: 'Short note blocks improved retention across sections.',
-    context: 'Note-taking and memory recovery.',
-  },
-  {
-    word: 'cue',
-    definition: 'A signal that helps predict or identify upcoming information.',
-    example: 'Transition words gave a cue before the main argument.',
-    context: 'Audio structure tracking.',
-  },
-  {
-    word: 'clarify',
-    definition: 'To make something easier to understand.',
-    example: 'The speaker clarified the timeline with dates.',
-    context: 'Understanding reformulation in speech.',
-  },
-  {
-    word: 'accent',
-    definition: 'A characteristic way of pronouncing a language.',
-    example: 'Repeated practice helped her adapt to the new accent.',
-    context: 'Multi-accent listening drills.',
-  },
-  {
-    word: 'paraphrase',
-    definition: 'To express the same meaning using different words.',
-    example: 'The answer used a paraphrase, not the exact wording.',
-    context: 'Matching spoken content to questions.',
-  },
-  {
-    word: 'synthesis',
-    definition: 'Combining separate points into one complete understanding.',
-    example: 'The final question required synthesis of two viewpoints.',
-    context: 'Long-form lecture comprehension.',
-  },
-  {
-    word: 'precision',
-    definition: 'Accuracy and exactness in interpretation or response.',
-    example: 'Precision in note keywords reduced answer errors.',
-    context: 'Time-limited listening response quality.',
-  },
-];
-
-const progressStatusClass = (status: LessonRow['status']): string => {
-  if (status === 'Completed') return 'pill done';
-  if (status === 'Not started') return 'pill muted';
-  return 'pill live';
-};
 
 const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
-
 const readMetaText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
-const asMetaRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null
-);
-const readMetaList = (value: unknown): string[] => (Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : []);
+const asMetaRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+const readMetaList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => readMetaText(entry)).filter(Boolean) : [];
 
 const resolveProfileName = (session: Session | null): string | null => {
   if (!session) return null;
   const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
   const fullName = readMetaText(meta.full_name);
   if (fullName) return fullName;
-
   const firstName = readMetaText(meta.first_name);
   const lastName = readMetaText(meta.last_name);
-  const combined = `${firstName} ${lastName}`.trim();
-  return combined || null;
-};
-
-const resolveInitials = (name: string | null, email: string | null): string => {
-  if (name) {
-    const parts = name
-      .split(/\s+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const first = parts[0] ?? '';
-    const second = parts[1] ?? '';
-    if (first && second) return `${first.slice(0, 1)}${second.slice(0, 1)}`.toUpperCase();
-    if (first) return first.slice(0, 2).toUpperCase();
-  }
-
-  if (email) {
-    const prefix = email.split('@')[0] ?? '';
-    return prefix.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'GL';
-  }
-
-  return 'GL';
+  return `${firstName} ${lastName}`.trim() || null;
 };
 
 const resolveReturnTo = (): string => {
@@ -249,314 +108,224 @@ const resolveReturnTo = (): string => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`;
 };
 
-const buildServiceDashboardHref = (
-  serviceKey: string,
-  intent: string,
-  skill: string,
-  reason: string,
-): string => {
-  const target = ENGLISH_SERVICE_LINKS.find((entry) => entry.key === serviceKey) ?? ENGLISH_SERVICE_LINKS[0];
-  const url = new URL(`${target.href}/dashboard`);
-  url.searchParams.set('from', 'english-hub');
-  url.searchParams.set('source_service', CURRENT_SERVICE_KEY);
-  url.searchParams.set('intent', intent);
-  url.searchParams.set('skill', skill);
-  url.searchParams.set('reason', reason);
-  return url.toString();
-};
-
-const resolveAppPath = (pathname: string): AppPath => {
-  const normalized = pathname.replace(/\/+$/, '') || '/';
-  if (normalized === '/dashboard') return '/dashboard';
-  if (normalized === EXERCISES_PATH || normalized.startsWith('/exercise/')) return EXERCISES_PATH;
-  if (normalized.startsWith('/feature/')) return '/dashboard';
-  return '/';
-};
-
-const DashboardPage = ({
-  lessons,
-  hasAccess,
-  pricingHref,
-  onOpenExercise,
-  isSignedIn,
+const SignedOutLanding = ({
   signInHref,
-  syncingWords,
-  syncMessage,
-  syncError,
-  onSyncWords,
+  pricingHref,
+  platformWorkspaceHref,
+  isSignedIn,
 }: {
-  lessons: LessonRow[];
-  hasAccess: boolean;
-  pricingHref: string;
-  onOpenExercise: (index: number) => void;
-  isSignedIn: boolean;
   signInHref: string;
-  syncingWords: boolean;
-  syncMessage: string | null;
-  syncError: string | null;
-  onSyncWords: () => void;
-}) => {
-  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  const inboundIntent = params.get('intent') ?? '';
-  const inboundSkill = params.get('skill') ?? '';
-  const inboundReason = params.get('reason') ?? '';
-  const inboundSourceService = params.get('source_service') ?? '';
-  const hasInboundFocus = Boolean(inboundIntent || inboundSkill);
-
-  return (
-    <div className="dashboard-stack">
-    <section className="hero-card card">
-      <div className="hero-copy">
-        <div className="eyebrow">English Listening Studio</div>
-        <h1>Build real-world listening confidence, one focused audio lab at a time.</h1>
-        <p>
-          Train with structured drills, track micro-skills, and keep your full learning history in one workspace.
-        </p>
-        <button
-          className="primary-cta"
-          type="button"
-          onClick={() => {
-            if (!hasAccess) window.location.assign(pricingHref);
-          }}
-        >
-          {hasAccess ? 'Start 15-min warmup' : 'Unlock listening access'}
-        </button>
-        {!hasAccess ? <small className="hero-note">Your account is signed in, but this service needs an active plan or trial.</small> : null}
-      </div>
-      <div className="hero-art" aria-hidden>
-        <div className="wave one" />
-        <div className="wave two" />
-        <div className="wave three" />
-      </div>
-    </section>
-
-    {hasInboundFocus ? (
-      <section className="card connected-brief">
-        <div>
-          <h2>Focus routed from Schood English</h2>
-          <p>
-            Continue with intent <strong>{inboundIntent || 'sentence-loop'}</strong> on skill{' '}
-            <strong>{inboundSkill || 'comprehension'}</strong>.
-          </p>
-          {inboundReason ? <small>Reason: {inboundReason.replace(/[-_]+/g, ' ')}</small> : null}
-          {inboundSourceService ? <small>Triggered by: {inboundSourceService}</small> : null}
-        </div>
-        <a
-          className="ghost-btn"
-          href={buildServiceDashboardHref(CURRENT_SERVICE_KEY, inboundIntent || 'sentence-loop', inboundSkill || 'comprehension', 'continue-focus')}
-        >
-          Keep this focus
-        </a>
-      </section>
-    ) : null}
-
-    <section className="kpi-grid">
-      <article className="card kpi">
-        <span>Total listening sets</span>
-        <strong>48</strong>
-        <small>+6 this month</small>
-      </article>
-      <article className="card kpi">
-        <span>Hours practiced</span>
-        <strong>36.4 h</strong>
-        <small>consistency score: 88</small>
-      </article>
-      <article className="card kpi">
-        <span>Estimated band (Listening)</span>
-        <strong>7.0</strong>
-        <small>target: 7.5</small>
-      </article>
-    </section>
-
-    <section className="card class-table">
-      <div className="section-head">
-        <h2>My class list</h2>
-        <button className="ghost-btn" type="button">See all</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>Progress</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map((lesson) => (
-            <tr key={lesson.id}>
-              <td>
-                <strong>{lesson.title}</strong>
-                <small>{lesson.level} - {lesson.schedule}</small>
-              </td>
-              <td>
-                <div className="progress-row">
-                  <span>{lesson.progress}%</span>
-                  <div className="track">
-                    <div className="fill" style={{ width: `${lesson.progress}%`, background: lesson.accent }} />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span className={progressStatusClass(lesson.status)}>{lesson.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section className="card cross-service-playbook">
-      <div className="section-head">
-        <h2>Exercises</h2>
-        <a className="ghost-btn" href={`${ENGLISH_HUB_URL}/dashboard`}>Open Schood English</a>
-      </div>
-      <div className="playbook-grid">
-        {SERVICE_BLUEPRINT.map((item, index) => (
-          <article key={item.title} className="playbook-card">
-            <small>{'Exercise ' + (index + 1) + ' - ' + item.skill}</small>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            <button className="ghost-btn" type="button" onClick={() => onOpenExercise(index)}>
-              Open exercise window
-            </button>
-          </article>
-        ))}
-      </div>
-      <div className="handoff-row">
-        {SERVICE_HANDOFFS.map((handoff) => (
-          <a
-            key={handoff.key}
-            className="menu-link muted-link"
-            href={buildServiceDashboardHref(handoff.key, handoff.intent, handoff.skill, handoff.reason)}
-          >
-            {handoff.label}
+  pricingHref: string;
+  platformWorkspaceHref: string;
+  isSignedIn: boolean;
+}) => (
+  <div className="landing-page-root">
+    <div className="ambient-layer" />
+    <div className="landing-page-main">
+      <header className="landing-page-topbar card">
+        <Link className="landing-brand" to="/">
+          <span className="dot" />
+          <strong>{SERVICE_LABEL}</strong>
+        </Link>
+        <nav className="landing-links">
+          <a href={buildPlatformUrl('/about')}>About us</a>
+          <a href={buildPlatformUrl('/programs')}>Programs</a>
+          <a href={buildPlatformUrl('/blog')}>Blog</a>
+          <a href={buildPlatformUrl('/courses')}>Courses</a>
+          <a href={buildPlatformUrl('/faq')}>FAQ</a>
+          <a href={buildPlatformUrl('/contact')}>Contact</a>
+        </nav>
+        <div className="landing-actions">
+          <a className="ghost-btn" href={ENGLISH_HUB_URL}>
+            English hub
           </a>
-        ))}
-      </div>
-    </section>
+          <a className="ghost-btn" href={platformWorkspaceHref}>
+            Open platform
+          </a>
+          {isSignedIn ? (
+            <Link className="icon-btn" to="/dashboard">
+              Dashboard
+            </Link>
+          ) : (
+            <a className="icon-btn" href={signInHref}>
+              Log in
+            </a>
+          )}
+          <a className="primary-cta" href={pricingHref}>
+            Sign up
+          </a>
+        </div>
+      </header>
 
-    <section className="card vocab-sync-card">
-      <div className="section-head">
-        <h2>Vocabulary Sync</h2>
-        <button
-          className="ghost-btn"
-          type="button"
-          disabled={syncingWords}
-          onClick={() => {
-            if (!isSignedIn) {
-              window.location.assign(signInHref);
-              return;
-            }
-            onSyncWords();
-          }}
-        >
-          {isSignedIn ? (syncingWords ? 'Syncing...' : 'Send 10 words') : 'Sign in to sync'}
-        </button>
-      </div>
-      <p className="vocab-sync-copy">
-        Save key listening words to the shared English Vocabulary notebook for daily Leitner review.
-      </p>
-      <small className="vocab-sync-copy">
-        Words are deduplicated by language scope, so repeated syncs will not create duplicates.
-      </small>
-      {syncError ? (
-        <div className="access-banner warning">
-          <strong>Sync failed.</strong>
-          <span>{syncError}</span>
+      <section className="landing-hero">
+        <div className="landing-mosaic">
+          <article className="landing-card landing-stat tilt-left">
+            <div className="landing-stat-head">
+              <strong>Tracks</strong>
+              <span className="landing-arrow">{'->'}</span>
+            </div>
+            <p>Discovery before dictation</p>
+            <small>choose the right audio route first</small>
+          </article>
+          <article className="landing-card landing-team tilt-right">
+            <span className="landing-pill">Audio lab</span>
+            <h3>Clearer workflow</h3>
+            <p>Split track selection, dictation, and recovery review into dedicated listening pages.</p>
+          </article>
+          <article className="landing-card landing-offer tilt-right">
+            <h3>Premium listening routes</h3>
+            <p className="landing-price">
+              12$ <span>35$</span>
+            </p>
+            <div className="landing-ticket">
+              <div className="landing-ticket-row">
+                <small>Track</small>
+                <small>Review</small>
+              </div>
+              <strong>Hear {'->'} write {'->'} recover</strong>
+              <small>clean route ownership</small>
+            </div>
+          </article>
+          <article className="landing-card landing-showcase tilt-left">
+            <div className="landing-orb" aria-hidden />
+            <h3>Connected vocabulary</h3>
+            <p>Missed words move directly from listening review into Vocabulary activation.</p>
+          </article>
         </div>
-      ) : null}
-      {syncMessage ? (
-        <div className="access-banner">
-          <strong>{syncMessage}</strong>
-          <a className="ghost-btn" href="https://vocabulary.english.schood.online/dashboard">Open vocabulary notebook</a>
-        </div>
-      ) : null}
-    </section>
+        <article className="landing-copy card">
+          <div className="landing-chip">{SERVICE_LABEL}</div>
+          <h2>One page for discovery, one page for dictation, one page for recovery.</h2>
+          <p>Listening now feels like a real route: select a track, do the work, then debrief in a separate room.</p>
+          <div className="landing-cta-row">
+            <a className="primary-cta" href={isSignedIn ? '/dashboard' : signInHref}>
+              {isSignedIn ? 'Continue' : 'Get started'}
+            </a>
+            <a className="ghost-btn" href={pricingHref}>
+              See pricing
+            </a>
+            <a className="ghost-btn" href={platformWorkspaceHref}>
+              Open platform
+            </a>
+          </div>
+        </article>
+      </section>
+    </div>
+    <a className="updates-fab" href={buildPlatformUrl('/updates')}>
+      Updates
+    </a>
   </div>
-  );
-};
+);
 
-
-
-const ExercisesPage = ({
+const ListeningDashboardPage = ({
   hasAccess,
   pricingHref,
-  onNavigate,
-  accessToken,
+  context,
 }: {
   hasAccess: boolean;
   pricingHref: string;
-  onNavigate: (nextPath: AppPath) => void;
+  context: EnglishRouteContext;
+}) => (
+  <SectionGrid>
+    <RouteContextRibbon
+      context={context}
+      cta={
+        <Link className="ghost-btn" to="/tracks">
+          Open listening tracks
+        </Link>
+      }
+    />
+    <PageHero
+      eyebrow="Listening dashboard"
+      title="Pick an audio route before you start decoding."
+      copy="This dashboard now stays orchestration-only: current weakness, next track, and where the recovery route should hand off after dictation."
+      actions={
+        <>
+          <Link className="primary-cta" to="/tracks">
+            Browse tracks
+          </Link>
+          <Link className="ghost-btn" to="/dictation">
+            Dictation lab
+          </Link>
+          <Link className="ghost-btn" to="/review">
+            Review room
+          </Link>
+        </>
+      }
+      aside={
+        <>
+          <div className="route-chip-row">
+            <span className="route-chip">Tracks</span>
+            <span className="route-chip">Dictation</span>
+            <span className="route-chip">Recovery</span>
+          </div>
+          <p className="route-muted-copy">
+            {hasAccess
+              ? 'Live listening work now opens on the dictation route.'
+              : 'Browse the full listening route map now. Live dictation unlocks with an active plan.'}
+          </p>
+        </>
+      }
+    />
+
+    <div className="route-stat-grid">
+      <StatCard label="Weakest pattern" value="Function words" hint="Reduced speech and small grammar words are the current pressure point." />
+      <StatCard label="Best next route" value="Dictation lab" hint="Use a controlled replay route instead of another mixed dashboard card." />
+      <StatCard label="Transfer target" value="Vocabulary" hint="Missed words should move into retention review after each attempt." />
+    </div>
+
+    {!hasAccess ? (
+      <AccessBoundaryCard
+        hasAccess={false}
+        title="Preview-only listening routes"
+        message="You can browse tracks, dictation, and recovery pages, but playback and scoring stay locked until your service access is active."
+        ctaHref={pricingHref}
+      />
+    ) : null}
+  </SectionGrid>
+);
+
+const ListeningTracksPage = ({
+  hasAccess,
+  pricingHref,
+  search,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  search: string;
   accessToken: string | null;
+  context: EnglishRouteContext;
 }) => {
-  type LaneKey = 'todo' | 'in_progress' | 'completed';
-
-  const [activeLane, setActiveLane] = useState<'all' | LaneKey>('all');
-  const [selectedId, setSelectedId] = useState<string>('');
-  const [listeningItems, setListeningItems] = useState<ListeningItem[]>([]);
-  const [listeningItemsLoading, setListeningItemsLoading] = useState(false);
-  const [listeningItemsError, setListeningItemsError] = useState<string | null>(null);
-  const [activeListeningItemId, setActiveListeningItemId] = useState<string>('');
-  const [dictationText, setDictationText] = useState('');
-  const [showTranscript, setShowTranscript] = useState(false);
-  const [practiceSubmitting, setPracticeSubmitting] = useState(false);
-  const [practiceMessage, setPracticeMessage] = useState<string | null>(null);
-  const [practiceError, setPracticeError] = useState<string | null>(null);
-  const [practiceResult, setPracticeResult] = useState<ListeningPracticeResult | null>(null);
-  const [syncingMissedWords, setSyncingMissedWords] = useState(false);
-  const [syncMissedWordsMessage, setSyncMissedWordsMessage] = useState<string | null>(null);
-  const [syncMissedWordsError, setSyncMissedWordsError] = useState<string | null>(null);
-
-  const exerciseItems = useMemo(
-    () =>
-      SERVICE_BLUEPRINT.map((item, index) => {
-        const lane: LaneKey = index === 0 ? 'todo' : index < SERVICE_BLUEPRINT.length - 1 ? 'in_progress' : 'completed';
-        const priority = index === 0 ? 'High' : index === 1 ? 'Medium' : 'Low';
-
-        return {
-          id: `${CURRENT_SERVICE_KEY}-${index + 1}`,
-          lane,
-          priority,
-          due: `${10 + index * 3} days left`,
-          comments: 6 + index * 4,
-          updates: 3 + index * 2,
-          ...item,
-        };
-      }),
-    [],
-  );
-
-  useEffect(() => {
-    const firstItem = exerciseItems[0];
-    if (!selectedId && firstItem) {
-      setSelectedId(firstItem.id);
-    }
-  }, [exerciseItems, selectedId]);
+  const navigate = useNavigate();
+  const params = useParams<{ itemId?: string }>();
+  const [items, setItems] = useState<ListeningItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<ListeningItem | null>(null);
 
   useEffect(() => {
     if (!hasAccess || !accessToken) {
-      setListeningItems([]);
-      setListeningItemsLoading(false);
-      setListeningItemsError(null);
+      setItems([]);
+      setActiveItem(null);
       return;
     }
-
     let cancelled = false;
-    setListeningItemsLoading(true);
-    setListeningItemsError(null);
+    setLoading(true);
+    setError(null);
 
     void listListeningItems(accessToken)
-      .then((items) => {
+      .then((nextItems) => {
         if (cancelled) return;
-        setListeningItems(items);
+        setItems(nextItems);
       })
-      .catch((error) => {
+      .catch((nextError) => {
         if (cancelled) return;
-        setListeningItemsError(error instanceof Error ? error.message : 'Failed to load listening practice.');
+        setError(nextError instanceof Error ? nextError.message : 'Failed to load listening tracks.');
       })
       .finally(() => {
         if (cancelled) return;
-        setListeningItemsLoading(false);
+        setLoading(false);
       });
 
     return () => {
@@ -565,524 +334,574 @@ const ExercisesPage = ({
   }, [accessToken, hasAccess]);
 
   useEffect(() => {
-    const firstListeningItem = listeningItems[0];
-    if (!activeListeningItemId && firstListeningItem) {
-      setActiveListeningItemId(firstListeningItem.id);
+    if (!hasAccess || !accessToken || !params.itemId) return;
+    const existing = items.find((item) => item.id === params.itemId || item.slug === params.itemId);
+    if (existing) {
+      setActiveItem(existing);
+      return;
     }
-  }, [activeListeningItemId, listeningItems]);
+    let cancelled = false;
+    void getListeningItem(accessToken, params.itemId)
+      .then((result) => {
+        if (cancelled) return;
+        setActiveItem(result.item);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setActiveItem(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, items, params.itemId]);
 
-  const visibleItems = activeLane === 'all' ? exerciseItems : exerciseItems.filter((item) => item.lane === activeLane);
+  const previewItems = useMemo(() => {
+    const base = items.length > 0
+      ? items
+      : SERVICE_BLUEPRINT.map((item, index) => ({
+          id: item.slug,
+          slug: item.slug,
+          title: item.title,
+          summary: item.detail,
+          transcript_text: '',
+          level: ['A2', 'B1', 'B2'][index] ?? 'B1',
+          category: item.skill,
+          accent: ['us', 'uk', 'global'][index] ?? 'global',
+          speed_label: ['steady', 'controlled', 'fast'][index] ?? 'steady',
+          speed_wpm: 132,
+          duration_seconds: 26,
+          focus_skill: item.skill,
+          tags: [item.intent],
+          presentation_meta: {
+            scene_label: 'Listening track',
+            hero_note: item.detail,
+            target_badges: [item.skill, item.intent],
+          },
+        } satisfies ListeningItem));
 
-  const groupedItems = useMemo(
-    () => ({
-      todo: visibleItems.filter((item) => item.lane === 'todo'),
-      in_progress: visibleItems.filter((item) => item.lane === 'in_progress'),
-      completed: visibleItems.filter((item) => item.lane === 'completed'),
-    }),
-    [visibleItems],
+    const normalized = search.trim().toLowerCase();
+    if (!normalized) return base;
+    return base.filter(
+      (item) =>
+        item.title.toLowerCase().includes(normalized) ||
+        item.level.toLowerCase().includes(normalized) ||
+        item.category.toLowerCase().includes(normalized),
+    );
+  }, [items, search]);
+
+  const selectedItem =
+    activeItem ??
+    previewItems.find((item) => item.id === params.itemId || item.slug === params.itemId) ??
+    previewItems[0] ??
+    null;
+  const presentation = asMetaRecord(selectedItem?.presentation_meta);
+  const targetBadges = readMetaList(presentation?.target_badges);
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Listening tracks"
+        title="Choose the right clip before you open the dictation lab."
+        copy="The track page now owns discovery: accent, speed, clip type, and what kind of listening pressure you are about to practice."
+        actions={
+          <>
+            {selectedItem ? (
+              <button
+                className="primary-cta"
+                type="button"
+                onClick={() => navigate(`/dictation/${selectedItem.slug || selectedItem.id}`)}
+              >
+                Open dictation lab
+              </button>
+            ) : null}
+            <Link className="ghost-btn" to="/dashboard">
+              Back to dashboard
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Preview the listening catalog"
+          message="You can inspect the new route structure and track metadata now. Live playback and submission unlock when the service plan is active."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-list-card">
+          <div className="route-list-head">
+            <h2>Track queue</h2>
+            <span className="route-outline-chip">{previewItems.length} tracks</span>
+          </div>
+          {loading ? <div className="route-empty-state">Loading listening tracks...</div> : null}
+          {error ? <div className="route-empty-state">{error}</div> : null}
+          <div className="route-list-stack">
+            {previewItems.map((item) => (
+              <Link
+                key={item.id}
+                className={'route-list-item' + (selectedItem?.id === item.id ? ' active' : '')}
+                to={`/tracks/${item.slug || item.id}`}
+              >
+                <small>{item.level} · {item.accent} · {item.speed_label}</small>
+                <strong>{item.title}</strong>
+                <p>{item.summary}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="route-stage-card">
+          {selectedItem ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">{readMetaText(presentation?.scene_label) || 'Listening track'}</small>
+                  <h2>{selectedItem.title}</h2>
+                </div>
+                <span className="route-chip">{selectedItem.level}</span>
+              </div>
+              <p>{readMetaText(presentation?.hero_note) || selectedItem.summary}</p>
+              <div className="route-chip-row">
+                <span className="route-chip">{selectedItem.category}</span>
+                <span className="route-outline-chip">{selectedItem.accent} accent</span>
+                <span className="route-outline-chip">{selectedItem.speed_label}</span>
+                {targetBadges.map((badge) => (
+                  <span key={badge} className="route-outline-chip">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+              <div className="route-inline-card">
+                <div className="route-label-row">
+                  <strong>Track profile</strong>
+                  <span className="route-outline-chip">{selectedItem.duration_seconds}s</span>
+                </div>
+                <p>{selectedItem.summary}</p>
+              </div>
+              <div className="route-cta-row">
+                <Link className="primary-cta" to={`/dictation/${selectedItem.slug || selectedItem.id}`}>
+                  {hasAccess ? 'Open dictation lab' : 'Unlock dictation'}
+                </Link>
+                <Link className="ghost-btn" to="/review">
+                  Recovery room
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="route-empty-state">Choose a track from the queue to preview the listening route.</div>
+          )}
+        </section>
+      </div>
+    </SectionGrid>
   );
+};
 
-  const selectedItem = exerciseItems.find((item) => item.id === selectedId) ?? exerciseItems[0];
-  const activeListeningItem = listeningItems.find((item) => item.id === activeListeningItemId) ?? listeningItems[0] ?? null;
-  const listeningPresentation = asMetaRecord(activeListeningItem?.presentation_meta);
-  const listeningSupportModes = readMetaList(listeningPresentation?.support_mode_labels);
-  const listeningTargetBadges = readMetaList(listeningPresentation?.target_badges);
+const ListeningDictationPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const navigate = useNavigate();
+  const params = useParams<{ itemId?: string }>();
+  const [item, setItem] = useState<ListeningItem | null>(null);
+  const [dictationText, setDictationText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const laneDefs: Array<{ key: LaneKey; label: string }> = [
-    { key: 'todo', label: 'Todo' },
-    { key: 'in_progress', label: 'In progress' },
-    { key: 'completed', label: 'Completed' },
-  ];
+  useEffect(() => {
+    if (!params.itemId || !hasAccess || !accessToken) {
+      setItem(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getListeningItem(accessToken, params.itemId)
+      .then((result) => {
+        if (cancelled) return;
+        setItem(result.item);
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not open this listening item.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.itemId]);
 
   const playClip = (slowMode = false): void => {
-    if (!activeListeningItem || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (!item || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(activeListeningItem.transcript_text);
+    const utterance = new SpeechSynthesisUtterance(item.transcript_text);
     utterance.lang = 'en-US';
-    utterance.rate = slowMode
-      ? 0.8
-      : activeListeningItem.speed_label === 'fast'
-      ? 1.05
-      : activeListeningItem.speed_label === 'slow'
-      ? 0.84
-      : 0.94;
+    utterance.rate = slowMode ? 0.8 : item.speed_label === 'fast' ? 1.05 : item.speed_label === 'slow' ? 0.84 : 0.94;
     window.speechSynthesis.speak(utterance);
   };
 
-  const stopClip = (): void => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-  };
-
-  const handleSelectListeningItem = (itemId: string): void => {
-    setActiveListeningItemId(itemId);
-    setDictationText('');
-    setShowTranscript(false);
-    setPracticeResult(null);
-    setPracticeMessage(null);
-    setPracticeError(null);
-    setSyncMissedWordsMessage(null);
-    setSyncMissedWordsError(null);
-  };
-
-  const handleSubmitPractice = async (): Promise<void> => {
-    if (!activeListeningItem || !accessToken) return;
-    setPracticeSubmitting(true);
-    setPracticeMessage(null);
-    setPracticeError(null);
-    setSyncMissedWordsMessage(null);
-    setSyncMissedWordsError(null);
-
+  const handleSubmit = async (): Promise<void> => {
+    if (!item || !accessToken) return;
+    setSubmitting(true);
+    setError(null);
     try {
       const result = await submitListeningPractice(accessToken, {
-        item_id: activeListeningItem.id,
+        item_id: item.id,
         response_text: dictationText,
-        time_spent_seconds: Math.max(30, Math.round((activeListeningItem.duration_seconds ?? 20) * 2.2)),
-        retry_count: practiceResult ? 1 : 0,
+        time_spent_seconds: Math.max(30, Math.round((item.duration_seconds ?? 20) * 2.2)),
+        retry_count: 0,
         hint_usage_count: 0,
       });
-      setPracticeResult(result);
-      setPracticeMessage(result.feedback?.summary ?? 'Listening attempt recorded.');
-      setShowTranscript(false);
-    } catch (error) {
-      setPracticeError(error instanceof Error ? error.message : 'Unable to score listening practice right now.');
+      const attemptId =
+        result && typeof (result as Record<string, unknown>).attempt === 'object'
+          ? String(((result as Record<string, unknown>).attempt as Record<string, unknown>).id ?? '')
+          : '';
+      navigate(attemptId ? `/review/${attemptId}` : '/review');
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not score this dictation.');
     } finally {
-      setPracticeSubmitting(false);
+      setSubmitting(false);
     }
   };
+
+  return (
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Dictation lab"
+        title="Keep listening work on a single-purpose decoding page."
+        copy="Playback, dictation, and immediate submission now live here, separate from discovery and recovery."
+        actions={
+          <>
+            <Link className="ghost-btn" to="/tracks">
+              Back to tracks
+            </Link>
+            <Link className="ghost-btn" to="/review">
+              Recovery room
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Dictation lab is locked"
+          message="The dedicated dictation route is visible now, but playback and scoring unlock when this listening service is active."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <section className={'route-stage-card' + (!hasAccess ? ' route-disabled' : '')}>
+        {loading ? <div className="route-empty-state">Opening listening lab...</div> : null}
+        {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+        {!loading && !item ? (
+          <div className="route-empty-state">
+            Choose a listening track first so the dictation lab can focus on one clip at a time.
+          </div>
+        ) : null}
+
+        {item ? (
+          <>
+            <div className="route-stage-header">
+              <div>
+                <small className="route-context-kicker">Live dictation</small>
+                <h2>{item.title}</h2>
+              </div>
+              <span className="route-chip">{item.speed_label}</span>
+            </div>
+            <p>{item.summary}</p>
+            <div className="route-inline-actions">
+              <button className="ghost-btn" type="button" onClick={() => playClip(false)}>
+                Play clip
+              </button>
+              <button className="ghost-btn" type="button" onClick={() => playClip(true)}>
+                Slow replay
+              </button>
+            </div>
+            <textarea
+              className="route-textarea"
+              value={dictationText}
+              onChange={(event) => setDictationText(event.target.value)}
+              placeholder="Type exactly what you hear from the clip..."
+            />
+            <div className="route-inline-actions">
+              <button
+                className="primary-cta"
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={!hasAccess || !accessToken || !dictationText.trim() || submitting}
+              >
+                {submitting ? 'Submitting dictation...' : 'Submit dictation'}
+              </button>
+            </div>
+          </>
+        ) : null}
+      </section>
+    </SectionGrid>
+  );
+};
+
+const ListeningReviewPage = ({
+  hasAccess,
+  pricingHref,
+  accessToken,
+  context,
+}: {
+  hasAccess: boolean;
+  pricingHref: string;
+  accessToken: string | null;
+  context: EnglishRouteContext;
+}) => {
+  const params = useParams<{ attemptId?: string }>();
+  const [feedback, setFeedback] = useState<Record<string, unknown> | null>(null);
+  const [attempt, setAttempt] = useState<Record<string, unknown> | null>(null);
+  const [item, setItem] = useState<ListeningItem | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.attemptId || !hasAccess || !accessToken) {
+      setFeedback(null);
+      setAttempt(null);
+      setItem(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    void getLearningAttempt(accessToken, params.attemptId)
+      .then(async (result) => {
+        if (cancelled) return;
+        setAttempt(result.attempt);
+        setFeedback(result.feedback ?? null);
+        const responseJson = result.attempt.response_json as Record<string, unknown> | undefined;
+        const listeningItemId = typeof responseJson?.listening_item_id === 'string' ? responseJson.listening_item_id : '';
+        if (listeningItemId) {
+          const loadedItem = await getListeningItem(accessToken, listeningItemId);
+          if (cancelled) return;
+          setItem(loadedItem.item);
+        }
+      })
+      .catch((nextError) => {
+        if (cancelled) return;
+        setError(nextError instanceof Error ? nextError.message : 'Could not load this listening review.');
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, hasAccess, params.attemptId]);
+
+  const responseJson = (attempt?.response_json as Record<string, unknown> | undefined) ?? {};
+  const missingWords = Array.isArray(responseJson.missing_words)
+    ? responseJson.missing_words.map((entry) => String(entry))
+    : [];
+  const expectedTranscript = typeof responseJson.expected_transcript === 'string' ? responseJson.expected_transcript : '';
+  const issues = Array.isArray(feedback?.issues) ? (feedback.issues as Array<Record<string, unknown>>) : [];
 
   const handleSendMissedWords = async (): Promise<void> => {
-    if (!accessToken || !Array.isArray(practiceResult?.notebook_words) || practiceResult.notebook_words.length === 0) return;
-    setSyncingMissedWords(true);
-    setSyncMissedWordsMessage(null);
-    setSyncMissedWordsError(null);
-
-    try {
-      const result = await captureNotebookWords(
-        accessToken,
-        practiceResult.notebook_words.map((entry) => ({
-          word: String(entry.word ?? ''),
-          definition: typeof entry.definition === 'string' ? entry.definition : null,
-          example: typeof entry.example === 'string' ? entry.example : null,
-          context_text: typeof entry.context_text === 'string' ? entry.context_text : null,
-          source_type: typeof entry.source_type === 'string' ? entry.source_type : 'english.listening.dictation',
-          source_label: typeof entry.source_label === 'string' ? entry.source_label : 'English Listening',
-          metadata: entry.metadata && typeof entry.metadata === 'object' ? entry.metadata as Record<string, unknown> : null,
-        })),
-      );
-      setSyncMissedWordsMessage(`Saved ${result.saved} listening words to Vocabulary.`);
-    } catch (error) {
-      setSyncMissedWordsError(error instanceof Error ? error.message : 'Failed to sync missed words.');
-    } finally {
-      setSyncingMissedWords(false);
-    }
+    if (!accessToken || missingWords.length === 0 || !expectedTranscript) return;
+    const result = await captureNotebookWords(
+      accessToken,
+      missingWords.map((word) => ({
+        word,
+        definition: null,
+        example: expectedTranscript,
+        context_text: expectedTranscript,
+        source_type: 'english.listening.review',
+        source_label: 'English Listening',
+        metadata: {
+          seeded_by: 'listening-review',
+        },
+      })),
+    );
+    setSyncMessage(`Saved ${result.saved} words to Vocabulary.`);
   };
 
   return (
-    <div className="dashboard-stack">
-      <section className="card exercises-workspace">
-        <div className="exercises-grid">
-          <div className="exercises-list-pane">
-            <div className="exercises-list-head">
-              <h2>{SERVICE_LABEL} Exercises</h2>
-              <small>One unified page</small>
+    <SectionGrid>
+      <RouteContextRibbon context={context} />
+      <PageHero
+        eyebrow="Recovery review"
+        title="Move missed details onto a page that belongs only to recovery."
+        copy="The listening debrief now owns transcript reveal, issue clustering, and vocabulary handoff so the lab stays focused on dictation."
+        actions={
+          <>
+            <Link className="ghost-btn" to={item ? `/dictation/${item.slug || item.id}` : '/dictation'}>
+              Back to dictation
+            </Link>
+            <Link className="ghost-btn" to="/tracks">
+              Browse tracks
+            </Link>
+          </>
+        }
+      />
+
+      {!hasAccess ? (
+        <AccessBoundaryCard
+          hasAccess={false}
+          title="Recovery route is preview-only"
+          message="This page shows where transcript review and handoffs will live after a real dictation attempt."
+          ctaHref={pricingHref}
+        />
+      ) : null}
+
+      <div className="route-split-grid">
+        <section className="route-debrief-card">
+          {loading ? <div className="route-empty-state">Loading listening review...</div> : null}
+          {!loading && error ? <div className="route-empty-state">{error}</div> : null}
+          {!loading && !attempt ? (
+            <div className="route-empty-state">
+              Submit a dictation first. The review route will then show transcript recovery, missed words, and next routes.
             </div>
+          ) : null}
 
-            <div className="exercises-filters">
-              <button className={activeLane === 'all' ? 'exercise-filter active' : 'exercise-filter'} type="button" onClick={() => setActiveLane('all')}>
-                All
-              </button>
-              {laneDefs.map((lane) => (
-                <button
-                  key={lane.key}
-                  className={activeLane === lane.key ? 'exercise-filter active' : 'exercise-filter'}
-                  type="button"
-                  onClick={() => setActiveLane(lane.key)}
-                >
-                  {lane.label}
-                </button>
-              ))}
-            </div>
-
-            {laneDefs.map((lane) => (
-              <section key={lane.key} className="exercise-lane">
-                <header>
-                  <h3>{lane.label}</h3>
-                  <span>{groupedItems[lane.key].length}</span>
-                </header>
-
-                {groupedItems[lane.key].length === 0 ? <p className="exercise-empty">No exercises in this lane.</p> : null}
-
-                {groupedItems[lane.key].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={selectedItem?.id === item.id ? 'exercise-item active' : 'exercise-item'}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div className="exercise-item-top">
-                      <h4>{item.title}</h4>
-                      <span className={`exercise-priority ${item.priority.toLowerCase()}`}>{item.priority} priority</span>
-                    </div>
-                    <p>{item.detail}</p>
-                    <div className="exercise-item-meta">
-                      <span>{item.due}</span>
-                      <span>{item.comments} notes</span>
-                      <span>{item.updates} updates</span>
-                    </div>
+          {attempt ? (
+            <>
+              <div className="route-stage-header">
+                <div>
+                  <small className="route-context-kicker">Latest listening review</small>
+                  <h2>{item?.title ?? 'Listening attempt'}</h2>
+                </div>
+                {item ? <span className="route-chip">{item.speed_label}</span> : null}
+              </div>
+              <p>{typeof feedback?.summary === 'string' && feedback.summary ? feedback.summary : 'Your listening recovery summary is ready.'}</p>
+              <div className="phase2-feedback-card">
+                <strong>What you missed</strong>
+                {missingWords.length > 0 ? <p>{missingWords.join(', ')}</p> : <p>No missed words were captured in the latest attempt.</p>}
+                {issues.length > 0 ? (
+                  <ul className="phase2-feedback-list">
+                    {issues.map((issue, index) => (
+                      <li key={`${String(issue.category ?? 'issue')}-${index}`}>
+                        <strong>{String(issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Use one smaller retry route next.')}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+              {expectedTranscript ? (
+                <div className="route-inline-card">
+                  <div className="route-label-row">
+                    <strong>Transcript reveal</strong>
+                    <span className="route-outline-chip">recovery only</span>
+                  </div>
+                  <p>{expectedTranscript}</p>
+                </div>
+              ) : null}
+              {missingWords.length > 0 ? (
+                <div className="route-inline-actions">
+                  <button className="primary-cta" type="button" onClick={() => void handleSendMissedWords()}>
+                    Send missed words to Vocabulary
                   </button>
-                ))}
-              </section>
+                  {syncMessage ? <span className="route-muted-copy">{syncMessage}</span> : null}
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </section>
+
+        <section className="route-summary-card">
+          <div className="route-subhead">
+            <h2>Next routes</h2>
+            <span className="route-outline-chip">transfer next</span>
+          </div>
+          <div className="route-next-step-grid">
+            {REVIEW_HANDOFFS.map((handoff) => (
+              <a
+                key={handoff.label}
+                className="route-next-step-card"
+                href={withEnglishRouteContext(handoff.href, {
+                  sourceService: 'listening',
+                  intent: 'review-followup',
+                  skill: 'listening',
+                  reason: 'listening-review',
+                })}
+              >
+                <strong>{handoff.label}</strong>
+                <p>Leave the recovery room only when the next service route is specific and contextual.</p>
+              </a>
             ))}
           </div>
-
-          <div className="exercises-detail-pane">
-            {selectedItem ? (
-              <>
-                <div className="exercise-detail-actions">
-                  <button type="button" className="ghost-btn">Share</button>
-                  <button type="button" className="ghost-btn">Expand</button>
-                  <button type="button" className="ghost-btn" onClick={() => onNavigate('/dashboard')}>Close</button>
-                </div>
-
-                <small className="exercise-detail-eyebrow">{SERVICE_LABEL.toUpperCase()} · {selectedItem.skill}</small>
-                <h2>{selectedItem.title}</h2>
-
-                <div className="exercise-detail-badges">
-                  <span className={`exercise-priority ${selectedItem.priority.toLowerCase()}`}>{selectedItem.priority} priority</span>
-                  <span className="exercise-chip">{selectedItem.due}</span>
-                </div>
-
-                <div className="exercise-timebox">
-                  <span>Focused exercise block</span>
-                  <strong>45:00</strong>
-                </div>
-
-                <p className="exercise-detail-copy">{selectedItem.detail}</p>
-
-                <div className="exercise-subsection">
-                  <div className="phase2-lab-head">
-                    <div>
-                      <h3>Live Listening Lab</h3>
-                      <p>Real listening items, dictation scoring, and missed-word routing into the shared system.</p>
-                    </div>
-                    {activeListeningItem ? <span className="exercise-chip">{activeListeningItem.level} · {activeListeningItem.speed_label}</span> : null}
-                  </div>
-
-                  {activeListeningItem ? (
-                    <div className="phase2-premium-card">
-                      <small>{readMetaText(listeningPresentation?.scene_label) || 'Audio lab scene'}</small>
-                      <strong>{readMetaText(listeningPresentation?.hero_note) || 'Use the waveform tools to isolate missed sounds, then recover meaning before replaying.'}</strong>
-                      <div className="phase2-badge-row">
-                        {listeningTargetBadges.map((badge) => (
-                          <span key={`${activeListeningItem.id}-${badge}`} className="phase2-badge">{badge}</span>
-                        ))}
-                        {listeningSupportModes.map((badge) => (
-                          <span key={`${activeListeningItem.id}-${badge}-support`} className="phase2-badge muted">{badge}</span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {!hasAccess ? <p className="phase2-status">Unlock access to open the listening backend.</p> : null}
-                  {hasAccess && !accessToken ? <p className="phase2-status">Sign in again to load your listening tasks.</p> : null}
-                  {listeningItemsLoading ? <p className="phase2-status">Loading listening items...</p> : null}
-                  {listeningItemsError ? <p className="phase2-status error">{listeningItemsError}</p> : null}
-
-                  {activeListeningItem ? (
-                    <>
-                      <div className="phase2-chip-row">
-                        {listeningItems.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className={item.id === activeListeningItem.id ? 'phase2-chip-button active' : 'phase2-chip-button'}
-                            onClick={() => handleSelectListeningItem(item.id)}
-                          >
-                            {item.title}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="phase2-inline-meta">
-                        <span>{activeListeningItem.category}</span>
-                        <span>{activeListeningItem.accent} accent</span>
-                        <span>{activeListeningItem.duration_seconds}s clip</span>
-                      </div>
-                      <p className="phase2-lab-copy">{activeListeningItem.summary}</p>
-
-                      <div className="phase2-actions">
-                        <button className="ghost-btn" type="button" onClick={() => playClip(false)}>Play clip</button>
-                        <button className="ghost-btn" type="button" onClick={() => playClip(true)}>Slow replay</button>
-                        <button className="ghost-btn" type="button" onClick={stopClip}>Stop</button>
-                        {practiceResult?.evaluation?.expected_transcript ? (
-                          <button className="ghost-btn" type="button" onClick={() => setShowTranscript((prev) => !prev)}>
-                            {showTranscript ? 'Hide transcript' : 'Reveal transcript'}
-                          </button>
-                        ) : null}
-                      </div>
-
-                      <textarea
-                        className="phase2-textarea"
-                        value={dictationText}
-                        onChange={(event) => setDictationText(event.target.value)}
-                        placeholder="Type exactly what you hear from the clip..."
-                        rows={6}
-                      />
-
-                      <div className="phase2-actions">
-                        <button
-                          className="primary-cta"
-                          type="button"
-                          onClick={() => {
-                            void handleSubmitPractice();
-                          }}
-                          disabled={practiceSubmitting || !dictationText.trim() || !hasAccess || !accessToken}
-                        >
-                          {practiceSubmitting ? 'Scoring dictation...' : 'Submit dictation'}
-                        </button>
-                        {Array.isArray(practiceResult?.notebook_words) && practiceResult.notebook_words.length > 0 ? (
-                          <button
-                            className="ghost-btn"
-                            type="button"
-                            onClick={() => {
-                              void handleSendMissedWords();
-                            }}
-                            disabled={syncingMissedWords}
-                          >
-                            {syncingMissedWords ? 'Sending to Vocabulary...' : 'Send missed words to Vocabulary'}
-                          </button>
-                        ) : null}
-                      </div>
-
-                      {practiceMessage ? <p className="phase2-status">{practiceMessage}</p> : null}
-                      {practiceError ? <p className="phase2-status error">{practiceError}</p> : null}
-                      {syncMissedWordsMessage ? <p className="phase2-status">{syncMissedWordsMessage}</p> : null}
-                      {syncMissedWordsError ? <p className="phase2-status error">{syncMissedWordsError}</p> : null}
-
-                      {showTranscript && practiceResult?.evaluation?.expected_transcript ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Transcript review</strong>
-                          <p>{practiceResult.evaluation.expected_transcript}</p>
-                        </div>
-                      ) : null}
-
-                      {practiceResult ? (
-                        <div className="phase2-feedback-card">
-                          <strong>Attempt feedback</strong>
-                          <p>{practiceResult.feedback?.summary ?? 'Listening feedback is ready.'}</p>
-                          <div className="phase2-inline-meta">
-                            <span>Score: {Math.round((practiceResult.scoring?.overall_score ?? 0) * 100)}%</span>
-                            <span>Accuracy: {Math.round((practiceResult.scoring?.correctness_ratio ?? 0) * 100)}%</span>
-                          </div>
-                          {Array.isArray(practiceResult.feedback?.issues) && practiceResult.feedback.issues.length > 0 ? (
-                            <ul className="phase2-feedback-list">
-                              {practiceResult.feedback.issues.map((issue, index) => (
-                                <li key={`${String(issue.category ?? 'issue')}-${index}`}>
-                                  <strong>{String(issue.category ?? 'issue')}</strong>: {String(issue.explanation ?? 'Focus on one smaller retry.')}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                          {Array.isArray(practiceResult.evaluation?.missing_words) && practiceResult.evaluation.missing_words.length > 0 ? (
-                            <p>Missed words: {practiceResult.evaluation.missing_words.join(', ')}</p>
-                          ) : null}
-                          <div className="phase2-metric-grid">
-                            <div>
-                              <small>What you missed</small>
-                              <strong>{practiceResult.evaluation?.missing_words?.length ?? 0} unstable words</strong>
-                            </div>
-                            <div>
-                              <small>Why it matters</small>
-                              <strong>{readMetaText(listeningPresentation?.coach_tone) || 'Detail recall and function-word control feed stronger listening transfer.'}</strong>
-                            </div>
-                            <div>
-                              <small>Where next</small>
-                              <strong>{readMetaText(listeningPresentation?.celebration_copy) || 'Loop the clip once more, then push weak words into Vocabulary or Speaking shadowing.'}</strong>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Execution checklist</h3>
-                  <ul>
-                    <li>Complete the task prompt without switching services.</li>
-                    <li>Write one short reflection before submitting.</li>
-                    <li>Push weak words or patterns into connected services.</li>
-                  </ul>
-                </div>
-
-                <div className="exercise-subsection">
-                  <h3>Comments</h3>
-                  <div className="exercise-comment">
-                    <strong>Coach</strong>
-                    <p>Prioritize clarity first, then improve speed in the second attempt.</p>
-                  </div>
-                  <div className="exercise-comment">
-                    <strong>You</strong>
-                    <p>I will repeat this with a shorter time limit after one full run.</p>
-                  </div>
-                </div>
-
-                <div className="exercise-detail-footer">
-                  <button
-                    className="primary-cta"
-                    type="button"
-                    onClick={() => {
-                      if (!hasAccess) {
-                        window.location.assign(pricingHref);
-                      }
-                    }}
-                  >
-                    {hasAccess ? 'Start exercise' : 'Unlock exercise access'}
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => onNavigate('/dashboard')}>
-                    Back to dashboard
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </SectionGrid>
   );
 };
 
-const SignedOutLanding = ({
-  serviceLabel,
-  signInHref,
+const ListeningWorkspaceRoutes = ({
+  hasAccess,
   pricingHref,
-  platformWorkspaceHref,
-  isSignedIn,
-  onContinue,
+  accessToken,
+  search,
 }: {
-  serviceLabel: string;
-  signInHref: string;
+  hasAccess: boolean;
   pricingHref: string;
-  platformWorkspaceHref: string;
-  isSignedIn: boolean;
-  onContinue: () => void;
+  accessToken: string | null;
+  search: string;
 }) => {
-  const focusTitle = serviceLabel.replace(/^English\s+/i, '');
-  const focusLower = focusTitle.toLowerCase();
+  const location = useLocation();
+  const context = useMemo(() => readEnglishRouteContext(location.search), [location.search]);
 
   return (
-    <div className="service-landing">
-      <section className="landing-hero">
-        <div className="landing-mosaic">
-          <article className="landing-card landing-stat tilt-left">
-            <div className="landing-stat-head">
-              <strong>174+</strong>
-              <span className="landing-arrow">{'->'}</span>
-            </div>
-            <p>{focusTitle} programs</p>
-            <small>new practice packs every week</small>
-          </article>
-
-          <article className="landing-card landing-team tilt-right">
-            <span className="landing-pill">4.8 review</span>
-            <h3>Mentor team</h3>
-            <p>Human mentors and AI scoring work together so your {focusLower} progress stays accurate and actionable.</p>
-          </article>
-
-          <article className="landing-card landing-offer tilt-right">
-            <h3>Secrets of {focusLower}</h3>
-            <p className="landing-price">
-              12$ <span>35$</span>
-            </p>
-            <div className="landing-ticket">
-              <div className="landing-ticket-row">
-                <small>24 Jul</small>
-                <small>28 Jul</small>
-              </div>
-              <strong>18:00</strong>
-              <small>35h 20m</small>
-            </div>
-          </article>
-
-          <article className="landing-card landing-showcase tilt-left">
-            <div className="landing-orb" aria-hidden />
-            <h3>{focusTitle} studio</h3>
-            <p>Structured drills, diagnostics, and feedback loops connected to your English learner profile.</p>
-          </article>
-        </div>
-
-        <article className="landing-copy card">
-          <div className="landing-chip">{serviceLabel}</div>
-          <h2>Interactive online {focusLower} education that keeps progress connected.</h2>
-          <p>
-            Train in one focused service while your outcomes feed a shared English profile across reading, listening,
-            writing, speaking, grammar, vocabulary, and immersion.
-          </p>
-          <div className="landing-cta-row">
-            {isSignedIn ? (
-              <button className="primary-cta" type="button" onClick={onContinue}>Continue</button>
-            ) : (
-              <a className="primary-cta" href={signInHref}>Get started</a>
-            )}
-            <a className="ghost-btn" href={pricingHref}>See pricing</a>
-            <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-          </div>
-        </article>
-      </section>
-
-      <section className="landing-proof-grid">
-        <article className="landing-proof card tilt-left">
-          <small>Learner footprint</small>
-          <strong>12k+</strong>
-          <p>Students completed at least one full-cycle {focusLower} pathway this year.</p>
-        </article>
-        <article className="landing-proof card tilt-right">
-          <small>Practice volume</small>
-          <strong>34k</strong>
-          <p>Total {focusLower} training hours logged by active users on the platform.</p>
-        </article>
-      </section>
-    </div>
+    <Routes>
+      <Route path="/dashboard" element={<ListeningDashboardPage hasAccess={hasAccess} pricingHref={pricingHref} context={context} />} />
+      <Route
+        path="/tracks"
+        element={<ListeningTracksPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/tracks/:itemId"
+        element={<ListeningTracksPage hasAccess={hasAccess} pricingHref={pricingHref} search={search} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/dictation"
+        element={<ListeningDictationPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/dictation/:itemId"
+        element={<ListeningDictationPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/review"
+        element={<ListeningReviewPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route
+        path="/review/:attemptId"
+        element={<ListeningReviewPage hasAccess={hasAccess} pricingHref={pricingHref} accessToken={accessToken} context={context} />}
+      />
+      <Route path="/exercises" element={<Navigate to="/tracks" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 };
+
 const App = () => {
+  const location = useLocation();
   const [status, setStatus] = useState<SessionStatus>('checking');
   const [session, setSession] = useState<Session | null>(null);
   const [search, setSearch] = useState('');
   const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
-  const [accessEndsAt, setAccessEndsAt] = useState<string | null>(null);
   const [accessError, setAccessError] = useState<string | null>(null);
-  const [syncingWords, setSyncingWords] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
-
-  const [path, setPath] = useState<AppPath>(() => {
-    if (typeof window === 'undefined') return '/';
-    return resolveAppPath(window.location.pathname);
-  });
-  const showLanding = path === '/';
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    if (showLanding || status === 'signed_out') {
-      setMobileNavOpen(false);
-    }
-  }, [showLanding, status]);
-
-  const navigate = (nextPath: AppPath, replace = false): void => {
-    if (typeof window === 'undefined') return;
-    setMobileNavOpen(false);
-    if (window.location.pathname !== nextPath) {
-      if (replace) {
-        window.history.replaceState({}, '', nextPath);
-      } else {
-        window.history.pushState({}, '', nextPath);
-      }
-    }
-    setPath(nextPath);
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -1105,30 +924,11 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      setPath(resolveAppPath(window.location.pathname));
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  useEffect(() => {
-    if (status === 'signed_out' && path !== '/') {
-      if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-        window.history.replaceState({}, '', '/');
-      }
-      setPath('/');
-    }
-  }, [path, status]);
-
-  useEffect(() => {
     let cancelled = false;
 
     const resolveAccess = async () => {
       if (status !== 'signed_in' || !session?.access_token) {
         setAccessStatus('idle');
-        setAccessEndsAt(null);
         setAccessError(null);
         return;
       }
@@ -1139,13 +939,10 @@ const App = () => {
       try {
         const me = await getMe(session.access_token);
         if (cancelled) return;
-
         const entitlement =
           me.entitlements.find(
             (entry) => entry.resource_type === 'product' && entry.resource_id === LISTENING_PRODUCT_ID,
           ) ?? null;
-
-        setAccessEndsAt(entitlement?.ends_at ?? null);
         setAccessStatus(entitlement ? 'granted' : 'denied');
       } catch (error) {
         if (cancelled) return;
@@ -1160,12 +957,11 @@ const App = () => {
           return;
         }
         setAccessStatus('denied');
-        setAccessError('Could not verify your service access right now.');
+        setAccessError('Could not verify your listening access right now.');
       }
     };
 
     void resolveAccess();
-
     return () => {
       cancelled = true;
     };
@@ -1173,37 +969,28 @@ const App = () => {
 
   useEffect(() => {
     let cancelled = false;
-
     const loadProfileName = async () => {
       if (status !== 'signed_in' || !session?.user.id) {
         setProfileNameFromDb(null);
         return;
       }
-
       try {
         const { data, error } = await supabase
           .from('user_profiles')
           .select('first_name,last_name')
           .eq('user_id', session.user.id)
           .maybeSingle();
-
         if (cancelled || error || !data) {
           if (!cancelled) setProfileNameFromDb(null);
           return;
         }
-
         const row = data as Record<string, unknown>;
-        const firstName = readMetaText(row.first_name);
-        const lastName = readMetaText(row.last_name);
-        const combined = `${firstName} ${lastName}`.trim();
-        setProfileNameFromDb(combined || null);
+        setProfileNameFromDb(`${readMetaText(row.first_name)} ${readMetaText(row.last_name)}`.trim() || null);
       } catch {
         if (!cancelled) setProfileNameFromDb(null);
       }
     };
-
     void loadProfileName();
-
     return () => {
       cancelled = true;
     };
@@ -1223,316 +1010,69 @@ const App = () => {
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';
   const profileName = useMemo(() => profileNameFromDb ?? resolveProfileName(session), [profileNameFromDb, session]);
-  const profileEmail = session?.user.email ?? null;
-  const avatarLabel = useMemo(() => resolveInitials(profileName, profileEmail), [profileName, profileEmail]);
-  const accessEndsLabel = useMemo(() => {
-    if (!accessEndsAt) return null;
-    const date = new Date(accessEndsAt);
-    if (Number.isNaN(date.getTime())) return accessEndsAt;
-    return date.toLocaleString();
-  }, [accessEndsAt]);
-
-  const visibleLessons = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return lessonRows;
-    return lessonRows.filter((lesson) => lesson.title.toLowerCase().includes(normalized));
-  }, [search]);
-
-  
   void profileName;
-  void profileEmail;
-  void avatarLabel;
-  void accessEndsLabel;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut({ scope: 'local' });
   };
 
-  const handleSyncWords = async (): Promise<void> => {
-    if (!session?.access_token) {
-      window.location.assign(signInHref);
-      return;
-    }
-
-    setSyncingWords(true);
-    setSyncError(null);
-    setSyncMessage(null);
-    try {
-      const payload = LISTENING_VOCAB_SEEDS.map((seed, index) => ({
-        word: seed.word,
-        definition: seed.definition,
-        example: seed.example,
-        context_text: seed.context,
-        source_type: 'english-listening.sync',
-        source_product_id: LISTENING_PRODUCT_ID,
-        source_label: 'Listening sync',
-        metadata: {
-          pipeline: 'listening_dashboard_sync',
-          rank: index + 1,
-        },
-      }));
-
-      const result = await captureNotebookWords(session.access_token, payload);
-      const savedCount = Number(result.saved ?? payload.length);
-      setSyncMessage(`${savedCount} listening words synced to your vocabulary notebook.`);
-    } catch (error) {
-      const statusCode = (error as { status?: number } | null)?.status ?? null;
-      if (statusCode === 401 || statusCode === 403) {
-        try {
-          await supabase.auth.signOut({ scope: 'local' });
-        } catch {
-          // ignore sign-out failures
-        }
-        return;
-      }
-      setSyncError('Could not sync listening words right now. Please try again.');
-    } finally {
-      setSyncingWords(false);
-    }
-  };
-
-  
-  if (showLanding) {
+  if (status === 'signed_out' || location.pathname === '/') {
     return (
-      <div className="landing-page-root">
-        <div className="ambient-layer" />
-        <div className="landing-page-main">
-          <header className="landing-page-topbar card">
-            <button
-              type="button"
-              className="landing-brand"
-              onClick={() => navigate('/')}
-            >
-              <span className="dot" />
-              <strong>{SERVICE_LABEL}</strong>
-            </button>
-            <nav className="landing-links">
-              <a href={buildPlatformUrl('/about')}>About us</a>
-              <a href={buildPlatformUrl('/programs')}>Programs</a>
-              <a href={buildPlatformUrl('/blog')}>Blog</a>
-              <a href={buildPlatformUrl('/courses')}>Courses</a>
-              <a href={buildPlatformUrl('/faq')}>FAQ</a>
-              <a href={buildPlatformUrl('/contact')}>Contact</a>
-            </nav>
-            <div className="landing-actions">
-              <a className="ghost-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              <a className="ghost-btn" href={platformWorkspaceHref}>Open platform</a>
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Log in</a>
-              )}
-              <a className="primary-cta" href={pricingHref}>Sign up</a>
-            </div>
-          </header>
-
-          <SignedOutLanding
-            serviceLabel={SERVICE_LABEL}
-            signInHref={signInHref}
-            pricingHref={pricingHref}
-            platformWorkspaceHref={platformWorkspaceHref}
-            isSignedIn={status === 'signed_in'}
-            onContinue={() => navigate('/dashboard')}
-          />
-        </div>
-        <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-          Updates
-        </a>
-      </div>
-    );
-  }
-  return (
-    <div className="reading-root">
-      <div className="ambient-layer" />
-      <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''} ${showLanding ? 'landing' : ''}`.trim()}>
-        <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-          <button
-            type="button"
-            className="brand-mark"
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-            style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-          >
-            <span className="dot" />
-            <div>
-              <strong>ENGLISH LISTENING</strong>
-              <small>Unified auth + payment</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="mobile-nav-inline-toggle"
-            aria-expanded={mobileNavOpen}
-            aria-controls="service-side-nav"
-            onClick={() => setMobileNavOpen((prev) => !prev)}
-          >
-            {mobileNavOpen ? 'Close menu' : 'Menu'}
-          </button>
-
-          <div className="left-nav-body">
-          <nav className="menu-list">
-            <button
-              className={'menu-link ' + (path === '/dashboard' ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate('/dashboard');
-              }}
-            >
-              Dashboard
-            </button>            <button
-              className={'menu-link ' + (path === EXERCISES_PATH ? 'active' : '')}
-              type="button"
-              onClick={() => {
-                navigate(EXERCISES_PATH);
-              }}
-            >
-              Exercises
-            </button>          </nav>
-
-          
-          <section className="service-switcher">
-            <div className="service-switch-head">
-              <span>Switch service</span>
-              <a className="muted-link" href={ENGLISH_HUB_URL}>Hub</a>
-            </div>
-            <div className="service-switch-grid">
-              {SERVICE_SWITCH_LINKS.map((service) => (
-                <a key={service.key} className="service-switch-link" href={service.href}>
-                  {service.label}
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <div className="left-footer">
-            <div className="support-zone">
-              <a className="menu-link muted-link" href={buildPlatformUrl('/contact')}>Support</a>
-              <a className="menu-link muted-link" href={pricingHref}>Pricing and trial</a>
-            </div>
-
-            <div className="mobile-account-zone">
-              <a className="menu-link muted-link" href={platformWorkspaceHref}>Platform</a>
-              <a className="menu-link muted-link" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="menu-link muted-link" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="menu-link muted-link" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="menu-link muted-link" href={signInHref}>Sign in</a>
-              )}
-            </div>
-
-            <article className="upgrade-card">
-              <h3>Premium Listening Pack</h3>
-              <p>Unlock full mock banks, detailed answer analytics, and teacher-reviewed dictation feedback.</p>
-              <a className="black-btn" href={pricingHref}>View plans</a>
-            </article>
-          </div>
-        </div>
-        </aside>
-
-        <main className="main-column">
-          {!showLanding ? (
-          <header className="topbar">
-            <div className="topbar-title">
-              <h1>Welcome back, learner</h1>
-              <p>{`${SERVICE_LABEL} service - premium daily listening workflow.`}</p>
-            </div>
-
-            <div className="topbar-actions">
-              <label className="search-box">
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search classes, sets, tasks..."
-                />
-              </label>
-              <a className="icon-btn" href={platformWorkspaceHref}>Platform</a>
-              <a className="icon-btn" href={ENGLISH_HUB_URL}>English hub</a>
-              {needsAccess ? <a className="icon-btn" href={pricingHref}>Get access</a> : null}
-              {status === 'signed_in' ? (
-                <button className="icon-btn" type="button" onClick={handleSignOut}>Sign out</button>
-              ) : (
-                <a className="icon-btn" href={signInHref}>Sign in</a>
-              )}
-            </div>
-          </header>
-          ) : null}
-
-          {showLanding ? (
+      <Routes>
+        <Route
+          path="/"
+          element={
             <SignedOutLanding
-              serviceLabel={SERVICE_LABEL}
               signInHref={signInHref}
               pricingHref={pricingHref}
               platformWorkspaceHref={platformWorkspaceHref}
               isSignedIn={status === 'signed_in'}
-              onContinue={() => navigate('/dashboard')}
             />
-          ) : null}
-          {!showLanding && status !== 'signed_out' && checkingAccess ? (
-            <div className="access-banner">
-              <strong>Checking access...</strong>
-              <span>Verifying your active plan for English Listening.</span>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && needsAccess ? (
-            <div className="access-banner warning">
-              <strong>Plan required for full access.</strong>
-              <span>Choose a trial or paid plan to unlock this service.</span>
-              <a className="ghost-btn" href={pricingHref}>Pricing and trial</a>
-            </div>
-          ) : null}
-          {!showLanding && status !== 'signed_out' && accessError ? <div className="access-banner warning">{accessError}</div> : null}
+          }
+        />
+        <Route path="*" element={<Navigate to={status === 'signed_in' ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    );
+  }
 
-          {!showLanding && status !== 'signed_out' && path === '/dashboard' && (
-            <DashboardPage
-              lessons={visibleLessons}
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onOpenExercise={() => {
-                navigate(EXERCISES_PATH);
-              }}
-              isSignedIn={status === 'signed_in'}
-              signInHref={signInHref}
-              syncingWords={syncingWords}
-              syncMessage={syncMessage}
-              syncError={syncError}
-              onSyncWords={() => {
-                void handleSyncWords();
-              }}
-            />
-          )}
-          {!showLanding && status !== 'signed_out' && path === EXERCISES_PATH && (
-            <ExercisesPage
-              hasAccess={hasAccess}
-              pricingHref={pricingHref}
-              onNavigate={navigate}
-              accessToken={session?.access_token ?? null}
-            />
-          )}
-        </main>
-      </div>
-      <a className="updates-fab" href={buildPlatformUrl('/updates')}>
-        Updates
-      </a>
-    </div>
+  const menuItems = [
+    { label: 'Dashboard', href: '/dashboard', active: location.pathname === '/dashboard' },
+    { label: 'Tracks', href: '/tracks', active: location.pathname.startsWith('/tracks') },
+    { label: 'Dictation lab', href: '/dictation', active: location.pathname.startsWith('/dictation') },
+    { label: 'Review room', href: '/review', active: location.pathname.startsWith('/review') },
+  ];
+
+  return (
+    <EnglishSkillWorkspace
+      serviceName={SERVICE_LABEL}
+      serviceTagline="English Listening service - route-based track, dictation, and recovery workflow."
+      menuItems={menuItems}
+      serviceSwitchLinks={SERVICE_SWITCH_LINKS}
+      hubHref={ENGLISH_HUB_URL}
+      platformHref={platformWorkspaceHref}
+      pricingHref={pricingHref}
+      signInHref={signInHref}
+      status={status}
+      needsAccess={needsAccess}
+      checkingAccess={checkingAccess}
+      accessError={accessError}
+      search={search}
+      onSearchChange={setSearch}
+      onSignOut={() => {
+        void handleSignOut();
+      }}
+      upgradeTitle="Premium Listening Pack"
+      upgradeCopy="Unlock live track routes, dictation scoring, and recovery handoffs into Vocabulary and Speaking."
+      updatesHref={buildPlatformUrl('/updates')}
+    >
+      <ListeningWorkspaceRoutes
+        hasAccess={hasAccess}
+        pricingHref={pricingHref}
+        accessToken={session?.access_token ?? null}
+        search={search}
+      />
+    </EnglishSkillWorkspace>
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

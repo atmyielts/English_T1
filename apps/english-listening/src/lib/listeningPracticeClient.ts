@@ -66,6 +66,22 @@ export const listListeningItems = async (accessToken: string): Promise<Listening
   return Array.isArray(res.items) ? res.items : [];
 };
 
+export const getListeningItem = async (
+  accessToken: string,
+  identifier: string,
+): Promise<{
+  item: ListeningItem;
+  segments?: Array<Record<string, unknown>>;
+  task_sets?: Array<Record<string, unknown>>;
+}> =>
+  (await call(accessToken, `/items/${encodeURIComponent(identifier)}`, {
+    method: "GET",
+  })) as {
+    item: ListeningItem;
+    segments?: Array<Record<string, unknown>>;
+    task_sets?: Array<Record<string, unknown>>;
+  };
+
 export const submitListeningPractice = async (
   accessToken: string,
   body: Record<string, unknown>,
