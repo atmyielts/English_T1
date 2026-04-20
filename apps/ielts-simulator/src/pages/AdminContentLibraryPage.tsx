@@ -105,6 +105,8 @@ const createExamplePart = (moduleType: ModuleType): IeltsPartTemplateV1 => {
 };
 
 const toJson = (value: unknown) => JSON.stringify(value, null, 2);
+const readString = (value: unknown): string => (typeof value === 'string' ? value : '');
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 export const AdminContentLibraryPage: React.FC = () => {
   const { accessToken } = useAccess();
@@ -120,6 +122,52 @@ export const AdminContentLibraryPage: React.FC = () => {
   const [editorModuleType, setEditorModuleType] = useState<ModuleType>('listening');
   const [editorTemplateName, setEditorTemplateName] = useState<string>('Part 1');
   const [editorTemplateKey, setEditorTemplateKey] = useState<string>('');
+
+  const syncEditorFieldsFromJson = (nextJsonText: string) => {
+    try {
+      const parsed = JSON.parse(nextJsonText) as unknown;
+      if (!isObject(parsed)) return;
+      const nextModuleType = readString(parsed.module_type).trim();
+      if (nextModuleType === 'listening' || nextModuleType === 'reading' || nextModuleType === 'writing') {
+        setEditorModuleType(nextModuleType);
+      }
+      setEditorTemplateName(readString(parsed.name));
+      setEditorTemplateKey(readString(parsed.template_key));
+    } catch {
+      // Ignore partial JSON edits while the user is typing.
+    }
+  };
+
+  const patchJsonRoot = (patch: { name?: string; templateKey?: string }) => {
+    setJsonText((current) => {
+      try {
+        const parsed = JSON.parse(current) as unknown;
+        if (!isObject(parsed)) return current;
+        const next: Record<string, unknown> = { ...parsed };
+        if (patch.name !== undefined) next.name = patch.name;
+        if (patch.templateKey !== undefined) next.template_key = patch.templateKey;
+        return toJson(next);
+      } catch {
+        return current;
+      }
+    });
+  };
+
+  const buildEditorCanonical = () => {
+    const parsed = JSON.parse(jsonText) as unknown;
+    const canonical = normalizePartTemplateInput(parsed, editorModuleType);
+    const templateName = editorTemplateName.trim() || canonical.name || `${moduleLabel(canonical.module_type)} item`;
+    const templateKey = editorTemplateKey.trim();
+    return normalizePartTemplateInput(
+      {
+        ...canonical,
+        module_type: canonical.module_type,
+        name: templateName,
+        template_key: templateKey,
+      },
+      canonical.module_type,
+    );
+  };
 
   const loadTemplates = async (opts?: { preserveSelection?: boolean }) => {
     if (!accessToken) return;
@@ -197,20 +245,19 @@ export const AdminContentLibraryPage: React.FC = () => {
     setStatus(`${moduleLabel(moduleType)} draft ready.`);
   };
 
-  const saveTemplate = async () => {
+  const saveTemplate = async (opts?: { asNew?: boolean }) => {
     if (!accessToken) return;
     setSaving(true);
     setError(null);
     setStatus(null);
     try {
-      const parsed = JSON.parse(jsonText) as unknown;
-      const canonical = normalizePartTemplateInput(parsed, editorModuleType);
-      const templateName = canonical.name || editorTemplateName.trim() || `${moduleLabel(editorModuleType)} item`;
-      const templateKey = canonical.template_key?.trim() || editorTemplateKey.trim() || slugifyTemplateKey(templateName, 'part-template');
+      const canonical = buildEditorCanonical();
+      const templateName = canonical.name || `${moduleLabel(editorModuleType)} item`;
+      const templateKey = canonical.template_key?.trim() || slugifyTemplateKey(templateName, 'part-template');
 
       const response = await adminBuilderPartTemplateUpsert(accessToken, {
         product_id: IELTS_PRODUCT_ID,
-        template_id: selectedTemplateId,
+        template_id: opts?.asNew ? null : selectedTemplateId,
         template_name: templateName,
         template_key: templateKey,
         module_type: canonical.module_type,
@@ -225,7 +272,8 @@ export const AdminContentLibraryPage: React.FC = () => {
       setEditorTemplateKey(response.template_key);
       setSelectedTemplateId(response.template_id);
       setSelectedTemplateVersionId(response.template_version_id);
-      setStatus(`Saved ${response.template_name} (v${response.version}).`);
+      setJsonText(toJson({ ...canonical, name: response.template_name, template_key: response.template_key }));
+      setStatus(`${opts?.asNew ? 'Saved new template' : 'Saved'} ${response.template_name} (v${response.version}).`);
       await loadTemplates({ preserveSelection: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save template.');
@@ -236,8 +284,7 @@ export const AdminContentLibraryPage: React.FC = () => {
 
   const exportCurrent = () => {
     try {
-      const parsed = JSON.parse(jsonText) as unknown;
-      const canonical = normalizePartTemplateInput(parsed, editorModuleType);
+      const canonical = buildEditorCanonical();
       const filename = `${canonical.template_key || slugifyTemplateKey(canonical.name, 'part-template')}.json`;
       downloadJsonFile(filename, canonical);
     } catch (e) {
@@ -267,14 +314,13 @@ export const AdminContentLibraryPage: React.FC = () => {
 
   const duplicateCurrent = () => {
     try {
-      const parsed = JSON.parse(jsonText) as unknown;
-      const canonical = normalizePartTemplateInput(parsed, editorModuleType);
-      const next = { ...canonical, template_key: '' };
+      const canonical = buildEditorCanonical();
+      const next = { ...canonical, name: `${canonical.name} Copy`, template_key: '' };
       setJsonText(toJson(next));
       setSelectedTemplateId(null);
       setSelectedTemplateVersionId(null);
       setEditorTemplateKey('');
-      setEditorTemplateName(`${canonical.name} Copy`);
+      setEditorTemplateName(next.name);
       setStatus('Duplicate draft created. Saving will create a new template.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Current JSON is invalid.');
@@ -371,6 +417,14 @@ export const AdminContentLibraryPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold hover:bg-gray-50 disabled:text-gray-400 disabled:hover:bg-white"
+                  onClick={() => void saveTemplate({ asNew: true })}
+                  disabled={saving}
+                >
+                  Save As New
+                </button>
+                <button
+                  type="button"
                   className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black disabled:bg-gray-400"
                   onClick={() => void saveTemplate()}
                   disabled={saving}
@@ -400,11 +454,30 @@ export const AdminContentLibraryPage: React.FC = () => {
               </label>
               <label className="text-xs text-gray-600 space-y-1">
                 <span className="font-semibold">Template name</span>
-                <input value={editorTemplateName} readOnly className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input
+                  value={editorTemplateName}
+                  onChange={(event) => {
+                    setEditorTemplateName(event.target.value);
+                    patchJsonRoot({ name: event.target.value });
+                    setError(null);
+                    setStatus(null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+                />
               </label>
               <label className="text-xs text-gray-600 space-y-1">
                 <span className="font-semibold">Template key</span>
-                <input value={editorTemplateKey || '(new)'} readOnly className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50" />
+                <input
+                  value={editorTemplateKey}
+                  onChange={(event) => {
+                    setEditorTemplateKey(event.target.value);
+                    patchJsonRoot({ templateKey: event.target.value });
+                    setError(null);
+                    setStatus(null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white"
+                  placeholder="part-1"
+                />
               </label>
               <label className="text-xs text-gray-600 space-y-1 md:col-span-3">
                 <span className="font-semibold">Loaded state</span>
@@ -420,6 +493,7 @@ export const AdminContentLibraryPage: React.FC = () => {
               value={jsonText}
               onChange={(event) => {
                 setJsonText(event.target.value);
+                syncEditorFieldsFromJson(event.target.value);
                 setError(null);
                 setStatus(null);
               }}
@@ -429,7 +503,7 @@ export const AdminContentLibraryPage: React.FC = () => {
             />
 
             <div className="text-xs text-gray-500">
-              Use the canonical part format only. Saving normalizes the JSON and creates a new version when the template already exists.
+              `Save Template` updates the loaded template. `Save As New` or `Duplicate` keeps the original so you can create Part 1, Part 2, and later assemble them together.
             </div>
           </div>
         </div>
