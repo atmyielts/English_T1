@@ -2,6 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BadgeHelp, BookOpenCheck, CreditCard, ShieldCheck, Sparkles } from 'lucide-react';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import {
+  SeoHead,
+  createBreadcrumbSchema,
+  createFaqSchema,
+  createOrganizationSchema,
+  createWebPageSchema,
+} from '../components/seo/SeoHead';
 import { useI18n } from '../i18n';
 
 type FAQItem = {
@@ -94,8 +101,31 @@ export const FAQPage: React.FC = () => {
     },
   ];
 
+  const faqItems = [...gettingStarted, ...billingAndAccess, ...learningAndSecurity];
+
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
+      <SeoHead
+        title="Schood FAQ | Platform Access, Plans, and Learning Support"
+        description="Find answers about Schood accounts, subscriptions, support, and platform behavior across IELTS, TOEFL, SAT, and English services."
+        path="/faq"
+        keywords={['Schood FAQ', 'platform FAQ', 'IELTS TOEFL SAT support', 'learning platform questions']}
+        schema={[
+          createOrganizationSchema(),
+          createWebPageSchema({
+            title: 'Schood FAQ | Platform Access, Plans, and Learning Support',
+            description:
+              'Find answers about Schood accounts, subscriptions, support, and platform behavior across IELTS, TOEFL, SAT, and English services.',
+            path: '/faq',
+          }),
+          createBreadcrumbSchema([
+            { name: 'Schood', path: '/' },
+            { name: 'FAQ', path: '/faq' },
+          ]),
+          createFaqSchema(faqItems.map((item) => ({ question: item.question, answer: item.answer }))),
+        ]}
+      />
+
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 right-16 h-[340px] w-[340px] rounded-full bg-emerald-200/50 blur-3xl" />

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
+import { SeoHead } from '../components/seo/SeoHead';
 
 type Mode = 'signin' | 'signup';
 
@@ -188,6 +189,13 @@ export const AuthPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900 relative overflow-hidden flex items-center justify-center p-6">
+      <SeoHead
+        title="Schood Account Access"
+        description="Sign in or create your Schood account."
+        path="/auth"
+        robots="noindex, nofollow"
+      />
+
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 -right-24 h-[420px] w-[420px] rounded-full bg-emerald-200/60 blur-3xl" />
         <div className="absolute -bottom-32 -left-24 h-[480px] w-[480px] rounded-full bg-amber-200/40 blur-3xl" />

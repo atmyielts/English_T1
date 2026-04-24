@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { candidateEntry } from '../lib/platformClient';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
+import { SeoHead } from '../components/seo/SeoHead';
 
 export const CandidateEntryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -81,6 +82,13 @@ export const CandidateEntryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f1e7] text-[#111827]">
+      <SeoHead
+        title="Schood Candidate Entry"
+        description="Candidate exam entry page for Schood."
+        path="/candidate"
+        robots="noindex, nofollow"
+      />
+
       <div className="max-w-4xl mx-auto px-6 pt-12 pb-24">
         <div className="rounded-3xl border border-gray-900/20 bg-white/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

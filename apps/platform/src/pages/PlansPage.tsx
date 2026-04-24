@@ -4,6 +4,7 @@ import { Crown, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { filterVisibleProducts, isArchivedProduct, productSlug } from '../lib/productVisibility';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { SeoHead, createBreadcrumbSchema, createOrganizationSchema, createWebPageSchema } from '../components/seo/SeoHead';
 import { useI18n } from '../i18n';
 import type { BillingPlan } from '../lib/platformClient';
 import type { TranslationKey } from '../i18n/locales/en';
@@ -169,6 +170,26 @@ export const PlansPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
+      <SeoHead
+        title="Schood Plans | IELTS, TOEFL, SAT, and English Access"
+        description="Browse Schood plans for IELTS, TOEFL, SAT, and English services, including shared platform access and product-level options."
+        path="/plans"
+        keywords={['Schood plans', 'IELTS pricing', 'TOEFL pricing', 'SAT pricing', 'English learning plans']}
+        schema={[
+          createOrganizationSchema(),
+          createWebPageSchema({
+            title: 'Schood Plans | IELTS, TOEFL, SAT, and English Access',
+            description:
+              'Browse Schood plans for IELTS, TOEFL, SAT, and English services, including shared platform access and product-level options.',
+            path: '/plans',
+          }),
+          createBreadcrumbSchema([
+            { name: 'Schood', path: '/' },
+            { name: 'Plans', path: '/plans' },
+          ]),
+        ]}
+      />
+
       <SiteHeader navItems={navItems} />
       <div className="px-6 md:px-10 pt-8 pb-10">
         <div className="max-w-6xl mx-auto">

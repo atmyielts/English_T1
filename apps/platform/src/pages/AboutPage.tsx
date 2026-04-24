@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, BarChart3, BookOpenCheck, Compass, GraduationCap, Layers, Sparkles, Target } from 'lucide-react';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { SeoHead, createBreadcrumbSchema, createOrganizationSchema, createWebPageSchema } from '../components/seo/SeoHead';
 import { useI18n } from '../i18n';
 
 export const AboutPage: React.FC = () => {
@@ -33,6 +34,27 @@ export const AboutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
+      <SeoHead
+        title="About Schood | Unified Exam and Learning Platform"
+        description="Learn what Schood is building across IELTS, TOEFL, SAT, and English learning, and how the platform connects services in one account."
+        path="/about"
+        keywords={['about Schood', 'learning platform', 'IELTS TOEFL SAT platform', 'English learning ecosystem']}
+        schema={[
+          createOrganizationSchema(),
+          createWebPageSchema({
+            title: 'About Schood | Unified Exam and Learning Platform',
+            description:
+              'Learn what Schood is building across IELTS, TOEFL, SAT, and English learning, and how the platform connects services in one account.',
+            path: '/about',
+            type: 'AboutPage',
+          }),
+          createBreadcrumbSchema([
+            { name: 'Schood', path: '/' },
+            { name: 'About', path: '/about' },
+          ]),
+        ]}
+      />
+
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-28 -left-24 h-[360px] w-[360px] rounded-full bg-emerald-200/55 blur-3xl" />

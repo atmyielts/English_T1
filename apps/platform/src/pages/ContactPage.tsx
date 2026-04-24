@@ -4,6 +4,7 @@ import { Mail, MessageCircle, Send } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { supportLinksList, supportMessageCreate, type SupportLink } from '../lib/platformClient';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { SeoHead, createBreadcrumbSchema, createOrganizationSchema, createWebPageSchema } from '../components/seo/SeoHead';
 import { useI18n } from '../i18n';
 
 export const ContactPage: React.FC = () => {
@@ -111,6 +112,27 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
+      <SeoHead
+        title="Contact Schood | Support for IELTS, TOEFL, SAT, and English Services"
+        description="Contact Schood support for help with platform access, plans, and learning services across IELTS, TOEFL, SAT, and English."
+        path="/contact"
+        keywords={['contact Schood', 'learning platform support', 'IELTS support', 'TOEFL support', 'SAT support']}
+        schema={[
+          createOrganizationSchema(),
+          createWebPageSchema({
+            title: 'Contact Schood | Support for IELTS, TOEFL, SAT, and English Services',
+            description:
+              'Contact Schood support for help with platform access, plans, and learning services across IELTS, TOEFL, SAT, and English.',
+            path: '/contact',
+            type: 'ContactPage',
+          }),
+          createBreadcrumbSchema([
+            { name: 'Schood', path: '/' },
+            { name: 'Contact', path: '/contact' },
+          ]),
+        ]}
+      />
+
       <SiteHeader navItems={navItems} />
 
       <main className="px-6 md:px-10 pt-10 pb-24 md:py-10">

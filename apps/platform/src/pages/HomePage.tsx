@@ -6,6 +6,14 @@ import { getAccessEffective, getMe } from '../lib/platformClient';
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import {
+  SeoHead,
+  createBreadcrumbSchema,
+  createOrganizationSchema,
+  createWebPageSchema,
+  createWebSiteSchema,
+} from '../components/seo/SeoHead';
+import { discoveryPageCards, getDiscoveryPageForProductSlug } from '../content/discoveryPages';
 import { useI18n } from '../i18n';
 
 type ProductRow = {
@@ -33,6 +41,20 @@ const resolveProductLandingUrl = (p: ProductRow): string | null => {
 };
 
 const metaValue = (p: ProductRow): ProductMeta => (p.metadata ?? {}) as ProductMeta;
+
+const HOME_TITLE = 'Schood Platform | IELTS, TOEFL, SAT, and English Learning';
+const HOME_DESCRIPTION =
+  'Discover IELTS, TOEFL, SAT, and English learning services on Schood with shared access, clearer service pages, and connected study workflows.';
+const HOME_SCHEMA = [
+  createOrganizationSchema(),
+  createWebSiteSchema(HOME_TITLE, HOME_DESCRIPTION, '/'),
+  createWebPageSchema({
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    path: '/',
+  }),
+  createBreadcrumbSchema([{ name: 'Schood', path: '/' }]),
+];
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -145,6 +167,14 @@ export const HomePage: React.FC = () => {
     openPricing(product);
   };
 
+  const openHref = (href: string) => {
+    if (isExternalUrl(href)) {
+      window.location.assign(href);
+      return;
+    }
+    navigate(href);
+  };
+
   const featuredProduct = products[0] ?? null;
   const productCount = products.length;
   const accessCount = products.reduce((count, product) => (entitlements.has(product.id) ? count + 1 : count), 0);
@@ -187,6 +217,20 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
+      <SeoHead
+        title={HOME_TITLE}
+        description={HOME_DESCRIPTION}
+        path="/"
+        keywords={[
+          'IELTS preparation platform',
+          'TOEFL practice platform',
+          'Digital SAT practice',
+          'English learning platform',
+          'Schood',
+        ]}
+        schema={HOME_SCHEMA}
+      />
+
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-24 -right-24 h-[420px] w-[420px] rounded-full bg-emerald-200/60 blur-3xl" />
@@ -380,6 +424,7 @@ export const HomePage: React.FC = () => {
               const hasAccess = entitlements.has(product.id);
               const shortDesc = meta.short_description ?? product.description ?? t('home.service.fallbackDesc');
               const tagline = meta.tagline ?? '';
+              const discoveryPath = getDiscoveryPageForProductSlug(productSlug(product));
               return (
                 <div key={product.id} className="rounded-3xl border border-gray-900 bg-white/85 p-6 flex flex-col">
                   <div className="flex items-center justify-between">
@@ -413,6 +458,14 @@ export const HomePage: React.FC = () => {
                       <Users2 size={16} />
                     </button>
                   </div>
+                  {discoveryPath ? (
+                    <a
+                      href={discoveryPath}
+                      className="mt-3 text-sm font-semibold text-gray-700 underline underline-offset-2"
+                    >
+                      Learn more about this service
+                    </a>
+                  ) : null}
                 </div>
               );
             })}
@@ -462,32 +515,20 @@ export const HomePage: React.FC = () => {
             {t('home.landings.desc')}
           </p>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {products.map((product) => {
-              const landingUrl = resolveProductLandingUrl(product);
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {discoveryPageCards.map((page) => {
               return (
-                <div key={`landing-${product.id}`} className="rounded-2xl border border-gray-900/20 bg-white/90 p-4">
-                  <div className="text-sm font-semibold text-gray-900">{product.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">{typeLabel(product.type)}</div>
+                <div key={`landing-${page.key}`} className="rounded-2xl border border-gray-900/20 bg-white/90 p-4">
+                  <div className="text-[11px] uppercase tracking-wider font-semibold text-gray-500">{page.label}</div>
+                  <div className="mt-2 text-sm font-semibold text-gray-900">{page.title}</div>
+                  <div className="mt-2 text-sm text-gray-600">{page.description}</div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {landingUrl ? (
-                      <button
-                        onClick={() => {
-                          if (isExternalUrl(landingUrl)) window.location.assign(landingUrl);
-                          else navigate(landingUrl);
-                        }}
-                        className="px-3 py-2 rounded-full bg-[#0f172a] text-white text-sm font-semibold"
-                      >
-                        {t('home.landings.openLanding')}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => openPricing(product)}
-                        className="px-3 py-2 rounded-full border border-gray-900 text-sm font-semibold"
-                      >
-                        {t('common.viewPricing')}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => openHref(page.path)}
+                      className="px-3 py-2 rounded-full bg-[#0f172a] text-white text-sm font-semibold"
+                    >
+                      {t('home.landings.openLanding')}
+                    </button>
                   </div>
                 </div>
               );

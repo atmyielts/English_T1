@@ -39,6 +39,7 @@ const FAQPage = lazyWithChunkRetry(() => import('./pages/FAQPage').then((m) => (
 const ContactPage = lazyWithChunkRetry(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const UpdatesPage = lazyWithChunkRetry(() => import('./pages/UpdatesPage').then((m) => ({ default: m.UpdatesPage })));
 const PlansPage = lazyWithChunkRetry(() => import('./pages/PlansPage').then((m) => ({ default: m.PlansPage })));
+const DiscoveryPage = lazyWithChunkRetry(() => import('./pages/DiscoveryPage').then((m) => ({ default: m.DiscoveryPage })));
 const PricingPage = lazyWithChunkRetry(() => import('./pages/PricingPage').then((m) => ({ default: m.PricingPage })));
 const CheckoutPage = lazyWithChunkRetry(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
 const AccountPage = lazyWithChunkRetry(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
@@ -100,6 +101,14 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/updates" element={<UpdatesPage />} />
           <Route path="/plans" element={<PlansPage />} />
+          <Route path="/ielts" element={<DiscoveryPage pageKey="ielts" />} />
+          <Route path="/ielts-mock-test" element={<DiscoveryPage pageKey="ieltsMockTest" />} />
+          <Route path="/ielts-writing-practice" element={<DiscoveryPage pageKey="ieltsWritingPractice" />} />
+          <Route path="/toefl" element={<DiscoveryPage pageKey="toefl" />} />
+          <Route path="/toefl-practice-test" element={<DiscoveryPage pageKey="toeflPracticeTest" />} />
+          <Route path="/sat" element={<DiscoveryPage pageKey="sat" />} />
+          <Route path="/digital-sat-practice-test" element={<DiscoveryPage pageKey="digitalSatPracticeTest" />} />
+          <Route path="/english" element={<DiscoveryPage pageKey="english" />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/candidate" element={<CandidateEntryPage />} />
 
