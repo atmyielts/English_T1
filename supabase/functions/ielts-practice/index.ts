@@ -1698,9 +1698,22 @@ serve(async (req) => {
       if (exercisesError) throw new Error("Failed to load exercise bank");
       const exercises = (Array.isArray(exercisesData) ? exercisesData : []) as ExerciseRow[];
       if (exercises.length === 0) {
+        if (publishedBlueprints.length === 0) {
+          return json(422, {
+            error: "No published practice blueprints or exercises are available yet",
+            hint: "Build and publish at least one practice blueprint in /admin before generating plans",
+            runtime: "session_blueprints",
+            published_blueprints: 0,
+            published_exercises: 0,
+          });
+        }
+
         return json(422, {
-          error: "No published exercises are available yet",
-          hint: "Create and publish exercises in /admin",
+          error: "Published blueprints exist, but none could be selected and no fallback exercises are available",
+          hint: "Review the latest published blueprint builds in /admin and confirm their build summaries include section type and question coverage",
+          runtime: "session_blueprints",
+          published_blueprints: publishedBlueprints.length,
+          published_exercises: 0,
         });
       }
 

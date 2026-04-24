@@ -135,7 +135,12 @@ const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
-  if (text.includes('no published exercises') || text.includes('no published blueprints')) {
+  if (
+    text.includes('no published exercises')
+    || text.includes('no published blueprints')
+    || text.includes('no published practice blueprints or exercises')
+    || text.includes('none could be selected and no fallback exercises are available')
+  ) {
     return 'Practice content is being prepared. No session blueprints are available yet.';
   }
   if (text.includes('network') || text.includes('failed to fetch')) {
