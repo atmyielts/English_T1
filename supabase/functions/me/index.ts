@@ -195,7 +195,7 @@ serve(async (req) => {
           .maybeSingle();
         if (policyData) {
           securityPolicy = {
-            require_mfa: Boolean((policyData as Record<string, unknown>).require_mfa),
+            require_mfa: false,
             session_timeout_minutes: Number((policyData as Record<string, unknown>).session_timeout_minutes ?? 30),
             rate_limit_per_minute: Number((policyData as Record<string, unknown>).rate_limit_per_minute ?? 120),
             ip_allowlist: Array.isArray((policyData as Record<string, unknown>).ip_allowlist)

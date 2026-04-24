@@ -31,7 +31,7 @@ type AuthorizeResult =
   | { ok: false; response: Response };
 
 const defaultSecurityPolicy: AdminSecurityPolicy = {
-  require_mfa: true,
+  require_mfa: false,
   session_timeout_minutes: 30,
   rate_limit_per_minute: 120,
   ip_allowlist: [],
@@ -164,7 +164,7 @@ const loadSecurityPolicy = async (sb: any): Promise<AdminSecurityPolicy> => {
     };
 
     return {
-      require_mfa: typeof policy.require_mfa === "boolean" ? policy.require_mfa : defaultSecurityPolicy.require_mfa,
+      require_mfa: false,
       session_timeout_minutes:
         typeof policy.session_timeout_minutes === "number" && policy.session_timeout_minutes > 0
           ? Math.floor(policy.session_timeout_minutes)
@@ -397,27 +397,6 @@ export const authorizeAdminRequest = async (
 
   const tokenPayload = decodeJwtPayload(token) ?? {};
   const sessionAal = typeof tokenPayload.aal === "string" ? tokenPayload.aal : null;
-  if (policy.require_mfa && sessionAal !== "aal2") {
-    await writeAuditLog(sb, req, {
-      userId,
-      email: userEmail,
-      role,
-      permissionKey: requiredPermission,
-      action,
-      statusCode: 403,
-      requestId,
-      ipAddress,
-      metadata: { reason: "mfa_required", aal: sessionAal },
-    });
-    return {
-      ok: false,
-      response: jsonResponse(
-        403,
-        { error: "Admin MFA required", code: "mfa_required", request_id: requestId },
-        corsHeaders,
-      ),
-    };
-  }
 
   if (!isIpAllowed(ipAddress, policy.ip_allowlist)) {
     await writeAuditLog(sb, req, {

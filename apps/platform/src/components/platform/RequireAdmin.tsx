@@ -8,7 +8,6 @@ type AdminState =
   | { status: 'loading' }
   | { status: 'unauthenticated'; reason?: 'idle_timeout' | 'missing_session' }
   | { status: 'forbidden' }
-  | { status: 'mfa_required' }
   | { status: 'authorized'; access: AdminAccessInfo };
 
 const returnToFromLocation = (pathname: string, search: string, hash: string): string =>
@@ -43,11 +42,6 @@ export const RequireAdmin: React.FC = () => {
 
         if (!hasAdminPermission(admin.permissions, 'admin.portal.access')) {
           if (!cancelled) setState({ status: 'forbidden' });
-          return;
-        }
-
-        if (admin.security_policy?.require_mfa && admin.session_aal !== 'aal2') {
-          if (!cancelled) setState({ status: 'mfa_required' });
           return;
         }
 
@@ -133,26 +127,6 @@ export const RequireAdmin: React.FC = () => {
 
   if (state.status === 'forbidden') {
     return <Navigate to={`/account?returnTo=${encodeURIComponent(returnTo)}`} replace />;
-  }
-
-  if (state.status === 'mfa_required') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="w-full max-w-lg bg-white border border-gray-200 rounded-2xl p-6 space-y-3">
-          <h1 className="text-xl font-bold text-gray-900">Admin access requires MFA</h1>
-          <p className="text-sm text-gray-600">
-            Your admin session needs multi-factor authentication (AAL2). Open the admin MFA page, verify with your
-            authenticator app, then return to admin.
-          </p>
-          <a
-            href={`/admin-mfa?returnTo=${encodeURIComponent(returnTo)}`}
-            className="inline-flex px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold"
-          >
-            Open admin MFA
-          </a>
-        </div>
-      </div>
-    );
   }
 
   return (

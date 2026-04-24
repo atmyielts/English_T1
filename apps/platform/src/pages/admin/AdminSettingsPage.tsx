@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
 import {
@@ -33,7 +32,7 @@ export const AdminSettingsPage: React.FC = () => {
       try {
         const [settingsRes, securityRes] = await Promise.all([platformSettingsGet(accessToken), adminSecurityPolicyGet(accessToken)]);
         setSettings(settingsRes);
-        setSecurityPolicy(securityRes);
+        setSecurityPolicy({ ...securityRes, require_mfa: false });
         setIpAllowlistText((securityRes.ip_allowlist ?? []).join('\n'));
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load settings');
@@ -69,7 +68,7 @@ export const AdminSettingsPage: React.FC = () => {
         .map((entry) => entry.trim())
         .filter(Boolean);
       const res = await adminSecurityPolicyPatch(accessToken, {
-        require_mfa: securityPolicy.require_mfa,
+        require_mfa: false,
         session_timeout_minutes: securityPolicy.session_timeout_minutes,
         rate_limit_per_minute: securityPolicy.rate_limit_per_minute,
         ip_allowlist: allowlist,
@@ -140,21 +139,7 @@ export const AdminSettingsPage: React.FC = () => {
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
           <div className="text-sm font-semibold text-gray-900">Admin security policy</div>
-          <div className="text-xs text-gray-600">
-            Manage authenticator apps and remove old factors in{' '}
-            <Link to="/admin-mfa?returnTo=%2Fadmin%2Fsettings" className="font-semibold underline">
-              Admin MFA
-            </Link>
-            .
-          </div>
-          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={securityPolicy.require_mfa}
-              onChange={(e) => setSecurityPolicy((prev) => (prev ? { ...prev, require_mfa: e.target.checked } : prev))}
-            />
-            Require MFA (AAL2) for admin API
-          </label>
+          <div className="text-xs text-gray-600">Admin MFA requirement is disabled for portal and API access.</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-semibold text-gray-600">Admin idle timeout (minutes)</label>

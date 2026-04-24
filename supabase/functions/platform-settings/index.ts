@@ -125,7 +125,8 @@ serve(async (req) => {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
       }
-      return new Response(JSON.stringify(policy), {
+      const responsePolicy = policy ? { ...policy, require_mfa: false } : policy;
+      return new Response(JSON.stringify(responsePolicy), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -133,8 +134,7 @@ serve(async (req) => {
 
     if (scope === "admin_security" && req.method === "PATCH") {
       const body = (await req.json()) as AdminSecurityPatch;
-      const patch: AdminSecurityPatch = {};
-      if (typeof body.require_mfa === "boolean") patch.require_mfa = body.require_mfa;
+      const patch: AdminSecurityPatch = { require_mfa: false };
       if ("session_timeout_minutes" in body) {
         const timeout = normalizePositiveInt(body.session_timeout_minutes);
         if (timeout != null) patch.session_timeout_minutes = Math.min(240, Math.max(5, timeout));
