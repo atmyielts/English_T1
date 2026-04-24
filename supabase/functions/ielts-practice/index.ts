@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loadPublishedBlueprintCandidates } from "../_shared/ielts-practice-blueprints.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -80,6 +81,15 @@ type ExerciseRow = {
 
 type PlanCandidate = {
   exercise: ExerciseRow;
+  sectionType: "reading" | "listening" | "writing";
+  score: number;
+  rationale: string;
+  rationaleJson: JsonRecord;
+};
+
+type SessionPlanCandidate = {
+  blueprint: JsonRecord;
+  build: JsonRecord;
   sectionType: "reading" | "listening" | "writing";
   score: number;
   rationale: string;
@@ -518,23 +528,26 @@ const computeDiagnostics = async (
 ): Promise<{ payload: DiagnosticPayload; sourceSummary: JsonRecord }> => {
   const { data: outcomesData, error: outcomesError } = await sb
     .from("exam_outcomes")
-    .select("id,session_id,computed_at,overall_band,section_scores")
+    .select("id,session_id,product_id,computed_at,overall_band,section_scores")
     .eq("user_id", userId)
-    .eq("product_id", scope.simulatorProductId)
+    .in("product_id", [scope.simulatorProductId, scope.practiceProductId])
     .order("computed_at", { ascending: false })
-    .limit(120);
+    .limit(240);
 
   if (outcomesError) throw new Error("Failed to load simulator outcomes");
 
   const outcomes = Array.isArray(outcomesData) ? outcomesData : [];
-  const overallBandValues: number[] = [];
+  let overallBandWeightedSum = 0;
+  let overallBandWeightTotal = 0;
+  let simulatorOutcomeCount = 0;
+  let practiceOutcomeCount = 0;
 
   const sectionBuckets = new Map<"reading" | "listening" | "writing", {
     samples: number;
     raw: number;
     max: number;
     bandTotal: number;
-    bandCount: number;
+    bandWeight: number;
   }>();
 
   for (const section of ["reading", "listening", "writing"] as const) {
@@ -543,13 +556,21 @@ const computeDiagnostics = async (
       raw: 0,
       max: 0,
       bandTotal: 0,
-      bandCount: 0,
+      bandWeight: 0,
     });
   }
 
   for (const outcome of outcomes) {
+    const productId = String((outcome as any).product_id ?? "");
+    const weight = productId === scope.simulatorProductId ? 1 : 0.65;
+    if (productId === scope.simulatorProductId) simulatorOutcomeCount += 1;
+    else if (productId === scope.practiceProductId) practiceOutcomeCount += 1;
+
     const overallBand = toNumber((outcome as any).overall_band);
-    if (overallBand != null) overallBandValues.push(overallBand);
+    if (overallBand != null) {
+      overallBandWeightedSum += overallBand * weight;
+      overallBandWeightTotal += weight;
+    }
 
     const sectionScores = isObject((outcome as any).section_scores)
       ? ((outcome as any).section_scores as JsonRecord)
@@ -567,8 +588,8 @@ const computeDiagnostics = async (
       bucket.raw += rawScore;
       bucket.max += maxScore;
       if (band != null) {
-        bucket.bandTotal += band;
-        bucket.bandCount += 1;
+        bucket.bandTotal += band * weight;
+        bucket.bandWeight += weight;
       }
     }
   }
@@ -685,8 +706,8 @@ const computeDiagnostics = async (
     }
   }
 
-  const averageOverallBand = overallBandValues.length > 0
-    ? roundTo(overallBandValues.reduce((sum, value) => sum + value, 0) / overallBandValues.length, 2)
+  const averageOverallBand = overallBandWeightTotal > 0
+    ? roundTo(overallBandWeightedSum / overallBandWeightTotal, 2)
     : null;
 
   const targetOverallBand = clamp(toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
@@ -695,7 +716,7 @@ const computeDiagnostics = async (
   for (const section of ["reading", "listening", "writing"] as const) {
     const bucket = sectionBuckets.get(section)!;
     const accuracyRatio = bucket.max > 0 ? roundTo(bucket.raw / bucket.max, 4) : null;
-    const averageBand = bucket.bandCount > 0 ? roundTo(bucket.bandTotal / bucket.bandCount, 2) : null;
+    const averageBand = bucket.bandWeight > 0 ? roundTo(bucket.bandTotal / bucket.bandWeight, 2) : null;
     const targetBandRaw = toNumber((goals.target_section_bands as any)?.[section]);
     const targetBand = targetBandRaw != null ? clamp(targetBandRaw, 0, 9) : targetOverallBand;
     const bandGap = averageBand == null ? null : roundTo(targetBand - averageBand, 2);
@@ -752,9 +773,15 @@ const computeDiagnostics = async (
   return {
     payload,
     sourceSummary: {
-      simulator_outcomes_count: outcomes.length,
+      simulator_outcomes_count: simulatorOutcomeCount,
+      practice_outcomes_count: practiceOutcomeCount,
+      total_outcomes_count: outcomes.length,
       sessions_considered: sessionIds.length,
       scored_responses_count: scoredResponseCount,
+      weighting: {
+        simulator_outcome_weight: 1,
+        practice_outcome_weight: 0.65,
+      },
     },
   };
 };
@@ -925,27 +952,244 @@ const scorePlanCandidates = (candidates: PlanCandidate[]): PlanCandidate[] =>
     return a.exercise.id.localeCompare(b.exercise.id);
   });
 
-const enrichPlanRows = async (sb: any, rows: Array<{ id: string; exercise_id: string }>): Promise<JsonRecord[]> => {
+const buildSessionPlanCandidates = (
+  candidates: Array<JsonRecord>,
+  diagnostics: DiagnosticPayload,
+  goals: GoalRow,
+  recentSessionMap: Map<string, { attempts: number; latestAt: string | null }>,
+): SessionPlanCandidate[] => {
+  const sectionGapBySection = new Map<string, number>();
+  for (const [section, value] of Object.entries(diagnostics.sections ?? {})) {
+    sectionGapBySection.set(section, Math.max(0, toNumber((value as any).band_gap) ?? 0));
+  }
+
+  const weaknessByQuestionType = new Map<string, number>();
+  for (const row of diagnostics.question_types ?? []) {
+    weaknessByQuestionType.set(`${row.section_type}::${row.question_type}`, Math.max(0, toNumber(row.weakness_score) ?? 0));
+  }
+
+  const targetOverallBand = clamp(toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
+  const now = Date.now();
+
+  return candidates.map((row) => {
+    const blueprint = isObject(row.blueprint) ? (row.blueprint as JsonRecord) : {};
+    const build = isObject(row.build) ? (row.build as JsonRecord) : {};
+    const buildSummary = isObject(build.build_summary) ? (build.build_summary as JsonRecord) : {};
+    const sectionType = toSectionType(blueprint.section_type ?? buildSummary.section_type ?? "reading") ?? "reading";
+    const sectionGap = sectionGapBySection.get(sectionType) ?? 0;
+
+    const questionTypesRaw = Array.isArray(buildSummary.question_types)
+      ? buildSummary.question_types
+      : Array.isArray(blueprint.target_question_types)
+        ? blueprint.target_question_types
+        : [];
+    const questionTypes = questionTypesRaw.map((entry) => toText(entry, 120).toLowerCase()).filter(Boolean);
+    const weaknessValues = questionTypes.map((questionType) => weaknessByQuestionType.get(`${sectionType}::${questionType}`) ?? 0);
+    const questionWeakness = weaknessValues.length > 0
+      ? weaknessValues.reduce((sum, value) => sum + value, 0) / weaknessValues.length
+      : 0;
+
+    const buildId = toText(build.id, 80);
+    const recent = recentSessionMap.get(buildId);
+    let recencyPenalty = 0;
+    if (recent?.latestAt) {
+      const daysAgo = Math.max(0, (now - Date.parse(recent.latestAt)) / (1000 * 60 * 60 * 24));
+      recencyPenalty = Math.max(0, 0.9 - Math.min(daysAgo / 14, 0.9)) + recent.attempts * 0.08;
+    }
+
+    const estimatedMinutes = clamp(Math.floor(toNumber(blueprint.estimated_minutes ?? 25) ?? 25), 5, 120);
+    const durationFit = Math.max(0.2, 1 - Math.abs(estimatedMinutes - 25) / 50);
+    const targetBandFit = Math.max(0.2, 1 - Math.abs(targetOverallBand - (toNumber((diagnostics.sections as any)?.[sectionType]?.target_band) ?? targetOverallBand)) / 4);
+    const score = roundTo(sectionGap * 1.45 + questionWeakness * 1.6 + durationFit * 0.3 + targetBandFit * 0.2 - recencyPenalty, 6);
+    const questionSummary = questionTypes.length > 0 ? questionTypes.slice(0, 4).join(", ") : "mixed question types";
+
+    return {
+      blueprint,
+      build,
+      sectionType,
+      score,
+      rationale: `${sectionType} weakness plus ${questionSummary}`,
+      rationaleJson: {
+        source: "practice_blueprint",
+        section_gap: roundTo(sectionGap, 4),
+        question_weakness: roundTo(questionWeakness, 4),
+        duration_fit: roundTo(durationFit, 4),
+        target_band_fit: roundTo(targetBandFit, 4),
+        recency_penalty: roundTo(recencyPenalty, 4),
+        question_types: questionTypes,
+      },
+    };
+  }).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (a.sectionType !== b.sectionType) return a.sectionType.localeCompare(b.sectionType);
+    return toText(a.build.id, 80).localeCompare(toText(b.build.id, 80));
+  });
+};
+
+const startRealPracticeSession = async (
+  supabaseUrl: string,
+  anonKey: string,
+  token: string,
+  experienceId: string,
+  metadata: JsonRecord,
+): Promise<string> => {
+  const res = await fetch(`${supabaseUrl}/functions/v1/start-session`, {
+    method: "POST",
+    headers: apiHeaders(anonKey, token),
+    body: JSON.stringify({
+      experience_id: experienceId,
+      capability_key: "section_practice",
+      metadata: {
+        ...metadata,
+        mode: "practice",
+      },
+    }),
+  });
+  if (!res.ok) {
+    let details: unknown = null;
+    try {
+      details = await res.json();
+    } catch {
+      details = await res.text();
+    }
+    throw new Error(`Failed to start real practice session: ${JSON.stringify(details)}`);
+  }
+  const payload = await res.json() as { session_id?: string | null };
+  const sessionId = toText(payload.session_id, 80);
+  if (!sessionId) throw new Error("start-session did not return session_id");
+  return sessionId;
+};
+
+const loadPracticeSessionBundle = async (
+  sb: any,
+  practiceSessionId: string,
+  userId: string,
+  scope: ResolvedScope,
+): Promise<JsonRecord | null> => {
+  const { data: practiceSessionData } = await sb
+    .from("ielts_practice_sessions")
+    .select("id,user_id,language_id,product_id,blueprint_id,delivery_build_id,delivery_experience_id,session_id,plan_item_id,status,latest_outcome_id,latest_auto_evaluation_id,latest_ai_evaluation_id,review_metadata,metadata,started_at,completed_at,created_at,updated_at")
+    .eq("id", practiceSessionId)
+    .maybeSingle();
+  if (!practiceSessionData) return null;
+
+  const practiceSession = practiceSessionData as JsonRecord;
+  if (String(practiceSession.user_id ?? "") !== userId || String(practiceSession.language_id ?? "") !== scope.languageId) return null;
+
+  const [buildRes, blueprintRes, sessionRes, outcomeRes, evaluationsRes, sectionsRes] = await Promise.all([
+    sb
+      .from("ielts_practice_delivery_builds")
+      .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+      .eq("id", String(practiceSession.delivery_build_id ?? ""))
+      .maybeSingle(),
+    sb
+      .from("ielts_practice_blueprints")
+      .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+      .eq("id", String(practiceSession.blueprint_id ?? ""))
+      .maybeSingle(),
+    sb
+      .from("sessions")
+      .select("id,experience_id,status,started_at,completed_at,metadata")
+      .eq("id", String(practiceSession.session_id ?? ""))
+      .maybeSingle(),
+    sb
+      .from("exam_outcomes")
+      .select("id,computed_at,overall_band,section_scores,result")
+      .eq("session_id", String(practiceSession.session_id ?? ""))
+      .order("computed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    sb
+      .from("evaluations")
+      .select("id,method,status,result,evaluated_at")
+      .eq("session_id", String(practiceSession.session_id ?? ""))
+      .order("evaluated_at", { ascending: false }),
+    sb
+      .from("sections")
+      .select("id,name,display_order,metadata")
+      .eq("experience_id", String(practiceSession.delivery_experience_id ?? ""))
+      .order("display_order", { ascending: true }),
+  ]);
+
+  const evaluationRows = Array.isArray(evaluationsRes.data) ? evaluationsRes.data : [];
+  const autoEvaluation = evaluationRows.find((row: any) => String((row as any).method ?? "") === "auto") ?? null;
+  const aiEvaluation = evaluationRows.find((row: any) => String((row as any).method ?? "") === "ai") ?? null;
+
+  return {
+    practice_session: practiceSession,
+    blueprint: blueprintRes.data ?? null,
+    delivery_build: buildRes.data ?? null,
+    session: sessionRes.data ?? null,
+    sections: sectionsRes.data ?? [],
+    first_section_id: Array.isArray(sectionsRes.data) && sectionsRes.data.length > 0 ? String((sectionsRes.data[0] as any).id ?? "") : null,
+    latest_outcome: outcomeRes.data ?? null,
+    evaluations: {
+      auto: autoEvaluation,
+      ai: aiEvaluation,
+      items: evaluationRows,
+    },
+  };
+};
+
+const enrichPlanRows = async (
+  sb: any,
+  rows: Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+): Promise<JsonRecord[]> => {
   if (rows.length === 0) return [];
-  const exerciseIds = Array.from(new Set(rows.map((row) => row.exercise_id)));
-  const { data: exercisesData } = await sb
-    .from("ielts_practice_exercises")
-    .select("id,title,section_type,question_type,skill_tags,difficulty_band_min,difficulty_band_max,estimated_minutes,payload_json,status")
-    .in("id", exerciseIds);
+  const exerciseIds = Array.from(new Set(rows.map((row) => String(row.exercise_id ?? "")).filter(Boolean)));
+  const buildIds = Array.from(new Set(rows.map((row) => String(row.delivery_build_id ?? "")).filter(Boolean)));
+  const blueprintIds = Array.from(new Set(rows.map((row) => String(row.blueprint_id ?? "")).filter(Boolean)));
+  const practiceSessionIds = Array.from(new Set(rows.map((row) => String(row.practice_session_id ?? "")).filter(Boolean)));
+
+  const [exercisesRes, buildsRes, blueprintsRes, practiceSessionsRes] = await Promise.all([
+    exerciseIds.length > 0
+      ? sb
+        .from("ielts_practice_exercises")
+        .select("id,title,section_type,question_type,skill_tags,difficulty_band_min,difficulty_band_max,estimated_minutes,payload_json,status")
+        .in("id", exerciseIds)
+      : Promise.resolve({ data: [] }),
+    buildIds.length > 0
+      ? sb
+        .from("ielts_practice_delivery_builds")
+        .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+        .in("id", buildIds)
+      : Promise.resolve({ data: [] }),
+    blueprintIds.length > 0
+      ? sb
+        .from("ielts_practice_blueprints")
+        .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+        .in("id", blueprintIds)
+      : Promise.resolve({ data: [] }),
+    practiceSessionIds.length > 0
+      ? sb
+        .from("ielts_practice_sessions")
+        .select("id,session_id,status,started_at,completed_at,metadata,review_metadata")
+        .in("id", practiceSessionIds)
+      : Promise.resolve({ data: [] }),
+  ]);
 
   const exerciseMap = new Map<string, JsonRecord>();
-  for (const row of Array.isArray(exercisesData) ? exercisesData : []) exerciseMap.set(String((row as any).id), row as JsonRecord);
+  for (const row of Array.isArray(exercisesRes.data) ? exercisesRes.data : []) exerciseMap.set(String((row as any).id), row as JsonRecord);
+  const buildMap = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(buildsRes.data) ? buildsRes.data : []) buildMap.set(String((row as any).id), row as JsonRecord);
+  const blueprintMap = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(blueprintsRes.data) ? blueprintsRes.data : []) blueprintMap.set(String((row as any).id), row as JsonRecord);
+  const practiceSessionMap = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(practiceSessionsRes.data) ? practiceSessionsRes.data : []) practiceSessionMap.set(String((row as any).id), row as JsonRecord);
 
   const { data: plansData } = await sb
     .from("ielts_practice_plan_items")
-    .select("id,user_id,language_id,product_id,plan_date,section_type,exercise_id,status,priority,due_at,rationale,rationale_json,metadata,attempt_id,completed_at,created_at,updated_at")
+    .select("id,user_id,language_id,product_id,plan_date,section_type,exercise_id,blueprint_id,delivery_build_id,practice_session_id,status,priority,due_at,rationale,rationale_json,metadata,attempt_id,completed_at,created_at,updated_at")
     .in("id", rows.map((row) => row.id))
     .order("priority", { ascending: false })
     .order("created_at", { ascending: true });
 
   return (Array.isArray(plansData) ? plansData : []).map((row: any) => ({
     ...row,
-    exercise: exerciseMap.get(String(row.exercise_id)) ?? null,
+    exercise: row.exercise_id ? exerciseMap.get(String(row.exercise_id)) ?? null : null,
+    blueprint: row.blueprint_id ? blueprintMap.get(String(row.blueprint_id)) ?? null : null,
+    delivery_build: row.delivery_build_id ? buildMap.get(String(row.delivery_build_id)) ?? null : null,
+    practice_session: row.practice_session_id ? practiceSessionMap.get(String(row.practice_session_id)) ?? null : null,
   }));
 };
 
@@ -1316,6 +1560,130 @@ serve(async (req) => {
       if (!diagnostics) return json(422, { error: "Diagnostics data is unavailable" });
 
       const rules = await getActiveRules(sb, scope);
+      const publishedBlueprints = await loadPublishedBlueprintCandidates(sb, scope);
+
+      const coverageRule = rules.get("coverage_balance");
+      const targetMixRaw = isObject(coverageRule?.config?.target_mix)
+        ? (coverageRule?.config?.target_mix as JsonRecord)
+        : { reading: 0.34, listening: 0.33, writing: 0.33 };
+      const mix = {
+        reading: Math.max(0, toNumber(targetMixRaw.reading) ?? 0.34),
+        listening: Math.max(0, toNumber(targetMixRaw.listening) ?? 0.33),
+        writing: Math.max(0, toNumber(targetMixRaw.writing) ?? 0.33),
+      };
+      const mixTotal = mix.reading + mix.listening + mix.writing;
+      const normalizedMix = mixTotal > 0
+        ? { reading: mix.reading / mixTotal, listening: mix.listening / mixTotal, writing: mix.writing / mixTotal }
+        : { reading: 0.34, listening: 0.33, writing: 0.33 };
+      const quotas = createSectionQuota(dailyCount, normalizedMix);
+
+      if (publishedBlueprints.length > 0) {
+        const { data: recentPracticeSessionsData } = await sb
+          .from("ielts_practice_sessions")
+          .select("delivery_build_id,created_at")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .order("created_at", { ascending: false })
+          .limit(300);
+
+        const recentSessionMap = new Map<string, { attempts: number; latestAt: string | null }>();
+        for (const row of Array.isArray(recentPracticeSessionsData) ? recentPracticeSessionsData : []) {
+          const buildId = String((row as any).delivery_build_id ?? "");
+          if (!buildId) continue;
+          const bucket = recentSessionMap.get(buildId) ?? { attempts: 0, latestAt: null };
+          bucket.attempts += 1;
+          if (!bucket.latestAt) bucket.latestAt = String((row as any).created_at ?? "");
+          recentSessionMap.set(buildId, bucket);
+        }
+
+        const rankedBlueprints = buildSessionPlanCandidates(
+          publishedBlueprints.map((row) => ({ blueprint: row as unknown as JsonRecord, build: row.latest_build as unknown as JsonRecord })),
+          diagnostics,
+          goals,
+          recentSessionMap,
+        );
+
+        const selectedBlueprints: SessionPlanCandidate[] = [];
+        const usedBuilds = new Set<string>();
+        for (const section of ["reading", "listening", "writing"] as const) {
+          const needed = quotas[section];
+          if (needed <= 0) continue;
+          for (const candidate of rankedBlueprints) {
+            const buildId = toText(candidate.build.id, 80);
+            if (candidate.sectionType !== section || usedBuilds.has(buildId)) continue;
+            selectedBlueprints.push(candidate);
+            usedBuilds.add(buildId);
+            if (selectedBlueprints.filter((item) => item.sectionType === section).length >= needed) break;
+          }
+        }
+
+        if (selectedBlueprints.length < dailyCount) {
+          for (const candidate of rankedBlueprints) {
+            const buildId = toText(candidate.build.id, 80);
+            if (usedBuilds.has(buildId)) continue;
+            selectedBlueprints.push(candidate);
+            usedBuilds.add(buildId);
+            if (selectedBlueprints.length >= dailyCount) break;
+          }
+        }
+
+        if (selectedBlueprints.length > 0) {
+          await sb
+            .from("ielts_practice_plan_items")
+            .delete()
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .eq("plan_date", planDate)
+            .in("status", ["planned", "in_progress", "expired"]);
+
+          const insertRows = selectedBlueprints.map((candidate, index) => ({
+            user_id: auth.userId,
+            language_id: scope.languageId,
+            product_id: scope.practiceProductId,
+            plan_date: planDate,
+            section_type: candidate.sectionType,
+            exercise_id: null,
+            blueprint_id: toText(candidate.blueprint.id, 80),
+            delivery_build_id: toText(candidate.build.id, 80),
+            status: "planned",
+            priority: roundTo(candidate.score, 6),
+            due_at: null,
+            rationale: candidate.rationale,
+            rationale_json: candidate.rationaleJson,
+            metadata: {
+              generation_rank: index + 1,
+              source: "practice_blueprint",
+              estimated_minutes: toNumber(candidate.blueprint.estimated_minutes) ?? 25,
+              question_types: Array.isArray((candidate.build.build_summary as any)?.question_types)
+                ? (candidate.build.build_summary as any).question_types
+                : Array.isArray(candidate.blueprint.target_question_types)
+                  ? candidate.blueprint.target_question_types
+                  : [],
+            },
+          }));
+
+          const { data: insertedRows, error: insertError } = await sb
+            .from("ielts_practice_plan_items")
+            .insert(insertRows)
+            .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id");
+          if (insertError) throw new Error("Failed to persist blueprint-backed plan items");
+
+          const planItems = await enrichPlanRows(
+            sb,
+            (Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+          );
+          return json(200, {
+            ok: true,
+            runtime: "session_blueprints",
+            plan_date: planDate,
+            generated_count: planItems.length,
+            quotas,
+            diagnostics_snapshot_id: diagnosticsSnapshot.id,
+            items: planItems,
+          });
+        }
+      }
+
       const { data: exercisesData, error: exercisesError } = await sb
         .from("ielts_practice_exercises")
         .select(
@@ -1354,21 +1722,6 @@ serve(async (req) => {
         recentAttemptMap.set(exerciseId, bucket);
       }
 
-      const coverageRule = rules.get("coverage_balance");
-      const targetMixRaw = isObject(coverageRule?.config?.target_mix)
-        ? (coverageRule?.config?.target_mix as JsonRecord)
-        : { reading: 0.34, listening: 0.33, writing: 0.33 };
-      const mix = {
-        reading: Math.max(0, toNumber(targetMixRaw.reading) ?? 0.34),
-        listening: Math.max(0, toNumber(targetMixRaw.listening) ?? 0.33),
-        writing: Math.max(0, toNumber(targetMixRaw.writing) ?? 0.33),
-      };
-      const mixTotal = mix.reading + mix.listening + mix.writing;
-      const normalizedMix = mixTotal > 0
-        ? { reading: mix.reading / mixTotal, listening: mix.listening / mixTotal, writing: mix.writing / mixTotal }
-        : { reading: 0.34, listening: 0.33, writing: 0.33 };
-
-      const quotas = createSectionQuota(dailyCount, normalizedMix);
       const ranked = scorePlanCandidates(buildPlanCandidates(exercises, diagnostics, goals, rules, recentAttemptMap));
 
       const selected: PlanCandidate[] = [];
@@ -1425,12 +1778,16 @@ serve(async (req) => {
       const { data: insertedRows, error: insertError } = await sb
         .from("ielts_practice_plan_items")
         .insert(insertRows)
-        .select("id,exercise_id");
+        .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id");
       if (insertError) throw new Error("Failed to persist plan items");
 
-      const planItems = await enrichPlanRows(sb, (Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id: string }>);
+      const planItems = await enrichPlanRows(
+        sb,
+        (Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+      );
       return json(200, {
         ok: true,
+        runtime: "legacy_exercises",
         plan_date: planDate,
         generated_count: planItems.length,
         quotas,
@@ -1443,7 +1800,7 @@ serve(async (req) => {
       const requestedDate = parsePlanDate(url.searchParams.get("date"));
       const { data: rows, error } = await sb
         .from("ielts_practice_plan_items")
-        .select("id,exercise_id")
+        .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id")
         .eq("user_id", auth.userId)
         .eq("language_id", scope.languageId)
         .eq("plan_date", requestedDate)
@@ -1451,7 +1808,10 @@ serve(async (req) => {
         .order("created_at", { ascending: true });
       if (error) throw new Error("Failed to load today plan");
 
-      const planItems = await enrichPlanRows(sb, (Array.isArray(rows) ? rows : []) as Array<{ id: string; exercise_id: string }>);
+      const planItems = await enrichPlanRows(
+        sb,
+        (Array.isArray(rows) ? rows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+      );
       return json(200, {
         scope: {
           user_id: auth.userId,
@@ -1462,6 +1822,185 @@ serve(async (req) => {
         plan_date: requestedDate,
         items: planItems,
       });
+    }
+
+    if (req.method === "POST" && route.startsWith("/plan-items/") && route.endsWith("/start")) {
+      const planItemId = toText(route.slice("/plan-items/".length, -"/start".length), 80);
+      if (!planItemId) return json(404, { error: "Plan item not found" });
+
+      const { data: planItemData } = await sb
+        .from("ielts_practice_plan_items")
+        .select("id,user_id,language_id,product_id,plan_date,section_type,exercise_id,blueprint_id,delivery_build_id,practice_session_id,status,priority,rationale,rationale_json,metadata")
+        .eq("id", planItemId)
+        .maybeSingle();
+      if (!planItemData) return json(404, { error: "Plan item not found" });
+
+      const planItem = planItemData as JsonRecord;
+      if (String(planItem.user_id ?? "") !== auth.userId || String(planItem.language_id ?? "") !== scope.languageId) {
+        return json(403, { error: "Forbidden" });
+      }
+
+      if (String(planItem.practice_session_id ?? "")) {
+        const existingBundle = await loadPracticeSessionBundle(sb, String(planItem.practice_session_id), auth.userId, scope);
+        if (existingBundle) {
+          return json(200, {
+            ok: true,
+            resumed: true,
+            ...existingBundle,
+          });
+        }
+      }
+
+      const blueprintId = toText(planItem.blueprint_id, 80);
+      let buildId = toText(planItem.delivery_build_id, 80);
+      if (!blueprintId && !buildId) {
+        return json(409, {
+          error: "This plan item is still on the legacy exercise runtime",
+          hint: "Regenerate the plan after publishing practice blueprints.",
+        });
+      }
+
+      if (!buildId && blueprintId) {
+        const { data: blueprintRow } = await sb
+          .from("ielts_practice_blueprints")
+          .select("id,latest_delivery_build_id")
+          .eq("id", blueprintId)
+          .maybeSingle();
+        buildId = toText((blueprintRow as any)?.latest_delivery_build_id, 80);
+      }
+      if (!buildId) return json(422, { error: "No published delivery build is attached to this plan item" });
+
+      const { data: buildData } = await sb
+        .from("ielts_practice_delivery_builds")
+        .select("id,blueprint_id,delivery_experience_id,status,build_summary,validation_summary,metadata")
+        .eq("id", buildId)
+        .maybeSingle();
+      if (!buildData) return json(404, { error: "Delivery build not found" });
+
+      const build = buildData as JsonRecord;
+      if (String(build.status ?? "") !== "published") {
+        return json(409, { error: "Delivery build is not published yet" });
+      }
+
+      const deliveryExperienceId = toText(build.delivery_experience_id, 80);
+      if (!deliveryExperienceId) return json(422, { error: "Delivery build has no experience id" });
+
+      const sessionId = await startRealPracticeSession(supabaseUrl, supabaseAnonKey, auth.token, deliveryExperienceId, {
+        practice_context: {
+          service: "ielts-practice",
+          plan_item_id: planItemId,
+          blueprint_id: blueprintId || toText(build.blueprint_id, 80),
+          delivery_build_id: buildId,
+        },
+      });
+
+      const nowIso = new Date().toISOString();
+      const { data: practiceSessionData, error: practiceSessionError } = await sb
+        .from("ielts_practice_sessions")
+        .insert({
+          user_id: auth.userId,
+          language_id: scope.languageId,
+          product_id: scope.practiceProductId,
+          blueprint_id: blueprintId || toText(build.blueprint_id, 80),
+          delivery_build_id: buildId,
+          delivery_experience_id: deliveryExperienceId,
+          session_id: sessionId,
+          plan_item_id: planItemId,
+          status: "started",
+          metadata: {
+            source: "ielts-practice.plan_item_start",
+            plan_date: planItem.plan_date,
+          },
+          started_at: nowIso,
+        })
+        .select("id")
+        .maybeSingle();
+      if (practiceSessionError || !practiceSessionData) throw new Error("Failed to create practice session wrapper");
+
+      await sb
+        .from("ielts_practice_plan_items")
+        .update({
+          status: "in_progress",
+          blueprint_id: blueprintId || toText(build.blueprint_id, 80),
+          delivery_build_id: buildId,
+          practice_session_id: String((practiceSessionData as any).id),
+        })
+        .eq("id", planItemId);
+
+      const bundle = await loadPracticeSessionBundle(sb, String((practiceSessionData as any).id), auth.userId, scope);
+      if (!bundle) throw new Error("Failed to load started practice session");
+
+      return json(200, {
+        ok: true,
+        resumed: false,
+        ...bundle,
+      });
+    }
+
+    if (req.method === "GET" && route.startsWith("/sessions/")) {
+      const sessionTail = route.replace("/sessions/", "");
+      const [practiceSessionId, subRoute] = sessionTail.split("/", 2);
+      const cleanPracticeSessionId = toText(practiceSessionId, 80);
+      if (!cleanPracticeSessionId) return json(404, { error: "Practice session not found" });
+
+      const bundle = await loadPracticeSessionBundle(sb, cleanPracticeSessionId, auth.userId, scope);
+      if (!bundle) return json(404, { error: "Practice session not found" });
+
+      const evaluations = isObject(bundle.evaluations) ? (bundle.evaluations as JsonRecord) : {};
+      const autoEval = isObject(evaluations.auto) ? (evaluations.auto as JsonRecord) : null;
+      const aiEval = isObject(evaluations.ai) ? (evaluations.ai as JsonRecord) : null;
+      const latestOutcome = isObject(bundle.latest_outcome) ? (bundle.latest_outcome as JsonRecord) : null;
+      const sessionRow = isObject(bundle.session) ? (bundle.session as JsonRecord) : null;
+      const sessionLifecycle = toText(sessionRow?.status, 32).toLowerCase();
+      const nextStatus = sessionLifecycle === "completed"
+        ? "completed"
+        : sessionLifecycle === "abandoned"
+          ? "abandoned"
+          : sessionLifecycle === "expired"
+            ? "expired"
+            : sessionLifecycle === "active" || sessionLifecycle === "paused"
+              ? "in_progress"
+              : "started";
+
+      await sb
+        .from("ielts_practice_sessions")
+        .update({
+          status: nextStatus || toText((bundle.practice_session as any)?.status, 32).toLowerCase() || "started",
+          latest_outcome_id: latestOutcome ? toNullableText(latestOutcome.id, 80) : null,
+          latest_auto_evaluation_id: autoEval ? toNullableText(autoEval.id, 80) : null,
+          latest_ai_evaluation_id: aiEval ? toNullableText(aiEval.id, 80) : null,
+          completed_at: sessionRow?.completed_at ?? null,
+        })
+        .eq("id", cleanPracticeSessionId);
+
+      if (!subRoute) {
+        return json(200, { ok: true, ...bundle });
+      }
+
+      if (subRoute === "results") {
+        return json(200, {
+          ok: true,
+          ...bundle,
+          results: {
+            outcome: latestOutcome,
+            auto_evaluation: autoEval,
+            ai_evaluation: aiEval,
+          },
+        });
+      }
+
+      if (subRoute === "review") {
+        return json(200, {
+          ok: true,
+          ...bundle,
+          review: {
+            first_section_id: bundle.first_section_id ?? null,
+            section_count: Array.isArray(bundle.sections) ? bundle.sections.length : 0,
+          },
+        });
+      }
+
+      return json(404, { error: "Practice session route not found" });
     }
 
     if (req.method === "POST" && route === "/attempts/start") {

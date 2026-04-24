@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from './lib/constants';
 import { PlatformRedirect } from './components/platform/PlatformRedirect';
@@ -9,6 +10,27 @@ import { PlanPage } from './pages/PlanPage';
 import { ExercisePage } from './pages/ExercisePage';
 import { ResultsPage } from './pages/ResultsPage';
 import { AdminPage } from './pages/AdminPage';
+
+const SharedExamPlayer = lazy(async () => {
+  const module = await import('../../ielts-simulator/src/pages/ExamPlayer');
+  return { default: module.ExamPlayer };
+});
+
+const SharedSessionResultsPage = lazy(async () => {
+  const module = await import('../../ielts-simulator/src/pages/SessionResultsPage');
+  return { default: module.SessionResultsPage };
+});
+
+const SharedReviewSessionPage = lazy(async () => {
+  const module = await import('../../ielts-simulator/src/pages/ReviewSessionPage');
+  return { default: module.ReviewSessionPage };
+});
+
+const sessionRuntimeFallback = (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="glass dashboard-alert">Loading practice session...</div>
+  </div>
+);
 
 function App() {
   return (
@@ -26,6 +48,30 @@ function App() {
         <Route element={<RequireProductEntitlement />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route
+            path="/session/:sessionId/results"
+            element={(
+              <Suspense fallback={sessionRuntimeFallback}>
+                <SharedSessionResultsPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/session/:sessionId/review"
+            element={(
+              <Suspense fallback={sessionRuntimeFallback}>
+                <SharedReviewSessionPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/session/:sessionId/:sectionId"
+            element={(
+              <Suspense fallback={sessionRuntimeFallback}>
+                <SharedExamPlayer />
+              </Suspense>
+            )}
+          />
           <Route path="/exercise/:id" element={<ExercisePage />} />
           <Route path="/results/:attempt_id" element={<ResultsPage />} />
         </Route>

@@ -121,6 +121,7 @@ const extractPlaceholders = (text: string): string[] => {
   let m: RegExpExecArray | null = null;
   while ((m = re.exec(text))) {
     const id = m[1];
+    if (!id) continue;
     if (seen.has(id)) continue;
     seen.add(id);
     ids.push(id);
@@ -134,9 +135,11 @@ const splitWithPlaceholders = (text: string): Array<{ kind: 'text'; value: strin
   let last = 0;
   let m: RegExpExecArray | null = null;
   while ((m = re.exec(text))) {
+    const blankId = m[1];
+    if (!blankId) continue;
     const start = m.index;
     if (start > last) parts.push({ kind: 'text', value: text.slice(last, start) });
-    parts.push({ kind: 'blank', id: m[1] });
+    parts.push({ kind: 'blank', id: blankId });
     last = start + m[0].length;
   }
   if (last < text.length) parts.push({ kind: 'text', value: text.slice(last) });

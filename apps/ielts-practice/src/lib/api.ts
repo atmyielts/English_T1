@@ -44,11 +44,52 @@ export type PracticeExercise = {
   updated_at: string;
 };
 
+export type PracticeBlueprint = {
+  id: string;
+  title: string;
+  section_type: "reading" | "listening" | "writing";
+  source_product_id: string | null;
+  source_experience_id: string | null;
+  source_section_id: string | null;
+  target_question_types: string[];
+  estimated_minutes: number;
+  status: string;
+  metadata: Json;
+  latest_delivery_build_id: string | null;
+};
+
+export type PracticeDeliveryBuild = {
+  id: string;
+  blueprint_id: string;
+  delivery_experience_id: string | null;
+  status: string;
+  build_version: number;
+  build_summary: Json;
+  validation_summary: Json;
+  metadata: Json;
+  created_at?: string;
+  updated_at?: string;
+  blueprint?: PracticeBlueprint | null;
+};
+
+export type PracticeSessionSummary = {
+  id: string;
+  session_id: string;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+  metadata: Json;
+  review_metadata: Json;
+};
+
 export type PracticePlanItem = {
   id: string;
   plan_date: string;
   section_type: "reading" | "listening" | "writing";
-  exercise_id: string;
+  exercise_id: string | null;
+  blueprint_id?: string | null;
+  delivery_build_id?: string | null;
+  practice_session_id?: string | null;
   status: string;
   priority: number;
   rationale: string | null;
@@ -56,6 +97,9 @@ export type PracticePlanItem = {
   metadata: Json;
   attempt_id: string | null;
   exercise: PracticeExercise | null;
+  blueprint?: PracticeBlueprint | null;
+  delivery_build?: PracticeDeliveryBuild | null;
+  practice_session?: PracticeSessionSummary | null;
 };
 
 export type PracticeAttempt = {
@@ -90,6 +134,21 @@ export type PracticeRule = {
   weight: number;
   config: Json;
   updated_at: string;
+};
+
+export type PracticeSourceCatalogItem = {
+  experience_id: string;
+  experience_name: string;
+  section_id: string;
+  section_name: string;
+  section_type: "reading" | "listening" | "writing";
+  part_count: number;
+  unit_count: number;
+  question_count: number;
+  question_types: string[];
+  has_audio: boolean;
+  has_passage: boolean;
+  has_image: boolean;
 };
 
 const getEnv = (key: "VITE_SUPABASE_URL" | "VITE_SUPABASE_ANON_KEY"): string => {
@@ -221,6 +280,86 @@ export const practiceTodayPlan = (
   return call(accessToken, `/ielts-practice/plans/today${qs.toString() ? `?${qs.toString()}` : ""}`);
 };
 
+export const practicePlanItemStart = (
+  accessToken: string,
+  planItemId: string,
+): Promise<{
+  ok: boolean;
+  resumed: boolean;
+  practice_session: {
+    id: string;
+    session_id: string;
+    status: string;
+    metadata: Json;
+  };
+  blueprint: PracticeBlueprint | null;
+  delivery_build: PracticeDeliveryBuild | null;
+  session: {
+    id: string;
+    experience_id: string;
+    status: string;
+    metadata: Json | null;
+  } | null;
+  sections: Array<{ id: string; name: string; display_order: number; metadata: Json | null }>;
+  first_section_id: string | null;
+}> => call(accessToken, `/ielts-practice/plan-items/${encodeURIComponent(planItemId)}/start`, { method: "POST", body: {} });
+
+export const practiceSessionGet = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<{
+  ok: boolean;
+  practice_session: {
+    id: string;
+    session_id: string;
+    status: string;
+    metadata: Json;
+    review_metadata: Json;
+  };
+  blueprint: PracticeBlueprint | null;
+  delivery_build: PracticeDeliveryBuild | null;
+  session: {
+    id: string;
+    experience_id: string;
+    status: string;
+    metadata: Json | null;
+    started_at: string | null;
+    completed_at: string | null;
+  } | null;
+  sections: Array<{ id: string; name: string; display_order: number; metadata: Json | null }>;
+  first_section_id: string | null;
+  latest_outcome?: Json | null;
+  evaluations?: Json | null;
+}> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}`);
+
+export const practiceSessionResultsGet = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<{
+  ok: boolean;
+  practice_session: Json;
+  blueprint: PracticeBlueprint | null;
+  delivery_build: PracticeDeliveryBuild | null;
+  session: Json | null;
+  sections: Json[];
+  first_section_id: string | null;
+  results: {
+    outcome: Json | null;
+    auto_evaluation: Json | null;
+    ai_evaluation: Json | null;
+  };
+}> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/results`);
+
+export const practiceSessionReviewGet = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<{
+  ok: boolean;
+  practice_session: Json;
+  first_section_id: string | null;
+  review: { first_section_id: string | null; section_count: number };
+}> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/review`);
+
 export const practiceAttemptStart = (
   accessToken: string,
   body: { exercise_id?: string; plan_item_id?: string },
@@ -249,6 +388,61 @@ export const adminPracticeExercisesList = (
   if (opts?.q) qs.set("q", opts.q);
   if (typeof opts?.limit === "number") qs.set("limit", String(Math.floor(opts.limit)));
   return call(accessToken, `/admin-ielts-practice/exercises${qs.toString() ? `?${qs.toString()}` : ""}`);
+};
+
+export const adminPracticeSourcesList = (
+  accessToken: string,
+  opts?: { experience_id?: string; section_type?: string; limit?: number },
+): Promise<{ sources: PracticeSourceCatalogItem[] }> => {
+  const qs = new URLSearchParams();
+  if (opts?.experience_id) qs.set("experience_id", opts.experience_id);
+  if (opts?.section_type) qs.set("section_type", opts.section_type);
+  if (typeof opts?.limit === "number") qs.set("limit", String(Math.floor(opts.limit)));
+  return call(accessToken, `/admin-ielts-practice/sources${qs.toString() ? `?${qs.toString()}` : ""}`);
+};
+
+export const adminPracticeBlueprintsList = (
+  accessToken: string,
+  opts?: { status?: string },
+): Promise<{ blueprints: Array<PracticeBlueprint & { latest_build: PracticeDeliveryBuild | null }> }> => {
+  const qs = new URLSearchParams();
+  if (opts?.status) qs.set("status", opts.status);
+  return call(accessToken, `/admin-ielts-practice/blueprints${qs.toString() ? `?${qs.toString()}` : ""}`);
+};
+
+export const adminPracticeBlueprintCreate = (
+  accessToken: string,
+  body: {
+    title?: string;
+    source_section_id: string;
+    target_question_types?: string[];
+    estimated_minutes?: number;
+    status?: string;
+    metadata?: Json;
+  },
+): Promise<{ blueprint: PracticeBlueprint }> =>
+  call(accessToken, "/admin-ielts-practice/blueprints", { method: "POST", body });
+
+export const adminPracticeBlueprintPatch = (
+  accessToken: string,
+  id: string,
+  patch: Partial<PracticeBlueprint>,
+): Promise<{ blueprint: PracticeBlueprint }> =>
+  call(accessToken, "/admin-ielts-practice/blueprints", { method: "PATCH", body: { id, patch } });
+
+export const adminPracticeBlueprintBuild = (
+  accessToken: string,
+  body: { blueprint_id: string; publish?: boolean },
+): Promise<{ ok: boolean; build: PracticeDeliveryBuild }> =>
+  call(accessToken, "/admin-ielts-practice/blueprints/build", { method: "POST", body });
+
+export const adminPracticeBuildsList = (
+  accessToken: string,
+  opts?: { status?: string },
+): Promise<{ builds: PracticeDeliveryBuild[] }> => {
+  const qs = new URLSearchParams();
+  if (opts?.status) qs.set("status", opts.status);
+  return call(accessToken, `/admin-ielts-practice/builds${qs.toString() ? `?${qs.toString()}` : ""}`);
 };
 
 export const adminPracticeExerciseCreate = (

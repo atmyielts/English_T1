@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
 import { IELTS_PRODUCT_ID } from '../lib/constants';
@@ -21,6 +21,7 @@ const extractPlaceholders = (text: string): string[] => {
   let m: RegExpExecArray | null = null;
   while ((m = re.exec(text))) {
     const id = m[1];
+    if (!id) continue;
     if (seen.has(id)) continue;
     seen.add(id);
     ids.push(id);
@@ -200,6 +201,7 @@ const correctSummary = (u: UnitRow): string | null => {
 
 export const ReviewSessionPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { accessToken } = useAccess();
 
@@ -209,6 +211,9 @@ export const ReviewSessionPage: React.FC = () => {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [activePartId, setActivePartId] = useState<string | null>(null);
   const [mobileReadingPane, setMobileReadingPane] = useState<'questions' | 'passage'>('questions');
+  const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const reviewProductId = search.get('product_id')?.trim() || IELTS_PRODUCT_ID;
+  const backPath = search.get('back')?.trim() || '/review';
 
   useEffect(() => {
     setMobileReadingPane('questions');
@@ -228,7 +233,7 @@ export const ReviewSessionPage: React.FC = () => {
       if (!accessToken) return;
 
       try {
-        const res = await getReviewSession(accessToken, sessionId, undefined, IELTS_PRODUCT_ID);
+        const res = await getReviewSession(accessToken, sessionId, undefined, reviewProductId);
         setData(res);
         setActiveSectionId((prev) => prev ?? res.sections?.[0]?.id ?? null);
         setActivePartId(null);
@@ -241,7 +246,7 @@ export const ReviewSessionPage: React.FC = () => {
     };
 
     run();
-  }, [accessToken, navigate, sessionId]);
+  }, [accessToken, navigate, reviewProductId, sessionId]);
 
   const section = useMemo(() => data?.sections.find((s) => s.id === activeSectionId) ?? null, [activeSectionId, data?.sections]);
 
@@ -309,6 +314,12 @@ export const ReviewSessionPage: React.FC = () => {
     return r.start === r.end ? String(r.start) : `${r.start}-${r.end}`;
   };
 
+  const questionNumberForUnit = (unitId: string): number | QuestionRange | undefined => {
+    const range = questionRanges[unitId];
+    if (!range) return undefined;
+    return range.start === range.end ? range.start : range;
+  };
+
   if (loading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">Loading review...</div>;
   }
@@ -321,7 +332,7 @@ export const ReviewSessionPage: React.FC = () => {
           <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">{error}</div>
           <div className="mt-6 flex gap-2">
             <button
-              onClick={() => navigate('/review', { replace: true })}
+              onClick={() => navigate(backPath, { replace: true })}
               className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 font-medium"
             >
               Back
@@ -341,7 +352,7 @@ export const ReviewSessionPage: React.FC = () => {
       <div className="h-16 bg-gray-900 text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10 shrink-0">
         <div className="flex items-center space-x-4 min-w-0">
           <button
-            onClick={() => navigate('/review')}
+            onClick={() => navigate(backPath)}
             className="text-sm font-semibold px-3 py-2 rounded bg-white/10 hover:bg-white/15 transition-colors"
             type="button"
           >
@@ -468,13 +479,7 @@ export const ReviewSessionPage: React.FC = () => {
                       unit={toContentUnit(u)}
                       value={u.answer ?? undefined}
                       readOnly
-                      questionNumber={
-                        questionRanges[u.id]
-                          ? questionRanges[u.id].start === questionRanges[u.id].end
-                            ? questionRanges[u.id].start
-                            : questionRanges[u.id]
-                          : undefined
-                      }
+                      questionNumber={questionNumberForUnit(u.id)}
                     />
                   </div>
 
@@ -522,13 +527,7 @@ export const ReviewSessionPage: React.FC = () => {
                     unit={toContentUnit(u)}
                     value={u.answer ?? undefined}
                     readOnly
-                    questionNumber={
-                      questionRanges[u.id]
-                        ? questionRanges[u.id].start === questionRanges[u.id].end
-                          ? questionRanges[u.id].start
-                          : questionRanges[u.id]
-                        : undefined
-                    }
+                    questionNumber={questionNumberForUnit(u.id)}
                   />
                 </div>
 

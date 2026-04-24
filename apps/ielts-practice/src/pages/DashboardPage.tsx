@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   learningProfileV2,
   practiceDiagnosticsGet,
   practiceGeneratePlan,
   practiceGoalsGet,
+  practicePlanItemStart,
   practiceTodayPlan,
   type PracticePlanItem,
 } from '../lib/api';
@@ -134,8 +135,8 @@ const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
-  if (text.includes('no published exercises')) {
-    return 'Practice content is being prepared. No exercises are available yet.';
+  if (text.includes('no published exercises') || text.includes('no published blueprints')) {
+    return 'Practice content is being prepared. No session blueprints are available yet.';
   }
   if (text.includes('network') || text.includes('failed to fetch')) {
     return 'Connection issue. Please refresh and try again.';
@@ -144,6 +145,7 @@ const humanizeError = (message: string): string => {
 };
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
   const { accessToken, me, session } = useAccess({ includeEffective: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +155,7 @@ export const DashboardPage = () => {
   const [sharedSignals, setSharedSignals] = useState<number | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
 
   useEffect(() => {
@@ -282,6 +285,48 @@ export const DashboardPage = () => {
     [diagnostics],
   );
 
+  const planItemTitle = (item: PracticePlanItem): string =>
+    item.blueprint?.title
+    ?? item.exercise?.title
+    ?? (
+      item.delivery_build?.build_summary && typeof item.delivery_build.build_summary === 'object'
+        ? String((item.delivery_build.build_summary as Record<string, unknown>).source_section_name ?? 'Practice session')
+        : 'Practice session'
+    );
+
+  const launchPlanItem = async (item: PracticePlanItem): Promise<void> => {
+    if (!accessToken) return;
+    if (!item.blueprint_id && !item.delivery_build_id) return;
+
+    setLaunchingId(item.id);
+    setError(null);
+    try {
+      const started = await practicePlanItemStart(accessToken, item.id);
+      const sessionId = started.session?.id ?? started.practice_session?.session_id ?? null;
+      const firstSectionId = started.first_section_id ?? started.sections?.[0]?.id ?? null;
+      if (!sessionId) throw new Error('Practice session started without a session id');
+
+      const runtimeQuery = new URLSearchParams({
+        results_back: '/dashboard',
+        review_back: '/dashboard',
+        review_product_id: IELTS_PRACTICE_PRODUCT_ID,
+        playbook_source: 'practice',
+      }).toString();
+
+      if (started.practice_session?.status === 'completed' || started.session?.status === 'completed') {
+        navigate(`/session/${encodeURIComponent(sessionId)}/results?${runtimeQuery}`);
+        return;
+      }
+
+      if (!firstSectionId) throw new Error('Practice session started without a section id');
+      navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
+    } catch (err) {
+      setError(humanizeError(err instanceof Error ? err.message : 'Failed to launch plan item'));
+    } finally {
+      setLaunchingId((current) => (current === item.id ? null : current));
+    }
+  };
+
   const planSummary = useMemo(() => {
     const total = plan.length;
     const completed = plan.filter((item) => item.status === 'completed').length;
@@ -337,7 +382,7 @@ export const DashboardPage = () => {
               <p className="eyebrow">Schood IELTS Practice</p>
               <h1>Welcome back, {displayName}</h1>
               <p className="muted">
-                Train Reading, Listening, and Writing with simulator-derived diagnostics and targeted daily tasks.
+                Train Reading, Listening, and Writing with simulator-derived diagnostics and targeted daily sessions.
               </p>
             </div>
             <div className="top-nav-actions">
@@ -360,7 +405,7 @@ export const DashboardPage = () => {
             <article className="glass kpi-card">
               <h3>Current Average</h3>
               <div className="kpi-value">{averageBand != null ? averageBand.toFixed(1) : '-'}</div>
-              <p className="muted">Derived from your recent simulator outcomes.</p>
+              <p className="muted">Derived from recent simulator and practice outcomes.</p>
             </article>
             <article className="glass kpi-card">
               <h3>Shared Profile Signals</h3>
@@ -417,7 +462,7 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card task-card">
               <div className="task-card-head">
-                <h3>Today's Adaptive Exercises</h3>
+                <h3>Today's Adaptive Sessions</h3>
                 <div className="task-summary">
                   <span>Total {planSummary.total}</span>
                   <span>Done {planSummary.completed}</span>
@@ -431,7 +476,7 @@ export const DashboardPage = () => {
 
               {plan.length === 0 ? (
                 <div className="empty-plan">
-                  <p>No exercises are available in today's plan yet.</p>
+                  <p>No practice sessions are available in today's plan yet.</p>
                   <div className="inline-actions">
                     <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
                       Generate Now
@@ -445,14 +490,25 @@ export const DashboardPage = () => {
                     <li key={item.id} className="task-item">
                       <div>
                         <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                        <h4>{item.exercise?.title ?? 'Practice Exercise'}</h4>
+                        <h4>{planItemTitle(item)}</h4>
                         <p>{item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
                       </div>
                       <div className="inline-actions">
                         <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>
-                        <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
-                          {item.status === 'completed' ? 'Review' : 'Start'}
-                        </Link>
+                        {item.blueprint_id || item.delivery_build_id ? (
+                          <button
+                            type="button"
+                            className="btn ghost"
+                            onClick={() => void launchPlanItem(item)}
+                            disabled={launchingId === item.id}
+                          >
+                            {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Start'}
+                          </button>
+                        ) : (
+                          <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
+                            {item.status === 'completed' ? 'Review' : 'Start'}
+                          </Link>
+                        )}
                       </div>
                     </li>
                   ))}

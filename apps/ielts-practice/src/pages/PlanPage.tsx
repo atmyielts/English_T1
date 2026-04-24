@@ -1,11 +1,29 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { practiceGeneratePlan, practiceGoalsGet, practiceGoalsPatch, practiceTodayPlan, type PracticePlanItem } from '../lib/api';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  practiceGeneratePlan,
+  practiceGoalsGet,
+  practiceGoalsPatch,
+  practicePlanItemStart,
+  practiceTodayPlan,
+  type PracticePlanItem,
+} from '../lib/api';
+import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { useAccess } from '../lib/useAccess';
 
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
+const planItemTitle = (item: PracticePlanItem): string =>
+  item.blueprint?.title
+  ?? item.exercise?.title
+  ?? (
+    item.delivery_build?.build_summary && typeof item.delivery_build.build_summary === 'object'
+      ? String((item.delivery_build.build_summary as Record<string, unknown>).source_section_name ?? 'Practice session')
+      : 'Practice session'
+  );
+
 export const PlanPage = () => {
+  const navigate = useNavigate();
   const { accessToken } = useAccess();
   const [targetBand, setTargetBand] = useState('6.5');
   const [readingBand, setReadingBand] = useState('6.5');
@@ -14,6 +32,7 @@ export const PlanPage = () => {
   const [planItems, setPlanItems] = useState<PracticePlanItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = async (): Promise<void> => {
@@ -21,12 +40,15 @@ export const PlanPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [goalsRes, planRes] = await Promise.all([practiceGoalsGet(accessToken), practiceTodayPlan(accessToken)]);
+      const [goalsRes, planRes] = await Promise.all([
+        practiceGoalsGet(accessToken),
+        practiceTodayPlan(accessToken),
+      ]);
       const goals = goalsRes.goals;
       setTargetBand(String(goals.target_overall_band ?? 6.5));
-      setReadingBand(String((goals.target_section_bands as any)?.reading ?? goals.target_overall_band ?? 6.5));
-      setListeningBand(String((goals.target_section_bands as any)?.listening ?? goals.target_overall_band ?? 6.5));
-      setWritingBand(String((goals.target_section_bands as any)?.writing ?? goals.target_overall_band ?? 6.5));
+      setReadingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.reading ?? goals.target_overall_band ?? 6.5));
+      setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
+      setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
       setPlanItems(planRes.items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load plan page');
@@ -37,7 +59,6 @@ export const PlanPage = () => {
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
   const saveGoals = async (): Promise<void> => {
@@ -75,20 +96,67 @@ export const PlanPage = () => {
     }
   };
 
+  const launchPlanItem = async (item: PracticePlanItem): Promise<void> => {
+    if (!accessToken) return;
+    if (!item.blueprint_id && !item.delivery_build_id) return;
+
+    setLaunchingId(item.id);
+    setError(null);
+    try {
+      const started = await practicePlanItemStart(accessToken, item.id);
+      const sessionId = started.session?.id ?? started.practice_session?.session_id ?? null;
+      const firstSectionId = started.first_section_id ?? started.sections?.[0]?.id ?? null;
+      if (!sessionId) throw new Error('Practice session started without a session id');
+
+      const runtimeQuery = new URLSearchParams({
+        results_back: '/plan',
+        review_back: '/plan',
+        review_product_id: IELTS_PRACTICE_PRODUCT_ID,
+        playbook_source: 'practice',
+      }).toString();
+
+      if (started.practice_session?.status === 'completed' || started.session?.status === 'completed') {
+        navigate(`/session/${encodeURIComponent(sessionId)}/results?${runtimeQuery}`);
+        return;
+      }
+
+      if (!firstSectionId) throw new Error('Practice session started without a section id');
+      navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to launch plan item');
+    } finally {
+      setLaunchingId((current) => (current === item.id ? null : current));
+    }
+  };
+
+  const planSummary = useMemo(() => {
+    const total = planItems.length;
+    const completed = planItems.filter((item) => item.status === 'completed').length;
+    const inProgress = planItems.filter((item) => item.status === 'in_progress').length;
+    return {
+      total,
+      completed,
+      inProgress,
+      pending: Math.max(0, total - completed - inProgress),
+    };
+  }, [planItems]);
+
   return (
     <div className="practice-root">
       <header className="top-nav glass compact">
         <Link className="brand" to="/dashboard">
           <img src="/schood-logo.png" alt="Schood" />
           <div>
-            <strong>Daily Plan Builder</strong>
-            <span>Configure goals and generate today’s plan</span>
+            <strong>Daily Practice Plan</strong>
+            <span>Configure goals and generate today's focused IELTS sessions</span>
           </div>
         </Link>
         <div className="top-nav-actions">
           <Link to="/dashboard" className="btn ghost">Back</Link>
           <a href={`${PLAYBOOK_URL}/study-plans?source=practice`} className="btn ghost">Playbook</a>
-          <button className="btn solid" type="button" onClick={() => void regenerate()} disabled={saving}>Regenerate</button>
+          <button className="btn solid" type="button" onClick={() => void regenerate()} disabled={saving}>
+            {saving ? 'Working...' : 'Regenerate'}
+          </button>
         </div>
       </header>
 
@@ -99,23 +167,51 @@ export const PlanPage = () => {
           <label>Reading target<input value={readingBand} onChange={(event) => setReadingBand(event.target.value)} /></label>
           <label>Listening target<input value={listeningBand} onChange={(event) => setListeningBand(event.target.value)} /></label>
           <label>Writing target<input value={writingBand} onChange={(event) => setWritingBand(event.target.value)} /></label>
-          <button className="btn ghost" type="button" onClick={() => void saveGoals()} disabled={saving}>Save goals</button>
+          <button className="btn ghost" type="button" onClick={() => void saveGoals()} disabled={saving}>
+            Save goals
+          </button>
         </section>
 
         <section className="glass stat-card wide">
-          <h3>Today’s generated plan</h3>
+          <div className="task-card-head">
+            <div>
+              <h3>Today's generated plan</h3>
+              <p className="muted">Session blueprints are picked from your current band gap and recent weaknesses.</p>
+            </div>
+            <div className="task-summary">
+              <span>Total {planSummary.total}</span>
+              <span>Done {planSummary.completed}</span>
+              <span>Active {planSummary.inProgress}</span>
+              <span>Pending {planSummary.pending}</span>
+            </div>
+          </div>
+
           {loading ? <p>Loading...</p> : null}
           {error ? <p className="error-text">{error}</p> : null}
           {!loading && planItems.length === 0 ? <p>No plan items generated for today yet.</p> : null}
+
           <ul className="task-list">
             {planItems.map((item) => (
               <li className="task-item" key={item.id}>
                 <div>
                   <span className={`chip ${item.section_type}`}>{item.section_type}</span>
-                  <h4>{item.exercise?.title ?? 'Exercise'}</h4>
-                  <p>{item.rationale ?? 'Adaptive selection'}</p>
+                  <h4>{planItemTitle(item)}</h4>
+                  <p>{item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
                 </div>
-                <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">Open</Link>
+                {item.blueprint_id || item.delivery_build_id ? (
+                  <button
+                    className="btn ghost"
+                    type="button"
+                    onClick={() => void launchPlanItem(item)}
+                    disabled={launchingId === item.id}
+                  >
+                    {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Open'}
+                  </button>
+                ) : (
+                  <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
+                    Open legacy
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -124,4 +220,3 @@ export const PlanPage = () => {
     </div>
   );
 };
-

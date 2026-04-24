@@ -6,12 +6,20 @@ import { useAccess } from '../lib/useAccess';
 
 const toHalfBand = (value: number): number => Math.round(value * 2) / 2;
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+const humanizeSectionType = (value: string): string => {
+  const first = value.charAt(0).toUpperCase();
+  return first ? `${first}${value.slice(1)}` : value;
+};
 
 export const SessionResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { accessToken } = useAccess();
+  const search = new URLSearchParams(location.search);
+  const backOverride = search.get('back')?.trim() || null;
+  const playbookSource = search.get('playbook_source')?.trim() || 'simulator';
+  const reviewUrl = search.get('review_url')?.trim() || null;
   const [data, setData] = useState<ScoreSessionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,7 +136,7 @@ export const SessionResultsPage: React.FC = () => {
   );
   const isCandidate = String((data?.session?.metadata as any)?.exam_mode ?? '') === 'token';
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
-  const backPath = isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard';
+  const backPath = backOverride ?? (isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard');
 
   useEffect(() => {
     if (isCandidate) {
@@ -220,12 +228,22 @@ export const SessionResultsPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">Session Score</h1>
             <p className="text-sm text-gray-500 mt-1">Objective scoring for Reading/Listening, plus Writing feedback when available.</p>
           </div>
-          <button
-            onClick={() => navigate(backPath, { replace: true })}
-            className="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 font-medium"
-          >
-            {isCandidate ? 'Back to landing' : 'Back'}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {reviewUrl ? (
+              <button
+                onClick={() => navigate(reviewUrl)}
+                className="w-full sm:w-auto px-4 py-2 rounded-lg bg-gray-900 text-white font-medium"
+              >
+                Review Answers
+              </button>
+            ) : null}
+            <button
+              onClick={() => navigate(backPath, { replace: true })}
+              className="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 font-medium"
+            >
+              {isCandidate ? 'Back to landing' : 'Back'}
+            </button>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -248,8 +266,8 @@ export const SessionResultsPage: React.FC = () => {
         {isPartialCoverage ? (
           <div className="mt-4 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3">
             Partial attempt: this result includes{' '}
-            <strong>{completedCoreSections.map((type) => type[0].toUpperCase() + type.slice(1)).join(', ')}</strong>
-            . Missing: <strong>{missingCoreSections.map((type) => type[0].toUpperCase() + type.slice(1)).join(', ')}</strong>.
+            <strong>{completedCoreSections.map(humanizeSectionType).join(', ')}</strong>
+            . Missing: <strong>{missingCoreSections.map(humanizeSectionType).join(', ')}</strong>.
           </div>
         ) : null}
 
@@ -265,7 +283,7 @@ export const SessionResultsPage: React.FC = () => {
             </div>
           </div>
           <a
-            href={`${PLAYBOOK_URL}/diagnostic?source=simulator&session_id=${encodeURIComponent(sessionId ?? '')}&overall_band=${encodeURIComponent(String(summaryBand ?? ''))}&weak_skill=${encodeURIComponent(weakestSkill)}`}
+            href={`${PLAYBOOK_URL}/diagnostic?source=${encodeURIComponent(playbookSource)}&session_id=${encodeURIComponent(sessionId ?? '')}&overall_band=${encodeURIComponent(String(summaryBand ?? ''))}&weak_skill=${encodeURIComponent(weakestSkill)}`}
             className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-semibold text-center"
           >
             Open playbook

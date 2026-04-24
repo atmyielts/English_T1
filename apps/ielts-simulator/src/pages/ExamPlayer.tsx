@@ -87,6 +87,7 @@ const extractPlaceholders = (text: string): string[] => {
   let m: RegExpExecArray | null = null;
   while ((m = re.exec(text))) {
     const id = m[1];
+    if (!id) continue;
     if (seen.has(id)) continue;
     seen.add(id);
     ids.push(id);
@@ -305,6 +306,27 @@ export const ExamPlayer: React.FC = () => {
   const isCandidateRoute = location.pathname.startsWith('/candidate/session/');
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
   const sessionBasePath = isCandidate ? '/candidate/session' : isAdminSessionRoute ? '/admin/session' : '/session';
+  const routeSearch = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const sectionSearch = location.search || '';
+  const resultsSearch = useMemo(() => {
+    if (!sessionId) return '';
+    const params = new URLSearchParams();
+    const back = routeSearch.get('results_back')?.trim();
+    const playbookSource = routeSearch.get('playbook_source')?.trim();
+    const reviewBack = routeSearch.get('review_back')?.trim() || back || '';
+    const reviewProductId = routeSearch.get('review_product_id')?.trim();
+
+    if (back) params.set('back', back);
+    if (playbookSource) params.set('playbook_source', playbookSource);
+
+    const reviewParams = new URLSearchParams();
+    if (reviewProductId) reviewParams.set('product_id', reviewProductId);
+    if (reviewBack) reviewParams.set('back', reviewBack);
+    const reviewUrl = `${sessionBasePath}/${sessionId}/review${reviewParams.toString() ? `?${reviewParams.toString()}` : ''}`;
+    params.set('review_url', reviewUrl);
+
+    return params.toString() ? `?${params.toString()}` : '';
+  }, [routeSearch, sessionBasePath, sessionId]);
 
   useEffect(() => {
     setMobilePassageOpen(true);
@@ -524,15 +546,15 @@ export const ExamPlayer: React.FC = () => {
       }
 
       if (nextSectionId) {
-        navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}`, { replace: true });
+        navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`, { replace: true });
       } else {
         await supabase.from('sessions').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', sessionId);
-        navigate(`${sessionBasePath}/${sessionId}/results`, { replace: true });
+        navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`, { replace: true });
       }
     };
 
     go();
-  }, [flushSaves, navigate, nextSectionId, sessionId, sessionBasePath, timeLeftSeconds]);
+  }, [flushSaves, navigate, nextSectionId, resultsSearch, sectionSearch, sessionId, sessionBasePath, timeLeftSeconds]);
 
   const handleNext = async () => {
     setError(null);
@@ -544,7 +566,7 @@ export const ExamPlayer: React.FC = () => {
     }
 
     if (nextSectionId) {
-      navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}`);
+      navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`);
       return;
     }
 
@@ -558,7 +580,7 @@ export const ExamPlayer: React.FC = () => {
       return;
     }
 
-    navigate(`${sessionBasePath}/${sessionId}/results`);
+    navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`);
   };
 
   const handleAbandon = async () => {

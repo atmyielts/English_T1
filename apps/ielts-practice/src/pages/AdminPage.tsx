@@ -2,55 +2,88 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   adminPracticeAnalytics,
-  adminPracticeExerciseCreate,
-  adminPracticeExercisePatch,
-  adminPracticeExercisesList,
-  adminPracticeImportFromSimulator,
-  adminPracticePreviewPlan,
+  adminPracticeBlueprintBuild,
+  adminPracticeBlueprintCreate,
+  adminPracticeBlueprintPatch,
+  adminPracticeBlueprintsList,
+  adminPracticeBuildsList,
   adminPracticeRulesList,
   adminPracticeRulesPatch,
-  type PracticeExercise,
+  adminPracticeSourcesList,
+  type PracticeBlueprint,
+  type PracticeDeliveryBuild,
   type PracticeRule,
+  type PracticeSourceCatalogItem,
 } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
-type TabKey = 'exercises' | 'import' | 'rules' | 'preview' | 'analytics';
+type TabKey = 'sources' | 'blueprints' | 'builds' | 'rules' | 'analytics';
+
+const joinParts = (parts: Array<string | null | undefined>): string => parts.filter(Boolean).join(' | ');
+
+const summarizeQuestionTypes = (source: PracticeSourceCatalogItem | PracticeDeliveryBuild | null | undefined): string => {
+  if (!source) return 'No question types';
+  if ('question_types' in source && Array.isArray(source.question_types) && source.question_types.length > 0) {
+    return source.question_types.join(', ');
+  }
+  if ('build_summary' in source) {
+    const buildSummary = source.build_summary;
+    if (buildSummary && typeof buildSummary === 'object' && Array.isArray((buildSummary as Record<string, unknown>).question_types)) {
+      const values = (buildSummary as Record<string, unknown>).question_types as string[];
+      return values.length > 0 ? values.join(', ') : 'No question types';
+    }
+  }
+  return 'No question types';
+};
+
+const summarizeBuildContext = (build: PracticeDeliveryBuild): string => {
+  const summary = build.build_summary;
+  if (!summary || typeof summary !== 'object') return 'No summary';
+  const row = summary as Record<string, unknown>;
+  return joinParts([
+    row.has_passage === true ? 'passage' : null,
+    row.has_audio === true ? 'audio' : null,
+    row.has_image === true ? 'image' : null,
+  ]) || 'question-only';
+};
+
+const summarizeAnalytics = (analytics: unknown): Array<{ label: string; value: string }> => {
+  if (!analytics || typeof analytics !== 'object') return [];
+  const record = analytics as Record<string, unknown>;
+  return [
+    { label: 'Attempts', value: String(record.total_attempts ?? '-') },
+    { label: 'Users', value: String(record.distinct_users ?? '-') },
+    { label: 'Completed', value: String(record.completed_attempts ?? '-') },
+    { label: 'Signals', value: String(record.signals_emitted ?? '-') },
+  ];
+};
 
 export const AdminPage = () => {
   const { accessToken } = useAccess();
-  const [tab, setTab] = useState<TabKey>('exercises');
+  const [tab, setTab] = useState<TabKey>('sources');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [exercises, setExercises] = useState<PracticeExercise[]>([]);
+  const [sources, setSources] = useState<PracticeSourceCatalogItem[]>([]);
+  const [blueprints, setBlueprints] = useState<Array<PracticeBlueprint & { latest_build: PracticeDeliveryBuild | null }>>([]);
+  const [builds, setBuilds] = useState<PracticeDeliveryBuild[]>([]);
   const [rules, setRules] = useState<PracticeRule[]>([]);
-  const [preview, setPreview] = useState<unknown>(null);
   const [analytics, setAnalytics] = useState<unknown>(null);
 
-  const [newExercise, setNewExercise] = useState({
-    title: '',
-    section_type: 'reading' as 'reading' | 'listening' | 'writing',
-    question_type: 'question_text',
-    status: 'draft' as 'draft' | 'published',
-  });
-
-  const [importPayload, setImportPayload] = useState({
-    experience_id: '',
-    section_type: '',
-    limit: '200',
-    publish: false,
-  });
-
-  const [previewUserId, setPreviewUserId] = useState('');
+  const [sourceSectionType, setSourceSectionType] = useState('');
   const [analyticsDays, setAnalyticsDays] = useState('30');
 
   const loadBase = async (): Promise<void> => {
     if (!accessToken) return;
-    const [exerciseRes, rulesRes] = await Promise.all([
-      adminPracticeExercisesList(accessToken),
+    const [sourceRes, blueprintRes, buildRes, rulesRes] = await Promise.all([
+      adminPracticeSourcesList(accessToken, { section_type: sourceSectionType || undefined, limit: 200 }),
+      adminPracticeBlueprintsList(accessToken),
+      adminPracticeBuildsList(accessToken),
       adminPracticeRulesList(accessToken),
     ]);
-    setExercises(exerciseRes.exercises ?? []);
+    setSources(sourceRes.sources ?? []);
+    setBlueprints(blueprintRes.blueprints ?? []);
+    setBuilds(buildRes.builds ?? []);
     setRules(rulesRes.rules ?? []);
   };
 
@@ -68,52 +101,56 @@ export const AdminPage = () => {
       }
     };
     void run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [accessToken, sourceSectionType]);
 
-  const createExercise = async (): Promise<void> => {
+  const createBlueprintFromSource = async (source: PracticeSourceCatalogItem): Promise<void> => {
     if (!accessToken) return;
     setBusy(true);
     setError(null);
     try {
-      await adminPracticeExerciseCreate(accessToken, newExercise);
-      setNewExercise({ title: '', section_type: 'reading', question_type: 'question_text', status: 'draft' });
-      await loadBase();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create exercise');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const publishExercise = async (id: string, status: string): Promise<void> => {
-    if (!accessToken) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await adminPracticeExercisePatch(accessToken, id, { status });
-      await loadBase();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update exercise');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const runImport = async (): Promise<void> => {
-    if (!accessToken) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await adminPracticeImportFromSimulator(accessToken, {
-        experience_id: importPayload.experience_id || undefined,
-        section_type: importPayload.section_type || undefined,
-        limit: Number(importPayload.limit),
-        publish: importPayload.publish,
+      await adminPracticeBlueprintCreate(accessToken, {
+        source_section_id: source.section_id,
+        title: `${source.experience_name} | ${source.section_name}`,
+        target_question_types: source.question_types,
+        estimated_minutes: source.section_type === 'writing' ? 40 : 25,
+        metadata: {
+          source_part_count: source.part_count,
+          source_question_count: source.question_count,
+        },
       });
       await loadBase();
+      setTab('blueprints');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed');
+      setError(err instanceof Error ? err.message : 'Failed to create blueprint');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const updateBlueprintStatus = async (id: string, status: string): Promise<void> => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await adminPracticeBlueprintPatch(accessToken, id, { status });
+      await loadBase();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update blueprint');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const buildBlueprint = async (blueprintId: string, publish: boolean): Promise<void> => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await adminPracticeBlueprintBuild(accessToken, { blueprint_id: blueprintId, publish });
+      await loadBase();
+      setTab('builds');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to build blueprint');
     } finally {
       setBusy(false);
     }
@@ -143,20 +180,6 @@ export const AdminPage = () => {
     }
   };
 
-  const runPreview = async (): Promise<void> => {
-    if (!accessToken || !previewUserId.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const response = await adminPracticePreviewPlan(accessToken, previewUserId.trim(), 10);
-      setPreview(response);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate preview');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const loadAnalytics = async (): Promise<void> => {
     if (!accessToken) return;
     setBusy(true);
@@ -171,12 +194,24 @@ export const AdminPage = () => {
     }
   };
 
+  const publishedBlueprints = useMemo(
+    () => blueprints.filter((row) => row.status === 'published').length,
+    [blueprints],
+  );
+
+  const publishedBuilds = useMemo(
+    () => builds.filter((row) => row.status === 'published').length,
+    [builds],
+  );
+
+  const analyticsSummary = useMemo(() => summarizeAnalytics(analytics), [analytics]);
+
   const tabButtons: Array<{ key: TabKey; label: string }> = useMemo(
     () => [
-      { key: 'exercises', label: 'Exercises' },
-      { key: 'import', label: 'Import' },
+      { key: 'sources', label: 'Sources' },
+      { key: 'blueprints', label: 'Blueprints' },
+      { key: 'builds', label: 'Builds' },
       { key: 'rules', label: 'Rules' },
-      { key: 'preview', label: 'Preview' },
       { key: 'analytics', label: 'Analytics' },
     ],
     [],
@@ -189,7 +224,7 @@ export const AdminPage = () => {
           <img src="/schood-logo.png" alt="Schood" />
           <div>
             <strong>IELTS Practice Admin</strong>
-            <span>Exercise bank, import, rules, analytics</span>
+            <span>Source curation, blueprint packaging, publishing, and recommendation control</span>
           </div>
         </Link>
         <div className="top-nav-actions">
@@ -201,85 +236,125 @@ export const AdminPage = () => {
         <section className="glass stat-card wide">
           <div className="tab-row">
             {tabButtons.map((entry) => (
-              <button key={entry.key} className={tab === entry.key ? 'btn solid' : 'btn ghost'} type="button" onClick={() => setTab(entry.key)}>
+              <button
+                key={entry.key}
+                className={tab === entry.key ? 'btn solid' : 'btn ghost'}
+                type="button"
+                onClick={() => setTab(entry.key)}
+              >
                 {entry.label}
               </button>
             ))}
           </div>
 
+          <div className="field-grid" style={{ marginTop: 16 }}>
+            <div className="glass stat-card">
+              <h3>Blueprints</h3>
+              <p>{blueprints.length} total | {publishedBlueprints} published</p>
+            </div>
+            <div className="glass stat-card">
+              <h3>Builds</h3>
+              <p>{builds.length} total | {publishedBuilds} published</p>
+            </div>
+            <div className="glass stat-card">
+              <h3>Sources</h3>
+              <p>{sources.length} simulator sections available for packaging</p>
+            </div>
+          </div>
+
           {error ? <p className="error-text">{error}</p> : null}
           {busy ? <p>Working...</p> : null}
 
-          {tab === 'exercises' ? (
+          {tab === 'sources' ? (
             <>
               <div className="field-grid">
-                <label>Title<input value={newExercise.title} onChange={(event) => setNewExercise((prev) => ({ ...prev, title: event.target.value }))} /></label>
-                <label>Section
-                  <select
-                    value={newExercise.section_type}
-                    onChange={(event) =>
-                      setNewExercise((prev) => ({
-                        ...prev,
-                        section_type: event.target.value as 'reading' | 'listening' | 'writing',
-                      }))}
-                  >
+                <label>
+                  Section filter
+                  <select value={sourceSectionType} onChange={(event) => setSourceSectionType(event.target.value)}>
+                    <option value="">all</option>
                     <option value="reading">reading</option>
                     <option value="listening">listening</option>
                     <option value="writing">writing</option>
                   </select>
                 </label>
-                <label>Question type<input value={newExercise.question_type} onChange={(event) => setNewExercise((prev) => ({ ...prev, question_type: event.target.value }))} /></label>
-                <label>Status
-                  <select
-                    value={newExercise.status}
-                    onChange={(event) =>
-                      setNewExercise((prev) => ({ ...prev, status: event.target.value as 'draft' | 'published' }))}
-                  >
-                    <option value="draft">draft</option>
-                    <option value="published">published</option>
-                  </select>
-                </label>
               </div>
-              <button className="btn ghost" type="button" onClick={() => void createExercise()}>Create exercise</button>
 
               <ul className="task-list">
-                {exercises.map((exercise) => (
-                  <li className="task-item" key={exercise.id}>
+                {sources.map((source) => (
+                  <li key={source.section_id} className="task-item">
                     <div>
-                      <span className={`chip ${exercise.section_type}`}>{exercise.section_type}</span>
-                      <h4>{exercise.title}</h4>
-                      <p>{exercise.question_type} · status: {exercise.status}</p>
+                      <span className={`chip ${source.section_type}`}>{source.section_type}</span>
+                      <h4>{source.experience_name} | {source.section_name}</h4>
+                      <p>
+                        {joinParts([
+                          `${source.part_count} parts`,
+                          `${source.unit_count} units`,
+                          `${source.question_count} questions`,
+                          summarizeQuestionTypes(source),
+                        ])}
+                      </p>
+                      <p>
+                        {joinParts([
+                          source.has_passage ? 'passage' : null,
+                          source.has_audio ? 'audio' : null,
+                          source.has_image ? 'image' : null,
+                        ]) || 'question-only'}
+                      </p>
                     </div>
-                    <div className="inline-actions">
-                      <button className="btn ghost" type="button" onClick={() => void publishExercise(exercise.id, 'draft')}>Draft</button>
-                      <button className="btn ghost" type="button" onClick={() => void publishExercise(exercise.id, 'published')}>Publish</button>
-                    </div>
+                    <button className="btn solid" type="button" onClick={() => void createBlueprintFromSource(source)}>
+                      Create Blueprint
+                    </button>
                   </li>
                 ))}
               </ul>
             </>
           ) : null}
 
-          {tab === 'import' ? (
-            <div className="field-grid">
-              <label>Experience id (optional)<input value={importPayload.experience_id} onChange={(event) => setImportPayload((prev) => ({ ...prev, experience_id: event.target.value }))} /></label>
-              <label>Section filter
-                <select value={importPayload.section_type} onChange={(event) => setImportPayload((prev) => ({ ...prev, section_type: event.target.value }))}>
-                  <option value="">all</option>
-                  <option value="reading">reading</option>
-                  <option value="listening">listening</option>
-                  <option value="writing">writing</option>
-                </select>
-              </label>
-              <label>Limit<input value={importPayload.limit} onChange={(event) => setImportPayload((prev) => ({ ...prev, limit: event.target.value }))} /></label>
-              <label>Publish imported
-                <select value={importPayload.publish ? 'yes' : 'no'} onChange={(event) => setImportPayload((prev) => ({ ...prev, publish: event.target.value === 'yes' }))}>
-                  <option value="no">no</option>
-                  <option value="yes">yes</option>
-                </select>
-              </label>
-              <button className="btn solid" type="button" onClick={() => void runImport()}>Run import</button>
-            </div>
+          {tab === 'blueprints' ? (
+            <ul className="task-list">
+              {blueprints.map((blueprint) => (
+                <li className="task-item" key={blueprint.id}>
+                  <div>
+                    <span className={`chip ${blueprint.section_type}`}>{blueprint.section_type}</span>
+                    <h4>{blueprint.title}</h4>
+                    <p>
+                      {joinParts([
+                        `status: ${blueprint.status}`,
+                        `target types: ${blueprint.target_question_types.length > 0 ? blueprint.target_question_types.join(', ') : 'mixed'}`,
+                      ])}
+                    </p>
+                    <p>
+                      {blueprint.latest_build
+                        ? `latest build: v${blueprint.latest_build.build_version} | ${blueprint.latest_build.status}`
+                        : 'latest build: none'}
+                    </p>
+                  </div>
+                  <div className="inline-actions">
+                    <button className="btn ghost" type="button" onClick={() => void buildBlueprint(blueprint.id, false)}>Build Draft</button>
+                    <button className="btn solid" type="button" onClick={() => void buildBlueprint(blueprint.id, true)}>Build and Publish</button>
+                    <button className="btn ghost" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'draft')}>Draft</button>
+                    <button className="btn ghost" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'archived')}>Archive</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {tab === 'builds' ? (
+            <ul className="task-list">
+              {builds.map((build) => (
+                <li className="task-item" key={build.id}>
+                  <div>
+                    <h4>{build.blueprint?.title ?? `Build ${build.id.slice(0, 8)}`} | v{build.build_version}</h4>
+                    <p>{joinParts([`status: ${build.status}`, summarizeBuildContext(build)])}</p>
+                    <p>{summarizeQuestionTypes(build)}</p>
+                  </div>
+                  <div className="inline-actions">
+                    <span className={`status-pill ${build.status}`}>{build.status}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           ) : null}
 
           {tab === 'rules' ? (
@@ -296,12 +371,18 @@ export const AdminPage = () => {
                         value={String(rule.weight)}
                         onChange={(event) => {
                           const value = Number(event.target.value);
-                          setRules((prev) => prev.map((row) => (row.id === rule.id ? { ...row, weight: Number.isFinite(value) ? value : row.weight } : row)));
+                          setRules((prev) => prev.map((row) => (
+                            row.id === rule.id
+                              ? { ...row, weight: Number.isFinite(value) ? value : row.weight }
+                              : row
+                          )));
                         }}
                       />
                       <select
                         value={rule.status}
-                        onChange={(event) => setRules((prev) => prev.map((row) => (row.id === rule.id ? { ...row, status: event.target.value } : row)))}
+                        onChange={(event) => setRules((prev) => prev.map((row) => (
+                          row.id === rule.id ? { ...row, status: event.target.value } : row
+                        )))}
                       >
                         <option value="active">active</option>
                         <option value="draft">draft</option>
@@ -315,18 +396,23 @@ export const AdminPage = () => {
             </>
           ) : null}
 
-          {tab === 'preview' ? (
-            <div className="field-grid">
-              <label>User id<input value={previewUserId} onChange={(event) => setPreviewUserId(event.target.value)} /></label>
-              <button className="btn solid" type="button" onClick={() => void runPreview()}>Generate preview</button>
-              {preview ? <pre className="json-box">{JSON.stringify(preview, null, 2)}</pre> : null}
-            </div>
-          ) : null}
-
           {tab === 'analytics' ? (
             <div className="field-grid">
-              <label>Window days<input value={analyticsDays} onChange={(event) => setAnalyticsDays(event.target.value)} /></label>
+              <label>
+                Window days
+                <input value={analyticsDays} onChange={(event) => setAnalyticsDays(event.target.value)} />
+              </label>
               <button className="btn solid" type="button" onClick={() => void loadAnalytics()}>Load analytics</button>
+              {analyticsSummary.length > 0 ? (
+                <div className="field-grid">
+                  {analyticsSummary.map((item) => (
+                    <div key={item.label} className="glass stat-card">
+                      <h3>{item.label}</h3>
+                      <p>{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               {analytics ? <pre className="json-box">{JSON.stringify(analytics, null, 2)}</pre> : null}
             </div>
           ) : null}
@@ -335,4 +421,3 @@ export const AdminPage = () => {
     </div>
   );
 };
-

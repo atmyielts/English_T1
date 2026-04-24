@@ -37,10 +37,10 @@ export const LandingPage = () => {
       <main className="landing-grid">
         <section className="hero-panel glass">
           <p className="eyebrow">Practice.ielts.schood.online</p>
-          <h1>Stay band-focused with daily IELTS drills built from your real simulator outcomes.</h1>
+          <h1>Stay band-focused with daily IELTS practice sessions built from your real simulator outcomes.</h1>
           <p>
-            Reading, Listening, and Writing loops stay connected to your target band. Every completed task contributes signals into
-            your English personalization layer.
+            Reading, Listening, and Writing sessions run on the same delivery engine as IELTS Simulator, so your practice keeps real
+            passages, audio, scoring, and writing feedback in one focused flow.
           </p>
           <div className="hero-actions">
             <Link to="/dashboard" className="btn solid">Open dashboard</Link>
@@ -55,7 +55,7 @@ export const LandingPage = () => {
           </article>
           <article>
             <h3>Deterministic plans</h3>
-            <p>Rule-weighted daily tasks with explicit rationale for each selected exercise.</p>
+            <p>Rule-weighted daily plans with explicit rationale for each selected practice session.</p>
           </article>
           <article>
             <h3>Shared profile</h3>
@@ -66,15 +66,15 @@ export const LandingPage = () => {
         <section className="cards-row">
           <article className="service-card glass reading">
             <h4>Reading</h4>
-            <p>Question-type targeting for heading match, TFNG, completion, and more.</p>
+            <p>Full passage-based sessions with heading match, TFNG, completion, and the broader simulator question set.</p>
           </article>
           <article className="service-card glass listening">
             <h4>Listening</h4>
-            <p>Replay-focused drills aligned to concentration and speed weaknesses.</p>
+            <p>Audio-backed sessions aligned to concentration, accuracy, and speed weaknesses.</p>
           </article>
           <article className="service-card glass writing">
             <h4>Writing</h4>
-            <p>Task loops with optional `grade-writing-v2` integration for tighter feedback.</p>
+            <p>Task 1 and Task 2 practice with automatic `grade-writing-v2` feedback when available.</p>
           </article>
         </section>
       </main>
