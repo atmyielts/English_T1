@@ -10,6 +10,12 @@ import { useAccess } from '../lib/useAccess';
 type Json = Record<string, unknown>;
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
+type ExperienceLink = {
+  id: string;
+  name: string;
+  product_id: string;
+};
+
 type SessionRow = {
   id: string;
   status: string;
@@ -18,7 +24,7 @@ type SessionRow = {
   completed_at: string | null;
   metadata: Json | null;
   experience_id: string;
-  experience?: { id: string; name: string } | { id: string; name: string }[] | null;
+  experience?: ExperienceLink | ExperienceLink[] | null;
 };
 
 type EvaluationRow = {
@@ -29,7 +35,7 @@ type EvaluationRow = {
 
 type SectionLite = { id: string; name: string; metadata: Json | null } | null;
 
-const getExperience = (s: SessionRow): { id: string; name: string } | null => {
+const getExperience = (s: SessionRow): ExperienceLink | null => {
   const e: any = s.experience;
   if (!e) return null;
   return Array.isArray(e) ? (e[0] ?? null) : e;
@@ -105,25 +111,31 @@ export const Dashboard: React.FC = () => {
       setError(null);
 
       try {
+        const selectClause =
+          'id,status,created_at,started_at,completed_at,metadata,experience_id,experience:experiences!inner(id,name,product_id)';
+
         const [activeRes, completedRes, mixRes] = await Promise.all([
           supabase
             .from('sessions')
-            .select('id,status,created_at,started_at,completed_at,metadata,experience_id,experience:experiences(id,name)')
+            .select(selectClause)
             .eq('user_id', userId)
+            .eq('experience.product_id', IELTS_PRODUCT_ID)
             .in('status', ['created', 'active', 'paused'])
             .order('created_at', { ascending: false })
             .limit(1),
           supabase
             .from('sessions')
-            .select('id,status,created_at,started_at,completed_at,metadata,experience_id,experience:experiences(id,name)')
+            .select(selectClause)
             .eq('user_id', userId)
+            .eq('experience.product_id', IELTS_PRODUCT_ID)
             .eq('status', 'completed')
             .order('completed_at', { ascending: false })
             .limit(3),
           supabase
             .from('sessions')
-            .select('id,status,created_at,metadata')
+            .select(selectClause)
             .eq('user_id', userId)
+            .eq('experience.product_id', IELTS_PRODUCT_ID)
             .order('created_at', { ascending: false })
             .limit(20),
         ]);
