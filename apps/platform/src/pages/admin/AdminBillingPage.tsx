@@ -62,6 +62,12 @@ const normalizeIncluded = (ids: string[], baseId?: string): string[] => {
   return Array.from(set);
 };
 
+const compareProductsForPlanCreate = (a: ProductRow, b: ProductRow): number => {
+  if (a.status === 'active' && b.status !== 'active') return -1;
+  if (a.status !== 'active' && b.status === 'active') return 1;
+  return a.name.localeCompare(b.name);
+};
+
 const mergeMeta = (base: Record<string, unknown> | null | undefined, patch: PlanMeta): Record<string, unknown> => {
   const meta: Record<string, unknown> = isObject(base) ? { ...base } : {};
 
@@ -198,6 +204,12 @@ export const AdminBillingPage: React.FC = () => {
     } as Record<LimitKey, string>,
   });
 
+  const createProduct = useMemo(
+    () => products.find((product) => product.id === createProductId) ?? null,
+    [products, createProductId],
+  );
+  const createProductIsActive = createProduct?.status === 'active';
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAccessToken(data.session?.access_token ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setAccessToken(session?.access_token ?? null));
@@ -220,8 +232,9 @@ export const AdminBillingPage: React.FC = () => {
         if (prodErr) throw prodErr;
         const list = (data ?? []) as ProductRow[];
         setProducts(list);
-        if (!createProductId && list.length > 0) setCreateProductId(list[0].id);
-        if (!filterProductId && list.length > 0) setFilterProductId(list[0].id);
+        const firstActiveId = list.find((product) => product.status === 'active')?.id ?? list[0]?.id ?? '';
+        if (!createProductId && firstActiveId) setCreateProductId(firstActiveId);
+        if (!filterProductId && firstActiveId) setFilterProductId(firstActiveId);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load products');
       } finally {
@@ -249,6 +262,11 @@ export const AdminBillingPage: React.FC = () => {
   useEffect(() => {
     if (filterProductId) void loadPlans(filterProductId);
   }, [filterProductId]);
+
+  useEffect(() => {
+    if (createProductIsActive || !newPlan.is_active) return;
+    setNewPlan((prev) => ({ ...prev, is_active: false }));
+  }, [createProductIsActive, newPlan.is_active]);
 
   const updatePlan = async (planId: string, patch: Partial<BillingPlan>) => {
     if (!accessToken) return;
@@ -326,7 +344,7 @@ export const AdminBillingPage: React.FC = () => {
         metadata: meta,
       });
       if (res.plan) setPlans((prev) => [res.plan as BillingPlan, ...prev]);
-      setNewPlan({ name: '', amount: 0, currency: 'UZS', duration_days: 30, is_active: true });
+      setNewPlan({ name: '', amount: 0, currency: 'UZS', duration_days: 30, is_active: createProductIsActive });
       setNewPlanMeta({
         tagline: '',
         description: '',
@@ -429,6 +447,7 @@ export const AdminBillingPage: React.FC = () => {
   };
 
   const selectableCreateProducts = useMemo(() => products.filter((p) => p.id !== createProductId), [products, createProductId]);
+  const createProductOptions = useMemo(() => [...products].sort(compareProductsForPlanCreate), [products]);
 
   return (
     <AdminLayout>
@@ -482,6 +501,7 @@ export const AdminBillingPage: React.FC = () => {
                   type="checkbox"
                   checked={newPlan.is_active}
                   onChange={(e) => setNewPlan((prev) => ({ ...prev, is_active: e.target.checked }))}
+                  disabled={!createProductIsActive}
                 />
                 Active
               </label>
@@ -525,12 +545,17 @@ export const AdminBillingPage: React.FC = () => {
                   }}
                   className="mt-2 w-full border border-gray-200 rounded-xl px-3 py-2"
                 >
-                  {products.map((p) => (
+                  {createProductOptions.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} ({p.status})
                     </option>
                   ))}
                 </select>
+                {!createProductIsActive ? (
+                  <div className="mt-2 text-xs text-amber-700">
+                    Archived services can only have inactive plans until the service is activated again.
+                  </div>
+                ) : null}
               </div>
 
               <div>
