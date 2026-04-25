@@ -476,7 +476,14 @@ export const adminPracticeBuildsList = (
 
 export const adminPracticeContentFactoryBuild = (
   accessToken: string,
-  body?: { section_type?: string; publish?: boolean; limit?: number },
+  body?: {
+    section_type?: string;
+    experience_kind?: string;
+    publish?: boolean;
+    limit?: number;
+    offset?: number;
+    catalog_limit?: number;
+  },
 ): Promise<{
   ok: boolean;
   publish: boolean;
@@ -484,6 +491,11 @@ export const adminPracticeContentFactoryBuild = (
   reused: number;
   built: number;
   failed: number;
+  requested?: Json;
+  processed_sources?: number;
+  total_sources_with_questions?: number;
+  next_offset?: number;
+  has_more?: boolean;
   coverage: Json;
   results: Json[];
 }> =>

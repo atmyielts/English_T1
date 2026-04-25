@@ -119,6 +119,30 @@ const defaultKindForSection = (sectionType: PracticeSourceCatalogItem['section_t
   sectionType === 'writing' ? 'writing_rewrite' : 'guided_set'
 );
 
+const FACTORY_SECTIONS = ['reading', 'listening', 'writing'] as const;
+
+const factoryKindsForSection = (sectionType: string): string[] => (
+  sectionType === 'writing'
+    ? ['strategy', 'writing_rewrite', 'guided_set', 'timed_mini', 'mastery_check']
+    : ['strategy', 'repair_drill', 'guided_set', 'timed_mini', 'mastery_check']
+);
+
+type FactoryBuildResponse = Awaited<ReturnType<typeof adminPracticeContentFactoryBuild>>;
+
+type FactoryAggregate = {
+  ok: boolean;
+  publish: boolean;
+  created: number;
+  reused: number;
+  built: number;
+  failed: number;
+  coverage: Record<string, unknown>;
+  results: unknown[];
+  batches: number;
+  current: string;
+  running: boolean;
+};
+
 export const AdminPage = () => {
   const { accessToken } = useAccess();
   const [tab, setTab] = useState<TabKey>('factory');
@@ -279,16 +303,83 @@ export const AdminPage = () => {
     if (!accessToken) return;
     setBusy(true);
     setError(null);
+    const sectionsToBuild = factorySectionType ? [factorySectionType] : [...FACTORY_SECTIONS];
+    const aggregate: FactoryAggregate = {
+      ok: true,
+      publish: factoryPublish,
+      created: 0,
+      reused: 0,
+      built: 0,
+      failed: 0,
+      coverage: {},
+      results: [],
+      batches: 0,
+      current: 'Preparing batches',
+      running: true,
+    };
+    const applyBatch = (response: FactoryBuildResponse, current: string): void => {
+      aggregate.ok = aggregate.ok && response.ok;
+      aggregate.publish = response.publish;
+      aggregate.created += response.created ?? 0;
+      aggregate.reused += response.reused ?? 0;
+      aggregate.built += response.built ?? 0;
+      aggregate.failed += response.failed ?? 0;
+      aggregate.coverage = asRecord(response.coverage);
+      aggregate.results = [...aggregate.results, ...(response.results ?? [])].slice(-120);
+      aggregate.batches += 1;
+      aggregate.current = current;
+      setFactoryResult({ ...aggregate, results: [...aggregate.results], coverage: { ...aggregate.coverage } });
+    };
+
     try {
-      const response = await adminPracticeContentFactoryBuild(accessToken, {
-        section_type: factorySectionType || undefined,
-        publish: factoryPublish,
-      });
-      setFactoryResult(response);
-      await loadBase();
+      setFactoryResult(aggregate);
       setTab('factory');
+
+      for (const sectionType of sectionsToBuild) {
+        for (const experienceKind of factoryKindsForSection(sectionType)) {
+          let offset = 0;
+          let guard = 0;
+          let hasMore = true;
+
+          while (hasMore) {
+            const label = `${titleCase(sectionType)} ${titleCase(experienceKind)} batch ${offset + 1}`;
+            setFactoryResult({ ...aggregate, current: label, results: [...aggregate.results], coverage: { ...aggregate.coverage } });
+            const response = await adminPracticeContentFactoryBuild(accessToken, {
+              section_type: sectionType,
+              experience_kind: experienceKind,
+              publish: factoryPublish,
+              limit: 1,
+              offset,
+              catalog_limit: 300,
+            });
+            applyBatch(response, label);
+
+            hasMore = response.has_more === true;
+            const nextOffset = Number(response.next_offset);
+            offset = Number.isFinite(nextOffset) && nextOffset > offset ? nextOffset : offset + 1;
+            guard += 1;
+            if (guard > 500) throw new Error('Content Factory stopped because batch pagination did not finish.');
+          }
+        }
+      }
+
+      setFactoryResult({
+        ...aggregate,
+        current: 'Coverage build complete',
+        running: false,
+        results: [...aggregate.results],
+        coverage: { ...aggregate.coverage },
+      });
+      await loadBase();
     } catch (err) {
       setError(getErrorMessage(err));
+      setFactoryResult({
+        ...aggregate,
+        current: 'Build stopped',
+        running: false,
+        results: [...aggregate.results],
+        coverage: { ...aggregate.coverage },
+      });
     } finally {
       setBusy(false);
     }
@@ -423,6 +514,15 @@ export const AdminPage = () => {
                   <span>Publish successful builds</span>
                 </label>
               </div>
+              {hasFactoryResult ? (
+                <div className="admin-factory-progress">
+                  <strong>{String(factoryRecord.current ?? 'Last Content Factory run')}</strong>
+                  <span>
+                    {formatCount(factoryRecord.batches)} safe batches completed.
+                    {factoryRecord.running === true ? ' The build is still running.' : ' Ready to rerun when simulator content changes.'}
+                  </span>
+                </div>
+              ) : null}
               {hasFactoryResult ? (
                 <div className="admin-result-grid">
                   {[

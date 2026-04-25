@@ -309,16 +309,41 @@ const factoryEstimateMinutes = (sectionType: string, kind: string): number => {
   return 20;
 };
 
+const factoryKindsForSection = (sectionType: string, requestedKind: string | null): string[] => {
+  const baseKinds = sectionType === "writing"
+    ? ["strategy", "writing_rewrite", "guided_set", "timed_mini", "mastery_check"]
+    : ["strategy", "repair_drill", "guided_set", "timed_mini", "mastery_check"];
+  return requestedKind ? baseKinds.filter((kind) => kind === requestedKind) : baseKinds;
+};
+
 const contentFactoryBuild = async (sb: any, scope: Scope, body: JsonRecord, adminUserId: string): Promise<Response> => {
   const publish = body.publish !== false;
   const sectionTypeFilter = toNullableText(body.section_type, 32);
-  const limit = clamp(Math.floor(toNumber(body.limit) ?? 60), 1, 300);
+  const requestedKindText = toNullableText(body.experience_kind, 80)?.toLowerCase() ?? null;
+  const requestedKind = requestedKindText
+    ? (PRACTICE_EXPERIENCE_KINDS as readonly string[]).includes(requestedKindText)
+      ? normalizePracticeExperienceKind(requestedKindText)
+      : null
+    : null;
+  if (requestedKindText && !requestedKind) {
+    return json(400, {
+      ok: false,
+      error: "Unsupported experience_kind",
+      supported_experience_kinds: PRACTICE_EXPERIENCE_KINDS,
+    });
+  }
+
+  const offset = clamp(Math.floor(toNumber(body.offset) ?? 0), 0, 10000);
+  const requestedSourceLimit = Math.floor(toNumber(body.limit) ?? 1);
+  const sourceLimit = requestedKind ? clamp(requestedSourceLimit, 1, 3) : 1;
+  const catalogLimit = clamp(Math.floor(toNumber(body.catalog_limit) ?? 300), sourceLimit, 300);
   const sources = await listSimulatorSourceSections(sb, scope, {
     sectionType: sectionTypeFilter,
-    limit,
+    limit: Math.max(catalogLimit, Math.min(300, offset + sourceLimit)),
   });
 
-  const selectedSources = sources.filter((source) => source.question_count > 0);
+  const allSelectedSources = sources.filter((source) => source.question_count > 0);
+  const selectedSources = allSelectedSources.slice(offset, offset + sourceLimit);
   const results: Array<JsonRecord> = [];
   let created = 0;
   let reused = 0;
@@ -326,9 +351,7 @@ const contentFactoryBuild = async (sb: any, scope: Scope, body: JsonRecord, admi
   let failed = 0;
 
   for (const source of selectedSources) {
-    const baseKinds = source.section_type === "writing"
-      ? ["strategy", "writing_rewrite", "guided_set", "timed_mini", "mastery_check"]
-      : ["strategy", "repair_drill", "guided_set", "timed_mini", "mastery_check"];
+    const baseKinds = factoryKindsForSection(source.section_type, requestedKind);
 
     for (const kindRaw of baseKinds) {
       const kind = normalizePracticeExperienceKind(kindRaw);
@@ -428,14 +451,19 @@ const contentFactoryBuild = async (sb: any, scope: Scope, body: JsonRecord, admi
 
   const coverage = {
     sources_considered: sources.length,
-    sources_with_questions: selectedSources.length,
+    sources_with_questions: allSelectedSources.length,
+    processed_sources: selectedSources.length,
+    batch_offset: offset,
+    batch_limit: sourceLimit,
     sections: {
-      reading: selectedSources.filter((source) => source.section_type === "reading").length,
-      listening: selectedSources.filter((source) => source.section_type === "listening").length,
-      writing: selectedSources.filter((source) => source.section_type === "writing").length,
+      reading: allSelectedSources.filter((source) => source.section_type === "reading").length,
+      listening: allSelectedSources.filter((source) => source.section_type === "listening").length,
+      writing: allSelectedSources.filter((source) => source.section_type === "writing").length,
     },
     required_experience_kinds: PRACTICE_EXPERIENCE_KINDS,
   };
+
+  const nextOffset = offset + selectedSources.length;
 
   return json(200, {
     ok: failed === 0,
@@ -444,6 +472,17 @@ const contentFactoryBuild = async (sb: any, scope: Scope, body: JsonRecord, admi
     reused,
     built,
     failed,
+    requested: {
+      section_type: sectionTypeFilter,
+      experience_kind: requestedKind,
+      offset,
+      limit: sourceLimit,
+      catalog_limit: catalogLimit,
+    },
+    processed_sources: selectedSources.length,
+    total_sources_with_questions: allSelectedSources.length,
+    next_offset: nextOffset,
+    has_more: nextOffset < allSelectedSources.length,
     coverage,
     results: results.slice(0, 500),
   });
