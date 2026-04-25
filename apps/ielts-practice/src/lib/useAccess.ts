@@ -34,8 +34,22 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
         const me = await getMe(session.access_token);
         const effective = includeEffective ? await getAccessEffective(session.access_token).catch(() => null) : null;
         if (!cancelled) setState({ status: 'authenticated', session, me, effective });
-      } catch {
-        if (!cancelled) setState({ status: 'unauthenticated' });
+      } catch (err) {
+        const message = err instanceof Error ? err.message.toLowerCase() : '';
+        if (message.includes('unauthorized')) {
+          if (!cancelled) setState({ status: 'unauthenticated' });
+          return;
+        }
+
+        const fallbackMe: MeResponse = {
+          user: {
+            id: session.user.id,
+            email: session.user.email ?? null,
+            role: null,
+          },
+          entitlements: [],
+        };
+        if (!cancelled) setState({ status: 'authenticated', session, me: fallbackMe, effective: null });
       }
     };
 
