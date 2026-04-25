@@ -19,28 +19,75 @@ import {
 import { useAccess } from '../lib/useAccess';
 
 type TabKey = 'factory' | 'sources' | 'blueprints' | 'builds' | 'rules' | 'analytics';
+type LoadWarning = { area: string; message: string };
 
 const joinParts = (parts: Array<string | null | undefined>): string => parts.filter(Boolean).join(' | ');
 
-const summarizeQuestionTypes = (source: PracticeSourceCatalogItem | PracticeDeliveryBuild | null | undefined): string => {
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+
+const asRecordArray = (value: unknown): Array<Record<string, unknown>> =>
+  Array.isArray(value) ? value.filter((entry) => entry && typeof entry === 'object') as Array<Record<string, unknown>> : [];
+
+const compactClass = (value: string | null | undefined): string =>
+  String(value ?? 'unknown').toLowerCase().replace(/[^a-z0-9_-]+/g, '-');
+
+const titleCase = (value: string | null | undefined): string =>
+  String(value ?? '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim() || '-';
+
+const getErrorMessage = (err: unknown): string => (err instanceof Error ? err.message : 'Request failed');
+
+const formatDateTime = (value: string | null | undefined): string => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
+
+const formatRatio = (value: unknown): string => {
+  const number = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(number)) return '-';
+  return `${Math.round(number * 100)}%`;
+};
+
+const formatCount = (value: unknown): string => {
+  const number = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(number) ? String(number) : '-';
+};
+
+const summarizeQuestionTypes = (
+  source: PracticeSourceCatalogItem | PracticeDeliveryBuild | PracticeBlueprint | null | undefined,
+): string => {
   if (!source) return 'No question types';
   if ('question_types' in source && Array.isArray(source.question_types) && source.question_types.length > 0) {
     return source.question_types.join(', ');
   }
+  if ('target_question_types' in source && Array.isArray(source.target_question_types) && source.target_question_types.length > 0) {
+    return source.target_question_types.join(', ');
+  }
   if ('build_summary' in source) {
-    const buildSummary = source.build_summary;
-    if (buildSummary && typeof buildSummary === 'object' && Array.isArray((buildSummary as Record<string, unknown>).question_types)) {
-      const values = (buildSummary as Record<string, unknown>).question_types as string[];
-      return values.length > 0 ? values.join(', ') : 'No question types';
-    }
+    const buildSummary = asRecord(source.build_summary);
+    const types = Array.isArray(buildSummary.question_types)
+      ? buildSummary.question_types
+      : Array.isArray(buildSummary.target_question_types)
+        ? buildSummary.target_question_types
+        : [];
+    const values = types.map((entry) => String(entry)).filter(Boolean);
+    return values.length > 0 ? values.join(', ') : 'No question types';
   }
   return 'No question types';
 };
 
 const summarizeBuildContext = (build: PracticeDeliveryBuild): string => {
-  const summary = build.build_summary;
-  if (!summary || typeof summary !== 'object') return 'No summary';
-  const row = summary as Record<string, unknown>;
+  const row = asRecord(build.build_summary);
   return joinParts([
     row.has_passage === true ? 'passage' : null,
     row.has_audio === true ? 'audio' : null,
@@ -48,22 +95,36 @@ const summarizeBuildContext = (build: PracticeDeliveryBuild): string => {
   ]) || 'question-only';
 };
 
+const summarizeValidation = (build: PracticeDeliveryBuild): string => {
+  const validation = asRecord(build.validation_summary);
+  const errors = Array.isArray(validation.errors) ? validation.errors.length : 0;
+  const warnings = Array.isArray(validation.warnings) ? validation.warnings.length : 0;
+  if (errors > 0) return `${errors} issue${errors === 1 ? '' : 's'}`;
+  if (warnings > 0) return `${warnings} warning${warnings === 1 ? '' : 's'}`;
+  return validation.ok === false ? 'needs review' : 'validated';
+};
+
 const summarizeAnalytics = (analytics: unknown): Array<{ label: string; value: string }> => {
-  if (!analytics || typeof analytics !== 'object') return [];
-  const record = analytics as Record<string, unknown>;
+  const record = asRecord(analytics);
+  const totals = Object.keys(asRecord(record.totals)).length > 0 ? asRecord(record.totals) : record;
   return [
-    { label: 'Attempts', value: String(record.total_attempts ?? '-') },
-    { label: 'Users', value: String(record.distinct_users ?? '-') },
-    { label: 'Completed', value: String(record.completed_attempts ?? '-') },
-    { label: 'Signals', value: String(record.signals_emitted ?? '-') },
+    { label: 'Attempts', value: formatCount(totals.attempts ?? totals.total_attempts) },
+    { label: 'Users', value: formatCount(totals.unique_users ?? totals.distinct_users) },
+    { label: 'Scored', value: formatCount(totals.scored_attempts ?? totals.completed_attempts) },
+    { label: 'Accuracy', value: formatRatio(totals.accuracy_avg) },
   ];
 };
 
+const defaultKindForSection = (sectionType: PracticeSourceCatalogItem['section_type']): string => (
+  sectionType === 'writing' ? 'writing_rewrite' : 'guided_set'
+);
+
 export const AdminPage = () => {
   const { accessToken } = useAccess();
-  const [tab, setTab] = useState<TabKey>('sources');
+  const [tab, setTab] = useState<TabKey>('factory');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadWarnings, setLoadWarnings] = useState<LoadWarning[]>([]);
 
   const [sources, setSources] = useState<PracticeSourceCatalogItem[]>([]);
   const [blueprints, setBlueprints] = useState<Array<PracticeBlueprint & { latest_build: PracticeDeliveryBuild | null }>>([]);
@@ -79,16 +140,31 @@ export const AdminPage = () => {
 
   const loadBase = async (): Promise<void> => {
     if (!accessToken) return;
-    const [sourceRes, blueprintRes, buildRes, rulesRes] = await Promise.all([
+    const results = await Promise.allSettled([
       adminPracticeSourcesList(accessToken, { section_type: sourceSectionType || undefined, limit: 200 }),
       adminPracticeBlueprintsList(accessToken),
       adminPracticeBuildsList(accessToken),
       adminPracticeRulesList(accessToken),
-    ]);
-    setSources(sourceRes.sources ?? []);
-    setBlueprints(blueprintRes.blueprints ?? []);
-    setBuilds(buildRes.builds ?? []);
-    setRules(rulesRes.rules ?? []);
+    ] as const);
+
+    const warnings: LoadWarning[] = [];
+    const applyResult = <T,>(result: PromiseSettledResult<T>, area: string, apply: (value: T) => void): void => {
+      if (result.status === 'fulfilled') {
+        apply(result.value);
+        return;
+      }
+      warnings.push({ area, message: getErrorMessage(result.reason) });
+    };
+
+    applyResult(results[0], 'Sources', (value) => setSources(value.sources ?? []));
+    applyResult(results[1], 'Blueprints', (value) => setBlueprints(value.blueprints ?? []));
+    applyResult(results[2], 'Builds', (value) => setBuilds(value.builds ?? []));
+    applyResult(results[3], 'Rules', (value) => setRules(value.rules ?? []));
+    setLoadWarnings(warnings);
+
+    if (warnings.length === results.length) {
+      throw new Error('Admin data could not be loaded.');
+    }
   };
 
   useEffect(() => {
@@ -99,7 +175,7 @@ export const AdminPage = () => {
       try {
         await loadBase();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load admin data');
+        setError(getErrorMessage(err));
       } finally {
         setBusy(false);
       }
@@ -116,6 +192,7 @@ export const AdminPage = () => {
         source_section_id: source.section_id,
         title: `${source.experience_name} | ${source.section_name}`,
         target_question_types: source.question_types,
+        experience_kind: defaultKindForSection(source.section_type),
         estimated_minutes: source.section_type === 'writing' ? 40 : 25,
         metadata: {
           source_part_count: source.part_count,
@@ -125,7 +202,7 @@ export const AdminPage = () => {
       await loadBase();
       setTab('blueprints');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create blueprint');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -139,7 +216,7 @@ export const AdminPage = () => {
       await adminPracticeBlueprintPatch(accessToken, id, { status });
       await loadBase();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update blueprint');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -154,7 +231,7 @@ export const AdminPage = () => {
       await loadBase();
       setTab('builds');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to build blueprint');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -178,7 +255,7 @@ export const AdminPage = () => {
       );
       await loadBase();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save rules');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -192,7 +269,7 @@ export const AdminPage = () => {
       const response = await adminPracticeAnalytics(accessToken, Number(analyticsDays));
       setAnalytics(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -211,7 +288,7 @@ export const AdminPage = () => {
       await loadBase();
       setTab('factory');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to run Content Factory');
+      setError(getErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -227,107 +304,137 @@ export const AdminPage = () => {
     [builds],
   );
 
+  const sourceSections = useMemo(() => new Set(sources.map((row) => row.section_type)).size, [sources]);
   const analyticsSummary = useMemo(() => summarizeAnalytics(analytics), [analytics]);
+  const analyticsRecord = asRecord(analytics);
+  const analyticsBySection = asRecordArray(analyticsRecord.by_section);
+  const analyticsByQuestion = asRecordArray(analyticsRecord.by_question_type).slice(0, 10);
+  const factoryRecord = asRecord(factoryResult);
+  const hasFactoryResult = Object.keys(factoryRecord).length > 0;
 
-  const tabButtons: Array<{ key: TabKey; label: string }> = useMemo(
+  const tabButtons: Array<{ key: TabKey; label: string; description: string }> = useMemo(
     () => [
-      { key: 'factory', label: 'Factory' },
-      { key: 'sources', label: 'Sources' },
-      { key: 'blueprints', label: 'Blueprints' },
-      { key: 'builds', label: 'Builds' },
-      { key: 'rules', label: 'Rules' },
-      { key: 'analytics', label: 'Analytics' },
+      { key: 'factory', label: 'Factory', description: 'Build coverage' },
+      { key: 'sources', label: 'Sources', description: 'Simulator inputs' },
+      { key: 'blueprints', label: 'Blueprints', description: 'Practice packages' },
+      { key: 'builds', label: 'Builds', description: 'Published sessions' },
+      { key: 'rules', label: 'Rules', description: 'Recommendation control' },
+      { key: 'analytics', label: 'Analytics', description: 'Practice signals' },
     ],
     [],
   );
 
   return (
-    <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/dashboard">
+    <div className="practice-root admin-root">
+      <header className="admin-header">
+        <Link className="brand admin-brand" to="/dashboard">
           <img src="/schood-logo.png" alt="Schood" />
           <div>
             <strong>IELTS Practice Admin</strong>
-            <span>Source curation, blueprint packaging, publishing, and recommendation control</span>
+            <span>Content factory, publishing, and recommendation controls</span>
           </div>
         </Link>
-        <div className="top-nav-actions">
-          <Link to="/dashboard" className="btn ghost">Dashboard</Link>
+        <div className="admin-header-actions">
+          <span className="admin-env">Production console</span>
+          <Link to="/dashboard" className="btn ghost compact">Learner dashboard</Link>
         </div>
       </header>
 
-      <main className="dashboard-grid">
-        <section className="glass stat-card wide">
-          <div className="tab-row">
-            {tabButtons.map((entry) => (
-              <button
-                key={entry.key}
-                className={tab === entry.key ? 'btn solid' : 'btn ghost'}
-                type="button"
-                onClick={() => setTab(entry.key)}
-              >
-                {entry.label}
-              </button>
-            ))}
+      <main className="admin-shell">
+        <aside className="admin-sidebar" aria-label="IELTS Practice admin sections">
+          {tabButtons.map((entry) => (
+            <button
+              key={entry.key}
+              className={`admin-tab${tab === entry.key ? ' active' : ''}`}
+              type="button"
+              onClick={() => setTab(entry.key)}
+            >
+              <span>{entry.label}</span>
+              <small>{entry.description}</small>
+            </button>
+          ))}
+        </aside>
+
+        <section className="admin-main">
+          <div className="admin-title-row">
+            <div>
+              <p className="eyebrow">IELTS Practice Relaunch</p>
+              <h1>Personalized training operations</h1>
+            </div>
+            {busy ? <span className="admin-busy">Working...</span> : null}
           </div>
 
-          <div className="field-grid" style={{ marginTop: 16 }}>
-            <div className="glass stat-card">
-              <h3>Blueprints</h3>
-              <p>{blueprints.length} total | {publishedBlueprints} published</p>
-            </div>
-            <div className="glass stat-card">
-              <h3>Builds</h3>
-              <p>{builds.length} total | {publishedBuilds} published</p>
-            </div>
-            <div className="glass stat-card">
-              <h3>Sources</h3>
-              <p>{sources.length} simulator sections available for packaging</p>
-            </div>
+          <div className="admin-stat-row">
+            <article className="admin-stat">
+              <span>Sources</span>
+              <strong>{sources.length}</strong>
+              <small>{sourceSections} active sections</small>
+            </article>
+            <article className="admin-stat">
+              <span>Blueprints</span>
+              <strong>{blueprints.length}</strong>
+              <small>{publishedBlueprints} published</small>
+            </article>
+            <article className="admin-stat">
+              <span>Builds</span>
+              <strong>{builds.length}</strong>
+              <small>{publishedBuilds} live sessions</small>
+            </article>
+            <article className="admin-stat">
+              <span>Rules</span>
+              <strong>{rules.length}</strong>
+              <small>ranking controls</small>
+            </article>
           </div>
 
-          {error ? <p className="error-text">{error}</p> : null}
-          {busy ? <p>Working...</p> : null}
+          {error ? <div className="admin-alert error">{error}</div> : null}
+          {loadWarnings.length > 0 ? (
+            <div className="admin-alert warning">
+              <strong>Partial load</strong>
+              <span>
+                {loadWarnings.map((warning) => `${warning.area}: ${warning.message}`).join('  ')}
+              </span>
+            </div>
+          ) : null}
 
           {tab === 'factory' ? (
-            <section className="factory-panel">
-              <div>
-                <h3>Content Factory</h3>
-                <p className="muted">
-                  Build transformed R/L/W practice coverage from simulator sources: strategy, repair drill, guided set, timed mini-session, writing rewrite, and mastery check.
-                </p>
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Content Factory</h2>
+                  <p>Build transformed Reading, Listening, and Writing coverage from simulator source sections.</p>
+                </div>
+                <button className="btn solid" type="button" onClick={() => void runContentFactory()} disabled={busy}>
+                  {busy ? 'Building...' : 'Build coverage'}
+                </button>
               </div>
-              <div className="field-grid">
-                <label>
-                  Section
+              <div className="admin-form-grid">
+                <label className="admin-field">
+                  <span>Section</span>
                   <select value={factorySectionType} onChange={(event) => setFactorySectionType(event.target.value)}>
-                    <option value="">all R/L/W</option>
-                    <option value="reading">reading</option>
-                    <option value="listening">listening</option>
-                    <option value="writing">writing</option>
+                    <option value="">All R/L/W</option>
+                    <option value="reading">Reading</option>
+                    <option value="listening">Listening</option>
+                    <option value="writing">Writing</option>
                   </select>
                 </label>
-                <label className="option-row">
+                <label className="admin-switch">
                   <input type="checkbox" checked={factoryPublish} onChange={(event) => setFactoryPublish(event.target.checked)} />
-                  Publish builds
+                  <span>Publish successful builds</span>
                 </label>
               </div>
-              <button className="btn solid" type="button" onClick={() => void runContentFactory()} disabled={busy}>
-                {busy ? 'Building...' : 'Build Full Coverage'}
-              </button>
-
-              {factoryResult && typeof factoryResult === 'object' ? (
-                <div className="factory-summary">
+              {hasFactoryResult ? (
+                <div className="admin-result-grid">
                   {[
-                    ['Created', (factoryResult as Record<string, unknown>).created],
-                    ['Reused', (factoryResult as Record<string, unknown>).reused],
-                    ['Built', (factoryResult as Record<string, unknown>).built],
-                    ['Failed', (factoryResult as Record<string, unknown>).failed],
+                    ['Created', factoryRecord.created],
+                    ['Reused', factoryRecord.reused],
+                    ['Built', factoryRecord.built],
+                    ['Failed', factoryRecord.failed],
                   ].map(([label, value]) => (
-                    <div key={String(label)} className="summary-tile">
+                    <article key={String(label)} className="admin-result">
                       <span>{String(label)}</span>
-                      <strong>{String(value ?? '-')}</strong>
-                    </div>
+                      <strong>{formatCount(value)}</strong>
+                    </article>
                   ))}
                 </div>
               ) : null}
@@ -335,155 +442,305 @@ export const AdminPage = () => {
           ) : null}
 
           {tab === 'sources' ? (
-            <>
-              <div className="field-grid">
-                <label>
-                  Section filter
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Simulator sources</h2>
+                  <p>Select source sections and package them into transformed practice blueprints.</p>
+                </div>
+                <label className="admin-inline-field">
+                  <span>Section</span>
                   <select value={sourceSectionType} onChange={(event) => setSourceSectionType(event.target.value)}>
-                    <option value="">all</option>
-                    <option value="reading">reading</option>
-                    <option value="listening">listening</option>
-                    <option value="writing">writing</option>
+                    <option value="">All</option>
+                    <option value="reading">Reading</option>
+                    <option value="listening">Listening</option>
+                    <option value="writing">Writing</option>
                   </select>
                 </label>
               </div>
-
-              <ul className="task-list">
-                {sources.map((source) => (
-                  <li key={source.section_id} className="task-item">
-                    <div>
-                      <span className={`chip ${source.section_type}`}>{source.section_type}</span>
-                      <h4>{source.experience_name} | {source.section_name}</h4>
-                      <p>
-                        {joinParts([
-                          `${source.part_count} parts`,
-                          `${source.unit_count} units`,
-                          `${source.question_count} questions`,
-                          summarizeQuestionTypes(source),
-                        ])}
-                      </p>
-                      <p>
-                        {joinParts([
-                          source.has_passage ? 'passage' : null,
-                          source.has_audio ? 'audio' : null,
-                          source.has_image ? 'image' : null,
-                        ]) || 'question-only'}
-                      </p>
-                    </div>
-                    <button className="btn solid" type="button" onClick={() => void createBlueprintFromSource(source)}>
-                      Create Blueprint
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Source</th>
+                      <th>Section</th>
+                      <th>Coverage</th>
+                      <th>Assets</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sources.length > 0 ? sources.map((source) => (
+                      <tr key={source.section_id}>
+                        <td>
+                          <div className="admin-cell-title">{source.experience_name}</div>
+                          <div className="admin-meta-line">{source.section_name}</div>
+                        </td>
+                        <td><span className={`chip ${source.section_type}`}>{source.section_type}</span></td>
+                        <td>
+                          <div>{joinParts([`${source.part_count} parts`, `${source.unit_count} units`, `${source.question_count} questions`])}</div>
+                          <div className="admin-meta-line">{summarizeQuestionTypes(source)}</div>
+                        </td>
+                        <td>{joinParts([source.has_passage ? 'passage' : null, source.has_audio ? 'audio' : null, source.has_image ? 'image' : null]) || 'question-only'}</td>
+                        <td>
+                          <button className="btn solid compact" type="button" onClick={() => void createBlueprintFromSource(source)} disabled={busy}>
+                            Create blueprint
+                          </button>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={5}><div className="admin-empty">No simulator sources found for this filter.</div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           ) : null}
 
           {tab === 'blueprints' ? (
-            <ul className="task-list">
-              {blueprints.map((blueprint) => (
-                <li className="task-item" key={blueprint.id}>
-                  <div>
-                    <span className={`chip ${blueprint.section_type}`}>{blueprint.section_type}</span>
-                    <h4>{blueprint.title}</h4>
-                    <p>
-                      {joinParts([
-                        `status: ${blueprint.status}`,
-                        `target types: ${blueprint.target_question_types.length > 0 ? blueprint.target_question_types.join(', ') : 'mixed'}`,
-                      ])}
-                    </p>
-                    <p>
-                      {blueprint.latest_build
-                        ? `latest build: v${blueprint.latest_build.build_version} | ${blueprint.latest_build.status}`
-                        : 'latest build: none'}
-                    </p>
-                  </div>
-                  <div className="inline-actions">
-                    <button className="btn ghost" type="button" onClick={() => void buildBlueprint(blueprint.id, false)}>Build Draft</button>
-                    <button className="btn solid" type="button" onClick={() => void buildBlueprint(blueprint.id, true)}>Build and Publish</button>
-                    <button className="btn ghost" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'draft')}>Draft</button>
-                    <button className="btn ghost" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'archived')}>Archive</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Blueprints</h2>
+                  <p>Blueprints define the transformed learner experience built from simulator material.</p>
+                </div>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Blueprint</th>
+                      <th>Kind</th>
+                      <th>Target types</th>
+                      <th>Latest build</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {blueprints.length > 0 ? blueprints.map((blueprint) => (
+                      <tr key={blueprint.id}>
+                        <td>
+                          <div className="admin-cell-title">{blueprint.title}</div>
+                          <div className="admin-meta-line">{blueprint.section_type} | {blueprint.estimated_minutes} min</div>
+                        </td>
+                        <td>{titleCase(blueprint.experience_kind)}</td>
+                        <td>{summarizeQuestionTypes(blueprint)}</td>
+                        <td>
+                          {blueprint.latest_build
+                            ? `v${blueprint.latest_build.build_version} | ${blueprint.latest_build.status}`
+                            : 'none'}
+                        </td>
+                        <td><span className={`status-pill ${compactClass(blueprint.status)}`}>{blueprint.status}</span></td>
+                        <td>
+                          <div className="admin-row-actions">
+                            <button className="btn ghost compact" type="button" onClick={() => void buildBlueprint(blueprint.id, false)} disabled={busy}>Draft build</button>
+                            <button className="btn solid compact" type="button" onClick={() => void buildBlueprint(blueprint.id, true)} disabled={busy}>Publish</button>
+                            <button className="btn ghost compact" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'draft')} disabled={busy}>Draft</button>
+                            <button className="btn ghost compact" type="button" onClick={() => void updateBlueprintStatus(blueprint.id, 'archived')} disabled={busy}>Archive</button>
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={6}><div className="admin-empty">No blueprints yet. Create one from Sources or run Content Factory.</div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           ) : null}
 
           {tab === 'builds' ? (
-            <ul className="task-list">
-              {builds.map((build) => (
-                <li className="task-item" key={build.id}>
-                  <div>
-                    <h4>{build.blueprint?.title ?? `Build ${build.id.slice(0, 8)}`} | v{build.build_version}</h4>
-                    <p>{joinParts([`status: ${build.status}`, summarizeBuildContext(build)])}</p>
-                    <p>{summarizeQuestionTypes(build)}</p>
-                  </div>
-                  <div className="inline-actions">
-                    <span className={`status-pill ${build.status}`}>{build.status}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Delivery builds</h2>
+                  <p>Published builds are what learner plans use for transformed practice sessions.</p>
+                </div>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Build</th>
+                      <th>Kind</th>
+                      <th>Context</th>
+                      <th>Questions</th>
+                      <th>Validation</th>
+                      <th>Status</th>
+                      <th>Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {builds.length > 0 ? builds.map((build) => (
+                      <tr key={build.id}>
+                        <td>
+                          <div className="admin-cell-title">{build.blueprint?.title ?? `Build ${build.id.slice(0, 8)}`}</div>
+                          <div className="admin-meta-line">version {build.build_version}</div>
+                        </td>
+                        <td>{titleCase(build.experience_kind)}</td>
+                        <td>{summarizeBuildContext(build)}</td>
+                        <td>{summarizeQuestionTypes(build)}</td>
+                        <td>{summarizeValidation(build)}</td>
+                        <td><span className={`status-pill ${compactClass(build.status)}`}>{build.status}</span></td>
+                        <td>{formatDateTime(build.updated_at ?? build.created_at)}</td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={7}><div className="admin-empty">No delivery builds yet. Run Content Factory to generate coverage.</div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           ) : null}
 
           {tab === 'rules' ? (
-            <>
-              <ul className="task-list">
-                {rules.map((rule) => (
-                  <li key={rule.id} className="task-item">
-                    <div>
-                      <h4>{rule.rule_key}</h4>
-                      <p>{rule.description ?? '-'}</p>
-                    </div>
-                    <div className="inline-actions">
-                      <input
-                        value={String(rule.weight)}
-                        onChange={(event) => {
-                          const value = Number(event.target.value);
-                          setRules((prev) => prev.map((row) => (
-                            row.id === rule.id
-                              ? { ...row, weight: Number.isFinite(value) ? value : row.weight }
-                              : row
-                          )));
-                        }}
-                      />
-                      <select
-                        value={rule.status}
-                        onChange={(event) => setRules((prev) => prev.map((row) => (
-                          row.id === rule.id ? { ...row, status: event.target.value } : row
-                        )))}
-                      >
-                        <option value="active">active</option>
-                        <option value="draft">draft</option>
-                        <option value="disabled">disabled</option>
-                      </select>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <button className="btn solid" type="button" onClick={() => void saveRules()}>Save rules</button>
-            </>
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Recommendation rules</h2>
+                  <p>Adjust the weights that rank next-best tasks for learners.</p>
+                </div>
+                <button className="btn solid" type="button" onClick={() => void saveRules()} disabled={busy}>Save rules</button>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Rule</th>
+                      <th>Description</th>
+                      <th>Weight</th>
+                      <th>Status</th>
+                      <th>Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rules.length > 0 ? rules.map((rule) => (
+                      <tr key={rule.id}>
+                        <td>
+                          <div className="admin-cell-title">{rule.rule_name || rule.rule_key}</div>
+                          <div className="admin-meta-line">{rule.rule_key}</div>
+                        </td>
+                        <td>{rule.description ?? '-'}</td>
+                        <td>
+                          <input
+                            className="admin-number-input"
+                            type="number"
+                            step="0.1"
+                            value={String(rule.weight)}
+                            onChange={(event) => {
+                              const value = Number(event.target.value);
+                              setRules((prev) => prev.map((row) => (
+                                row.id === rule.id
+                                  ? { ...row, weight: Number.isFinite(value) ? value : row.weight }
+                                  : row
+                              )));
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={rule.status}
+                            onChange={(event) => setRules((prev) => prev.map((row) => (
+                              row.id === rule.id ? { ...row, status: event.target.value } : row
+                            )))}
+                          >
+                            <option value="active">Active</option>
+                            <option value="draft">Draft</option>
+                            <option value="disabled">Disabled</option>
+                          </select>
+                        </td>
+                        <td>{formatDateTime(rule.updated_at)}</td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={5}><div className="admin-empty">No recommendation rules are configured.</div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           ) : null}
 
           {tab === 'analytics' ? (
-            <div className="field-grid">
-              <label>
-                Window days
-                <input value={analyticsDays} onChange={(event) => setAnalyticsDays(event.target.value)} />
-              </label>
-              <button className="btn solid" type="button" onClick={() => void loadAnalytics()}>Load analytics</button>
-              {analyticsSummary.length > 0 ? (
-                <div className="field-grid">
-                  {analyticsSummary.map((item) => (
-                    <div key={item.label} className="glass stat-card">
-                      <h3>{item.label}</h3>
-                      <p>{item.value}</p>
-                    </div>
-                  ))}
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Analytics</h2>
+                  <p>Review practice attempts, completion, and accuracy signals for the selected window.</p>
+                </div>
+                <div className="admin-toolbar">
+                  <label className="admin-inline-field">
+                    <span>Days</span>
+                    <input value={analyticsDays} onChange={(event) => setAnalyticsDays(event.target.value)} />
+                  </label>
+                  <button className="btn solid" type="button" onClick={() => void loadAnalytics()} disabled={busy}>Load</button>
+                </div>
+              </div>
+              <div className="admin-result-grid">
+                {analyticsSummary.map((item) => (
+                  <article key={item.label} className="admin-result">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                  </article>
+                ))}
+              </div>
+              {analyticsBySection.length > 0 ? (
+                <div className="admin-table-wrap compact">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Section</th>
+                        <th>Attempts</th>
+                        <th>Scored</th>
+                        <th>Completion</th>
+                        <th>Accuracy</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsBySection.map((row) => (
+                        <tr key={String(row.section_type)}>
+                          <td>{titleCase(String(row.section_type ?? ''))}</td>
+                          <td>{formatCount(row.attempts)}</td>
+                          <td>{formatCount(row.scored_attempts)}</td>
+                          <td>{formatRatio(row.completion_ratio)}</td>
+                          <td>{formatRatio(row.accuracy_avg)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               ) : null}
-              {analytics ? <pre className="json-box">{JSON.stringify(analytics, null, 2)}</pre> : null}
-            </div>
+              {analyticsByQuestion.length > 0 ? (
+                <div className="admin-table-wrap compact">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Question type</th>
+                        <th>Section</th>
+                        <th>Attempts</th>
+                        <th>Accuracy</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsByQuestion.map((row) => (
+                        <tr key={`${String(row.section_type)}-${String(row.question_type)}`}>
+                          <td>{String(row.question_type ?? '-')}</td>
+                          <td>{titleCase(String(row.section_type ?? ''))}</td>
+                          <td>{formatCount(row.attempts)}</td>
+                          <td>{formatRatio(row.accuracy_avg)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+              {analytics ? (
+                <details className="admin-json-details">
+                  <summary>Raw response</summary>
+                  <pre className="json-box">{JSON.stringify(analytics, null, 2)}</pre>
+                </details>
+              ) : null}
+            </section>
           ) : null}
         </section>
       </main>

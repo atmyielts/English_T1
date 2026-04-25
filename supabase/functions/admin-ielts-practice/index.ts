@@ -69,6 +69,13 @@ const extractRoute = (url: URL): string => {
   return tail.startsWith("/") ? tail : tail ? `/${tail}` : "";
 };
 
+const normalizeRoute = (route: string): string => {
+  const normalized = route.replace(/\/{2,}/g, "/").replace(/\/+$/g, "");
+  return normalized || "/";
+};
+
+const routeIs = (route: string, target: string): boolean => route === target || route.startsWith(`${target}/`);
+
 const resolveProductIdBySlug = async (sb: any, slug: string): Promise<string | null> => {
   const { data, error } = await sb
     .from("products")
@@ -885,34 +892,34 @@ serve(async (req) => {
 
     const scope = await resolveScope(sb);
     const url = new URL(req.url);
-    const route = extractRoute(url);
+    const route = normalizeRoute(extractRoute(url));
 
-    if (req.method === "GET" && route === "/sources") return await listSources(sb, scope, url);
-    if (req.method === "GET" && route === "/blueprints") return await listBlueprints(sb, scope, url);
-    if (req.method === "POST" && route === "/blueprints") return await createBlueprint(sb, scope, await parseBody(req), authz.context.userId);
-    if (req.method === "PATCH" && route === "/blueprints") return await patchBlueprint(sb, scope, await parseBody(req), authz.context.userId);
-    if (req.method === "POST" && route === "/blueprints/build") {
+    if (req.method === "POST" && routeIs(route, "/blueprints/build")) {
       return await buildBlueprint(sb, scope, await parseBody(req), authz.context.userId);
     }
-    if (req.method === "GET" && route === "/builds") return await listBuilds(sb, scope, url);
-    if (req.method === "POST" && route === "/content-factory/build") {
+    if (req.method === "GET" && routeIs(route, "/sources")) return await listSources(sb, scope, url);
+    if (req.method === "GET" && routeIs(route, "/blueprints")) return await listBlueprints(sb, scope, url);
+    if (req.method === "POST" && route === "/blueprints") return await createBlueprint(sb, scope, await parseBody(req), authz.context.userId);
+    if (req.method === "PATCH" && route === "/blueprints") return await patchBlueprint(sb, scope, await parseBody(req), authz.context.userId);
+    if (req.method === "GET" && routeIs(route, "/builds")) return await listBuilds(sb, scope, url);
+    if (req.method === "POST" && routeIs(route, "/content-factory/build")) {
       return await contentFactoryBuild(sb, scope, await parseBody(req), authz.context.userId);
     }
 
-    if (req.method === "GET" && route === "/exercises") return await listExercises(sb, scope, url);
-    if (req.method === "POST" && route === "/exercises") return await createExercise(sb, scope, await parseBody(req), authz.context.userId);
-    if (req.method === "PATCH" && route === "/exercises") return await patchExercise(sb, await parseBody(req), authz.context.userId);
-    if (req.method === "POST" && route === "/exercises/import-from-simulator") {
+    if (req.method === "POST" && routeIs(route, "/exercises/import-from-simulator")) {
       return await importFromSimulator(sb, scope, await parseBody(req), authz.context.userId);
     }
+    if (req.method === "GET" && routeIs(route, "/exercises")) return await listExercises(sb, scope, url);
+    if (req.method === "POST" && route === "/exercises") return await createExercise(sb, scope, await parseBody(req), authz.context.userId);
+    if (req.method === "PATCH" && route === "/exercises") return await patchExercise(sb, await parseBody(req), authz.context.userId);
 
-    if (req.method === "GET" && route === "/rules") return await listRules(sb, scope);
-    if (req.method === "PATCH" && route === "/rules") return await patchRules(sb, scope, await parseBody(req), authz.context.userId);
+    if (req.method === "GET" && routeIs(route, "/rules")) return await listRules(sb, scope);
+    if (req.method === "PATCH" && routeIs(route, "/rules")) return await patchRules(sb, scope, await parseBody(req), authz.context.userId);
 
-    if (req.method === "GET" && route === "/preview-plan") return await previewPlan(sb, scope, url);
-    if (req.method === "GET" && route === "/analytics") return await analytics(sb, scope, url);
+    if (req.method === "GET" && routeIs(route, "/preview-plan")) return await previewPlan(sb, scope, url);
+    if (req.method === "GET" && routeIs(route, "/analytics")) return await analytics(sb, scope, url);
 
-    return json(404, { error: "Not found" });
+    return json(404, { error: "Not found", route });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
