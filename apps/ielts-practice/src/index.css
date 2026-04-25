@@ -662,6 +662,55 @@ textarea {
   font-size: 1.03rem;
 }
 
+.lab-section-mix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.lab-section-tile {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lab-section-tile.reading {
+  border-top: 3px solid var(--reading);
+}
+
+.lab-section-tile.listening {
+  border-top: 3px solid var(--listening);
+}
+
+.lab-section-tile.writing {
+  border-top: 3px solid var(--writing);
+}
+
+.lab-section-tile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.lab-section-tile strong {
+  display: block;
+  font-size: 0.96rem;
+  line-height: 1.25;
+}
+
+.lab-section-tile p {
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
 .kpi-card {
   padding: 18px;
 }
@@ -1663,6 +1712,10 @@ button:disabled {
   }
 
   .labs-hero-card {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-section-mix {
     grid-template-columns: 1fr;
   }
 

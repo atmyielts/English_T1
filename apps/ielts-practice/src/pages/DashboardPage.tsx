@@ -180,6 +180,14 @@ const LAB_FEATURES = [
   { title: 'Band Roadmap', copy: 'Connects every gap to the lab that repairs it.' },
 ];
 
+const SECTION_ORDER: SectionType[] = ['reading', 'listening', 'writing'];
+
+const SECTION_FALLBACK_COPY: Record<SectionType, string> = {
+  reading: 'Evidence, distractor, timed, and mastery labs',
+  listening: 'Replay, prediction, distractor, timed, and mastery labs',
+  writing: 'Rewrite, planning, sentence upgrade, and feedback labs',
+};
+
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
   if (
@@ -327,7 +335,7 @@ export const DashboardPage = () => {
 
   const sectionRows = useMemo(() => {
     const sections = diagnostics?.sections;
-    return (['reading', 'listening', 'writing'] as const).map((section) => {
+    return SECTION_ORDER.map((section) => {
       const row = sections?.[section];
       const accuracy = row?.accuracy_ratio != null ? Math.max(0, Math.min(1, row.accuracy_ratio)) : 0;
       return {
@@ -340,6 +348,20 @@ export const DashboardPage = () => {
       };
     });
   }, [diagnostics, targetBand]);
+
+  const dailyLabMix = useMemo(() => (
+    SECTION_ORDER.map((section) => {
+      const sectionItems = plan.filter((item) => item.section_type === section && (item.blueprint_id || item.delivery_build_id));
+      const nextItem = sectionItems.find((item) => item.status !== 'completed') ?? sectionItems[0] ?? null;
+      const completed = sectionItems.filter((item) => item.status === 'completed').length;
+      return {
+        section,
+        item: nextItem,
+        total: sectionItems.length,
+        completed,
+      };
+    })
+  ), [plan]);
 
   const topWeaknesses = useMemo(
     () => (diagnostics?.question_types ?? []).slice(0, 6),
@@ -494,18 +516,30 @@ export const DashboardPage = () => {
           <section className="glass labs-hero-card" id="practice-labs">
             <div className="labs-hero-copy">
               <p className="eyebrow">Practice Labs</p>
-              <h2>The new IELTS Practice is not a retake player.</h2>
+              <h2>Practice Labs train Reading, Listening, and Writing.</h2>
               <p>
-                It turns simulator source material into seven lab workflows: coach, evidence, distractor, replay, rewrite, notebook, and roadmap.
+                The top recommendation changes with your diagnostic; today&apos;s mix keeps all three IELTS sections visible.
               </p>
               <div className="task-feature-row">
                 {LAB_FEATURES.map((feature) => (
                   <span className="feature-pill" key={feature.title}>{feature.title}</span>
                 ))}
               </div>
+              <div className="lab-section-mix" aria-label="Today's Reading, Listening, and Writing lab mix">
+                {dailyLabMix.map((row) => (
+                  <article className={`lab-section-tile ${row.section}`} key={row.section}>
+                    <div className="lab-section-tile-head">
+                      <span className={sectionChipClass(row.section)}>{row.section}</span>
+                      <span>{row.total > 0 ? `${row.completed}/${row.total} done` : 'no task yet'}</span>
+                    </div>
+                    <strong>{row.item ? getPlanItemTitle(row.item) : SECTION_FALLBACK_COPY[row.section]}</strong>
+                    <p>{row.item ? getPlanItemDescription(row.item) : 'Regenerate the plan to add this section to today.'}</p>
+                  </article>
+                ))}
+              </div>
             </div>
             <div className="labs-next-panel">
-              <span className="muted">Next best lab</span>
+              <span className="muted">Top priority lab</span>
               {nextLabItem ? (
                 <>
                   <strong>{getPlanItemTitle(nextLabItem)}</strong>
