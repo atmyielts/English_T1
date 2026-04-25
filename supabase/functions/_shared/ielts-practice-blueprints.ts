@@ -38,6 +38,9 @@ export type DeliveryBuildRow = {
   id: string;
   blueprint_id: string;
   delivery_experience_id: string | null;
+  source_product_id?: string | null;
+  source_experience_id?: string | null;
+  source_section_id?: string | null;
   status: string;
   experience_kind?: PracticeExperienceKind | string | null;
   build_version: number;
@@ -148,6 +151,83 @@ const instructionForKind = (
     return `${base}\n\nTreat this as a checkpoint. No hints: prove that this question type is ready to move up in difficulty.`;
   }
   return `${base}\n\nFollow the guided sequence: understand the prompt, locate evidence, answer, and then compare the question wording with the source.`;
+};
+
+const promptLeadForKind = (
+  kind: PracticeExperienceKind,
+  sectionType: "reading" | "listening" | "writing",
+  questionTypes: string[],
+): string => {
+  const focus = questionTypes.length > 0
+    ? questionTypes.slice(0, 3).map(formatQuestionType).join(", ")
+    : "mixed IELTS questions";
+
+  if (kind === "strategy") {
+    if (sectionType === "listening") {
+      return `Strategy task (${focus}): predict the answer type, listen for signposts, and note the paraphrase before choosing.`;
+    }
+    if (sectionType === "writing") {
+      return `Strategy task (${focus}): identify the task demand, plan the position, and decide the paragraph job before writing.`;
+    }
+    return `Strategy task (${focus}): locate the evidence first, underline the phrase that proves it, then answer.`;
+  }
+
+  if (kind === "repair_drill") {
+    return `Repair drill (${focus}): slow down, eliminate the distractor, and answer only after checking the exact wording.`;
+  }
+
+  if (kind === "timed_mini") {
+    return `Timed mini-session (${focus}): work at exam pace and do not over-review before submitting.`;
+  }
+
+  if (kind === "writing_rewrite") {
+    return `Writing rewrite (${focus}): improve the response with clearer task achievement, paragraph control, vocabulary, and grammar.`;
+  }
+
+  if (kind === "mastery_check") {
+    return `Mastery check (${focus}): no hints. Prove this skill is ready to move up.`;
+  }
+
+  return `Guided set (${focus}): follow the evidence, answer, then compare the wording with the source.`;
+};
+
+const withPromptLead = (data: JsonRecord, lead: string): JsonRecord => {
+  const prompt = toText(data.prompt, 5000);
+  return {
+    ...data,
+    prompt: prompt ? `${lead}\n\n${prompt}` : lead,
+  };
+};
+
+const transformUnitDataForPractice = (unit: any, plan: TransformationPlan): JsonRecord => {
+  const data = isObject(unit?.data) ? { ...(unit.data as JsonRecord) } : {};
+  const type = toText(unit?.type, 120).toLowerCase();
+
+  if (!isQuestionUnit(unit)) {
+    if (type === "reading_passage") {
+      return {
+        ...data,
+        title: toText(data.title, 500) || "Practice evidence source",
+      };
+    }
+    return data;
+  }
+
+  const transformed = withPromptLead(data, promptLeadForKind(plan.experienceKind, plan.sectionType, plan.targetQuestionTypes));
+  if (plan.experienceKind === "writing_rewrite" && type === "question_text") {
+    transformed.placeholder = toText(transformed.placeholder, 500) || "Rewrite your improved answer here.";
+    transformed.show_word_count = transformed.show_word_count ?? true;
+  }
+
+  return {
+    ...transformed,
+    practice_mode: {
+      experience_kind: plan.experienceKind,
+      section_type: plan.sectionType,
+      target_question_types: plan.targetQuestionTypes,
+      transformed_from_simulator: true,
+    },
+  };
 };
 
 export type TransformationPlan = {
@@ -370,6 +450,8 @@ const createBuildSummary = (
   return {
     schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
     transformed: true,
+    source_experience_id: toText(sourceExperience?.id, 80),
+    source_section_id: toText(sourceSection?.id, 80),
     source_experience_name: toText(sourceExperience?.name, 240),
     source_section_name: toText(sourceSection?.name, 240),
     section_type: readSectionType(sourceSection?.metadata),
@@ -426,7 +508,7 @@ export const loadBlueprintsWithBuilds = async (
   if (buildIds.length > 0) {
     let buildQuery = sb
       .from("ielts_practice_delivery_builds")
-      .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+      .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
       .in("id", buildIds);
     if (!opts?.includeDraftBuilds) buildQuery = buildQuery.neq("status", "failed");
     const { data: buildRows, error: buildError } = await buildQuery;
@@ -547,7 +629,7 @@ export const cloneBlueprintToDeliveryExperience = async (
     .from("sections")
     .insert({
       experience_id: String((deliveryExperience as any).id),
-      name: toText((sourceSection as any).name, 240) || blueprint.title,
+      name: titleForKind(transformationPlan.experienceKind),
       display_order: 1,
       metadata: {
         ...(isObject((sourceSection as any).metadata) ? ((sourceSection as any).metadata as JsonRecord) : {}),
@@ -623,7 +705,7 @@ export const cloneBlueprintToDeliveryExperience = async (
         part_id: partIdMap.get(String(unit.part_id)) ?? null,
         type: toText(unit.type, 120),
         display_order: Math.max(1, Math.floor(toNumber(unit.display_order) ?? 1)) + 1,
-        data: isObject(unit.data) ? unit.data : {},
+        data: transformUnitDataForPractice(unit, transformationPlan),
         metadata: {
           ...(isObject(unit.metadata) ? (unit.metadata as JsonRecord) : {}),
           source_content_unit_id: String(unit.id),
@@ -704,7 +786,7 @@ export const cloneBlueprintToDeliveryExperience = async (
       },
       created_by: adminUserId,
     })
-    .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+    .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
     .maybeSingle();
   if (buildError || !buildRow) throw new Error("Failed to persist practice delivery build");
 

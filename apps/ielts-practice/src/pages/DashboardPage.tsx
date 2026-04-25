@@ -148,6 +148,25 @@ const experienceLabel = (item: PracticePlanItem): string => {
   return raw ? formatQuestionType(raw) : 'Guided Set';
 };
 
+const planItemFocus = (item: PracticePlanItem): string => {
+  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  const rawTypes = Array.isArray(buildSummary.target_question_types)
+    ? buildSummary.target_question_types
+    : Array.isArray(buildSummary.question_types)
+      ? buildSummary.question_types
+      : Array.isArray(item.blueprint?.target_question_types)
+        ? item.blueprint.target_question_types
+        : [];
+  const labels = rawTypes.map((entry) => formatQuestionType(String(entry))).filter(Boolean);
+  return labels.length > 0 ? labels.slice(0, 2).join(', ') : formatQuestionType(item.section_type);
+};
+
+const transformedSourceLabel = (item: PracticePlanItem): string => {
+  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  const source = String(buildSummary.source_section_name ?? '').trim();
+  return source ? `Transformed source: ${source}` : 'Transformed practice session';
+};
+
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
@@ -252,7 +271,8 @@ export const DashboardPage = () => {
       setAverageBand(diagnosticPayload?.overall.average_band ?? null);
 
       let todayPlan = planRes.items ?? [];
-      if (todayPlan.length === 0 && autoGenerate) {
+      const hasLegacyPlanItems = todayPlan.some((item) => !item.blueprint_id && !item.delivery_build_id);
+      if ((todayPlan.length === 0 || hasLegacyPlanItems) && autoGenerate) {
         const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
         todayPlan = generated.items ?? [];
       }
@@ -310,13 +330,9 @@ export const DashboardPage = () => {
   );
 
   const planItemTitle = (item: PracticePlanItem): string =>
-    item.blueprint?.title
-    ?? item.exercise?.title
-    ?? (
-      item.delivery_build?.build_summary && typeof item.delivery_build.build_summary === 'object'
-        ? String((item.delivery_build.build_summary as Record<string, unknown>).source_section_name ?? 'Practice session')
-        : 'Practice session'
-    );
+    item.blueprint_id || item.delivery_build_id
+      ? `${experienceLabel(item)}: ${planItemFocus(item)}`
+      : item.exercise?.title ?? 'Practice session';
 
   const launchPlanItem = async (item: PracticePlanItem): Promise<void> => {
     if (!accessToken) return;
@@ -515,7 +531,8 @@ export const DashboardPage = () => {
                       <div>
                         <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
                         <h4>{planItemTitle(item)}</h4>
-                        <p>{experienceLabel(item)}. {item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
+                        <p>{item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
+                        {item.blueprint_id || item.delivery_build_id ? <p>{transformedSourceLabel(item)}</p> : null}
                       </div>
                       <div className="inline-actions">
                         <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>

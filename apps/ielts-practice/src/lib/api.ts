@@ -63,6 +63,9 @@ export type PracticeDeliveryBuild = {
   id: string;
   blueprint_id: string;
   delivery_experience_id: string | null;
+  source_product_id?: string | null;
+  source_experience_id?: string | null;
+  source_section_id?: string | null;
   status: string;
   experience_kind?: string | null;
   build_version: number;

@@ -22,14 +22,29 @@ const formatLabel = (value: unknown): string =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (token) => token.toUpperCase());
 
+const planItemFocus = (item: PracticePlanItem): string => {
+  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  const rawTypes = Array.isArray(summary.target_question_types)
+    ? summary.target_question_types
+    : Array.isArray(summary.question_types)
+      ? summary.question_types
+      : Array.isArray(item.blueprint?.target_question_types)
+        ? item.blueprint.target_question_types
+        : [];
+  const labels = rawTypes.map(formatLabel).filter(Boolean);
+  return labels.length > 0 ? labels.slice(0, 2).join(', ') : formatLabel(item.section_type);
+};
+
 const planItemTitle = (item: PracticePlanItem): string =>
-  item.blueprint?.title
-  ?? item.exercise?.title
-  ?? (
-    item.delivery_build?.build_summary && typeof item.delivery_build.build_summary === 'object'
-      ? String((item.delivery_build.build_summary as Record<string, unknown>).source_section_name ?? 'Practice session')
-      : 'Practice session'
-  );
+  item.blueprint_id || item.delivery_build_id
+    ? `${experienceLabel(item)}: ${planItemFocus(item)}`
+    : item.exercise?.title ?? 'Practice session';
+
+const sourceLabel = (item: PracticePlanItem): string => {
+  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  const source = String(summary.source_section_name ?? '').trim();
+  return source ? `Transformed from simulator source: ${source}` : 'New transformed practice session';
+};
 
 const experienceLabel = (item: PracticePlanItem): string => {
   const summary = item.delivery_build?.build_summary;
@@ -67,7 +82,13 @@ export const PlanPage = () => {
       setReadingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.reading ?? goals.target_overall_band ?? 6.5));
       setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
       setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
-      setPlanItems(planRes.items ?? []);
+      const loadedItems = planRes.items ?? [];
+      if (loadedItems.some((item) => !item.blueprint_id && !item.delivery_build_id)) {
+        const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
+        setPlanItems(generated.items ?? []);
+      } else {
+        setPlanItems(loadedItems);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load plan page');
     } finally {
@@ -214,7 +235,8 @@ export const PlanPage = () => {
                 <div>
                   <span className={`chip ${item.section_type}`}>{item.section_type}</span>
                   <h4>{planItemTitle(item)}</h4>
-                  <p>{experienceLabel(item)}. {item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
+                  <p>{item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
+                  {item.blueprint_id || item.delivery_build_id ? <p>{sourceLabel(item)}</p> : null}
                 </div>
                 {item.blueprint_id || item.delivery_build_id ? (
                   <button

@@ -264,7 +264,7 @@ const listBuilds = async (sb: any, scope: Scope, url: URL): Promise<Response> =>
   const status = toText(url.searchParams.get("status"), 32).toLowerCase();
   let query = sb
     .from("ielts_practice_delivery_builds")
-    .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+    .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
     .eq("product_id", scope.practiceProductId)
     .eq("language_id", scope.languageId)
     .order("updated_at", { ascending: false })

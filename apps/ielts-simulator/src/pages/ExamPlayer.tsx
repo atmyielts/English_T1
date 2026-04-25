@@ -15,6 +15,12 @@ type SectionRow = { id: string; name: string; display_order: number; metadata: J
 type ExamUnit = ContentUnit & { partName?: string | null; partOrder?: number | null };
 
 const sectionType = (s: SectionRow | null): string => String((s?.metadata as any)?.type ?? 'unknown');
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+const formatPracticeLabel = (value: unknown): string =>
+  String(value ?? 'guided_set')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (token) => token.toUpperCase());
 
 const isQuestionUnit = (u: Pick<ContentUnit, 'type'>): boolean => String(u.type).startsWith('question_');
 
@@ -305,6 +311,9 @@ export const ExamPlayer: React.FC = () => {
   const isCandidate = String((sessionMeta as any)?.exam_mode ?? '') === 'token';
   const isCandidateRoute = location.pathname.startsWith('/candidate/session/');
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
+  const practiceContext = asRecord((sessionMeta as any)?.practice_context);
+  const isPracticeSession = String((sessionMeta as any)?.mode ?? '') === 'practice' || Object.keys(practiceContext).length > 0;
+  const practiceKindLabel = formatPracticeLabel(practiceContext.experience_kind);
   const sessionBasePath = isCandidate ? '/candidate/session' : isAdminSessionRoute ? '/admin/session' : '/session';
   const routeSearch = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const sectionSearch = location.search || '';
@@ -846,9 +855,11 @@ export const ExamPlayer: React.FC = () => {
         }`}
       >
         <div className="min-w-0 flex items-center gap-3">
-          <div className="font-bold tracking-wide">IELTSX</div>
+          <div className="font-bold tracking-wide">{isPracticeSession ? 'IELTS Practice' : 'IELTSX'}</div>
           <div className="hidden sm:block text-xs text-[var(--inspera-muted)] truncate">
-            {experience?.name ?? 'Exam'} {section?.name ? `| ${section.name}` : ''}
+            {isPracticeSession
+              ? `${practiceKindLabel}${section?.name ? ` | ${section.name}` : ''}`
+              : `${experience?.name ?? 'Exam'} ${section?.name ? `| ${section.name}` : ''}`}
           </div>
         </div>
 
@@ -931,6 +942,15 @@ export const ExamPlayer: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {isPracticeSession ? (
+        <div className="shrink-0 border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-950">
+          <span className="font-semibold">{practiceKindLabel}</span>
+          <span className="ml-2 text-blue-800">
+            Personalized from simulator diagnostics, source passed-tests are down-ranked in future plans.
+          </span>
+        </div>
+      ) : null}
 
       {activeInstructionText ? (
         <div className="shrink-0 bg-[var(--inspera-panel)] border-b border-[var(--inspera-border)] px-4 py-3">

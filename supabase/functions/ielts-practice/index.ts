@@ -117,6 +117,12 @@ type SessionPlanCandidate = {
   rationaleJson: JsonRecord;
 };
 
+type SourceAvoidance = {
+  passedSourceSectionIds: Set<string>;
+  passedSourceExperienceIds: Set<string>;
+  recentPracticeSourceSections: Map<string, { attempts: number; latestAt: string | null }>;
+};
+
 type AttemptRow = {
   id: string;
   user_id: string;
@@ -1020,6 +1026,143 @@ const createSectionQuota = (dailyCount: number, mix: Record<string, number>): Re
   return base;
 };
 
+const targetBandForSection = (goals: GoalRow, section: "reading" | "listening" | "writing"): number => {
+  const sectionTarget = toNumber((goals.target_section_bands as any)?.[section]);
+  return clamp(sectionTarget ?? toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
+};
+
+const loadSourceAvoidance = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  goals: GoalRow,
+): Promise<SourceAvoidance> => {
+  const avoidance: SourceAvoidance = {
+    passedSourceSectionIds: new Set<string>(),
+    passedSourceExperienceIds: new Set<string>(),
+    recentPracticeSourceSections: new Map<string, { attempts: number; latestAt: string | null }>(),
+  };
+
+  const { data: outcomesData } = await sb
+    .from("exam_outcomes")
+    .select("experience_id,status,overall_band,section_scores,computed_at")
+    .eq("user_id", userId)
+    .eq("product_id", scope.simulatorProductId)
+    .eq("status", "completed")
+    .order("computed_at", { ascending: false })
+    .limit(120);
+
+  const outcomes = Array.isArray(outcomesData) ? outcomesData : [];
+  const experienceIds = Array.from(new Set(outcomes.map((row: any) => toText(row.experience_id, 80)).filter(Boolean)));
+
+  const sectionIdsByExperience = new Map<string, string[]>();
+  const sectionIdsByExperienceAndType = new Map<string, string[]>();
+  if (experienceIds.length > 0) {
+    const { data: sectionsData } = await sb
+      .from("sections")
+      .select("id,experience_id,metadata")
+      .in("experience_id", experienceIds);
+
+    for (const row of Array.isArray(sectionsData) ? sectionsData : []) {
+      const experienceId = toText((row as any).experience_id, 80);
+      const sectionId = toText((row as any).id, 80);
+      const sectionType = toSectionType((row as any)?.metadata?.type);
+      if (!experienceId || !sectionId) continue;
+
+      const allBucket = sectionIdsByExperience.get(experienceId) ?? [];
+      allBucket.push(sectionId);
+      sectionIdsByExperience.set(experienceId, allBucket);
+
+      if (sectionType) {
+        const key = `${experienceId}::${sectionType}`;
+        const typeBucket = sectionIdsByExperienceAndType.get(key) ?? [];
+        typeBucket.push(sectionId);
+        sectionIdsByExperienceAndType.set(key, typeBucket);
+      }
+    }
+  }
+
+  const targetOverallBand = clamp(toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
+  for (const outcome of outcomes) {
+    const experienceId = toText((outcome as any).experience_id, 80);
+    if (!experienceId) continue;
+
+    const overallBand = toNumber((outcome as any).overall_band);
+    const overallPassed = overallBand != null && overallBand >= targetOverallBand - 0.25;
+    if (overallPassed) avoidance.passedSourceExperienceIds.add(experienceId);
+
+    const sectionScores = isObject((outcome as any).section_scores)
+      ? ((outcome as any).section_scores as JsonRecord)
+      : {};
+    let sawSectionScore = false;
+    for (const rawSection of Object.values(sectionScores)) {
+      if (!isObject(rawSection)) continue;
+      const sectionType = toSectionType(rawSection.type);
+      if (!sectionType) continue;
+      sawSectionScore = true;
+
+      const sectionBand = toNumber(rawSection.band);
+      const passed = sectionBand != null
+        ? sectionBand >= targetBandForSection(goals, sectionType) - 0.25
+        : overallPassed;
+      if (!passed) continue;
+
+      for (const sectionId of sectionIdsByExperienceAndType.get(`${experienceId}::${sectionType}`) ?? []) {
+        avoidance.passedSourceSectionIds.add(sectionId);
+      }
+    }
+
+    if (overallPassed && !sawSectionScore) {
+      for (const sectionId of sectionIdsByExperience.get(experienceId) ?? []) {
+        avoidance.passedSourceSectionIds.add(sectionId);
+      }
+    }
+  }
+
+  const { data: practiceSessionsData } = await sb
+    .from("ielts_practice_sessions")
+    .select("delivery_build_id,created_at")
+    .eq("user_id", userId)
+    .eq("language_id", scope.languageId)
+    .eq("product_id", scope.practiceProductId)
+    .order("created_at", { ascending: false })
+    .limit(300);
+
+  const buildIds = Array.from(new Set(
+    (Array.isArray(practiceSessionsData) ? practiceSessionsData : [])
+      .map((row: any) => toText(row.delivery_build_id, 80))
+      .filter(Boolean),
+  ));
+
+  const sourceSectionByBuildId = new Map<string, string>();
+  if (buildIds.length > 0) {
+    const { data: buildsData } = await sb
+      .from("ielts_practice_delivery_builds")
+      .select("id,source_section_id,build_summary")
+      .in("id", buildIds);
+    for (const row of Array.isArray(buildsData) ? buildsData : []) {
+      const buildId = toText((row as any).id, 80);
+      const summary = isObject((row as any).build_summary) ? ((row as any).build_summary as JsonRecord) : {};
+      const sourceSectionId = toText((row as any).source_section_id ?? summary.source_section_id, 80);
+      if (buildId && sourceSectionId) sourceSectionByBuildId.set(buildId, sourceSectionId);
+    }
+  }
+
+  for (const row of Array.isArray(practiceSessionsData) ? practiceSessionsData : []) {
+    const buildId = toText((row as any).delivery_build_id, 80);
+    const sourceSectionId = sourceSectionByBuildId.get(buildId);
+    if (!sourceSectionId) continue;
+
+    const bucket = avoidance.recentPracticeSourceSections.get(sourceSectionId) ?? { attempts: 0, latestAt: null };
+    bucket.attempts += 1;
+    const createdAt = toNullableText((row as any).created_at, 80);
+    if (createdAt && (!bucket.latestAt || createdAt > bucket.latestAt)) bucket.latestAt = createdAt;
+    avoidance.recentPracticeSourceSections.set(sourceSectionId, bucket);
+  }
+
+  return avoidance;
+};
+
 const buildPlanCandidates = (
   exercises: ExerciseRow[],
   diagnostics: DiagnosticPayload,
@@ -1094,6 +1237,7 @@ const buildSessionPlanCandidates = (
   diagnostics: DiagnosticPayload,
   goals: GoalRow,
   recentSessionMap: Map<string, { attempts: number; latestAt: string | null }>,
+  sourceAvoidance: SourceAvoidance,
 ): SessionPlanCandidate[] => {
   const sectionGapBySection = new Map<string, number>();
   for (const [section, value] of Object.entries(diagnostics.sections ?? {})) {
@@ -1118,6 +1262,8 @@ const buildSessionPlanCandidates = (
     const buildSummary = isObject(build.build_summary) ? (build.build_summary as JsonRecord) : {};
     const sectionType = toSectionType(blueprint.section_type ?? buildSummary.section_type ?? "reading") ?? "reading";
     const experienceKind = toText(build.experience_kind ?? blueprint.experience_kind ?? buildSummary.experience_kind ?? "guided_set", 80).toLowerCase();
+    const sourceSectionId = toText(blueprint.source_section_id ?? build.source_section_id ?? buildSummary.source_section_id, 80);
+    const sourceExperienceId = toText(blueprint.source_experience_id ?? build.source_experience_id ?? buildSummary.source_experience_id, 80);
     const sectionGap = sectionGapBySection.get(sectionType) ?? 0;
 
     const questionTypesRaw = Array.isArray(buildSummary.target_question_types)
@@ -1148,6 +1294,17 @@ const buildSessionPlanCandidates = (
       const daysAgo = Math.max(0, (now - Date.parse(recent.latestAt)) / (1000 * 60 * 60 * 24));
       recencyPenalty = Math.max(0, 0.9 - Math.min(daysAgo / 14, 0.9)) + recent.attempts * 0.08;
     }
+    const recentSource = sourceSectionId ? sourceAvoidance.recentPracticeSourceSections.get(sourceSectionId) : null;
+    let sourceRecencyPenalty = 0;
+    if (recentSource?.latestAt) {
+      const daysAgo = Math.max(0, (now - Date.parse(recentSource.latestAt)) / (1000 * 60 * 60 * 24));
+      sourceRecencyPenalty = Math.max(0, 0.8 - Math.min(daysAgo / 21, 0.8)) + recentSource.attempts * 0.06;
+    }
+    const passedSourcePenalty = sourceSectionId && sourceAvoidance.passedSourceSectionIds.has(sourceSectionId)
+      ? 4.5
+      : sourceExperienceId && sourceAvoidance.passedSourceExperienceIds.has(sourceExperienceId)
+        ? 1.6
+        : 0;
 
     const estimatedMinutes = clamp(Math.floor(toNumber(blueprint.estimated_minutes ?? 25) ?? 25), 5, 120);
     const durationFit = Math.max(0.2, 1 - Math.abs(estimatedMinutes - 25) / 50);
@@ -1162,18 +1319,32 @@ const buildSessionPlanCandidates = (
             ? (sectionType === "writing" ? sectionGap * 0.35 + questionWeakness * 0.2 : -0.3)
             : 0.16;
     const masteryPenalty = experienceKind === "mastery_check" ? 0 : averageMastery * 0.45;
-    const score = roundTo(sectionGap * 1.45 + questionWeakness * 1.7 + durationFit * 0.25 + targetBandFit * 0.2 + kindFit - masteryPenalty - recencyPenalty, 6);
+    const score = roundTo(
+      sectionGap * 1.45
+        + questionWeakness * 1.7
+        + durationFit * 0.25
+        + targetBandFit * 0.2
+        + kindFit
+        - masteryPenalty
+        - recencyPenalty
+        - sourceRecencyPenalty
+        - passedSourcePenalty,
+      6,
+    );
     const questionSummary = questionTypes.length > 0 ? questionTypes.slice(0, 4).join(", ") : "mixed question types";
+    const freshnessNote = passedSourcePenalty > 0 ? " (kept low because this simulator source already met target)" : "";
 
     return {
       blueprint,
       build,
       sectionType,
       score,
-      rationale: `${experienceKind.replace(/_/g, " ")} for ${sectionType}: ${questionSummary}`,
+      rationale: `${experienceKind.replace(/_/g, " ")} for ${sectionType}: ${questionSummary}${freshnessNote}`,
       rationaleJson: {
         source: "practice_blueprint",
         experience_kind: experienceKind,
+        source_section_id: sourceSectionId || null,
+        source_experience_id: sourceExperienceId || null,
         section_gap: roundTo(sectionGap, 4),
         question_weakness: roundTo(questionWeakness, 4),
         average_mastery: roundTo(averageMastery, 4),
@@ -1183,6 +1354,8 @@ const buildSessionPlanCandidates = (
         kind_fit: roundTo(kindFit, 4),
         mastery_penalty: roundTo(masteryPenalty, 4),
         recency_penalty: roundTo(recencyPenalty, 4),
+        source_recency_penalty: roundTo(sourceRecencyPenalty, 4),
+        passed_source_penalty: roundTo(passedSourcePenalty, 4),
         question_types: questionTypes,
       },
     };
@@ -1255,7 +1428,7 @@ const loadPracticeSessionBundle = async (
   const [buildRes, blueprintRes, sessionRes, outcomeRes, evaluationsRes, sectionsRes] = await Promise.all([
     sb
       .from("ielts_practice_delivery_builds")
-      .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+      .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
       .eq("id", String(practiceSession.delivery_build_id ?? ""))
       .maybeSingle(),
     sb
@@ -1327,7 +1500,7 @@ const enrichPlanRows = async (
     buildIds.length > 0
       ? sb
         .from("ielts_practice_delivery_builds")
-        .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+        .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
         .in("id", buildIds)
       : Promise.resolve({ data: [] }),
     blueprintIds.length > 0
@@ -2120,6 +2293,7 @@ serve(async (req) => {
       const quotas = createSectionQuota(dailyCount, normalizedMix);
 
       if (publishedBlueprints.length > 0) {
+        const sourceAvoidance = await loadSourceAvoidance(sb, scope, auth.userId, goals);
         const { data: recentPracticeSessionsData } = await sb
           .from("ielts_practice_sessions")
           .select("delivery_build_id,created_at")
@@ -2143,6 +2317,7 @@ serve(async (req) => {
           diagnostics,
           goals,
           recentSessionMap,
+          sourceAvoidance,
         );
 
         const selectedBlueprints: SessionPlanCandidate[] = [];
@@ -2314,7 +2489,7 @@ serve(async (req) => {
 
       const { data: buildData } = await sb
         .from("ielts_practice_delivery_builds")
-        .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_summary,validation_summary,metadata")
+        .select("id,blueprint_id,delivery_experience_id,source_product_id,source_experience_id,source_section_id,status,experience_kind,build_summary,validation_summary,metadata")
         .eq("id", buildId)
         .maybeSingle();
       if (!buildData) return json(404, { error: "Delivery build not found" });
@@ -2333,6 +2508,9 @@ serve(async (req) => {
           plan_item_id: planItemId,
           blueprint_id: blueprintId || toText(build.blueprint_id, 80),
           delivery_build_id: buildId,
+          experience_kind: toText(build.experience_kind, 80),
+          source_section_id: toText(build.source_section_id ?? (isObject(build.build_summary) ? (build.build_summary as JsonRecord).source_section_id : null), 80),
+          runtime: "transformed_sessions",
         },
       });
 
