@@ -5,9 +5,14 @@ import {
   practiceDiagnosticsGet,
   practiceGeneratePlan,
   practiceGoalsGet,
+  practiceNotebookList,
+  practiceNotebookPatch,
   practicePlanItemStart,
+  practiceRoadmapList,
   practiceTodayPlan,
+  type PracticeNotebookItem,
   type PracticePlanItem,
+  type PracticeRoadmapItem,
 } from '../lib/api';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import {
@@ -146,7 +151,20 @@ const sectionBarClass = (section: SectionType): string => {
 const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
   if (!item.blueprint_id && !item.delivery_build_id) return false;
   const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  return buildSummary.transformed === true && typeof buildSummary.source_section_id === 'string' && buildSummary.source_section_id.length > 0;
+  const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
+  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
+  return (
+    buildSummary.transformed === true
+    && typeof buildSummary.source_section_id === 'string'
+    && buildSummary.source_section_id.length > 0
+    && labPayload.version === 'ielts.practice.lab.v1'
+  );
+};
+
+const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null }): boolean => {
+  const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
+  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
+  return labPayload.version === 'ielts.practice.lab.v1';
 };
 
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
@@ -179,8 +197,11 @@ export const DashboardPage = () => {
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
   const [sharedSignals, setSharedSignals] = useState<number | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
+  const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
+  const [roadmap, setRoadmap] = useState<PracticeRoadmapItem[]>([]);
   const [generating, setGenerating] = useState(false);
   const [launchingId, setLaunchingId] = useState<string | null>(null);
+  const [notebookBusyId, setNotebookBusyId] = useState<string | null>(null);
   const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
 
   useEffect(() => {
@@ -239,11 +260,13 @@ export const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [goalsRes, diagnosticsRes, planRes, profileRes] = await Promise.all([
+      const [goalsRes, diagnosticsRes, planRes, profileRes, notebookRes, roadmapRes] = await Promise.all([
         practiceGoalsGet(accessToken),
         practiceDiagnosticsGet(accessToken, { refresh: forceDiagnostics }),
         practiceTodayPlan(accessToken),
         learningProfileV2(accessToken, { productId: IELTS_PRACTICE_PRODUCT_ID, languageCode: 'en' }).catch(() => null),
+        practiceNotebookList(accessToken).catch(() => ({ items: [] as PracticeNotebookItem[] })),
+        practiceRoadmapList(accessToken, { refresh: forceDiagnostics }).catch(() => ({ items: [] as PracticeRoadmapItem[] })),
       ]);
 
       setTargetBand(toNumber(goalsRes.goals.target_overall_band));
@@ -259,6 +282,8 @@ export const DashboardPage = () => {
         todayPlan = generated.items ?? [];
       }
       setPlan(todayPlan);
+      setNotebook(notebookRes.items ?? []);
+      setRoadmap(roadmapRes.items ?? []);
 
       const profileSignals = Number((profileRes as { language_projection?: { signals_count?: number } } | null)?.language_projection?.signals_count ?? NaN);
       setSharedSignals(Number.isFinite(profileSignals) ? profileSignals : null);
@@ -320,8 +345,15 @@ export const DashboardPage = () => {
     try {
       const started = await practicePlanItemStart(accessToken, item.id);
       const sessionId = started.session?.id ?? started.practice_session?.session_id ?? null;
+      const practiceSessionId = started.practice_session?.id ?? null;
       const firstSectionId = started.first_section_id ?? started.sections?.[0]?.id ?? null;
+      const labReady = hasLabPayload(started);
       if (!sessionId) throw new Error('Practice session started without a session id');
+
+      if (labReady && practiceSessionId) {
+        navigate(`/lab/${encodeURIComponent(practiceSessionId)}?back=/dashboard`);
+        return;
+      }
 
       const runtimeQuery = new URLSearchParams({
         results_back: '/dashboard',
@@ -344,6 +376,27 @@ export const DashboardPage = () => {
     }
   };
 
+  const updateNotebookStatus = async (
+    item: PracticeNotebookItem,
+    status: 'reviewed' | 'difficult' | 'mastered' | 'archived',
+  ): Promise<void> => {
+    if (!accessToken) return;
+    setNotebookBusyId(item.id);
+    setError(null);
+    try {
+      const response = await practiceNotebookPatch(accessToken, item.id, status);
+      setNotebook((prev) => (
+        status === 'archived'
+          ? prev.filter((row) => row.id !== item.id)
+          : prev.map((row) => (row.id === item.id ? response.item : row))
+      ));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update notebook item');
+    } finally {
+      setNotebookBusyId((current) => (current === item.id ? null : current));
+    }
+  };
+
   const planSummary = useMemo(() => {
     const total = plan.length;
     const completed = plan.filter((item) => item.status === 'completed').length;
@@ -352,6 +405,9 @@ export const DashboardPage = () => {
     const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, active, pending, completion };
   }, [plan]);
+
+  const notebookPreview = useMemo(() => notebook.slice(0, 4), [notebook]);
+  const roadmapPreview = useMemo(() => roadmap.slice(0, 5), [roadmap]);
 
   return (
     <div className="practice-root">
@@ -471,6 +527,56 @@ export const DashboardPage = () => {
                         <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
                         <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
                       </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="glass practice-card notebook-card">
+              <div className="task-card-head">
+                <h3>Mistake Notebook</h3>
+                <span className="muted">{notebook.length} active</span>
+              </div>
+              {notebookPreview.length === 0 ? (
+                <p className="muted">Mistake patterns will appear after lab submissions.</p>
+              ) : (
+                <ul className="notebook-list">
+                  {notebookPreview.map((item) => (
+                    <li key={item.id} className="notebook-item">
+                      <div>
+                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                        <h4>{item.mistake_pattern}</h4>
+                        <p>{item.coach_note ?? `${formatPracticeLabel(item.question_type)} | ${formatPracticeLabel(item.trap_type)}`}</p>
+                      </div>
+                      <div className="notebook-actions">
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'reviewed')}>Reviewed</button>
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'difficult')}>Hard</button>
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'archived')}>Archive</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="glass practice-card roadmap-card">
+              <div className="task-card-head">
+                <h3>Band Roadmap</h3>
+                <Link to="/plan" className="btn ghost compact">Tune goal</Link>
+              </div>
+              {roadmapPreview.length === 0 ? (
+                <p className="muted">Roadmap items are created from your diagnostics and target band.</p>
+              ) : (
+                <ul className="roadmap-list">
+                  {roadmapPreview.map((item) => (
+                    <li key={item.id} className="roadmap-item">
+                      <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                      <div>
+                        <h4>{item.title}</h4>
+                        <p>{item.current_state} {'->'} {item.target_state}</p>
+                      </div>
+                      <strong>{formatPracticeLabel(item.linked_lab_kind ?? 'lab')}</strong>
                     </li>
                   ))}
                 </ul>

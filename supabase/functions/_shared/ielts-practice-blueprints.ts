@@ -1,6 +1,7 @@
 type JsonRecord = Record<string, unknown>;
 
 export const PRACTICE_DELIVERY_SCHEMA_VERSION = "ielts.practice.delivery.v2";
+export const PRACTICE_LAB_SCHEMA_VERSION = "ielts.practice.lab.v1";
 export const PRACTICE_EXPERIENCE_KINDS = [
   "strategy",
   "repair_drill",
@@ -67,6 +68,10 @@ export type SourceCatalogRow = {
 };
 
 const toText = (value: unknown, maxLen = 320): string => String(value ?? "").trim().slice(0, maxLen);
+const toNullableText = (value: unknown, maxLen = 320): string | null => {
+  const text = toText(value, maxLen);
+  return text.length > 0 ? text : null;
+};
 const toNumber = (value: unknown): number | null => {
   const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) ? n : null;
@@ -240,6 +245,21 @@ export type TransformationPlan = {
   questionLimit: number;
 };
 
+export type PracticeLabPayload = JsonRecord & {
+  version: typeof PRACTICE_LAB_SCHEMA_VERSION;
+  lab_kind: string;
+  section_type: "reading" | "listening" | "writing";
+  experience_kind: PracticeExperienceKind;
+  title: string;
+  coach_template: JsonRecord;
+  steps: JsonRecord[];
+  answer_key: Record<string, JsonRecord>;
+  feedback_rules: JsonRecord;
+  variant_seed: string;
+  source_refs: JsonRecord;
+  validation: JsonRecord;
+};
+
 export const buildTransformationPlan = (
   sectionType: "reading" | "listening" | "writing",
   experienceKindRaw: unknown,
@@ -339,6 +359,234 @@ const summarizeUnits = (units: any[]): Pick<SourceCatalogRow, "question_count" |
     has_audio: hasAudio,
     has_passage: hasPassage,
     has_image: hasImage,
+  };
+};
+
+const firstText = (value: JsonRecord, keys: string[], maxLen = 12000): string => {
+  for (const key of keys) {
+    const raw = value[key];
+    if (typeof raw === "string" && raw.trim().length > 0) return toText(raw, maxLen);
+  }
+  return "";
+};
+
+const unitText = (unit: any, keys: string[], maxLen = 12000): string => {
+  const data = isObject(unit?.data) ? (unit.data as JsonRecord) : {};
+  const metadata = isObject(unit?.metadata) ? (unit.metadata as JsonRecord) : {};
+  return firstText(data, keys, maxLen) || firstText(metadata, keys, maxLen);
+};
+
+const optionsFromUnit = (unit: any): JsonRecord[] => {
+  const data = isObject(unit?.data) ? (unit.data as JsonRecord) : {};
+  const raw = Array.isArray(data.options)
+    ? data.options
+    : Array.isArray(data.choices)
+      ? data.choices
+      : [];
+  return raw
+    .map((entry, index) => {
+      if (isObject(entry)) {
+        return {
+          id: toText(entry.id ?? entry.value ?? entry.key ?? String(index + 1), 80),
+          label: toText(entry.label ?? entry.text ?? entry.value ?? entry.id ?? "", 1200),
+        };
+      }
+      return { id: String(index + 1), label: toText(entry, 1200) };
+    })
+    .filter((entry) => toText(entry.id, 80) || toText(entry.label, 1200));
+};
+
+const responseShapeFromCorrect = (correct: unknown): JsonRecord => {
+  if (!isObject(correct)) return { kind: "free_text", keys: [] };
+  for (const key of ["blanks", "matches", "cells", "labels", "targets"]) {
+    if (isObject(correct[key])) return { kind: "map", map_key: key, keys: Object.keys(correct[key] as JsonRecord) };
+  }
+  if (Array.isArray(correct.option_ids)) return { kind: "multi_choice" };
+  if (typeof correct.option_id === "string") return { kind: "single_choice" };
+  return { kind: "free_text", keys: [] };
+};
+
+const labKindFor = (
+  sectionType: "reading" | "listening" | "writing",
+  experienceKind: PracticeExperienceKind,
+): string => {
+  if (sectionType === "writing") return "writing_rewrite";
+  if (experienceKind === "timed_mini") return "timed_mini";
+  if (experienceKind === "mastery_check") return "mastery_check";
+  if (sectionType === "listening") return experienceKind === "repair_drill" ? "distractor_drill" : "listening_replay";
+  if (experienceKind === "repair_drill") return "distractor_drill";
+  return "evidence_locator";
+};
+
+const stepKindFor = (
+  sectionType: "reading" | "listening" | "writing",
+  experienceKind: PracticeExperienceKind,
+): string => {
+  if (sectionType === "writing") return "writing_rewrite";
+  if (experienceKind === "mastery_check") return "mastery_response";
+  if (experienceKind === "timed_mini") return "timed_response";
+  if (sectionType === "listening") return experienceKind === "repair_drill" ? "distractor_elimination" : "listening_replay";
+  return experienceKind === "repair_drill" ? "distractor_elimination" : "evidence_locator";
+};
+
+const sourceContextForUnit = (question: any, selectedUnits: any[]): JsonRecord => {
+  const partId = toText(question?.part_id, 80);
+  const samePart = selectedUnits.filter((unit) => toText(unit?.part_id, 80) === partId);
+  const passage = samePart.find((unit) => toText(unit?.type, 120).toLowerCase() === "reading_passage");
+  const audio = samePart.find((unit) => toText(unit?.type, 120).toLowerCase() === "audio");
+  const image = samePart.find((unit) => toText(unit?.type, 120).toLowerCase() === "image");
+  const passageText = passage ? unitText(passage, ["text", "passage", "content", "body"], 18000) : "";
+  const transcript = audio ? unitText(audio, ["transcript", "transcript_text", "text"], 18000) : "";
+  const audioData = audio && isObject(audio.data) ? (audio.data as JsonRecord) : {};
+  return {
+    passage_title: passage ? unitText(passage, ["title"], 500) || "Reading passage" : null,
+    passage_text: passageText || null,
+    transcript: transcript || null,
+    audio_url: toNullableText(audioData.url ?? audioData.audio_url ?? audioData.public_url ?? audioData.path, 1200),
+    image: image && isObject(image.data) ? image.data : null,
+    has_passage: Boolean(passageText),
+    has_transcript: Boolean(transcript),
+    has_audio: Boolean(audio),
+  };
+};
+
+const createPracticeLabStep = (
+  unit: any,
+  index: number,
+  plan: TransformationPlan,
+  answerKeyBySourceUnitId: Map<string, JsonRecord>,
+  clonedUnitIdBySourceUnitId?: Map<string, string>,
+): JsonRecord => {
+  const sourceUnitId = toText(unit?.id, 80);
+  const questionType = questionTypeFromUnit(unit);
+  const data = isObject(unit?.data) ? (unit.data as JsonRecord) : {};
+  const correct = answerKeyBySourceUnitId.get(sourceUnitId)?.correct ?? {};
+  const context = sourceContextForUnit(unit, plan.selectedUnits);
+  const stepKind = stepKindFor(plan.sectionType, plan.experienceKind);
+  const prompt = firstText(data, ["prompt", "question", "text", "title"], 5000) || promptLeadForKind(plan.experienceKind, plan.sectionType, [questionType]);
+  const stepId = `step_${index + 1}_${questionType.replace(/[^a-z0-9]+/gi, "_")}`;
+
+  return {
+    id: stepId,
+    kind: stepKind,
+    title: stepKind === "writing_rewrite"
+      ? "Writing Rewrite Lab"
+      : `${formatQuestionType(questionType)} ${stepKind.replace(/_/g, " ")}`,
+    instructions: promptLeadForKind(plan.experienceKind, plan.sectionType, [questionType]),
+    question_type: questionType,
+    prompt,
+    options: optionsFromUnit(unit),
+    response_shape: responseShapeFromCorrect(correct),
+    source_content_unit_id: sourceUnitId,
+    delivery_content_unit_id: clonedUnitIdBySourceUnitId?.get(sourceUnitId) ?? null,
+    context,
+    replay: {
+      available: Boolean(context.has_transcript || context.has_audio),
+      transcript: context.transcript ?? null,
+      signpost_prompt: plan.sectionType === "listening" ? "Listen for signposts, paraphrase, and late corrections before answering." : null,
+    },
+    evidence: {
+      required: stepKind === "evidence_locator",
+      target: isObject((answerKeyBySourceUnitId.get(sourceUnitId)?.metadata as unknown)) ? (answerKeyBySourceUnitId.get(sourceUnitId)?.metadata as JsonRecord).evidence : null,
+      fallback: stepKind === "evidence_locator" && !context.has_passage ? "best_effort_without_passage" : null,
+    },
+    distractors: {
+      required: stepKind === "distractor_elimination",
+      trap_types: ["word_match", "opposite_meaning", "too_broad", "nearby_but_wrong", "wrong_number", "wrong_speaker", "not_given"],
+    },
+    answer_key: correct,
+  };
+};
+
+export const buildPracticeLabPayload = (
+  plan: TransformationPlan,
+  answerKeys: any[],
+  opts?: {
+    sourceExperienceId?: string | null;
+    sourceSectionId?: string | null;
+    sourceSectionName?: string | null;
+    clonedUnitIdBySourceUnitId?: Map<string, string>;
+  },
+): PracticeLabPayload => {
+  const answerKeyBySourceUnitId = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(answerKeys) ? answerKeys : []) {
+    const unitId = toText((row as any)?.content_unit_id, 80);
+    if (!unitId) continue;
+    answerKeyBySourceUnitId.set(unitId, {
+      correct: isObject((row as any)?.correct) || Array.isArray((row as any)?.correct) ? (row as any).correct : {},
+      metadata: isObject((row as any)?.metadata) ? (row as any).metadata : {},
+    });
+  }
+
+  const labKind = labKindFor(plan.sectionType, plan.experienceKind);
+  const questionTypes = plan.targetQuestionTypes.length > 0 ? plan.targetQuestionTypes : plan.selectedQuestionUnits.map(questionTypeFromUnit);
+  const steps = plan.selectedQuestionUnits.map((unit, index) =>
+    createPracticeLabStep(unit, index, plan, answerKeyBySourceUnitId, opts?.clonedUnitIdBySourceUnitId)
+  );
+  const answerKey: Record<string, JsonRecord> = {};
+  for (const step of steps) {
+    answerKey[toText(step.id, 120)] = {
+      question_type: step.question_type,
+      correct: step.answer_key,
+      source_content_unit_id: step.source_content_unit_id,
+      delivery_content_unit_id: step.delivery_content_unit_id,
+    };
+  }
+
+  const hasAnswerKeys = steps.every((step) => isObject(step.answer_key) && Object.keys(step.answer_key as JsonRecord).length > 0)
+    || plan.sectionType === "writing";
+  const hasTranscript = steps.some((step) => isObject(step.context) && Boolean((step.context as JsonRecord).has_transcript));
+  const hasPassage = steps.some((step) => isObject(step.context) && Boolean((step.context as JsonRecord).has_passage));
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  if (steps.length === 0) errors.push("No lab steps generated");
+  if (!hasAnswerKeys) errors.push("Missing answer keys for objective lab steps");
+  if (labKind === "listening_replay" && !hasTranscript) warnings.push("Listening replay will use prediction and reasoning fallback because transcript is missing");
+  if (labKind === "evidence_locator" && !hasPassage) warnings.push("Evidence locator has no passage text and will use best-effort evidence reflection");
+
+  return {
+    version: PRACTICE_LAB_SCHEMA_VERSION,
+    lab_kind: labKind,
+    section_type: plan.sectionType,
+    experience_kind: plan.experienceKind,
+    title: `${titleForKind(plan.experienceKind)} Lab`,
+    coach_template: {
+      headline: `${formatQuestionType(questionTypes[0] ?? plan.sectionType)} focus`,
+      body: instructionForKind(plan.experienceKind, plan.sectionType, questionTypes),
+      watch_for: plan.sectionType === "writing"
+        ? ["Task position", "Paragraph control", "Vocabulary precision", "Grammar accuracy"]
+        : ["Question wording", "Paraphrase", "Distractors", "Evidence"],
+      source: "diagnostics_mastery_and_plan_rationale",
+    },
+    steps,
+    answer_key: answerKey,
+    feedback_rules: {
+      score_model: plan.sectionType === "writing" ? "grade-writing-v2-with-heuristic-fallback" : "objective-plus-lab-process",
+      partial_credit: true,
+      mastery_updates: true,
+      notebook_updates: true,
+      roadmap_updates: true,
+    },
+    variant_seed: [
+      opts?.sourceSectionId ?? "source",
+      plan.experienceKind,
+      questionTypes.join(".") || "mixed",
+      String(steps.length),
+    ].join(":"),
+    source_refs: {
+      source_experience_id: opts?.sourceExperienceId ?? null,
+      source_section_id: opts?.sourceSectionId ?? null,
+      source_section_name: opts?.sourceSectionName ?? null,
+      question_types: questionTypes,
+      has_passage: hasPassage,
+      has_transcript: hasTranscript,
+      selected_source_unit_count: plan.selectedUnits.length,
+    },
+    validation: {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+    },
   };
 };
 
@@ -743,8 +991,24 @@ export const cloneBlueprintToDeliveryExperience = async (
     if (insertKeysError) throw new Error("Failed to clone practice answer keys");
   }
 
+  const labPayload = buildPracticeLabPayload(transformationPlan, Array.isArray(answerKeys) ? answerKeys : [], {
+    sourceExperienceId: String((sourceExperience as any).id),
+    sourceSectionId: String((sourceSection as any).id),
+    sourceSectionName: toText((sourceSection as any).name, 240) || null,
+    clonedUnitIdBySourceUnitId: unitIdMap,
+  });
   const buildSummary = createBuildSummary(sourceExperience, sourceSection, selectedSourceParts, transformationPlan.selectedUnits, transformationPlan);
-  const validationSummary = createValidationSummary(buildSummary);
+  const baseValidationSummary = createValidationSummary(buildSummary);
+  const labValidation = isObject(labPayload.validation) ? labPayload.validation : {};
+  const validationSummary = {
+    ...baseValidationSummary,
+    valid: baseValidationSummary.valid === true && labValidation.valid !== false,
+    checks: {
+      ...(isObject(baseValidationSummary.checks) ? baseValidationSummary.checks : {}),
+      lab_payload_ready: labPayload.version === PRACTICE_LAB_SCHEMA_VERSION && labValidation.valid !== false,
+    },
+    lab: labPayload.validation,
+  };
   const buildStatus = opts?.publish === true ? "published" : "draft";
 
   if (opts?.publish === true) {
@@ -783,6 +1047,8 @@ export const cloneBlueprintToDeliveryExperience = async (
         section_type: sectionType,
         experience_kind: transformationPlan.experienceKind,
         delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+        lab_payload: labPayload,
+        lab_schema_version: PRACTICE_LAB_SCHEMA_VERSION,
       },
       created_by: adminUserId,
     })
@@ -819,6 +1085,10 @@ export const loadPublishedBlueprintCandidates = async (
       && row.latest_build.build_summary?.schema_version === PRACTICE_DELIVERY_SCHEMA_VERSION
       && row.latest_build.build_summary?.transformed === true
       && typeof row.latest_build.build_summary?.source_section_id === "string"
-      && row.latest_build.build_summary.source_section_id.length > 0)
+      && row.latest_build.build_summary.source_section_id.length > 0
+      && isObject(row.latest_build.metadata?.lab_payload)
+      && row.latest_build.metadata.lab_payload.version === PRACTICE_LAB_SCHEMA_VERSION
+      && isObject(row.latest_build.metadata.lab_payload.validation)
+      && row.latest_build.metadata.lab_payload.validation.valid !== false)
     .sort((a, b) => String(b.latest_build.updated_at ?? b.latest_build.created_at ?? "").localeCompare(String(a.latest_build.updated_at ?? a.latest_build.created_at ?? "")));
 };

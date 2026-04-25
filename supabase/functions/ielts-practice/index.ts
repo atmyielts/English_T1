@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { loadPublishedBlueprintCandidates } from "../_shared/ielts-practice-blueprints.ts";
+import { loadPublishedBlueprintCandidates, PRACTICE_LAB_SCHEMA_VERSION } from "../_shared/ielts-practice-blueprints.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -123,6 +123,12 @@ type SourceAvoidance = {
   recentPracticeSourceSections: Map<string, { attempts: number; latestAt: string | null }>;
 };
 
+type PracticeTrainingContext = {
+  notebookBoostByQuestionKey: Map<string, number>;
+  roadmapBoostByQuestionKey: Map<string, number>;
+  roadmapBoostBySection: Map<string, number>;
+};
+
 type AttemptRow = {
   id: string;
   user_id: string;
@@ -189,6 +195,7 @@ const IELTS_SIMULATOR_PRODUCT_ID_FALLBACK = "ead05eae-aa97-4bda-a07c-51e5dbb062c
 const EN_LANGUAGE_CODE = "en";
 const DIAGNOSTIC_SCHEMA_VERSION = "ielts.practice.diagnostic.v2";
 const PRACTICE_DELIVERY_SCHEMA_VERSION = "ielts.practice.delivery.v2";
+const PRACTICE_LAB_ATTEMPT_SCHEMA_VERSION = "ielts.practice.lab_attempt.v1";
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -272,6 +279,19 @@ const toStringList = (value: unknown): string[] => {
     if (typeof value.answer === "string") return [value.answer];
   }
   return [String(value)];
+};
+
+const firstTextValue = (value: unknown, keys: string[]): string => {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (!isObject(value)) return "";
+  for (const key of keys) {
+    const raw = value[key];
+    if (typeof raw === "string" || typeof raw === "number") {
+      const text = String(raw).trim();
+      if (text) return text;
+    }
+  }
+  return "";
 };
 
 const firstNormalized = (value: unknown, normalizer: (raw: string) => string): string => {
@@ -1163,6 +1183,62 @@ const loadSourceAvoidance = async (
   return avoidance;
 };
 
+const loadPracticeTrainingContext = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+): Promise<PracticeTrainingContext> => {
+  const context: PracticeTrainingContext = {
+    notebookBoostByQuestionKey: new Map(),
+    roadmapBoostByQuestionKey: new Map(),
+    roadmapBoostBySection: new Map(),
+  };
+
+  const nowIso = new Date().toISOString();
+  const [{ data: notebookData }, { data: roadmapData }] = await Promise.all([
+    sb
+      .from("ielts_practice_mistake_notebook")
+      .select("section_type,question_type,priority,status,next_review_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .in("status", ["active", "difficult", "reviewed"])
+      .limit(200),
+    sb
+      .from("ielts_practice_roadmap_items")
+      .select("section_type,skill_key,priority,status")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .in("status", ["active", "in_progress"])
+      .limit(200),
+  ]);
+
+  for (const row of Array.isArray(notebookData) ? notebookData : []) {
+    const section = toSectionType((row as any).section_type);
+    const questionType = toText((row as any).question_type, 120).toLowerCase();
+    if (!section || !questionType) continue;
+    const dueAt = toNullableText((row as any).next_review_at, 80);
+    const dueBoost = !dueAt || dueAt <= nowIso ? 0.35 : 0.12;
+    const statusBoost = toText((row as any).status, 40) === "difficult" ? 0.35 : 0;
+    const priorityBoost = clamp(toNumber((row as any).priority) ?? 0, 0, 1) * 0.45;
+    const key = `${section}::${questionType}`;
+    context.notebookBoostByQuestionKey.set(key, Math.max(context.notebookBoostByQuestionKey.get(key) ?? 0, dueBoost + statusBoost + priorityBoost));
+  }
+
+  for (const row of Array.isArray(roadmapData) ? roadmapData : []) {
+    const section = toSectionType((row as any).section_type);
+    const questionType = toText((row as any).skill_key, 120).toLowerCase();
+    if (!section || !questionType) continue;
+    const priorityBoost = clamp((toNumber((row as any).priority) ?? 0) / 4, 0, 0.55);
+    const key = `${section}::${questionType}`;
+    context.roadmapBoostByQuestionKey.set(key, Math.max(context.roadmapBoostByQuestionKey.get(key) ?? 0, priorityBoost));
+    context.roadmapBoostBySection.set(section, Math.max(context.roadmapBoostBySection.get(section) ?? 0, priorityBoost * 0.45));
+  }
+
+  return context;
+};
+
 const buildPlanCandidates = (
   exercises: ExerciseRow[],
   diagnostics: DiagnosticPayload,
@@ -1238,6 +1314,7 @@ const buildSessionPlanCandidates = (
   goals: GoalRow,
   recentSessionMap: Map<string, { attempts: number; latestAt: string | null }>,
   sourceAvoidance: SourceAvoidance,
+  trainingContext?: PracticeTrainingContext,
 ): SessionPlanCandidate[] => {
   const sectionGapBySection = new Map<string, number>();
   for (const [section, value] of Object.entries(diagnostics.sections ?? {})) {
@@ -1278,6 +1355,12 @@ const buildSessionPlanCandidates = (
     const questionWeakness = weaknessValues.length > 0
       ? weaknessValues.reduce((sum, value) => sum + value, 0) / weaknessValues.length
       : 0;
+    const notebookBoost = questionTypes.length > 0
+      ? Math.max(...questionTypes.map((questionType) => trainingContext?.notebookBoostByQuestionKey.get(`${sectionType}::${questionType}`) ?? 0), 0)
+      : 0;
+    const roadmapBoost = questionTypes.length > 0
+      ? Math.max(...questionTypes.map((questionType) => trainingContext?.roadmapBoostByQuestionKey.get(`${sectionType}::${questionType}`) ?? 0), trainingContext?.roadmapBoostBySection.get(sectionType) ?? 0)
+      : (trainingContext?.roadmapBoostBySection.get(sectionType) ?? 0);
     const masteryValues = questionTypes.map((questionType) => masteryByQuestionType.get(`${sectionType}::${questionType}`) ?? 0);
     const averageMastery = masteryValues.length > 0
       ? masteryValues.reduce((sum, value) => sum + value, 0) / masteryValues.length
@@ -1325,6 +1408,8 @@ const buildSessionPlanCandidates = (
         + durationFit * 0.25
         + targetBandFit * 0.2
         + kindFit
+        + notebookBoost
+        + roadmapBoost
         - masteryPenalty
         - recencyPenalty
         - sourceRecencyPenalty
@@ -1367,6 +1452,8 @@ const buildSessionPlanCandidates = (
         duration_fit: roundTo(durationFit, 4),
         target_band_fit: roundTo(targetBandFit, 4),
         kind_fit: roundTo(kindFit, 4),
+        notebook_boost: roundTo(notebookBoost, 4),
+        roadmap_boost: roundTo(roadmapBoost, 4),
         mastery_penalty: roundTo(masteryPenalty, 4),
         recency_penalty: roundTo(recencyPenalty, 4),
         source_recency_penalty: roundTo(sourceRecencyPenalty, 4),
@@ -2195,6 +2282,484 @@ const scoreAndRefreshPracticeSession = async (
   return { scoring, mastery_updates: masteryUpdates, diagnostics_snapshot_id: diagnosticsSnapshotId };
 };
 
+const formatQuestionLabel = (value: unknown): string =>
+  toText(value, 120)
+    .replace(/^question_/i, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (token) => token.toUpperCase())
+    || "IELTS skill";
+
+const labPayloadFromBundle = (bundle: JsonRecord): JsonRecord | null => {
+  const build = isObject(bundle.delivery_build) ? (bundle.delivery_build as JsonRecord) : {};
+  const metadata = isObject(build.metadata) ? (build.metadata as JsonRecord) : {};
+  const payload = isObject(metadata.lab_payload) ? (metadata.lab_payload as JsonRecord) : null;
+  return payload?.version === PRACTICE_LAB_SCHEMA_VERSION ? payload : null;
+};
+
+const loadLatestLabAttempt = async (sb: any, practiceSessionId: string, userId: string): Promise<JsonRecord | null> => {
+  const { data } = await sb
+    .from("ielts_practice_lab_attempts")
+    .select("id,practice_session_id,delivery_build_id,lab_kind,section_type,status,current_step_index,answers_json,score_artifacts,raw_score,max_score,accuracy_ratio,estimated_band,started_at,submitted_at,scored_at,metadata,created_at,updated_at")
+    .eq("practice_session_id", practiceSessionId)
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return isObject(data) ? (data as JsonRecord) : null;
+};
+
+const upsertLabAttemptDraft = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  practiceSession: JsonRecord,
+  labPayload: JsonRecord,
+  body: JsonRecord,
+): Promise<JsonRecord> => {
+  const practiceSessionId = toText(practiceSession.id, 80);
+  const existing = await loadLatestLabAttempt(sb, practiceSessionId, userId);
+  const nowIso = new Date().toISOString();
+  const answers = isObject(body.answers) ? body.answers : {};
+  const currentStepIndex = Math.max(0, Math.floor(toNumber(body.current_step_index) ?? toNumber(body.currentStepIndex) ?? 0));
+  const row = {
+    user_id: userId,
+    language_id: scope.languageId,
+    product_id: scope.practiceProductId,
+    practice_session_id: practiceSessionId,
+    delivery_build_id: toNullableText(practiceSession.delivery_build_id, 80),
+    lab_kind: toText(labPayload.lab_kind, 80) || "guided_lab",
+    section_type: toSectionType(labPayload.section_type) ?? "reading",
+    status: "in_progress",
+    current_step_index: currentStepIndex,
+    answers_json: answers,
+    metadata: {
+      schema_version: PRACTICE_LAB_ATTEMPT_SCHEMA_VERSION,
+      saved_at: nowIso,
+      elapsed_seconds: Math.max(0, Math.floor(toNumber(body.elapsed_seconds) ?? 0)),
+    },
+  };
+
+  const query = existing?.id
+    ? sb
+      .from("ielts_practice_lab_attempts")
+      .update(row)
+      .eq("id", toText(existing.id, 80))
+      .select("id,practice_session_id,delivery_build_id,lab_kind,section_type,status,current_step_index,answers_json,score_artifacts,raw_score,max_score,accuracy_ratio,estimated_band,started_at,submitted_at,scored_at,metadata,created_at,updated_at")
+      .maybeSingle()
+    : sb
+      .from("ielts_practice_lab_attempts")
+      .insert(row)
+      .select("id,practice_session_id,delivery_build_id,lab_kind,section_type,status,current_step_index,answers_json,score_artifacts,raw_score,max_score,accuracy_ratio,estimated_band,started_at,submitted_at,scored_at,metadata,created_at,updated_at")
+      .maybeSingle();
+
+  const { data, error } = await query;
+  if (error || !data) throw new Error("Failed to save practice lab attempt");
+  return data as JsonRecord;
+};
+
+const responseDataForStep = (step: JsonRecord, response: unknown): unknown => {
+  if (!isObject(response)) return response;
+  const shape = isObject(step.response_shape) ? (step.response_shape as JsonRecord) : {};
+  const kind = toText(shape.kind, 80).toLowerCase();
+  if (kind === "single_choice") {
+    return { selected_option: response.selected_option ?? response.answer ?? response.value ?? response.text };
+  }
+  if (kind === "multi_choice") {
+    return { selected_options: Array.isArray(response.selected_options) ? response.selected_options : Array.isArray(response.answer) ? response.answer : [] };
+  }
+  if (kind === "map") {
+    const mapKey = toText(shape.map_key, 80);
+    if (mapKey && isObject(response[mapKey])) return response;
+    if (isObject(response.answers)) return response.answers;
+    return response;
+  }
+  return { text: response.answer ?? response.text ?? response.rewrite ?? response.full_rewrite ?? response.value ?? "" };
+};
+
+const scoreLabStep = (
+  labPayload: JsonRecord,
+  step: JsonRecord,
+  response: unknown,
+): {
+  step_id: string;
+  question_type: string;
+  trap_type: string;
+  raw_score: number;
+  max_score: number;
+  accuracy_ratio: number;
+  feedback: string;
+} => {
+  const stepId = toText(step.id, 120);
+  const questionType = toText(step.question_type, 120).toLowerCase() || "question_unknown";
+  const kind = toText(step.kind, 80).toLowerCase();
+  const correct = isObject(step.answer_key) ? step.answer_key : {};
+  const isWriting = toSectionType(labPayload.section_type) === "writing" || kind === "writing_rewrite";
+
+  let rawScore = 0;
+  let maxScore = 1;
+  if (isWriting) {
+    const text = firstTextValue(response, ["rewrite", "full_rewrite", "answer", "text", "value"]);
+    const heuristic = heuristicWritingBand({ text });
+    rawScore = heuristic.band;
+    maxScore = 9;
+  } else {
+    const scored = scoreObjectiveQuestion(questionType, correct, responseDataForStep(step, response));
+    rawScore = scored?.score ?? 0;
+    maxScore = scored && scored.max > 0 ? scored.max : 1;
+  }
+
+  let processScore = 0;
+  let processMax = 0;
+  if (isObject(response)) {
+    if (kind === "evidence_locator") {
+      processMax += 1;
+      const evidence = firstTextValue(response, ["evidence", "evidence_text", "highlight"]);
+      if (evidence.length >= 12) processScore += 1;
+    }
+    if (kind === "distractor_elimination") {
+      processMax += 1;
+      const trap = toText(response.trap_type, 80);
+      const reason = firstTextValue(response, ["reason", "explanation"]);
+      if (trap && reason.length >= 8) processScore += 1;
+    }
+    if (kind === "listening_replay") {
+      processMax += 1;
+      const prediction = firstTextValue(response, ["prediction"]);
+      const paraphrase = firstTextValue(response, ["paraphrase", "signpost"]);
+      if (prediction.length >= 2) processScore += 0.4;
+      if (paraphrase.length >= 6) processScore += 0.6;
+    }
+  }
+
+  const totalRaw = rawScore + processScore;
+  const totalMax = maxScore + processMax;
+  const accuracy = totalMax > 0 ? clamp(totalRaw / totalMax, 0, 1) : 0;
+  const trapType = isObject(response) ? toText(response.trap_type, 80).toLowerCase() || (accuracy < 0.75 ? "unknown" : "none") : (accuracy < 0.75 ? "unknown" : "none");
+
+  return {
+    step_id: stepId,
+    question_type: questionType,
+    trap_type: trapType,
+    raw_score: roundTo(totalRaw, 4),
+    max_score: roundTo(totalMax, 4),
+    accuracy_ratio: roundTo(accuracy, 4),
+    feedback: accuracy >= 0.85
+      ? "Strong response. This can move toward mastery."
+      : accuracy >= 0.55
+        ? "Partial control. Review the evidence, paraphrase, or distractor before the next attempt."
+        : "This pattern needs repair. Add it to the notebook and revisit soon.",
+  };
+};
+
+const insertWritingLabResponsesAndGrade = async (
+  sb: any,
+  supabaseUrl: string,
+  anonKey: string,
+  token: string,
+  bundle: JsonRecord,
+  labPayload: JsonRecord,
+  answers: JsonRecord,
+): Promise<{ evaluation_id: string | null; result: JsonRecord | null }> => {
+  if (toSectionType(labPayload.section_type) !== "writing") return { evaluation_id: null, result: null };
+  const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+  const runtimeSessionId = toText(practiceSession.session_id, 80);
+  if (!runtimeSessionId) return { evaluation_id: null, result: null };
+
+  const rows: JsonRecord[] = [];
+  for (const step of Array.isArray(labPayload.steps) ? labPayload.steps.filter(isObject) : []) {
+    const unitId = toNullableText(step.delivery_content_unit_id, 80);
+    if (!unitId) continue;
+    const response = isObject(answers[toText(step.id, 120)]) ? (answers[toText(step.id, 120)] as JsonRecord) : {};
+    const text = firstTextValue(response, ["rewrite", "full_rewrite", "answer", "text", "value"]);
+    if (!text) continue;
+    rows.push({
+      session_id: runtimeSessionId,
+      content_unit_id: unitId,
+      type: "text",
+      data: { text },
+      metadata: {
+        source: "ielts-practice.lab",
+        lab_step_id: toText(step.id, 120),
+      },
+    });
+  }
+
+  if (rows.length === 0) return { evaluation_id: null, result: null };
+  await sb.from("responses").insert(rows);
+  await sb.from("sessions").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", runtimeSessionId);
+  const grade = await callGradeWriting(supabaseUrl, anonKey, token, runtimeSessionId);
+  return { evaluation_id: grade.evaluationId, result: grade.result };
+};
+
+const upsertMistakeNotebookFromLab = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  labAttemptId: string,
+  sectionType: "reading" | "listening" | "writing",
+  scoredSteps: JsonRecord[],
+  nowIso: string,
+): Promise<JsonRecord[]> => {
+  const rows: JsonRecord[] = [];
+  for (const step of scoredSteps) {
+    const accuracy = clamp(toNumber(step.accuracy_ratio) ?? 0, 0, 1);
+    if (accuracy >= 0.75) continue;
+    const questionType = toText(step.question_type, 120).toLowerCase() || "question_unknown";
+    const trapType = toText(step.trap_type, 80).toLowerCase() || "unknown";
+    const nextReview = new Date(Date.parse(nowIso) + (accuracy < 0.45 ? 1 : 3) * 24 * 60 * 60 * 1000).toISOString();
+    const mistakePattern = `${formatQuestionLabel(questionType)}: ${trapType.replace(/_/g, " ")}`;
+
+    const { data: existing } = await sb
+      .from("ielts_practice_mistake_notebook")
+      .select("id,review_count,metadata")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .eq("section_type", sectionType)
+      .eq("question_type", questionType)
+      .eq("trap_type", trapType)
+      .eq("status", "active")
+      .maybeSingle();
+
+    const payload = {
+      user_id: userId,
+      language_id: scope.languageId,
+      product_id: scope.practiceProductId,
+      section_type: sectionType,
+      question_type: questionType,
+      trap_type: trapType,
+      mistake_pattern: mistakePattern,
+      coach_note: `Next review: slow down on ${formatQuestionLabel(questionType)} and prove the answer with evidence or paraphrase.`,
+      review_count: Math.max(0, Math.floor(toNumber((existing as any)?.review_count) ?? 0)) + 1,
+      status: "active",
+      priority: roundTo(1 - accuracy, 4),
+      next_review_at: nextReview,
+      last_seen_at: nowIso,
+      last_lab_attempt_id: labAttemptId,
+      metadata: {
+        ...(isObject((existing as any)?.metadata) ? (existing as any).metadata : {}),
+        last_accuracy_ratio: accuracy,
+        last_step_id: toText(step.step_id, 120),
+      },
+    };
+
+    const query = (existing as any)?.id
+      ? sb.from("ielts_practice_mistake_notebook").update(payload).eq("id", String((existing as any).id)).select("*").maybeSingle()
+      : sb.from("ielts_practice_mistake_notebook").insert(payload).select("*").maybeSingle();
+    const { data } = await query;
+    if (isObject(data)) rows.push(data as JsonRecord);
+  }
+  return rows;
+};
+
+const labKindForRoadmap = (section: string, questionType: string): string => {
+  if (section === "writing") return "writing_rewrite";
+  if (section === "listening") return questionType.includes("gap") ? "listening_replay" : "distractor_drill";
+  if (questionType.includes("matching") || questionType.includes("choice")) return "distractor_drill";
+  return "evidence_locator";
+};
+
+const refreshRoadmapFromDiagnostics = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  goals: GoalRow,
+  diagnostics: DiagnosticPayload,
+  refs?: { practice_session_id?: string | null },
+): Promise<JsonRecord[]> => {
+  const rows: JsonRecord[] = [];
+  for (const row of (diagnostics.question_types ?? []).slice(0, 12)) {
+    const section = toSectionType(row.section_type);
+    if (!section) continue;
+    const weakness = clamp(toNumber(row.weakness_score) ?? 0, 0, 10);
+    const mastery = toNumber(row.mastery_level);
+    const questionType = toText(row.question_type, 120).toLowerCase() || "question_unknown";
+    const targetBand = toNumber(row.target_band) ?? toNumber(goals.target_overall_band) ?? 6.5;
+    const title = `${formatQuestionLabel(section)} ${formatQuestionLabel(questionType)} to band ${targetBand.toFixed(1)}`;
+    const payload = {
+      user_id: userId,
+      language_id: scope.languageId,
+      product_id: scope.practiceProductId,
+      section_type: section,
+      skill_key: questionType,
+      title,
+      current_state: `Weakness ${weakness.toFixed(2)}${mastery != null ? `, mastery ${Math.round(mastery * 100)}%` : ""}`,
+      target_state: `Reliable ${formatQuestionLabel(questionType)} performance at band ${targetBand.toFixed(1)}`,
+      linked_lab_kind: labKindForRoadmap(section, questionType),
+      priority: roundTo(weakness + Math.max(0, toNumber(row.target_distance) ?? 0), 4),
+      status: mastery != null && mastery >= 0.86 ? "completed" : "active",
+      last_practice_session_id: refs?.practice_session_id ?? null,
+      metadata: {
+        weakness_score: weakness,
+        target_distance: row.target_distance,
+        mastery_level: mastery,
+        confidence: row.confidence,
+      },
+    };
+    const { data } = await sb
+      .from("ielts_practice_roadmap_items")
+      .upsert(payload, { onConflict: "user_id,language_id,product_id,section_type,skill_key" })
+      .select("*")
+      .maybeSingle();
+    if (isObject(data)) rows.push(data as JsonRecord);
+  }
+  return rows;
+};
+
+const loadNotebookItems = async (sb: any, scope: ResolvedScope, userId: string, limit = 12): Promise<JsonRecord[]> => {
+  const { data } = await sb
+    .from("ielts_practice_mistake_notebook")
+    .select("id,section_type,question_type,trap_type,mistake_pattern,coach_note,review_count,status,priority,next_review_at,last_seen_at,metadata,updated_at")
+    .eq("user_id", userId)
+    .eq("language_id", scope.languageId)
+    .eq("product_id", scope.practiceProductId)
+    .neq("status", "archived")
+    .order("priority", { ascending: false })
+    .order("next_review_at", { ascending: true })
+    .limit(limit);
+  return (Array.isArray(data) ? data : []).filter(isObject) as JsonRecord[];
+};
+
+const loadRoadmapItems = async (sb: any, scope: ResolvedScope, userId: string, limit = 12): Promise<JsonRecord[]> => {
+  const { data } = await sb
+    .from("ielts_practice_roadmap_items")
+    .select("id,section_type,skill_key,title,current_state,target_state,linked_lab_kind,priority,status,metadata,updated_at")
+    .eq("user_id", userId)
+    .eq("language_id", scope.languageId)
+    .eq("product_id", scope.practiceProductId)
+    .neq("status", "archived")
+    .order("priority", { ascending: false })
+    .limit(limit);
+  return (Array.isArray(data) ? data : []).filter(isObject) as JsonRecord[];
+};
+
+const submitLabAttempt = async (
+  sb: any,
+  supabaseUrl: string,
+  anonKey: string,
+  token: string,
+  scope: ResolvedScope,
+  userId: string,
+  bundle: JsonRecord,
+  body: JsonRecord,
+): Promise<JsonRecord> => {
+  const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+  const labPayload = labPayloadFromBundle(bundle);
+  if (!labPayload) throw new Error("This practice session does not have a lab payload. Rebuild it in Content Factory.");
+  const answers = isObject(body.answers) ? (body.answers as JsonRecord) : {};
+  const attempt = await upsertLabAttemptDraft(sb, scope, userId, practiceSession, labPayload, { ...body, answers });
+  const sectionType = toSectionType(labPayload.section_type) ?? "reading";
+  const steps = Array.isArray(labPayload.steps) ? labPayload.steps.filter(isObject) : [];
+  const scoredSteps = steps.map((step) => scoreLabStep(labPayload, step, answers[toText(step.id, 120)] ?? {}));
+  let rawScore = scoredSteps.reduce((sum, step) => sum + (toNumber(step.raw_score) ?? 0), 0);
+  let maxScore = scoredSteps.reduce((sum, step) => sum + (toNumber(step.max_score) ?? 0), 0);
+  let writingEvaluation: { evaluation_id: string | null; result: JsonRecord | null } = { evaluation_id: null, result: null };
+  if (sectionType === "writing") {
+    writingEvaluation = await insertWritingLabResponsesAndGrade(sb, supabaseUrl, anonKey, token, bundle, labPayload, answers);
+    const band = toNumber(writingEvaluation.result?.overall_band);
+    if (band != null) {
+      rawScore = band;
+      maxScore = 9;
+    }
+  }
+
+  const nowIso = new Date().toISOString();
+  const accuracy = maxScore > 0 ? clamp(rawScore / maxScore, 0, 1) : 0;
+  const estimatedBand = sectionType === "writing" && maxScore === 9 ? rawScore : roundTo(4 + accuracy * 5, 1);
+  const scoreArtifacts = {
+    schema_version: PRACTICE_LAB_ATTEMPT_SCHEMA_VERSION,
+    lab_kind: labPayload.lab_kind,
+    section_type: sectionType,
+    scored_steps: scoredSteps,
+    writing_evaluation: writingEvaluation,
+  };
+
+  const { data: updatedAttempt, error: updateError } = await sb
+    .from("ielts_practice_lab_attempts")
+    .update({
+      status: "scored",
+      answers_json: answers,
+      score_artifacts: scoreArtifacts,
+      raw_score: roundTo(rawScore, 4),
+      max_score: roundTo(maxScore || 1, 4),
+      accuracy_ratio: roundTo(accuracy, 4),
+      estimated_band: roundTo(clamp(estimatedBand, 0, 9), 1),
+      submitted_at: nowIso,
+      scored_at: nowIso,
+      metadata: {
+        ...(isObject(attempt.metadata) ? attempt.metadata : {}),
+        submitted_via: "practice_lab",
+      },
+    })
+    .eq("id", toText(attempt.id, 80))
+    .select("id,practice_session_id,delivery_build_id,lab_kind,section_type,status,current_step_index,answers_json,score_artifacts,raw_score,max_score,accuracy_ratio,estimated_band,started_at,submitted_at,scored_at,metadata,created_at,updated_at")
+    .maybeSingle();
+  if (updateError || !updatedAttempt) throw new Error("Failed to score practice lab attempt");
+
+  const buckets = scoredSteps
+    .map((step) => ({
+      section_type: sectionType,
+      question_type: toText(step.question_type, 120).toLowerCase() || "question_unknown",
+      accuracy_ratio: clamp(toNumber(step.accuracy_ratio) ?? 0, 0, 1),
+      raw_score: toNumber(step.raw_score),
+      max_score: toNumber(step.max_score),
+      practiced_at: nowIso,
+      source: "practice_lab",
+    }));
+  const masteryUpdates = await updateMasteryBuckets(sb, scope, userId, buckets, {
+    practice_session_id: toText(practiceSession.id, 80),
+    session_id: toNullableText(practiceSession.session_id, 80),
+    delivery_build_id: toNullableText(practiceSession.delivery_build_id, 80),
+  });
+  const notebookItems = await upsertMistakeNotebookFromLab(sb, scope, userId, toText(updatedAttempt.id, 80), sectionType, scoredSteps, nowIso);
+
+  await sb.from("ielts_practice_sessions").update({
+    status: "completed",
+    latest_ai_evaluation_id: writingEvaluation.evaluation_id,
+    completed_at: nowIso,
+    review_metadata: {
+      lab_scored_at: nowIso,
+      lab_attempt_id: toText(updatedAttempt.id, 80),
+      accuracy_ratio: roundTo(accuracy, 4),
+    },
+  }).eq("id", toText(practiceSession.id, 80));
+
+  const planItemId = toNullableText(practiceSession.plan_item_id, 80);
+  if (planItemId) {
+    await sb.from("ielts_practice_plan_items").update({ status: "completed", completed_at: nowIso }).eq("id", planItemId);
+  }
+
+  let diagnosticsSnapshotId: string | null = null;
+  let roadmapItems: JsonRecord[] = [];
+  try {
+    const goals = await getGoals(sb, userId, scope);
+    const computed = await computeDiagnostics(sb, scope, userId, goals);
+    const snapshot = await persistDiagnostics(sb, userId, scope, computed.payload, computed.sourceSummary);
+    diagnosticsSnapshotId = toNullableText(snapshot.id, 80);
+    roadmapItems = await refreshRoadmapFromDiagnostics(sb, scope, userId, goals, computed.payload, {
+      practice_session_id: toText(practiceSession.id, 80),
+    });
+  } catch {
+    diagnosticsSnapshotId = null;
+  }
+
+  return {
+    ok: true,
+    lab_attempt: updatedAttempt,
+    score: {
+      raw_score: roundTo(rawScore, 4),
+      max_score: roundTo(maxScore || 1, 4),
+      accuracy_ratio: roundTo(accuracy, 4),
+      estimated_band: roundTo(clamp(estimatedBand, 0, 9), 1),
+    },
+    scored_steps: scoredSteps,
+    mastery_updates: masteryUpdates,
+    notebook_items: notebookItems,
+    roadmap_items: roadmapItems,
+    diagnostics_snapshot_id: diagnosticsSnapshotId,
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -2309,6 +2874,12 @@ serve(async (req) => {
 
       if (publishedBlueprints.length > 0) {
         const sourceAvoidance = await loadSourceAvoidance(sb, scope, auth.userId, goals);
+        await refreshRoadmapFromDiagnostics(sb, scope, auth.userId, goals, diagnostics).catch(() => []);
+        const trainingContext = await loadPracticeTrainingContext(sb, scope, auth.userId).catch(() => ({
+          notebookBoostByQuestionKey: new Map<string, number>(),
+          roadmapBoostByQuestionKey: new Map<string, number>(),
+          roadmapBoostBySection: new Map<string, number>(),
+        }));
         const { data: recentPracticeSessionsData } = await sb
           .from("ielts_practice_sessions")
           .select("delivery_build_id,created_at")
@@ -2333,6 +2904,7 @@ serve(async (req) => {
           goals,
           recentSessionMap,
           sourceAvoidance,
+          trainingContext,
         );
 
         const selectedBlueprints: SessionPlanCandidate[] = [];
@@ -2456,6 +3028,60 @@ serve(async (req) => {
       });
     }
 
+    if (req.method === "GET" && route === "/notebook") {
+      return json(200, {
+        ok: true,
+        items: await loadNotebookItems(sb, scope, auth.userId, 50),
+      });
+    }
+
+    if ((req.method === "PATCH" || req.method === "POST") && route.startsWith("/notebook/")) {
+      const notebookId = toText(route.replace("/notebook/", "").replace(/\/status$/, ""), 80);
+      if (!notebookId) return json(404, { error: "Notebook item not found" });
+      const body = await parseBody(req);
+      const status = toText(body.status, 32).toLowerCase();
+      if (!["active", "reviewed", "difficult", "mastered", "archived"].includes(status)) {
+        return json(422, { error: "Unsupported notebook status" });
+      }
+      const { data, error } = await sb
+        .from("ielts_practice_mistake_notebook")
+        .update({
+          status,
+          next_review_at: status === "reviewed"
+            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            : status === "difficult"
+              ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+              : null,
+        })
+        .eq("id", notebookId)
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .select("id,section_type,question_type,trap_type,mistake_pattern,coach_note,review_count,status,priority,next_review_at,last_seen_at,metadata,updated_at")
+        .maybeSingle();
+      if (error || !data) return json(404, { error: "Notebook item not found" });
+      return json(200, { ok: true, item: data });
+    }
+
+    if (req.method === "GET" && route === "/roadmap") {
+      let items = await loadRoadmapItems(sb, scope, auth.userId, 50);
+      if (items.length === 0 || url.searchParams.get("refresh") === "true") {
+        const goals = await getGoals(sb, auth.userId, scope);
+        const diagnosticsSnapshot = await loadCurrentDiagnostics(sb, auth.userId, scope)
+          ?? await (async () => {
+            const computed = await computeDiagnostics(sb, scope, auth.userId, goals);
+            return await persistDiagnostics(sb, auth.userId, scope, computed.payload, computed.sourceSummary);
+          })();
+        const diagnostics = isObject(diagnosticsSnapshot?.diagnostics)
+          ? (diagnosticsSnapshot?.diagnostics as DiagnosticPayload)
+          : null;
+        if (diagnostics) {
+          await refreshRoadmapFromDiagnostics(sb, scope, auth.userId, goals, diagnostics);
+          items = await loadRoadmapItems(sb, scope, auth.userId, 50);
+        }
+      }
+      return json(200, { ok: true, items });
+    }
+
     if (req.method === "POST" && route.startsWith("/plan-items/") && route.endsWith("/start")) {
       const planItemId = toText(route.slice("/plan-items/".length, -"/start".length), 80);
       if (!planItemId) return json(404, { error: "Plan item not found" });
@@ -2570,6 +3196,52 @@ serve(async (req) => {
         resumed: false,
         ...bundle,
       });
+    }
+
+    if (route.startsWith("/labs/")) {
+      const labTail = route.replace("/labs/", "");
+      const parts = labTail.split("/");
+      const practiceSessionId = toText(parts[0], 80);
+      const labAction = toText(parts[1], 40);
+      if (!practiceSessionId) return json(404, { error: "Practice lab not found" });
+
+      const bundle = await loadPracticeSessionBundle(sb, practiceSessionId, auth.userId, scope);
+      if (!bundle) return json(404, { error: "Practice lab not found" });
+      const labPayload = labPayloadFromBundle(bundle);
+      if (!labPayload) {
+        return json(409, {
+          error: "This practice session does not have a lab payload",
+          hint: "Rebuild and publish this source through Admin Content Factory.",
+        });
+      }
+      const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+
+      if (req.method === "GET" && !labAction) {
+        const attempt = await loadLatestLabAttempt(sb, toText(practiceSession.id, 80), auth.userId);
+        return json(200, {
+          ok: true,
+          practice_session: bundle.practice_session,
+          blueprint: bundle.blueprint,
+          delivery_build: bundle.delivery_build,
+          lab: labPayload,
+          attempt,
+          notebook: await loadNotebookItems(sb, scope, auth.userId, 8),
+          roadmap: await loadRoadmapItems(sb, scope, auth.userId, 8),
+        });
+      }
+
+      if (req.method === "POST" && labAction === "save") {
+        const attempt = await upsertLabAttemptDraft(sb, scope, auth.userId, practiceSession, labPayload, await parseBody(req));
+        await sb.from("ielts_practice_sessions").update({ status: "in_progress" }).eq("id", toText(practiceSession.id, 80));
+        return json(200, { ok: true, attempt });
+      }
+
+      if (req.method === "POST" && labAction === "submit") {
+        const result = await submitLabAttempt(sb, supabaseUrl, supabaseAnonKey, auth.token, scope, auth.userId, bundle, await parseBody(req));
+        return json(200, result);
+      }
+
+      return json(404, { error: "Practice lab route not found" });
     }
 
     if ((req.method === "GET" || req.method === "POST") && route.startsWith("/sessions/")) {

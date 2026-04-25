@@ -11,6 +11,7 @@ import { ExercisePage } from './pages/ExercisePage';
 import { ResultsPage } from './pages/ResultsPage';
 import { SessionResultsPage } from './pages/SessionResultsPage';
 import { AdminPage } from './pages/AdminPage';
+import { LabPage } from './pages/LabPage';
 
 const SharedExamPlayer = lazy(async () => {
   const module = await import('../../ielts-simulator/src/pages/ExamPlayer');
@@ -44,6 +45,7 @@ function App() {
         <Route element={<RequireProductEntitlement />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route path="/lab/:practiceSessionId" element={<LabPage />} />
           <Route
             path="/session/:sessionId/results"
             element={<SessionResultsPage />}

@@ -95,10 +95,31 @@ const summarizeBuildContext = (build: PracticeDeliveryBuild): string => {
   ]) || 'question-only';
 };
 
+const labPayloadFromBuild = (build: PracticeDeliveryBuild): Record<string, unknown> => {
+  const metadata = asRecord(build.metadata);
+  return asRecord(metadata.lab_payload);
+};
+
+const isLabReadyBuild = (build: PracticeDeliveryBuild): boolean => {
+  const payload = labPayloadFromBuild(build);
+  const validation = asRecord(payload.validation);
+  return payload.version === 'ielts.practice.lab.v1' && validation.valid !== false;
+};
+
+const labKindForBuild = (build: PracticeDeliveryBuild): string => {
+  const payload = labPayloadFromBuild(build);
+  return String(payload.lab_kind ?? build.experience_kind ?? 'fallback').toLowerCase();
+};
+
 const summarizeValidation = (build: PracticeDeliveryBuild): string => {
   const validation = asRecord(build.validation_summary);
+  const labPayload = labPayloadFromBuild(build);
+  const labValidation = asRecord(labPayload.validation);
+  const labErrors = Array.isArray(labValidation.errors) ? labValidation.errors.length : 0;
   const errors = Array.isArray(validation.errors) ? validation.errors.length : 0;
   const warnings = Array.isArray(validation.warnings) ? validation.warnings.length : 0;
+  if (labPayload.version !== 'ielts.practice.lab.v1') return 'fallback-only';
+  if (labErrors > 0 || labValidation.valid === false) return `lab ${labErrors || 1} issue${labErrors === 1 ? '' : 's'}`;
   if (errors > 0) return `${errors} issue${errors === 1 ? '' : 's'}`;
   if (warnings > 0) return `${warnings} warning${warnings === 1 ? '' : 's'}`;
   return validation.ok === false ? 'needs review' : 'validated';
@@ -395,6 +416,23 @@ export const AdminPage = () => {
     [builds],
   );
 
+  const labCoverage = useMemo(() => {
+    const published = builds.filter((build) => build.status === 'published');
+    const ready = published.filter(isLabReadyBuild);
+    const countByKind = (kind: string): number => ready.filter((build) => labKindForBuild(build) === kind).length;
+    return {
+      published: published.length,
+      ready: ready.length,
+      fallback: Math.max(0, published.length - ready.length),
+      evidence: countByKind('evidence_locator'),
+      distractor: countByKind('distractor_drill'),
+      replay: countByKind('listening_replay'),
+      rewrite: countByKind('writing_rewrite'),
+      mastery: countByKind('mastery_check'),
+      timed: countByKind('timed_mini'),
+    };
+  }, [builds]);
+
   const sourceSections = useMemo(() => new Set(sources.map((row) => row.section_type)).size, [sources]);
   const analyticsSummary = useMemo(() => summarizeAnalytics(analytics), [analytics]);
   const analyticsRecord = asRecord(analytics);
@@ -469,7 +507,7 @@ export const AdminPage = () => {
             <article className="admin-stat">
               <span>Builds</span>
               <strong>{builds.length}</strong>
-              <small>{publishedBuilds} live sessions</small>
+              <small>{publishedBuilds} live sessions, {labCoverage.ready} lab-ready</small>
             </article>
             <article className="admin-stat">
               <span>Rules</span>
@@ -538,6 +576,23 @@ export const AdminPage = () => {
                   ))}
                 </div>
               ) : null}
+              <div className="admin-lab-coverage">
+                {[
+                  ['Lab-ready published', labCoverage.ready],
+                  ['Fallback-only', labCoverage.fallback],
+                  ['Evidence Locator', labCoverage.evidence],
+                  ['Distractor Drill', labCoverage.distractor],
+                  ['Listening Replay', labCoverage.replay],
+                  ['Writing Rewrite', labCoverage.rewrite],
+                  ['Mastery Check', labCoverage.mastery],
+                  ['Timed Mini', labCoverage.timed],
+                ].map(([label, value]) => (
+                  <article key={String(label)} className="admin-result">
+                    <span>{String(label)}</span>
+                    <strong>{formatCount(value)}</strong>
+                  </article>
+                ))}
+              </div>
             </section>
           ) : null}
 
@@ -665,6 +720,7 @@ export const AdminPage = () => {
                       <th>Build</th>
                       <th>Kind</th>
                       <th>Context</th>
+                      <th>Lab</th>
                       <th>Questions</th>
                       <th>Validation</th>
                       <th>Status</th>
@@ -680,13 +736,20 @@ export const AdminPage = () => {
                         </td>
                         <td>{titleCase(build.experience_kind)}</td>
                         <td>{summarizeBuildContext(build)}</td>
+                        <td>
+                          {isLabReadyBuild(build) ? (
+                            <span className="status-pill published">{titleCase(labKindForBuild(build))}</span>
+                          ) : (
+                            <span className="status-pill archived">Fallback only</span>
+                          )}
+                        </td>
                         <td>{summarizeQuestionTypes(build)}</td>
                         <td>{summarizeValidation(build)}</td>
                         <td><span className={`status-pill ${compactClass(build.status)}`}>{build.status}</span></td>
                         <td>{formatDateTime(build.updated_at ?? build.created_at)}</td>
                       </tr>
                     )) : (
-                      <tr><td colSpan={7}><div className="admin-empty">No delivery builds yet. Run Content Factory to generate coverage.</div></td></tr>
+                      <tr><td colSpan={8}><div className="admin-empty">No delivery builds yet. Run Content Factory to generate coverage.</div></td></tr>
                     )}
                   </tbody>
                 </table>

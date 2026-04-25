@@ -77,6 +77,87 @@ export type PracticeDeliveryBuild = {
   blueprint?: PracticeBlueprint | null;
 };
 
+export type PracticeLabStep = Json & {
+  id: string;
+  kind?: string;
+  title?: string;
+  instructions?: string;
+  question_type?: string;
+  prompt?: string;
+  options?: unknown[];
+  response_shape?: Json;
+  context?: Json;
+  replay?: Json;
+  evidence?: Json;
+  distractors?: Json;
+};
+
+export type PracticeLabPayload = Json & {
+  version?: string;
+  lab_kind?: string;
+  section_type?: "reading" | "listening" | "writing";
+  experience_kind?: string;
+  title?: string;
+  coach_template?: Json;
+  steps?: PracticeLabStep[];
+  answer_key?: Json;
+  feedback_rules?: Json;
+  source_refs?: Json;
+  validation?: Json;
+};
+
+export type PracticeLabAttempt = {
+  id: string;
+  practice_session_id: string;
+  delivery_build_id: string | null;
+  lab_kind: string;
+  section_type: "reading" | "listening" | "writing";
+  status: "in_progress" | "submitted" | "scored" | "abandoned";
+  current_step_index: number;
+  answers_json: Json;
+  score_artifacts: Json;
+  raw_score: number | null;
+  max_score: number | null;
+  accuracy_ratio: number | null;
+  estimated_band: number | null;
+  started_at: string | null;
+  submitted_at: string | null;
+  scored_at: string | null;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PracticeNotebookItem = {
+  id: string;
+  section_type: "reading" | "listening" | "writing";
+  question_type: string;
+  trap_type: string;
+  mistake_pattern: string;
+  coach_note: string | null;
+  review_count: number;
+  status: string;
+  priority: number;
+  next_review_at: string | null;
+  last_seen_at: string | null;
+  metadata: Json;
+  updated_at: string;
+};
+
+export type PracticeRoadmapItem = {
+  id: string;
+  section_type: "reading" | "listening" | "writing";
+  skill_key: string;
+  title: string;
+  current_state: string | null;
+  target_state: string | null;
+  linked_lab_kind: string | null;
+  priority: number;
+  status: string;
+  metadata: Json;
+  updated_at: string;
+};
+
 export type PracticeSessionSummary = {
   id: string;
   session_id: string;
@@ -387,6 +468,63 @@ export const practiceSessionReviewGet = (
   first_section_id: string | null;
   review: { first_section_id: string | null; section_count: number };
 }> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/review`);
+
+export const practiceLabGet = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<{
+  ok: boolean;
+  practice_session: Json;
+  blueprint: PracticeBlueprint | null;
+  delivery_build: PracticeDeliveryBuild | null;
+  lab: PracticeLabPayload;
+  attempt: PracticeLabAttempt | null;
+  notebook: PracticeNotebookItem[];
+  roadmap: PracticeRoadmapItem[];
+}> => call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}`);
+
+export const practiceLabSave = (
+  accessToken: string,
+  practiceSessionId: string,
+  body: { answers: Json; current_step_index?: number; metadata?: Json },
+): Promise<{ ok: boolean; attempt: PracticeLabAttempt }> =>
+  call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/save`, { method: "POST", body });
+
+export const practiceLabSubmit = (
+  accessToken: string,
+  practiceSessionId: string,
+  body: { answers: Json; current_step_index?: number; metadata?: Json },
+): Promise<{
+  ok: boolean;
+  lab_attempt: PracticeLabAttempt;
+  score: { raw_score: number; max_score: number; accuracy_ratio: number; estimated_band: number };
+  scored_steps: Json[];
+  mastery_updates: Json[];
+  notebook_items: PracticeNotebookItem[];
+  roadmap_items: PracticeRoadmapItem[];
+  diagnostics_snapshot_id: string | null;
+}> => call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/submit`, { method: "POST", body });
+
+export const practiceNotebookList = (
+  accessToken: string,
+): Promise<{ ok: boolean; items: PracticeNotebookItem[] }> =>
+  call(accessToken, "/ielts-practice/notebook");
+
+export const practiceNotebookPatch = (
+  accessToken: string,
+  notebookItemId: string,
+  status: "active" | "reviewed" | "difficult" | "mastered" | "archived",
+): Promise<{ ok: boolean; item: PracticeNotebookItem }> =>
+  call(accessToken, `/ielts-practice/notebook/${encodeURIComponent(notebookItemId)}`, { method: "PATCH", body: { status } });
+
+export const practiceRoadmapList = (
+  accessToken: string,
+  opts?: { refresh?: boolean },
+): Promise<{ ok: boolean; items: PracticeRoadmapItem[] }> => {
+  const qs = new URLSearchParams();
+  if (opts?.refresh) qs.set("refresh", "true");
+  return call(accessToken, `/ielts-practice/roadmap${qs.toString() ? `?${qs.toString()}` : ""}`);
+};
 
 export const practiceAttemptStart = (
   accessToken: string,

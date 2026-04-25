@@ -27,7 +27,20 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
   if (!item.blueprint_id && !item.delivery_build_id) return false;
   const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  return summary.transformed === true && typeof summary.source_section_id === 'string' && summary.source_section_id.length > 0;
+  const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
+  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
+  return (
+    summary.transformed === true
+    && typeof summary.source_section_id === 'string'
+    && summary.source_section_id.length > 0
+    && labPayload.version === 'ielts.practice.lab.v1'
+  );
+};
+
+const hasLabPayload = (value: { delivery_build?: { metadata?: unknown } | null }): boolean => {
+  const metadata = isRecord(value.delivery_build?.metadata) ? value.delivery_build?.metadata as Record<string, unknown> : {};
+  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
+  return labPayload.version === 'ielts.practice.lab.v1';
 };
 
 export const PlanPage = () => {
@@ -119,8 +132,15 @@ export const PlanPage = () => {
     try {
       const started = await practicePlanItemStart(accessToken, item.id);
       const sessionId = started.session?.id ?? started.practice_session?.session_id ?? null;
+      const practiceSessionId = started.practice_session?.id ?? null;
       const firstSectionId = started.first_section_id ?? started.sections?.[0]?.id ?? null;
+      const labReady = hasLabPayload(started);
       if (!sessionId) throw new Error('Practice session started without a session id');
+
+      if (labReady && practiceSessionId) {
+        navigate(`/lab/${encodeURIComponent(practiceSessionId)}?back=/plan`);
+        return;
+      }
 
       const runtimeQuery = new URLSearchParams({
         results_back: '/plan',
