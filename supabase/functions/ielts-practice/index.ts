@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadPublishedBlueprintCandidates, PRACTICE_LAB_SCHEMA_VERSION } from "../_shared/ielts-practice-blueprints.ts";
+import { signStorageRef } from "../_shared/media-storage.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -196,6 +197,7 @@ const EN_LANGUAGE_CODE = "en";
 const DIAGNOSTIC_SCHEMA_VERSION = "ielts.practice.diagnostic.v2";
 const PRACTICE_DELIVERY_SCHEMA_VERSION = "ielts.practice.delivery.v2";
 const PRACTICE_LAB_ATTEMPT_SCHEMA_VERSION = "ielts.practice.lab_attempt.v1";
+const LAB_MEDIA_SIGNED_URL_TTL_SECONDS = 60 * 60 * 6;
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -2296,6 +2298,143 @@ const labPayloadFromBundle = (bundle: JsonRecord): JsonRecord | null => {
   return payload?.version === PRACTICE_LAB_SCHEMA_VERSION ? payload : null;
 };
 
+const cloneJsonRecord = (value: JsonRecord): JsonRecord => {
+  try {
+    return JSON.parse(JSON.stringify(value)) as JsonRecord;
+  } catch {
+    return { ...value };
+  }
+};
+
+const isPlayableMediaUrl = (value: unknown): value is string => {
+  const text = toText(value, 1600);
+  return /^https?:\/\//i.test(text) || text.startsWith("/") || text.startsWith("data:") || text.startsWith("blob:");
+};
+
+const firstTextFromRecord = (value: unknown, keys: string[], maxLen = 18000): string | null => {
+  if (!isObject(value)) return null;
+  for (const key of keys) {
+    const text = toNullableText(value[key], maxLen);
+    if (text) return text;
+  }
+  return null;
+};
+
+const storageRefFromAudioData = (audioData: JsonRecord, context: JsonRecord): JsonRecord | null => {
+  if (isObject(audioData.storage)) return audioData.storage as JsonRecord;
+  if (isObject(context.audio_storage)) return context.audio_storage as JsonRecord;
+  const bucket = toNullableText(audioData.bucket ?? context.audio_bucket, 200);
+  const path = toNullableText(audioData.path ?? audioData.key ?? context.audio_path, 1200);
+  return bucket && path ? { bucket, path } : null;
+};
+
+const hydrateLabPayloadMedia = async (
+  sb: any,
+  userId: string,
+  labPayload: JsonRecord,
+): Promise<JsonRecord> => {
+  const payload = cloneJsonRecord(labPayload);
+  const steps = Array.isArray(payload.steps) ? payload.steps.filter(isObject) as JsonRecord[] : [];
+  if (steps.length === 0) return payload;
+
+  const questionUnitIds = Array.from(new Set(
+    steps
+      .flatMap((step) => [
+        toNullableText(step.delivery_content_unit_id, 80),
+        toNullableText(step.source_content_unit_id, 80),
+      ])
+      .filter((entry): entry is string => Boolean(entry)),
+  ));
+  if (questionUnitIds.length === 0) return payload;
+
+  const { data: questionRows } = await sb
+    .from("content_units")
+    .select("id,part_id")
+    .in("id", questionUnitIds);
+
+  const partIdByQuestionUnitId = new Map<string, string>();
+  for (const row of Array.isArray(questionRows) ? questionRows : []) {
+    const id = toNullableText((row as any).id, 80);
+    const partId = toNullableText((row as any).part_id, 80);
+    if (id && partId) partIdByQuestionUnitId.set(id, partId);
+  }
+
+  const partIds = Array.from(new Set(Array.from(partIdByQuestionUnitId.values()).filter(Boolean)));
+  if (partIds.length === 0) return payload;
+
+  const { data: audioRows } = await sb
+    .from("content_units")
+    .select("id,part_id,type,data")
+    .in("part_id", partIds)
+    .eq("type", "audio");
+
+  const audioByPartId = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(audioRows) ? audioRows : []) {
+    if (!isObject(row)) continue;
+    const partId = toNullableText((row as any).part_id, 80);
+    if (partId && !audioByPartId.has(partId)) audioByPartId.set(partId, row as JsonRecord);
+  }
+
+  const signedUrlByAudioUnitId = new Map<string, string | null>();
+  for (const step of steps) {
+    const context = isObject(step.context) ? { ...(step.context as JsonRecord) } : {};
+    const currentAudioUrl = toNullableText(context.audio_url, 1600);
+    if (currentAudioUrl && isPlayableMediaUrl(currentAudioUrl)) continue;
+
+    const deliveryUnitId = toNullableText(step.delivery_content_unit_id, 80);
+    const sourceUnitId = toNullableText(step.source_content_unit_id, 80);
+    const partId = (deliveryUnitId ? partIdByQuestionUnitId.get(deliveryUnitId) : null)
+      ?? (sourceUnitId ? partIdByQuestionUnitId.get(sourceUnitId) : null)
+      ?? null;
+    const audioUnit = partId ? audioByPartId.get(partId) : null;
+    const audioData = isObject(audioUnit?.data) ? (audioUnit?.data as JsonRecord) : {};
+
+    let audioUrl: string | null = null;
+    const directUrl = toNullableText(audioData.url ?? audioData.audio_url ?? audioData.public_url, 1600);
+    if (directUrl && isPlayableMediaUrl(directUrl)) {
+      audioUrl = directUrl;
+    }
+
+    const audioUnitId = toNullableText(audioUnit?.id, 80);
+    if (!audioUrl) {
+      const storageRef = storageRefFromAudioData(audioData, context);
+      if (storageRef && audioUnitId && signedUrlByAudioUnitId.has(audioUnitId)) {
+        audioUrl = signedUrlByAudioUnitId.get(audioUnitId) ?? null;
+      } else if (storageRef) {
+        audioUrl = await signStorageRef(sb, storageRef, LAB_MEDIA_SIGNED_URL_TTL_SECONDS, {
+          route: "ielts-practice.labs.media",
+          userId,
+        });
+        if (audioUnitId) signedUrlByAudioUnitId.set(audioUnitId, audioUrl);
+      }
+    }
+
+    const transcript = toNullableText(context.transcript, 18000)
+      ?? firstTextFromRecord(audioData, ["transcript", "transcript_text", "text"], 18000);
+    const storageRef = storageRefFromAudioData(audioData, context);
+
+    step.context = {
+      ...context,
+      ...(audioUnitId ? { audio_unit_id: audioUnitId } : {}),
+      ...(storageRef ? { audio_storage: storageRef } : {}),
+      ...(audioUrl ? { audio_url: audioUrl } : {}),
+      ...(transcript ? { transcript } : {}),
+      has_audio: Boolean(audioUrl || audioUnit || context.has_audio),
+      has_transcript: Boolean(transcript),
+    };
+    if (isObject(step.replay)) {
+      step.replay = {
+        ...(step.replay as JsonRecord),
+        available: Boolean(audioUrl || transcript || audioUnit || context.has_audio),
+        ...(audioUrl ? { audio_url: audioUrl } : {}),
+        ...(transcript ? { transcript } : {}),
+      };
+    }
+  }
+
+  return payload;
+};
+
 const loadLatestLabAttempt = async (sb: any, practiceSessionId: string, userId: string): Promise<JsonRecord | null> => {
   const { data } = await sb
     .from("ielts_practice_lab_attempts")
@@ -3218,12 +3357,13 @@ serve(async (req) => {
 
       if (req.method === "GET" && !labAction) {
         const attempt = await loadLatestLabAttempt(sb, toText(practiceSession.id, 80), auth.userId);
+        const labWithMedia = await hydrateLabPayloadMedia(sb, auth.userId, labPayload);
         return json(200, {
           ok: true,
           practice_session: bundle.practice_session,
           blueprint: bundle.blueprint,
           delivery_build: bundle.delivery_build,
-          lab: labPayload,
+          lab: labWithMedia,
           attempt,
           notebook: await loadNotebookItems(sb, scope, auth.userId, 8),
           roadmap: await loadRoadmapItems(sb, scope, auth.userId, 8),

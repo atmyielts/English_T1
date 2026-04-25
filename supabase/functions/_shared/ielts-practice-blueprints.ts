@@ -443,6 +443,8 @@ const sourceContextForUnit = (question: any, selectedUnits: any[]): JsonRecord =
     passage_text: passageText || null,
     transcript: transcript || null,
     audio_url: toNullableText(audioData.url ?? audioData.audio_url ?? audioData.public_url ?? audioData.path, 1200),
+    audio_storage: isObject(audioData.storage) ? audioData.storage : null,
+    audio_unit_id: audio ? toNullableText((audio as any).id, 80) : null,
     image: image && isObject(image.data) ? image.data : null,
     has_passage: Boolean(passageText),
     has_transcript: Boolean(transcript),
