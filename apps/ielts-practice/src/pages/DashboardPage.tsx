@@ -159,6 +159,12 @@ const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
   );
 };
 
+const hasCompleteDailyLabCoverage = (items: PracticePlanItem[]): boolean => {
+  const transformedItems = items.filter(isCurrentTransformedItem);
+  if (transformedItems.length < SECTION_ORDER.length) return false;
+  return SECTION_ORDER.every((section) => transformedItems.some((item) => item.section_type === section));
+};
+
 const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null }): boolean => {
   const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
   const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
@@ -249,7 +255,8 @@ export const DashboardPage = () => {
 
       let todayPlan = planRes.items ?? [];
       const hasOutdatedPlanItems = todayPlan.some((item) => !isCurrentTransformedItem(item));
-      if ((todayPlan.length === 0 || hasOutdatedPlanItems) && autoGenerate) {
+      const missingDailyCoverage = !hasCompleteDailyLabCoverage(todayPlan);
+      if ((todayPlan.length === 0 || hasOutdatedPlanItems || missingDailyCoverage) && autoGenerate) {
         const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
         todayPlan = generated.items ?? [];
       }

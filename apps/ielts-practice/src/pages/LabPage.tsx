@@ -1,19 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
+  practiceGeneratePlan,
   practiceLabGet,
   practiceLabSave,
   practiceLabSubmit,
+  practicePlanItemStart,
+  practiceTodayPlan,
   type PracticeLabPayload,
   type PracticeLabStep,
   type PracticeNotebookItem,
+  type PracticePlanItem,
   type PracticeRoadmapItem,
 } from '../lib/api';
+import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import { getPlanItemDescription, getPlanItemTitle } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 
 type AnswerMap = Record<string, Record<string, unknown>>;
 
 const LAB_SCHEMA_VERSION = 'ielts.practice.lab.v1';
+const SECTION_ORDER = ['reading', 'listening', 'writing'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -99,7 +106,14 @@ const updateNestedMapAnswer = (
 
 type LabResult = Awaited<ReturnType<typeof practiceLabSubmit>>;
 
+const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null }): boolean => {
+  const metadata = asRecord(item.delivery_build?.metadata);
+  const labPayload = asRecord(metadata.lab_payload);
+  return labPayload.version === LAB_SCHEMA_VERSION;
+};
+
 export const LabPage = () => {
+  const navigate = useNavigate();
   const { practiceSessionId = '' } = useParams();
   const [searchParams] = useSearchParams();
   const { accessToken } = useAccess();
@@ -112,6 +126,9 @@ export const LabPage = () => {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
   const [roadmap, setRoadmap] = useState<PracticeRoadmapItem[]>([]);
+  const [plan, setPlan] = useState<PracticePlanItem[]>([]);
+  const [launchingPlanItemId, setLaunchingPlanItemId] = useState<string | null>(null);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
   const [result, setResult] = useState<LabResult | null>(null);
   const [dirty, setDirty] = useState(false);
 
@@ -134,8 +151,10 @@ export const LabPage = () => {
       setError(null);
       try {
         const response = await practiceLabGet(accessToken, practiceSessionId);
+        const planResponse = await practiceTodayPlan(accessToken).catch(() => ({ items: [] as PracticePlanItem[] }));
         if (cancelled) return;
         setLab(response.lab);
+        setPlan(planResponse.items ?? []);
         setNotebook(response.notebook ?? []);
         setRoadmap(response.roadmap ?? []);
         const savedAnswers = asRecord(response.attempt?.answers_json);
@@ -239,6 +258,91 @@ export const LabPage = () => {
     setActiveStepIndex(Math.max(0, Math.min(index, Math.max(steps.length - 1, 0))));
     setDirty(true);
   };
+
+  const reloadPlan = async (): Promise<void> => {
+    if (!accessToken) return;
+    const response = await practiceTodayPlan(accessToken);
+    setPlan(response.items ?? []);
+  };
+
+  const regeneratePlan = async (): Promise<void> => {
+    if (!accessToken) return;
+    setGeneratingPlan(true);
+    setError(null);
+    try {
+      await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
+      await reloadPlan();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to regenerate today\'s labs');
+    } finally {
+      setGeneratingPlan(false);
+    }
+  };
+
+  const launchPlanItem = async (item: PracticePlanItem): Promise<void> => {
+    if (!accessToken || launchingPlanItemId) return;
+    const existingPracticeSessionId = toText(item.practice_session_id || item.practice_session?.id);
+    if (existingPracticeSessionId && existingPracticeSessionId === practiceSessionId) return;
+
+    setLaunchingPlanItemId(item.id);
+    setError(null);
+    try {
+      if (dirty && !isScored) {
+        await practiceLabSave(accessToken, practiceSessionId, { answers, current_step_index: activeStepIndex }).catch(() => undefined);
+        setDirty(false);
+      }
+
+      if (existingPracticeSessionId && hasLabPayload(item)) {
+        const query = new URLSearchParams({ back: backPath }).toString();
+        navigate(`/lab/${encodeURIComponent(existingPracticeSessionId)}?${query}`);
+        return;
+      }
+
+      const started = await practicePlanItemStart(accessToken, item.id);
+      const sessionId = started.session?.id ?? started.practice_session?.session_id ?? null;
+      const nextPracticeSessionId = started.practice_session?.id ?? null;
+      const firstSectionId = started.first_section_id ?? started.sections?.[0]?.id ?? null;
+      const labReady = hasLabPayload(started);
+
+      if (labReady && nextPracticeSessionId) {
+        const query = new URLSearchParams({ back: backPath }).toString();
+        navigate(`/lab/${encodeURIComponent(nextPracticeSessionId)}?${query}`);
+        return;
+      }
+
+      if (!sessionId || !firstSectionId) throw new Error('Practice session started without a section id');
+      const runtimeQuery = new URLSearchParams({
+        results_back: backPath,
+        review_back: backPath,
+        review_product_id: IELTS_PRACTICE_PRODUCT_ID,
+        playbook_source: 'practice',
+      }).toString();
+      navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to open lab';
+      if (message.toLowerCase().includes('plan item not found')) {
+        await regeneratePlan();
+        setError('That lab was stale, so I refreshed today\'s Reading, Listening, and Writing labs.');
+      } else {
+        setError(message);
+      }
+    } finally {
+      setLaunchingPlanItemId(null);
+    }
+  };
+
+  const dailySectionLabs = useMemo(() => (
+    SECTION_ORDER.map((section) => {
+      const items = plan.filter((item) => item.section_type === section && (item.blueprint_id || item.delivery_build_id));
+      const item = items.find((row) => row.status !== 'completed') ?? items[0] ?? null;
+      const linkedPracticeSessionId = toText(item?.practice_session_id || item?.practice_session?.id);
+      return {
+        section,
+        item,
+        isCurrent: linkedPracticeSessionId === practiceSessionId,
+      };
+    })
+  ), [plan, practiceSessionId]);
 
   const renderAnswerSurface = (step: PracticeLabStep) => {
     const stepId = toText(step.id);
@@ -500,6 +604,44 @@ export const LabPage = () => {
             <p>{toText(coach.body) || 'This lab is selected from your diagnostics, mastery gaps, and target band.'}</p>
             <div className="lab-watch-list">
               {coachList(coach, 'watch_for').slice(0, 4).map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </section>
+
+          <section className="lab-panel today-labs-panel">
+            <div className="lab-panel-head">
+              <div>
+                <h3>Today&apos;s Labs</h3>
+                <p className="muted">Switch between Reading, Listening, and Writing.</p>
+              </div>
+              <button className="btn ghost compact" type="button" onClick={() => void regeneratePlan()} disabled={generatingPlan}>
+                {generatingPlan ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
+            <div className="today-lab-list">
+              {dailySectionLabs.map((row) => (
+                <article className={`today-lab-card ${row.section}${row.isCurrent ? ' active' : ''}`} key={row.section}>
+                  <div className="today-lab-card-head">
+                    <span className={sectionChipClass(row.section)}>{row.section}</span>
+                    <span className={`status-pill ${row.item?.status ?? 'missing'}`}>{row.isCurrent ? 'current' : row.item?.status?.replace('_', ' ') ?? 'missing'}</span>
+                  </div>
+                  <strong>{row.item ? getPlanItemTitle(row.item) : `${titleCase(row.section)} lab not generated`}</strong>
+                  <p>{row.item ? getPlanItemDescription(row.item) : 'Refresh today\'s labs to add this section.'}</p>
+                  {row.item ? (
+                    <button
+                      className={row.isCurrent ? 'btn ghost full' : 'btn solid full'}
+                      type="button"
+                      onClick={() => { if (row.item) void launchPlanItem(row.item); }}
+                      disabled={row.isCurrent || launchingPlanItemId === row.item.id}
+                    >
+                      {row.isCurrent ? 'Open now' : launchingPlanItemId === row.item.id ? 'Opening...' : row.item.practice_session_id ? 'Resume lab' : `Open ${titleCase(row.section)}`}
+                    </button>
+                  ) : (
+                    <button className="btn ghost full" type="button" onClick={() => void regeneratePlan()} disabled={generatingPlan}>
+                      Generate
+                    </button>
+                  )}
+                </article>
+              ))}
             </div>
           </section>
 

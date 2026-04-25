@@ -20,6 +20,7 @@ import {
 import { useAccess } from '../lib/useAccess';
 
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+const SECTION_ORDER = ['reading', 'listening', 'writing'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
@@ -35,6 +36,12 @@ const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
     && summary.source_section_id.length > 0
     && labPayload.version === 'ielts.practice.lab.v1'
   );
+};
+
+const hasCompleteDailyLabCoverage = (items: PracticePlanItem[]): boolean => {
+  const transformedItems = items.filter(isCurrentTransformedItem);
+  if (transformedItems.length < SECTION_ORDER.length) return false;
+  return SECTION_ORDER.every((section) => transformedItems.some((item) => item.section_type === section));
 };
 
 const hasLabPayload = (value: { delivery_build?: { metadata?: unknown } | null }): boolean => {
@@ -71,7 +78,7 @@ export const PlanPage = () => {
       setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
       setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
       const loadedItems = planRes.items ?? [];
-      if (loadedItems.some((item) => !isCurrentTransformedItem(item))) {
+      if (loadedItems.some((item) => !isCurrentTransformedItem(item)) || !hasCompleteDailyLabCoverage(loadedItems)) {
         const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
         setPlanItems(generated.items ?? []);
       } else {
