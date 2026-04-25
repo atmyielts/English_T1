@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  learningProfileV2,
   practiceDiagnosticsGet,
   practiceGeneratePlan,
   practiceGoalsGet,
@@ -27,7 +26,6 @@ import {
   getPlanWhyCopy,
 } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
-import { supabase } from '../lib/supabase';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -213,56 +211,13 @@ export const DashboardPage = () => {
   const [targetBand, setTargetBand] = useState<number | null>(null);
   const [averageBand, setAverageBand] = useState<number | null>(null);
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
-  const [sharedSignals, setSharedSignals] = useState<number | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
   const [roadmap, setRoadmap] = useState<PracticeRoadmapItem[]>([]);
   const [generating, setGenerating] = useState(false);
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [notebookBusyId, setNotebookBusyId] = useState<string | null>(null);
-  const [profileNameFromDb, setProfileNameFromDb] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadProfileName = async (): Promise<void> => {
-      const userId = session?.user.id;
-      if (!userId) {
-        setProfileNameFromDb(null);
-        return;
-      }
-
-      try {
-        const { data, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('first_name,last_name')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (cancelled) return;
-        if (profileError || !data) {
-          setProfileNameFromDb(null);
-          return;
-        }
-
-        const first = typeof data.first_name === 'string' ? data.first_name.trim() : '';
-        const last = typeof data.last_name === 'string' ? data.last_name.trim() : '';
-        const full = `${first} ${last}`.trim();
-        setProfileNameFromDb(full || null);
-      } catch {
-        if (!cancelled) setProfileNameFromDb(null);
-      }
-    };
-
-    void loadProfileName();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [session?.user.id]);
-
   const displayName = useMemo(() => {
-    if (profileNameFromDb) return profileNameFromDb;
     const first = String(session?.user.user_metadata?.first_name ?? '').trim();
     const last = String(session?.user.user_metadata?.last_name ?? '').trim();
     const full = `${first} ${last}`.trim();
@@ -271,18 +226,17 @@ export const DashboardPage = () => {
     if (fullName) return fullName;
     const raw = String(me?.user.email ?? '').split('@')[0] ?? 'Learner';
     return raw.length > 0 ? raw : 'Learner';
-  }, [me?.user.email, profileNameFromDb, session?.user.user_metadata]);
+  }, [me?.user.email, session?.user.user_metadata]);
 
   const load = async (forceDiagnostics = false, autoGenerate = false): Promise<void> => {
     if (!accessToken) return;
     setLoading(true);
     setError(null);
     try {
-      const [goalsRes, diagnosticsRes, planRes, profileRes, notebookRes, roadmapRes] = await Promise.all([
+      const [goalsRes, diagnosticsRes, planRes, notebookRes, roadmapRes] = await Promise.all([
         practiceGoalsGet(accessToken),
         practiceDiagnosticsGet(accessToken, { refresh: forceDiagnostics }),
         practiceTodayPlan(accessToken),
-        learningProfileV2(accessToken, { productId: IELTS_PRACTICE_PRODUCT_ID, languageCode: 'en' }).catch(() => null),
         practiceNotebookList(accessToken).catch(() => ({ items: [] as PracticeNotebookItem[] })),
         practiceRoadmapList(accessToken, { refresh: forceDiagnostics }).catch(() => ({ items: [] as PracticeRoadmapItem[] })),
       ]);
@@ -302,9 +256,6 @@ export const DashboardPage = () => {
       setPlan(todayPlan);
       setNotebook(notebookRes.items ?? []);
       setRoadmap(roadmapRes.items ?? []);
-
-      const profileSignals = Number((profileRes as { language_projection?: { signals_count?: number } } | null)?.language_projection?.signals_count ?? NaN);
-      setSharedSignals(Number.isFinite(profileSignals) ? profileSignals : null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(humanizeError(message));
@@ -324,7 +275,7 @@ export const DashboardPage = () => {
       setGenerating(true);
       setError(null);
       await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
-      await load(true, false);
+      await load(false, false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Plan generation failed';
       setError(humanizeError(message));
@@ -402,7 +353,14 @@ export const DashboardPage = () => {
       if (!firstSectionId) throw new Error('Practice session started without a section id');
       navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
     } catch (err) {
-      setError(humanizeError(err instanceof Error ? err.message : 'Failed to launch plan item'));
+      const message = err instanceof Error ? err.message : 'Failed to launch plan item';
+      if (message.toLowerCase().includes('plan item not found')) {
+        await practiceGeneratePlan(accessToken, { refresh_diagnostics: false }).catch(() => null);
+        await load(false, false);
+        setError('That lab was from an older generated plan, so I refreshed today\'s Practice Labs.');
+      } else {
+        setError(humanizeError(message));
+      }
     } finally {
       setLaunchingId((current) => (current === item.id ? null : current));
     }
@@ -572,9 +530,9 @@ export const DashboardPage = () => {
               <p className="muted">Derived from recent simulator and practice outcomes.</p>
             </article>
             <article className="glass kpi-card">
-              <h3>Shared Profile Signals</h3>
-              <div className="kpi-value">{sharedSignals != null ? String(sharedSignals) : '-'}</div>
-              <p className="muted">Language-scoped signals already merged in English profile.</p>
+              <h3>Today&apos;s Labs</h3>
+              <div className="kpi-value">{planSummary.total}</div>
+              <p className="muted">{planSummary.pending} pending across Reading, Listening, and Writing.</p>
             </article>
           </section>
 

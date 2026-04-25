@@ -157,7 +157,14 @@ export const PlanPage = () => {
       if (!firstSectionId) throw new Error('Practice session started without a section id');
       navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to launch plan item');
+      const message = err instanceof Error ? err.message : 'Failed to launch plan item';
+      if (message.toLowerCase().includes('plan item not found')) {
+        await practiceGeneratePlan(accessToken, { refresh_diagnostics: false }).catch(() => null);
+        await load();
+        setError('That lab was from an older generated plan, so I refreshed today\'s plan.');
+      } else {
+        setError(message);
+      }
     } finally {
       setLaunchingId((current) => (current === item.id ? null : current));
     }
