@@ -817,6 +817,8 @@ export const loadPublishedBlueprintCandidates = async (
       && row.latest_build.status === "published"
       && typeof row.latest_build.delivery_experience_id === "string"
       && row.latest_build.build_summary?.schema_version === PRACTICE_DELIVERY_SCHEMA_VERSION
-      && row.latest_build.build_summary?.transformed === true)
+      && row.latest_build.build_summary?.transformed === true
+      && typeof row.latest_build.build_summary?.source_section_id === "string"
+      && row.latest_build.build_summary.source_section_id.length > 0)
     .sort((a, b) => String(b.latest_build.updated_at ?? b.latest_build.created_at ?? "").localeCompare(String(a.latest_build.updated_at ?? a.latest_build.created_at ?? "")));
 };
