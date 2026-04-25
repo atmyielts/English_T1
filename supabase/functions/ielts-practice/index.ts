@@ -38,6 +38,12 @@ type SectionDiagnostic = {
   average_band: number | null;
   target_band: number | null;
   band_gap: number | null;
+  target_distance: number | null;
+  confidence: number;
+  last_seen_at: string | null;
+  days_since_seen: number | null;
+  mastery_level: number | null;
+  mastery_status: string | null;
 };
 
 type QuestionTypeDiagnostic = {
@@ -48,6 +54,13 @@ type QuestionTypeDiagnostic = {
   max_score: number;
   accuracy_ratio: number | null;
   weakness_score: number;
+  target_band: number | null;
+  target_distance: number | null;
+  confidence: number;
+  last_seen_at: string | null;
+  days_since_seen: number | null;
+  mastery_level: number | null;
+  mastery_status: string | null;
 };
 
 type DiagnosticPayload = {
@@ -58,9 +71,17 @@ type DiagnosticPayload = {
     average_band: number | null;
     target_band: number;
     band_gap: number | null;
+    target_distance: number | null;
+    confidence: number;
+    latest_outcome_at: string | null;
   };
   sections: Record<string, SectionDiagnostic>;
   question_types: QuestionTypeDiagnostic[];
+  mastery: {
+    tracked_question_types: number;
+    mastered_question_types: number;
+    weak_question_types: number;
+  };
 };
 
 type ExerciseRow = {
@@ -160,7 +181,8 @@ const PRACTICE_PRODUCT_SLUG = "ielts-practice";
 const IELTS_SIMULATOR_PRODUCT_SLUG = "ielts-academic-simulator";
 const IELTS_SIMULATOR_PRODUCT_ID_FALLBACK = "ead05eae-aa97-4bda-a07c-51e5dbb062c0";
 const EN_LANGUAGE_CODE = "en";
-const DIAGNOSTIC_SCHEMA_VERSION = "ielts.practice.diagnostic.v1";
+const DIAGNOSTIC_SCHEMA_VERSION = "ielts.practice.diagnostic.v2";
+const PRACTICE_DELIVERY_SCHEMA_VERSION = "ielts.practice.delivery.v2";
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -520,6 +542,28 @@ const toSectionType = (raw: unknown): "reading" | "listening" | "writing" | null
   return null;
 };
 
+const daysSince = (iso: string | null | undefined, nowMs = Date.now()): number | null => {
+  if (!iso) return null;
+  const parsed = Date.parse(iso);
+  if (!Number.isFinite(parsed)) return null;
+  return roundTo(Math.max(0, (nowMs - parsed) / (1000 * 60 * 60 * 24)), 1);
+};
+
+const confidenceFromSamples = (samples: number, latestAt: string | null, nowMs = Date.now()): number => {
+  const sampleConfidence = Math.min(0.92, Math.max(0.15, samples / 12));
+  const age = daysSince(latestAt, nowMs);
+  const recencyFactor = age == null ? 0.45 : Math.max(0.35, 1 - Math.min(age, 90) / 120);
+  return roundTo(clamp(sampleConfidence * recencyFactor, 0.05, 0.95), 3);
+};
+
+const masteryStatusFrom = (masteryLevel: number, attempts: number): string => {
+  if (attempts <= 0) return "new";
+  if (masteryLevel >= 0.86) return "mastered";
+  if (masteryLevel >= 0.72) return "stable";
+  if (masteryLevel >= 0.48) return "building";
+  return "weak";
+};
+
 const computeDiagnostics = async (
   sb: any,
   scope: ResolvedScope,
@@ -548,6 +592,7 @@ const computeDiagnostics = async (
     max: number;
     bandTotal: number;
     bandWeight: number;
+    latestAt: string | null;
   }>();
 
   for (const section of ["reading", "listening", "writing"] as const) {
@@ -557,6 +602,7 @@ const computeDiagnostics = async (
       max: 0,
       bandTotal: 0,
       bandWeight: 0,
+      latestAt: null,
     });
   }
 
@@ -565,6 +611,7 @@ const computeDiagnostics = async (
     const weight = productId === scope.simulatorProductId ? 1 : 0.65;
     if (productId === scope.simulatorProductId) simulatorOutcomeCount += 1;
     else if (productId === scope.practiceProductId) practiceOutcomeCount += 1;
+    const computedAt = toNullableText((outcome as any).computed_at, 80);
 
     const overallBand = toNumber((outcome as any).overall_band);
     if (overallBand != null) {
@@ -591,6 +638,7 @@ const computeDiagnostics = async (
         bucket.bandTotal += band * weight;
         bucket.bandWeight += weight;
       }
+      if (computedAt && (!bucket.latestAt || computedAt > bucket.latestAt)) bucket.latestAt = computedAt;
     }
   }
 
@@ -603,13 +651,14 @@ const computeDiagnostics = async (
     samples: number;
     raw: number;
     max: number;
+    latestAt: string | null;
   }>();
 
   if (sessionIds.length > 0) {
     const [{ data: responsesData }, { data: sessionRowsData }] = await Promise.all([
       sb
         .from("responses")
-        .select("session_id,content_unit_id,data")
+        .select("session_id,content_unit_id,data,submitted_at")
         .in("session_id", sessionIds),
       sb
         .from("sessions")
@@ -697,13 +746,31 @@ const computeDiagnostics = async (
           samples: 0,
           raw: 0,
           max: 0,
+          latestAt: null,
         };
         bucket.samples += 1;
         bucket.raw += score.score;
         bucket.max += score.max;
+        const submittedAt = toNullableText((response as any).submitted_at, 80);
+        if (submittedAt && (!bucket.latestAt || submittedAt > bucket.latestAt)) bucket.latestAt = submittedAt;
         questionBuckets.set(key, bucket);
       }
     }
+  }
+
+  const { data: masteryData } = await sb
+    .from("ielts_practice_mastery")
+    .select("section_type,question_type,attempts,mastery_level,mastery_status,rolling_accuracy_ratio,best_accuracy_ratio,last_practiced_at")
+    .eq("user_id", userId)
+    .eq("language_id", scope.languageId)
+    .eq("product_id", scope.practiceProductId);
+
+  const masteryByQuestionType = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(masteryData) ? masteryData : []) {
+    const section = toSectionType((row as any).section_type);
+    const questionType = toText((row as any).question_type, 120).toLowerCase();
+    if (!section || !questionType) continue;
+    masteryByQuestionType.set(`${section}::${questionType}`, row as JsonRecord);
   }
 
   const averageOverallBand = overallBandWeightTotal > 0
@@ -720,6 +787,13 @@ const computeDiagnostics = async (
     const targetBandRaw = toNumber((goals.target_section_bands as any)?.[section]);
     const targetBand = targetBandRaw != null ? clamp(targetBandRaw, 0, 9) : targetOverallBand;
     const bandGap = averageBand == null ? null : roundTo(targetBand - averageBand, 2);
+    const masteryRows = Array.from(masteryByQuestionType.values()).filter((row) => toSectionType(row.section_type) === section);
+    const masteryValues = masteryRows
+      .map((row) => toNumber(row.mastery_level))
+      .filter((value): value is number => value != null);
+    const masteryLevel = masteryValues.length > 0
+      ? roundTo(masteryValues.reduce((sum, value) => sum + value, 0) / masteryValues.length, 3)
+      : null;
 
     sections[section] = {
       section_type: section,
@@ -730,6 +804,12 @@ const computeDiagnostics = async (
       average_band: averageBand,
       target_band: targetBand,
       band_gap: bandGap,
+      target_distance: bandGap,
+      confidence: confidenceFromSamples(bucket.samples, bucket.latestAt),
+      last_seen_at: bucket.latestAt,
+      days_since_seen: daysSince(bucket.latestAt),
+      mastery_level: masteryLevel,
+      mastery_status: masteryLevel == null ? null : masteryStatusFrom(masteryLevel, masteryValues.length),
     };
   }
 
@@ -738,7 +818,11 @@ const computeDiagnostics = async (
       const accuracy = bucket.max > 0 ? bucket.raw / bucket.max : null;
       const sectionGap = Math.max(0, toNumber(sections[bucket.sectionType]?.band_gap) ?? 0);
       const weaknessFromAccuracy = accuracy == null ? 0 : 1 - clamp(accuracy, 0, 1);
-      const weaknessScore = roundTo(weaknessFromAccuracy * 1.2 + sectionGap * 0.2 + Math.min(bucket.samples, 8) * 0.02, 4);
+      const mastery = masteryByQuestionType.get(`${bucket.sectionType}::${bucket.questionType}`);
+      const masteryLevel = toNumber(mastery?.mastery_level);
+      const masteryPenalty = masteryLevel != null ? masteryLevel * 0.5 : 0;
+      const weaknessScore = roundTo(Math.max(0, weaknessFromAccuracy * 1.2 + sectionGap * 0.2 + Math.min(bucket.samples, 8) * 0.02 - masteryPenalty), 4);
+      const targetBand = toNumber(sections[bucket.sectionType]?.target_band);
 
       return {
         section_type: bucket.sectionType,
@@ -748,6 +832,13 @@ const computeDiagnostics = async (
         max_score: bucket.max,
         accuracy_ratio: accuracy == null ? null : roundTo(accuracy, 4),
         weakness_score: weaknessScore,
+        target_band: targetBand,
+        target_distance: sectionGap,
+        confidence: confidenceFromSamples(bucket.samples, bucket.latestAt),
+        last_seen_at: bucket.latestAt,
+        days_since_seen: daysSince(bucket.latestAt),
+        mastery_level: masteryLevel,
+        mastery_status: toNullableText(mastery?.mastery_status, 40),
       };
     })
     .sort((a, b) => {
@@ -757,6 +848,40 @@ const computeDiagnostics = async (
     })
     .slice(0, 120);
 
+  for (const [key, mastery] of masteryByQuestionType.entries()) {
+    if (questionTypes.some((row) => `${row.section_type}::${row.question_type}` === key)) continue;
+    const [sectionTypeRaw, questionTypeRaw] = key.split("::");
+    const sectionType = toSectionType(sectionTypeRaw);
+    const questionType = toText(questionTypeRaw, 120).toLowerCase();
+    if (!sectionType || !questionType) continue;
+    const masteryLevel = toNumber(mastery.mastery_level);
+    const rollingAccuracy = toNumber(mastery.rolling_accuracy_ratio);
+    const lastPracticedAt = toNullableText(mastery.last_practiced_at, 80);
+    const sectionGap = Math.max(0, toNumber(sections[sectionType]?.band_gap) ?? 0);
+    questionTypes.push({
+      section_type: sectionType,
+      question_type: questionType,
+      samples: Math.max(0, Math.floor(toNumber(mastery.attempts) ?? 0)),
+      raw_score: rollingAccuracy ?? 0,
+      max_score: 1,
+      accuracy_ratio: rollingAccuracy,
+      weakness_score: roundTo(Math.max(0, (1 - (rollingAccuracy ?? masteryLevel ?? 0)) * 1.1 + sectionGap * 0.2), 4),
+      target_band: toNumber(sections[sectionType]?.target_band),
+      target_distance: sectionGap,
+      confidence: confidenceFromSamples(Math.max(0, Math.floor(toNumber(mastery.attempts) ?? 0)), lastPracticedAt),
+      last_seen_at: lastPracticedAt,
+      days_since_seen: daysSince(lastPracticedAt),
+      mastery_level: masteryLevel,
+      mastery_status: toNullableText(mastery.mastery_status, 40),
+    });
+  }
+
+  questionTypes.sort((a, b) => {
+    if (b.weakness_score !== a.weakness_score) return b.weakness_score - a.weakness_score;
+    if (b.samples !== a.samples) return b.samples - a.samples;
+    return a.question_type.localeCompare(b.question_type);
+  });
+
   const payload: DiagnosticPayload = {
     schema_version: DIAGNOSTIC_SCHEMA_VERSION,
     generated_at: new Date().toISOString(),
@@ -765,9 +890,17 @@ const computeDiagnostics = async (
       average_band: averageOverallBand,
       target_band: targetOverallBand,
       band_gap: averageOverallBand == null ? null : roundTo(targetOverallBand - averageOverallBand, 2),
+      target_distance: averageOverallBand == null ? null : roundTo(targetOverallBand - averageOverallBand, 2),
+      confidence: confidenceFromSamples(outcomes.length, toNullableText((outcomes[0] as any)?.computed_at, 80)),
+      latest_outcome_at: toNullableText((outcomes[0] as any)?.computed_at, 80),
     },
     sections,
     question_types: questionTypes,
+    mastery: {
+      tracked_question_types: masteryByQuestionType.size,
+      mastered_question_types: Array.from(masteryByQuestionType.values()).filter((row) => toText(row.mastery_status, 40) === "mastered").length,
+      weak_question_types: Array.from(masteryByQuestionType.values()).filter((row) => toText(row.mastery_status, 40) === "weak").length,
+    },
   };
 
   return {
@@ -907,8 +1040,12 @@ const buildPlanCandidates = (
   }
 
   const weaknessByQuestionType = new Map<string, number>();
+  const masteryByQuestionType = new Map<string, number>();
+  const confidenceByQuestionType = new Map<string, number>();
   for (const row of diagnostics.question_types ?? []) {
     weaknessByQuestionType.set(`${row.section_type}::${row.question_type}`, Math.max(0, toNumber(row.weakness_score) ?? 0));
+    masteryByQuestionType.set(`${row.section_type}::${row.question_type}`, clamp(toNumber((row as any).mastery_level) ?? 0, 0, 1));
+    confidenceByQuestionType.set(`${row.section_type}::${row.question_type}`, clamp(toNumber((row as any).confidence) ?? 0.4, 0, 1));
   }
 
   return exercises.map((exercise) => {
@@ -964,8 +1101,12 @@ const buildSessionPlanCandidates = (
   }
 
   const weaknessByQuestionType = new Map<string, number>();
+  const masteryByQuestionType = new Map<string, number>();
+  const confidenceByQuestionType = new Map<string, number>();
   for (const row of diagnostics.question_types ?? []) {
     weaknessByQuestionType.set(`${row.section_type}::${row.question_type}`, Math.max(0, toNumber(row.weakness_score) ?? 0));
+    masteryByQuestionType.set(`${row.section_type}::${row.question_type}`, clamp(toNumber((row as any).mastery_level) ?? 0, 0, 1));
+    confidenceByQuestionType.set(`${row.section_type}::${row.question_type}`, clamp(toNumber((row as any).confidence) ?? 0.4, 0, 1));
   }
 
   const targetOverallBand = clamp(toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
@@ -976,18 +1117,29 @@ const buildSessionPlanCandidates = (
     const build = isObject(row.build) ? (row.build as JsonRecord) : {};
     const buildSummary = isObject(build.build_summary) ? (build.build_summary as JsonRecord) : {};
     const sectionType = toSectionType(blueprint.section_type ?? buildSummary.section_type ?? "reading") ?? "reading";
+    const experienceKind = toText(build.experience_kind ?? blueprint.experience_kind ?? buildSummary.experience_kind ?? "guided_set", 80).toLowerCase();
     const sectionGap = sectionGapBySection.get(sectionType) ?? 0;
 
-    const questionTypesRaw = Array.isArray(buildSummary.question_types)
-      ? buildSummary.question_types
-      : Array.isArray(blueprint.target_question_types)
-        ? blueprint.target_question_types
-        : [];
+    const questionTypesRaw = Array.isArray(buildSummary.target_question_types)
+      ? buildSummary.target_question_types
+      : Array.isArray(buildSummary.question_types)
+        ? buildSummary.question_types
+        : Array.isArray(blueprint.target_question_types)
+          ? blueprint.target_question_types
+          : [];
     const questionTypes = questionTypesRaw.map((entry) => toText(entry, 120).toLowerCase()).filter(Boolean);
     const weaknessValues = questionTypes.map((questionType) => weaknessByQuestionType.get(`${sectionType}::${questionType}`) ?? 0);
     const questionWeakness = weaknessValues.length > 0
       ? weaknessValues.reduce((sum, value) => sum + value, 0) / weaknessValues.length
       : 0;
+    const masteryValues = questionTypes.map((questionType) => masteryByQuestionType.get(`${sectionType}::${questionType}`) ?? 0);
+    const averageMastery = masteryValues.length > 0
+      ? masteryValues.reduce((sum, value) => sum + value, 0) / masteryValues.length
+      : 0;
+    const confidenceValues = questionTypes.map((questionType) => confidenceByQuestionType.get(`${sectionType}::${questionType}`) ?? 0.4);
+    const averageConfidence = confidenceValues.length > 0
+      ? confidenceValues.reduce((sum, value) => sum + value, 0) / confidenceValues.length
+      : 0.4;
 
     const buildId = toText(build.id, 80);
     const recent = recentSessionMap.get(buildId);
@@ -1000,7 +1152,17 @@ const buildSessionPlanCandidates = (
     const estimatedMinutes = clamp(Math.floor(toNumber(blueprint.estimated_minutes ?? 25) ?? 25), 5, 120);
     const durationFit = Math.max(0.2, 1 - Math.abs(estimatedMinutes - 25) / 50);
     const targetBandFit = Math.max(0.2, 1 - Math.abs(targetOverallBand - (toNumber((diagnostics.sections as any)?.[sectionType]?.target_band) ?? targetOverallBand)) / 4);
-    const score = roundTo(sectionGap * 1.45 + questionWeakness * 1.6 + durationFit * 0.3 + targetBandFit * 0.2 - recencyPenalty, 6);
+    const kindFit = experienceKind === "repair_drill"
+      ? questionWeakness * 0.55
+      : experienceKind === "mastery_check"
+        ? averageMastery * 0.5 + (questionWeakness < 0.35 ? 0.2 : -0.15)
+        : experienceKind === "strategy"
+          ? (averageConfidence < 0.55 ? 0.28 : 0.08)
+          : experienceKind === "writing_rewrite"
+            ? (sectionType === "writing" ? sectionGap * 0.35 + questionWeakness * 0.2 : -0.3)
+            : 0.16;
+    const masteryPenalty = experienceKind === "mastery_check" ? 0 : averageMastery * 0.45;
+    const score = roundTo(sectionGap * 1.45 + questionWeakness * 1.7 + durationFit * 0.25 + targetBandFit * 0.2 + kindFit - masteryPenalty - recencyPenalty, 6);
     const questionSummary = questionTypes.length > 0 ? questionTypes.slice(0, 4).join(", ") : "mixed question types";
 
     return {
@@ -1008,13 +1170,18 @@ const buildSessionPlanCandidates = (
       build,
       sectionType,
       score,
-      rationale: `${sectionType} weakness plus ${questionSummary}`,
+      rationale: `${experienceKind.replace(/_/g, " ")} for ${sectionType}: ${questionSummary}`,
       rationaleJson: {
         source: "practice_blueprint",
+        experience_kind: experienceKind,
         section_gap: roundTo(sectionGap, 4),
         question_weakness: roundTo(questionWeakness, 4),
+        average_mastery: roundTo(averageMastery, 4),
+        average_confidence: roundTo(averageConfidence, 4),
         duration_fit: roundTo(durationFit, 4),
         target_band_fit: roundTo(targetBandFit, 4),
+        kind_fit: roundTo(kindFit, 4),
+        mastery_penalty: roundTo(masteryPenalty, 4),
         recency_penalty: roundTo(recencyPenalty, 4),
         question_types: questionTypes,
       },
@@ -1071,20 +1238,29 @@ const loadPracticeSessionBundle = async (
     .select("id,user_id,language_id,product_id,blueprint_id,delivery_build_id,delivery_experience_id,session_id,plan_item_id,status,latest_outcome_id,latest_auto_evaluation_id,latest_ai_evaluation_id,review_metadata,metadata,started_at,completed_at,created_at,updated_at")
     .eq("id", practiceSessionId)
     .maybeSingle();
-  if (!practiceSessionData) return null;
+  let resolvedPracticeSessionData = practiceSessionData;
+  if (!resolvedPracticeSessionData) {
+    const { data: byRuntimeSessionData } = await sb
+      .from("ielts_practice_sessions")
+      .select("id,user_id,language_id,product_id,blueprint_id,delivery_build_id,delivery_experience_id,session_id,plan_item_id,status,latest_outcome_id,latest_auto_evaluation_id,latest_ai_evaluation_id,review_metadata,metadata,started_at,completed_at,created_at,updated_at")
+      .eq("session_id", practiceSessionId)
+      .maybeSingle();
+    resolvedPracticeSessionData = byRuntimeSessionData;
+  }
+  if (!resolvedPracticeSessionData) return null;
 
-  const practiceSession = practiceSessionData as JsonRecord;
+  const practiceSession = resolvedPracticeSessionData as JsonRecord;
   if (String(practiceSession.user_id ?? "") !== userId || String(practiceSession.language_id ?? "") !== scope.languageId) return null;
 
   const [buildRes, blueprintRes, sessionRes, outcomeRes, evaluationsRes, sectionsRes] = await Promise.all([
     sb
       .from("ielts_practice_delivery_builds")
-      .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+      .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
       .eq("id", String(practiceSession.delivery_build_id ?? ""))
       .maybeSingle(),
     sb
       .from("ielts_practice_blueprints")
-      .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+      .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
       .eq("id", String(practiceSession.blueprint_id ?? ""))
       .maybeSingle(),
     sb
@@ -1094,7 +1270,7 @@ const loadPracticeSessionBundle = async (
       .maybeSingle(),
     sb
       .from("exam_outcomes")
-      .select("id,computed_at,overall_band,section_scores,result")
+      .select("id,computed_at,overall_band,section_scores,skill_breakdown,raw_result")
       .eq("session_id", String(practiceSession.session_id ?? ""))
       .order("computed_at", { ascending: false })
       .limit(1)
@@ -1151,13 +1327,13 @@ const enrichPlanRows = async (
     buildIds.length > 0
       ? sb
         .from("ielts_practice_delivery_builds")
-        .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+        .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
         .in("id", buildIds)
       : Promise.resolve({ data: [] }),
     blueprintIds.length > 0
       ? sb
         .from("ielts_practice_blueprints")
-        .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+        .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
         .in("id", blueprintIds)
       : Promise.resolve({ data: [] }),
     practiceSessionIds.length > 0
@@ -1465,6 +1641,372 @@ const emitLanguageSignalEvent = async (
     );
 };
 
+const callScoreSession = async (
+  supabaseUrl: string,
+  anonKey: string,
+  token: string,
+  sessionId: string,
+): Promise<JsonRecord | null> => {
+  const preferred = toText(Deno.env.get("IELTS_PRACTICE_SCORE_SESSION_FUNCTION") ?? "score-session-v2", 80);
+  const slugs = Array.from(new Set([preferred, "score-session"].filter(Boolean)));
+
+  let lastDetails: unknown = null;
+  for (const slug of slugs) {
+    const res = await fetch(`${supabaseUrl}/functions/v1/${slug}`, {
+      method: "POST",
+      headers: apiHeaders(anonKey, token),
+      body: JSON.stringify({ session_id: sessionId, method: "auto" }),
+    });
+    if (res.ok) {
+      const payload = await res.json();
+      return isObject(payload) ? payload : null;
+    }
+    try {
+      lastDetails = await res.json();
+    } catch {
+      lastDetails = await res.text();
+    }
+    if (res.status !== 404 && res.status !== 405) break;
+  }
+
+  throw new Error(`Failed to score practice session: ${JSON.stringify(lastDetails)}`);
+};
+
+const extractWritingBand = (outcome: JsonRecord | null, aiEvaluation: JsonRecord | null): number | null => {
+  const aiResult = isObject(aiEvaluation?.result) ? (aiEvaluation?.result as JsonRecord) : null;
+  const aiBand = toNumber(aiResult?.overall_band);
+  if (aiBand != null) return clamp(aiBand, 0, 9);
+
+  const sectionScores = isObject(outcome?.section_scores) ? (outcome?.section_scores as JsonRecord) : {};
+  for (const section of Object.values(sectionScores)) {
+    if (!isObject(section)) continue;
+    if (toSectionType(section.type) !== "writing") continue;
+    const band = toNumber(section.band);
+    if (band != null) return clamp(band, 0, 9);
+  }
+  return null;
+};
+
+const updateMasteryBuckets = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  buckets: Array<{
+    section_type: "reading" | "listening" | "writing";
+    question_type: string;
+    accuracy_ratio: number;
+    raw_score: number | null;
+    max_score: number | null;
+    practiced_at: string;
+    source: string;
+  }>,
+  refs: { practice_session_id?: string | null; session_id?: string | null; attempt_id?: string | null; delivery_build_id?: string | null },
+): Promise<JsonRecord[]> => {
+  if (buckets.length === 0) return [];
+
+  const { data: existingData } = await sb
+    .from("ielts_practice_mastery")
+    .select("section_type,question_type,attempts,best_accuracy_ratio,rolling_accuracy_ratio,mastery_level,metadata")
+    .eq("user_id", userId)
+    .eq("language_id", scope.languageId)
+    .eq("product_id", scope.practiceProductId);
+
+  const existingByKey = new Map<string, JsonRecord>();
+  for (const row of Array.isArray(existingData) ? existingData : []) {
+    const section = toSectionType((row as any).section_type);
+    const questionType = toText((row as any).question_type, 120).toLowerCase();
+    if (!section || !questionType) continue;
+    existingByKey.set(`${section}::${questionType}`, row as JsonRecord);
+  }
+
+  const upsertRows = buckets.map((bucket) => {
+    const questionType = toText(bucket.question_type, 120).toLowerCase() || "question_unknown";
+    const key = `${bucket.section_type}::${questionType}`;
+    const current = existingByKey.get(key);
+    const previousAttempts = Math.max(0, Math.floor(toNumber(current?.attempts) ?? 0));
+    const previousRolling = toNumber(current?.rolling_accuracy_ratio);
+    const previousBest = toNumber(current?.best_accuracy_ratio);
+    const accuracy = roundTo(clamp(bucket.accuracy_ratio, 0, 1), 4);
+    const nextAttempts = previousAttempts + 1;
+    const rolling = previousRolling == null
+      ? accuracy
+      : roundTo(clamp(previousRolling * 0.65 + accuracy * 0.35, 0, 1), 4);
+    const best = previousBest == null ? accuracy : Math.max(previousBest, accuracy);
+    const masteryLevel = roundTo(clamp(rolling * 0.75 + best * 0.25, 0, 1), 4);
+
+    return {
+      user_id: userId,
+      language_id: scope.languageId,
+      product_id: scope.practiceProductId,
+      section_type: bucket.section_type,
+      question_type: questionType,
+      attempts: nextAttempts,
+      last_accuracy_ratio: accuracy,
+      best_accuracy_ratio: roundTo(best, 4),
+      rolling_accuracy_ratio: rolling,
+      mastery_level: masteryLevel,
+      mastery_status: masteryStatusFrom(masteryLevel, nextAttempts),
+      last_practice_session_id: refs.practice_session_id ?? null,
+      last_session_id: refs.session_id ?? null,
+      last_attempt_id: refs.attempt_id ?? null,
+      last_practiced_at: bucket.practiced_at,
+      metadata: {
+        ...(isObject(current?.metadata) ? current?.metadata : {}),
+        updated_from: bucket.source,
+        delivery_build_id: refs.delivery_build_id ?? null,
+        raw_score: bucket.raw_score,
+        max_score: bucket.max_score,
+        accuracy_ratio: accuracy,
+      },
+    };
+  });
+
+  const { data, error } = await sb
+    .from("ielts_practice_mastery")
+    .upsert(upsertRows, { onConflict: "user_id,language_id,section_type,question_type" })
+    .select("section_type,question_type,attempts,mastery_level,mastery_status,rolling_accuracy_ratio");
+
+  if (error) throw new Error("Failed to update IELTS practice mastery");
+  return (Array.isArray(data) ? data : []) as JsonRecord[];
+};
+
+const updateMasteryFromAttempt = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  attempt: AttemptRow,
+  scoreResult: ScoreResult,
+  submittedAt: string,
+): Promise<JsonRecord[]> => {
+  const accuracy = scoreResult.accuracyRatio ?? (scoreResult.estimatedBand != null ? scoreResult.estimatedBand / 9 : null);
+  if (accuracy == null) return [];
+  return updateMasteryBuckets(
+    sb,
+    scope,
+    userId,
+    [{
+      section_type: attempt.section_type,
+      question_type: attempt.question_type,
+      accuracy_ratio: accuracy,
+      raw_score: scoreResult.rawScore,
+      max_score: scoreResult.maxScore,
+      practiced_at: submittedAt,
+      source: "legacy_attempt",
+    }],
+    { attempt_id: attempt.id },
+  );
+};
+
+const updateMasteryFromPracticeSession = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  bundle: JsonRecord,
+): Promise<JsonRecord[]> => {
+  const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+  const runtimeSessionId = toText(practiceSession.session_id, 80);
+  const deliveryExperienceId = toText(practiceSession.delivery_experience_id, 80);
+  if (!runtimeSessionId || !deliveryExperienceId) return [];
+
+  const sections = Array.isArray(bundle.sections) ? bundle.sections.filter(isObject) : [];
+  const sectionIds = sections.map((section) => toText(section.id, 80)).filter(Boolean);
+  if (sectionIds.length === 0) return [];
+
+  const sectionTypeById = new Map<string, "reading" | "listening" | "writing">();
+  for (const section of sections) {
+    const sectionType = toSectionType((section.metadata as any)?.type);
+    if (sectionType) sectionTypeById.set(toText(section.id, 80), sectionType);
+  }
+
+  const { data: partsData } = await sb
+    .from("parts")
+    .select("id,section_id")
+    .in("section_id", sectionIds);
+  const parts = Array.isArray(partsData) ? partsData.filter(isObject) : [];
+  const partIds = parts.map((part) => toText(part.id, 80)).filter(Boolean);
+  if (partIds.length === 0) return [];
+
+  const partToSection = new Map<string, string>();
+  for (const part of parts) partToSection.set(toText(part.id, 80), toText(part.section_id, 80));
+
+  const { data: unitsData } = await sb
+    .from("content_units")
+    .select("id,part_id,type,data,metadata,display_order")
+    .in("part_id", partIds);
+  const units = Array.isArray(unitsData) ? unitsData.filter(isObject) : [];
+  const unitIds = units.map((unit) => toText(unit.id, 80)).filter(Boolean);
+  if (unitIds.length === 0) return [];
+
+  const [{ data: keysData }, { data: responsesData }] = await Promise.all([
+    sb
+      .from("answer_keys")
+      .select("content_unit_id,correct")
+      .in("content_unit_id", unitIds),
+    sb
+      .from("responses")
+      .select("content_unit_id,data,submitted_at")
+      .eq("session_id", runtimeSessionId)
+      .order("submitted_at", { ascending: true }),
+  ]);
+
+  const unitById = new Map<string, JsonRecord>();
+  for (const unit of units) unitById.set(toText(unit.id, 80), unit);
+
+  const keyByUnitId = new Map<string, JsonRecord>();
+  for (const key of Array.isArray(keysData) ? keysData.filter(isObject) : []) {
+    keyByUnitId.set(toText(key.content_unit_id, 80), key);
+  }
+
+  const latestResponseByUnitId = new Map<string, JsonRecord>();
+  for (const response of Array.isArray(responsesData) ? responsesData.filter(isObject) : []) {
+    latestResponseByUnitId.set(toText(response.content_unit_id, 80), response);
+  }
+
+  const aggregate = new Map<string, {
+    section_type: "reading" | "listening" | "writing";
+    question_type: string;
+    raw_score: number;
+    max_score: number;
+    practiced_at: string;
+  }>();
+
+  for (const [unitId, key] of keyByUnitId.entries()) {
+    const unit = unitById.get(unitId);
+    if (!unit || !key) continue;
+
+    const partId = toText(unit.part_id, 80);
+    const sectionId = partToSection.get(partId);
+    const sectionType = sectionId ? sectionTypeById.get(sectionId) : null;
+    if (!sectionType || sectionType === "writing") continue;
+
+    const response = latestResponseByUnitId.get(unitId);
+    const scored = scoreObjectiveQuestion(toText(unit.type, 120), key.correct, response?.data);
+    if (!scored || scored.max <= 0) continue;
+
+    const questionType = questionTypeFromUnit(unit);
+    const mapKey = `${sectionType}::${questionType}`;
+    const bucket = aggregate.get(mapKey) ?? {
+      section_type: sectionType,
+      question_type: questionType,
+      raw_score: 0,
+      max_score: 0,
+      practiced_at: new Date().toISOString(),
+    };
+    bucket.raw_score += scored.score;
+    bucket.max_score += scored.max;
+    const submittedAt = toNullableText(response?.submitted_at, 80);
+    if (submittedAt && submittedAt > bucket.practiced_at) bucket.practiced_at = submittedAt;
+    aggregate.set(mapKey, bucket);
+  }
+
+  const buckets = Array.from(aggregate.values()).map((bucket) => ({
+    section_type: bucket.section_type,
+    question_type: bucket.question_type,
+    accuracy_ratio: bucket.max_score > 0 ? bucket.raw_score / bucket.max_score : 0,
+    raw_score: bucket.raw_score,
+    max_score: bucket.max_score,
+    practiced_at: bucket.practiced_at,
+    source: "transformed_session",
+  }));
+
+  const hasWritingSection = sections.some((section) => toSectionType((section.metadata as any)?.type) === "writing");
+  if (hasWritingSection) {
+    const outcome = isObject(bundle.latest_outcome) ? (bundle.latest_outcome as JsonRecord) : null;
+    const evaluations = isObject(bundle.evaluations) ? (bundle.evaluations as JsonRecord) : {};
+    const aiEvaluation = isObject(evaluations.ai) ? (evaluations.ai as JsonRecord) : null;
+    const writingBand = extractWritingBand(outcome, aiEvaluation);
+    if (writingBand != null) {
+      const blueprint = isObject(bundle.blueprint) ? (bundle.blueprint as JsonRecord) : {};
+      const targetTypes = Array.isArray(blueprint.target_question_types)
+        ? blueprint.target_question_types.map((entry) => toText(entry, 120).toLowerCase()).filter(Boolean)
+        : [];
+      const questionTypes = targetTypes.length > 0 ? targetTypes : ["question_text"];
+      for (const questionType of questionTypes) {
+        buckets.push({
+          section_type: "writing",
+          question_type: questionType,
+          accuracy_ratio: writingBand / 9,
+          raw_score: writingBand,
+          max_score: 9,
+          practiced_at: toNullableText(aiEvaluation?.evaluated_at, 80) ?? new Date().toISOString(),
+          source: "writing_evaluation",
+        });
+      }
+    }
+  }
+
+  return updateMasteryBuckets(sb, scope, userId, buckets, {
+    practice_session_id: toNullableText(practiceSession.id, 80),
+    session_id: runtimeSessionId,
+    delivery_build_id: toNullableText(practiceSession.delivery_build_id, 80),
+  });
+};
+
+const scoreAndRefreshPracticeSession = async (
+  sb: any,
+  supabaseUrl: string,
+  anonKey: string,
+  token: string,
+  scope: ResolvedScope,
+  userId: string,
+  bundle: JsonRecord,
+): Promise<{ scoring: JsonRecord | null; mastery_updates: JsonRecord[]; diagnostics_snapshot_id: string | null }> => {
+  const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+  const runtimeSessionId = toText(practiceSession.session_id, 80);
+  if (!runtimeSessionId) throw new Error("Practice session has no runtime session id");
+
+  const scoring = await callScoreSession(supabaseUrl, anonKey, token, runtimeSessionId);
+  const sections = Array.isArray(bundle.sections) ? bundle.sections.filter(isObject) : [];
+  const hasWriting = sections.some((section) => toSectionType((section.metadata as any)?.type) === "writing");
+  if (hasWriting) {
+    await callGradeWriting(supabaseUrl, anonKey, token, runtimeSessionId);
+  }
+
+  const refreshed = await loadPracticeSessionBundle(sb, toText(practiceSession.id, 80), userId, scope);
+  const latestBundle = refreshed ?? bundle;
+  const evaluations = isObject(latestBundle.evaluations) ? (latestBundle.evaluations as JsonRecord) : {};
+  const autoEval = isObject(evaluations.auto) ? (evaluations.auto as JsonRecord) : null;
+  const aiEval = isObject(evaluations.ai) ? (evaluations.ai as JsonRecord) : null;
+  const latestOutcome = isObject(latestBundle.latest_outcome) ? (latestBundle.latest_outcome as JsonRecord) : null;
+  const nowIso = new Date().toISOString();
+
+  await sb
+    .from("ielts_practice_sessions")
+    .update({
+      status: "completed",
+      latest_outcome_id: latestOutcome ? toNullableText(latestOutcome.id, 80) : null,
+      latest_auto_evaluation_id: autoEval ? toNullableText(autoEval.id, 80) : null,
+      latest_ai_evaluation_id: aiEval ? toNullableText(aiEval.id, 80) : null,
+      completed_at: (latestBundle.session as any)?.completed_at ?? nowIso,
+      review_metadata: {
+        refreshed_at: nowIso,
+        scoring_schema: isObject(scoring?.result) ? (scoring?.result as JsonRecord).schema_version ?? null : null,
+      },
+    })
+    .eq("id", toText(practiceSession.id, 80));
+
+  const planItemId = toNullableText(practiceSession.plan_item_id, 80);
+  if (planItemId) {
+    await sb
+      .from("ielts_practice_plan_items")
+      .update({ status: "completed", completed_at: nowIso })
+      .eq("id", planItemId);
+  }
+
+  const masteryUpdates = await updateMasteryFromPracticeSession(sb, scope, userId, latestBundle);
+  let diagnosticsSnapshotId: string | null = null;
+  try {
+    const goals = await getGoals(sb, userId, scope);
+    const computed = await computeDiagnostics(sb, scope, userId, goals);
+    const snapshot = await persistDiagnostics(sb, userId, scope, computed.payload, computed.sourceSummary);
+    diagnosticsSnapshotId = toNullableText(snapshot.id, 80);
+  } catch {
+    diagnosticsSnapshotId = null;
+  }
+
+  return { scoring, mastery_updates: masteryUpdates, diagnostics_snapshot_id: diagnosticsSnapshotId };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -1510,7 +2052,7 @@ serve(async (req) => {
 
       if (!refresh) {
         const current = await loadCurrentDiagnostics(sb, auth.userId, scope);
-        if (current) {
+        if (current && String(current.snapshot_version ?? "") === DIAGNOSTIC_SCHEMA_VERSION) {
           return json(200, {
             scope: {
               user_id: auth.userId,
@@ -1543,8 +2085,8 @@ serve(async (req) => {
     if (req.method === "POST" && route === "/plans/generate") {
       const body = await parseBody(req);
       const planDate = parsePlanDate(body.plan_date);
-      const requestedDailyCount = Number(body.daily_count ?? 10);
-      const dailyCount = Number.isFinite(requestedDailyCount) ? clamp(Math.floor(requestedDailyCount), 3, 20) : 10;
+      const requestedDailyCount = Number(body.daily_count ?? 3);
+      const dailyCount = Number.isFinite(requestedDailyCount) ? clamp(Math.floor(requestedDailyCount), 3, 12) : 3;
       const refreshDiagnostics = String(body.refresh_diagnostics ?? "").toLowerCase() === "true";
 
       const goals = await getGoals(sb, auth.userId, scope);
@@ -1653,9 +2195,13 @@ serve(async (req) => {
             metadata: {
               generation_rank: index + 1,
               source: "practice_blueprint",
+              runtime: "transformed_sessions",
+              experience_kind: toText(candidate.rationaleJson.experience_kind, 80),
               estimated_minutes: toNumber(candidate.blueprint.estimated_minutes) ?? 25,
-              question_types: Array.isArray((candidate.build.build_summary as any)?.question_types)
-                ? (candidate.build.build_summary as any).question_types
+              question_types: Array.isArray((candidate.build.build_summary as any)?.target_question_types)
+                ? (candidate.build.build_summary as any).target_question_types
+                : Array.isArray((candidate.build.build_summary as any)?.question_types)
+                  ? (candidate.build.build_summary as any).question_types
                 : Array.isArray(candidate.blueprint.target_question_types)
                   ? candidate.blueprint.target_question_types
                   : [],
@@ -1674,7 +2220,7 @@ serve(async (req) => {
           );
           return json(200, {
             ok: true,
-            runtime: "session_blueprints",
+            runtime: "transformed_sessions",
             plan_date: planDate,
             generated_count: planItems.length,
             quotas,
@@ -1684,128 +2230,11 @@ serve(async (req) => {
         }
       }
 
-      const { data: exercisesData, error: exercisesError } = await sb
-        .from("ielts_practice_exercises")
-        .select(
-          "id,title,section_type,question_type,skill_tags,difficulty_band_min,difficulty_band_max,estimated_minutes,payload_json,status,metadata,created_at,updated_at",
-        )
-        .eq("language_id", scope.languageId)
-        .eq("product_id", scope.practiceProductId)
-        .eq("status", "published")
-        .order("updated_at", { ascending: false })
-        .limit(1000);
-
-      if (exercisesError) throw new Error("Failed to load exercise bank");
-      const exercises = (Array.isArray(exercisesData) ? exercisesData : []) as ExerciseRow[];
-      if (exercises.length === 0) {
-        if (publishedBlueprints.length === 0) {
-          return json(422, {
-            error: "No published practice blueprints or exercises are available yet",
-            hint: "Build and publish at least one practice blueprint in /admin before generating plans",
-            runtime: "session_blueprints",
-            published_blueprints: 0,
-            published_exercises: 0,
-          });
-        }
-
-        return json(422, {
-          error: "Published blueprints exist, but none could be selected and no fallback exercises are available",
-          hint: "Review the latest published blueprint builds in /admin and confirm their build summaries include section type and question coverage",
-          runtime: "session_blueprints",
-          published_blueprints: publishedBlueprints.length,
-          published_exercises: 0,
-        });
-      }
-
-      const { data: recentAttemptsData } = await sb
-        .from("ielts_practice_attempts")
-        .select("exercise_id,created_at")
-        .eq("user_id", auth.userId)
-        .eq("language_id", scope.languageId)
-        .order("created_at", { ascending: false })
-        .limit(300);
-
-      const recentAttemptMap = new Map<string, { attempts: number; latestAt: string | null }>();
-      for (const row of Array.isArray(recentAttemptsData) ? recentAttemptsData : []) {
-        const exerciseId = String((row as any).exercise_id ?? "");
-        if (!exerciseId) continue;
-        const bucket = recentAttemptMap.get(exerciseId) ?? { attempts: 0, latestAt: null };
-        bucket.attempts += 1;
-        if (!bucket.latestAt) bucket.latestAt = String((row as any).created_at ?? "");
-        recentAttemptMap.set(exerciseId, bucket);
-      }
-
-      const ranked = scorePlanCandidates(buildPlanCandidates(exercises, diagnostics, goals, rules, recentAttemptMap));
-
-      const selected: PlanCandidate[] = [];
-      const used = new Set<string>();
-      for (const section of ["reading", "listening", "writing"] as const) {
-        const needed = quotas[section];
-        if (needed <= 0) continue;
-        for (const candidate of ranked) {
-          if (candidate.sectionType !== section || used.has(candidate.exercise.id)) continue;
-          selected.push(candidate);
-          used.add(candidate.exercise.id);
-          if (selected.filter((item) => item.sectionType === section).length >= needed) break;
-        }
-      }
-
-      if (selected.length < dailyCount) {
-        for (const candidate of ranked) {
-          if (used.has(candidate.exercise.id)) continue;
-          selected.push(candidate);
-          used.add(candidate.exercise.id);
-          if (selected.length >= dailyCount) break;
-        }
-      }
-
-      if (selected.length === 0) return json(422, { error: "Could not generate plan with current exercise bank" });
-
-      await sb
-        .from("ielts_practice_plan_items")
-        .delete()
-        .eq("user_id", auth.userId)
-        .eq("language_id", scope.languageId)
-        .eq("plan_date", planDate)
-        .in("status", ["planned", "in_progress", "expired"]);
-
-      const insertRows = selected.map((candidate, index) => ({
-        user_id: auth.userId,
-        language_id: scope.languageId,
-        product_id: scope.practiceProductId,
-        plan_date: planDate,
-        section_type: candidate.sectionType,
-        exercise_id: candidate.exercise.id,
-        status: "planned",
-        priority: roundTo(candidate.score, 6),
-        due_at: null,
-        rationale: candidate.rationale,
-        rationale_json: candidate.rationaleJson,
-        metadata: {
-          generation_rank: index + 1,
-          question_type: candidate.exercise.question_type,
-          estimated_minutes: candidate.exercise.estimated_minutes,
-        },
-      }));
-
-      const { data: insertedRows, error: insertError } = await sb
-        .from("ielts_practice_plan_items")
-        .insert(insertRows)
-        .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id");
-      if (insertError) throw new Error("Failed to persist plan items");
-
-      const planItems = await enrichPlanRows(
-        sb,
-        (Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
-      );
-      return json(200, {
-        ok: true,
-        runtime: "legacy_exercises",
-        plan_date: planDate,
-        generated_count: planItems.length,
-        quotas,
-        diagnostics_snapshot_id: diagnosticsSnapshot.id,
-        items: planItems,
+      return json(422, {
+        error: "No published transformed IELTS Practice experiences are available for this learner yet",
+        hint: "Use Admin Content Factory to build and publish transformed Reading, Listening, and Writing coverage from simulator sources.",
+        runtime: "transformed_sessions",
+        published_transformed_builds: publishedBlueprints.length,
       });
     }
 
@@ -1885,7 +2314,7 @@ serve(async (req) => {
 
       const { data: buildData } = await sb
         .from("ielts_practice_delivery_builds")
-        .select("id,blueprint_id,delivery_experience_id,status,build_summary,validation_summary,metadata")
+        .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_summary,validation_summary,metadata")
         .eq("id", buildId)
         .maybeSingle();
       if (!buildData) return json(404, { error: "Delivery build not found" });
@@ -1950,14 +2379,38 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "GET" && route.startsWith("/sessions/")) {
+    if ((req.method === "GET" || req.method === "POST") && route.startsWith("/sessions/")) {
       const sessionTail = route.replace("/sessions/", "");
       const [practiceSessionId, subRoute] = sessionTail.split("/", 2);
       const cleanPracticeSessionId = toText(practiceSessionId, 80);
       if (!cleanPracticeSessionId) return json(404, { error: "Practice session not found" });
 
-      const bundle = await loadPracticeSessionBundle(sb, cleanPracticeSessionId, auth.userId, scope);
+      let bundle = await loadPracticeSessionBundle(sb, cleanPracticeSessionId, auth.userId, scope);
       if (!bundle) return json(404, { error: "Practice session not found" });
+
+      let scoringRefresh: {
+        scoring: JsonRecord | null;
+        mastery_updates: JsonRecord[];
+        diagnostics_snapshot_id: string | null;
+      } | null = null;
+      if (subRoute === "results" && req.method === "POST") {
+        scoringRefresh = await scoreAndRefreshPracticeSession(
+          sb,
+          supabaseUrl,
+          supabaseAnonKey,
+          auth.token,
+          scope,
+          auth.userId,
+          bundle,
+        );
+        const refreshedBundle = await loadPracticeSessionBundle(
+          sb,
+          toText((bundle.practice_session as any)?.id, 80) || cleanPracticeSessionId,
+          auth.userId,
+          scope,
+        );
+        if (refreshedBundle) bundle = refreshedBundle;
+      }
 
       const evaluations = isObject(bundle.evaluations) ? (bundle.evaluations as JsonRecord) : {};
       const autoEval = isObject(evaluations.auto) ? (evaluations.auto as JsonRecord) : null;
@@ -1994,6 +2447,7 @@ serve(async (req) => {
         return json(200, {
           ok: true,
           ...bundle,
+          scoring_refresh: scoringRefresh,
           results: {
             outcome: latestOutcome,
             auto_evaluation: autoEval,
@@ -2148,7 +2602,21 @@ serve(async (req) => {
       }
 
       await emitLanguageSignalEvent(sb, scope, auth.userId, attempt.id, scoreResult);
-      return json(200, { ok: true, attempt: updatedAttempt, exercise, signals_enqueued: scoreResult.signals.length });
+      const masteryUpdates = await updateMasteryFromAttempt(sb, scope, auth.userId, attempt, scoreResult, nowIso);
+      try {
+        const goals = await getGoals(sb, auth.userId, scope);
+        const computed = await computeDiagnostics(sb, scope, auth.userId, goals);
+        await persistDiagnostics(sb, auth.userId, scope, computed.payload, computed.sourceSummary);
+      } catch {
+        // Diagnostics can be refreshed on the next dashboard load if this best-effort pass fails.
+      }
+      return json(200, {
+        ok: true,
+        attempt: updatedAttempt,
+        exercise,
+        signals_enqueued: scoreResult.signals.length,
+        mastery_updates: masteryUpdates,
+      });
     }
 
     if (req.method === "GET" && route.startsWith("/attempts/")) {

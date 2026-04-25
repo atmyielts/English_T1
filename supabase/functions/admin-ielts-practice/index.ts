@@ -5,6 +5,8 @@ import {
   cloneBlueprintToDeliveryExperience,
   listSimulatorSourceSections,
   loadBlueprintsWithBuilds,
+  normalizePracticeExperienceKind,
+  PRACTICE_EXPERIENCE_KINDS,
 } from "../_shared/ielts-practice-blueprints.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -147,6 +149,7 @@ const createBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUse
     .maybeSingle();
 
   const status = toText(body.status, 32).toLowerCase();
+  const experienceKind = normalizePracticeExperienceKind(body.experience_kind ?? (isObject(body.metadata) ? body.metadata.experience_kind : null));
   const title = toText(body.title, 240)
     || `${toText((sourceExperience as any)?.name, 160) || "Simulator"} · ${toText((sourceSection as any).name, 160) || "Section"}`;
 
@@ -163,7 +166,11 @@ const createBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUse
       : [],
     estimated_minutes: Math.max(5, Math.min(120, Math.floor(toNumber(body.estimated_minutes) ?? 25))),
     status: ["draft", "published", "archived"].includes(status) ? status : "draft",
-    metadata: isObject(body.metadata) ? body.metadata : {},
+    experience_kind: experienceKind,
+    metadata: {
+      ...(isObject(body.metadata) ? body.metadata : {}),
+      experience_kind: experienceKind,
+    },
     created_by: adminUserId,
     updated_by: adminUserId,
   };
@@ -171,7 +178,7 @@ const createBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUse
   const { data, error } = await sb
     .from("ielts_practice_blueprints")
     .insert(row)
-    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
     .maybeSingle();
   if (error || !data) return json(500, { error: "Failed to create blueprint", details: error });
   return json(200, { blueprint: data });
@@ -194,6 +201,7 @@ const patchBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUser
     const status = toText(patch.status, 32).toLowerCase();
     if (["draft", "published", "archived"].includes(status)) update.status = status;
   }
+  if (patch.experience_kind != null) update.experience_kind = normalizePracticeExperienceKind(patch.experience_kind);
   if (patch.metadata != null && isObject(patch.metadata)) update.metadata = patch.metadata;
 
   if (typeof patch.source_section_id === "string" && patch.source_section_id.trim()) {
@@ -215,7 +223,7 @@ const patchBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUser
     .from("ielts_practice_blueprints")
     .update(update)
     .eq("id", id)
-    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
     .maybeSingle();
   if (error || !data) return json(500, { error: "Failed to update blueprint", details: error });
   return json(200, { blueprint: data });
@@ -227,7 +235,7 @@ const buildBlueprint = async (sb: any, scope: Scope, body: JsonRecord, adminUser
 
   const { data: blueprintData, error: blueprintError } = await sb
     .from("ielts_practice_blueprints")
-    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
     .eq("id", blueprintId)
     .eq("product_id", scope.practiceProductId)
     .eq("language_id", scope.languageId)
@@ -249,7 +257,7 @@ const listBuilds = async (sb: any, scope: Scope, url: URL): Promise<Response> =>
   const status = toText(url.searchParams.get("status"), 32).toLowerCase();
   let query = sb
     .from("ielts_practice_delivery_builds")
-    .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+    .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
     .eq("product_id", scope.practiceProductId)
     .eq("language_id", scope.languageId)
     .order("updated_at", { ascending: false })
@@ -272,6 +280,165 @@ const listBuilds = async (sb: any, scope: Scope, url: URL): Promise<Response> =>
       ...row,
       blueprint: blueprintById.get(String(row.blueprint_id ?? "")) ?? null,
     })),
+  });
+};
+
+const factoryTitle = (
+  source: { experience_name: string; section_name: string; section_type: string },
+  kind: string,
+  questionType?: string | null,
+): string => {
+  const kindLabel = kind.replace(/_/g, " ").replace(/\b\w/g, (token) => token.toUpperCase());
+  const focus = questionType ? ` | ${questionType.replace(/^question_/, "").replace(/_/g, " ")}` : "";
+  return `${kindLabel} | ${source.section_type} | ${source.section_name}${focus}`;
+};
+
+const factoryEstimateMinutes = (sectionType: string, kind: string): number => {
+  if (sectionType === "writing") return kind === "strategy" ? 12 : kind === "timed_mini" ? 40 : 25;
+  if (kind === "strategy") return 10;
+  if (kind === "repair_drill") return 15;
+  if (kind === "timed_mini") return 25;
+  if (kind === "mastery_check") return 18;
+  return 20;
+};
+
+const contentFactoryBuild = async (sb: any, scope: Scope, body: JsonRecord, adminUserId: string): Promise<Response> => {
+  const publish = body.publish !== false;
+  const sectionTypeFilter = toNullableText(body.section_type, 32);
+  const limit = clamp(Math.floor(toNumber(body.limit) ?? 60), 1, 300);
+  const sources = await listSimulatorSourceSections(sb, scope, {
+    sectionType: sectionTypeFilter,
+    limit,
+  });
+
+  const selectedSources = sources.filter((source) => source.question_count > 0);
+  const results: Array<JsonRecord> = [];
+  let created = 0;
+  let reused = 0;
+  let built = 0;
+  let failed = 0;
+
+  for (const source of selectedSources) {
+    const baseKinds = source.section_type === "writing"
+      ? ["strategy", "writing_rewrite", "guided_set", "timed_mini", "mastery_check"]
+      : ["strategy", "repair_drill", "guided_set", "timed_mini", "mastery_check"];
+
+    for (const kindRaw of baseKinds) {
+      const kind = normalizePracticeExperienceKind(kindRaw);
+      const qtypeGroups = kind === "repair_drill" && source.question_types.length > 0
+        ? source.question_types.map((questionType) => [questionType])
+        : [source.question_types];
+
+      for (const questionTypes of qtypeGroups) {
+        const focusKey = questionTypes.length === 1 ? questionTypes[0] : "mixed";
+        const factoryKey = [
+          "ielts-practice-v2",
+          source.section_id,
+          kind,
+          focusKey,
+        ].join(":");
+
+        try {
+          const { data: existing } = await sb
+            .from("ielts_practice_blueprints")
+            .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
+            .eq("product_id", scope.practiceProductId)
+            .eq("language_id", scope.languageId)
+            .eq("metadata->>factory_key", factoryKey)
+            .maybeSingle();
+
+          let blueprint = existing as JsonRecord | null;
+          const row = {
+            product_id: scope.practiceProductId,
+            language_id: scope.languageId,
+            title: factoryTitle(source, kind, questionTypes.length === 1 ? questionTypes[0] : null),
+            section_type: source.section_type,
+            source_product_id: scope.simulatorProductId,
+            source_experience_id: source.experience_id,
+            source_section_id: source.section_id,
+            target_question_types: questionTypes,
+            estimated_minutes: factoryEstimateMinutes(source.section_type, kind),
+            status: "draft",
+            experience_kind: kind,
+            metadata: {
+              factory_key: factoryKey,
+              factory_source: "content_factory_v2",
+              experience_kind: kind,
+              source_question_count: source.question_count,
+              source_question_types: source.question_types,
+              source_has_audio: source.has_audio,
+              source_has_passage: source.has_passage,
+              source_has_image: source.has_image,
+            },
+            updated_by: adminUserId,
+          };
+
+          if (blueprint?.id) {
+            reused += 1;
+            const { data: updated, error: updateError } = await sb
+              .from("ielts_practice_blueprints")
+              .update(row)
+              .eq("id", String(blueprint.id))
+              .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
+              .maybeSingle();
+            if (updateError || !updated) throw new Error("Failed to update factory blueprint");
+            blueprint = updated as JsonRecord;
+          } else {
+            created += 1;
+            const { data: inserted, error: insertError } = await sb
+              .from("ielts_practice_blueprints")
+              .insert({ ...row, created_by: adminUserId })
+              .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
+              .maybeSingle();
+            if (insertError || !inserted) throw new Error("Failed to create factory blueprint");
+            blueprint = inserted as JsonRecord;
+          }
+
+          const build = await cloneBlueprintToDeliveryExperience(sb, scope, blueprint as any, adminUserId, { publish });
+          built += 1;
+          results.push({
+            factory_key: factoryKey,
+            blueprint_id: blueprint.id,
+            build_id: build.id,
+            status: build.status,
+            section_type: source.section_type,
+            experience_kind: kind,
+            question_types: questionTypes,
+          });
+        } catch (err) {
+          failed += 1;
+          results.push({
+            factory_key: factoryKey,
+            section_type: source.section_type,
+            experience_kind: kind,
+            question_types: questionTypes,
+            error: err instanceof Error ? err.message : "Factory build failed",
+          });
+        }
+      }
+    }
+  }
+
+  const coverage = {
+    sources_considered: sources.length,
+    sources_with_questions: selectedSources.length,
+    sections: {
+      reading: selectedSources.filter((source) => source.section_type === "reading").length,
+      listening: selectedSources.filter((source) => source.section_type === "listening").length,
+      writing: selectedSources.filter((source) => source.section_type === "writing").length,
+    },
+    required_experience_kinds: PRACTICE_EXPERIENCE_KINDS,
+  };
+
+  return json(200, {
+    ok: failed === 0,
+    publish,
+    created,
+    reused,
+    built,
+    failed,
+    coverage,
+    results: results.slice(0, 500),
   });
 };
 
@@ -728,6 +895,9 @@ serve(async (req) => {
       return await buildBlueprint(sb, scope, await parseBody(req), authz.context.userId);
     }
     if (req.method === "GET" && route === "/builds") return await listBuilds(sb, scope, url);
+    if (req.method === "POST" && route === "/content-factory/build") {
+      return await contentFactoryBuild(sb, scope, await parseBody(req), authz.context.userId);
+    }
 
     if (req.method === "GET" && route === "/exercises") return await listExercises(sb, scope, url);
     if (req.method === "POST" && route === "/exercises") return await createExercise(sb, scope, await parseBody(req), authz.context.userId);

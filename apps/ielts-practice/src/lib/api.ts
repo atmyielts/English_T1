@@ -54,6 +54,7 @@ export type PracticeBlueprint = {
   target_question_types: string[];
   estimated_minutes: number;
   status: string;
+  experience_kind?: string | null;
   metadata: Json;
   latest_delivery_build_id: string | null;
 };
@@ -63,6 +64,7 @@ export type PracticeDeliveryBuild = {
   blueprint_id: string;
   delivery_experience_id: string | null;
   status: string;
+  experience_kind?: string | null;
   build_version: number;
   build_summary: Json;
   validation_summary: Json;
@@ -350,6 +352,29 @@ export const practiceSessionResultsGet = (
   };
 }> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/results`);
 
+export const practiceSessionResultsScore = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<{
+  ok: boolean;
+  practice_session: Json;
+  blueprint: PracticeBlueprint | null;
+  delivery_build: PracticeDeliveryBuild | null;
+  session: Json | null;
+  sections: Json[];
+  first_section_id: string | null;
+  scoring_refresh: {
+    scoring: Json | null;
+    mastery_updates: Json[];
+    diagnostics_snapshot_id: string | null;
+  } | null;
+  results: {
+    outcome: Json | null;
+    auto_evaluation: Json | null;
+    ai_evaluation: Json | null;
+  };
+}> => call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/results`, { method: "POST", body: {} });
+
 export const practiceSessionReviewGet = (
   accessToken: string,
   practiceSessionId: string,
@@ -416,6 +441,7 @@ export const adminPracticeBlueprintCreate = (
     title?: string;
     source_section_id: string;
     target_question_types?: string[];
+    experience_kind?: string;
     estimated_minutes?: number;
     status?: string;
     metadata?: Json;
@@ -444,6 +470,24 @@ export const adminPracticeBuildsList = (
   if (opts?.status) qs.set("status", opts.status);
   return call(accessToken, `/admin-ielts-practice/builds${qs.toString() ? `?${qs.toString()}` : ""}`);
 };
+
+export const adminPracticeContentFactoryBuild = (
+  accessToken: string,
+  body?: { section_type?: string; publish?: boolean; limit?: number },
+): Promise<{
+  ok: boolean;
+  publish: boolean;
+  created: number;
+  reused: number;
+  built: number;
+  failed: number;
+  coverage: Json;
+  results: Json[];
+}> =>
+  call(accessToken, "/admin-ielts-practice/content-factory/build", {
+    method: "POST",
+    body: body ?? { publish: true },
+  });
 
 export const adminPracticeExerciseCreate = (
   accessToken: string,

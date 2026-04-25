@@ -22,6 +22,8 @@ type SectionDiagnostic = {
   average_band: number | null;
   target_band: number | null;
   band_gap: number | null;
+  confidence?: number | null;
+  mastery_level?: number | null;
 };
 
 type QuestionTypeDiagnostic = {
@@ -30,6 +32,9 @@ type QuestionTypeDiagnostic = {
   samples: number;
   accuracy_ratio: number | null;
   weakness_score: number;
+  confidence?: number | null;
+  mastery_level?: number | null;
+  mastery_status?: string | null;
 };
 
 type DiagnosticsPayload = {
@@ -86,7 +91,7 @@ const normalizeDiagnostics = (raw: unknown): DiagnosticsPayload | null => {
   };
 
   const question_types: QuestionTypeDiagnostic[] = questionTypesRaw
-    .map((entry) => {
+    .map((entry): QuestionTypeDiagnostic | null => {
       if (!isRecord(entry)) return null;
       const section = toSectionType(entry.section_type);
       if (!section) return null;
@@ -96,6 +101,9 @@ const normalizeDiagnostics = (raw: unknown): DiagnosticsPayload | null => {
         samples: Math.max(0, Math.floor(toNumber(entry.samples) ?? 0)),
         accuracy_ratio: toNumber(entry.accuracy_ratio),
         weakness_score: toNumber(entry.weakness_score) ?? 0,
+        confidence: toNumber(entry.confidence),
+        mastery_level: toNumber(entry.mastery_level),
+        mastery_status: typeof entry.mastery_status === 'string' ? entry.mastery_status : null,
       };
     })
     .filter((entry): entry is QuestionTypeDiagnostic => entry != null)
@@ -130,6 +138,16 @@ const formatQuestionType = (value: string): string =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (token) => token.toUpperCase());
 
+const experienceLabel = (item: PracticePlanItem): string => {
+  const buildSummary = item.delivery_build?.build_summary;
+  const raw =
+    item.delivery_build?.experience_kind ??
+    item.blueprint?.experience_kind ??
+    (isRecord(buildSummary) ? String(buildSummary.experience_kind ?? '') : '') ??
+    '';
+  return raw ? formatQuestionType(raw) : 'Guided Set';
+};
+
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
@@ -139,9 +157,10 @@ const humanizeError = (message: string): string => {
     text.includes('no published exercises')
     || text.includes('no published blueprints')
     || text.includes('no published practice blueprints or exercises')
+    || text.includes('no published transformed ielts practice experiences')
     || text.includes('none could be selected and no fallback exercises are available')
   ) {
-    return 'Practice content is being prepared. No session blueprints are available yet.';
+    return 'Practice content is being prepared. Ask an admin to run Content Factory for transformed sessions.';
   }
   if (text.includes('network') || text.includes('failed to fetch')) {
     return 'Connection issue. Please refresh and try again.';
@@ -457,7 +476,7 @@ export const DashboardPage = () => {
                       <div className="weakness-metrics">
                         <span>Weakness {row.weakness_score.toFixed(2)}</span>
                         <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
-                        <span>Samples {row.samples}</span>
+                        <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
                       </div>
                     </li>
                   ))}
@@ -496,7 +515,7 @@ export const DashboardPage = () => {
                       <div>
                         <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
                         <h4>{planItemTitle(item)}</h4>
-                        <p>{item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
+                        <p>{experienceLabel(item)}. {item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
                       </div>
                       <div className="inline-actions">
                         <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>
@@ -510,9 +529,9 @@ export const DashboardPage = () => {
                             {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Start'}
                           </button>
                         ) : (
-                          <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
-                            {item.status === 'completed' ? 'Review' : 'Start'}
-                          </Link>
+                          <button className="btn ghost" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+                            Refresh
+                          </button>
                         )}
                       </div>
                     </li>

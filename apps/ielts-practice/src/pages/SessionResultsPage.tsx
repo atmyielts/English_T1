@@ -1,0 +1,289 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  practiceGeneratePlan,
+  practiceSessionResultsGet,
+  practiceSessionResultsScore,
+  type PracticeDeliveryBuild,
+} from '../lib/api';
+import { useAccess } from '../lib/useAccess';
+
+type Json = Record<string, unknown>;
+
+const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+
+const isRecord = (value: unknown): value is Json =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+const asNumber = (value: unknown): number | null => {
+  const next = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(next) ? next : null;
+};
+
+const titleCase = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/^question_/i, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (token) => token.toUpperCase());
+
+const percent = (value: number | null): string =>
+  value == null ? '-' : `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+
+const experienceLabel = (build: PracticeDeliveryBuild | null): string => {
+  const raw =
+    build?.experience_kind ??
+    (isRecord(build?.build_summary) ? String((build?.build_summary as Json).experience_kind ?? '') : '');
+  return raw ? titleCase(raw) : 'Practice Session';
+};
+
+const sectionRowsFromOutcome = (outcome: Json | null) => {
+  const scores = isRecord(outcome?.section_scores) ? (outcome?.section_scores as Json) : {};
+  return Object.entries(scores).map(([id, row]) => {
+    const record = isRecord(row) ? row : {};
+    const raw = asNumber(record.raw_score);
+    const max = asNumber(record.max_score);
+    return {
+      id,
+      type: String(record.type ?? 'section'),
+      raw,
+      max,
+      accuracy: raw != null && max != null && max > 0 ? raw / max : null,
+      band: asNumber(record.band),
+    };
+  });
+};
+
+const writingTasksFromEvaluation = (evaluation: Json | null): Json[] => {
+  const result = isRecord(evaluation?.result) ? (evaluation?.result as Json) : {};
+  return Array.isArray(result.tasks) ? result.tasks.filter(isRecord) : [];
+};
+
+export const SessionResultsPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { sessionId } = useParams<{ sessionId: string }>();
+  const { accessToken } = useAccess();
+  const [data, setData] = useState<Awaited<ReturnType<typeof practiceSessionResultsScore>> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestedRef = useRef<string | null>(null);
+
+  const search = new URLSearchParams(location.search);
+  const backPath = search.get('results_back')?.trim() || search.get('back')?.trim() || '/dashboard';
+
+  useEffect(() => {
+    const load = async (): Promise<void> => {
+      if (!accessToken || !sessionId) return;
+      if (requestedRef.current === `${accessToken}:${sessionId}`) return;
+      requestedRef.current = `${accessToken}:${sessionId}`;
+      setLoading(true);
+      setError(null);
+      try {
+        const scored = await practiceSessionResultsScore(accessToken, sessionId);
+        setData(scored);
+      } catch (scoreErr) {
+        try {
+          const existing = await practiceSessionResultsGet(accessToken, sessionId);
+          setData({ ...existing, scoring_refresh: null });
+        } catch {
+          setError(scoreErr instanceof Error ? scoreErr.message : 'Unable to load practice results');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [accessToken, sessionId]);
+
+  const outcome = isRecord(data?.results?.outcome) ? (data?.results?.outcome as Json) : null;
+  const aiEvaluation = isRecord(data?.results?.ai_evaluation) ? (data?.results?.ai_evaluation as Json) : null;
+  const sectionRows = useMemo(() => sectionRowsFromOutcome(outcome), [outcome]);
+  const writingTasks = useMemo(() => writingTasksFromEvaluation(aiEvaluation), [aiEvaluation]);
+  const runtimeSessionId = String((data?.session as Json | null)?.id ?? (data?.practice_session as Json | null)?.session_id ?? sessionId ?? '');
+  const build = data?.delivery_build ?? null;
+  const targetTypes = Array.isArray(data?.blueprint?.target_question_types) ? data.blueprint.target_question_types : [];
+  const masteryUpdates = Array.isArray(data?.scoring_refresh?.mastery_updates) ? data.scoring_refresh.mastery_updates : [];
+
+  const summaryBand =
+    asNumber(outcome?.overall_band) ??
+    asNumber((isRecord(aiEvaluation?.result) ? (aiEvaluation?.result as Json) : {}).overall_band);
+  const weakestSection = sectionRows
+    .filter((row) => row.accuracy != null || row.band != null)
+    .sort((a, b) => (a.band ?? a.accuracy ?? 99) - (b.band ?? b.accuracy ?? 99))[0];
+  const firstWritingImprovement = writingTasks
+    .flatMap((task) => {
+      const improvements = Array.isArray(task.improvements) ? task.improvements : [];
+      const actions = Array.isArray(task.actionable_feedback) ? task.actionable_feedback : [];
+      return [...improvements, ...actions].map(String);
+    })
+    .find((item) => item.trim().length > 0);
+
+  const regenerateNext = async (): Promise<void> => {
+    if (!accessToken) return;
+    setRegenerating(true);
+    try {
+      await practiceGeneratePlan(accessToken, { daily_count: 3, refresh_diagnostics: true });
+      navigate('/plan');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to regenerate plan');
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  return (
+    <div className="practice-root">
+      <header className="top-nav glass compact">
+        <Link className="brand" to="/dashboard">
+          <img src="/schood-logo.png" alt="Schood" />
+          <div>
+            <strong>Practice Results</strong>
+            <span>{experienceLabel(build)} feedback and next action</span>
+          </div>
+        </Link>
+        <div className="top-nav-actions">
+          <button className="btn ghost" type="button" onClick={() => navigate(backPath)}>
+            Back
+          </button>
+          <Link className="btn ghost" to={`/session/${encodeURIComponent(runtimeSessionId)}/review?review_back=${encodeURIComponent(backPath)}`}>
+            Review Answers
+          </Link>
+          <button className="btn solid" type="button" onClick={() => void regenerateNext()} disabled={regenerating}>
+            {regenerating ? 'Updating...' : 'Next Plan'}
+          </button>
+        </div>
+      </header>
+
+      <main className="dashboard-grid results-layout">
+        <section className="glass stat-card">
+          <h3>Score</h3>
+          <div className="band-row">
+            <strong>{summaryBand != null ? summaryBand.toFixed(1) : '-'}</strong>
+          </div>
+          <p className="muted">
+            {outcome ? `Computed ${String(outcome.computed_at ?? '').slice(0, 16).replace('T', ' ')}` : 'Scoring is being prepared.'}
+          </p>
+        </section>
+
+        <section className="glass stat-card">
+          <h3>Focus</h3>
+          <p>{targetTypes.length > 0 ? targetTypes.slice(0, 3).map(titleCase).join(', ') : titleCase(data?.blueprint?.section_type ?? 'IELTS')}</p>
+          <p className="muted">{experienceLabel(build)}</p>
+        </section>
+
+        <section className="glass stat-card">
+          <h3>Mastery Updated</h3>
+          <div className="band-row secondary">
+            <strong>{masteryUpdates.length}</strong>
+          </div>
+          <p className="muted">Question-type records refreshed from this session.</p>
+        </section>
+
+        <section className="glass stat-card wide">
+          <div className="task-card-head">
+            <div>
+              <h3>Mistake Pattern</h3>
+              <p className="muted">A concise read of what this attempt says about your next practice step.</p>
+            </div>
+          </div>
+
+          {loading ? <p>Scoring practice session...</p> : null}
+          {error ? <p className="error-text">{error}</p> : null}
+          {!loading && !error ? (
+            <div className="result-insight">
+              <h4>
+                {firstWritingImprovement
+                  ? 'Writing improvement target'
+                  : weakestSection
+                    ? `${titleCase(weakestSection.type)} needs the next repair pass`
+                    : 'No major mistake pattern detected yet'}
+              </h4>
+              <p>
+                {firstWritingImprovement
+                  ? firstWritingImprovement
+                  : weakestSection
+                    ? `Accuracy is ${percent(weakestSection.accuracy)}${weakestSection.band != null ? ` with band ${weakestSection.band.toFixed(1)}` : ''}. Start with the next recommended transformed task instead of repeating this test.`
+                    : 'Complete the review once, then regenerate the plan so the next task targets a fresh weakness.'}
+              </p>
+            </div>
+          ) : null}
+        </section>
+
+        <section className="glass stat-card wide">
+          <h3>Section Breakdown</h3>
+          <div className="section-result-list">
+            {sectionRows.map((row) => (
+              <div className="section-progress-row" key={row.id}>
+                <div className="section-progress-head">
+                  <span className={`chip ${row.type}`}>{row.type}</span>
+                  <span className="muted">{row.raw ?? '-'} / {row.max ?? '-'}</span>
+                </div>
+                <div className="progress-track">
+                  <div className={`progress-fill ${row.type}`} style={{ width: row.accuracy == null ? '0%' : percent(row.accuracy) }} />
+                </div>
+                <div className="section-progress-meta">
+                  <span>Accuracy {percent(row.accuracy)}</span>
+                  <span>Band {row.band != null ? row.band.toFixed(1) : '-'}</span>
+                </div>
+              </div>
+            ))}
+            {sectionRows.length === 0 && !loading ? <p className="muted">No objective section scores yet.</p> : null}
+          </div>
+        </section>
+
+        {writingTasks.length > 0 ? (
+          <section className="glass stat-card wide">
+            <h3>Writing Feedback</h3>
+            <div className="writing-feedback-list">
+              {writingTasks.map((task, index) => (
+                <article className="feedback-panel" key={String(task.content_unit_id ?? index)}>
+                  <div className="task-card-head">
+                    <h4>{titleCase(task.task_type ?? `Task ${index + 1}`)}</h4>
+                    <strong>Band {String(task.band ?? '-')}</strong>
+                  </div>
+                  <div className="feedback-grid">
+                    {['strengths', 'improvements', 'actionable_feedback'].map((key) => {
+                      const source = task[key];
+                      const values = Array.isArray(source) ? source.slice(0, 4).map(String) : [];
+                      if (values.length === 0) return null;
+                      return (
+                        <div key={key}>
+                          <h5>{titleCase(key)}</h5>
+                          <ul>
+                            {values.map((value, itemIndex) => <li key={`${key}-${itemIndex}`}>{value}</li>)}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="glass stat-card wide next-action-card">
+          <div>
+            <h3>Next Recommended Exercise</h3>
+            <p className="muted">
+              Regenerate the plan now to use the refreshed diagnostics and mastery records from this result.
+            </p>
+          </div>
+          <div className="inline-actions">
+            <button className="btn solid" type="button" onClick={() => void regenerateNext()} disabled={regenerating}>
+              {regenerating ? 'Updating...' : 'Generate Next 3 Tasks'}
+            </button>
+            <a
+              className="btn ghost"
+              href={`${PLAYBOOK_URL}/diagnostic?source=practice&session_id=${encodeURIComponent(runtimeSessionId)}&weak_skill=${encodeURIComponent(String(weakestSection?.type ?? data?.blueprint?.section_type ?? 'writing'))}`}
+            >
+              Open Playbook
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};

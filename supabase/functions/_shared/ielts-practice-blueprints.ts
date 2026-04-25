@@ -1,5 +1,17 @@
 type JsonRecord = Record<string, unknown>;
 
+export const PRACTICE_DELIVERY_SCHEMA_VERSION = "ielts.practice.delivery.v2";
+export const PRACTICE_EXPERIENCE_KINDS = [
+  "strategy",
+  "repair_drill",
+  "guided_set",
+  "timed_mini",
+  "writing_rewrite",
+  "mastery_check",
+] as const;
+
+export type PracticeExperienceKind = typeof PRACTICE_EXPERIENCE_KINDS[number];
+
 export type PracticeScope = {
   practiceProductId: string;
   simulatorProductId: string;
@@ -17,6 +29,7 @@ export type BlueprintRow = {
   target_question_types: string[];
   estimated_minutes: number;
   status: string;
+  experience_kind?: PracticeExperienceKind | string | null;
   metadata: JsonRecord;
   latest_delivery_build_id: string | null;
 };
@@ -26,6 +39,7 @@ export type DeliveryBuildRow = {
   blueprint_id: string;
   delivery_experience_id: string | null;
   status: string;
+  experience_kind?: PracticeExperienceKind | string | null;
   build_version: number;
   build_summary: JsonRecord;
   validation_summary: JsonRecord;
@@ -55,6 +69,150 @@ const toNumber = (value: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 const isObject = (value: unknown): value is JsonRecord => !!value && typeof value === "object" && !Array.isArray(value);
+
+export const normalizePracticeExperienceKind = (value: unknown): PracticeExperienceKind => {
+  const text = toText(value, 80).toLowerCase();
+  return (PRACTICE_EXPERIENCE_KINDS as readonly string[]).includes(text)
+    ? (text as PracticeExperienceKind)
+    : "guided_set";
+};
+
+const formatQuestionType = (value: string): string =>
+  value
+    .replace(/^question_/i, "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (token) => token.toUpperCase());
+
+const isQuestionUnit = (unit: unknown): boolean => {
+  if (!isObject(unit)) return false;
+  const type = toText(unit.type, 120).toLowerCase();
+  return type.startsWith("question_") || type === "question_text";
+};
+
+const isContextUnit = (unit: unknown): boolean => {
+  if (!isObject(unit)) return false;
+  const type = toText(unit.type, 120).toLowerCase();
+  return type === "instruction" || type === "reading_passage" || type === "audio" || type === "image";
+};
+
+const questionLimitForKind = (kind: PracticeExperienceKind, sectionType: "reading" | "listening" | "writing"): number => {
+  if (sectionType === "writing") return kind === "strategy" ? 1 : 2;
+  if (kind === "strategy") return 3;
+  if (kind === "repair_drill") return 5;
+  if (kind === "guided_set") return 8;
+  if (kind === "timed_mini") return 12;
+  return 10;
+};
+
+const titleForKind = (kind: PracticeExperienceKind): string => {
+  switch (kind) {
+    case "strategy":
+      return "Strategy primer";
+    case "repair_drill":
+      return "Repair drill";
+    case "timed_mini":
+      return "Timed mini-session";
+    case "writing_rewrite":
+      return "Writing rewrite";
+    case "mastery_check":
+      return "Mastery check";
+    case "guided_set":
+    default:
+      return "Guided set";
+  }
+};
+
+const instructionForKind = (
+  kind: PracticeExperienceKind,
+  sectionType: "reading" | "listening" | "writing",
+  questionTypes: string[],
+): string => {
+  const focus = questionTypes.length > 0
+    ? questionTypes.slice(0, 4).map(formatQuestionType).join(", ")
+    : "mixed IELTS tasks";
+  const base = `${titleForKind(kind)} | ${sectionType.toUpperCase()} | Focus: ${focus}.`;
+
+  if (kind === "strategy") {
+    return `${base}\n\nBefore answering, identify the task type, predict what evidence you need, and name the distractor pattern you expect. Accuracy matters more than speed in this session.`;
+  }
+  if (kind === "repair_drill") {
+    return `${base}\n\nWork slowly and repair the exact mistake pattern. After each answer, check whether the wording in the question was paraphrased, contradicted, or distracted by nearby information.`;
+  }
+  if (kind === "timed_mini") {
+    return `${base}\n\nUse exam timing. Answer without pausing to over-review, then use the result to update your next practice target.`;
+  }
+  if (kind === "writing_rewrite") {
+    return `${base}\n\nRewrite with one concrete upgrade: clearer task position, stronger paragraph control, more precise vocabulary, or cleaner grammar. Submit a full response for AI feedback.`;
+  }
+  if (kind === "mastery_check") {
+    return `${base}\n\nTreat this as a checkpoint. No hints: prove that this question type is ready to move up in difficulty.`;
+  }
+  return `${base}\n\nFollow the guided sequence: understand the prompt, locate evidence, answer, and then compare the question wording with the source.`;
+};
+
+export type TransformationPlan = {
+  experienceKind: PracticeExperienceKind;
+  sectionType: "reading" | "listening" | "writing";
+  targetQuestionTypes: string[];
+  selectedUnits: any[];
+  selectedQuestionUnits: any[];
+  selectedPartIds: string[];
+  questionLimit: number;
+};
+
+export const buildTransformationPlan = (
+  sectionType: "reading" | "listening" | "writing",
+  experienceKindRaw: unknown,
+  sourceUnits: any[],
+  targetQuestionTypesRaw: unknown,
+): TransformationPlan => {
+  const normalizedKind = normalizePracticeExperienceKind(experienceKindRaw);
+  const experienceKind = sectionType === "writing" && normalizedKind === "repair_drill" ? "writing_rewrite" : normalizedKind;
+  const targetQuestionTypes = Array.isArray(targetQuestionTypesRaw)
+    ? targetQuestionTypesRaw.map((entry) => toText(entry, 120).toLowerCase()).filter(Boolean)
+    : [];
+  const targetSet = new Set(targetQuestionTypes);
+  const sourceQuestions = sourceUnits
+    .filter(isQuestionUnit)
+    .filter((unit) => targetSet.size === 0 || targetSet.has(questionTypeFromUnit(unit)))
+    .sort((a, b) => (toNumber(a?.display_order) ?? 0) - (toNumber(b?.display_order) ?? 0));
+
+  const limit = questionLimitForKind(experienceKind, sectionType);
+  const selectedQuestionUnits = sourceQuestions.slice(0, Math.max(1, limit));
+  const selectedPartIds = Array.from(new Set(
+    selectedQuestionUnits
+      .map((unit) => toText(unit?.part_id, 80))
+      .filter(Boolean),
+  ));
+
+  if (selectedPartIds.length === 0 && sectionType === "writing") {
+    const fallbackParts = Array.from(new Set(sourceUnits.map((unit) => toText(unit?.part_id, 80)).filter(Boolean)));
+    selectedPartIds.push(...fallbackParts.slice(0, 2));
+  }
+
+  const selectedQuestionIds = new Set(selectedQuestionUnits.map((unit) => toText(unit?.id, 80)));
+  const selectedPartSet = new Set(selectedPartIds);
+  const selectedUnits = sourceUnits
+    .filter((unit) => {
+      const partId = toText(unit?.part_id, 80);
+      if (!selectedPartSet.has(partId)) return false;
+      if (isQuestionUnit(unit)) return selectedQuestionIds.has(toText(unit?.id, 80));
+      return isContextUnit(unit);
+    })
+    .sort((a, b) => (toNumber(a?.display_order) ?? 0) - (toNumber(b?.display_order) ?? 0));
+
+  return {
+    experienceKind,
+    sectionType,
+    targetQuestionTypes: selectedQuestionUnits.length > 0
+      ? Array.from(new Set(selectedQuestionUnits.map(questionTypeFromUnit))).sort()
+      : targetQuestionTypes,
+    selectedUnits,
+    selectedQuestionUnits,
+    selectedPartIds,
+    questionLimit: limit,
+  };
+};
 
 const readSectionType = (raw: unknown): "reading" | "listening" | "writing" | null => {
   const text = toText(isObject(raw) ? raw.type : raw, 32).toLowerCase();
@@ -201,16 +359,29 @@ export const listSimulatorSourceSections = async (
   });
 };
 
-const createBuildSummary = (sourceExperience: any, sourceSection: any, parts: any[], units: any[]): JsonRecord => {
+const createBuildSummary = (
+  sourceExperience: any,
+  sourceSection: any,
+  parts: any[],
+  units: any[],
+  plan?: TransformationPlan,
+): JsonRecord => {
   const contentSummary = summarizeUnits(units);
   return {
+    schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+    transformed: true,
     source_experience_name: toText(sourceExperience?.name, 240),
     source_section_name: toText(sourceSection?.name, 240),
     section_type: readSectionType(sourceSection?.metadata),
+    experience_kind: plan?.experienceKind ?? "guided_set",
     part_count: parts.length,
     unit_count: units.length,
     question_count: contentSummary.question_count,
     question_types: contentSummary.question_types,
+    target_question_types: plan?.targetQuestionTypes ?? contentSummary.question_types,
+    selected_source_unit_count: plan?.selectedUnits.length ?? units.length,
+    selected_question_count: plan?.selectedQuestionUnits.length ?? contentSummary.question_count,
+    question_limit: plan?.questionLimit ?? null,
     has_audio: contentSummary.has_audio,
     has_passage: contentSummary.has_passage,
     has_image: contentSummary.has_image,
@@ -221,11 +392,13 @@ const createValidationSummary = (buildSummary: JsonRecord): JsonRecord => {
   const questionCount = Math.max(0, Math.floor(toNumber(buildSummary.question_count) ?? 0));
   const sectionType = readSectionType(buildSummary.section_type);
   return {
-    valid: questionCount > 0 && sectionType != null,
+    valid: questionCount > 0 && sectionType != null && buildSummary.transformed === true,
     checks: {
       has_questions: questionCount > 0,
       has_context: buildSummary.has_audio === true || buildSummary.has_passage === true || sectionType === "writing",
       section_type_known: sectionType != null,
+      transformed_runtime: buildSummary.transformed === true,
+      schema_version: buildSummary.schema_version === PRACTICE_DELIVERY_SCHEMA_VERSION,
     },
   };
 };
@@ -238,7 +411,7 @@ export const loadBlueprintsWithBuilds = async (
   const status = toText(opts?.status, 32).toLowerCase();
   let blueprintQuery = sb
     .from("ielts_practice_blueprints")
-    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,metadata,latest_delivery_build_id")
+    .select("id,title,section_type,source_product_id,source_experience_id,source_section_id,target_question_types,estimated_minutes,status,experience_kind,metadata,latest_delivery_build_id")
     .eq("product_id", scope.practiceProductId)
     .eq("language_id", scope.languageId)
     .order("updated_at", { ascending: false });
@@ -253,7 +426,7 @@ export const loadBlueprintsWithBuilds = async (
   if (buildIds.length > 0) {
     let buildQuery = sb
       .from("ielts_practice_delivery_builds")
-      .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+      .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
       .in("id", buildIds);
     if (!opts?.includeDraftBuilds) buildQuery = buildQuery.neq("status", "failed");
     const { data: buildRows, error: buildError } = await buildQuery;
@@ -334,12 +507,23 @@ export const cloneBlueprintToDeliveryExperience = async (
     .limit(1)
     .maybeSingle();
   const buildVersion = Math.max(1, Math.floor(toNumber((latestBuildData as any)?.build_version) ?? 0) + 1);
+  const transformationPlan = buildTransformationPlan(
+    sectionType,
+    blueprint.experience_kind ?? blueprint.metadata?.experience_kind,
+    sourceUnits,
+    blueprint.target_question_types,
+  );
+  if (transformationPlan.selectedUnits.length === 0 || transformationPlan.selectedQuestionUnits.length === 0) {
+    throw new Error("No compatible source questions found for transformed practice build");
+  }
 
   const deliveryExperienceMeta = {
     ...(isObject((sourceExperience as any).metadata) ? ((sourceExperience as any).metadata as JsonRecord) : {}),
     practice_blueprint_id: blueprint.id,
     practice_delivery_build_version: buildVersion,
-    delivery_kind: "ielts_practice_blueprint",
+    delivery_kind: "ielts_practice_transformed",
+    delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+    experience_kind: transformationPlan.experienceKind,
     source_product_id: scope.simulatorProductId,
     source_experience_id: String((sourceExperience as any).id),
     source_section_id: String((sourceSection as any).id),
@@ -350,7 +534,7 @@ export const cloneBlueprintToDeliveryExperience = async (
     .from("experiences")
     .insert({
       product_id: scope.practiceProductId,
-      name: toText(blueprint.title, 240) || `Practice ${toText((sourceSection as any).name, 160)}`,
+      name: `${titleForKind(transformationPlan.experienceKind)} | ${toText(blueprint.title, 220) || toText((sourceSection as any).name, 160) || "IELTS Practice"}`,
       display_order: 0,
       is_active: opts?.publish === true,
       metadata: deliveryExperienceMeta,
@@ -370,26 +554,34 @@ export const cloneBlueprintToDeliveryExperience = async (
         source_section_id: String((sourceSection as any).id),
         source_experience_id: String((sourceExperience as any).id),
         practice_blueprint_id: blueprint.id,
+        delivery_kind: "ielts_practice_transformed",
+        delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+        experience_kind: transformationPlan.experienceKind,
       },
     })
     .select("id")
     .maybeSingle();
   if (deliverySectionError || !deliverySection) throw new Error("Failed to create practice delivery section");
 
+  const selectedPartSet = new Set(transformationPlan.selectedPartIds);
+  const selectedSourceParts = sourceParts.filter((part: any) => selectedPartSet.has(String(part.id)));
   const partIdMap = new Map<string, string>();
-  if (sourceParts.length > 0) {
-    const partRows = sourceParts.map((part: any) => {
+  if (selectedSourceParts.length > 0) {
+    const partRows = selectedSourceParts.map((part: any, index: number) => {
       const id = crypto.randomUUID();
       partIdMap.set(String(part.id), id);
       return {
         id,
         section_id: String((deliverySection as any).id),
-        name: toText(part.name, 240) || "Part",
-        display_order: Math.max(1, Math.floor(toNumber(part.display_order) ?? 1)),
+        name: index === 0 ? titleForKind(transformationPlan.experienceKind) : (toText(part.name, 240) || "Part"),
+        display_order: Math.max(1, Math.floor(toNumber(part.display_order) ?? index + 1)),
         metadata: {
           ...(isObject(part.metadata) ? (part.metadata as JsonRecord) : {}),
           source_part_id: String(part.id),
           practice_blueprint_id: blueprint.id,
+          delivery_kind: "ielts_practice_transformed",
+          delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+          experience_kind: transformationPlan.experienceKind,
         },
       };
     });
@@ -398,26 +590,54 @@ export const cloneBlueprintToDeliveryExperience = async (
   }
 
   const unitIdMap = new Map<string, string>();
-  if (sourceUnits.length > 0) {
-    const unitRows = sourceUnits.map((unit: any) => {
+  if (transformationPlan.selectedUnits.length > 0) {
+    const firstPartId = partIdMap.get(transformationPlan.selectedPartIds[0] ?? "");
+    const introRow = firstPartId
+      ? [{
+        id: crypto.randomUUID(),
+        part_id: firstPartId,
+        type: "instruction",
+        display_order: 0,
+        data: {
+          text: instructionForKind(
+            transformationPlan.experienceKind,
+            transformationPlan.sectionType,
+            transformationPlan.targetQuestionTypes,
+          ),
+        },
+        metadata: {
+          practice_blueprint_id: blueprint.id,
+          delivery_kind: "ielts_practice_transformed",
+          delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+          experience_kind: transformationPlan.experienceKind,
+          generated_by: "ielts-practice.content-factory",
+        },
+      }]
+      : [];
+
+    const unitRows = transformationPlan.selectedUnits.map((unit: any) => {
       const id = crypto.randomUUID();
       unitIdMap.set(String(unit.id), id);
       return {
         id,
         part_id: partIdMap.get(String(unit.part_id)) ?? null,
         type: toText(unit.type, 120),
-        display_order: Math.max(1, Math.floor(toNumber(unit.display_order) ?? 1)),
+        display_order: Math.max(1, Math.floor(toNumber(unit.display_order) ?? 1)) + 1,
         data: isObject(unit.data) ? unit.data : {},
         metadata: {
           ...(isObject(unit.metadata) ? (unit.metadata as JsonRecord) : {}),
           source_content_unit_id: String(unit.id),
           source_part_id: String(unit.part_id),
           practice_blueprint_id: blueprint.id,
+          delivery_kind: "ielts_practice_transformed",
+          delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
+          experience_kind: transformationPlan.experienceKind,
+          transformed_from_simulator: true,
         },
       };
     }).filter((row) => typeof row.part_id === "string" && row.part_id.length > 0);
 
-    const { error: insertUnitsError } = await sb.from("content_units").insert(unitRows);
+    const { error: insertUnitsError } = await sb.from("content_units").insert([...introRow, ...unitRows]);
     if (insertUnitsError) throw new Error("Failed to create practice delivery content units");
   }
 
@@ -441,7 +661,7 @@ export const cloneBlueprintToDeliveryExperience = async (
     if (insertKeysError) throw new Error("Failed to clone practice answer keys");
   }
 
-  const buildSummary = createBuildSummary(sourceExperience, sourceSection, sourceParts, sourceUnits);
+  const buildSummary = createBuildSummary(sourceExperience, sourceSection, selectedSourceParts, transformationPlan.selectedUnits, transformationPlan);
   const validationSummary = createValidationSummary(buildSummary);
   const buildStatus = opts?.publish === true ? "published" : "draft";
 
@@ -473,15 +693,18 @@ export const cloneBlueprintToDeliveryExperience = async (
       delivery_experience_id: String((deliveryExperience as any).id),
       build_version: buildVersion,
       status: buildStatus,
+      experience_kind: transformationPlan.experienceKind,
       build_summary: buildSummary,
       validation_summary: validationSummary,
       metadata: {
         created_by: adminUserId,
         section_type: sectionType,
+        experience_kind: transformationPlan.experienceKind,
+        delivery_schema_version: PRACTICE_DELIVERY_SCHEMA_VERSION,
       },
       created_by: adminUserId,
     })
-    .select("id,blueprint_id,delivery_experience_id,status,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
+    .select("id,blueprint_id,delivery_experience_id,status,experience_kind,build_version,build_summary,validation_summary,metadata,created_at,updated_at")
     .maybeSingle();
   if (buildError || !buildRow) throw new Error("Failed to persist practice delivery build");
 
@@ -489,6 +712,7 @@ export const cloneBlueprintToDeliveryExperience = async (
     latest_delivery_build_id: String((buildRow as any).id),
     updated_by: adminUserId,
     section_type: sectionType,
+    experience_kind: transformationPlan.experienceKind,
   };
   if (opts?.publish === true) blueprintPatch.status = "published";
 
@@ -507,6 +731,10 @@ export const loadPublishedBlueprintCandidates = async (
   const rows = await loadBlueprintsWithBuilds(sb, scope, { status: "published" });
   return rows
     .filter((row): row is BlueprintRow & { latest_build: DeliveryBuildRow } =>
-      row.latest_build != null && row.latest_build.status === "published" && typeof row.latest_build.delivery_experience_id === "string")
+      row.latest_build != null
+      && row.latest_build.status === "published"
+      && typeof row.latest_build.delivery_experience_id === "string"
+      && row.latest_build.build_summary?.schema_version === PRACTICE_DELIVERY_SCHEMA_VERSION
+      && row.latest_build.build_summary?.transformed === true)
     .sort((a, b) => String(b.latest_build.updated_at ?? b.latest_build.created_at ?? "").localeCompare(String(a.latest_build.updated_at ?? a.latest_build.created_at ?? "")));
 };

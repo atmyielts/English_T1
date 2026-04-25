@@ -33,6 +33,18 @@ export const ResultsPage = () => {
   }, [accessToken, attempt_id]);
 
   const accuracy = attempt?.accuracy_ratio != null ? `${(attempt.accuracy_ratio * 100).toFixed(1)}%` : '-';
+  const artifacts = attempt?.score_artifacts && typeof attempt.score_artifacts === 'object'
+    ? attempt.score_artifacts as Record<string, unknown>
+    : {};
+  const mode = String(artifacts.mode ?? 'practice');
+  const questionType = exercise?.question_type?.replace(/^question_/i, '').replace(/_/g, ' ') ?? 'practice';
+  const nextStep = attempt?.accuracy_ratio == null
+    ? 'Regenerate your plan so the next task comes from transformed simulator coverage.'
+    : attempt.accuracy_ratio >= 0.8
+      ? 'Move to a mastery check or timed mini-session for this question type.'
+      : attempt.accuracy_ratio >= 0.55
+        ? 'Use a guided set to repair the pattern before timing yourself.'
+        : 'Start with a repair drill and review the evidence or prompt language carefully.';
 
   return (
     <div className="practice-root">
@@ -60,11 +72,22 @@ export const ResultsPage = () => {
         </section>
 
         <section className="glass stat-card wide">
-          <h3>Scoring artifacts</h3>
+          <h3>Mistake pattern</h3>
           {loading ? <p>Loading result...</p> : null}
           {error ? <p className="error-text">{error}</p> : null}
           {!loading && !error ? (
-            <pre className="json-box">{JSON.stringify(attempt?.score_artifacts ?? {}, null, 2)}</pre>
+            <div className="result-insight">
+              <h4>{exercise?.section_type ?? 'Practice'} / {questionType}</h4>
+              <p>
+                {mode === 'ai'
+                  ? 'Your writing response was scored with AI feedback. Use the rewrite task type next so the same criterion improves without repeating the whole prompt.'
+                  : `This legacy item estimated performance from your submitted answer accuracy. ${nextStep}`}
+              </p>
+              <div className="inline-actions">
+                <Link to="/plan" className="btn solid">Open transformed plan</Link>
+                <a href={`${PLAYBOOK_URL}/diagnostic?source=practice&weak_skill=${encodeURIComponent(String(exercise?.section_type ?? 'writing'))}`} className="btn ghost">Open playbook</a>
+              </div>
+            </div>
           ) : null}
         </section>
       </main>

@@ -9,16 +9,12 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PlanPage } from './pages/PlanPage';
 import { ExercisePage } from './pages/ExercisePage';
 import { ResultsPage } from './pages/ResultsPage';
+import { SessionResultsPage } from './pages/SessionResultsPage';
 import { AdminPage } from './pages/AdminPage';
 
 const SharedExamPlayer = lazy(async () => {
   const module = await import('../../ielts-simulator/src/pages/ExamPlayer');
   return { default: module.ExamPlayer };
-});
-
-const SharedSessionResultsPage = lazy(async () => {
-  const module = await import('../../ielts-simulator/src/pages/SessionResultsPage');
-  return { default: module.SessionResultsPage };
 });
 
 const SharedReviewSessionPage = lazy(async () => {
@@ -50,11 +46,7 @@ function App() {
           <Route path="/plan" element={<PlanPage />} />
           <Route
             path="/session/:sessionId/results"
-            element={(
-              <Suspense fallback={sessionRuntimeFallback}>
-                <SharedSessionResultsPage />
-              </Suspense>
-            )}
+            element={<SessionResultsPage />}
           />
           <Route
             path="/session/:sessionId/review"

@@ -7,6 +7,7 @@ import {
   adminPracticeBlueprintPatch,
   adminPracticeBlueprintsList,
   adminPracticeBuildsList,
+  adminPracticeContentFactoryBuild,
   adminPracticeRulesList,
   adminPracticeRulesPatch,
   adminPracticeSourcesList,
@@ -17,7 +18,7 @@ import {
 } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
-type TabKey = 'sources' | 'blueprints' | 'builds' | 'rules' | 'analytics';
+type TabKey = 'factory' | 'sources' | 'blueprints' | 'builds' | 'rules' | 'analytics';
 
 const joinParts = (parts: Array<string | null | undefined>): string => parts.filter(Boolean).join(' | ');
 
@@ -69,8 +70,11 @@ export const AdminPage = () => {
   const [builds, setBuilds] = useState<PracticeDeliveryBuild[]>([]);
   const [rules, setRules] = useState<PracticeRule[]>([]);
   const [analytics, setAnalytics] = useState<unknown>(null);
+  const [factoryResult, setFactoryResult] = useState<unknown>(null);
 
   const [sourceSectionType, setSourceSectionType] = useState('');
+  const [factorySectionType, setFactorySectionType] = useState('');
+  const [factoryPublish, setFactoryPublish] = useState(true);
   const [analyticsDays, setAnalyticsDays] = useState('30');
 
   const loadBase = async (): Promise<void> => {
@@ -194,6 +198,25 @@ export const AdminPage = () => {
     }
   };
 
+  const runContentFactory = async (): Promise<void> => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await adminPracticeContentFactoryBuild(accessToken, {
+        section_type: factorySectionType || undefined,
+        publish: factoryPublish,
+      });
+      setFactoryResult(response);
+      await loadBase();
+      setTab('factory');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to run Content Factory');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const publishedBlueprints = useMemo(
     () => blueprints.filter((row) => row.status === 'published').length,
     [blueprints],
@@ -208,6 +231,7 @@ export const AdminPage = () => {
 
   const tabButtons: Array<{ key: TabKey; label: string }> = useMemo(
     () => [
+      { key: 'factory', label: 'Factory' },
       { key: 'sources', label: 'Sources' },
       { key: 'blueprints', label: 'Blueprints' },
       { key: 'builds', label: 'Builds' },
@@ -264,6 +288,51 @@ export const AdminPage = () => {
 
           {error ? <p className="error-text">{error}</p> : null}
           {busy ? <p>Working...</p> : null}
+
+          {tab === 'factory' ? (
+            <section className="factory-panel">
+              <div>
+                <h3>Content Factory</h3>
+                <p className="muted">
+                  Build transformed R/L/W practice coverage from simulator sources: strategy, repair drill, guided set, timed mini-session, writing rewrite, and mastery check.
+                </p>
+              </div>
+              <div className="field-grid">
+                <label>
+                  Section
+                  <select value={factorySectionType} onChange={(event) => setFactorySectionType(event.target.value)}>
+                    <option value="">all R/L/W</option>
+                    <option value="reading">reading</option>
+                    <option value="listening">listening</option>
+                    <option value="writing">writing</option>
+                  </select>
+                </label>
+                <label className="option-row">
+                  <input type="checkbox" checked={factoryPublish} onChange={(event) => setFactoryPublish(event.target.checked)} />
+                  Publish builds
+                </label>
+              </div>
+              <button className="btn solid" type="button" onClick={() => void runContentFactory()} disabled={busy}>
+                {busy ? 'Building...' : 'Build Full Coverage'}
+              </button>
+
+              {factoryResult && typeof factoryResult === 'object' ? (
+                <div className="factory-summary">
+                  {[
+                    ['Created', (factoryResult as Record<string, unknown>).created],
+                    ['Reused', (factoryResult as Record<string, unknown>).reused],
+                    ['Built', (factoryResult as Record<string, unknown>).built],
+                    ['Failed', (factoryResult as Record<string, unknown>).failed],
+                  ].map(([label, value]) => (
+                    <div key={String(label)} className="summary-tile">
+                      <span>{String(label)}</span>
+                      <strong>{String(value ?? '-')}</strong>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
 
           {tab === 'sources' ? (
             <>

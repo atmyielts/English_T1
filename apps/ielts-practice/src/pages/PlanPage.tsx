@@ -13,6 +13,15 @@ import { useAccess } from '../lib/useAccess';
 
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
+
+const formatLabel = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/^question_/i, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (token) => token.toUpperCase());
+
 const planItemTitle = (item: PracticePlanItem): string =>
   item.blueprint?.title
   ?? item.exercise?.title
@@ -21,6 +30,15 @@ const planItemTitle = (item: PracticePlanItem): string =>
       ? String((item.delivery_build.build_summary as Record<string, unknown>).source_section_name ?? 'Practice session')
       : 'Practice session'
   );
+
+const experienceLabel = (item: PracticePlanItem): string => {
+  const summary = item.delivery_build?.build_summary;
+  const raw =
+    item.delivery_build?.experience_kind ??
+    item.blueprint?.experience_kind ??
+    (isRecord(summary) ? String(summary.experience_kind ?? '') : '');
+  return raw ? formatLabel(raw) : 'Guided Set';
+};
 
 export const PlanPage = () => {
   const navigate = useNavigate();
@@ -176,7 +194,7 @@ export const PlanPage = () => {
           <div className="task-card-head">
             <div>
               <h3>Today's generated plan</h3>
-              <p className="muted">Session blueprints are picked from your current band gap and recent weaknesses.</p>
+              <p className="muted">Transformed sessions are picked from your target band, simulator result, mastery, and recency.</p>
             </div>
             <div className="task-summary">
               <span>Total {planSummary.total}</span>
@@ -196,7 +214,7 @@ export const PlanPage = () => {
                 <div>
                   <span className={`chip ${item.section_type}`}>{item.section_type}</span>
                   <h4>{planItemTitle(item)}</h4>
-                  <p>{item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
+                  <p>{experienceLabel(item)}. {item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
                 </div>
                 {item.blueprint_id || item.delivery_build_id ? (
                   <button
@@ -208,9 +226,9 @@ export const PlanPage = () => {
                     {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Open'}
                   </button>
                 ) : (
-                  <Link to={`/exercise/${item.exercise_id}?planItem=${encodeURIComponent(item.id)}`} className="btn ghost">
-                    Open legacy
-                  </Link>
+                  <button className="btn ghost" type="button" onClick={() => void regenerate()} disabled={saving}>
+                    Replace
+                  </button>
                 )}
               </li>
             ))}
