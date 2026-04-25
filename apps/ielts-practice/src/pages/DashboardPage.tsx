@@ -167,6 +167,12 @@ const transformedSourceLabel = (item: PracticePlanItem): string => {
   return source ? `Transformed source: ${source}` : 'Transformed practice session';
 };
 
+const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
+  if (!item.blueprint_id && !item.delivery_build_id) return false;
+  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  return buildSummary.transformed === true && typeof buildSummary.source_section_id === 'string' && buildSummary.source_section_id.length > 0;
+};
+
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
@@ -271,8 +277,8 @@ export const DashboardPage = () => {
       setAverageBand(diagnosticPayload?.overall.average_band ?? null);
 
       let todayPlan = planRes.items ?? [];
-      const hasLegacyPlanItems = todayPlan.some((item) => !item.blueprint_id && !item.delivery_build_id);
-      if ((todayPlan.length === 0 || hasLegacyPlanItems) && autoGenerate) {
+      const hasOutdatedPlanItems = todayPlan.some((item) => !isCurrentTransformedItem(item));
+      if ((todayPlan.length === 0 || hasOutdatedPlanItems) && autoGenerate) {
         const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
         todayPlan = generated.items ?? [];
       }

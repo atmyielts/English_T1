@@ -46,6 +46,12 @@ const sourceLabel = (item: PracticePlanItem): string => {
   return source ? `Transformed from simulator source: ${source}` : 'New transformed practice session';
 };
 
+const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
+  if (!item.blueprint_id && !item.delivery_build_id) return false;
+  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
+  return summary.transformed === true && typeof summary.source_section_id === 'string' && summary.source_section_id.length > 0;
+};
+
 const experienceLabel = (item: PracticePlanItem): string => {
   const summary = item.delivery_build?.build_summary;
   const raw =
@@ -83,7 +89,7 @@ export const PlanPage = () => {
       setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
       setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
       const loadedItems = planRes.items ?? [];
-      if (loadedItems.some((item) => !item.blueprint_id && !item.delivery_build_id)) {
+      if (loadedItems.some((item) => !isCurrentTransformedItem(item))) {
         const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
         setPlanItems(generated.items ?? []);
       } else {
