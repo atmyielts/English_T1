@@ -170,6 +170,16 @@ const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null })
 const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 
+const LAB_FEATURES = [
+  { title: 'Mistake Coach', copy: 'Explains why today\'s lab was selected and what trap to watch.' },
+  { title: 'Evidence Locator', copy: 'Prove Reading answers with the exact sentence or paragraph.' },
+  { title: 'Distractor Drill', copy: 'Classify wrong answers by trap type before moving on.' },
+  { title: 'Listening Replay', copy: 'Predict, replay, catch signposts, then answer.' },
+  { title: 'Writing Rewrite', copy: 'Analyse, plan, rewrite, and receive criterion feedback.' },
+  { title: 'Mistake Notebook', copy: 'Keeps recurring patterns and due reviews visible.' },
+  { title: 'Band Roadmap', copy: 'Connects every gap to the lab that repairs it.' },
+];
+
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
   if (
@@ -408,6 +418,10 @@ export const DashboardPage = () => {
 
   const notebookPreview = useMemo(() => notebook.slice(0, 4), [notebook]);
   const roadmapPreview = useMemo(() => roadmap.slice(0, 5), [roadmap]);
+  const nextLabItem = useMemo(
+    () => plan.find((item) => item.status !== 'completed' && (item.blueprint_id || item.delivery_build_id)) ?? plan.find((item) => item.blueprint_id || item.delivery_build_id) ?? null,
+    [plan],
+  );
 
   return (
     <div className="practice-root">
@@ -417,13 +431,16 @@ export const DashboardPage = () => {
             <img src="/schood-logo.png" alt="Schood" />
             <div>
               <strong>IELTS Practice</strong>
-              <span>Adaptive training twin</span>
+              <span>Practice Labs workspace</span>
             </div>
           </div>
 
           <nav className="practice-sidebar-nav">
             <Link to="/dashboard" className="sidebar-link active">Dashboard</Link>
+            <a href="#practice-labs" className="sidebar-link">Practice Labs</a>
             <Link to="/plan" className="sidebar-link">Plan Builder</Link>
+            <a href="#mistake-notebook" className="sidebar-link">Notebook</a>
+            <a href="#band-roadmap" className="sidebar-link">Roadmap</a>
             <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link">IELTS Simulator</a>
             <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link">IELTS Playbook</a>
           </nav>
@@ -455,11 +472,16 @@ export const DashboardPage = () => {
               <p className="eyebrow">Schood IELTS Practice</p>
               <h1>Welcome back, {displayName}</h1>
               <p className="muted">
-                Train Reading, Listening, and Writing with simulator-derived diagnostics and targeted daily sessions.
+                Train inside Practice Labs built from your IELTS Simulator results: coaching, repair, replay, rewriting, notebook, and roadmap.
               </p>
             </div>
             <div className="top-nav-actions">
               <Link to="/plan" className="btn ghost">Daily Plan</Link>
+              {nextLabItem ? (
+                <button className="btn solid" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
+                  {launchingId === nextLabItem.id ? 'Opening...' : 'Start next lab'}
+                </button>
+              ) : null}
               <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
                 {generating ? 'Regenerating...' : 'Regenerate'}
               </button>
@@ -468,6 +490,41 @@ export const DashboardPage = () => {
 
           {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
           {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+
+          <section className="glass labs-hero-card" id="practice-labs">
+            <div className="labs-hero-copy">
+              <p className="eyebrow">Practice Labs</p>
+              <h2>The new IELTS Practice is not a retake player.</h2>
+              <p>
+                It turns simulator source material into seven lab workflows: coach, evidence, distractor, replay, rewrite, notebook, and roadmap.
+              </p>
+              <div className="task-feature-row">
+                {LAB_FEATURES.map((feature) => (
+                  <span className="feature-pill" key={feature.title}>{feature.title}</span>
+                ))}
+              </div>
+            </div>
+            <div className="labs-next-panel">
+              <span className="muted">Next best lab</span>
+              {nextLabItem ? (
+                <>
+                  <strong>{getPlanItemTitle(nextLabItem)}</strong>
+                  <p>{getPlanWhyCopy(nextLabItem)}</p>
+                  <button className="btn solid full" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
+                    {launchingId === nextLabItem.id ? 'Opening...' : 'Start lab'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <strong>No lab in today&apos;s plan yet</strong>
+                  <p>Generate a plan to create lab-ready tasks from your diagnostics.</p>
+                  <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+                    {generating ? 'Generating...' : 'Generate labs'}
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
 
           <section className="practice-kpi-grid">
             <article className="glass kpi-card">
@@ -533,7 +590,7 @@ export const DashboardPage = () => {
               )}
             </article>
 
-            <article className="glass practice-card notebook-card">
+            <article className="glass practice-card notebook-card" id="mistake-notebook">
               <div className="task-card-head">
                 <h3>Mistake Notebook</h3>
                 <span className="muted">{notebook.length} active</span>
@@ -560,7 +617,7 @@ export const DashboardPage = () => {
               )}
             </article>
 
-            <article className="glass practice-card roadmap-card">
+            <article className="glass practice-card roadmap-card" id="band-roadmap">
               <div className="task-card-head">
                 <h3>Band Roadmap</h3>
                 <Link to="/plan" className="btn ghost compact">Tune goal</Link>

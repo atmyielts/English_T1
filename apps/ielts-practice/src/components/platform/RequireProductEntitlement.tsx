@@ -2,12 +2,11 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platformUrls';
 import { useAccess } from '../../lib/useAccess';
-import { IELTS_PRACTICE_PRODUCT_ID, IELTS_PRACTICE_PRODUCT_SLUG } from '../../lib/constants';
+import { IELTS_PRACTICE_PRODUCT_SLUG } from '../../lib/constants';
 
 export const RequireProductEntitlement: React.FC = () => {
   const location = useLocation();
-  const { status, me, effective } = useAccess({ force: true, includeEffective: true });
-  const disablePaywall = String(import.meta.env.VITE_DISABLE_PAYWALL ?? '').toLowerCase() === 'true';
+  const { status, me } = useAccess({ force: true });
   const returnTo = getReturnTo(location);
 
   if (status === 'loading') return <div className="route-loading">Checking access...</div>;
@@ -22,18 +21,6 @@ export const RequireProductEntitlement: React.FC = () => {
   }
 
   if (!me) return <div className="route-loading">Loading account...</div>;
-
-  const direct = me.entitlements.some((entry) => entry.resource_type === 'product' && entry.resource_id === IELTS_PRACTICE_PRODUCT_ID);
-  const viaEffective = Array.isArray(effective?.effective_product_ids) && effective.effective_product_ids.includes(IELTS_PRACTICE_PRODUCT_ID);
-
-  if (!disablePaywall && !direct && !viaEffective) {
-    const url = buildPlatformUrl('/pricing', returnTo, { product: IELTS_PRACTICE_PRODUCT_SLUG });
-    if (hasPlatformBase) {
-      window.location.assign(url);
-      return null;
-    }
-    return <Navigate to={url} replace />;
-  }
 
   return <Outlet />;
 };

@@ -620,6 +620,48 @@ textarea {
   gap: 14px;
 }
 
+.labs-hero-card {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.34fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.labs-hero-copy {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.labs-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  line-height: 1.15;
+}
+
+.labs-hero-copy p,
+.labs-next-panel p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.labs-next-panel {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-subtle);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.labs-next-panel strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.03rem;
+}
+
 .kpi-card {
   padding: 18px;
 }
@@ -1618,6 +1660,10 @@ button:disabled {
 
   .practice-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .labs-hero-card {
+    grid-template-columns: 1fr;
   }
 
   .section-progress-card,
