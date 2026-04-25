@@ -1331,7 +1331,22 @@ const buildSessionPlanCandidates = (
         - passedSourcePenalty,
       6,
     );
-    const questionSummary = questionTypes.length > 0 ? questionTypes.slice(0, 4).join(", ") : "mixed question types";
+    const questionSummary = questionTypes.length > 0
+      ? questionTypes.slice(0, 4).map((questionType) =>
+        questionType
+          .replace(/^question_/i, "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (token) => token.toUpperCase())
+      ).join(", ")
+      : "mixed question types";
+    const experienceSummary = experienceKind
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (token) => token.toUpperCase());
+    const selectionSignals = [
+      sectionGap > 0 ? `band gap ${roundTo(sectionGap, 2)}` : null,
+      questionWeakness > 0 ? `weakness ${roundTo(questionWeakness, 2)}` : null,
+      averageMastery >= 0 ? `mastery ${Math.round(clamp(averageMastery, 0, 1) * 100)}%` : null,
+    ].filter(Boolean).join(", ");
     const freshnessNote = passedSourcePenalty > 0 ? " (kept low because this simulator source already met target)" : "";
 
     return {
@@ -1339,7 +1354,7 @@ const buildSessionPlanCandidates = (
       build,
       sectionType,
       score,
-      rationale: `${experienceKind.replace(/_/g, " ")} for ${sectionType}: ${questionSummary}${freshnessNote}`,
+      rationale: `${experienceSummary}: ${questionSummary}. Selected from simulator diagnostics${selectionSignals ? `: ${selectionSignals}` : ""}${freshnessNote}.`,
       rationaleJson: {
         source: "practice_blueprint",
         experience_kind: experienceKind,

@@ -9,6 +9,14 @@ import {
   type PracticePlanItem,
 } from '../lib/api';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import {
+  getPlanExperienceSteps,
+  getPlanItemDescription,
+  getPlanItemTitle,
+  getPlanPersonalizationChips,
+  getPlanSourceCopy,
+  getPlanWhyCopy,
+} from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
@@ -16,49 +24,10 @@ const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
-const formatLabel = (value: unknown): string =>
-  String(value ?? '')
-    .replace(/^question_/i, '')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (token) => token.toUpperCase());
-
-const planItemFocus = (item: PracticePlanItem): string => {
-  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const rawTypes = Array.isArray(summary.target_question_types)
-    ? summary.target_question_types
-    : Array.isArray(summary.question_types)
-      ? summary.question_types
-      : Array.isArray(item.blueprint?.target_question_types)
-        ? item.blueprint.target_question_types
-        : [];
-  const labels = rawTypes.map(formatLabel).filter(Boolean);
-  return labels.length > 0 ? labels.slice(0, 2).join(', ') : formatLabel(item.section_type);
-};
-
-const planItemTitle = (item: PracticePlanItem): string =>
-  item.blueprint_id || item.delivery_build_id
-    ? `${experienceLabel(item)}: ${planItemFocus(item)}`
-    : item.exercise?.title ?? 'Practice session';
-
-const sourceLabel = (item: PracticePlanItem): string => {
-  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const source = String(summary.source_section_name ?? '').trim();
-  return source ? `Transformed from simulator source: ${source}` : 'New transformed practice session';
-};
-
 const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
   if (!item.blueprint_id && !item.delivery_build_id) return false;
   const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
   return summary.transformed === true && typeof summary.source_section_id === 'string' && summary.source_section_id.length > 0;
-};
-
-const experienceLabel = (item: PracticePlanItem): string => {
-  const summary = item.delivery_build?.build_summary;
-  const raw =
-    item.delivery_build?.experience_kind ??
-    item.blueprint?.experience_kind ??
-    (isRecord(summary) ? String(summary.experience_kind ?? '') : '');
-  return raw ? formatLabel(raw) : 'Guided Set';
 };
 
 export const PlanPage = () => {
@@ -240,9 +209,20 @@ export const PlanPage = () => {
               <li className="task-item" key={item.id}>
                 <div>
                   <span className={`chip ${item.section_type}`}>{item.section_type}</span>
-                  <h4>{planItemTitle(item)}</h4>
-                  <p>{item.rationale ?? 'Adaptive selection from your current diagnostics.'}</p>
-                  {item.blueprint_id || item.delivery_build_id ? <p>{sourceLabel(item)}</p> : null}
+                  <h4>{getPlanItemTitle(item)}</h4>
+                  <p>{getPlanItemDescription(item)}</p>
+                  <p className="task-why">{getPlanWhyCopy(item)}</p>
+                  <div className="task-feature-row">
+                    {getPlanExperienceSteps(item).map((step) => (
+                      <span className="feature-pill" key={step}>{step}</span>
+                    ))}
+                  </div>
+                  <div className="task-meta-row">
+                    {getPlanPersonalizationChips(item).map((chip) => (
+                      <span key={chip}>{chip}</span>
+                    ))}
+                  </div>
+                  {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item)}</p> : null}
                 </div>
                 {item.blueprint_id || item.delivery_build_id ? (
                   <button

@@ -4,8 +4,14 @@ import {
   practiceGeneratePlan,
   practiceSessionResultsGet,
   practiceSessionResultsScore,
-  type PracticeDeliveryBuild,
 } from '../lib/api';
+import {
+  EXPERIENCE_COPY,
+  formatPracticeLabel,
+  getBuildExperienceKind,
+  getBuildExperienceLabel,
+  getExperienceSteps,
+} from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 
 type Json = Record<string, unknown>;
@@ -28,13 +34,6 @@ const titleCase = (value: unknown): string =>
 
 const percent = (value: number | null): string =>
   value == null ? '-' : `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
-
-const experienceLabel = (build: PracticeDeliveryBuild | null): string => {
-  const raw =
-    build?.experience_kind ??
-    (isRecord(build?.build_summary) ? String((build?.build_summary as Json).experience_kind ?? '') : '');
-  return raw ? titleCase(raw) : 'Practice Session';
-};
 
 const sectionRowsFromOutcome = (outcome: Json | null) => {
   const scores = isRecord(outcome?.section_scores) ? (outcome?.section_scores as Json) : {};
@@ -103,6 +102,10 @@ export const SessionResultsPage = () => {
   const writingTasks = useMemo(() => writingTasksFromEvaluation(aiEvaluation), [aiEvaluation]);
   const runtimeSessionId = String((data?.session as Json | null)?.id ?? (data?.practice_session as Json | null)?.session_id ?? sessionId ?? '');
   const build = data?.delivery_build ?? null;
+  const buildSummary = isRecord(build?.build_summary) ? build?.build_summary as Json : {};
+  const experienceKind = getBuildExperienceKind(build);
+  const experienceInfo = EXPERIENCE_COPY[experienceKind];
+  const resultSection = String(data?.blueprint?.section_type ?? buildSummary.section_type ?? 'reading');
   const targetTypes = Array.isArray(data?.blueprint?.target_question_types) ? data.blueprint.target_question_types : [];
   const masteryUpdates = Array.isArray(data?.scoring_refresh?.mastery_updates) ? data.scoring_refresh.mastery_updates : [];
 
@@ -140,7 +143,7 @@ export const SessionResultsPage = () => {
           <img src="/schood-logo.png" alt="Schood" />
           <div>
             <strong>Practice Results</strong>
-            <span>{experienceLabel(build)} feedback and next action</span>
+            <span>{getBuildExperienceLabel(build)} feedback and next action</span>
           </div>
         </Link>
         <div className="top-nav-actions">
@@ -169,8 +172,13 @@ export const SessionResultsPage = () => {
 
         <section className="glass stat-card">
           <h3>Focus</h3>
-          <p>{targetTypes.length > 0 ? targetTypes.slice(0, 3).map(titleCase).join(', ') : titleCase(data?.blueprint?.section_type ?? 'IELTS')}</p>
-          <p className="muted">{experienceLabel(build)}</p>
+          <p>{targetTypes.length > 0 ? targetTypes.slice(0, 3).map(formatPracticeLabel).join(', ') : titleCase(data?.blueprint?.section_type ?? 'IELTS')}</p>
+          <p className="muted">{experienceInfo.description}</p>
+          <div className="task-feature-row compact">
+            {getExperienceSteps(experienceKind, resultSection).map((step) => (
+              <span className="feature-pill" key={step}>{step}</span>
+            ))}
+          </div>
         </section>
 
         <section className="glass stat-card">

@@ -10,6 +10,17 @@ import {
   type PracticePlanItem,
 } from '../lib/api';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import {
+  EXPERIENCE_COPY,
+  EXPERIENCE_KINDS,
+  formatPracticeLabel,
+  getPlanExperienceSteps,
+  getPlanItemDescription,
+  getPlanItemTitle,
+  getPlanPersonalizationChips,
+  getPlanSourceCopy,
+  getPlanWhyCopy,
+} from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 import { supabase } from '../lib/supabase';
 
@@ -130,41 +141,6 @@ const sectionBarClass = (section: SectionType): string => {
   if (section === 'reading') return 'progress-fill reading';
   if (section === 'listening') return 'progress-fill listening';
   return 'progress-fill writing';
-};
-
-const formatQuestionType = (value: string): string =>
-  value
-    .replace(/^question_/i, '')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (token) => token.toUpperCase());
-
-const experienceLabel = (item: PracticePlanItem): string => {
-  const buildSummary = item.delivery_build?.build_summary;
-  const raw =
-    item.delivery_build?.experience_kind ??
-    item.blueprint?.experience_kind ??
-    (isRecord(buildSummary) ? String(buildSummary.experience_kind ?? '') : '') ??
-    '';
-  return raw ? formatQuestionType(raw) : 'Guided Set';
-};
-
-const planItemFocus = (item: PracticePlanItem): string => {
-  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const rawTypes = Array.isArray(buildSummary.target_question_types)
-    ? buildSummary.target_question_types
-    : Array.isArray(buildSummary.question_types)
-      ? buildSummary.question_types
-      : Array.isArray(item.blueprint?.target_question_types)
-        ? item.blueprint.target_question_types
-        : [];
-  const labels = rawTypes.map((entry) => formatQuestionType(String(entry))).filter(Boolean);
-  return labels.length > 0 ? labels.slice(0, 2).join(', ') : formatQuestionType(item.section_type);
-};
-
-const transformedSourceLabel = (item: PracticePlanItem): string => {
-  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const source = String(buildSummary.source_section_name ?? '').trim();
-  return source ? `Transformed source: ${source}` : 'Transformed practice session';
 };
 
 const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
@@ -335,11 +311,6 @@ export const DashboardPage = () => {
     [diagnostics],
   );
 
-  const planItemTitle = (item: PracticePlanItem): string =>
-    item.blueprint_id || item.delivery_build_id
-      ? `${experienceLabel(item)}: ${planItemFocus(item)}`
-      : item.exercise?.title ?? 'Practice session';
-
   const launchPlanItem = async (item: PracticePlanItem): Promise<void> => {
     if (!accessToken) return;
     if (!item.blueprint_id && !item.delivery_build_id) return;
@@ -493,7 +464,7 @@ export const DashboardPage = () => {
                     <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">
                       <div>
                         <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
-                        <h4>{formatQuestionType(row.question_type)}</h4>
+                        <h4>{formatPracticeLabel(row.question_type)}</h4>
                       </div>
                       <div className="weakness-metrics">
                         <span>Weakness {row.weakness_score.toFixed(2)}</span>
@@ -520,6 +491,15 @@ export const DashboardPage = () => {
                 <div className="progress-fill writing" style={{ width: `${planSummary.completion}%` }} />
               </div>
 
+              <div className="experience-strip" aria-label="Available transformed practice modes">
+                {EXPERIENCE_KINDS.map((kind) => (
+                  <article className="experience-mode-card" key={kind}>
+                    <strong>{EXPERIENCE_COPY[kind].label}</strong>
+                    <span>{EXPERIENCE_COPY[kind].short}</span>
+                  </article>
+                ))}
+              </div>
+
               {plan.length === 0 ? (
                 <div className="empty-plan">
                   <p>No practice sessions are available in today's plan yet.</p>
@@ -536,9 +516,20 @@ export const DashboardPage = () => {
                     <li key={item.id} className="task-item">
                       <div>
                         <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                        <h4>{planItemTitle(item)}</h4>
-                        <p>{item.rationale ?? 'Selected from your diagnostics profile and goal gap.'}</p>
-                        {item.blueprint_id || item.delivery_build_id ? <p>{transformedSourceLabel(item)}</p> : null}
+                        <h4>{getPlanItemTitle(item)}</h4>
+                        <p>{getPlanItemDescription(item)}</p>
+                        <p className="task-why">{getPlanWhyCopy(item)}</p>
+                        <div className="task-feature-row">
+                          {getPlanExperienceSteps(item).map((step) => (
+                            <span className="feature-pill" key={step}>{step}</span>
+                          ))}
+                        </div>
+                        <div className="task-meta-row">
+                          {getPlanPersonalizationChips(item).map((chip) => (
+                            <span key={chip}>{chip}</span>
+                          ))}
+                        </div>
+                        {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item)}</p> : null}
                       </div>
                       <div className="inline-actions">
                         <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>
