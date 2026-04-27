@@ -1,17 +1,18 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from './lib/constants';
 import { PlatformRedirect } from './components/platform/PlatformRedirect';
 import { RequireProductEntitlement } from './components/platform/RequireProductEntitlement';
 import { RequireAdmin } from './components/platform/RequireAdmin';
 import { LandingPage } from './pages/LandingPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { PlanPage } from './pages/PlanPage';
-import { ExercisePage } from './pages/ExercisePage';
-import { ResultsPage } from './pages/ResultsPage';
-import { SessionResultsPage } from './pages/SessionResultsPage';
-import { AdminPage } from './pages/AdminPage';
-import { LabPage } from './pages/LabPage';
+
+const DashboardPage = lazy(async () => ({ default: (await import('./pages/DashboardPage')).DashboardPage }));
+const PlanPage = lazy(async () => ({ default: (await import('./pages/PlanPage')).PlanPage }));
+const LabPage = lazy(async () => ({ default: (await import('./pages/LabPage')).LabPage }));
+const ExercisePage = lazy(async () => ({ default: (await import('./pages/ExercisePage')).ExercisePage }));
+const ResultsPage = lazy(async () => ({ default: (await import('./pages/ResultsPage')).ResultsPage }));
+const SessionResultsPage = lazy(async () => ({ default: (await import('./pages/SessionResultsPage')).SessionResultsPage }));
+const AdminPage = lazy(async () => ({ default: (await import('./pages/AdminPage')).AdminPage }));
 
 const SharedExamPlayer = lazy(async () => {
   const module = await import('../../ielts-simulator/src/pages/ExamPlayer');
@@ -29,6 +30,18 @@ const sessionRuntimeFallback = (
   </div>
 );
 
+const pageFallback = (
+  <div className="practice-root">
+    <div className="route-loading">Loading IELTS Practice...</div>
+  </div>
+);
+
+const lazyPage = (node: ReactNode) => (
+  <Suspense fallback={pageFallback}>
+    {node}
+  </Suspense>
+);
+
 function App() {
   return (
     <BrowserRouter>
@@ -43,12 +56,12 @@ function App() {
         <Route path="/" element={<LandingPage />} />
 
         <Route element={<RequireProductEntitlement />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/plan" element={<PlanPage />} />
-          <Route path="/lab/:practiceSessionId" element={<LabPage />} />
+          <Route path="/dashboard" element={lazyPage(<DashboardPage />)} />
+          <Route path="/plan" element={lazyPage(<PlanPage />)} />
+          <Route path="/lab/:practiceSessionId" element={lazyPage(<LabPage />)} />
           <Route
             path="/session/:sessionId/results"
-            element={<SessionResultsPage />}
+            element={lazyPage(<SessionResultsPage />)}
           />
           <Route
             path="/session/:sessionId/review"
@@ -66,12 +79,12 @@ function App() {
               </Suspense>
             )}
           />
-          <Route path="/exercise/:id" element={<ExercisePage />} />
-          <Route path="/results/:attempt_id" element={<ResultsPage />} />
+          <Route path="/exercise/:id" element={lazyPage(<ExercisePage />)} />
+          <Route path="/results/:attempt_id" element={lazyPage(<ResultsPage />)} />
         </Route>
 
         <Route element={<RequireAdmin />}>
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={lazyPage(<AdminPage />)} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

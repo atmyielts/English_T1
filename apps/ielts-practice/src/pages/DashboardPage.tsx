@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  practiceDiagnosticsGet,
+  practiceDashboardGet,
   practiceGeneratePlan,
-  practiceGoalsGet,
-  practiceNotebookList,
   practiceNotebookPatch,
   practicePlanItemStart,
-  practiceRoadmapList,
-  practiceTodayPlan,
+  type PracticeGoal,
   type PracticeNotebookItem,
   type PracticePlanItem,
   type PracticeRoadmapItem,
@@ -146,25 +143,6 @@ const sectionBarClass = (section: SectionType): string => {
   return 'progress-fill writing';
 };
 
-const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
-  if (!item.blueprint_id && !item.delivery_build_id) return false;
-  const buildSummary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
-  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
-  return (
-    buildSummary.transformed === true
-    && typeof buildSummary.source_section_id === 'string'
-    && buildSummary.source_section_id.length > 0
-    && labPayload.version === 'ielts.practice.lab.v1'
-  );
-};
-
-const hasCompleteDailyLabCoverage = (items: PracticePlanItem[]): boolean => {
-  const transformedItems = items.filter(isCurrentTransformedItem);
-  if (transformedItems.length < SECTION_ORDER.length) return false;
-  return SECTION_ORDER.every((section) => transformedItems.some((item) => item.section_type === section));
-};
-
 const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null }): boolean => {
   const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
   const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
@@ -216,6 +194,7 @@ export const DashboardPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
   const [averageBand, setAverageBand] = useState<number | null>(null);
+  const [goal, setGoal] = useState<PracticeGoal | null>(null);
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
@@ -234,35 +213,29 @@ export const DashboardPage = () => {
     return raw.length > 0 ? raw : 'Learner';
   }, [me?.user.email, session?.user.user_metadata]);
 
-  const load = async (forceDiagnostics = false, autoGenerate = false): Promise<void> => {
+  const generationBody = (refreshDiagnostics: boolean) => ({
+    refresh_diagnostics: refreshDiagnostics,
+    daily_minutes: goal?.daily_practice_minutes ?? 60,
+    timezone: goal?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  });
+
+  const load = async (): Promise<void> => {
     if (!accessToken) return;
     setLoading(true);
     setError(null);
     try {
-      const [goalsRes, diagnosticsRes, planRes, notebookRes, roadmapRes] = await Promise.all([
-        practiceGoalsGet(accessToken),
-        practiceDiagnosticsGet(accessToken, { refresh: forceDiagnostics }),
-        practiceTodayPlan(accessToken),
-        practiceNotebookList(accessToken).catch(() => ({ items: [] as PracticeNotebookItem[] })),
-        practiceRoadmapList(accessToken, { refresh: forceDiagnostics }).catch(() => ({ items: [] as PracticeRoadmapItem[] })),
-      ]);
+      const dashboardRes = await practiceDashboardGet(accessToken);
 
-      setTargetBand(toNumber(goalsRes.goals.target_overall_band));
+      setGoal(dashboardRes.goals);
+      setTargetBand(toNumber(dashboardRes.goals.target_overall_band));
 
-      const diagnosticPayload = normalizeDiagnostics(diagnosticsRes.diagnostics_snapshot?.diagnostics);
+      const diagnosticPayload = normalizeDiagnostics(dashboardRes.diagnostics_snapshot?.diagnostics);
       setDiagnostics(diagnosticPayload);
       setAverageBand(diagnosticPayload?.overall.average_band ?? null);
 
-      let todayPlan = planRes.items ?? [];
-      const hasOutdatedPlanItems = todayPlan.some((item) => !isCurrentTransformedItem(item));
-      const missingDailyCoverage = !hasCompleteDailyLabCoverage(todayPlan);
-      if ((todayPlan.length === 0 || hasOutdatedPlanItems || missingDailyCoverage) && autoGenerate) {
-        const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
-        todayPlan = generated.items ?? [];
-      }
-      setPlan(todayPlan);
-      setNotebook(notebookRes.items ?? []);
-      setRoadmap(roadmapRes.items ?? []);
+      setPlan(dashboardRes.items ?? []);
+      setNotebook(dashboardRes.notebook ?? []);
+      setRoadmap(dashboardRes.roadmap ?? []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(humanizeError(message));
@@ -272,7 +245,7 @@ export const DashboardPage = () => {
   };
 
   useEffect(() => {
-    void load(false, true);
+    void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
@@ -281,8 +254,8 @@ export const DashboardPage = () => {
     try {
       setGenerating(true);
       setError(null);
-      await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
-      await load(false, false);
+      await practiceGeneratePlan(accessToken, generationBody(true));
+      await load();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Plan generation failed';
       setError(humanizeError(message));
@@ -362,8 +335,8 @@ export const DashboardPage = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to launch plan item';
       if (message.toLowerCase().includes('plan item not found')) {
-        await practiceGeneratePlan(accessToken, { refresh_diagnostics: false }).catch(() => null);
-        await load(false, false);
+        await practiceGeneratePlan(accessToken, generationBody(false)).catch(() => null);
+        await load();
         setError('That lab was from an older generated plan, so I refreshed today\'s Practice Labs.');
       } else {
         setError(humanizeError(message));

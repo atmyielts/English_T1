@@ -13,6 +13,7 @@ import {
   getExperienceSteps,
 } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
+import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 
 type Json = Record<string, unknown>;
 
@@ -101,6 +102,10 @@ export const SessionResultsPage = () => {
   const sectionRows = useMemo(() => sectionRowsFromOutcome(outcome), [outcome]);
   const writingTasks = useMemo(() => writingTasksFromEvaluation(aiEvaluation), [aiEvaluation]);
   const runtimeSessionId = String((data?.session as Json | null)?.id ?? (data?.practice_session as Json | null)?.session_id ?? sessionId ?? '');
+  const reviewQuery = new URLSearchParams({
+    product_id: IELTS_PRACTICE_PRODUCT_ID,
+    back: backPath,
+  }).toString();
   const build = data?.delivery_build ?? null;
   const buildSummary = isRecord(build?.build_summary) ? build?.build_summary as Json : {};
   const experienceKind = getBuildExperienceKind(build);
@@ -127,7 +132,7 @@ export const SessionResultsPage = () => {
     if (!accessToken) return;
     setRegenerating(true);
     try {
-      await practiceGeneratePlan(accessToken, { daily_count: 3, refresh_diagnostics: true });
+      await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
       navigate('/plan');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to regenerate plan');
@@ -150,7 +155,7 @@ export const SessionResultsPage = () => {
           <button className="btn ghost" type="button" onClick={() => navigate(backPath)}>
             Back
           </button>
-          <Link className="btn ghost" to={`/session/${encodeURIComponent(runtimeSessionId)}/review?review_back=${encodeURIComponent(backPath)}`}>
+          <Link className="btn ghost" to={`/session/${encodeURIComponent(runtimeSessionId)}/review?${reviewQuery}`}>
             Review Answers
           </Link>
           <button className="btn solid" type="button" onClick={() => void regenerateNext()} disabled={regenerating}>

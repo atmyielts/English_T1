@@ -20,29 +20,15 @@ import {
 import { useAccess } from '../lib/useAccess';
 
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
-const SECTION_ORDER = ['reading', 'listening', 'writing'] as const;
+const browserTimezone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+const todayLocalDate = (): string => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value);
-
-const isCurrentTransformedItem = (item: PracticePlanItem): boolean => {
-  if (!item.blueprint_id && !item.delivery_build_id) return false;
-  const summary = isRecord(item.delivery_build?.build_summary) ? item.delivery_build?.build_summary as Record<string, unknown> : {};
-  const metadata = isRecord(item.delivery_build?.metadata) ? item.delivery_build?.metadata as Record<string, unknown> : {};
-  const labPayload = isRecord(metadata.lab_payload) ? metadata.lab_payload as Record<string, unknown> : {};
-  return (
-    summary.transformed === true
-    && typeof summary.source_section_id === 'string'
-    && summary.source_section_id.length > 0
-    && labPayload.version === 'ielts.practice.lab.v1'
-  );
-};
-
-const hasCompleteDailyLabCoverage = (items: PracticePlanItem[]): boolean => {
-  const transformedItems = items.filter(isCurrentTransformedItem);
-  if (transformedItems.length < SECTION_ORDER.length) return false;
-  return SECTION_ORDER.every((section) => transformedItems.some((item) => item.section_type === section));
-};
 
 const hasLabPayload = (value: { delivery_build?: { metadata?: unknown } | null }): boolean => {
   const metadata = isRecord(value.delivery_build?.metadata) ? value.delivery_build?.metadata as Record<string, unknown> : {};
@@ -57,6 +43,10 @@ export const PlanPage = () => {
   const [readingBand, setReadingBand] = useState('6.5');
   const [listeningBand, setListeningBand] = useState('6.5');
   const [writingBand, setWritingBand] = useState('6.5');
+  const [practiceStartDate, setPracticeStartDate] = useState(todayLocalDate());
+  const [programDurationDays, setProgramDurationDays] = useState('30');
+  const [dailyPracticeMinutes, setDailyPracticeMinutes] = useState('60');
+  const [timezone, setTimezone] = useState(browserTimezone());
   const [planItems, setPlanItems] = useState<PracticePlanItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -77,13 +67,11 @@ export const PlanPage = () => {
       setReadingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.reading ?? goals.target_overall_band ?? 6.5));
       setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
       setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
-      const loadedItems = planRes.items ?? [];
-      if (loadedItems.some((item) => !isCurrentTransformedItem(item)) || !hasCompleteDailyLabCoverage(loadedItems)) {
-        const generated = await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
-        setPlanItems(generated.items ?? []);
-      } else {
-        setPlanItems(loadedItems);
-      }
+      setPracticeStartDate(goals.practice_start_date || todayLocalDate());
+      setProgramDurationDays(String(goals.program_duration_days ?? 30));
+      setDailyPracticeMinutes(String(goals.daily_practice_minutes ?? 60));
+      setTimezone(goals.timezone || browserTimezone());
+      setPlanItems(planRes.items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load plan page');
     } finally {
@@ -107,6 +95,10 @@ export const PlanPage = () => {
           listening: Number(listeningBand),
           writing: Number(writingBand),
         },
+        practice_start_date: practiceStartDate || todayLocalDate(),
+        program_duration_days: Number(programDurationDays),
+        daily_practice_minutes: Number(dailyPracticeMinutes),
+        timezone: timezone || browserTimezone(),
       });
       await load();
     } catch (err) {
@@ -121,7 +113,11 @@ export const PlanPage = () => {
     setSaving(true);
     setError(null);
     try {
-      await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
+      await practiceGeneratePlan(accessToken, {
+        refresh_diagnostics: true,
+        daily_minutes: Number(dailyPracticeMinutes),
+        timezone: timezone || browserTimezone(),
+      });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to regenerate plan');
@@ -166,7 +162,11 @@ export const PlanPage = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to launch plan item';
       if (message.toLowerCase().includes('plan item not found')) {
-        await practiceGeneratePlan(accessToken, { refresh_diagnostics: false }).catch(() => null);
+        await practiceGeneratePlan(accessToken, {
+          refresh_diagnostics: false,
+          daily_minutes: Number(dailyPracticeMinutes),
+          timezone: timezone || browserTimezone(),
+        }).catch(() => null);
         await load();
         setError('That lab was from an older generated plan, so I refreshed today\'s plan.');
       } else {
@@ -215,6 +215,10 @@ export const PlanPage = () => {
           <label>Reading target<input value={readingBand} onChange={(event) => setReadingBand(event.target.value)} /></label>
           <label>Listening target<input value={listeningBand} onChange={(event) => setListeningBand(event.target.value)} /></label>
           <label>Writing target<input value={writingBand} onChange={(event) => setWritingBand(event.target.value)} /></label>
+          <label>Start date<input type="date" value={practiceStartDate} onChange={(event) => setPracticeStartDate(event.target.value)} /></label>
+          <label>Program duration days<input type="number" min="1" max="365" value={programDurationDays} onChange={(event) => setProgramDurationDays(event.target.value)} /></label>
+          <label>Daily practice minutes<input type="number" min="10" max="360" step="5" value={dailyPracticeMinutes} onChange={(event) => setDailyPracticeMinutes(event.target.value)} /></label>
+          <label>Timezone<input value={timezone} onChange={(event) => setTimezone(event.target.value)} /></label>
           <button className="btn ghost" type="button" onClick={() => void saveGoals()} disabled={saving}>
             Save goals
           </button>

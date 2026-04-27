@@ -19,6 +19,17 @@ type EntitlementRow = {
   value: Json | null;
 };
 
+type SponsoredEntitlementRow = {
+  id: string;
+  academy_id?: string | null;
+  grant_type: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  starts_at: string | null;
+  expires_at: string | null;
+  status: string;
+};
+
 type SessionGuardrails = {
   enabled: boolean;
   maxConcurrentSessionsPerProduct: number;
@@ -158,6 +169,13 @@ const isActiveEntitlement = (row: { starts_at: string | null; ends_at: string | 
   return true;
 };
 
+const isActiveSponsoredProductAccess = (row: SponsoredEntitlementRow, productId: string): boolean =>
+  row.status === "active"
+  && row.grant_type === "product_access"
+  && row.resource_type === "product"
+  && row.resource_id === productId
+  && isActiveEntitlement({ starts_at: row.starts_at, ends_at: row.expires_at, is_active: true });
+
 const extractLimits = (value: unknown): Record<string, number> => {
   if (!isObject(value)) return {};
   const raw = (value as any).limits;
@@ -293,6 +311,23 @@ serve(async (req) => {
       tenantId = (memberships ?? [])[0]?.tenant_id ?? null;
     }
 
+    if (!tenantId) {
+      const { data: sponsoredTenantRows, error: sponsoredTenantErr } = await sb
+        .from("academy_entitlements")
+        .select("id,academy_id,grant_type,resource_type,resource_id,starts_at,expires_at,status")
+        .eq("user_id", authedUserId)
+        .eq("status", "active")
+        .eq("grant_type", "product_access")
+        .eq("resource_type", "product")
+        .eq("resource_id", productId)
+        .limit(10);
+
+      if (sponsoredTenantErr) return json(500, { error: "Failed to load sponsored tenant access", details: sponsoredTenantErr });
+      const sponsoredTenant = ((sponsoredTenantRows ?? []) as SponsoredEntitlementRow[])
+        .find((row) => isActiveSponsoredProductAccess(row, productId));
+      tenantId = sponsoredTenant?.academy_id ?? null;
+    }
+
     if (!tenantId) return json(403, { error: "No active tenant membership" });
 
     (sessionMetadata as any)._guardrail_device_key = deviceKey;
@@ -312,7 +347,26 @@ serve(async (req) => {
         .maybeSingle();
 
       if (entErr) return json(500, { error: "Failed to load entitlements", details: entErr });
-      if (!entitlement || !isActiveEntitlement(entitlement as EntitlementRow)) {
+      let hasProductAccess = Boolean(entitlement && isActiveEntitlement(entitlement as EntitlementRow));
+
+      if (!hasProductAccess) {
+        const { data: sponsoredEntitlements, error: sponsoredErr } = await sb
+          .from("academy_entitlements")
+          .select("id,grant_type,resource_type,resource_id,starts_at,expires_at,status")
+          .eq("user_id", authedUserId)
+          .eq("status", "active")
+          .eq("grant_type", "product_access")
+          .eq("resource_type", "product")
+          .eq("resource_id", productId)
+          .limit(10);
+
+        if (sponsoredErr) return json(500, { error: "Failed to load sponsored entitlements", details: sponsoredErr });
+        hasProductAccess = ((sponsoredEntitlements ?? []) as SponsoredEntitlementRow[]).some((row) =>
+          isActiveSponsoredProductAccess(row, productId)
+        );
+      }
+
+      if (!hasProductAccess) {
         return json(403, { error: "No entitlement for product" });
       }
 

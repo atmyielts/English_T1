@@ -23,6 +23,10 @@ export type PracticeGoal = {
   target_overall_band: number;
   target_section_bands: Json;
   target_date: string | null;
+  practice_start_date: string;
+  program_duration_days: number;
+  daily_practice_minutes: number;
+  timezone: string;
   focus_modes: string[];
   metadata: Json;
   updated_at: string;
@@ -322,7 +326,7 @@ export const practiceGoalsGet = (
 
 export const practiceGoalsPatch = (
   accessToken: string,
-  body: Partial<Pick<PracticeGoal, "target_overall_band" | "target_section_bands" | "target_date" | "focus_modes" | "metadata">>,
+  body: Partial<Pick<PracticeGoal, "target_overall_band" | "target_section_bands" | "target_date" | "practice_start_date" | "program_duration_days" | "daily_practice_minutes" | "timezone" | "focus_modes" | "metadata">>,
 ): Promise<{ ok: boolean; goals: PracticeGoal }> =>
   call(accessToken, "/ielts-practice/goals", { method: "PATCH", body });
 
@@ -348,22 +352,49 @@ export const practiceDiagnosticsGet = (
 
 export const practiceGeneratePlan = (
   accessToken: string,
-  body?: { plan_date?: string; daily_count?: number; refresh_diagnostics?: boolean },
+  body?: { plan_date?: string; timezone?: string; daily_minutes?: number; daily_count?: number; refresh_diagnostics?: boolean },
 ): Promise<{
   ok: boolean;
   plan_date: string;
   generated_count: number;
+  retained_count?: number;
+  daily_practice_minutes?: number;
   quotas: Json;
   items: PracticePlanItem[];
 }> => call(accessToken, "/ielts-practice/plans/generate", { method: "POST", body: body ?? {} });
 
 export const practiceTodayPlan = (
   accessToken: string,
-  opts?: { date?: string },
+  opts?: { date?: string; timezone?: string },
 ): Promise<{ plan_date: string; items: PracticePlanItem[] }> => {
   const qs = new URLSearchParams();
   if (opts?.date) qs.set("date", opts.date);
+  if (opts?.timezone) qs.set("timezone", opts.timezone);
   return call(accessToken, `/ielts-practice/plans/today${qs.toString() ? `?${qs.toString()}` : ""}`);
+};
+
+export const practiceDashboardGet = (
+  accessToken: string,
+  opts?: { date?: string; timezone?: string },
+): Promise<{
+  scope: Json;
+  goals: PracticeGoal;
+  diagnostics_snapshot: {
+    id: string;
+    computed_at: string;
+    snapshot_version: string;
+    diagnostics: Json;
+    source_summary: Json;
+  } | null;
+  plan_date: string;
+  items: PracticePlanItem[];
+  notebook: PracticeNotebookItem[];
+  roadmap: PracticeRoadmapItem[];
+}> => {
+  const qs = new URLSearchParams();
+  if (opts?.date) qs.set("date", opts.date);
+  if (opts?.timezone) qs.set("timezone", opts.timezone);
+  return call(accessToken, `/ielts-practice/dashboard${qs.toString() ? `?${qs.toString()}` : ""}`);
 };
 
 export const practicePlanItemStart = (

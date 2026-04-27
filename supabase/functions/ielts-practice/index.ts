@@ -1,6 +1,21 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadPublishedBlueprintCandidates, PRACTICE_LAB_SCHEMA_VERSION } from "../_shared/ielts-practice-blueprints.ts";
+import {
+  dailyCountFromPracticeMinutes,
+  daysUntilDate,
+  deriveTargetDate,
+  hasActiveProductEntitlement,
+  hasActiveSponsoredProductAccess,
+  PLAN_REGENERATION_PRESERVED_STATUSES,
+  PLAN_REGENERATION_REPLACEABLE_STATUSES,
+  normalizeDailyPracticeMinutes,
+  normalizeProgramDurationDays,
+  parsePlanDate as parsePracticePlanDate,
+  safeTimezone,
+  scoreObjectiveQuestion as scorePracticeObjectiveQuestion,
+  todayInTimezone,
+} from "../_shared/ielts-practice-core.ts";
 import { signStorageRef } from "../_shared/media-storage.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -24,6 +39,10 @@ type GoalRow = {
   target_overall_band: number;
   target_section_bands: JsonRecord;
   target_date: string | null;
+  practice_start_date: string;
+  program_duration_days: number;
+  daily_practice_minutes: number;
+  timezone: string;
   focus_modes: string[];
   metadata: JsonRecord;
   created_at: string;
@@ -336,70 +355,8 @@ const scoreObjectiveQuestion = (
   questionType: string,
   answerKey: unknown,
   responseData: unknown,
-): { score: number; max: number } | null => {
-  if (!isObject(answerKey)) return null;
-  const type = toText(questionType, 120).toLowerCase();
-
-  if (type === "question_single_choice") {
-    const expected = normalizeChoiceToken(String(answerKey.option_id ?? ""));
-    const actualRaw =
-      typeof responseData === "string"
-        ? responseData
-        : isObject(responseData)
-          ? String(responseData.selected_option ?? responseData.option_id ?? "")
-          : "";
-    const actual = normalizeChoiceToken(actualRaw);
-    return { score: expected && actual === expected ? 1 : 0, max: expected ? 1 : 0 };
-  }
-
-  if (type === "question_multi_choice") {
-    const expected = Array.isArray(answerKey.option_ids)
-      ? answerKey.option_ids.map((entry) => normalizeChoiceToken(String(entry))).filter(Boolean)
-      : [];
-
-    let actual: string[] = [];
-    if (Array.isArray(responseData)) {
-      actual = responseData.map((entry) => normalizeChoiceToken(String(entry))).filter(Boolean);
-    } else if (isObject(responseData) && Array.isArray(responseData.selected_options)) {
-      actual = responseData.selected_options.map((entry) => normalizeChoiceToken(String(entry))).filter(Boolean);
-    }
-
-    return { score: expected.length > 0 && setEquals(expected, actual) ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
-  }
-
-  if (type === "question_text") {
-    const expected = Array.isArray(answerKey.answers)
-      ? answerKey.answers.map((entry) => normalizeToken(String(entry))).filter(Boolean)
-      : [];
-    const actualRaw = typeof responseData === "string"
-      ? responseData
-      : isObject(responseData)
-        ? String(responseData.text ?? responseData.answer ?? "")
-        : "";
-    const actual = normalizeToken(actualRaw);
-    return { score: expected.includes(actual) ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
-  }
-
-  const mapCandidates = ["matches", "blanks", "cells", "labels", "targets"];
-  for (const mapKey of mapCandidates) {
-    if (isObject(answerKey[mapKey])) {
-      const expectedMap = answerKey[mapKey] as Record<string, unknown>;
-      let actualMap: Record<string, unknown> | null = null;
-      if (isObject(responseData) && isObject(responseData[mapKey])) {
-        actualMap = responseData[mapKey] as Record<string, unknown>;
-      } else if (isObject(responseData)) {
-        actualMap = responseData;
-      }
-      const normalizer =
-        mapKey === "matches" && (type.includes("true_false") || type.includes("yes_no") || type.includes("select_from_list"))
-          ? normalizeChoiceToken
-          : normalizeToken;
-      return scoreMapAnswers(expectedMap, actualMap, normalizer);
-    }
-  }
-
-  return null;
-};
+): { score: number; max: number } | null =>
+  scorePracticeObjectiveQuestion(questionType, answerKey, responseData);
 
 const extractRoute = (url: URL): string => {
   const marker = "/ielts-practice";
@@ -420,6 +377,61 @@ const authUser = async (sb: any, req: Request): Promise<AuthedContext | null> =>
     userId: data.user.id,
     token,
   };
+};
+
+const userHasPracticeAccess = async (sb: any, userId: string, scope: ResolvedScope): Promise<boolean> => {
+  const { data: userRow, error: userError } = await sb
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  if (userError) throw new Error("Failed to load user role");
+  if (String((userRow as any)?.role ?? "").toLowerCase() === "admin") return true;
+
+  const { data: memberships, error: membershipError } = await sb
+    .from("tenant_memberships")
+    .select("tenant_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(1);
+  if (membershipError) throw new Error("Failed to load tenant memberships");
+
+  const tenantId = Array.isArray(memberships) ? toNullableText((memberships[0] as any)?.tenant_id, 80) : null;
+  if (tenantId) {
+    const { data: entitlements, error: entitlementError } = await sb
+      .from("entitlements")
+      .select("id,starts_at,ends_at,is_active")
+      .eq("tenant_id", tenantId)
+      .eq("resource_type", "product")
+      .eq("resource_id", scope.practiceProductId)
+      .eq("is_active", true)
+      .limit(10);
+    if (entitlementError) throw new Error("Failed to load product entitlements");
+
+    const hasPersonalAccess = hasActiveProductEntitlement(
+      (Array.isArray(entitlements) ? entitlements : []).map((row: any) => ({
+        ...row,
+        resource_type: "product",
+        resource_id: scope.practiceProductId,
+      })),
+      scope.practiceProductId,
+    );
+    if (hasPersonalAccess) return true;
+  }
+
+  const { data: sponsored, error: sponsoredError } = await sb
+    .from("academy_entitlements")
+    .select("id,grant_type,resource_type,resource_id,starts_at,expires_at,status")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .eq("grant_type", "product_access")
+    .eq("resource_type", "product")
+    .eq("resource_id", scope.practiceProductId)
+    .limit(10);
+  if (sponsoredError) throw new Error("Failed to load sponsored product access");
+
+  return hasActiveSponsoredProductAccess(sponsored, scope.practiceProductId);
 };
 
 const resolveProductIdBySlug = async (sb: any, slug: string): Promise<string | null> => {
@@ -458,28 +470,36 @@ const resolveScope = async (sb: any): Promise<ResolvedScope> => {
   };
 };
 
-const defaultGoals = (scope: ResolvedScope, userId: string): GoalRow => ({
-  user_id: userId,
-  language_id: scope.languageId,
-  product_id: scope.practiceProductId,
-  target_overall_band: 6.5,
-  target_section_bands: {
-    reading: 6.5,
-    listening: 6.5,
-    writing: 6.5,
-  },
-  target_date: null,
-  focus_modes: [],
-  metadata: {},
-  created_at: new Date(0).toISOString(),
-  updated_at: new Date(0).toISOString(),
-});
+const defaultGoals = (scope: ResolvedScope, userId: string): GoalRow => {
+  const practiceStartDate = todayInTimezone("UTC");
+  const programDurationDays = 30;
+  return {
+    user_id: userId,
+    language_id: scope.languageId,
+    product_id: scope.practiceProductId,
+    target_overall_band: 6.5,
+    target_section_bands: {
+      reading: 6.5,
+      listening: 6.5,
+      writing: 6.5,
+    },
+    target_date: deriveTargetDate(practiceStartDate, programDurationDays),
+    practice_start_date: practiceStartDate,
+    program_duration_days: programDurationDays,
+    daily_practice_minutes: 60,
+    timezone: "UTC",
+    focus_modes: [],
+    metadata: {},
+    created_at: new Date(0).toISOString(),
+    updated_at: new Date(0).toISOString(),
+  };
+};
 
 const getGoals = async (sb: any, userId: string, scope: ResolvedScope): Promise<GoalRow> => {
   const { data } = await sb
     .from("ielts_practice_user_goals")
     .select(
-      "user_id,language_id,product_id,target_overall_band,target_section_bands,target_date,focus_modes,metadata,created_at,updated_at",
+      "user_id,language_id,product_id,target_overall_band,target_section_bands,target_date,practice_start_date,program_duration_days,daily_practice_minutes,timezone,focus_modes,metadata,created_at,updated_at",
     )
     .eq("user_id", userId)
     .eq("language_id", scope.languageId)
@@ -488,9 +508,17 @@ const getGoals = async (sb: any, userId: string, scope: ResolvedScope): Promise<
   if (!data) return defaultGoals(scope, userId);
 
   const row = data as GoalRow;
+  const timezone = safeTimezone((row as any).timezone ?? "UTC");
+  const practiceStartDate = parsePracticePlanDate((row as any).practice_start_date, timezone);
+  const programDurationDays = normalizeProgramDurationDays((row as any).program_duration_days, 30);
   return {
     ...row,
     target_section_bands: isObject(row.target_section_bands) ? row.target_section_bands : {},
+    target_date: toNullableText((row as any).target_date, 20) ?? deriveTargetDate(practiceStartDate, programDurationDays),
+    practice_start_date: practiceStartDate,
+    program_duration_days: programDurationDays,
+    daily_practice_minutes: normalizeDailyPracticeMinutes((row as any).daily_practice_minutes, 60),
+    timezone,
     focus_modes: Array.isArray(row.focus_modes) ? row.focus_modes.map((entry) => String(entry)) : [],
     metadata: isObject(row.metadata) ? row.metadata : {},
   };
@@ -515,9 +543,11 @@ const patchGoals = async (sb: any, userId: string, scope: ResolvedScope, body: J
     nextSectionBands[section] = clamp(roundTo(value, 1), 0, 9);
   }
 
-  const targetDate = body.target_date == null
-    ? current.target_date
-    : toNullableText(body.target_date, 30);
+  const timezone = safeTimezone(body.timezone ?? current.timezone ?? "UTC");
+  const practiceStartDate = parsePracticePlanDate(body.practice_start_date ?? current.practice_start_date, timezone);
+  const programDurationDays = normalizeProgramDurationDays(body.program_duration_days, current.program_duration_days ?? 30);
+  const dailyPracticeMinutes = normalizeDailyPracticeMinutes(body.daily_practice_minutes, current.daily_practice_minutes ?? 60);
+  const targetDate = deriveTargetDate(practiceStartDate, programDurationDays);
 
   const focusModes = Array.isArray(body.focus_modes)
     ? body.focus_modes.map((entry) => toText(entry, 80).toLowerCase()).filter(Boolean)
@@ -534,6 +564,10 @@ const patchGoals = async (sb: any, userId: string, scope: ResolvedScope, body: J
     target_overall_band: targetOverallBand,
     target_section_bands: nextSectionBands,
     target_date: targetDate,
+    practice_start_date: practiceStartDate,
+    program_duration_days: programDurationDays,
+    daily_practice_minutes: dailyPracticeMinutes,
+    timezone,
     focus_modes: focusModes,
     metadata,
   };
@@ -542,7 +576,7 @@ const patchGoals = async (sb: any, userId: string, scope: ResolvedScope, body: J
     .from("ielts_practice_user_goals")
     .upsert(upsertPayload, { onConflict: "user_id,language_id" })
     .select(
-      "user_id,language_id,product_id,target_overall_band,target_section_bands,target_date,focus_modes,metadata,created_at,updated_at",
+      "user_id,language_id,product_id,target_overall_band,target_section_bands,target_date,practice_start_date,program_duration_days,daily_practice_minutes,timezone,focus_modes,metadata,created_at,updated_at",
     )
     .maybeSingle();
 
@@ -550,7 +584,12 @@ const patchGoals = async (sb: any, userId: string, scope: ResolvedScope, body: J
     throw new Error("Failed to save goals");
   }
 
-  return data as GoalRow;
+  return {
+    ...(data as GoalRow),
+    target_section_bands: isObject((data as GoalRow).target_section_bands) ? (data as GoalRow).target_section_bands : {},
+    focus_modes: Array.isArray((data as GoalRow).focus_modes) ? (data as GoalRow).focus_modes.map((entry) => String(entry)) : [],
+    metadata: isObject((data as GoalRow).metadata) ? (data as GoalRow).metadata : {},
+  };
 };
 
 const questionTypeFromUnit = (unit: any): string => {
@@ -1012,11 +1051,8 @@ const getActiveRules = async (sb: any, scope: ResolvedScope): Promise<Map<string
   return out;
 };
 
-const parsePlanDate = (raw: unknown): string => {
-  const text = toText(raw, 20);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
-  return new Date().toISOString().slice(0, 10);
-};
+const parsePlanDate = (raw: unknown, timezone: unknown = "UTC"): string =>
+  parsePracticePlanDate(raw, timezone);
 
 const createSectionQuota = (dailyCount: number, mix: Record<string, number>): Record<"reading" | "listening" | "writing", number> => {
   const sections: Array<"reading" | "listening" | "writing"> = ["reading", "listening", "writing"];
@@ -1051,6 +1087,44 @@ const createSectionQuota = (dailyCount: number, mix: Record<string, number>): Re
 const targetBandForSection = (goals: GoalRow, section: "reading" | "listening" | "writing"): number => {
   const sectionTarget = toNumber((goals.target_section_bands as any)?.[section]);
   return clamp(sectionTarget ?? toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
+};
+
+const estimatedMinutesForSessionCandidate = (candidate: SessionPlanCandidate): number => {
+  const buildSummary = isObject(candidate.build.build_summary) ? candidate.build.build_summary as JsonRecord : {};
+  const metadata = isObject(candidate.build.metadata) ? candidate.build.metadata as JsonRecord : {};
+  return clamp(
+    Math.floor(
+      toNumber(candidate.blueprint.estimated_minutes)
+        ?? toNumber(buildSummary.estimated_minutes)
+        ?? toNumber(metadata.estimated_minutes)
+        ?? 25,
+    ),
+    5,
+    120,
+  );
+};
+
+const limitSessionCandidatesByMinutes = (
+  candidates: SessionPlanCandidate[],
+  dailyPracticeMinutes: number,
+): SessionPlanCandidate[] => {
+  if (candidates.length <= 1) return candidates;
+  const budget = normalizeDailyPracticeMinutes(dailyPracticeMinutes, 60);
+  const total = candidates.reduce((sum, candidate) => sum + estimatedMinutesForSessionCandidate(candidate), 0);
+  if (total <= budget + 10) return candidates;
+
+  const selected: SessionPlanCandidate[] = [];
+  let used = 0;
+  for (const candidate of candidates) {
+    const minutes = estimatedMinutesForSessionCandidate(candidate);
+    const wouldFit = used + minutes <= budget;
+    const nearBudgetCoverage = selected.length < 3 && used + minutes <= budget + 15;
+    if (selected.length === 0 || wouldFit || nearBudgetCoverage) {
+      selected.push(candidate);
+      used += minutes;
+    }
+  }
+  return selected.length > 0 ? selected : candidates.slice(0, 1);
 };
 
 const loadSourceAvoidance = async (
@@ -1333,6 +1407,8 @@ const buildSessionPlanCandidates = (
   }
 
   const targetOverallBand = clamp(toNumber(goals.target_overall_band) ?? 6.5, 0, 9);
+  const daysRemaining = daysUntilDate(goals.target_date, goals.timezone);
+  const urgencyMultiplier = daysRemaining == null ? 0 : clamp(45 / Math.max(daysRemaining, 1), 0, 1.5);
   const now = Date.now();
 
   return candidates.map((row) => {
@@ -1394,6 +1470,7 @@ const buildSessionPlanCandidates = (
     const estimatedMinutes = clamp(Math.floor(toNumber(blueprint.estimated_minutes ?? 25) ?? 25), 5, 120);
     const durationFit = Math.max(0.2, 1 - Math.abs(estimatedMinutes - 25) / 50);
     const targetBandFit = Math.max(0.2, 1 - Math.abs(targetOverallBand - (toNumber((diagnostics.sections as any)?.[sectionType]?.target_band) ?? targetOverallBand)) / 4);
+    const urgencyBoost = sectionGap > 0 ? sectionGap * urgencyMultiplier * 0.45 : 0;
     const kindFit = experienceKind === "repair_drill"
       ? questionWeakness * 0.55
       : experienceKind === "mastery_check"
@@ -1409,6 +1486,7 @@ const buildSessionPlanCandidates = (
         + questionWeakness * 1.7
         + durationFit * 0.25
         + targetBandFit * 0.2
+        + urgencyBoost
         + kindFit
         + notebookBoost
         + roadmapBoost
@@ -1433,6 +1511,7 @@ const buildSessionPlanCandidates = (
       sectionGap > 0 ? `band gap ${roundTo(sectionGap, 2)}` : null,
       questionWeakness > 0 ? `weakness ${roundTo(questionWeakness, 2)}` : null,
       averageMastery >= 0 ? `mastery ${Math.round(clamp(averageMastery, 0, 1) * 100)}%` : null,
+      urgencyBoost > 0 ? `${daysRemaining} days remaining` : null,
     ].filter(Boolean).join(", ");
     const freshnessNote = passedSourcePenalty > 0 ? " (kept low because this simulator source already met target)" : "";
 
@@ -1453,6 +1532,8 @@ const buildSessionPlanCandidates = (
         average_confidence: roundTo(averageConfidence, 4),
         duration_fit: roundTo(durationFit, 4),
         target_band_fit: roundTo(targetBandFit, 4),
+        days_remaining: daysRemaining,
+        urgency_boost: roundTo(urgencyBoost, 4),
         kind_fit: roundTo(kindFit, 4),
         notebook_boost: roundTo(notebookBoost, 4),
         roadmap_boost: roundTo(roadmapBoost, 4),
@@ -2918,6 +2999,16 @@ serve(async (req) => {
     const url = new URL(req.url);
     const route = extractRoute(url);
 
+    const hasPracticeAccess = await userHasPracticeAccess(sb, auth.userId, scope);
+    if (!hasPracticeAccess) {
+      return json(403, {
+        error: "IELTS Practice access is required",
+        code: "product_access_required",
+        product_id: scope.practiceProductId,
+        product_slug: PRACTICE_PRODUCT_SLUG,
+      });
+    }
+
     if (req.method === "GET" && route === "/goals") {
       const goals = await getGoals(sb, auth.userId, scope);
       return json(200, {
@@ -2936,6 +3027,48 @@ serve(async (req) => {
       const body = await parseBody(req);
       const goals = await patchGoals(sb, auth.userId, scope, body);
       return json(200, { ok: true, goals });
+    }
+
+    if (req.method === "GET" && route === "/dashboard") {
+      const goals = await getGoals(sb, auth.userId, scope);
+      const timezone = safeTimezone(url.searchParams.get("timezone") ?? goals.timezone);
+      const planDate = parsePlanDate(url.searchParams.get("date"), timezone);
+
+      const [diagnosticsSnapshot, planRowsRes, notebookItems, roadmapItems] = await Promise.all([
+        loadCurrentDiagnostics(sb, auth.userId, scope),
+        sb
+          .from("ielts_practice_plan_items")
+          .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("plan_date", planDate)
+          .order("priority", { ascending: false })
+          .order("created_at", { ascending: true }),
+        loadNotebookItems(sb, scope, auth.userId, 4),
+        loadRoadmapItems(sb, scope, auth.userId, 5),
+      ]);
+      if (planRowsRes.error) throw new Error("Failed to load dashboard plan");
+
+      const planItems = await enrichPlanRows(
+        sb,
+        (Array.isArray(planRowsRes.data) ? planRowsRes.data : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+      );
+
+      return json(200, {
+        scope: {
+          user_id: auth.userId,
+          language_id: scope.languageId,
+          language_code: scope.languageCode,
+          product_id: scope.practiceProductId,
+          product_slug: PRACTICE_PRODUCT_SLUG,
+        },
+        goals,
+        diagnostics_snapshot: diagnosticsSnapshot,
+        plan_date: planDate,
+        items: planItems,
+        notebook: notebookItems,
+        roadmap: roadmapItems,
+      });
     }
 
     if (req.method === "GET" && route === "/diagnostics") {
@@ -2976,12 +3109,14 @@ serve(async (req) => {
 
     if (req.method === "POST" && route === "/plans/generate") {
       const body = await parseBody(req);
-      const planDate = parsePlanDate(body.plan_date);
-      const requestedDailyCount = Number(body.daily_count ?? 3);
-      const dailyCount = Number.isFinite(requestedDailyCount) ? clamp(Math.floor(requestedDailyCount), 3, 12) : 3;
       const refreshDiagnostics = String(body.refresh_diagnostics ?? "").toLowerCase() === "true";
 
       const goals = await getGoals(sb, auth.userId, scope);
+      const timezone = safeTimezone(body.timezone ?? goals.timezone ?? "UTC");
+      const planDate = parsePlanDate(body.plan_date, timezone);
+      const dailyMinutesProvided = body.daily_minutes != null;
+      const dailyPracticeMinutes = normalizeDailyPracticeMinutes(body.daily_minutes, goals.daily_practice_minutes ?? 60);
+      const dailyCount = dailyCountFromPracticeMinutes(dailyPracticeMinutes, body.daily_count, dailyMinutesProvided || body.daily_count == null);
       let diagnosticsSnapshot = !refreshDiagnostics ? await loadCurrentDiagnostics(sb, auth.userId, scope) : null;
       if (!diagnosticsSnapshot) {
         const computed = await computeDiagnostics(sb, scope, auth.userId, goals);
@@ -3009,7 +3144,52 @@ serve(async (req) => {
       const normalizedMix = mixTotal > 0
         ? { reading: mix.reading / mixTotal, listening: mix.listening / mixTotal, writing: mix.writing / mixTotal }
         : { reading: 0.34, listening: 0.33, writing: 0.33 };
-      const quotas = createSectionQuota(dailyCount, normalizedMix);
+
+      const { data: retainedRowsData, error: retainedRowsError } = await sb
+        .from("ielts_practice_plan_items")
+        .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id,section_type,status,metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("plan_date", planDate)
+        .in("status", [...PLAN_REGENERATION_PRESERVED_STATUSES]);
+      if (retainedRowsError) throw new Error("Failed to load active plan items");
+
+      const retainedRows = (Array.isArray(retainedRowsData) ? retainedRowsData : []) as Array<{
+        id: string;
+        exercise_id?: string | null;
+        blueprint_id?: string | null;
+        delivery_build_id?: string | null;
+        practice_session_id?: string | null;
+      }>;
+      const retainedBuildIds = new Set(
+        retainedRows.map((row) => toText(row.delivery_build_id, 80)).filter(Boolean),
+      );
+      const generationCount = Math.max(0, dailyCount - retainedRows.length);
+      const quotas = createSectionQuota(generationCount, normalizedMix);
+
+      const { error: cleanupError } = await sb
+        .from("ielts_practice_plan_items")
+        .delete()
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("plan_date", planDate)
+        .in("status", [...PLAN_REGENERATION_REPLACEABLE_STATUSES]);
+      if (cleanupError) throw new Error("Failed to replace generated plan items");
+
+      if (generationCount <= 0 && retainedRows.length > 0) {
+        const planItems = await enrichPlanRows(sb, retainedRows);
+        return json(200, {
+          ok: true,
+          runtime: "transformed_sessions",
+          plan_date: planDate,
+          generated_count: 0,
+          retained_count: retainedRows.length,
+          daily_practice_minutes: dailyPracticeMinutes,
+          quotas,
+          diagnostics_snapshot_id: diagnosticsSnapshot.id,
+          items: planItems,
+        });
+      }
 
       if (publishedBlueprints.length > 0) {
         const sourceAvoidance = await loadSourceAvoidance(sb, scope, auth.userId, goals);
@@ -3047,7 +3227,7 @@ serve(async (req) => {
         );
 
         const selectedBlueprints: SessionPlanCandidate[] = [];
-        const usedBuilds = new Set<string>();
+        const usedBuilds = new Set<string>(retainedBuildIds);
         for (const section of ["reading", "listening", "writing"] as const) {
           const needed = quotas[section];
           if (needed <= 0) continue;
@@ -3060,26 +3240,20 @@ serve(async (req) => {
           }
         }
 
-        if (selectedBlueprints.length < dailyCount) {
+        if (selectedBlueprints.length < generationCount) {
           for (const candidate of rankedBlueprints) {
             const buildId = toText(candidate.build.id, 80);
             if (usedBuilds.has(buildId)) continue;
             selectedBlueprints.push(candidate);
             usedBuilds.add(buildId);
-            if (selectedBlueprints.length >= dailyCount) break;
+            if (selectedBlueprints.length >= generationCount) break;
           }
         }
 
-        if (selectedBlueprints.length > 0) {
-          await sb
-            .from("ielts_practice_plan_items")
-            .delete()
-            .eq("user_id", auth.userId)
-            .eq("language_id", scope.languageId)
-            .eq("plan_date", planDate)
-            .in("status", ["planned", "in_progress", "expired"]);
+        const selectedWithinBudget = limitSessionCandidatesByMinutes(selectedBlueprints, dailyPracticeMinutes);
 
-          const insertRows = selectedBlueprints.map((candidate, index) => ({
+        if (selectedWithinBudget.length > 0) {
+          const insertRows = selectedWithinBudget.map((candidate, index) => ({
             user_id: auth.userId,
             language_id: scope.languageId,
             product_id: scope.practiceProductId,
@@ -3098,7 +3272,7 @@ serve(async (req) => {
               source: "practice_blueprint",
               runtime: "transformed_sessions",
               experience_kind: toText(candidate.rationaleJson.experience_kind, 80),
-              estimated_minutes: toNumber(candidate.blueprint.estimated_minutes) ?? 25,
+              estimated_minutes: estimatedMinutesForSessionCandidate(candidate),
               question_types: Array.isArray((candidate.build.build_summary as any)?.target_question_types)
                 ? (candidate.build.build_summary as any).target_question_types
                 : Array.isArray((candidate.build.build_summary as any)?.question_types)
@@ -3117,18 +3291,38 @@ serve(async (req) => {
 
           const planItems = await enrichPlanRows(
             sb,
-            (Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+            [
+              ...retainedRows,
+              ...((Array.isArray(insertedRows) ? insertedRows : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>),
+            ],
           );
           return json(200, {
             ok: true,
             runtime: "transformed_sessions",
             plan_date: planDate,
-            generated_count: planItems.length,
+            generated_count: selectedWithinBudget.length,
+            retained_count: retainedRows.length,
+            daily_practice_minutes: dailyPracticeMinutes,
             quotas,
             diagnostics_snapshot_id: diagnosticsSnapshot.id,
             items: planItems,
           });
         }
+      }
+
+      if (retainedRows.length > 0) {
+        const planItems = await enrichPlanRows(sb, retainedRows);
+        return json(200, {
+          ok: true,
+          runtime: "transformed_sessions",
+          plan_date: planDate,
+          generated_count: 0,
+          retained_count: retainedRows.length,
+          daily_practice_minutes: dailyPracticeMinutes,
+          quotas,
+          diagnostics_snapshot_id: diagnosticsSnapshot.id,
+          items: planItems,
+        });
       }
 
       return json(422, {
@@ -3140,7 +3334,9 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && route === "/plans/today") {
-      const requestedDate = parsePlanDate(url.searchParams.get("date"));
+      const goals = await getGoals(sb, auth.userId, scope);
+      const timezone = safeTimezone(url.searchParams.get("timezone") ?? goals.timezone);
+      const requestedDate = parsePlanDate(url.searchParams.get("date"), timezone);
       const { data: rows, error } = await sb
         .from("ielts_practice_plan_items")
         .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id")
