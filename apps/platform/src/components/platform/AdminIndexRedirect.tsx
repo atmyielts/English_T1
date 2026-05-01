@@ -9,6 +9,7 @@ const routeOrder: Array<{ path: string; permission: string }> = [
   { path: '/admin/products', permission: 'admin.products.manage' },
   { path: '/admin/billing', permission: 'admin.billing.manage' },
   { path: '/admin/coupons', permission: 'admin.coupons.manage' },
+  { path: '/admin/referrals', permission: 'admin.referrals.manage' },
   { path: '/admin/payments', permission: 'admin.payments.manage' },
   { path: '/admin/trials', permission: 'admin.trials.manage' },
   { path: '/admin/support', permission: 'admin.support.manage' },

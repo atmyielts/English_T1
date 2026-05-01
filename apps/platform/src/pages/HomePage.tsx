@@ -66,6 +66,11 @@ export const HomePage: React.FC = () => {
     return raw ? sanitizeReturnTo(raw) : '/';
   }, [location.search]);
 
+  useEffect(() => {
+    const ref = new URLSearchParams(location.search).get('ref')?.trim().toUpperCase();
+    if (ref) window.localStorage.setItem('schood:referral_code', ref);
+  }, [location.search]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductRow[]>([]);

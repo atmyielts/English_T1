@@ -64,6 +64,11 @@ export const CheckoutPage: React.FC = () => {
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
 
   const [couponCode, setCouponCode] = useState<string>('');
+  const [applyCredit, setApplyCredit] = useState<boolean>(true);
+  const [referralCode, setReferralCode] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('schood:referral_code') ?? '';
+  });
   const [quote, setQuote] = useState<BillingQuoteResponse | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
 
@@ -72,6 +77,9 @@ export const CheckoutPage: React.FC = () => {
     currency: string;
     original_amount: number;
     discount_amount: number;
+    credit_amount?: number;
+    referral_discount_amount?: number;
+    final_amount?: number;
     coupon_code: string | null;
   } | null>(null);
 
@@ -85,6 +93,14 @@ export const CheckoutPage: React.FC = () => {
     setEntitled(ok);
     return ok;
   };
+
+  useEffect(() => {
+    const ref = searchParams.get('ref')?.trim().toUpperCase();
+    if (ref) {
+      window.localStorage.setItem('schood:referral_code', ref);
+      setReferralCode(ref);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const init = async () => {
@@ -191,6 +207,8 @@ export const CheckoutPage: React.FC = () => {
         description,
         metadata: { source: 'checkout_page' },
         coupon_code: couponCode.trim() || null,
+        apply_credit: applyCredit,
+        referral_code: referralCode.trim() || null,
       });
 
       setTransactionId(res.transaction_id);
@@ -200,11 +218,24 @@ export const CheckoutPage: React.FC = () => {
         currency: res.currency,
         original_amount: res.original_amount,
         discount_amount: res.discount_amount,
+        credit_amount: res.credit_amount ?? 0,
+        referral_discount_amount: res.referral_discount_amount ?? 0,
+        final_amount: res.final_amount ?? res.amount,
         coupon_code: res.coupon_code,
       });
 
       if (res.payment_url) {
         window.location.assign(res.payment_url);
+        return;
+      }
+
+      if (isSuccessStatus(res.status ?? '')) {
+        setStatus(res.status ?? 'paid');
+        const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
+        if (ok) {
+          if (isExternalUrl(returnTo)) window.location.assign(returnTo);
+          else navigate(returnTo, { replace: true });
+        }
         return;
       }
 
@@ -385,6 +416,22 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label className="md:col-span-2 block text-xs font-semibold text-gray-600">
+                Referral code
+                <input
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 font-mono"
+                  placeholder="Optional"
+                />
+              </label>
+              <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700">
+                <input type="checkbox" checked={applyCredit} onChange={(e) => setApplyCredit(e.target.checked)} />
+                Apply credit
+              </label>
+            </div>
           </div>
         ) : (
           <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900">
@@ -435,6 +482,16 @@ export const CheckoutPage: React.FC = () => {
                           (<span className="font-mono">{checkoutPricing.coupon_code}</span>)
                         </>
                       ) : null}
+                    </div>
+                  ) : null}
+                  {(checkoutPricing.referral_discount_amount ?? 0) > 0 ? (
+                    <div className="mt-1">
+                      Referral discount: {formatMoney(checkoutPricing.referral_discount_amount ?? 0, checkoutPricing.currency)}
+                    </div>
+                  ) : null}
+                  {(checkoutPricing.credit_amount ?? 0) > 0 ? (
+                    <div className="mt-1">
+                      Credit applied: {formatMoney(checkoutPricing.credit_amount ?? 0, checkoutPricing.currency)}
                     </div>
                   ) : null}
                 </div>

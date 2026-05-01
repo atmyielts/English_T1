@@ -145,11 +145,17 @@ export const TeacherOfficePage: React.FC = () => {
       setTokenTransactionId(res.transaction_id);
       setTokenPaymentUrl(res.payment_url);
       setTokenStatus('pending');
-      const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
-      if (!popup) {
-        setError(t('teacher.error.popupBlocked'));
+      if (res.payment_url) {
+        const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
+        if (!popup) {
+          setError(t('teacher.error.popupBlocked'));
+        } else {
+          setSuccess(t('teacher.success.popupOpened'));
+        }
       } else {
-        setSuccess(t('teacher.success.popupOpened'));
+        setTokenStatus(res.status ?? 'paid');
+        await refreshAll();
+        setSuccess(t('teacher.success.tokensGenerated'));
       }
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.createToken')));
@@ -207,11 +213,17 @@ export const TeacherOfficePage: React.FC = () => {
       setSeatStatus(null);
       setSeatPaymentUrl(res.payment_url);
       setSeatStatus('pending');
-      const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
-      if (!popup) {
-        setError(t('teacher.error.popupBlocked'));
+      if (res.payment_url) {
+        const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
+        if (!popup) {
+          setError(t('teacher.error.popupBlocked'));
+        } else {
+          setSuccess(t('teacher.success.popupOpened'));
+        }
       } else {
-        setSuccess(t('teacher.success.popupOpened'));
+        setSeatStatus(res.status ?? 'paid');
+        await refreshAll();
+        setSuccess(t('teacher.success.seatsAdded'));
       }
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.createSeat')));

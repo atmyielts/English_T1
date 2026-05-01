@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { referralsClaim } from '../lib/platformClient';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
@@ -69,6 +70,23 @@ export const AuthPage: React.FC = () => {
   };
 
   useEffect(() => {
+    const ref = searchParams.get('ref')?.trim().toUpperCase();
+    if (ref) window.localStorage.setItem('schood:referral_code', ref);
+  }, [searchParams]);
+
+  const claimStoredReferral = async (accessToken: string) => {
+    const code = window.localStorage.getItem('schood:referral_code')?.trim();
+    if (!code) return;
+    try {
+      await referralsClaim(accessToken, code);
+    } catch {
+      // Referral claims are best-effort and should not block account access.
+    } finally {
+      window.localStorage.removeItem('schood:referral_code');
+    }
+  };
+
+  useEffect(() => {
     // If already logged in, go straight through.
       supabase.auth.getSession().then(({ data }) => {
         if (!data.session) return;
@@ -79,6 +97,7 @@ export const AuthPage: React.FC = () => {
           phone: typeof um.phone === 'string' ? um.phone.trim() : undefined,
         };
         void syncProfile(data.session.user.id, profile);
+        void claimStoredReferral(data.session.access_token);
         if (isExternalUrl(returnTo)) window.location.assign(returnTo);
         else navigate(returnTo, { replace: true });
       });
@@ -139,6 +158,7 @@ export const AuthPage: React.FC = () => {
           phone: typeof um.phone === 'string' ? um.phone.trim() : undefined,
         };
         await syncProfile(data.session.user.id, profile);
+        await claimStoredReferral(data.session.access_token);
 
         if (isExternalUrl(returnTo)) window.location.assign(returnTo);
         else navigate(returnTo, { replace: true });
@@ -173,6 +193,7 @@ export const AuthPage: React.FC = () => {
           last_name: ln || undefined,
           phone: ph || undefined,
         });
+        await claimStoredReferral(data.session.access_token);
         if (isExternalUrl(returnTo)) window.location.assign(returnTo);
         else navigate(returnTo, { replace: true });
         return;

@@ -1016,16 +1016,25 @@ export type TspayCreateInput = {
   metadata?: Json;
   tenant_id?: string | null;
   coupon_code?: string | null;
+  apply_credit?: boolean | null;
+  credit_amount?: number | null;
+  referral_code?: string | null;
+  referral_attribution_id?: string | null;
 };
 
 export type TspayCreateResponse = {
-  payment_url: string;
+  payment_url: string | null;
   transaction_id: string;
+  status?: string;
   amount: number;
   currency: string;
   original_amount: number;
   discount_amount: number;
+  credit_amount?: number;
+  referral_discount_amount?: number;
+  final_amount?: number;
   coupon_code: string | null;
+  referral_code?: string | null;
   plan_id: string | null;
   product_id: string | null;
 };
@@ -1050,6 +1059,9 @@ export type TspayStatusResponse = {
   status: string;
   api_status?: string;
   status_query_id?: string;
+  credit_amount?: number;
+  referral_discount_amount?: number;
+  final_amount?: number;
 };
 
 export const tspayStatus = async (accessToken: string, transactionId: string): Promise<TspayStatusResponse> => {
@@ -2252,6 +2264,236 @@ export const teacherOfficeAssignSeat = async (
     throw new Error(`POST /teacher-office assign seat failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as { seat: TeacherOfficeSeat | null };
+};
+
+export type PartnerOfficeExperience = TeacherOfficeExperience & {
+  product_name?: string | null;
+  app_url?: string | null;
+  ticketing?: Json | null;
+  is_ticket_ready?: boolean;
+};
+export type PartnerOfficeTicket = TeacherOfficeToken;
+export type PartnerOfficePlan = TeacherOfficePlan;
+export type PartnerOfficeSeat = TeacherOfficeSeat;
+export type PartnerOfficeResult = TeacherOfficeResult;
+
+export type PartnerOfficePayment = {
+  id: string;
+  provider: string | null;
+  provider_transaction_id: string | null;
+  status: string;
+  amount: number;
+  original_amount: number | null;
+  discount_amount: number | null;
+  credit_amount?: number | null;
+  referral_discount_amount?: number | null;
+  final_amount?: number | null;
+  currency: string;
+  purchase_type?: string | null;
+  product_id?: string | null;
+  plan_id?: string | null;
+  created_at: string;
+  granted_at?: string | null;
+  metadata?: Json | null;
+};
+
+export type PartnerCreditLedgerEntry = {
+  id: string;
+  amount: number;
+  currency: string;
+  entry_kind: string;
+  status: string;
+  payment_id?: string | null;
+  reward_id?: string | null;
+  metadata?: Json | null;
+  created_at: string;
+};
+
+export type ReferralProgram = {
+  id: string;
+  program_key: string;
+  name: string;
+  status: string;
+  currency: string;
+  referred_discount_type: 'percent' | 'fixed' | null;
+  referred_discount_value: number | null;
+  referrer_credit_type: 'percent' | 'fixed' | null;
+  referrer_credit_value: number | null;
+  referrer_credit_cap: number | null;
+  min_purchase_amount: number | null;
+  eligible_purchase_types: string[];
+  first_purchase_only: boolean;
+  metadata?: Json | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ReferralMeResponse = {
+  account: { id: string; user_id: string; referral_code: string; status: string; metadata?: Json | null };
+  program: ReferralProgram | null;
+  referral_url_path: string;
+  credit: { currency: string; available_amount: number; earned_amount?: number };
+  attributions: any[];
+  rewards: any[];
+  ledger: PartnerCreditLedgerEntry[];
+};
+
+export const partnerOfficeGet = async <T = unknown>(
+  accessToken: string,
+  action: string,
+  params?: Record<string, string | number | null | undefined>,
+): Promise<T> => {
+  const qs = new URLSearchParams({ action });
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    if (value !== null && typeof value !== 'undefined' && value !== '') qs.set(key, String(value));
+  });
+  const res = await fetch(`${edgeBase}/partner-office?${qs.toString()}`, { method: 'GET', headers: apiHeaders(accessToken) });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /partner-office ${action} failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as T;
+};
+
+export const partnerOfficePost = async <T = unknown>(
+  accessToken: string,
+  body: Json,
+): Promise<T> => {
+  const res = await fetch(`${edgeBase}/partner-office`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /partner-office failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as T;
+};
+
+export const partnerOfficeDashboard = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ tenant_id: string; counts: Record<string, number>; credit: { currency: string; available_amount: number } }>(
+    accessToken,
+    'dashboard',
+    { tenant_id: tenantId },
+  );
+export const partnerOfficeCatalog = (accessToken: string) =>
+  partnerOfficeGet<{ experiences: PartnerOfficeExperience[] }>(accessToken, 'catalog');
+export const partnerOfficeTickets = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ tickets: PartnerOfficeTicket[] }>(accessToken, 'tickets', { tenant_id: tenantId });
+export const partnerOfficeResults = (accessToken: string, params?: { tenant_id?: string | null; token_id?: string | null }) =>
+  partnerOfficeGet<{ results: PartnerOfficeResult[] }>(accessToken, 'results', params);
+export const partnerOfficePlans = (accessToken: string) =>
+  partnerOfficeGet<{ plans: PartnerOfficePlan[] }>(accessToken, 'plans');
+export const partnerOfficeSeats = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ seats: PartnerOfficeSeat[] }>(accessToken, 'seats', { tenant_id: tenantId });
+export const partnerOfficePayments = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ payments: PartnerOfficePayment[] }>(accessToken, 'payments', { tenant_id: tenantId });
+export const partnerOfficeCredits = (accessToken: string) =>
+  partnerOfficeGet<{ credit: { currency: string; available_amount: number }; ledger: PartnerCreditLedgerEntry[] }>(accessToken, 'credits');
+export const partnerOfficeReferrals = (accessToken: string) =>
+  partnerOfficeGet<ReferralMeResponse>(accessToken, 'referrals');
+
+export const partnerOfficeAssignSeat = (
+  accessToken: string,
+  body: { tenant_id?: string | null; seat_id: string; email: string },
+) => partnerOfficePost<{ seat: PartnerOfficeSeat | null }>(accessToken, { action: 'assign_seat', ...body });
+
+export const partnerOfficeCreateTicketPurchase = (
+  accessToken: string,
+  body: {
+    tenant_id?: string | null;
+    experience_id: string;
+    quantity: number;
+    expires_in_days?: number;
+    apply_credit?: boolean;
+    credit_amount?: number | null;
+    referral_code?: string | null;
+  },
+) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_ticket_purchase', ...body });
+
+export const partnerOfficeCreateSeatPurchase = (
+  accessToken: string,
+  body: {
+    tenant_id?: string | null;
+    plan_id: string;
+    seat_count: number;
+    apply_credit?: boolean;
+    credit_amount?: number | null;
+    referral_code?: string | null;
+  },
+) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
+
+export const referralsMe = async (accessToken: string): Promise<ReferralMeResponse> => {
+  const res = await fetch(`${edgeBase}/referrals/me`, { method: 'GET', headers: apiHeaders(accessToken) });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /referrals/me failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as ReferralMeResponse;
+};
+
+export const referralsClaim = async (accessToken: string, code: string): Promise<{ attribution: any; program: ReferralProgram | null }> => {
+  const res = await fetch(`${edgeBase}/referrals/claim`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /referrals/claim failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { attribution: any; program: ReferralProgram | null };
+};
+
+export type AdminReferralsSummary = {
+  programs: ReferralProgram[];
+  accounts: any[];
+  attributions: any[];
+  rewards: any[];
+  ledger: any[];
+  analytics: { referral_accounts: number; attributions: number; converted_attributions: number; issued_credit: number };
+};
+
+export const adminReferralsSummary = async (accessToken: string): Promise<AdminReferralsSummary> => {
+  const res = await fetch(`${edgeBase}/admin-referrals`, { method: 'GET', headers: apiHeaders(accessToken) });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-referrals failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AdminReferralsSummary;
+};
+
+export const adminReferralsUpdateDefaultProgram = async (
+  accessToken: string,
+  patch: Partial<ReferralProgram>,
+): Promise<{ program: ReferralProgram | null }> => {
+  const res = await fetch(`${edgeBase}/admin-referrals/programs/default`, {
+    method: 'PATCH',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`PATCH /admin-referrals/programs/default failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { program: ReferralProgram | null };
+};
+
+export const adminReferralsReverseCredit = async (
+  accessToken: string,
+  body: { reward_id: string; amount?: number | null; reason?: string },
+): Promise<{ ledger_entry: any }> => {
+  const res = await fetch(`${edgeBase}/admin-referrals/credits/reverse`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /admin-referrals/credits/reverse failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { ledger_entry: any };
 };
 
 export type CandidateEntryResponse = {

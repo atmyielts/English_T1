@@ -44,11 +44,12 @@ const PricingPage = lazyWithChunkRetry(() => import('./pages/PricingPage').then(
 const CheckoutPage = lazyWithChunkRetry(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
 const AccountPage = lazyWithChunkRetry(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
 const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEntryPage').then((m) => ({ default: m.CandidateEntryPage })));
-const TeacherOfficePage = lazyWithChunkRetry(() => import('./pages/TeacherOfficePage').then((m) => ({ default: m.TeacherOfficePage })));
+const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const AdminMfaPage = lazyWithChunkRetry(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
 const AdminBillingPage = lazyWithChunkRetry(() => import('./pages/admin/AdminBillingPage').then((m) => ({ default: m.AdminBillingPage })));
 const AdminProductsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage })));
 const AdminCouponsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage })));
+const AdminReferralsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminReferralsPage').then((m) => ({ default: m.AdminReferralsPage })));
 const AdminPaymentsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })));
 const AdminUsersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
 const AdminAnalyticsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
@@ -119,7 +120,8 @@ function App() {
             <Route path="/admin-mfa" element={<AdminMfaPage />} />
             <Route path="/workspace/student" element={<Navigate to="/" replace />} />
             <Route path="/student-workspace" element={<Navigate to="/" replace />} />
-            <Route path="/teacher" element={<TeacherOfficePage />} />
+            <Route path="/partner" element={<PartnerOfficePage />} />
+            <Route path="/teacher" element={<Navigate to="/partner" replace />} />
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/admin" element={<AdminIndexRedirect />} />
@@ -184,6 +186,14 @@ function App() {
               element={
                 <RequireAdminPermission permission="admin.coupons.manage" title="Coupons">
                   <AdminCouponsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/referrals"
+              element={
+                <RequireAdminPermission permission="admin.referrals.manage" title="Referrals">
+                  <AdminReferralsPage />
                 </RequireAdminPermission>
               }
             />

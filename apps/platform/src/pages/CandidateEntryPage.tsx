@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { candidateEntry } from '../lib/platformClient';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
@@ -7,6 +7,7 @@ import { SeoHead } from '../components/seo/SeoHead';
 
 export const CandidateEntryPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +48,11 @@ export const CandidateEntryPage: React.FC = () => {
       window.localStorage.removeItem('schood:candidate_handoff_url');
     }
   }, []);
+
+  useEffect(() => {
+    const code = new URLSearchParams(location.search).get('code')?.trim().toUpperCase();
+    if (code) setForm((prev) => ({ ...prev, token_code: code }));
+  }, [location.search]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

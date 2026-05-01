@@ -185,6 +185,15 @@ verify_jwt = false
 [functions.teacher-office]
 verify_jwt = false
 
+[functions.partner-office]
+verify_jwt = false
+
+[functions.referrals]
+verify_jwt = false
+
+[functions.admin-referrals]
+verify_jwt = false
+
 [functions.candidate-entry]
 verify_jwt = false
 
