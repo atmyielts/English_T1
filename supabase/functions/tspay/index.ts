@@ -673,7 +673,7 @@ const resolveReferralCheckout = async (
     const { data, error } = await sb
       .from("referral_attributions")
       .select(
-        "id, program_id, referrer_user_id, referred_user_id, referral_code, status, referral_programs ( id, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only )",
+        "id, program_id, referrer_user_id, referred_user_id, referral_code, status, referral_programs ( id, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only )",
       )
       .eq("id", attributionId)
       .eq("referred_user_id", input.userId)
@@ -700,7 +700,7 @@ const resolveReferralCheckout = async (
     const { data: programRow, error: programError } = await sb
       .from("referral_programs")
       .select(
-        "id, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only",
+        "id, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only",
       )
       .eq("program_key", "default")
       .maybeSingle();
@@ -773,7 +773,7 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
   const { data: attribution, error: attributionError } = await sb
     .from("referral_attributions")
     .select(
-      "id, program_id, referrer_user_id, referred_user_id, referral_code, status, converted_payment_id, referral_programs ( id, status, currency, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only )",
+      "id, program_id, referrer_user_id, referred_user_id, referral_code, status, converted_payment_id, referral_programs ( id, status, currency, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only )",
     )
     .eq("id", payment.referral_attribution_id)
     .maybeSingle();
@@ -790,7 +790,15 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
     program.referrer_credit_value,
     program.referrer_credit_cap,
   );
-  if (creditAmount <= 0) return;
+  const cashAmount = Boolean(program.cash_payouts_enabled)
+    ? computeConfiguredAmount(
+      originalAmount,
+      program.referrer_cash_type,
+      program.referrer_cash_value,
+      program.referrer_cash_cap,
+    )
+    : 0;
+  if (creditAmount <= 0 && cashAmount <= 0) return;
 
   let reward: any = null;
   const { data: inserted, error: insertError } = await sb
@@ -803,6 +811,8 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
       payment_id: payment.id,
       status: "issued",
       credit_amount: creditAmount,
+      cash_amount: cashAmount,
+      cash_status: cashAmount > 0 ? "available" : "none",
       currency,
       issued_at: new Date().toISOString(),
       metadata: {
@@ -811,13 +821,13 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
         payment_amount: payment.amount ?? null,
       },
     })
-    .select("id, status, credit_amount, referrer_user_id, currency")
+    .select("id, status, credit_amount, cash_amount, cash_status, referrer_user_id, currency")
     .maybeSingle();
 
   if (insertError) {
     const { data: existing } = await sb
       .from("referral_rewards")
-      .select("id, status, credit_amount, referrer_user_id, currency")
+      .select("id, status, credit_amount, cash_amount, cash_status, referrer_user_id, currency")
       .eq("attribution_id", attribution.id)
       .eq("payment_id", payment.id)
       .maybeSingle();
@@ -835,7 +845,7 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
     .eq("entry_kind", "grant")
     .maybeSingle();
 
-  if (!existingCreditGrant?.id) {
+  if (normalizeMoney(reward.credit_amount) > 0 && !existingCreditGrant?.id) {
     await sb.from("platform_credit_ledger").insert({
       user_id: reward.referrer_user_id,
       tenant_id: payment.tenant_id ?? null,

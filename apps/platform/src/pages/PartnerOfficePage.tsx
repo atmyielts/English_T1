@@ -29,6 +29,7 @@ import {
   partnerOfficePayments,
   partnerOfficePlans,
   partnerOfficeReferrals,
+  partnerOfficeRequestCashPayout,
   partnerOfficeResults,
   partnerOfficeSeats,
   partnerOfficeTickets,
@@ -174,6 +175,9 @@ export const PartnerOfficePage: React.FC = () => {
   const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
   const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | null>(null);
   const [seatEmails, setSeatEmails] = useState<Record<string, string>>({});
+  const [cashPayoutMethod, setCashPayoutMethod] = useState('cash');
+  const [cashPayoutDetails, setCashPayoutDetails] = useState('');
+  const [cashPayoutNote, setCashPayoutNote] = useState('');
 
   const selectedExperience = useMemo(() => catalog.find((item) => item.id === experienceId) ?? null, [catalog, experienceId]);
   const selectedPlan = useMemo(() => plans.find((item) => item.id === seatPlanId) ?? null, [plans, seatPlanId]);
@@ -181,7 +185,13 @@ export const PartnerOfficePage: React.FC = () => {
   const activeTickets = useMemo(() => tickets.filter((ticket) => String(ticket.status).toLowerCase() === 'active'), [tickets]);
   const openSeats = useMemo(() => seats.filter((seat) => String(seat.status).toLowerCase() === 'unassigned'), [seats]);
   const ticketReadyCount = useMemo(() => catalog.filter((item) => item.is_ticket_ready).length, [catalog]);
-  const referralUrl = referrals?.account?.referral_code ? `${origin}/?ref=${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const referralUrl = referrals?.referral_url_path ? `${origin}${referrals.referral_url_path}` : referrals?.account?.referral_code ? `${origin}/r/${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const legacyReferralUrl = referrals?.legacy_referral_url_path ? `${origin}${referrals.legacy_referral_url_path}` : referrals?.account?.referral_code ? `${origin}/?ref=${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const availableCashRewards = useMemo(
+    () => (referrals?.rewards ?? []).filter((reward: any) => reward.referrer_user_id === referrals?.account?.user_id && reward.status === 'issued' && reward.cash_status === 'available' && Number(reward.cash_amount ?? 0) > 0),
+    [referrals?.account?.user_id, referrals?.rewards],
+  );
+  const cashPayoutRequests = referrals?.cash_payout_requests ?? [];
   const inviteUrl = (code: string) => `${origin}/candidate?code=${encodeURIComponent(code)}`;
   const ticketEstimate =
     selectedExperience && typeof selectedExperience.price_amount === 'number'
@@ -359,6 +369,34 @@ export const PartnerOfficePage: React.FC = () => {
       await partnerOfficeAssignSeat(token, { seat_id: seatId, email });
       await refreshAll();
       setSuccess('Seat assigned.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const requestCashPayout = async () => {
+    const token = await getValidToken();
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const payoutDetails = cashPayoutDetails.trim()
+        ? { instructions: cashPayoutDetails.trim() }
+        : {};
+      const rewardIds = availableCashRewards.map((reward: any) => String(reward.id)).filter(Boolean);
+      await partnerOfficeRequestCashPayout(token, {
+        payout_method: cashPayoutMethod,
+        payout_details: payoutDetails,
+        note: cashPayoutNote.trim() || null,
+        reward_ids: rewardIds,
+      });
+      setCashPayoutDetails('');
+      setCashPayoutNote('');
+      await refreshAll();
+      setSuccess('Cash payout request sent to admins.');
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -784,40 +822,141 @@ export const PartnerOfficePage: React.FC = () => {
           ) : null}
 
           {tab === 'referrals' ? (
-            <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-              <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={Link2} label="Referral link" title="Share" />
-                <p className="mt-5 font-mono text-3xl font-bold">{referrals?.account?.referral_code ?? '-'}</p>
-                <button type="button" onClick={() => referralUrl && void copy(referralUrl, 'Referral link copied.')} disabled={!referralUrl} className={`${secondaryButton} mt-5 w-full`}>
-                  <Copy className="h-4 w-4" />
-                  Copy referral link
-                </button>
-                <div className="mt-5 rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Credit balance</p>
-                  <p className="mt-2 text-xl font-bold">{money(referrals?.credit?.available_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+            <section className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
+              <div className="space-y-5">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={Link2} label="Affiliate link" title="Share" />
+                  <p className="mt-5 font-mono text-3xl font-bold">{referrals?.account?.referral_code ?? '-'}</p>
+                  <div className="mt-4 rounded-2xl border border-gray-900/10 bg-gray-50 p-3 font-mono text-xs text-gray-700 break-all">
+                    {referralUrl || '-'}
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    <button type="button" onClick={() => referralUrl && void copy(referralUrl, 'Affiliate link copied.')} disabled={!referralUrl} className={secondaryButton}>
+                      <Copy className="h-4 w-4" />
+                      Copy affiliate link
+                    </button>
+                    <button type="button" onClick={() => legacyReferralUrl && void copy(legacyReferralUrl, 'Legacy referral link copied.')} disabled={!legacyReferralUrl} className={secondaryButton}>
+                      <Copy className="h-4 w-4" />
+                      Copy legacy link
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={Coins} label="Balances" title="Rewards" />
+                  <div className="mt-5 grid gap-3">
+                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Platform credit</p>
+                      <p className="mt-2 text-xl font-bold">{money(referrals?.credit?.available_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+                    </div>
+                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Cash available</p>
+                      <p className="mt-2 text-xl font-bold">{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Requested: {money(referrals?.cash?.requested_amount ?? 0, referrals?.cash?.currency ?? 'UZS')} - Paid: {money(referrals?.cash?.paid_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="border-b border-gray-900/10 p-5 md:p-6">
-                  <SectionTitle icon={Coins} label="Referral rewards" title="Reward activity" />
+              <div className="space-y-5">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={WalletCards} label="Cash payout" title="Request cash from admins" />
+                  <div className="mt-5 grid gap-4 md:grid-cols-[160px_minmax(0,1fr)]">
+                    <label className="text-sm font-semibold text-gray-800">
+                      Method
+                      <select value={cashPayoutMethod} onChange={(event) => setCashPayoutMethod(event.target.value)} className={inputClass}>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="bank">Bank transfer</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-800">
+                      Payout details
+                      <input
+                        value={cashPayoutDetails}
+                        onChange={(event) => setCashPayoutDetails(event.target.value)}
+                        placeholder="Card, bank, phone, or pickup instructions"
+                        className={inputClass}
+                      />
+                    </label>
+                  </div>
+                  <label className="mt-4 block text-sm font-semibold text-gray-800">
+                    Note for admin
+                    <textarea
+                      value={cashPayoutNote}
+                      onChange={(event) => setCashPayoutNote(event.target.value)}
+                      placeholder="Optional note"
+                      className={`${inputClass} min-h-[86px]`}
+                    />
+                  </label>
+                  <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Available request amount: <strong>{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</strong>
+                    </span>
+                    <span>Minimum: {money(referrals?.cash?.minimum_payout_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void requestCashPayout()}
+                    disabled={loading || !referrals?.cash?.payouts_enabled || (referrals?.cash?.available_amount ?? 0) <= 0}
+                    className={`${primaryButton} mt-5`}
+                  >
+                    Request cash payout
+                  </button>
                 </div>
-                <div className="divide-y divide-gray-900/10">
-                  {(referrals?.rewards ?? []).map((reward) => (
-                    <div key={reward.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
-                      <div>
-                        <p className="font-semibold">{money(reward.credit_amount, reward.currency)}</p>
-                        <p className="mt-1 text-sm text-gray-600">{formatDateTime(reward.created_at)}</p>
+
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={Coins} label="Referral rewards" title="Active rewards and history" />
+                  </div>
+                  <div className="divide-y divide-gray-900/10">
+                    {(referrals?.rewards ?? []).map((reward) => (
+                      <div key={reward.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                        <div>
+                          <p className="font-semibold">
+                            Credit {money(reward.credit_amount ?? 0, reward.currency)} / Cash {money(reward.cash_amount ?? 0, reward.currency)}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">{formatDateTime(reward.issued_at ?? reward.created_at)}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <StatusPill status={reward.status} />
+                          <StatusPill status={reward.cash_status} />
+                        </div>
+                        <span className="font-mono text-xs text-gray-500">{reward.id}</span>
                       </div>
-                      <StatusPill status={reward.status} />
-                      <span className="font-mono text-xs text-gray-500">{reward.id}</span>
-                    </div>
-                  ))}
-                  {(referrals?.rewards ?? []).length === 0 ? (
-                    <div className="p-6">
-                      <EmptyState icon={Coins} title="No rewards yet" note="Credits are issued after eligible referred purchases convert." />
-                    </div>
-                  ) : null}
+                    ))}
+                    {(referrals?.rewards ?? []).length === 0 ? (
+                      <div className="p-6">
+                        <EmptyState icon={Coins} title="No rewards yet" note="Rewards are issued after eligible referred purchases convert." />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={ReceiptText} label="Cash requests" title="Payout requests" />
+                  </div>
+                  <div className="divide-y divide-gray-900/10">
+                    {cashPayoutRequests.map((request: any) => (
+                      <div key={request.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                        <div>
+                          <p className="font-semibold">{money(request.amount, request.currency)}</p>
+                          <p className="mt-1 text-sm text-gray-600">{request.payout_method} - {formatDateTime(request.requested_at)}</p>
+                        </div>
+                        <StatusPill status={request.status} />
+                        <span className="font-mono text-xs text-gray-500">{request.id}</span>
+                      </div>
+                    ))}
+                    {cashPayoutRequests.length === 0 ? (
+                      <div className="p-6">
+                        <EmptyState icon={ReceiptText} title="No payout requests" note="Cash payout requests will appear here." />
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </section>

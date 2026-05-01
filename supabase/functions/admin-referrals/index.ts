@@ -57,7 +57,7 @@ const validateProgramPatch = (body: Json): { ok: true; patch: Json } | { ok: fal
     patch.currency = currency;
   }
 
-  for (const key of ["referred_discount_type", "referrer_credit_type"]) {
+  for (const key of ["referred_discount_type", "referrer_credit_type", "referrer_cash_type"]) {
     if (key in body) {
       const type = normalizeType(body[key]);
       if (type === "__invalid__") return { ok: false, error: `${key} must be fixed or percent` };
@@ -65,7 +65,15 @@ const validateProgramPatch = (body: Json): { ok: true; patch: Json } | { ok: fal
     }
   }
 
-  for (const key of ["referred_discount_value", "referrer_credit_value", "referrer_credit_cap", "min_purchase_amount"]) {
+  for (const key of [
+    "referred_discount_value",
+    "referrer_credit_value",
+    "referrer_credit_cap",
+    "referrer_cash_value",
+    "referrer_cash_cap",
+    "min_purchase_amount",
+    "minimum_cash_payout_amount",
+  ]) {
     if (key in body) {
       const value = toNonNegativeInt(body[key], null);
       if (value === null && body[key] !== null && typeof body[key] !== "undefined" && body[key] !== "") {
@@ -84,6 +92,7 @@ const validateProgramPatch = (body: Json): { ok: true; patch: Json } | { ok: fal
   }
 
   if ("first_purchase_only" in body) patch.first_purchase_only = Boolean(body.first_purchase_only);
+  if ("cash_payouts_enabled" in body) patch.cash_payouts_enabled = Boolean(body.cash_payouts_enabled);
   if ("metadata" in body) patch.metadata = isObject(body.metadata) ? body.metadata : {};
 
   return { ok: true, patch };
@@ -106,10 +115,10 @@ serve(async (req) => {
     const url = new URL(req.url);
 
     if (req.method === "GET") {
-      const [programs, accounts, attributions, rewards, ledger] = await Promise.all([
+      const [programs, accounts, attributions, rewards, ledger, payoutRequests] = await Promise.all([
         sb
           .from("referral_programs")
-          .select("id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at")
+          .select("id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at")
           .order("created_at", { ascending: true }),
         sb.from("referral_accounts").select("id, user_id, referral_code, status, created_at").order("created_at", { ascending: false }).limit(100),
         sb
@@ -119,7 +128,7 @@ serve(async (req) => {
           .limit(100),
         sb
           .from("referral_rewards")
-          .select("id, attribution_id, program_id, payment_id, referrer_user_id, referred_user_id, status, credit_amount, currency, issued_at, reversed_at, metadata")
+          .select("id, attribution_id, program_id, payment_id, referrer_user_id, referred_user_id, status, credit_amount, cash_amount, cash_status, cash_payout_request_id, cash_payout_requested_at, cash_paid_at, archived_at, archive_reason, currency, issued_at, reversed_at, metadata")
           .order("created_at", { ascending: false })
           .limit(100),
         sb
@@ -127,11 +136,25 @@ serve(async (req) => {
           .select("id, user_id, tenant_id, entry_kind, status, amount, currency, payment_id, reward_id, metadata, created_at")
           .order("created_at", { ascending: false })
           .limit(200),
+        sb
+          .from("referral_cash_payout_requests")
+          .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, reviewed_by, reviewed_at, paid_at, rejected_reason, metadata, created_at, updated_at")
+          .order("created_at", { ascending: false })
+          .limit(100),
       ]);
 
       const issuedCredit = (rewards.data ?? [])
         .filter((row: any) => row.status === "issued")
         .reduce((sum: number, row: any) => sum + Number(row.credit_amount ?? 0), 0);
+      const issuedCash = (rewards.data ?? [])
+        .filter((row: any) => row.status === "issued")
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      const activeCash = (rewards.data ?? [])
+        .filter((row: any) => row.status === "issued" && ["available", "requested", "approved"].includes(String(row.cash_status ?? "")))
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      const paidCash = (rewards.data ?? [])
+        .filter((row: any) => row.cash_status === "paid")
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
       const converted = (attributions.data ?? []).filter((row: any) => row.status === "converted").length;
 
       return json(200, {
@@ -140,11 +163,15 @@ serve(async (req) => {
         attributions: attributions.data ?? [],
         rewards: rewards.data ?? [],
         ledger: ledger.data ?? [],
+        cash_payout_requests: payoutRequests.data ?? [],
         analytics: {
           referral_accounts: accounts.data?.length ?? 0,
           attributions: attributions.data?.length ?? 0,
           converted_attributions: converted,
           issued_credit: issuedCredit,
+          issued_cash: issuedCash,
+          active_cash: activeCash,
+          paid_cash: paidCash,
         },
       });
     }
@@ -158,10 +185,107 @@ serve(async (req) => {
         .from("referral_programs")
         .update(validation.patch)
         .eq("program_key", "default")
-        .select("id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at")
+        .select("id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at")
         .maybeSingle();
       if (error) return json(500, { error: "Failed to update referral program", detail: error.message });
       return json(200, { program: data });
+    }
+
+    if (req.method === "POST" && url.pathname.endsWith("/cash-payouts/settle")) {
+      const body = (await req.json().catch(() => ({}))) as Json;
+      const requestId = String(body.request_id ?? "").trim();
+      const action = String(body.action ?? body.status ?? "").trim().toLowerCase();
+      const note = String(body.note ?? "").trim().slice(0, 2000) || null;
+      const providerReference = String(body.provider_reference ?? "").trim().slice(0, 256) || null;
+      if (!requestId) return json(400, { error: "request_id is required" });
+      if (!["approve", "paid", "reject"].includes(action)) return json(400, { error: "action must be approve, paid, or reject" });
+
+      const { data: requestRow, error: requestError } = await sb
+        .from("referral_cash_payout_requests")
+        .select("id, user_id, status, amount, currency, metadata")
+        .eq("id", requestId)
+        .maybeSingle();
+      if (requestError) return json(500, { error: "Failed to load cash payout request", detail: requestError.message });
+      if (!requestRow?.id) return json(404, { error: "Cash payout request not found" });
+
+      const now = new Date().toISOString();
+      const metadata = {
+        ...(((requestRow as any).metadata ?? {}) as Json),
+        admin_user_id: authz.context.userId,
+        settlement_note: note,
+        provider_reference: providerReference,
+      };
+
+      if (action === "approve") {
+        const { data, error } = await sb
+          .from("referral_cash_payout_requests")
+          .update({
+            status: "approved",
+            reviewed_by: authz.context.userId,
+            reviewed_at: now,
+            metadata,
+          })
+          .eq("id", requestId)
+          .in("status", ["requested", "approved"])
+          .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, reviewed_by, reviewed_at, paid_at, rejected_reason, metadata")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to approve cash payout", detail: error.message });
+        await sb.from("referral_rewards").update({ cash_status: "approved" }).eq("cash_payout_request_id", requestId).eq("cash_status", "requested");
+        return json(200, { cash_payout_request: data });
+      }
+
+      if (action === "paid") {
+        const { data, error } = await sb
+          .from("referral_cash_payout_requests")
+          .update({
+            status: "paid",
+            reviewed_by: authz.context.userId,
+            reviewed_at: now,
+            paid_at: now,
+            metadata,
+          })
+          .eq("id", requestId)
+          .in("status", ["requested", "approved", "paid"])
+          .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, reviewed_by, reviewed_at, paid_at, rejected_reason, metadata")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to mark cash payout paid", detail: error.message });
+        await sb
+          .from("referral_rewards")
+          .update({
+            cash_status: "paid",
+            cash_paid_at: now,
+            archived_at: now,
+            archive_reason: "cash_paid",
+          })
+          .eq("cash_payout_request_id", requestId)
+          .in("cash_status", ["requested", "approved", "paid"]);
+        return json(200, { cash_payout_request: data });
+      }
+
+      const { data, error } = await sb
+        .from("referral_cash_payout_requests")
+        .update({
+          status: "rejected",
+          reviewed_by: authz.context.userId,
+          reviewed_at: now,
+          rejected_reason: note ?? "Rejected by admin",
+          metadata,
+        })
+        .eq("id", requestId)
+        .in("status", ["requested", "approved"])
+        .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, reviewed_by, reviewed_at, paid_at, rejected_reason, metadata")
+        .maybeSingle();
+      if (error) return json(500, { error: "Failed to reject cash payout", detail: error.message });
+      await sb
+        .from("referral_rewards")
+        .update({
+          cash_status: "available",
+          cash_payout_request_id: null,
+          cash_payout_requested_at: null,
+        })
+        .eq("cash_payout_request_id", requestId)
+        .in("cash_status", ["requested", "approved"]);
+      return json(200, { cash_payout_request: data });
     }
 
     if (req.method === "POST" && url.pathname.endsWith("/credits/reverse")) {

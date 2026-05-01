@@ -2320,6 +2320,11 @@ export type ReferralProgram = {
   referrer_credit_type: 'percent' | 'fixed' | null;
   referrer_credit_value: number | null;
   referrer_credit_cap: number | null;
+  referrer_cash_type?: 'percent' | 'fixed' | null;
+  referrer_cash_value?: number | null;
+  referrer_cash_cap?: number | null;
+  cash_payouts_enabled?: boolean;
+  minimum_cash_payout_amount?: number;
   min_purchase_amount: number | null;
   eligible_purchase_types: string[];
   first_purchase_only: boolean;
@@ -2332,10 +2337,21 @@ export type ReferralMeResponse = {
   account: { id: string; user_id: string; referral_code: string; status: string; metadata?: Json | null };
   program: ReferralProgram | null;
   referral_url_path: string;
+  legacy_referral_url_path?: string;
+  affiliate_urls?: { landing?: string; signup?: string; plans?: string };
   credit: { currency: string; available_amount: number; earned_amount?: number };
+  cash?: {
+    currency: string;
+    available_amount: number;
+    requested_amount: number;
+    paid_amount: number;
+    payouts_enabled: boolean;
+    minimum_payout_amount: number;
+  };
   attributions: any[];
   rewards: any[];
   ledger: PartnerCreditLedgerEntry[];
+  cash_payout_requests?: any[];
 };
 
 export const partnerOfficeGet = async <T = unknown>(
@@ -2394,6 +2410,11 @@ export const partnerOfficeCredits = (accessToken: string) =>
 export const partnerOfficeReferrals = (accessToken: string) =>
   partnerOfficeGet<ReferralMeResponse>(accessToken, 'referrals');
 
+export const partnerOfficeRequestCashPayout = (
+  accessToken: string,
+  body: { payout_method: string; payout_details?: Json | null; note?: string | null; reward_ids?: string[] },
+) => partnerOfficePost<{ cash_payout_request: any; reward_ids: string[] }>(accessToken, { action: 'request_cash_payout', ...body });
+
 export const partnerOfficeAssignSeat = (
   accessToken: string,
   body: { tenant_id?: string | null; seat_id: string; email: string },
@@ -2446,13 +2467,38 @@ export const referralsClaim = async (accessToken: string, code: string): Promise
   return (await res.json()) as { attribution: any; program: ReferralProgram | null };
 };
 
+export const referralsRequestCashPayout = async (
+  accessToken: string,
+  body: { payout_method: string; payout_details?: Json | null; note?: string | null; reward_ids?: string[] },
+): Promise<{ cash_payout_request: any; reward_ids: string[] }> => {
+  const res = await fetch(`${edgeBase}/referrals/cash-payouts/request`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /referrals/cash-payouts/request failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { cash_payout_request: any; reward_ids: string[] };
+};
+
 export type AdminReferralsSummary = {
   programs: ReferralProgram[];
   accounts: any[];
   attributions: any[];
   rewards: any[];
   ledger: any[];
-  analytics: { referral_accounts: number; attributions: number; converted_attributions: number; issued_credit: number };
+  cash_payout_requests?: any[];
+  analytics: {
+    referral_accounts: number;
+    attributions: number;
+    converted_attributions: number;
+    issued_credit: number;
+    issued_cash?: number;
+    active_cash?: number;
+    paid_cash?: number;
+  };
 };
 
 export const adminReferralsSummary = async (accessToken: string): Promise<AdminReferralsSummary> => {
@@ -2494,6 +2540,22 @@ export const adminReferralsReverseCredit = async (
     throw new Error(`POST /admin-referrals/credits/reverse failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as { ledger_entry: any };
+};
+
+export const adminReferralsSettleCashPayout = async (
+  accessToken: string,
+  body: { request_id: string; action: 'approve' | 'paid' | 'reject'; note?: string | null; provider_reference?: string | null },
+): Promise<{ cash_payout_request: any }> => {
+  const res = await fetch(`${edgeBase}/admin-referrals/cash-payouts/settle`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /admin-referrals/cash-payouts/settle failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { cash_payout_request: any };
 };
 
 export type CandidateEntryResponse = {

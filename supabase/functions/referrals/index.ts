@@ -26,6 +26,13 @@ const getBearerToken = (req: Request): string | null => {
 
 const normalizeCode = (raw: unknown): string => String(raw ?? "").trim().toUpperCase();
 
+const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
+
+const normalizeIdList = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item ?? "").trim()).filter(Boolean).slice(0, 100);
+};
+
 const randomReferralCode = (len = 8): string => {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let out = "";
@@ -65,7 +72,7 @@ const loadDefaultProgram = async (sb: any): Promise<any | null> => {
   const { data, error } = await sb
     .from("referral_programs")
     .select(
-      "id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at",
+      "id, program_key, name, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only, metadata, created_at, updated_at",
     )
     .eq("program_key", "default")
     .maybeSingle();
@@ -108,8 +115,21 @@ serve(async (req) => {
 
       const { data: rewards } = await sb
         .from("referral_rewards")
-        .select("id, attribution_id, payment_id, referrer_user_id, referred_user_id, status, credit_amount, currency, issued_at, reversed_at, metadata")
+        .select("id, attribution_id, payment_id, referrer_user_id, referred_user_id, status, credit_amount, cash_amount, cash_status, cash_payout_request_id, cash_payout_requested_at, cash_paid_at, archived_at, archive_reason, currency, issued_at, reversed_at, metadata")
         .or(`referrer_user_id.eq.${userId},referred_user_id.eq.${userId}`)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      const { data: rewardSummary } = await sb
+        .from("referral_rewards")
+        .select("status, referrer_user_id, credit_amount, cash_amount, cash_status, currency")
+        .eq("referrer_user_id", userId)
+        .limit(1000);
+
+      const { data: cashPayoutRequests } = await sb
+        .from("referral_cash_payout_requests")
+        .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, reviewed_at, paid_at, rejected_reason, metadata, created_at, updated_at")
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -123,20 +143,118 @@ serve(async (req) => {
       const earnedCredit = (rewards ?? [])
         .filter((row: any) => row.referrer_user_id === userId && row.status === "issued")
         .reduce((sum: number, row: any) => sum + Number(row.credit_amount ?? 0), 0);
+      const cashRows = rewardSummary ?? [];
+      const cashAvailable = cashRows
+        .filter((row: any) => row.status === "issued" && row.cash_status === "available")
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      const cashRequested = cashRows
+        .filter((row: any) => ["requested", "approved"].includes(String(row.cash_status ?? "")))
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      const cashPaid = cashRows
+        .filter((row: any) => row.cash_status === "paid")
+        .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
 
       return json(200, {
         account,
         program,
-        referral_url_path: `/?ref=${encodeURIComponent(account.referral_code)}`,
+        referral_url_path: `/r/${encodeURIComponent(account.referral_code)}`,
+        legacy_referral_url_path: `/?ref=${encodeURIComponent(account.referral_code)}`,
+        affiliate_urls: {
+          landing: `/r/${encodeURIComponent(account.referral_code)}`,
+          signup: `/auth?mode=signup&ref=${encodeURIComponent(account.referral_code)}`,
+          plans: `/plans?ref=${encodeURIComponent(account.referral_code)}`,
+        },
         credit: {
           currency,
           available_amount: Number(creditData ?? 0),
           earned_amount: earnedCredit,
         },
+        cash: {
+          currency,
+          available_amount: cashAvailable,
+          requested_amount: cashRequested,
+          paid_amount: cashPaid,
+          payouts_enabled: Boolean(program?.cash_payouts_enabled),
+          minimum_payout_amount: Number(program?.minimum_cash_payout_amount ?? 0),
+        },
         attributions: attributions ?? [],
         rewards: rewards ?? [],
         ledger: ledger ?? [],
+        cash_payout_requests: cashPayoutRequests ?? [],
       });
+    }
+
+    if (req.method === "POST" && url.pathname.endsWith("/cash-payouts/request")) {
+      const body = (await req.json().catch(() => ({}))) as Json;
+      const program = await loadDefaultProgram(sb);
+      const currency = String(program?.currency ?? "UZS").toUpperCase();
+      if (!program?.cash_payouts_enabled) return json(400, { error: "Cash payouts are not enabled" });
+
+      const payoutMethod = String(body.payout_method ?? "cash").trim().slice(0, 64) || "cash";
+      const payoutDetails = isObject(body.payout_details) ? body.payout_details : {};
+      const note = String(body.note ?? "").trim().slice(0, 2000) || null;
+      const rewardIds = normalizeIdList(body.reward_ids);
+
+      let query = sb
+        .from("referral_rewards")
+        .select("id, referrer_user_id, status, cash_amount, cash_status, currency")
+        .eq("referrer_user_id", userId)
+        .eq("status", "issued")
+        .eq("cash_status", "available")
+        .gt("cash_amount", 0)
+        .eq("currency", currency)
+        .order("created_at", { ascending: true })
+        .limit(100);
+
+      if (rewardIds.length > 0) query = query.in("id", rewardIds);
+
+      const { data: rewards, error: rewardError } = await query;
+      if (rewardError) return json(500, { error: "Failed to load cash rewards", detail: rewardError.message });
+
+      const eligibleRewards = rewards ?? [];
+      const amount = eligibleRewards.reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      if (amount <= 0) return json(400, { error: "No cash rewards are available for payout" });
+
+      const minimum = Number(program.minimum_cash_payout_amount ?? 0);
+      if (minimum > 0 && amount < minimum) {
+        return json(400, { error: `Minimum cash payout is ${minimum} ${currency}` });
+      }
+
+      const now = new Date().toISOString();
+      const { data: requestRow, error: requestError } = await sb
+        .from("referral_cash_payout_requests")
+        .insert({
+          user_id: userId,
+          status: "requested",
+          amount,
+          currency,
+          payout_method: payoutMethod,
+          payout_details: payoutDetails,
+          note,
+          requested_at: now,
+          metadata: { reward_count: eligibleRewards.length },
+        })
+        .select("id, user_id, status, amount, currency, payout_method, payout_details, note, requested_at, created_at")
+        .maybeSingle();
+      if (requestError || !requestRow?.id) {
+        return json(500, { error: "Failed to create cash payout request", detail: requestError?.message });
+      }
+
+      const ids = eligibleRewards.map((row: any) => row.id);
+      const { error: updateError } = await sb
+        .from("referral_rewards")
+        .update({
+          cash_status: "requested",
+          cash_payout_request_id: requestRow.id,
+          cash_payout_requested_at: now,
+        })
+        .in("id", ids)
+        .eq("referrer_user_id", userId)
+        .eq("cash_status", "available");
+
+      if (updateError) return json(500, { error: "Failed to reserve cash rewards", detail: updateError.message });
+
+      return json(200, { cash_payout_request: requestRow, reward_ids: ids });
     }
 
     if (req.method === "POST" && url.pathname.endsWith("/claim")) {

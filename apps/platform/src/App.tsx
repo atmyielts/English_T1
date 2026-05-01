@@ -44,6 +44,7 @@ const PricingPage = lazyWithChunkRetry(() => import('./pages/PricingPage').then(
 const CheckoutPage = lazyWithChunkRetry(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
 const AccountPage = lazyWithChunkRetry(() => import('./pages/AccountPage').then((m) => ({ default: m.AccountPage })));
 const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEntryPage').then((m) => ({ default: m.CandidateEntryPage })));
+const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLandingPage').then((m) => ({ default: m.ReferralLandingPage })));
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const AdminMfaPage = lazyWithChunkRetry(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
 const AdminBillingPage = lazyWithChunkRetry(() => import('./pages/admin/AdminBillingPage').then((m) => ({ default: m.AdminBillingPage })));
@@ -112,6 +113,7 @@ function App() {
           <Route path="/english" element={<DiscoveryPage pageKey="english" />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/candidate" element={<CandidateEntryPage />} />
+          <Route path="/r/:code" element={<ReferralLandingPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />

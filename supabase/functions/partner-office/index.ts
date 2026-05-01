@@ -269,6 +269,17 @@ serve(async (req) => {
         return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
       }
 
+      if (actionBody === "request_cash_payout") {
+        const payload = { ...body };
+        delete (payload as any).action;
+        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "referrals/cash-payouts/request", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const text = await forwarded.text();
+        return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
+
       if (actionBody === "quote_purchase") {
         const purchaseType = String(body.purchase_type ?? "").trim();
         const quantity = normalizeQuantity(body.quantity ?? body.seat_count, 500) ?? 1;
