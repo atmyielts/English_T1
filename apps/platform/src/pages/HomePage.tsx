@@ -197,6 +197,7 @@ export const HomePage: React.FC = () => {
     },
     { id: 'plans', label: t('nav.plans'), onClick: () => navigate('/plans') },
     { id: 'candidate', label: t('nav.candidate'), onClick: () => navigate('/candidate') },
+    { id: 'partner', label: t('nav.partner'), onClick: () => navigate('/partner') },
     { id: 'contact', label: t('nav.contact'), onClick: () => navigate('/contact') },
     { id: 'faq', label: t('nav.faq'), onClick: () => navigate('/faq') },
   ];
@@ -399,6 +400,50 @@ export const HomePage: React.FC = () => {
           >
             {t('common.contactSupport')}
           </button>
+        </div>
+      </section>
+
+      <section id="partners" className="px-6 md:px-10 pb-12">
+        <div className="max-w-6xl mx-auto overflow-hidden rounded-3xl border border-gray-900 bg-[#0f172a] text-white">
+          <div className="grid gap-0 lg:grid-cols-12">
+            <div className="lg:col-span-7 p-6 md:p-8">
+              <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-white/70">
+                <Users2 size={14} /> {t('home.partner.badge')}
+              </div>
+              <h2 className="mt-3 text-2xl md:text-3xl font-bold">{t('home.partner.title')}</h2>
+              <p className="mt-3 max-w-2xl text-sm md:text-base text-white/75">{t('home.partner.desc')}</p>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate('/partner')}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-full bg-white text-[#0f172a] text-sm font-semibold flex items-center justify-center gap-2"
+                >
+                  {t('home.partner.cta')} <ArrowUpRight size={16} />
+                </button>
+                <button
+                  onClick={() => navigate('/candidate')}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-white/30 text-white text-sm font-semibold"
+                >
+                  {t('home.partner.secondary')}
+                </button>
+              </div>
+            </div>
+            <div className="lg:col-span-5 border-t border-white/15 bg-white/10 p-6 md:p-8 lg:border-l lg:border-t-0">
+              <div className="divide-y divide-white/15 rounded-2xl border border-white/15">
+                <div className="p-4">
+                  <div className="text-sm font-semibold">{t('home.partner.item1.title')}</div>
+                  <div className="mt-1 text-sm text-white/70">{t('home.partner.item1.desc')}</div>
+                </div>
+                <div className="p-4">
+                  <div className="text-sm font-semibold">{t('home.partner.item2.title')}</div>
+                  <div className="mt-1 text-sm text-white/70">{t('home.partner.item2.desc')}</div>
+                </div>
+                <div className="p-4">
+                  <div className="text-sm font-semibold">{t('home.partner.item3.title')}</div>
+                  <div className="mt-1 text-sm text-white/70">{t('home.partner.item3.desc')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
