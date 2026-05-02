@@ -735,6 +735,32 @@ const resolveReferralCheckout = async (
       if (insertError) return { ok: false, response: jsonResponse(500, { error: "Failed to claim referral", details: insertError }) };
       attribution = inserted;
     }
+  } else {
+    const { data: programRow, error: programError } = await sb
+      .from("referral_programs")
+      .select(
+        "id, status, currency, referred_discount_type, referred_discount_value, referrer_credit_type, referrer_credit_value, referrer_credit_cap, referrer_cash_type, referrer_cash_value, referrer_cash_cap, cash_payouts_enabled, minimum_cash_payout_amount, min_purchase_amount, eligible_purchase_types, first_purchase_only",
+      )
+      .eq("program_key", "default")
+      .maybeSingle();
+    if (programError) return { ok: false, response: jsonResponse(500, { error: "Failed to load referral program", details: programError }) };
+
+    if (programRow?.id) {
+      const { data: existing, error: existingError } = await sb
+        .from("referral_attributions")
+        .select("id, program_id, referrer_user_id, referred_user_id, referral_code, status")
+        .eq("program_id", programRow.id)
+        .eq("referred_user_id", input.userId)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (existingError) return { ok: false, response: jsonResponse(500, { error: "Failed to load referral attribution", details: existingError }) };
+
+      if (existing?.id) {
+        attribution = existing;
+        program = programRow;
+        referralCode = normalizeReferralCode((existing as any).referral_code);
+      }
+    }
   }
 
   if (!attribution?.id || !program) {

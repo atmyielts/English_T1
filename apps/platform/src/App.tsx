@@ -4,6 +4,7 @@ import { RequireAuth } from './components/platform/RequireAuth';
 import { RequireAdmin } from './components/platform/RequireAdmin';
 import { RequireAdminPermission } from './components/platform/RequireAdminPermission';
 import { AdminIndexRedirect } from './components/platform/AdminIndexRedirect';
+import { ReferralCapture } from './components/platform/ReferralCapture';
 import { UpdatesButton } from './components/platform/UpdatesButton';
 import { useI18n } from './i18n';
 
@@ -251,6 +252,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <ReferralCapture />
       <UpdatesButton />
     </BrowserRouter>
   );
