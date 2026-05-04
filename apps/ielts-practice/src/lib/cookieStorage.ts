@@ -41,6 +41,12 @@ const readCookieRaw = (name: string): string | null => {
   return value;
 };
 
+const readCookieRawAll = (name: string): string[] => {
+  if (!isBrowser) return [];
+  const pattern = new RegExp(`(?:^|;\\s*)${escapeName(name)}=([^;]*)`, 'g');
+  return Array.from(document.cookie.matchAll(pattern), (match) => match[1] ?? '');
+};
+
 const writeCookieRaw = (name: string, value: string, maxAgeSeconds = 60 * 60 * 24 * 30): void => {
   if (!isBrowser) return;
   const domain = resolveCookieDomain();
@@ -80,12 +86,23 @@ const getChunkCount = (key: string): number | null => {
   return Number.isFinite(count) && count > 0 ? count : null;
 };
 
+const getChunkCounts = (key: string): number[] =>
+  readCookieRawAll(chunkMetaKey(key))
+    .map((raw) => Number(raw))
+    .filter((count) => Number.isFinite(count) && count > 0);
+
 const clearChunks = (key: string): void => {
   const count = getChunkCount(key);
   if (count) {
     for (let i = 0; i < count; i += 1) deleteCookieEverywhere(chunkKey(key, i));
     deleteCookieEverywhere(chunkMetaKey(key));
   }
+};
+
+const clearHostChunks = (key: string): void => {
+  const count = Math.max(0, ...getChunkCounts(key));
+  for (let i = 0; i < count; i += 1) deleteCookieRaw(chunkKey(key, i), null);
+  deleteCookieRaw(chunkMetaKey(key), null);
 };
 
 export const cookieStorage = {
@@ -126,4 +143,9 @@ export const cookieStorage = {
     clearChunks(key);
     deleteCookieEverywhere(key);
   },
+  removeHostItem: (key: string): void => {
+    clearHostChunks(key);
+    deleteCookieRaw(key, null);
+  },
+  hasItem: (key: string): boolean => readCookieRaw(key) != null || readCookieRaw(chunkMetaKey(key)) != null,
 };
