@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ArrowRight, BookOpenCheck, ExternalLink, LibraryBig, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { playbookPageGet, playbookTrackEvent } from '../lib/api';
 import { SiteChrome } from '../components/content/SiteChrome';
@@ -82,30 +83,64 @@ export const ContentPage: React.FC = () => {
   const sections = Array.isArray(payload?.sections) ? (payload?.sections as Array<Record<string, unknown>>) : [];
   const childPages = Array.isArray(payload?.child_pages) ? (payload?.child_pages as Array<Record<string, unknown>>) : [];
   const sources = Array.isArray(payload?.sources) ? (payload?.sources as Array<Record<string, unknown>>) : [];
+  const visibility = String(page?.visibility ?? 'public');
 
   return (
     <SiteChrome compact>
-      <section className="page-hero">
-        <p className="eyebrow">{String(page?.module_key ?? 'IELTS Playbook')}</p>
-        <h1>{String(page?.title ?? 'Loading...')}</h1>
-        <p className="hero-summary">{String(page?.summary ?? 'Working on the right IELTS questions matters as much as working hard.')}</p>
+      <section className="article-hero">
+        <div>
+          <p className="eyebrow">{String(page?.module_key ?? 'IELTS Playbook')}</p>
+          <h1>{String(page?.title ?? 'Loading...')}</h1>
+          <p className="hero-summary">
+            {String(page?.summary ?? 'Working on the right IELTS questions matters as much as working hard.')}
+          </p>
+          <div className="hero-actions">
+            <Link to="/dashboard" className="button button-primary">
+              <ShieldCheck size={17} />
+              Use in My Plan
+            </Link>
+            <Link to="/study-plans" className="button button-secondary">
+              <BookOpenCheck size={17} />
+              Study Plans
+            </Link>
+          </div>
+        </div>
+        <aside className="article-rail" aria-label="Module metadata">
+          <div className="rail-row">
+            <LockKeyhole size={18} />
+            <span>{visibility === 'premium' ? 'Premium guide' : 'Public module'}</span>
+          </div>
+          <div className="rail-row">
+            <LibraryBig size={18} />
+            <span>{sections.length || '-'} sections</span>
+          </div>
+          <div className="rail-row">
+            <ExternalLink size={18} />
+            <span>{sources.length || 0} official sources</span>
+          </div>
+        </aside>
       </section>
 
-      {error ? <p className="error-banner">{error}</p> : null}
-      {page ? <PageBlocks sections={sections} /> : <div className="route-loading">Loading page…</div>}
+      {error ? <p className="notice-banner notice-danger">{error}</p> : null}
+      {page ? <PageBlocks sections={sections} /> : <div className="route-loading">Loading page...</div>}
 
       {childPages.length > 0 ? (
-        <section className="section-shell">
+        <section className="section-band">
           <div className="section-heading">
-            <p className="eyebrow">Deep Guides</p>
-            <h2>Go deeper from here</h2>
+            <p className="eyebrow">Deep guides</p>
+            <h2>Go deeper from here.</h2>
+            <p>Use these companion guides when the main module reveals a specific gap.</p>
           </div>
-          <div className="module-grid">
+          <div className="module-showcase compact-cards">
             {childPages.map((child) => (
               <Link key={String(child.id)} to={`/${String(child.slug)}`} className="module-card">
-                <span>{String(child.visibility ?? 'public')}</span>
+                <span className="card-kicker">{String(child.visibility ?? 'public')}</span>
                 <h3>{String(child.title ?? '')}</h3>
                 <p>{String(child.summary ?? '')}</p>
+                <span className="card-link">
+                  Open guide
+                  <ArrowRight size={15} />
+                </span>
               </Link>
             ))}
           </div>
@@ -113,10 +148,11 @@ export const ContentPage: React.FC = () => {
       ) : null}
 
       {sources.length > 0 ? (
-        <section className="section-shell">
+        <section className="section-band source-section">
           <div className="section-heading">
             <p className="eyebrow">Sources</p>
-            <h2>Official references</h2>
+            <h2>Official references.</h2>
+            <p>Policy-sensitive guidance stays tied to provider and official IELTS sources.</p>
           </div>
           <div className="source-list">
             {sources.map((row, index) => {
@@ -125,6 +161,7 @@ export const ContentPage: React.FC = () => {
                 <a key={index} href={String(source?.url ?? '#')} className="source-item">
                   <strong>{String(source?.title ?? 'Official source')}</strong>
                   <span>{String((row as Record<string, unknown>).citation_note ?? source?.summary ?? '')}</span>
+                  <ExternalLink size={16} />
                 </a>
               );
             })}
