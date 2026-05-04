@@ -13,6 +13,8 @@ const shouldShareCookie = (): boolean => {
   const shared = String(import.meta.env.VITE_AUTH_SHARED_COOKIE ?? '')
     .trim()
     .toLowerCase();
+  if (!shared) return resolveExplicitCookieDomain() != null;
+  if (shared === '0' || shared === 'false' || shared === 'no') return false;
   return shared === '1' || shared === 'true' || shared === 'yes';
 };
 

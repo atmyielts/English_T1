@@ -15,6 +15,8 @@ type SectionRow = { id: string; name: string; display_order: number; metadata: J
 type ExamUnit = ContentUnit & { partName?: string | null; partOrder?: number | null };
 
 const sectionType = (s: SectionRow | null): string => String((s?.metadata as any)?.type ?? 'unknown');
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 
 const isQuestionUnit = (u: Pick<ContentUnit, 'type'>): boolean => String(u.type).startsWith('question_');
 
@@ -291,11 +293,13 @@ export const ExamPlayer: React.FC = () => {
   const [passageAnnotations, setPassageAnnotations] = useState<Record<string, PassageAnnotation[]>>({});
 
   const questionBarRef = useRef<HTMLDivElement | null>(null);
+  const contentScrollRef = useRef<HTMLElement | null>(null);
 
   const saveTimersRef = useRef<Map<string, number>>(new Map());
   const lastSavedRef = useRef<Record<string, string>>({});
   const serverNowOffsetMsRef = useRef<number>(0);
   const autoAdvanceRef = useRef(false);
+  const listeningPartAdvanceTimerRef = useRef<number | null>(null);
 
   const currentSectionIndex = useMemo(() => sections.findIndex((s) => s.id === sectionId), [sections, sectionId]);
   const currentSectionNumber = currentSectionIndex >= 0 ? currentSectionIndex + 1 : 1;
@@ -345,6 +349,13 @@ export const ExamPlayer: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (listeningPartAdvanceTimerRef.current) window.clearTimeout(listeningPartAdvanceTimerRef.current);
+      listeningPartAdvanceTimerRef.current = null;
+    };
+  }, [sectionId]);
 
   const flushSaves = useCallback(async (): Promise<void> => {
     const sid = sessionId;
@@ -600,18 +611,19 @@ export const ExamPlayer: React.FC = () => {
     setActivePartId((prev) => (prev && parts.some((p) => p.id === prev) ? prev : first));
   }, [parts]);
 
+  const selectedPartId = activePartId ?? parts[0]?.id ?? null;
   const allPassages = useMemo(() => (isReading ? units.filter((u) => u.type === 'reading_passage') : []), [isReading, units]);
   const allMainUnits = useMemo(() => (isReading ? units.filter((u) => u.type !== 'reading_passage') : units), [isReading, units]);
 
   const visiblePassages = useMemo(() => {
-    if (!activePartId) return allPassages;
-    return allPassages.filter((u) => u.partId === activePartId);
-  }, [activePartId, allPassages]);
+    if (!selectedPartId) return allPassages;
+    return allPassages.filter((u) => u.partId === selectedPartId);
+  }, [allPassages, selectedPartId]);
 
   const visibleMainUnits = useMemo(() => {
-    if (!activePartId) return allMainUnits;
-    return allMainUnits.filter((u) => u.partId === activePartId);
-  }, [activePartId, allMainUnits]);
+    if (!selectedPartId) return allMainUnits;
+    return allMainUnits.filter((u) => u.partId === selectedPartId);
+  }, [allMainUnits, selectedPartId]);
 
   const visibleInstructions = useMemo(() => visibleMainUnits.filter((u) => u.type === 'instruction'), [visibleMainUnits]);
   const visibleRenderableUnits = useMemo(() => visibleMainUnits.filter((u) => u.type !== 'instruction'), [visibleMainUnits]);
@@ -705,9 +717,9 @@ export const ExamPlayer: React.FC = () => {
   }, [answers, parts, questionItemsByPartId, unitById]);
 
   const activeQuestionItems = useMemo(() => {
-    if (activePartId) return questionItemsByPartId.get(activePartId) ?? [];
+    if (selectedPartId) return questionItemsByPartId.get(selectedPartId) ?? [];
     return questionMeta.items;
-  }, [activePartId, questionItemsByPartId, questionMeta.items]);
+  }, [questionItemsByPartId, questionMeta.items, selectedPartId]);
 
   const activeRangeLabel = useMemo(() => {
     if (activeQuestionItems.length === 0) return null;
@@ -725,9 +737,51 @@ export const ExamPlayer: React.FC = () => {
     return count;
   }, [answers, questionMeta.items, unitById]);
 
+  const handleAudioEnded = useCallback((unit: ExamUnit) => {
+    if ((unit.data as any)?.play_once === true) {
+      setUnits((prev) =>
+        prev.map((candidate) => {
+          if (candidate.id !== unit.id) return candidate;
+          const data = asRecord(candidate.data);
+          return {
+            ...candidate,
+            data: {
+              ...data,
+              locked: true,
+              playback: {
+                ...asRecord(data.playback),
+                ended_at: new Date().toISOString(),
+              },
+            } as any,
+          };
+        })
+      );
+    }
+
+    if (!isListening) return;
+    const endedPartId = unit.partId ?? null;
+    if (!endedPartId) return;
+
+    const currentIndex = parts.findIndex((p) => p.id === endedPartId);
+    const nextPart = currentIndex >= 0 ? parts[currentIndex + 1] : null;
+    if (!nextPart) return;
+
+    if (listeningPartAdvanceTimerRef.current) window.clearTimeout(listeningPartAdvanceTimerRef.current);
+    listeningPartAdvanceTimerRef.current = window.setTimeout(() => {
+      listeningPartAdvanceTimerRef.current = null;
+      setActivePartId((current) => {
+        const currentPartId = current ?? parts[0]?.id ?? null;
+        return currentPartId === endedPartId ? nextPart.id : current;
+      });
+      window.requestAnimationFrame(() => {
+        contentScrollRef.current?.scrollTo({ top: 0 });
+      });
+    }, 650);
+  }, [isListening, parts]);
+
   const scrollToUnit = (unitId: string) => {
     const pid = unitToPartId.get(unitId) ?? null;
-    if (pid && pid !== activePartId) {
+    if (pid && pid !== selectedPartId) {
       setActivePartId(pid);
       window.setTimeout(() => {
         const el = document.getElementById(`unit-${unitId}`);
@@ -959,6 +1013,7 @@ export const ExamPlayer: React.FC = () => {
             </aside>
 
             <main
+              ref={contentScrollRef}
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] bg-[var(--inspera-panel)]"
             >
               <div className="p-5 inspera-question space-y-4">
@@ -987,6 +1042,7 @@ export const ExamPlayer: React.FC = () => {
                         value={answers[u.id]}
                         onChange={(val) => queueSave(u, val)}
                         audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                        onAudioEnded={() => handleAudioEnded(u)}
                         questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                       />
                     </div>
@@ -997,7 +1053,7 @@ export const ExamPlayer: React.FC = () => {
             </main>
           </div>
         ) : (
-          <main className="flex-1 min-h-0 overflow-y-auto bg-[var(--inspera-panel)]">
+          <main ref={contentScrollRef} className="flex-1 min-h-0 overflow-y-auto bg-[var(--inspera-panel)]">
             <div className="p-5 max-w-5xl mx-auto inspera-question space-y-4">
               {visibleRenderableUnits.map((u) => {
                 const range = questionMeta.ranges[u.id];
@@ -1024,6 +1080,7 @@ export const ExamPlayer: React.FC = () => {
                       value={answers[u.id]}
                       onChange={(val) => queueSave(u, val)}
                       audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                      onAudioEnded={() => handleAudioEnded(u)}
                       questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                     />
                   </div>
@@ -1052,7 +1109,7 @@ export const ExamPlayer: React.FC = () => {
         <div className="px-4 pb-3 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto">
             {partStats.map((p) => {
-              const active = p.id === activePartId;
+              const active = p.id === selectedPartId;
               const label = p.total > 0 ? `${p.answered}/${p.total}` : '0';
               return (
                 <button

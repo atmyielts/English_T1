@@ -1,18 +1,23 @@
 const parseAllowedHosts = (): string[] => {
   const raw = String(import.meta.env.VITE_ALLOWED_RETURN_HOSTS ?? '').trim();
-  if (!raw) return [];
-  return raw
+  const configured = raw
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+  const currentHost = typeof window !== 'undefined' ? window.location.host : '';
+  return Array.from(new Set([...configured, currentHost, 'schood.online', '.schood.online'].filter(Boolean)));
 };
 
 const isHostAllowed = (host: string, allowed: string[]): boolean => {
-  if (!allowed.length) return host === window.location.host;
+  const normalizedHost = host.toLowerCase();
+  if (!allowed.length) return normalizedHost === window.location.host.toLowerCase();
   return allowed.some((entry) => {
     if (!entry) return false;
-    if (entry.startsWith('.')) return host.endsWith(entry);
-    return host === entry;
+    const normalizedEntry = entry.toLowerCase();
+    if (normalizedEntry.startsWith('.')) {
+      return normalizedHost === normalizedEntry.slice(1) || normalizedHost.endsWith(normalizedEntry);
+    }
+    return normalizedHost === normalizedEntry;
   });
 };
 

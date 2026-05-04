@@ -77,6 +77,7 @@ interface InputRendererProps {
   questionNumber?: number | { start: number; end: number };
   readOnly?: boolean;
   audioContext?: { accessToken: string; sessionId: string; volume?: number } | null;
+  onAudioEnded?: (unit: ContentUnit) => void;
 }
 
 const safeJson = (v: unknown): Json => (v && typeof v === 'object' ? (v as Json) : {});
@@ -148,7 +149,8 @@ const AudioUnit: React.FC<{
   data: AudioData;
   readOnly?: boolean;
   context?: { accessToken: string; sessionId: string; volume?: number } | null;
-}> = ({ unitId, data, readOnly, context }) => {
+  onEnded?: () => void;
+}> = ({ unitId, data, readOnly, context, onEnded }) => {
   const url = typeof data.url === 'string' && data.url.length > 0 ? data.url : null;
   const tone = data.tone && typeof data.tone.frequency_hz === 'number' ? data.tone : null;
   const playOnce = readOnly ? false : data.play_once === true;
@@ -264,6 +266,7 @@ const AudioUnit: React.FC<{
           setPlayedOnce(true);
           setPositionSeconds(dur);
           void pushEvent('end');
+          onEnded?.();
         }, dur * 1000);
         return;
       }
@@ -409,10 +412,11 @@ const AudioUnit: React.FC<{
               setPlaying(false);
               setPlayedOnce(true);
               void pushEvent('end');
+              onEnded?.();
             }}
           />
         ) : (
-          <audio src={url} controls preload="none" controlsList="nodownload noplaybackrate" className="w-full" />
+          <audio src={url} controls preload="none" controlsList="nodownload noplaybackrate" className="w-full" onEnded={onEnded} />
         )
       ) : tone ? (
         <div className="text-sm text-gray-600 bg-white/60 border border-blue-200 rounded p-3">
@@ -432,7 +436,7 @@ const AudioUnit: React.FC<{
   );
 };
 
-export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onChange, questionNumber, readOnly, audioContext }) => {
+export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onChange, questionNumber, readOnly, audioContext, onAudioEnded }) => {
   const data = safeJson(unit.data);
 
   const qPrefix = qPrefixFrom(questionNumber);
@@ -475,7 +479,7 @@ export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onCha
 
     case 'audio': {
       const d = data as unknown as AudioData;
-      return <AudioUnit unitId={unit.id} data={d} readOnly={readOnly} context={audioContext ?? null} />;
+      return <AudioUnit unitId={unit.id} data={d} readOnly={readOnly} context={audioContext ?? null} onEnded={() => onAudioEnded?.(unit)} />;
     }
 
     case 'question_text': {

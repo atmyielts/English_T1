@@ -59,16 +59,25 @@ Set these before deploy (no localhost defaults):
   - `VITE_IELTS_URL` (required for candidate handoff)
   - `VITE_ALLOWED_RETURN_HOSTS`
   - optional `VITE_AUTH_COOKIE_DOMAIN`
+  - optional `VITE_AUTH_SHARED_COOKIE`
 - IELTS app:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
   - `VITE_PLATFORM_URL`
   - optional `VITE_AUTH_COOKIE_DOMAIN`
+  - optional `VITE_AUTH_SHARED_COOKIE`
+- IELTS Practice app:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+  - `VITE_PLATFORM_URL`
+  - optional `VITE_AUTH_COOKIE_DOMAIN`
+  - optional `VITE_AUTH_SHARED_COOKIE`
 - SAT app:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
   - `VITE_PLATFORM_URL`
   - optional `VITE_AUTH_COOKIE_DOMAIN`
+  - optional `VITE_AUTH_SHARED_COOKIE`
 - Academy app:
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
