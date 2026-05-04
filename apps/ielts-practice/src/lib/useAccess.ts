@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { clearHostAuthStorage, hasAuthStorage, supabase } from './supabase';
 import { getAccessEffective, getMe, type AccessEffectiveResponse, type MeResponse } from './api';
 
 type AccessState =
@@ -23,20 +23,60 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
 
   useEffect(() => {
     let cancelled = false;
+    const recoveryKey =
+      typeof window !== 'undefined'
+        ? `__schood_practice_auth_recovery__:${window.location.pathname}${window.location.search}`
+        : '';
+
+    const reloadAfterClearingHostCookie = (): boolean => {
+      if (typeof window === 'undefined' || !recoveryKey) return false;
+      if (window.sessionStorage.getItem(recoveryKey) === '1') return false;
+
+      clearHostAuthStorage();
+      if (!hasAuthStorage()) return false;
+
+      window.sessionStorage.setItem(recoveryKey, '1');
+      window.location.replace(window.location.href);
+      return true;
+    };
+
+    const loadAccount = async (session: Session): Promise<{ me: MeResponse; effective: AccessEffectiveResponse | null }> => {
+      const me = await getMe(session.access_token);
+      const effective = includeEffective ? await getAccessEffective(session.access_token).catch(() => null) : null;
+      return { me, effective };
+    };
 
     const hydrate = async (session: Session | null) => {
       if (!session) {
+        if (reloadAfterClearingHostCookie()) return;
         if (!cancelled) setState({ status: 'unauthenticated' });
         return;
       }
 
       try {
-        const me = await getMe(session.access_token);
-        const effective = includeEffective ? await getAccessEffective(session.access_token).catch(() => null) : null;
-        if (!cancelled) setState({ status: 'authenticated', session, me, effective });
+        const { me, effective } = await loadAccount(session);
+        if (!cancelled) {
+          if (recoveryKey) window.sessionStorage.removeItem(recoveryKey);
+          setState({ status: 'authenticated', session, me, effective });
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message.toLowerCase() : '';
         if (message.includes('unauthorized')) {
+          const { data } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
+          if (data.session) {
+            try {
+              const { me, effective } = await loadAccount(data.session);
+              if (!cancelled) {
+                if (recoveryKey) window.sessionStorage.removeItem(recoveryKey);
+                setState({ status: 'authenticated', session: data.session, me, effective });
+              }
+              return;
+            } catch {
+              // Fall through to stale-cookie recovery/unauthenticated handling.
+            }
+          }
+
+          if (reloadAfterClearingHostCookie()) return;
           if (!cancelled) setState({ status: 'unauthenticated' });
           return;
         }
