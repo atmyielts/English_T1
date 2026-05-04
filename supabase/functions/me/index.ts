@@ -57,6 +57,13 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   }
 };
 
+const shouldIncludeAdminPayload = (url: URL): boolean => {
+  const raw = url.searchParams.get("admin") ?? url.searchParams.get("include_admin");
+  if (raw == null) return true;
+  const normalized = raw.trim().toLowerCase();
+  return !(normalized === "0" || normalized === "false" || normalized === "no");
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -70,6 +77,8 @@ serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const includeAdminPayload = shouldIncludeAdminPayload(url);
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseAnonKey = getEnv("SUPABASE_ANON_KEY");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -91,69 +100,66 @@ serve(async (req) => {
     const user = userData.user;
     const tokenPayload = decodeJwtPayload(token) ?? {};
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false },
-    });
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
 
-    const { data: profileRow } = await userClient.from("users").select("role").eq("id", user.id).maybeSingle();
+    const [profileRes, membershipsRes] = await Promise.all([
+      serviceClient.from("users").select("role").eq("id", user.id).maybeSingle(),
+      serviceClient
+        .from("tenant_memberships")
+        .select("tenant_id, role, status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: true }),
+    ]);
+
+    const profileRow = profileRes.data;
     const role = profileRow?.role ?? null;
     const normalizedRole = String(role ?? "").trim().toLowerCase();
 
-    const { data: memberships, error: membershipError } = await userClient
-      .from("tenant_memberships")
-      .select("tenant_id, role, status")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .order("created_at", { ascending: true });
-
-    if (membershipError) {
-      return new Response(JSON.stringify({ error: "Failed to load memberships", details: membershipError }), {
+    if (membershipsRes.error) {
+      return new Response(JSON.stringify({ error: "Failed to load memberships", details: membershipsRes.error }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const membershipRows = (memberships ?? []) as MembershipRow[];
+    const membershipRows = (membershipsRes.data ?? []) as MembershipRow[];
     const currentTenantId = membershipRows[0]?.tenant_id ?? null;
 
     let tenant = null;
-    if (currentTenantId) {
-      const { data: tenantRow, error: tenantError } = await userClient
-        .from("tenants")
-        .select("id, name, slug, type")
-        .eq("id", currentTenantId)
-        .maybeSingle();
-
-      if (tenantError) {
-        return new Response(JSON.stringify({ error: "Failed to load tenant", details: tenantError }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      tenant = tenantRow ?? null;
-    }
-
     let entitlements: EntitlementRow[] = [];
     if (currentTenantId) {
-      const { data: entitlementRows, error: entitlementError } = await userClient
-        .from("entitlements")
-        .select("id, resource_type, resource_id, starts_at, ends_at, value")
-        .eq("tenant_id", currentTenantId)
-        .eq("is_active", true);
+      const [tenantRes, entitlementsRes] = await Promise.all([
+        serviceClient
+          .from("tenants")
+          .select("id, name, slug, type")
+          .eq("id", currentTenantId)
+          .maybeSingle(),
+        serviceClient
+          .from("entitlements")
+          .select("id, resource_type, resource_id, starts_at, ends_at, value")
+          .eq("tenant_id", currentTenantId)
+          .eq("is_active", true),
+      ]);
 
-      if (entitlementError) {
-        return new Response(JSON.stringify({ error: "Failed to load entitlements", details: entitlementError }), {
+      if (tenantRes.error) {
+        return new Response(JSON.stringify({ error: "Failed to load tenant", details: tenantRes.error }), {
           status: 500,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
       }
 
-      entitlements = (entitlementRows ?? []).filter(isActiveEntitlement) as EntitlementRow[];
+      if (entitlementsRes.error) {
+        return new Response(JSON.stringify({ error: "Failed to load entitlements", details: entitlementsRes.error }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      tenant = tenantRes.data ?? null;
+      entitlements = (entitlementsRes.data ?? []).filter(isActiveEntitlement) as EntitlementRow[];
     }
 
     let adminPayload: {
@@ -163,13 +169,22 @@ serve(async (req) => {
       security_policy: AdminSecurityPolicyRow | null;
     } | null = null;
 
-    if (normalizedRole.startsWith("admin")) {
+    if (includeAdminPayload && normalizedRole.startsWith("admin")) {
       let permissions: string[] = normalizedRole === "admin" ? ["admin.*"] : [];
+      let policyData: Record<string, unknown> | null = null;
       try {
-        const { data: permsData } = await serviceClient.rpc("admin_effective_permissions", {
-          p_user_id: user.id,
-          p_role: normalizedRole,
-        });
+        const [permsRes, policyRes] = await Promise.all([
+          serviceClient.rpc("admin_effective_permissions", {
+            p_user_id: user.id,
+            p_role: normalizedRole,
+          }),
+          serviceClient
+            .from("admin_security_policies")
+            .select("require_mfa, session_timeout_minutes, rate_limit_per_minute, ip_allowlist")
+            .eq("id", 1)
+            .maybeSingle(),
+        ]);
+        const permsData = permsRes.data;
         if (Array.isArray(permsData)) {
           permissions = permsData
             .map((row: unknown) => {
@@ -182,29 +197,21 @@ serve(async (req) => {
             .map((value) => value.trim())
             .filter(Boolean);
         }
+        policyData = (policyRes.data as Record<string, unknown> | null) ?? null;
       } catch {
         // Keep role-derived fallback permissions.
       }
 
       let securityPolicy: AdminSecurityPolicyRow | null = null;
-      try {
-        const { data: policyData } = await serviceClient
-          .from("admin_security_policies")
-          .select("require_mfa, session_timeout_minutes, rate_limit_per_minute, ip_allowlist")
-          .eq("id", 1)
-          .maybeSingle();
-        if (policyData) {
-          securityPolicy = {
-            require_mfa: false,
-            session_timeout_minutes: Number((policyData as Record<string, unknown>).session_timeout_minutes ?? 30),
-            rate_limit_per_minute: Number((policyData as Record<string, unknown>).rate_limit_per_minute ?? 120),
-            ip_allowlist: Array.isArray((policyData as Record<string, unknown>).ip_allowlist)
-              ? ((policyData as Record<string, unknown>).ip_allowlist as unknown[]).map((item) => String(item ?? "")).filter(Boolean)
-              : [],
-          };
-        }
-      } catch {
-        securityPolicy = null;
+      if (policyData) {
+        securityPolicy = {
+          require_mfa: false,
+          session_timeout_minutes: Number(policyData.session_timeout_minutes ?? 30),
+          rate_limit_per_minute: Number(policyData.rate_limit_per_minute ?? 120),
+          ip_allowlist: Array.isArray(policyData.ip_allowlist)
+            ? (policyData.ip_allowlist as unknown[]).map((item) => String(item ?? "")).filter(Boolean)
+            : [],
+        };
       }
 
       adminPayload = {

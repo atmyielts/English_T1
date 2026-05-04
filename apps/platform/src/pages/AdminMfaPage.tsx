@@ -98,7 +98,7 @@ export const AdminMfaPage: React.FC = () => {
       }
 
       try {
-        const me = await getMe(session.access_token, { force: true });
+        const me = await getMe(session.access_token, { force: true, includeAdmin: true });
         const role = String(me.user.role ?? '').toLowerCase();
         const isAdmin = Boolean(me.admin?.is_admin) || role === 'admin' || role.startsWith('admin_');
         if (!isAdmin) {

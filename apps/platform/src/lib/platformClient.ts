@@ -146,8 +146,9 @@ const tryRefreshAccessToken = async (): Promise<string | null> => {
   return refreshAccessTokenInFlight;
 };
 
-export const getMe = async (accessToken: string, opts?: { force?: boolean }): Promise<MeResponse> => {
-  const key = accessToken;
+export const getMe = async (accessToken: string, opts?: { force?: boolean; includeAdmin?: boolean }): Promise<MeResponse> => {
+  const includeAdmin = opts?.includeAdmin === true;
+  const key = `${includeAdmin ? 'admin' : 'basic'}:${accessToken}`;
   const now = Date.now();
 
   if (!opts?.force) {
@@ -160,7 +161,9 @@ export const getMe = async (accessToken: string, opts?: { force?: boolean }): Pr
 
   const p = (async () => {
     let activeToken = accessToken;
-    let res = await fetch(`${edgeBase}/me`, { headers: apiHeaders(activeToken) });
+    const qs = new URLSearchParams({ admin: includeAdmin ? 'true' : 'false' });
+    const url = `${edgeBase}/me?${qs.toString()}`;
+    let res = await fetch(url, { headers: apiHeaders(activeToken) });
     let details: unknown = null;
 
     if (!res.ok) {
@@ -169,7 +172,7 @@ export const getMe = async (accessToken: string, opts?: { force?: boolean }): Pr
         const refreshedToken = await tryRefreshAccessToken();
         if (refreshedToken) {
           activeToken = refreshedToken;
-          res = await fetch(`${edgeBase}/me`, { headers: apiHeaders(activeToken) });
+          res = await fetch(url, { headers: apiHeaders(activeToken) });
           if (!res.ok) details = await readJsonOrText(res);
         }
       }
@@ -184,7 +187,7 @@ export const getMe = async (accessToken: string, opts?: { force?: boolean }): Pr
     }
 
     const value = (await res.json()) as MeResponse;
-    meCache.set(activeToken, { at: Date.now(), value });
+    meCache.set(`${includeAdmin ? 'admin' : 'basic'}:${activeToken}`, { at: Date.now(), value });
     return value;
   })();
 

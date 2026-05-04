@@ -32,7 +32,7 @@ export const RequireAdmin: React.FC = () => {
       }
 
       try {
-        const me = await getMe(session.access_token);
+        const me = await getMe(session.access_token, { includeAdmin: true });
         const role = String(me.user.role ?? '').toLowerCase();
         const admin = me.admin ?? null;
         if (!admin?.is_admin || !Array.isArray(admin.permissions)) {

@@ -13,6 +13,7 @@ export type MeResponse = {
 };
 
 export type AccessEffectiveResponse = {
+  has_access?: boolean | null;
   effective_product_ids: string[];
 };
 
@@ -300,10 +301,64 @@ const call = async <T>(
   return (await res.json()) as T;
 };
 
-export const getMe = (accessToken: string): Promise<MeResponse> => call<MeResponse>(accessToken, "/me");
+const ME_CACHE_TTL_MS = 30_000;
+const ACCESS_EFFECTIVE_CACHE_TTL_MS = 10_000;
 
-export const getAccessEffective = (accessToken: string): Promise<AccessEffectiveResponse> =>
-  call<AccessEffectiveResponse>(accessToken, "/access-effective");
+const meCache = new Map<string, { at: number; value: MeResponse }>();
+const meInFlight = new Map<string, Promise<MeResponse>>();
+const accessEffectiveCache = new Map<string, { at: number; value: AccessEffectiveResponse }>();
+const accessEffectiveInFlight = new Map<string, Promise<AccessEffectiveResponse>>();
+
+export const getMe = (accessToken: string, opts?: { force?: boolean; includeAdmin?: boolean }): Promise<MeResponse> => {
+  const includeAdmin = opts?.includeAdmin === true;
+  const key = `${includeAdmin ? "admin" : "basic"}:${accessToken}`;
+  const now = Date.now();
+
+  if (!opts?.force) {
+    const cached = meCache.get(key);
+    if (cached && now - cached.at < ME_CACHE_TTL_MS) return Promise.resolve(cached.value);
+
+    const inFlight = meInFlight.get(key);
+    if (inFlight) return inFlight;
+  }
+
+  const qs = new URLSearchParams({ admin: includeAdmin ? "true" : "false" });
+  const promise = call<MeResponse>(accessToken, `/me?${qs.toString()}`).then((value) => {
+    meCache.set(key, { at: Date.now(), value });
+    return value;
+  }).finally(() => {
+    meInFlight.delete(key);
+  });
+
+  meInFlight.set(key, promise);
+  return promise;
+};
+
+export const getAccessEffective = (
+  accessToken: string,
+  opts?: { productId?: string | null },
+): Promise<AccessEffectiveResponse> => {
+  const productId = opts?.productId?.trim() || "";
+  const key = `${productId}:${accessToken}`;
+  const now = Date.now();
+  const cached = accessEffectiveCache.get(key);
+  if (cached && now - cached.at < ACCESS_EFFECTIVE_CACHE_TTL_MS) return Promise.resolve(cached.value);
+
+  const inFlight = accessEffectiveInFlight.get(key);
+  if (inFlight) return inFlight;
+
+  const qs = new URLSearchParams();
+  if (productId) qs.set("product_id", productId);
+  const promise = call<AccessEffectiveResponse>(accessToken, `/access-effective${qs.toString() ? `?${qs.toString()}` : ""}`).then((value) => {
+    accessEffectiveCache.set(key, { at: Date.now(), value });
+    return value;
+  }).finally(() => {
+    accessEffectiveInFlight.delete(key);
+  });
+
+  accessEffectiveInFlight.set(key, promise);
+  return promise;
+};
 
 export const learningProfileV2 = (
   accessToken: string,

@@ -189,7 +189,7 @@ const humanizeError = (message: string): string => {
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
-  const { accessToken, me, session } = useAccess({ includeEffective: true });
+  const { accessToken, me, session } = useAccess();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);

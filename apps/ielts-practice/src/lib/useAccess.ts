@@ -17,9 +17,10 @@ type AccessResult = {
   userId: string | null;
 };
 
-export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }): AccessResult => {
+export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean; productId?: string | null }): AccessResult => {
   const [state, setState] = useState<AccessState>({ status: 'loading' });
   const includeEffective = opts?.includeEffective === true;
+  const productId = opts?.productId ?? null;
 
   useEffect(() => {
     let cancelled = false;
@@ -41,8 +42,10 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
     };
 
     const loadAccount = async (session: Session): Promise<{ me: MeResponse; effective: AccessEffectiveResponse | null }> => {
-      const me = await getMe(session.access_token);
-      const effective = includeEffective ? await getAccessEffective(session.access_token).catch(() => null) : null;
+      const [me, effective] = await Promise.all([
+        getMe(session.access_token, { force: opts?.force }),
+        includeEffective ? getAccessEffective(session.access_token, { productId }).catch(() => null) : Promise.resolve(null),
+      ]);
       return { me, effective };
     };
 
@@ -105,7 +108,7 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
       cancelled = true;
       subscription.subscription.unsubscribe();
     };
-  }, [opts?.force, includeEffective]);
+  }, [opts?.force, includeEffective, productId]);
 
   if (state.status === 'authenticated') {
     return {
