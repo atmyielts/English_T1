@@ -656,6 +656,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .practice-sidebar-brand img {
@@ -667,6 +668,7 @@ textarea {
 .practice-sidebar-brand strong {
   display: block;
   font-size: 1.04rem;
+  line-height: 1.12;
 }
 
 .practice-sidebar-brand span {
@@ -681,6 +683,10 @@ textarea {
 }
 
 .sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
   text-decoration: none;
   color: var(--text);
   border: 1px solid var(--card-border);
@@ -688,6 +694,16 @@ textarea {
   padding: 10px 12px;
   background: #ffffff;
   font-weight: 500;
+}
+
+.sidebar-link::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.5;
 }
 
 .sidebar-link.active {
@@ -715,6 +731,11 @@ textarea {
   gap: 8px;
 }
 
+.sidebar-score-grid {
+  display: grid;
+  gap: 10px;
+}
+
 .sidebar-target-row strong {
   font-size: 1.9rem;
   line-height: 1;
@@ -722,6 +743,10 @@ textarea {
 
 .sidebar-target-row.muted strong {
   font-size: 1.4rem;
+}
+
+.sidebar-actions-panel .btn {
+  min-height: 44px;
 }
 
 .practice-main {
@@ -1970,8 +1995,75 @@ button:disabled {
     align-items: stretch;
   }
 
+  .practice-sidebar {
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .practice-sidebar-brand {
+    align-items: center;
+    padding: 4px 4px 10px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .practice-sidebar-brand img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .practice-sidebar-brand strong {
+    font-size: 1rem;
+  }
+
+  .practice-sidebar-brand span {
+    font-size: 0.82rem;
+  }
+
   .practice-sidebar-nav {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .sidebar-link {
+    min-height: 42px;
+    padding: 9px 11px;
+    font-size: 0.96rem;
+  }
+
+  .sidebar-panel {
+    padding: 12px;
+    gap: 9px;
+  }
+
+  .sidebar-score-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .sidebar-target-row {
+    display: grid;
+    gap: 4px;
+    align-items: start;
+    min-height: 82px;
+    padding: 12px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .sidebar-target-row strong,
+  .sidebar-target-row.muted strong {
+    font-size: 1.9rem;
+  }
+
+  .sidebar-target-row span {
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+
+  .sidebar-actions-panel {
+    grid-template-columns: 1fr;
   }
 
   .weakness-item {

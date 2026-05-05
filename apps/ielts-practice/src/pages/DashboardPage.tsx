@@ -405,19 +405,21 @@ export const DashboardPage = () => {
             <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link">IELTS Playbook</a>
           </nav>
 
-          <section className="sidebar-panel">
+          <section className="sidebar-panel sidebar-score-panel">
             <h4>Band Target</h4>
-            <div className="sidebar-target-row">
-              <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
-              <span>goal</span>
-            </div>
-            <div className="sidebar-target-row muted">
-              <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
-              <span>current</span>
+            <div className="sidebar-score-grid">
+              <div className="sidebar-target-row">
+                <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
+                <span>goal</span>
+              </div>
+              <div className="sidebar-target-row muted">
+                <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
+                <span>current</span>
+              </div>
             </div>
           </section>
 
-          <section className="sidebar-panel">
+          <section className="sidebar-panel sidebar-actions-panel">
             <h4>Quick Actions</h4>
             <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
               {generating ? 'Generating...' : 'Regenerate Plan'}
