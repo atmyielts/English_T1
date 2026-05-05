@@ -205,7 +205,7 @@ type ScoreResult = {
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-user-jwt",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
 };
 
@@ -262,8 +262,10 @@ const parseBody = async (req: Request): Promise<JsonRecord> => {
 
 const getBearerToken = (req: Request): string | null => {
   const header = req.headers.get("Authorization") ?? "";
-  if (!header) return null;
-  const token = header.startsWith("Bearer ") ? header.slice(7) : header;
+  const fallback = req.headers.get("x-user-jwt") ?? "";
+  const raw = header.trim() ? header : fallback;
+  if (!raw) return null;
+  const token = raw.startsWith("Bearer ") ? raw.slice(7) : raw;
   const clean = token.trim();
   return clean.length > 0 ? clean : null;
 };
@@ -366,11 +368,11 @@ const extractRoute = (url: URL): string => {
   return tail.startsWith("/") ? tail : tail ? `/${tail}` : "";
 };
 
-const authUser = async (sb: any, req: Request): Promise<AuthedContext | null> => {
+const authUser = async (authSb: any, req: Request): Promise<AuthedContext | null> => {
   const token = getBearerToken(req);
   if (!token) return null;
 
-  const { data, error } = await sb.auth.getUser(token);
+  const { data, error } = await authSb.auth.getUser(token);
   if (error || !data?.user) return null;
 
   return {
@@ -2988,11 +2990,14 @@ serve(async (req) => {
     const supabaseAnonKey = getEnv("SUPABASE_ANON_KEY");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
+    const authSb = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+    });
     const sb = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
 
-    const auth = await authUser(sb, req);
+    const auth = await authUser(authSb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
 
     const scope = await resolveScope(sb);

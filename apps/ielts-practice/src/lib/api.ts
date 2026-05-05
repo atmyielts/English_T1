@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 type Json = Record<string, unknown>;
 
 export type MeResponse = {
@@ -288,11 +290,23 @@ const call = async <T>(
   opts?: { method?: "GET" | "POST" | "PATCH"; body?: unknown },
 ): Promise<T> => {
   const method = opts?.method ?? "GET";
-  const res = await fetch(`${edgeBase}${path}`, {
-    method,
-    headers: headers(accessToken, opts?.body != null),
-    body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
-  });
+  const send = (token: string) =>
+    fetch(`${edgeBase}${path}`, {
+      method,
+      headers: headers(token, opts?.body != null),
+      body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
+    });
+
+  let res = await send(accessToken);
+  if (res.status === 401) {
+    await readBody(res).catch(() => null);
+    const refreshed = await supabase.auth.refreshSession().catch(() => null);
+    const retryToken = refreshed?.data.session?.access_token ?? null;
+    if (retryToken && retryToken !== accessToken) {
+      res = await send(retryToken);
+    }
+  }
+
   if (!res.ok) {
     const details = await readBody(res);
     throw new Error(resolveApiErrorMessage(res.status, details));
