@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { PracticeTopNav } from '../components/PracticeTopNav';
 import { practiceAttemptGet, type PracticeAttempt, type PracticeExercise } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
@@ -48,20 +49,16 @@ export const ResultsPage = () => {
 
   return (
     <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/dashboard">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Attempt Result</strong>
-            <span>{exercise?.section_type ?? '-'} / {exercise?.question_type ?? '-'}</span>
-          </div>
-        </Link>
-        <div className="top-nav-actions">
-          <Link to="/plan" className="btn ghost">Back to plan</Link>
-          <a href={`${PLAYBOOK_URL}/diagnostic?source=practice&weak_skill=${encodeURIComponent(String(exercise?.section_type ?? 'writing'))}`} className="btn ghost">Open playbook</a>
-          {exercise ? <Link to={`/exercise/${exercise.id}`} className="btn solid">Retry</Link> : null}
-        </div>
-      </header>
+      <PracticeTopNav
+        compact
+        title="Attempt Result"
+        subtitle={`${exercise?.section_type ?? '-'} / ${exercise?.question_type ?? '-'}`}
+        actions={[
+          { id: 'plan', label: 'Back to plan', to: '/plan' },
+          { id: 'playbook', label: 'Open playbook', href: `${PLAYBOOK_URL}/diagnostic?source=practice&weak_skill=${encodeURIComponent(String(exercise?.section_type ?? 'writing'))}` },
+          ...(exercise ? [{ id: 'retry', label: 'Retry', to: `/exercise/${exercise.id}`, variant: 'solid' as const }] : []),
+        ]}
+      />
 
       <main className="dashboard-grid">
         <section className="glass stat-card">

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { PracticeTopNav } from '../components/PracticeTopNav';
 import { practiceAttemptStart, practiceAttemptSubmit, type PracticeAttempt, type PracticeExercise } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
@@ -90,18 +91,12 @@ export const ExercisePage = () => {
 
   return (
     <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/dashboard">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Practice Exercise</strong>
-            <span>{exercise?.section_type ?? 'Section'} / {exercise?.question_type ?? 'Question type'}</span>
-          </div>
-        </Link>
-        <div className="top-nav-actions">
-          <Link to="/plan" className="btn ghost">Back to plan</Link>
-        </div>
-      </header>
+      <PracticeTopNav
+        compact
+        title="Practice Exercise"
+        subtitle={`${exercise?.section_type ?? 'Section'} / ${exercise?.question_type ?? 'Question type'}`}
+        actions={[{ id: 'plan', label: 'Back to plan', to: '/plan' }]}
+      />
 
       <main className="dashboard-grid">
         <section className="glass stat-card wide">

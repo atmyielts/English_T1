@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { PracticeTopNav } from '../components/PracticeTopNav';
 import {
   practiceGeneratePlan,
   practiceGoalsGet,
@@ -191,22 +192,16 @@ export const PlanPage = () => {
 
   return (
     <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/dashboard">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Daily Practice Plan</strong>
-            <span>Configure goals and generate today's focused IELTS sessions</span>
-          </div>
-        </Link>
-        <div className="top-nav-actions">
-          <Link to="/dashboard" className="btn ghost">Back</Link>
-          <a href={`${PLAYBOOK_URL}/study-plans?source=practice`} className="btn ghost">Playbook</a>
-          <button className="btn solid" type="button" onClick={() => void regenerate()} disabled={saving}>
-            {saving ? 'Working...' : 'Regenerate'}
-          </button>
-        </div>
-      </header>
+      <PracticeTopNav
+        compact
+        title="Daily Practice Plan"
+        subtitle="Configure goals and generate today's focused IELTS sessions"
+        actions={[
+          { id: 'back', label: 'Back', to: '/dashboard' },
+          { id: 'playbook', label: 'Playbook', href: `${PLAYBOOK_URL}/study-plans?source=practice` },
+          { id: 'regenerate', label: saving ? 'Working...' : 'Regenerate', onClick: () => void regenerate(), variant: 'solid', disabled: saving },
+        ]}
+      />
 
       <main className="dashboard-grid">
         <section className="glass stat-card">

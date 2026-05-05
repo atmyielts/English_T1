@@ -4,6 +4,7 @@ import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platfo
 import { useAccess } from '../../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID, IELTS_PRACTICE_PRODUCT_SLUG } from '../../lib/constants';
 import type { AccessEffectiveResponse, MeResponse } from '../../lib/api';
+import { AccessLoading } from './AccessLoading';
 
 const hasProductEntitlement = (me: MeResponse, productId: string): boolean =>
   me.entitlements.some((entry) => entry.resource_type === 'product' && entry.resource_id === productId);
@@ -23,7 +24,7 @@ export const RequireProductEntitlement: React.FC = () => {
   const disablePaywall = String(import.meta.env.VITE_DISABLE_PAYWALL ?? '').toLowerCase() === 'true';
   const returnTo = getReturnTo(location);
 
-  if (status === 'loading') return <div className="route-loading">Checking access...</div>;
+  if (status === 'loading') return <AccessLoading label="Checking access" />;
 
   if (status === 'unauthenticated') {
     const url = buildPlatformUrl('/auth', returnTo, { product: IELTS_PRACTICE_PRODUCT_SLUG });
@@ -34,7 +35,7 @@ export const RequireProductEntitlement: React.FC = () => {
     return <Navigate to={url} replace />;
   }
 
-  if (!me) return <div className="route-loading">Loading account...</div>;
+  if (!me) return <AccessLoading label="Loading account" detail="We are preparing your Practice Labs workspace." />;
 
   if (!disablePaywall && !hasEffectiveProductAccess(me, effective, IELTS_PRACTICE_PRODUCT_ID)) {
     const url = buildPlatformUrl('/pricing', returnTo, { product: IELTS_PRACTICE_PRODUCT_SLUG });

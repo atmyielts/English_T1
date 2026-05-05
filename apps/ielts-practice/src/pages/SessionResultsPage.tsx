@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { PracticeTopNav } from '../components/PracticeTopNav';
 import {
   practiceGeneratePlan,
   practiceSessionResultsGet,
@@ -143,26 +144,16 @@ export const SessionResultsPage = () => {
 
   return (
     <div className="practice-root">
-      <header className="top-nav glass compact">
-        <Link className="brand" to="/dashboard">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Practice Results</strong>
-            <span>{getBuildExperienceLabel(build)} feedback and next action</span>
-          </div>
-        </Link>
-        <div className="top-nav-actions">
-          <button className="btn ghost" type="button" onClick={() => navigate(backPath)}>
-            Back
-          </button>
-          <Link className="btn ghost" to={`/session/${encodeURIComponent(runtimeSessionId)}/review?${reviewQuery}`}>
-            Review Answers
-          </Link>
-          <button className="btn solid" type="button" onClick={() => void regenerateNext()} disabled={regenerating}>
-            {regenerating ? 'Updating...' : 'Next Plan'}
-          </button>
-        </div>
-      </header>
+      <PracticeTopNav
+        compact
+        title="Practice Results"
+        subtitle={`${getBuildExperienceLabel(build)} feedback and next action`}
+        actions={[
+          { id: 'back', label: 'Back', onClick: () => navigate(backPath) },
+          { id: 'review', label: 'Review Answers', to: `/session/${encodeURIComponent(runtimeSessionId)}/review?${reviewQuery}` },
+          { id: 'next-plan', label: regenerating ? 'Updating...' : 'Next Plan', onClick: () => void regenerateNext(), variant: 'solid', disabled: regenerating },
+        ]}
+      />
 
       <main className="dashboard-grid results-layout">
         <section className="glass stat-card">

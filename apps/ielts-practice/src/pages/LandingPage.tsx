@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PracticeTopNav } from '../components/PracticeTopNav';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from '../lib/constants';
 import { buildPlatformUrl } from '../lib/platformUrls';
 import { useAccess } from '../lib/useAccess';
@@ -16,23 +17,17 @@ export const LandingPage = () => {
 
   return (
     <div className="practice-root">
-      <header className="top-nav glass">
-        <a className="brand" href="https://schood.online">
-          <img src="/schood-logo.png" alt="Schood" />
-          <div>
-            <strong>Schood IELTS Practice</strong>
-            <span>Practice Labs for IELTS progression</span>
-          </div>
-        </a>
-        <div className="top-nav-actions">
-          {status === 'authenticated' ? (
-            <Link to="/dashboard" className="btn ghost">Dashboard</Link>
-          ) : (
-            <a href={authHref} className="btn ghost">Sign in</a>
-          )}
-          <a href={pricingHref} className="btn solid">Get access</a>
-        </div>
-      </header>
+      <PracticeTopNav
+        title="Schood IELTS Practice"
+        subtitle="Practice Labs for IELTS progression"
+        brandHref="https://schood.online"
+        actions={[
+          status === 'authenticated'
+            ? { id: 'dashboard', label: 'Dashboard', to: '/dashboard' }
+            : { id: 'signin', label: 'Sign in', href: authHref },
+          { id: 'access', label: 'Get access', href: pricingHref, variant: 'solid' },
+        ]}
+      />
 
       <main className="landing-grid">
         <section className="hero-panel glass">
