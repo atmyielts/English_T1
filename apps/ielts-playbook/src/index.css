@@ -71,10 +71,6 @@ button:disabled {
 }
 
 .site-header {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
   min-height: 64px;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.88);
@@ -85,6 +81,13 @@ button:disabled {
   top: 12px;
   z-index: 10;
   backdrop-filter: blur(16px);
+}
+
+.site-header-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
 }
 
 .brand-mark {
@@ -122,6 +125,7 @@ button:disabled {
 }
 
 .site-nav,
+.site-actions,
 .hero-actions,
 .inline-actions,
 .pill-row,
@@ -136,8 +140,16 @@ button:disabled {
   justify-content: center;
 }
 
+.site-actions {
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .nav-link,
 .nav-cta,
+.nav-menu-button,
+.mobile-nav-link,
+.mobile-nav-cta,
 .button,
 .text-link {
   display: inline-flex;
@@ -162,6 +174,7 @@ button:disabled {
 }
 
 .nav-cta,
+.nav-menu-button,
 .button {
   border: 1px solid transparent;
   cursor: pointer;
@@ -173,6 +186,56 @@ button:disabled {
   background: var(--ink);
   color: #fff;
   white-space: nowrap;
+}
+
+.nav-menu-button {
+  display: none;
+  padding: 0 13px;
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--subtle);
+  white-space: nowrap;
+}
+
+.mobile-nav-panel {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(251, 252, 254, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.mobile-nav-panel:not([hidden]) {
+  display: grid;
+  gap: 8px;
+}
+
+.mobile-nav-link,
+.mobile-nav-cta {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 750;
+}
+
+.mobile-nav-link.active,
+.mobile-nav-link:hover {
+  border-color: rgba(24, 134, 75, 0.28);
+  background: var(--surface-soft);
+  color: var(--green-dark);
+}
+
+.mobile-nav-cta {
+  margin-top: 2px;
+  border-color: transparent;
+  background: var(--ink);
+  color: #fff;
 }
 
 .button {
@@ -191,11 +254,13 @@ button:disabled {
 }
 
 .button-primary:hover,
-.nav-cta:hover {
+.nav-cta:hover,
+.mobile-nav-cta:hover {
   background: #252a33;
 }
 
-.button-secondary:hover {
+.button-secondary:hover,
+.nav-menu-button:hover {
   border-color: #aeb7c5;
 }
 
@@ -1080,6 +1145,60 @@ button:disabled {
   color: var(--muted);
 }
 
+.access-loading-shell {
+  display: grid;
+  place-items: center;
+  min-height: min(62vh, 560px);
+  padding: 28px 0;
+}
+
+.access-loading-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(100%, 420px);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.access-loading-mark {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--green-dark);
+  border: 1px solid rgba(24, 134, 75, 0.2);
+}
+
+.access-loading-mark .spin {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+}
+
+.access-loading-copy h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.access-loading-copy p:last-child {
+  max-width: 320px;
+  margin: 8px auto 0;
+  color: var(--muted);
+}
+
 .notice-banner,
 .error-banner {
   margin-top: 16px;
@@ -1124,15 +1243,6 @@ pre {
 }
 
 @media (max-width: 980px) {
-  .site-header {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
-  .site-nav {
-    justify-content: flex-start;
-  }
-
   .playbook-hero,
   .article-hero,
   .workspace-hero,
@@ -1181,6 +1291,29 @@ pre {
   }
 }
 
+@media (max-width: 920px) {
+  .site-header-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .brand-mark {
+    min-width: 0;
+  }
+
+  .site-nav,
+  .site-actions > .nav-cta {
+    display: none;
+  }
+
+  .site-actions {
+    justify-content: flex-end;
+  }
+
+  .nav-menu-button {
+    display: inline-flex;
+  }
+}
+
 @media (max-width: 640px) {
   .site-shell,
   .compact-shell {
@@ -1190,6 +1323,7 @@ pre {
 
   .site-header {
     position: static;
+    padding: 10px;
   }
 
   .hero-copy,
@@ -1261,5 +1395,9 @@ pre {
   .button,
   .nav-cta {
     width: 100%;
+  }
+
+  .access-loading-card {
+    padding: 22px 18px;
   }
 }
