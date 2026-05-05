@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   practiceDashboardGet,
@@ -189,6 +190,8 @@ const humanizeError = (message: string): string => {
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
+  const sidebarMenuId = useId();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { accessToken, me, session } = useAccess({ includeEffective: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -382,50 +385,73 @@ export const DashboardPage = () => {
     () => plan.find((item) => item.status !== 'completed' && (item.blueprint_id || item.delivery_build_id)) ?? plan.find((item) => item.blueprint_id || item.delivery_build_id) ?? null,
     [plan],
   );
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className="practice-root">
       <div className="practice-workspace">
-        <aside className="practice-sidebar glass">
-          <div className="practice-sidebar-brand">
-            <img src="/schood-logo.png" alt="Schood" />
-            <div>
-              <strong>IELTS Practice</strong>
-              <span>Practice Labs workspace</span>
-            </div>
+        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`}>
+          <div className="practice-sidebar-head">
+            <Link to="/dashboard" className="practice-sidebar-brand" onClick={closeSidebar}>
+              <img src="/schood-logo.png" alt="Schood" />
+              <div>
+                <strong>IELTS Practice</strong>
+                <span>Practice Labs workspace</span>
+              </div>
+            </Link>
+            <button
+              className="sidebar-menu-button"
+              type="button"
+              onClick={() => setSidebarOpen((open) => !open)}
+              aria-expanded={sidebarOpen}
+              aria-controls={sidebarMenuId}
+            >
+              {sidebarOpen ? <X size={17} strokeWidth={2.4} /> : <Menu size={17} strokeWidth={2.4} />}
+              Menu
+            </button>
           </div>
 
-          <nav className="practice-sidebar-nav">
-            <Link to="/dashboard" className="sidebar-link active">Dashboard</Link>
-            <a href="#practice-labs" className="sidebar-link">Practice Labs</a>
-            <Link to="/plan" className="sidebar-link">Plan Builder</Link>
-            <a href="#mistake-notebook" className="sidebar-link">Notebook</a>
-            <a href="#band-roadmap" className="sidebar-link">Roadmap</a>
-            <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link">IELTS Simulator</a>
-            <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link">IELTS Playbook</a>
-          </nav>
+          <div id={sidebarMenuId} className="practice-sidebar-menu">
+            <nav className="practice-sidebar-nav">
+              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar}>Dashboard</Link>
+              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
+              <Link to="/plan" className="sidebar-link" onClick={closeSidebar}>Plan Builder</Link>
+              <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
+              <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
+              <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
+              <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link" onClick={closeSidebar}>IELTS Playbook</a>
+            </nav>
 
-          <section className="sidebar-panel sidebar-score-panel">
-            <h4>Band Target</h4>
-            <div className="sidebar-score-grid">
-              <div className="sidebar-target-row">
-                <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
-                <span>goal</span>
+            <section className="sidebar-panel sidebar-score-panel">
+              <h4>Band Target</h4>
+              <div className="sidebar-score-grid">
+                <div className="sidebar-target-row">
+                  <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
+                  <span>goal</span>
+                </div>
+                <div className="sidebar-target-row muted">
+                  <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
+                  <span>current</span>
+                </div>
               </div>
-              <div className="sidebar-target-row muted">
-                <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
-                <span>current</span>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="sidebar-panel sidebar-actions-panel">
-            <h4>Quick Actions</h4>
-            <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-              {generating ? 'Generating...' : 'Regenerate Plan'}
-            </button>
-            <Link to="/plan" className="btn ghost full">Open Plan Builder</Link>
-          </section>
+            <section className="sidebar-panel sidebar-actions-panel">
+              <h4>Quick Actions</h4>
+              <button
+                className="btn solid full"
+                type="button"
+                onClick={() => {
+                  closeSidebar();
+                  void handleGenerate();
+                }}
+                disabled={generating}
+              >
+                {generating ? 'Generating...' : 'Regenerate Plan'}
+              </button>
+              <Link to="/plan" className="btn ghost full" onClick={closeSidebar}>Open Plan Builder</Link>
+            </section>
+          </div>
         </aside>
 
         <main className="practice-main">
