@@ -8,17 +8,22 @@ import {
   adminPracticeBlueprintsList,
   adminPracticeBuildsList,
   adminPracticeContentFactoryBuild,
+  adminPracticeExercisePatch,
+  adminPracticeExercisesList,
+  adminPracticeImportFromSimulator,
+  adminPracticePreviewPlan,
   adminPracticeRulesList,
   adminPracticeRulesPatch,
   adminPracticeSourcesList,
   type PracticeBlueprint,
   type PracticeDeliveryBuild,
+  type PracticeExercise,
   type PracticeRule,
   type PracticeSourceCatalogItem,
 } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
-type TabKey = 'factory' | 'sources' | 'blueprints' | 'builds' | 'rules' | 'analytics';
+type TabKey = 'factory' | 'sources' | 'blueprints' | 'builds' | 'exercises' | 'rules' | 'preview' | 'analytics';
 type LoadWarning = { area: string; message: string };
 
 const joinParts = (parts: Array<string | null | undefined>): string => parts.filter(Boolean).join(' | ');
@@ -174,13 +179,21 @@ export const AdminPage = () => {
   const [sources, setSources] = useState<PracticeSourceCatalogItem[]>([]);
   const [blueprints, setBlueprints] = useState<Array<PracticeBlueprint & { latest_build: PracticeDeliveryBuild | null }>>([]);
   const [builds, setBuilds] = useState<PracticeDeliveryBuild[]>([]);
+  const [exercises, setExercises] = useState<PracticeExercise[]>([]);
   const [rules, setRules] = useState<PracticeRule[]>([]);
   const [analytics, setAnalytics] = useState<unknown>(null);
   const [factoryResult, setFactoryResult] = useState<unknown>(null);
+  const [previewPlan, setPreviewPlan] = useState<unknown>(null);
 
   const [sourceSectionType, setSourceSectionType] = useState('');
+  const [exerciseSectionType, setExerciseSectionType] = useState('');
+  const [exerciseSearch, setExerciseSearch] = useState('');
+  const [importSectionType, setImportSectionType] = useState('');
+  const [importPublish, setImportPublish] = useState(true);
   const [factorySectionType, setFactorySectionType] = useState('');
   const [factoryPublish, setFactoryPublish] = useState(true);
+  const [previewUserId, setPreviewUserId] = useState('');
+  const [previewCount, setPreviewCount] = useState('10');
   const [analyticsDays, setAnalyticsDays] = useState('30');
 
   const loadBase = async (): Promise<void> => {
@@ -189,6 +202,7 @@ export const AdminPage = () => {
       adminPracticeSourcesList(accessToken, { section_type: sourceSectionType || undefined, limit: 200 }),
       adminPracticeBlueprintsList(accessToken),
       adminPracticeBuildsList(accessToken),
+      adminPracticeExercisesList(accessToken, { section_type: exerciseSectionType || undefined, q: exerciseSearch || undefined, limit: 150 }),
       adminPracticeRulesList(accessToken),
     ] as const);
 
@@ -204,7 +218,8 @@ export const AdminPage = () => {
     applyResult(results[0], 'Sources', (value) => setSources(value.sources ?? []));
     applyResult(results[1], 'Blueprints', (value) => setBlueprints(value.blueprints ?? []));
     applyResult(results[2], 'Builds', (value) => setBuilds(value.builds ?? []));
-    applyResult(results[3], 'Rules', (value) => setRules(value.rules ?? []));
+    applyResult(results[3], 'Exercises', (value) => setExercises(value.exercises ?? []));
+    applyResult(results[4], 'Rules', (value) => setRules(value.rules ?? []));
     setLoadWarnings(warnings);
 
     if (warnings.length === results.length) {
@@ -226,7 +241,7 @@ export const AdminPage = () => {
       }
     };
     void run();
-  }, [accessToken, sourceSectionType]);
+  }, [accessToken, sourceSectionType, exerciseSectionType, exerciseSearch]);
 
   const createBlueprintFromSource = async (source: PracticeSourceCatalogItem): Promise<void> => {
     if (!accessToken) return;
@@ -313,6 +328,54 @@ export const AdminPage = () => {
     try {
       const response = await adminPracticeAnalytics(accessToken, Number(analyticsDays));
       setAnalytics(response);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importExercises = async (): Promise<void> => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await adminPracticeImportFromSimulator(accessToken, {
+        section_type: importSectionType || undefined,
+        limit: 200,
+        publish: importPublish,
+      });
+      setFactoryResult(response);
+      await loadBase();
+      setTab('exercises');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const updateExerciseStatus = async (id: string, status: string): Promise<void> => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await adminPracticeExercisePatch(accessToken, id, { status });
+      await loadBase();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadPreviewPlan = async (): Promise<void> => {
+    if (!accessToken || !previewUserId) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await adminPracticePreviewPlan(accessToken, previewUserId, Number(previewCount) || 10);
+      setPreviewPlan(response);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -416,6 +479,11 @@ export const AdminPage = () => {
     [builds],
   );
 
+  const publishedExercises = useMemo(
+    () => exercises.filter((row) => row.status === 'published').length,
+    [exercises],
+  );
+
   const labCoverage = useMemo(() => {
     const published = builds.filter((build) => build.status === 'published');
     const ready = published.filter(isLabReadyBuild);
@@ -447,7 +515,9 @@ export const AdminPage = () => {
       { key: 'sources', label: 'Sources', description: 'Simulator inputs' },
       { key: 'blueprints', label: 'Blueprints', description: 'Practice packages' },
       { key: 'builds', label: 'Builds', description: 'Published sessions' },
+      { key: 'exercises', label: 'Exercises', description: 'Legacy drills' },
       { key: 'rules', label: 'Rules', description: 'Recommendation control' },
+      { key: 'preview', label: 'Preview', description: 'Plan ranking' },
       { key: 'analytics', label: 'Analytics', description: 'Practice signals' },
     ],
     [],
@@ -508,6 +578,11 @@ export const AdminPage = () => {
               <span>Builds</span>
               <strong>{builds.length}</strong>
               <small>{publishedBuilds} live sessions, {labCoverage.ready} lab-ready</small>
+            </article>
+            <article className="admin-stat">
+              <span>Exercises</span>
+              <strong>{exercises.length}</strong>
+              <small>{publishedExercises} published drills</small>
             </article>
             <article className="admin-stat">
               <span>Rules</span>
@@ -757,6 +832,85 @@ export const AdminPage = () => {
             </section>
           ) : null}
 
+          {tab === 'exercises' ? (
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Exercise catalog</h2>
+                  <p>Manage legacy drills and import simulator units that still support plan generation fallback.</p>
+                </div>
+                <button className="btn solid" type="button" onClick={() => void importExercises()} disabled={busy}>
+                  {busy ? 'Importing...' : 'Import from simulator'}
+                </button>
+              </div>
+              <div className="admin-form-grid">
+                <label className="admin-field">
+                  <span>Catalog filter</span>
+                  <select value={exerciseSectionType} onChange={(event) => setExerciseSectionType(event.target.value)}>
+                    <option value="">All sections</option>
+                    <option value="reading">Reading</option>
+                    <option value="listening">Listening</option>
+                    <option value="writing">Writing</option>
+                  </select>
+                </label>
+                <label className="admin-field">
+                  <span>Search</span>
+                  <input value={exerciseSearch} onChange={(event) => setExerciseSearch(event.target.value)} placeholder="Title or question type" />
+                </label>
+                <label className="admin-field">
+                  <span>Import section</span>
+                  <select value={importSectionType} onChange={(event) => setImportSectionType(event.target.value)}>
+                    <option value="">All sections</option>
+                    <option value="reading">Reading</option>
+                    <option value="listening">Listening</option>
+                    <option value="writing">Writing</option>
+                  </select>
+                </label>
+                <label className="admin-switch">
+                  <input type="checkbox" checked={importPublish} onChange={(event) => setImportPublish(event.target.checked)} />
+                  <span>Publish imported drills</span>
+                </label>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Exercise</th>
+                      <th>Section</th>
+                      <th>Question type</th>
+                      <th>Band</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exercises.length > 0 ? exercises.map((exercise) => (
+                      <tr key={exercise.id}>
+                        <td>
+                          <div className="admin-cell-title">{exercise.title}</div>
+                          <div className="admin-meta-line">{exercise.estimated_minutes} min | {formatDateTime(exercise.updated_at)}</div>
+                        </td>
+                        <td><span className={`chip ${exercise.section_type}`}>{exercise.section_type}</span></td>
+                        <td>{exercise.question_type}</td>
+                        <td>{exercise.difficulty_band_min}-{exercise.difficulty_band_max}</td>
+                        <td><span className={`status-pill ${compactClass(exercise.status)}`}>{exercise.status}</span></td>
+                        <td>
+                          <div className="admin-row-actions">
+                            <button className="btn solid compact" type="button" onClick={() => void updateExerciseStatus(exercise.id, 'published')} disabled={busy}>Publish</button>
+                            <button className="btn ghost compact" type="button" onClick={() => void updateExerciseStatus(exercise.id, 'draft')} disabled={busy}>Draft</button>
+                            <button className="btn ghost compact" type="button" onClick={() => void updateExerciseStatus(exercise.id, 'archived')} disabled={busy}>Archive</button>
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr><td colSpan={6}><div className="admin-empty">No exercises match this filter. Import from simulator to seed fallback drills.</div></td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : null}
+
           {tab === 'rules' ? (
             <section className="admin-panel">
               <div className="admin-panel-header">
@@ -821,6 +975,36 @@ export const AdminPage = () => {
                   </tbody>
                 </table>
               </div>
+            </section>
+          ) : null}
+
+          {tab === 'preview' ? (
+            <section className="admin-panel">
+              <div className="admin-panel-header">
+                <div>
+                  <h2>Plan preview</h2>
+                  <p>Preview next-best practice ranking for a user before changing rules or publishing new builds.</p>
+                </div>
+                <button className="btn solid" type="button" onClick={() => void loadPreviewPlan()} disabled={busy || !previewUserId}>Preview plan</button>
+              </div>
+              <div className="admin-form-grid">
+                <label className="admin-field">
+                  <span>User ID</span>
+                  <input value={previewUserId} onChange={(event) => setPreviewUserId(event.target.value)} placeholder="Supabase user UUID" />
+                </label>
+                <label className="admin-field">
+                  <span>Item count</span>
+                  <input value={previewCount} onChange={(event) => setPreviewCount(event.target.value)} />
+                </label>
+              </div>
+              {previewPlan ? (
+                <details className="admin-json-details" open>
+                  <summary>Preview response</summary>
+                  <pre className="json-box">{JSON.stringify(previewPlan, null, 2)}</pre>
+                </details>
+              ) : (
+                <div className="admin-empty">Enter a user ID to inspect the generated plan ranking.</div>
+              )}
             </section>
           ) : null}
 

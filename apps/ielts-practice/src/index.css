@@ -1345,7 +1345,7 @@ button:disabled {
 .admin-stat-row,
 .admin-result-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
 }
 
@@ -1433,9 +1433,32 @@ button:disabled {
 
 .admin-inline-field,
 .admin-field {
+  display: grid;
+  gap: 7px;
   color: #475569;
   font-size: 0.84rem;
   font-weight: 700;
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea,
+.admin-inline-field input,
+.admin-inline-field select,
+.admin-json-textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: #0f172a;
+}
+
+.admin-field textarea,
+.admin-json-textarea {
+  min-height: 110px;
+  resize: vertical;
 }
 
 .admin-inline-field {

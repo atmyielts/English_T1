@@ -61,8 +61,9 @@ const jsonResponse = (status: number, body: unknown, corsHeaders: Record<string,
 
 const getBearerToken = (req: Request): string | null => {
   const header = req.headers.get("Authorization") ?? "";
-  if (!header) return null;
-  return header.startsWith("Bearer ") ? header.slice(7) : header;
+  if (header) return header.startsWith("Bearer ") ? header.slice(7) : header;
+  const fallback = req.headers.get("x-user-jwt") ?? "";
+  return fallback.trim() || null;
 };
 
 const getClientIp = (req: Request): string | null => {

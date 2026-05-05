@@ -4,6 +4,9 @@ import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platfo
 import { useAccess } from '../../lib/useAccess';
 import { AccessLoading } from './AccessLoading';
 
+const hasPermission = (permissions: string[], required: string[]) =>
+  permissions.includes('admin.*') || required.some((permission) => permissions.includes(permission));
+
 export const RequireAdmin: React.FC = () => {
   const location = useLocation();
   const { status, me } = useAccess();
@@ -22,7 +25,12 @@ export const RequireAdmin: React.FC = () => {
     return <Navigate to={url} replace />;
   }
 
-  if (!me || String(me.user.role ?? '').toLowerCase() !== 'admin') {
+  const permissions = Array.isArray(me?.admin?.permissions) ? me.admin.permissions : [];
+  const allowed =
+    String(me?.user.role ?? '').toLowerCase() === 'admin'
+    || hasPermission(permissions, ['admin.products.manage', 'admin.analytics.view']);
+
+  if (!allowed) {
     const url = buildPlatformUrl('/account', returnTo);
     if (hasPlatformBase) {
       window.location.assign(url);

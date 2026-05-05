@@ -12,6 +12,11 @@ export type MeResponse = {
     ends_at: string | null;
     value: Json | null;
   }>;
+  admin?: {
+    is_admin: boolean;
+    permissions: string[];
+    session_aal: string | null;
+  } | null;
 };
 
 export type AccessEffectiveResponse = {
