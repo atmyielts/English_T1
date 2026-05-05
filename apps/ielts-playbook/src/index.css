@@ -491,6 +491,7 @@ button:disabled {
 
 .module-card:hover,
 .feed-item:hover,
+.service-card:hover,
 .source-item:hover,
 .timeline-item:hover {
   transform: translateY(-2px);
@@ -578,7 +579,9 @@ button:disabled {
 .mini-feed,
 .source-list,
 .faq-list,
-.timeline-list {
+.timeline-list,
+.evidence-list,
+.service-grid {
   display: grid;
   gap: 10px;
 }
@@ -586,14 +589,17 @@ button:disabled {
 .feed-item,
 .source-item,
 .timeline-item,
-.data-item {
+.data-item,
+.evidence-item,
+.service-card {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fbfcfe;
 }
 
 .feed-item,
-.source-item {
+.source-item,
+.service-card {
   display: grid;
   gap: 5px;
   padding: 14px;
@@ -705,7 +711,7 @@ button:disabled {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 12px;
 }
 
@@ -713,7 +719,7 @@ button:disabled {
   display: grid;
   align-content: start;
   gap: 10px;
-  min-height: 230px;
+  min-height: 220px;
 }
 
 .metric-card-accent {
@@ -744,10 +750,76 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
   gap: 12px;
+  align-items: start;
 }
 
 .priority-panel {
   background: #fcfdfd;
+}
+
+.evidence-panel {
+  background: linear-gradient(180deg, #fbfcfe 0%, #f6fbf8 100%);
+}
+
+.evidence-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.evidence-item strong,
+.service-card strong {
+  display: block;
+  line-height: 1.18;
+}
+
+.evidence-item span,
+.service-card span,
+.card-footnote {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.evidence-item em {
+  min-width: 46px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+  color: var(--green-dark);
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+}
+
+.evidence-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.evidence-columns h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.service-card {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.service-card svg {
+  color: var(--green);
+}
+
+.card-footnote {
+  margin: 14px 0 0;
+}
+
+.wide-card {
+  grid-column: 1 / -1;
 }
 
 .timeline-item {
@@ -1165,7 +1237,8 @@ pre {
   .module-showcase,
   .form-grid,
   .stat-strip,
-  .score-panel {
+  .score-panel,
+  .evidence-columns {
     grid-template-columns: 1fr;
   }
 

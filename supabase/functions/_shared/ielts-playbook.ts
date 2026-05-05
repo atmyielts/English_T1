@@ -11,6 +11,7 @@ export type PlaybookScope = {
   simulatorProductId: string;
   practiceProductId: string;
   languageCode: string;
+  languageId: string | null;
 };
 
 export type PlaybookProfileRow = {
@@ -111,6 +112,7 @@ export type SourceRow = {
 export type OutcomeRow = {
   id: string;
   session_id: string;
+  product_id?: string | null;
   overall_band: number | null;
   section_scores: JsonRecord;
   computed_at: string;
@@ -210,6 +212,16 @@ const resolveProductIdBySlug = async (sb: any, slug: string): Promise<string | n
   return data?.id ? String((data as any).id) : null;
 };
 
+const resolveLanguageIdByCode = async (sb: any, code: string): Promise<string | null> => {
+  const { data, error } = await sb
+    .from("languages")
+    .select("id")
+    .eq("code", code)
+    .maybeSingle();
+  if (error) return null;
+  return data?.id ? String((data as any).id) : null;
+};
+
 export const authUser = async (sb: any, req: Request): Promise<AuthedContext | null> => {
   const token = getBearerToken(req);
   if (!token) return null;
@@ -223,6 +235,7 @@ export const resolveScope = async (sb: any): Promise<PlaybookScope> => ({
   simulatorProductId: (await resolveProductIdBySlug(sb, SIMULATOR_PRODUCT_SLUG)) ?? SIMULATOR_PRODUCT_ID_FALLBACK,
   practiceProductId: (await resolveProductIdBySlug(sb, PRACTICE_PRODUCT_SLUG)) ?? PRACTICE_PRODUCT_ID_FALLBACK,
   languageCode: "en",
+  languageId: await resolveLanguageIdByCode(sb, "en"),
 });
 
 export const resolveEffectiveProductIds = async (
@@ -362,11 +375,19 @@ export const loadRules = async (sb: any, scope: PlaybookScope): Promise<Map<stri
 };
 
 export const loadLatestOutcome = async (sb: any, scope: PlaybookScope, userId: string): Promise<OutcomeRow | null> => {
+  return loadLatestOutcomeForProduct(sb, userId, scope.simulatorProductId);
+};
+
+export const loadLatestOutcomeForProduct = async (
+  sb: any,
+  userId: string,
+  productId: string,
+): Promise<OutcomeRow | null> => {
   const { data } = await sb
     .from("exam_outcomes")
-    .select("id,session_id,overall_band,section_scores,computed_at")
+    .select("id,session_id,product_id,overall_band,section_scores,computed_at")
     .eq("user_id", userId)
-    .eq("product_id", scope.simulatorProductId)
+    .eq("product_id", productId)
     .order("computed_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -381,14 +402,362 @@ export const loadLatestOutcome = async (sb: any, scope: PlaybookScope, userId: s
 export const extractSectionBands = (outcome: OutcomeRow | null): Record<string, number> => {
   const out: Record<string, number> = {};
   const sectionScores = isObject(outcome?.section_scores) ? (outcome?.section_scores as JsonRecord) : {};
-  for (const value of Object.values(sectionScores)) {
+  for (const [key, value] of Object.entries(sectionScores)) {
+    const directBand = toNumber(value);
+    if (directBand != null) {
+      const directSection = toText(key, 24).toLowerCase();
+      if (directSection) out[directSection] = directBand;
+      continue;
+    }
     if (!isObject(value)) continue;
-    const sectionType = toText(value.type, 24).toLowerCase();
-    const band = toNumber(value.band);
+    const sectionType = toText(value.type ?? key, 24).toLowerCase();
+    const band = toNumber(value.band ?? value.estimated_band ?? value.average_band);
     if (!sectionType || band == null) continue;
     out[sectionType] = band;
   }
   return out;
+};
+
+const safeRows = async <T = Record<string, unknown>>(
+  label: string,
+  query: PromiseLike<{ data: unknown; error?: { message?: string } | null }>,
+  errors: string[],
+): Promise<T[]> => {
+  try {
+    const { data, error } = await query;
+    if (error) {
+      errors.push(`${label}: ${error.message ?? "query failed"}`);
+      return [];
+    }
+    return Array.isArray(data) ? (data as T[]) : [];
+  } catch (error) {
+    errors.push(`${label}: ${error instanceof Error ? error.message : "query failed"}`);
+    return [];
+  }
+};
+
+const safeMaybe = async <T = Record<string, unknown>>(
+  label: string,
+  query: PromiseLike<{ data: unknown; error?: { message?: string } | null }>,
+  errors: string[],
+): Promise<T | null> => {
+  try {
+    const { data, error } = await query;
+    if (error) {
+      errors.push(`${label}: ${error.message ?? "query failed"}`);
+      return null;
+    }
+    return data && typeof data === "object" ? (data as T) : null;
+  } catch (error) {
+    errors.push(`${label}: ${error instanceof Error ? error.message : "query failed"}`);
+    return null;
+  }
+};
+
+const maxIso = (values: Array<unknown>): string | null => {
+  const clean = values.map((value) => toNullableText(value, 80)).filter((value): value is string => Boolean(value));
+  if (clean.length === 0) return null;
+  return clean.sort().at(-1) ?? null;
+};
+
+const sectionFrom = (value: unknown): string | null => {
+  const section = toText(value, 24).toLowerCase();
+  return ["listening", "reading", "writing", "speaking"].includes(section) ? section : null;
+};
+
+const summarizePracticeMastery = (masteryRows: Array<Record<string, unknown>>): JsonRecord => {
+  const sectionSummaries = new Map<string, {
+    tracked: number;
+    weak: number;
+    mastered: number;
+    attempts: number;
+    masteryTotal: number;
+    masteryCount: number;
+    accuracyTotal: number;
+    accuracyCount: number;
+    latest: string | null;
+  }>();
+
+  const weakQuestionTypes: JsonRecord[] = [];
+
+  for (const row of masteryRows) {
+    const section = sectionFrom(row.section_type);
+    if (!section) continue;
+    const summary = sectionSummaries.get(section) ?? {
+      tracked: 0,
+      weak: 0,
+      mastered: 0,
+      attempts: 0,
+      masteryTotal: 0,
+      masteryCount: 0,
+      accuracyTotal: 0,
+      accuracyCount: 0,
+      latest: null,
+    };
+    const attempts = Math.max(0, Math.floor(toNumber(row.attempts) ?? 0));
+    const masteryLevel = toNumber(row.mastery_level);
+    const rollingAccuracy = toNumber(row.rolling_accuracy_ratio);
+    const status = toText(row.mastery_status, 40).toLowerCase();
+    const lastPracticedAt = toNullableText(row.last_practiced_at, 80);
+
+    summary.tracked += 1;
+    summary.attempts += attempts;
+    if (status === "weak" || (masteryLevel != null && masteryLevel < 0.48)) summary.weak += 1;
+    if (status === "mastered") summary.mastered += 1;
+    if (masteryLevel != null) {
+      summary.masteryTotal += masteryLevel;
+      summary.masteryCount += 1;
+    }
+    if (rollingAccuracy != null) {
+      summary.accuracyTotal += rollingAccuracy;
+      summary.accuracyCount += 1;
+    }
+    if (lastPracticedAt && (!summary.latest || lastPracticedAt > summary.latest)) summary.latest = lastPracticedAt;
+    sectionSummaries.set(section, summary);
+
+    if (status === "weak" || (masteryLevel != null && masteryLevel < 0.55)) {
+      weakQuestionTypes.push({
+        section_type: section,
+        question_type: toText(row.question_type, 120),
+        attempts,
+        mastery_level: masteryLevel,
+        mastery_status: status || null,
+        rolling_accuracy_ratio: rollingAccuracy,
+        last_practiced_at: lastPracticedAt,
+      });
+    }
+  }
+
+  const bySection: Record<string, JsonRecord> = {};
+  for (const [section, summary] of sectionSummaries.entries()) {
+    bySection[section] = {
+      tracked_question_types: summary.tracked,
+      weak_question_types: summary.weak,
+      mastered_question_types: summary.mastered,
+      attempts: summary.attempts,
+      average_mastery_level: summary.masteryCount > 0 ? roundTo(summary.masteryTotal / summary.masteryCount, 3) : null,
+      average_accuracy_ratio: summary.accuracyCount > 0 ? roundTo(summary.accuracyTotal / summary.accuracyCount, 3) : null,
+      last_practiced_at: summary.latest,
+    };
+  }
+
+  weakQuestionTypes.sort((a, b) => {
+    const aMastery = toNumber(a.mastery_level) ?? 1;
+    const bMastery = toNumber(b.mastery_level) ?? 1;
+    if (aMastery !== bMastery) return aMastery - bMastery;
+    return String(a.question_type ?? "").localeCompare(String(b.question_type ?? ""));
+  });
+
+  const weakestSection = Object.entries(bySection)
+    .sort(([, a], [, b]) => {
+      const aMastery = toNumber(a.average_mastery_level) ?? 1;
+      const bMastery = toNumber(b.average_mastery_level) ?? 1;
+      if (aMastery !== bMastery) return aMastery - bMastery;
+      return (toNumber(b.weak_question_types) ?? 0) - (toNumber(a.weak_question_types) ?? 0);
+    })[0]?.[0] ?? null;
+
+  return {
+    tracked_question_types: masteryRows.length,
+    weak_question_types: weakQuestionTypes.length,
+    mastered_question_types: masteryRows.filter((row) => toText(row.mastery_status, 40).toLowerCase() === "mastered").length,
+    weakest_section: weakestSection,
+    by_section: bySection,
+    weakest_question_types: weakQuestionTypes.slice(0, 8),
+  };
+};
+
+const extractPracticeDiagnosticBands = (diagnostic: Record<string, unknown> | null): Record<string, number> => {
+  const diagnostics = isObject(diagnostic?.diagnostics) ? (diagnostic?.diagnostics as JsonRecord) : {};
+  const sections = isObject(diagnostics.sections) ? (diagnostics.sections as JsonRecord) : {};
+  const out: Record<string, number> = {};
+  for (const [section, value] of Object.entries(sections)) {
+    if (!isObject(value)) continue;
+    const band = toNumber(value.average_band);
+    const key = sectionFrom((value as JsonRecord).section_type ?? section);
+    if (key && band != null) out[key] = band;
+  }
+  return out;
+};
+
+const extractPracticeOverallBand = (diagnostic: Record<string, unknown> | null): number | null => {
+  const directOverall = isObject(diagnostic?.overall) ? (diagnostic?.overall as JsonRecord) : {};
+  const directBand = toNumber(directOverall.average_band);
+  if (directBand != null) return directBand;
+
+  const diagnostics = isObject(diagnostic?.diagnostics) ? (diagnostic?.diagnostics as JsonRecord) : {};
+  const overall = isObject(diagnostics.overall) ? (diagnostics.overall as JsonRecord) : {};
+  return toNumber(overall.average_band);
+};
+
+export const loadRecentOutcomeEvidence = async (
+  sb: any,
+  scope: PlaybookScope,
+  userId: string,
+): Promise<JsonRecord[]> => {
+  const { data } = await sb
+    .from("exam_outcomes")
+    .select("id,session_id,product_id,overall_band,section_scores,computed_at,status,score_method")
+    .eq("user_id", userId)
+    .in("product_id", [scope.simulatorProductId, scope.practiceProductId])
+    .order("computed_at", { ascending: false })
+    .limit(16);
+
+  return (Array.isArray(data) ? data : []).map((row: any) => {
+    const outcome = {
+      ...(row as OutcomeRow),
+      section_scores: isObject(row.section_scores) ? row.section_scores : {},
+    };
+    return {
+      ...outcome,
+      source_service: String(row.product_id) === scope.practiceProductId ? "ielts-practice" : "ielts-simulator",
+      section_bands: extractSectionBands(outcome),
+    };
+  });
+};
+
+export const loadPracticeEvidence = async (
+  sb: any,
+  scope: PlaybookScope,
+  userId: string,
+): Promise<JsonRecord> => {
+  const errors: string[] = [];
+  if (!scope.languageId) {
+    return {
+      connected: false,
+      language_id: null,
+      errors: ["English language id could not be resolved"],
+    };
+  }
+
+  const [
+    goal,
+    currentDiagnostic,
+    masteryRows,
+    labAttempts,
+    mistakes,
+    roadmapItems,
+    planItems,
+    sessions,
+  ] = await Promise.all([
+    safeMaybe("practice_goal", sb
+      .from("ielts_practice_user_goals")
+      .select("target_overall_band,target_section_bands,target_date,practice_start_date,program_duration_days,daily_practice_minutes,timezone,focus_modes,metadata,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .maybeSingle(), errors),
+    safeMaybe("practice_diagnostic", sb
+      .from("ielts_practice_diagnostic_snapshots")
+      .select("id,computed_at,snapshot_version,diagnostics,source_summary")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .eq("is_current", true)
+      .order("computed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(), errors),
+    safeRows("practice_mastery", sb
+      .from("ielts_practice_mastery")
+      .select("section_type,question_type,attempts,mastery_level,mastery_status,last_accuracy_ratio,best_accuracy_ratio,rolling_accuracy_ratio,last_practiced_at,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .order("updated_at", { ascending: false })
+      .limit(80), errors),
+    safeRows("practice_lab_attempts", sb
+      .from("ielts_practice_lab_attempts")
+      .select("id,practice_session_id,lab_kind,section_type,status,raw_score,max_score,accuracy_ratio,estimated_band,started_at,submitted_at,scored_at,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .order("updated_at", { ascending: false })
+      .limit(12), errors),
+    safeRows("practice_mistake_notebook", sb
+      .from("ielts_practice_mistake_notebook")
+      .select("section_type,question_type,trap_type,mistake_pattern,coach_note,review_count,status,priority,next_review_at,last_seen_at,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .in("status", ["active", "difficult"])
+      .order("priority", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(12), errors),
+    safeRows("practice_roadmap", sb
+      .from("ielts_practice_roadmap_items")
+      .select("section_type,skill_key,title,current_state,target_state,linked_lab_kind,priority,status,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .in("status", ["active", "in_progress"])
+      .order("priority", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(12), errors),
+    safeRows("practice_plan_items", sb
+      .from("ielts_practice_plan_items")
+      .select("id,plan_date,section_type,status,priority,due_at,rationale,completed_at,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .order("plan_date", { ascending: true })
+      .order("priority", { ascending: false })
+      .limit(14), errors),
+    safeRows("practice_sessions", sb
+      .from("ielts_practice_sessions")
+      .select("id,status,latest_outcome_id,started_at,completed_at,updated_at")
+      .eq("user_id", userId)
+      .eq("language_id", scope.languageId)
+      .eq("product_id", scope.practiceProductId)
+      .order("updated_at", { ascending: false })
+      .limit(8), errors),
+  ]);
+
+  const masterySummary = summarizePracticeMastery(masteryRows);
+  const diagnosticBands = extractPracticeDiagnosticBands(currentDiagnostic);
+  const latestPracticeAt = maxIso([
+    currentDiagnostic?.computed_at,
+    goal?.updated_at,
+    ...masteryRows.map((row) => row.last_practiced_at ?? row.updated_at),
+    ...labAttempts.map((row) => row.scored_at ?? row.submitted_at ?? row.updated_at),
+    ...mistakes.map((row) => row.last_seen_at ?? row.updated_at),
+    ...roadmapItems.map((row) => row.updated_at),
+    ...sessions.map((row) => row.completed_at ?? row.updated_at ?? row.started_at),
+  ]);
+
+  return {
+    connected: Boolean(goal || currentDiagnostic || masteryRows.length || labAttempts.length || mistakes.length || roadmapItems.length || planItems.length || sessions.length),
+    language_id: scope.languageId,
+    goal,
+    current_diagnostic: currentDiagnostic
+      ? {
+        id: currentDiagnostic.id,
+        computed_at: currentDiagnostic.computed_at,
+        snapshot_version: currentDiagnostic.snapshot_version,
+        overall: isObject((currentDiagnostic.diagnostics as JsonRecord | undefined)?.overall)
+          ? (currentDiagnostic.diagnostics as JsonRecord).overall
+          : null,
+        sections: isObject((currentDiagnostic.diagnostics as JsonRecord | undefined)?.sections)
+          ? (currentDiagnostic.diagnostics as JsonRecord).sections
+          : {},
+        question_types: Array.isArray((currentDiagnostic.diagnostics as JsonRecord | undefined)?.question_types)
+          ? ((currentDiagnostic.diagnostics as JsonRecord).question_types as unknown[]).slice(0, 12)
+          : [],
+        source_summary: isObject(currentDiagnostic.source_summary) ? currentDiagnostic.source_summary : {},
+      }
+      : null,
+    diagnostic_section_bands: diagnosticBands,
+    mastery_summary: masterySummary,
+    recent_lab_attempts: labAttempts,
+    mistake_notebook: mistakes,
+    roadmap_items: roadmapItems,
+    plan_items: planItems,
+    recent_sessions: sessions,
+    freshness: {
+      latest_practice_at: latestPracticeAt,
+      latest_diagnostic_at: toNullableText(currentDiagnostic?.computed_at, 80),
+      has_current_diagnostic: Boolean(currentDiagnostic),
+    },
+    errors,
+  };
 };
 
 export const resolveMarketGuidance = async (
@@ -453,6 +822,7 @@ export const resolveTrack = (rules: Map<string, JsonRecord>, profile: PlaybookPr
 export const resolveWeakestSkill = (
   profile: PlaybookProfileRow,
   sectionBands: Record<string, number>,
+  practiceWeakestSkill?: string | null,
 ): string => {
   const candidates = ["listening", "reading", "writing", "speaking"];
   const scored = candidates
@@ -460,10 +830,15 @@ export const resolveWeakestSkill = (
     .filter((entry) => typeof entry.band === "number");
 
   if (scored.length > 0) {
-    scored.sort((a, b) => a.band - b.band || a.skill.localeCompare(b.skill));
+    scored.sort((a, b) => {
+      const aAdjustedBand = a.band - (a.skill === practiceWeakestSkill ? 0.35 : 0);
+      const bAdjustedBand = b.band - (b.skill === practiceWeakestSkill ? 0.35 : 0);
+      return aAdjustedBand - bAdjustedBand || a.band - b.band || a.skill.localeCompare(b.skill);
+    });
     return scored[0].skill;
   }
 
+  if (practiceWeakestSkill && candidates.includes(practiceWeakestSkill)) return practiceWeakestSkill;
   if (profile.weakest_skill && candidates.includes(profile.weakest_skill)) return profile.weakest_skill;
   return "writing";
 };
@@ -525,7 +900,12 @@ const buildPriorityModules = (weakestSkill: string, bucket: string): Array<{ slu
   return modules.filter((entry, index, arr) => arr.findIndex((other) => other.slug === entry.slug) === index);
 };
 
-const buildLikelyBottlenecks = (weakestSkill: string, track: string, bandGap: number): string[] => {
+const buildLikelyBottlenecks = (
+  weakestSkill: string,
+  track: string,
+  bandGap: number,
+  practiceEvidence?: JsonRecord | null,
+): string[] => {
   const items = [
     `Score progress will probably stay uneven across skills while ${weakestSkill} is lagging.`,
     weakestSkill === "writing"
@@ -537,6 +917,22 @@ const buildLikelyBottlenecks = (weakestSkill: string, track: string, bandGap: nu
   ];
 
   if (bandGap >= 1) items.push("A full-band jump usually needs repeated feedback loops, not just more untimed practice.");
+
+  const masterySummary = isObject(practiceEvidence?.mastery_summary) ? (practiceEvidence?.mastery_summary as JsonRecord) : {};
+  const weakQuestionTypes = Array.isArray(masterySummary.weakest_question_types)
+    ? masterySummary.weakest_question_types as Array<Record<string, unknown>>
+    : [];
+  if (weakQuestionTypes.length > 0) {
+    const labels = weakQuestionTypes
+      .slice(0, 3)
+      .map((row) => `${toText(row.section_type, 24)} ${toText(row.question_type, 80)}`.trim())
+      .filter(Boolean)
+      .join(", ");
+    if (labels) items.push(`Practice mastery data is still flagging: ${labels}.`);
+  }
+
+  const mistakes = Array.isArray(practiceEvidence?.mistake_notebook) ? (practiceEvidence?.mistake_notebook as unknown[]) : [];
+  if (mistakes.length > 0) items.push(`${mistakes.length} active practice mistake patterns should be reviewed before adding new volume.`);
   return items;
 };
 
@@ -562,16 +958,34 @@ export const generateRecommendation = async (
   userId: string,
   profile: PlaybookProfileRow,
 ): Promise<JsonRecord> => {
-  const [rules, templates, outcome, market] = await Promise.all([
+  const [rules, templates, simulatorOutcome, practiceOutcome, practiceEvidence, market] = await Promise.all([
     loadRules(sb, scope),
     loadPlanTemplates(sb, scope),
     loadLatestOutcome(sb, scope, userId),
+    loadLatestOutcomeForProduct(sb, userId, scope.practiceProductId),
+    loadPracticeEvidence(sb, scope, userId),
     resolveMarketGuidance(sb, scope, profile.test_market_country_code, profile.provider_key),
   ]);
 
-  const sectionBands = extractSectionBands(outcome);
-  const weakestSkill = resolveWeakestSkill(profile, sectionBands);
-  const currentOverallBand = outcome?.overall_band ?? profile.current_band_or_estimate ?? null;
+  const simulatorSectionBands = extractSectionBands(simulatorOutcome);
+  const practiceOutcomeSectionBands = extractSectionBands(practiceOutcome);
+  const practiceDiagnosticSectionBands = isObject(practiceEvidence.diagnostic_section_bands)
+    ? (practiceEvidence.diagnostic_section_bands as Record<string, number>)
+    : {};
+  const sectionBands = {
+    ...practiceDiagnosticSectionBands,
+    ...practiceOutcomeSectionBands,
+    ...simulatorSectionBands,
+  };
+  const practiceMasterySummary = isObject(practiceEvidence.mastery_summary) ? (practiceEvidence.mastery_summary as JsonRecord) : {};
+  const practiceWeakestSkill = sectionFrom(practiceMasterySummary.weakest_section);
+  const weakestSkill = resolveWeakestSkill(profile, sectionBands, practiceWeakestSkill);
+  const currentOverallBand =
+    simulatorOutcome?.overall_band ??
+    practiceOutcome?.overall_band ??
+    extractPracticeOverallBand(isObject(practiceEvidence.current_diagnostic) ? (practiceEvidence.current_diagnostic as Record<string, unknown>) : null) ??
+    profile.current_band_or_estimate ??
+    null;
   const bandGap = currentOverallBand == null ? Math.max(0, profile.target_overall_band - 6) : Math.max(0, profile.target_overall_band - currentOverallBand);
   const bucket = pickDeadlineBucket(rules, profile.deadline_date);
   const track = resolveTrack(rules, profile);
@@ -603,12 +1017,34 @@ export const generateRecommendation = async (
       practice_product_id: scope.practiceProductId,
     },
     outcome_summary: {
-      latest_exam_outcome_id: outcome?.id ?? null,
-      latest_session_id: outcome?.session_id ?? null,
-      latest_computed_at: outcome?.computed_at ?? null,
+      latest_exam_outcome_id: simulatorOutcome?.id ?? practiceOutcome?.id ?? null,
+      latest_session_id: simulatorOutcome?.session_id ?? practiceOutcome?.session_id ?? null,
+      latest_computed_at: simulatorOutcome?.computed_at ?? practiceOutcome?.computed_at ?? null,
       current_overall_band: currentOverallBand,
       section_bands: sectionBands,
-      used_simulator_outcome: Boolean(outcome),
+      simulator_section_bands: simulatorSectionBands,
+      practice_section_bands: practiceOutcomeSectionBands,
+      practice_diagnostic_section_bands: practiceDiagnosticSectionBands,
+      used_simulator_outcome: Boolean(simulatorOutcome),
+      used_practice_outcome: Boolean(practiceOutcome),
+      used_practice_evidence: Boolean(practiceEvidence.connected),
+    },
+    evidence_summary: {
+      simulator: {
+        connected: Boolean(simulatorOutcome),
+        latest_outcome_id: simulatorOutcome?.id ?? null,
+        latest_computed_at: simulatorOutcome?.computed_at ?? null,
+        overall_band: simulatorOutcome?.overall_band ?? null,
+        section_bands: simulatorSectionBands,
+      },
+      practice: {
+        connected: Boolean(practiceEvidence.connected),
+        latest_outcome_id: practiceOutcome?.id ?? null,
+        latest_computed_at: practiceOutcome?.computed_at ?? null,
+        latest_practice_at: isObject(practiceEvidence.freshness) ? (practiceEvidence.freshness as JsonRecord).latest_practice_at ?? null : null,
+        overall_band: practiceOutcome?.overall_band ?? extractPracticeOverallBand(isObject(practiceEvidence.current_diagnostic) ? (practiceEvidence.current_diagnostic as Record<string, unknown>) : null),
+        mastery: practiceMasterySummary,
+      },
     },
     decision: {
       selected_track: track,
@@ -622,7 +1058,7 @@ export const generateRecommendation = async (
       deadline_bucket: bucket,
       band_gap: roundTo(bandGap, 1),
       weakest_skill: weakestSkill,
-      likely_bottlenecks: buildLikelyBottlenecks(weakestSkill, track, bandGap),
+      likely_bottlenecks: buildLikelyBottlenecks(weakestSkill, track, bandGap, practiceEvidence),
       realistic_timeline: buildTimelineAssessment(bucket, bandGap),
     },
     recommended_module_order: buildPriorityModules(weakestSkill, bucket),
@@ -647,6 +1083,7 @@ export const generateRecommendation = async (
       label: "Open targeted practice",
       url: `https://practice.ielts.schood.online/dashboard?source=playbook&weak_skill=${encodeURIComponent(weakestSkill)}`,
     },
+    practice_evidence: practiceEvidence,
     post_result_strategy: {
       recommended_path: osrEligible ? "one_skill_retake" : "full_retake",
       rationale: osrEligible
@@ -895,10 +1332,13 @@ export const loadUpdatesPayload = async (sb: any, scope: PlaybookScope): Promise
 };
 
 export const buildDashboardPayload = async (sb: any, scope: PlaybookScope, userId: string): Promise<JsonRecord> => {
-  const [profile, recommendation, outcome, premiumGuides] = await Promise.all([
+  const [profile, recommendation, simulatorOutcome, practiceOutcome, recentOutcomes, practiceEvidence, premiumGuides] = await Promise.all([
     loadProfile(sb, scope, userId),
     loadCurrentRecommendation(sb, scope, userId),
     loadLatestOutcome(sb, scope, userId),
+    loadLatestOutcomeForProduct(sb, userId, scope.practiceProductId),
+    loadRecentOutcomeEvidence(sb, scope, userId),
+    loadPracticeEvidence(sb, scope, userId),
     sb
       .from("ielts_playbook_pages")
       .select("id,slug,title,summary,module_key,page_type,sort_order")
@@ -912,7 +1352,24 @@ export const buildDashboardPayload = async (sb: any, scope: PlaybookScope, userI
   return {
     profile,
     latest_recommendation: recommendation,
-    latest_outcome: outcome ? { ...outcome, section_bands: extractSectionBands(outcome) } : null,
+    latest_outcome: simulatorOutcome ? { ...simulatorOutcome, section_bands: extractSectionBands(simulatorOutcome) } : null,
+    latest_simulator_outcome: simulatorOutcome ? { ...simulatorOutcome, section_bands: extractSectionBands(simulatorOutcome) } : null,
+    latest_practice_outcome: practiceOutcome ? { ...practiceOutcome, section_bands: extractSectionBands(practiceOutcome) } : null,
+    recent_outcomes: recentOutcomes,
+    practice_evidence: practiceEvidence,
+    connected_services: {
+      simulator: {
+        connected: Boolean(simulatorOutcome),
+        latest_outcome_at: simulatorOutcome?.computed_at ?? null,
+        overall_band: simulatorOutcome?.overall_band ?? null,
+      },
+      practice: {
+        connected: Boolean(practiceEvidence.connected || practiceOutcome),
+        latest_outcome_at: practiceOutcome?.computed_at ?? null,
+        latest_practice_at: isObject(practiceEvidence.freshness) ? (practiceEvidence.freshness as JsonRecord).latest_practice_at ?? null : null,
+        mastery: isObject(practiceEvidence.mastery_summary) ? practiceEvidence.mastery_summary : {},
+      },
+    },
     premium_guides: premiumGuides.data ?? [],
   };
 };
