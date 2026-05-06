@@ -88,6 +88,7 @@ const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
 const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50';
+const TSPAY_MAX_AMOUNT_UZS = 100_000;
 
 const money = (amount?: number | null, currency = 'UZS') =>
   typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : '-';
@@ -219,6 +220,16 @@ export const CenterOfficePage: React.FC = () => {
   const redeemUrl = (code?: string | null) => `${origin}/redeem${code ? `/${encodeURIComponent(code)}` : ''}`;
   const centerTenantId = center?.tenant_id ?? null;
   const centerIsActive = center?.status === 'active';
+  const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
+  const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
+  const ticketEstimate = (selectedExperience?.price_amount ?? 0) * ticketForm.quantity;
+  const ticketCurrency = selectedExperience?.price_currency ?? 'UZS';
+  const ticketMaxOnlineQuantity = selectedExperience?.price_amount ? Math.floor(TSPAY_MAX_AMOUNT_UZS / selectedExperience.price_amount) : 0;
+  const ticketOnlineBlocked = ticketCurrency === 'UZS' && ticketEstimate > TSPAY_MAX_AMOUNT_UZS;
+  const seatEstimate = (selectedPlan?.amount ?? 0) * seatForm.seat_count;
+  const seatCurrency = selectedPlan?.currency ?? 'UZS';
+  const seatMaxOnlineQuantity = selectedPlan?.amount ? Math.floor(TSPAY_MAX_AMOUNT_UZS / selectedPlan.amount) : 0;
+  const seatOnlineBlocked = seatCurrency === 'UZS' && seatEstimate > TSPAY_MAX_AMOUNT_UZS;
 
   const getValidToken = async (): Promise<string | null> => {
     const { data } = await supabase.auth.getSession();
@@ -343,6 +354,11 @@ export const CenterOfficePage: React.FC = () => {
   const buyTickets = async () => {
     const token = await getValidToken();
     if (!token || !ticketForm.experience_id || !centerTenantId) return;
+    if (ticketOnlineBlocked) {
+      setTab('wallet');
+      setError(`Online card checkout is limited to ${money(TSPAY_MAX_AMOUNT_UZS, 'UZS')} per transaction. For larger center packs, request a wallet top-up, then generate vouchers from the Buy tab.`);
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -367,6 +383,11 @@ export const CenterOfficePage: React.FC = () => {
   const buySeats = async () => {
     const token = await getValidToken();
     if (!token || !seatForm.plan_id || !centerTenantId) return;
+    if (seatOnlineBlocked) {
+      setTab('wallet');
+      setError(`Online card checkout is limited to ${money(TSPAY_MAX_AMOUNT_UZS, 'UZS')} per transaction. For larger seat bundles, request a wallet top-up, then generate seat vouchers from the Buy tab.`);
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -607,8 +628,6 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
-  const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
-  const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
   const recentVouchers = vouchers.slice(0, 12);
 
   const headerActions: SiteHeaderAction[] = [
@@ -762,6 +781,9 @@ export const CenterOfficePage: React.FC = () => {
                 catalog={catalog}
                 form={ticketForm}
                 selected={selectedExperience}
+                maxOnlineAmount={TSPAY_MAX_AMOUNT_UZS}
+                maxOnlineQuantity={ticketMaxOnlineQuantity}
+                onlineBlocked={ticketOnlineBlocked}
                 loading={loading}
                 pending={pendingKind === 'tickets' ? pendingTransactionId : null}
                 onChange={setTicketForm}
@@ -772,6 +794,9 @@ export const CenterOfficePage: React.FC = () => {
                 plans={plans}
                 form={seatForm}
                 selected={selectedPlan}
+                maxOnlineAmount={TSPAY_MAX_AMOUNT_UZS}
+                maxOnlineQuantity={seatMaxOnlineQuantity}
+                onlineBlocked={seatOnlineBlocked}
                 loading={loading}
                 pending={pendingKind === 'seats' ? pendingTransactionId : null}
                 onChange={setSeatForm}
@@ -1061,19 +1086,30 @@ const BuyMockPanel: React.FC<{
   catalog: PartnerOfficeExperience[];
   form: { experience_id: string; quantity: number; expires_in_days: number; apply_credit: boolean };
   selected?: PartnerOfficeExperience | null;
+  maxOnlineAmount: number;
+  maxOnlineQuantity: number;
+  onlineBlocked: boolean;
   loading: boolean;
   pending: string | null;
   onChange: React.Dispatch<React.SetStateAction<{ experience_id: string; quantity: number; expires_in_days: number; apply_credit: boolean }>>;
   onBuy: () => void;
   onCheck: () => void;
-}> = ({ catalog, form, selected, loading, pending, onChange, onBuy, onCheck }) => (
+}> = ({ catalog, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, loading, pending, onChange, onBuy, onCheck }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={Ticket} label="Wholesale pack" title="Buy mock tickets" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={200} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Expiry days<input type="number" min={1} max={30} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
     <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.price_amount ?? 0) * form.quantity, selected?.price_currency ?? 'UZS')}</strong></p>
-    <button type="button" onClick={onBuy} disabled={loading || !selected} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
+    <p className="mt-2 text-xs text-gray-500">
+      Online card checkout supports up to {money(maxOnlineAmount, 'UZS')} per transaction. Larger center packs should use Wallet top-up, then voucher generation.
+    </p>
+    {onlineBlocked ? (
+      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+        This pack is above the card limit{maxOnlineQuantity > 0 ? `; buy up to ${maxOnlineQuantity} online, or use wallet for the full pack.` : '; use wallet top-up for this item.'}
+      </p>
+    ) : null}
+    <button type="button" onClick={onBuy} disabled={loading || !selected || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
     {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
   </div>
 );
@@ -1082,18 +1118,29 @@ const BuySeatPanel: React.FC<{
   plans: PartnerOfficePlan[];
   form: { plan_id: string; seat_count: number; apply_credit: boolean };
   selected?: PartnerOfficePlan | null;
+  maxOnlineAmount: number;
+  maxOnlineQuantity: number;
+  onlineBlocked: boolean;
   loading: boolean;
   pending: string | null;
   onChange: React.Dispatch<React.SetStateAction<{ plan_id: string; seat_count: number; apply_credit: boolean }>>;
   onBuy: () => void;
   onCheck: () => void;
-}> = ({ plans, form, selected, loading, pending, onChange, onBuy, onCheck }) => (
+}> = ({ plans, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, loading, pending, onChange, onBuy, onCheck }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={UsersRound} label="Seat pack" title="Buy subscriptions" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Seats<input type="number" min={1} max={200} value={form.seat_count} onChange={(e) => onChange((prev) => ({ ...prev, seat_count: Number(e.target.value) }))} className={inputClass} /></label>
     <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.amount ?? 0) * form.seat_count, selected?.currency ?? 'UZS')}</strong></p>
-    <button type="button" onClick={onBuy} disabled={loading || !selected} className={`${primaryButton} mt-5 w-full`}>Buy seats</button>
+    <p className="mt-2 text-xs text-gray-500">
+      Online card checkout supports up to {money(maxOnlineAmount, 'UZS')} per transaction. Larger seat bundles should use Wallet top-up, then voucher generation.
+    </p>
+    {onlineBlocked ? (
+      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+        This bundle is above the card limit{maxOnlineQuantity > 0 ? `; buy up to ${maxOnlineQuantity} online, or use wallet for the full bundle.` : '; use wallet top-up for this plan.'}
+      </p>
+    ) : null}
+    <button type="button" onClick={onBuy} disabled={loading || !selected || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy seats</button>
     {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
   </div>
 );

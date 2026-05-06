@@ -4,6 +4,7 @@ import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-st
 
 type Json = Record<string, unknown>;
 type MembershipRow = { tenant_id: string; role: string; status: string };
+const TSPAY_MAX_AMOUNT_UZS = 100000;
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -81,6 +82,12 @@ const sanitizeFilename = (name: string): string =>
 
 const normalizeEmail = (raw: unknown): string =>
   String(raw ?? "").trim().toLowerCase();
+
+const normalizeMoney = (raw: unknown): number => {
+  const num = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(num) || num <= 0) return 0;
+  return Math.floor(num);
+};
 
 const loadMemberships = async (sb: any, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
@@ -1197,6 +1204,52 @@ serve(async (req) => {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
         const purchaseType = actionBody === "create_ticket_purchase" ? "token_pack" : "seat_pack";
+        const quantity = normalizeQuantity(purchaseType === "token_pack" ? body.quantity : body.seat_count ?? body.quantity, 200) ?? 1;
+        let originalAmount = 0;
+        let currency = "UZS";
+
+        if (purchaseType === "token_pack") {
+          const experienceId = String(body.experience_id ?? "");
+          const { data: exp } = await sb
+            .from("experiences")
+            .select("id, price_amount, price_currency")
+            .eq("id", experienceId)
+            .eq("is_active", true)
+            .maybeSingle();
+          originalAmount = Number((exp as any)?.price_amount ?? 0) * quantity;
+          currency = String((exp as any)?.price_currency ?? "UZS");
+        } else {
+          const planId = String(body.plan_id ?? "");
+          const { data: plan } = await sb
+            .from("plans")
+            .select("id, amount, currency")
+            .eq("id", planId)
+            .eq("is_active", true)
+            .maybeSingle();
+          originalAmount = Number((plan as any)?.amount ?? 0) * quantity;
+          currency = String((plan as any)?.currency ?? "UZS");
+        }
+
+        if (Number.isFinite(originalAmount) && originalAmount > 0 && currency === "UZS") {
+          const { data: creditAvailable } = await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
+          const requestedCredit = body.apply_credit || typeof body.credit_amount !== "undefined"
+            ? (typeof body.credit_amount === "undefined" || body.credit_amount === null ? originalAmount : normalizeMoney(body.credit_amount))
+            : 0;
+          const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
+          const finalAmount = Math.max(0, originalAmount - creditAmount);
+          if (finalAmount > TSPAY_MAX_AMOUNT_UZS) {
+            return json(400, {
+              error: "Online card checkout is limited to 100,000 UZS per transaction. For larger education center packs, request a wallet top-up and generate vouchers from wallet balance.",
+              error_code: "tspay_amount_limit",
+              max_amount: TSPAY_MAX_AMOUNT_UZS,
+              original_amount: originalAmount,
+              credit_amount: creditAmount,
+              final_amount: finalAmount,
+              currency,
+            });
+          }
+        }
+
         const payload = {
           ...body,
           purchase_type: purchaseType,
