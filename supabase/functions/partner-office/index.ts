@@ -4,7 +4,7 @@ import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-st
 
 type Json = Record<string, unknown>;
 type MembershipRow = { tenant_id: string; role: string; status: string };
-const TSPAY_MAX_AMOUNT_UZS = 100000;
+const TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 100000;
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -1237,11 +1237,12 @@ serve(async (req) => {
             : 0;
           const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
           const finalAmount = Math.max(0, originalAmount - creditAmount);
-          if (finalAmount > TSPAY_MAX_AMOUNT_UZS) {
+          if (finalAmount > TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS) {
             return json(400, {
-              error: "Online card checkout is limited to 100,000 UZS per transaction. For larger education center packs, request a wallet top-up and generate vouchers from wallet balance.",
-              error_code: "tspay_amount_limit",
-              max_amount: TSPAY_MAX_AMOUNT_UZS,
+              error: "Online checkout is temporarily limited to 100,000 UZS per transaction while only one payment provider is enabled. For larger education center packs, use wallet top-up/admin settlement or split the purchase.",
+              error_code: "online_payment_amount_limit",
+              temporary: true,
+              max_amount: TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS,
               original_amount: originalAmount,
               credit_amount: creditAmount,
               final_amount: finalAmount,
