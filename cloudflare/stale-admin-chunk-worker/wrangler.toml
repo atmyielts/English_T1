@@ -1,0 +1,7 @@
+name = "schood-stale-admin-chunk"
+main = "worker.js"
+compatibility_date = "2026-05-06"
+
+routes = [
+  { pattern = "schood.online/assets/AdminReferralsPage-C0Y3UgzG.js", custom_domain = false }
+]
