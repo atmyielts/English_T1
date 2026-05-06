@@ -11,8 +11,15 @@ const localPreviewFallback =
       }
     : null;
 
-const envSupabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
-const envSupabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
+const cleanEnvValue = (value: string | undefined): string | undefined => {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  const unquoted = trimmed.replace(/^(['"])(.*)\1$/, '$2').trim();
+  return unquoted || undefined;
+};
+
+const envSupabaseUrl = cleanEnvValue(import.meta.env.VITE_SUPABASE_URL as string | undefined);
+const envSupabaseAnonKey = cleanEnvValue(import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined);
 const envPointsToLocalSupabase = /^https?:\/\/(?:127\.0\.0\.1|localhost):54321\b/i.test(envSupabaseUrl ?? '');
 
 const resolvedSupabaseUrl = !import.meta.env.DEV && envPointsToLocalSupabase ? undefined : envSupabaseUrl || localPreviewFallback?.supabaseUrl;
