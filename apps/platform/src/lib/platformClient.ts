@@ -2490,7 +2490,11 @@ export const partnerOfficeDashboard = (accessToken: string, tenantId?: string | 
     { tenant_id: tenantId },
   );
 export const partnerOfficeCenter = (accessToken: string, tenantId?: string | null) =>
-  partnerOfficeGet<{ center: PartnerCenterProfile; tenant: { id: string; name: string; slug: string } | null }>(accessToken, 'center', { tenant_id: tenantId });
+  partnerOfficeGet<{ center: PartnerCenterProfile | null; tenant: { id: string; name: string; slug: string } | null; needs_application?: boolean }>(
+    accessToken,
+    'center',
+    { tenant_id: tenantId },
+  );
 export const partnerOfficeCatalog = (accessToken: string) =>
   partnerOfficeGet<{ experiences: PartnerOfficeExperience[]; plans?: PartnerOfficePlan[]; products?: AdminProductRow[] }>(accessToken, 'catalog');
 export const partnerOfficeTickets = (accessToken: string, tenantId?: string | null) =>
@@ -2526,12 +2530,31 @@ export const partnerOfficeCommissions = (accessToken: string) =>
 
 export const partnerOfficeUpdateCenter = (
   accessToken: string,
-  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding' | 'commercial_model'>>,
+  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding' | 'commercial_model'>> & {
+    tenant_id?: string | null;
+    center_office?: boolean;
+  },
 ) => partnerOfficePost<{ center: PartnerCenterProfile }>(accessToken, { action: 'update_center_profile', ...body });
+
+export const partnerOfficeApplyCenter = (
+  accessToken: string,
+  body: {
+    display_name: string;
+    slug?: string;
+    logo_url?: string;
+    public_instructions?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+  },
+) => partnerOfficePost<{ center: PartnerCenterProfile; tenant: { id: string; name: string; slug: string; type?: string }; status: string; note?: string }>(
+  accessToken,
+  { action: 'apply_center', ...body },
+);
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,
-  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null },
+  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean },
 ) => partnerOfficePost<{ ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
 
 export const partnerOfficeCreateVoucherBatch = (
@@ -2547,26 +2570,27 @@ export const partnerOfficeCreateVoucherBatch = (
     expires_at?: string | null;
     prefix?: string | null;
     source_model?: string | null;
+    center_office?: boolean;
     assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
   },
 ) => partnerOfficePost<{ batch: PartnerVoucherBatch; vouchers: PartnerVoucher[] }>(accessToken, { action: 'create_voucher_batch', ...body });
 
 export const partnerOfficeVoidVoucher = (
   accessToken: string,
-  body: { tenant_id?: string | null; voucher_id: string; reason?: string | null },
+  body: { tenant_id?: string | null; voucher_id: string; reason?: string | null; center_office?: boolean },
 ) => partnerOfficePost<{ voucher: PartnerVoucher }>(accessToken, { action: 'void_voucher', ...body });
 
-export const partnerOfficeExportReport = (accessToken: string, tenantId?: string | null) =>
-  partnerOfficePost<{ filename: string; csv: string }>(accessToken, { action: 'export_report', tenant_id: tenantId });
+export const partnerOfficeExportReport = (accessToken: string, tenantId?: string | null, centerOffice = false) =>
+  partnerOfficePost<{ filename: string; csv: string }>(accessToken, { action: 'export_report', tenant_id: tenantId, center_office: centerOffice });
 
 export const partnerOfficeRequestCashPayout = (
   accessToken: string,
-  body: { payout_method: string; payout_details?: Json | null; note?: string | null; reward_ids?: string[] },
+  body: { payout_method: string; payout_details?: Json | null; note?: string | null; reward_ids?: string[]; tenant_id?: string | null; center_office?: boolean },
 ) => partnerOfficePost<{ cash_payout_request: any; reward_ids: string[] }>(accessToken, { action: 'request_cash_payout', ...body });
 
 export const partnerOfficeAssignSeat = (
   accessToken: string,
-  body: { tenant_id?: string | null; seat_id: string; email: string },
+  body: { tenant_id?: string | null; seat_id: string; email: string; center_office?: boolean },
 ) => partnerOfficePost<{ seat: PartnerOfficeSeat | null }>(accessToken, { action: 'assign_seat', ...body });
 
 export const partnerOfficeCreateTicketPurchase = (
@@ -2579,6 +2603,7 @@ export const partnerOfficeCreateTicketPurchase = (
     apply_credit?: boolean;
     credit_amount?: number | null;
     referral_code?: string | null;
+    center_office?: boolean;
   },
 ) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_ticket_purchase', ...body });
 
@@ -2591,6 +2616,7 @@ export const partnerOfficeCreateSeatPurchase = (
     apply_credit?: boolean;
     credit_amount?: number | null;
     referral_code?: string | null;
+    center_office?: boolean;
   },
 ) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
 

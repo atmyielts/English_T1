@@ -2,73 +2,59 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowUpRight,
   BarChart3,
-  Building2,
+  CheckCircle2,
   ClipboardList,
   Coins,
   Copy,
   CreditCard,
-  Download,
   Link2,
-  Paintbrush,
   ReceiptText,
   RefreshCw,
-  Save,
+  Send,
   Ticket,
-  Trash2,
   UserPlus,
   UsersRound,
   WalletCards,
   type LucideIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
 import {
+  partnerOfficeAssignSeat,
   partnerOfficeCatalog,
-  partnerOfficeCenter,
   partnerOfficeCreateSeatPurchase,
   partnerOfficeCreateTicketPurchase,
-  partnerOfficeCreateVoucherBatch,
-  partnerOfficeCreateWalletTopup,
+  partnerOfficeCredits,
   partnerOfficeDashboard,
-  partnerOfficeExportReport,
   partnerOfficePayments,
   partnerOfficePlans,
-  partnerOfficeReports,
+  partnerOfficeReferrals,
   partnerOfficeRequestCashPayout,
   partnerOfficeResults,
   partnerOfficeSeats,
-  partnerOfficeStudents,
   partnerOfficeTickets,
-  partnerOfficeUpdateCenter,
-  partnerOfficeVoidVoucher,
-  partnerOfficeVoucherBatches,
-  partnerOfficeVouchers,
-  partnerOfficeWallet,
   tspayStatus,
-  type PartnerCenterProfile,
   type PartnerCreditLedgerEntry,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
   type PartnerOfficePlan,
   type PartnerOfficeResult,
-  type PartnerReportSummary,
-  type PartnerStudent,
-  type PartnerVoucher,
-  type PartnerVoucherBatch,
+  type PartnerOfficeSeat,
+  type PartnerOfficeTicket,
+  type ReferralMeResponse,
 } from '../lib/platformClient';
+import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 
-type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'results' | 'reports' | 'branding' | 'payments';
+type Tab = 'overview' | 'buy' | 'tickets' | 'results' | 'seats' | 'referrals' | 'credits' | 'payments';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
-  { id: 'wallet', label: 'Wallet', icon: WalletCards },
   { id: 'buy', label: 'Buy', icon: CreditCard },
-  { id: 'vouchers', label: 'Vouchers', icon: Ticket },
-  { id: 'students', label: 'Students', icon: UsersRound },
+  { id: 'tickets', label: 'Tickets', icon: Ticket },
   { id: 'results', label: 'Results', icon: ClipboardList },
-  { id: 'reports', label: 'Reports', icon: Download },
-  { id: 'branding', label: 'Branding', icon: Paintbrush },
+  { id: 'seats', label: 'Seats', icon: UsersRound },
+  { id: 'referrals', label: 'Referrals', icon: Link2 },
+  { id: 'credits', label: 'Credits', icon: Coins },
   { id: 'payments', label: 'Payments', icon: ReceiptText },
 ];
 
@@ -81,7 +67,9 @@ const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50';
 
 const money = (amount?: number | null, currency = 'UZS') =>
-  typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : '-';
+  typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : 'Not priced';
+
+const isPaid = (status?: string | null) => ['paid', 'success', 'completed'].includes(String(status ?? '').trim().toLowerCase());
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
@@ -97,16 +85,20 @@ const formatDateTime = (value?: string | null) => {
   return date.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-const isPaid = (status?: string | null) => ['paid', 'success', 'completed'].includes(String(status ?? '').trim().toLowerCase());
-
 const statusTone = (status?: string | null) => {
   const normalized = String(status ?? '').toLowerCase();
-  if (['active', 'paid', 'success', 'completed', 'issued', 'unused', 'unassigned', 'redeemed'].includes(normalized)) {
+  if (['active', 'paid', 'success', 'completed', 'issued', 'unassigned'].includes(normalized)) {
     return 'border-emerald-200 bg-emerald-50 text-emerald-800';
   }
-  if (['pending', 'reserved', 'processing'].includes(normalized)) return 'border-amber-200 bg-amber-50 text-amber-900';
-  if (['claimed', 'assigned'].includes(normalized)) return 'border-sky-200 bg-sky-50 text-sky-800';
-  if (['failed', 'canceled', 'cancelled', 'expired', 'void', 'disabled'].includes(normalized)) return 'border-red-200 bg-red-50 text-red-700';
+  if (['pending', 'reserved', 'processing'].includes(normalized)) {
+    return 'border-amber-200 bg-amber-50 text-amber-900';
+  }
+  if (['used', 'assigned'].includes(normalized)) {
+    return 'border-sky-200 bg-sky-50 text-sky-800';
+  }
+  if (['failed', 'canceled', 'cancelled', 'expired', 'void'].includes(normalized)) {
+    return 'border-red-200 bg-red-50 text-red-700';
+  }
   return 'border-gray-200 bg-gray-50 text-gray-700';
 };
 
@@ -160,42 +152,65 @@ const StatCard: React.FC<{ label: string; value: string | number; icon: LucideIc
 export const PartnerOfficePage: React.FC = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('overview');
-  const [center, setCenter] = useState<PartnerCenterProfile | null>(null);
   const [catalog, setCatalog] = useState<PartnerOfficeExperience[]>([]);
-  const [plans, setPlans] = useState<PartnerOfficePlan[]>([]);
-  const [payments, setPayments] = useState<PartnerOfficePayment[]>([]);
+  const [tickets, setTickets] = useState<PartnerOfficeTicket[]>([]);
   const [results, setResults] = useState<PartnerOfficeResult[]>([]);
-  const [reports, setReports] = useState<PartnerReportSummary | null>(null);
-  const [batches, setBatches] = useState<PartnerVoucherBatch[]>([]);
-  const [vouchers, setVouchers] = useState<PartnerVoucher[]>([]);
-  const [students, setStudents] = useState<PartnerStudent[]>([]);
-  const [wallet, setWallet] = useState<{ currency: string; available_amount: number }>({ currency: 'UZS', available_amount: 0 });
-  const [ledger, setLedger] = useState<PartnerCreditLedgerEntry[]>([]);
-  const [dashboard, setDashboard] = useState<{ counts: Record<string, number>; wallet?: { currency: string; available_amount: number } } | null>(null);
+  const [plans, setPlans] = useState<PartnerOfficePlan[]>([]);
+  const [seats, setSeats] = useState<PartnerOfficeSeat[]>([]);
+  const [payments, setPayments] = useState<PartnerOfficePayment[]>([]);
+  const [referrals, setReferrals] = useState<ReferralMeResponse | null>(null);
+  const [credit, setCredit] = useState<{ currency: string; available_amount: number }>({ currency: 'UZS', available_amount: 0 });
+  const [creditLedger, setCreditLedger] = useState<PartnerCreditLedgerEntry[]>([]);
+  const [dashboard, setDashboard] = useState<{ counts: Record<string, number>; credit: { currency: string; available_amount: number } } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [experienceId, setExperienceId] = useState('');
+  const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [expiryDays, setExpiryDays] = useState(30);
+  const [ticketApplyCredit, setTicketApplyCredit] = useState(true);
+  const [seatPlanId, setSeatPlanId] = useState('');
+  const [seatQuantity, setSeatQuantity] = useState(1);
+  const [seatApplyCredit, setSeatApplyCredit] = useState(true);
   const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
   const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | null>(null);
+  const [seatEmails, setSeatEmails] = useState<Record<string, string>>({});
+  const [cashPayoutMethod, setCashPayoutMethod] = useState('cash');
+  const [cashPayoutDetails, setCashPayoutDetails] = useState('');
+  const [cashPayoutNote, setCashPayoutNote] = useState('');
 
-  const [ticketForm, setTicketForm] = useState({ experience_id: '', quantity: 10, expires_in_days: 30, apply_credit: true });
-  const [seatForm, setSeatForm] = useState({ plan_id: '', seat_count: 10, apply_credit: true });
-  const [voucherForm, setVoucherForm] = useState({
-    access_kind: 'mock_exam' as 'mock_exam' | 'subscription' | 'seat',
-    experience_id: '',
-    plan_id: '',
-    quantity: 10,
-    expires_in_days: 30,
-    prefix: 'SCH',
-    source_model: 'prepaid_wallet',
-  });
-  const [walletTopup, setWalletTopup] = useState({ amount: 1000000, note: '' });
-  const [brandingForm, setBrandingForm] = useState({ display_name: '', slug: '', logo_url: '', public_instructions: '', powered_by_schood: true });
-  const [cashPayout, setCashPayout] = useState({ payout_method: 'cash', payout_details: '', note: '' });
-
+  const selectedExperience = useMemo(() => catalog.find((item) => item.id === experienceId) ?? null, [catalog, experienceId]);
+  const selectedPlan = useMemo(() => plans.find((item) => item.id === seatPlanId) ?? null, [plans, seatPlanId]);
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
-  const centerUrl = center?.slug ? `${origin}/center/${center.slug}` : '';
-  const redeemUrl = (code?: string | null) => `${origin}/redeem${code ? `/${encodeURIComponent(code)}` : ''}`;
+  const activeTickets = useMemo(() => tickets.filter((ticket) => String(ticket.status).toLowerCase() === 'active'), [tickets]);
+  const openSeats = useMemo(() => seats.filter((seat) => String(seat.status).toLowerCase() === 'unassigned'), [seats]);
+  const ticketReadyCount = useMemo(() => catalog.filter((item) => item.is_ticket_ready).length, [catalog]);
+  const referralUrl = referrals?.referral_url_path ? `${origin}${referrals.referral_url_path}` : referrals?.account?.referral_code ? `${origin}/r/${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const legacyReferralUrl = referrals?.legacy_referral_url_path ? `${origin}${referrals.legacy_referral_url_path}` : referrals?.account?.referral_code ? `${origin}/?ref=${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const availableCashRewards = useMemo(
+    () => (referrals?.rewards ?? []).filter((reward: any) => reward.referrer_user_id === referrals?.account?.user_id && reward.status === 'issued' && reward.cash_status === 'available' && Number(reward.cash_amount ?? 0) > 0),
+    [referrals?.account?.user_id, referrals?.rewards],
+  );
+  const cashPayoutRequests = referrals?.cash_payout_requests ?? [];
+  const inviteUrl = (code: string) => `${origin}/candidate?code=${encodeURIComponent(code)}`;
+  const ticketEstimate =
+    selectedExperience && typeof selectedExperience.price_amount === 'number'
+      ? selectedExperience.price_amount * Math.max(1, ticketQuantity)
+      : null;
+  const seatEstimate = selectedPlan && typeof selectedPlan.amount === 'number' ? selectedPlan.amount * Math.max(1, seatQuantity) : null;
+
+  const navItems: SiteHeaderNavItem[] = [
+    { id: 'overview', label: 'Overview', onClick: () => setTab('overview'), active: tab === 'overview' },
+    { id: 'buy', label: 'Buy', onClick: () => setTab('buy'), active: tab === 'buy' },
+    { id: 'tickets', label: 'Tickets', onClick: () => setTab('tickets'), active: tab === 'tickets' },
+    { id: 'results', label: 'Results', onClick: () => setTab('results'), active: tab === 'results' },
+    { id: 'referrals', label: 'Referrals', onClick: () => setTab('referrals'), active: tab === 'referrals' },
+  ];
+
+  const headerActions: SiteHeaderAction[] = [
+    { id: 'candidate', label: 'Candidate', onClick: () => navigate('/candidate') },
+    { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
+  ];
 
   const getValidToken = async (): Promise<string | null> => {
     const { data } = await supabase.auth.getSession();
@@ -219,50 +234,29 @@ export const PartnerOfficePage: React.FC = () => {
         navigate(`/auth?returnTo=${encodeURIComponent('/partner')}`, { replace: true });
         return;
       }
-      const [centerRes, dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, resultRes, reportRes] =
-        await Promise.all([
-          partnerOfficeCenter(token),
-          partnerOfficeDashboard(token),
-          partnerOfficeCatalog(token),
-          partnerOfficePlans(token),
-          partnerOfficeTickets(token),
-          partnerOfficeSeats(token),
-          partnerOfficePayments(token),
-          partnerOfficeWallet(token),
-          partnerOfficeVouchers(token),
-          partnerOfficeVoucherBatches(token),
-          partnerOfficeStudents(token),
-          partnerOfficeResults(token),
-          partnerOfficeReports(token),
-        ]);
-
-      setCenter(centerRes.center);
+      const [dashRes, catalogRes, ticketsRes, resultsRes, plansRes, seatsRes, paymentsRes, creditsRes, referralsRes] = await Promise.all([
+        partnerOfficeDashboard(token),
+        partnerOfficeCatalog(token),
+        partnerOfficeTickets(token),
+        partnerOfficeResults(token),
+        partnerOfficePlans(token),
+        partnerOfficeSeats(token),
+        partnerOfficePayments(token),
+        partnerOfficeCredits(token),
+        partnerOfficeReferrals(token),
+      ]);
       setDashboard(dashRes);
       setCatalog(catalogRes.experiences ?? []);
-      setPlans(plansRes.plans ?? catalogRes.plans ?? []);
-      void ticketRes;
-      void seatRes;
-      setPayments(paymentRes.payments ?? []);
-      setWallet(walletRes.wallet ?? dashRes.wallet ?? { currency: 'UZS', available_amount: 0 });
-      setLedger(walletRes.ledger ?? []);
-      setVouchers(voucherRes.vouchers ?? []);
-      setBatches(batchRes.batches ?? []);
-      setStudents(studentRes.students ?? []);
-      setResults(resultRes.results ?? []);
-      setReports(reportRes.reports ?? null);
-
-      const firstExperience = catalogRes.experiences?.[0]?.id ?? '';
-      const firstPlan = (plansRes.plans ?? catalogRes.plans ?? [])[0]?.id ?? '';
-      setTicketForm((prev) => ({ ...prev, experience_id: prev.experience_id || firstExperience }));
-      setSeatForm((prev) => ({ ...prev, plan_id: prev.plan_id || firstPlan }));
-      setVoucherForm((prev) => ({ ...prev, experience_id: prev.experience_id || firstExperience, plan_id: prev.plan_id || firstPlan }));
-      setBrandingForm({
-        display_name: centerRes.center.display_name ?? '',
-        slug: centerRes.center.slug ?? '',
-        logo_url: centerRes.center.logo_url ?? '',
-        public_instructions: centerRes.center.public_instructions ?? '',
-        powered_by_schood: Boolean(centerRes.center.powered_by_schood),
-      });
+      setTickets(ticketsRes.tickets ?? []);
+      setResults(resultsRes.results ?? []);
+      setPlans(plansRes.plans ?? []);
+      setSeats(seatsRes.seats ?? []);
+      setPayments(paymentsRes.payments ?? []);
+      setCredit(creditsRes.credit);
+      setCreditLedger(creditsRes.ledger ?? []);
+      setReferrals(referralsRes);
+      if (!experienceId && catalogRes.experiences?.[0]) setExperienceId(catalogRes.experiences[0].id);
+      if (!seatPlanId && plansRes.plans?.[0]) setSeatPlanId(plansRes.plans[0].id);
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -279,12 +273,6 @@ export const PartnerOfficePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const copy = async (value: string, message = 'Copied.') => {
-    if (!value) return;
-    await navigator.clipboard.writeText(value);
-    setSuccess(message);
-  };
-
   const openPayment = (url: string | null) => {
     if (!url) return;
     const popup = window.open(url, '_blank', 'noopener,noreferrer');
@@ -293,20 +281,25 @@ export const PartnerOfficePage: React.FC = () => {
 
   const buyTickets = async () => {
     const token = await getValidToken();
-    if (!token || !ticketForm.experience_id) return;
+    if (!token || !experienceId) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTicketPurchase(token, ticketForm);
+      const res = await partnerOfficeCreateTicketPurchase(token, {
+        experience_id: experienceId,
+        quantity: ticketQuantity,
+        expires_in_days: expiryDays,
+        apply_credit: ticketApplyCredit,
+      });
       setPendingTransactionId(res.transaction_id);
       setPendingKind('tickets');
       if (res.payment_url) {
         openPayment(res.payment_url);
-        setSuccess('Payment opened. Mock tickets will appear after payment is confirmed.');
+        setSuccess('Payment opened. Tickets will appear after payment is confirmed.');
       } else if (isPaid(res.status)) {
         await refreshAll();
-        setSuccess('Mock tickets generated.');
+        setSuccess('Tickets generated using platform credit.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -317,12 +310,16 @@ export const PartnerOfficePage: React.FC = () => {
 
   const buySeats = async () => {
     const token = await getValidToken();
-    if (!token || !seatForm.plan_id) return;
+    if (!token || !seatPlanId) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateSeatPurchase(token, seatForm);
+      const res = await partnerOfficeCreateSeatPurchase(token, {
+        plan_id: seatPlanId,
+        seat_count: seatQuantity,
+        apply_credit: seatApplyCredit,
+      });
       setPendingTransactionId(res.transaction_id);
       setPendingKind('seats');
       if (res.payment_url) {
@@ -330,7 +327,7 @@ export const PartnerOfficePage: React.FC = () => {
         setSuccess('Payment opened. Seats will appear after payment is confirmed.');
       } else if (isPaid(res.status)) {
         await refreshAll();
-        setSuccess('Seats added.');
+        setSuccess('Seats added using platform credit.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -351,7 +348,7 @@ export const PartnerOfficePage: React.FC = () => {
         setPendingTransactionId(null);
         setPendingKind(null);
         await refreshAll();
-        setSuccess(pendingKind === 'seats' ? 'Seats added.' : 'Mock tickets generated.');
+        setSuccess(pendingKind === 'seats' ? 'Seats added.' : 'Tickets generated.');
       } else {
         setSuccess(`Payment status: ${res.status}`);
       }
@@ -362,96 +359,20 @@ export const PartnerOfficePage: React.FC = () => {
     }
   };
 
-  const createVoucherBatch = async () => {
+  const assignSeat = async (seatId: string) => {
     const token = await getValidToken();
-    if (!token) return;
+    const email = seatEmails[seatId]?.trim();
+    if (!token || !email) return;
     setLoading(true);
     setError(null);
-    setSuccess(null);
     try {
-      const payload = {
-        ...voucherForm,
-        experience_id: voucherForm.access_kind === 'mock_exam' ? voucherForm.experience_id : null,
-        plan_id: voucherForm.access_kind === 'mock_exam' ? null : voucherForm.plan_id,
-      };
-      const res = await partnerOfficeCreateVoucherBatch(token, payload);
+      await partnerOfficeAssignSeat(token, { seat_id: seatId, email });
       await refreshAll();
-      setTab('vouchers');
-      setSuccess(`Created ${res.vouchers.length} vouchers in ${res.batch.batch_code}.`);
+      setSuccess('Seat assigned.');
     } catch (err) {
       setError(parseError(err));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const requestTopup = async () => {
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      await partnerOfficeCreateWalletTopup(token, { amount: walletTopup.amount, currency: wallet.currency, note: walletTopup.note });
-      await refreshAll();
-      setSuccess('Top-up request recorded. Admin settlement is required before funds become available.');
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveBranding = async () => {
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const res = await partnerOfficeUpdateCenter(token, brandingForm);
-      setCenter(res.center);
-      setSuccess('Center branding saved.');
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const voidVoucher = async (voucherId: string) => {
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      await partnerOfficeVoidVoucher(token, { voucher_id: voucherId, reason: 'voided_from_partner_office' });
-      await refreshAll();
-      setSuccess('Voucher voided.');
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const exportReport = async () => {
-    const token = await getValidToken();
-    if (!token) return;
-    setError(null);
-    try {
-      const res = await partnerOfficeExportReport(token);
-      const blob = new Blob([res.csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = res.filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      setSuccess('Report exported.');
-    } catch (err) {
-      setError(parseError(err));
     }
   };
 
@@ -462,12 +383,20 @@ export const PartnerOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
+      const payoutDetails = cashPayoutDetails.trim()
+        ? { instructions: cashPayoutDetails.trim() }
+        : {};
+      const rewardIds = availableCashRewards.map((reward: any) => String(reward.id)).filter(Boolean);
       await partnerOfficeRequestCashPayout(token, {
-        payout_method: cashPayout.payout_method,
-        payout_details: cashPayout.payout_details.trim() ? { instructions: cashPayout.payout_details.trim() } : {},
-        note: cashPayout.note.trim() || null,
+        payout_method: cashPayoutMethod,
+        payout_details: payoutDetails,
+        note: cashPayoutNote.trim() || null,
+        reward_ids: rewardIds,
       });
-      setSuccess('Cash payout request sent.');
+      setCashPayoutDetails('');
+      setCashPayoutNote('');
+      await refreshAll();
+      setSuccess('Cash payout request sent to admins.');
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -475,21 +404,15 @@ export const PartnerOfficePage: React.FC = () => {
     }
   };
 
-  const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
-  const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
-  const recentVouchers = vouchers.slice(0, 12);
-
-  const navItems: SiteHeaderNavItem[] = tabs.map((item) => ({
-    id: item.id,
-    label: item.label,
-    onClick: () => setTab(item.id),
-    active: tab === item.id,
-  }));
-
-  const headerActions: SiteHeaderAction[] = [
-    { id: 'redeem', label: 'Redeem', onClick: () => navigate('/redeem') },
-    { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
-  ];
+  const copy = async (value: string, message = 'Copied.') => {
+    if (!value) return;
+    if (!navigator.clipboard) {
+      setError('Clipboard is not available in this browser.');
+      return;
+    }
+    await navigator.clipboard.writeText(value);
+    setSuccess(message);
+  };
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
@@ -500,23 +423,23 @@ export const PartnerOfficePage: React.FC = () => {
           <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
             <div className={`${panelClass} p-6 md:p-8`}>
               <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-800">
-                <Building2 className="h-4 w-4" />
-                {center?.display_name ?? 'Partner Office'}
+                <WalletCards className="h-4 w-4" />
+                Partner Office
               </div>
               <h1 className="mt-5 max-w-3xl text-3xl font-bold leading-tight text-gray-900 md:text-5xl">
-                Sell access, distribute vouchers, and monitor student outcomes.
+                Tickets, seats, referrals, and credits in one workspace.
               </h1>
               <p className="mt-4 max-w-2xl text-base text-gray-600">
-                Manage mock exams, subscription access, seats, wallet activity, branded center pages, reports, and partner payments from one workspace.
+                Buy single-sitting mock access, hand students into the existing candidate flow, manage seats, and track partner rewards from the same account.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <button type="button" onClick={() => setTab('buy')} className={primaryButton}>
                   <CreditCard className="h-4 w-4" />
-                  Buy or generate
+                  Buy access
                 </button>
-                <button type="button" onClick={() => centerUrl && window.open(centerUrl, '_blank', 'noopener,noreferrer')} disabled={!centerUrl} className={secondaryButton}>
-                  <ArrowUpRight className="h-4 w-4" />
-                  Center page
+                <button type="button" onClick={() => navigate('/candidate')} className={secondaryButton}>
+                  <Send className="h-4 w-4" />
+                  Candidate entry
                 </button>
                 <button type="button" onClick={() => void refreshAll()} className={secondaryButton} disabled={loading}>
                   <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -526,215 +449,569 @@ export const PartnerOfficePage: React.FC = () => {
             </div>
 
             <div className="rounded-3xl border border-gray-900 bg-[#0f172a] p-6 text-white shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Partner wallet</p>
-              <p className="mt-3 text-3xl font-bold">{money(wallet.available_amount, wallet.currency)}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Available credit</p>
+              <p className="mt-3 text-3xl font-bold">{money(dashboard?.credit?.available_amount ?? credit.available_amount, credit.currency)}</p>
               <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Public center page</p>
-                <p className="mt-2 break-all font-mono text-sm">{centerUrl || '-'}</p>
-                <button type="button" onClick={() => void copy(centerUrl, 'Center page copied.')} disabled={!centerUrl} className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/30 px-3 py-2 text-sm font-semibold text-white">
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </button>
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Referral code</p>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate font-mono text-xl font-bold">{referrals?.account?.referral_code ?? '-'}</span>
+                  <button
+                    type="button"
+                    onClick={() => referralUrl && void copy(referralUrl, 'Referral link copied.')}
+                    disabled={!referralUrl}
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-40"
+                    title="Copy referral link"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
+              <div className="mt-4 flex items-center gap-2 text-sm text-white/70">
+                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                Candidate links use /candidate?code=TOKEN
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <StatCard label="Tickets" value={dashboard?.counts?.tickets ?? tickets.length} icon={Ticket} />
+            <StatCard label="Active" value={activeTickets.length} icon={CheckCircle2} />
+            <StatCard label="Results" value={dashboard?.counts?.results ?? results.length} icon={ClipboardList} />
+            <StatCard label="Open seats" value={openSeats.length} icon={UsersRound} />
+            <StatCard label="Ticket mocks" value={ticketReadyCount} icon={BarChart3} tone="dark" />
+          </section>
+
+          <section className="overflow-x-auto rounded-full border border-gray-900 bg-[#efe6d8]/80 p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex min-w-max gap-2">
+              {tabs.map((item) => {
+                const Icon = item.icon;
+                const active = tab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setTab(item.id)}
+                    className={`inline-flex items-center gap-2 rounded-full border border-gray-900 px-4 py-2 text-sm font-semibold transition ${
+                      active ? 'bg-[#0f172a] text-white' : 'bg-white/80 text-gray-900 hover:bg-white'
+                    }`}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </section>
 
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
 
-          {tab === 'overview' ? (
-            <section className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-4">
-                <StatCard label="Wallet" value={money(wallet.available_amount, wallet.currency)} icon={WalletCards} tone="dark" />
-                <StatCard label="Unused vouchers" value={dashboard?.counts?.vouchers_unused ?? 0} icon={Ticket} />
-                <StatCard label="Redeemed" value={dashboard?.counts?.vouchers_redeemed ?? 0} icon={UsersRound} />
-                <StatCard label="Completed exams" value={reports?.completed_exams ?? dashboard?.counts?.results ?? 0} icon={ClipboardList} />
+          {pendingTransactionId ? (
+            <div className="flex flex-col gap-3 rounded-3xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold">Pending {pendingKind}</p>
+                <p className="mt-1 font-mono text-xs">{pendingTransactionId}</p>
               </div>
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="border-b border-gray-900/10 p-5 md:p-6">
-                  <SectionTitle icon={Ticket} label="Recent inventory" title="Latest vouchers" />
-                </div>
-                <VoucherTable vouchers={recentVouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
-              </div>
-            </section>
+              <button type="button" onClick={() => void checkPayment()} className={primaryButton}>
+                <CreditCard className="h-4 w-4" />
+                Check payment
+              </button>
+            </div>
           ) : null}
 
-          {tab === 'wallet' ? (
-            <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          {tab === 'overview' ? (
+            <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={WalletCards} label="Prepaid wallet" title="Request top-up" />
-                <label className="mt-5 block text-sm font-semibold text-gray-800">
-                  Amount
-                  <input type="number" min={1} value={walletTopup.amount} onChange={(e) => setWalletTopup((prev) => ({ ...prev, amount: Number(e.target.value) }))} className={inputClass} />
-                </label>
-                <label className="mt-4 block text-sm font-semibold text-gray-800">
-                  Note
-                  <textarea value={walletTopup.note} onChange={(e) => setWalletTopup((prev) => ({ ...prev, note: e.target.value }))} className={`${inputClass} min-h-[90px]`} />
-                </label>
-                <button type="button" onClick={() => void requestTopup()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
-                  <WalletCards className="h-4 w-4" />
-                  Request top-up
-                </button>
-                <p className="mt-3 text-xs text-gray-500">Top-up requests require admin settlement before they become available balance.</p>
+                <SectionTitle
+                  icon={Ticket}
+                  label="Recent activity"
+                  title="Latest tickets"
+                  action={
+                    <button type="button" onClick={() => setTab('tickets')} className={secondaryButton}>
+                      View all
+                    </button>
+                  }
+                />
+                <div className="mt-5 space-y-3">
+                  {tickets.slice(0, 5).map((ticket) => (
+                    <div key={ticket.id} className="flex flex-col gap-3 rounded-2xl border border-gray-900/10 bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-mono text-lg font-bold text-gray-900">{ticket.token_code}</p>
+                        <p className="mt-1 truncate text-sm text-gray-600">{ticket.experiences?.name ?? 'Mock'} - expires {formatDate(ticket.expires_at)}</p>
+                      </div>
+                      <StatusPill status={ticket.status} />
+                    </div>
+                  ))}
+                  {tickets.length === 0 ? <EmptyState icon={Ticket} title="No tickets yet" note="Purchased mock tickets will appear here." /> : null}
+                </div>
               </div>
-              <LedgerPanel ledger={ledger} />
+
+              <div className="space-y-5">
+                <div className={`${panelClass} p-5`}>
+                  <SectionTitle icon={Link2} label="Referrals" title="Program snapshot" />
+                  <div className="mt-5 space-y-3 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-600">Status</span>
+                      <StatusPill status={referrals?.program?.status ?? 'not configured'} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-600">Attributions</span>
+                      <span className="font-semibold">{referrals?.attributions?.length ?? 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-gray-600">Rewards</span>
+                      <span className="font-semibold">{referrals?.rewards?.length ?? 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`${panelClass} p-5`}>
+                  <SectionTitle icon={ReceiptText} label="Payments" title="Recent payments" />
+                  <div className="mt-5 space-y-3">
+                    {payments.slice(0, 3).map((payment) => (
+                      <div key={payment.id} className="rounded-2xl border border-gray-900/10 bg-white/80 p-4 text-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="font-semibold capitalize">{payment.purchase_type ?? 'plan'}</span>
+                          <StatusPill status={payment.status} />
+                        </div>
+                        <p className="mt-2 font-bold">{money(payment.final_amount ?? payment.amount, payment.currency)}</p>
+                      </div>
+                    ))}
+                    {payments.length === 0 ? <p className="text-sm text-gray-600">No payments yet.</p> : null}
+                  </div>
+                </div>
+              </div>
             </section>
           ) : null}
 
           {tab === 'buy' ? (
-            <section className="grid gap-5 lg:grid-cols-3">
-              <BuyMockPanel
-                catalog={catalog}
-                form={ticketForm}
-                selected={selectedExperience}
-                loading={loading}
-                pending={pendingKind === 'tickets' ? pendingTransactionId : null}
-                onChange={setTicketForm}
-                onBuy={() => void buyTickets()}
-                onCheck={() => void checkPayment()}
-              />
-              <BuySeatPanel
-                plans={plans}
-                form={seatForm}
-                selected={selectedPlan}
-                loading={loading}
-                pending={pendingKind === 'seats' ? pendingTransactionId : null}
-                onChange={setSeatForm}
-                onBuy={() => void buySeats()}
-                onCheck={() => void checkPayment()}
-              />
-              <VoucherGeneratorPanel
-                catalog={catalog}
-                plans={plans}
-                wallet={wallet}
-                form={voucherForm}
-                loading={loading}
-                onChange={setVoucherForm}
-                onCreate={() => void createVoucherBatch()}
-              />
-            </section>
-          ) : null}
+            <section className="grid gap-5 lg:grid-cols-2">
+              <div className={`${panelClass} p-5 md:p-6`}>
+                <SectionTitle icon={Ticket} label="Mock tickets" title="Buy single-sitting tickets" />
+                <div className="mt-6 space-y-4">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Mock experience
+                    <select value={experienceId} onChange={(event) => setExperienceId(event.target.value)} className={inputClass}>
+                      {catalog.map((exp) => (
+                        <option key={exp.id} value={exp.id}>
+                          {exp.product_name ? `${exp.product_name} - ` : ''}
+                          {exp.name} ({money(exp.price_amount, exp.price_currency ?? 'UZS')})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-          {tab === 'vouchers' ? (
-            <section className="space-y-5">
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="border-b border-gray-900/10 p-5 md:p-6">
-                  <SectionTitle icon={Ticket} label="Distribution" title="Voucher codes" />
-                </div>
-                <VoucherTable vouchers={vouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
-              </div>
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="border-b border-gray-900/10 p-5 md:p-6">
-                  <SectionTitle icon={ReceiptText} label="Batches" title="Voucher batches" />
-                </div>
-                <div className="divide-y divide-gray-900/10">
-                  {batches.map((batch) => (
-                    <div key={batch.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
-                      <div>
-                        <p className="font-mono font-bold">{batch.batch_code}</p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {batch.access_kind.replace('_', ' ')} - {batch.quantity} codes - expires {formatDate(batch.expires_at)}
-                        </p>
-                      </div>
-                      <StatusPill status={batch.status} />
-                      <span className="text-sm font-semibold">{String((batch.metadata as any)?.total_amount ?? 0).toLocaleString()} {(batch.metadata as any)?.currency ?? 'UZS'}</span>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Quantity
+                      <input
+                        type="number"
+                        min={1}
+                        max={200}
+                        value={ticketQuantity}
+                        onChange={(event) => setTicketQuantity(Number(event.target.value))}
+                        className={inputClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Expires in days
+                      <input
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={expiryDays}
+                        onChange={(event) => setExpiryDays(Number(event.target.value))}
+                        className={inputClass}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/15 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-800">
+                    <span>Apply credit</span>
+                    <input type="checkbox" checked={ticketApplyCredit} onChange={(event) => setTicketApplyCredit(event.target.checked)} className="h-5 w-5 accent-[#0f172a]" />
+                  </label>
+
+                  <div className="rounded-2xl border border-gray-900/10 bg-gray-50 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-600">Estimated total</span>
+                      <span className="font-bold">{money(ticketEstimate, selectedExperience?.price_currency ?? 'UZS')}</span>
                     </div>
-                  ))}
-                  {batches.length === 0 ? <div className="p-6"><EmptyState icon={Ticket} title="No batches yet" note="Generated voucher batches will appear here." /></div> : null}
+                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-600">Available credit</span>
+                      <span className="font-semibold">{money(credit.available_amount, credit.currency)}</span>
+                    </div>
+                  </div>
+
+                  <button type="button" onClick={() => void buyTickets()} disabled={loading || !selectedExperience?.is_ticket_ready} className={primaryButton}>
+                    <CreditCard className="h-4 w-4" />
+                    Buy tickets
+                  </button>
+                </div>
+              </div>
+
+              <div className={`${panelClass} p-5 md:p-6`}>
+                <SectionTitle icon={UserPlus} label="Seats" title="Buy subscription seats" />
+                <div className="mt-6 space-y-4">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Plan
+                    <select value={seatPlanId} onChange={(event) => setSeatPlanId(event.target.value)} className={inputClass}>
+                      {plans.map((plan) => (
+                        <option key={plan.id} value={plan.id}>
+                          {plan.products?.name ? `${plan.products.name} - ` : ''}
+                          {plan.name} ({money(plan.amount, plan.currency)})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Seats
+                    <input
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={seatQuantity}
+                      onChange={(event) => setSeatQuantity(Number(event.target.value))}
+                      className={inputClass}
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/15 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-800">
+                    <span>Apply credit</span>
+                    <input type="checkbox" checked={seatApplyCredit} onChange={(event) => setSeatApplyCredit(event.target.checked)} className="h-5 w-5 accent-[#0f172a]" />
+                  </label>
+
+                  <div className="rounded-2xl border border-gray-900/10 bg-gray-50 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-600">Estimated total</span>
+                      <span className="font-bold">{money(seatEstimate, selectedPlan?.currency ?? 'UZS')}</span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                      <span className="text-gray-600">Available credit</span>
+                      <span className="font-semibold">{money(credit.available_amount, credit.currency)}</span>
+                    </div>
+                  </div>
+
+                  <button type="button" onClick={() => void buySeats()} disabled={loading || !selectedPlan} className={primaryButton}>
+                    <CreditCard className="h-4 w-4" />
+                    Buy seats
+                  </button>
                 </div>
               </div>
             </section>
           ) : null}
 
-          {tab === 'students' ? (
+          {tab === 'tickets' ? (
             <section className={`${panelClass} overflow-hidden`}>
               <div className="border-b border-gray-900/10 p-5 md:p-6">
-                <SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" />
+                <SectionTitle icon={Ticket} label="Candidate links" title="Tickets" />
+              </div>
+              <div className="divide-y divide-gray-900/10">
+                {tickets.map((ticket) => (
+                  <div key={ticket.id} className="grid gap-4 p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-mono text-lg font-bold">{ticket.token_code}</p>
+                        <StatusPill status={ticket.status} />
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600">
+                        {ticket.experiences?.name ?? 'Mock'} - uses {ticket.uses_count}/{ticket.max_uses} - expires {formatDate(ticket.expires_at)}
+                      </p>
+                    </div>
+                    <button type="button" onClick={() => void copy(inviteUrl(ticket.token_code), 'Candidate link copied.')} className={secondaryButton}>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </button>
+                    <a href={inviteUrl(ticket.token_code)} className={primaryButton}>
+                      <ArrowUpRight className="h-4 w-4" />
+                      Open
+                    </a>
+                  </div>
+                ))}
+                {tickets.length === 0 ? (
+                  <div className="p-6">
+                    <EmptyState icon={Ticket} title="No tickets yet" note="Ticket purchases will generate single-use candidate links." />
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {tab === 'results' ? (
+            <section className={`${panelClass} overflow-hidden`}>
+              <div className="border-b border-gray-900/10 p-5 md:p-6">
+                <SectionTitle icon={ClipboardList} label="Student outcomes" title="Results" />
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-900/10 text-sm">
                   <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    <tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th></tr>
+                    <tr>
+                      <th className="px-5 py-3">Candidate</th>
+                      <th className="px-5 py-3">Ticket</th>
+                      <th className="px-5 py-3">Mock</th>
+                      <th className="px-5 py-3">Score</th>
+                      <th className="px-5 py-3">Status</th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-900/10 bg-white/60">
-                    {students.map((row) => (
+                    {results.map((row) => (
                       <tr key={row.id}>
-                        <td className="px-5 py-4"><p className="font-semibold">{row.name || row.email || 'Student'}</p><p className="text-xs text-gray-500">{row.email}</p></td>
-                        <td className="px-5 py-4">{row.product_name ?? row.access_kind}</td>
-                        <td className="px-5 py-4 font-mono">{row.voucher_code}</td>
-                        <td className="px-5 py-4"><StatusPill status={row.status} /></td>
-                        <td className="px-5 py-4">{formatDate(row.expires_at)}</td>
+                        <td className="px-5 py-4">
+                          <p className="font-semibold">{row.candidate_name || row.email || 'Candidate'}</p>
+                          <p className="text-xs text-gray-500">{row.email}</p>
+                        </td>
+                        <td className="px-5 py-4 font-mono">{row.token_code ?? '-'}</td>
+                        <td className="px-5 py-4">{row.experience_name ?? '-'}</td>
+                        <td className="px-5 py-4 font-semibold">{row.overall_band ?? row.overall_score ?? '-'}</td>
+                        <td className="px-5 py-4">
+                          <StatusPill status={row.session_status ?? row.registration_status} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {students.length === 0 ? <div className="p-6"><EmptyState icon={UsersRound} title="No students yet" note="Assigned and redeemed students will appear here." /></div> : null}
+              {results.length === 0 ? (
+                <div className="p-6">
+                  <EmptyState icon={ClipboardList} title="No results yet" note="Completed candidate sessions will appear here." />
+                </div>
+              ) : null}
             </section>
           ) : null}
 
-          {tab === 'results' ? <ResultsPanel results={results} /> : null}
-
-          {tab === 'reports' ? (
-            <section className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-5">
-                <StatCard label="Completed" value={reports?.completed_exams ?? 0} icon={ClipboardList} />
-                <StatCard label="Average score" value={reports?.average_score ?? '-'} icon={BarChart3} />
-                <StatCard label="Active students" value={reports?.active_students ?? 0} icon={UsersRound} />
-                <StatCard label="Inactive vouchers" value={reports?.inactive_vouchers ?? 0} icon={Ticket} />
-                <StatCard label="Expiring soon" value={reports?.expiring_vouchers ?? 0} icon={ReceiptText} />
+          {tab === 'seats' ? (
+            <section className={`${panelClass} overflow-hidden`}>
+              <div className="border-b border-gray-900/10 p-5 md:p-6">
+                <SectionTitle icon={UsersRound} label="Seat licenses" title="Seats" />
               </div>
-              <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle
-                  icon={Download}
-                  label="Export"
-                  title="Teacher-ready reports"
-                  action={<button type="button" onClick={() => void exportReport()} className={primaryButton}><Download className="h-4 w-4" />Export CSV</button>}
-                />
-                <p className="mt-4 text-sm text-gray-600">The export includes candidate names, email, voucher code, exam, status, score, and completion date for offline teacher review.</p>
+              <div className="divide-y divide-gray-900/10">
+                {seats.map((seat) => {
+                  const assignable = seat.status === 'unassigned';
+                  return (
+                    <div key={seat.id} className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_300px_auto] lg:items-center">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{seat.plans?.name ?? 'Seat'}</p>
+                          <StatusPill status={seat.status} />
+                        </div>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {seat.assigned_user?.email ?? 'Unassigned'} - expires {formatDate(seat.expires_at)}
+                        </p>
+                      </div>
+                      <input
+                        value={seatEmails[seat.id] ?? ''}
+                        onChange={(event) => setSeatEmails((prev) => ({ ...prev, [seat.id]: event.target.value }))}
+                        placeholder="student@email.com"
+                        className={`${inputClass} mt-0`}
+                        disabled={!assignable}
+                      />
+                      <button type="button" onClick={() => void assignSeat(seat.id)} disabled={!assignable || !seatEmails[seat.id]?.trim()} className={primaryButton}>
+                        Assign
+                      </button>
+                    </div>
+                  );
+                })}
+                {seats.length === 0 ? (
+                  <div className="p-6">
+                    <EmptyState icon={UsersRound} title="No seats yet" note="Seat pack purchases will appear here." />
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}
 
-          {tab === 'branding' ? (
-            <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-              <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={Paintbrush} label="Center profile" title="Branding and instructions" />
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <label className="text-sm font-semibold text-gray-800">Center name<input value={brandingForm.display_name} onChange={(e) => setBrandingForm((prev) => ({ ...prev, display_name: e.target.value }))} className={inputClass} /></label>
-                  <label className="text-sm font-semibold text-gray-800">Slug<input value={brandingForm.slug} onChange={(e) => setBrandingForm((prev) => ({ ...prev, slug: e.target.value }))} className={inputClass} /></label>
-                  <label className="md:col-span-2 text-sm font-semibold text-gray-800">Logo URL<input value={brandingForm.logo_url} onChange={(e) => setBrandingForm((prev) => ({ ...prev, logo_url: e.target.value }))} className={inputClass} /></label>
-                  <label className="md:col-span-2 text-sm font-semibold text-gray-800">Public instructions<textarea value={brandingForm.public_instructions} onChange={(e) => setBrandingForm((prev) => ({ ...prev, public_instructions: e.target.value }))} className={`${inputClass} min-h-[120px]`} /></label>
-                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/15 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-800">
-                    <span>Powered by Schood</span>
-                    <input type="checkbox" checked={brandingForm.powered_by_schood} onChange={(e) => setBrandingForm((prev) => ({ ...prev, powered_by_schood: e.target.checked }))} className="h-5 w-5 accent-[#0f172a]" />
+          {tab === 'referrals' ? (
+            <section className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
+              <div className="space-y-5">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={Link2} label="Affiliate link" title="Share" />
+                  <p className="mt-5 font-mono text-3xl font-bold">{referrals?.account?.referral_code ?? '-'}</p>
+                  <div className="mt-4 rounded-2xl border border-gray-900/10 bg-gray-50 p-3 font-mono text-xs text-gray-700 break-all">
+                    {referralUrl || '-'}
+                  </div>
+                  <div className="mt-4 grid gap-2">
+                    <button type="button" onClick={() => referralUrl && void copy(referralUrl, 'Affiliate link copied.')} disabled={!referralUrl} className={secondaryButton}>
+                      <Copy className="h-4 w-4" />
+                      Copy affiliate link
+                    </button>
+                    <button type="button" onClick={() => legacyReferralUrl && void copy(legacyReferralUrl, 'Legacy referral link copied.')} disabled={!legacyReferralUrl} className={secondaryButton}>
+                      <Copy className="h-4 w-4" />
+                      Copy legacy link
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={Coins} label="Balances" title="Rewards" />
+                  <div className="mt-5 grid gap-3">
+                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Platform credit</p>
+                      <p className="mt-2 text-xl font-bold">{money(referrals?.credit?.available_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+                    </div>
+                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Cash available</p>
+                      <p className="mt-2 text-xl font-bold">{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Requested: {money(referrals?.cash?.requested_amount ?? 0, referrals?.cash?.currency ?? 'UZS')} - Paid: {money(referrals?.cash?.paid_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={WalletCards} label="Cash payout" title="Request cash from admins" />
+                  <div className="mt-5 grid gap-4 md:grid-cols-[160px_minmax(0,1fr)]">
+                    <label className="text-sm font-semibold text-gray-800">
+                      Method
+                      <select value={cashPayoutMethod} onChange={(event) => setCashPayoutMethod(event.target.value)} className={inputClass}>
+                        <option value="cash">Cash</option>
+                        <option value="card">Card</option>
+                        <option value="bank">Bank transfer</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-800">
+                      Payout details
+                      <input
+                        value={cashPayoutDetails}
+                        onChange={(event) => setCashPayoutDetails(event.target.value)}
+                        placeholder="Card, bank, phone, or pickup instructions"
+                        className={inputClass}
+                      />
+                    </label>
+                  </div>
+                  <label className="mt-4 block text-sm font-semibold text-gray-800">
+                    Note for admin
+                    <textarea
+                      value={cashPayoutNote}
+                      onChange={(event) => setCashPayoutNote(event.target.value)}
+                      placeholder="Optional note"
+                      className={`${inputClass} min-h-[86px]`}
+                    />
                   </label>
+                  <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Available request amount: <strong>{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</strong>
+                    </span>
+                    <span>Minimum: {money(referrals?.cash?.minimum_payout_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void requestCashPayout()}
+                    disabled={loading || !referrals?.cash?.payouts_enabled || (referrals?.cash?.available_amount ?? 0) <= 0}
+                    className={`${primaryButton} mt-5`}
+                  >
+                    Request cash payout
+                  </button>
                 </div>
-                <button type="button" onClick={() => void saveBranding()} disabled={loading} className={`${primaryButton} mt-5`}>
-                  <Save className="h-4 w-4" />
-                  Save branding
-                </button>
+
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={Coins} label="Referral rewards" title="Active rewards and history" />
+                  </div>
+                  <div className="divide-y divide-gray-900/10">
+                    {(referrals?.rewards ?? []).map((reward) => (
+                      <div key={reward.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                        <div>
+                          <p className="font-semibold">
+                            Credit {money(reward.credit_amount ?? 0, reward.currency)} / Cash {money(reward.cash_amount ?? 0, reward.currency)}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">{formatDateTime(reward.issued_at ?? reward.created_at)}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <StatusPill status={reward.status} />
+                          <StatusPill status={reward.cash_status} />
+                        </div>
+                        <span className="font-mono text-xs text-gray-500">{reward.id}</span>
+                      </div>
+                    ))}
+                    {(referrals?.rewards ?? []).length === 0 ? (
+                      <div className="p-6">
+                        <EmptyState icon={Coins} title="No rewards yet" note="Rewards are issued after eligible referred purchases convert." />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={ReceiptText} label="Cash requests" title="Payout requests" />
+                  </div>
+                  <div className="divide-y divide-gray-900/10">
+                    {cashPayoutRequests.map((request: any) => (
+                      <div key={request.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                        <div>
+                          <p className="font-semibold">{money(request.amount, request.currency)}</p>
+                          <p className="mt-1 text-sm text-gray-600">{request.payout_method} - {formatDateTime(request.requested_at)}</p>
+                        </div>
+                        <StatusPill status={request.status} />
+                        <span className="font-mono text-xs text-gray-500">{request.id}</span>
+                      </div>
+                    ))}
+                    {cashPayoutRequests.length === 0 ? (
+                      <div className="p-6">
+                        <EmptyState icon={ReceiptText} title="No payout requests" note="Cash payout requests will appear here." />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-              <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={Link2} label="Public page" title="Links" />
-                <div className="mt-5 space-y-3">
-                  <button type="button" onClick={() => void copy(centerUrl, 'Center page copied.')} className={`${secondaryButton} w-full`} disabled={!centerUrl}><Copy className="h-4 w-4" />Copy center page</button>
-                  <button type="button" onClick={() => void copy(`${origin}/redeem`, 'Redeem page copied.')} className={`${secondaryButton} w-full`}><Copy className="h-4 w-4" />Copy redeem page</button>
-                  <button type="button" onClick={() => centerUrl && window.open(centerUrl, '_blank', 'noopener,noreferrer')} className={`${primaryButton} w-full`} disabled={!centerUrl}><ArrowUpRight className="h-4 w-4" />Open public page</button>
+            </section>
+          ) : null}
+
+          {tab === 'credits' ? (
+            <section className={`${panelClass} overflow-hidden`}>
+              <div className="flex flex-col gap-4 border-b border-gray-900/10 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+                <SectionTitle icon={Coins} label="Credit ledger" title="Credits" />
+                <div className="rounded-full border border-gray-900 bg-white px-4 py-2 text-sm font-bold">
+                  Available: {money(credit.available_amount, credit.currency)}
                 </div>
+              </div>
+              <div className="divide-y divide-gray-900/10">
+                {creditLedger.map((entry) => (
+                  <div key={entry.id} className="grid gap-3 p-5 text-sm md:grid-cols-[1fr_auto_auto_auto] md:items-center">
+                    <span className="font-semibold capitalize">{entry.entry_kind}</span>
+                    <StatusPill status={entry.status} />
+                    <span className="font-bold">{money(entry.amount, entry.currency)}</span>
+                    <span className="text-gray-500">{formatDateTime(entry.created_at)}</span>
+                  </div>
+                ))}
+                {creditLedger.length === 0 ? (
+                  <div className="p-6">
+                    <EmptyState icon={Coins} title="No credit activity" note="Referral credits and reservations will appear in this ledger." />
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}
 
           {tab === 'payments' ? (
-            <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-              <PaymentsPanel payments={payments} />
-              <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={Coins} label="Revenue share" title="Cash payout" />
-                <label className="mt-5 block text-sm font-semibold text-gray-800">Method<input value={cashPayout.payout_method} onChange={(e) => setCashPayout((prev) => ({ ...prev, payout_method: e.target.value }))} className={inputClass} /></label>
-                <label className="mt-4 block text-sm font-semibold text-gray-800">Details<input value={cashPayout.payout_details} onChange={(e) => setCashPayout((prev) => ({ ...prev, payout_details: e.target.value }))} className={inputClass} /></label>
-                <label className="mt-4 block text-sm font-semibold text-gray-800">Note<textarea value={cashPayout.note} onChange={(e) => setCashPayout((prev) => ({ ...prev, note: e.target.value }))} className={`${inputClass} min-h-[90px]`} /></label>
-                <button type="button" onClick={() => void requestCashPayout()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>Request payout</button>
+            <section className={`${panelClass} overflow-hidden`}>
+              <div className="border-b border-gray-900/10 p-5 md:p-6">
+                <SectionTitle icon={ReceiptText} label="Billing" title="Payments" />
+              </div>
+              <div className="divide-y divide-gray-900/10">
+                {payments.map((payment) => (
+                  <div key={payment.id} className="grid gap-3 p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold capitalize">{payment.purchase_type ?? 'plan'}</p>
+                        <StatusPill status={payment.status} />
+                      </div>
+                      <p className="mt-1 truncate font-mono text-xs text-gray-500">{payment.provider_transaction_id ?? payment.id}</p>
+                    </div>
+                    <span className="font-bold">{money(payment.final_amount ?? payment.amount, payment.currency)}</span>
+                    <span className="text-sm text-gray-500">{formatDateTime(payment.created_at)}</span>
+                  </div>
+                ))}
+                {payments.length === 0 ? (
+                  <div className="p-6">
+                    <EmptyState icon={ReceiptText} title="No payments yet" note="Partner purchases and status updates will appear here." />
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}
@@ -743,164 +1020,3 @@ export const PartnerOfficePage: React.FC = () => {
     </div>
   );
 };
-
-const VoucherTable: React.FC<{ vouchers: PartnerVoucher[]; onCopy: (code: string) => void; onVoid: (id: string) => void }> = ({ vouchers, onCopy, onVoid }) => (
-  <>
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-900/10 text-sm">
-        <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-          <tr><th className="px-5 py-3">Code</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th><th className="px-5 py-3">Actions</th></tr>
-        </thead>
-        <tbody className="divide-y divide-gray-900/10 bg-white/60">
-          {vouchers.map((voucher) => (
-            <tr key={voucher.id}>
-              <td className="px-5 py-4 font-mono font-bold">{voucher.code}</td>
-              <td className="px-5 py-4 capitalize">{voucher.access_kind.replace('_', ' ')}</td>
-              <td className="px-5 py-4">{voucher.products?.name ?? voucher.experiences?.name ?? voucher.plans?.name ?? '-'}</td>
-              <td className="px-5 py-4"><StatusPill status={voucher.status} /></td>
-              <td className="px-5 py-4">{formatDate(voucher.expires_at)}</td>
-              <td className="px-5 py-4">
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => onCopy(voucher.code)} className={secondaryButton}><Copy className="h-4 w-4" />Copy</button>
-                  <button type="button" onClick={() => onVoid(voucher.id)} disabled={voucher.status !== 'unused'} className={secondaryButton}><Trash2 className="h-4 w-4" />Void</button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    {vouchers.length === 0 ? <div className="p-6"><EmptyState icon={Ticket} title="No vouchers yet" note="Generate voucher batches from the Buy tab." /></div> : null}
-  </>
-);
-
-const LedgerPanel: React.FC<{ ledger: PartnerCreditLedgerEntry[] }> = ({ ledger }) => (
-  <section className={`${panelClass} overflow-hidden`}>
-    <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={Coins} label="Ledger" title="Wallet activity" /></div>
-    <div className="divide-y divide-gray-900/10">
-      {ledger.map((entry) => (
-        <div key={entry.id} className="grid gap-3 p-5 text-sm md:grid-cols-[1fr_auto_auto_auto] md:items-center">
-          <span className="font-semibold capitalize">{entry.entry_kind}</span>
-          <StatusPill status={entry.status} />
-          <span className="font-bold">{money(entry.amount, entry.currency)}</span>
-          <span className="text-gray-500">{formatDateTime(entry.created_at)}</span>
-        </div>
-      ))}
-      {ledger.length === 0 ? <div className="p-6"><EmptyState icon={Coins} title="No wallet activity" note="Top-ups, voucher debits, and commission credits will appear here." /></div> : null}
-    </div>
-  </section>
-);
-
-const BuyMockPanel: React.FC<{
-  catalog: PartnerOfficeExperience[];
-  form: { experience_id: string; quantity: number; expires_in_days: number; apply_credit: boolean };
-  selected?: PartnerOfficeExperience | null;
-  loading: boolean;
-  pending: string | null;
-  onChange: React.Dispatch<React.SetStateAction<{ experience_id: string; quantity: number; expires_in_days: number; apply_credit: boolean }>>;
-  onBuy: () => void;
-  onCheck: () => void;
-}> = ({ catalog, form, selected, loading, pending, onChange, onBuy, onCheck }) => (
-  <div className={`${panelClass} p-5 md:p-6`}>
-    <SectionTitle icon={Ticket} label="Wholesale pack" title="Buy mock tickets" />
-    <label className="mt-5 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
-    <label className="mt-4 block text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={200} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
-    <label className="mt-4 block text-sm font-semibold text-gray-800">Expiry days<input type="number" min={1} max={30} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
-    <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.price_amount ?? 0) * form.quantity, selected?.price_currency ?? 'UZS')}</strong></p>
-    <button type="button" onClick={onBuy} disabled={loading || !selected} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
-    {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
-  </div>
-);
-
-const BuySeatPanel: React.FC<{
-  plans: PartnerOfficePlan[];
-  form: { plan_id: string; seat_count: number; apply_credit: boolean };
-  selected?: PartnerOfficePlan | null;
-  loading: boolean;
-  pending: string | null;
-  onChange: React.Dispatch<React.SetStateAction<{ plan_id: string; seat_count: number; apply_credit: boolean }>>;
-  onBuy: () => void;
-  onCheck: () => void;
-}> = ({ plans, form, selected, loading, pending, onChange, onBuy, onCheck }) => (
-  <div className={`${panelClass} p-5 md:p-6`}>
-    <SectionTitle icon={UsersRound} label="Seat pack" title="Buy subscriptions" />
-    <label className="mt-5 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
-    <label className="mt-4 block text-sm font-semibold text-gray-800">Seats<input type="number" min={1} max={200} value={form.seat_count} onChange={(e) => onChange((prev) => ({ ...prev, seat_count: Number(e.target.value) }))} className={inputClass} /></label>
-    <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.amount ?? 0) * form.seat_count, selected?.currency ?? 'UZS')}</strong></p>
-    <button type="button" onClick={onBuy} disabled={loading || !selected} className={`${primaryButton} mt-5 w-full`}>Buy seats</button>
-    {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
-  </div>
-);
-
-const VoucherGeneratorPanel: React.FC<{
-  catalog: PartnerOfficeExperience[];
-  plans: PartnerOfficePlan[];
-  wallet: { currency: string; available_amount: number };
-  form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string };
-  loading: boolean;
-  onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
-  onCreate: () => void;
-}> = ({ catalog, plans, wallet, form, loading, onChange, onCreate }) => (
-  <div className={`${panelClass} p-5 md:p-6`}>
-    <SectionTitle icon={UserPlus} label="Distribution" title="Generate vouchers" />
-    <label className="mt-5 block text-sm font-semibold text-gray-800">Access type<select value={form.access_kind} onChange={(e) => onChange((prev) => ({ ...prev, access_kind: e.target.value as any }))} className={inputClass}><option value="mock_exam">Mock exam</option><option value="subscription">Subscription</option><option value="seat">Seat voucher</option></select></label>
-    {form.access_kind === 'mock_exam' ? (
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
-    ) : (
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
-    )}
-    <div className="mt-4 grid grid-cols-2 gap-3">
-      <label className="text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={500} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
-      <label className="text-sm font-semibold text-gray-800">Days<input type="number" min={1} max={365} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
-    </div>
-    <label className="mt-4 block text-sm font-semibold text-gray-800">Code prefix<input value={form.prefix} onChange={(e) => onChange((prev) => ({ ...prev, prefix: e.target.value }))} className={inputClass} /></label>
-    <label className="mt-4 block text-sm font-semibold text-gray-800">Commercial model<select value={form.source_model} onChange={(e) => onChange((prev) => ({ ...prev, source_model: e.target.value }))} className={inputClass}><option value="prepaid_wallet">Prepaid wallet</option><option value="wholesale">Wholesale</option><option value="revenue_share">Revenue share</option><option value="manual">Manual</option></select></label>
-    <p className="mt-4 text-sm text-gray-600">Wallet available: <strong>{money(wallet.available_amount, wallet.currency)}</strong></p>
-    <button type="button" onClick={onCreate} disabled={loading} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
-  </div>
-);
-
-const ResultsPanel: React.FC<{ results: PartnerOfficeResult[] }> = ({ results }) => (
-  <section className={`${panelClass} overflow-hidden`}>
-    <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={ClipboardList} label="Student outcomes" title="Results" /></div>
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-900/10 text-sm">
-        <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-          <tr><th className="px-5 py-3">Candidate</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Mock</th><th className="px-5 py-3">Score</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Date</th></tr>
-        </thead>
-        <tbody className="divide-y divide-gray-900/10 bg-white/60">
-          {results.map((row) => (
-            <tr key={row.id}>
-              <td className="px-5 py-4"><p className="font-semibold">{row.candidate_name || row.email || 'Candidate'}</p><p className="text-xs text-gray-500">{row.email}</p></td>
-              <td className="px-5 py-4 font-mono">{row.token_code ?? '-'}</td>
-              <td className="px-5 py-4">{row.experience_name ?? '-'}</td>
-              <td className="px-5 py-4 font-semibold">{row.overall_band ?? row.overall_score ?? '-'}</td>
-              <td className="px-5 py-4"><StatusPill status={row.session_status ?? row.registration_status} /></td>
-              <td className="px-5 py-4">{formatDate(row.created_at)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    {results.length === 0 ? <div className="p-6"><EmptyState icon={ClipboardList} title="No results yet" note="Completed candidate sessions will appear here." /></div> : null}
-  </section>
-);
-
-const PaymentsPanel: React.FC<{ payments: PartnerOfficePayment[] }> = ({ payments }) => (
-  <section className={`${panelClass} overflow-hidden`}>
-    <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={ReceiptText} label="Billing" title="Payments" /></div>
-    <div className="divide-y divide-gray-900/10">
-      {payments.map((payment) => (
-        <div key={payment.id} className="grid gap-3 p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><p className="font-semibold capitalize">{payment.purchase_type ?? 'plan'}</p><StatusPill status={payment.status} /></div>
-            <p className="mt-1 truncate font-mono text-xs text-gray-500">{payment.provider_transaction_id ?? payment.id}</p>
-          </div>
-          <span className="font-bold">{money(payment.final_amount ?? payment.amount, payment.currency)}</span>
-          <span className="text-sm text-gray-500">{formatDateTime(payment.created_at)}</span>
-        </div>
-      ))}
-      {payments.length === 0 ? <div className="p-6"><EmptyState icon={ReceiptText} title="No payments yet" note="Partner purchases and status updates will appear here." /></div> : null}
-    </div>
-  </section>
-);

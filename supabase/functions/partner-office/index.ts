@@ -89,6 +89,65 @@ const requireTenant = (memberships: MembershipRow[], requested?: string | null):
 const requireTenantAdmin = (memberships: MembershipRow[], tenantId: string): boolean =>
   memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin"].includes(m.role));
 
+const authUserEmail = (user: any): string =>
+  String(user?.email ?? user?.user_metadata?.email ?? `${user?.id ?? crypto.randomUUID()}@schood.local`).trim().toLowerCase();
+
+const authUserName = (user: any): string | null => {
+  const meta = isObject(user?.user_metadata) ? user.user_metadata as Json : {};
+  const name = String(meta.full_name ?? meta.name ?? "").trim();
+  return name || null;
+};
+
+const ensureUniqueTenantSlug = async (sb: any, raw: unknown, fallback: string): Promise<string> => {
+  const base = normalizeSlug(raw, fallback).slice(0, 54);
+  let slug = base;
+  for (let i = 0; i < 20; i += 1) {
+    const { data } = await sb.from("tenants").select("id").eq("slug", slug).maybeSingle();
+    if (!data?.id) return slug;
+    slug = `${base}-${randomCodePart(4).toLowerCase()}`;
+  }
+  throw new Error("Failed to create a unique tenant slug");
+};
+
+const ensurePlatformUser = async (sb: any, user: any): Promise<void> => {
+  const email = authUserEmail(user);
+  const { error } = await sb
+    .from("users")
+    .upsert(
+      {
+        id: user.id,
+        email,
+        full_name: authUserName(user),
+        avatar_url: isObject(user?.user_metadata) ? String((user.user_metadata as Json).avatar_url ?? "") || null : null,
+        is_active: true,
+      },
+      { onConflict: "id" },
+    );
+  if (error) throw error;
+};
+
+const ensurePersonalMembership = async (sb: any, user: any): Promise<MembershipRow[]> => {
+  await ensurePlatformUser(sb, user);
+  let memberships = await loadMemberships(sb, user.id);
+  if (memberships.length > 0) return memberships;
+
+  const email = authUserEmail(user);
+  const slug = await ensureUniqueTenantSlug(sb, email, `user-${String(user.id).slice(0, 8)}`);
+  const { data: tenant, error: tenantError } = await sb
+    .from("tenants")
+    .insert({ name: email, slug, type: "personal", created_by: user.id })
+    .select("id")
+    .maybeSingle();
+  if (tenantError || !tenant?.id) throw tenantError ?? new Error("Failed to create personal tenant");
+
+  const { error: memberError } = await sb
+    .from("tenant_memberships")
+    .insert({ tenant_id: tenant.id, user_id: user.id, role: "owner", status: "active" });
+  if (memberError) throw memberError;
+  memberships = await loadMemberships(sb, user.id);
+  return memberships;
+};
+
 const forwardEdge = async (
   supabaseUrl: string,
   anonKey: string,
@@ -113,13 +172,42 @@ const getFirstTenant = async (sb: any, tenantId: string): Promise<{ id: string; 
   return data?.id ? { id: String(data.id), name: String(data.name ?? "Education center"), slug: String(data.slug ?? "center") } : null;
 };
 
-const ensureCenterProfile = async (sb: any, tenantId: string, userId: string): Promise<any> => {
-  const { data: existing, error: existingError } = await sb
+const getCenterProfile = async (sb: any, tenantId: string): Promise<any | null> => {
+  const { data, error } = await sb
     .from("partner_center_profiles")
     .select("*")
     .eq("tenant_id", tenantId)
     .maybeSingle();
-  if (existingError) throw existingError;
+  if (error) throw error;
+  return data?.tenant_id ? data : null;
+};
+
+const ensureUniqueCenterSlug = async (sb: any, raw: unknown, fallback: string): Promise<string> => {
+  const base = normalizeSlug(raw, fallback).slice(0, 54);
+  let slug = base;
+  for (let i = 0; i < 20; i += 1) {
+    const { data } = await sb.from("partner_center_profiles").select("tenant_id").eq("slug", slug).maybeSingle();
+    if (!data?.tenant_id) return slug;
+    slug = `${base}-${randomCodePart(4).toLowerCase()}`;
+  }
+  throw new Error("Failed to create a unique center slug");
+};
+
+const findCenterProfileForMemberships = async (sb: any, memberships: MembershipRow[]): Promise<any | null> => {
+  const tenantIds = memberships.map((m) => m.tenant_id).filter(Boolean);
+  if (tenantIds.length === 0) return null;
+  const { data, error } = await sb
+    .from("partner_center_profiles")
+    .select("*")
+    .in("tenant_id", tenantIds)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  const rows = data ?? [];
+  return rows.find((row: any) => row.status === "active") ?? rows.find((row: any) => row.status === "pending") ?? rows[0] ?? null;
+};
+
+const ensureCenterProfile = async (sb: any, tenantId: string, userId: string): Promise<any> => {
+  const existing = await getCenterProfile(sb, tenantId);
   if (existing?.tenant_id) return existing;
 
   const tenant = await getFirstTenant(sb, tenantId);
@@ -151,6 +239,62 @@ const ensureCenterProfile = async (sb: any, tenantId: string, userId: string): P
     .maybeSingle();
   if (insertError) throw insertError;
   return inserted;
+};
+
+const createCenterApplication = async (sb: any, body: Json, user: any): Promise<{ center: any; tenant: any }> => {
+  await ensurePlatformUser(sb, user);
+  const displayName = String(body.display_name ?? body.center_name ?? "").trim().slice(0, 120);
+  if (!displayName) throw new Error("Center name is required");
+  const slug = await ensureUniqueTenantSlug(sb, body.slug ?? displayName, `center-${randomCodePart(4).toLowerCase()}`);
+  const { data: tenant, error: tenantError } = await sb
+    .from("tenants")
+    .insert({ name: displayName, slug, type: "org", created_by: user.id })
+    .select("id, name, slug, type")
+    .maybeSingle();
+  if (tenantError || !tenant?.id) throw tenantError ?? new Error("Failed to create center tenant");
+
+  const { error: memberError } = await sb
+    .from("tenant_memberships")
+    .insert({ tenant_id: tenant.id, user_id: user.id, role: "owner", status: "active" });
+  if (memberError) throw memberError;
+
+  const profileSlug = await ensureUniqueCenterSlug(sb, body.slug ?? slug, slug);
+  const { data: center, error: centerError } = await sb
+    .from("partner_center_profiles")
+    .insert({
+      tenant_id: tenant.id,
+      display_name: displayName,
+      slug: profileSlug,
+      logo_url: String(body.logo_url ?? "").trim().slice(0, 1000) || null,
+      status: "pending",
+      package_tier: "starter",
+      commercial_model: "prepaid_wallet",
+      public_instructions: String(body.public_instructions ?? "Enter your Schood voucher code to start your exam or activate your learning access.").trim().slice(0, 3000),
+      powered_by_schood: true,
+      created_by: user.id,
+      branding: {
+        contact_name: String(body.contact_name ?? "").trim() || null,
+        contact_email: String(body.contact_email ?? authUserEmail(user)).trim().toLowerCase() || null,
+        contact_phone: String(body.contact_phone ?? "").trim() || null,
+      },
+      commission_rules: {},
+      wholesale_pricing: {},
+      wallet_settings: { currency: "UZS" },
+    })
+    .select("*")
+    .maybeSingle();
+  if (centerError || !center?.tenant_id) throw centerError ?? new Error("Failed to create center profile");
+  return { center, tenant };
+};
+
+const requireActiveCenterOffice = async (sb: any, tenantId: string, body?: Json): Promise<Response | null> => {
+  if (!Boolean(body?.center_office)) return null;
+  const profile = await getCenterProfile(sb, tenantId);
+  if (!profile?.tenant_id) return json(403, { error: "Education center profile is required" });
+  if (profile.status !== "active") {
+    return json(403, { error: "Education center must be approved by Schood before this action is available", center_status: profile.status });
+  }
+  return null;
 };
 
 const ensureUniqueVoucherCode = async (sb: any, prefix: string): Promise<string> => {
@@ -296,7 +440,7 @@ serve(async (req) => {
     if (authError || !authData?.user) return json(401, { error: "Unauthorized" });
 
     const userId = authData.user.id;
-    const memberships = await loadMemberships(sb, userId);
+    const memberships = await ensurePersonalMembership(sb, authData.user);
     if (memberships.length === 0) return json(403, { error: "No active tenant" });
 
     const url = new URL(req.url);
@@ -305,9 +449,11 @@ serve(async (req) => {
     if (!tenantId) return json(403, { error: "Forbidden" });
 
     if (req.method === "GET" && (action === "center" || action === "branding")) {
-      const center = await ensureCenterProfile(sb, tenantId, userId);
-      const tenant = await getFirstTenant(sb, tenantId);
-      return json(200, { center, tenant });
+      const requestedTenantId = url.searchParams.get("tenant_id");
+      const center = requestedTenantId ? await getCenterProfile(sb, tenantId) : await findCenterProfileForMemberships(sb, memberships);
+      const resolvedTenantId = center?.tenant_id ?? tenantId;
+      const tenant = await getFirstTenant(sb, resolvedTenantId);
+      return json(200, { center, tenant, needs_application: !center?.tenant_id });
     }
 
     if (req.method === "GET" && (action === "catalog" || action === "experiences")) {
@@ -485,7 +631,7 @@ serve(async (req) => {
 
     if (req.method === "GET" && action === "dashboard") {
       const [center, tickets, seats, payments, results, vouchers, batches, wallet] = await Promise.all([
-        ensureCenterProfile(sb, tenantId, userId),
+        getCenterProfile(sb, tenantId),
         sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("payments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
@@ -527,6 +673,15 @@ serve(async (req) => {
       const body = (await req.json().catch(() => ({}))) as Json;
       const actionBody = String(body.action ?? "");
 
+      if (actionBody === "apply_center") {
+        const result = await createCenterApplication(sb, body, authData.user);
+        return json(200, {
+          ...result,
+          status: "pending",
+          note: "Center application created. Schood admin approval is required before dashboard tools unlock.",
+        });
+      }
+
       if (["update_center_profile", "create_wallet_topup", "create_voucher_batch", "void_voucher", "export_report", "resend_student_invite"].includes(actionBody)) {
         if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       }
@@ -555,6 +710,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_wallet_topup") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const amount = normalizeQuantity(body.amount, 1000000000);
         const currency = String(body.currency ?? "UZS").toUpperCase();
         if (!amount) return json(400, { error: "amount must be positive" });
@@ -577,6 +734,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_voucher_batch") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const profile = await ensureCenterProfile(sb, tenantId, userId);
         const accessKind = String(body.access_kind ?? "").trim();
         if (!["mock_exam", "subscription", "seat"].includes(accessKind)) return json(400, { error: "Unsupported access_kind" });
@@ -763,6 +922,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "void_voucher") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const voucherId = String(body.voucher_id ?? "").trim();
         if (!voucherId) return json(400, { error: "voucher_id is required" });
         const { data, error } = await sb
@@ -782,6 +943,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "export_report") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const results = await loadResults(sb, tenantId);
         const csv = [
           ["Candidate", "Email", "Voucher", "Exam", "Status", "Score", "Date"],
@@ -801,21 +964,30 @@ serve(async (req) => {
       }
 
       if (actionBody === "resend_student_invite") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         return json(200, { ok: true, status: "queued", note: "Invite delivery provider is not configured; voucher link can be copied from the dashboard." });
       }
 
       if (actionBody === "assign_seat") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const payload = { ...body };
+        delete (payload as any).center_office;
         const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "teacher-office", {
           method: "POST",
-          body: JSON.stringify(body),
+          body: JSON.stringify(payload),
         });
         const text = await forwarded.text();
         return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
       }
 
       if (actionBody === "request_cash_payout") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const payload = { ...body };
         delete (payload as any).action;
+        delete (payload as any).center_office;
         const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "referrals/cash-payouts/request", {
           method: "POST",
           body: JSON.stringify(payload),
@@ -825,6 +997,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "quote_purchase") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const purchaseType = String(body.purchase_type ?? "").trim();
         const quantity = normalizeQuantity(body.quantity ?? body.seat_count, 500) ?? 1;
         let originalAmount = 0;
@@ -860,6 +1034,8 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_ticket_purchase" || actionBody === "create_seat_purchase") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
         const purchaseType = actionBody === "create_ticket_purchase" ? "token_pack" : "seat_pack";
         const payload = {
           ...body,
@@ -868,6 +1044,7 @@ serve(async (req) => {
           description: String(body.description ?? (purchaseType === "token_pack" ? "Partner mock ticket pack" : "Partner seat pack")),
         };
         delete (payload as any).action;
+        delete (payload as any).center_office;
 
         if (purchaseType === "token_pack" && !normalizeDays((payload as any).expires_in_days)) {
           (payload as any).expires_in_days = 30;
