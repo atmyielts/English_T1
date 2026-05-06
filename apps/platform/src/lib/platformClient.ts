@@ -1013,6 +1013,7 @@ export type TspayCreateInput = {
   expires_in_days?: number;
   seat_count?: number;
   description: string;
+  redirect_url?: string | null;
   metadata?: Json;
   tenant_id?: string | null;
   coupon_code?: string | null;
@@ -1025,6 +1026,7 @@ export type TspayCreateInput = {
 export type TspayCreateResponse = {
   payment_url: string | null;
   transaction_id: string;
+  order_id?: string;
   status?: string;
   amount: number;
   currency: string;
@@ -2277,6 +2279,94 @@ export type PartnerOfficePlan = TeacherOfficePlan;
 export type PartnerOfficeSeat = TeacherOfficeSeat;
 export type PartnerOfficeResult = TeacherOfficeResult;
 
+export type PartnerCenterProfile = {
+  tenant_id: string;
+  display_name: string;
+  slug: string;
+  logo_url?: string | null;
+  status: string;
+  package_tier: string;
+  commercial_model: string;
+  public_instructions?: string | null;
+  powered_by_schood: boolean;
+  branding?: Json | null;
+  commission_rules?: Json | null;
+  wholesale_pricing?: Json | null;
+  wallet_settings?: Json | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PartnerVoucherBatch = {
+  id: string;
+  tenant_id: string;
+  batch_code: string;
+  access_kind: 'mock_exam' | 'subscription' | 'seat';
+  product_id: string | null;
+  experience_id: string | null;
+  plan_id: string | null;
+  quantity: number;
+  expires_at: string;
+  status: string;
+  prefix?: string | null;
+  source_model: string;
+  metadata?: Json | null;
+  created_at: string;
+  products?: { name: string | null; metadata?: Json | null } | null;
+  experiences?: { name: string | null } | null;
+  plans?: { name: string | null; duration_days?: number | null } | null;
+};
+
+export type PartnerVoucher = {
+  id: string;
+  tenant_id: string;
+  batch_id: string | null;
+  code: string;
+  access_kind: 'mock_exam' | 'subscription' | 'seat';
+  product_id: string | null;
+  experience_id: string | null;
+  plan_id: string | null;
+  exam_token_id?: string | null;
+  seat_license_id?: string | null;
+  status: string;
+  max_uses: number;
+  uses_count: number;
+  expires_at: string;
+  assigned_name?: string | null;
+  assigned_email?: string | null;
+  assigned_phone?: string | null;
+  redeemed_by?: string | null;
+  redeemed_at?: string | null;
+  metadata?: Json | null;
+  created_at: string;
+  products?: { name: string | null; metadata?: Json | null } | null;
+  experiences?: { name: string | null } | null;
+  plans?: { name: string | null; duration_days?: number | null } | null;
+};
+
+export type PartnerStudent = {
+  id: string;
+  voucher_code: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  access_kind: string;
+  product_name: string | null;
+  status: string;
+  redeemed_by?: string | null;
+  redeemed_at?: string | null;
+  expires_at?: string | null;
+};
+
+export type PartnerReportSummary = {
+  completed_exams: number;
+  average_score: number | null;
+  active_students: number;
+  inactive_vouchers: number;
+  expiring_vouchers: number;
+  unassigned_seats: number;
+};
+
 export type PartnerOfficePayment = {
   id: string;
   provider: string | null;
@@ -2388,27 +2478,86 @@ export const partnerOfficePost = async <T = unknown>(
 };
 
 export const partnerOfficeDashboard = (accessToken: string, tenantId?: string | null) =>
-  partnerOfficeGet<{ tenant_id: string; counts: Record<string, number>; credit: { currency: string; available_amount: number } }>(
+  partnerOfficeGet<{
+    tenant_id: string;
+    center?: PartnerCenterProfile | null;
+    counts: Record<string, number>;
+    wallet?: { currency: string; available_amount: number };
+    credit: { currency: string; available_amount: number };
+  }>(
     accessToken,
     'dashboard',
     { tenant_id: tenantId },
   );
+export const partnerOfficeCenter = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ center: PartnerCenterProfile; tenant: { id: string; name: string; slug: string } | null }>(accessToken, 'center', { tenant_id: tenantId });
 export const partnerOfficeCatalog = (accessToken: string) =>
-  partnerOfficeGet<{ experiences: PartnerOfficeExperience[] }>(accessToken, 'catalog');
+  partnerOfficeGet<{ experiences: PartnerOfficeExperience[]; plans?: PartnerOfficePlan[]; products?: AdminProductRow[] }>(accessToken, 'catalog');
 export const partnerOfficeTickets = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ tickets: PartnerOfficeTicket[] }>(accessToken, 'tickets', { tenant_id: tenantId });
+export const partnerOfficeVoucherBatches = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ batches: PartnerVoucherBatch[] }>(accessToken, 'voucher_batches', { tenant_id: tenantId });
+export const partnerOfficeVouchers = (accessToken: string, params?: { tenant_id?: string | null; status?: string | null }) =>
+  partnerOfficeGet<{ vouchers: PartnerVoucher[] }>(accessToken, 'vouchers', params);
+export const partnerOfficeStudents = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ students: PartnerStudent[] }>(accessToken, 'students', { tenant_id: tenantId });
 export const partnerOfficeResults = (accessToken: string, params?: { tenant_id?: string | null; token_id?: string | null }) =>
   partnerOfficeGet<{ results: PartnerOfficeResult[] }>(accessToken, 'results', params);
+export const partnerOfficeReports = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ reports: PartnerReportSummary; results: PartnerOfficeResult[] }>(accessToken, 'reports', { tenant_id: tenantId });
 export const partnerOfficePlans = (accessToken: string) =>
   partnerOfficeGet<{ plans: PartnerOfficePlan[] }>(accessToken, 'plans');
 export const partnerOfficeSeats = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ seats: PartnerOfficeSeat[] }>(accessToken, 'seats', { tenant_id: tenantId });
 export const partnerOfficePayments = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ payments: PartnerOfficePayment[] }>(accessToken, 'payments', { tenant_id: tenantId });
+export const partnerOfficeWallet = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ wallet: { currency: string; available_amount: number }; credit: { currency: string; available_amount: number }; ledger: PartnerCreditLedgerEntry[] }>(
+    accessToken,
+    'wallet',
+    { tenant_id: tenantId },
+  );
 export const partnerOfficeCredits = (accessToken: string) =>
-  partnerOfficeGet<{ credit: { currency: string; available_amount: number }; ledger: PartnerCreditLedgerEntry[] }>(accessToken, 'credits');
+  partnerOfficeGet<{ wallet?: { currency: string; available_amount: number }; credit: { currency: string; available_amount: number }; ledger: PartnerCreditLedgerEntry[] }>(accessToken, 'credits');
 export const partnerOfficeReferrals = (accessToken: string) =>
   partnerOfficeGet<ReferralMeResponse>(accessToken, 'referrals');
+export const partnerOfficeCommissions = (accessToken: string) =>
+  partnerOfficeGet<{ account: any; cash: any; rewards: any[]; cash_payout_requests: any[] }>(accessToken, 'commissions');
+
+export const partnerOfficeUpdateCenter = (
+  accessToken: string,
+  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding' | 'commercial_model'>>,
+) => partnerOfficePost<{ center: PartnerCenterProfile }>(accessToken, { action: 'update_center_profile', ...body });
+
+export const partnerOfficeCreateWalletTopup = (
+  accessToken: string,
+  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null },
+) => partnerOfficePost<{ ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
+
+export const partnerOfficeCreateVoucherBatch = (
+  accessToken: string,
+  body: {
+    tenant_id?: string | null;
+    access_kind: 'mock_exam' | 'subscription' | 'seat';
+    experience_id?: string | null;
+    plan_id?: string | null;
+    product_id?: string | null;
+    quantity: number;
+    expires_in_days?: number | null;
+    expires_at?: string | null;
+    prefix?: string | null;
+    source_model?: string | null;
+    assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
+  },
+) => partnerOfficePost<{ batch: PartnerVoucherBatch; vouchers: PartnerVoucher[] }>(accessToken, { action: 'create_voucher_batch', ...body });
+
+export const partnerOfficeVoidVoucher = (
+  accessToken: string,
+  body: { tenant_id?: string | null; voucher_id: string; reason?: string | null },
+) => partnerOfficePost<{ voucher: PartnerVoucher }>(accessToken, { action: 'void_voucher', ...body });
+
+export const partnerOfficeExportReport = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficePost<{ filename: string; csv: string }>(accessToken, { action: 'export_report', tenant_id: tenantId });
 
 export const partnerOfficeRequestCashPayout = (
   accessToken: string,
@@ -2558,6 +2707,55 @@ export const adminReferralsSettleCashPayout = async (
   return (await res.json()) as { cash_payout_request: any };
 };
 
+export type AdminPartnerRow = PartnerCenterProfile & {
+  tenants?: { id: string; name: string; slug: string; type: string } | null;
+  wallet?: { currency: string; available_amount: number };
+  voucher_counts?: Record<string, number>;
+};
+
+export const adminPartnersSummary = async (accessToken: string): Promise<{ partners: AdminPartnerRow[]; topup_requests: any[] }> => {
+  const res = await fetch(`${edgeBase}/admin-partners`, { method: 'GET', headers: apiHeaders(accessToken) });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-partners failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { partners: AdminPartnerRow[]; topup_requests: any[] };
+};
+
+export const adminPartnersUpdateProfile = async (
+  accessToken: string,
+  body: { tenant_id: string } & Partial<PartnerCenterProfile>,
+): Promise<{ partner: AdminPartnerRow | null }> => {
+  const res = await fetch(`${edgeBase}/admin-partners/profile`, {
+    method: 'PATCH',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`PATCH /admin-partners/profile failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { partner: AdminPartnerRow | null };
+};
+
+export const adminPartnersWallet = async (
+  accessToken: string,
+  body:
+    | { action: 'settle_topup'; tenant_id: string; ledger_id: string; status: 'posted' | 'void'; note?: string | null }
+    | { action: 'adjust'; tenant_id: string; entry_kind: 'adjustment' | 'credit' | 'refund' | 'debit' | 'commission'; amount: number; currency?: string; note?: string | null },
+): Promise<{ ledger_entry: any }> => {
+  const res = await fetch(`${edgeBase}/admin-partners/wallet`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /admin-partners/wallet failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { ledger_entry: any };
+};
+
 export type CandidateEntryResponse = {
   session: { access_token: string; refresh_token: string; expires_in: number; token_type: string };
   session_id: string;
@@ -2585,4 +2783,79 @@ export const candidateEntry = async (body: {
     throw new Error(`POST /candidate-entry failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as CandidateEntryResponse;
+};
+
+export type VoucherPreview = {
+  id: string;
+  code: string;
+  access_kind: 'mock_exam' | 'subscription' | 'seat';
+  status: string;
+  expires_at: string | null;
+  assigned_name?: string | null;
+  assigned_email?: string | null;
+  center: PartnerCenterProfile | null;
+  product: { id: string | null; name: string | null; slug?: string | null; app_url?: string | null };
+  experience: { id: string | null; name: string | null } | null;
+  plan: { id: string | null; name: string | null; duration_days?: number | null } | null;
+};
+
+export type VoucherPreviewResponse = {
+  voucher: VoucherPreview;
+  redeem_action: 'candidate_entry' | 'authenticated_redeem' | 'open_product';
+  token_code?: string;
+};
+
+export type VoucherRedeemResponse = VoucherPreviewResponse & {
+  grant?: { product_ids: string[]; starts_at: string; ends_at: string | null };
+  next_url?: string;
+};
+
+export const voucherPreview = async (code: string): Promise<VoucherPreviewResponse> => {
+  const qs = new URLSearchParams({ action: 'preview', code });
+  const res = await fetch(`${edgeBase}/voucher-redeem?${qs.toString()}`, { method: 'GET', headers: publicApiHeaders });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /voucher-redeem preview failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as VoucherPreviewResponse;
+};
+
+export const voucherRedeem = async (code: string, accessToken?: string | null): Promise<VoucherRedeemResponse> => {
+  const headers: HeadersInit = { ...publicApiHeaders, 'Content-Type': 'application/json' };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const res = await fetch(`${edgeBase}/voucher-redeem`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action: 'redeem', code }),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /voucher-redeem redeem failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as VoucherRedeemResponse;
+};
+
+export type PublicCenterResponse = {
+  center: {
+    tenant_id: string;
+    name: string;
+    slug: string;
+    logo_url?: string | null;
+    status: string;
+    package_tier?: string | null;
+    public_instructions?: string | null;
+    powered_by_schood: boolean;
+    branding?: Json | null;
+  };
+  services: { mock_exams: any[]; subscriptions: any[] };
+};
+
+export const publicCenter = async (slug: string): Promise<PublicCenterResponse> => {
+  const qs = new URLSearchParams({ action: 'center', slug });
+  const res = await fetch(`${edgeBase}/voucher-redeem?${qs.toString()}`, { method: 'GET', headers: publicApiHeaders });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /voucher-redeem center failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as PublicCenterResponse;
 };

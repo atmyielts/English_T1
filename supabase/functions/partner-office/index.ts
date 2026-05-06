@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type Json = Record<string, unknown>;
-
 type MembershipRow = { tenant_id: string; role: string; status: string };
 
 const corsHeaders: Record<string, string> = {
@@ -26,7 +25,9 @@ const getBearerToken = (req: Request): string | null => {
   return header.startsWith("Bearer ") ? header.slice(7) : header;
 };
 
-const normalizeQuantity = (raw: unknown, max = 200): number | null => {
+const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
+
+const normalizeQuantity = (raw: unknown, max = 500): number | null => {
   const num = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(num)) return null;
   const qty = Math.floor(num);
@@ -34,12 +35,39 @@ const normalizeQuantity = (raw: unknown, max = 200): number | null => {
   return qty;
 };
 
-const normalizeDays = (raw: unknown): number | null => {
+const normalizeDays = (raw: unknown, max = 365): number | null => {
   const num = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(num)) return null;
   const days = Math.floor(num);
-  if (days < 1 || days > 30) return null;
+  if (days < 1 || days > max) return null;
   return days;
+};
+
+const normalizeCode = (raw: unknown): string =>
+  String(raw ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 64);
+
+const normalizeSlug = (raw: unknown, fallback: string): string => {
+  const base = String(raw ?? fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 64);
+  return base || fallback;
+};
+
+const randomCodePart = (len = 6): string => {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < len; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return out;
 };
 
 const loadMemberships = async (sb: any, userId: string): Promise<MembershipRow[]> => {
@@ -58,6 +86,9 @@ const requireTenant = (memberships: MembershipRow[], requested?: string | null):
   return memberships[0]?.tenant_id ?? null;
 };
 
+const requireTenantAdmin = (memberships: MembershipRow[], tenantId: string): boolean =>
+  memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin"].includes(m.role));
+
 const forwardEdge = async (
   supabaseUrl: string,
   anonKey: string,
@@ -73,10 +104,181 @@ const forwardEdge = async (
 };
 
 const isTicketEligible = (metadata: unknown): boolean => {
-  const ticketing = metadata && typeof metadata === "object" && !Array.isArray(metadata)
-    ? (metadata as any).ticketing
-    : null;
+  const ticketing = isObject(metadata) ? (metadata as any).ticketing : null;
   return Boolean(ticketing?.eligible === true && String(ticketing?.mode ?? "") === "single_sitting");
+};
+
+const getFirstTenant = async (sb: any, tenantId: string): Promise<{ id: string; name: string; slug: string } | null> => {
+  const { data } = await sb.from("tenants").select("id, name, slug").eq("id", tenantId).maybeSingle();
+  return data?.id ? { id: String(data.id), name: String(data.name ?? "Education center"), slug: String(data.slug ?? "center") } : null;
+};
+
+const ensureCenterProfile = async (sb: any, tenantId: string, userId: string): Promise<any> => {
+  const { data: existing, error: existingError } = await sb
+    .from("partner_center_profiles")
+    .select("*")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (existing?.tenant_id) return existing;
+
+  const tenant = await getFirstTenant(sb, tenantId);
+  const baseSlug = normalizeSlug(tenant?.slug ?? tenant?.name, `center-${randomCodePart(4).toLowerCase()}`);
+  let slug = baseSlug;
+  for (let i = 0; i < 10; i += 1) {
+    const { data } = await sb.from("partner_center_profiles").select("tenant_id").eq("slug", slug).maybeSingle();
+    if (!data?.tenant_id) break;
+    slug = `${baseSlug}-${randomCodePart(3).toLowerCase()}`;
+  }
+
+  const { data: inserted, error: insertError } = await sb
+    .from("partner_center_profiles")
+    .insert({
+      tenant_id: tenantId,
+      display_name: tenant?.name ?? "Education center",
+      slug,
+      status: "pending",
+      package_tier: "starter",
+      commercial_model: "hybrid",
+      public_instructions: "Enter your Schood voucher code to start your exam or activate your learning access.",
+      created_by: userId,
+      branding: {},
+      commission_rules: {},
+      wholesale_pricing: {},
+      wallet_settings: { currency: "UZS" },
+    })
+    .select("*")
+    .maybeSingle();
+  if (insertError) throw insertError;
+  return inserted;
+};
+
+const ensureUniqueVoucherCode = async (sb: any, prefix: string): Promise<string> => {
+  const safePrefix = normalizeCode(prefix || "SCH").slice(0, 24) || "SCH";
+  for (let i = 0; i < 20; i += 1) {
+    const code = `${safePrefix}-${randomCodePart(6)}`;
+    const [{ data: voucher }, { data: token }] = await Promise.all([
+      sb.from("partner_vouchers").select("id").eq("code", code).maybeSingle(),
+      sb.from("exam_tokens").select("id").eq("token_code", code).maybeSingle(),
+    ]);
+    if (!voucher?.id && !token?.id) return code;
+  }
+  throw new Error("Failed to generate unique voucher code");
+};
+
+const buildBatchCode = async (sb: any, tenantId: string, prefix: string): Promise<string> => {
+  const base = normalizeCode(prefix || "BATCH").slice(0, 24) || "BATCH";
+  for (let i = 0; i < 20; i += 1) {
+    const code = `${base}-${new Date().toISOString().slice(2, 10).replace(/-/g, "")}-${randomCodePart(4)}`;
+    const { data } = await sb
+      .from("partner_voucher_batches")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("batch_code", code)
+      .maybeSingle();
+    if (!data?.id) return code;
+  }
+  throw new Error("Failed to generate batch code");
+};
+
+const pricingKeyCandidates = (kind: string, resourceId: string | null, productId: string | null): string[] => [
+  `${kind}:${resourceId ?? ""}`,
+  `${kind}:${productId ?? ""}`,
+  resourceId ?? "",
+  productId ?? "",
+  kind,
+];
+
+const lookupWholesalePrice = (profile: any, kind: string, resourceId: string | null, productId: string | null, fallback: number): number => {
+  const pricing = isObject(profile?.wholesale_pricing) ? profile.wholesale_pricing as Json : {};
+  for (const key of pricingKeyCandidates(kind, resourceId, productId)) {
+    const value = Number((pricing as any)[key]);
+    if (Number.isFinite(value) && value >= 0) return Math.floor(value);
+  }
+  return Math.max(0, Math.floor(fallback));
+};
+
+const findPersonalTenant = async (sb: any, userId: string): Promise<string | null> => {
+  const { data, error } = await sb
+    .from("tenant_memberships")
+    .select("tenant_id, tenants ( type )")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  const rows = data ?? [];
+  const personal = rows.find((row: any) => String(row?.tenants?.type ?? "") === "personal");
+  return personal?.tenant_id ?? rows[0]?.tenant_id ?? null;
+};
+
+const computeReports = (results: any[], vouchers: any[], seats: any[]) => {
+  const completed = results.filter((row) => String(row.registration_status ?? row.session_status ?? "") === "completed").length;
+  const scores = results
+    .map((row) => Number(row.overall_band ?? row.overall_score ?? NaN))
+    .filter((value) => Number.isFinite(value));
+  const averageScore = scores.length ? Math.round((scores.reduce((sum, value) => sum + value, 0) / scores.length) * 10) / 10 : null;
+  const now = Date.now();
+  const expiring = vouchers.filter((row) => row.status === "unused" && row.expires_at && Date.parse(row.expires_at) - now < 7 * 86400000).length;
+  return {
+    completed_exams: completed,
+    average_score: averageScore,
+    active_students: new Set(vouchers.map((row) => row.redeemed_by).filter(Boolean)).size,
+    inactive_vouchers: vouchers.filter((row) => row.status === "unused").length,
+    expiring_vouchers: expiring,
+    unassigned_seats: seats.filter((row) => row.status === "unassigned").length,
+  };
+};
+
+const loadResults = async (sb: any, tenantId: string, tokenId?: string | null) => {
+  let query = sb
+    .from("exam_registrations")
+    .select(
+      "id, token_id, status, created_at, first_name, last_name, legal_name, email, phone, session_id, experiences ( name ), exam_tokens ( token_code ), sessions!exam_registrations_session_id_fkey ( status )",
+    )
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+  if (tokenId) query = query.eq("token_id", tokenId);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  const rows = (data ?? []) as any[];
+  const sessionIds = rows.map((row) => row.session_id).filter(Boolean);
+  const evalMap = new Map<string, any>();
+  if (sessionIds.length > 0) {
+    const { data: evalRows } = await sb.from("evaluations").select("session_id, method, status, result").in("session_id", sessionIds);
+    for (const row of evalRows ?? []) {
+      const sid = String((row as any).session_id ?? "");
+      if (!sid) continue;
+      const existing = evalMap.get(sid);
+      if (!existing || (row as any).method === "auto") evalMap.set(sid, row);
+    }
+  }
+
+  return rows.map((row) => {
+    const evaluation = evalMap.get(String(row.session_id ?? "")) ?? null;
+    const result = isObject(evaluation?.result) ? evaluation.result : {};
+    const overallScore = (result as any)?.overall_score ?? null;
+    return {
+      id: row.id,
+      token_id: row.token_id,
+      token_code: row.exam_tokens?.token_code ?? null,
+      experience_name: row.experiences?.name ?? null,
+      candidate_name: row.legal_name || `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim(),
+      email: row.email,
+      phone: row.phone,
+      session_id: row.session_id,
+      session_status: row.sessions?.status ?? null,
+      registration_status: row.status,
+      overall_score: overallScore,
+      overall_band: (result as any)?.overall_band ?? overallScore,
+      listening_score: (result as any)?.listening_score ?? (result as any)?.listening_band ?? null,
+      reading_score: (result as any)?.reading_score ?? (result as any)?.reading_band ?? null,
+      writing_status: (result as any)?.writing_status ?? evaluation?.status ?? null,
+      speaking_status: (result as any)?.speaking_status ?? null,
+      weak_areas: (result as any)?.weak_areas ?? [],
+      created_at: row.created_at,
+    };
+  });
 };
 
 serve(async (req) => {
@@ -102,15 +304,35 @@ serve(async (req) => {
     const tenantId = requireTenant(memberships, url.searchParams.get("tenant_id"));
     if (!tenantId) return json(403, { error: "Forbidden" });
 
-    if (req.method === "GET" && (action === "catalog" || action === "experiences")) {
-      const { data, error } = await sb
-        .from("experiences")
-        .select("id, name, is_active, product_id, price_amount, price_currency, metadata, products ( name, type, status, metadata )")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      if (error) return json(500, { error: "Failed to load catalog", detail: error.message });
+    if (req.method === "GET" && (action === "center" || action === "branding")) {
+      const center = await ensureCenterProfile(sb, tenantId, userId);
+      const tenant = await getFirstTenant(sb, tenantId);
+      return json(200, { center, tenant });
+    }
 
-      const experiences = (data ?? [])
+    if (req.method === "GET" && (action === "catalog" || action === "experiences")) {
+      const [experiencesRes, plansRes, productsRes] = await Promise.all([
+        sb
+          .from("experiences")
+          .select("id, name, is_active, product_id, price_amount, price_currency, metadata, products ( name, type, status, metadata )")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
+        sb
+          .from("plans")
+          .select("id, product_id, name, amount, currency, duration_days, metadata, is_active, products ( name, metadata )")
+          .eq("is_active", true)
+          .order("created_at", { ascending: true }),
+        sb
+          .from("products")
+          .select("id, name, type, status, metadata")
+          .eq("status", "active")
+          .order("created_at", { ascending: true }),
+      ]);
+      if (experiencesRes.error) return json(500, { error: "Failed to load catalog", detail: experiencesRes.error.message });
+      if (plansRes.error) return json(500, { error: "Failed to load plans", detail: plansRes.error.message });
+      if (productsRes.error) return json(500, { error: "Failed to load products", detail: productsRes.error.message });
+
+      const experiences = (experiencesRes.data ?? [])
         .filter((row: any) => isTicketEligible(row.metadata))
         .map((row: any) => ({
           id: row.id,
@@ -124,7 +346,7 @@ serve(async (req) => {
           is_ticket_ready: Number(row.price_amount ?? 0) > 0,
         }));
 
-      return json(200, { experiences });
+      return json(200, { experiences, plans: plansRes.data ?? [], products: productsRes.data ?? [] });
     }
 
     if (req.method === "GET" && action === "tickets") {
@@ -137,53 +359,59 @@ serve(async (req) => {
       return json(200, { tickets: data ?? [] });
     }
 
-    if (req.method === "GET" && action === "results") {
-      const tokenId = url.searchParams.get("token_id");
-      let query = sb
-        .from("exam_registrations")
-        .select(
-          "id, token_id, status, created_at, first_name, last_name, legal_name, email, phone, session_id, experiences ( name ), exam_tokens ( token_code ), sessions!exam_registrations_session_id_fkey ( status )",
-        )
+    if (req.method === "GET" && action === "voucher_batches") {
+      const { data, error } = await sb
+        .from("partner_voucher_batches")
+        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days )")
         .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
-      if (tokenId) query = query.eq("token_id", tokenId);
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) return json(500, { error: "Failed to load voucher batches", detail: error.message });
+      return json(200, { batches: data ?? [] });
+    }
 
+    if (req.method === "GET" && action === "vouchers") {
+      const status = String(url.searchParams.get("status") ?? "").trim();
+      let query = sb
+        .from("partner_vouchers")
+        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days )")
+        .eq("tenant_id", tenantId)
+        .order("created_at", { ascending: false })
+        .limit(300);
+      if (status) query = query.eq("status", status);
       const { data, error } = await query;
-      if (error) return json(500, { error: "Failed to load results", detail: error.message });
-      const rows = (data ?? []) as any[];
-      const sessionIds = rows.map((row) => row.session_id).filter(Boolean);
-      const evalMap = new Map<string, any>();
-      if (sessionIds.length > 0) {
-        const { data: evalRows } = await sb.from("evaluations").select("session_id, method, status, result").in("session_id", sessionIds);
-        for (const row of evalRows ?? []) {
-          const sid = String((row as any).session_id ?? "");
-          if (!sid) continue;
-          const existing = evalMap.get(sid);
-          if (!existing || (row as any).method === "auto") evalMap.set(sid, row);
-        }
-      }
+      if (error) return json(500, { error: "Failed to load vouchers", detail: error.message });
+      return json(200, { vouchers: data ?? [] });
+    }
 
-      return json(200, {
-        results: rows.map((row) => {
-          const evaluation = evalMap.get(String(row.session_id ?? "")) ?? null;
-          const overallScore = evaluation?.result?.overall_score ?? null;
-          return {
-            id: row.id,
-            token_id: row.token_id,
-            token_code: row.exam_tokens?.token_code ?? null,
-            experience_name: row.experiences?.name ?? null,
-            candidate_name: row.legal_name || `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim(),
-            email: row.email,
-            phone: row.phone,
-            session_id: row.session_id,
-            session_status: row.sessions?.status ?? null,
-            registration_status: row.status,
-            overall_score: overallScore,
-            overall_band: evaluation?.result?.overall_band ?? overallScore,
-            created_at: row.created_at,
-          };
-        }),
-      });
+    if (req.method === "GET" && action === "results") {
+      const results = await loadResults(sb, tenantId, url.searchParams.get("token_id"));
+      return json(200, { results });
+    }
+
+    if (req.method === "GET" && action === "students") {
+      const { data, error } = await sb
+        .from("partner_vouchers")
+        .select("id, code, access_kind, status, assigned_name, assigned_email, assigned_phone, redeemed_by, redeemed_at, expires_at, products ( name ), experiences ( name ), plans ( name )")
+        .eq("tenant_id", tenantId)
+        .or("assigned_email.not.is.null,redeemed_by.not.is.null")
+        .order("updated_at", { ascending: false })
+        .limit(300);
+      if (error) return json(500, { error: "Failed to load students", detail: error.message });
+      const students = (data ?? []).map((row: any) => ({
+        id: row.id,
+        voucher_code: row.code,
+        name: row.assigned_name ?? null,
+        email: row.assigned_email ?? null,
+        phone: row.assigned_phone ?? null,
+        access_kind: row.access_kind,
+        product_name: row.products?.name ?? row.experiences?.name ?? row.plans?.name ?? null,
+        status: row.status,
+        redeemed_by: row.redeemed_by,
+        redeemed_at: row.redeemed_at,
+        expires_at: row.expires_at,
+      }));
+      return json(200, { students });
     }
 
     if (req.method === "GET" && action === "seats") {
@@ -207,17 +435,24 @@ serve(async (req) => {
       return json(200, { payments: data ?? [] });
     }
 
-    if (req.method === "GET" && action === "credits") {
+    if (req.method === "GET" && (action === "wallet" || action === "credits")) {
       const currency = String(url.searchParams.get("currency") ?? "UZS").toUpperCase();
-      const { data: balance } = await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
-      const { data, error } = await sb
-        .from("platform_credit_ledger")
-        .select("id, amount, currency, entry_kind, status, payment_id, reward_id, metadata, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (error) return json(500, { error: "Failed to load credits", detail: error.message });
-      return json(200, { credit: { currency, available_amount: Number(balance ?? 0) }, ledger: data ?? [] });
+      const [{ data: walletBalance }, walletRows, { data: platformCredit }] = await Promise.all([
+        sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency }),
+        sb
+          .from("partner_wallet_ledger")
+          .select("id, amount, currency, entry_kind, status, payment_id, voucher_batch_id, metadata, created_at")
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency }),
+      ]);
+      if (walletRows.error) return json(500, { error: "Failed to load wallet", detail: walletRows.error.message });
+      return json(200, {
+        wallet: { currency, available_amount: Number(walletBalance ?? 0) },
+        credit: { currency, available_amount: Number(platformCredit ?? 0) },
+        ledger: walletRows.data ?? [],
+      });
     }
 
     if (req.method === "GET" && action === "referrals") {
@@ -226,30 +461,62 @@ serve(async (req) => {
       return new Response(body, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
+    if (req.method === "GET" && action === "commissions") {
+      const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "referrals/me", { method: "GET" });
+      const body = await forwarded.json().catch(() => ({}));
+      return json(forwarded.status, {
+        account: body.account ?? null,
+        cash: body.cash ?? null,
+        rewards: body.rewards ?? [],
+        cash_payout_requests: body.cash_payout_requests ?? [],
+      });
+    }
+
+    if (req.method === "GET" && action === "reports") {
+      const [results, vouchersRes, seatsRes] = await Promise.all([
+        loadResults(sb, tenantId),
+        sb.from("partner_vouchers").select("id, status, redeemed_by, expires_at").eq("tenant_id", tenantId).limit(1000),
+        sb.from("seat_licenses").select("id, status").eq("tenant_id", tenantId).limit(1000),
+      ]);
+      if (vouchersRes.error) return json(500, { error: "Failed to load report vouchers", detail: vouchersRes.error.message });
+      if (seatsRes.error) return json(500, { error: "Failed to load report seats", detail: seatsRes.error.message });
+      return json(200, { reports: computeReports(results, vouchersRes.data ?? [], seatsRes.data ?? []), results });
+    }
+
     if (req.method === "GET" && action === "dashboard") {
-      const [tickets, seats, payments, results, credits] = await Promise.all([
+      const [center, tickets, seats, payments, results, vouchers, batches, wallet] = await Promise.all([
+        ensureCenterProfile(sb, tenantId, userId),
         sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("payments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("exam_registrations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: "UZS" }),
+        sb.from("partner_vouchers").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
+        sb.from("partner_voucher_batches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" }),
       ]);
+      const voucherRows = vouchers.data ?? [];
       return json(200, {
         tenant_id: tenantId,
+        center,
         counts: {
           tickets: tickets.count ?? 0,
           seats: seats.count ?? 0,
           payments: payments.count ?? 0,
           results: results.count ?? 0,
+          voucher_batches: batches.count ?? 0,
+          vouchers: vouchers.count ?? voucherRows.length,
+          vouchers_unused: voucherRows.filter((row: any) => row.status === "unused").length,
+          vouchers_redeemed: voucherRows.filter((row: any) => row.status === "redeemed").length,
         },
-        credit: { currency: "UZS", available_amount: Number(credits.data ?? 0) },
+        wallet: { currency: "UZS", available_amount: Number(wallet.data ?? 0) },
+        credit: { currency: "UZS", available_amount: Number(wallet.data ?? 0) },
       });
     }
 
     if (req.method === "GET" && action === "plans") {
       const { data, error } = await sb
         .from("plans")
-        .select("id, product_id, name, amount, currency, duration_days, metadata, is_active, products ( name )")
+        .select("id, product_id, name, amount, currency, duration_days, metadata, is_active, products ( name, metadata )")
         .eq("is_active", true)
         .order("created_at", { ascending: true });
       if (error) return json(500, { error: "Failed to load plans", detail: error.message });
@@ -259,6 +526,283 @@ serve(async (req) => {
     if (req.method === "POST") {
       const body = (await req.json().catch(() => ({}))) as Json;
       const actionBody = String(body.action ?? "");
+
+      if (["update_center_profile", "create_wallet_topup", "create_voucher_batch", "void_voucher", "export_report", "resend_student_invite"].includes(actionBody)) {
+        if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      }
+
+      if (actionBody === "update_center_profile") {
+        const current = await ensureCenterProfile(sb, tenantId, userId);
+        const patch: Json = {};
+        if ("display_name" in body) patch.display_name = String(body.display_name ?? current.display_name).trim().slice(0, 120) || current.display_name;
+        if ("slug" in body) patch.slug = normalizeSlug(body.slug, current.slug);
+        if ("logo_url" in body) patch.logo_url = String(body.logo_url ?? "").trim().slice(0, 1000) || null;
+        if ("public_instructions" in body) patch.public_instructions = String(body.public_instructions ?? "").trim().slice(0, 3000) || null;
+        if ("powered_by_schood" in body) patch.powered_by_schood = Boolean(body.powered_by_schood);
+        if ("branding" in body) patch.branding = isObject(body.branding) ? body.branding : {};
+        if ("commercial_model" in body && ["prepaid_wallet", "wholesale", "revenue_share", "hybrid"].includes(String(body.commercial_model))) {
+          patch.commercial_model = String(body.commercial_model);
+        }
+
+        const { data, error } = await sb
+          .from("partner_center_profiles")
+          .update(patch)
+          .eq("tenant_id", tenantId)
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update center profile", detail: error.message });
+        return json(200, { center: data });
+      }
+
+      if (actionBody === "create_wallet_topup") {
+        const amount = normalizeQuantity(body.amount, 1000000000);
+        const currency = String(body.currency ?? "UZS").toUpperCase();
+        if (!amount) return json(400, { error: "amount must be positive" });
+        const { data, error } = await sb
+          .from("partner_wallet_ledger")
+          .insert({
+            tenant_id: tenantId,
+            user_id: userId,
+            entry_kind: "topup",
+            status: "reserved",
+            amount,
+            currency,
+            created_by: userId,
+            metadata: { source: "partner_office", note: body.note ?? null, requires_admin_settlement: true },
+          })
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to request wallet top-up", detail: error.message });
+        return json(200, { ledger_entry: data, status: "reserved", note: "Top-up request recorded. Admin settlement is required before funds become available." });
+      }
+
+      if (actionBody === "create_voucher_batch") {
+        const profile = await ensureCenterProfile(sb, tenantId, userId);
+        const accessKind = String(body.access_kind ?? "").trim();
+        if (!["mock_exam", "subscription", "seat"].includes(accessKind)) return json(400, { error: "Unsupported access_kind" });
+        const quantity = normalizeQuantity(body.quantity, 500);
+        if (!quantity) return json(400, { error: "quantity must be between 1 and 500" });
+        const prefix = normalizeCode(body.prefix ?? `SCH-${String(profile.slug ?? "CENTER").toUpperCase()}`);
+        const expiresAt = body.expires_at
+          ? new Date(String(body.expires_at)).toISOString()
+          : new Date(Date.now() + (normalizeDays(body.expires_in_days, 365) ?? 30) * 86400000).toISOString();
+        if (Date.parse(expiresAt) <= Date.now()) return json(400, { error: "expires_at must be in the future" });
+
+        let productId = String(body.product_id ?? "").trim() || null;
+        let experienceId = String(body.experience_id ?? "").trim() || null;
+        let planId = String(body.plan_id ?? "").trim() || null;
+        let unitPrice = 0;
+        let currency = "UZS";
+
+        if (accessKind === "mock_exam") {
+          if (!experienceId) return json(400, { error: "experience_id is required for mock vouchers" });
+          const { data: exp, error } = await sb
+            .from("experiences")
+            .select("id, product_id, is_active, price_amount, price_currency, metadata")
+            .eq("id", experienceId)
+            .maybeSingle();
+          if (error || !exp?.id || !exp.is_active) return json(400, { error: "Invalid experience_id" });
+          if (!isTicketEligible(exp.metadata)) return json(400, { error: "Experience is not ticket eligible" });
+          productId = exp.product_id;
+          currency = String(exp.price_currency ?? "UZS");
+          unitPrice = lookupWholesalePrice(profile, accessKind, experienceId, productId, Number(exp.price_amount ?? 0));
+        } else if (accessKind === "subscription") {
+          if (!planId) return json(400, { error: "plan_id is required for subscription vouchers" });
+          const { data: plan, error } = await sb
+            .from("plans")
+            .select("id, product_id, amount, currency, is_active")
+            .eq("id", planId)
+            .maybeSingle();
+          if (error || !plan?.id || !plan.is_active) return json(400, { error: "Invalid plan_id" });
+          productId = plan.product_id;
+          currency = String(plan.currency ?? "UZS");
+          unitPrice = lookupWholesalePrice(profile, accessKind, planId, productId, Number(plan.amount ?? 0));
+        } else {
+          if (!planId) return json(400, { error: "plan_id is required for seat vouchers" });
+          const { data: seatRows, error } = await sb
+            .from("seat_licenses")
+            .select("id, plan_id, product_id")
+            .eq("tenant_id", tenantId)
+            .eq("plan_id", planId)
+            .eq("status", "unassigned")
+            .order("created_at", { ascending: true })
+            .limit(quantity);
+          if (error) return json(500, { error: "Failed to load seats", detail: error.message });
+          if ((seatRows ?? []).length < quantity) return json(400, { error: "Not enough unassigned seats for this plan" });
+          productId = String((seatRows ?? [])[0]?.product_id ?? productId ?? "");
+          unitPrice = 0;
+        }
+
+        const sourceModel = String(body.source_model ?? profile.commercial_model ?? "prepaid_wallet");
+        const totalAmount = unitPrice * quantity;
+        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
+          const { data: available } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency });
+          if (Number(available ?? 0) < totalAmount) return json(400, { error: "Insufficient partner wallet balance" });
+        }
+
+        const batchCode = await buildBatchCode(sb, tenantId, prefix);
+        const { data: batch, error: batchError } = await sb
+          .from("partner_voucher_batches")
+          .insert({
+            tenant_id: tenantId,
+            batch_code: batchCode,
+            access_kind: accessKind,
+            product_id: productId,
+            experience_id: experienceId,
+            plan_id: planId,
+            quantity,
+            expires_at: expiresAt,
+            prefix,
+            source_model: sourceModel === "prepaid_wallet" || sourceModel === "wholesale" || sourceModel === "revenue_share" ? sourceModel : "manual",
+            created_by: userId,
+            metadata: {
+              unit_price: unitPrice,
+              total_amount: totalAmount,
+              currency,
+              assigned_students: Array.isArray(body.assigned_students) ? body.assigned_students.length : 0,
+            },
+          })
+          .select("*")
+          .maybeSingle();
+        if (batchError || !batch?.id) return json(500, { error: "Failed to create voucher batch", detail: batchError?.message });
+
+        const assignedStudents = Array.isArray(body.assigned_students) ? body.assigned_students : [];
+        const vouchers = [];
+        if (accessKind === "mock_exam") {
+          for (let i = 0; i < quantity; i += 1) {
+            const code = await ensureUniqueVoucherCode(sb, prefix);
+            const { data: tokenRow, error: tokenError } = await sb
+              .from("exam_tokens")
+              .insert({
+                tenant_id: tenantId,
+                experience_id: experienceId,
+                token_code: code,
+                status: "active",
+                expires_at: expiresAt,
+                max_uses: 1,
+                uses_count: 0,
+                created_by: userId,
+                metadata: { source: "partner_voucher", batch_id: batch.id },
+              })
+              .select("id")
+              .maybeSingle();
+            if (tokenError || !tokenRow?.id) return json(500, { error: "Failed to create exam token", detail: tokenError?.message });
+            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
+            vouchers.push({
+              tenant_id: tenantId,
+              batch_id: batch.id,
+              code,
+              access_kind: accessKind,
+              product_id: productId,
+              experience_id: experienceId,
+              plan_id: null,
+              exam_token_id: tokenRow.id,
+              status: "unused",
+              expires_at: expiresAt,
+              assigned_name: String(assigned.name ?? "").trim() || null,
+              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
+              assigned_phone: String(assigned.phone ?? "").trim() || null,
+              source_payment_id: null,
+              metadata: { batch_code: batchCode },
+            });
+          }
+        } else {
+          let seatRows: any[] = [];
+          if (accessKind === "seat") {
+            const { data } = await sb
+              .from("seat_licenses")
+              .select("id")
+              .eq("tenant_id", tenantId)
+              .eq("plan_id", planId)
+              .eq("status", "unassigned")
+              .order("created_at", { ascending: true })
+              .limit(quantity);
+            seatRows = data ?? [];
+          }
+          for (let i = 0; i < quantity; i += 1) {
+            const code = await ensureUniqueVoucherCode(sb, prefix);
+            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
+            vouchers.push({
+              tenant_id: tenantId,
+              batch_id: batch.id,
+              code,
+              access_kind: accessKind,
+              product_id: productId,
+              experience_id: null,
+              plan_id: planId,
+              seat_license_id: accessKind === "seat" ? seatRows[i]?.id ?? null : null,
+              status: "unused",
+              expires_at: expiresAt,
+              assigned_name: String(assigned.name ?? "").trim() || null,
+              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
+              assigned_phone: String(assigned.phone ?? "").trim() || null,
+              source_payment_id: null,
+              metadata: { batch_code: batchCode },
+            });
+          }
+        }
+
+        const { data: insertedVouchers, error: voucherError } = await sb.from("partner_vouchers").insert(vouchers).select("*");
+        if (voucherError) return json(500, { error: "Failed to create vouchers", detail: voucherError.message });
+
+        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
+          await sb.from("partner_wallet_ledger").insert({
+            tenant_id: tenantId,
+            user_id: userId,
+            entry_kind: "debit",
+            status: "posted",
+            amount: totalAmount,
+            currency,
+            voucher_batch_id: batch.id,
+            created_by: userId,
+            metadata: { access_kind: accessKind, quantity, unit_price: unitPrice },
+          });
+        }
+
+        return json(200, { batch, vouchers: insertedVouchers ?? [] });
+      }
+
+      if (actionBody === "void_voucher") {
+        const voucherId = String(body.voucher_id ?? "").trim();
+        if (!voucherId) return json(400, { error: "voucher_id is required" });
+        const { data, error } = await sb
+          .from("partner_vouchers")
+          .update({ status: "void", metadata: { reason: body.reason ?? "voided_by_center", voided_by: userId } })
+          .eq("id", voucherId)
+          .eq("tenant_id", tenantId)
+          .eq("status", "unused")
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to void voucher", detail: error.message });
+        if (!data?.id) return json(400, { error: "Only unused vouchers can be voided" });
+        if (data.exam_token_id) {
+          await sb.from("exam_tokens").update({ status: "disabled" }).eq("id", data.exam_token_id).eq("status", "active");
+        }
+        return json(200, { voucher: data });
+      }
+
+      if (actionBody === "export_report") {
+        const results = await loadResults(sb, tenantId);
+        const csv = [
+          ["Candidate", "Email", "Voucher", "Exam", "Status", "Score", "Date"],
+          ...results.map((row) => [
+            row.candidate_name ?? "",
+            row.email ?? "",
+            row.token_code ?? "",
+            row.experience_name ?? "",
+            row.session_status ?? row.registration_status ?? "",
+            row.overall_band ?? row.overall_score ?? "",
+            row.created_at ?? "",
+          ]),
+        ]
+          .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+          .join("\n");
+        return json(200, { filename: `schood-partner-report-${new Date().toISOString().slice(0, 10)}.csv`, csv });
+      }
+
+      if (actionBody === "resend_student_invite") {
+        return json(200, { ok: true, status: "queued", note: "Invite delivery provider is not configured; voucher link can be copied from the dashboard." });
+      }
 
       if (actionBody === "assign_seat") {
         const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "teacher-office", {
@@ -288,22 +832,12 @@ serve(async (req) => {
 
         if (purchaseType === "token_pack") {
           const experienceId = String(body.experience_id ?? "");
-          const { data: exp } = await sb
-            .from("experiences")
-            .select("id, price_amount, price_currency")
-            .eq("id", experienceId)
-            .eq("is_active", true)
-            .maybeSingle();
+          const { data: exp } = await sb.from("experiences").select("id, price_amount, price_currency").eq("id", experienceId).eq("is_active", true).maybeSingle();
           originalAmount = Number((exp as any)?.price_amount ?? 0) * quantity;
           currency = String((exp as any)?.price_currency ?? "UZS");
         } else {
           const planId = String(body.plan_id ?? "");
-          const { data: plan } = await sb
-            .from("plans")
-            .select("id, amount, currency")
-            .eq("id", planId)
-            .eq("is_active", true)
-            .maybeSingle();
+          const { data: plan } = await sb.from("plans").select("id, amount, currency").eq("id", planId).eq("is_active", true).maybeSingle();
           originalAmount = Number((plan as any)?.amount ?? 0) * quantity;
           currency = String((plan as any)?.currency ?? "UZS");
         }

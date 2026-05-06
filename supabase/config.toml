@@ -188,6 +188,12 @@ verify_jwt = false
 [functions.partner-office]
 verify_jwt = false
 
+[functions.voucher-redeem]
+verify_jwt = false
+
+[functions.admin-partners]
+verify_jwt = false
+
 [functions.referrals]
 verify_jwt = false
 

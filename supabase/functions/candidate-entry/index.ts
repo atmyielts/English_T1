@@ -73,8 +73,8 @@ const buildPassword = (): string => {
 };
 
 const findUserIdByEmail = async (
-  sbDb: ReturnType<typeof createClient>,
-  sbAuth: ReturnType<typeof createClient>,
+  sbDb: any,
+  sbAuth: any,
   email: string,
 ): Promise<string | null> => {
   const { data: userRow } = await sbDb.from("users").select("id, email").eq("email", email).maybeSingle();
@@ -86,7 +86,7 @@ const findUserIdByEmail = async (
   for (let i = 0; i < 10; i += 1) {
     const { data, error } = await sbAuth.auth.admin.listUsers({ page, perPage });
     if (error) break;
-    const match = (data?.users ?? []).find((u) => String(u.email ?? "").toLowerCase() === email);
+    const match = (data?.users ?? []).find((u: any) => String(u.email ?? "").toLowerCase() === email);
     if (match?.id) return String(match.id);
     if (data?.lastPage && page >= data.lastPage) break;
     page += 1;
@@ -95,9 +95,9 @@ const findUserIdByEmail = async (
 };
 
 const ensureUserSession = async (
-  sbDb: ReturnType<typeof createClient>,
-  sbAuth: ReturnType<typeof createClient>,
-  sbAnon: ReturnType<typeof createClient>,
+  sbDb: any,
+  sbAuth: any,
+  sbAnon: any,
   email: string,
   firstName: string,
   lastName: string,
@@ -187,8 +187,8 @@ const ensureUserSession = async (
 };
 
 const validateExistingIdentity = async (
-  sbDb: ReturnType<typeof createClient>,
-  sbAuth: ReturnType<typeof createClient>,
+  sbDb: any,
+  sbAuth: any,
   userId: string,
   submitted: { firstName: string; lastName: string; phone: string },
 ): Promise<{ ok: boolean }> => {
@@ -220,7 +220,7 @@ const validateExistingIdentity = async (
 };
 
 const findReusableSession = async (
-  sbAdmin: ReturnType<typeof createClient>,
+  sbAdmin: any,
   tokenId: string,
   userId: string,
 ): Promise<{ id: string; experience_id: string } | null> => {
@@ -236,6 +236,39 @@ const findReusableSession = async (
 
   if (!row?.id) return null;
   return { id: String(row.id), experience_id: String(row.experience_id) };
+};
+
+const markPartnerVoucherForToken = async (
+  sbAdmin: any,
+  tokenId: string,
+  userId: string,
+  details: { firstName: string; lastName: string; email: string; phone: string },
+): Promise<void> => {
+  const { data: voucher } = await sbAdmin
+    .from("partner_vouchers")
+    .select("id, status, redeemed_by, metadata")
+    .eq("exam_token_id", tokenId)
+    .maybeSingle();
+  if (!voucher?.id) return;
+  if (voucher.status === "redeemed" && voucher.redeemed_by && voucher.redeemed_by !== userId) return;
+
+  await sbAdmin
+    .from("partner_vouchers")
+    .update({
+      status: "redeemed",
+      redeemed_by: userId,
+      redeemed_at: new Date().toISOString(),
+      uses_count: 1,
+      assigned_name: `${details.firstName} ${details.lastName}`.trim(),
+      assigned_email: details.email,
+      assigned_phone: details.phone,
+      metadata: {
+        ...((voucher.metadata && typeof voucher.metadata === "object" && !Array.isArray(voucher.metadata)) ? voucher.metadata : {}),
+        redeemed_via: "candidate-entry",
+      },
+    })
+    .eq("id", voucher.id)
+    .in("status", ["unused", "redeemed"]);
 };
 
 const buildCandidateResponse = (
@@ -400,6 +433,7 @@ serve(async (req) => {
           if (!claimedEmail) return json(500, { error: "Failed to recover candidate session" });
 
           const { session } = await ensureUserSession(sbDb, sbAuth, sbAnon, claimedEmail, firstName, lastName, phone);
+          await markPartnerVoucherForToken(sbDb, tokenRow.id, claimedBy, { firstName, lastName, email: claimedEmail, phone });
           return buildCandidateResponse(
             {
               access_token: session.access_token,
@@ -468,6 +502,7 @@ serve(async (req) => {
       if (latestToken?.claimed_by === userId && String(latestToken?.status) === "claimed") {
         const existingSession = await findReusableSession(sbDb, tokenRow.id, userId);
         if (existingSession) {
+          await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
           return buildCandidateResponse(
             {
               access_token: session.access_token,
@@ -536,6 +571,8 @@ serve(async (req) => {
     if (registrationRow?.id) {
       await sbDb.from("sessions").update({ registration_id: registrationRow.id }).eq("id", sessionRow.id);
     }
+
+    await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
 
     return buildCandidateResponse(
       {

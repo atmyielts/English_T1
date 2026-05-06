@@ -47,11 +47,14 @@ const AccountPage = lazyWithChunkRetry(() => import('./pages/AccountPage').then(
 const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEntryPage').then((m) => ({ default: m.CandidateEntryPage })));
 const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLandingPage').then((m) => ({ default: m.ReferralLandingPage })));
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
+const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
+const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
 const AdminMfaPage = lazyWithChunkRetry(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
 const AdminBillingPage = lazyWithChunkRetry(() => import('./pages/admin/AdminBillingPage').then((m) => ({ default: m.AdminBillingPage })));
 const AdminProductsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage })));
 const AdminCouponsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage })));
 const AdminReferralsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminReferralsPage').then((m) => ({ default: m.AdminReferralsPage })));
+const AdminPartnersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPartnersPage').then((m) => ({ default: m.AdminPartnersPage })));
 const AdminPaymentsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })));
 const AdminUsersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
 const AdminAnalyticsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
@@ -115,6 +118,10 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/candidate" element={<CandidateEntryPage />} />
           <Route path="/r/:code" element={<ReferralLandingPage />} />
+          <Route path="/redeem" element={<RedeemPage />} />
+          <Route path="/redeem/:code" element={<RedeemPage />} />
+          <Route path="/center/:slug" element={<CenterLandingPage />} />
+          <Route path="/partners/:slug" element={<CenterLandingPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />
@@ -197,6 +204,14 @@ function App() {
               element={
                 <RequireAdminPermission permission="admin.referrals.manage" title="Referrals">
                   <AdminReferralsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/partners"
+              element={
+                <RequireAdminPermission permission="admin.partners.manage" title="Partners">
+                  <AdminPartnersPage />
                 </RequireAdminPermission>
               }
             />
