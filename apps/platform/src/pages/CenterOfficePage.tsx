@@ -21,10 +21,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
 import {
   partnerOfficeApplyCenter,
+  partnerOfficeAcceptStaffInvites,
   partnerOfficeCatalog,
   partnerOfficeCenter,
   partnerOfficeCreateSeatPurchase,
@@ -36,18 +37,24 @@ import {
   partnerOfficePayments,
   partnerOfficePlans,
   partnerOfficeReports,
+  partnerOfficeInviteStaff,
   partnerOfficeRequestCashPayout,
   partnerOfficeResults,
   partnerOfficeSeats,
+  partnerOfficeStaff,
   partnerOfficeStudents,
   partnerOfficeTickets,
   partnerOfficeUpdateCenter,
+  partnerOfficeUpdateStaff,
+  partnerOfficeUploadCenterLogo,
   partnerOfficeVoidVoucher,
   partnerOfficeVoucherBatches,
   partnerOfficeVouchers,
   partnerOfficeWallet,
   tspayStatus,
   type PartnerCenterProfile,
+  type PartnerCenterStaffInvite,
+  type PartnerCenterStaffMember,
   type PartnerCreditLedgerEntry,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
@@ -59,7 +66,7 @@ import {
   type PartnerVoucherBatch,
 } from '../lib/platformClient';
 
-type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'results' | 'reports' | 'branding' | 'payments';
+type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -67,6 +74,7 @@ const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'buy', label: 'Buy', icon: CreditCard },
   { id: 'vouchers', label: 'Vouchers', icon: Ticket },
   { id: 'students', label: 'Students', icon: UsersRound },
+  { id: 'staff', label: 'Staff', icon: UserPlus },
   { id: 'results', label: 'Results', icon: ClipboardList },
   { id: 'reports', label: 'Reports', icon: Download },
   { id: 'branding', label: 'Branding', icon: Paintbrush },
@@ -170,6 +178,8 @@ export const CenterOfficePage: React.FC = () => {
   const [batches, setBatches] = useState<PartnerVoucherBatch[]>([]);
   const [vouchers, setVouchers] = useState<PartnerVoucher[]>([]);
   const [students, setStudents] = useState<PartnerStudent[]>([]);
+  const [staffMembers, setStaffMembers] = useState<PartnerCenterStaffMember[]>([]);
+  const [staffInvites, setStaffInvites] = useState<PartnerCenterStaffInvite[]>([]);
   const [wallet, setWallet] = useState<{ currency: string; available_amount: number }>({ currency: 'UZS', available_amount: 0 });
   const [ledger, setLedger] = useState<PartnerCreditLedgerEntry[]>([]);
   const [dashboard, setDashboard] = useState<{ counts: Record<string, number>; wallet?: { currency: string; available_amount: number } } | null>(null);
@@ -193,6 +203,8 @@ export const CenterOfficePage: React.FC = () => {
   const [walletTopup, setWalletTopup] = useState({ amount: 1000000, note: '' });
   const [brandingForm, setBrandingForm] = useState({ display_name: '', slug: '', logo_url: '', public_instructions: '', powered_by_schood: true });
   const [cashPayout, setCashPayout] = useState({ payout_method: 'cash', payout_details: '', note: '' });
+  const [staffForm, setStaffForm] = useState({ email: '', role: 'member' as 'admin' | 'member' });
+  const [logoUploading, setLogoUploading] = useState(false);
   const [applicationForm, setApplicationForm] = useState({
     display_name: '',
     slug: '',
@@ -230,6 +242,7 @@ export const CenterOfficePage: React.FC = () => {
         navigate(`/auth?returnTo=${encodeURIComponent('/center-office')}`, { replace: true });
         return;
       }
+      await partnerOfficeAcceptStaffInvites(token).catch(() => null);
       const centerRes = await partnerOfficeCenter(token);
       setCenter(centerRes.center);
       if (!centerRes.center?.tenant_id) {
@@ -246,13 +259,15 @@ export const CenterOfficePage: React.FC = () => {
         setVouchers([]);
         setBatches([]);
         setStudents([]);
+        setStaffMembers([]);
+        setStaffInvites([]);
         setResults([]);
         setReports(null);
         return;
       }
 
       const tenant_id = centerRes.center.tenant_id;
-      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, resultRes, reportRes] =
+      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
@@ -264,6 +279,7 @@ export const CenterOfficePage: React.FC = () => {
           partnerOfficeVouchers(token, { tenant_id }),
           partnerOfficeVoucherBatches(token, tenant_id),
           partnerOfficeStudents(token, tenant_id),
+          partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })),
           partnerOfficeResults(token, { tenant_id }),
           partnerOfficeReports(token, tenant_id),
         ]);
@@ -279,6 +295,8 @@ export const CenterOfficePage: React.FC = () => {
       setVouchers(voucherRes.vouchers ?? []);
       setBatches(batchRes.batches ?? []);
       setStudents(studentRes.students ?? []);
+      setStaffMembers(staffRes.members ?? []);
+      setStaffInvites(staffRes.invites ?? []);
       setResults(resultRes.results ?? []);
       setReports(reportRes.reports ?? null);
 
@@ -534,25 +552,72 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
+  const uploadLogo = async (file?: File | null) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !file) return;
+    setLogoUploading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeUploadCenterLogo(token, centerTenantId, file);
+      setCenter(res.center);
+      setBrandingForm((prev) => ({ ...prev, logo_url: res.logo_url ?? res.center.logo_url ?? '' }));
+      setSuccess('Logo uploaded and saved.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const inviteStaff = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !staffForm.email.trim()) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeInviteStaff(token, { tenant_id: centerTenantId, email: staffForm.email.trim(), role: staffForm.role });
+      setStaffMembers(res.members ?? []);
+      setStaffInvites(res.invites ?? []);
+      setStaffForm({ email: '', role: 'member' });
+      setSuccess('Staff access updated. If the email is not registered yet, an invite is waiting for that account.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStaff = async (membership_id: string, patch: { role?: 'admin' | 'member'; status?: 'active' | 'disabled' }) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeUpdateStaff(token, { tenant_id: centerTenantId, membership_id, ...patch });
+      setStaffMembers(res.members ?? []);
+      setStaffInvites(res.invites ?? []);
+      setSuccess('Staff access saved.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
   const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
   const recentVouchers = vouchers.slice(0, 12);
 
-  const navItems: SiteHeaderNavItem[] = centerIsActive ? tabs.map((item) => ({
-    id: item.id,
-    label: item.label,
-    onClick: () => setTab(item.id),
-    active: tab === item.id,
-  })) : [];
-
   const headerActions: SiteHeaderAction[] = [
-    { id: 'redeem', label: 'Redeem', onClick: () => navigate('/redeem') },
     { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
   ];
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
-      <SiteHeader navItems={navItems} actions={headerActions} brandLabel="schood center" />
+      <SiteHeader actions={headerActions} brandLabel="schood center" />
 
       <main className="px-6 pb-16 pt-8 md:px-10">
         <div className="mx-auto max-w-6xl space-y-6">
@@ -600,6 +665,27 @@ export const CenterOfficePage: React.FC = () => {
 
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+
+          {centerIsActive ? (
+            <nav className={`${panelClass} flex flex-wrap gap-2 p-3`}>
+              {tabs.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setTab(item.id)}
+                    className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition ${
+                      tab === item.id ? 'border-gray-900 bg-[#0f172a] text-white' : 'border-gray-900/20 bg-white/80 text-gray-800 hover:border-gray-900'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
+          ) : null}
 
           {!center ? (
             <section className={`${panelClass} p-6 md:p-8`}>
@@ -762,6 +848,79 @@ export const CenterOfficePage: React.FC = () => {
             </section>
           ) : null}
 
+          {centerIsActive && tab === 'staff' ? (
+            <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+              <div className={`${panelClass} p-5 md:p-6`}>
+                <SectionTitle icon={UserPlus} label="Staff access" title="Invite center staff" />
+                <label className="mt-5 block text-sm font-semibold text-gray-800">
+                  Email
+                  <input value={staffForm.email} onChange={(e) => setStaffForm((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} placeholder="teacher@center.uz" />
+                </label>
+                <label className="mt-4 block text-sm font-semibold text-gray-800">
+                  Role
+                  <select value={staffForm.role} onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'admin' | 'member' }))} className={inputClass}>
+                    <option value="member">Teacher / member</option>
+                    <option value="admin">Center admin</option>
+                  </select>
+                </label>
+                <button type="button" onClick={() => void inviteStaff()} disabled={loading || !staffForm.email.trim()} className={`${primaryButton} mt-5 w-full`}>
+                  <UserPlus className="h-4 w-4" />
+                  Add staff
+                </button>
+                <p className="mt-3 text-xs leading-5 text-gray-500">
+                  Registered emails get access immediately. New staff can sign up with the same email and their pending invite will attach automatically.
+                </p>
+              </div>
+
+              <div className={`${panelClass} overflow-hidden`}>
+                <div className="border-b border-gray-900/10 p-5 md:p-6">
+                  <SectionTitle icon={UsersRound} label="Team" title="Center staff and pending invites" />
+                </div>
+                <div className="divide-y divide-gray-900/10">
+                  {staffMembers.map((member) => (
+                    <div key={member.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                      <div>
+                        <p className="font-semibold">{member.users?.full_name || member.users?.email || member.user_id}</p>
+                        <p className="text-xs text-gray-500">{member.users?.email ?? member.user_id}</p>
+                      </div>
+                      <select
+                        value={member.role}
+                        onChange={(e) => void updateStaff(member.id, { role: e.target.value as 'admin' | 'member' })}
+                        disabled={member.role === 'owner'}
+                        className="rounded-xl border border-gray-900/20 bg-white px-3 py-2 text-sm capitalize"
+                      >
+                        <option value="owner">Owner</option>
+                        <option value="admin">Admin</option>
+                        <option value="member">Member</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => void updateStaff(member.id, { status: member.status === 'active' ? 'disabled' : 'active' })}
+                        disabled={member.role === 'owner'}
+                        className={secondaryButton}
+                      >
+                        {member.status === 'active' ? 'Disable' : 'Enable'}
+                      </button>
+                    </div>
+                  ))}
+                  {staffInvites.map((invite) => (
+                    <div key={invite.id} className="grid gap-3 bg-amber-50/60 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                      <div>
+                        <p className="font-semibold">{invite.email}</p>
+                        <p className="text-xs text-gray-500">Pending invite - expires {formatDate(invite.expires_at)}</p>
+                      </div>
+                      <span className="text-sm font-semibold capitalize">{invite.role}</span>
+                      <StatusPill status={invite.status} />
+                    </div>
+                  ))}
+                  {staffMembers.length === 0 && staffInvites.length === 0 ? (
+                    <div className="p-6"><EmptyState icon={UsersRound} title="No staff yet" note="Add center staff so teachers and office managers can help manage student access." /></div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          ) : null}
+
           {centerIsActive && tab === 'results' ? <ResultsPanel results={results} /> : null}
 
           {centerIsActive && tab === 'reports' ? (
@@ -792,7 +951,25 @@ export const CenterOfficePage: React.FC = () => {
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <label className="text-sm font-semibold text-gray-800">Center name<input value={brandingForm.display_name} onChange={(e) => setBrandingForm((prev) => ({ ...prev, display_name: e.target.value }))} className={inputClass} /></label>
                   <label className="text-sm font-semibold text-gray-800">Slug<input value={brandingForm.slug} onChange={(e) => setBrandingForm((prev) => ({ ...prev, slug: e.target.value }))} className={inputClass} /></label>
-                  <label className="md:col-span-2 text-sm font-semibold text-gray-800">Logo URL<input value={brandingForm.logo_url} onChange={(e) => setBrandingForm((prev) => ({ ...prev, logo_url: e.target.value }))} className={inputClass} /></label>
+                  <div className="md:col-span-2 rounded-2xl border border-gray-900/15 bg-white/80 p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Center logo</p>
+                        <p className="mt-1 text-xs leading-5 text-gray-600">
+                          Use a transparent PNG or WebP when possible. A square logo around 512x512px with comfortable padding looks best; keep the file under 3MB.
+                        </p>
+                      </div>
+                      {brandingForm.logo_url ? <img src={brandingForm.logo_url} alt="" className="h-14 w-14 rounded-2xl border border-gray-900/10 bg-white object-contain p-1" /> : null}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/png,image/webp,image/jpeg,image/svg+xml"
+                      onChange={(e) => void uploadLogo(e.target.files?.[0])}
+                      disabled={logoUploading}
+                      className="mt-4 block w-full text-sm text-gray-700 file:mr-4 file:rounded-full file:border-0 file:bg-[#0f172a] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                    />
+                    {logoUploading ? <p className="mt-2 text-xs text-gray-500">Uploading logo...</p> : null}
+                  </div>
                   <label className="md:col-span-2 text-sm font-semibold text-gray-800">Public instructions<textarea value={brandingForm.public_instructions} onChange={(e) => setBrandingForm((prev) => ({ ...prev, public_instructions: e.target.value }))} className={`${inputClass} min-h-[120px]`} /></label>
                   <label className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/15 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-800">
                     <span>Powered by Schood</span>

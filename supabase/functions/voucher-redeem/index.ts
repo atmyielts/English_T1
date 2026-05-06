@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { signStorageRef } from "../_shared/media-storage.ts";
 
 type Json = Record<string, unknown>;
 
@@ -40,11 +41,13 @@ const normalizeSlug = (raw: unknown): string =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-const publicCenterView = (center: any, tenant?: any) => ({
+const publicCenterView = async (sb: any, center: any, tenant?: any) => ({
   tenant_id: center?.tenant_id ?? tenant?.id ?? null,
   name: center?.display_name ?? tenant?.name ?? "Education center",
   slug: center?.slug ?? tenant?.slug ?? null,
-  logo_url: center?.logo_url ?? null,
+  logo_url: isObject(center?.branding?.logo_storage)
+    ? await signStorageRef(sb, center.branding.logo_storage, 60 * 60 * 6, { route: "voucher-redeem:center" })
+    : center?.logo_url ?? null,
   status: center?.status ?? null,
   package_tier: center?.package_tier ?? null,
   public_instructions: center?.public_instructions ?? null,
@@ -264,7 +267,7 @@ serve(async (req) => {
           .limit(12),
       ]);
       return json(200, {
-        center: publicCenterView(center, center.tenants),
+        center: await publicCenterView(sb, center, center.tenants),
         services: {
           mock_exams: experiences.data ?? [],
           subscriptions: plans.data ?? [],
@@ -302,7 +305,7 @@ serve(async (req) => {
       });
     }
 
-    const center = publicCenterView(await loadCenter(sb, voucher.tenant_id));
+    const center = await publicCenterView(sb, await loadCenter(sb, voucher.tenant_id));
     const preview = voucherPreview(voucher, center);
     if (action === "preview" || req.method === "GET") {
       return json(200, {

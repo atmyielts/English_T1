@@ -2358,6 +2358,28 @@ export type PartnerStudent = {
   expires_at?: string | null;
 };
 
+export type PartnerCenterStaffMember = {
+  id: string;
+  tenant_id: string;
+  user_id: string;
+  role: string;
+  status: string;
+  created_at: string;
+  users?: { email?: string | null; full_name?: string | null } | null;
+};
+
+export type PartnerCenterStaffInvite = {
+  id: string;
+  tenant_id: string;
+  email: string;
+  role: string;
+  status: string;
+  expires_at: string;
+  accepted_by?: string | null;
+  accepted_at?: string | null;
+  created_at: string;
+};
+
 export type PartnerReportSummary = {
   completed_exams: number;
   average_score: number | null;
@@ -2505,6 +2527,8 @@ export const partnerOfficeVouchers = (accessToken: string, params?: { tenant_id?
   partnerOfficeGet<{ vouchers: PartnerVoucher[] }>(accessToken, 'vouchers', params);
 export const partnerOfficeStudents = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ students: PartnerStudent[] }>(accessToken, 'students', { tenant_id: tenantId });
+export const partnerOfficeStaff = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[] }>(accessToken, 'staff', { tenant_id: tenantId });
 export const partnerOfficeResults = (accessToken: string, params?: { tenant_id?: string | null; token_id?: string | null }) =>
   partnerOfficeGet<{ results: PartnerOfficeResult[] }>(accessToken, 'results', params);
 export const partnerOfficeReports = (accessToken: string, tenantId?: string | null) =>
@@ -2551,6 +2575,38 @@ export const partnerOfficeApplyCenter = (
   accessToken,
   { action: 'apply_center', ...body },
 );
+
+export const partnerOfficeAcceptStaffInvites = (accessToken: string) =>
+  partnerOfficePost<{ accepted: PartnerCenterStaffMember[] }>(accessToken, { action: 'accept_staff_invites' });
+
+export const partnerOfficeInviteStaff = (
+  accessToken: string,
+  body: { tenant_id?: string | null; email: string; role: 'admin' | 'member' },
+) => partnerOfficePost<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[]; mode?: string }>(accessToken, { action: 'invite_staff', ...body });
+
+export const partnerOfficeUpdateStaff = (
+  accessToken: string,
+  body: { tenant_id?: string | null; membership_id: string; role?: 'admin' | 'member'; status?: 'active' | 'disabled' },
+) => partnerOfficePost<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[] }>(accessToken, { action: 'update_staff', ...body });
+
+export const partnerOfficeUploadCenterLogo = async (
+  accessToken: string,
+  tenantId: string,
+  file: File,
+): Promise<{ center: PartnerCenterProfile; logo_url: string | null; storage: Json }> => {
+  const body = new FormData();
+  body.set('file', file);
+  const res = await fetch(`${edgeBase}/partner-office?action=upload_center_logo&tenant_id=${encodeURIComponent(tenantId)}`, {
+    method: 'POST',
+    headers: apiHeaders(accessToken),
+    body,
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /partner-office upload_center_logo failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { center: PartnerCenterProfile; logo_url: string | null; storage: Json };
+};
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,

@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, ChevronRight, Crown, LayoutGrid, Sparkles, Users2 } from 'lucide-react';
+import { ArrowUpRight, Building2, ChevronRight, Crown, LayoutGrid, Sparkles, Users2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getAccessEffective, getMe } from '../lib/platformClient';
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
@@ -196,6 +196,7 @@ export const HomePage: React.FC = () => {
       onClick: () => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }),
     },
     { id: 'plans', label: t('nav.plans'), onClick: () => navigate('/plans') },
+    { id: 'redeem', label: 'Redeem', onClick: () => navigate('/redeem') },
     { id: 'candidate', label: t('nav.candidate'), onClick: () => navigate('/candidate') },
     { id: 'partner', label: t('nav.partner'), onClick: () => navigate('/partner') },
     { id: 'contact', label: t('nav.contact'), onClick: () => navigate('/contact') },
@@ -336,6 +337,31 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <section className="px-6 md:px-10 pb-12">
+        <div className="mx-auto max-w-6xl rounded-3xl border border-gray-900 bg-white/85 p-6 md:p-7">
+          <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                <Building2 size={14} />
+                Education centers
+              </div>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">Run Schood access through your center.</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                Approved centers get a dedicated office for wallet credits, voucher distribution, staff access, and teacher reports.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/education-centers')}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white px-4 py-2.5 text-sm font-semibold text-gray-900"
+            >
+              Center cooperation
+              <ArrowUpRight size={16} />
+            </button>
+          </div>
+        </div>
+      </section>
 
       {subscribedProducts.length > 0 ? (
         <section id="my-services" className="px-6 md:px-10 pb-12">

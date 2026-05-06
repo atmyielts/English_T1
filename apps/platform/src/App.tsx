@@ -48,6 +48,7 @@ const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEnt
 const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLandingPage').then((m) => ({ default: m.ReferralLandingPage })));
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePage').then((m) => ({ default: m.CenterOfficePage })));
+const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
 const AdminMfaPage = lazyWithChunkRetry(() => import('./pages/AdminMfaPage').then((m) => ({ default: m.AdminMfaPage })));
@@ -121,6 +122,8 @@ function App() {
           <Route path="/r/:code" element={<ReferralLandingPage />} />
           <Route path="/redeem" element={<RedeemPage />} />
           <Route path="/redeem/:code" element={<RedeemPage />} />
+          <Route path="/education-centers" element={<CenterInitiationPage />} />
+          <Route path="/center-initiation" element={<CenterInitiationPage />} />
           <Route path="/center/:slug" element={<CenterLandingPage />} />
           <Route path="/partners/:slug" element={<CenterLandingPage />} />
 

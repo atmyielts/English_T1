@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { tenant_id: string; role: string; status: string };
@@ -69,6 +70,17 @@ const randomCodePart = (len = 6): string => {
   for (let i = 0; i < len; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
   return out;
 };
+
+const sanitizeFilename = (name: string): string =>
+  name
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "logo";
+
+const normalizeEmail = (raw: unknown): string =>
+  String(raw ?? "").trim().toLowerCase();
 
 const loadMemberships = async (sb: any, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
@@ -295,6 +307,86 @@ const requireActiveCenterOffice = async (sb: any, tenantId: string, body?: Json)
     return json(403, { error: "Education center must be approved by Schood before this action is available", center_status: profile.status });
   }
   return null;
+};
+
+const loadCenterStaff = async (sb: any, tenantId: string): Promise<{ members: any[]; invites: any[] }> => {
+  const [membersRes, invitesRes] = await Promise.all([
+    sb
+      .from("tenant_memberships")
+      .select("id, tenant_id, user_id, role, status, created_at, users ( email, full_name )")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: true }),
+    sb
+      .from("partner_center_staff_invites")
+      .select("id, tenant_id, email, role, status, expires_at, accepted_by, accepted_at, created_at")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false })
+      .limit(100),
+  ]);
+  if (membersRes.error) throw membersRes.error;
+  if (invitesRes.error) throw invitesRes.error;
+  return { members: membersRes.data ?? [], invites: invitesRes.data ?? [] };
+};
+
+const inviteCenterStaff = async (sb: any, tenantId: string, emailRaw: unknown, roleRaw: unknown, invitedBy: string): Promise<any> => {
+  const email = normalizeEmail(emailRaw);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Valid staff email is required");
+  const role = ["admin", "member"].includes(String(roleRaw)) ? String(roleRaw) : "member";
+  const { data: userRow } = await sb.from("users").select("id").ilike("email", email).maybeSingle();
+  if (userRow?.id) {
+    const { data, error } = await sb
+      .from("tenant_memberships")
+      .upsert({ tenant_id: tenantId, user_id: userRow.id, role, status: "active" }, { onConflict: "tenant_id,user_id" })
+      .select("id, tenant_id, user_id, role, status, created_at")
+      .maybeSingle();
+    if (error) throw error;
+    return { mode: "membership", member: data };
+  }
+
+  const { data, error } = await sb
+    .from("partner_center_staff_invites")
+    .upsert(
+      {
+        tenant_id: tenantId,
+        email,
+        role,
+        status: "pending",
+        invited_by: invitedBy,
+        expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+      },
+      { onConflict: "tenant_id,email,status" },
+    )
+    .select("*")
+    .maybeSingle();
+  if (error) throw error;
+  return { mode: "invite", invite: data };
+};
+
+const acceptPendingStaffInvites = async (sb: any, user: any): Promise<any[]> => {
+  await ensurePlatformUser(sb, user);
+  const email = authUserEmail(user);
+  const { data: invites, error } = await sb
+    .from("partner_center_staff_invites")
+    .select("id, tenant_id, role, status, expires_at")
+    .ilike("email", email)
+    .eq("status", "pending")
+    .gt("expires_at", new Date().toISOString());
+  if (error) throw error;
+  const accepted: any[] = [];
+  for (const invite of invites ?? []) {
+    const { data: member, error: memberError } = await sb
+      .from("tenant_memberships")
+      .upsert({ tenant_id: invite.tenant_id, user_id: user.id, role: invite.role, status: "active" }, { onConflict: "tenant_id,user_id" })
+      .select("id, tenant_id, user_id, role, status, created_at")
+      .maybeSingle();
+    if (memberError) throw memberError;
+    await sb
+      .from("partner_center_staff_invites")
+      .update({ status: "accepted", accepted_by: user.id, accepted_at: new Date().toISOString() })
+      .eq("id", invite.id);
+    accepted.push(member);
+  }
+  return accepted;
 };
 
 const ensureUniqueVoucherCode = async (sb: any, prefix: string): Promise<string> => {
@@ -560,6 +652,12 @@ serve(async (req) => {
       return json(200, { students });
     }
 
+    if (req.method === "GET" && action === "staff") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      const staff = await loadCenterStaff(sb, tenantId);
+      return json(200, staff);
+    }
+
     if (req.method === "GET" && action === "seats") {
       const { data, error } = await sb
         .from("seat_licenses")
@@ -670,8 +768,41 @@ serve(async (req) => {
     }
 
     if (req.method === "POST") {
+      if (action === "upload_center_logo") {
+        if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+        const profile = await getCenterProfile(sb, tenantId);
+        if (!profile?.tenant_id) return json(403, { error: "Education center profile is required" });
+        const form = await req.formData();
+        const file = form.get("file");
+        if (!(file instanceof File)) return json(400, { error: "file is required" });
+        if (!String(file.type ?? "").startsWith("image/")) return json(400, { error: "Logo must be an image file" });
+        if ((file as any).size && Number((file as any).size) > 3 * 1024 * 1024) return json(400, { error: "Logo must be smaller than 3MB" });
+
+        const cfg = getS3Config({ required: true })!;
+        const safeName = sanitizeFilename(file.name || "logo");
+        const ext = safeName.includes(".") ? safeName.split(".").pop() : "";
+        const path = `partner-centers/${tenantId}/logos/${crypto.randomUUID()}${ext ? `.${ext}` : ""}-${safeName}`;
+        await uploadFileToS3(path, file, file.type || "image/png", { route: url.pathname, userId });
+        const signedUrl = await signStoredPath(sb, cfg.bucket, path, 60 * 60 * 24 * 7, { route: url.pathname, userId });
+        const branding = isObject(profile.branding) ? { ...profile.branding } : {};
+        branding.logo_storage = { provider: "s3", bucket: cfg.bucket, path };
+        const { data, error } = await sb
+          .from("partner_center_profiles")
+          .update({ logo_url: signedUrl, branding })
+          .eq("tenant_id", tenantId)
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to save logo", detail: error.message });
+        return json(200, { center: data, logo_url: signedUrl, storage: branding.logo_storage });
+      }
+
       const body = (await req.json().catch(() => ({}))) as Json;
       const actionBody = String(body.action ?? "");
+
+      if (actionBody === "accept_staff_invites") {
+        const accepted = await acceptPendingStaffInvites(sb, authData.user);
+        return json(200, { accepted });
+      }
 
       if (actionBody === "apply_center") {
         const result = await createCenterApplication(sb, body, authData.user);
@@ -682,8 +813,37 @@ serve(async (req) => {
         });
       }
 
-      if (["update_center_profile", "create_wallet_topup", "create_voucher_batch", "void_voucher", "export_report", "resend_student_invite"].includes(actionBody)) {
+      if (["update_center_profile", "create_wallet_topup", "create_voucher_batch", "void_voucher", "export_report", "resend_student_invite", "invite_staff", "update_staff"].includes(actionBody)) {
         if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      }
+
+      if (actionBody === "invite_staff") {
+        const result = await inviteCenterStaff(sb, tenantId, body.email, body.role, userId);
+        const staff = await loadCenterStaff(sb, tenantId);
+        return json(200, { ...result, ...staff });
+      }
+
+      if (actionBody === "update_staff") {
+        const membershipId = String(body.membership_id ?? "").trim();
+        const nextStatus = String(body.status ?? "").trim();
+        const nextRole = String(body.role ?? "").trim();
+        if (!membershipId) return json(400, { error: "membership_id is required" });
+        const patch: Json = {};
+        if (["active", "disabled"].includes(nextStatus)) patch.status = nextStatus;
+        if (["admin", "member"].includes(nextRole)) patch.role = nextRole;
+        if (Object.keys(patch).length === 0) return json(400, { error: "No staff change supplied" });
+        const { data, error } = await sb
+          .from("tenant_memberships")
+          .update(patch)
+          .eq("id", membershipId)
+          .eq("tenant_id", tenantId)
+          .neq("user_id", userId)
+          .select("id")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update staff", detail: error.message });
+        if (!data?.id) return json(400, { error: "Staff member not found or cannot modify your own owner access" });
+        const staff = await loadCenterStaff(sb, tenantId);
+        return json(200, staff);
       }
 
       if (actionBody === "update_center_profile") {

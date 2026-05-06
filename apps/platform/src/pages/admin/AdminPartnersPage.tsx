@@ -13,6 +13,10 @@ const money = (amount?: number | null, currency = 'UZS') =>
   typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : '-';
 const inputClass = 'mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm';
 const panelClass = 'rounded-2xl border border-gray-200 bg-white p-5';
+const selectClass = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm capitalize';
+const STATUS_OPTIONS = ['pending', 'active', 'paused', 'disabled'];
+const TIER_OPTIONS = ['starter', 'growth', 'premium', 'exclusive'];
+const MODEL_OPTIONS = ['prepaid_wallet', 'wholesale', 'revenue_share', 'hybrid'];
 
 const statusClass = (status?: string | null) => {
   const value = String(status ?? '').toLowerCase();
@@ -193,6 +197,7 @@ export const AdminPartnersPage: React.FC = () => {
                   <th className="px-4 py-3">Center</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Tier</th>
+                  <th className="px-4 py-3">Model</th>
                   <th className="px-4 py-3">Wallet</th>
                   <th className="px-4 py-3">Vouchers</th>
                   <th className="px-4 py-3">Adjust</th>
@@ -208,8 +213,22 @@ export const AdminPartnersPage: React.FC = () => {
                         <p className="font-semibold">{partner.display_name}</p>
                         <p className="text-xs text-gray-500">/{partner.slug}</p>
                       </td>
-                      <td className="px-4 py-4"><StatusPill status={partner.status} /></td>
-                      <td className="px-4 py-4 capitalize">{partner.package_tier}</td>
+                      <td className="px-4 py-4 min-w-[150px]">
+                        <select value={partner.status} onChange={(e) => void updatePartner(partner.tenant_id, { status: e.target.value })} className={selectClass}>
+                          {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                        <div className="mt-2"><StatusPill status={partner.status} /></div>
+                      </td>
+                      <td className="px-4 py-4 min-w-[150px]">
+                        <select value={partner.package_tier} onChange={(e) => void updatePartner(partner.tenant_id, { package_tier: e.target.value })} className={selectClass}>
+                          {TIER_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                        </select>
+                      </td>
+                      <td className="px-4 py-4 min-w-[170px]">
+                        <select value={partner.commercial_model} onChange={(e) => void updatePartner(partner.tenant_id, { commercial_model: e.target.value })} className={selectClass}>
+                          {MODEL_OPTIONS.map((option) => <option key={option} value={option}>{option.replace('_', ' ')}</option>)}
+                        </select>
+                      </td>
                       <td className="px-4 py-4 font-semibold">{money(partner.wallet?.available_amount, partner.wallet?.currency)}</td>
                       <td className="px-4 py-4">{partner.voucher_counts?.redeemed ?? 0}/{partner.voucher_counts?.total ?? 0}</td>
                       <td className="px-4 py-4 min-w-[220px]">
