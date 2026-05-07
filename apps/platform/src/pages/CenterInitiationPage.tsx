@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, Building2, CheckCircle2, ClipboardList, ShieldCheck, WalletCards, type LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { getAuthSession } from '../lib/supabase';
+import { partnerOfficeCenter } from '../lib/platformClient';
 
 const panelClass = 'rounded-3xl border border-gray-900 bg-white/85 shadow-sm';
 const primaryButton =
@@ -11,6 +13,7 @@ const secondaryButton =
 
 export const CenterInitiationPage: React.FC = () => {
   const navigate = useNavigate();
+  const [checkingCenter, setCheckingCenter] = useState(true);
   const navItems: SiteHeaderNavItem[] = [
     { id: 'redeem', label: 'Redeem code', onClick: () => navigate('/redeem') },
     { id: 'plans', label: 'Plans', onClick: () => navigate('/plans') },
@@ -22,6 +25,24 @@ export const CenterInitiationPage: React.FC = () => {
     { title: 'Wallet and codes', note: 'Top up, buy packs, and generate voucher batches.', icon: WalletCards },
     { title: 'Reports', note: 'Teachers track usage, results, and inactive students.', icon: ClipboardList },
   ];
+
+  useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      try {
+        const session = await getAuthSession();
+        if (!session?.access_token) return;
+        const res = await partnerOfficeCenter(session.access_token).catch(() => null);
+        if (alive && res?.center?.tenant_id) navigate('/center-office', { replace: true });
+      } finally {
+        if (alive) setCheckingCenter(false);
+      }
+    };
+    void run();
+    return () => {
+      alive = false;
+    };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
@@ -41,7 +62,7 @@ export const CenterInitiationPage: React.FC = () => {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <button type="button" onClick={() => navigate('/center-office')} className={primaryButton}>
-                Start center application
+                {checkingCenter ? 'Checking center status...' : 'Start center application'}
                 <ArrowUpRight className="h-4 w-4" />
               </button>
               <button type="button" onClick={() => navigate('/contact')} className={secondaryButton}>

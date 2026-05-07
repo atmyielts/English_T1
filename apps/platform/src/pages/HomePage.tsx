@@ -2,7 +2,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Building2, ChevronRight, Crown, LayoutGrid, Sparkles, Users2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { getAccessEffective, getMe } from '../lib/platformClient';
+import { getAccessEffective, getMe, partnerOfficeCenter } from '../lib/platformClient';
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
@@ -77,6 +77,7 @@ export const HomePage: React.FC = () => {
   const [entitlements, setEntitlements] = useState<Set<string>>(new Set());
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<string>('user');
+  const [hasCenterProfile, setHasCenterProfile] = useState(false);
 
   const typeLabel = (value: string): string => {
     switch (value) {
@@ -101,6 +102,7 @@ export const HomePage: React.FC = () => {
       setEntitlements(new Set());
       setEmail(null);
       setRole('user');
+      setHasCenterProfile(false);
 
       try {
         const { data: productsRes, error: prodErr } = await supabase
@@ -125,12 +127,14 @@ export const HomePage: React.FC = () => {
 
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
-          const [me, effective] = await Promise.all([
+          const [me, effective, centerRes] = await Promise.all([
             getMe(sessionData.session.access_token),
             getAccessEffective(sessionData.session.access_token).catch(() => null),
+            partnerOfficeCenter(sessionData.session.access_token).catch(() => null),
           ]);
           setEmail(me.user.email ?? null);
           setRole(String(me.user.role ?? 'user'));
+          setHasCenterProfile(Boolean(centerRes?.center?.tenant_id));
           const set = new Set<string>();
           (me.entitlements ?? []).forEach((e) => {
             if (e.resource_type === 'product' && e.resource_id) set.add(e.resource_id);
@@ -348,15 +352,17 @@ export const HomePage: React.FC = () => {
               </div>
               <h2 className="mt-2 text-2xl font-bold text-gray-900">Run Schood access through your center.</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                Approved centers get a dedicated office for wallet credits, voucher distribution, staff access, and teacher reports.
+                {hasCenterProfile
+                  ? 'Your center profile is ready. Continue to Center Office to manage wallet credits, voucher distribution, staff access, and teacher reports.'
+                  : 'Approved centers get a dedicated office for wallet credits, voucher distribution, staff access, and teacher reports.'}
               </p>
             </div>
             <button
               type="button"
-              onClick={() => navigate('/education-centers')}
+              onClick={() => navigate(hasCenterProfile ? '/center-office' : '/education-centers')}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white px-4 py-2.5 text-sm font-semibold text-gray-900"
             >
-              Center cooperation
+              {hasCenterProfile ? 'Continue to center office' : 'Center cooperation'}
               <ArrowUpRight size={16} />
             </button>
           </div>
