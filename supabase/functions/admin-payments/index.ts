@@ -13,6 +13,9 @@ type PaymentRow = {
   id: string;
   provider: string;
   provider_transaction_id: string;
+  tspay_order_id?: string | null;
+  tspay_cheque_id?: string | null;
+  tspay_transaction_id?: string | null;
   amount: number;
   currency: string;
   status: string;
@@ -20,6 +23,7 @@ type PaymentRow = {
   tenant_id: string | null;
   product_id: string | null;
   plan_id: string | null;
+  purchase_type?: string | null;
   granted_at: string | null;
   grant_error: string | null;
   original_amount: number | null;
@@ -51,9 +55,24 @@ const normalizePaymentStatus = (raw: unknown): string => {
 };
 
 const parseSuccessStatuses = (raw: string | undefined): Set<string> => {
-  // See tspay/index.ts: payment status is usually in data.pay_status (e.g. "paid").
+  // TSPay docs use "success"; the app stores successful provider payments as "paid".
   const list = (raw ?? "paid,success,completed").split(",").map((v) => v.trim().toLowerCase());
   return new Set(list.filter(Boolean));
+};
+
+const normalizePurchaseType = (raw: unknown): string => String(raw ?? "").trim().toLowerCase();
+
+const normalizeCenterTier = (raw: unknown): "starter" | "growth" | "premium" | "exclusive" | null => {
+  const tier = String(raw ?? "").trim().toLowerCase();
+  if (tier === "starter" || tier === "growth" || tier === "premium" || tier === "exclusive") return tier;
+  return null;
+};
+
+const normalizeBillingPeriod = (raw: unknown): "monthly" | "annual" | "manual" => {
+  const period = String(raw ?? "").trim().toLowerCase();
+  if (period === "annual") return "annual";
+  if (period === "manual") return "manual";
+  return "monthly";
 };
 
 const isSuccessStatus = (successes: Set<string>, status: string): boolean => successes.has(status.trim().toLowerCase());
@@ -167,36 +186,49 @@ const resolveGrantTerms = async (sb: any, payment: PaymentRow): Promise<Resolved
   };
 };
 
-const fetchShopAccessToken = async (baseUrl: string): Promise<string> => {
-  const directToken = Deno.env.get("TSPAY_SHOP_ACCESS_TOKEN");
-  if (directToken) return directToken;
+const normalizeTspayApiBaseUrl = (raw: string | undefined): string => {
+  const value = String(raw ?? "").trim();
+  if (!value) return "https://api.tspay.uz/api";
+  if (/\/api\/v1\/?$/i.test(value)) return "https://api.tspay.uz/api";
+  return value.replace(/\/+$/, "");
+};
 
-  const email = Deno.env.get("TSPAY_EMAIL");
-  const password = Deno.env.get("TSPAY_PASSWORD");
-  if (!email || !password) {
-    throw new Error("Missing TSPAY_SHOP_ACCESS_TOKEN or TSPAY_EMAIL/TSPAY_PASSWORD");
+const readJsonPayload = async (res: Response): Promise<any> => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { detail: text };
+  }
+};
+
+const fetchTspayStatus = async (
+  tspayBaseUrl: string,
+  payment: PaymentRow,
+): Promise<{ ok: boolean; statusJson: any; statusQueryId: string }> => {
+  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
+    ? payment.metadata
+    : {};
+  const candidates = uniqIds([
+    payment.tspay_cheque_id,
+    (meta as any)?.tspay_cheque_id,
+    payment.provider_transaction_id,
+    payment.tspay_order_id,
+    (meta as any)?.tspay_order_id,
+  ]);
+
+  for (const candidate of candidates) {
+    const endpoint = looksLikeUuid(candidate)
+      ? `${tspayBaseUrl}/transactions/cheque/${encodeURIComponent(candidate)}`
+      : `${tspayBaseUrl}/transactions/${encodeURIComponent(candidate)}`;
+    const res = await fetch(endpoint, { method: "GET" });
+    const statusJson = await readJsonPayload(res);
+    if (res.ok) return { ok: true, statusJson, statusQueryId: candidate };
+    if (res.status !== 404) return { ok: false, statusJson, statusQueryId: candidate };
   }
 
-  const loginRes = await fetch(`${baseUrl}/auth/login/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const loginJson = await loginRes.json();
-  if (!loginRes.ok || !loginJson?.access_token) throw new Error("TSPay login failed");
-  const userToken = loginJson.access_token as string;
-
-  const shopRes = await fetch(`${baseUrl}/shops/access-token/`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${userToken}`, "Content-Type": "application/json" },
-  });
-
-  const shopJson = await shopRes.json();
-  const shopToken = shopJson?.shops?.[0]?.access_token as string | undefined;
-  if (!shopRes.ok || !shopToken) throw new Error("TSPay shop access token fetch failed");
-
-  return shopToken;
+  return { ok: false, statusJson: { detail: "Transaction not found" }, statusQueryId: candidates[0] ?? payment.provider_transaction_id };
 };
 
 const selectPaymentView = () =>
@@ -204,6 +236,9 @@ const selectPaymentView = () =>
     "id",
     "provider",
     "provider_transaction_id",
+    "tspay_order_id",
+    "tspay_cheque_id",
+    "tspay_transaction_id",
     "amount",
     "currency",
     "status",
@@ -211,6 +246,7 @@ const selectPaymentView = () =>
     "tenant_id",
     "product_id",
     "plan_id",
+    "purchase_type",
     "granted_at",
     "grant_error",
     "original_amount",
@@ -227,7 +263,100 @@ const selectPaymentView = () =>
     "tenants(slug,name)",
   ].join(",");
 
+const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
+  if (!payment.tenant_id || !payment.user_id) return false;
+  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
+  const targetTier = normalizeCenterTier((meta as any).requested_tier ?? (meta as any).center_tier);
+  if (!targetTier || targetTier === "starter") {
+    await sb.from("payments").update({ granted_at: null, grant_error: "Invalid center tier upgrade metadata" }).eq("id", payment.id);
+    throw new Error("Invalid center tier upgrade metadata");
+  }
+
+  const nowIso = new Date().toISOString();
+  const { data: claim, error: claimErr } = await sb
+    .from("payments")
+    .update({ granted_at: nowIso, grant_error: null })
+    .eq("id", payment.id)
+    .is("granted_at", null)
+    .select("id")
+    .maybeSingle();
+  if (claimErr) throw claimErr;
+  if (!claim) return false;
+
+  let durationDays = 30;
+  if (payment.plan_id) {
+    const { data: planRow } = await sb.from("plans").select("duration_days").eq("id", payment.plan_id).maybeSingle();
+    const planDays = Number((planRow as any)?.duration_days ?? 0);
+    if (Number.isFinite(planDays) && planDays > 0) durationDays = Math.floor(planDays);
+  }
+  const metaDays = Number((meta as any).duration_days ?? 0);
+  if (Number.isFinite(metaDays) && metaDays > 0) durationDays = Math.floor(metaDays);
+
+  const { data: currentProfile, error: profileError } = await sb
+    .from("partner_center_profiles")
+    .select("tenant_id, package_tier, wallet_settings")
+    .eq("tenant_id", payment.tenant_id)
+    .maybeSingle();
+  if (profileError || !currentProfile?.tenant_id) {
+    await sb.from("payments").update({ granted_at: null, grant_error: "Education center profile not found" }).eq("id", payment.id);
+    throw new Error("Education center profile not found");
+  }
+
+  const billingPeriod = normalizeBillingPeriod((meta as any).billing_period);
+  const periodEnd = new Date(Date.now() + durationDays * 86400000).toISOString();
+  const existingSettings = (currentProfile as any).wallet_settings && typeof (currentProfile as any).wallet_settings === "object" && !Array.isArray((currentProfile as any).wallet_settings)
+    ? (currentProfile as any).wallet_settings
+    : {};
+
+  const { error: updateError } = await sb
+    .from("partner_center_profiles")
+    .update({
+      package_tier: targetTier,
+      powered_by_schood: targetTier === "growth" ? true : undefined,
+      wallet_settings: {
+        ...existingSettings,
+        upgraded_by_payment_id: payment.id,
+        tier_period_end: periodEnd,
+        tier_billing_period: billingPeriod,
+      },
+    })
+    .eq("tenant_id", payment.tenant_id);
+  if (updateError) {
+    await sb.from("payments").update({ granted_at: null, grant_error: String(updateError.message ?? updateError) }).eq("id", payment.id);
+    throw updateError;
+  }
+
+  await sb.from("partner_center_tier_subscriptions").upsert(
+    {
+      tenant_id: payment.tenant_id,
+      current_tier: targetTier,
+      status: "active",
+      billing_period: billingPeriod,
+      current_period_start: nowIso,
+      current_period_end: periodEnd,
+      payment_id: payment.id,
+      amount: payment.amount ?? null,
+      currency: payment.currency ?? "UZS",
+      metadata: { source: "admin_retry", previous_tier: (currentProfile as any).package_tier ?? null, plan_id: payment.plan_id ?? null },
+    },
+    { onConflict: "tenant_id" },
+  );
+
+  const requestId = String((meta as any).tier_change_request_id ?? "").trim();
+  if (requestId) {
+    await sb
+      .from("partner_center_tier_change_requests")
+      .update({ status: "applied", payment_id: payment.id, applied_at: nowIso, metadata: { ...meta, applied_tier: targetTier, applied_period_end: periodEnd } })
+      .eq("id", requestId)
+      .eq("tenant_id", payment.tenant_id);
+  }
+
+  return true;
+};
+
 const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
+  const purchaseType = normalizePurchaseType(payment.purchase_type ?? (payment.metadata as any)?.purchase_type);
+  if (purchaseType === "center_tier_upgrade") return applyCenterTierUpgradeOnce(sb, payment);
   if (!payment.tenant_id || !payment.product_id || !payment.user_id) return false;
 
   const terms = await resolveGrantTerms(sb, payment);
@@ -447,7 +576,7 @@ serve(async (req) => {
 
       const { data: paymentRow, error: payErr } = await sb
         .from("payments")
-        .select("id, provider, provider_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
+        .select("id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
         .eq("id", paymentId)
         .maybeSingle();
       if (payErr) throw payErr;
@@ -466,63 +595,17 @@ serve(async (req) => {
         });
       }
 
-      const tspayBaseUrl = Deno.env.get("TSPAY_BASE_URL") ?? "https://tspay.uz/api/v1";
+      const tspayBaseUrl = normalizeTspayApiBaseUrl(Deno.env.get("TSPAY_API_BASE_URL") ?? Deno.env.get("TSPAY_BASE_URL"));
       const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
-      const shopAccessToken = await fetchShopAccessToken(tspayBaseUrl);
 
       const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
         ? payment.metadata
         : {};
-      const tspayIds = Array.isArray((meta as any)?.tspay_ids) ? (meta as any).tspay_ids.map((v: unknown) => String(v)) : [];
-      const statusHint = String((meta as any)?.tspay_status_id ?? "");
-      const candidateIds = uniqIds([statusHint, payment.provider_transaction_id, ...tspayIds]);
+      const checked = await fetchTspayStatus(tspayBaseUrl, payment);
+      const statusJson = checked.statusJson;
+      const usedStatusId = checked.statusQueryId;
 
-      const fetchStatusJson = async (statusId: string): Promise<{ ok: boolean; json: any | null; text: string; response: Response }> => {
-        const statusUrl = new URL(`${tspayBaseUrl}/transactions/${statusId}/`);
-        statusUrl.searchParams.set("access_token", shopAccessToken);
-
-        let res = await fetch(statusUrl.toString(), { method: "GET" });
-        if (!res.ok) {
-          res = await fetch(`${tspayBaseUrl}/transactions/${statusId}/`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${shopAccessToken}`,
-              "Content-Type": "application/json",
-            },
-          });
-        }
-
-        const text = await res.text();
-        try {
-          return { ok: true, json: JSON.parse(text), text, response: res };
-        } catch {
-          return { ok: false, json: null, text, response: res };
-        }
-      };
-
-      let statusJson: any = null;
-      let statusRes: Response | null = null;
-      let statusText = "";
-      let usedStatusId = candidateIds[0] ?? payment.provider_transaction_id;
-
-      for (const candidateId of candidateIds) {
-        const checked = await fetchStatusJson(candidateId);
-        statusRes = checked.response;
-        statusText = checked.text;
-        if (!checked.ok) continue;
-        statusJson = checked.json;
-        usedStatusId = candidateId;
-        break;
-      }
-
-      if (!statusJson || !statusRes) {
-        return new Response(JSON.stringify({ error: "TSPay status returned invalid JSON", body: statusText.slice(0, 300) }), {
-          status: 502,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      if (!statusRes.ok) {
+      if (!checked.ok) {
         return new Response(JSON.stringify({ error: "TSPay status failed", details: statusJson }), {
           status: 502,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -574,7 +657,7 @@ serve(async (req) => {
 
       const { data: paymentRow, error: payErr } = await sb
         .from("payments")
-        .select("id, provider, provider_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
+        .select("id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
         .eq("id", paymentId)
         .maybeSingle();
       if (payErr) throw payErr;

@@ -7,6 +7,7 @@ import {
   adminPartnersUpdateProfile,
   adminPartnersWallet,
   type AdminPartnerRow,
+  type PartnerCenterTierRequest,
 } from '../../lib/platformClient';
 
 const money = (amount?: number | null, currency = 'UZS') =>
@@ -36,6 +37,7 @@ export const AdminPartnersPage: React.FC = () => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [partners, setPartners] = useState<AdminPartnerRow[]>([]);
   const [topups, setTopups] = useState<any[]>([]);
+  const [tierRequests, setTierRequests] = useState<PartnerCenterTierRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export const AdminPartnersPage: React.FC = () => {
       const res = await adminPartnersSummary(accessToken);
       setPartners(res.partners ?? []);
       setTopups(res.topup_requests ?? []);
+      setTierRequests(res.tier_requests ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load partners');
     } finally {
@@ -131,6 +134,27 @@ export const AdminPartnersPage: React.FC = () => {
     }
   };
 
+  const applyTierRequest = async (request: PartnerCenterTierRequest) => {
+    if (!accessToken) return;
+    setBusy(request.id);
+    setError(null);
+    setSuccess(null);
+    try {
+      await adminPartnersWallet(accessToken, {
+        action: 'apply_tier_request',
+        tenant_id: request.tenant_id,
+        request_id: request.id,
+        note: 'Applied from admin partners dashboard',
+      });
+      setSuccess('Tier request applied.');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to apply tier request');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -182,6 +206,36 @@ export const AdminPartnersPage: React.FC = () => {
               </div>
             ))}
             {topups.length === 0 ? <p className="py-6 text-sm text-gray-500">No pending top-up requests.</p> : null}
+          </div>
+        </section>
+
+        <section className={panelClass}>
+          <div className="mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5" />
+            <h2 className="text-lg font-semibold text-gray-900">Paid tier requests</h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {tierRequests.slice(0, 20).map((request) => (
+              <div key={request.id} className="grid gap-3 py-4 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
+                <div>
+                  <p className="font-semibold">{request.center?.display_name ?? request.tenant_id}</p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {request.previous_tier} to {request.requested_tier} - {request.billing_period} - {new Date(request.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="font-semibold">{money(request.amount, request.currency)}</span>
+                <StatusPill status={request.status} />
+                <button
+                  type="button"
+                  onClick={() => void applyTierRequest(request)}
+                  disabled={busy === request.id || !['pending_payment', 'paid', 'manual_review'].includes(request.status)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Apply manually
+                </button>
+              </div>
+            ))}
+            {tierRequests.length === 0 ? <p className="py-6 text-sm text-gray-500">No paid tier requests yet.</p> : null}
           </div>
         </section>
 

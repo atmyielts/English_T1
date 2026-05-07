@@ -49,6 +49,13 @@ type ExperiencePriceRow = {
   price_currency: string | null;
 };
 
+const CENTER_TIER_RANK: Record<string, number> = {
+  starter: 0,
+  growth: 1,
+  premium: 2,
+  exclusive: 3,
+};
+
 type CouponEffect = {
   type: string;
   [key: string]: unknown;
@@ -94,6 +101,19 @@ const parseSuccessStatuses = (raw: string | undefined): Set<string> => {
 };
 
 const normalizePurchaseType = (raw: unknown): string => String(raw ?? "").trim().toLowerCase();
+
+const normalizeCenterTier = (raw: unknown): "starter" | "growth" | "premium" | "exclusive" | null => {
+  const tier = String(raw ?? "").trim().toLowerCase();
+  if (tier === "starter" || tier === "growth" || tier === "premium" || tier === "exclusive") return tier;
+  return null;
+};
+
+const normalizeBillingPeriod = (raw: unknown): "monthly" | "annual" | "manual" => {
+  const period = String(raw ?? "").trim().toLowerCase();
+  if (period === "annual") return "annual";
+  if (period === "manual") return "manual";
+  return "monthly";
+};
 
 const normalizeQuantity = (raw: unknown, max = 200): number | null => {
   const num = typeof raw === "number" ? raw : Number(raw);
@@ -866,6 +886,139 @@ const issueReferralReward = async (sb: any, payment: PaymentGrantRow): Promise<v
 const isTerminalFailureStatus = (status: string): boolean =>
   ["failed", "failure", "canceled", "cancelled", "expired", "rejected"].includes(status.trim().toLowerCase());
 
+const applyCenterTierUpgrade = async (
+  supabase: any,
+  payment: PaymentGrantRow,
+): Promise<Response | null> => {
+  const meta = payment.metadata ?? {};
+  const targetTier = normalizeCenterTier((meta as any)?.requested_tier ?? (meta as any)?.center_tier);
+  const previousTier = normalizeCenterTier((meta as any)?.previous_tier) ?? "starter";
+  const billingPeriod = normalizeBillingPeriod((meta as any)?.billing_period);
+  if (!payment.tenant_id || !payment.user_id || !targetTier || targetTier === "starter") {
+    await supabase
+      .from("payments")
+      .update({ granted_at: null, grant_error: "Invalid center tier upgrade metadata" })
+      .eq("id", payment.id);
+    return jsonResponse(500, { error: "Invalid center tier upgrade metadata" });
+  }
+
+  const { data: currentProfile, error: profileError } = await supabase
+    .from("partner_center_profiles")
+    .select("tenant_id, package_tier, status, powered_by_schood, wallet_settings")
+    .eq("tenant_id", payment.tenant_id)
+    .maybeSingle();
+  if (profileError || !currentProfile?.tenant_id) {
+    await supabase
+      .from("payments")
+      .update({ granted_at: null, grant_error: "Education center profile not found" })
+      .eq("id", payment.id);
+    return jsonResponse(500, { error: "Education center profile not found" });
+  }
+
+  const currentTier = normalizeCenterTier((currentProfile as any).package_tier) ?? previousTier;
+  if (CENTER_TIER_RANK[targetTier] < CENTER_TIER_RANK[currentTier]) {
+    await supabase
+      .from("payments")
+      .update({ granted_at: null, grant_error: "Paid tier downgrades are not automatic" })
+      .eq("id", payment.id);
+    return jsonResponse(500, { error: "Paid tier downgrades are not automatic" });
+  }
+
+  let durationDays = 30;
+  if (payment.plan_id) {
+    const { data: planRow } = await supabase
+      .from("plans")
+      .select("duration_days, metadata")
+      .eq("id", payment.plan_id)
+      .maybeSingle();
+    const planDays = Number((planRow as any)?.duration_days ?? 0);
+    if (Number.isFinite(planDays) && planDays > 0) durationDays = Math.floor(planDays);
+  }
+  if ((meta as any)?.duration_days) {
+    const metaDays = Number((meta as any).duration_days);
+    if (Number.isFinite(metaDays) && metaDays > 0) durationDays = Math.floor(metaDays);
+  }
+
+  const nowIso = new Date().toISOString();
+  const periodEnd = new Date(Date.now() + durationDays * 86400000).toISOString();
+  const patch: Record<string, unknown> = {
+    package_tier: targetTier,
+    status: (currentProfile as any).status === "active" ? "active" : (currentProfile as any).status,
+    wallet_settings: {
+      ...(((currentProfile as any).wallet_settings && typeof (currentProfile as any).wallet_settings === "object" && !Array.isArray((currentProfile as any).wallet_settings))
+        ? (currentProfile as any).wallet_settings
+        : {}),
+      upgraded_by_payment_id: payment.id,
+      tier_period_end: periodEnd,
+      tier_billing_period: billingPeriod,
+    },
+  };
+  if (targetTier === "growth") patch.powered_by_schood = true;
+
+  const { error: updateError } = await supabase
+    .from("partner_center_profiles")
+    .update(patch)
+    .eq("tenant_id", payment.tenant_id);
+  if (updateError) {
+    await supabase
+      .from("payments")
+      .update({ granted_at: null, grant_error: String(updateError.message ?? updateError) })
+      .eq("id", payment.id);
+    return jsonResponse(500, { error: "Failed to update center tier", details: updateError });
+  }
+
+  await supabase.from("partner_center_tier_subscriptions").upsert(
+    {
+      tenant_id: payment.tenant_id,
+      current_tier: targetTier,
+      status: "active",
+      billing_period: billingPeriod,
+      current_period_start: nowIso,
+      current_period_end: periodEnd,
+      payment_id: payment.id,
+      amount: payment.amount ?? null,
+      currency: payment.currency ?? "UZS",
+      metadata: {
+        source: "tspay",
+        previous_tier: currentTier,
+        plan_id: payment.plan_id ?? null,
+      },
+    },
+    { onConflict: "tenant_id" },
+  );
+
+  const requestId = String((meta as any)?.tier_change_request_id ?? "").trim();
+  if (requestId) {
+    await supabase
+      .from("partner_center_tier_change_requests")
+      .update({
+        status: "applied",
+        payment_id: payment.id,
+        applied_at: nowIso,
+        metadata: {
+          ...meta,
+          applied_tier: targetTier,
+          applied_period_end: periodEnd,
+        },
+      })
+      .eq("id", requestId)
+      .eq("tenant_id", payment.tenant_id);
+  }
+
+  await supabase
+    .from("payments")
+    .update({
+      metadata: {
+        ...meta,
+        center_tier_applied: targetTier,
+        center_tier_period_end: periodEnd,
+      },
+    })
+    .eq("id", payment.id);
+
+  return null;
+};
+
 const grantPaidPaymentOnce = async (
   supabase: any,
   payment: PaymentGrantRow,
@@ -886,7 +1039,10 @@ const grantPaidPaymentOnce = async (
     const meta = payment.metadata ?? {};
     const purchaseType = normalizePurchaseType(payment.purchase_type ?? (meta as any)?.purchase_type);
 
-    if (purchaseType === "token_pack") {
+    if (purchaseType === "center_tier_upgrade") {
+      const response = await applyCenterTierUpgrade(supabase, payment);
+      if (response) return response;
+    } else if (purchaseType === "token_pack") {
       const experienceId = String((meta as any)?.experience_id ?? "");
       const qty = normalizeQuantity((meta as any)?.quantity, 500);
       const days = normalizeDays((meta as any)?.expires_in_days);
@@ -2132,7 +2288,10 @@ serve(async (req) => {
             const meta = payment.metadata ?? {};
             const purchaseType = normalizePurchaseType((meta as any)?.purchase_type);
 
-            if (purchaseType === "token_pack") {
+            if (purchaseType === "center_tier_upgrade") {
+              const grantResponse = await applyCenterTierUpgrade(supabase, payment);
+              if (grantResponse) return grantResponse;
+            } else if (purchaseType === "token_pack") {
               const experienceId = String((meta as any)?.experience_id ?? "");
               const qty = normalizeQuantity((meta as any)?.quantity, 500);
               const days = normalizeDays((meta as any)?.expires_in_days);

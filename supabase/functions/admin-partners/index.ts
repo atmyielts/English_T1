@@ -149,8 +149,14 @@ serve(async (req) => {
           .select("tenant_id, status")
           .limit(5000),
       ]);
+      const { data: tierRequests, error: tierRequestsError } = await sb
+        .from("partner_center_tier_change_requests")
+        .select("*, payments ( id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, status, amount, currency, created_at )")
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (profiles.error) return json(500, { error: "Failed to load partners", detail: profiles.error.message });
       if (topups.error) return json(500, { error: "Failed to load top-ups", detail: topups.error.message });
+      if (tierRequestsError) return json(500, { error: "Failed to load tier requests", detail: tierRequestsError.message });
 
       const voucherCounts = new Map<string, Record<string, number>>();
       for (const row of vouchers.data ?? []) {
@@ -164,8 +170,10 @@ serve(async (req) => {
       }
 
       const rows = [];
+      const profileByTenant = new Map<string, any>();
       for (const profile of profiles.data ?? []) {
         const tenantId = String((profile as any).tenant_id);
+        profileByTenant.set(tenantId, profile);
         const { data: balance } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" });
         rows.push({
           ...profile,
@@ -175,7 +183,12 @@ serve(async (req) => {
         });
       }
 
-      return json(200, { partners: rows, topup_requests: topups.data ?? [] });
+      const decoratedTierRequests = (tierRequests ?? []).map((row: any) => ({
+        ...row,
+        center: profileByTenant.get(String(row.tenant_id)) ?? null,
+      }));
+
+      return json(200, { partners: rows, topup_requests: topups.data ?? [], tier_requests: decoratedTierRequests });
     }
 
     if (req.method === "PATCH" && url.pathname.endsWith("/profile")) {
@@ -251,6 +264,82 @@ serve(async (req) => {
           .maybeSingle();
         if (error) return json(500, { error: "Failed to adjust wallet", detail: error.message });
         return json(200, { ledger_entry: data });
+      }
+
+      if (action === "apply_tier_request") {
+        const requestId = String(body.request_id ?? "").trim();
+        if (!requestId) return json(400, { error: "request_id is required" });
+        const { data: requestRow, error: requestError } = await sb
+          .from("partner_center_tier_change_requests")
+          .select("*")
+          .eq("id", requestId)
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+        if (requestError) return json(500, { error: "Failed to load tier request", detail: requestError.message });
+        if (!requestRow?.id) return json(404, { error: "Tier request not found" });
+        if (!["pending_payment", "paid", "manual_review"].includes(String(requestRow.status))) {
+          return json(400, { error: "Only pending/paid/manual-review tier requests can be applied" });
+        }
+
+        const targetTier = normalizeTier((requestRow as any).requested_tier);
+        if (targetTier === "starter") return json(400, { error: "Invalid target tier" });
+        const periodDays = String((requestRow as any).billing_period) === "annual" ? 365 : 30;
+        const nowIso = new Date().toISOString();
+        const periodEnd = new Date(Date.now() + periodDays * 86400000).toISOString();
+
+        const { data: profile } = await sb
+          .from("partner_center_profiles")
+          .select("wallet_settings")
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+        const settings = isObject((profile as any)?.wallet_settings) ? (profile as any).wallet_settings : {};
+
+        const { data: updatedProfile, error: profileUpdateError } = await sb
+          .from("partner_center_profiles")
+          .update({
+            package_tier: targetTier,
+            powered_by_schood: ["starter", "growth"].includes(targetTier) ? true : undefined,
+            wallet_settings: {
+              ...settings,
+              upgraded_by_admin_user_id: authz.context.userId,
+              tier_period_end: periodEnd,
+              tier_billing_period: (requestRow as any).billing_period,
+            },
+          })
+          .eq("tenant_id", tenantId)
+          .select("*")
+          .maybeSingle();
+        if (profileUpdateError) return json(500, { error: "Failed to update center tier", detail: profileUpdateError.message });
+
+        await sb.from("partner_center_tier_subscriptions").upsert(
+          {
+            tenant_id: tenantId,
+            current_tier: targetTier,
+            status: "active",
+            billing_period: (requestRow as any).billing_period,
+            current_period_start: nowIso,
+            current_period_end: periodEnd,
+            payment_id: (requestRow as any).payment_id ?? null,
+            amount: (requestRow as any).amount ?? null,
+            currency: (requestRow as any).currency ?? "UZS",
+            metadata: { source: "admin_manual_apply", admin_user_id: authz.context.userId, request_id: requestId },
+          },
+          { onConflict: "tenant_id" },
+        );
+
+        const { data: updatedRequest } = await sb
+          .from("partner_center_tier_change_requests")
+          .update({
+            status: "applied",
+            approved_by: authz.context.userId,
+            applied_at: nowIso,
+            metadata: { ...((requestRow as any).metadata ?? {}), admin_note: body.note ?? null, applied_period_end: periodEnd },
+          })
+          .eq("id", requestId)
+          .select("*")
+          .maybeSingle();
+
+        return json(200, { partner: updatedProfile ? { ...updatedProfile, capabilities: capabilitiesFor(updatedProfile) } : updatedProfile, tier_request: updatedRequest });
       }
     }
 

@@ -5,6 +5,7 @@ import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-st
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
+const CENTER_TIER_PRODUCT_ID = "00000000-0000-4000-8000-000000000701";
 const TSPAY_MIN_AMOUNT_UZS = 1000;
 const TSPAY_MAX_AMOUNT_UZS = 200000000;
 
@@ -201,6 +202,18 @@ const normalizeCenterTier = (raw: unknown): CenterCapabilities["tier"] => {
   const tier = String(raw ?? "").trim().toLowerCase();
   if (tier === "growth" || tier === "premium" || tier === "exclusive") return tier;
   return "starter";
+};
+
+const CENTER_TIER_RANK: Record<CenterCapabilities["tier"], number> = {
+  starter: 0,
+  growth: 1,
+  premium: 2,
+  exclusive: 3,
+};
+
+const normalizeBillingPeriod = (raw: unknown): "monthly" | "annual" => {
+  const period = String(raw ?? "").trim().toLowerCase();
+  return period === "annual" ? "annual" : "monthly";
 };
 
 const getCenterCapabilities = (profile?: any | null): CenterCapabilities => {
@@ -859,6 +872,74 @@ const buildPaymentCapabilities = () => ({
   default_provider: "tspay",
 });
 
+const planCenterTier = (plan: any): CenterCapabilities["tier"] | null => {
+  const tier = normalizeCenterTier(plan?.metadata?.center_tier);
+  return tier === "starter" ? null : tier;
+};
+
+const planBillingPeriod = (plan: any): "monthly" | "annual" | null => {
+  const period = String(plan?.metadata?.billing_period ?? "").trim().toLowerCase();
+  return period === "monthly" || period === "annual" ? period : null;
+};
+
+const buildTierCatalog = async (sb: any, profile: any) => {
+  const { data: plans, error } = await sb
+    .from("plans")
+    .select("id, product_id, name, amount, currency, duration_days, is_active, metadata")
+    .eq("product_id", CENTER_TIER_PRODUCT_ID)
+    .eq("is_active", true)
+    .order("amount", { ascending: true });
+  if (error) throw error;
+
+  const currentTier = normalizeCenterTier(profile?.package_tier);
+  const tiers = ["growth", "premium", "exclusive"].map((tier) => {
+    const capabilities = CENTER_TIER_CAPABILITIES[tier];
+    const tierPlans = (plans ?? [])
+      .filter((plan: any) => planCenterTier(plan) === tier)
+      .map((plan: any) => ({
+        id: plan.id,
+        name: plan.name,
+        tier,
+        billing_period: planBillingPeriod(plan) ?? "monthly",
+        amount: Number(plan.amount ?? 0),
+        currency: String(plan.currency ?? "UZS"),
+        duration_days: plan.duration_days ?? null,
+        metadata: plan.metadata ?? {},
+      }))
+      .sort((a: any, b: any) => (a.billing_period === b.billing_period ? a.amount - b.amount : a.billing_period.localeCompare(b.billing_period)));
+    return {
+      tier,
+      tier_label: capabilities.tier_label,
+      capabilities,
+      plans: tierPlans,
+      current: currentTier === tier,
+      upgrade_available: CENTER_TIER_RANK[tier as CenterCapabilities["tier"]] >= CENTER_TIER_RANK[currentTier],
+    };
+  });
+
+  const [subscriptionRes, requestsRes] = await Promise.all([
+    sb.from("partner_center_tier_subscriptions").select("*").eq("tenant_id", profile.tenant_id).maybeSingle(),
+    sb
+      .from("partner_center_tier_change_requests")
+      .select("*, payments ( id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, status, amount, currency, created_at )")
+      .eq("tenant_id", profile.tenant_id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+
+  if (subscriptionRes.error && subscriptionRes.error.code !== "PGRST116") throw subscriptionRes.error;
+  if (requestsRes.error) throw requestsRes.error;
+
+  return {
+    product_id: CENTER_TIER_PRODUCT_ID,
+    current_tier: currentTier,
+    current_capabilities: getCenterCapabilities(profile),
+    tiers,
+    subscription: subscriptionRes.data ?? null,
+    requests: requestsRes.data ?? [],
+  };
+};
+
 const createSimplePdf = async (title: string, lines: string[]): Promise<string> => {
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([595.28, 841.89]);
@@ -922,6 +1003,13 @@ serve(async (req) => {
 
     if (req.method === "GET" && action === "payment_capabilities") {
       return json(200, buildPaymentCapabilities());
+    }
+
+    if (req.method === "GET" && action === "tier_catalog") {
+      const center = await getCenterProfile(sb, tenantId);
+      if (!center?.tenant_id) return json(404, { error: "Education center profile is required" });
+      if (!requireTenantAdmin(memberships, center.tenant_id)) return json(403, { error: "Only center owners/admins can manage tier billing" });
+      return json(200, await buildTierCatalog(sb, center));
     }
 
     if (req.method === "GET" && (action === "center" || action === "branding")) {
@@ -2065,6 +2153,142 @@ serve(async (req) => {
         });
         const text = await forwarded.text();
         return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      }
+
+      if (actionBody === "create_tier_upgrade_payment") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Only center owners/admins can manage tier billing" });
+
+        const profile = await getCenterProfile(sb, tenantId);
+        if (!profile?.tenant_id) return json(404, { error: "Education center profile is required" });
+
+        const currentTier = normalizeCenterTier(profile.package_tier);
+        const requestedTier = normalizeCenterTier(body.requested_tier ?? body.tier);
+        if (requestedTier === "starter") return json(400, { error: "Starter is the free base tier and cannot be purchased" });
+        if (CENTER_TIER_RANK[requestedTier] < CENTER_TIER_RANK[currentTier]) {
+          return json(400, { error: "Tier downgrades are handled by Schood admin support" });
+        }
+
+        const billingPeriod = normalizeBillingPeriod(body.billing_period);
+        const { data: plan, error: planError } = await sb
+          .from("plans")
+          .select("id, product_id, name, amount, currency, duration_days, metadata, is_active")
+          .eq("product_id", CENTER_TIER_PRODUCT_ID)
+          .eq("is_active", true)
+          .eq("metadata->>center_tier", requestedTier)
+          .eq("metadata->>billing_period", billingPeriod)
+          .maybeSingle();
+        if (planError) return json(500, { error: "Failed to load tier pricing", detail: planError.message });
+        if (!plan?.id) return json(400, { error: "Tier pricing is not configured for this period" });
+
+        const amount = normalizeMoney((plan as any).amount);
+        const currency = String((plan as any).currency ?? "UZS").toUpperCase();
+        if (!amount) return json(400, { error: "Tier plan amount is not configured" });
+        if (currency === "UZS" && amount > TSPAY_MAX_AMOUNT_UZS) {
+          return json(400, {
+            error: "Current online payment limit is 200,000,000 UZS per transaction. Ask Schood admin to invoice this tier manually.",
+            error_code: "online_payment_amount_limit",
+            max_amount: TSPAY_MAX_AMOUNT_UZS,
+            amount,
+            currency,
+          });
+        }
+
+        const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+        const { data: tierRequest, error: requestError } = await sb
+          .from("partner_center_tier_change_requests")
+          .insert({
+            tenant_id: tenantId,
+            previous_tier: currentTier,
+            requested_tier: requestedTier,
+            billing_period: billingPeriod,
+            amount,
+            currency,
+            status: "pending_payment",
+            requested_by: userId,
+            expires_at: expiresAt,
+            metadata: {
+              source: "center_office",
+              plan_id: plan.id,
+              plan_name: plan.name,
+              duration_days: plan.duration_days ?? null,
+            },
+          })
+          .select("*")
+          .maybeSingle();
+        if (requestError || !tierRequest?.id) return json(500, { error: "Failed to create tier request", detail: requestError?.message });
+
+        const payload = {
+          plan_id: plan.id,
+          purchase_type: "center_tier_upgrade",
+          tenant_id: tenantId,
+          description: `${profile.display_name ?? "Education center"} ${CENTER_TIER_CAPABILITIES[requestedTier].tier_label} ${billingPeriod} tier`,
+          apply_credit: false,
+          credit_amount: 0,
+          metadata: {
+            center_office: true,
+            center_tenant_id: tenantId,
+            purchase_type: "center_tier_upgrade",
+            tier_change_request_id: tierRequest.id,
+            requested_tier: requestedTier,
+            previous_tier: currentTier,
+            billing_period: billingPeriod,
+          },
+        };
+
+        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "tspay/create-transaction", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const text = await forwarded.text();
+        let parsed: any = null;
+        try {
+          parsed = text ? JSON.parse(text) : null;
+        } catch {
+          parsed = null;
+        }
+
+        if (!forwarded.ok) {
+          await sb
+            .from("partner_center_tier_change_requests")
+            .update({ status: "failed", metadata: { ...(tierRequest.metadata ?? {}), tspay_error: parsed ?? text } })
+            .eq("id", tierRequest.id);
+          return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        }
+
+        const orderId = String(parsed?.order_id ?? "").trim();
+        const transactionId = String(parsed?.transaction_id ?? "").trim();
+        let paymentId: string | null = null;
+        if (orderId || transactionId) {
+          const { data: paymentRow } = await sb
+            .from("payments")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .eq("purchase_type", "center_tier_upgrade")
+            .or(`tspay_order_id.eq.${orderId || "__none__"},provider_transaction_id.eq.${orderId || "__none__"},tspay_cheque_id.eq.${transactionId || "__none__"}`)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          paymentId = paymentRow?.id ?? null;
+        }
+
+        const { data: updatedRequest } = await sb
+          .from("partner_center_tier_change_requests")
+          .update({
+            payment_id: paymentId,
+            metadata: {
+              ...(tierRequest.metadata ?? {}),
+              tspay_order_id: parsed?.order_id ?? null,
+              tspay_transaction_id: parsed?.transaction_id ?? null,
+              payment_url: parsed?.payment_url ?? null,
+            },
+          })
+          .eq("id", tierRequest.id)
+          .select("*")
+          .maybeSingle();
+
+        return json(200, { ...(parsed ?? {}), tier_request: updatedRequest ?? tierRequest });
       }
 
       if (actionBody === "quote_purchase") {

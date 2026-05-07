@@ -2428,6 +2428,55 @@ export type PartnerPaymentCapability = {
   temporary?: boolean;
 };
 
+export type PartnerCenterTierPlan = {
+  id: string;
+  name: string;
+  tier: 'growth' | 'premium' | 'exclusive';
+  billing_period: 'monthly' | 'annual';
+  amount: number;
+  currency: string;
+  duration_days?: number | null;
+  metadata?: Json | null;
+};
+
+export type PartnerCenterTierCatalogItem = {
+  tier: 'growth' | 'premium' | 'exclusive';
+  tier_label: string;
+  capabilities: PartnerCenterCapabilities;
+  plans: PartnerCenterTierPlan[];
+  current: boolean;
+  upgrade_available: boolean;
+};
+
+export type PartnerCenterTierRequest = {
+  id: string;
+  tenant_id: string;
+  previous_tier: string;
+  requested_tier: string;
+  billing_period: string;
+  amount: number;
+  currency: string;
+  status: string;
+  payment_id?: string | null;
+  requested_by?: string | null;
+  approved_by?: string | null;
+  applied_at?: string | null;
+  expires_at?: string | null;
+  metadata?: Json | null;
+  created_at: string;
+  payments?: PartnerOfficePayment | null;
+  center?: PartnerCenterProfile | null;
+};
+
+export type PartnerCenterTierCatalog = {
+  product_id: string;
+  current_tier: string;
+  current_capabilities: PartnerCenterCapabilities;
+  tiers: PartnerCenterTierCatalogItem[];
+  subscription?: Json | null;
+  requests: PartnerCenterTierRequest[];
+};
+
 export type PartnerCenterGroup = {
   id: string;
   tenant_id: string;
@@ -2663,6 +2712,8 @@ export const partnerOfficeCommissions = (accessToken: string) =>
   partnerOfficeGet<{ account: any; cash: any; rewards: any[]; cash_payout_requests: any[] }>(accessToken, 'commissions');
 export const partnerOfficePaymentCapabilities = (accessToken: string) =>
   partnerOfficeGet<{ providers: PartnerPaymentCapability[]; default_provider: string }>(accessToken, 'payment_capabilities');
+export const partnerOfficeTierCatalog = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<PartnerCenterTierCatalog>(accessToken, 'tier_catalog', { tenant_id: tenantId });
 export const partnerOfficeGroups = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ groups: PartnerCenterGroup[] }>(accessToken, 'groups', { tenant_id: tenantId });
 export const partnerOfficeMockEvents = (accessToken: string, tenantId?: string | null) =>
@@ -2837,6 +2888,16 @@ export const partnerOfficeCreateSeatPurchase = (
   },
 ) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
 
+export const partnerOfficeCreateTierUpgradePayment = (
+  accessToken: string,
+  body: {
+    tenant_id?: string | null;
+    requested_tier: 'growth' | 'premium' | 'exclusive';
+    billing_period: 'monthly' | 'annual';
+    center_office?: boolean;
+  },
+) => partnerOfficePost<TspayCreateResponse & { tier_request?: PartnerCenterTierRequest }>(accessToken, { action: 'create_tier_upgrade_payment', ...body });
+
 export const referralsMe = async (accessToken: string): Promise<ReferralMeResponse> => {
   const res = await fetch(`${edgeBase}/referrals/me`, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {
@@ -2956,13 +3017,13 @@ export type AdminPartnerRow = PartnerCenterProfile & {
   voucher_counts?: Record<string, number>;
 };
 
-export const adminPartnersSummary = async (accessToken: string): Promise<{ partners: AdminPartnerRow[]; topup_requests: any[] }> => {
+export const adminPartnersSummary = async (accessToken: string): Promise<{ partners: AdminPartnerRow[]; topup_requests: any[]; tier_requests?: PartnerCenterTierRequest[] }> => {
   const res = await fetch(`${edgeBase}/admin-partners`, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {
     const details = await readJsonOrText(res);
     throw new Error(`GET /admin-partners failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as { partners: AdminPartnerRow[]; topup_requests: any[] };
+  return (await res.json()) as { partners: AdminPartnerRow[]; topup_requests: any[]; tier_requests?: PartnerCenterTierRequest[] };
 };
 
 export const adminPartnersUpdateProfile = async (
@@ -2985,8 +3046,9 @@ export const adminPartnersWallet = async (
   accessToken: string,
   body:
     | { action: 'settle_topup'; tenant_id: string; ledger_id: string; status: 'posted' | 'void'; note?: string | null }
-    | { action: 'adjust'; tenant_id: string; entry_kind: 'adjustment' | 'credit' | 'refund' | 'debit' | 'commission'; amount: number; currency?: string; note?: string | null },
-): Promise<{ ledger_entry: any }> => {
+    | { action: 'adjust'; tenant_id: string; entry_kind: 'adjustment' | 'credit' | 'refund' | 'debit' | 'commission'; amount: number; currency?: string; note?: string | null }
+    | { action: 'apply_tier_request'; tenant_id: string; request_id: string; note?: string | null },
+): Promise<{ ledger_entry?: any; partner?: AdminPartnerRow | null; tier_request?: PartnerCenterTierRequest }> => {
   const res = await fetch(`${edgeBase}/admin-partners/wallet`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
@@ -2996,7 +3058,7 @@ export const adminPartnersWallet = async (
     const details = await readJsonOrText(res);
     throw new Error(`POST /admin-partners/wallet failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as { ledger_entry: any };
+  return (await res.json()) as { ledger_entry?: any; partner?: AdminPartnerRow | null; tier_request?: PartnerCenterTierRequest };
 };
 
 export type CandidateEntryResponse = {

@@ -49,10 +49,12 @@ import {
   partnerOfficeCreateGroup,
   partnerOfficeCreateMockEvent,
   partnerOfficeCreateStudentInvites,
+  partnerOfficeCreateTierUpgradePayment,
   partnerOfficeMarkEventAttendance,
   partnerOfficeRequestCashPayout,
   partnerOfficeReviewQueue,
   partnerOfficeStatements,
+  partnerOfficeTierCatalog,
   partnerOfficeUpdateReviewItem,
   partnerOfficeResults,
   partnerOfficeSeats,
@@ -77,6 +79,8 @@ import {
   type PartnerCreditLedgerEntry,
   type PartnerPaymentCapability,
   type PartnerCenterStatement,
+  type PartnerCenterTierCatalog,
+  type PartnerCenterTierPlan,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
   type PartnerOfficePlan,
@@ -87,10 +91,11 @@ import {
   type PartnerVoucherBatch,
 } from '../lib/platformClient';
 
-type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'groups' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
+type Tab = 'overview' | 'upgrade' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'groups' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'upgrade', label: 'Upgrade', icon: Coins },
   { id: 'wallet', label: 'Wallet', icon: WalletCards },
   { id: 'buy', label: 'Buy', icon: CreditCard },
   { id: 'vouchers', label: 'Vouchers', icon: Ticket },
@@ -258,6 +263,7 @@ export const CenterOfficePage: React.FC = () => {
   const [reviewItems, setReviewItems] = useState<PartnerCenterReviewItem[]>([]);
   const [statements, setStatements] = useState<PartnerCenterStatement[]>([]);
   const [paymentCapabilities, setPaymentCapabilities] = useState<PartnerPaymentCapability[]>([]);
+  const [tierCatalog, setTierCatalog] = useState<PartnerCenterTierCatalog | null>(null);
   const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
   const [staffMembers, setStaffMembers] = useState<PartnerCenterStaffMember[]>([]);
   const [staffInvites, setStaffInvites] = useState<PartnerCenterStaffInvite[]>([]);
@@ -268,7 +274,10 @@ export const CenterOfficePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
-  const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | null>(null);
+  const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | 'tier' | null>(null);
+  const [pendingPaymentUrl, setPendingPaymentUrl] = useState<string | null>(null);
+  const [pendingPaymentLabel, setPendingPaymentLabel] = useState<string>('payment');
+  const [tierBillingPeriod, setTierBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   const [ticketForm, setTicketForm] = useState({ experience_id: '', quantity: 10, expires_in_days: 30, apply_credit: false });
   const [seatForm, setSeatForm] = useState({ plan_id: '', seat_count: 10, apply_credit: false });
@@ -372,6 +381,7 @@ export const CenterOfficePage: React.FC = () => {
         setReviewItems([]);
         setStatements([]);
         setPaymentCapabilities([]);
+        setTierCatalog(null);
         setAnalytics(null);
         setStaffMembers([]);
         setStaffInvites([]);
@@ -381,7 +391,7 @@ export const CenterOfficePage: React.FC = () => {
       }
 
       const tenant_id = centerRes.center.tenant_id;
-      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, analyticsRes] =
+      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
@@ -401,6 +411,7 @@ export const CenterOfficePage: React.FC = () => {
           partnerOfficeReviewQueue(token, tenant_id).catch(() => ({ review_items: [] })),
           partnerOfficeStatements(token, tenant_id).catch(() => ({ statements: [] })),
           partnerOfficePaymentCapabilities(token).catch(() => ({ providers: [] })),
+          partnerOfficeTierCatalog(token, tenant_id).catch(() => null),
           partnerOfficeAnalytics(token, tenant_id).catch(() => ({ analytics: {} })),
         ]);
 
@@ -420,6 +431,7 @@ export const CenterOfficePage: React.FC = () => {
       setReviewItems(reviewRes.review_items ?? []);
       setStatements(statementRes.statements ?? []);
       setPaymentCapabilities(capsRes.providers ?? []);
+      setTierCatalog(tierCatalogRes);
       setAnalytics((analyticsRes.analytics ?? {}) as Record<string, any>);
       setStaffMembers(staffRes.members ?? []);
       setStaffInvites(staffRes.invites ?? []);
@@ -465,10 +477,12 @@ export const CenterOfficePage: React.FC = () => {
     setSuccess(message);
   };
 
-  const openPayment = (url: string | null) => {
+  const openPayment = (url: string | null, label = 'payment') => {
     if (!url) return;
+    setPendingPaymentUrl(url);
+    setPendingPaymentLabel(label);
     const popup = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!popup) setError('Popup blocked. Use the payment link from the Payments tab.');
+    if (!popup) setError('Popup blocked. Use the Continue payment link below to open checkout manually.');
   };
 
   const buyTickets = async () => {
@@ -487,9 +501,10 @@ export const CenterOfficePage: React.FC = () => {
       setPendingTransactionId(res.transaction_id);
       setPendingKind('tickets');
       if (res.payment_url) {
-        openPayment(res.payment_url);
+        openPayment(res.payment_url, 'mock ticket pack payment');
         setSuccess('Payment opened. Mock tickets will appear after payment is confirmed.');
       } else if (isPaid(res.status)) {
+        setPendingPaymentUrl(null);
         await refreshAll();
         setSuccess('Mock tickets generated.');
       }
@@ -516,9 +531,10 @@ export const CenterOfficePage: React.FC = () => {
       setPendingTransactionId(res.transaction_id);
       setPendingKind('seats');
       if (res.payment_url) {
-        openPayment(res.payment_url);
+        openPayment(res.payment_url, 'seat pack payment');
         setSuccess('Payment opened. Seats will appear after payment is confirmed.');
       } else if (isPaid(res.status)) {
+        setPendingPaymentUrl(null);
         await refreshAll();
         setSuccess('Seats added.');
       }
@@ -540,8 +556,9 @@ export const CenterOfficePage: React.FC = () => {
       if (isPaid(res.status)) {
         setPendingTransactionId(null);
         setPendingKind(null);
+        setPendingPaymentUrl(null);
         await refreshAll();
-        setSuccess(pendingKind === 'seats' ? 'Seats added.' : 'Mock tickets generated.');
+        setSuccess(pendingKind === 'seats' ? 'Seats added.' : pendingKind === 'tier' ? 'Center tier updated.' : 'Mock tickets generated.');
       } else {
         setSuccess(`Payment status: ${res.status}`);
       }
@@ -574,6 +591,41 @@ export const CenterOfficePage: React.FC = () => {
       await refreshAll();
       setTab('vouchers');
       setSuccess(`Created ${res.vouchers.length} vouchers in ${res.batch.batch_code}.`);
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const buyTier = async (plan: PartnerCenterTierPlan) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    if (plan.currency === 'UZS' && plan.amount > onlineMaxAmount) {
+      setTab('wallet');
+      setError(`Current online payment limit is ${money(onlineMaxAmount, 'UZS')} per transaction. Ask Schood admin to invoice this tier manually.`);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeCreateTierUpgradePayment(token, {
+        tenant_id: centerTenantId,
+        requested_tier: plan.tier,
+        billing_period: plan.billing_period,
+        center_office: true,
+      });
+      setPendingTransactionId(res.transaction_id);
+      setPendingKind('tier');
+      if (res.payment_url) {
+        openPayment(res.payment_url, `${plan.tier} tier payment`);
+        setSuccess('Payment opened. The center tier updates automatically after payment is confirmed.');
+      } else if (isPaid(res.status)) {
+        setPendingPaymentUrl(null);
+        await refreshAll();
+        setSuccess('Center tier updated.');
+      }
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -956,6 +1008,28 @@ export const CenterOfficePage: React.FC = () => {
 
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+          {pendingPaymentUrl ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold">Checkout is ready</p>
+                  <p className="mt-1 text-amber-900/80">If the payment window did not open, use this link to continue your {pendingPaymentLabel}.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <a href={pendingPaymentUrl} target="_blank" rel="noreferrer" className={primaryButton}>
+                    <ArrowUpRight className="h-4 w-4" />
+                    Continue payment
+                  </a>
+                  {pendingTransactionId ? (
+                    <button type="button" onClick={() => void checkPayment()} disabled={loading} className={secondaryButton}>
+                      <RefreshCw className="h-4 w-4" />
+                      Check status
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {centerIsActive ? (
             <nav className={`${panelClass} flex flex-wrap gap-2 p-3`}>
@@ -1024,6 +1098,20 @@ export const CenterOfficePage: React.FC = () => {
                 <VoucherTable vouchers={recentVouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
               </div>
             </section>
+          ) : null}
+
+          {centerIsActive && tab === 'upgrade' ? (
+            <TierUpgradePanel
+              catalog={tierCatalog}
+              currentTier={capabilities.tier}
+              billingPeriod={tierBillingPeriod}
+              loading={loading}
+              pending={pendingKind === 'tier' ? pendingTransactionId : null}
+              maxOnlineAmount={onlineMaxAmount}
+              onBillingPeriodChange={setTierBillingPeriod}
+              onBuy={(plan) => void buyTier(plan)}
+              onCheck={() => void checkPayment()}
+            />
           ) : null}
 
           {centerIsActive && tab === 'wallet' ? (
@@ -1435,6 +1523,124 @@ export const CenterOfficePage: React.FC = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+const TierUpgradePanel: React.FC<{
+  catalog: PartnerCenterTierCatalog | null;
+  currentTier: string;
+  billingPeriod: 'monthly' | 'annual';
+  loading: boolean;
+  pending: string | null;
+  maxOnlineAmount: number;
+  onBillingPeriodChange: React.Dispatch<React.SetStateAction<'monthly' | 'annual'>>;
+  onBuy: (plan: PartnerCenterTierPlan) => void;
+  onCheck: () => void;
+}> = ({ catalog, currentTier, billingPeriod, loading, pending, maxOnlineAmount, onBillingPeriodChange, onBuy, onCheck }) => {
+  const tiers = catalog?.tiers ?? [];
+  const activeRequests = (catalog?.requests ?? []).filter((request) => ['pending_payment', 'paid', 'manual_review'].includes(request.status));
+  return (
+    <section className="space-y-5">
+      <div className={`${panelClass} p-5 md:p-6`}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <SectionTitle icon={Coins} label="Paid tiers" title="Upgrade Center Office" />
+          <div className="inline-flex rounded-full border border-gray-900 bg-white p-1">
+            {(['monthly', 'annual'] as const).map((period) => (
+              <button
+                key={period}
+                type="button"
+                onClick={() => onBillingPeriodChange(period)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold capitalize ${billingPeriod === period ? 'bg-[#0f172a] text-white' : 'text-gray-700'}`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-4 max-w-3xl text-sm text-gray-600">
+          Tier payments are charged to the center tenant. After online payment is confirmed, Schood upgrades the center automatically and records the subscription period for admin audit.
+        </p>
+        <p className="mt-2 text-xs font-semibold text-gray-500">Current online payment limit: {money(maxOnlineAmount, 'UZS')}</p>
+      </div>
+
+      {pending ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span>Tier payment is pending confirmation.</span>
+            <button type="button" onClick={onCheck} disabled={loading} className={secondaryButton}>Check payment</button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        {tiers.map((item) => {
+          const plan = item.plans.find((candidate) => candidate.billing_period === billingPeriod) ?? item.plans[0] ?? null;
+          const isCurrent = item.tier === currentTier;
+          const onlineBlocked = Boolean(plan && plan.currency === 'UZS' && plan.amount > maxOnlineAmount);
+          return (
+            <article key={item.tier} className={`${panelClass} flex min-h-[420px] flex-col p-5 md:p-6`}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{isCurrent ? 'Current tier' : 'Upgrade tier'}</p>
+                  <h3 className="mt-2 text-2xl font-bold text-gray-900">{item.tier_label}</h3>
+                </div>
+                {isCurrent ? <StatusPill status="active" /> : null}
+              </div>
+              <p className="mt-5 text-3xl font-bold">{plan ? money(plan.amount, plan.currency) : 'Ask admin'}</p>
+              <p className="mt-1 text-sm text-gray-500 capitalize">{plan?.billing_period ?? billingPeriod} billing</p>
+              <div className="mt-5 grid grid-cols-2 gap-2 text-xs">
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 font-semibold">Staff {item.capabilities.staff_limit}</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 font-semibold">Batch {item.capabilities.max_voucher_batch_quantity}</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 font-semibold">Groups {item.capabilities.groups_enabled ? item.capabilities.max_active_groups : 'locked'}</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 font-semibold">Events {item.capabilities.mock_events_enabled ? item.capabilities.max_upcoming_events : 'locked'}</span>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {item.capabilities.included_features.map((feature) => (
+                  <span key={feature} className="rounded-full border border-gray-900/15 bg-white px-3 py-1 text-xs font-semibold text-gray-700">{feature}</span>
+                ))}
+              </div>
+              <div className="mt-auto pt-6">
+                {onlineBlocked ? <p className="mb-3 text-xs font-semibold text-amber-700">This plan is above the current online payment limit.</p> : null}
+                <button
+                  type="button"
+                  onClick={() => plan && onBuy(plan)}
+                  disabled={loading || !plan || onlineBlocked || (isCurrent && billingPeriod === 'monthly')}
+                  className={`${isCurrent ? secondaryButton : primaryButton} w-full`}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {isCurrent ? 'Renew annual/monthly' : 'Pay and upgrade'}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className={`${panelClass} overflow-hidden`}>
+        <div className="border-b border-gray-900/10 p-5 md:p-6">
+          <SectionTitle icon={ReceiptText} label="Audit" title="Tier payment requests" />
+        </div>
+        <div className="divide-y divide-gray-900/10">
+          {(catalog?.requests ?? []).slice(0, 8).map((request) => (
+            <div key={request.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+              <div>
+                <p className="font-semibold capitalize">{request.previous_tier} to {request.requested_tier}</p>
+                <p className="text-xs text-gray-500">{formatDateTime(request.created_at)} - {request.billing_period}</p>
+              </div>
+              <span className="font-semibold">{money(request.amount, request.currency)}</span>
+              <StatusPill status={request.status} />
+            </div>
+          ))}
+          {(catalog?.requests ?? []).length === 0 ? <div className="p-6"><EmptyState icon={ReceiptText} title="No tier requests yet" note="Upgrade and renewal attempts will appear here." /></div> : null}
+        </div>
+      </div>
+
+      {activeRequests.length > 0 ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          There is an active tier request waiting for payment or admin settlement. Paying another plan will create a new request, but only paid/applied requests change the center tier.
+        </div>
+      ) : null}
+    </section>
   );
 };
 
