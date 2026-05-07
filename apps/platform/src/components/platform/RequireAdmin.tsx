@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { getAuthSession, supabase } from '../../lib/supabase';
 import { getMe } from '../../lib/platformClient';
 import { AdminAccessContext, type AdminAccessInfo, hasAdminPermission } from './adminAccess';
 
@@ -64,9 +64,9 @@ export const RequireAdmin: React.FC = () => {
       }
     };
 
-    supabase.auth.getSession().then(({ data }) => {
+    getAuthSession().then((session) => {
       if (cancelled) return;
-      void check(data.session ? { access_token: data.session.access_token } : null);
+      void check(session ? { access_token: session.access_token } : null);
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {

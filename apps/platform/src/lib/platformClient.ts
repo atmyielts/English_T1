@@ -1,4 +1,4 @@
-import { clearLocalAuthStorage, edgeBase, supabase, supabaseAnonKey } from './supabase';
+import { clearLocalAuthStorage, edgeBase, refreshAuthSession, supabaseAnonKey } from './supabase';
 
 type Json = Record<string, unknown> | unknown[];
 
@@ -136,9 +136,8 @@ const forceLocalSignOut = async (): Promise<void> => {
 const tryRefreshAccessToken = async (): Promise<string | null> => {
   if (!refreshAccessTokenInFlight) {
     refreshAccessTokenInFlight = (async () => {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error || !data.session?.access_token) return null;
-      return data.session.access_token;
+      const session = await refreshAuthSession();
+      return session?.access_token ?? null;
     })().finally(() => {
       refreshAccessTokenInFlight = null;
     });
@@ -2346,7 +2345,8 @@ export type PartnerVoucher = {
 
 export type PartnerStudent = {
   id: string;
-  voucher_code: string;
+  student_id?: string | null;
+  voucher_code?: string | null;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -2356,6 +2356,9 @@ export type PartnerStudent = {
   redeemed_by?: string | null;
   redeemed_at?: string | null;
   expires_at?: string | null;
+  last_activity_at?: string | null;
+  groups?: Array<{ id: string; name: string }>;
+  metadata?: Json | null;
 };
 
 export type PartnerCenterStaffMember = {
@@ -2387,6 +2390,90 @@ export type PartnerReportSummary = {
   inactive_vouchers: number;
   expiring_vouchers: number;
   unassigned_seats: number;
+  active_groups?: number;
+  upcoming_events?: number;
+  pending_reviews?: number;
+  registered_students?: number;
+};
+
+export type PartnerPaymentCapability = {
+  provider: string;
+  label: string;
+  currency: string;
+  min_amount: number;
+  max_amount: number;
+  enabled: boolean;
+  temporary?: boolean;
+};
+
+export type PartnerCenterGroup = {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description?: string | null;
+  product_id?: string | null;
+  assigned_teacher_membership_id?: string | null;
+  status: string;
+  metadata?: Json | null;
+  created_at: string;
+  student_count?: number;
+};
+
+export type PartnerCenterMockEvent = {
+  id: string;
+  tenant_id: string;
+  title: string;
+  product_id?: string | null;
+  experience_id?: string | null;
+  group_id?: string | null;
+  voucher_batch_id?: string | null;
+  starts_at: string;
+  ends_at?: string | null;
+  mode: 'online' | 'offline' | 'hybrid';
+  location?: string | null;
+  meeting_url?: string | null;
+  capacity?: number | null;
+  status: string;
+  instructions?: string | null;
+  metadata?: Json | null;
+  registered_count?: number;
+  present_count?: number;
+  experiences?: { name?: string | null } | null;
+  partner_center_groups?: { name?: string | null } | null;
+  partner_voucher_batches?: { batch_code?: string | null } | null;
+};
+
+export type PartnerCenterReviewItem = {
+  id: string;
+  tenant_id: string;
+  student_id?: string | null;
+  group_id?: string | null;
+  event_id?: string | null;
+  skill: 'writing' | 'speaking' | 'manual';
+  assigned_staff_membership_id?: string | null;
+  status: string;
+  due_at?: string | null;
+  score?: number | null;
+  max_score?: number | null;
+  notes?: string | null;
+  created_at: string;
+  partner_center_students?: { full_name?: string | null; email?: string | null } | null;
+  partner_center_groups?: { name?: string | null } | null;
+  partner_center_mock_events?: { title?: string | null } | null;
+};
+
+export type PartnerCenterStatement = {
+  id: string;
+  tenant_id: string;
+  period_start: string;
+  period_end: string;
+  currency: string;
+  opening_balance: number;
+  credits_total: number;
+  debits_total: number;
+  closing_balance: number;
+  status: string;
+  created_at: string;
 };
 
 export type PartnerOfficePayment = {
@@ -2551,6 +2638,18 @@ export const partnerOfficeReferrals = (accessToken: string) =>
   partnerOfficeGet<ReferralMeResponse>(accessToken, 'referrals');
 export const partnerOfficeCommissions = (accessToken: string) =>
   partnerOfficeGet<{ account: any; cash: any; rewards: any[]; cash_payout_requests: any[] }>(accessToken, 'commissions');
+export const partnerOfficePaymentCapabilities = (accessToken: string) =>
+  partnerOfficeGet<{ providers: PartnerPaymentCapability[]; default_provider: string }>(accessToken, 'payment_capabilities');
+export const partnerOfficeGroups = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ groups: PartnerCenterGroup[] }>(accessToken, 'groups', { tenant_id: tenantId });
+export const partnerOfficeMockEvents = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ events: PartnerCenterMockEvent[] }>(accessToken, 'mock_events', { tenant_id: tenantId });
+export const partnerOfficeReviewQueue = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ review_items: PartnerCenterReviewItem[] }>(accessToken, 'review_queue', { tenant_id: tenantId });
+export const partnerOfficeAnalytics = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ analytics: Json }>(accessToken, 'analytics', { tenant_id: tenantId });
+export const partnerOfficeStatements = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ statements: PartnerCenterStatement[] }>(accessToken, 'statements', { tenant_id: tenantId });
 
 export const partnerOfficeUpdateCenter = (
   accessToken: string,
@@ -2581,13 +2680,40 @@ export const partnerOfficeAcceptStaffInvites = (accessToken: string) =>
 
 export const partnerOfficeInviteStaff = (
   accessToken: string,
-  body: { tenant_id?: string | null; email: string; role: 'admin' | 'member' },
+  body: { tenant_id?: string | null; email: string; role: 'admin' | 'member' | 'teacher' | 'counselor' },
 ) => partnerOfficePost<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[]; mode?: string }>(accessToken, { action: 'invite_staff', ...body });
 
 export const partnerOfficeUpdateStaff = (
   accessToken: string,
-  body: { tenant_id?: string | null; membership_id: string; role?: 'admin' | 'member'; status?: 'active' | 'disabled' },
+  body: { tenant_id?: string | null; membership_id: string; role?: 'admin' | 'member' | 'teacher' | 'counselor'; status?: 'active' | 'disabled' },
 ) => partnerOfficePost<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[] }>(accessToken, { action: 'update_staff', ...body });
+
+export const partnerOfficeCreateGroup = (accessToken: string, body: { tenant_id?: string | null; name: string; description?: string | null; assigned_teacher_membership_id?: string | null; product_id?: string | null }) =>
+  partnerOfficePost<{ group: PartnerCenterGroup; groups: PartnerCenterGroup[] }>(accessToken, { action: 'create_group', ...body });
+export const partnerOfficeUpdateGroup = (accessToken: string, body: { tenant_id?: string | null; group_id: string; name?: string; description?: string | null; status?: string; assigned_teacher_membership_id?: string | null; product_id?: string | null }) =>
+  partnerOfficePost<{ group: PartnerCenterGroup; groups: PartnerCenterGroup[] }>(accessToken, { action: 'update_group', ...body });
+export const partnerOfficeAssignStudentGroup = (accessToken: string, body: { tenant_id?: string | null; student_id: string; group_id: string; status?: 'active' | 'removed' }) =>
+  partnerOfficePost<{ membership: any; groups: PartnerCenterGroup[]; students: PartnerStudent[] }>(accessToken, { action: 'assign_student_group', ...body });
+export const partnerOfficeCreateStudentInvites = (
+  accessToken: string,
+  body: { tenant_id?: string | null; students: Array<{ name?: string; full_name?: string; email?: string; phone?: string }>; group_id?: string | null; voucher_batch_id?: string | null; origin?: string },
+) => partnerOfficePost<{ invites: any[]; students: PartnerStudent[] }>(accessToken, { action: 'create_student_invites', ...body });
+export const partnerOfficeCreateMockEvent = (
+  accessToken: string,
+  body: Partial<PartnerCenterMockEvent> & { tenant_id?: string | null; title: string; starts_at: string },
+) => partnerOfficePost<{ event: PartnerCenterMockEvent; events: PartnerCenterMockEvent[] }>(accessToken, { action: 'create_mock_event', ...body });
+export const partnerOfficeUpdateMockEvent = (
+  accessToken: string,
+  body: Partial<PartnerCenterMockEvent> & { tenant_id?: string | null; event_id: string },
+) => partnerOfficePost<{ event: PartnerCenterMockEvent; events: PartnerCenterMockEvent[] }>(accessToken, { action: 'update_mock_event', ...body });
+export const partnerOfficeMarkEventAttendance = (
+  accessToken: string,
+  body: { tenant_id?: string | null; event_id: string; student_id: string; voucher_id?: string | null; attendance_status: 'pending' | 'present' | 'absent' | 'late' },
+) => partnerOfficePost<{ registration: any; events: PartnerCenterMockEvent[] }>(accessToken, { action: 'mark_event_attendance', ...body });
+export const partnerOfficeUpdateReviewItem = (
+  accessToken: string,
+  body: Partial<PartnerCenterReviewItem> & { tenant_id?: string | null; review_item_id?: string },
+) => partnerOfficePost<{ review_item: PartnerCenterReviewItem; review_items: PartnerCenterReviewItem[] }>(accessToken, { action: body.review_item_id ? 'update_review_item' : 'assign_review_item', ...body });
 
 export const partnerOfficeUploadCenterLogo = async (
   accessToken: string,
@@ -2638,6 +2764,18 @@ export const partnerOfficeVoidVoucher = (
 
 export const partnerOfficeExportReport = (accessToken: string, tenantId?: string | null, centerOffice = false) =>
   partnerOfficePost<{ filename: string; csv: string }>(accessToken, { action: 'export_report', tenant_id: tenantId, center_office: centerOffice });
+export const partnerOfficeExportPdfReport = (
+  accessToken: string,
+  body: { tenant_id?: string | null; report_type: 'student' | 'group' | 'event'; filters?: Json; center_office?: boolean },
+) => {
+  const action =
+    body.report_type === 'student' ? 'export_student_report_pdf' : body.report_type === 'group' ? 'export_group_report_pdf' : 'export_event_report_pdf';
+  return partnerOfficePost<{ filename: string; content_type: string; pdf_base64: string; report_export?: any }>(accessToken, { action, ...body });
+};
+export const partnerOfficeGenerateStatement = (
+  accessToken: string,
+  body: { tenant_id?: string | null; period_start?: string; period_end?: string; currency?: string; center_office?: boolean },
+) => partnerOfficePost<{ statement: PartnerCenterStatement; filename: string; content_type: string; pdf_base64: string }>(accessToken, { action: 'generate_statement', ...body });
 
 export const partnerOfficeRequestCashPayout = (
   accessToken: string,
@@ -2930,6 +3068,7 @@ export type PublicCenterResponse = {
     branding?: Json | null;
   };
   services: { mock_exams: any[]; subscriptions: any[] };
+  events?: PartnerCenterMockEvent[];
 };
 
 export const publicCenter = async (slug: string): Promise<PublicCenterResponse> => {

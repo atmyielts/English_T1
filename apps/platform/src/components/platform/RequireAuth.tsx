@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
-import { clearLocalAuthStorage, supabase } from '../../lib/supabase';
+import { clearLocalAuthStorage, getAuthSession, refreshAuthSession, supabase } from '../../lib/supabase';
 import { useI18n } from '../../i18n';
 
 type AuthState =
@@ -37,20 +37,20 @@ export const RequireAuth: React.FC = () => {
         return;
       }
 
-      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-      if (refreshError || !refreshed.session) {
+      const refreshed = await refreshAuthSession();
+      if (!refreshed?.access_token) {
         clearLocalAuthStorage();
         if (!cancelled) setState({ status: 'unauthenticated' });
         return;
       }
 
-      if (!cancelled) setState({ status: 'authenticated', session: refreshed.session });
+      if (!cancelled) setState({ status: 'authenticated', session: refreshed });
     };
 
     const init = async () => {
-      const { data } = await supabase.auth.getSession();
+      const session = await getAuthSession();
       if (cancelled) return;
-      await validateSession(data.session ?? null);
+      await validateSession(session);
     };
 
     init();

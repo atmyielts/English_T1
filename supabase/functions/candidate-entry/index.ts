@@ -246,7 +246,7 @@ const markPartnerVoucherForToken = async (
 ): Promise<void> => {
   const { data: voucher } = await sbAdmin
     .from("partner_vouchers")
-    .select("id, status, redeemed_by, metadata")
+    .select("id, tenant_id, code, access_kind, status, redeemed_by, metadata, expires_at")
     .eq("exam_token_id", tokenId)
     .maybeSingle();
   if (!voucher?.id) return;
@@ -269,6 +269,40 @@ const markPartnerVoucherForToken = async (
     })
     .eq("id", voucher.id)
     .in("status", ["unused", "redeemed"]);
+
+  try {
+    const email = details.email.trim().toLowerCase();
+    const fullName = `${details.firstName} ${details.lastName}`.trim();
+    const { data: existing } = await sbAdmin
+      .from("partner_center_students")
+      .select("id")
+      .eq("tenant_id", voucher.tenant_id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    const payload = {
+      tenant_id: voucher.tenant_id,
+      user_id: userId,
+      full_name: fullName || null,
+      email,
+      phone: details.phone,
+      status: "active",
+      source_voucher_id: voucher.id,
+      last_activity_at: new Date().toISOString(),
+      metadata: {
+        voucher_code: voucher.code,
+        access_kind: voucher.access_kind,
+        expires_at: voucher.expires_at ?? null,
+        redeemed_via: "candidate-entry",
+      },
+    };
+    if (existing?.id) {
+      await sbAdmin.from("partner_center_students").update(payload).eq("id", existing.id);
+    } else {
+      await sbAdmin.from("partner_center_students").insert(payload);
+    }
+  } catch (error) {
+    console.warn("Failed to upsert partner center student", error);
+  }
 };
 
 const buildCandidateResponse = (

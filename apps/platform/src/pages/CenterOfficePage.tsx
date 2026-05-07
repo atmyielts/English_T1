@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   BarChart3,
   Building2,
+  CalendarDays,
   ClipboardList,
   Coins,
   Copy,
@@ -10,6 +11,7 @@ import {
   Download,
   Link2,
   Paintbrush,
+  FileText,
   ReceiptText,
   RefreshCw,
   Save,
@@ -22,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
-import { supabase } from '../lib/supabase';
+import { getAuthSession, refreshAuthSession, supabase } from '../lib/supabase';
 import {
   partnerOfficeApplyCenter,
   partnerOfficeAcceptStaffInvites,
@@ -34,11 +36,24 @@ import {
   partnerOfficeCreateWalletTopup,
   partnerOfficeDashboard,
   partnerOfficeExportReport,
+  partnerOfficeExportPdfReport,
+  partnerOfficeGenerateStatement,
+  partnerOfficeGroups,
+  partnerOfficeAnalytics,
   partnerOfficePayments,
+  partnerOfficePaymentCapabilities,
   partnerOfficePlans,
   partnerOfficeReports,
+  partnerOfficeMockEvents,
   partnerOfficeInviteStaff,
+  partnerOfficeCreateGroup,
+  partnerOfficeCreateMockEvent,
+  partnerOfficeCreateStudentInvites,
+  partnerOfficeMarkEventAttendance,
   partnerOfficeRequestCashPayout,
+  partnerOfficeReviewQueue,
+  partnerOfficeStatements,
+  partnerOfficeUpdateReviewItem,
   partnerOfficeResults,
   partnerOfficeSeats,
   partnerOfficeStaff,
@@ -53,9 +68,14 @@ import {
   partnerOfficeWallet,
   tspayStatus,
   type PartnerCenterProfile,
+  type PartnerCenterGroup,
+  type PartnerCenterMockEvent,
+  type PartnerCenterReviewItem,
   type PartnerCenterStaffInvite,
   type PartnerCenterStaffMember,
   type PartnerCreditLedgerEntry,
+  type PartnerPaymentCapability,
+  type PartnerCenterStatement,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
   type PartnerOfficePlan,
@@ -66,7 +86,7 @@ import {
   type PartnerVoucherBatch,
 } from '../lib/platformClient';
 
-type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
+type Tab = 'overview' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'groups' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -74,6 +94,9 @@ const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'buy', label: 'Buy', icon: CreditCard },
   { id: 'vouchers', label: 'Vouchers', icon: Ticket },
   { id: 'students', label: 'Students', icon: UsersRound },
+  { id: 'groups', label: 'Groups', icon: Building2 },
+  { id: 'events', label: 'Events', icon: CalendarDays },
+  { id: 'reviews', label: 'Reviews', icon: ClipboardList },
   { id: 'staff', label: 'Staff', icon: UserPlus },
   { id: 'results', label: 'Results', icon: ClipboardList },
   { id: 'reports', label: 'Reports', icon: Download },
@@ -88,7 +111,7 @@ const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
 const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50';
-const TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 100_000;
+const FALLBACK_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 200_000_000;
 
 const money = (amount?: number | null, currency = 'UZS') =>
   typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : '-';
@@ -179,6 +202,12 @@ export const CenterOfficePage: React.FC = () => {
   const [batches, setBatches] = useState<PartnerVoucherBatch[]>([]);
   const [vouchers, setVouchers] = useState<PartnerVoucher[]>([]);
   const [students, setStudents] = useState<PartnerStudent[]>([]);
+  const [groups, setGroups] = useState<PartnerCenterGroup[]>([]);
+  const [events, setEvents] = useState<PartnerCenterMockEvent[]>([]);
+  const [reviewItems, setReviewItems] = useState<PartnerCenterReviewItem[]>([]);
+  const [statements, setStatements] = useState<PartnerCenterStatement[]>([]);
+  const [paymentCapabilities, setPaymentCapabilities] = useState<PartnerPaymentCapability[]>([]);
+  const [analytics, setAnalytics] = useState<Record<string, any> | null>(null);
   const [staffMembers, setStaffMembers] = useState<PartnerCenterStaffMember[]>([]);
   const [staffInvites, setStaffInvites] = useState<PartnerCenterStaffInvite[]>([]);
   const [wallet, setWallet] = useState<{ currency: string; available_amount: number }>({ currency: 'UZS', available_amount: 0 });
@@ -190,8 +219,8 @@ export const CenterOfficePage: React.FC = () => {
   const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
   const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | null>(null);
 
-  const [ticketForm, setTicketForm] = useState({ experience_id: '', quantity: 10, expires_in_days: 30, apply_credit: true });
-  const [seatForm, setSeatForm] = useState({ plan_id: '', seat_count: 10, apply_credit: true });
+  const [ticketForm, setTicketForm] = useState({ experience_id: '', quantity: 10, expires_in_days: 30, apply_credit: false });
+  const [seatForm, setSeatForm] = useState({ plan_id: '', seat_count: 10, apply_credit: false });
   const [voucherForm, setVoucherForm] = useState({
     access_kind: 'mock_exam' as 'mock_exam' | 'subscription' | 'seat',
     experience_id: '',
@@ -202,9 +231,12 @@ export const CenterOfficePage: React.FC = () => {
     source_model: 'prepaid_wallet',
   });
   const [walletTopup, setWalletTopup] = useState({ amount: 1000000, note: '' });
+  const [groupForm, setGroupForm] = useState({ name: '', description: '', assigned_teacher_membership_id: '' });
+  const [inviteForm, setInviteForm] = useState({ name: '', email: '', phone: '', group_id: '', voucher_batch_id: '' });
+  const [eventForm, setEventForm] = useState({ title: '', experience_id: '', starts_at: '', mode: 'online' as 'online' | 'offline' | 'hybrid', group_id: '', voucher_batch_id: '', location: '', meeting_url: '', capacity: 20 });
   const [brandingForm, setBrandingForm] = useState({ display_name: '', slug: '', logo_url: '', public_instructions: '', powered_by_schood: true });
   const [cashPayout, setCashPayout] = useState({ payout_method: 'cash', payout_details: '', note: '' });
-  const [staffForm, setStaffForm] = useState({ email: '', role: 'member' as 'admin' | 'member' });
+  const [staffForm, setStaffForm] = useState({ email: '', role: 'teacher' as 'admin' | 'teacher' | 'counselor' });
   const [logoUploading, setLogoUploading] = useState(false);
   const [applicationForm, setApplicationForm] = useState({
     display_name: '',
@@ -224,18 +256,20 @@ export const CenterOfficePage: React.FC = () => {
   const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
   const ticketEstimate = (selectedExperience?.price_amount ?? 0) * ticketForm.quantity;
   const ticketCurrency = selectedExperience?.price_currency ?? 'UZS';
-  const ticketMaxOnlineQuantity = selectedExperience?.price_amount ? Math.floor(TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS / selectedExperience.price_amount) : 0;
-  const ticketOnlineBlocked = ticketCurrency === 'UZS' && ticketEstimate > TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS;
+  const paymentCapability = paymentCapabilities.find((item) => item.currency === ticketCurrency && item.enabled) ?? paymentCapabilities[0];
+  const onlineMaxAmount = paymentCapability?.max_amount ?? FALLBACK_ONLINE_PAYMENT_MAX_AMOUNT_UZS;
+  const ticketMaxOnlineQuantity = selectedExperience?.price_amount ? Math.floor(onlineMaxAmount / selectedExperience.price_amount) : 0;
+  const ticketOnlineBlocked = ticketCurrency === 'UZS' && ticketEstimate > onlineMaxAmount;
   const seatEstimate = (selectedPlan?.amount ?? 0) * seatForm.seat_count;
   const seatCurrency = selectedPlan?.currency ?? 'UZS';
-  const seatMaxOnlineQuantity = selectedPlan?.amount ? Math.floor(TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS / selectedPlan.amount) : 0;
-  const seatOnlineBlocked = seatCurrency === 'UZS' && seatEstimate > TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS;
+  const seatMaxOnlineQuantity = selectedPlan?.amount ? Math.floor(onlineMaxAmount / selectedPlan.amount) : 0;
+  const seatOnlineBlocked = seatCurrency === 'UZS' && seatEstimate > onlineMaxAmount;
 
   const getValidToken = async (): Promise<string | null> => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.access_token) return data.session.access_token;
-    const refreshed = await supabase.auth.refreshSession();
-    return refreshed.data.session?.access_token ?? null;
+    const session = await getAuthSession();
+    if (session?.access_token) return session.access_token;
+    const refreshed = await refreshAuthSession();
+    return refreshed?.access_token ?? null;
   };
 
   const parseError = (err: unknown): string => {
@@ -270,6 +304,12 @@ export const CenterOfficePage: React.FC = () => {
         setVouchers([]);
         setBatches([]);
         setStudents([]);
+        setGroups([]);
+        setEvents([]);
+        setReviewItems([]);
+        setStatements([]);
+        setPaymentCapabilities([]);
+        setAnalytics(null);
         setStaffMembers([]);
         setStaffInvites([]);
         setResults([]);
@@ -278,7 +318,7 @@ export const CenterOfficePage: React.FC = () => {
       }
 
       const tenant_id = centerRes.center.tenant_id;
-      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes] =
+      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, analyticsRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
@@ -293,6 +333,12 @@ export const CenterOfficePage: React.FC = () => {
           partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })),
           partnerOfficeResults(token, { tenant_id }),
           partnerOfficeReports(token, tenant_id),
+          partnerOfficeGroups(token, tenant_id).catch(() => ({ groups: [] })),
+          partnerOfficeMockEvents(token, tenant_id).catch(() => ({ events: [] })),
+          partnerOfficeReviewQueue(token, tenant_id).catch(() => ({ review_items: [] })),
+          partnerOfficeStatements(token, tenant_id).catch(() => ({ statements: [] })),
+          partnerOfficePaymentCapabilities(token).catch(() => ({ providers: [] })),
+          partnerOfficeAnalytics(token, tenant_id).catch(() => ({ analytics: {} })),
         ]);
 
       setDashboard(dashRes);
@@ -306,6 +352,12 @@ export const CenterOfficePage: React.FC = () => {
       setVouchers(voucherRes.vouchers ?? []);
       setBatches(batchRes.batches ?? []);
       setStudents(studentRes.students ?? []);
+      setGroups(groupRes.groups ?? []);
+      setEvents(eventRes.events ?? []);
+      setReviewItems(reviewRes.review_items ?? []);
+      setStatements(statementRes.statements ?? []);
+      setPaymentCapabilities(capsRes.providers ?? []);
+      setAnalytics((analyticsRes.analytics ?? {}) as Record<string, any>);
       setStaffMembers(staffRes.members ?? []);
       setStaffInvites(staffRes.invites ?? []);
       setResults(resultRes.results ?? []);
@@ -316,6 +368,7 @@ export const CenterOfficePage: React.FC = () => {
       setTicketForm((prev) => ({ ...prev, experience_id: prev.experience_id || firstExperience }));
       setSeatForm((prev) => ({ ...prev, plan_id: prev.plan_id || firstPlan }));
       setVoucherForm((prev) => ({ ...prev, experience_id: prev.experience_id || firstExperience, plan_id: prev.plan_id || firstPlan }));
+      setEventForm((prev) => ({ ...prev, experience_id: prev.experience_id || firstExperience }));
       setBrandingForm({
         display_name: centerRes.center.display_name ?? '',
         slug: centerRes.center.slug ?? '',
@@ -356,7 +409,7 @@ export const CenterOfficePage: React.FC = () => {
     if (!token || !ticketForm.experience_id || !centerTenantId) return;
     if (ticketOnlineBlocked) {
       setTab('wallet');
-      setError(`Online checkout is temporarily limited to ${money(TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS, 'UZS')} per transaction while only one payment provider is enabled. For larger center packs, use wallet top-up or split the purchase.`);
+      setError(`Current online checkout limit is ${money(onlineMaxAmount, 'UZS')} per transaction. For larger center packs, use wallet top-up or split the purchase.`);
       return;
     }
     setLoading(true);
@@ -385,7 +438,7 @@ export const CenterOfficePage: React.FC = () => {
     if (!token || !seatForm.plan_id || !centerTenantId) return;
     if (seatOnlineBlocked) {
       setTab('wallet');
-      setError(`Online checkout is temporarily limited to ${money(TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS, 'UZS')} per transaction while only one payment provider is enabled. For larger seat bundles, use wallet top-up or split the purchase.`);
+      setError(`Current online checkout limit is ${money(onlineMaxAmount, 'UZS')} per transaction. For larger seat bundles, use wallet top-up or split the purchase.`);
       return;
     }
     setLoading(true);
@@ -601,7 +654,7 @@ export const CenterOfficePage: React.FC = () => {
       const res = await partnerOfficeInviteStaff(token, { tenant_id: centerTenantId, email: staffForm.email.trim(), role: staffForm.role });
       setStaffMembers(res.members ?? []);
       setStaffInvites(res.invites ?? []);
-      setStaffForm({ email: '', role: 'member' });
+      setStaffForm({ email: '', role: 'teacher' });
       setSuccess('Staff access updated. If the email is not registered yet, an invite is waiting for that account.');
     } catch (err) {
       setError(parseError(err));
@@ -610,7 +663,7 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
-  const updateStaff = async (membership_id: string, patch: { role?: 'admin' | 'member'; status?: 'active' | 'disabled' }) => {
+  const updateStaff = async (membership_id: string, patch: { role?: 'admin' | 'teacher' | 'counselor'; status?: 'active' | 'disabled' }) => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
     setLoading(true);
@@ -625,6 +678,141 @@ export const CenterOfficePage: React.FC = () => {
       setError(parseError(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createGroup = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !groupForm.name.trim()) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeCreateGroup(token, { tenant_id: centerTenantId, ...groupForm });
+      setGroups(res.groups ?? []);
+      setGroupForm({ name: '', description: '', assigned_teacher_membership_id: '' });
+      setSuccess('Group created.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createStudentInvite = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || (!inviteForm.email.trim() && !inviteForm.phone.trim())) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeCreateStudentInvites(token, {
+        tenant_id: centerTenantId,
+        origin,
+        group_id: inviteForm.group_id || null,
+        voucher_batch_id: inviteForm.voucher_batch_id || null,
+        students: [{ name: inviteForm.name, email: inviteForm.email, phone: inviteForm.phone }],
+      });
+      setStudents(res.students ?? []);
+      const invite = res.invites?.[0];
+      if (invite?.message) await copy(String(invite.message), 'Student invite message copied.');
+      setInviteForm({ name: '', email: '', phone: '', group_id: '', voucher_batch_id: '' });
+      setSuccess('Student invite prepared.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createMockEvent = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !eventForm.title.trim() || !eventForm.starts_at) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeCreateMockEvent(token, {
+        tenant_id: centerTenantId,
+        title: eventForm.title,
+        experience_id: eventForm.experience_id || null,
+        starts_at: eventForm.starts_at,
+        mode: eventForm.mode,
+        group_id: eventForm.group_id || null,
+        voucher_batch_id: eventForm.voucher_batch_id || null,
+        location: eventForm.location || null,
+        meeting_url: eventForm.meeting_url || null,
+        capacity: eventForm.capacity,
+      });
+      setEvents(res.events ?? []);
+      setEventForm((prev) => ({ ...prev, title: '', starts_at: '', location: '', meeting_url: '' }));
+      setSuccess('Mock event created.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAttendance = async (event_id: string, student_id: string, attendance_status: 'present' | 'absent' | 'late') => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    try {
+      const res = await partnerOfficeMarkEventAttendance(token, { tenant_id: centerTenantId, event_id, student_id, attendance_status });
+      setEvents(res.events ?? []);
+      setSuccess('Attendance saved.');
+    } catch (err) {
+      setError(parseError(err));
+    }
+  };
+
+  const updateReview = async (review_item_id: string, status: string) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    try {
+      const res = await partnerOfficeUpdateReviewItem(token, { tenant_id: centerTenantId, review_item_id, status });
+      setReviewItems(res.review_items ?? []);
+      setSuccess('Review item updated.');
+    } catch (err) {
+      setError(parseError(err));
+    }
+  };
+
+  const downloadBase64Pdf = (filename: string, base64: string) => {
+    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportPdf = async (report_type: 'student' | 'group' | 'event') => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setError(null);
+    try {
+      const res = await partnerOfficeExportPdfReport(token, { tenant_id: centerTenantId, report_type, center_office: true });
+      downloadBase64Pdf(res.filename, res.pdf_base64);
+      setSuccess('PDF exported.');
+    } catch (err) {
+      setError(parseError(err));
+    }
+  };
+
+  const generateStatement = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setError(null);
+    try {
+      const res = await partnerOfficeGenerateStatement(token, { tenant_id: centerTenantId, center_office: true });
+      downloadBase64Pdf(res.filename, res.pdf_base64);
+      await refreshAll();
+      setSuccess('Statement generated.');
+    } catch (err) {
+      setError(parseError(err));
     }
   };
 
@@ -781,7 +969,7 @@ export const CenterOfficePage: React.FC = () => {
                 catalog={catalog}
                 form={ticketForm}
                 selected={selectedExperience}
-                maxOnlineAmount={TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS}
+                maxOnlineAmount={onlineMaxAmount}
                 maxOnlineQuantity={ticketMaxOnlineQuantity}
                 onlineBlocked={ticketOnlineBlocked}
                 loading={loading}
@@ -794,7 +982,7 @@ export const CenterOfficePage: React.FC = () => {
                 plans={plans}
                 form={seatForm}
                 selected={selectedPlan}
-                maxOnlineAmount={TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS}
+                maxOnlineAmount={onlineMaxAmount}
                 maxOnlineQuantity={seatMaxOnlineQuantity}
                 onlineBlocked={seatOnlineBlocked}
                 loading={loading}
@@ -847,30 +1035,45 @@ export const CenterOfficePage: React.FC = () => {
           ) : null}
 
           {centerIsActive && tab === 'students' ? (
-            <section className={`${panelClass} overflow-hidden`}>
-              <div className="border-b border-gray-900/10 p-5 md:p-6">
-                <SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" />
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-900/10 text-sm">
-                  <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    <tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-900/10 bg-white/60">
-                    {students.map((row) => (
-                      <tr key={row.id}>
-                        <td className="px-5 py-4"><p className="font-semibold">{row.name || row.email || 'Student'}</p><p className="text-xs text-gray-500">{row.email}</p></td>
-                        <td className="px-5 py-4">{row.product_name ?? row.access_kind}</td>
-                        <td className="px-5 py-4 font-mono">{row.voucher_code}</td>
-                        <td className="px-5 py-4"><StatusPill status={row.status} /></td>
-                        <td className="px-5 py-4">{formatDate(row.expires_at)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {students.length === 0 ? <div className="p-6"><EmptyState icon={UsersRound} title="No students yet" note="Assigned and redeemed students will appear here." /></div> : null}
-            </section>
+            <StudentsPanel
+              students={students}
+              inviteForm={inviteForm}
+              groups={groups}
+              batches={batches}
+              loading={loading}
+              onInviteFormChange={setInviteForm}
+              onInvite={() => void createStudentInvite()}
+            />
+          ) : null}
+
+          {centerIsActive && tab === 'groups' ? (
+            <GroupsPanel
+              groups={groups}
+              staffMembers={staffMembers}
+              groupForm={groupForm}
+              loading={loading}
+              onGroupFormChange={setGroupForm}
+              onCreate={() => void createGroup()}
+            />
+          ) : null}
+
+          {centerIsActive && tab === 'events' ? (
+            <EventsPanel
+              events={events}
+              students={students}
+              catalog={catalog}
+              groups={groups}
+              batches={batches}
+              eventForm={eventForm}
+              loading={loading}
+              onEventFormChange={setEventForm}
+              onCreate={() => void createMockEvent()}
+              onAttendance={(eventId, studentId, status) => void markAttendance(eventId, studentId, status)}
+            />
+          ) : null}
+
+          {centerIsActive && tab === 'reviews' ? (
+            <ReviewQueuePanel reviewItems={reviewItems} onUpdate={(id, status) => void updateReview(id, status)} />
           ) : null}
 
           {centerIsActive && tab === 'staff' ? (
@@ -883,8 +1086,9 @@ export const CenterOfficePage: React.FC = () => {
                 </label>
                 <label className="mt-4 block text-sm font-semibold text-gray-800">
                   Role
-                  <select value={staffForm.role} onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'admin' | 'member' }))} className={inputClass}>
-                    <option value="member">Teacher / member</option>
+                  <select value={staffForm.role} onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'admin' | 'teacher' | 'counselor' }))} className={inputClass}>
+                    <option value="teacher">Teacher</option>
+                    <option value="counselor">Counselor</option>
                     <option value="admin">Center admin</option>
                   </select>
                 </label>
@@ -910,13 +1114,14 @@ export const CenterOfficePage: React.FC = () => {
                       </div>
                       <select
                         value={member.role}
-                        onChange={(e) => void updateStaff(member.id, { role: e.target.value as 'admin' | 'member' })}
+                        onChange={(e) => void updateStaff(member.id, { role: e.target.value as 'admin' | 'teacher' | 'counselor' })}
                         disabled={member.role === 'owner'}
                         className="rounded-xl border border-gray-900/20 bg-white px-3 py-2 text-sm capitalize"
                       >
                         <option value="owner">Owner</option>
                         <option value="admin">Admin</option>
-                        <option value="member">Member</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="counselor">Counselor</option>
                       </select>
                       <button
                         type="button"
@@ -950,21 +1155,114 @@ export const CenterOfficePage: React.FC = () => {
 
           {centerIsActive && tab === 'reports' ? (
             <section className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-5">
+              <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
                 <StatCard label="Completed" value={reports?.completed_exams ?? 0} icon={ClipboardList} />
                 <StatCard label="Average score" value={reports?.average_score ?? '-'} icon={BarChart3} />
                 <StatCard label="Active students" value={reports?.active_students ?? 0} icon={UsersRound} />
-                <StatCard label="Inactive vouchers" value={reports?.inactive_vouchers ?? 0} icon={Ticket} />
-                <StatCard label="Expiring soon" value={reports?.expiring_vouchers ?? 0} icon={ReceiptText} />
+                <StatCard label="Groups" value={reports?.active_groups ?? groups.length} icon={Building2} />
+                <StatCard label="Events" value={reports?.upcoming_events ?? events.length} icon={CalendarDays} />
+                <StatCard label="Pending review" value={reports?.pending_reviews ?? reviewItems.filter((item) => item.status !== 'released').length} icon={FileText} />
               </div>
+
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle
+                    icon={Download}
+                    label="Export"
+                    title="Teacher-ready reports"
+                    action={<button type="button" onClick={() => void exportReport()} className={primaryButton}><Download className="h-4 w-4" />Export CSV</button>}
+                  />
+                  <p className="mt-4 text-sm text-gray-600">CSV export remains available for offline teacher review and spreadsheets.</p>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <button type="button" onClick={() => void exportPdf('student')} className={secondaryButton}>
+                      <FileText className="h-4 w-4" />
+                      Student PDF
+                    </button>
+                    <button type="button" onClick={() => void exportPdf('group')} className={secondaryButton}>
+                      <FileText className="h-4 w-4" />
+                      Group PDF
+                    </button>
+                    <button type="button" onClick={() => void exportPdf('event')} className={secondaryButton}>
+                      <FileText className="h-4 w-4" />
+                      Event PDF
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={ReceiptText} label="Statements" title="Monthly center statement" />
+                  <p className="mt-4 text-sm text-gray-600">Statements summarize wallet credits, debits, paid purchases, voucher batches, and payouts for the center tenant.</p>
+                  <button type="button" onClick={() => void generateStatement()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
+                    <ReceiptText className="h-4 w-4" />
+                    Generate statement
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-2">
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={BarChart3} label="Analytics" title="Center performance" />
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Redemption rate</p>
+                      <p className="mt-2 text-2xl font-bold">{Math.round(Number(analytics?.redemption_rate ?? 0) * 100)}%</p>
+                    </div>
+                    <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inactive students</p>
+                      <p className="mt-2 text-2xl font-bold">{analytics?.inactive_students ?? 0}</p>
+                    </div>
+                    <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Upcoming events</p>
+                      <p className="mt-2 text-2xl font-bold">{analytics?.upcoming_events ?? 0}</p>
+                    </div>
+                    <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pending reviews</p>
+                      <p className="mt-2 text-2xl font-bold">{analytics?.pending_reviews ?? 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={ReceiptText} label="Ledger statements" title="Recent statements" />
+                  </div>
+                  <div className="divide-y divide-gray-900/10">
+                    {statements.slice(0, 6).map((statement) => (
+                      <div key={statement.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto] md:items-center">
+                        <div>
+                          <p className="font-semibold">{formatDate(statement.period_start)} - {formatDate(statement.period_end)}</p>
+                          <p className="text-sm text-gray-600">
+                            Credits {money(statement.credits_total, statement.currency)} / debits {money(statement.debits_total, statement.currency)}
+                          </p>
+                        </div>
+                        <StatusPill status={statement.status} />
+                      </div>
+                    ))}
+                    {statements.length === 0 ? <div className="p-6"><EmptyState icon={ReceiptText} title="No statements yet" note="Generate a statement when the center needs monthly financial paperwork." /></div> : null}
+                  </div>
+                </div>
+              </div>
+
               <div className={`${panelClass} p-5 md:p-6`}>
                 <SectionTitle
-                  icon={Download}
-                  label="Export"
-                  title="Teacher-ready reports"
-                  action={<button type="button" onClick={() => void exportReport()} className={primaryButton}><Download className="h-4 w-4" />Export CSV</button>}
+                  icon={Ticket}
+                  label="Operational signals"
+                  title="Voucher and access health"
                 />
-                <p className="mt-4 text-sm text-gray-600">The export includes candidate names, email, voucher code, exam, status, score, and completion date for offline teacher review.</p>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inactive vouchers</p>
+                    <p className="mt-2 text-2xl font-bold">{reports?.inactive_vouchers ?? 0}</p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Expiring soon</p>
+                    <p className="mt-2 text-2xl font-bold">{reports?.expiring_vouchers ?? 0}</p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Unassigned seats</p>
+                    <p className="mt-2 text-2xl font-bold">{reports?.unassigned_seats ?? 0}</p>
+                  </div>
+                </div>
               </div>
             </section>
           ) : null}
@@ -1035,6 +1333,137 @@ export const CenterOfficePage: React.FC = () => {
   );
 };
 
+const StudentsPanel: React.FC<{
+  students: PartnerStudent[];
+  inviteForm: { name: string; email: string; phone: string; group_id: string; voucher_batch_id: string };
+  groups: PartnerCenterGroup[];
+  batches: PartnerVoucherBatch[];
+  loading: boolean;
+  onInviteFormChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; group_id: string; voucher_batch_id: string }>>;
+  onInvite: () => void;
+}> = ({ students, inviteForm, groups, batches, loading, onInviteFormChange, onInvite }) => (
+  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+    <div className={`${panelClass} p-5 md:p-6`}>
+      <SectionTitle icon={UserPlus} label="Invite" title="Add student" />
+      <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={inviteForm.name} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Email<input value={inviteForm.email} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Phone<input value={inviteForm.phone} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, phone: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={inviteForm.group_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={inviteForm.voucher_batch_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No voucher</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
+      <button type="button" onClick={onInvite} disabled={loading || (!inviteForm.email.trim() && !inviteForm.phone.trim())} className={`${primaryButton} mt-5 w-full`}>Prepare invite</button>
+    </div>
+    <section className={`${panelClass} overflow-hidden`}>
+      <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" /></div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-900/10 text-sm">
+          <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+            <tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Groups</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Last activity</th></tr>
+          </thead>
+          <tbody className="divide-y divide-gray-900/10 bg-white/60">
+            {students.map((row) => (
+              <tr key={row.id}>
+                <td className="px-5 py-4"><p className="font-semibold">{row.name || row.email || 'Student'}</p><p className="text-xs text-gray-500">{row.email}</p></td>
+                <td className="px-5 py-4">{row.groups?.map((group) => group.name).join(', ') || '-'}</td>
+                <td className="px-5 py-4">{row.product_name ?? row.access_kind}</td>
+                <td className="px-5 py-4 font-mono">{row.voucher_code ?? '-'}</td>
+                <td className="px-5 py-4"><StatusPill status={row.status} /></td>
+                <td className="px-5 py-4">{formatDate(row.last_activity_at ?? row.redeemed_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {students.length === 0 ? <div className="p-6"><EmptyState icon={UsersRound} title="No students yet" note="Assigned and redeemed students will appear here." /></div> : null}
+    </section>
+  </section>
+);
+
+const GroupsPanel: React.FC<{
+  groups: PartnerCenterGroup[];
+  staffMembers: PartnerCenterStaffMember[];
+  groupForm: { name: string; description: string; assigned_teacher_membership_id: string };
+  loading: boolean;
+  onGroupFormChange: React.Dispatch<React.SetStateAction<{ name: string; description: string; assigned_teacher_membership_id: string }>>;
+  onCreate: () => void;
+}> = ({ groups, staffMembers, groupForm, loading, onGroupFormChange, onCreate }) => (
+  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+    <div className={`${panelClass} p-5 md:p-6`}>
+      <SectionTitle icon={Building2} label="Classes" title="Create group" />
+      <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={groupForm.name} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Teacher<select value={groupForm.assigned_teacher_membership_id} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, assigned_teacher_membership_id: e.target.value }))} className={inputClass}><option value="">Unassigned</option>{staffMembers.filter((member) => ['owner', 'admin', 'teacher', 'member'].includes(member.role)).map((member) => <option key={member.id} value={member.id}>{member.users?.full_name || member.users?.email || member.role}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Description<textarea value={groupForm.description} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, description: e.target.value }))} className={`${inputClass} min-h-[90px]`} /></label>
+      <button type="button" onClick={onCreate} disabled={loading || !groupForm.name.trim()} className={`${primaryButton} mt-5 w-full`}>Create group</button>
+    </div>
+    <div className="grid gap-4 md:grid-cols-2">
+      {groups.map((group) => (
+        <div key={group.id} className={`${panelClass} p-5`}>
+          <div className="flex items-start justify-between gap-3"><h3 className="font-bold">{group.name}</h3><StatusPill status={group.status} /></div>
+          <p className="mt-2 text-sm text-gray-600">{group.description || 'No description'}</p>
+          <p className="mt-4 text-sm font-semibold">{group.student_count ?? 0} students</p>
+        </div>
+      ))}
+      {groups.length === 0 ? <EmptyState icon={Building2} title="No groups yet" note="Create classes or cohorts for teacher reporting." /> : null}
+    </div>
+  </section>
+);
+
+const EventsPanel: React.FC<{
+  events: PartnerCenterMockEvent[];
+  students: PartnerStudent[];
+  catalog: PartnerOfficeExperience[];
+  groups: PartnerCenterGroup[];
+  batches: PartnerVoucherBatch[];
+  eventForm: { title: string; experience_id: string; starts_at: string; mode: 'online' | 'offline' | 'hybrid'; group_id: string; voucher_batch_id: string; location: string; meeting_url: string; capacity: number };
+  loading: boolean;
+  onEventFormChange: React.Dispatch<React.SetStateAction<{ title: string; experience_id: string; starts_at: string; mode: 'online' | 'offline' | 'hybrid'; group_id: string; voucher_batch_id: string; location: string; meeting_url: string; capacity: number }>>;
+  onCreate: () => void;
+  onAttendance: (eventId: string, studentId: string, status: 'present' | 'absent' | 'late') => void;
+}> = ({ events, students, catalog, groups, batches, eventForm, loading, onEventFormChange, onCreate, onAttendance }) => (
+  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+    <div className={`${panelClass} p-5 md:p-6`}>
+      <SectionTitle icon={CalendarDays} label="Mock events" title="Schedule event" />
+      <label className="mt-5 block text-sm font-semibold text-gray-800">Title<input value={eventForm.title} onChange={(e) => onEventFormChange((prev) => ({ ...prev, title: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock<select value={eventForm.experience_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Starts<input type="datetime-local" value={eventForm.starts_at} onChange={(e) => onEventFormChange((prev) => ({ ...prev, starts_at: e.target.value }))} className={inputClass} /></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Mode<select value={eventForm.mode} onChange={(e) => onEventFormChange((prev) => ({ ...prev, mode: e.target.value as any }))} className={inputClass}><option value="online">Online</option><option value="offline">Offline</option><option value="hybrid">Hybrid</option></select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={eventForm.group_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={eventForm.voucher_batch_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Location or link<input value={eventForm.location} onChange={(e) => onEventFormChange((prev) => ({ ...prev, location: e.target.value }))} className={inputClass} /></label>
+      <button type="button" onClick={onCreate} disabled={loading || !eventForm.title.trim() || !eventForm.starts_at} className={`${primaryButton} mt-5 w-full`}>Create event</button>
+    </div>
+    <div className="space-y-4">
+      {events.map((event) => (
+        <div key={event.id} className={`${panelClass} p-5`}>
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{event.title}</h3><p className="text-sm text-gray-600">{formatDateTime(event.starts_at)} - {event.mode}</p></div><StatusPill status={event.status} /></div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3"><StatCard label="Registered" value={event.registered_count ?? 0} icon={UsersRound} /><StatCard label="Present" value={event.present_count ?? 0} icon={ClipboardList} /><StatCard label="Capacity" value={event.capacity ?? '-'} icon={Ticket} /></div>
+          {students.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {students.slice(0, 8).map((student) => student.student_id ? <button key={student.id} type="button" onClick={() => onAttendance(event.id, student.student_id!, 'present')} className={secondaryButton}>Mark {student.name || student.email} present</button> : null)}
+            </div>
+          ) : null}
+        </div>
+      ))}
+      {events.length === 0 ? <EmptyState icon={CalendarDays} title="No mock events yet" note="Schedule online or offline mock sessions for groups." /> : null}
+    </div>
+  </section>
+);
+
+const ReviewQueuePanel: React.FC<{ reviewItems: PartnerCenterReviewItem[]; onUpdate: (id: string, status: string) => void }> = ({ reviewItems, onUpdate }) => (
+  <section className={`${panelClass} overflow-hidden`}>
+    <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={ClipboardList} label="Teacher workflow" title="Review queue" /></div>
+    <div className="divide-y divide-gray-900/10">
+      {reviewItems.map((item) => (
+        <div key={item.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+          <div><p className="font-semibold capitalize">{item.skill} review</p><p className="text-sm text-gray-600">{item.partner_center_students?.full_name || item.partner_center_students?.email || 'Student'} - {item.partner_center_groups?.name ?? item.partner_center_mock_events?.title ?? 'General'}</p></div>
+          <StatusPill status={item.status} />
+          <div className="flex flex-wrap gap-2"><button type="button" className={secondaryButton} onClick={() => onUpdate(item.id, 'in_review')}>Start</button><button type="button" className={primaryButton} onClick={() => onUpdate(item.id, 'released')}>Release</button></div>
+        </div>
+      ))}
+      {reviewItems.length === 0 ? <div className="p-6"><EmptyState icon={ClipboardList} title="No pending reviews" note="Writing, speaking, and manual review work will appear here." /></div> : null}
+    </div>
+  </section>
+);
+
 const VoucherTable: React.FC<{ vouchers: PartnerVoucher[]; onCopy: (code: string) => void; onVoid: (id: string) => void }> = ({ vouchers, onCopy, onVoid }) => (
   <>
     <div className="overflow-x-auto">
@@ -1102,7 +1531,7 @@ const BuyMockPanel: React.FC<{
     <label className="mt-4 block text-sm font-semibold text-gray-800">Expiry days<input type="number" min={1} max={30} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
     <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.price_amount ?? 0) * form.quantity, selected?.price_currency ?? 'UZS')}</strong></p>
     <p className="mt-2 text-xs text-gray-500">
-      Temporary online checkout limit: {money(maxOnlineAmount, 'UZS')} per transaction. Larger center packs can use wallet/admin settlement or smaller online purchases.
+      Current online checkout limit: {money(maxOnlineAmount, 'UZS')} per transaction. Larger center packs can use wallet/admin settlement or smaller online purchases.
     </p>
     {onlineBlocked ? (
       <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
@@ -1133,7 +1562,7 @@ const BuySeatPanel: React.FC<{
     <label className="mt-4 block text-sm font-semibold text-gray-800">Seats<input type="number" min={1} max={200} value={form.seat_count} onChange={(e) => onChange((prev) => ({ ...prev, seat_count: Number(e.target.value) }))} className={inputClass} /></label>
     <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.amount ?? 0) * form.seat_count, selected?.currency ?? 'UZS')}</strong></p>
     <p className="mt-2 text-xs text-gray-500">
-      Temporary online checkout limit: {money(maxOnlineAmount, 'UZS')} per transaction. Larger seat bundles can use wallet/admin settlement or smaller online purchases.
+      Current online checkout limit: {money(maxOnlineAmount, 'UZS')} per transaction. Larger seat bundles can use wallet/admin settlement or smaller online purchases.
     </p>
     {onlineBlocked ? (
       <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">

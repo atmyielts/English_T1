@@ -17,6 +17,7 @@ type CreateTransactionInput = {
   expires_in_days?: number | null;
   seat_count?: number | null;
   description: string;
+  redirect_url?: string | null;
   metadata?: Record<string, unknown> | null;
   coupon_code?: string | null;
   apply_credit?: boolean | null;
@@ -76,7 +77,7 @@ type CouponRow = {
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-signature, x-timestamp",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -87,9 +88,7 @@ const getEnv = (key: string): string => {
 };
 
 const parseSuccessStatuses = (raw: string | undefined): Set<string> => {
-  // IMPORTANT:
-  // TsPay responses often include a top-level { status: "success" } meaning "API call ok",
-  // while the *payment* status is in data.pay_status (e.g. "paid"). Default to "paid".
+  // TSPay docs use "success"; the app stores successful provider payments as "paid".
   const list = (raw ?? "paid,success,completed").split(",").map((v) => v.trim().toLowerCase());
   return new Set(list.filter(Boolean));
 };
@@ -110,46 +109,6 @@ const normalizeDays = (raw: unknown): number | null => {
   const days = Math.floor(num);
   if (days < 1 || days > 30) return null;
   return days;
-};
-
-const fetchShopAccessToken = async (baseUrl: string): Promise<string> => {
-  const directToken = Deno.env.get("TSPAY_SHOP_ACCESS_TOKEN");
-  if (directToken) return directToken;
-
-  const email = Deno.env.get("TSPAY_EMAIL");
-  const password = Deno.env.get("TSPAY_PASSWORD");
-  if (!email || !password) {
-    throw new Error("Missing TSPAY_SHOP_ACCESS_TOKEN or TSPAY_EMAIL/TSPAY_PASSWORD");
-  }
-
-  const loginRes = await fetch(`${baseUrl}/auth/login/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-
-  const loginJson = await loginRes.json();
-  if (!loginRes.ok || !loginJson?.access_token) {
-    throw new Error("TSPay login failed");
-  }
-
-  const userToken = loginJson.access_token as string;
-
-  const shopRes = await fetch(`${baseUrl}/shops/access-token/`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  const shopJson = await shopRes.json();
-  const shopToken = shopJson?.shops?.[0]?.access_token as string | undefined;
-  if (!shopRes.ok || !shopToken) {
-    throw new Error("TSPay shop access token fetch failed");
-  }
-
-  return shopToken;
 };
 
 const getBearerToken = (req: Request): string | null => {
@@ -366,11 +325,10 @@ const uniqIds = (values: Array<string | null | undefined>): string[] => {
 const parseCreateResponse = (
   createJson: any,
 ): { paymentUrl: string; preferredStatusId: string | null; rawIds: string[] } | null => {
-  const tx = createJson?.transaction ?? null;
+  const tx = createJson?.transaction ?? createJson ?? null;
   if (!tx) return null;
 
-  // Newer docs: transaction.id + transaction.url
-  // Older / existing code: transaction.cheque_id + transaction.payment_url
+  // Current docs: cheque_id + payment_url. Keep older variants for rollback safety.
   const paymentUrl = tx?.url ?? tx?.payment_url ?? tx?.paymentUrl ?? null;
   const chequeId = tx?.cheque_id ?? tx?.chequeId ?? null;
   const rawId = tx?.id ?? tx?.transaction_id ?? tx?.tx_id ?? null;
@@ -435,6 +393,9 @@ type PaymentGrantRow = {
   id: string;
   provider?: string | null;
   provider_transaction_id: string;
+  tspay_order_id?: string | null;
+  tspay_cheque_id?: string | null;
+  tspay_transaction_id?: string | null;
   user_id: string | null;
   tenant_id: string | null;
   product_id: string | null;
@@ -1112,6 +1073,331 @@ const grantPaidPaymentOnce = async (
   return null;
 };
 
+const paymentGrantSelect =
+  "id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, user_id, tenant_id, product_id, plan_id, status, granted_at, coupon_id, coupon_code, original_amount, discount_amount, amount, currency, credit_amount, referral_discount_amount, referral_attribution_id, purchase_type, plan_snapshot, entitlement_terms, metadata";
+
+const normalizeTspayApiBaseUrl = (raw: string | undefined): string => {
+  const value = String(raw ?? "").trim();
+  if (!value) return "https://api.tspay.uz/api";
+  if (/\/api\/v1\/?$/i.test(value)) return "https://api.tspay.uz/api";
+  return value.replace(/\/+$/, "");
+};
+
+const getTspayMerchantId = (): string => getEnv("TSPAY_MERCHANT_ID");
+
+const getWebhookSecret = (): string => getEnv("TSPAY_WEBHOOK_SECRET");
+
+const generateTspayOrderId = (): string => {
+  const random = new Uint32Array(1);
+  crypto.getRandomValues(random);
+  const value = BigInt(Date.now()) * 1000n + BigInt(random[0] % 1000);
+  return value.toString();
+};
+
+const normalizeRedirectUrl = (raw: unknown): string | null => {
+  const value = String(raw ?? "").trim();
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+};
+
+const amountForSignatureCandidates = (raw: unknown): string[] => {
+  const values = new Set<string>();
+  const asString = String(raw ?? "");
+  if (asString) {
+    values.add(asString);
+    if (!asString.includes(".")) values.add(`${asString}.0`);
+  }
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric)) {
+    values.add(String(numeric));
+    values.add(numeric.toFixed(1));
+  }
+  if (values.size === 0) values.add("");
+  return Array.from(values);
+};
+
+const hmacSha256Hex = async (secret: string, message: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+};
+
+const constantTimeEqual = (a: string, b: string): boolean => {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+};
+
+const verifyTspayWebhookSignature = async (
+  req: Request,
+  body: any,
+  webhookSecret: string,
+): Promise<boolean> => {
+  const signature = req.headers.get("x-signature") ?? "";
+  const timestamp = req.headers.get("x-timestamp") ?? "";
+  const params = body?.params ?? {};
+  const orderId = String(params?.order_id ?? "");
+  if (!signature || !timestamp) return false;
+
+  for (const amount of amountForSignatureCandidates(params?.amount)) {
+    const expected = `sha256=${await hmacSha256Hex(webhookSecret, `${orderId}:${amount}:${timestamp}`)}`;
+    if (constantTimeEqual(signature, expected)) return true;
+  }
+  return false;
+};
+
+const normalizeWebhookAmount = (raw: unknown): number | null => {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n);
+};
+
+const amountsMatch = (expected: unknown, actual: unknown): boolean => {
+  const a = normalizeWebhookAmount(expected);
+  const b = normalizeWebhookAmount(actual);
+  return a !== null && b !== null && a === b;
+};
+
+const loadPaymentByReference = async (sb: any, ref: string): Promise<{ payment: PaymentGrantRow | null; error: any }> => {
+  const value = String(ref ?? "").trim();
+  if (!value) return { payment: null, error: null };
+
+  const queries = [
+    sb.from("payments").select(paymentGrantSelect).eq("provider_transaction_id", value).maybeSingle(),
+    sb.from("payments").select(paymentGrantSelect).eq("provider", "tspay").eq("tspay_cheque_id", value).maybeSingle(),
+    sb.from("payments").select(paymentGrantSelect).eq("provider", "tspay").eq("tspay_order_id", value).maybeSingle(),
+  ];
+
+  for (const query of queries) {
+    const { data, error } = await query;
+    if (error) return { payment: null, error };
+    if (data) return { payment: data as PaymentGrantRow, error: null };
+  }
+
+  return { payment: null, error: null };
+};
+
+const loadTspayPaymentByOrderId = async (sb: any, orderId: string): Promise<{ payment: PaymentGrantRow | null; error: any }> => {
+  const value = String(orderId ?? "").trim();
+  if (!value) return { payment: null, error: null };
+
+  const { data, error } = await sb
+    .from("payments")
+    .select(paymentGrantSelect)
+    .eq("provider", "tspay")
+    .eq("tspay_order_id", value)
+    .maybeSingle();
+  if (error || data) return { payment: (data ?? null) as PaymentGrantRow | null, error };
+
+  const fallback = await sb
+    .from("payments")
+    .select(paymentGrantSelect)
+    .eq("provider", "tspay")
+    .eq("provider_transaction_id", value)
+    .maybeSingle();
+  return { payment: (fallback.data ?? null) as PaymentGrantRow | null, error: fallback.error };
+};
+
+const readJsonPayload = async (res: Response): Promise<any> => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { detail: text };
+  }
+};
+
+const assertTspayAmountAllowed = (amount: number): Response | null => {
+  if (amount < 1000) {
+    return jsonResponse(400, { error: "TSPay minimum amount is 1,000 UZS after discounts and credits" });
+  }
+  if (amount > 200000000) {
+    return jsonResponse(400, { error: "TSPay maximum amount is 200,000,000 UZS per transaction" });
+  }
+  return null;
+};
+
+const fetchTspayStatus = async (
+  tspayBaseUrl: string,
+  payment: PaymentGrantRow,
+  requestedTransactionId: string,
+): Promise<{ ok: boolean; statusJson: any; statusQueryId: string; responseStatus: number }> => {
+  const meta = payment.metadata ?? {};
+  const chequeId = String(payment.tspay_cheque_id ?? (meta as any)?.tspay_cheque_id ?? "").trim();
+  const orderId = String(payment.tspay_order_id ?? (meta as any)?.tspay_order_id ?? "").trim();
+  const candidates = uniqIds([chequeId, requestedTransactionId, payment.provider_transaction_id, orderId]);
+
+  for (const candidate of candidates) {
+    const isCheque = looksLikeUuid(candidate);
+    const endpoint = isCheque
+      ? `${tspayBaseUrl}/transactions/cheque/${encodeURIComponent(candidate)}`
+      : `${tspayBaseUrl}/transactions/${encodeURIComponent(candidate)}`;
+    const res = await fetch(endpoint, { method: "GET" });
+    const statusJson = await readJsonPayload(res);
+    if (res.ok) return { ok: true, statusJson, statusQueryId: candidate, responseStatus: res.status };
+    if (res.status !== 404) return { ok: false, statusJson, statusQueryId: candidate, responseStatus: res.status };
+  }
+
+  return {
+    ok: false,
+    statusJson: { detail: "Transaction not found" },
+    statusQueryId: candidates[0] ?? requestedTransactionId,
+    responseStatus: 404,
+  };
+};
+
+const handleTspayWebhook = async (
+  req: Request,
+  supabase: any,
+  successStatuses: Set<string>,
+): Promise<Response> => {
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return jsonResponse(400, { error: { code: -31000, message: "Invalid JSON" } });
+  }
+
+  const webhookSecret = getWebhookSecret();
+  const isValidSignature = await verifyTspayWebhookSignature(req, body, webhookSecret);
+  if (!isValidSignature) {
+    return jsonResponse(401, { allow: false, reason: "Invalid signature" });
+  }
+
+  const method = String(body?.method ?? "").trim();
+  const params = body?.params ?? {};
+  const orderId = String(params?.order_id ?? "").trim();
+  const chequeId = String(params?.cheque_id ?? "").trim() || null;
+  const merchantId = String(params?.merchant_id ?? "").trim();
+  const configuredMerchantId = String(Deno.env.get("TSPAY_MERCHANT_ID") ?? "").trim();
+
+  if (configuredMerchantId && merchantId && merchantId !== configuredMerchantId) {
+    return jsonResponse(400, { allow: false, reason: "Merchant mismatch" });
+  }
+
+  if (!orderId) {
+    return jsonResponse(400, { allow: false, reason: "order_id is required" });
+  }
+
+  const { payment, error } = await loadTspayPaymentByOrderId(supabase, orderId);
+  if (error) return jsonResponse(500, { error: { code: -31099, message: "Payment lookup failed" } });
+
+  if (method === "checkPerform") {
+    if (!payment) return jsonResponse(200, { allow: false, reason: "Order not found" });
+    if (!amountsMatch(payment.amount, params?.amount)) return jsonResponse(200, { allow: false, reason: "Amount mismatch" });
+    if (isTerminalFailureStatus(payment.status)) return jsonResponse(200, { allow: false, reason: "Order is not payable" });
+
+    return jsonResponse(200, {
+      allow: true,
+      additional: {
+        payment_id: payment.id,
+        tenant_id: payment.tenant_id,
+        user_id: payment.user_id,
+      },
+    });
+  }
+
+  if (method === "createTransaction") {
+    if (!payment) {
+      return jsonResponse(400, { error: { code: -31002, message: "Order not found" } });
+    }
+    if (!amountsMatch(payment.amount, params?.amount)) {
+      return jsonResponse(400, { error: { code: -31001, message: "Amount mismatch" } });
+    }
+
+    const tspayTransactionId = String(params?.transaction_id ?? params?.id ?? "").trim() || null;
+    const metadata = {
+      ...(payment.metadata ?? {}),
+      tspay_order_id: orderId,
+      tspay_cheque_id: chequeId,
+      tspay_transaction_id: tspayTransactionId,
+      tspay_webhook_additional: params?.additional ?? null,
+    };
+
+    const { data: updated, error: updateError } = await supabase
+      .from("payments")
+      .update({
+        provider_transaction_id: chequeId ?? payment.provider_transaction_id,
+        tspay_order_id: orderId,
+        tspay_cheque_id: chequeId,
+        tspay_transaction_id: tspayTransactionId,
+        status: payment.status === "created" ? "pending" : payment.status,
+        metadata,
+        provider_payload: { webhook_create_transaction: body },
+      })
+      .eq("id", payment.id)
+      .select("id")
+      .maybeSingle();
+
+    if (updateError || !updated?.id) {
+      return jsonResponse(500, { error: { code: -31003, message: "Could not create merchant transaction" } });
+    }
+
+    return jsonResponse(200, { success: true, transaction_id: payment.id });
+  }
+
+  if (method === "performTransaction") {
+    const ref = chequeId ?? orderId;
+    const loaded = chequeId ? await loadPaymentByReference(supabase, chequeId) : { payment, error: null };
+    const row = loaded.payment ?? payment;
+    if (loaded.error) return jsonResponse(500, { success: false });
+    if (!row) return jsonResponse(200, { success: false });
+    if (!amountsMatch(row.amount, params?.amount)) return jsonResponse(200, { success: false });
+
+    const tspayTransactionId = String(params?.transaction_id ?? "").trim() || row.tspay_transaction_id || null;
+    const metadata = {
+      ...(row.metadata ?? {}),
+      tspay_order_id: orderId,
+      tspay_cheque_id: chequeId ?? row.tspay_cheque_id ?? null,
+      tspay_transaction_id: tspayTransactionId,
+      tspay_webhook_additional: params?.additional ?? null,
+    };
+
+    const { data: updatedPayment, error: updateError } = await supabase
+      .from("payments")
+      .update({
+        provider_transaction_id: chequeId ?? row.provider_transaction_id,
+        tspay_order_id: orderId,
+        tspay_cheque_id: chequeId ?? row.tspay_cheque_id ?? null,
+        tspay_transaction_id: tspayTransactionId,
+        status: "paid",
+        metadata,
+        provider_payload: { webhook_perform_transaction: body },
+      })
+      .eq("id", row.id)
+      .select(paymentGrantSelect)
+      .maybeSingle();
+
+    if (updateError || !updatedPayment?.id) return jsonResponse(500, { success: false });
+
+    if (isSuccessStatus(successStatuses, "paid")) {
+      const grantResponse = await grantPaidPaymentOnce(supabase, updatedPayment as PaymentGrantRow, ref);
+      if (grantResponse) {
+        console.error("tspay_webhook_grant_failed", { payment_id: row.id });
+      }
+    }
+
+    return jsonResponse(200, { success: true });
+  }
+
+  return jsonResponse(400, { allow: false, reason: "Unknown method" });
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -1120,12 +1406,22 @@ serve(async (req) => {
   try {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const tspayBaseUrl = Deno.env.get("TSPAY_BASE_URL") ?? "https://tspay.uz/api/v1";
+    const tspayBaseUrl = normalizeTspayApiBaseUrl(Deno.env.get("TSPAY_API_BASE_URL") ?? Deno.env.get("TSPAY_BASE_URL"));
     const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
+
+    const url = new URL(req.url);
+
+    const isWebhookRoute =
+      req.method === "POST" &&
+      (url.pathname.endsWith("/webhook") || !getBearerToken(req));
+
+    if (isWebhookRoute) {
+      return await handleTspayWebhook(req, supabase, successStatuses);
+    }
 
     const token = getBearerToken(req);
     if (!token) {
@@ -1144,8 +1440,6 @@ serve(async (req) => {
     }
 
     const authedUserId = authData.user.id;
-
-    const url = new URL(req.url);
 
     if (req.method === "POST" && url.pathname.endsWith("/create-transaction")) {
       const body = (await req.json()) as CreateTransactionInput;
@@ -1511,46 +1805,6 @@ serve(async (req) => {
         });
       }
 
-      const shopAccessToken = await fetchShopAccessToken(tspayBaseUrl);
-
-      const createRes = await fetch(`${tspayBaseUrl}/transactions/create/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          access_token: shopAccessToken,
-          // Official docs call this "comment"; older docs use "description".
-          comment: body.description,
-          description: body.description,
-        }),
-      });
-
-      const createJson = await createRes.json();
-      if (!createRes.ok) {
-        return new Response(JSON.stringify({ error: "TSPay create failed", details: createJson }), {
-          status: 502,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      const parsed = parseCreateResponse(createJson);
-      if (!parsed) {
-        return new Response(JSON.stringify({ error: "Missing transaction data" }), {
-          status: 502,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      const { paymentUrl, preferredStatusId, rawIds } = parsed;
-      const providerId = preferredStatusId || (rawIds[0] ?? null);
-
-      if (!providerId) {
-        return new Response(JSON.stringify({ error: "Missing transaction id" }), {
-          status: 502,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
       const metadata: Record<string, unknown> = {
         ...(body.metadata ?? {}),
       };
@@ -1573,12 +1827,20 @@ serve(async (req) => {
 
       const planSnapshot = plan ? buildPlanSnapshot(plan) : {};
       const entitlementTerms = plan ? buildEntitlementTerms(plan) : {};
+      const amountGuard = assertTspayAmountAllowed(amount);
+      if (amountGuard) return amountGuard;
+
+      const merchantId = getTspayMerchantId();
+      const tspayOrderId = generateTspayOrderId();
+      const redirectUrl = normalizeRedirectUrl(body.redirect_url);
+      metadata.tspay_order_id = tspayOrderId;
 
       const { data: insertedPayment, error: insertError } = await supabase
         .from("payments")
         .insert({
           provider: "tspay",
-          provider_transaction_id: providerId,
+          provider_transaction_id: tspayOrderId,
+          tspay_order_id: tspayOrderId,
           amount,
           original_amount: originalAmount,
           discount_amount: discountAmount,
@@ -1598,10 +1860,8 @@ serve(async (req) => {
           entitlement_terms: entitlementTerms,
           metadata: {
             ...metadata,
-            tspay_ids: rawIds,
-            tspay_payment_url: paymentUrl,
           },
-          provider_payload: createJson,
+          provider_payload: { stage: "local_order_created" },
         })
         .select("id")
         .maybeSingle();
@@ -1620,7 +1880,7 @@ serve(async (req) => {
           amount: creditAmount,
           currency,
           paymentId: insertedPayment.id,
-          metadata: { provider: "tspay", provider_transaction_id: providerId, purchase_type: purchaseKind },
+          metadata: { provider: "tspay", tspay_order_id: tspayOrderId, purchase_type: purchaseKind },
         });
         if (!reserve.ok) {
           await supabase
@@ -1631,10 +1891,103 @@ serve(async (req) => {
         }
       }
 
+      const createRes = await fetch(`${tspayBaseUrl}/transactions/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          merchant_id: merchantId,
+          amount,
+          order_id: Number(tspayOrderId),
+          ...(redirectUrl ? { redirect_url: redirectUrl } : {}),
+        }),
+      });
+
+      const createJson = await readJsonPayload(createRes);
+      if (!createRes.ok) {
+        await supabase
+          .from("payments")
+          .update({ status: "failed", grant_error: "TSPay create failed", provider_payload: createJson })
+          .eq("id", insertedPayment.id);
+        if (creditAmount > 0) {
+          await supabase.rpc("release_platform_credit", {
+            p_payment_id: insertedPayment.id,
+            p_reason: "tspay_create_failed",
+          });
+        }
+        return new Response(JSON.stringify({ error: "TSPay create failed", details: createJson }), {
+          status: 502,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      const parsed = parseCreateResponse(createJson);
+      if (!parsed) {
+        await supabase
+          .from("payments")
+          .update({ status: "failed", grant_error: "Missing TSPay transaction data", provider_payload: createJson })
+          .eq("id", insertedPayment.id);
+        if (creditAmount > 0) {
+          await supabase.rpc("release_platform_credit", {
+            p_payment_id: insertedPayment.id,
+            p_reason: "tspay_missing_transaction_data",
+          });
+        }
+        return new Response(JSON.stringify({ error: "Missing transaction data" }), {
+          status: 502,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      const { paymentUrl, preferredStatusId, rawIds } = parsed;
+      const providerId = preferredStatusId || (rawIds[0] ?? null);
+      const tspayTransactionId = String((createJson as any)?.id ?? (createJson as any)?.transaction?.id ?? "").trim() || null;
+
+      if (!providerId) {
+        await supabase
+          .from("payments")
+          .update({ status: "failed", grant_error: "Missing TSPay transaction id", provider_payload: createJson })
+          .eq("id", insertedPayment.id);
+        if (creditAmount > 0) {
+          await supabase.rpc("release_platform_credit", {
+            p_payment_id: insertedPayment.id,
+            p_reason: "tspay_missing_transaction_id",
+          });
+        }
+        return new Response(JSON.stringify({ error: "Missing transaction id" }), {
+          status: 502,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      const { error: updateError } = await supabase
+        .from("payments")
+        .update({
+          provider_transaction_id: providerId,
+          tspay_cheque_id: providerId,
+          tspay_transaction_id: tspayTransactionId,
+          metadata: {
+            ...metadata,
+            tspay_cheque_id: providerId,
+            tspay_transaction_id: tspayTransactionId,
+            tspay_ids: rawIds,
+            tspay_payment_url: paymentUrl,
+          },
+          provider_payload: createJson,
+        })
+        .eq("id", insertedPayment.id);
+
+      if (updateError) {
+        return new Response(JSON.stringify({ error: "Failed to record TSPay transaction", details: updateError }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
       return new Response(
         JSON.stringify({
           payment_url: paymentUrl,
           transaction_id: providerId,
+          order_id: tspayOrderId,
           amount,
           currency,
           original_amount: originalAmount,
@@ -1667,13 +2020,7 @@ serve(async (req) => {
         });
       }
 
-      const { data: paymentRow, error: paymentError } = await supabase
-        .from("payments")
-        .select(
-          "id, provider, provider_transaction_id, user_id, tenant_id, product_id, plan_id, status, granted_at, coupon_id, coupon_code, original_amount, discount_amount, amount, currency, credit_amount, referral_discount_amount, referral_attribution_id, purchase_type, plan_snapshot, entitlement_terms, metadata",
-        )
-        .eq("provider_transaction_id", requestedTransactionId)
-        .maybeSingle();
+      const { payment: paymentRow, error: paymentError } = await loadPaymentByReference(supabase, requestedTransactionId);
 
       if (paymentError) {
         return new Response(JSON.stringify({ error: "Failed to load payment", details: paymentError }), {
@@ -1697,75 +2044,11 @@ serve(async (req) => {
       let normalized = "paid";
 
       if (String(payment.provider ?? "tspay") !== "platform_credit") {
-        const shopAccessToken = await fetchShopAccessToken(tspayBaseUrl);
-        const tspayIdsFromMeta = Array.isArray((payment.metadata as any)?.tspay_ids)
-          ? ((payment.metadata as any).tspay_ids as unknown[]).map((v) => String(v))
-          : [];
-        const hintedStatusId = String((payment.metadata as any)?.tspay_status_id ?? "").trim();
-        const candidateIds = uniqIds([
-          hintedStatusId,
-          requestedTransactionId,
-          payment.provider_transaction_id,
-          ...tspayIdsFromMeta,
-        ]);
-        console.log("tspay_status_candidates", {
-          payment_id: payment.id,
-          requested_transaction_id: requestedTransactionId,
-          candidate_ids: candidateIds,
-        });
+        const checked = await fetchTspayStatus(tspayBaseUrl, payment, requestedTransactionId);
+        statusJson = checked.statusJson;
+        usedStatusId = checked.statusQueryId;
 
-        let statusRes: Response | null = null;
-        let statusText = "";
-        usedStatusId = candidateIds[0] ?? requestedTransactionId;
-
-        const fetchStatusJson = async (statusId: string): Promise<{ ok: boolean; json: any | null; text: string; response: Response }> => {
-          const statusUrl = new URL(`${tspayBaseUrl}/transactions/${statusId}/`);
-          statusUrl.searchParams.set("access_token", shopAccessToken);
-
-          let res = await fetch(statusUrl.toString(), { method: "GET" });
-          if (!res.ok) {
-            // Backwards compatible fallback (older variants used Authorization: Bearer).
-            res = await fetch(`${tspayBaseUrl}/transactions/${statusId}/`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${shopAccessToken}`,
-                "Content-Type": "application/json",
-              },
-            });
-          }
-
-          const text = await res.text();
-          try {
-            return { ok: true, json: JSON.parse(text), text, response: res };
-          } catch {
-            return { ok: false, json: null, text, response: res };
-          }
-        };
-
-        statusJson = null;
-        for (const candidateId of candidateIds) {
-          const checked = await fetchStatusJson(candidateId);
-          statusRes = checked.response;
-          statusText = checked.text;
-          if (!checked.ok) continue;
-          statusJson = checked.json;
-          usedStatusId = candidateId;
-          break;
-        }
-
-        if (!statusJson || !statusRes) {
-          console.error("tspay_status_invalid_json", {
-            payment_id: payment.id,
-            requested_transaction_id: requestedTransactionId,
-            body_preview: statusText.slice(0, 300),
-          });
-          return new Response(JSON.stringify({ error: "TSPay status returned invalid JSON", body: statusText.slice(0, 300) }), {
-            status: 502,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          });
-        }
-
-        if (!statusRes.ok) {
+        if (!checked.ok) {
           return new Response(JSON.stringify({ error: "TSPay status failed", details: statusJson }), {
             status: 502,
             headers: { "Content-Type": "application/json", ...corsHeaders },

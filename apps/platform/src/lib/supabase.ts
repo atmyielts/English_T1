@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 import { cookieStorage } from './cookieStorage';
 
 export const AUTH_STORAGE_KEY = 'schood-auth';
@@ -61,4 +62,48 @@ export const clearLocalAuthStorage = (): void => {
   } catch {
     // no-op
   }
+};
+
+let sessionRefreshInFlight: Promise<Session | null> | null = null;
+let sessionReadInFlight: Promise<Session | null> | null = null;
+let lastRefreshAt = 0;
+let lastRefreshSession: Session | null = null;
+
+export const refreshAuthSession = async (): Promise<Session | null> => {
+  const now = Date.now();
+  if (sessionRefreshInFlight) return sessionRefreshInFlight;
+  if (lastRefreshSession && now - lastRefreshAt < 15_000) return lastRefreshSession;
+
+  sessionRefreshInFlight = supabase.auth
+    .refreshSession()
+    .then(({ data, error }) => {
+      lastRefreshAt = Date.now();
+      if (error) {
+        lastRefreshSession = null;
+        return null;
+      }
+      lastRefreshSession = data.session ?? null;
+      return lastRefreshSession;
+    })
+    .finally(() => {
+      sessionRefreshInFlight = null;
+    });
+
+  return sessionRefreshInFlight;
+};
+
+export const getAuthSession = async (): Promise<Session | null> => {
+  if (sessionReadInFlight) return sessionReadInFlight;
+
+  sessionReadInFlight = supabase.auth
+    .getSession()
+    .then(({ data }) => {
+      if (data.session?.access_token) return data.session;
+      return refreshAuthSession();
+    })
+    .finally(() => {
+      sessionReadInFlight = null;
+    });
+
+  return sessionReadInFlight;
 };

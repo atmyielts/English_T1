@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowUpRight, BookOpen, ClipboardList, KeyRound, Loader2, Ticket } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CalendarDays, ClipboardList, KeyRound, Loader2, Mail, MapPin, Phone, ShieldCheck, Ticket } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { publicCenter, type PublicCenterResponse } from '../lib/platformClient';
@@ -8,6 +8,13 @@ const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
 const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-white';
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
 
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +37,11 @@ export const CenterLandingPage: React.FC = () => {
     { id: 'redeem', label: 'Redeem', onClick: () => navigate('/redeem') },
     { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
   ];
+  const branding = (data?.center.branding && typeof data.center.branding === 'object' ? data.center.branding : {}) as Record<string, any>;
+  const contactEmail = String(branding.contact_email ?? branding.email ?? '').trim();
+  const contactPhone = String(branding.contact_phone ?? branding.phone ?? '').trim();
+  const contactName = String(branding.contact_name ?? '').trim();
+  const upcomingEvents = data?.events ?? [];
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
@@ -42,14 +54,15 @@ export const CenterLandingPage: React.FC = () => {
         ) : error || !data ? (
           <div className="mx-auto max-w-3xl rounded-3xl border border-red-200 bg-red-50 p-8 text-red-700">Center not found or not active.</div>
         ) : (
-          <section className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <section className="mx-auto max-w-6xl space-y-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
             <div className="rounded-3xl border border-gray-900 bg-white/85 p-6 shadow-sm md:p-10">
               <div className="flex flex-wrap items-center gap-4">
                 {data.center.logo_url ? <img src={data.center.logo_url} alt="" className="h-16 w-16 rounded-2xl border border-gray-900/10 object-contain bg-white" /> : null}
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-800">
-                    <KeyRound className="h-4 w-4" />
-                    Schood partner center
+                    <ShieldCheck className="h-4 w-4" />
+                    Verified Schood partner
                   </div>
                   <h1 className="mt-3 text-3xl font-bold leading-tight md:text-5xl">{data.center.name}</h1>
                 </div>
@@ -93,8 +106,46 @@ export const CenterLandingPage: React.FC = () => {
                 Continue
                 <ArrowUpRight className="h-4 w-4" />
               </button>
+              {contactName || contactEmail || contactPhone ? (
+                <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/75">
+                  {contactName ? <p className="font-semibold text-white">{contactName}</p> : null}
+                  {contactEmail ? <p className="mt-2 flex items-center gap-2"><Mail className="h-4 w-4" />{contactEmail}</p> : null}
+                  {contactPhone ? <p className="mt-2 flex items-center gap-2"><Phone className="h-4 w-4" />{contactPhone}</p> : null}
+                </div>
+              ) : null}
               {data.center.powered_by_schood ? <p className="mt-5 text-center text-xs text-white/50">Powered by Schood</p> : null}
             </aside>
+            </div>
+
+            {upcomingEvents.length > 0 ? (
+              <section className="rounded-3xl border border-gray-900 bg-white/85 p-5 shadow-sm md:p-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                      <CalendarDays className="h-4 w-4" />
+                      Upcoming mocks
+                    </div>
+                    <h2 className="mt-2 text-2xl font-bold">Center mock exam events</h2>
+                  </div>
+                  <button type="button" onClick={() => navigate('/redeem')} className={secondaryButton}>
+                    <KeyRound className="h-4 w-4" />
+                    Redeem event code
+                  </button>
+                </div>
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  {upcomingEvents.slice(0, 6).map((event) => (
+                    <article key={event.id} className="rounded-2xl border border-gray-900/15 bg-white/75 p-4">
+                      <p className="font-semibold">{event.title}</p>
+                      <p className="mt-2 text-sm text-gray-600">{event.experiences?.name ?? 'Mock exam'} · {formatDateTime(event.starts_at)}</p>
+                      <p className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <MapPin className="h-4 w-4" />
+                        {event.mode}{event.location ? ` · ${event.location}` : ''}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </section>
         )}
       </main>

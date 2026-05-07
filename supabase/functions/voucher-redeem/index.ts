@@ -110,6 +110,42 @@ const findPersonalTenant = async (sb: any, userId: string): Promise<string | nul
   return personal?.tenant_id ?? rows[0]?.tenant_id ?? null;
 };
 
+const upsertCenterStudentForVoucher = async (sb: any, voucher: any, user: any): Promise<void> => {
+  const email = String(user.email ?? voucher.assigned_email ?? "").trim().toLowerCase();
+  const meta = isObject(user.user_metadata) ? user.user_metadata as Json : {};
+  const fullName = String(meta.full_name ?? meta.name ?? voucher.assigned_name ?? "").trim() || null;
+  const phone = String((meta as any).phone ?? voucher.assigned_phone ?? "").trim() || null;
+  const payload = {
+    tenant_id: voucher.tenant_id,
+    user_id: user.id,
+    full_name: fullName,
+    email: email || null,
+    phone,
+    status: "active",
+    source_voucher_id: voucher.id,
+    last_activity_at: new Date().toISOString(),
+    metadata: {
+      voucher_code: voucher.code,
+      access_kind: voucher.access_kind,
+      product_id: voucher.product_id ?? null,
+      plan_id: voucher.plan_id ?? null,
+      expires_at: voucher.expires_at ?? null,
+      redeemed_via: "voucher-redeem",
+    },
+  };
+  const { data: existing } = await sb
+    .from("partner_center_students")
+    .select("id")
+    .eq("tenant_id", voucher.tenant_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (existing?.id) {
+    await sb.from("partner_center_students").update(payload).eq("id", existing.id);
+    return;
+  }
+  await sb.from("partner_center_students").insert(payload);
+};
+
 const loadVoucher = async (sb: any, code: string) => {
   const { data, error } = await sb
     .from("partner_vouchers")
@@ -254,7 +290,7 @@ serve(async (req) => {
       if (error) return json(500, { error: "Failed to load center", detail: error.message });
       if (!center?.tenant_id) return json(404, { error: "Center not found" });
 
-      const [experiences, plans] = await Promise.all([
+      const [experiences, plans, events] = await Promise.all([
         sb
           .from("experiences")
           .select("id, name, product_id, products ( name, metadata )")
@@ -265,6 +301,14 @@ serve(async (req) => {
           .select("id, name, duration_days, product_id, products ( name, metadata )")
           .eq("is_active", true)
           .limit(12),
+        sb
+          .from("partner_center_mock_events")
+          .select("id, title, starts_at, mode, location, meeting_url, capacity, status, experience_id, experiences ( name )")
+          .eq("tenant_id", center.tenant_id)
+          .eq("status", "scheduled")
+          .gte("starts_at", new Date().toISOString())
+          .order("starts_at", { ascending: true })
+          .limit(6),
       ]);
       return json(200, {
         center: await publicCenterView(sb, center, center.tenants),
@@ -272,6 +316,7 @@ serve(async (req) => {
           mock_exams: experiences.data ?? [],
           subscriptions: plans.data ?? [],
         },
+        events: events.data ?? [],
       });
     }
 
@@ -352,6 +397,9 @@ serve(async (req) => {
       ...(isObject(voucher.metadata) ? voucher.metadata : {}),
       redeemed_via: "voucher-redeem",
       grant,
+    });
+    await upsertCenterStudentForVoucher(sb, voucher, authData.user).catch((err) => {
+      console.warn("voucher-redeem: failed to upsert center student", err instanceof Error ? err.message : err);
     });
 
     return json(200, {

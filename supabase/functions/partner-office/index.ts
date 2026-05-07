@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 type Json = Record<string, unknown>;
-type MembershipRow = { tenant_id: string; role: string; status: string };
-const TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 100000;
+type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
+const TSPAY_MIN_AMOUNT_UZS = 1000;
+const TSPAY_MAX_AMOUNT_UZS = 200000000;
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -83,6 +85,23 @@ const sanitizeFilename = (name: string): string =>
 const normalizeEmail = (raw: unknown): string =>
   String(raw ?? "").trim().toLowerCase();
 
+const normalizeCenterRole = (raw: unknown): "owner" | "admin" | "teacher" | "counselor" => {
+  const role = String(raw ?? "").trim().toLowerCase();
+  if (role === "owner") return "owner";
+  if (role === "admin") return "admin";
+  if (role === "counselor") return "counselor";
+  return "teacher";
+};
+
+const canManageCenter = (memberships: MembershipRow[], tenantId: string): boolean =>
+  memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin"].includes(normalizeCenterRole(m.role)));
+
+const canOperateCenter = (memberships: MembershipRow[], tenantId: string): boolean =>
+  memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin", "teacher", "counselor"].includes(normalizeCenterRole(m.role)));
+
+const canInviteCenterStudents = (memberships: MembershipRow[], tenantId: string): boolean =>
+  memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin", "counselor"].includes(normalizeCenterRole(m.role)));
+
 const normalizeMoney = (raw: unknown): number => {
   const num = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(num) || num <= 0) return 0;
@@ -92,7 +111,7 @@ const normalizeMoney = (raw: unknown): number => {
 const loadMemberships = async (sb: any, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
     .from("tenant_memberships")
-    .select("tenant_id, role, status")
+    .select("id, tenant_id, user_id, role, status")
     .eq("user_id", userId)
     .eq("status", "active")
     .order("created_at", { ascending: true });
@@ -106,7 +125,10 @@ const requireTenant = (memberships: MembershipRow[], requested?: string | null):
 };
 
 const requireTenantAdmin = (memberships: MembershipRow[], tenantId: string): boolean =>
-  memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin"].includes(m.role));
+  canManageCenter(memberships, tenantId);
+
+const requireCenterOperator = (memberships: MembershipRow[], tenantId: string): boolean =>
+  canOperateCenter(memberships, tenantId);
 
 const authUserEmail = (user: any): string =>
   String(user?.email ?? user?.user_metadata?.email ?? `${user?.id ?? crypto.randomUUID()}@schood.local`).trim().toLowerCase();
@@ -332,13 +354,17 @@ const loadCenterStaff = async (sb: any, tenantId: string): Promise<{ members: an
   ]);
   if (membersRes.error) throw membersRes.error;
   if (invitesRes.error) throw invitesRes.error;
-  return { members: membersRes.data ?? [], invites: invitesRes.data ?? [] };
+  return {
+    members: (membersRes.data ?? []).map((row: any) => ({ ...row, role: normalizeCenterRole(row.role) })),
+    invites: (invitesRes.data ?? []).map((row: any) => ({ ...row, role: normalizeCenterRole(row.role) })),
+  };
 };
 
 const inviteCenterStaff = async (sb: any, tenantId: string, emailRaw: unknown, roleRaw: unknown, invitedBy: string): Promise<any> => {
   const email = normalizeEmail(emailRaw);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Valid staff email is required");
-  const role = ["admin", "member"].includes(String(roleRaw)) ? String(roleRaw) : "member";
+  const role = normalizeCenterRole(roleRaw);
+  if (role === "owner") throw new Error("Owner role cannot be invited from staff settings");
   const { data: userRow } = await sb.from("users").select("id").ilike("email", email).maybeSingle();
   if (userRow?.id) {
     const { data, error } = await sb
@@ -394,6 +420,15 @@ const acceptPendingStaffInvites = async (sb: any, user: any): Promise<any[]> => 
     accepted.push(member);
   }
   return accepted;
+};
+
+const expirePendingStaffInvites = async (sb: any, tenantId: string): Promise<void> => {
+  await sb
+    .from("partner_center_staff_invites")
+    .update({ status: "expired" })
+    .eq("tenant_id", tenantId)
+    .eq("status", "pending")
+    .lt("expires_at", new Date().toISOString());
 };
 
 const ensureUniqueVoucherCode = async (sb: any, prefix: string): Promise<string> => {
@@ -524,6 +559,206 @@ const loadResults = async (sb: any, tenantId: string, tokenId?: string | null) =
   });
 };
 
+const upsertCenterStudent = async (
+  sb: any,
+  input: {
+    tenantId: string;
+    userId?: string | null;
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    voucherId?: string | null;
+    inviteId?: string | null;
+    createdBy?: string | null;
+    metadata?: Json;
+  },
+): Promise<any | null> => {
+  const email = normalizeEmail(input.email);
+  const payload = {
+    tenant_id: input.tenantId,
+    user_id: input.userId ?? null,
+    full_name: String(input.fullName ?? "").trim() || null,
+    email: email || null,
+    phone: String(input.phone ?? "").trim() || null,
+    status: input.userId ? "active" : "invited",
+    source_voucher_id: input.voucherId ?? null,
+    source_invite_id: input.inviteId ?? null,
+    last_activity_at: new Date().toISOString(),
+    created_by: input.createdBy ?? null,
+    metadata: input.metadata ?? {},
+  };
+  let existing: any | null = null;
+  if (input.userId) {
+    const { data } = await sb
+      .from("partner_center_students")
+      .select("id")
+      .eq("tenant_id", input.tenantId)
+      .eq("user_id", input.userId)
+      .maybeSingle();
+    existing = data ?? null;
+  } else if (email) {
+    const { data } = await sb
+      .from("partner_center_students")
+      .select("id")
+      .eq("tenant_id", input.tenantId)
+      .ilike("email", email)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+  const { data, error } = existing?.id
+    ? await sb.from("partner_center_students").update(payload).eq("id", existing.id).select("*").maybeSingle()
+    : await sb.from("partner_center_students").insert(payload).select("*").maybeSingle();
+  if (error) throw error;
+  return data;
+};
+
+const loadCenterStudents = async (sb: any, tenantId: string): Promise<any[]> => {
+  const { data, error } = await sb
+    .from("partner_center_students")
+    .select("*, partner_center_group_members ( group_id, status, partner_center_groups ( id, name ) )")
+    .eq("tenant_id", tenantId)
+    .order("updated_at", { ascending: false })
+    .limit(500);
+  if (!error) {
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      student_id: row.id,
+      voucher_code: row.metadata?.voucher_code ?? null,
+      name: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      access_kind: row.metadata?.access_kind ?? "student",
+      product_name: row.metadata?.product_name ?? null,
+      status: row.status,
+      redeemed_by: row.user_id,
+      redeemed_at: row.last_activity_at,
+      expires_at: row.metadata?.expires_at ?? null,
+      groups: (row.partner_center_group_members ?? [])
+        .filter((m: any) => m.status === "active")
+        .map((m: any) => m.partner_center_groups)
+        .filter(Boolean),
+      last_activity_at: row.last_activity_at,
+      metadata: row.metadata ?? {},
+    }));
+  }
+
+  const fallback = await sb
+    .from("partner_vouchers")
+    .select("id, code, access_kind, status, assigned_name, assigned_email, assigned_phone, redeemed_by, redeemed_at, expires_at, products ( name ), experiences ( name ), plans ( name )")
+    .eq("tenant_id", tenantId)
+    .or("assigned_email.not.is.null,redeemed_by.not.is.null")
+    .order("updated_at", { ascending: false })
+    .limit(300);
+  if (fallback.error) throw fallback.error;
+  return (fallback.data ?? []).map((row: any) => ({
+    id: row.id,
+    student_id: null,
+    voucher_code: row.code,
+    name: row.assigned_name ?? null,
+    email: row.assigned_email ?? null,
+    phone: row.assigned_phone ?? null,
+    access_kind: row.access_kind,
+    product_name: row.products?.name ?? row.experiences?.name ?? row.plans?.name ?? null,
+    status: row.status,
+    redeemed_by: row.redeemed_by,
+    redeemed_at: row.redeemed_at,
+    expires_at: row.expires_at,
+    groups: [],
+  }));
+};
+
+const loadCenterGroups = async (sb: any, tenantId: string): Promise<any[]> => {
+  const { data, error } = await sb
+    .from("partner_center_groups")
+    .select("*, assigned_teacher:tenant_memberships!partner_center_groups_assigned_teacher_membership_id_fkey ( id, role, users ( email, full_name ) ), partner_center_group_members ( id, status, student_id )")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...row,
+    student_count: (row.partner_center_group_members ?? []).filter((member: any) => member.status === "active").length,
+  }));
+};
+
+const loadMockEvents = async (sb: any, tenantId: string): Promise<any[]> => {
+  const { data, error } = await sb
+    .from("partner_center_mock_events")
+    .select("*, experiences ( name ), products ( name ), partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_center_event_registrations ( id, attendance_status, registration_status )")
+    .eq("tenant_id", tenantId)
+    .order("starts_at", { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    ...row,
+    registered_count: (row.partner_center_event_registrations ?? []).length,
+    present_count: (row.partner_center_event_registrations ?? []).filter((r: any) => r.attendance_status === "present").length,
+  }));
+};
+
+const loadReviewQueue = async (sb: any, tenantId: string): Promise<any[]> => {
+  const { data, error } = await sb
+    .from("partner_center_review_items")
+    .select("*, partner_center_students ( full_name, email, phone ), partner_center_groups ( name ), partner_center_mock_events ( title ), assigned_staff:tenant_memberships!partner_center_review_items_assigned_staff_membership_id_fkey ( id, role, users ( email, full_name ) )")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(300);
+  if (error) throw error;
+  return data ?? [];
+};
+
+const buildPaymentCapabilities = () => ({
+  providers: [
+    {
+      provider: "tspay",
+      label: "TSPay",
+      currency: "UZS",
+      min_amount: TSPAY_MIN_AMOUNT_UZS,
+      max_amount: TSPAY_MAX_AMOUNT_UZS,
+      enabled: Boolean(Deno.env.get("TSPAY_USERNAME") && Deno.env.get("TSPAY_PASSWORD")),
+      temporary: false,
+    },
+  ],
+  default_provider: "tspay",
+});
+
+const createSimplePdf = async (title: string, lines: string[]): Promise<string> => {
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([595.28, 841.89]);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  page.drawText(title, { x: 48, y: 790, size: 18, font: bold, color: rgb(0.06, 0.09, 0.16) });
+  let y = 755;
+  for (const line of lines.slice(0, 42)) {
+    page.drawText(String(line).slice(0, 110), { x: 48, y, size: 10, font, color: rgb(0.17, 0.2, 0.25) });
+    y -= 17;
+  }
+  page.drawText("Powered by Schood", { x: 48, y: 40, size: 9, font, color: rgb(0.45, 0.48, 0.55) });
+  const bytes = await pdf.save();
+  let binary = "";
+  bytes.forEach((byte) => binary += String.fromCharCode(byte));
+  return btoa(binary);
+};
+
+const analyticsFrom = (students: any[], groups: any[], events: any[], reviews: any[], results: any[], vouchers: any[]) => {
+  const redeemed = vouchers.filter((row) => row.status === "redeemed").length;
+  const total = vouchers.length;
+  const scores = results.map((row) => Number(row.overall_band ?? row.overall_score ?? NaN)).filter((n) => Number.isFinite(n));
+  return {
+    redemption_rate: total > 0 ? redeemed / total : 0,
+    active_students: students.filter((row) => row.status === "active").length,
+    inactive_students: students.filter((row) => row.status === "inactive" || row.status === "invited").length,
+    groups: groups.length,
+    upcoming_events: events.filter((row) => ["draft", "scheduled"].includes(row.status) && Date.parse(row.starts_at) >= Date.now()).length,
+    pending_reviews: reviews.filter((row) => ["pending", "in_review"].includes(row.status)).length,
+    average_score: scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : null,
+    teacher_workload: reviews.reduce((acc: Record<string, number>, row: any) => {
+      const key = row.assigned_staff?.users?.email ?? "unassigned";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {}),
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -546,6 +781,10 @@ serve(async (req) => {
     const action = url.searchParams.get("action") ?? "";
     const tenantId = requireTenant(memberships, url.searchParams.get("tenant_id"));
     if (!tenantId) return json(403, { error: "Forbidden" });
+
+    if (req.method === "GET" && action === "payment_capabilities") {
+      return json(200, buildPaymentCapabilities());
+    }
 
     if (req.method === "GET" && (action === "center" || action === "branding")) {
       const requestedTenantId = url.searchParams.get("tenant_id");
@@ -635,34 +874,84 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "students") {
-      const { data, error } = await sb
-        .from("partner_vouchers")
-        .select("id, code, access_kind, status, assigned_name, assigned_email, assigned_phone, redeemed_by, redeemed_at, expires_at, products ( name ), experiences ( name ), plans ( name )")
-        .eq("tenant_id", tenantId)
-        .or("assigned_email.not.is.null,redeemed_by.not.is.null")
-        .order("updated_at", { ascending: false })
-        .limit(300);
-      if (error) return json(500, { error: "Failed to load students", detail: error.message });
-      const students = (data ?? []).map((row: any) => ({
-        id: row.id,
-        voucher_code: row.code,
-        name: row.assigned_name ?? null,
-        email: row.assigned_email ?? null,
-        phone: row.assigned_phone ?? null,
-        access_kind: row.access_kind,
-        product_name: row.products?.name ?? row.experiences?.name ?? row.plans?.name ?? null,
-        status: row.status,
-        redeemed_by: row.redeemed_by,
-        redeemed_at: row.redeemed_at,
-        expires_at: row.expires_at,
-      }));
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const students = await loadCenterStudents(sb, tenantId);
       return json(200, { students });
+    }
+
+    if (req.method === "GET" && action === "student_detail") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const studentId = String(url.searchParams.get("student_id") ?? "").trim();
+      if (!studentId) return json(400, { error: "student_id is required" });
+      const [studentRes, membershipsRes, reviewsRes] = await Promise.all([
+        sb.from("partner_center_students").select("*").eq("tenant_id", tenantId).eq("id", studentId).maybeSingle(),
+        sb.from("partner_center_group_members").select("*, partner_center_groups ( id, name )").eq("tenant_id", tenantId).eq("student_id", studentId),
+        sb.from("partner_center_review_items").select("*").eq("tenant_id", tenantId).eq("student_id", studentId).limit(100),
+      ]);
+      if (studentRes.error) return json(500, { error: "Failed to load student", detail: studentRes.error.message });
+      const student = studentRes.data;
+      let voucherQuery = sb.from("partner_vouchers").select("*, products ( name ), experiences ( name ), plans ( name )").eq("tenant_id", tenantId).limit(50);
+      if (student?.source_voucher_id) {
+        voucherQuery = voucherQuery.eq("id", student.source_voucher_id);
+      } else if (student?.user_id) {
+        voucherQuery = voucherQuery.eq("redeemed_by", student.user_id);
+      } else if (student?.email) {
+        voucherQuery = voucherQuery.eq("assigned_email", student.email);
+      } else {
+        voucherQuery = voucherQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+      }
+      const vouchersRes = await voucherQuery;
+      return json(200, {
+        student,
+        groups: membershipsRes.data ?? [],
+        vouchers: vouchersRes.data ?? [],
+        reviews: reviewsRes.data ?? [],
+      });
     }
 
     if (req.method === "GET" && action === "staff") {
       if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      await expirePendingStaffInvites(sb, tenantId);
       const staff = await loadCenterStaff(sb, tenantId);
       return json(200, staff);
+    }
+
+    if (req.method === "GET" && action === "groups") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      return json(200, { groups: await loadCenterGroups(sb, tenantId) });
+    }
+
+    if (req.method === "GET" && action === "mock_events") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      return json(200, { events: await loadMockEvents(sb, tenantId) });
+    }
+
+    if (req.method === "GET" && action === "review_queue") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      return json(200, { review_items: await loadReviewQueue(sb, tenantId) });
+    }
+
+    if (req.method === "GET" && action === "statements") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      const { data, error } = await sb
+        .from("partner_center_statements")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("period_start", { ascending: false })
+        .limit(36);
+      if (error) return json(500, { error: "Failed to load statements", detail: error.message });
+      return json(200, { statements: data ?? [] });
+    }
+
+    if (req.method === "GET" && action === "report_templates") {
+      return json(200, {
+        templates: [
+          { id: "student_pdf", label: "Student PDF report" },
+          { id: "group_pdf", label: "Group PDF report" },
+          { id: "event_pdf", label: "Mock event PDF report" },
+          { id: "statement_pdf", label: "Monthly statement PDF" },
+        ],
+      });
     }
 
     if (req.method === "GET" && action === "seats") {
@@ -724,18 +1013,45 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "reports") {
-      const [results, vouchersRes, seatsRes] = await Promise.all([
+      const [results, vouchersRes, seatsRes, students, groups, events, reviews] = await Promise.all([
         loadResults(sb, tenantId),
         sb.from("partner_vouchers").select("id, status, redeemed_by, expires_at").eq("tenant_id", tenantId).limit(1000),
         sb.from("seat_licenses").select("id, status").eq("tenant_id", tenantId).limit(1000),
+        loadCenterStudents(sb, tenantId).catch(() => []),
+        loadCenterGroups(sb, tenantId).catch(() => []),
+        loadMockEvents(sb, tenantId).catch(() => []),
+        loadReviewQueue(sb, tenantId).catch(() => []),
       ]);
       if (vouchersRes.error) return json(500, { error: "Failed to load report vouchers", detail: vouchersRes.error.message });
       if (seatsRes.error) return json(500, { error: "Failed to load report seats", detail: seatsRes.error.message });
-      return json(200, { reports: computeReports(results, vouchersRes.data ?? [], seatsRes.data ?? []), results });
+      return json(200, {
+        reports: {
+          ...computeReports(results, vouchersRes.data ?? [], seatsRes.data ?? []),
+          active_groups: groups.filter((row: any) => row.status === "active").length,
+          upcoming_events: events.filter((row: any) => ["draft", "scheduled"].includes(row.status) && Date.parse(row.starts_at) >= Date.now()).length,
+          pending_reviews: reviews.filter((row: any) => ["pending", "in_review"].includes(row.status)).length,
+          registered_students: students.length,
+        },
+        results,
+      });
+    }
+
+    if (req.method === "GET" && action === "analytics") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const [students, groups, events, reviews, results, vouchersRes] = await Promise.all([
+        loadCenterStudents(sb, tenantId),
+        loadCenterGroups(sb, tenantId),
+        loadMockEvents(sb, tenantId),
+        loadReviewQueue(sb, tenantId),
+        loadResults(sb, tenantId),
+        sb.from("partner_vouchers").select("id, status, access_kind, expires_at, created_at").eq("tenant_id", tenantId).limit(5000),
+      ]);
+      if (vouchersRes.error) return json(500, { error: "Failed to load voucher analytics", detail: vouchersRes.error.message });
+      return json(200, { analytics: analyticsFrom(students, groups, events, reviews, results, vouchersRes.data ?? []) });
     }
 
     if (req.method === "GET" && action === "dashboard") {
-      const [center, tickets, seats, payments, results, vouchers, batches, wallet] = await Promise.all([
+      const [center, tickets, seats, payments, results, vouchers, batches, wallet, students, groups, events, reviews] = await Promise.all([
         getCenterProfile(sb, tenantId),
         sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
@@ -744,8 +1060,14 @@ serve(async (req) => {
         sb.from("partner_vouchers").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_voucher_batches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" }),
+        sb.from("partner_center_students").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
+        sb.from("partner_center_groups").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
+        sb.from("partner_center_mock_events").select("id, status, starts_at", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
+        sb.from("partner_center_review_items").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
       ]);
       const voucherRows = vouchers.data ?? [];
+      const eventRows = events.data ?? [];
+      const reviewRows = reviews.data ?? [];
       return json(200, {
         tenant_id: tenantId,
         center,
@@ -758,9 +1080,15 @@ serve(async (req) => {
           vouchers: vouchers.count ?? voucherRows.length,
           vouchers_unused: voucherRows.filter((row: any) => row.status === "unused").length,
           vouchers_redeemed: voucherRows.filter((row: any) => row.status === "redeemed").length,
+          students: students.count ?? students.data?.length ?? 0,
+          active_students: (students.data ?? []).filter((row: any) => row.status === "active").length,
+          groups: groups.count ?? groups.data?.length ?? 0,
+          active_groups: (groups.data ?? []).filter((row: any) => row.status === "active").length,
+          upcoming_events: eventRows.filter((row: any) => ["draft", "scheduled"].includes(row.status) && Date.parse(row.starts_at) >= Date.now()).length,
+          pending_reviews: reviewRows.filter((row: any) => ["pending", "in_review"].includes(row.status)).length,
         },
         wallet: { currency: "UZS", available_amount: Number(wallet.data ?? 0) },
-        credit: { currency: "UZS", available_amount: Number(wallet.data ?? 0) },
+        credit: { currency: "UZS", available_amount: 0 },
       });
     }
 
@@ -820,8 +1148,55 @@ serve(async (req) => {
         });
       }
 
-      if (["update_center_profile", "create_wallet_topup", "create_voucher_batch", "void_voucher", "export_report", "resend_student_invite", "invite_staff", "update_staff"].includes(actionBody)) {
+      const adminOnlyActions = [
+        "update_center_profile",
+        "create_wallet_topup",
+        "create_voucher_batch",
+        "void_voucher",
+        "export_report",
+        "resend_student_invite",
+        "invite_staff",
+        "update_staff",
+        "create_group",
+        "update_group",
+        "assign_student_group",
+        "create_mock_event",
+        "update_mock_event",
+        "assign_review_item",
+        "export_student_report_pdf",
+        "export_group_report_pdf",
+        "export_event_report_pdf",
+        "generate_statement",
+        "request_cash_payout",
+      ];
+      if (adminOnlyActions.includes(actionBody)) {
         if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      }
+      if (actionBody === "create_student_invites" && !canInviteCenterStudents(memberships, tenantId)) {
+        return json(403, { error: "Center counselor/admin access is required" });
+      }
+      if (["mark_event_attendance", "update_review_item"].includes(actionBody) && !requireCenterOperator(memberships, tenantId)) {
+        return json(403, { error: "Center staff access is required" });
+      }
+      if ([
+        "invite_staff",
+        "update_staff",
+        "create_group",
+        "update_group",
+        "assign_student_group",
+        "create_student_invites",
+        "create_mock_event",
+        "update_mock_event",
+        "mark_event_attendance",
+        "assign_review_item",
+        "update_review_item",
+        "export_student_report_pdf",
+        "export_group_report_pdf",
+        "export_event_report_pdf",
+        "generate_statement",
+      ].includes(actionBody)) {
+        const gate = await requireActiveCenterOffice(sb, tenantId, { ...(isObject(body) ? body : {}), center_office: true });
+        if (gate) return gate;
       }
 
       if (actionBody === "invite_staff") {
@@ -837,7 +1212,7 @@ serve(async (req) => {
         if (!membershipId) return json(400, { error: "membership_id is required" });
         const patch: Json = {};
         if (["active", "disabled"].includes(nextStatus)) patch.status = nextStatus;
-        if (["admin", "member"].includes(nextRole)) patch.role = nextRole;
+        if (nextRole) patch.role = normalizeCenterRole(nextRole);
         if (Object.keys(patch).length === 0) return json(400, { error: "No staff change supplied" });
         const { data, error } = await sb
           .from("tenant_memberships")
@@ -851,6 +1226,282 @@ serve(async (req) => {
         if (!data?.id) return json(400, { error: "Staff member not found or cannot modify your own owner access" });
         const staff = await loadCenterStaff(sb, tenantId);
         return json(200, staff);
+      }
+
+      if (actionBody === "create_group" || actionBody === "update_group") {
+        const groupId = String(body.group_id ?? "").trim();
+        const name = String(body.name ?? "").trim().slice(0, 160);
+        if (actionBody === "create_group" && !name) return json(400, { error: "Group name is required" });
+        const payload: Json = {};
+        if (name) payload.name = name;
+        if ("description" in body) payload.description = String(body.description ?? "").trim().slice(0, 2000) || null;
+        if ("product_id" in body) payload.product_id = String(body.product_id ?? "").trim() || null;
+        if ("assigned_teacher_membership_id" in body) payload.assigned_teacher_membership_id = String(body.assigned_teacher_membership_id ?? "").trim() || null;
+        if ("status" in body && ["active", "archived"].includes(String(body.status))) payload.status = String(body.status);
+        if ("metadata" in body) payload.metadata = isObject(body.metadata) ? body.metadata : {};
+
+        const query = sb.from("partner_center_groups");
+        const { data, error } = actionBody === "create_group"
+          ? await query.insert({ tenant_id: tenantId, name, description: payload.description ?? null, product_id: payload.product_id ?? null, assigned_teacher_membership_id: payload.assigned_teacher_membership_id ?? null, metadata: payload.metadata ?? {}, created_by: userId }).select("*").maybeSingle()
+          : await query.update(payload).eq("tenant_id", tenantId).eq("id", groupId).select("*").maybeSingle();
+        if (error) return json(500, { error: "Failed to save group", detail: error.message });
+        return json(200, { group: data, groups: await loadCenterGroups(sb, tenantId) });
+      }
+
+      if (actionBody === "assign_student_group") {
+        const studentId = String(body.student_id ?? "").trim();
+        const groupId = String(body.group_id ?? "").trim();
+        const status = String(body.status ?? "active");
+        if (!studentId || !groupId) return json(400, { error: "student_id and group_id are required" });
+        const { data, error } = await sb
+          .from("partner_center_group_members")
+          .upsert({
+            tenant_id: tenantId,
+            group_id: groupId,
+            student_id: studentId,
+            status: status === "removed" ? "removed" : "active",
+            created_by: userId,
+          }, { onConflict: "group_id,student_id" })
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to assign student group", detail: error.message });
+        return json(200, { membership: data, groups: await loadCenterGroups(sb, tenantId), students: await loadCenterStudents(sb, tenantId) });
+      }
+
+      if (actionBody === "create_student_invites") {
+        const rawStudents = Array.isArray(body.students) ? body.students : [];
+        const groupId = String(body.group_id ?? "").trim() || null;
+        const voucherBatchId = String(body.voucher_batch_id ?? "").trim() || null;
+        const origin = String(body.origin ?? "https://schood.online").replace(/\/$/, "");
+        if (rawStudents.length === 0) return json(400, { error: "students array is required" });
+        const created: any[] = [];
+        for (const raw of rawStudents.slice(0, 200)) {
+          const item = isObject(raw) ? raw as Json : {};
+          const student = await upsertCenterStudent(sb, {
+            tenantId,
+            fullName: String(item.name ?? item.full_name ?? "").trim() || null,
+            email: normalizeEmail(item.email),
+            phone: String(item.phone ?? "").trim() || null,
+            createdBy: userId,
+            metadata: { invite_source: "center_office" },
+          });
+          if (groupId && student?.id) {
+            await sb.from("partner_center_group_members").upsert({ tenant_id: tenantId, group_id: groupId, student_id: student.id, status: "active", created_by: userId }, { onConflict: "group_id,student_id" });
+          }
+          let voucherId: string | null = null;
+          let inviteUrl = origin + "/redeem";
+          if (voucherBatchId) {
+            const { data: voucher } = await sb
+              .from("partner_vouchers")
+              .select("id, code")
+              .eq("tenant_id", tenantId)
+              .eq("batch_id", voucherBatchId)
+              .eq("status", "unused")
+              .is("assigned_email", null)
+              .order("created_at", { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            if (voucher?.id) {
+              voucherId = voucher.id;
+              inviteUrl = `${origin}/redeem/${encodeURIComponent(voucher.code)}`;
+              await sb.from("partner_vouchers").update({
+                assigned_name: student?.full_name ?? null,
+                assigned_email: student?.email ?? null,
+                assigned_phone: student?.phone ?? null,
+              }).eq("id", voucher.id);
+            }
+          }
+          const message = `${student?.full_name ? `${student.full_name}, ` : ""}please open ${inviteUrl} to start your Schood access with ${String(body.center_name ?? "your education center")}.`;
+          const { data: invite, error } = await sb
+            .from("partner_center_student_invites")
+            .insert({
+              tenant_id: tenantId,
+              student_id: student?.id ?? null,
+              group_id: groupId,
+              voucher_batch_id: voucherBatchId,
+              voucher_id: voucherId,
+              full_name: student?.full_name ?? null,
+              email: student?.email ?? null,
+              phone: student?.phone ?? null,
+              invite_url: inviteUrl,
+              message,
+              created_by: userId,
+            })
+            .select("*")
+            .maybeSingle();
+          if (error) return json(500, { error: "Failed to create student invite", detail: error.message });
+          created.push(invite);
+        }
+        return json(200, { invites: created, students: await loadCenterStudents(sb, tenantId) });
+      }
+
+      if (actionBody === "create_mock_event" || actionBody === "update_mock_event") {
+        const eventId = String(body.event_id ?? "").trim();
+        const title = String(body.title ?? "").trim().slice(0, 180);
+        if (actionBody === "create_mock_event" && !title) return json(400, { error: "Event title is required" });
+        const startsAt = body.starts_at ? new Date(String(body.starts_at)).toISOString() : null;
+        const payload: Json = {};
+        if (title) payload.title = title;
+        if ("experience_id" in body) payload.experience_id = String(body.experience_id ?? "").trim() || null;
+        if ("product_id" in body) payload.product_id = String(body.product_id ?? "").trim() || null;
+        if ("group_id" in body) payload.group_id = String(body.group_id ?? "").trim() || null;
+        if ("voucher_batch_id" in body) payload.voucher_batch_id = String(body.voucher_batch_id ?? "").trim() || null;
+        if (startsAt) payload.starts_at = startsAt;
+        if ("ends_at" in body) payload.ends_at = body.ends_at ? new Date(String(body.ends_at)).toISOString() : null;
+        if ("mode" in body && ["online", "offline", "hybrid"].includes(String(body.mode))) payload.mode = String(body.mode);
+        if ("location" in body) payload.location = String(body.location ?? "").trim().slice(0, 500) || null;
+        if ("meeting_url" in body) payload.meeting_url = String(body.meeting_url ?? "").trim().slice(0, 1000) || null;
+        if ("capacity" in body) payload.capacity = normalizeQuantity(body.capacity, 10000);
+        if ("status" in body && ["draft", "scheduled", "completed", "cancelled"].includes(String(body.status))) payload.status = String(body.status);
+        if ("instructions" in body) payload.instructions = String(body.instructions ?? "").trim().slice(0, 3000) || null;
+        if ("metadata" in body) payload.metadata = isObject(body.metadata) ? body.metadata : {};
+        const query = sb.from("partner_center_mock_events");
+        const { data, error } = actionBody === "create_mock_event"
+          ? await query.insert({ tenant_id: tenantId, title, starts_at: startsAt ?? new Date(Date.now() + 86400000).toISOString(), mode: payload.mode ?? "online", status: payload.status ?? "scheduled", ...payload, created_by: userId }).select("*").maybeSingle()
+          : await query.update(payload).eq("tenant_id", tenantId).eq("id", eventId).select("*").maybeSingle();
+        if (error) return json(500, { error: "Failed to save mock event", detail: error.message });
+        return json(200, { event: data, events: await loadMockEvents(sb, tenantId) });
+      }
+
+      if (actionBody === "mark_event_attendance") {
+        const eventId = String(body.event_id ?? "").trim();
+        const studentId = String(body.student_id ?? "").trim();
+        const voucherId = String(body.voucher_id ?? "").trim() || null;
+        const attendanceStatus = String(body.attendance_status ?? "present");
+        if (!eventId || !studentId) return json(400, { error: "event_id and student_id are required" });
+        const { data, error } = await sb
+          .from("partner_center_event_registrations")
+          .upsert({
+            tenant_id: tenantId,
+            event_id: eventId,
+            student_id: studentId,
+            voucher_id: voucherId,
+            attendance_status: ["present", "absent", "late", "pending"].includes(attendanceStatus) ? attendanceStatus : "present",
+            checked_in_by: userId,
+            checked_in_at: new Date().toISOString(),
+          }, { onConflict: "event_id,student_id" })
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to mark attendance", detail: error.message });
+        return json(200, { registration: data, events: await loadMockEvents(sb, tenantId) });
+      }
+
+      if (actionBody === "assign_review_item" || actionBody === "update_review_item") {
+        const reviewId = String(body.review_item_id ?? body.id ?? "").trim();
+        const payload: Json = {};
+        if ("student_id" in body) payload.student_id = String(body.student_id ?? "").trim() || null;
+        if ("group_id" in body) payload.group_id = String(body.group_id ?? "").trim() || null;
+        if ("event_id" in body) payload.event_id = String(body.event_id ?? "").trim() || null;
+        if ("session_id" in body) payload.session_id = String(body.session_id ?? "").trim() || null;
+        if ("exam_registration_id" in body) payload.exam_registration_id = String(body.exam_registration_id ?? "").trim() || null;
+        if ("skill" in body && ["writing", "speaking", "manual"].includes(String(body.skill))) payload.skill = String(body.skill);
+        if ("assigned_staff_membership_id" in body) payload.assigned_staff_membership_id = String(body.assigned_staff_membership_id ?? "").trim() || null;
+        if ("status" in body && ["pending", "in_review", "completed", "released", "cancelled"].includes(String(body.status))) payload.status = String(body.status);
+        if ("due_at" in body) payload.due_at = body.due_at ? new Date(String(body.due_at)).toISOString() : null;
+        if ("score" in body) payload.score = Number(body.score);
+        if ("max_score" in body) payload.max_score = Number(body.max_score);
+        if ("notes" in body) payload.notes = String(body.notes ?? "").trim().slice(0, 5000) || null;
+        if (payload.status === "released") payload.released_at = new Date().toISOString();
+        const query = sb.from("partner_center_review_items");
+        const { data, error } = actionBody === "assign_review_item" && !reviewId
+          ? await query.insert({ tenant_id: tenantId, skill: payload.skill ?? "manual", status: payload.status ?? "pending", ...payload, created_by: userId }).select("*").maybeSingle()
+          : await query.update(payload).eq("tenant_id", tenantId).eq("id", reviewId).select("*").maybeSingle();
+        if (error) return json(500, { error: "Failed to save review item", detail: error.message });
+        return json(200, { review_item: data, review_items: await loadReviewQueue(sb, tenantId) });
+      }
+
+      if (["export_student_report_pdf", "export_group_report_pdf", "export_event_report_pdf"].includes(actionBody)) {
+        const profile = await getCenterProfile(sb, tenantId);
+        const reportType = actionBody === "export_student_report_pdf" ? "student_pdf" : actionBody === "export_group_report_pdf" ? "group_pdf" : "event_pdf";
+        const [students, groups, events, reviews, results] = await Promise.all([
+          loadCenterStudents(sb, tenantId).catch(() => []),
+          loadCenterGroups(sb, tenantId).catch(() => []),
+          loadMockEvents(sb, tenantId).catch(() => []),
+          loadReviewQueue(sb, tenantId).catch(() => []),
+          loadResults(sb, tenantId).catch(() => []),
+        ]);
+        const title = `${profile?.display_name ?? "Education center"} ${reportType.replace("_", " ")}`;
+        const lines = [
+          `Generated: ${new Date().toLocaleString("en-US", { timeZone: "Asia/Tashkent" })}`,
+          `Students: ${students.length}`,
+          `Groups: ${groups.length}`,
+          `Mock events: ${events.length}`,
+          `Results: ${results.length}`,
+          `Pending reviews: ${reviews.filter((row: any) => ["pending", "in_review"].includes(row.status)).length}`,
+          "",
+          ...results.slice(0, 25).map((row: any) => `${row.candidate_name || row.email || "Candidate"} - ${row.experience_name || "Exam"} - ${row.overall_band ?? row.overall_score ?? "pending"}`),
+        ];
+        const pdf_base64 = await createSimplePdf(title, lines);
+        const { data: audit } = await sb
+          .from("partner_center_report_exports")
+          .insert({
+            tenant_id: tenantId,
+            report_type: reportType,
+            filters: isObject(body.filters) ? body.filters : {},
+            filename: `schood-${reportType}-${new Date().toISOString().slice(0, 10)}.pdf`,
+            generated_by: userId,
+          })
+          .select("*")
+          .maybeSingle();
+        return json(200, {
+          filename: `schood-${reportType}-${new Date().toISOString().slice(0, 10)}.pdf`,
+          content_type: "application/pdf",
+          pdf_base64,
+          report_export: audit ?? null,
+        });
+      }
+
+      if (actionBody === "generate_statement") {
+        const currency = String(body.currency ?? "UZS").toUpperCase();
+        const periodStart = String(body.period_start ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
+        const periodEnd = String(body.period_end ?? new Date().toISOString().slice(0, 10));
+        const { data: ledgerRows, error: ledgerError } = await sb
+          .from("partner_wallet_ledger")
+          .select("entry_kind, status, amount, currency, created_at")
+          .eq("tenant_id", tenantId)
+          .eq("currency", currency)
+          .gte("created_at", `${periodStart}T00:00:00.000Z`)
+          .lte("created_at", `${periodEnd}T23:59:59.999Z`);
+        if (ledgerError) return json(500, { error: "Failed to load statement ledger", detail: ledgerError.message });
+        let creditsTotal = 0;
+        let debitsTotal = 0;
+        for (const row of ledgerRows ?? []) {
+          if (["topup", "credit", "commission", "refund", "adjustment"].includes(String((row as any).entry_kind)) && (row as any).status === "posted") {
+            creditsTotal += Number((row as any).amount ?? 0);
+          } else if ((row as any).entry_kind === "debit" && ["posted", "reserved"].includes(String((row as any).status))) {
+            debitsTotal += Number((row as any).amount ?? 0);
+          }
+        }
+        const { data: currentBalance } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency });
+        const closingBalance = Number(currentBalance ?? 0);
+        const openingBalance = Math.max(0, closingBalance - creditsTotal + debitsTotal);
+        const { data, error } = await sb
+          .from("partner_center_statements")
+          .upsert({
+            tenant_id: tenantId,
+            period_start: periodStart,
+            period_end: periodEnd,
+            currency,
+            opening_balance: openingBalance,
+            credits_total: creditsTotal,
+            debits_total: debitsTotal,
+            closing_balance: closingBalance,
+            generated_by: userId,
+            metadata: { ledger_entries: (ledgerRows ?? []).length },
+          }, { onConflict: "tenant_id,period_start,period_end,currency" })
+          .select("*")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to generate statement", detail: error.message });
+        const pdf_base64 = await createSimplePdf("Schood center statement", [
+          `Center tenant: ${tenantId}`,
+          `Period: ${periodStart} to ${periodEnd}`,
+          `Currency: ${currency}`,
+          `Opening balance: ${openingBalance}`,
+          `Credits: ${creditsTotal}`,
+          `Debits: ${debitsTotal}`,
+          `Closing balance: ${closingBalance}`,
+        ]);
+        return json(200, { statement: data, filename: `schood-center-statement-${periodStart}-${periodEnd}.pdf`, content_type: "application/pdf", pdf_base64 });
       }
 
       if (actionBody === "update_center_profile") {
@@ -1184,8 +1835,10 @@ serve(async (req) => {
         }
 
         if (!Number.isFinite(originalAmount) || originalAmount <= 0) return json(400, { error: "Purchase is not priced" });
-        const { data: creditAvailable } = await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
-        const requestedCredit = body.apply_credit ? originalAmount : Math.max(0, Number(body.credit_amount ?? 0));
+        const { data: creditAvailable } = Boolean(body.center_office)
+          ? { data: 0 }
+          : await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
+        const requestedCredit = Boolean(body.center_office) ? 0 : body.apply_credit ? originalAmount : Math.max(0, Number(body.credit_amount ?? 0));
         const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
         return json(200, {
           quote: {
@@ -1232,17 +1885,17 @@ serve(async (req) => {
 
         if (Number.isFinite(originalAmount) && originalAmount > 0 && currency === "UZS") {
           const { data: creditAvailable } = await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
-          const requestedCredit = body.apply_credit || typeof body.credit_amount !== "undefined"
+          const requestedCredit = Boolean(body.center_office) ? 0 : body.apply_credit || typeof body.credit_amount !== "undefined"
             ? (typeof body.credit_amount === "undefined" || body.credit_amount === null ? originalAmount : normalizeMoney(body.credit_amount))
             : 0;
           const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
           const finalAmount = Math.max(0, originalAmount - creditAmount);
-          if (finalAmount > TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS) {
+          if (finalAmount > TSPAY_MAX_AMOUNT_UZS) {
             return json(400, {
-              error: "Online checkout is temporarily limited to 100,000 UZS per transaction while only one payment provider is enabled. For larger education center packs, use wallet top-up/admin settlement or split the purchase.",
+              error: "Current online checkout limit is 200,000,000 UZS per transaction. For larger education center purchases, use wallet top-up/admin settlement or split the purchase.",
               error_code: "online_payment_amount_limit",
-              temporary: true,
-              max_amount: TEMP_ONLINE_PAYMENT_MAX_AMOUNT_UZS,
+              temporary: false,
+              max_amount: TSPAY_MAX_AMOUNT_UZS,
               original_amount: originalAmount,
               credit_amount: creditAmount,
               final_amount: finalAmount,
@@ -1256,6 +1909,14 @@ serve(async (req) => {
           purchase_type: purchaseType,
           tenant_id: String(body.tenant_id ?? tenantId),
           description: String(body.description ?? (purchaseType === "token_pack" ? "Partner mock ticket pack" : "Partner seat pack")),
+          apply_credit: Boolean(body.center_office) ? false : body.apply_credit,
+          credit_amount: Boolean(body.center_office) ? 0 : body.credit_amount,
+          metadata: {
+            ...(isObject(body.metadata) ? body.metadata : {}),
+            center_office: Boolean(body.center_office),
+            center_tenant_id: tenantId,
+            purchaser_user_id: userId,
+          },
         };
         delete (payload as any).action;
         delete (payload as any).center_office;
