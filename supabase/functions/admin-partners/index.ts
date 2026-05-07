@@ -4,6 +4,96 @@ import { authorizeAdminRequest } from "../_shared/admin-access.ts";
 
 type Json = Record<string, unknown>;
 
+const CENTER_TIER_CAPABILITIES: Record<string, Json> = {
+  starter: {
+    tier: "starter",
+    tier_label: "Starter",
+    staff_limit: 3,
+    max_voucher_batch_quantity: 50,
+    max_active_groups: 0,
+    max_upcoming_events: 0,
+    groups_enabled: false,
+    student_invites_enabled: true,
+    mock_events_enabled: false,
+    review_queue_enabled: false,
+    analytics_enabled: false,
+    pdf_reports_enabled: false,
+    statements_enabled: false,
+    advanced_branding_enabled: false,
+    public_events_enabled: false,
+    payouts_enabled: false,
+    white_label_enabled: false,
+    included_features: ["Voucher generation", "Student registry", "CSV reports", "Logo and public page"],
+  },
+  growth: {
+    tier: "growth",
+    tier_label: "Growth",
+    staff_limit: 10,
+    max_voucher_batch_quantity: 300,
+    max_active_groups: 20,
+    max_upcoming_events: 20,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: false,
+    statements_enabled: true,
+    advanced_branding_enabled: false,
+    public_events_enabled: true,
+    payouts_enabled: false,
+    white_label_enabled: false,
+    included_features: ["Groups/classes", "Mock events", "Teacher review queue", "Analytics", "Monthly statements"],
+  },
+  premium: {
+    tier: "premium",
+    tier_label: "Premium",
+    staff_limit: 30,
+    max_voucher_batch_quantity: 500,
+    max_active_groups: 100,
+    max_upcoming_events: 80,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: true,
+    statements_enabled: true,
+    advanced_branding_enabled: true,
+    public_events_enabled: true,
+    payouts_enabled: true,
+    white_label_enabled: false,
+    included_features: ["PDF reports", "Advanced branding", "Revenue share payouts", "Higher staff and batch limits"],
+  },
+  exclusive: {
+    tier: "exclusive",
+    tier_label: "Exclusive",
+    staff_limit: 100,
+    max_voucher_batch_quantity: 1000,
+    max_active_groups: 500,
+    max_upcoming_events: 300,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: true,
+    statements_enabled: true,
+    advanced_branding_enabled: true,
+    public_events_enabled: true,
+    payouts_enabled: true,
+    white_label_enabled: true,
+    included_features: ["Light white-label", "Custom operating limits", "Priority center operations", "Full reporting suite"],
+  },
+};
+
+const normalizeTier = (raw: unknown): string => {
+  const tier = String(raw ?? "").trim().toLowerCase();
+  return ["starter", "growth", "premium", "exclusive"].includes(tier) ? tier : "starter";
+};
+
+const capabilitiesFor = (profile: any): Json => CENTER_TIER_CAPABILITIES[normalizeTier(profile?.package_tier)] ?? CENTER_TIER_CAPABILITIES.starter;
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -79,6 +169,7 @@ serve(async (req) => {
         const { data: balance } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" });
         rows.push({
           ...profile,
+          capabilities: capabilitiesFor(profile),
           wallet: { currency: "UZS", available_amount: Number(balance ?? 0) },
           voucher_counts: voucherCounts.get(tenantId) ?? {},
         });
@@ -95,7 +186,9 @@ serve(async (req) => {
       for (const key of ["display_name", "slug", "logo_url", "status", "package_tier", "commercial_model", "public_instructions"]) {
         if (key in body) patch[key] = body[key];
       }
+      if ("package_tier" in patch) patch.package_tier = normalizeTier(patch.package_tier);
       if ("powered_by_schood" in body) patch.powered_by_schood = Boolean(body.powered_by_schood);
+      if (["starter", "growth"].includes(String(patch.package_tier ?? ""))) patch.powered_by_schood = true;
       if ("branding" in body) patch.branding = isObject(body.branding) ? body.branding : {};
       if ("commission_rules" in body) patch.commission_rules = isObject(body.commission_rules) ? body.commission_rules : {};
       if ("wholesale_pricing" in body) patch.wholesale_pricing = isObject(body.wholesale_pricing) ? body.wholesale_pricing : {};
@@ -108,7 +201,7 @@ serve(async (req) => {
         .select("*")
         .maybeSingle();
       if (error) return json(500, { error: "Failed to update partner", detail: error.message });
-      return json(200, { partner: data });
+      return json(200, { partner: data ? { ...data, capabilities: capabilitiesFor(data) } : data });
     }
 
     if (req.method === "POST" && url.pathname.endsWith("/wallet")) {

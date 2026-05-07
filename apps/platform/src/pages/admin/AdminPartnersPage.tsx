@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Building2, CheckCircle2, RefreshCw, Save, WalletCards, XCircle } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { supabase } from '../../lib/supabase';
+import { getAuthSession, supabase } from '../../lib/supabase';
 import {
   adminPartnersSummary,
   adminPartnersUpdateProfile,
@@ -43,7 +43,7 @@ export const AdminPartnersPage: React.FC = () => {
   const [adjustments, setAdjustments] = useState<Record<string, { amount: number; note: string }>>({});
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setAccessToken(data.session?.access_token ?? null));
+    getAuthSession().then((session) => setAccessToken(session?.access_token ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => setAccessToken(session?.access_token ?? null));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -223,6 +223,15 @@ export const AdminPartnersPage: React.FC = () => {
                         <select value={partner.package_tier} onChange={(e) => void updatePartner(partner.tenant_id, { package_tier: e.target.value })} className={selectClass}>
                           {TIER_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                         </select>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Staff {partner.capabilities?.staff_limit ?? '-'} / batch {partner.capabilities?.max_voucher_batch_quantity ?? '-'}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {partner.capabilities?.groups_enabled ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Groups</span> : null}
+                          {partner.capabilities?.mock_events_enabled ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Events</span> : null}
+                          {partner.capabilities?.pdf_reports_enabled ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">PDF</span> : null}
+                          {partner.capabilities?.advanced_branding_enabled ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Branding</span> : null}
+                        </div>
                       </td>
                       <td className="px-4 py-4 min-w-[170px]">
                         <select value={partner.commercial_model} onChange={(e) => void updatePartner(partner.tenant_id, { commercial_model: e.target.value })} className={selectClass}>

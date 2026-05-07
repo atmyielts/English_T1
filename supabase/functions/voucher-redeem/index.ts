@@ -41,6 +41,9 @@ const normalizeSlug = (raw: unknown): string =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
+const publicEventsEnabled = (center: any): boolean =>
+  ["growth", "premium", "exclusive"].includes(String(center?.package_tier ?? "starter").trim().toLowerCase());
+
 const publicCenterView = async (sb: any, center: any, tenant?: any) => ({
   tenant_id: center?.tenant_id ?? tenant?.id ?? null,
   name: center?.display_name ?? tenant?.name ?? "Education center",
@@ -316,7 +319,7 @@ serve(async (req) => {
           mock_exams: experiences.data ?? [],
           subscriptions: plans.data ?? [],
         },
-        events: events.data ?? [],
+        events: publicEventsEnabled(center) ? events.data ?? [] : [],
       });
     }
 

@@ -2292,8 +2292,30 @@ export type PartnerCenterProfile = {
   commission_rules?: Json | null;
   wholesale_pricing?: Json | null;
   wallet_settings?: Json | null;
+  capabilities?: PartnerCenterCapabilities | null;
   created_at?: string;
   updated_at?: string;
+};
+
+export type PartnerCenterCapabilities = {
+  tier: 'starter' | 'growth' | 'premium' | 'exclusive';
+  tier_label: string;
+  staff_limit: number;
+  max_voucher_batch_quantity: number;
+  max_active_groups: number;
+  max_upcoming_events: number;
+  groups_enabled: boolean;
+  student_invites_enabled: boolean;
+  mock_events_enabled: boolean;
+  review_queue_enabled: boolean;
+  analytics_enabled: boolean;
+  pdf_reports_enabled: boolean;
+  statements_enabled: boolean;
+  advanced_branding_enabled: boolean;
+  public_events_enabled: boolean;
+  payouts_enabled: boolean;
+  white_label_enabled: boolean;
+  included_features: string[];
 };
 
 export type PartnerVoucherBatch = {
@@ -2590,6 +2612,7 @@ export const partnerOfficeDashboard = (accessToken: string, tenantId?: string | 
   partnerOfficeGet<{
     tenant_id: string;
     center?: PartnerCenterProfile | null;
+    capabilities?: PartnerCenterCapabilities | null;
     counts: Record<string, number>;
     wallet?: { currency: string; available_amount: number };
     credit: { currency: string; available_amount: number };

@@ -68,6 +68,7 @@ import {
   partnerOfficeWallet,
   tspayStatus,
   type PartnerCenterProfile,
+  type PartnerCenterCapabilities,
   type PartnerCenterGroup,
   type PartnerCenterMockEvent,
   type PartnerCenterReviewItem,
@@ -113,6 +114,27 @@ const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50';
 const FALLBACK_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 200_000_000;
 
+const STARTER_CAPABILITIES: PartnerCenterCapabilities = {
+  tier: 'starter',
+  tier_label: 'Starter',
+  staff_limit: 3,
+  max_voucher_batch_quantity: 50,
+  max_active_groups: 0,
+  max_upcoming_events: 0,
+  groups_enabled: false,
+  student_invites_enabled: true,
+  mock_events_enabled: false,
+  review_queue_enabled: false,
+  analytics_enabled: false,
+  pdf_reports_enabled: false,
+  statements_enabled: false,
+  advanced_branding_enabled: false,
+  public_events_enabled: false,
+  payouts_enabled: false,
+  white_label_enabled: false,
+  included_features: ['Voucher generation', 'Student registry', 'CSV reports', 'Logo and public page'],
+};
+
 const money = (amount?: number | null, currency = 'UZS') =>
   typeof amount === 'number' && Number.isFinite(amount) ? `${amount.toLocaleString()} ${currency}` : '-';
 
@@ -147,6 +169,35 @@ const StatusPill: React.FC<{ status?: string | null }> = ({ status }) => (
   <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${statusTone(status)}`}>
     {status || 'unknown'}
   </span>
+);
+
+const TierCapabilitiesPanel: React.FC<{ capabilities: PartnerCenterCapabilities }> = ({ capabilities }) => (
+  <section className={`${panelClass} p-5 md:p-6`}>
+    <SectionTitle icon={Building2} label="Tier controls" title={`${capabilities.tier_label} center capabilities`} />
+    <div className="mt-5 grid gap-3 md:grid-cols-4">
+      <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Staff limit</p>
+        <p className="mt-2 text-xl font-bold">{capabilities.staff_limit}</p>
+      </div>
+      <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Voucher batch</p>
+        <p className="mt-2 text-xl font-bold">{capabilities.max_voucher_batch_quantity}</p>
+      </div>
+      <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Groups</p>
+        <p className="mt-2 text-xl font-bold">{capabilities.groups_enabled ? capabilities.max_active_groups : 'Locked'}</p>
+      </div>
+      <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Mock events</p>
+        <p className="mt-2 text-xl font-bold">{capabilities.mock_events_enabled ? capabilities.max_upcoming_events : 'Locked'}</p>
+      </div>
+    </div>
+    <div className="mt-4 flex flex-wrap gap-2">
+      {capabilities.included_features.map((feature) => (
+        <span key={feature} className="rounded-full border border-gray-900/15 bg-white px-3 py-1 text-xs font-semibold text-gray-700">{feature}</span>
+      ))}
+    </div>
+  </section>
 );
 
 const SectionTitle: React.FC<{ icon: LucideIcon; label: string; title: string; action?: React.ReactNode }> = ({
@@ -252,6 +303,18 @@ export const CenterOfficePage: React.FC = () => {
   const redeemUrl = (code?: string | null) => `${origin}/redeem${code ? `/${encodeURIComponent(code)}` : ''}`;
   const centerTenantId = center?.tenant_id ?? null;
   const centerIsActive = center?.status === 'active';
+  const capabilities = center?.capabilities ?? STARTER_CAPABILITIES;
+  const visibleTabs = useMemo(
+    () =>
+      tabs.filter((item) => {
+        if (item.id === 'groups') return capabilities.groups_enabled;
+        if (item.id === 'events') return capabilities.mock_events_enabled;
+        if (item.id === 'reviews') return capabilities.review_queue_enabled;
+        if (item.id === 'payments') return capabilities.payouts_enabled || center?.commercial_model === 'revenue_share' || center?.commercial_model === 'hybrid';
+        return true;
+      }),
+    [capabilities, center?.commercial_model],
+  );
   const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
   const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
   const ticketEstimate = (selectedExperience?.price_amount ?? 0) * ticketForm.quantity;
@@ -392,6 +455,10 @@ export const CenterOfficePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!visibleTabs.some((item) => item.id === tab)) setTab('overview');
+  }, [tab, visibleTabs]);
+
   const copy = async (value: string, message = 'Copied.') => {
     if (!value) return;
     await navigator.clipboard.writeText(value);
@@ -488,6 +555,10 @@ export const CenterOfficePage: React.FC = () => {
   const createVoucherBatch = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
+    if (voucherForm.quantity > capabilities.max_voucher_batch_quantity) {
+      setError(`${capabilities.tier_label} centers can generate up to ${capabilities.max_voucher_batch_quantity} vouchers per batch.`);
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -530,6 +601,10 @@ export const CenterOfficePage: React.FC = () => {
   const saveBranding = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
+    if (!brandingForm.powered_by_schood && !capabilities.advanced_branding_enabled) {
+      setError('Removing the Powered by Schood footer is available on Premium and Exclusive center tiers.');
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -867,6 +942,15 @@ export const CenterOfficePage: React.FC = () => {
                   Copy
                 </button>
               </div>
+              <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{capabilities.tier_label} tier</p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/75">
+                  <span>Staff {staffMembers.filter((member) => member.status === 'active').length}/{capabilities.staff_limit}</span>
+                  <span>Batch max {capabilities.max_voucher_batch_quantity}</span>
+                  <span>Groups {capabilities.groups_enabled ? 'on' : 'locked'}</span>
+                  <span>PDF {capabilities.pdf_reports_enabled ? 'on' : 'premium'}</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -875,7 +959,7 @@ export const CenterOfficePage: React.FC = () => {
 
           {centerIsActive ? (
             <nav className={`${panelClass} flex flex-wrap gap-2 p-3`}>
-              {tabs.map((item) => {
+              {visibleTabs.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
@@ -932,6 +1016,7 @@ export const CenterOfficePage: React.FC = () => {
                 <StatCard label="Redeemed" value={dashboard?.counts?.vouchers_redeemed ?? 0} icon={UsersRound} />
                 <StatCard label="Completed exams" value={reports?.completed_exams ?? dashboard?.counts?.results ?? 0} icon={ClipboardList} />
               </div>
+              <TierCapabilitiesPanel capabilities={capabilities} />
               <div className={`${panelClass} overflow-hidden`}>
                 <div className="border-b border-gray-900/10 p-5 md:p-6">
                   <SectionTitle icon={Ticket} label="Recent inventory" title="Latest vouchers" />
@@ -996,6 +1081,7 @@ export const CenterOfficePage: React.FC = () => {
                 plans={plans}
                 wallet={wallet}
                 form={voucherForm}
+                maxQuantity={capabilities.max_voucher_batch_quantity}
                 loading={loading}
                 onChange={setVoucherForm}
                 onCreate={() => void createVoucherBatch()}
@@ -1040,6 +1126,7 @@ export const CenterOfficePage: React.FC = () => {
               inviteForm={inviteForm}
               groups={groups}
               batches={batches}
+              capabilities={capabilities}
               loading={loading}
               onInviteFormChange={setInviteForm}
               onInvite={() => void createStudentInvite()}
@@ -1173,28 +1260,34 @@ export const CenterOfficePage: React.FC = () => {
                     action={<button type="button" onClick={() => void exportReport()} className={primaryButton}><Download className="h-4 w-4" />Export CSV</button>}
                   />
                   <p className="mt-4 text-sm text-gray-600">CSV export remains available for offline teacher review and spreadsheets.</p>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <button type="button" onClick={() => void exportPdf('student')} className={secondaryButton}>
-                      <FileText className="h-4 w-4" />
-                      Student PDF
-                    </button>
-                    <button type="button" onClick={() => void exportPdf('group')} className={secondaryButton}>
-                      <FileText className="h-4 w-4" />
-                      Group PDF
-                    </button>
-                    <button type="button" onClick={() => void exportPdf('event')} className={secondaryButton}>
-                      <FileText className="h-4 w-4" />
-                      Event PDF
-                    </button>
-                  </div>
+                  {capabilities.pdf_reports_enabled ? (
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      <button type="button" onClick={() => void exportPdf('student')} className={secondaryButton}>
+                        <FileText className="h-4 w-4" />
+                        Student PDF
+                      </button>
+                      <button type="button" onClick={() => void exportPdf('group')} className={secondaryButton}>
+                        <FileText className="h-4 w-4" />
+                        Group PDF
+                      </button>
+                      <button type="button" onClick={() => void exportPdf('event')} className={secondaryButton}>
+                        <FileText className="h-4 w-4" />
+                        Event PDF
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      PDF reports unlock on Premium and Exclusive center tiers.
+                    </div>
+                  )}
                 </div>
 
                 <div className={`${panelClass} p-5 md:p-6`}>
                   <SectionTitle icon={ReceiptText} label="Statements" title="Monthly center statement" />
                   <p className="mt-4 text-sm text-gray-600">Statements summarize wallet credits, debits, paid purchases, voucher batches, and payouts for the center tenant.</p>
-                  <button type="button" onClick={() => void generateStatement()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
+                  <button type="button" onClick={() => void generateStatement()} disabled={loading || !capabilities.statements_enabled} className={`${primaryButton} mt-5 w-full`}>
                     <ReceiptText className="h-4 w-4" />
-                    Generate statement
+                    {capabilities.statements_enabled ? 'Generate statement' : 'Growth tier required'}
                   </button>
                 </div>
               </div>
@@ -1202,7 +1295,7 @@ export const CenterOfficePage: React.FC = () => {
               <div className="grid gap-5 lg:grid-cols-2">
                 <div className={`${panelClass} p-5 md:p-6`}>
                   <SectionTitle icon={BarChart3} label="Analytics" title="Center performance" />
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {capabilities.analytics_enabled ? <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Redemption rate</p>
                       <p className="mt-2 text-2xl font-bold">{Math.round(Number(analytics?.redemption_rate ?? 0) * 100)}%</p>
@@ -1219,7 +1312,11 @@ export const CenterOfficePage: React.FC = () => {
                       <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pending reviews</p>
                       <p className="mt-2 text-2xl font-bold">{analytics?.pending_reviews ?? 0}</p>
                     </div>
-                  </div>
+                  </div> : (
+                    <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      Analytics unlock on Growth, Premium, and Exclusive center tiers.
+                    </div>
+                  )}
                 </div>
 
                 <div className={`${panelClass} overflow-hidden`}>
@@ -1295,8 +1392,14 @@ export const CenterOfficePage: React.FC = () => {
                   </div>
                   <label className="md:col-span-2 text-sm font-semibold text-gray-800">Public instructions<textarea value={brandingForm.public_instructions} onChange={(e) => setBrandingForm((prev) => ({ ...prev, public_instructions: e.target.value }))} className={`${inputClass} min-h-[120px]`} /></label>
                   <label className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/15 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-800">
-                    <span>Powered by Schood</span>
-                    <input type="checkbox" checked={brandingForm.powered_by_schood} onChange={(e) => setBrandingForm((prev) => ({ ...prev, powered_by_schood: e.target.checked }))} className="h-5 w-5 accent-[#0f172a]" />
+                    <span>Powered by Schood{capabilities.advanced_branding_enabled ? '' : ' (Premium+)'}</span>
+                    <input
+                      type="checkbox"
+                      checked={brandingForm.powered_by_schood}
+                      disabled={!capabilities.advanced_branding_enabled}
+                      onChange={(e) => setBrandingForm((prev) => ({ ...prev, powered_by_schood: e.target.checked }))}
+                      className="h-5 w-5 accent-[#0f172a] disabled:opacity-50"
+                    />
                   </label>
                 </div>
                 <button type="button" onClick={() => void saveBranding()} disabled={loading} className={`${primaryButton} mt-5`}>
@@ -1323,7 +1426,9 @@ export const CenterOfficePage: React.FC = () => {
                 <label className="mt-5 block text-sm font-semibold text-gray-800">Method<input value={cashPayout.payout_method} onChange={(e) => setCashPayout((prev) => ({ ...prev, payout_method: e.target.value }))} className={inputClass} /></label>
                 <label className="mt-4 block text-sm font-semibold text-gray-800">Details<input value={cashPayout.payout_details} onChange={(e) => setCashPayout((prev) => ({ ...prev, payout_details: e.target.value }))} className={inputClass} /></label>
                 <label className="mt-4 block text-sm font-semibold text-gray-800">Note<textarea value={cashPayout.note} onChange={(e) => setCashPayout((prev) => ({ ...prev, note: e.target.value }))} className={`${inputClass} min-h-[90px]`} /></label>
-                <button type="button" onClick={() => void requestCashPayout()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>Request payout</button>
+                <button type="button" onClick={() => void requestCashPayout()} disabled={loading || !capabilities.payouts_enabled} className={`${primaryButton} mt-5 w-full`}>
+                  {capabilities.payouts_enabled ? 'Request payout' : 'Premium tier required'}
+                </button>
               </div>
             </section>
           ) : null}
@@ -1338,17 +1443,20 @@ const StudentsPanel: React.FC<{
   inviteForm: { name: string; email: string; phone: string; group_id: string; voucher_batch_id: string };
   groups: PartnerCenterGroup[];
   batches: PartnerVoucherBatch[];
+  capabilities: PartnerCenterCapabilities;
   loading: boolean;
   onInviteFormChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; group_id: string; voucher_batch_id: string }>>;
   onInvite: () => void;
-}> = ({ students, inviteForm, groups, batches, loading, onInviteFormChange, onInvite }) => (
+}> = ({ students, inviteForm, groups, batches, capabilities, loading, onInviteFormChange, onInvite }) => (
   <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
     <div className={`${panelClass} p-5 md:p-6`}>
       <SectionTitle icon={UserPlus} label="Invite" title="Add student" />
       <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={inviteForm.name} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Email<input value={inviteForm.email} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Phone<input value={inviteForm.phone} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, phone: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={inviteForm.group_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      {capabilities.groups_enabled ? (
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={inviteForm.group_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      ) : null}
       <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={inviteForm.voucher_batch_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No voucher</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
       <button type="button" onClick={onInvite} disabled={loading || (!inviteForm.email.trim() && !inviteForm.phone.trim())} className={`${primaryButton} mt-5 w-full`}>Prepare invite</button>
     </div>
@@ -1579,10 +1687,11 @@ const VoucherGeneratorPanel: React.FC<{
   plans: PartnerOfficePlan[];
   wallet: { currency: string; available_amount: number };
   form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string };
+  maxQuantity: number;
   loading: boolean;
   onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
   onCreate: () => void;
-}> = ({ catalog, plans, wallet, form, loading, onChange, onCreate }) => (
+}> = ({ catalog, plans, wallet, form, maxQuantity, loading, onChange, onCreate }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={UserPlus} label="Distribution" title="Generate vouchers" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Access type<select value={form.access_kind} onChange={(e) => onChange((prev) => ({ ...prev, access_kind: e.target.value as any }))} className={inputClass}><option value="mock_exam">Mock exam</option><option value="subscription">Subscription</option><option value="seat">Seat voucher</option></select></label>
@@ -1592,12 +1701,13 @@ const VoucherGeneratorPanel: React.FC<{
       <label className="mt-4 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
     )}
     <div className="mt-4 grid grid-cols-2 gap-3">
-      <label className="text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={500} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
+      <label className="text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={maxQuantity} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
       <label className="text-sm font-semibold text-gray-800">Days<input type="number" min={1} max={365} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
     </div>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Code prefix<input value={form.prefix} onChange={(e) => onChange((prev) => ({ ...prev, prefix: e.target.value }))} className={inputClass} /></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Commercial model<select value={form.source_model} onChange={(e) => onChange((prev) => ({ ...prev, source_model: e.target.value }))} className={inputClass}><option value="prepaid_wallet">Prepaid wallet</option><option value="wholesale">Wholesale</option><option value="revenue_share">Revenue share</option><option value="manual">Manual</option></select></label>
     <p className="mt-4 text-sm text-gray-600">Wallet available: <strong>{money(wallet.available_amount, wallet.currency)}</strong></p>
+    <p className="mt-2 text-xs text-gray-500">Your current tier allows up to {maxQuantity} vouchers per batch.</p>
     <button type="button" onClick={onCreate} disabled={loading} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
   </div>
 );

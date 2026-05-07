@@ -8,6 +8,110 @@ type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: s
 const TSPAY_MIN_AMOUNT_UZS = 1000;
 const TSPAY_MAX_AMOUNT_UZS = 200000000;
 
+type CenterCapabilities = {
+  tier: "starter" | "growth" | "premium" | "exclusive";
+  tier_label: string;
+  staff_limit: number;
+  max_voucher_batch_quantity: number;
+  max_active_groups: number;
+  max_upcoming_events: number;
+  groups_enabled: boolean;
+  student_invites_enabled: boolean;
+  mock_events_enabled: boolean;
+  review_queue_enabled: boolean;
+  analytics_enabled: boolean;
+  pdf_reports_enabled: boolean;
+  statements_enabled: boolean;
+  advanced_branding_enabled: boolean;
+  public_events_enabled: boolean;
+  payouts_enabled: boolean;
+  white_label_enabled: boolean;
+  included_features: string[];
+};
+
+const CENTER_TIER_CAPABILITIES: Record<string, CenterCapabilities> = {
+  starter: {
+    tier: "starter",
+    tier_label: "Starter",
+    staff_limit: 3,
+    max_voucher_batch_quantity: 50,
+    max_active_groups: 0,
+    max_upcoming_events: 0,
+    groups_enabled: false,
+    student_invites_enabled: true,
+    mock_events_enabled: false,
+    review_queue_enabled: false,
+    analytics_enabled: false,
+    pdf_reports_enabled: false,
+    statements_enabled: false,
+    advanced_branding_enabled: false,
+    public_events_enabled: false,
+    payouts_enabled: false,
+    white_label_enabled: false,
+    included_features: ["Voucher generation", "Student registry", "CSV reports", "Logo and public page"],
+  },
+  growth: {
+    tier: "growth",
+    tier_label: "Growth",
+    staff_limit: 10,
+    max_voucher_batch_quantity: 300,
+    max_active_groups: 20,
+    max_upcoming_events: 20,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: false,
+    statements_enabled: true,
+    advanced_branding_enabled: false,
+    public_events_enabled: true,
+    payouts_enabled: false,
+    white_label_enabled: false,
+    included_features: ["Groups/classes", "Mock events", "Teacher review queue", "Analytics", "Monthly statements"],
+  },
+  premium: {
+    tier: "premium",
+    tier_label: "Premium",
+    staff_limit: 30,
+    max_voucher_batch_quantity: 500,
+    max_active_groups: 100,
+    max_upcoming_events: 80,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: true,
+    statements_enabled: true,
+    advanced_branding_enabled: true,
+    public_events_enabled: true,
+    payouts_enabled: true,
+    white_label_enabled: false,
+    included_features: ["PDF reports", "Advanced branding", "Revenue share payouts", "Higher staff and batch limits"],
+  },
+  exclusive: {
+    tier: "exclusive",
+    tier_label: "Exclusive",
+    staff_limit: 100,
+    max_voucher_batch_quantity: 1000,
+    max_active_groups: 500,
+    max_upcoming_events: 300,
+    groups_enabled: true,
+    student_invites_enabled: true,
+    mock_events_enabled: true,
+    review_queue_enabled: true,
+    analytics_enabled: true,
+    pdf_reports_enabled: true,
+    statements_enabled: true,
+    advanced_branding_enabled: true,
+    public_events_enabled: true,
+    payouts_enabled: true,
+    white_label_enabled: true,
+    included_features: ["Light white-label", "Custom operating limits", "Priority center operations", "Full reporting suite"],
+  },
+};
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -91,6 +195,40 @@ const normalizeCenterRole = (raw: unknown): "owner" | "admin" | "teacher" | "cou
   if (role === "admin") return "admin";
   if (role === "counselor") return "counselor";
   return "teacher";
+};
+
+const normalizeCenterTier = (raw: unknown): CenterCapabilities["tier"] => {
+  const tier = String(raw ?? "").trim().toLowerCase();
+  if (tier === "growth" || tier === "premium" || tier === "exclusive") return tier;
+  return "starter";
+};
+
+const getCenterCapabilities = (profile?: any | null): CenterCapabilities => {
+  const base = CENTER_TIER_CAPABILITIES[normalizeCenterTier(profile?.package_tier)] ?? CENTER_TIER_CAPABILITIES.starter;
+  const overrides = isObject(profile?.wallet_settings) && isObject((profile.wallet_settings as Json).capability_overrides)
+    ? ((profile.wallet_settings as Json).capability_overrides as Json)
+    : {};
+  return {
+    ...base,
+    staff_limit: Number(overrides.staff_limit ?? base.staff_limit),
+    max_voucher_batch_quantity: Number(overrides.max_voucher_batch_quantity ?? base.max_voucher_batch_quantity),
+    max_active_groups: Number(overrides.max_active_groups ?? base.max_active_groups),
+    max_upcoming_events: Number(overrides.max_upcoming_events ?? base.max_upcoming_events),
+  };
+};
+
+const withCenterCapabilities = (profile?: any | null): any | null =>
+  profile?.tenant_id ? { ...profile, capabilities: getCenterCapabilities(profile) } : profile ?? null;
+
+const requireTierCapability = (profile: any, capability: keyof CenterCapabilities, label: string): Response | null => {
+  const capabilities = getCenterCapabilities(profile);
+  if (Boolean((capabilities as any)[capability])) return null;
+  return json(403, {
+    error: `${label} is not available on the ${capabilities.tier_label} center tier.`,
+    error_code: "center_tier_capability_required",
+    required_capability: capability,
+    tier: capabilities.tier,
+  });
 };
 
 const canManageCenter = (memberships: MembershipRow[], tenantId: string): boolean =>
@@ -791,7 +929,7 @@ serve(async (req) => {
       const center = requestedTenantId ? await getCenterProfile(sb, tenantId) : await findCenterProfileForMemberships(sb, memberships);
       const resolvedTenantId = center?.tenant_id ?? tenantId;
       const tenant = await getFirstTenant(sb, resolvedTenantId);
-      return json(200, { center, tenant, needs_application: !center?.tenant_id });
+      return json(200, { center: withCenterCapabilities(center), tenant, needs_application: !center?.tenant_id });
     }
 
     if (req.method === "GET" && (action === "catalog" || action === "experiences")) {
@@ -918,21 +1056,33 @@ serve(async (req) => {
 
     if (req.method === "GET" && action === "groups") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const profile = await getCenterProfile(sb, tenantId);
+      const gate = requireTierCapability(profile, "groups_enabled", "Groups and classes");
+      if (gate) return gate;
       return json(200, { groups: await loadCenterGroups(sb, tenantId) });
     }
 
     if (req.method === "GET" && action === "mock_events") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const profile = await getCenterProfile(sb, tenantId);
+      const gate = requireTierCapability(profile, "mock_events_enabled", "Mock events");
+      if (gate) return gate;
       return json(200, { events: await loadMockEvents(sb, tenantId) });
     }
 
     if (req.method === "GET" && action === "review_queue") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const profile = await getCenterProfile(sb, tenantId);
+      const gate = requireTierCapability(profile, "review_queue_enabled", "Teacher review queue");
+      if (gate) return gate;
       return json(200, { review_items: await loadReviewQueue(sb, tenantId) });
     }
 
     if (req.method === "GET" && action === "statements") {
       if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
+      const profile = await getCenterProfile(sb, tenantId);
+      const gate = requireTierCapability(profile, "statements_enabled", "Monthly statements");
+      if (gate) return gate;
       const { data, error } = await sb
         .from("partner_center_statements")
         .select("*")
@@ -1038,6 +1188,9 @@ serve(async (req) => {
 
     if (req.method === "GET" && action === "analytics") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const profile = await getCenterProfile(sb, tenantId);
+      const gate = requireTierCapability(profile, "analytics_enabled", "Analytics");
+      if (gate) return gate;
       const [students, groups, events, reviews, results, vouchersRes] = await Promise.all([
         loadCenterStudents(sb, tenantId),
         loadCenterGroups(sb, tenantId),
@@ -1070,7 +1223,8 @@ serve(async (req) => {
       const reviewRows = reviews.data ?? [];
       return json(200, {
         tenant_id: tenantId,
-        center,
+        center: withCenterCapabilities(center),
+        capabilities: getCenterCapabilities(center),
         counts: {
           tickets: tickets.count ?? 0,
           seats: seats.count ?? 0,
@@ -1128,7 +1282,7 @@ serve(async (req) => {
           .select("*")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to save logo", detail: error.message });
-        return json(200, { center: data, logo_url: signedUrl, storage: branding.logo_storage });
+        return json(200, { center: withCenterCapabilities(data), logo_url: signedUrl, storage: branding.logo_storage });
       }
 
       const body = (await req.json().catch(() => ({}))) as Json;
@@ -1143,6 +1297,7 @@ serve(async (req) => {
         const result = await createCenterApplication(sb, body, authData.user);
         return json(200, {
           ...result,
+          center: withCenterCapabilities(result.center),
           status: "pending",
           note: "Center application created. Schood admin approval is required before dashboard tools unlock.",
         });
@@ -1200,6 +1355,19 @@ serve(async (req) => {
       }
 
       if (actionBody === "invite_staff") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const capabilities = getCenterCapabilities(profile);
+        const currentStaff = await loadCenterStaff(sb, tenantId);
+        const occupiedStaffSlots = currentStaff.members.filter((row: any) => row.status === "active").length +
+          currentStaff.invites.filter((row: any) => row.status === "pending").length;
+        if (occupiedStaffSlots >= capabilities.staff_limit) {
+          return json(403, {
+            error: `${capabilities.tier_label} centers can have up to ${capabilities.staff_limit} active or pending staff accounts.`,
+            error_code: "center_tier_limit_reached",
+            limit: capabilities.staff_limit,
+            tier: capabilities.tier,
+          });
+        }
         const result = await inviteCenterStaff(sb, tenantId, body.email, body.role, userId);
         const staff = await loadCenterStaff(sb, tenantId);
         return json(200, { ...result, ...staff });
@@ -1229,6 +1397,26 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_group" || actionBody === "update_group") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "groups_enabled", "Groups and classes");
+        if (gate) return gate;
+        if (actionBody === "create_group") {
+          const capabilities = getCenterCapabilities(profile);
+          const { count, error: countError } = await sb
+            .from("partner_center_groups")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("status", "active");
+          if (countError) return json(500, { error: "Failed to check group limits", detail: countError.message });
+          if (Number(count ?? 0) >= capabilities.max_active_groups) {
+            return json(403, {
+              error: `${capabilities.tier_label} centers can have up to ${capabilities.max_active_groups} active groups.`,
+              error_code: "center_tier_limit_reached",
+              limit: capabilities.max_active_groups,
+              tier: capabilities.tier,
+            });
+          }
+        }
         const groupId = String(body.group_id ?? "").trim();
         const name = String(body.name ?? "").trim().slice(0, 160);
         if (actionBody === "create_group" && !name) return json(400, { error: "Group name is required" });
@@ -1249,6 +1437,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "assign_student_group") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "groups_enabled", "Groups and classes");
+        if (gate) return gate;
         const studentId = String(body.student_id ?? "").trim();
         const groupId = String(body.group_id ?? "").trim();
         const status = String(body.status ?? "active");
@@ -1269,6 +1460,13 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_student_invites") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const inviteGate = requireTierCapability(profile, "student_invites_enabled", "Student invitations");
+        if (inviteGate) return inviteGate;
+        if (String(body.group_id ?? "").trim()) {
+          const groupGate = requireTierCapability(profile, "groups_enabled", "Group assignment");
+          if (groupGate) return groupGate;
+        }
         const rawStudents = Array.isArray(body.students) ? body.students : [];
         const groupId = String(body.group_id ?? "").trim() || null;
         const voucherBatchId = String(body.voucher_batch_id ?? "").trim() || null;
@@ -1336,6 +1534,27 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_mock_event" || actionBody === "update_mock_event") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "mock_events_enabled", "Mock events");
+        if (gate) return gate;
+        if (actionBody === "create_mock_event") {
+          const capabilities = getCenterCapabilities(profile);
+          const { count, error: countError } = await sb
+            .from("partner_center_mock_events")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .in("status", ["draft", "scheduled"])
+            .gte("starts_at", new Date().toISOString());
+          if (countError) return json(500, { error: "Failed to check event limits", detail: countError.message });
+          if (Number(count ?? 0) >= capabilities.max_upcoming_events) {
+            return json(403, {
+              error: `${capabilities.tier_label} centers can have up to ${capabilities.max_upcoming_events} upcoming mock events.`,
+              error_code: "center_tier_limit_reached",
+              limit: capabilities.max_upcoming_events,
+              tier: capabilities.tier,
+            });
+          }
+        }
         const eventId = String(body.event_id ?? "").trim();
         const title = String(body.title ?? "").trim().slice(0, 180);
         if (actionBody === "create_mock_event" && !title) return json(400, { error: "Event title is required" });
@@ -1364,6 +1583,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "mark_event_attendance") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "mock_events_enabled", "Mock event attendance");
+        if (gate) return gate;
         const eventId = String(body.event_id ?? "").trim();
         const studentId = String(body.student_id ?? "").trim();
         const voucherId = String(body.voucher_id ?? "").trim() || null;
@@ -1387,6 +1609,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "assign_review_item" || actionBody === "update_review_item") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "review_queue_enabled", "Teacher review queue");
+        if (gate) return gate;
         const reviewId = String(body.review_item_id ?? body.id ?? "").trim();
         const payload: Json = {};
         if ("student_id" in body) payload.student_id = String(body.student_id ?? "").trim() || null;
@@ -1412,6 +1637,8 @@ serve(async (req) => {
 
       if (["export_student_report_pdf", "export_group_report_pdf", "export_event_report_pdf"].includes(actionBody)) {
         const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "pdf_reports_enabled", "PDF report exports");
+        if (gate) return gate;
         const reportType = actionBody === "export_student_report_pdf" ? "student_pdf" : actionBody === "export_group_report_pdf" ? "group_pdf" : "event_pdf";
         const [students, groups, events, reviews, results] = await Promise.all([
           loadCenterStudents(sb, tenantId).catch(() => []),
@@ -1452,6 +1679,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "generate_statement") {
+        const profile = await getCenterProfile(sb, tenantId);
+        const gate = requireTierCapability(profile, "statements_enabled", "Monthly statements");
+        if (gate) return gate;
         const currency = String(body.currency ?? "UZS").toUpperCase();
         const periodStart = String(body.period_start ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
         const periodEnd = String(body.period_end ?? new Date().toISOString().slice(0, 10));
@@ -1511,7 +1741,18 @@ serve(async (req) => {
         if ("slug" in body) patch.slug = normalizeSlug(body.slug, current.slug);
         if ("logo_url" in body) patch.logo_url = String(body.logo_url ?? "").trim().slice(0, 1000) || null;
         if ("public_instructions" in body) patch.public_instructions = String(body.public_instructions ?? "").trim().slice(0, 3000) || null;
-        if ("powered_by_schood" in body) patch.powered_by_schood = Boolean(body.powered_by_schood);
+        if ("powered_by_schood" in body) {
+          const capabilities = getCenterCapabilities(current);
+          if (Boolean(body.powered_by_schood) === false && !capabilities.advanced_branding_enabled) {
+            return json(403, {
+              error: "Removing the Powered by Schood footer is available on Premium and Exclusive center tiers.",
+              error_code: "center_tier_capability_required",
+              required_capability: "advanced_branding_enabled",
+              tier: capabilities.tier,
+            });
+          }
+          patch.powered_by_schood = Boolean(body.powered_by_schood);
+        }
         if ("branding" in body) patch.branding = isObject(body.branding) ? body.branding : {};
         if ("commercial_model" in body && ["prepaid_wallet", "wholesale", "revenue_share", "hybrid"].includes(String(body.commercial_model))) {
           patch.commercial_model = String(body.commercial_model);
@@ -1524,7 +1765,7 @@ serve(async (req) => {
           .select("*")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to update center profile", detail: error.message });
-        return json(200, { center: data });
+        return json(200, { center: withCenterCapabilities(data) });
       }
 
       if (actionBody === "create_wallet_topup") {
@@ -1555,10 +1796,19 @@ serve(async (req) => {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
         const profile = await ensureCenterProfile(sb, tenantId, userId);
+        const capabilities = getCenterCapabilities(profile);
         const accessKind = String(body.access_kind ?? "").trim();
         if (!["mock_exam", "subscription", "seat"].includes(accessKind)) return json(400, { error: "Unsupported access_kind" });
-        const quantity = normalizeQuantity(body.quantity, 500);
-        if (!quantity) return json(400, { error: "quantity must be between 1 and 500" });
+        const quantity = normalizeQuantity(body.quantity, 1000);
+        if (!quantity) return json(400, { error: "quantity must be between 1 and 1000" });
+        if (quantity > capabilities.max_voucher_batch_quantity) {
+          return json(403, {
+            error: `${capabilities.tier_label} centers can generate up to ${capabilities.max_voucher_batch_quantity} vouchers per batch.`,
+            error_code: "center_tier_limit_reached",
+            limit: capabilities.max_voucher_batch_quantity,
+            tier: capabilities.tier,
+          });
+        }
         const prefix = normalizeCode(body.prefix ?? `SCH-${String(profile.slug ?? "CENTER").toUpperCase()}`);
         const expiresAt = body.expires_at
           ? new Date(String(body.expires_at)).toISOString()
@@ -1803,6 +2053,9 @@ serve(async (req) => {
       if (actionBody === "request_cash_payout") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
+        const profile = await getCenterProfile(sb, tenantId);
+        const capabilityGate = requireTierCapability(profile, "payouts_enabled", "Cash payouts");
+        if (capabilityGate) return capabilityGate;
         const payload = { ...body };
         delete (payload as any).action;
         delete (payload as any).center_office;
