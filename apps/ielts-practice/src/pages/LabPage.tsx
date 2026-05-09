@@ -7,6 +7,7 @@ import {
   practiceLabSubmit,
   practicePlanItemStart,
   practiceTodayPlan,
+  srsBulkFromMastery,
   type PracticeLabPayload,
   type PracticeLabStep,
   type PracticeNotebookItem,
@@ -247,6 +248,54 @@ export const LabPage = () => {
       setRoadmap(response.roadmap_items ?? []);
       setDirty(false);
       setActiveStepIndex(Math.min(activeStepIndex, Math.max(steps.length - 1, 0)));
+
+      // Feed the spaced-repetition queue. Best-effort: a 404/network error here
+      // must not break the lab submit flow, so the API helper already swallows.
+      const masteryUpdates = Array.isArray(response.mastery_updates)
+        ? response.mastery_updates.map(asRecord)
+        : [];
+      const srsItems: Array<{ question_type: string; accuracy_ratio: number; section_type?: 'reading' | 'listening' | 'writing' }> = [];
+      for (const entry of masteryUpdates) {
+        const questionType = toText(entry.question_type);
+        const accuracy = typeof entry.accuracy_ratio === 'number'
+          ? entry.accuracy_ratio
+          : typeof entry.last_accuracy_ratio === 'number'
+            ? entry.last_accuracy_ratio
+            : null;
+        if (!questionType || accuracy == null || !Number.isFinite(accuracy)) continue;
+        const sectionRaw = toText(entry.section_type).toLowerCase();
+        const section = sectionRaw === 'reading' || sectionRaw === 'listening' || sectionRaw === 'writing' ? sectionRaw : undefined;
+        srsItems.push({ question_type: questionType, accuracy_ratio: accuracy, section_type: section });
+      }
+      // Fall back: if no mastery_updates rows but we have a top-level score and
+      // know the lab section_type + question_type from steps, derive a single review.
+      if (srsItems.length === 0 && response.score && Number.isFinite(response.score.accuracy_ratio)) {
+        const stepQuestionTypes = new Set<string>();
+        for (const step of (response.scored_steps ?? []).map(asRecord)) {
+          const qt = toText(step.question_type);
+          if (qt) stepQuestionTypes.add(qt);
+        }
+        if (stepQuestionTypes.size === 0) {
+          const stepFromAttempt = lab?.steps ?? [];
+          for (const step of stepFromAttempt) {
+            const qt = toText(step?.question_type);
+            if (qt) stepQuestionTypes.add(qt);
+          }
+        }
+        const sectionType = (lab?.section_type ?? null) as 'reading' | 'listening' | 'writing' | null;
+        for (const qt of stepQuestionTypes) {
+          srsItems.push({
+            question_type: qt,
+            accuracy_ratio: response.score.accuracy_ratio,
+            ...(sectionType ? { section_type: sectionType } : {}),
+          });
+        }
+      }
+      if (srsItems.length > 0) {
+        void srsBulkFromMastery(accessToken, srsItems, IELTS_PRACTICE_PRODUCT_ID).catch(() => {
+          // best-effort
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submit failed');
     } finally {

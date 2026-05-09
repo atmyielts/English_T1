@@ -744,3 +744,74 @@ export const adminPracticeAnalytics = (
   return call(accessToken, `/admin-ielts-practice/analytics?${qs.toString()}`);
 };
 
+// ============================================================================
+// Spaced Repetition (Leitner) for IELTS question types
+// ============================================================================
+
+export type SrsReviewItem = {
+  id: string;
+  user_id: string;
+  language_id: string;
+  product_id: string | null;
+  section_type: "reading" | "listening" | "writing";
+  question_type: string;
+  leitner_box: number;
+  next_review_at: string;
+  last_reviewed_at: string | null;
+  last_accuracy_ratio: number | null;
+  rolling_accuracy_ratio: number | null;
+  review_count: number;
+  correct_count: number;
+  incorrect_count: number;
+  is_archived: boolean;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SrsListMode = "daily" | "upcoming" | "all" | "mastered";
+
+export type SrsListResponse = {
+  items: SrsReviewItem[];
+  summary: { due: number; mastered: number; total: number };
+};
+
+export const srsListReviews = (
+  accessToken: string,
+  opts?: { mode?: SrsListMode; limit?: number; sectionType?: "reading" | "listening" | "writing" },
+): Promise<SrsListResponse> => {
+  const qs = new URLSearchParams();
+  qs.set("mode", opts?.mode ?? "daily");
+  if (typeof opts?.limit === "number") qs.set("limit", String(Math.floor(opts.limit)));
+  if (opts?.sectionType) qs.set("section_type", opts.sectionType);
+  return call(accessToken, `/ielts-srs?${qs.toString()}`);
+};
+
+export const srsSubmitReview = (
+  accessToken: string,
+  body: {
+    question_type: string;
+    accuracy_ratio: number;
+    section_type?: "reading" | "listening" | "writing";
+    product_id?: string;
+  },
+): Promise<{ ok: boolean; item: SrsReviewItem }> =>
+  call(accessToken, "/ielts-srs", { method: "POST", body });
+
+export const srsBulkFromMastery = (
+  accessToken: string,
+  items: Array<{
+    question_type: string;
+    accuracy_ratio: number;
+    section_type?: "reading" | "listening" | "writing";
+  }>,
+  productId?: string,
+): Promise<{
+  ok: boolean;
+  results: Array<{ question_type: string; ok: boolean; box?: number; next_review_at?: string; error?: string }>;
+}> =>
+  call(accessToken, "/ielts-srs", {
+    method: "POST",
+    body: { items, ...(productId ? { product_id: productId } : {}) },
+  });
+

@@ -6,10 +6,13 @@ import {
   practiceGeneratePlan,
   practiceNotebookPatch,
   practicePlanItemStart,
+  srsListReviews,
+  srsSubmitReview,
   type PracticeGoal,
   type PracticeNotebookItem,
   type PracticePlanItem,
   type PracticeRoadmapItem,
+  type SrsReviewItem,
 } from '../lib/api';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import {
@@ -205,6 +208,9 @@ export const DashboardPage = () => {
   const [generating, setGenerating] = useState(false);
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [notebookBusyId, setNotebookBusyId] = useState<string | null>(null);
+  const [srsItems, setSrsItems] = useState<SrsReviewItem[]>([]);
+  const [srsSummary, setSrsSummary] = useState<{ due: number; mastered: number; total: number }>({ due: 0, mastered: 0, total: 0 });
+  const [queuingKey, setQueuingKey] = useState<string | null>(null);
   const displayName = useMemo(() => {
     const first = String(session?.user.user_metadata?.first_name ?? '').trim();
     const last = String(session?.user.user_metadata?.last_name ?? '').trim();
@@ -227,7 +233,13 @@ export const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const dashboardRes = await practiceDashboardGet(accessToken);
+      const [dashboardRes, srsRes] = await Promise.all([
+        practiceDashboardGet(accessToken),
+        srsListReviews(accessToken, { mode: 'daily', limit: 6 }).catch(() => ({
+          items: [] as SrsReviewItem[],
+          summary: { due: 0, mastered: 0, total: 0 },
+        })),
+      ]);
 
       setGoal(dashboardRes.goals);
       setTargetBand(toNumber(dashboardRes.goals.target_overall_band));
@@ -239,11 +251,41 @@ export const DashboardPage = () => {
       setPlan(dashboardRes.items ?? []);
       setNotebook(dashboardRes.notebook ?? []);
       setRoadmap(dashboardRes.roadmap ?? []);
+      setSrsItems(srsRes.items ?? []);
+      setSrsSummary(srsRes.summary ?? { due: 0, mastered: 0, total: 0 });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(humanizeError(message));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const addWeaknessToQueue = async (
+    section: SectionType,
+    questionType: string,
+    accuracyRatio: number | null,
+  ): Promise<void> => {
+    if (!accessToken) return;
+    const key = `${section}::${questionType}`;
+    setQueuingKey(key);
+    setError(null);
+    try {
+      await srsSubmitReview(accessToken, {
+        question_type: questionType,
+        section_type: section,
+        accuracy_ratio: accuracyRatio ?? 0,
+        product_id: IELTS_PRACTICE_PRODUCT_ID,
+      });
+      const refresh = await srsListReviews(accessToken, { mode: 'daily', limit: 6 }).catch(() => null);
+      if (refresh) {
+        setSrsItems(refresh.items ?? []);
+        setSrsSummary(refresh.summary ?? { due: 0, mastered: 0, total: 0 });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add to queue');
+    } finally {
+      setQueuingKey(null);
     }
   };
 
@@ -416,6 +458,10 @@ export const DashboardPage = () => {
               <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar}>Dashboard</Link>
               <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
               <Link to="/plan" className="sidebar-link" onClick={closeSidebar}>Plan Builder</Link>
+              <Link to="/practice/reviews" className="sidebar-link" onClick={closeSidebar}>
+                Reviews due{srsSummary.due > 0 ? ` (${srsSummary.due})` : ''}
+              </Link>
+              <Link to="/practice/stats/by-type" className="sidebar-link" onClick={closeSidebar}>Stats by type</Link>
               <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
               <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
               <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
@@ -567,25 +613,81 @@ export const DashboardPage = () => {
               </div>
             </article>
 
+            <article className="glass practice-card srs-card" id="srs-reviews">
+              <div className="task-card-head">
+                <h3>Reviews due today</h3>
+                <Link to="/practice/reviews" className="btn ghost compact">
+                  Open queue ({srsSummary.due})
+                </Link>
+              </div>
+              {srsItems.length === 0 ? (
+                <p className="muted">
+                  {srsSummary.total === 0
+                    ? 'Submit a practice lab to start filling your spaced-repetition queue, or add weak types from the list below.'
+                    : 'You\'re caught up. The next review will appear when its interval is due.'}
+                </p>
+              ) : (
+                <ul className="weakness-list">
+                  {srsItems.slice(0, 4).map((item) => (
+                    <li key={item.id} className="weakness-item">
+                      <div>
+                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                        <h4>{formatPracticeLabel(item.question_type)}</h4>
+                      </div>
+                      <div className="weakness-metrics">
+                        <span>Box {item.leitner_box}/5</span>
+                        <span>Last {item.last_accuracy_ratio != null ? `${Math.round(item.last_accuracy_ratio * 100)}%` : '-'}</span>
+                        <span>Reviews {item.review_count}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
             <article className="glass practice-card weakness-card">
-              <h3>Top Weaknesses By Question Type</h3>
+              <div className="task-card-head">
+                <h3>Top Weaknesses By Question Type</h3>
+                <Link to="/practice/stats/by-type" className="btn ghost compact">See all</Link>
+              </div>
               {topWeaknesses.length === 0 ? (
                 <p className="muted">No diagnostic weaknesses yet. Complete simulator attempts or regenerate diagnostics.</p>
               ) : (
                 <ul className="weakness-list">
-                  {topWeaknesses.map((row) => (
-                    <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">
-                      <div>
-                        <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
-                        <h4>{formatPracticeLabel(row.question_type)}</h4>
-                      </div>
-                      <div className="weakness-metrics">
-                        <span>Weakness {row.weakness_score.toFixed(2)}</span>
-                        <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
-                        <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
-                      </div>
-                    </li>
-                  ))}
+                  {topWeaknesses.map((row) => {
+                    const queueKey = `${row.section_type}::${row.question_type}`;
+                    const inQueue = srsItems.some(
+                      (item) => item.section_type === row.section_type && item.question_type === row.question_type,
+                    );
+                    const isQueuing = queuingKey === queueKey;
+                    return (
+                      <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">
+                        <div>
+                          <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
+                          <h4>{formatPracticeLabel(row.question_type)}</h4>
+                        </div>
+                        <div className="weakness-metrics">
+                          <span>Weakness {row.weakness_score.toFixed(2)}</span>
+                          <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
+                          <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
+                        </div>
+                        <div className="weakness-actions" style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          {inQueue ? (
+                            <Link to="/practice/reviews" className="btn ghost compact">In queue</Link>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn solid compact"
+                              disabled={isQueuing}
+                              onClick={() => void addWeaknessToQueue(row.section_type, row.question_type, row.accuracy_ratio)}
+                            >
+                              {isQueuing ? 'Adding...' : 'Add to queue'}
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </article>

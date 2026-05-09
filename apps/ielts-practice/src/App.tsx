@@ -12,6 +12,8 @@ const LabPage = lazy(async () => ({ default: (await import('./pages/LabPage')).L
 const ExercisePage = lazy(async () => ({ default: (await import('./pages/ExercisePage')).ExercisePage }));
 const ResultsPage = lazy(async () => ({ default: (await import('./pages/ResultsPage')).ResultsPage }));
 const SessionResultsPage = lazy(async () => ({ default: (await import('./pages/SessionResultsPage')).SessionResultsPage }));
+const ReviewsDuePage = lazy(async () => ({ default: (await import('./pages/ReviewsDuePage')).ReviewsDuePage }));
+const StatsByTypePage = lazy(async () => ({ default: (await import('./pages/StatsByTypePage')).StatsByTypePage }));
 const AdminPage = lazy(async () => ({ default: (await import('./pages/AdminPage')).AdminPage }));
 
 const SharedExamPlayer = lazy(async () => {
@@ -81,6 +83,8 @@ function App() {
           />
           <Route path="/exercise/:id" element={lazyPage(<ExercisePage />)} />
           <Route path="/results/:attempt_id" element={lazyPage(<ResultsPage />)} />
+          <Route path="/practice/reviews" element={lazyPage(<ReviewsDuePage />)} />
+          <Route path="/practice/stats/by-type" element={lazyPage(<StatsByTypePage />)} />
         </Route>
 
         <Route element={<RequireAdmin />}>
