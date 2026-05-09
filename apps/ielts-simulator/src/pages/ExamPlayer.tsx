@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Bookmark, BookOpen, ChevronLeft, ChevronRight, Menu, StickyNote, Volume2 } from 'lucide-react';
+import { Bookmark, BookOpen, ChevronLeft, ChevronRight, Maximize2, Menu, ShieldAlert, StickyNote, Volume2 } from 'lucide-react';
 import type { ContentUnit } from '../domain/models';
 import { PassageViewer, type PassageAnnotation } from '../components/exam/PassageViewer';
+import { PreTestGate, type PreTestGateStatus } from '../components/exam/PreTestGate';
+import { SubmitConfirmModal } from '../components/exam/SubmitConfirmModal';
+import { ListeningCheckBanner } from '../components/exam/ListeningCheckBanner';
 import { InputRenderer } from '../features/exam/InputRenderer';
 import { getExamState } from '../lib/platformClient';
 import { supabase } from '../lib/supabase';
 import { useAccess } from '../lib/useAccess';
+import { useStrictMode } from '../lib/useStrictMode';
 
 type Json = Record<string, unknown>;
 
@@ -296,13 +300,19 @@ export const ExamPlayer: React.FC = () => {
     return Number.isFinite(v) ? clamp01(v) : 0.85;
   });
   const [passageAnnotations, setPassageAnnotations] = useState<Record<string, PassageAnnotation[]>>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [listeningAudioEnded, setListeningAudioEnded] = useState(false);
+  const [strictMode, setStrictMode] = useState<boolean>(false);
 
   const questionBarRef = useRef<HTMLDivElement | null>(null);
+  const contentScrollRef = useRef<HTMLElement | null>(null);
 
   const saveTimersRef = useRef<Map<string, number>>(new Map());
   const lastSavedRef = useRef<Record<string, string>>({});
   const serverNowOffsetMsRef = useRef<number>(0);
   const autoAdvanceRef = useRef(false);
+  const listeningPartAdvanceTimerRef = useRef<number | null>(null);
+  const autoSubmitLoggedRef = useRef(false);
 
   const currentSectionIndex = useMemo(() => sections.findIndex((s) => s.id === sectionId), [sections, sectionId]);
   const currentSectionNumber = currentSectionIndex >= 0 ? currentSectionIndex + 1 : 1;
@@ -376,6 +386,13 @@ export const ExamPlayer: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (listeningPartAdvanceTimerRef.current) window.clearTimeout(listeningPartAdvanceTimerRef.current);
+      listeningPartAdvanceTimerRef.current = null;
+    };
+  }, [sectionId]);
 
   const flushSaves = useCallback(async (): Promise<void> => {
     const sid = sessionId;
@@ -455,6 +472,10 @@ export const ExamPlayer: React.FC = () => {
 
       setLoading(true);
       setError(null);
+      setDeadlineIso(null);
+      setTimeLeftSeconds(null);
+      setNextSectionId(null);
+      autoAdvanceRef.current = false;
 
       try {
         const state = await getExamState(accessToken, sessionId, sectionId);
@@ -487,6 +508,35 @@ export const ExamPlayer: React.FC = () => {
         setDeadlineIso(state.deadline_iso);
         setSessionMeta((state.session?.metadata ?? {}) as Record<string, unknown>);
         setShowNavigator(false);
+        setListeningAudioEnded(false);
+        autoSubmitLoggedRef.current = false;
+        // Determine strict mode: session metadata wins, then experience metadata. Token (candidate)
+        // sessions are strict by default since they represent supervised exam delivery.
+        const sessMeta = (state.session?.metadata ?? {}) as Record<string, unknown>;
+        let expMeta: Record<string, unknown> = {};
+        const expMetaRaw = (state as any)?.experience?.metadata;
+        if (expMetaRaw && typeof expMetaRaw === 'object' && !Array.isArray(expMetaRaw)) {
+          expMeta = expMetaRaw as Record<string, unknown>;
+        } else {
+          // Fallback: read experience metadata directly when the edge function doesn't include it.
+          try {
+            const { data: expRow } = await supabase
+              .from('experiences')
+              .select('metadata')
+              .eq('id', state.experience.id)
+              .maybeSingle();
+            if (expRow && typeof (expRow as any).metadata === 'object' && (expRow as any).metadata != null && !Array.isArray((expRow as any).metadata)) {
+              expMeta = (expRow as any).metadata as Record<string, unknown>;
+            }
+          } catch {
+            // ignore — strict_mode falls back to false (or token mode)
+          }
+        }
+        const sessStrict = sessMeta.strict_mode;
+        const expStrict = (expMeta as any).strict_mode;
+        const tokenMode = String((sessMeta as any).exam_mode ?? '') === 'token';
+        const strict = typeof sessStrict === 'boolean' ? sessStrict : typeof expStrict === 'boolean' ? expStrict : tokenMode;
+        setStrictMode(Boolean(strict));
         // Reset part selection when changing sections (used for reading split-view).
         setActivePartId(null);
         setLoadedOnce(true);
@@ -522,6 +572,44 @@ export const ExamPlayer: React.FC = () => {
     });
   }, [accessToken, nextSectionId, sessionId]);
 
+  const type = sectionType(section);
+  const isReading = type === 'reading';
+  const isListening = type === 'listening';
+  const isWriting = type === 'writing';
+
+  const ackStatus: PreTestGateStatus = useMemo(() => ({
+    instructions_acknowledged_at:
+      typeof (sessionMeta as any)?.instructions_acknowledged_at === 'string'
+        ? String((sessionMeta as any).instructions_acknowledged_at)
+        : null,
+    headphones_checked_at:
+      typeof (sessionMeta as any)?.headphones_checked_at === 'string'
+        ? String((sessionMeta as any).headphones_checked_at)
+        : null,
+    identity_acknowledged_at:
+      typeof (sessionMeta as any)?.identity_acknowledged_at === 'string'
+        ? String((sessionMeta as any).identity_acknowledged_at)
+        : null,
+  }), [sessionMeta]);
+
+  const allAcknowledged = useMemo(() => {
+    if (!ackStatus.instructions_acknowledged_at) return false;
+    if (isListening && !ackStatus.headphones_checked_at) return false;
+    if (!ackStatus.identity_acknowledged_at) return false;
+    return true;
+  }, [ackStatus, isListening]);
+
+  const strictActive = strictMode && allAcknowledged && !error;
+  const strict = useStrictMode({
+    enabled: strictActive,
+    accessToken: accessToken ?? null,
+    sessionId: sessionId ?? null,
+    sectionId: sectionId ?? null,
+    blockPaste: isWriting && strictMode,
+    blockContextMenu: strictMode,
+    warnOnLeave: strictMode && !error,
+  });
+
   useEffect(() => {
     autoAdvanceRef.current = false;
     if (!deadlineIso) {
@@ -543,6 +631,8 @@ export const ExamPlayer: React.FC = () => {
   useEffect(() => {
     if (timeLeftSeconds == null) return;
     if (timeLeftSeconds > 0) return;
+    if (!sectionId || section?.id !== sectionId) return;
+    if (!deadlineIso) return;
     if (autoAdvanceRef.current) return;
     autoAdvanceRef.current = true;
 
@@ -554,6 +644,11 @@ export const ExamPlayer: React.FC = () => {
         // ignore
       }
 
+      if (!autoSubmitLoggedRef.current) {
+        autoSubmitLoggedRef.current = true;
+        strict.logEvent('auto_submit', { section_id: sectionId, section_type: type }, 'high');
+      }
+
       if (nextSectionId) {
         navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`, { replace: true });
       } else {
@@ -563,9 +658,23 @@ export const ExamPlayer: React.FC = () => {
     };
 
     go();
-  }, [flushSaves, navigate, nextSectionId, resultsSearch, sectionSearch, sessionId, sessionBasePath, timeLeftSeconds]);
+  }, [
+    deadlineIso,
+    flushSaves,
+    navigate,
+    nextSectionId,
+    resultsSearch,
+    section?.id,
+    sectionId,
+    sectionSearch,
+    sessionId,
+    sessionBasePath,
+    strict,
+    timeLeftSeconds,
+    type,
+  ]);
 
-  const handleNext = async () => {
+  const performNext = async () => {
     setError(null);
 
     try {
@@ -573,6 +682,8 @@ export const ExamPlayer: React.FC = () => {
     } catch {
       // ignore
     }
+
+    strict.logEvent('manual_submit', { section_id: sectionId, section_type: type, is_final: !nextSectionId });
 
     if (nextSectionId) {
       navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`);
@@ -592,6 +703,10 @@ export const ExamPlayer: React.FC = () => {
     navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`);
   };
 
+  const handleNext = () => {
+    setConfirmOpen(true);
+  };
+
   const handleAbandon = async () => {
     if (!sessionId) return;
     const ok = window.confirm('Leaving now will mark this attempt as abandoned and cannot be restarted. Leave exam?');
@@ -608,10 +723,6 @@ export const ExamPlayer: React.FC = () => {
 
     navigate('/', { replace: true });
   };
-
-  const type = sectionType(section);
-  const isReading = type === 'reading';
-  const isListening = type === 'listening';
 
   const parts = useMemo(() => {
     const map = new Map<string, { id: string; name: string; order: number }>();
@@ -631,18 +742,19 @@ export const ExamPlayer: React.FC = () => {
     setActivePartId((prev) => (prev && parts.some((p) => p.id === prev) ? prev : first));
   }, [parts]);
 
+  const selectedPartId = activePartId ?? parts[0]?.id ?? null;
   const allPassages = useMemo(() => (isReading ? units.filter((u) => u.type === 'reading_passage') : []), [isReading, units]);
   const allMainUnits = useMemo(() => (isReading ? units.filter((u) => u.type !== 'reading_passage') : units), [isReading, units]);
 
   const visiblePassages = useMemo(() => {
-    if (!activePartId) return allPassages;
-    return allPassages.filter((u) => u.partId === activePartId);
-  }, [activePartId, allPassages]);
+    if (!selectedPartId) return allPassages;
+    return allPassages.filter((u) => u.partId === selectedPartId);
+  }, [allPassages, selectedPartId]);
 
   const visibleMainUnits = useMemo(() => {
-    if (!activePartId) return allMainUnits;
-    return allMainUnits.filter((u) => u.partId === activePartId);
-  }, [activePartId, allMainUnits]);
+    if (!selectedPartId) return allMainUnits;
+    return allMainUnits.filter((u) => u.partId === selectedPartId);
+  }, [allMainUnits, selectedPartId]);
 
   const visibleInstructions = useMemo(() => visibleMainUnits.filter((u) => u.type === 'instruction'), [visibleMainUnits]);
   const visibleRenderableUnits = useMemo(() => visibleMainUnits.filter((u) => u.type !== 'instruction'), [visibleMainUnits]);
@@ -736,9 +848,9 @@ export const ExamPlayer: React.FC = () => {
   }, [answers, parts, questionItemsByPartId, unitById]);
 
   const activeQuestionItems = useMemo(() => {
-    if (activePartId) return questionItemsByPartId.get(activePartId) ?? [];
+    if (selectedPartId) return questionItemsByPartId.get(selectedPartId) ?? [];
     return questionMeta.items;
-  }, [activePartId, questionItemsByPartId, questionMeta.items]);
+  }, [questionItemsByPartId, questionMeta.items, selectedPartId]);
 
   const activeRangeLabel = useMemo(() => {
     if (activeQuestionItems.length === 0) return null;
@@ -756,9 +868,56 @@ export const ExamPlayer: React.FC = () => {
     return count;
   }, [answers, questionMeta.items, unitById]);
 
+  const handleAudioEnded = useCallback((unit: ExamUnit) => {
+    if ((unit.data as any)?.play_once === true) {
+      setUnits((prev) =>
+        prev.map((candidate) => {
+          if (candidate.id !== unit.id) return candidate;
+          const data = asRecord(candidate.data);
+          return {
+            ...candidate,
+            data: {
+              ...data,
+              locked: true,
+              playback: {
+                ...asRecord(data.playback),
+                ended_at: new Date().toISOString(),
+              },
+            } as any,
+          };
+        })
+      );
+    }
+
+    if (!isListening) return;
+    const endedPartId = unit.partId ?? null;
+    if (!endedPartId) return;
+
+    const currentIndex = parts.findIndex((p) => p.id === endedPartId);
+    const nextPart = currentIndex >= 0 ? parts[currentIndex + 1] : null;
+    if (!nextPart) {
+      // Audio for the last listening part has just ended; we are now in the
+      // computer-IELTS final review window. The section deadline handles auto-submit.
+      setListeningAudioEnded(true);
+      return;
+    }
+
+    if (listeningPartAdvanceTimerRef.current) window.clearTimeout(listeningPartAdvanceTimerRef.current);
+    listeningPartAdvanceTimerRef.current = window.setTimeout(() => {
+      listeningPartAdvanceTimerRef.current = null;
+      setActivePartId((current) => {
+        const currentPartId = current ?? parts[0]?.id ?? null;
+        return currentPartId === endedPartId ? nextPart.id : current;
+      });
+      window.requestAnimationFrame(() => {
+        contentScrollRef.current?.scrollTo({ top: 0 });
+      });
+    }, 650);
+  }, [isListening, parts]);
+
   const scrollToUnit = (unitId: string) => {
     const pid = unitToPartId.get(unitId) ?? null;
-    if (pid && pid !== activePartId) {
+    if (pid && pid !== selectedPartId) {
       setActivePartId(pid);
       window.setTimeout(() => {
         const el = document.getElementById(`unit-${unitId}`);
@@ -802,6 +961,42 @@ export const ExamPlayer: React.FC = () => {
     contrast === 'invert' ? 'inspera-theme-invert' : contrast === 'yellow' ? 'inspera-theme-yellow' : 'inspera-theme-default';
   const textSizeClass = textSize === 'large' ? 'inspera-text-large' : textSize === 'xlarge' ? 'inspera-text-xlarge' : 'inspera-text-regular';
   const oneMinuteWarning = timeLeftSeconds != null && timeLeftSeconds <= 60;
+  const sectionDurationMinutes = useMemo(() => {
+    const meta = section?.metadata as Record<string, unknown> | null | undefined;
+    const ds = Number((meta as any)?.duration_seconds ?? 0);
+    if (!Number.isFinite(ds) || ds <= 0) return null;
+    return Math.round(ds / 60);
+  }, [section]);
+
+  const unansweredQuestionNumbers = useMemo(() => {
+    const out: number[] = [];
+    for (const it of questionMeta.items) {
+      const u = unitById.get(it.unitId);
+      if (!u) continue;
+      if (!isAnswered(u, answers[it.unitId], it.subId)) out.push(it.number);
+    }
+    return out;
+  }, [answers, questionMeta.items, unitById]);
+
+  const flaggedCount = useMemo(() => Object.keys(flags).length, [flags]);
+
+  const preTestSectionType = isListening
+    ? ('listening' as const)
+    : isReading
+      ? ('reading' as const)
+      : isWriting
+        ? ('writing' as const)
+        : ('unknown' as const);
+
+  const handleAck = useCallback((which: keyof PreTestGateStatus, atIso: string) => {
+    setSessionMeta((prev) => ({ ...(prev ?? {}), [which]: atIso }));
+  }, []);
+
+  const handleAllAcked = useCallback(() => {
+    if (strictMode && !strict.state.fullscreen && strict.state.fullscreenAvailable && !strict.state.fullscreenAsked) {
+      void strict.enterFullscreen();
+    }
+  }, [strict, strictMode]);
 
   if (!sessionId || !sectionId) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">Invalid session URL</div>;
@@ -952,6 +1147,34 @@ export const ExamPlayer: React.FC = () => {
         </div>
       ) : null}
 
+      {strictMode && allAcknowledged ? (
+        <div className="shrink-0 border-b border-rose-100 bg-rose-50 px-4 py-1.5 text-xs text-rose-900 flex items-center gap-3">
+          <ShieldAlert size={14} className="text-rose-700 shrink-0" />
+          <div className="flex-1">
+            <span className="font-semibold">Strict exam mode</span>
+            <span className="ml-2">Tab switches, paste attempts and other integrity events are recorded.</span>
+          </div>
+          {strict.state.focusLossCount > 0 ? (
+            <span className="px-2 py-0.5 rounded-full bg-rose-100 border border-rose-200 font-mono">
+              focus loss x{strict.state.focusLossCount}
+            </span>
+          ) : null}
+          {strict.state.fullscreenAvailable && !strict.state.fullscreen ? (
+            <button
+              type="button"
+              onClick={() => void strict.enterFullscreen()}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-rose-200 hover:bg-rose-100 font-semibold"
+            >
+              <Maximize2 size={12} /> Full-screen
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {isListening ? (
+        <ListeningCheckBanner active={listeningAudioEnded} secondsLeft={timeLeftSeconds ?? 0} />
+      ) : null}
+
       {activeInstructionText ? (
         <div className="shrink-0 bg-[var(--inspera-panel)] border-b border-[var(--inspera-border)] px-4 py-3">
           <div className="text-xs text-[var(--inspera-muted)] font-semibold uppercase tracking-wider">Instructions</div>
@@ -1001,6 +1224,7 @@ export const ExamPlayer: React.FC = () => {
             </aside>
 
             <main
+              ref={contentScrollRef}
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] bg-[var(--inspera-panel)]"
             >
               <div className="p-5 inspera-question space-y-4">
@@ -1029,6 +1253,7 @@ export const ExamPlayer: React.FC = () => {
                         value={answers[u.id]}
                         onChange={(val) => queueSave(u, val)}
                         audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                        onAudioEnded={() => handleAudioEnded(u)}
                         questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                       />
                     </div>
@@ -1039,7 +1264,7 @@ export const ExamPlayer: React.FC = () => {
             </main>
           </div>
         ) : (
-          <main className="flex-1 min-h-0 overflow-y-auto bg-[var(--inspera-panel)]">
+          <main ref={contentScrollRef} className="flex-1 min-h-0 overflow-y-auto bg-[var(--inspera-panel)]">
             <div className="p-5 max-w-5xl mx-auto inspera-question space-y-4">
               {visibleRenderableUnits.map((u) => {
                 const range = questionMeta.ranges[u.id];
@@ -1066,6 +1291,7 @@ export const ExamPlayer: React.FC = () => {
                       value={answers[u.id]}
                       onChange={(val) => queueSave(u, val)}
                       audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                      onAudioEnded={() => handleAudioEnded(u)}
                       questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                     />
                   </div>
@@ -1094,7 +1320,7 @@ export const ExamPlayer: React.FC = () => {
         <div className="px-4 pb-3 space-y-2">
           <div className="flex items-center gap-2 overflow-x-auto">
             {partStats.map((p) => {
-              const active = p.id === activePartId;
+              const active = p.id === selectedPartId;
               const label = p.total > 0 ? `${p.answered}/${p.total}` : '0';
               return (
                 <button
@@ -1269,6 +1495,37 @@ export const ExamPlayer: React.FC = () => {
           </div>
         </div>
       ) : null}
+
+      {accessToken && sessionId && !error ? (
+        <PreTestGate
+          accessToken={accessToken}
+          sessionId={sessionId}
+          sectionType={preTestSectionType}
+          examName={experience?.name ?? 'IELTS'}
+          sectionName={section?.name ?? ''}
+          durationMinutes={sectionDurationMinutes}
+          strictMode={strictMode}
+          status={ackStatus}
+          onAcknowledged={handleAck}
+          onRequestFullscreen={strict.enterFullscreen}
+          onAllAcknowledged={handleAllAcked}
+        />
+      ) : null}
+
+      <SubmitConfirmModal
+        open={confirmOpen}
+        isFinalSection={isLastSection}
+        sectionName={section?.name ?? 'this section'}
+        answeredCount={answeredCount}
+        totalQuestions={questionMeta.items.length}
+        unansweredQuestionNumbers={unansweredQuestionNumbers}
+        flaggedCount={flaggedCount}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          setConfirmOpen(false);
+          await performNext();
+        }}
+      />
 
       {showNavigator ? (
         <div

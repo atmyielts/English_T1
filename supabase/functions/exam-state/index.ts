@@ -69,6 +69,43 @@ const validateTokenSession = async (
 const isObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 
+const toPositiveNumber = (value: unknown): number | null => {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const sectionType = (section: SectionRow | null): string => {
+  const metadata = isObject(section?.metadata) ? (section?.metadata as Record<string, unknown>) : {};
+  return String((metadata as any).type ?? "").trim().toLowerCase();
+};
+
+const audioDurationSeconds = (unit: Pick<UnitRow, "type" | "data">): number | null => {
+  if (String(unit.type) !== "audio") return null;
+  const data = isObject(unit.data) ? (unit.data as Record<string, unknown>) : {};
+  return (
+    toPositiveNumber((data as any).duration_seconds) ??
+    toPositiveNumber((data as any).duration) ??
+    toPositiveNumber((data as any).tone?.duration_seconds) ??
+    null
+  );
+};
+
+const deriveSectionDurationSeconds = (section: SectionRow, units: Array<Pick<UnitRow, "type" | "data">>): number => {
+  const metadata = isObject(section.metadata) ? (section.metadata as Record<string, unknown>) : {};
+  const configuredDuration = toPositiveNumber((metadata as any).duration_seconds) ?? 0;
+  if (sectionType(section) !== "listening") return configuredDuration;
+
+  const audioTotal = units.reduce((sum, unit) => sum + (audioDurationSeconds(unit) ?? 0), 0);
+  if (audioTotal <= 0) return configuredDuration;
+
+  const reviewSeconds =
+    toPositiveNumber((metadata as any).listening_review_seconds) ??
+    toPositiveNumber((metadata as any).answer_review_seconds) ??
+    120;
+
+  return Math.ceil(audioTotal + reviewSeconds);
+};
+
 const normalizeText = (raw: string): string =>
   raw
     .toLowerCase()
@@ -360,7 +397,7 @@ serve(async (req) => {
 
     const { data: experienceRow, error: experienceError } = await supabase
       .from("experiences")
-      .select("id, name, product_id")
+      .select("id, name, product_id, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -537,31 +574,66 @@ serve(async (req) => {
       });
     };
 
+    const isListeningSection = sectionType(currentSection) === "listening";
+
+    const audioPlaybackWallClockUpdates: Record<string, Json> = {};
+
     // Resolve private Storage references into short-lived signed URLs for playback/viewing.
     const resolvedUnits = await Promise.all(
       unitRows.map(async (u) => {
         const type = String(u.type);
 
         if (type === "audio") {
-          const d: any = u.data ?? {};
+          const originalData: any = u.data ?? {};
+          const d: any = isListeningSection
+            ? { ...originalData, play_once: true, auto_start: true, auto_start_delay_seconds: 10 }
+            : originalData;
 
           const playback = (audioPlayback as any)[u.id];
           const playbackObj = playback && typeof playback === "object" && !Array.isArray(playback) ? playback : null;
+          const declaredDuration =
+            audioDurationSeconds({ type: u.type, data: d }) ??
+            toPositiveNumber((playbackObj as any)?.duration_seconds) ??
+            null;
+          const startedAt =
+            typeof playbackObj?.started_at === "string" && playbackObj.started_at.length > 0 ? playbackObj.started_at : null;
+          const elapsedSinceStart =
+            startedAt ? Math.max(0, (Date.now() - Date.parse(startedAt)) / 1000) : null;
           const resumeFrom =
-            typeof playbackObj?.last_time_seconds === "number" && Number.isFinite(playbackObj.last_time_seconds)
-              ? Math.max(0, playbackObj.last_time_seconds)
-              : null;
+            elapsedSinceStart != null && declaredDuration != null
+              ? Math.min(declaredDuration, elapsedSinceStart)
+              : typeof playbackObj?.last_time_seconds === "number" && Number.isFinite(playbackObj.last_time_seconds)
+                ? Math.max(0, playbackObj.last_time_seconds)
+                : null;
+          const endedByWallClock =
+            elapsedSinceStart != null && declaredDuration != null && elapsedSinceStart >= Math.max(0.1, declaredDuration - 0.25);
           const endedAt =
-            typeof playbackObj?.ended_at === "string" && playbackObj.ended_at.length > 0 ? playbackObj.ended_at : null;
+            typeof playbackObj?.ended_at === "string" && playbackObj.ended_at.length > 0
+              ? playbackObj.ended_at
+              : endedByWallClock
+                ? new Date(Date.parse(startedAt as string) + Math.ceil(declaredDuration as number) * 1000).toISOString()
+                : null;
+          const finalPlaybackObj =
+            playbackObj && endedByWallClock && !playbackObj.ended_at
+              ? {
+                  ...playbackObj,
+                  last_time_seconds: declaredDuration,
+                  duration_seconds: declaredDuration,
+                  ended_at: endedAt,
+                  updated_at: endedAt,
+                }
+              : null;
+          if (finalPlaybackObj) audioPlaybackWallClockUpdates[u.id] = finalPlaybackObj as Json;
 
           const playOnce = d.play_once === true;
           const locked = playOnce && endedAt != null;
 
           const baseData = {
             ...d,
-            ...(playbackObj ? { playback: playbackObj } : {}),
+            ...(playbackObj || finalPlaybackObj ? { playback: finalPlaybackObj ?? playbackObj } : {}),
             ...(resumeFrom != null ? { resume_from_seconds: resumeFrom } : {}),
             ...(locked ? { locked: true } : {}),
+            ...(isListeningSection ? { playback_mode: "ielts_listening_single_run" } : {}),
           };
 
           // Don't return a playable URL if the audio has been consumed.
@@ -664,7 +736,7 @@ serve(async (req) => {
     }
 
     // Per-section deadline stored in session.metadata.deadlines[section_id]
-    const durationSeconds = Number((currentSection.metadata as any)?.duration_seconds ?? 0);
+    const durationSeconds = deriveSectionDurationSeconds(currentSection, visibleUnits);
     const deadlines =
       currentMetadata.deadlines && typeof currentMetadata.deadlines === "object" ? (currentMetadata.deadlines as Json) : {};
     const existingDeadline = deadlines[sectionId];
@@ -695,6 +767,16 @@ serve(async (req) => {
         }
       }
 
+      if (Object.keys(audioPlaybackWallClockUpdates).length > 0) {
+        updatedMetadata = {
+          ...updatedMetadata,
+          audio_playback: {
+            ...audioPlayback,
+            ...audioPlaybackWallClockUpdates,
+          },
+        };
+      }
+
       // Create the deadline the first time the user enters a section. This must NOT happen during prefetch.
       if (!deadlineIso && durationSeconds > 0) {
         effectiveDeadlineIso = new Date(Date.now() + Math.max(1, durationSeconds) * 1000).toISOString();
@@ -722,7 +804,12 @@ serve(async (req) => {
           completed_at: sessionRow.completed_at,
           created_at: sessionRow.created_at,
         },
-        experience: { id: experienceRow.id, name: experienceRow.name, product_id: productId },
+        experience: {
+          id: experienceRow.id,
+          name: experienceRow.name,
+          product_id: productId,
+          metadata: (experienceRow as any).metadata ?? {},
+        },
         sections: sectionRows,
         current_section: currentSection,
         next_section_id: nextSectionId,

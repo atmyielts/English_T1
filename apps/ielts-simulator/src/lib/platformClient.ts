@@ -853,7 +853,7 @@ export type ExamStateResponse = {
     completed_at: string | null;
     created_at: string;
   };
-  experience: { id: string; name: string; product_id: string };
+  experience: { id: string; name: string; product_id: string; metadata?: Json | null };
   sections: { id: string; name: string; display_order: number; metadata: Json | null }[];
   current_section: { id: string; name: string; display_order: number; metadata: Json | null };
   next_section_id: string | null;
@@ -939,6 +939,85 @@ export const audioPlaybackEvent = async (
     throw new Error(`POST /audio-playback failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as AudioPlaybackEventResponse;
+};
+
+export type IntegrityEventType =
+  | 'focus_loss'
+  | 'focus_return'
+  | 'tab_hidden'
+  | 'tab_visible'
+  | 'fullscreen_enter'
+  | 'fullscreen_exit'
+  | 'paste'
+  | 'copy'
+  | 'cut'
+  | 'context_menu'
+  | 'reload'
+  | 'devtools_suspected'
+  | 'auto_submit'
+  | 'manual_submit'
+  | 'instructions_acknowledged'
+  | 'headphones_checked'
+  | 'identity_acknowledged'
+  | 'audio_blocked'
+  | 'audio_resumed'
+  | 'lock_warning'
+  | 'note';
+
+export type IntegrityEventSeverity = 'info' | 'warn' | 'high';
+
+export type IntegrityEventInput = {
+  session_id: string;
+  section_id?: string | null;
+  event_type: IntegrityEventType;
+  severity?: IntegrityEventSeverity;
+  data?: Record<string, unknown>;
+};
+
+export type IntegrityEventRecord = {
+  id: string;
+  session_id: string;
+  user_id: string;
+  section_id: string | null;
+  event_type: IntegrityEventType;
+  severity: IntegrityEventSeverity;
+  data: Record<string, unknown>;
+  created_at: string;
+};
+
+export const logIntegrityEvent = async (
+  accessToken: string,
+  payload: IntegrityEventInput,
+): Promise<{ ok: boolean }> => {
+  try {
+    const res = await fetch(`${edgeBase}/exam-integrity`, {
+      method: 'POST',
+      headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
+    if (!res.ok) return { ok: false };
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+};
+
+export const getIntegrityEvents = async (
+  accessToken: string,
+  sessionId: string,
+  limit = 200,
+): Promise<{ events: IntegrityEventRecord[] }> => {
+  const qs = new URLSearchParams({ session_id: sessionId, limit: String(limit) });
+  const res = await fetch(`${edgeBase}/exam-integrity?${qs.toString()}`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /exam-integrity failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { events: IntegrityEventRecord[] };
 };
 
 export type ReviewSessionResponse = {

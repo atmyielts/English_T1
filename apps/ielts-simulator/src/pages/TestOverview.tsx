@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Play } from 'lucide-react';
+import { ArrowLeft, Clock, Play, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
 import { supabase } from '../lib/supabase';
 import { createSession } from '../services/persistence';
@@ -209,6 +209,14 @@ export const TestOverview: React.FC = () => {
               <p className="text-gray-300">Computer-based format. Your answers are saved automatically.</p>
             </div>
 
+            {isAdminPreview ? (
+              <AdminStrictModePanel
+                experienceId={experience.id}
+                metadata={(experience.metadata ?? {}) as Record<string, unknown>}
+                onUpdated={(nextMeta) => setExperience((prev) => (prev ? { ...prev, metadata: nextMeta } : prev))}
+              />
+            ) : null}
+
             <div className="p-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Sections</h2>
               <div className="space-y-3">
@@ -260,5 +268,113 @@ export const TestOverview: React.FC = () => {
         ) : null}
       </div>
     </MainLayout>
+  );
+};
+
+interface AdminStrictModePanelProps {
+  experienceId: string;
+  metadata: Record<string, unknown>;
+  onUpdated: (nextMeta: Record<string, unknown>) => void;
+}
+
+const AdminStrictModePanel: React.FC<AdminStrictModePanelProps> = ({ experienceId, metadata, onUpdated }) => {
+  const initialStrict = Boolean((metadata as any)?.strict_mode);
+  const initialReview =
+    typeof (metadata as any)?.listening_review_seconds === 'number'
+      ? Number((metadata as any).listening_review_seconds)
+      : 120;
+
+  const [strict, setStrict] = useState<boolean>(initialStrict);
+  const [reviewSeconds, setReviewSeconds] = useState<number>(initialReview);
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const dirty = strict !== initialStrict || reviewSeconds !== initialReview;
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const nextMeta: Record<string, unknown> = {
+        ...metadata,
+        strict_mode: strict,
+        listening_review_seconds: Math.max(0, Math.floor(reviewSeconds)),
+      };
+      const { error: updateError } = await supabase.from('experiences').update({ metadata: nextMeta }).eq('id', experienceId);
+      if (updateError) {
+        setError(updateError.message);
+        return;
+      }
+      onUpdated(nextMeta);
+      setSavedAt(new Date().toLocaleTimeString());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="px-8 pt-6 pb-2">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={18} className="text-slate-700" />
+          <h3 className="text-sm font-bold text-slate-900">Admin: exam runtime</h3>
+          {savedAt ? <span className="ml-2 text-xs text-emerald-700">Saved {savedAt}</span> : null}
+        </div>
+        <p className="text-xs text-slate-600 mt-1">
+          Controls applied to all sessions of this test until changed.
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
+            <input
+              type="checkbox"
+              checked={strict}
+              onChange={(e) => setStrict(e.target.checked)}
+              className="mt-1 h-4 w-4"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-slate-900">Strict exam mode</div>
+              <div className="text-xs text-slate-600">
+                Pre-test instructions, headphone check, full-screen prompt, integrity event log, paste blocking in Writing.
+              </div>
+            </div>
+          </label>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <label className="text-sm font-semibold text-slate-900">Listening review window (seconds)</label>
+            <div className="text-xs text-slate-600 mt-0.5">
+              Computer IELTS uses 2 minutes (120s). The audio runtime auto-extends the section deadline by this much.
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={600}
+              step={30}
+              value={reviewSeconds}
+              onChange={(e) => setReviewSeconds(Number(e.target.value))}
+              className="mt-2 w-32 px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-slate-300"
+            />
+          </div>
+        </div>
+
+        {error ? (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 text-red-800 text-sm p-2">{error}</div>
+        ) : null}
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            disabled={!dirty || saving}
+            onClick={() => void save()}
+            className="px-4 py-2 rounded-xl bg-slate-900 text-white font-semibold hover:bg-black disabled:bg-slate-400 text-sm"
+          >
+            {saving ? 'Saving...' : dirty ? 'Save changes' : 'Saved'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };

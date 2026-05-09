@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
+import { IntegrityLogPanel } from '../components/admin/IntegrityLogPanel';
 
 const toHalfBand = (value: number): number => Math.round(value * 2) / 2;
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
@@ -134,9 +135,13 @@ export const SessionResultsPage: React.FC = () => {
   const hasWriting = Object.values(result?.sections ?? {}).some(
     (s: any) => String((s as any)?.type ?? '').toLowerCase() === 'writing',
   );
+  const sessionStatus = String((data?.session as any)?.status ?? '').toLowerCase();
+  const sessionFinalized = sessionStatus === 'completed' || sessionStatus === 'expired' || sessionStatus === 'abandoned';
   const isCandidate = String((data?.session?.metadata as any)?.exam_mode ?? '') === 'token';
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
   const backPath = backOverride ?? (isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard');
+  const writingFinal = !hasWriting || (aiEval && aiEval.status === 'completed');
+  const isProvisional = !sessionFinalized || (hasWriting && !writingFinal);
 
   useEffect(() => {
     if (isCandidate) {
@@ -224,12 +229,27 @@ export const SessionResultsPage: React.FC = () => {
       <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">Results</div>
-            <h1 className="text-2xl font-bold text-gray-900">Session Score</h1>
-            <p className="text-sm text-gray-500 mt-1">Objective scoring for Reading/Listening, plus Writing feedback when available.</p>
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700">Results</div>
+              {isProvisional ? (
+                <span className="text-[11px] font-semibold tracking-wider uppercase text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  Provisional
+                </span>
+              ) : (
+                <span className="text-[11px] font-semibold tracking-wider uppercase text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                  Final
+                </span>
+              )}
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mt-1">Session Score</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {isProvisional
+                ? 'These results are provisional. Final scores are confirmed once the session is fully complete and writing feedback is generated.'
+                : 'Objective scoring for Reading/Listening, plus Writing feedback when available.'}
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {reviewUrl ? (
+            {reviewUrl && (sessionFinalized || isAdminSessionRoute) ? (
               <button
                 onClick={() => navigate(reviewUrl)}
                 className="w-full sm:w-auto px-4 py-2 rounded-lg bg-gray-900 text-white font-medium"
@@ -474,6 +494,12 @@ export const SessionResultsPage: React.FC = () => {
                 ) : null}
               </div>
             ) : null}
+          </div>
+        ) : null}
+
+        {isAdminSessionRoute && accessToken && sessionId ? (
+          <div className="mt-10 pt-8 border-t border-gray-100">
+            <IntegrityLogPanel accessToken={accessToken} sessionId={sessionId} />
           </div>
         ) : null}
       </div>
