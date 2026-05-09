@@ -9,6 +9,7 @@ import {
 import { formatPracticeLabel } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import { PracticeShell } from '../components/PracticeShell';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -64,6 +65,7 @@ export const StatsByTypePage = () => {
   const [filter, setFilter] = useState<'all' | SectionType>('all');
   const [sort, setSort] = useState<'weakness' | 'accuracy' | 'samples'>('weakness');
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [reviewsDueCount, setReviewsDueCount] = useState(0);
 
   const load = async (): Promise<void> => {
     if (!accessToken) return;
@@ -101,6 +103,7 @@ export const StatsByTypePage = () => {
         map.set(`${item.section_type}::${item.question_type}`, item);
       }
       setSrsByKey(map);
+      setReviewsDueCount(srsRes.summary?.due ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load stats');
     } finally {
@@ -143,115 +146,111 @@ export const StatsByTypePage = () => {
   };
 
   return (
-    <div className="practice-root">
-      <div className="practice-workspace">
-        <main className="practice-main">
-          <header className="practice-page-head">
-            <div>
-              <span className="eyebrow">Stats</span>
-              <h1>Per-question-type breakdown</h1>
-              <p className="muted">
-                Every IELTS question type you&apos;ve attempted, its accuracy, and your current SRS box.
-                Click <strong>Add to queue</strong> to start tracking a type without waiting for a fresh lab attempt.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Link to="/practice/reviews" className="btn solid compact">Reviews due</Link>
-              <Link to="/dashboard" className="btn ghost compact">Dashboard</Link>
-            </div>
-          </header>
+    <PracticeShell reviewsDueCount={reviewsDueCount}>
+      <header className="practice-page-head">
+        <div>
+          <span className="eyebrow">Stats</span>
+          <h1>Per-question-type breakdown</h1>
+          <p className="muted">
+            Every IELTS question type you&apos;ve attempted, its accuracy, and your current SRS box.
+            Click <strong>Add to queue</strong> to start tracking a type without waiting for a fresh lab attempt.
+          </p>
+        </div>
+        <div className="kpi-row">
+          <Link to="/practice/reviews" className="btn solid compact">Reviews due</Link>
+          <Link to="/dashboard" className="btn ghost compact">Dashboard</Link>
+        </div>
+      </header>
 
-          <nav className="filter-row" style={{ display: 'flex', gap: 8, margin: '12px 0 16px', flexWrap: 'wrap' }}>
-            {(['all', 'reading', 'listening', 'writing'] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`btn ${filter === value ? 'solid' : 'ghost'} compact`}
-                onClick={() => setFilter(value)}
-              >
-                {value === 'all' ? 'All' : `${value.charAt(0).toUpperCase()}${value.slice(1)}`}
-              </button>
-            ))}
-            <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span className="muted" style={{ fontSize: 12 }}>Sort by</span>
-              {(['weakness', 'accuracy', 'samples'] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`btn ${sort === value ? 'solid' : 'ghost'} compact`}
-                  onClick={() => setSort(value)}
-                >
-                  {`${value.charAt(0).toUpperCase()}${value.slice(1)}`}
-                </button>
-              ))}
-            </span>
-          </nav>
+      <nav className="srs-filter-row">
+        {(['all', 'reading', 'listening', 'writing'] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`btn ${filter === value ? 'solid' : 'ghost'} compact`}
+            onClick={() => setFilter(value)}
+          >
+            {value === 'all' ? 'All' : `${value.charAt(0).toUpperCase()}${value.slice(1)}`}
+          </button>
+        ))}
+        <span className="filter-sort-group">
+          <span className="muted" style={{ fontSize: 12 }}>Sort by</span>
+          {(['weakness', 'accuracy', 'samples'] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              className={`btn ${sort === value ? 'solid' : 'ghost'} compact`}
+              onClick={() => setSort(value)}
+            >
+              {`${value.charAt(0).toUpperCase()}${value.slice(1)}`}
+            </button>
+          ))}
+        </span>
+      </nav>
 
-          {error ? <div className="glass dashboard-alert">{error}</div> : null}
+      {error ? <div className="glass dashboard-alert error">{error}</div> : null}
 
-          {loading ? (
-            <div className="glass practice-card">Loading stats...</div>
-          ) : filtered.length === 0 ? (
-            <article className="glass practice-card">
-              <h3>No question-type data yet</h3>
-              <p className="muted">
-                Complete a few practice labs or simulator attempts. Your per-type stats will populate once your
-                diagnostics snapshot has data.
-              </p>
-            </article>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
-              {filtered.map((row) => {
-                const key = `${row.section_type}::${row.question_type}`;
-                const srs = srsByKey.get(key) ?? null;
-                const accuracyPct = row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-';
-                const masteryPct = row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : (row.mastery_status ?? '-');
-                const isBusy = busyKey === key;
+      {loading ? (
+        <article className="glass practice-card">Loading stats...</article>
+      ) : filtered.length === 0 ? (
+        <article className="glass practice-card">
+          <h3>No question-type data yet</h3>
+          <p className="muted">
+            Complete a few practice labs or simulator attempts. Your per-type stats will populate once your
+            diagnostics snapshot has data.
+          </p>
+        </article>
+      ) : (
+        <ul className="srs-review-list">
+          {filtered.map((row) => {
+            const key = `${row.section_type}::${row.question_type}`;
+            const srs = srsByKey.get(key) ?? null;
+            const accuracyPct = row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-';
+            const masteryPct = row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : (row.mastery_status ?? '-');
+            const isBusy = busyKey === key;
 
-                return (
-                  <li key={key} className="glass practice-card" style={{ display: 'grid', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                      <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
-                      <h3 style={{ margin: 0 }}>{formatPracticeLabel(row.question_type)}</h3>
-                      <span className={`status-pill ${accuracyClass(row.accuracy_ratio)}`} style={{ marginLeft: 'auto' }}>
-                        Accuracy {accuracyPct}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 14, fontSize: 13, color: 'var(--muted, #6b7280)', flexWrap: 'wrap' }}>
-                      <span>Samples: {row.samples}</span>
-                      <span>Weakness: {row.weakness_score.toFixed(2)}</span>
-                      <span>Mastery: {masteryPct}</span>
-                      {srs ? (
-                        <>
-                          <span>SRS box: {srs.leitner_box}/5</span>
-                          <span>Reviews: {srs.review_count}</span>
-                          {srs.is_archived ? <span style={{ color: 'var(--success, #047857)' }}>Mastered</span> : null}
-                        </>
-                      ) : (
-                        <span className="muted">Not in SRS queue</span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      {srs ? (
-                        <Link to="/practice/reviews" className="btn ghost compact">Open in queue</Link>
-                      ) : (
-                        <button
-                          type="button"
-                          className="btn solid compact"
-                          disabled={isBusy}
-                          onClick={() => void addToQueue(row)}
-                        >
-                          {isBusy ? 'Adding...' : 'Add to queue'}
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </main>
-      </div>
-    </div>
+            return (
+              <li key={key} className="glass practice-card srs-review-row">
+                <div className="srs-review-row-head">
+                  <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
+                  <h3>{formatPracticeLabel(row.question_type)}</h3>
+                  <span className={`status-pill ${accuracyClass(row.accuracy_ratio)}`} style={{ marginLeft: 'auto' }}>
+                    Accuracy {accuracyPct}
+                  </span>
+                </div>
+                <div className="srs-review-row-meta">
+                  <span>Samples: {row.samples}</span>
+                  <span>Weakness: {row.weakness_score.toFixed(2)}</span>
+                  <span>Mastery: {masteryPct}</span>
+                  {srs ? (
+                    <>
+                      <span>SRS box: {srs.leitner_box}/5</span>
+                      <span>Reviews: {srs.review_count}</span>
+                      {srs.is_archived ? <span style={{ color: 'var(--success, #047857)' }}>Mastered</span> : null}
+                    </>
+                  ) : (
+                    <span className="muted">Not in SRS queue</span>
+                  )}
+                </div>
+                <div className="srs-review-row-actions">
+                  {srs ? (
+                    <Link to="/practice/reviews" className="btn ghost compact">Open in queue</Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn solid compact"
+                      disabled={isBusy}
+                      onClick={() => void addToQueue(row)}
+                    >
+                      {isBusy ? 'Adding...' : 'Add to queue'}
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </PracticeShell>
   );
 };

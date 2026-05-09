@@ -2241,3 +2241,113 @@ button:disabled {
   }
 }
 
+/* ==========================================================================
+   SRS / Reviews-due additions
+   ========================================================================== */
+
+.srs-card {
+  grid-column: 1 / -1;
+}
+
+.srs-card .task-card-head {
+  flex-wrap: wrap;
+}
+
+.practice-page-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 4px 4px 0;
+}
+
+.practice-page-head h1 {
+  margin: 6px 0;
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  line-height: 1.1;
+}
+
+.practice-page-head .muted {
+  max-width: 64ch;
+}
+
+.practice-page-head .kpi-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.practice-page-head .kpi-card {
+  min-width: 110px;
+  text-align: left;
+}
+
+.practice-page-head .kpi-card strong {
+  display: block;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.srs-review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.srs-review-row {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.srs-review-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.srs-review-row-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.srs-review-row-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 0.84rem;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.srs-review-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.srs-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 4px 0 8px;
+}
+
+.srs-filter-row .filter-sort-group {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .practice-page-head .kpi-row {
+    width: 100%;
+  }
+}

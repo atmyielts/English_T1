@@ -8,6 +8,7 @@ import {
 import { formatPracticeLabel } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import { PracticeShell } from '../components/PracticeShell';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -94,119 +95,113 @@ export const ReviewsDuePage = () => {
   };
 
   return (
-    <div className="practice-root">
-      <div className="practice-workspace">
-        <main className="practice-main">
-          <header className="practice-page-head">
-            <div>
-              <span className="eyebrow">Spaced Repetition</span>
-              <h1>Reviews due now</h1>
-              <p className="muted">
-                Question types you&apos;ve missed before, scheduled by Leitner intervals (1, 2, 4, 8, 16 days).
-                Mark each one as you go.
-              </p>
-            </div>
-            <div className="kpi-row">
-              <article className="glass kpi-card">
-                <span className="eyebrow">Due</span>
-                <strong>{summary.due}</strong>
-              </article>
-              <article className="glass kpi-card">
-                <span className="eyebrow">Mastered</span>
-                <strong>{summary.mastered}</strong>
-              </article>
-              <article className="glass kpi-card">
-                <span className="eyebrow">Tracked</span>
-                <strong>{summary.total}</strong>
-              </article>
-            </div>
-          </header>
+    <PracticeShell reviewsDueCount={summary.due}>
+      <header className="practice-page-head">
+        <div>
+          <span className="eyebrow">Spaced Repetition</span>
+          <h1>Reviews due now</h1>
+          <p className="muted">
+            Question types you&apos;ve missed before, scheduled by Leitner intervals (1, 2, 4, 8, 16 days).
+            Mark each one as you go.
+          </p>
+        </div>
+        <div className="kpi-row">
+          <article className="glass kpi-card">
+            <span className="eyebrow">Due</span>
+            <strong>{summary.due}</strong>
+          </article>
+          <article className="glass kpi-card">
+            <span className="eyebrow">Mastered</span>
+            <strong>{summary.mastered}</strong>
+          </article>
+          <article className="glass kpi-card">
+            <span className="eyebrow">Tracked</span>
+            <strong>{summary.total}</strong>
+          </article>
+        </div>
+      </header>
 
-          <nav className="filter-row" style={{ display: 'flex', gap: 8, margin: '12px 0 16px' }}>
-            {(['all', 'reading', 'listening', 'writing'] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`btn ${filter === value ? 'solid' : 'ghost'} compact`}
-                onClick={() => setFilter(value)}
-              >
-                {value === 'all' ? 'All sections' : `${value.charAt(0).toUpperCase()}${value.slice(1)}`}
-              </button>
-            ))}
-            <Link to="/practice/stats/by-type" className="btn ghost compact" style={{ marginLeft: 'auto' }}>
-              By question type
-            </Link>
-          </nav>
+      <nav className="srs-filter-row">
+        {(['all', 'reading', 'listening', 'writing'] as const).map((value) => (
+          <button
+            key={value}
+            type="button"
+            className={`btn ${filter === value ? 'solid' : 'ghost'} compact`}
+            onClick={() => setFilter(value)}
+          >
+            {value === 'all' ? 'All sections' : `${value.charAt(0).toUpperCase()}${value.slice(1)}`}
+          </button>
+        ))}
+        <Link to="/practice/stats/by-type" className="btn ghost compact filter-sort-group">
+          By question type
+        </Link>
+      </nav>
 
-          {error ? <div className="glass dashboard-alert">{error}</div> : null}
+      {error ? <div className="glass dashboard-alert error">{error}</div> : null}
 
-          {loading ? (
-            <div className="glass practice-card">Loading review queue...</div>
-          ) : visible.length === 0 ? (
-            <article className="glass practice-card">
-              <h3>Nothing due right now.</h3>
-              <p className="muted">
-                Complete a practice lab or add weak types to your queue from the dashboard.
-                {summary.total === 0
-                  ? ' Your queue will start filling automatically once you submit a lab.'
-                  : ' Come back later — your next review is on its way.'}
-              </p>
-              <Link to="/dashboard" className="btn solid compact" style={{ marginTop: 8 }}>
-                Back to dashboard
-              </Link>
-            </article>
-          ) : (
-            <ul className="weakness-list" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 12 }}>
-              {visible.map((item) => {
-                const accuracyPct = item.last_accuracy_ratio != null
-                  ? `${Math.round(item.last_accuracy_ratio * 100)}%`
-                  : '-';
-                const rollingPct = item.rolling_accuracy_ratio != null
-                  ? `${Math.round(item.rolling_accuracy_ratio * 100)}%`
-                  : '-';
-                const nextDays = intervalDaysForBox(Math.min(5, item.leitner_box + 1));
-                const isBusy = busyId === item.id;
-                return (
-                  <li key={item.id} className="glass practice-card weakness-item" style={{ display: 'grid', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                      <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                      <h3 style={{ margin: 0 }}>{formatPracticeLabel(item.question_type)}</h3>
-                      <span className="muted" style={{ marginLeft: 'auto' }}>
-                        Box {item.leitner_box} / 5 - {formatDueLabel(item.next_review_at)}
-                      </span>
-                    </div>
-                    <div className="weakness-metrics" style={{ display: 'flex', gap: 14, fontSize: 13, color: 'var(--muted, #6b7280)' }}>
-                      <span>Last: {accuracyPct}</span>
-                      <span>Rolling: {rollingPct}</span>
-                      <span>Reviews: {item.review_count}</span>
-                      <span>Correct: {item.correct_count}</span>
-                      <span>Wrong: {item.incorrect_count}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        type="button"
-                        className="btn solid compact"
-                        disabled={isBusy}
-                        onClick={() => void submit(item, 'got_it')}
-                      >
-                        {isBusy ? 'Saving...' : `Got it - move to box ${Math.min(5, item.leitner_box + 1)} (next in ${nextDays}d)`}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn ghost compact"
-                        disabled={isBusy}
-                        onClick={() => void submit(item, 'need_more')}
-                      >
-                        Need more practice - back to box 1
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </main>
-      </div>
-    </div>
+      {loading ? (
+        <article className="glass practice-card">Loading review queue...</article>
+      ) : visible.length === 0 ? (
+        <article className="glass practice-card">
+          <h3>Nothing due right now.</h3>
+          <p className="muted">
+            Complete a practice lab or add weak types to your queue from the dashboard.
+            {summary.total === 0
+              ? ' Your queue will start filling automatically once you submit a lab.'
+              : ' Come back later — your next review is on its way.'}
+          </p>
+          <Link to="/dashboard" className="btn solid compact">Back to dashboard</Link>
+        </article>
+      ) : (
+        <ul className="srs-review-list">
+          {visible.map((item) => {
+            const accuracyPct = item.last_accuracy_ratio != null
+              ? `${Math.round(item.last_accuracy_ratio * 100)}%`
+              : '-';
+            const rollingPct = item.rolling_accuracy_ratio != null
+              ? `${Math.round(item.rolling_accuracy_ratio * 100)}%`
+              : '-';
+            const nextDays = intervalDaysForBox(Math.min(5, item.leitner_box + 1));
+            const isBusy = busyId === item.id;
+            return (
+              <li key={item.id} className="glass practice-card srs-review-row">
+                <div className="srs-review-row-head">
+                  <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                  <h3>{formatPracticeLabel(item.question_type)}</h3>
+                  <span className="muted" style={{ marginLeft: 'auto' }}>
+                    Box {item.leitner_box} / 5 - {formatDueLabel(item.next_review_at)}
+                  </span>
+                </div>
+                <div className="srs-review-row-meta">
+                  <span>Last: {accuracyPct}</span>
+                  <span>Rolling: {rollingPct}</span>
+                  <span>Reviews: {item.review_count}</span>
+                  <span>Correct: {item.correct_count}</span>
+                  <span>Wrong: {item.incorrect_count}</span>
+                </div>
+                <div className="srs-review-row-actions">
+                  <button
+                    type="button"
+                    className="btn solid compact"
+                    disabled={isBusy}
+                    onClick={() => void submit(item, 'got_it')}
+                  >
+                    {isBusy ? 'Saving...' : `Got it - move to box ${Math.min(5, item.leitner_box + 1)} (next in ${nextDays}d)`}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost compact"
+                    disabled={isBusy}
+                    onClick={() => void submit(item, 'need_more')}
+                  >
+                    Need more practice - back to box 1
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </PracticeShell>
   );
 };
