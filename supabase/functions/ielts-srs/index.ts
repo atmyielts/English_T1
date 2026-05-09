@@ -202,6 +202,7 @@ serve(async (req) => {
             sectionType,
             questionType,
             accuracy,
+            seed: false,
           });
           results.push({
             question_type: questionType,
@@ -214,7 +215,10 @@ serve(async (req) => {
         return json(200, { ok: true, results });
       }
 
-      // Single-review submit: { question_type, accuracy_ratio, section_type?, product_id? }
+      // Single-review submit: { question_type, accuracy_ratio, section_type?, product_id?, seed? }
+      // seed=true means "user is adding this type to their queue", not a real
+      // review. We insert with 0 counts and next_review_at = now so it shows up
+      // immediately in mode=daily. If a row already exists, seed is a no-op.
       const questionType = String((body as any).question_type ?? "").trim();
       if (!questionType) return json(400, { error: "question_type required" });
       const accuracy = clampAccuracy((body as any).accuracy_ratio);
@@ -227,6 +231,7 @@ serve(async (req) => {
           : null;
       const sectionType = explicitSection ?? sectionTypeFor(questionType);
       const productId = typeof (body as any).product_id === "string" ? String((body as any).product_id) : null;
+      const seed = (body as any).seed === true;
 
       const updated = await applyReview(sb, {
         userId,
@@ -235,6 +240,7 @@ serve(async (req) => {
         sectionType,
         questionType,
         accuracy,
+        seed,
       });
 
       return json(200, { ok: true, item: updated });
@@ -256,9 +262,10 @@ const applyReview = async (
     sectionType: "reading" | "listening" | "writing";
     questionType: string;
     accuracy: number;
+    seed: boolean;
   },
 ): Promise<ReviewRow> => {
-  const { userId, languageId, productId, sectionType, questionType, accuracy } = args;
+  const { userId, languageId, productId, sectionType, questionType, accuracy, seed } = args;
   const correct = accuracy >= 0.7;
 
   // Fetch existing row (uniqueness key includes product_id; coalesce null with `is`).
@@ -274,7 +281,40 @@ const applyReview = async (
   const { data: existingData } = await existingQuery.maybeSingle();
   const existing = existingData as ReviewRow | null;
 
+  // Seed is a no-op when the row already exists: we don't want to reset
+  // counters or reschedule a row the user is already reviewing.
+  if (seed && existing) return existing;
+
   const nowIso = new Date().toISOString();
+
+  if (seed && !existing) {
+    const seedPayload = {
+      user_id: userId,
+      language_id: languageId,
+      product_id: productId,
+      section_type: sectionType,
+      question_type: questionType,
+      leitner_box: 1,
+      next_review_at: nowIso,
+      last_reviewed_at: null,
+      last_accuracy_ratio: Number(accuracy.toFixed(4)),
+      rolling_accuracy_ratio: Number(accuracy.toFixed(4)),
+      review_count: 0,
+      correct_count: 0,
+      incorrect_count: 0,
+      is_archived: false,
+      metadata: { seeded_at: nowIso, seed_accuracy: Number(accuracy.toFixed(4)) },
+    };
+    const { data, error } = await sb
+      .from("ielts_srs_question_reviews")
+      .insert(seedPayload)
+      .select("*")
+      .single();
+    if (error) throw new Error(`Failed to seed SRS row: ${error.message}`);
+    return data as ReviewRow;
+  }
+
+  // Real review path (existing or fresh first-attempt). Advance/reset box.
   const prevBox = existing ? Number(existing.leitner_box ?? 1) : 1;
   const nextBox = correct ? Math.min(5, prevBox + 1) : 1;
   const reviewCount = (existing?.review_count ?? 0) + 1;

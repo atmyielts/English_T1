@@ -2251,6 +2251,49 @@ button:disabled {
 
 .srs-card .task-card-head {
   flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.srs-card .srs-card-head-titles h3 {
+  margin: 4px 0 0;
+}
+
+.srs-card .srs-card-head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.srs-summary-pill {
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--card-subtle);
+  border: 1px solid var(--card-border);
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.srs-summary-pill strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.srs-summary-pill.muted {
+  color: var(--muted);
+}
+
+.srs-empty {
+  padding: 6px 0 2px;
+}
+
+.srs-empty p {
+  margin: 0;
+  max-width: 70ch;
 }
 
 .practice-page-head {

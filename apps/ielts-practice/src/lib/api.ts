@@ -798,6 +798,23 @@ export const srsSubmitReview = (
 ): Promise<{ ok: boolean; item: SrsReviewItem }> =>
   call(accessToken, "/ielts-srs", { method: "POST", body });
 
+// Seed a question type into the SRS queue without recording a review. The new
+// row is due immediately so it shows up on /practice/reviews. If the row
+// already exists, this is a no-op.
+export const srsAddToQueue = (
+  accessToken: string,
+  body: {
+    question_type: string;
+    section_type?: "reading" | "listening" | "writing";
+    accuracy_ratio?: number;
+    product_id?: string;
+  },
+): Promise<{ ok: boolean; item: SrsReviewItem }> =>
+  call(accessToken, "/ielts-srs", {
+    method: "POST",
+    body: { ...body, accuracy_ratio: body.accuracy_ratio ?? 0, seed: true },
+  });
+
 export const srsBulkFromMastery = (
   accessToken: string,
   items: Array<{

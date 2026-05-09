@@ -6,8 +6,8 @@ import {
   practiceGeneratePlan,
   practiceNotebookPatch,
   practicePlanItemStart,
+  srsAddToQueue,
   srsListReviews,
-  srsSubmitReview,
   type PracticeGoal,
   type PracticeNotebookItem,
   type PracticePlanItem,
@@ -210,6 +210,7 @@ export const DashboardPage = () => {
   const [notebookBusyId, setNotebookBusyId] = useState<string | null>(null);
   const [srsItems, setSrsItems] = useState<SrsReviewItem[]>([]);
   const [srsSummary, setSrsSummary] = useState<{ due: number; mastered: number; total: number }>({ due: 0, mastered: 0, total: 0 });
+  const [srsQueueKeys, setSrsQueueKeys] = useState<Set<string>>(new Set());
   const [queuingKey, setQueuingKey] = useState<string | null>(null);
   const displayName = useMemo(() => {
     const first = String(session?.user.user_metadata?.first_name ?? '').trim();
@@ -228,18 +229,31 @@ export const DashboardPage = () => {
     timezone: goal?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
   });
 
+  const refreshSrs = async (): Promise<void> => {
+    if (!accessToken) return;
+    const [daily, full] = await Promise.all([
+      srsListReviews(accessToken, { mode: 'daily', limit: 6 }).catch(() => null),
+      srsListReviews(accessToken, { mode: 'all', limit: 200 }).catch(() => null),
+    ]);
+    if (daily) {
+      setSrsItems(daily.items ?? []);
+      setSrsSummary(daily.summary ?? { due: 0, mastered: 0, total: 0 });
+    }
+    if (full) {
+      const keys = new Set<string>();
+      for (const item of full.items ?? []) {
+        keys.add(`${item.section_type}::${item.question_type}`);
+      }
+      setSrsQueueKeys(keys);
+    }
+  };
+
   const load = async (): Promise<void> => {
     if (!accessToken) return;
     setLoading(true);
     setError(null);
     try {
-      const [dashboardRes, srsRes] = await Promise.all([
-        practiceDashboardGet(accessToken),
-        srsListReviews(accessToken, { mode: 'daily', limit: 6 }).catch(() => ({
-          items: [] as SrsReviewItem[],
-          summary: { due: 0, mastered: 0, total: 0 },
-        })),
-      ]);
+      const [dashboardRes] = await Promise.all([practiceDashboardGet(accessToken), refreshSrs()]);
 
       setGoal(dashboardRes.goals);
       setTargetBand(toNumber(dashboardRes.goals.target_overall_band));
@@ -251,8 +265,6 @@ export const DashboardPage = () => {
       setPlan(dashboardRes.items ?? []);
       setNotebook(dashboardRes.notebook ?? []);
       setRoadmap(dashboardRes.roadmap ?? []);
-      setSrsItems(srsRes.items ?? []);
-      setSrsSummary(srsRes.summary ?? { due: 0, mastered: 0, total: 0 });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(humanizeError(message));
@@ -270,19 +282,28 @@ export const DashboardPage = () => {
     const key = `${section}::${questionType}`;
     setQueuingKey(key);
     setError(null);
+    // Optimistic: mark in queue immediately so the button flips before the
+    // network round-trip. We still refresh after the call.
+    setSrsQueueKeys((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      return next;
+    });
     try {
-      await srsSubmitReview(accessToken, {
+      await srsAddToQueue(accessToken, {
         question_type: questionType,
         section_type: section,
         accuracy_ratio: accuracyRatio ?? 0,
         product_id: IELTS_PRACTICE_PRODUCT_ID,
       });
-      const refresh = await srsListReviews(accessToken, { mode: 'daily', limit: 6 }).catch(() => null);
-      if (refresh) {
-        setSrsItems(refresh.items ?? []);
-        setSrsSummary(refresh.summary ?? { due: 0, mastered: 0, total: 0 });
-      }
+      await refreshSrs();
     } catch (err) {
+      // Roll back the optimistic update on failure so the button reappears.
+      setSrsQueueKeys((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
       setError(err instanceof Error ? err.message : 'Could not add to queue');
     } finally {
       setQueuingKey(null);
@@ -615,17 +636,30 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card srs-card" id="srs-reviews">
               <div className="task-card-head">
-                <h3>Reviews due today</h3>
-                <Link to="/practice/reviews" className="btn ghost compact">
-                  Open queue ({srsSummary.due})
-                </Link>
+                <div className="srs-card-head-titles">
+                  <span className="eyebrow">Spaced repetition</span>
+                  <h3>Reviews due today</h3>
+                </div>
+                <div className="srs-card-head-actions">
+                  <span className="srs-summary-pill">
+                    <strong>{srsSummary.due}</strong> due
+                  </span>
+                  <span className="srs-summary-pill muted">
+                    {srsQueueKeys.size} tracked - {srsSummary.mastered} mastered
+                  </span>
+                  <Link to="/practice/reviews" className="btn solid compact">
+                    Open queue
+                  </Link>
+                </div>
               </div>
               {srsItems.length === 0 ? (
-                <p className="muted">
-                  {srsSummary.total === 0
-                    ? 'Submit a practice lab to start filling your spaced-repetition queue, or add weak types from the list below.'
-                    : 'You\'re caught up. The next review will appear when its interval is due.'}
-                </p>
+                <div className="srs-empty">
+                  <p className="muted">
+                    {srsSummary.total === 0
+                      ? "Nothing tracked yet. Use Add to queue on a weak type below, or submit a practice lab to start filling your queue automatically."
+                      : "You're caught up. Items return to the queue on a Leitner schedule (1, 2, 4, 8, 16 days)."}
+                  </p>
+                </div>
               ) : (
                 <ul className="weakness-list">
                   {srsItems.slice(0, 4).map((item) => (
@@ -656,9 +690,7 @@ export const DashboardPage = () => {
                 <ul className="weakness-list">
                   {topWeaknesses.map((row) => {
                     const queueKey = `${row.section_type}::${row.question_type}`;
-                    const inQueue = srsItems.some(
-                      (item) => item.section_type === row.section_type && item.question_type === row.question_type,
-                    );
+                    const inQueue = srsQueueKeys.has(queueKey);
                     const isQueuing = queuingKey === queueKey;
                     return (
                       <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">

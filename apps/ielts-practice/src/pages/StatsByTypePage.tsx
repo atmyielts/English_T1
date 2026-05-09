@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   practiceDashboardGet,
+  srsAddToQueue,
   srsListReviews,
-  srsSubmitReview,
   type SrsReviewItem,
 } from '../lib/api';
 import { formatPracticeLabel } from '../lib/practiceExperience';
@@ -131,7 +131,7 @@ export const StatsByTypePage = () => {
     const key = `${row.section_type}::${row.question_type}`;
     setBusyKey(key);
     try {
-      await srsSubmitReview(accessToken, {
+      await srsAddToQueue(accessToken, {
         question_type: row.question_type,
         section_type: row.section_type,
         accuracy_ratio: row.accuracy_ratio ?? 0,
