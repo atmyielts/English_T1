@@ -77,6 +77,10 @@ interface InputRendererProps {
   questionNumber?: number | { start: number; end: number };
   readOnly?: boolean;
   audioContext?: { accessToken: string; sessionId: string; volume?: number } | null;
+  // Declared so callers in ExamPlayer compile under strict TS. The renderer
+  // currently doesn't consume this — wiring it to the audio element's onEnded
+  // is a follow-up to the strict-mode work in dc6e992.
+  onAudioEnded?: () => void;
 }
 
 const safeJson = (v: unknown): Json => (v && typeof v === 'object' ? (v as Json) : {});
