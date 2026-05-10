@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, BookOpenCheck, ExternalLink, LibraryBig, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { playbookPageGet, playbookTrackEvent } from '../lib/api';
+import { playbookModuleVisit, playbookPageGet, playbookTrackEvent } from '../lib/api';
 import { SiteChrome } from '../components/content/SiteChrome';
 import { PageBlocks } from '../components/content/PageBlocks';
 import { buildPlatformUrl } from '../lib/platformUrls';
@@ -31,6 +31,12 @@ export const ContentPage: React.FC = () => {
         },
         token,
       );
+      // Mark this module as visited so the dashboard's curriculum progress
+      // reflects what the user has actually opened. Authenticated only.
+      const slugForVisit = String(page?.slug ?? '').trim();
+      if (slugForVisit && token) {
+        void playbookModuleVisit(token, slugForVisit).catch(() => null);
+      }
     };
 
     const redirectForAccessError = (status?: number) => {

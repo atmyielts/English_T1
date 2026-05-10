@@ -169,6 +169,78 @@ export const playbookPlanGet = (
 ): Promise<{ plan: Record<string, unknown>; latest_recommendation: Record<string, unknown> | null }> =>
   callAuthed(accessToken, `/ielts-playbook/plans/${encodeURIComponent(slug)}`);
 
+// Track that the user opened a playbook module so the dashboard can show progress.
+export const playbookModuleVisit = (
+  accessToken: string,
+  slug: string,
+): Promise<{ ok: boolean; visited_modules: string[]; last_visited_slug: string }> =>
+  callAuthed(accessToken, `/ielts-playbook/modules/${encodeURIComponent(slug)}/visit`, {
+    method: 'POST',
+    body: {},
+  });
+
+// Cross-app insights — same data the practice dashboard renders, called
+// directly against the practice edge function so the playbook can mirror
+// the band trajectory + activity + mastery without duplicating logic.
+export type TrajectoryPoint = {
+  date: string;
+  source: 'mock' | 'lab';
+  overall_band: number | null;
+  reading: number | null;
+  listening: number | null;
+  writing: number | null;
+  speaking: number | null;
+};
+
+export type BandPredictorEntry = {
+  band: number | null;
+  sample_count: number;
+  confidence: 'low' | 'medium' | 'high';
+};
+
+export type PracticeTrajectoryResponse = {
+  ok: boolean;
+  series: TrajectoryPoint[];
+  predictor: Record<string, BandPredictorEntry>;
+};
+
+export const practiceTrajectoryGet = (accessToken: string): Promise<PracticeTrajectoryResponse> =>
+  callAuthed(accessToken, '/ielts-practice/insights/trajectory');
+
+export type ActivityDay = { date: string; attempts: number; sections: string[]; minutes_estimate: number };
+export type PracticeActivityResponse = {
+  ok: boolean;
+  days: ActivityDay[];
+  streak: { current_days: number; longest_days: number; last_practice_date: string | null };
+  totals: { last_7_days: number; last_30_days: number; all_time: number };
+};
+
+export const practiceActivityGet = (accessToken: string): Promise<PracticeActivityResponse> =>
+  callAuthed(accessToken, '/ielts-practice/insights/activity');
+
+export type MasteryRow = {
+  question_type: string;
+  section_type: string;
+  mastery_level: number;
+  mastery_status: string;
+  last_accuracy: number | null;
+  rolling_accuracy: number | null;
+  attempts: number;
+  last_practiced_at: string | null;
+};
+
+export type PracticeMasteryOverviewResponse = {
+  ok: boolean;
+  by_status: Record<string, MasteryRow[]>;
+  recent_graduations: MasteryRow[];
+  totals: { tracked: number; mastered: number; weak: number };
+};
+
+export const practiceMasteryOverviewGet = (
+  accessToken: string,
+): Promise<PracticeMasteryOverviewResponse> =>
+  callAuthed(accessToken, '/ielts-practice/insights/mastery-overview');
+
 export const playbookTrackEvent = (
   body: Record<string, unknown>,
   accessToken?: string | null,
