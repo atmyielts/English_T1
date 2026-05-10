@@ -194,8 +194,24 @@ export const DashboardPage: React.FC = () => {
       />
 
       <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 8 }}>
-        <PlaybookTrajectoryCard accessToken={accessToken} />
-        <PlaybookActivityCard accessToken={accessToken} />
+        <PlaybookTrajectoryCard
+          accessToken={accessToken}
+          embedded={(() => {
+            const insights = payload?.insights;
+            if (!insights || typeof insights !== 'object') return null;
+            const t = (insights as Record<string, unknown>).trajectory;
+            return t && typeof t === 'object' ? { ok: true, ...(t as Record<string, unknown>) } as never : null;
+          })()}
+        />
+        <PlaybookActivityCard
+          accessToken={accessToken}
+          embedded={(() => {
+            const insights = payload?.insights;
+            if (!insights || typeof insights !== 'object') return null;
+            const a = (insights as Record<string, unknown>).activity;
+            return a && typeof a === 'object' ? { ok: true, ...(a as Record<string, unknown>) } as never : null;
+          })()}
+        />
       </section>
 
       <PlaybookSectionTitle
@@ -204,7 +220,15 @@ export const DashboardPage: React.FC = () => {
         hint="From your practice attempts, classified into Repair / Building / Stable / Graduated."
       />
 
-      <PlaybookMasteryCard accessToken={accessToken} />
+      <PlaybookMasteryCard
+        accessToken={accessToken}
+        embedded={(() => {
+          const insights = payload?.insights;
+          if (!insights || typeof insights !== 'object') return null;
+          const m = (insights as Record<string, unknown>).mastery;
+          return m && typeof m === 'object' ? { ok: true, ...(m as Record<string, unknown>) } as never : null;
+        })()}
+      />
 
       <PlaybookSectionTitle
         eyebrow="Curriculum"

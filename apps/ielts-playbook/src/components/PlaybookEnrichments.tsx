@@ -246,19 +246,26 @@ const drawTrajectoryPath = (
 
 interface InsightsProps {
   accessToken: string | null;
+  // Optional embedded payload from the playbook's own dashboard response.
+  // When provided, skips the separate fetch entirely.
+  embedded?: PracticeTrajectoryResponse | null;
 }
 
-export const PlaybookTrajectoryCard = ({ accessToken }: InsightsProps) => {
-  const [data, setData] = useState<PracticeTrajectoryResponse | null>(null);
+export const PlaybookTrajectoryCard = ({ accessToken, embedded }: InsightsProps) => {
+  const [data, setData] = useState<PracticeTrajectoryResponse | null>(embedded ?? null);
   type ChartKey = 'overall' | 'reading' | 'listening' | 'writing';
   const [activeKey, setActiveKey] = useState<ChartKey>('overall');
   const bandKey: BandKey = activeKey === 'overall' ? 'overall_band' : activeKey;
   const { ref, visible } = useLazyVisible();
 
   useEffect(() => {
+    if (embedded) {
+      setData(embedded);
+      return;
+    }
     if (!accessToken || !visible || data) return;
     practiceTrajectoryGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken, visible, data]);
+  }, [accessToken, visible, data, embedded]);
 
   const w = 640;
   const h = 180;
@@ -324,13 +331,22 @@ export const PlaybookTrajectoryCard = ({ accessToken }: InsightsProps) => {
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
-export const PlaybookActivityCard = ({ accessToken }: InsightsProps) => {
-  const [data, setData] = useState<PracticeActivityResponse | null>(null);
+interface ActivityProps {
+  accessToken: string | null;
+  embedded?: PracticeActivityResponse | null;
+}
+
+export const PlaybookActivityCard = ({ accessToken, embedded }: ActivityProps) => {
+  const [data, setData] = useState<PracticeActivityResponse | null>(embedded ?? null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
+    if (embedded) {
+      setData(embedded);
+      return;
+    }
     if (!accessToken || !visible || data) return;
     practiceActivityGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken, visible, data]);
+  }, [accessToken, visible, data, embedded]);
 
   const grid = useMemo(() => {
     const today = new Date();
@@ -397,13 +413,22 @@ const STATUS_COPY: Record<string, { label: string; tone: string }> = {
   mastered: { label: 'Graduated', tone: '#166534' },
 };
 
-export const PlaybookMasteryCard = ({ accessToken }: InsightsProps) => {
-  const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(null);
+interface MasteryProps {
+  accessToken: string | null;
+  embedded?: PracticeMasteryOverviewResponse | null;
+}
+
+export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => {
+  const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(embedded ?? null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
+    if (embedded) {
+      setData(embedded);
+      return;
+    }
     if (!accessToken || !visible || data) return;
     practiceMasteryOverviewGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken, visible, data]);
+  }, [accessToken, visible, data, embedded]);
 
   if (!data) {
     return (
