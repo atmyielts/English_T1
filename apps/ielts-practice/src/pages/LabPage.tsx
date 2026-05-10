@@ -611,7 +611,15 @@ export const LabPage = () => {
   if (loading) {
     return (
       <div className="practice-root">
-        <div className="glass dashboard-alert">Loading Practice Lab...</div>
+        <div className="lab-loading-shell">
+          <div className="lab-loading-card glass">
+            <div className="lab-loading-spinner" aria-hidden="true" />
+            <div>
+              <strong>Loading practice lab…</strong>
+              <p className="muted">Preparing your transformed simulator material.</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -619,8 +627,12 @@ export const LabPage = () => {
   if (error && !lab) {
     return (
       <div className="practice-root">
-        <div className="glass dashboard-alert error">{error}</div>
-        <Link className="btn ghost" to={backPath}>Back</Link>
+        <div className="lab-loading-shell">
+          <div className="lab-loading-card glass" role="alert">
+            <strong style={{ color: 'var(--danger)' }}>{error}</strong>
+            <Link className="btn ghost compact" to={backPath} style={{ marginTop: 12 }}>Back</Link>
+          </div>
+        </div>
       </div>
     );
   }

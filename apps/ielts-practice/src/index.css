@@ -1714,6 +1714,70 @@ button:disabled {
   gap: 14px;
   position: sticky;
   top: 18px;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.lab-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lab-sidebar::-webkit-scrollbar-thumb {
+  background: var(--card-border-strong);
+  border-radius: 3px;
+}
+
+@media (max-width: 960px) {
+  .lab-layout {
+    grid-template-columns: 1fr;
+  }
+  .lab-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Lab loading shell — centered card instead of full-width stretched bar */
+.practice-root .lab-loading-shell {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.practice-root .lab-loading-card {
+  width: min(420px, 100%);
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.practice-root .lab-loading-card strong {
+  display: block;
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.practice-root .lab-loading-card p {
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.lab-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--card-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
 
 .lab-panel,
