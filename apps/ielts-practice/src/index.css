@@ -2394,3 +2394,713 @@ button:disabled {
     width: 100%;
   }
 }
+
+/* ============================================================ */
+/* Design refresh v2 — editorial, scholarly, content-first      */
+/* Additive layer at end of file so cascade wins over legacy.   */
+/* No legacy class is removed; every refinement is an override. */
+/* ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+
+:root {
+  /* Warm, editorial surface palette */
+  --bg-a: #fbfaf6;
+  --bg-b: #f4f1e8;
+  --card: #ffffff;
+  --card-subtle: #f7f4ec;
+  --card-border: #e8e2d0;
+  --card-border-strong: #c9c0a8;
+
+  /* Ink — warm near-black, two-tier muted */
+  --text: #1a1814;
+  --ink-2: #3b352a;
+  --muted: #7a7263;
+
+  /* Accent — deep scholarly teal (replaces generic blue) */
+  --accent: #0e4955;
+  --accent-2: #156471;
+  --accent-soft: #e3edee;
+
+  /* Section accents — refined for parity across all three apps */
+  --reading: #1f3a8a;
+  --reading-soft: #ecf0f9;
+  --listening: #0f5752;
+  --listening-soft: #e3efed;
+  --writing: #8a5a1b;
+  --writing-soft: #f5ecd9;
+
+  /* Status */
+  --danger: #952f2c;
+  --success: #2c6a3d;
+  --warning: #b08020;
+
+  /* Shadows — soft, warm-tinted */
+  --shadow-sm: 0 1px 2px rgba(26, 24, 20, 0.05);
+  --shadow-md: 0 4px 14px rgba(26, 24, 20, 0.07);
+  --shadow-lg: 0 14px 38px rgba(26, 24, 20, 0.09);
+
+  /* Type scale */
+  --t-hero: clamp(2.5rem, 4.6vw, 3.5rem);
+  --t-display: clamp(1.7rem, 3.2vw, 2.15rem);
+  --t-h1: 1.625rem;
+  --t-h2: 1.25rem;
+  --t-h3: 1.05rem;
+
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+}
+
+body {
+  background: var(--bg-a);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* --- Typography ----------------------------------------------- */
+
+h1, h2, h3, h4 {
+  color: var(--text);
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+.practice-root h1 {
+  font-family: 'Fraunces', 'Outfit', ui-serif, Georgia, serif;
+  font-weight: 600;
+  font-size: var(--t-h1);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  font-optical-sizing: auto;
+}
+
+.practice-root .hero-panel h1,
+.practice-root .p-hero h1 {
+  font-size: var(--t-hero);
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  font-weight: 600;
+}
+
+.practice-root h2,
+.practice-root .stat-card h3,
+.practice-root .practice-card h3 {
+  font-family: 'Fraunces', 'Outfit', ui-serif, Georgia, serif;
+  font-weight: 600;
+  font-size: var(--t-h2);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0 0 6px;
+}
+
+.practice-root .eyebrow {
+  font-family: 'Outfit', 'Manrope', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin: 0 0 8px;
+}
+
+.practice-root .muted {
+  color: var(--muted);
+}
+
+.practice-root p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.practice-root .band-row strong,
+.practice-root .kpi-card strong {
+  font-family: 'Fraunces', 'Outfit', ui-serif, Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* --- Surfaces and cards --------------------------------------- */
+
+.practice-root .glass {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: none;
+}
+
+.practice-root .glass:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.practice-root .stat-card,
+.practice-root .practice-card {
+  padding: 24px;
+  border-radius: var(--r-lg);
+}
+
+.practice-root .practice-card {
+  border: 1px solid var(--card-border);
+  background: var(--card);
+}
+
+/* --- Page heading pattern ------------------------------------- */
+
+.practice-root .practice-page-head {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.practice-root .practice-page-head h1 {
+  margin: 4px 0 0;
+}
+
+.practice-root .practice-page-head p {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--muted);
+}
+
+/* --- Buttons --------------------------------------------------- */
+
+.practice-root .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--card-border-strong);
+  border-radius: var(--r-md);
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.practice-root .btn:hover {
+  transform: none;
+  background: var(--card-subtle);
+  border-color: var(--text);
+}
+
+.practice-root .btn.solid {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.practice-root .btn.solid:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+.practice-root .btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--card-border-strong);
+}
+
+.practice-root .btn.compact {
+  padding: 7px 13px;
+  font-size: 0.85rem;
+}
+
+/* --- Chips ----------------------------------------------------- */
+
+.practice-root .chip {
+  padding: 3px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  text-transform: uppercase;
+}
+
+.practice-root .chip.reading {
+  background: var(--reading-soft);
+  color: var(--reading);
+  border-color: color-mix(in srgb, var(--reading) 18%, transparent);
+}
+
+.practice-root .chip.listening {
+  background: var(--listening-soft);
+  color: var(--listening);
+  border-color: color-mix(in srgb, var(--listening) 18%, transparent);
+}
+
+.practice-root .chip.writing {
+  background: var(--writing-soft);
+  color: var(--writing);
+  border-color: color-mix(in srgb, var(--writing) 18%, transparent);
+}
+
+/* --- KPI / metric cards --------------------------------------- */
+
+.practice-root .kpi-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+}
+
+.practice-root .kpi-card .eyebrow {
+  margin: 0;
+}
+
+.practice-root .kpi-card strong {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.practice-root .band-row {
+  margin-top: 12px;
+}
+
+.practice-root .band-row strong {
+  font-size: 3rem;
+}
+
+/* --- Hero + landing ------------------------------------------- */
+
+.practice-root .hero-panel {
+  padding: 48px 48px 40px;
+  background: var(--card);
+  border-radius: var(--r-xl);
+}
+
+.practice-root .hero-panel h1 {
+  margin: 12px 0 16px;
+  max-width: 22ch;
+}
+
+.practice-root .hero-panel p {
+  max-width: 60ch;
+  font-size: 1.05rem;
+  color: var(--ink-2);
+}
+
+.practice-root .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.practice-root .metric-panel {
+  padding: 28px;
+  display: grid;
+  gap: 22px;
+}
+
+.practice-root .metric-panel article {
+  display: grid;
+  gap: 4px;
+}
+
+.practice-root .metric-panel article h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  font-family: 'Outfit', sans-serif;
+}
+
+.practice-root .metric-panel article p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.practice-root .service-card {
+  padding: 22px;
+  background: var(--card);
+  border-color: var(--card-border);
+  position: relative;
+}
+
+.practice-root .service-card::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.practice-root .service-card.reading::before { background: var(--reading); }
+.practice-root .service-card.listening::before { background: var(--listening); }
+.practice-root .service-card.writing::before { background: var(--writing); }
+.practice-root .service-card.reading,
+.practice-root .service-card.listening,
+.practice-root .service-card.writing {
+  background: var(--card);
+}
+
+.practice-root .service-card h4 {
+  margin: 0 0 8px;
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+/* --- Sidebar refresh ------------------------------------------ */
+
+.practice-root .practice-sidebar {
+  padding: 22px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.practice-root .sidebar-link {
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.practice-root .sidebar-link:hover {
+  background: var(--card-subtle);
+  color: var(--text);
+}
+
+.practice-root .sidebar-link.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* --- SRS review row + filter row ------------------------------ */
+
+.practice-root .srs-review-list {
+  display: grid;
+  gap: 12px;
+}
+
+.practice-root .srs-review-row {
+  padding: 18px 20px;
+}
+
+.practice-root .srs-review-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.practice-root .srs-review-row-head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.practice-root .srs-review-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.practice-root .srs-review-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.practice-root .srs-filter-row {
+  margin: 0 0 16px;
+}
+
+/* --- New: P2 patterns (used by refined pages) ----------------- */
+
+.practice-root .p2-section-rule {
+  height: 1px;
+  background: var(--card-border);
+  margin: 4px 0;
+}
+
+.practice-root .p2-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.practice-root .p2-section-head h2 {
+  margin: 0;
+}
+
+.practice-root .p2-step-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 18px 0 28px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.practice-root .p2-step {
+  flex: 1 1 0;
+  padding: 14px 18px;
+  display: grid;
+  gap: 2px;
+  border-right: 1px solid var(--card-border);
+  background: var(--card);
+  min-width: 180px;
+}
+
+.practice-root .p2-step:last-child {
+  border-right: none;
+}
+
+.practice-root .p2-step.active {
+  background: var(--accent-soft);
+}
+
+.practice-root .p2-step.past {
+  background: var(--card-subtle);
+}
+
+.practice-root .p2-step-num {
+  font-family: 'Fraunces', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.practice-root .p2-step.past .p2-step-num {
+  color: var(--muted);
+}
+
+.practice-root .p2-step-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.practice-root .p2-step-time {
+  font-size: 0.74rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.practice-root .p2-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.practice-root .p2-stat {
+  padding: 18px 20px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  background: var(--card);
+  display: grid;
+  gap: 4px;
+}
+
+.practice-root .p2-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.practice-root .p2-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 1.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.practice-root .p2-stat-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .practice-root .hero-panel {
+    padding: 32px 24px;
+  }
+  .practice-root .practice-page-head {
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+  }
+  .practice-root .p2-step {
+    border-right: none;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .practice-root .p2-step:last-child {
+    border-bottom: none;
+  }
+}
+
+/* --- Dashboard surface refinements ---------------------------- */
+
+.practice-root .practice-header {
+  padding: 28px 32px;
+  border-radius: var(--r-lg);
+  align-items: center;
+}
+
+.practice-root .practice-header h1 {
+  margin: 6px 0 8px;
+}
+
+.practice-root .labs-hero-card {
+  padding: 28px;
+  border-radius: var(--r-lg);
+}
+
+.practice-root .labs-hero-copy h2 {
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+}
+
+.practice-root .labs-next-panel {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: var(--r-md);
+  padding: 18px;
+}
+
+.practice-root .labs-next-panel strong {
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  font-size: 1.08rem;
+}
+
+.practice-root .lab-section-tile {
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+
+.practice-root .lab-section-tile.reading {
+  border-top: 3px solid var(--reading);
+}
+
+.practice-root .lab-section-tile.listening {
+  border-top: 3px solid var(--listening);
+}
+
+.practice-root .lab-section-tile.writing {
+  border-top: 3px solid var(--writing);
+}
+
+.practice-root .practice-kpi-grid {
+  gap: 16px;
+}
+
+.practice-root .kpi-card {
+  padding: 22px;
+}
+
+.practice-root .kpi-card h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.practice-root .kpi-value {
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  font-size: clamp(2.2rem, 4vw, 2.85rem);
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-root .top-nav-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- Feedback panel + writing rubric bars --------------------- */
+
+.practice-root .feedback-panel {
+  background: var(--card-subtle);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-md);
+  padding: 18px;
+}
+
+.practice-root .feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.practice-root .feedback-grid h5 {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin: 0 0 6px;
+}
+
+.practice-root .feedback-grid ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.practice-root .feedback-grid li {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.practice-root .progress-track {
+  background: var(--card-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.practice-root .progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.practice-root .progress-fill.reading { background: var(--reading); }
+.practice-root .progress-fill.listening { background: var(--listening); }
+.practice-root .progress-fill.writing { background: var(--writing); }
+
