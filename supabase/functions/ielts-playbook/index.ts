@@ -24,6 +24,11 @@ import {
   saveProfile,
   toText,
 } from "../_shared/ielts-playbook.ts";
+import {
+  buildPracticeActivity,
+  buildPracticeMasteryOverview,
+  buildPracticeTrajectory,
+} from "../_shared/ielts-insights.ts";
 
 const routeMarker = "/ielts-playbook";
 
@@ -122,16 +127,41 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/dashboard") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
-      const data = await buildDashboardPayload(sb, scope, auth!.userId);
-      return new Response(JSON.stringify(data), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          // Short browser cache so re-mounts within the session are instant
-          "Cache-Control": "private, max-age=20",
-          ...corsHeaders,
+
+      // Single round-trip: own dashboard payload + the three cross-app insights
+      // (trajectory / activity / mastery) the frontend used to fetch separately.
+      // Running them in parallel server-side avoids 3 extra browser round-trips
+      // and lets the playbook frontend hydrate everything from one response.
+      const languageId = scope.languageId ?? "";
+      const [base, trajectory, activity, mastery] = await Promise.all([
+        buildDashboardPayload(sb, scope, auth!.userId),
+        buildPracticeTrajectory(sb, scope.practiceProductId, auth!.userId).catch(() => null),
+        languageId
+          ? buildPracticeActivity(sb, languageId, scope.practiceProductId, auth!.userId).catch(() => null)
+          : Promise.resolve(null),
+        languageId
+          ? buildPracticeMasteryOverview(sb, languageId, auth!.userId).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+
+      return new Response(
+        JSON.stringify({
+          ...base,
+          insights: {
+            trajectory,
+            activity,
+            mastery,
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "private, max-age=20",
+            ...corsHeaders,
+          },
         },
-      });
+      );
     }
 
     if (req.method === "GET" && route === "/profile") {
