@@ -1,3 +1,4 @@
+import { formatQuestionTypeLabel } from '@schood/ielts-core';
 import type { PracticeDeliveryBuild, PracticePlanItem } from './api';
 
 type JsonRecord = Record<string, unknown>;
@@ -65,28 +66,7 @@ const normalizeKind = (value: unknown): PracticeExperienceKind => {
   return (EXPERIENCE_KINDS as string[]).includes(raw) ? raw as PracticeExperienceKind : 'guided_set';
 };
 
-export const formatPracticeLabel = (value: unknown): string => {
-  const text = String(value ?? '').trim().toLowerCase();
-  if (!text) return '-';
-  const mapped: Record<string, string> = {
-    question_text: 'Task Response',
-    question_gap_fill: 'Gap Fill',
-    question_matching_headings: 'Matching Headings',
-    question_matching: 'Matching',
-    question_tfng: 'True / False / Not Given',
-    question_ynng: 'Yes / No / Not Given',
-    question_multiple_choice: 'Multiple Choice',
-    question_table_completion: 'Table Completion',
-    question_note_completion: 'Note Completion',
-    question_form_completion: 'Form Completion',
-    question_map_labeling: 'Map Labelling',
-  };
-  if (mapped[text]) return mapped[text];
-  return text
-    .replace(/^question_/i, '')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (token) => token.toUpperCase());
-};
+export const formatPracticeLabel = formatQuestionTypeLabel;
 
 const buildSummary = (item: PracticePlanItem): JsonRecord =>
   isRecord(item.delivery_build?.build_summary) ? item.delivery_build.build_summary as JsonRecord : {};
