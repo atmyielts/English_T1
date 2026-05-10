@@ -169,6 +169,25 @@ export const playbookPlanGet = (
 ): Promise<{ plan: Record<string, unknown>; latest_recommendation: Record<string, unknown> | null }> =>
   callAuthed(accessToken, `/ielts-playbook/plans/${encodeURIComponent(slug)}`);
 
+// AI strategy explainer — personalized walkthrough of a playbook strategy
+// grounded in the user's recent mistakes on the matching question type.
+export type PlaybookExplainResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  explanation: string;
+  examples: Array<{ mistake_pattern: string; how_strategy_applies: string }>;
+  generated_at: string;
+};
+
+export const playbookPageExplain = (
+  accessToken: string,
+  slug: string,
+): Promise<PlaybookExplainResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/explain`, {
+    method: 'POST',
+    body: {},
+  });
+
 // Track that the user opened a playbook module so the dashboard can show progress.
 export const playbookModuleVisit = (
   accessToken: string,

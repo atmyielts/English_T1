@@ -1,0 +1,78 @@
+// Shared OpenRouter JSON helper for IELTS AI features. Used by all the
+// AI-powered endpoints across practice and playbook so the prompt/model
+// plumbing lives in one place. Reads OPENROUTER_API_KEY / _MODEL / _BASE_URL
+// from Supabase secrets. Returns parsed JSON or throws on failure.
+
+export interface OpenRouterCallOptions {
+  /** Will be rendered as the JSON `response_format: { type: "json_object" }` */
+  systemPrompt: string;
+  /** Single user message — typically JSON.stringify of an input payload */
+  userPayload: string;
+  /** Temperature — defaults to 0.3 for deterministic structured output */
+  temperature?: number;
+  /** Override the default model from env */
+  modelOverride?: string | null;
+}
+
+export const isOpenRouterConfigured = (): boolean =>
+  Boolean(Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY"));
+
+export const callOpenRouterJson = async (
+  options: OpenRouterCallOptions,
+): Promise<unknown> => {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) throw new Error("openrouter_unconfigured");
+
+  const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
+  const model = options.modelOverride ?? Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
+  const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS";
+
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": referer,
+      "X-Title": appName,
+    },
+    body: JSON.stringify({
+      model,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: options.systemPrompt },
+        { role: "user", content: options.userPayload },
+      ],
+      temperature: options.temperature ?? 0.3,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`openrouter_http_${res.status}: ${text.slice(0, 200)}`);
+  }
+
+  const payload = await res.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new Error("openrouter_missing_content");
+
+  try {
+    return JSON.parse(content);
+  } catch {
+    throw new Error("openrouter_non_json");
+  }
+};
+
+// Helper to fall back gracefully when the AI call fails. Returns the parsed
+// JSON on success, or a typed fallback value otherwise.
+export const callOpenRouterJsonOrFallback = async <T>(
+  options: OpenRouterCallOptions,
+  fallback: T,
+): Promise<T> => {
+  try {
+    const result = await callOpenRouterJson(options);
+    return result as T;
+  } catch {
+    return fallback;
+  }
+};
