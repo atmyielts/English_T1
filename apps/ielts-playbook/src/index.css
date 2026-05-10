@@ -1840,3 +1840,124 @@ pre {
 @media (prefers-reduced-motion: reduce) {
   .p2-skeleton { animation: none; }
 }
+
+/* Rendered markdown inside prose-card sections (imported from .md files) */
+.prose-card .prose-markdown {
+  display: grid;
+  gap: 14px;
+  line-height: 1.7;
+  color: #1a1814;
+}
+
+.prose-card .prose-markdown > * {
+  margin: 0;
+}
+
+.prose-card .prose-markdown h1,
+.prose-card .prose-markdown h2,
+.prose-card .prose-markdown h3,
+.prose-card .prose-markdown h4 {
+  font-family: 'Fraunces', 'Outfit', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-top: 8px;
+}
+
+.prose-card .prose-markdown h1 { font-size: 1.7rem; }
+.prose-card .prose-markdown h2 { font-size: 1.4rem; }
+.prose-card .prose-markdown h3 { font-size: 1.15rem; }
+.prose-card .prose-markdown h4 { font-size: 1rem; }
+
+.prose-card .prose-markdown p {
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+.prose-card .prose-markdown ul,
+.prose-card .prose-markdown ol {
+  padding-left: 22px;
+  display: grid;
+  gap: 6px;
+}
+
+.prose-card .prose-markdown li {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.prose-card .prose-markdown strong {
+  font-weight: 700;
+  color: #14110d;
+}
+
+.prose-card .prose-markdown em {
+  font-style: italic;
+}
+
+.prose-card .prose-markdown code {
+  background: rgba(14, 73, 85, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.prose-card .prose-markdown pre {
+  background: #1a1814;
+  color: #f6f3eb;
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+}
+
+.prose-card .prose-markdown pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.prose-card .prose-markdown blockquote {
+  margin: 0;
+  padding: 8px 16px;
+  border-left: 3px solid #0e4955;
+  background: color-mix(in srgb, #0e4955 5%, white);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #3b352a;
+}
+
+.prose-card .prose-markdown a {
+  color: #0e4955;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-card .prose-markdown a:hover {
+  color: #156471;
+}
+
+.prose-card .prose-markdown hr {
+  border: none;
+  border-top: 1px solid #e8e2d0;
+  margin: 8px 0;
+}
+
+.prose-card .prose-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.prose-card .prose-markdown th,
+.prose-card .prose-markdown td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e8e2d0;
+}
+
+.prose-card .prose-markdown th {
+  background: #f4f1e8;
+  font-weight: 600;
+}
