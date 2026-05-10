@@ -25,6 +25,10 @@ jobs:
             workspace: apps/ielts-practice
             dist: apps/ielts-practice/dist
             project: schood-ielts-practice
+          - label: ielts-playbook
+            workspace: apps/ielts-playbook
+            dist: apps/ielts-playbook/dist
+            project: schood-ielts-playbook
           - label: sat
             workspace: apps/sat-simulator
             dist: apps/sat-simulator/dist
@@ -106,7 +110,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_ALLOWED_RETURN_HOSTS: schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,sat.schood.online,toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
+          VITE_ALLOWED_RETURN_HOSTS: schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,playbook.ielts.schood.online,sat.schood.online,toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
           VITE_ADMIN_URL: https://schood.online/admin
           VITE_IELTS_URL: https://ielts.schood.online
           VITE_ACADEMY_URL: https://schood.online/academy
