@@ -29,6 +29,10 @@ import {
   buildPracticeMasteryOverview,
   buildPracticeTrajectory,
 } from "../_shared/ielts-insights.ts";
+import {
+  callOpenRouterJsonOrFallback,
+  isOpenRouterConfigured,
+} from "../_shared/ielts-ai.ts";
 
 const routeMarker = "/ielts-playbook";
 
@@ -192,6 +196,105 @@ serve(async (req) => {
       const body = await parseBody(req);
       await recordEvent(sb, scope, body, auth?.userId ?? null);
       return json(200, { ok: true });
+    }
+
+    // AI strategy explainer: takes a playbook page slug + the authenticated
+    // user's recent mistakes for the matching question type, and returns a
+    // personalized walkthrough of the strategy grounded in the user's actual
+    // errors. Powered by OpenRouter; degrades to a generic explanation when
+    // the API key isn't set.
+    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/explain")) {
+      const slug = toText(route.replace("/pages/", "").replace(/\/explain$/, ""), 160);
+      if (!slug) return json(400, { error: "page slug required" });
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+
+      const pagePayload = await loadPageDetail(sb, scope, slug);
+      if (!pagePayload) return json(404, { error: "Page not found" });
+      const page = pagePayload.page as Record<string, unknown>;
+
+      // Pull a small sample of the user's recent active mistakes so the AI
+      // can reference real errors. Best-effort — empty array if anything fails.
+      let recentMistakes: Array<{ question_type: string; trap_type: string; pattern: string }> = [];
+      try {
+        const { data: mistakeRows } = await sb
+          .from("ielts_practice_mistake_notebook")
+          .select("question_type, trap_type, mistake_pattern, last_seen_at")
+          .eq("user_id", auth!.userId)
+          .eq("status", "active")
+          .order("last_seen_at", { ascending: false })
+          .limit(8);
+        recentMistakes = ((mistakeRows ?? []) as Array<Record<string, unknown>>).map((row) => ({
+          question_type: String(row.question_type ?? ""),
+          trap_type: String(row.trap_type ?? ""),
+          pattern: String(row.mistake_pattern ?? ""),
+        }));
+      } catch {
+        recentMistakes = [];
+      }
+
+      // Build a compact text representation of the page's sections.
+      const sections = Array.isArray(pagePayload.sections) ? pagePayload.sections : [];
+      const sectionsSummary = sections.slice(0, 6).map((sec) => {
+        const r = sec as Record<string, unknown>;
+        const block = r.content && typeof r.content === "object" ? r.content as Record<string, unknown> : {};
+        return {
+          title: toText(r.title ?? block.title ?? "", 200),
+          body: toText(block.body ?? block.text ?? r.summary ?? "", 600),
+        };
+      });
+
+      const fallbackExplanation = `This strategy walks through ${toText(page.title ?? "the technique", 80)}. ` +
+        `Re-read the page and try the strategy on your most recent missed attempt before moving on.`;
+
+      if (!isOpenRouterConfigured()) {
+        return json(200, {
+          ok: true,
+          ai_available: false,
+          explanation: fallbackExplanation,
+          examples: [],
+          generated_at: new Date().toISOString(),
+        });
+      }
+
+      const result = await callOpenRouterJsonOrFallback<{
+        explanation?: unknown;
+        examples?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS tutor explaining a strategy to a student. Read the strategy below and the student's recent mistakes. In strict JSON, return {explanation: 2-4 sentences grounded in the strategy text, citing how it would have caught their mistakes, examples: array (max 3) of {mistake_pattern, how_strategy_applies} where each item shows the named strategy step that resolves a real mistake the student made}. Be concrete; do NOT give generic test-taking advice.",
+          userPayload: JSON.stringify({
+            page_title: page.title,
+            page_module: page.module_key,
+            sections: sectionsSummary,
+            student_recent_mistakes: recentMistakes,
+          }),
+          temperature: 0.4,
+        },
+        { explanation: fallbackExplanation, examples: [] },
+      );
+
+      const explanation = typeof result.explanation === "string" && result.explanation.trim().length > 0
+        ? result.explanation.trim()
+        : fallbackExplanation;
+      const examples = Array.isArray(result.examples)
+        ? (result.examples as unknown[])
+            .filter((e): e is Record<string, unknown> => !!e && typeof e === "object" && !Array.isArray(e))
+            .map((e) => ({
+              mistake_pattern: toText(e.mistake_pattern, 200),
+              how_strategy_applies: toText(e.how_strategy_applies, 400),
+            }))
+            .filter((e) => e.mistake_pattern && e.how_strategy_applies)
+            .slice(0, 3)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: true,
+        explanation,
+        examples,
+        generated_at: new Date().toISOString(),
+      });
     }
 
     // Mark a playbook module as visited so the dashboard can show progress.

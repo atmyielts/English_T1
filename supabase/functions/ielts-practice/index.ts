@@ -17,6 +17,15 @@ import {
   todayInTimezone,
 } from "../_shared/ielts-practice-core.ts";
 import { signStorageRef } from "../_shared/media-storage.ts";
+import {
+  callOpenRouterJsonOrFallback,
+  isOpenRouterConfigured,
+} from "../_shared/ielts-ai.ts";
+import {
+  buildPracticeActivity as buildPracticeActivityShared,
+  buildPracticeMasteryOverview as buildPracticeMasteryOverviewShared,
+  buildPracticeTrajectory as buildPracticeTrajectoryShared,
+} from "../_shared/ielts-insights.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -4438,6 +4447,260 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/insights/plan-narrative") {
       const data = await buildPlanNarrative(sb, scope, auth.userId);
       return jsonCached(200, { ok: true, ...data });
+    }
+
+    // AI Writing prep — outline + band-8 sample for a user-supplied prompt.
+    // Stateless; no DB read or write. Returns structured JSON the frontend
+    // renders as a two-column scaffold (your plan vs. the model answer).
+    if (req.method === "POST" && route === "/writing/outline") {
+      const body = await parseBody(req);
+      const prompt = toText((body as JsonRecord).prompt, 1200);
+      const taskType = toText((body as JsonRecord).task_type, 32).toLowerCase() === "task1" ? "task1" : "task2";
+      if (!prompt || prompt.length < 20) return json(400, { error: "prompt is required (min 20 chars)" });
+
+      const fallback = {
+        thesis: "",
+        body_outline: [],
+        key_vocabulary: [],
+        time_management: "Plan 5 min, write 35 min, review 5 min for Task 2 (or 3/15/2 for Task 1).",
+      };
+
+      const result = await callOpenRouterJsonOrFallback<{
+        thesis?: unknown;
+        body_outline?: unknown;
+        key_vocabulary?: unknown;
+        time_management?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS Writing examiner helping a student plan a response BEFORE they write. Return strict JSON: {thesis: 1 sentence stating a clear position (Task 2) or overview (Task 1), body_outline: array of paragraph plans, each {label: 'Body 1'|'Body 2'|'Conclusion'|'Overview'|'Detail 1' etc, topic_sentence: 1 sentence, supporting_points: array of 2-3 short bullet points}, key_vocabulary: array of 5-8 topic-specific words/phrases the student should consider using, time_management: 1 sentence pacing advice}. Do NOT write the essay itself; only the plan.",
+          userPayload: JSON.stringify({ task_type: taskType, prompt }),
+          temperature: 0.4,
+        },
+        fallback,
+      );
+
+      return json(200, {
+        ok: true,
+        ai_available: isOpenRouterConfigured(),
+        thesis: typeof result.thesis === "string" ? result.thesis : "",
+        body_outline: Array.isArray(result.body_outline)
+          ? (result.body_outline as Array<Record<string, unknown>>)
+              .filter((p) => isObject(p))
+              .map((p) => ({
+                label: toText(p.label, 60),
+                topic_sentence: toText(p.topic_sentence, 400),
+                supporting_points: Array.isArray(p.supporting_points)
+                  ? (p.supporting_points as unknown[]).map((s) => toText(s, 200)).filter(Boolean).slice(0, 4)
+                  : [],
+              }))
+              .filter((p) => p.label && p.topic_sentence)
+              .slice(0, 5)
+          : [],
+        key_vocabulary: Array.isArray(result.key_vocabulary)
+          ? (result.key_vocabulary as unknown[]).map((v) => toText(v, 80)).filter(Boolean).slice(0, 8)
+          : [],
+        time_management: typeof result.time_management === "string" ? result.time_management : fallback.time_management,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    if (req.method === "POST" && route === "/writing/sample-answer") {
+      const body = await parseBody(req);
+      const prompt = toText((body as JsonRecord).prompt, 1200);
+      const taskType = toText((body as JsonRecord).task_type, 32).toLowerCase() === "task1" ? "task1" : "task2";
+      const targetBand = toNumber((body as JsonRecord).target_band) ?? 8;
+      if (!prompt || prompt.length < 20) return json(400, { error: "prompt is required (min 20 chars)" });
+
+      const result = await callOpenRouterJsonOrFallback<{
+        response_text?: unknown;
+        word_count?: unknown;
+        rubric_notes?: unknown;
+        annotations?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS Writing examiner writing a model response to a prompt. Match expected length: 150-180 words for Task 1, 250-280 for Task 2. The response should read like a strong real student's work — not flawless. Return strict JSON: {response_text: full response, word_count: integer, rubric_notes: {TR: 1 sentence on Task Response, CC: 1 sentence on Coherence, LR: 1 sentence on Lexical Resource, GRA: 1 sentence on Grammar}, annotations: array (max 6) of {phrase: exact text from the response (3-12 words), criterion: 'TR'|'CC'|'LR'|'GRA', why_band: 1 sentence explaining what makes this phrase work at the target band}}.",
+          userPayload: JSON.stringify({ task_type: taskType, prompt, target_band: targetBand }),
+          temperature: 0.5,
+        },
+        { response_text: "", word_count: 0, rubric_notes: {}, annotations: [] },
+      );
+
+      return json(200, {
+        ok: true,
+        ai_available: isOpenRouterConfigured(),
+        target_band: targetBand,
+        response_text: typeof result.response_text === "string" ? result.response_text : "",
+        word_count: toNumber(result.word_count) ?? 0,
+        rubric_notes: isObject(result.rubric_notes) ? {
+          TR: toText((result.rubric_notes as JsonRecord).TR, 400),
+          CC: toText((result.rubric_notes as JsonRecord).CC, 400),
+          LR: toText((result.rubric_notes as JsonRecord).LR, 400),
+          GRA: toText((result.rubric_notes as JsonRecord).GRA, 400),
+        } : { TR: "", CC: "", LR: "", GRA: "" },
+        annotations: Array.isArray(result.annotations)
+          ? (result.annotations as unknown[])
+              .filter((a): a is JsonRecord => isObject(a))
+              .map((a) => ({
+                phrase: toText(a.phrase, 200),
+                criterion: ["TR", "CC", "LR", "GRA"].includes(String(a.criterion ?? "").toUpperCase())
+                  ? String(a.criterion).toUpperCase()
+                  : "TR",
+                why_band: toText(a.why_band, 400),
+              }))
+              .filter((a) => a.phrase && a.why_band)
+              .slice(0, 6)
+          : [],
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // AI study coach — daily insights derived from trajectory + activity +
+    // mastery + goals. One small per-user payload; cached 8h client-side.
+    if (req.method === "GET" && route === "/insights/coach-summary") {
+      const [trajectory, activity, mastery] = await Promise.all([
+        buildPracticeTrajectoryShared(sb, scope.practiceProductId, auth.userId).catch(() => null),
+        buildPracticeActivityShared(sb, scope.languageId, scope.practiceProductId, auth.userId).catch(() => null),
+        buildPracticeMasteryOverviewShared(sb, scope.languageId, auth.userId).catch(() => null),
+      ]);
+      const goals = await getGoals(sb, auth.userId, scope);
+
+      const context = {
+        target_band: goals.target_overall_band,
+        target_date: goals.target_date,
+        daily_practice_minutes: goals.daily_practice_minutes,
+        trajectory_summary: trajectory ? {
+          overall_predictor: trajectory.predictor?.overall ?? null,
+          reading_predictor: trajectory.predictor?.reading ?? null,
+          listening_predictor: trajectory.predictor?.listening ?? null,
+          writing_predictor: trajectory.predictor?.writing ?? null,
+          recent_sample_count: trajectory.series.length,
+        } : null,
+        activity_summary: activity ? {
+          current_streak: activity.streak.current_days,
+          longest_streak: activity.streak.longest_days,
+          last_practice_date: activity.streak.last_practice_date,
+          last_7_days: activity.totals.last_7_days,
+          last_30_days: activity.totals.last_30_days,
+        } : null,
+        mastery_summary: mastery ? {
+          mastered: mastery.totals.mastered,
+          tracked: mastery.totals.tracked,
+          weak: mastery.totals.weak,
+          recent_graduations: mastery.recent_graduations.map((g) => g.question_type).slice(0, 5),
+          top_traps: mastery.trap_patterns.slice(0, 4),
+        } : null,
+      };
+
+      const result = await callOpenRouterJsonOrFallback<{
+        summary?: unknown;
+        insights?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS study coach reviewing a student's recent activity. From the JSON context, generate 3-4 SPECIFIC actionable insights. Each insight names a concrete observation tied to the data and a single next action. Return strict JSON: {summary: 1-2 sentence overall read, insights: array (3-4 items) of {type: 'progress'|'risk'|'recommendation'|'celebration', title: 5-8 words, body: 1-2 sentences citing the actual numbers, action_label: 3-5 word CTA, action_route: relative URL like '/today' or '/practice/reviews' or '/plan'}}. Do NOT use generic IELTS advice — every insight must reference data from the context.",
+          userPayload: JSON.stringify(context),
+          temperature: 0.4,
+        },
+        { summary: "", insights: [] },
+      );
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          ai_available: isOpenRouterConfigured(),
+          summary: typeof result.summary === "string" ? result.summary : "",
+          insights: Array.isArray(result.insights)
+            ? (result.insights as unknown[])
+                .filter((i): i is JsonRecord => isObject(i))
+                .map((i) => ({
+                  type: ["progress", "risk", "recommendation", "celebration"].includes(String(i.type ?? "")) ? String(i.type) : "recommendation",
+                  title: toText(i.title, 120),
+                  body: toText(i.body, 600),
+                  action_label: toText(i.action_label, 60),
+                  action_route: toText(i.action_route, 120) || "/dashboard",
+                }))
+                .filter((i) => i.title && i.body)
+                .slice(0, 4)
+            : [],
+          generated_at: new Date().toISOString(),
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            // Per-user, 8-hour cache. Insights don't need to refresh more often.
+            "Cache-Control": "private, max-age=28800",
+            ...corsHeaders,
+          },
+        },
+      );
+    }
+
+    // AI mock generator — produces a one-off IELTS-style passage + questions
+    // calibrated to the student's target band. Returned for in-memory practice;
+    // not persisted as a delivery_build (those go through the admin pipeline).
+    if (req.method === "POST" && route === "/generator/mock-passage") {
+      const body = await parseBody(req);
+      const sectionType = toText((body as JsonRecord).section_type, 32).toLowerCase();
+      if (!["reading", "listening"].includes(sectionType)) {
+        return json(400, { error: "section_type must be reading or listening" });
+      }
+      const targetBand = toNumber((body as JsonRecord).target_band) ?? 7;
+      const topicHint = toText((body as JsonRecord).topic_hint, 200);
+      const questionType = toText((body as JsonRecord).question_type, 64) || "matching_headings";
+
+      const result = await callOpenRouterJsonOrFallback<{
+        passage?: unknown;
+        questions?: unknown;
+        estimated_band?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS test writer. Generate an IELTS-style passage and 5 questions calibrated to the target band. Reading passages: 200-350 words, academic register. Return strict JSON: {passage: {title: 5-10 words, body: full passage text}, questions: array of 5 objects each {prompt: question text, type: 'matching_headings'|'true_false_not_given'|'gap_fill'|'multiple_choice', options: array of strings (3-5 for choice questions, omit for gap_fill), correct_answer: string or number index, explanation: 1-2 sentences citing the exact phrase in the passage that justifies the answer}, estimated_band: 0-9 numeric calibration of the passage difficulty}.",
+          userPayload: JSON.stringify({
+            section_type: sectionType,
+            target_band: targetBand,
+            topic_hint: topicHint || "general academic interest",
+            question_type: questionType,
+          }),
+          temperature: 0.6,
+        },
+        { passage: null, questions: [], estimated_band: targetBand },
+      );
+
+      if (!isObject(result.passage) || !Array.isArray(result.questions)) {
+        return json(200, {
+          ok: true,
+          ai_available: isOpenRouterConfigured(),
+          passage: null,
+          questions: [],
+          estimated_band: targetBand,
+          message: "Mock generation is unavailable right now. Try again in a moment or use a curated lab from your plan.",
+        });
+      }
+
+      return json(200, {
+        ok: true,
+        ai_available: true,
+        passage: {
+          title: toText((result.passage as JsonRecord).title, 200),
+          body: toText((result.passage as JsonRecord).body, 5000),
+        },
+        questions: (result.questions as unknown[])
+          .filter((q): q is JsonRecord => isObject(q))
+          .map((q) => ({
+            prompt: toText(q.prompt, 600),
+            type: toText(q.type, 64).toLowerCase() || "multiple_choice",
+            options: Array.isArray(q.options)
+              ? (q.options as unknown[]).map((o) => toText(o, 200)).filter(Boolean).slice(0, 6)
+              : [],
+            correct_answer: q.correct_answer == null ? "" : String(q.correct_answer),
+            explanation: toText(q.explanation, 600),
+          }))
+          .filter((q) => q.prompt && (q.options.length > 0 || q.correct_answer))
+          .slice(0, 6),
+        estimated_band: toNumber(result.estimated_band) ?? targetBand,
+        section_type: sectionType,
+        generated_at: new Date().toISOString(),
+      });
     }
 
     if (req.method === "GET" && route === "/insights/vocab-from-mistakes") {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, BookOpenCheck, ExternalLink, LibraryBig, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { playbookModuleVisit, playbookPageGet, playbookTrackEvent } from '../lib/api';
+import { PlaybookStrategyExplainer } from '../components/PlaybookStrategyExplainer';
 import { SiteChrome } from '../components/content/SiteChrome';
 import { PageBlocks } from '../components/content/PageBlocks';
 import { buildPlatformUrl } from '../lib/platformUrls';
@@ -129,6 +130,10 @@ export const ContentPage: React.FC = () => {
 
       {error ? <p className="notice-banner notice-danger">{error}</p> : null}
       {page ? <PageBlocks sections={sections} /> : <div className="route-loading">Loading page...</div>}
+
+      {page && slug && accessToken ? (
+        <PlaybookStrategyExplainer accessToken={accessToken} pageSlug={slug} />
+      ) : null}
 
       {childPages.length > 0 ? (
         <section className="section-band">

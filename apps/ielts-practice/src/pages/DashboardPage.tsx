@@ -34,6 +34,7 @@ import {
   PlanNarrativeBanner,
 } from '../components/PracticeInsights';
 import { NotebookRetestButton, PlanStaleBanner } from '../components/PracticeAdaptiveExtras';
+import { PracticeAICoachCard } from '../components/PracticeAICoachCard';
 import { PracticeOnboarding } from '../components/PracticeOnboarding';
 import {
   DashboardSectionTitle,
@@ -560,6 +561,15 @@ export const DashboardPage = () => {
             visible={planStale}
             onRegenerated={() => { void load(); }}
           />
+
+          <DashboardSectionTitle
+            eyebrow="Coach"
+            title="What to focus on right now"
+            hint="AI-generated insights from your trajectory, streak, and mastery. Refreshes every 8 hours."
+            anchorId="dashboard-coach"
+          />
+
+          <PracticeAICoachCard accessToken={accessToken} />
 
           <DashboardSectionTitle
             eyebrow="Today"

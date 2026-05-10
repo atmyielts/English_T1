@@ -1047,6 +1047,88 @@ export const practiceVocabFromMistakesGet = (
 ): Promise<VocabFromMistakesResponse> =>
   call(accessToken, `/ielts-practice/insights/vocab-from-mistakes`);
 
+// AI Writing prep — outline + band-8 sample
+export type WritingOutlineResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  thesis: string;
+  body_outline: Array<{ label: string; topic_sentence: string; supporting_points: string[] }>;
+  key_vocabulary: string[];
+  time_management: string;
+};
+
+export const practiceWritingOutline = (
+  accessToken: string,
+  body: { prompt: string; task_type?: 'task1' | 'task2' },
+): Promise<WritingOutlineResponse> =>
+  call(accessToken, '/ielts-practice/writing/outline', { method: 'POST', body });
+
+export type WritingSampleResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  target_band: number;
+  response_text: string;
+  word_count: number;
+  rubric_notes: { TR: string; CC: string; LR: string; GRA: string };
+  annotations: Array<{ phrase: string; criterion: string; why_band: string }>;
+};
+
+export const practiceWritingSample = (
+  accessToken: string,
+  body: { prompt: string; task_type?: 'task1' | 'task2'; target_band?: number },
+): Promise<WritingSampleResponse> =>
+  call(accessToken, '/ielts-practice/writing/sample-answer', { method: 'POST', body });
+
+// AI study coach insights
+export type CoachInsight = {
+  type: 'progress' | 'risk' | 'recommendation' | 'celebration' | string;
+  title: string;
+  body: string;
+  action_label: string;
+  action_route: string;
+};
+
+export type CoachSummaryResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  summary: string;
+  insights: CoachInsight[];
+  generated_at: string;
+};
+
+export const practiceCoachSummaryGet = (accessToken: string): Promise<CoachSummaryResponse> =>
+  call(accessToken, '/ielts-practice/insights/coach-summary');
+
+// AI mock generator
+export type MockGeneratorQuestion = {
+  prompt: string;
+  type: string;
+  options: string[];
+  correct_answer: string;
+  explanation: string;
+};
+
+export type MockGeneratorResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  passage: { title: string; body: string } | null;
+  questions: MockGeneratorQuestion[];
+  estimated_band: number;
+  section_type: 'reading' | 'listening';
+  message?: string;
+};
+
+export const practiceMockGenerate = (
+  accessToken: string,
+  body: {
+    section_type: 'reading' | 'listening';
+    target_band?: number;
+    topic_hint?: string;
+    question_type?: string;
+  },
+): Promise<MockGeneratorResponse> =>
+  call(accessToken, '/ielts-practice/generator/mock-passage', { method: 'POST', body });
+
 export type NotebookRetestResponse = {
   ok: boolean;
   notebook_id: string;

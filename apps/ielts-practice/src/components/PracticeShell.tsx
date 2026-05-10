@@ -14,6 +14,8 @@ const NAV_ITEMS: Array<{ label: string; to?: string; href?: string; matchPath?: 
   { label: 'Today’s session', to: '/today', matchPath: '/today' },
   { label: 'Dashboard', to: '/dashboard', matchPath: '/dashboard' },
   { label: 'Plan Builder', to: '/plan', matchPath: '/plan' },
+  { label: 'AI Writing prep', to: '/writing-prep', matchPath: '/writing-prep' },
+  { label: 'AI Mock generator', to: '/generator', matchPath: '/generator' },
   { label: 'Reviews due', to: '/practice/reviews', matchPath: '/practice/reviews' },
   { label: 'Stats by type', to: '/practice/stats/by-type', matchPath: '/practice/stats/by-type' },
 ];
