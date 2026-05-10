@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, Sparkles, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   practiceDashboardGet,
@@ -34,6 +34,13 @@ import {
   PlanNarrativeBanner,
 } from '../components/PracticeInsights';
 import { NotebookRetestButton, PlanStaleBanner } from '../components/PracticeAdaptiveExtras';
+import { PracticeOnboarding } from '../components/PracticeOnboarding';
+import {
+  DashboardSectionTitle,
+  MockTestEntryCard,
+  PreTestModeBanner,
+  VocabFromMistakesCard,
+} from '../components/PracticeFocusExtras';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -542,6 +549,10 @@ export const DashboardPage = () => {
           {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
           {error ? <div className="glass dashboard-alert error">{error}</div> : null}
 
+          <PracticeOnboarding goals={goal} onComplete={() => { void load(); }} />
+
+          <PreTestModeBanner targetDate={goal?.target_date ?? null} />
+
           <PlanNarrativeBanner accessToken={accessToken} />
 
           <PlanStaleBanner
@@ -550,14 +561,58 @@ export const DashboardPage = () => {
             onRegenerated={() => { void load(); }}
           />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 20 }}>
+          <DashboardSectionTitle
+            eyebrow="Today"
+            title="Your next move"
+            hint="Pick the focused session or run a full mock under exam conditions."
+            anchorId="dashboard-today"
+          />
+
+          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
+            <MockTestEntryCard />
+            <section className="glass" style={{ padding: 22, display: 'grid', gap: 12 }}>
+              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Guided session</p>
+              <div>
+                <h3 style={{ margin: '0 0 4px' }}>30-minute focused session</h3>
+                <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                  Spaced reviews → one focused lab → mastery check. Walks you through in order with skip buttons at every phase.
+                </p>
+              </div>
+              <Link to="/today" className="btn solid compact" style={{ alignSelf: 'flex-start' }}>
+                Open today’s session
+              </Link>
+            </section>
+          </section>
+
+          <DashboardSectionTitle
+            eyebrow="Progress"
+            title="Where you stand"
+            hint="Real-time band trajectory and your study consistency over 90 days."
+            anchorId="dashboard-progress"
+          />
+
+          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 }}>
             <BandTrajectoryCard accessToken={accessToken} />
             <ActivityHeatmapCard accessToken={accessToken} />
           </section>
 
+          <DashboardSectionTitle
+            eyebrow="Mastery"
+            title="What you’ve repaired"
+            hint="Question types you've drilled and the trap patterns most often catching you."
+            anchorId="dashboard-mastery"
+          />
+
           <MasteryOverviewCard accessToken={accessToken} />
 
-          <section className="glass labs-hero-card" id="practice-labs" style={{ marginTop: 20 }}>
+          <DashboardSectionTitle
+            eyebrow="Plan"
+            title="Today’s adaptive labs"
+            hint="Transformed simulator material rebuilt for repair, not retake."
+            anchorId="dashboard-labs"
+          />
+
+          <section className="glass labs-hero-card" id="practice-labs">
             <div className="labs-hero-copy">
               <p className="eyebrow">Practice Labs</p>
               <h2>Practice Labs train Reading, Listening, and Writing.</h2>
@@ -604,9 +659,18 @@ export const DashboardPage = () => {
             </div>
           </section>
 
-          <section className="practice-grid">
+          <DashboardSectionTitle
+            eyebrow="Review"
+            title="Practice queues + mistake notebook"
+            hint="The drills that keep what you've learned from slipping away."
+            anchorId="dashboard-review"
+          />
+
+          <VocabFromMistakesCard accessToken={accessToken} />
+
+          <section className="practice-grid" style={{ marginTop: 16 }}>
             <article className="glass practice-card section-progress-card">
-              <h3>Section Progress</h3>
+              <h3>Section accuracy</h3>
               <div className="section-progress-list">
                 {sectionRows.map((row) => (
                   <div key={row.section} className="section-progress-row">

@@ -4440,6 +4440,23 @@ serve(async (req) => {
       return jsonCached(200, { ok: true, ...data });
     }
 
+    if (req.method === "GET" && route === "/insights/vocab-from-mistakes") {
+      const { data: rows } = await sb
+        .from("user_vocabulary_notebook_entries")
+        .select("id, word, normalized_word, context_text, source_type, source_label, leitner_box, review_count, created_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("is_archived", false)
+        .eq("source_label", "Missed in practice")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return jsonCached(200, {
+        ok: true,
+        items: (rows ?? []) as JsonRecord[],
+        total: (rows ?? []).length,
+      });
+    }
+
     if (req.method === "GET" && route === "/diagnostics") {
       const refresh = String(url.searchParams.get("refresh") ?? "").toLowerCase() === "true";
       const goals = await getGoals(sb, auth.userId, scope);

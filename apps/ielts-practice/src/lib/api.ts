@@ -1024,6 +1024,29 @@ export const practiceModelAnswer = (
     body: {},
   });
 
+export type VocabFromMistakesEntry = {
+  id: string;
+  word: string;
+  normalized_word: string;
+  context_text: string | null;
+  source_type: string;
+  source_label: string | null;
+  leitner_box: number;
+  review_count: number;
+  created_at: string;
+};
+
+export type VocabFromMistakesResponse = {
+  ok: boolean;
+  items: VocabFromMistakesEntry[];
+  total: number;
+};
+
+export const practiceVocabFromMistakesGet = (
+  accessToken: string,
+): Promise<VocabFromMistakesResponse> =>
+  call(accessToken, `/ielts-practice/insights/vocab-from-mistakes`);
+
 export type NotebookRetestResponse = {
   ok: boolean;
   notebook_id: string;
