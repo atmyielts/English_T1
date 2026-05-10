@@ -17,6 +17,7 @@ import {
   buildUnifiedMistakeNotebook,
 } from "../_shared/english-insights.ts";
 import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import { parseBody } from "../_shared/english-learning.ts";
 
 const routeMarker = "/hub";
 
@@ -154,6 +155,147 @@ serve(async (req) => {
           "Cache-Control": "private, max-age=28800",
           ...corsHeaders,
         },
+      });
+    }
+
+    // Tier B #12 — vocab-in-context generator. Pulls the user's weakest
+    // vocabulary notebook entries (or accepts an explicit words list) and
+    // asks AI to produce a short passage featuring them naturally, with
+    // word-level highlights so the learner sees them in context.
+    if (req.method === "POST" && route === "/ai/vocab-in-context") {
+      const body = await parseBody(req);
+      const requestedWords: string[] = Array.isArray((body as Record<string, unknown>).words)
+        ? ((body as Record<string, unknown>).words as unknown[]).map((w) => String(w ?? "").trim()).filter(Boolean)
+        : [];
+      const topic = toText((body as Record<string, unknown>).topic, 200);
+
+      let words = requestedWords.slice(0, 8);
+      if (words.length === 0) {
+        // Pull the user's lowest-Leitner-box vocab as a default.
+        const { data: rows } = await sb
+          .from("user_vocabulary_notebook_entries")
+          .select("word")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("is_archived", false)
+          .lte("leitner_box", 2)
+          .order("created_at", { ascending: false })
+          .limit(8);
+        words = ((rows ?? []) as Array<{ word: string }>).map((r) => r.word).filter(Boolean);
+      }
+
+      if (words.length === 0) {
+        return json(200, {
+          ok: true,
+          ai_available: isEnglishAIConfigured(),
+          ai_status: "ok",
+          words: [],
+          passage: "",
+          translations: {},
+          message: "Add a few words to your notebook (or pass words: [...] in the request body) to generate a contextual passage.",
+        });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        passage?: unknown;
+        translations?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English teacher generating a short, natural reading passage that uses the given words IN CONTEXT. The passage should be 110-160 words at upper-intermediate (B2) reading level — readable but not artificial. Use each given word at least once, naturally, in a way that demonstrates its meaning. Reply in strict JSON: {passage: string, translations: { word: 1-line plain-English definition for each given word }}.",
+          userPayload: JSON.stringify({ topic: topic || "any natural everyday topic", words }),
+          temperature: 0.6,
+        },
+        { passage: "", translations: {} },
+      );
+
+      const passage = typeof result.passage === "string" ? result.passage : "";
+      const translations: Record<string, string> = {};
+      if (result.translations && typeof result.translations === "object" && !Array.isArray(result.translations)) {
+        for (const [k, v] of Object.entries(result.translations as Record<string, unknown>)) {
+          translations[String(k).toLowerCase()] = toText(v, 240);
+        }
+      }
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        words,
+        passage,
+        translations,
+        topic: topic || null,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier B #14 — grammar pattern decoder. Takes one English sentence and
+    // returns its parsed grammatical structure with annotated explanation.
+    // For advanced learners hitting pattern walls.
+    if (req.method === "POST" && route === "/ai/grammar-decode") {
+      const body = await parseBody(req);
+      const sentence = toText((body as Record<string, unknown>).sentence, 1000);
+      if (!sentence || sentence.length < 5) {
+        return json(400, { error: "sentence is required (min 5 characters)" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        clauses?: unknown;
+        tense?: unknown;
+        voice?: unknown;
+        register?: unknown;
+        notes?: unknown;
+        rephrasings?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English grammar tutor parsing a sentence for an advanced learner. Decode its structure and return strict JSON with: clauses (array of {role: 'main'|'subordinate'|'relative'|'noun'|'adverbial'|'participial', text: exact substring, function: one-sentence purpose}), tense (e.g., 'past perfect continuous'), voice ('active'|'passive'), register ('formal'|'neutral'|'informal'|'literary'|'spoken'), notes (1-3 short observations on what makes this sentence work or where learners stumble), rephrasings (array of 2 alternate ways to express the same idea, each {text, why_different}).",
+          userPayload: JSON.stringify({ sentence }),
+          temperature: 0.3,
+        },
+        { clauses: [], tense: "", voice: "", register: "", notes: [], rephrasings: [] },
+      );
+
+      const clauses = Array.isArray(result.clauses)
+        ? (result.clauses as unknown[])
+            .filter((c): c is Record<string, unknown> => !!c && typeof c === "object" && !Array.isArray(c))
+            .map((c) => ({
+              role: toText(c.role, 32),
+              text: toText(c.text, 600),
+              function: toText(c.function, 400),
+            }))
+            .filter((c) => c.text)
+            .slice(0, 8)
+        : [];
+      const notes = Array.isArray(result.notes)
+        ? (result.notes as unknown[]).map((n) => toText(n, 400)).filter(Boolean).slice(0, 4)
+        : [];
+      const rephrasings = Array.isArray(result.rephrasings)
+        ? (result.rephrasings as unknown[])
+            .filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r))
+            .map((r) => ({
+              text: toText(r.text, 600),
+              why_different: toText(r.why_different, 400),
+            }))
+            .filter((r) => r.text)
+            .slice(0, 3)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        sentence,
+        clauses,
+        tense: toText(result.tense, 80),
+        voice: toText(result.voice, 24),
+        register: toText(result.register, 32),
+        notes,
+        rephrasings,
+        generated_at: new Date().toISOString(),
       });
     }
 

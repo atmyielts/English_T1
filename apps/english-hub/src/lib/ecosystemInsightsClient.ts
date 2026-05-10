@@ -129,3 +129,74 @@ export const getCoachSummary = (
     `/hub/insights/coach-summary?language_code=${encodeURIComponent(languageCode)}`,
     accessToken,
   );
+
+// === New AI features (Tier B #12, #14) ===
+
+export interface VocabInContextResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  words: string[];
+  passage: string;
+  translations: Record<string, string>;
+  topic: string | null;
+  message?: string;
+  generated_at?: string;
+}
+
+const callEdgePost = async <T>(path: string, accessToken: string, body: unknown): Promise<T> => {
+  const url = `${edgeBase}${path}`;
+  const primaryToken = accessToken.trim();
+  const send = (token: string) =>
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body ?? {}),
+    });
+  let res = await send(primaryToken);
+  if (res.status === 401) {
+    const latest = (await resolveLatestAccessToken())?.trim() ?? '';
+    if (latest && latest !== primaryToken) res = await send(latest);
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`${path} failed (${res.status}): ${text.slice(0, 200)}`);
+    (err as { status?: number }).status = res.status;
+    throw err;
+  }
+  return (await res.json()) as T;
+};
+
+export const generateVocabInContext = (
+  accessToken: string,
+  body: { words?: string[]; topic?: string } = {},
+): Promise<VocabInContextResponse> =>
+  callEdgePost<VocabInContextResponse>('/hub/ai/vocab-in-context', accessToken, body);
+
+export interface GrammarDecodeResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  sentence: string;
+  clauses: Array<{ role: string; text: string; function: string }>;
+  tense: string;
+  voice: string;
+  register: string;
+  notes: string[];
+  rephrasings: Array<{ text: string; why_different: string }>;
+  generated_at?: string;
+}
+
+export const decodeGrammar = (
+  accessToken: string,
+  sentence: string,
+): Promise<GrammarDecodeResponse> =>
+  callEdgePost<GrammarDecodeResponse>('/hub/ai/grammar-decode', accessToken, { sentence });
