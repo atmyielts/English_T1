@@ -832,3 +832,31 @@ export const srsBulkFromMastery = (
     body: { items, ...(productId ? { product_id: productId } : {}) },
   });
 
+export type PracticeCoachStep = {
+  step_id: string;
+  question_type: string;
+  accuracy_ratio: number;
+  what_went_wrong: string;
+  correct_approach: string;
+  trap_pattern: string;
+  strategy_url: string;
+};
+
+export type PracticeCoachResponse = {
+  ok: boolean;
+  steps: PracticeCoachStep[];
+  generated_at: string;
+};
+
+// Feature 1: AI feedback per attempt. Lazily fetched from the results page;
+// returns concise per-question coaching for the worst-performing items in
+// the latest lab attempt on this practice session.
+export const practiceLabCoach = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<PracticeCoachResponse> =>
+  call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/coach`, {
+    method: "POST",
+    body: {},
+  });
+

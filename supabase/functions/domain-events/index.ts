@@ -287,6 +287,22 @@ const seedIeltsSrsFromOutcome = async (
   const languageId = (lang as { id?: string } | null)?.id;
   if (!languageId) return { applicable: true, seeded: 0, skipped: 0, reason: "language_missing" };
 
+  // Resolve the IELTS Practice product id. The frontend hardcodes this
+  // constant and the SRS table's unique constraint includes product_id, so the
+  // worker MUST write the same value the UI writes — otherwise the user ends
+  // up with duplicate rows that the reviews page can't advance. Look up by
+  // slug so we don't carry a second copy of the UUID.
+  const { data: practiceProduct } = await sb
+    .from("products")
+    .select("id")
+    .eq("slug", "ielts-practice")
+    .limit(1)
+    .maybeSingle();
+  const practiceProductId = (practiceProduct as { id?: string } | null)?.id ?? null;
+  if (!practiceProductId) {
+    return { applicable: true, seeded: 0, skipped: 0, reason: "practice_product_missing" };
+  }
+
   const targetBand = await resolveIeltsTargetBand(sb, userId);
   const accuracyFloor = 0.7;
   const bandGap = 0.5;
@@ -308,10 +324,25 @@ const seedIeltsSrsFromOutcome = async (
     // exam-wide breakdown — those would be drilled in the writing workbench.
     if (sectionType === "writing") { skipped += 1; continue; }
 
+    // Check for an existing row before inserting. Postgres treats NULL as
+    // distinct in UNIQUE constraints, so relying on 23505 alone would let
+    // duplicates through whenever product_id is null on either side.
+    const { data: existing } = await sb
+      .from("ielts_srs_question_reviews")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("language_id", languageId)
+      .eq("product_id", practiceProductId)
+      .eq("section_type", sectionType)
+      .eq("question_type", entry.canonical)
+      .limit(1)
+      .maybeSingle();
+    if (existing) { skipped += 1; continue; }
+
     const { error } = await sb.from("ielts_srs_question_reviews").insert({
       user_id: userId,
       language_id: languageId,
-      product_id: null,
+      product_id: practiceProductId,
       section_type: sectionType,
       question_type: entry.canonical,
       leitner_box: 1,
@@ -332,7 +363,8 @@ const seedIeltsSrsFromOutcome = async (
     });
 
     if (error) {
-      // 23505 = unique_violation = type already in queue. Honor seed semantic: no-op.
+      // 23505 = unique_violation. Could happen if another worker invocation
+      // raced us between the SELECT and INSERT. Honor seed semantic: no-op.
       if ((error as { code?: string }).code === "23505") {
         skipped += 1;
         continue;

@@ -2774,6 +2774,376 @@ const upsertMistakeNotebookFromLab = async (
   return rows;
 };
 
+// Feature 4: capture words/phrases from missed gap-style questions into the
+// vocabulary notebook. Targeted to question types where the expected answer is
+// a single word or short phrase the student presumably didn't recall — gap
+// fill, summary/note/table completion, select-from-list. Other types (TFNG,
+// matching, multi-choice) already feed the mistake notebook + SRS and don't
+// produce a single vocab item.
+const VOCAB_CAPTURE_QUESTION_TYPES = new Set([
+  "question_gap_fill",
+  "question_select_from_list",
+  "question_summary_completion",
+  "question_table_completion",
+  "question_form_completion",
+  "question_note_completion",
+  "question_sentence_endings",
+]);
+
+const VOCAB_TOKEN_MAX_LEN = 40;
+const VOCAB_TOKEN_MIN_LEN = 2;
+
+const normalizeVocabWord = (raw: unknown): string => {
+  const text = String(raw ?? "").trim().toLowerCase();
+  if (!text) return "";
+  // Drop trailing/leading punctuation but keep internal hyphens/apostrophes.
+  const trimmed = text.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+  if (trimmed.length < VOCAB_TOKEN_MIN_LEN || trimmed.length > VOCAB_TOKEN_MAX_LEN) return "";
+  // Reject purely numeric values — IELTS gap-fills sometimes accept "25%" or
+  // "1999" but those aren't vocabulary worth notebooking.
+  if (/^[\d\s%./-]+$/.test(trimmed)) return "";
+  return trimmed;
+};
+
+const extractVocabFromAnswerKey = (answerKey: unknown): string[] => {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const visit = (value: unknown): void => {
+    if (typeof value === "string") {
+      const word = normalizeVocabWord(value);
+      if (word && !seen.has(word)) {
+        seen.add(word);
+        out.push(word);
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+    if (isObject(value)) {
+      for (const v of Object.values(value)) visit(v);
+    }
+  };
+  visit(answerKey);
+  return out;
+};
+
+const captureMissedVocabularyFromLab = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  labAttemptId: string,
+  labPayload: JsonRecord,
+  scoredSteps: JsonRecord[],
+  nowIso: string,
+): Promise<number> => {
+  const sectionType = toSectionType(labPayload.section_type);
+  if (!sectionType) return 0;
+
+  const sourceSteps = Array.isArray(labPayload.steps)
+    ? (labPayload.steps as unknown[]).filter(isObject) as JsonRecord[]
+    : [];
+  const scoredById = new Map<string, JsonRecord>();
+  for (const step of scoredSteps) {
+    const id = toText(step.step_id, 120);
+    if (id) scoredById.set(id, step);
+  }
+
+  let captured = 0;
+  for (const step of sourceSteps) {
+    const stepId = toText(step.id, 120);
+    if (!stepId) continue;
+    const scored = scoredById.get(stepId);
+    const accuracy = scored ? clamp(toNumber(scored.accuracy_ratio) ?? 0, 0, 1) : 1;
+    // A fully correct answer doesn't need notebooking.
+    if (accuracy >= 1) continue;
+
+    const questionType = toText(step.question_type, 120).toLowerCase();
+    if (!VOCAB_CAPTURE_QUESTION_TYPES.has(questionType)) continue;
+
+    const answerKey = isObject(step.answer_key) ? step.answer_key : null;
+    if (!answerKey) continue;
+
+    const words = extractVocabFromAnswerKey(answerKey);
+    if (words.length === 0) continue;
+
+    const contextText = firstTextValue(step, ["context", "text", "prompt", "statement"]).slice(0, 600) || null;
+
+    for (const word of words.slice(0, 5)) {
+      const payload = {
+        user_id: userId,
+        language_id: scope.languageId,
+        word,
+        normalized_word: word,
+        context_text: contextText,
+        source_type: sectionType,
+        source_product_id: scope.practiceProductId,
+        source_label: "Missed in practice",
+        source_ref: `lab_attempt:${labAttemptId}:${stepId}`,
+        notes: null,
+        is_archived: false,
+        metadata: {
+          captured_at: nowIso,
+          question_type: questionType,
+          accuracy_ratio: accuracy,
+        },
+      };
+      const { error } = await sb
+        .from("user_vocabulary_notebook_entries")
+        .insert(payload);
+      if (error) {
+        // 23505 = already in notebook for this user+language — no-op.
+        if ((error as { code?: string }).code === "23505") continue;
+        // Don't throw — vocab capture is best-effort. Stop scanning further
+        // words for this step but keep processing other steps.
+        break;
+      }
+      captured += 1;
+    }
+  }
+  return captured;
+};
+
+// Feature 1: AI coach. Returns per-question explanations + trap names +
+// playbook strategy deep-link for the worst-performing items in a lab attempt.
+// Maps canonical question types to the playbook page slug that teaches the
+// matching strategy. Fall back to /diagnostic when the slug is unknown.
+const PLAYBOOK_STRATEGY_SLUG: Record<string, string> = {
+  question_true_false_not_given: 'reading-master-guide',
+  question_yes_no_not_given: 'reading-master-guide',
+  question_matching_headings: 'reading-master-guide',
+  question_matching: 'reading-master-guide',
+  question_summary_completion: 'reading-master-guide',
+  question_sentence_endings: 'reading-master-guide',
+  question_select_from_list: 'reading-master-guide',
+  question_form_completion: 'listening-master-guide',
+  question_note_completion: 'listening-master-guide',
+  question_map_labeling: 'listening-master-guide',
+  question_table_completion: 'listening-master-guide',
+  question_gap_fill: 'listening-master-guide',
+  question_multi_choice: 'listening-master-guide',
+  question_single_choice: 'listening-master-guide',
+  question_text: 'writing-master-guide',
+};
+
+const PLAYBOOK_BASE_URL = "https://playbook.ielts.schood.online";
+
+const strategyUrlForQuestionType = (questionType: string, sectionType: string): string => {
+  const slug = PLAYBOOK_STRATEGY_SLUG[questionType];
+  if (slug) return `${PLAYBOOK_BASE_URL}/${slug}?source=practice&focus=${encodeURIComponent(questionType)}`;
+  return `${PLAYBOOK_BASE_URL}/diagnostic?source=practice&weak_skill=${encodeURIComponent(sectionType)}`;
+};
+
+interface CoachStepFeedback {
+  step_id: string;
+  question_type: string;
+  accuracy_ratio: number;
+  what_went_wrong: string;
+  correct_approach: string;
+  trap_pattern: string;
+  strategy_url: string;
+}
+
+interface CoachResponse {
+  ok: true;
+  steps: CoachStepFeedback[];
+  generated_at: string;
+}
+
+const COACH_MAX_STEPS = 3;
+
+const truncate = (text: string, maxLen: number): string => {
+  const t = String(text ?? '').trim();
+  return t.length > maxLen ? `${t.slice(0, maxLen - 1)}…` : t;
+};
+
+const stringifyAnswer = (value: unknown): string => {
+  if (value == null) return '(no answer)';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+};
+
+const buildCoachPromptItems = (
+  labPayload: JsonRecord,
+  answers: JsonRecord,
+  scoredSteps: JsonRecord[],
+): Array<{ step_id: string; question_type: string; section_type: string; prompt: string; expected: string; student: string; context: string; accuracy: number }> => {
+  const items = [];
+  const stepsById = new Map<string, JsonRecord>();
+  for (const step of Array.isArray(labPayload.steps) ? (labPayload.steps as unknown[]).filter(isObject) : []) {
+    const id = toText((step as JsonRecord).id, 120);
+    if (id) stepsById.set(id, step as JsonRecord);
+  }
+  const sectionType = toText(labPayload.section_type, 32).toLowerCase();
+  const sorted = [...scoredSteps].sort((a, b) => {
+    const ra = clamp(toNumber(a.accuracy_ratio) ?? 1, 0, 1);
+    const rb = clamp(toNumber(b.accuracy_ratio) ?? 1, 0, 1);
+    return ra - rb;
+  });
+  for (const scored of sorted) {
+    const accuracy = clamp(toNumber(scored.accuracy_ratio) ?? 1, 0, 1);
+    if (accuracy >= 0.85) continue; // Only coach where there's a real gap.
+    const stepId = toText(scored.step_id, 120);
+    const source = stepsById.get(stepId);
+    if (!source) continue;
+    const questionType = toText(source.question_type, 120).toLowerCase() || toText(scored.question_type, 120).toLowerCase();
+    const prompt = truncate(firstTextValue(source, ['prompt', 'instruction', 'question']), 600);
+    const context = truncate(firstTextValue(source, ['context', 'text', 'passage', 'transcript']), 1400);
+    const answerKey = isObject(source.answer_key) ? source.answer_key : null;
+    const expected = truncate(stringifyAnswer(answerKey), 400);
+    const student = truncate(stringifyAnswer((answers as Record<string, unknown>)[stepId]), 400);
+    items.push({ step_id: stepId, question_type: questionType, section_type: sectionType, prompt, expected, student, context, accuracy });
+    if (items.length >= COACH_MAX_STEPS) break;
+  }
+  return items;
+};
+
+const callOpenRouterCoach = async (
+  prompt: string,
+  apiKey: string,
+  model: string,
+): Promise<unknown> => {
+  const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
+  const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
+  const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS Practice";
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": referer,
+      "X-Title": appName,
+    },
+    body: JSON.stringify({
+      model,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert IELTS coach. For each missed question, give one concise paragraph explaining what trap pattern the student fell for and what the correct approach is. Be specific, cite the evidence from the context, and avoid generic advice. Reply in strict JSON only.",
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.3,
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`OpenRouter ${res.status}: ${text.slice(0, 300)}`);
+  }
+  const payload = await res.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new Error("OpenRouter response missing content");
+  try {
+    return JSON.parse(content);
+  } catch {
+    throw new Error("OpenRouter returned non-JSON content");
+  }
+};
+
+const coachLabAttempt = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  practiceSessionId: string,
+  labPayload: JsonRecord,
+): Promise<CoachResponse> => {
+  // unused scope check kept for future per-product gating
+  void scope;
+  const attempt = await loadLatestLabAttempt(sb, practiceSessionId, userId);
+  if (!attempt) {
+    return { ok: true, steps: [], generated_at: new Date().toISOString() };
+  }
+  const scoreArtifacts = isObject(attempt.score_artifacts) ? attempt.score_artifacts : {};
+  const scoredSteps = Array.isArray(scoreArtifacts.scored_steps)
+    ? (scoreArtifacts.scored_steps as unknown[]).filter(isObject) as JsonRecord[]
+    : [];
+  const answers = isObject(attempt.answers_json) ? attempt.answers_json : {};
+
+  const items = buildCoachPromptItems(labPayload, answers, scoredSteps);
+  if (items.length === 0) {
+    return { ok: true, steps: [], generated_at: new Date().toISOString() };
+  }
+
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  if (!apiKey) {
+    // Degrade gracefully: return per-step rule-based coaching only.
+    return {
+      ok: true,
+      steps: items.map((item) => ({
+        step_id: item.step_id,
+        question_type: item.question_type,
+        accuracy_ratio: item.accuracy,
+        what_went_wrong: `Accuracy ${(item.accuracy * 100).toFixed(0)}% — likely a distractor or paraphrase trap on ${formatQuestionLabel(item.question_type)}.`,
+        correct_approach: `Re-read the relevant evidence and confirm wording before answering.`,
+        trap_pattern: 'unknown',
+        strategy_url: strategyUrlForQuestionType(item.question_type, item.section_type),
+      })),
+      generated_at: new Date().toISOString(),
+    };
+  }
+
+  const prompt = JSON.stringify({
+    instruction:
+      "For each item below, return a JSON object with key 'steps' whose value is an array of objects. Each object must have: step_id, what_went_wrong (1-2 sentences citing the evidence), correct_approach (1-2 sentences naming the technique), trap_pattern (one of: distractor, paraphrase, scope, off-topic, range, grammar, unknown).",
+    items: items.map((item) => ({
+      step_id: item.step_id,
+      question_type: item.question_type,
+      section_type: item.section_type,
+      accuracy: item.accuracy,
+      prompt: item.prompt,
+      context: item.context,
+      expected_answer: item.expected,
+      student_answer: item.student,
+    })),
+  });
+
+  let aiSteps: Array<{ step_id?: unknown; what_went_wrong?: unknown; correct_approach?: unknown; trap_pattern?: unknown }> = [];
+  try {
+    const parsed = await callOpenRouterCoach(prompt, apiKey, model);
+    const root = isObject(parsed) ? parsed : {};
+    const steps = Array.isArray(root.steps) ? root.steps : [];
+    aiSteps = steps.filter(isObject) as typeof aiSteps;
+  } catch {
+    aiSteps = [];
+  }
+
+  const aiById = new Map<string, typeof aiSteps[number]>();
+  for (const s of aiSteps) {
+    const id = toText(s.step_id, 120);
+    if (id) aiById.set(id, s);
+  }
+
+  return {
+    ok: true,
+    steps: items.map((item) => {
+      const ai = aiById.get(item.step_id);
+      const what = toText(ai?.what_went_wrong ?? '', 600);
+      const approach = toText(ai?.correct_approach ?? '', 600);
+      const trap = toText(ai?.trap_pattern ?? '', 80).toLowerCase() || 'unknown';
+      return {
+        step_id: item.step_id,
+        question_type: item.question_type,
+        accuracy_ratio: item.accuracy,
+        what_went_wrong: what || `Accuracy ${(item.accuracy * 100).toFixed(0)}% — review the source text and confirm the wording matches.`,
+        correct_approach: approach || `Slow down on ${formatQuestionLabel(item.question_type)} and prove the answer with explicit evidence.`,
+        trap_pattern: trap,
+        strategy_url: strategyUrlForQuestionType(item.question_type, item.section_type),
+      };
+    }),
+    generated_at: new Date().toISOString(),
+  };
+};
+
 const labKindForRoadmap = (section: string, questionType: string): string => {
   if (section === "writing") return "writing_rewrite";
   if (section === "listening") return questionType.includes("gap") ? "listening_replay" : "distractor_drill";
@@ -2935,6 +3305,22 @@ const submitLabAttempt = async (
   });
   const notebookItems = await upsertMistakeNotebookFromLab(sb, scope, userId, toText(updatedAttempt.id, 80), sectionType, scoredSteps, nowIso);
 
+  // Best-effort vocabulary capture for missed gap-style questions.
+  let vocabCaptured = 0;
+  try {
+    vocabCaptured = await captureMissedVocabularyFromLab(
+      sb,
+      scope,
+      userId,
+      toText(updatedAttempt.id, 80),
+      labPayload,
+      scoredSteps,
+      nowIso,
+    );
+  } catch {
+    // Vocab capture is purely additive; never fail the lab submit because of it.
+  }
+
   await sb.from("ielts_practice_sessions").update({
     status: "completed",
     latest_ai_evaluation_id: writingEvaluation.evaluation_id,
@@ -2979,6 +3365,7 @@ const submitLabAttempt = async (
     notebook_items: notebookItems,
     roadmap_items: roadmapItems,
     diagnostics_snapshot_id: diagnosticsSnapshotId,
+    vocab_captured: vocabCaptured,
   };
 };
 
@@ -3579,6 +3966,11 @@ serve(async (req) => {
 
       if (req.method === "POST" && labAction === "submit") {
         const result = await submitLabAttempt(sb, supabaseUrl, supabaseAnonKey, auth.token, scope, auth.userId, bundle, await parseBody(req));
+        return json(200, result);
+      }
+
+      if (req.method === "POST" && labAction === "coach") {
+        const result = await coachLabAttempt(sb, scope, auth.userId, toText(practiceSession.id, 80), labPayload);
         return json(200, result);
       }
 
