@@ -224,6 +224,18 @@ const json = (status: number, body: unknown): Response =>
     headers: { "Content-Type": "application/json", ...corsHeaders },
   });
 
+// Same as json() but with a short browser cache. Used by GET insights
+// endpoints so repeat page loads don't re-hit the backend within a minute.
+const jsonCached = (status: number, body: unknown, maxAgeSeconds = 45): Response =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": `private, max-age=${maxAgeSeconds}`,
+      ...corsHeaders,
+    },
+  });
+
 const getEnv = (key: string): string => {
   const value = Deno.env.get(key);
   if (!value) throw new Error(`Missing env var: ${key}`);
@@ -3910,7 +3922,7 @@ const buildPracticeTrajectory = async (
       .gte("scored_at", fromIso)
       .not("estimated_band", "is", null)
       .order("scored_at", { ascending: true })
-      .limit(400),
+      .limit(200),
   ]);
 
   const series: TrajectoryPoint[] = [];
@@ -4044,7 +4056,7 @@ const buildPracticeActivity = async (
       .eq("product_id", scope.practiceProductId)
       .gte("submitted_at", fromIso)
       .order("submitted_at", { ascending: true })
-      .limit(2000),
+      .limit(600),
     sb
       .from("ielts_practice_attempts")
       .select("submitted_at, section_type")
@@ -4052,7 +4064,7 @@ const buildPracticeActivity = async (
       .eq("language_id", scope.languageId)
       .gte("submitted_at", fromIso)
       .order("submitted_at", { ascending: true })
-      .limit(2000),
+      .limit(600),
   ]);
 
   const byDay = new Map<string, { attempts: number; sections: Set<string> }>();
@@ -4244,6 +4256,9 @@ const buildPlanNarrative = async (
   weeks_remaining: number | null;
   pace_label: "ahead" | "on_track" | "behind" | "unknown";
 }> => {
+  // Avoid scope unused warning when goals lookup runs in the same session
+  void scope;
+
   const goals = await getGoals(sb, userId, scope);
   const startDate = goals.practice_start_date || new Date().toISOString().slice(0, 10);
   const startTs = new Date(`${startDate}T00:00:00Z`).getTime();
@@ -4256,15 +4271,26 @@ const buildPlanNarrative = async (
     ? Math.max(0, Math.ceil((new Date(`${goals.target_date}T00:00:00Z`).getTime() - nowTs) / (7 * 24 * 60 * 60 * 1000)))
     : null;
 
-  // Pace: compare actual current band trajectory to required slope.
+  // Pace: single targeted query for recent overall band rather than the full
+  // trajectory pipeline. Cheaper and avoids duplicating work in the dashboard load.
   let paceLabel: "ahead" | "on_track" | "behind" | "unknown" = "unknown";
   if (totalDays != null) {
     try {
-      const trajectory = await buildPracticeTrajectory(sb, scope, userId);
-      const currentBand = trajectory.predictor.overall?.band ?? null;
-      if (currentBand != null) {
+      const since = new Date(nowTs - 60 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: rows } = await sb
+        .from("exam_outcomes")
+        .select("overall_band")
+        .eq("user_id", userId)
+        .gte("computed_at", since)
+        .not("overall_band", "is", null)
+        .order("computed_at", { ascending: false })
+        .limit(12);
+      const bands = ((rows ?? []) as JsonRecord[])
+        .map((r) => toNumber(r.overall_band))
+        .filter((v): v is number => v != null);
+      if (bands.length > 0) {
+        const currentBand = bands.reduce((a, b) => a + b, 0) / bands.length;
         const ratio = dayN / totalDays;
-        // Expected band: a smooth interpolation from a generous baseline 5.5 to target
         const baseline = 5.5;
         const expected = baseline + (goals.target_overall_band - baseline) * ratio;
         if (currentBand >= expected + 0.25) paceLabel = "ahead";
@@ -4396,22 +4422,22 @@ serve(async (req) => {
 
     if (req.method === "GET" && route === "/insights/trajectory") {
       const data = await buildPracticeTrajectory(sb, scope, auth.userId);
-      return json(200, { ok: true, ...data });
+      return jsonCached(200, { ok: true, ...data });
     }
 
     if (req.method === "GET" && route === "/insights/activity") {
       const data = await buildPracticeActivity(sb, scope, auth.userId);
-      return json(200, { ok: true, ...data });
+      return jsonCached(200, { ok: true, ...data });
     }
 
     if (req.method === "GET" && route === "/insights/mastery-overview") {
       const data = await buildPracticeMasteryOverview(sb, scope, auth.userId);
-      return json(200, { ok: true, ...data });
+      return jsonCached(200, { ok: true, ...data });
     }
 
     if (req.method === "GET" && route === "/insights/plan-narrative") {
       const data = await buildPlanNarrative(sb, scope, auth.userId);
-      return json(200, { ok: true, ...data });
+      return jsonCached(200, { ok: true, ...data });
     }
 
     if (req.method === "GET" && route === "/diagnostics") {
