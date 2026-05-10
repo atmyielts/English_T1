@@ -17,18 +17,17 @@ export interface OpenRouterCallOptions {
 export const isOpenRouterConfigured = (): boolean =>
   Boolean(Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY"));
 
-export const callOpenRouterJson = async (
+const AUTO_FALLBACK_MODEL = "openrouter/auto";
+
+const requestOpenRouter = async (
+  model: string,
+  apiKey: string,
+  baseUrl: string,
+  referer: string,
+  appName: string,
   options: OpenRouterCallOptions,
-): Promise<unknown> => {
-  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("openrouter_unconfigured");
-
-  const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
-  const model = options.modelOverride ?? Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
-  const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
-  const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS";
-
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+): Promise<Response> => {
+  return fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -46,6 +45,40 @@ export const callOpenRouterJson = async (
       temperature: options.temperature ?? 0.3,
     }),
   });
+};
+
+const isModelUnavailable = (status: number, body: string): boolean => {
+  if (status === 404) return true;
+  if (status === 400 && /no endpoints|model not found|unsupported model/i.test(body)) return true;
+  return false;
+};
+
+export const callOpenRouterJson = async (
+  options: OpenRouterCallOptions,
+): Promise<unknown> => {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) throw new Error("openrouter_unconfigured");
+
+  const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
+  const primaryModel = options.modelOverride ?? Deno.env.get("OPENROUTER_MODEL") ?? AUTO_FALLBACK_MODEL;
+  const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
+  const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS";
+
+  // First attempt: the configured (or default) model.
+  let res = await requestOpenRouter(primaryModel, apiKey, baseUrl, referer, appName, options);
+
+  // Auto-retry once with openrouter/auto when the configured model has been
+  // deprecated or removed (404 / 400 No endpoints). This makes the system
+  // resilient to a stale OPENROUTER_MODEL secret pointing at a model that
+  // OpenRouter no longer serves.
+  if (!res.ok && primaryModel !== AUTO_FALLBACK_MODEL) {
+    const probeText = await res.text().catch(() => "");
+    if (isModelUnavailable(res.status, probeText)) {
+      res = await requestOpenRouter(AUTO_FALLBACK_MODEL, apiKey, baseUrl, referer, appName, options);
+    } else {
+      throw new Error(`openrouter_http_${res.status}: ${probeText.slice(0, 200)}`);
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");

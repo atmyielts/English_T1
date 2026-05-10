@@ -101,28 +101,42 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
         );
       }
 
-      // Default prose-card. Pull any reasonable text field from `content`
-      // and render paragraphs in document order. Previous version only knew
-      // about `lead` and `body`, which left sections that authored copy
-      // under `text`, `description`, `summary`, `note`, or `paragraphs`
-      // looking empty even though the data was there.
-      const proseLead = typeof content.lead === 'string' && content.lead.trim() ? content.lead : null;
-      const proseBodyCandidates = ['body', 'text', 'description', 'summary', 'note', 'paragraph']
-        .map((key) => (typeof content[key] === 'string' ? String(content[key]).trim() : ''))
-        .filter(Boolean);
-      const proseParagraphs = Array.isArray(content.paragraphs)
-        ? (content.paragraphs as unknown[]).map((p) => String(p ?? '').trim()).filter(Boolean)
-        : [];
-      const proseItems = toList(content.items);
+      // Default prose-card. Exhaustively render anything text-shaped in
+      // content so authored copy under any reasonable key shows up.
+      // 1. content.lead → lead paragraph
+      // 2. Any string value at the top level of content (excluding known
+      //    non-prose keys) → body paragraphs in declaration order
+      // 3. Array-of-strings fields (paragraphs, body, items, points, bullets)
+      //    → list paragraphs / bullets
+      const proseLead = typeof content.lead === 'string' && content.lead.trim() ? content.lead.trim() : null;
+
+      const reservedKeys = new Set(['lead', 'items', 'paragraphs', 'bullets', 'points']);
+      const proseStringValues: string[] = [];
+      for (const [key, value] of Object.entries(content)) {
+        if (reservedKeys.has(key)) continue;
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed) proseStringValues.push(trimmed);
+        }
+      }
+      const proseParagraphsField = ['paragraphs', 'body']
+        .flatMap((key) => (Array.isArray(content[key])
+          ? (content[key] as unknown[]).map((p) => String(p ?? '').trim()).filter(Boolean)
+          : []));
+      const proseItems = [
+        ...toList(content.items),
+        ...toList(content.points),
+        ...toList(content.bullets),
+      ];
 
       return (
         <section key={id} className="content-card prose-card">
           {heading ? <h2>{heading}</h2> : null}
           {proseLead ? <p className="lead-copy">{proseLead}</p> : null}
-          {proseBodyCandidates.map((paragraph, paragraphIndex) => (
-            <p key={`${id}-body-${paragraphIndex}`}>{paragraph}</p>
+          {proseStringValues.map((paragraph, paragraphIndex) => (
+            <p key={`${id}-str-${paragraphIndex}`}>{paragraph}</p>
           ))}
-          {proseParagraphs.map((paragraph, paragraphIndex) => (
+          {proseParagraphsField.map((paragraph, paragraphIndex) => (
             <p key={`${id}-para-${paragraphIndex}`}>{paragraph}</p>
           ))}
           {proseItems.length > 0 ? (
