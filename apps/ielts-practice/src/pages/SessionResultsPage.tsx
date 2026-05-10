@@ -16,6 +16,7 @@ import {
   getExperienceSteps,
 } from '../lib/practiceExperience';
 import { formatBand } from '@schood/ielts-core';
+import { AnnotatedWritingRetro } from '../components/AnnotatedWritingRetro';
 
 // IELTS writing criteria. grade-writing returns the score under any of
 // these aliases depending on the model — accept all, render none if missing.
@@ -284,6 +285,10 @@ export const SessionResultsPage = () => {
             {sectionRows.length === 0 && !loading ? <p className="muted">No objective section scores yet.</p> : null}
           </div>
         </section>
+
+        {writingTasks.length > 0 && sessionId ? (
+          <AnnotatedWritingRetro accessToken={accessToken} practiceSessionId={sessionId} />
+        ) : null}
 
         {writingTasks.length > 0 ? (
           <section className="glass stat-card wide">

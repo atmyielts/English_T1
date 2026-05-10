@@ -27,6 +27,12 @@ import {
   getPlanWhyCopy,
 } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
+import {
+  ActivityHeatmapCard,
+  BandTrajectoryCard,
+  MasteryOverviewCard,
+  PlanNarrativeBanner,
+} from '../components/PracticeInsights';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -547,7 +553,16 @@ export const DashboardPage = () => {
           {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
           {error ? <div className="glass dashboard-alert error">{error}</div> : null}
 
-          <section className="glass labs-hero-card" id="practice-labs">
+          <PlanNarrativeBanner accessToken={accessToken} />
+
+          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 20 }}>
+            <BandTrajectoryCard accessToken={accessToken} />
+            <ActivityHeatmapCard accessToken={accessToken} />
+          </section>
+
+          <MasteryOverviewCard accessToken={accessToken} />
+
+          <section className="glass labs-hero-card" id="practice-labs" style={{ marginTop: 20 }}>
             <div className="labs-hero-copy">
               <p className="eyebrow">Practice Labs</p>
               <h2>Practice Labs train Reading, Listening, and Writing.</h2>

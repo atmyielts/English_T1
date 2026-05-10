@@ -860,3 +860,114 @@ export const practiceLabCoach = (
     body: {},
   });
 
+// ============================================================
+// Insights endpoints — backing the dashboard's sophisticated UI
+// ============================================================
+
+export type TrajectoryPoint = {
+  date: string;
+  source: "mock" | "lab";
+  overall_band: number | null;
+  reading: number | null;
+  listening: number | null;
+  writing: number | null;
+  speaking: number | null;
+};
+
+export type BandPredictorEntry = {
+  band: number | null;
+  sample_count: number;
+  confidence: "low" | "medium" | "high";
+};
+
+export type PracticeTrajectoryResponse = {
+  ok: boolean;
+  series: TrajectoryPoint[];
+  predictor: Record<string, BandPredictorEntry>;
+  range: { from: string; to: string };
+};
+
+export const practiceTrajectoryGet = (accessToken: string): Promise<PracticeTrajectoryResponse> =>
+  call(accessToken, "/ielts-practice/insights/trajectory");
+
+export type ActivityDay = { date: string; attempts: number; sections: string[]; minutes_estimate: number };
+export type PracticeActivityResponse = {
+  ok: boolean;
+  days: ActivityDay[];
+  streak: { current_days: number; longest_days: number; last_practice_date: string | null };
+  totals: { last_7_days: number; last_30_days: number; all_time: number };
+};
+
+export const practiceActivityGet = (accessToken: string): Promise<PracticeActivityResponse> =>
+  call(accessToken, "/ielts-practice/insights/activity");
+
+export type MasteryRow = {
+  question_type: string;
+  section_type: string;
+  mastery_level: number;
+  mastery_status: "new" | "weak" | "building" | "stable" | "mastered" | string;
+  last_accuracy: number | null;
+  rolling_accuracy: number | null;
+  attempts: number;
+  last_practiced_at: string | null;
+};
+
+export type TrapPatternRow = { trap_type: string; count: number; example_question_type: string | null };
+
+export type PracticeMasteryOverviewResponse = {
+  ok: boolean;
+  by_status: Record<string, MasteryRow[]>;
+  recent_graduations: MasteryRow[];
+  trap_patterns: TrapPatternRow[];
+  totals: { tracked: number; mastered: number; weak: number };
+};
+
+export const practiceMasteryOverviewGet = (
+  accessToken: string,
+): Promise<PracticeMasteryOverviewResponse> =>
+  call(accessToken, "/ielts-practice/insights/mastery-overview");
+
+export type PracticeNarrativeResponse = {
+  ok: boolean;
+  start_date: string;
+  target_date: string | null;
+  day_n: number;
+  total_days: number | null;
+  target_band: number;
+  weeks_remaining: number | null;
+  pace_label: "ahead" | "on_track" | "behind" | "unknown";
+};
+
+export const practiceNarrativeGet = (accessToken: string): Promise<PracticeNarrativeResponse> =>
+  call(accessToken, "/ielts-practice/insights/plan-narrative");
+
+export type WritingAnnotation = {
+  task_id: string;
+  phrase: string;
+  criterion: string;
+  severity: "low" | "medium" | "high";
+  comment: string;
+};
+
+export type AnnotatedWritingTask = {
+  task_id: string;
+  task_type: string | null;
+  answer_text: string;
+  annotations: WritingAnnotation[];
+};
+
+export type PracticeWritingAnnotateResponse = {
+  ok: boolean;
+  tasks: AnnotatedWritingTask[];
+  generated_at: string;
+};
+
+export const practiceWritingAnnotate = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<PracticeWritingAnnotateResponse> =>
+  call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/annotate`, {
+    method: "POST",
+    body: {},
+  });
+
