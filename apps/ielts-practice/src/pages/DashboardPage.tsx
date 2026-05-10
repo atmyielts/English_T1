@@ -531,14 +531,15 @@ export const DashboardPage = () => {
               </p>
             </div>
             <div className="top-nav-actions">
+              <Link to="/today" className="btn solid">Start today’s session</Link>
               <Link to="/plan" className="btn ghost">Daily Plan</Link>
               {nextLabItem ? (
-                <button className="btn solid" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
-                  {launchingId === nextLabItem.id ? 'Opening...' : 'Start next lab'}
+                <button className="btn ghost" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
+                  {launchingId === nextLabItem.id ? 'Opening…' : 'Start next lab'}
                 </button>
               ) : null}
-              <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                {generating ? 'Regenerating...' : 'Regenerate'}
+              <button className="btn ghost" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+                {generating ? 'Regenerating…' : 'Regenerate'}
               </button>
             </div>
           </header>

@@ -186,30 +186,34 @@ export const TodaySessionPage = () => {
         <div>
           <span className="eyebrow">Daily session</span>
           <h1>Today’s 30-minute plan</h1>
-          <p className="muted">
-            One guided path through your warm-up reviews, a focused lab, and a quick mastery check.
-            {targetBand != null ? ` Target band ${targetBand.toFixed(1)}.` : ''}
+          <p>
+            One guided path: a short warm-up of spaced reviews, a focused lab from your plan, and a closing
+            mastery check. {targetBand != null ? `Target band ${targetBand.toFixed(1)}.` : ''}
           </p>
         </div>
       </header>
 
-      <nav className="srs-filter-row" aria-label="Session progress">
+      <nav className="p2-step-track" aria-label="Session progress">
         {PHASES.map((p, idx) => {
           const isActive = p.id === phase;
           const isPast =
             phase === 'done' ||
             (phase === 'mastery' && (p.id === 'srs' || p.id === 'labs')) ||
             (phase === 'labs' && p.id === 'srs');
+          const className = `p2-step${isActive ? ' active' : ''}${isPast && !isActive ? ' past' : ''}`;
           return (
-            <div
-              key={p.id}
-              className={`btn compact ${isActive ? 'solid' : 'ghost'}`}
-              style={{ pointerEvents: 'none', opacity: isActive || isPast ? 1 : 0.55 }}
-            >
-              <span style={{ marginRight: 6 }}>{idx + 1}.</span>
-              {p.label}
-              <span className="muted" style={{ marginLeft: 8 }}>{p.mins}</span>
-              {isPast && !isActive ? <CheckCircle2 size={14} style={{ marginLeft: 6 }} /> : null}
+            <div key={p.id} className={className} aria-current={isActive ? 'step' : undefined}>
+              <div className="p2-step-num">
+                {isPast && !isActive ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <CheckCircle2 size={12} /> Done
+                  </span>
+                ) : (
+                  `Phase ${idx + 1}`
+                )}
+              </div>
+              <div className="p2-step-label">{p.label}</div>
+              <div className="p2-step-time">{p.mins}</div>
             </div>
           );
         })}

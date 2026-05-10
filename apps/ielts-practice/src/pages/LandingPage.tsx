@@ -19,7 +19,7 @@ export const LandingPage = () => {
     <div className="practice-root">
       <PracticeTopNav
         title="Schood IELTS Practice"
-        subtitle="Practice Labs for IELTS progression"
+        subtitle="Targeted labs for IELTS growth"
         brandHref="https://schood.online"
         actions={[
           status === 'authenticated'
@@ -31,45 +31,47 @@ export const LandingPage = () => {
 
       <main className="landing-grid">
         <section className="hero-panel glass">
-          <p className="eyebrow">Practice.ielts.schood.online</p>
-          <h1>Turn simulator results into focused IELTS Practice Labs.</h1>
+          <p className="eyebrow">IELTS Practice Lab</p>
+          <h1>From mock results to a sharper band — every session.</h1>
           <p>
-            Mistake Coach, Evidence Locator, Distractor Drill, Listening Replay, Writing Rewrite, Notebook, and Band Roadmap turn
-            real Reading, Listening, and Writing source material into targeted repair work.
+            Every wrong answer in the simulator becomes a focused drill here.
+            Spaced repetition keeps the patterns close; AI coaching tells you
+            why each miss happened and what to do next time. Built for serious
+            test-takers who want their study time to compound.
           </p>
           <div className="hero-actions">
-            <Link to="/dashboard" className="btn solid">Open dashboard</Link>
-            <Link to="/plan" className="btn ghost">See daily plan</Link>
+            <Link to="/today" className="btn solid">Start today’s session</Link>
+            <Link to="/dashboard" className="btn ghost">Open dashboard</Link>
           </div>
         </section>
 
         <section className="metric-panel glass">
           <article>
-            <h3>Diagnostics</h3>
-            <p>Section gaps, question-type weaknesses, recency, confidence, and target-band distance from simulator outcomes.</p>
+            <h3>Diagnostic-led</h3>
+            <p>Section gaps, type weaknesses, recency, and target-band distance all feed every day’s plan.</p>
           </article>
           <article>
-            <h3>Lab plans</h3>
-            <p>Daily tasks are selected from lab-ready builds and boosted by due notebook reviews and roadmap gaps.</p>
+            <h3>Repair, not retake</h3>
+            <p>Strategy primers, evidence drills, distractor work, and writing rewrites — not another full mock.</p>
           </article>
           <article>
-            <h3>Mastery loop</h3>
-            <p>Submissions update mastery, mistake patterns, diagnostics, and the next recommended lab.</p>
+            <h3>Loop that learns</h3>
+            <p>Each submission updates mastery, mistakes, and the next lab so the system keeps catching up to you.</p>
           </article>
         </section>
 
         <section className="cards-row">
           <article className="service-card glass reading">
             <h4>Reading</h4>
-            <p>Evidence-location, heading match, TFNG, completion, distractor elimination, timed mini, and mastery checks.</p>
+            <p>Evidence locators, matching headings, TFNG, completion drills, distractor elimination, and timed mini tests.</p>
           </article>
           <article className="service-card glass listening">
             <h4>Listening</h4>
-            <p>Prediction, replay chunks, transcript/signpost checks, paraphrase repair, distractors, and timed mini tasks.</p>
+            <p>Prediction work, replay chunks, transcript and signpost checks, paraphrase repair, and timed mini tasks.</p>
           </article>
           <article className="service-card glass writing">
             <h4>Writing</h4>
-            <p>Task analysis, plan builder, sentence and paragraph rewrite, full rewrite, and grade-writing-v2 feedback.</p>
+            <p>Task analysis, plan building, sentence and paragraph rewrites, and AI-graded feedback against IELTS rubrics.</p>
           </article>
         </section>
       </main>
