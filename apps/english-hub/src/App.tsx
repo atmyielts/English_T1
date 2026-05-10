@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase';
 import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/learningProfileClient';
 import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
+import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 
 type Service = {
   key: string;
@@ -824,6 +825,10 @@ const App = () => {
                     </a>
                   </div>
                 </header>
+
+                {session ? (
+                  <EcosystemSnapshot accessToken={session.access_token} />
+                ) : null}
 
                 <section className="hero frame">
                   <p className="kicker">Daily briefing room</p>
