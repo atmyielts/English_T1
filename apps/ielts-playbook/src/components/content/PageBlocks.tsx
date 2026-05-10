@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, CheckCircle2, MessageCircleQuestion } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { PlaybookSectionCoach } from '../PlaybookSectionCoach';
 
 // Markdown renderer for authored section bodies. The legacy import path
 // stored copy as raw markdown (### headings, - bullets, **bold**), so the
@@ -30,13 +31,29 @@ const toRecordList = (value: unknown): Array<Record<string, unknown>> =>
 
 const blockId = (section: Record<string, unknown>, index: number) => String(section.id ?? `${section.block_type ?? 'section'}-${index}`);
 
-export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> = ({ sections }) => (
+interface PageBlocksProps {
+  sections: Array<Record<string, unknown>>;
+  accessToken?: string | null;
+  pageSlug?: string | null;
+  enableSectionCoach?: boolean;
+}
+
+export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, pageSlug, enableSectionCoach }) => (
   <div className="page-blocks">
     {sections.map((section, index) => {
       const id = blockId(section, index);
       const type = String(section.block_type ?? 'rich_text');
       const heading = section.heading ? String(section.heading) : null;
       const content = (section.content ?? {}) as Record<string, unknown>;
+      const sectionId = String(section.id ?? id);
+      const coach = enableSectionCoach && accessToken && pageSlug && type === 'rich_text' ? (
+        <PlaybookSectionCoach
+          accessToken={accessToken}
+          pageSlug={pageSlug}
+          sectionId={sectionId}
+          sectionHeading={heading}
+        />
+      ) : null;
 
       if (type === 'checklist') {
         return (
@@ -174,6 +191,7 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
               ))}
             </ul>
           ) : null}
+          {coach}
         </section>
       );
     })}

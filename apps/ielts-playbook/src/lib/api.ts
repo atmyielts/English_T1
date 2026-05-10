@@ -104,7 +104,7 @@ const callPublic = async <T>(path: string): Promise<T> => {
 const callAuthed = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown },
 ): Promise<T> => {
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
@@ -190,6 +190,148 @@ export const playbookPageExplain = (
     method: 'POST',
     body: {},
   });
+
+// --- Enrichments: drills, diagnostic, section chat, worked example, band-render, notes ---
+export type PlaybookDrill = {
+  id: string;
+  prompt: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+};
+export type PlaybookDrillsResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  ai_error?: string | null;
+  drills: PlaybookDrill[];
+  question_type: string;
+  generated_at: string;
+};
+
+export const playbookDrillsGenerate = (accessToken: string, slug: string): Promise<PlaybookDrillsResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/drills`, { method: 'POST', body: {} });
+
+export const playbookDrillSubmit = (
+  accessToken: string,
+  slug: string,
+  body: { drill_id: string; is_correct: boolean; response?: Record<string, unknown> },
+): Promise<{ ok: boolean }> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/drills/submit`, { method: 'POST', body });
+
+export type PlaybookDiagnosticQuestion = {
+  id: string;
+  prompt: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+};
+export type PlaybookDiagnosticResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  questions: PlaybookDiagnosticQuestion[];
+  generated_at: string;
+};
+
+export const playbookDiagnosticGenerate = (accessToken: string, slug: string): Promise<PlaybookDiagnosticResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/diagnostic`, { method: 'POST', body: {} });
+
+export const playbookDiagnosticSubmit = (
+  accessToken: string,
+  slug: string,
+  body: { score: number; total: number; detail?: Record<string, unknown> },
+): Promise<{ ok: boolean; score: number; total: number; recommended_skip: boolean }> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/diagnostic/submit`, { method: 'POST', body });
+
+export type PlaybookThreadMessage = { role: 'user' | 'assistant'; content: string; at: string };
+export type PlaybookSectionAskResponse = {
+  ok: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  reply: string;
+  messages: PlaybookThreadMessage[];
+};
+
+export const playbookSectionAsk = (
+  accessToken: string,
+  slug: string,
+  sectionId: string,
+  message: string,
+): Promise<PlaybookSectionAskResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/sections/${encodeURIComponent(sectionId)}/ask`, {
+    method: 'POST',
+    body: { message },
+  });
+
+export const playbookSectionThreadGet = (
+  accessToken: string,
+  slug: string,
+  sectionId: string,
+): Promise<{ ok: boolean; messages: PlaybookThreadMessage[] }> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/sections/${encodeURIComponent(sectionId)}/thread`);
+
+export type PlaybookWorkedExampleStep = {
+  reveal_label: string;
+  explanation: string;
+  evidence: string | null;
+};
+export type PlaybookWorkedExampleResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  setup: string;
+  steps: PlaybookWorkedExampleStep[];
+  generated_at: string;
+};
+
+export const playbookWorkedExampleGenerate = (
+  accessToken: string,
+  slug: string,
+): Promise<PlaybookWorkedExampleResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/worked-example`, { method: 'POST', body: {} });
+
+export type PlaybookBandRenderResponse = {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  target_band: number;
+  framing: string;
+  focus_points: string[];
+  generated_at: string;
+};
+
+export const playbookBandRender = (
+  accessToken: string,
+  slug: string,
+  target_band: number,
+): Promise<PlaybookBandRenderResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}/band-render`, {
+    method: 'POST',
+    body: { target_band },
+  });
+
+export type PlaybookNote = {
+  id: string;
+  page_id: string;
+  section_id: string | null;
+  anchor_text: string;
+  body: string;
+  color: string;
+  updated_at: string;
+  page?: { slug: string; title: string; module_key: string | null } | null;
+};
+
+export const playbookNotesList = (accessToken: string): Promise<{ ok: boolean; notes: PlaybookNote[] }> =>
+  callAuthed(accessToken, '/ielts-playbook/notes');
+
+export const playbookNoteCreate = (
+  accessToken: string,
+  body: { page_slug: string; section_id?: string | null; anchor_text: string; body: string; color?: string },
+): Promise<{ ok: boolean; note: PlaybookNote }> =>
+  callAuthed(accessToken, '/ielts-playbook/notes', { method: 'POST', body });
+
+export const playbookNoteDelete = (accessToken: string, id: string): Promise<{ ok: boolean }> =>
+  callAuthed(accessToken, `/ielts-playbook/notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
 // Track that the user opened a playbook module so the dashboard can show progress.
 export const playbookModuleVisit = (

@@ -1,8 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowRight, BookOpenCheck, ExternalLink, LibraryBig, LockKeyhole, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowRight, BookOpenCheck, ExternalLink, LibraryBig, LockKeyhole, ShieldCheck, BookMarked } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { playbookModuleVisit, playbookPageGet, playbookTrackEvent } from '../lib/api';
 import { PlaybookStrategyExplainer } from '../components/PlaybookStrategyExplainer';
+import { PlaybookMiniDrills } from '../components/PlaybookMiniDrills';
+import { PlaybookDiagnostic } from '../components/PlaybookDiagnostic';
+import { PlaybookWorkedExample } from '../components/PlaybookWorkedExample';
+import { PlaybookBandRender } from '../components/PlaybookBandRender';
+import { PlaybookPracticeNow } from '../components/PlaybookPracticeNow';
+import { PlaybookHighlighter } from '../components/PlaybookHighlighter';
 import { SiteChrome } from '../components/content/SiteChrome';
 import { PageBlocks } from '../components/content/PageBlocks';
 import { buildPlatformUrl } from '../lib/platformUrls';
@@ -103,6 +109,9 @@ export const ContentPage: React.FC = () => {
   const childPages = Array.isArray(payload?.child_pages) ? (payload?.child_pages as Array<Record<string, unknown>>) : [];
   const sources = Array.isArray(payload?.sources) ? (payload?.sources as Array<Record<string, unknown>>) : [];
   const visibility = String(page?.visibility ?? 'public');
+  const moduleKey = page?.module_key ? String(page.module_key) : null;
+  const isPremiumModule = visibility === 'premium';
+  const articleRef = useRef<HTMLElement | null>(null);
 
   return (
     <SiteChrome compact>
@@ -114,9 +123,14 @@ export const ContentPage: React.FC = () => {
             {String(page?.summary ?? 'Working on the right IELTS questions matters as much as working hard.')}
           </p>
           <div className="hero-actions">
+            <PlaybookPracticeNow moduleKey={moduleKey} />
             <Link to="/dashboard" className="button button-primary">
               <ShieldCheck size={17} />
               Use in My Plan
+            </Link>
+            <Link to="/notes" className="button button-secondary">
+              <BookMarked size={17} />
+              My notes
             </Link>
             <Link to="/study-plans" className="button button-secondary">
               <BookOpenCheck size={17} />
@@ -141,10 +155,35 @@ export const ContentPage: React.FC = () => {
       </section>
 
       {error ? <p className="notice-banner notice-danger">{error}</p> : null}
-      {page ? <PageBlocks sections={sections} /> : <div className="route-loading">Loading page...</div>}
+
+      {isPremiumModule && slug && accessToken ? (
+        <PlaybookDiagnostic accessToken={accessToken} pageSlug={slug} />
+      ) : null}
+
+      <article ref={articleRef as React.RefObject<HTMLElement>} style={{ position: 'relative' }}>
+        {page ? (
+          <PageBlocks
+            sections={sections}
+            accessToken={accessToken}
+            pageSlug={slug}
+            enableSectionCoach={isPremiumModule}
+          />
+        ) : <div className="route-loading">Loading page...</div>}
+        {page && slug && accessToken ? (
+          <PlaybookHighlighter accessToken={accessToken} pageSlug={slug} containerRef={articleRef} />
+        ) : null}
+      </article>
 
       {page && slug && accessToken ? (
         <PlaybookStrategyExplainer accessToken={accessToken} pageSlug={slug} />
+      ) : null}
+
+      {isPremiumModule && slug && accessToken ? (
+        <>
+          <PlaybookWorkedExample accessToken={accessToken} pageSlug={slug} />
+          <PlaybookBandRender accessToken={accessToken} pageSlug={slug} />
+          <PlaybookMiniDrills accessToken={accessToken} pageSlug={slug} />
+        </>
       ) : null}
 
       {childPages.length > 0 ? (
