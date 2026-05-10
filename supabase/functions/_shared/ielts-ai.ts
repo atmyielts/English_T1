@@ -76,3 +76,28 @@ export const callOpenRouterJsonOrFallback = async <T>(
     return fallback;
   }
 };
+
+// Same as callOpenRouterJsonOrFallback but also reports HOW the result was
+// produced, so the caller can surface a real error message instead of silently
+// substituting placeholder content. The frontend uses ai_status to distinguish
+// "AI is off" (key missing) vs "AI errored" (call failed) vs "AI worked".
+export type AIStatus = "ok" | "unconfigured" | "failed";
+
+export const callOpenRouterJsonWithStatus = async <T>(
+  options: OpenRouterCallOptions,
+  fallback: T,
+): Promise<{ data: T; status: AIStatus; error?: string }> => {
+  if (!isOpenRouterConfigured()) {
+    return { data: fallback, status: "unconfigured" };
+  }
+  try {
+    const result = await callOpenRouterJson(options);
+    return { data: result as T, status: "ok" };
+  } catch (err) {
+    return {
+      data: fallback,
+      status: "failed",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+};

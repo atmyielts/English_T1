@@ -21,8 +21,14 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
       const res = await playbookPageExplain(accessToken, pageSlug);
       setData(res);
       setOpen(true);
-      if (!res.ai_available) {
-        setError('AI is offline right now — showing a generic explanation.');
+      // Surface a precise diagnostic so the user knows whether they're
+      // looking at a real AI response or a fallback string.
+      if (res.ai_status === 'unconfigured') {
+        setError('AI is not yet configured for this environment (missing OPENROUTER_API_KEY). The text below is a fallback, not an AI response.');
+      } else if (res.ai_status === 'failed') {
+        setError(`The AI call failed: ${res.ai_error ?? 'unknown error'}. The text below is a fallback, not an AI response.`);
+      } else if (res.ai_status === 'ok' && res.recent_mistake_count === 0) {
+        setError('No active mistake-notebook entries yet — the AI returned a general distillation of the strategy rather than a personalised walkthrough. Complete a few practice labs to unlock the personalised version.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not generate explanation');

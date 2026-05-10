@@ -101,11 +101,43 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
         );
       }
 
+      // Default prose-card. Pull any reasonable text field from `content`
+      // and render paragraphs in document order. Previous version only knew
+      // about `lead` and `body`, which left sections that authored copy
+      // under `text`, `description`, `summary`, `note`, or `paragraphs`
+      // looking empty even though the data was there.
+      const proseLead = typeof content.lead === 'string' && content.lead.trim() ? content.lead : null;
+      const proseBodyCandidates = ['body', 'text', 'description', 'summary', 'note', 'paragraph']
+        .map((key) => (typeof content[key] === 'string' ? String(content[key]).trim() : ''))
+        .filter(Boolean);
+      const proseParagraphs = Array.isArray(content.paragraphs)
+        ? (content.paragraphs as unknown[]).map((p) => String(p ?? '').trim()).filter(Boolean)
+        : [];
+      const proseItems = toList(content.items);
+      const hasAnyBody = proseLead || proseBodyCandidates.length > 0 || proseParagraphs.length > 0 || proseItems.length > 0;
+
       return (
         <section key={id} className="content-card prose-card">
           {heading ? <h2>{heading}</h2> : null}
-          {'lead' in content ? <p className="lead-copy">{String(content.lead ?? '')}</p> : null}
-          {'body' in content ? <p>{String(content.body ?? '')}</p> : null}
+          {proseLead ? <p className="lead-copy">{proseLead}</p> : null}
+          {proseBodyCandidates.map((paragraph, paragraphIndex) => (
+            <p key={`${id}-body-${paragraphIndex}`}>{paragraph}</p>
+          ))}
+          {proseParagraphs.map((paragraph, paragraphIndex) => (
+            <p key={`${id}-para-${paragraphIndex}`}>{paragraph}</p>
+          ))}
+          {proseItems.length > 0 ? (
+            <ul>
+              {proseItems.map((item, itemIndex) => (
+                <li key={`${id}-item-${itemIndex}`}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
+          {!hasAnyBody && heading ? (
+            <p className="muted" style={{ margin: 0, fontStyle: 'italic', fontSize: 14 }}>
+              This section is being authored.
+            </p>
+          ) : null}
         </section>
       );
     })}

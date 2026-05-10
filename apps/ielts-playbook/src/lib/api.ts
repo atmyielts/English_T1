@@ -174,8 +174,11 @@ export const playbookPlanGet = (
 export type PlaybookExplainResponse = {
   ok: boolean;
   ai_available: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  ai_error?: string | null;
   explanation: string;
   examples: Array<{ mistake_pattern: string; how_strategy_applies: string }>;
+  recent_mistake_count?: number;
   generated_at: string;
 };
 
