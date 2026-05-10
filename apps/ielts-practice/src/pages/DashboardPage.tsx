@@ -33,6 +33,7 @@ import {
   MasteryOverviewCard,
   PlanNarrativeBanner,
 } from '../components/PracticeInsights';
+import { NotebookRetestButton, PlanStaleBanner } from '../components/PracticeAdaptiveExtras';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -205,12 +206,13 @@ export const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
-  const [averageBand, setAverageBand] = useState<number | null>(null);
+  const [, setAverageBand] = useState<number | null>(null);
   const [goal, setGoal] = useState<PracticeGoal | null>(null);
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
   const [roadmap, setRoadmap] = useState<PracticeRoadmapItem[]>([]);
+  const [planStale, setPlanStale] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   const [notebookBusyId, setNotebookBusyId] = useState<string | null>(null);
@@ -271,6 +273,7 @@ export const DashboardPage = () => {
       setPlan(dashboardRes.items ?? []);
       setNotebook(dashboardRes.notebook ?? []);
       setRoadmap(dashboardRes.roadmap ?? []);
+      setPlanStale(Boolean(dashboardRes.plan_stale));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(humanizeError(message));
@@ -495,20 +498,6 @@ export const DashboardPage = () => {
               <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link" onClick={closeSidebar}>IELTS Playbook</a>
             </nav>
 
-            <section className="sidebar-panel sidebar-score-panel">
-              <h4>Band Target</h4>
-              <div className="sidebar-score-grid">
-                <div className="sidebar-target-row">
-                  <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
-                  <span>goal</span>
-                </div>
-                <div className="sidebar-target-row muted">
-                  <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
-                  <span>current</span>
-                </div>
-              </div>
-            </section>
-
             <section className="sidebar-panel sidebar-actions-panel">
               <h4>Quick Actions</h4>
               <button
@@ -554,6 +543,12 @@ export const DashboardPage = () => {
           {error ? <div className="glass dashboard-alert error">{error}</div> : null}
 
           <PlanNarrativeBanner accessToken={accessToken} />
+
+          <PlanStaleBanner
+            accessToken={accessToken}
+            visible={planStale}
+            onRegenerated={() => { void load(); }}
+          />
 
           <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 20 }}>
             <BandTrajectoryCard accessToken={accessToken} />
@@ -607,24 +602,6 @@ export const DashboardPage = () => {
                 </>
               )}
             </div>
-          </section>
-
-          <section className="practice-kpi-grid">
-            <article className="glass kpi-card">
-              <h3>Target Band</h3>
-              <div className="kpi-value">{targetBand != null ? targetBand.toFixed(1) : '-'}</div>
-              <p className="muted">Configured objective for IELTS progression.</p>
-            </article>
-            <article className="glass kpi-card">
-              <h3>Current Average</h3>
-              <div className="kpi-value">{averageBand != null ? averageBand.toFixed(1) : '-'}</div>
-              <p className="muted">Derived from recent simulator and practice outcomes.</p>
-            </article>
-            <article className="glass kpi-card">
-              <h3>Today&apos;s Labs</h3>
-              <div className="kpi-value">{planSummary.total}</div>
-              <p className="muted">{planSummary.pending} pending across Reading, Listening, and Writing.</p>
-            </article>
           </section>
 
           <section className="practice-grid">
@@ -757,6 +734,7 @@ export const DashboardPage = () => {
                         <p>{item.coach_note ?? `${formatPracticeLabel(item.question_type)} | ${formatPracticeLabel(item.trap_type)}`}</p>
                       </div>
                       <div className="notebook-actions">
+                        <NotebookRetestButton accessToken={accessToken} notebookId={item.id} />
                         <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'reviewed')}>Reviewed</button>
                         <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'difficult')}>Hard</button>
                         <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'archived')}>Archive</button>
