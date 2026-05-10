@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PracticeTopNav } from '../components/PracticeTopNav';
 import {
   practiceGeneratePlan,
+  practiceLabCoach,
   practiceSessionResultsGet,
   practiceSessionResultsScore,
+  type PracticeCoachStep,
 } from '../lib/api';
 import {
   EXPERIENCE_COPY,
@@ -13,6 +15,35 @@ import {
   getBuildExperienceLabel,
   getExperienceSteps,
 } from '../lib/practiceExperience';
+import { formatBand } from '@schood/ielts-core';
+
+// IELTS writing criteria. grade-writing returns the score under any of
+// these aliases depending on the model — accept all, render none if missing.
+const WRITING_CRITERIA: Array<{ short: string; aliases: string[]; label: string }> = [
+  {
+    short: 'TR',
+    label: 'Task Response',
+    aliases: ['TR', 'task_response', 'task_achievement', 'TA'],
+  },
+  { short: 'CC', label: 'Coherence & Cohesion', aliases: ['CC', 'coherence_cohesion'] },
+  { short: 'LR', label: 'Lexical Resource', aliases: ['LR', 'lexical_resource'] },
+  {
+    short: 'GRA',
+    label: 'Grammatical Range & Accuracy',
+    aliases: ['GRA', 'grammatical_range_accuracy', 'grammar_range_accuracy'],
+  },
+];
+
+const readCriterionScore = (criteria: unknown, aliases: string[]): number | null => {
+  if (!criteria || typeof criteria !== 'object' || Array.isArray(criteria)) return null;
+  const record = criteria as Record<string, unknown>;
+  for (const alias of aliases) {
+    const raw = record[alias];
+    const num = typeof raw === 'number' ? raw : Number(raw);
+    if (Number.isFinite(num)) return Math.max(0, Math.min(9, num));
+  }
+  return null;
+};
 import { useAccess } from '../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 
@@ -69,6 +100,9 @@ export const SessionResultsPage = () => {
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const requestedRef = useRef<string | null>(null);
+  const [coachSteps, setCoachSteps] = useState<PracticeCoachStep[] | null>(null);
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachError, setCoachError] = useState<string | null>(null);
 
   const search = new URLSearchParams(location.search);
   const backPath = search.get('results_back')?.trim() || search.get('back')?.trim() || '/dashboard';
@@ -128,6 +162,20 @@ export const SessionResultsPage = () => {
       return [...improvements, ...actions].map(String);
     })
     .find((item) => item.trim().length > 0);
+
+  const requestCoaching = async (): Promise<void> => {
+    if (!accessToken || !sessionId) return;
+    setCoachLoading(true);
+    setCoachError(null);
+    try {
+      const response = await practiceLabCoach(accessToken, sessionId);
+      setCoachSteps(response.steps);
+    } catch (err) {
+      setCoachError(err instanceof Error ? err.message : 'Coaching unavailable right now');
+    } finally {
+      setCoachLoading(false);
+    }
+  };
 
   const regenerateNext = async (): Promise<void> => {
     if (!accessToken) return;
@@ -241,32 +289,106 @@ export const SessionResultsPage = () => {
           <section className="glass stat-card wide">
             <h3>Writing Feedback</h3>
             <div className="writing-feedback-list">
-              {writingTasks.map((task, index) => (
-                <article className="feedback-panel" key={String(task.content_unit_id ?? index)}>
-                  <div className="task-card-head">
-                    <h4>{titleCase(task.task_type ?? `Task ${index + 1}`)}</h4>
-                    <strong>Band {String(task.band ?? '-')}</strong>
-                  </div>
-                  <div className="feedback-grid">
-                    {['strengths', 'improvements', 'actionable_feedback'].map((key) => {
-                      const source = task[key];
-                      const values = Array.isArray(source) ? source.slice(0, 4).map(String) : [];
-                      if (values.length === 0) return null;
-                      return (
-                        <div key={key}>
-                          <h5>{titleCase(key)}</h5>
-                          <ul>
-                            {values.map((value, itemIndex) => <li key={`${key}-${itemIndex}`}>{value}</li>)}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </article>
-              ))}
+              {writingTasks.map((task, index) => {
+                const criteria = (task as Json).criteria;
+                const criterionRows = WRITING_CRITERIA.map((c) => ({
+                  ...c,
+                  score: readCriterionScore(criteria, c.aliases),
+                })).filter((row) => row.score != null);
+                return (
+                  <article className="feedback-panel" key={String(task.content_unit_id ?? index)}>
+                    <div className="task-card-head">
+                      <h4>{titleCase(task.task_type ?? `Task ${index + 1}`)}</h4>
+                      <strong>Band {formatBand(asNumber(task.band))}</strong>
+                    </div>
+                    {criterionRows.length > 0 ? (
+                      <div className="writing-criteria-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, margin: '12px 0' }}>
+                        {criterionRows.map((row) => (
+                          <div key={row.short}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                              <span className="muted" style={{ fontSize: 12, fontWeight: 600 }} title={row.label}>{row.short}</span>
+                              <strong>{formatBand(row.score)}</strong>
+                            </div>
+                            <div className="progress-track" style={{ height: 6 }}>
+                              <div
+                                className="progress-fill writing"
+                                style={{ width: `${((row.score ?? 0) / 9) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="feedback-grid">
+                      {['strengths', 'improvements', 'actionable_feedback'].map((key) => {
+                        const source = task[key];
+                        const values = Array.isArray(source) ? source.slice(0, 4).map(String) : [];
+                        if (values.length === 0) return null;
+                        return (
+                          <div key={key}>
+                            <h5>{titleCase(key)}</h5>
+                            <ul>
+                              {values.map((value, itemIndex) => <li key={`${key}-${itemIndex}`}>{value}</li>)}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ) : null}
+
+        <section className="glass stat-card wide">
+          <div className="task-card-head">
+            <div>
+              <h3>Per-question coaching</h3>
+              <p className="muted">
+                AI-generated explanation for the items you missed: the trap pattern, the correct approach,
+                and a direct link to the playbook strategy.
+              </p>
+            </div>
+            {coachSteps == null ? (
+              <button
+                type="button"
+                className="btn solid compact"
+                onClick={() => void requestCoaching()}
+                disabled={coachLoading}
+              >
+                {coachLoading ? 'Generating…' : 'Get coaching'}
+              </button>
+            ) : null}
+          </div>
+          {coachError ? <p className="error-text">{coachError}</p> : null}
+          {coachSteps != null && coachSteps.length === 0 ? (
+            <p className="muted">Nothing to coach — every step in this attempt was above the coaching threshold.</p>
+          ) : null}
+          {coachSteps != null && coachSteps.length > 0 ? (
+            <ul className="srs-review-list">
+              {coachSteps.map((step) => (
+                <li key={step.step_id} className="feedback-panel">
+                  <div className="task-card-head">
+                    <div>
+                      <h4>{formatPracticeLabel(step.question_type)}</h4>
+                      <span className="muted" style={{ fontSize: 12 }}>
+                        Accuracy {Math.round(step.accuracy_ratio * 100)}% · Trap: {step.trap_pattern}
+                      </span>
+                    </div>
+                  </div>
+                  <p><strong>Why it’s wrong:</strong> {step.what_went_wrong}</p>
+                  <p><strong>Correct approach:</strong> {step.correct_approach}</p>
+                  <div className="inline-actions">
+                    <a className="btn ghost compact" href={step.strategy_url} target="_blank" rel="noreferrer">
+                      Open playbook strategy
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
 
         <section className="glass stat-card wide next-action-card">
           <div>
