@@ -10,6 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    # Build steps below need the same Vite env that deploy-pages.yml provides.
+    # Without these the platform / simulator / english-* apps' vite.config.ts
+    # guards refuse to build and the validate job goes red on a clean checkout.
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}
+      VITE_ALLOWED_RETURN_HOSTS: schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,sat.schood.online,toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
+      VITE_ADMIN_URL: https://schood.online/admin
+      VITE_IELTS_URL: https://ielts.schood.online
+      VITE_ACADEMY_URL: https://schood.online/academy
+      VITE_PLATFORM_URL: https://schood.online
+      VITE_AUTH_COOKIE_DOMAIN: .schood.online
+      VITE_AUTH_SHARED_COOKIE: "true"
+      VITE_DISABLE_PAYWALL: "false"
+      VITE_USE_MOCK_PERSISTENCE: "false"
+      VITE_DEBUG_AUTH: "false"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
