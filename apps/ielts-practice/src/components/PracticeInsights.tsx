@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Calendar, Flame, GraduationCap, Sparkles, TrendingUp } from 'lucide-react';
+import { useLazyVisible } from '../lib/useLazyVisible';
 import {
   practiceActivityGet,
   practiceMasteryOverviewGet,
@@ -142,19 +143,20 @@ interface TrajectoryProps {
 
 export const BandTrajectoryCard = ({ accessToken }: TrajectoryProps) => {
   const [data, setData] = useState<PracticeTrajectoryResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   type ChartKey = 'overall' | 'reading' | 'listening' | 'writing';
   const [activeKey, setActiveKey] = useState<ChartKey>('overall');
   const bandKey: BandKey = activeKey === 'overall' ? 'overall_band' : activeKey;
+  const { ref, visible } = useLazyVisible();
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data || loading) return;
     setLoading(true);
     practiceTrajectoryGet(accessToken)
       .then((res) => setData(res))
       .catch(() => null)
       .finally(() => setLoading(false));
-  }, [accessToken]);
+  }, [accessToken, visible, data, loading]);
 
   const w = 640;
   const h = 180;
@@ -166,7 +168,7 @@ export const BandTrajectoryCard = ({ accessToken }: TrajectoryProps) => {
   const predictor = data?.predictor?.[activeKey];
 
   return (
-    <section className="glass" style={{ padding: 24 }}>
+    <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
         <div>
           <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Band trajectory</p>
@@ -239,10 +241,11 @@ interface ActivityProps {
 
 export const ActivityHeatmapCard = ({ accessToken }: ActivityProps) => {
   const [data, setData] = useState<PracticeActivityResponse | null>(null);
+  const { ref, visible } = useLazyVisible();
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data) return;
     practiceActivityGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken]);
+  }, [accessToken, visible, data]);
 
   // Build 53-week grid ending today
   const grid = useMemo(() => {
@@ -275,7 +278,7 @@ export const ActivityHeatmapCard = ({ accessToken }: ActivityProps) => {
   };
 
   return (
-    <section className="glass" style={{ padding: 24 }}>
+    <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
         <div>
           <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Activity</p>
@@ -339,21 +342,28 @@ const STATUS_COPY: Record<string, { label: string; tone: string; description: st
 
 export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
   const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(null);
+  const { ref, visible } = useLazyVisible();
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data) return;
     practiceMasteryOverviewGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken]);
+  }, [accessToken, visible, data]);
 
   if (!data) {
     return (
-      <section className="glass" style={{ padding: 24 }}>
-        <p className="muted">Loading mastery overview…</p>
+      <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 14 }}>
+        <div>
+          <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery taxonomy</p>
+          <span className="p2-skeleton p2-skeleton-line medium" style={{ marginTop: 8 }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+          {[0, 1, 2, 3].map((i) => <span key={i} className="p2-skeleton p2-skeleton-block" />)}
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="glass" style={{ padding: 24, display: 'grid', gap: 18 }}>
+    <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 18 }}>
       <div>
         <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery taxonomy</p>
         <h2 style={{ margin: '4px 0 4px' }}>

@@ -122,7 +122,16 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/dashboard") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
-      return json(200, await buildDashboardPayload(sb, scope, auth!.userId));
+      const data = await buildDashboardPayload(sb, scope, auth!.userId);
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          // Short browser cache so re-mounts within the session are instant
+          "Cache-Control": "private, max-age=20",
+          ...corsHeaders,
+        },
+      });
     }
 
     if (req.method === "GET" && route === "/profile") {

@@ -3168,3 +3168,45 @@ h1, h2, h3, h4 {
 .practice-root .progress-fill.listening { background: var(--listening); }
 .practice-root .progress-fill.writing { background: var(--writing); }
 
+/* === Skeleton placeholders ==================================== */
+/* Used by insight cards while their network fetch is in flight. */
+/* The shimmer reads as "something is loading here" rather than  */
+/* "this page is broken / empty".                                */
+
+@keyframes p2-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.practice-root .p2-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card-subtle) 0%,
+    var(--card-border) 50%,
+    var(--card-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: p2-skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+  display: block;
+}
+
+.practice-root .p2-skeleton-block {
+  height: 120px;
+}
+
+.practice-root .p2-skeleton-line {
+  height: 14px;
+  margin: 4px 0;
+}
+
+.practice-root .p2-skeleton-line.short { width: 40%; }
+.practice-root .p2-skeleton-line.medium { width: 65%; }
+.practice-root .p2-skeleton-line.long { width: 85%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-root .p2-skeleton {
+    animation: none;
+  }
+}
+
