@@ -24,7 +24,7 @@ export const callOpenRouterJson = async (
   if (!apiKey) throw new Error("openrouter_unconfigured");
 
   const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
-  const model = options.modelOverride ?? Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = options.modelOverride ?? Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
   const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
   const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS";
 

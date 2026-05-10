@@ -114,7 +114,6 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
         ? (content.paragraphs as unknown[]).map((p) => String(p ?? '').trim()).filter(Boolean)
         : [];
       const proseItems = toList(content.items);
-      const hasAnyBody = proseLead || proseBodyCandidates.length > 0 || proseParagraphs.length > 0 || proseItems.length > 0;
 
       return (
         <section key={id} className="content-card prose-card">
@@ -132,11 +131,6 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
                 <li key={`${id}-item-${itemIndex}`}>{item}</li>
               ))}
             </ul>
-          ) : null}
-          {!hasAnyBody && heading ? (
-            <p className="muted" style={{ margin: 0, fontStyle: 'italic', fontSize: 14 }}>
-              This section is being authored.
-            </p>
           ) : null}
         </section>
       );

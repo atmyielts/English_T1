@@ -3095,7 +3095,7 @@ const coachLabAttempt = async (
   }
 
   const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
   if (!apiKey) {
     // Degrade gracefully: return per-step rule-based coaching only.
     return {
@@ -3464,7 +3464,7 @@ const coachConversation = async (
       suggested_followups: [],
     };
   }
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
 
   const system = "You are an expert IELTS coach having a focused conversation with a student about a specific practice attempt. Be concise, cite the evidence, name the trap pattern, and stay grounded in IELTS rubrics. Reply in strict JSON: {reply: string, suggested_followups: string[3]}. Keep the reply 2-4 sentences. Suggested followups are short questions the student might ask next.";
 
@@ -3520,7 +3520,7 @@ const labStrategyHint = async (
       hint: `For ${formatQuestionLabel(questionType)}: identify the exact phrase in the source that matches the question, then check for paraphrase or scope traps before answering.`,
     };
   }
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
   const system = "You are an IELTS coach helping a student who is stuck on a question in the middle of practice. Give a ONE-sentence strategy hint that points to the right approach without revealing the answer. Be specific: name the technique (paraphrase check, scope verification, distractor elimination, evidence locator, signpost detection). Never quote the answer. Reply in strict JSON: {hint: string}.";
 
   let parsed: unknown = null;
@@ -3584,7 +3584,7 @@ const generateModelAnswers = async (
   }
 
   const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
 
   const tasks: ModelAnswerTask[] = [];
   for (const row of (responses ?? []) as JsonRecord[]) {
@@ -3674,7 +3674,7 @@ const generateNotebookRetest = async (
   let explanation = "";
 
   if (apiKey) {
-    const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+    const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
     const system = "You are an IELTS examiner generating a SINGLE quick-recall question that specifically tests recognition of a named trap pattern. The question must include a short context (50-100 words) and four answer options where exactly one is correct and the others embody the trap pattern. Reply in strict JSON: {question_text: string, options: string[4], correct_index: number, explanation: string}.";
     try {
       const parsed = await callOpenRouterJsonInline(
@@ -3786,7 +3786,7 @@ const annotateWritingForSession = async (
       generated_at: new Date().toISOString(),
     };
   }
-  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
   const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
 
   const userPayload = JSON.stringify({

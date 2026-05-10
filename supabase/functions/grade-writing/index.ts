@@ -917,7 +917,7 @@ serve(async (req) => {
     }
     const primaryModel = getEnv("OPENROUTER_MODEL") ?? getEnv("OPENAI_MODEL") ?? "openrouter/auto";
     const fallbackModels = parseModelList(
-      getEnv("OPENROUTER_FALLBACK_MODELS") ?? "openrouter/auto,google/gemma-3-27b-it:free",
+      getEnv("OPENROUTER_FALLBACK_MODELS") ?? "openrouter/auto",
     );
     const modelCandidates = Array.from(new Set([primaryModel, ...fallbackModels]));
     const openRouterBaseUrl = getEnv("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1";
