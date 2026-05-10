@@ -17,6 +17,7 @@ import {
 } from '../lib/practiceExperience';
 import { formatBand } from '@schood/ielts-core';
 import { AnnotatedWritingRetro } from '../components/AnnotatedWritingRetro';
+import { ConversationalCoach, ModelAnswerComparator } from '../components/PracticeAdaptiveExtras';
 
 // IELTS writing criteria. grade-writing returns the score under any of
 // these aliases depending on the model — accept all, render none if missing.
@@ -288,6 +289,14 @@ export const SessionResultsPage = () => {
 
         {writingTasks.length > 0 && sessionId ? (
           <AnnotatedWritingRetro accessToken={accessToken} practiceSessionId={sessionId} />
+        ) : null}
+
+        {writingTasks.length > 0 && sessionId ? (
+          <ModelAnswerComparator accessToken={accessToken} practiceSessionId={sessionId} />
+        ) : null}
+
+        {sessionId ? (
+          <ConversationalCoach accessToken={accessToken} practiceSessionId={sessionId} />
         ) : null}
 
         {writingTasks.length > 0 ? (

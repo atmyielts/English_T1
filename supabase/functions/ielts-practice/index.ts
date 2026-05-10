@@ -3370,6 +3370,329 @@ const submitLabAttempt = async (
 };
 
 // ============================================================
+// OpenRouter call helper (shared by coach + hint + model answer + retest)
+// ============================================================
+
+const callOpenRouterJsonInline = async (
+  systemPrompt: string,
+  userPayload: string,
+  apiKey: string,
+  model: string,
+): Promise<unknown> => {
+  const baseUrl = (Deno.env.get("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1").replace(/\/+$/, "");
+  const referer = Deno.env.get("OPENROUTER_REFERER") ?? "https://schood.online";
+  const appName = Deno.env.get("OPENROUTER_APP_NAME") ?? "Schood IELTS Practice";
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": referer,
+      "X-Title": appName,
+    },
+    body: JSON.stringify({
+      model,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPayload },
+      ],
+      temperature: 0.3,
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`OpenRouter ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const payload = await res.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string") throw new Error("OpenRouter response missing content");
+  try { return JSON.parse(content); } catch { throw new Error("Non-JSON content"); }
+};
+
+// ============================================================
+// Conversational coach (multi-turn)
+// ============================================================
+
+interface CoachMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const coachConversation = async (
+  sb: any,
+  userId: string,
+  practiceSessionId: string,
+  labPayload: JsonRecord,
+  history: CoachMessage[],
+  userQuestion: string,
+): Promise<{ ok: true; reply: string; suggested_followups: string[] }> => {
+  const attempt = await loadLatestLabAttempt(sb, practiceSessionId, userId);
+  const scoreArtifacts = isObject(attempt?.score_artifacts) ? attempt!.score_artifacts as JsonRecord : {};
+  const scoredSteps = Array.isArray(scoreArtifacts.scored_steps)
+    ? (scoreArtifacts.scored_steps as unknown[]).filter(isObject) as JsonRecord[]
+    : [];
+  const sectionType = toText(labPayload.section_type, 32).toLowerCase();
+  const accuracy = toNumber(attempt?.accuracy_ratio);
+
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) {
+    return {
+      ok: true,
+      reply: "Coach is unavailable right now. Try opening the matching playbook strategy page for guidance.",
+      suggested_followups: [],
+    };
+  }
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+
+  const system = "You are an expert IELTS coach having a focused conversation with a student about a specific practice attempt. Be concise, cite the evidence, name the trap pattern, and stay grounded in IELTS rubrics. Reply in strict JSON: {reply: string, suggested_followups: string[3]}. Keep the reply 2-4 sentences. Suggested followups are short questions the student might ask next.";
+
+  const context = {
+    section: sectionType,
+    accuracy: accuracy,
+    scored_steps: scoredSteps.slice(0, 5).map((s) => ({
+      step_id: s.step_id,
+      question_type: s.question_type,
+      accuracy: s.accuracy_ratio,
+      trap_type: s.trap_type,
+    })),
+    history: history.slice(-8).map((m) => ({ role: m.role, content: m.content.slice(0, 800) })),
+    user_question: userQuestion.slice(0, 800),
+  };
+
+  let parsed: unknown = null;
+  try {
+    parsed = await callOpenRouterJsonInline(system, JSON.stringify(context), apiKey, model);
+  } catch {
+    parsed = null;
+  }
+  const root = isObject(parsed) ? parsed : {};
+  const reply = typeof root.reply === "string" && root.reply.trim().length > 0
+    ? root.reply.trim()
+    : "Let's break that down — could you clarify which question or which part of the rubric you want to discuss?";
+  const followups = Array.isArray(root.suggested_followups)
+    ? root.suggested_followups.map((v) => String(v).trim()).filter(Boolean).slice(0, 3)
+    : [];
+  return { ok: true, reply, suggested_followups: followups };
+};
+
+// ============================================================
+// Lab in-flight strategy hint
+// ============================================================
+
+const labStrategyHint = async (
+  labPayload: JsonRecord,
+  stepId: string,
+): Promise<{ ok: true; hint: string }> => {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  const steps = Array.isArray(labPayload.steps) ? (labPayload.steps as unknown[]).filter(isObject) as JsonRecord[] : [];
+  const step = steps.find((s) => toText(s.id, 120) === stepId) ?? null;
+  if (!step) return { ok: true, hint: "Pick a strategy primer for this question type from the playbook." };
+
+  const questionType = toText(step.question_type, 80).toLowerCase();
+  const prompt = truncate(firstTextValue(step, ["prompt", "instruction", "question"]), 400);
+  const context = truncate(firstTextValue(step, ["context", "text", "passage", "transcript"]), 1000);
+
+  if (!apiKey) {
+    return {
+      ok: true,
+      hint: `For ${formatQuestionLabel(questionType)}: identify the exact phrase in the source that matches the question, then check for paraphrase or scope traps before answering.`,
+    };
+  }
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+  const system = "You are an IELTS coach helping a student who is stuck on a question in the middle of practice. Give a ONE-sentence strategy hint that points to the right approach without revealing the answer. Be specific: name the technique (paraphrase check, scope verification, distractor elimination, evidence locator, signpost detection). Never quote the answer. Reply in strict JSON: {hint: string}.";
+
+  let parsed: unknown = null;
+  try {
+    parsed = await callOpenRouterJsonInline(
+      system,
+      JSON.stringify({ question_type: questionType, prompt, context }),
+      apiKey,
+      model,
+    );
+  } catch {
+    parsed = null;
+  }
+  const root = isObject(parsed) ? parsed : {};
+  const hint = typeof root.hint === "string" && root.hint.trim().length > 0
+    ? root.hint.trim()
+    : `For ${formatQuestionLabel(questionType)}: find the explicit evidence first, then confirm wording matches before answering.`;
+  return { ok: true, hint };
+};
+
+// ============================================================
+// Model answer comparator (writing)
+// ============================================================
+
+interface ModelAnswerTask {
+  task_id: string;
+  task_type: string | null;
+  prompt: string;
+  student_text: string;
+  student_band: number | null;
+  model_text: string;
+  model_band: number;
+  notes: string[];
+}
+
+const generateModelAnswers = async (
+  sb: any,
+  userId: string,
+  sessionId: string,
+): Promise<{ ok: true; tasks: ModelAnswerTask[] }> => {
+  const { data: session } = await sb
+    .from("sessions")
+    .select("id, user_id")
+    .eq("id", sessionId)
+    .maybeSingle();
+  if (!session || (session as JsonRecord).user_id !== userId) throw new Error("Session not found");
+
+  const { data: responses } = await sb
+    .from("responses")
+    .select("content_unit_id, data, metadata")
+    .eq("session_id", sessionId)
+    .limit(20);
+  const { data: contentUnitsRes } = await sb
+    .from("content_units")
+    .select("id, data, metadata")
+    .in("id", ((responses ?? []) as JsonRecord[]).map((r) => String(r.content_unit_id ?? '')))
+    .limit(20);
+  const cuById = new Map<string, JsonRecord>();
+  for (const cu of (contentUnitsRes ?? []) as JsonRecord[]) {
+    cuById.set(String(cu.id ?? ''), cu);
+  }
+
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+
+  const tasks: ModelAnswerTask[] = [];
+  for (const row of (responses ?? []) as JsonRecord[]) {
+    const data = isObject(row.data) ? row.data : {};
+    const studentText = firstTextValue(data, ["text", "answer", "rewrite", "full_rewrite", "value"]).slice(0, 3000);
+    if (!studentText || studentText.length < 30) continue;
+    const cu = cuById.get(String(row.content_unit_id ?? ''));
+    const cuData = isObject(cu?.data) ? cu!.data as JsonRecord : {};
+    const promptText = firstTextValue(cuData, ["prompt", "text", "question"]).slice(0, 1200);
+    const taskType = toNullableText((isObject(row.metadata) ? row.metadata.task_type : null) ?? cuData.task_type ?? null, 32);
+
+    let modelText = "";
+    let modelBand = 8;
+    let notes: string[] = [];
+    if (apiKey) {
+      const system = "You are an IELTS examiner writing a model band-8 response to a writing prompt. The response should be naturally written by a competent test-taker (not flawless). Match expected length conventions: 150-180 words for Task 1, 250-280 for Task 2. After the response, provide 3 short notes describing what makes it band 8. Reply in strict JSON: {response_text: string, band: number, notes: string[3]}.";
+      try {
+        const parsed = await callOpenRouterJsonInline(
+          system,
+          JSON.stringify({ task_type: taskType ?? "task2", prompt: promptText }),
+          apiKey,
+          model,
+        );
+        const root = isObject(parsed) ? parsed : {};
+        modelText = typeof root.response_text === "string" ? root.response_text.trim() : "";
+        modelBand = toNumber(root.band) ?? 8;
+        notes = Array.isArray(root.notes) ? (root.notes as unknown[]).map((v) => String(v).trim()).filter(Boolean).slice(0, 4) : [];
+      } catch {
+        modelText = "";
+      }
+    }
+    if (!modelText) {
+      modelText = "Model answer generation is unavailable right now. Open the playbook's writing master guide for band-8 exemplars and rubric anchors.";
+      notes = ["Try again later when the AI service is reachable."];
+    }
+
+    tasks.push({
+      task_id: String(row.content_unit_id ?? ''),
+      task_type: taskType,
+      prompt: promptText,
+      student_text: studentText,
+      student_band: null,
+      model_text: modelText,
+      model_band: Math.max(0, Math.min(9, modelBand)),
+      notes,
+    });
+  }
+
+  return { ok: true, tasks };
+};
+
+// ============================================================
+// Mistake notebook re-test
+// ============================================================
+
+interface RetestPayload {
+  ok: true;
+  notebook_id: string;
+  trap_type: string;
+  question_type: string;
+  section_type: string;
+  question_text: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+}
+
+const generateNotebookRetest = async (
+  sb: any,
+  userId: string,
+  notebookId: string,
+): Promise<RetestPayload> => {
+  const { data: row } = await sb
+    .from("ielts_practice_mistake_notebook")
+    .select("id, user_id, trap_type, question_type, section_type")
+    .eq("id", notebookId)
+    .maybeSingle();
+  if (!row || (row as JsonRecord).user_id !== userId) throw new Error("Notebook item not found");
+  const trapType = String((row as JsonRecord).trap_type ?? 'unknown').toLowerCase();
+  const questionType = String((row as JsonRecord).question_type ?? '').toLowerCase();
+  const sectionType = String((row as JsonRecord).section_type ?? 'reading').toLowerCase();
+
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY");
+  let questionText = "";
+  let options: string[] = [];
+  let correctIndex = 0;
+  let explanation = "";
+
+  if (apiKey) {
+    const model = Deno.env.get("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free";
+    const system = "You are an IELTS examiner generating a SINGLE quick-recall question that specifically tests recognition of a named trap pattern. The question must include a short context (50-100 words) and four answer options where exactly one is correct and the others embody the trap pattern. Reply in strict JSON: {question_text: string, options: string[4], correct_index: number, explanation: string}.";
+    try {
+      const parsed = await callOpenRouterJsonInline(
+        system,
+        JSON.stringify({ trap_type: trapType, question_type: questionType, section_type: sectionType }),
+        apiKey,
+        model,
+      );
+      const root = isObject(parsed) ? parsed : {};
+      questionText = String(root.question_text ?? '').trim();
+      options = Array.isArray(root.options) ? (root.options as unknown[]).map((v) => String(v).trim()).filter(Boolean) : [];
+      correctIndex = Math.max(0, Math.min(options.length - 1, toNumber(root.correct_index) ?? 0));
+      explanation = String(root.explanation ?? '').trim();
+    } catch {
+      questionText = "";
+    }
+  }
+
+  if (!questionText || options.length < 2) {
+    questionText = `Quick test on ${trapType.replace(/_/g, ' ')} (${formatQuestionLabel(questionType)}): re-attempt a real practice lab to drill this pattern.`;
+    options = ["Open practice lab", "Open playbook strategy"];
+    correctIndex = 0;
+    explanation = "Live retest is unavailable right now — open a focused lab on this type from your plan.";
+  }
+
+  return {
+    ok: true,
+    notebook_id: notebookId,
+    trap_type: trapType,
+    question_type: questionType,
+    section_type: sectionType,
+    question_text: questionText,
+    options,
+    correct_index: correctIndex,
+    explanation,
+  };
+};
+
+// ============================================================
 // Annotated writing retro
 // ============================================================
 // Loads the user's writing responses for a given session, calls
@@ -4025,7 +4348,7 @@ serve(async (req) => {
         loadCurrentDiagnostics(sb, auth.userId, scope),
         sb
           .from("ielts_practice_plan_items")
-          .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id")
+          .select("id,exercise_id,blueprint_id,delivery_build_id,practice_session_id,created_at")
           .eq("user_id", auth.userId)
           .eq("language_id", scope.languageId)
           .eq("plan_date", planDate)
@@ -4039,6 +4362,18 @@ serve(async (req) => {
       const planItems = await enrichPlanRows(
         sb,
         (Array.isArray(planRowsRes.data) ? planRowsRes.data : []) as Array<{ id: string; exercise_id?: string | null; blueprint_id?: string | null; delivery_build_id?: string | null; practice_session_id?: string | null }>,
+      );
+
+      // Reactive replanning signal: when diagnostics were recomputed AFTER the
+      // most recent plan item was generated, today's plan is stale relative
+      // to the user's latest results. The frontend offers a regenerate CTA.
+      const diagComputedAt = toNullableText(diagnosticsSnapshot?.computed_at ?? null, 80);
+      const oldestPlanCreatedAt = (planRowsRes.data ?? [])
+        .map((row: any) => String(row.created_at ?? ''))
+        .filter(Boolean)
+        .sort()[0] ?? null;
+      const planStale = Boolean(
+        diagComputedAt && oldestPlanCreatedAt && diagComputedAt > oldestPlanCreatedAt,
       );
 
       return json(200, {
@@ -4055,6 +4390,7 @@ serve(async (req) => {
         items: planItems,
         notebook: notebookItems,
         roadmap: roadmapItems,
+        plan_stale: planStale,
       });
     }
 
@@ -4377,6 +4713,17 @@ serve(async (req) => {
       });
     }
 
+    if (req.method === "POST" && route.startsWith("/notebook/") && route.endsWith("/retest")) {
+      const notebookId = toText(route.replace("/notebook/", "").replace(/\/retest$/, ""), 80);
+      if (!notebookId) return json(404, { error: "Notebook item not found" });
+      try {
+        const result = await generateNotebookRetest(sb, auth.userId, notebookId);
+        return json(200, result);
+      } catch (err) {
+        return json(404, { error: err instanceof Error ? err.message : "Notebook item not found" });
+      }
+    }
+
     if ((req.method === "PATCH" || req.method === "POST") && route.startsWith("/notebook/")) {
       const notebookId = toText(route.replace("/notebook/", "").replace(/\/status$/, ""), 80);
       if (!notebookId) return json(404, { error: "Notebook item not found" });
@@ -4585,7 +4932,38 @@ serve(async (req) => {
       }
 
       if (req.method === "POST" && labAction === "coach") {
+        const body = await parseBody(req);
+        const messages = Array.isArray((body as JsonRecord).messages) ? (body as JsonRecord).messages as unknown[] : [];
+        const userQuestion = toText((body as JsonRecord).question, 800);
+
+        // Conversational mode: prior messages provided OR a question supplied.
+        if (messages.length > 0 || userQuestion) {
+          const history: CoachMessage[] = messages
+            .map((m) => (isObject(m)
+              ? { role: m.role === "assistant" ? "assistant" : "user", content: toText(m.content, 800) }
+              : null))
+            .filter((m): m is CoachMessage => m !== null && m.content.length > 0);
+          const result = await coachConversation(
+            sb,
+            auth.userId,
+            toText(practiceSession.id, 80),
+            labPayload,
+            history,
+            userQuestion || "Continue the analysis.",
+          );
+          return json(200, result);
+        }
+
+        // Default: single-shot initial coaching summary
         const result = await coachLabAttempt(sb, scope, auth.userId, toText(practiceSession.id, 80), labPayload);
+        return json(200, result);
+      }
+
+      if (req.method === "POST" && labAction === "hint") {
+        const body = await parseBody(req);
+        const stepId = toText((body as JsonRecord).step_id, 120);
+        if (!stepId) return json(400, { error: "step_id required" });
+        const result = await labStrategyHint(labPayload, stepId);
         return json(200, result);
       }
 
@@ -4674,6 +5052,14 @@ serve(async (req) => {
         const runtimeSessionId = toText(practiceSession.session_id, 80);
         if (!runtimeSessionId) return json(200, { ok: true, tasks: [], generated_at: new Date().toISOString() });
         const result = await annotateWritingForSession(sb, auth.userId, runtimeSessionId);
+        return json(200, result);
+      }
+
+      if (subRoute === "model-answer" && req.method === "POST") {
+        const practiceSession = isObject(bundle.practice_session) ? (bundle.practice_session as JsonRecord) : {};
+        const runtimeSessionId = toText(practiceSession.session_id, 80);
+        if (!runtimeSessionId) return json(200, { ok: true, tasks: [] });
+        const result = await generateModelAnswers(sb, auth.userId, runtimeSessionId);
         return json(200, result);
       }
 

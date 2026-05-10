@@ -409,6 +409,7 @@ export const practiceDashboardGet = (
   items: PracticePlanItem[];
   notebook: PracticeNotebookItem[];
   roadmap: PracticeRoadmapItem[];
+  plan_stale?: boolean;
 }> => {
   const qs = new URLSearchParams();
   if (opts?.date) qs.set("date", opts.date);
@@ -967,6 +968,79 @@ export const practiceWritingAnnotate = (
   practiceSessionId: string,
 ): Promise<PracticeWritingAnnotateResponse> =>
   call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/annotate`, {
+    method: "POST",
+    body: {},
+  });
+
+export type CoachChatTurn = { role: "user" | "assistant"; content: string };
+
+export type PracticeCoachConversation = {
+  ok: boolean;
+  reply: string;
+  suggested_followups: string[];
+};
+
+export const practiceLabCoachChat = (
+  accessToken: string,
+  practiceSessionId: string,
+  body: { messages: CoachChatTurn[]; question: string },
+): Promise<PracticeCoachConversation> =>
+  call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/coach`, {
+    method: "POST",
+    body,
+  });
+
+export type PracticeLabHintResponse = { ok: boolean; hint: string };
+
+export const practiceLabHint = (
+  accessToken: string,
+  practiceSessionId: string,
+  stepId: string,
+): Promise<PracticeLabHintResponse> =>
+  call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/hint`, {
+    method: "POST",
+    body: { step_id: stepId },
+  });
+
+export type ModelAnswerTask = {
+  task_id: string;
+  task_type: string | null;
+  prompt: string;
+  student_text: string;
+  student_band: number | null;
+  model_text: string;
+  model_band: number;
+  notes: string[];
+};
+
+export type PracticeModelAnswerResponse = { ok: boolean; tasks: ModelAnswerTask[] };
+
+export const practiceModelAnswer = (
+  accessToken: string,
+  practiceSessionId: string,
+): Promise<PracticeModelAnswerResponse> =>
+  call(accessToken, `/ielts-practice/sessions/${encodeURIComponent(practiceSessionId)}/model-answer`, {
+    method: "POST",
+    body: {},
+  });
+
+export type NotebookRetestResponse = {
+  ok: boolean;
+  notebook_id: string;
+  trap_type: string;
+  question_type: string;
+  section_type: string;
+  question_text: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+};
+
+export const practiceNotebookRetest = (
+  accessToken: string,
+  notebookId: string,
+): Promise<NotebookRetestResponse> =>
+  call(accessToken, `/ielts-practice/notebook/${encodeURIComponent(notebookId)}/retest`, {
     method: "POST",
     body: {},
   });

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   practiceGeneratePlan,
   practiceLabGet,
+  practiceLabHint,
   practiceLabSave,
   practiceLabSubmit,
   practicePlanItemStart,
@@ -131,6 +132,8 @@ export const LabPage = () => {
   const [launchingPlanItemId, setLaunchingPlanItemId] = useState<string | null>(null);
   const [generatingPlan, setGeneratingPlan] = useState(false);
   const [result, setResult] = useState<LabResult | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
+  const [hintBusy, setHintBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
 
   const backPath = searchParams.get('back') || '/dashboard';
@@ -217,6 +220,20 @@ export const LabPage = () => {
       },
     }));
     setDirty(true);
+  };
+
+  const getHint = async (): Promise<void> => {
+    if (!accessToken || !practiceSessionId || !activeStep) return;
+    setHintBusy(true);
+    setHint(null);
+    try {
+      const res = await practiceLabHint(accessToken, practiceSessionId, toText(activeStep.id));
+      setHint(res.hint);
+    } catch (err) {
+      setHint(err instanceof Error ? err.message : 'Hint unavailable right now.');
+    } finally {
+      setHintBusy(false);
+    }
   };
 
   const saveNow = async (): Promise<void> => {
@@ -636,12 +653,48 @@ export const LabPage = () => {
         <div className="top-nav-actions">
           <span className={sectionChipClass(lab.section_type)}>{lab.section_type}</span>
           <span className="status-pill">{saving ? 'Saving...' : dirty ? 'Unsaved' : 'Saved'}</span>
+          <button
+            className="btn ghost"
+            type="button"
+            onClick={() => void getHint()}
+            disabled={hintBusy || isScored || !activeStep}
+            title="Get a one-sentence strategy hint without revealing the answer"
+          >
+            {hintBusy ? 'Thinking…' : 'Stuck?'}
+          </button>
           <button className="btn ghost" type="button" onClick={() => void saveNow()} disabled={saving || isScored}>Save</button>
           <button className="btn solid" type="button" onClick={() => void submit()} disabled={submitting || isScored}>
             {submitting ? 'Scoring...' : isScored ? 'Scored' : 'Submit'}
           </button>
         </div>
       </header>
+      {hint ? (
+        <div
+          style={{
+            margin: '12px 0 0',
+            padding: '10px 14px',
+            background: 'var(--accent-soft)',
+            border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+            borderRadius: 10,
+            fontSize: 14,
+            color: 'var(--ink-2)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: 12,
+          }}
+        >
+          <span><strong style={{ color: 'var(--accent)' }}>Hint:</strong> {hint}</span>
+          <button
+            type="button"
+            className="btn ghost compact"
+            onClick={() => setHint(null)}
+            style={{ flex: '0 0 auto' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
 
       {error ? <div className="dashboard-alert error">{error}</div> : null}
 
