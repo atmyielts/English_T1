@@ -11,12 +11,17 @@ import { useAccess } from '../lib/useAccess';
 
 export const ContentPage: React.FC = () => {
   const { slug } = useParams();
-  const { accessToken } = useAccess({ includeEffective: true });
+  const { accessToken, status } = useAccess({ includeEffective: true });
   const [payload, setPayload] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
+    // Wait until useAccess has finished resolving. Otherwise the public
+    // fetch fires with no token, gets 401 on premium pages, and we redirect
+    // to /auth before the session has had a chance to populate — kicking
+    // off an infinite auth → page → auth → page loop.
+    if (status === 'loading') return;
     let active = true;
     const handleLoaded = (data: Record<string, unknown>, token?: string | null) => {
       if (!active) return;
@@ -40,12 +45,19 @@ export const ContentPage: React.FC = () => {
       }
     };
 
-    const redirectForAccessError = (status?: number) => {
-      if (status === 403) {
+    const redirectForAccessError = (errStatus?: number) => {
+      if (errStatus === 403) {
         window.location.assign(buildPlatformUrl('/pricing', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
         return true;
       }
-      if (status === 401) {
+      if (errStatus === 401) {
+        // Only redirect to /auth when we actually know the user is anonymous.
+        // If status is 'authenticated' and we still got 401, the session is
+        // present but rejected — pricing/login won't fix it, surface an error
+        // instead of looping.
+        if (status === 'authenticated') {
+          return false;
+        }
         window.location.assign(buildPlatformUrl('/auth', window.location.href, { product: IELTS_PLAYBOOK_PRODUCT_SLUG }));
         return true;
       }
@@ -84,7 +96,7 @@ export const ContentPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [accessToken, slug]);
+  }, [accessToken, slug, status]);
 
   const page = (payload?.page ?? null) as Record<string, unknown> | null;
   const sections = Array.isArray(payload?.sections) ? (payload?.sections as Array<Record<string, unknown>>) : [];
