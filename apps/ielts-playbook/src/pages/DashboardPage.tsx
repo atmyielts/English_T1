@@ -13,6 +13,14 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { playbookDashboardGet } from '../lib/api';
+import {
+  PlaybookActivityCard,
+  PlaybookMasteryCard,
+  PlaybookModuleProgress,
+  PlaybookSectionTitle,
+  PlaybookStalePlanBanner,
+  PlaybookTrajectoryCard,
+} from '../components/PlaybookEnrichments';
 import { SiteChrome } from '../components/content/SiteChrome';
 import { useAccess } from '../lib/useAccess';
 
@@ -76,6 +84,7 @@ export const DashboardPage: React.FC = () => {
   const { accessToken } = useAccess({ includeEffective: true });
   const [payload, setPayload] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -92,7 +101,7 @@ export const DashboardPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [accessToken]);
+  }, [accessToken, reloadKey]);
 
   const profile = toRecord(payload?.profile);
   const recommendation = toRecordOrNull(payload?.latest_recommendation);
@@ -170,6 +179,56 @@ export const DashboardPage: React.FC = () => {
       </section>
 
       {error ? <p className="notice-banner notice-danger">{error}</p> : null}
+
+      <PlaybookStalePlanBanner
+        accessToken={accessToken}
+        evidenceUpdatedAt={typeof profile.evidence_updated_at === 'string' ? profile.evidence_updated_at : null}
+        recommendationCreatedAt={typeof recommendation?.created_at === 'string' ? recommendation.created_at : null}
+        onRegenerated={() => setReloadKey((k) => k + 1)}
+      />
+
+      <PlaybookSectionTitle
+        eyebrow="Progress"
+        title="Where you stand right now"
+        hint="Pulled live from your practice and simulator activity."
+      />
+
+      <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 8 }}>
+        <PlaybookTrajectoryCard accessToken={accessToken} />
+        <PlaybookActivityCard accessToken={accessToken} />
+      </section>
+
+      <PlaybookSectionTitle
+        eyebrow="Mastery"
+        title="What you’ve repaired vs what’s still weak"
+        hint="From your practice attempts, classified into Repair / Building / Stable / Graduated."
+      />
+
+      <PlaybookMasteryCard accessToken={accessToken} />
+
+      <PlaybookSectionTitle
+        eyebrow="Curriculum"
+        title="Your playbook path"
+        hint="Modules you’ve opened from your strategy plan."
+      />
+
+      <PlaybookModuleProgress
+        visitedSlugs={(() => {
+          const meta = profile.metadata && typeof profile.metadata === 'object' && !Array.isArray(profile.metadata)
+            ? profile.metadata as Record<string, unknown>
+            : {};
+          const visited = meta.visited_modules && typeof meta.visited_modules === 'object' && !Array.isArray(meta.visited_modules)
+            ? meta.visited_modules as Record<string, unknown>
+            : {};
+          return Object.keys(visited);
+        })()}
+      />
+
+      <PlaybookSectionTitle
+        eyebrow="Plan"
+        title="Strategy recommendation"
+        hint="Generated from your latest mock + practice signals."
+      />
 
       <section className="dashboard-grid">
         <article className="metric-card">

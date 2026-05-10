@@ -155,6 +155,27 @@ serve(async (req) => {
       return json(200, { ok: true });
     }
 
+    // Mark a playbook module as visited so the dashboard can show progress.
+    // Idempotent — repeated visits just refresh the timestamp.
+    if (req.method === "POST" && route.startsWith("/modules/") && route.endsWith("/visit")) {
+      const slug = toText(route.replace("/modules/", "").replace(/\/visit$/, ""), 160);
+      if (!slug) return json(400, { error: "module slug required" });
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+      const profile = await loadProfile(sb, scope, auth!.userId);
+      const meta = (profile.metadata && typeof profile.metadata === "object" && !Array.isArray(profile.metadata))
+        ? profile.metadata as Record<string, unknown>
+        : {};
+      const existingVisited = (meta.visited_modules && typeof meta.visited_modules === "object" && !Array.isArray(meta.visited_modules))
+        ? meta.visited_modules as Record<string, string>
+        : {};
+      const nextVisited = { ...existingVisited, [slug]: new Date().toISOString() };
+      await saveProfile(sb, scope, auth!.userId, {
+        metadata: { ...meta, visited_modules: nextVisited },
+      });
+      return json(200, { ok: true, visited_modules: Object.keys(nextVisited), last_visited_slug: slug });
+    }
+
     return json(404, { error: "Not found" });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
