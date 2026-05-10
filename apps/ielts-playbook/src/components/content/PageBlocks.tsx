@@ -1,5 +1,24 @@
 import React from 'react';
 import { ArrowRight, CheckCircle2, MessageCircleQuestion } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// Markdown renderer for authored section bodies. The legacy import path
+// stored copy as raw markdown (### headings, - bullets, **bold**), so the
+// renderer has to actually parse it instead of dumping it as one paragraph.
+// Scoped class so existing prose-card styles still apply to surrounding chrome.
+const ProseMarkdown: React.FC<{ source: string }> = ({ source }) => (
+  <div className="prose-markdown">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>{source}</ReactMarkdown>
+  </div>
+);
+
+const looksLikeMarkdown = (text: string): boolean => {
+  // Cheap heuristic: any of the common markdown markers suggests the source
+  // was an imported .md file and should be rendered through the markdown
+  // pipeline rather than as a single plain paragraph.
+  return /(^|\n)#{1,6}\s|(^|\n)[-*+]\s|(^|\n)\d+\.\s|\*\*[^*]+\*\*|`[^`]+`|^>\s|\[[^\]]+\]\([^)]+\)/.test(text);
+};
 
 const toList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map((entry) => String(entry ?? '')).filter(Boolean) : [];
@@ -129,16 +148,25 @@ export const PageBlocks: React.FC<{ sections: Array<Record<string, unknown>> }> 
         ...toList(content.bullets),
       ];
 
+      const renderProseString = (text: string, key: string) =>
+        looksLikeMarkdown(text)
+          ? <ProseMarkdown key={key} source={text} />
+          : <p key={key}>{text}</p>;
+
       return (
         <section key={id} className="content-card prose-card">
           {heading ? <h2>{heading}</h2> : null}
-          {proseLead ? <p className="lead-copy">{proseLead}</p> : null}
-          {proseStringValues.map((paragraph, paragraphIndex) => (
-            <p key={`${id}-str-${paragraphIndex}`}>{paragraph}</p>
-          ))}
-          {proseParagraphsField.map((paragraph, paragraphIndex) => (
-            <p key={`${id}-para-${paragraphIndex}`}>{paragraph}</p>
-          ))}
+          {proseLead
+            ? (looksLikeMarkdown(proseLead)
+                ? <ProseMarkdown key={`${id}-lead`} source={proseLead} />
+                : <p className="lead-copy">{proseLead}</p>)
+            : null}
+          {proseStringValues.map((paragraph, paragraphIndex) =>
+            renderProseString(paragraph, `${id}-str-${paragraphIndex}`),
+          )}
+          {proseParagraphsField.map((paragraph, paragraphIndex) =>
+            renderProseString(paragraph, `${id}-para-${paragraphIndex}`),
+          )}
           {proseItems.length > 0 ? (
             <ul>
               {proseItems.map((item, itemIndex) => (
