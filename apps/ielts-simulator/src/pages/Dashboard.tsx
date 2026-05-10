@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Clock, FileText, Play, Sparkles } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
+import { IeltsEcosystemPanel } from '../components/IeltsEcosystemPanel';
 import { supabase } from '../lib/supabase';
 import { buildPlatformUrl, hasPlatformBase } from '../lib/platformUrls';
 import { IELTS_PRODUCT_ID, IELTS_PRODUCT_SLUG } from '../lib/constants';
@@ -285,6 +286,11 @@ export const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
+
+        <IeltsEcosystemPanel
+          accessToken={accessToken}
+          latestBand={recentCompleted[0] ? getOverallBand(evaluations[recentCompleted[0].id]?.result) : null}
+        />
 
         {loading ? <div className="text-gray-600">Loading dashboard...</div> : null}
         {error ? (
