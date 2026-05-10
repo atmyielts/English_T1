@@ -25,7 +25,11 @@ const DEFAULT_TARGET_BAND = 6.5;
 const DEFAULT_DAILY_MINUTES = 60;
 
 const isOnboarded = (goals: PracticeGoal | null): boolean => {
-  if (!goals) return false;
+  // While the dashboard is still loading goals are null. Treat that as
+  // "already onboarded" so the modal doesn't flash open then snap closed
+  // on every page load — we only ever show the wizard once we KNOW the
+  // user needs it.
+  if (!goals) return true;
   if (goals.metadata && typeof goals.metadata === 'object' && (goals.metadata as Record<string, unknown>).onboarded_at) {
     return true;
   }
