@@ -3203,6 +3203,7 @@
       "apps/ielts-playbook": {
         "packageJson": {
           "dependencies": [
+            "npm:@schood/ielts-core@*",
             "npm:@supabase/supabase-js@^2.89.0",
             "npm:@types/node@^24.10.1",
             "npm:@types/react-dom@^19.2.3",
@@ -3220,6 +3221,7 @@
       "apps/ielts-practice": {
         "packageJson": {
           "dependencies": [
+            "npm:@schood/ielts-core@*",
             "npm:@supabase/supabase-js@^2.89.0",
             "npm:@types/node@^24.10.1",
             "npm:@types/react-dom@^19.2.3",
@@ -3238,6 +3240,7 @@
         "packageJson": {
           "dependencies": [
             "npm:@eslint/js@^9.39.1",
+            "npm:@schood/ielts-core@*",
             "npm:@types/node@^24.10.1",
             "npm:@types/react-dom@^19.2.3",
             "npm:@types/react@^19.2.5",

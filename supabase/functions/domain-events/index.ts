@@ -166,6 +166,211 @@ const buildSkillProfile = (outcomes: ExamOutcomeRow[]): Record<string, unknown> 
   return profile;
 };
 
+// ---------------------------------------------------------------------------
+// IELTS feedback loop: seed SRS queue + mark playbook evidence fresh
+// ---------------------------------------------------------------------------
+// Mirrors `packages/ielts-core` (frontend). Kept inline because Deno can't
+// resolve a workspace npm package by name — keep the whitelist in sync if you
+// add a new question type to the package.
+
+const IELTS_QUESTION_TYPES_SET: ReadonlySet<string> = new Set([
+  "question_text",
+  "question_single_choice",
+  "question_multi_choice",
+  "question_matching",
+  "question_true_false_not_given",
+  "question_yes_no_not_given",
+  "question_matching_headings",
+  "question_sentence_endings",
+  "question_gap_fill",
+  "question_select_from_list",
+  "question_table_completion",
+  "question_form_completion",
+  "question_note_completion",
+  "question_summary_completion",
+  "question_diagram_labeling",
+  "question_map_labeling",
+  "question_drag_drop",
+]);
+
+const IELTS_QUESTION_TYPE_ALIASES: Record<string, string> = {
+  question_tfng: "question_true_false_not_given",
+  question_ynng: "question_yes_no_not_given",
+  question_multiple_choice: "question_multi_choice",
+  tfng: "question_true_false_not_given",
+  ynng: "question_yes_no_not_given",
+};
+
+const canonicalizeIeltsQuestionType = (raw: unknown): string | null => {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim().toLowerCase();
+  if (!trimmed) return null;
+  if (IELTS_QUESTION_TYPES_SET.has(trimmed)) return trimmed;
+  const aliased = IELTS_QUESTION_TYPE_ALIASES[trimmed];
+  if (aliased) return aliased;
+  const prefixed = `question_${trimmed}`;
+  if (IELTS_QUESTION_TYPES_SET.has(prefixed)) return prefixed;
+  return null;
+};
+
+const inferIeltsSection = (questionType: string): "reading" | "listening" | "writing" | null => {
+  // Listening-only types
+  if (
+    questionType === "question_form_completion" ||
+    questionType === "question_note_completion" ||
+    questionType === "question_map_labeling"
+  ) return "listening";
+  // Writing-only types
+  if (questionType === "question_text") return "writing";
+  // Reading-only types
+  if (
+    questionType === "question_true_false_not_given" ||
+    questionType === "question_yes_no_not_given" ||
+    questionType === "question_matching_headings" ||
+    questionType === "question_summary_completion" ||
+    questionType === "question_sentence_endings" ||
+    questionType === "question_drag_drop"
+  ) return "reading";
+  // Ambiguous (multi_choice, matching, gap_fill, table_completion, etc.) — default reading.
+  return "reading";
+};
+
+const resolveIeltsTargetBand = async (sb: any, userId: string): Promise<number> => {
+  try {
+    const { data } = await sb
+      .from("ielts_playbook_user_profiles")
+      .select("target_overall_band")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const band = toNumber((data as { target_overall_band?: unknown } | null)?.target_overall_band);
+    if (band != null) return band;
+  } catch {
+    // Fall through to default
+  }
+  return 7.0;
+};
+
+interface IeltsFeedbackResult {
+  applicable: boolean;
+  seeded: number;
+  skipped: number;
+  reason?: string;
+}
+
+const seedIeltsSrsFromOutcome = async (
+  sb: any,
+  userId: string,
+  outcome: ExamOutcomeRow,
+): Promise<IeltsFeedbackResult> => {
+  const breakdown = isObject(outcome.skill_breakdown) ? outcome.skill_breakdown : {};
+  const ieltsEntries: Array<{ canonical: string; ratio: number | null; band: number | null }> = [];
+  for (const [rawType, value] of Object.entries(breakdown)) {
+    if (!isObject(value)) continue;
+    const canonical = canonicalizeIeltsQuestionType(rawType);
+    if (!canonical) continue;
+    ieltsEntries.push({
+      canonical,
+      ratio: toNumber((value as JsonRecord).ratio),
+      band: toNumber((value as JsonRecord).band),
+    });
+  }
+  if (ieltsEntries.length === 0) return { applicable: false, seeded: 0, skipped: 0 };
+
+  const { data: lang } = await sb
+    .from("languages")
+    .select("id")
+    .eq("code", "en")
+    .limit(1)
+    .maybeSingle();
+  const languageId = (lang as { id?: string } | null)?.id;
+  if (!languageId) return { applicable: true, seeded: 0, skipped: 0, reason: "language_missing" };
+
+  const targetBand = await resolveIeltsTargetBand(sb, userId);
+  const accuracyFloor = 0.7;
+  const bandGap = 0.5;
+  const weakBandThreshold = targetBand - bandGap;
+  const nowIso = new Date().toISOString();
+
+  let seeded = 0;
+  let skipped = 0;
+
+  for (const entry of ieltsEntries) {
+    const lowAccuracy = entry.ratio != null && entry.ratio < accuracyFloor;
+    const lowBand = entry.band != null && entry.band < weakBandThreshold;
+    if (!lowAccuracy && !lowBand) continue;
+
+    const sectionType = inferIeltsSection(entry.canonical);
+    if (!sectionType) { skipped += 1; continue; }
+    // SRS table check constraint forbids 'speaking', and Writing review goes through
+    // grade-writing rather than SRS, so skip writing-only types when seeding from an
+    // exam-wide breakdown — those would be drilled in the writing workbench.
+    if (sectionType === "writing") { skipped += 1; continue; }
+
+    const { error } = await sb.from("ielts_srs_question_reviews").insert({
+      user_id: userId,
+      language_id: languageId,
+      product_id: null,
+      section_type: sectionType,
+      question_type: entry.canonical,
+      leitner_box: 1,
+      next_review_at: nowIso,
+      last_accuracy_ratio: entry.ratio,
+      rolling_accuracy_ratio: entry.ratio,
+      review_count: 0,
+      correct_count: 0,
+      incorrect_count: 0,
+      is_archived: false,
+      metadata: {
+        seeded_from_event: true,
+        source_outcome_id: outcome.id,
+        source_session_id: outcome.session_id,
+        ratio: entry.ratio,
+        band: entry.band,
+      },
+    });
+
+    if (error) {
+      // 23505 = unique_violation = type already in queue. Honor seed semantic: no-op.
+      if ((error as { code?: string }).code === "23505") {
+        skipped += 1;
+        continue;
+      }
+      logOpsEvent("warn", opsDomain, "srs_seed_failed", {
+        user_id: userId,
+        question_type: entry.canonical,
+        section_type: sectionType,
+        error: (error as { message?: string }).message ?? String(error),
+      });
+      skipped += 1;
+      continue;
+    }
+    seeded += 1;
+  }
+
+  return { applicable: true, seeded, skipped };
+};
+
+const markPlaybookEvidenceFresh = async (
+  sb: any,
+  userId: string,
+  occurredAtIso: string,
+): Promise<boolean> => {
+  const { error } = await sb
+    .from("ielts_playbook_user_profiles")
+    .update({ evidence_updated_at: occurredAtIso })
+    .eq("user_id", userId);
+  if (error) {
+    logOpsEvent("warn", opsDomain, "playbook_evidence_update_failed", {
+      user_id: userId,
+      error: (error as { message?: string }).message ?? String(error),
+    });
+    return false;
+  }
+  return true;
+};
+
 const parseEventContext = (
   event: OutboxEventRow,
 ): { userId: string; productId: string; sessionId: string } => {
@@ -369,11 +574,33 @@ serve(async (req) => {
           if (doneError) throw doneError;
         }
 
+        // IELTS feedback loop side-effect. Best-effort: failures here do not
+        // un-deliver the event (the profile upsert is the primary contract).
+        let ieltsFeedback: IeltsFeedbackResult | null = null;
+        if (!dryRun && latestOutcome && eventType === "exam.result") {
+          try {
+            ieltsFeedback = await seedIeltsSrsFromOutcome(sb, ctx.userId, latestOutcome);
+            if (ieltsFeedback.applicable) {
+              await markPlaybookEvidenceFresh(sb, ctx.userId, event.occurred_at);
+            }
+          } catch (err) {
+            logOpsEvent("warn", opsDomain, "ielts_feedback_loop_failed", {
+              event_id: event.id,
+              user_id: ctx.userId,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
+
         delivered += 1;
+        const baseMessage = `sessions=${outcomeRows.length}`;
+        const ieltsSuffix = ieltsFeedback?.applicable
+          ? ` srs_seeded=${ieltsFeedback.seeded} srs_skipped=${ieltsFeedback.skipped}`
+          : "";
         details.push({
           event_id: event.id,
           status: dryRun ? "validated" : "delivered",
-          message: `sessions=${outcomeRows.length}`,
+          message: `${baseMessage}${ieltsSuffix}`,
         });
       } catch (err) {
         failed += 1;

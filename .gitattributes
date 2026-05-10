@@ -1,0 +1,2 @@
+# Git hooks must keep LF endings so the /bin/sh shebang works on Windows
+.githooks/* text eol=lf

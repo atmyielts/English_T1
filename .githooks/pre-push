@@ -1,0 +1,39 @@
+#!/bin/sh
+# Block direct pushes to main/master. Open a PR instead.
+# Override (rare): ALLOW_PUSH_MAIN=1 git push
+
+protected_branches="main master"
+
+while read local_ref local_sha remote_ref remote_sha; do
+  branch="${remote_ref#refs/heads/}"
+  for protected in $protected_branches; do
+    if [ "$branch" = "$protected" ]; then
+      if [ "$ALLOW_PUSH_MAIN" = "1" ]; then
+        echo "[pre-push] ALLOW_PUSH_MAIN=1 set; allowing push to $branch"
+      else
+        echo ""
+        echo "[pre-push] BLOCKED: direct push to '$branch' is disabled."
+        echo "  This branch is auto-deployed by Cloudflare Pages on push."
+        echo "  Open a PR from a feature branch instead."
+        echo ""
+        echo "  To override (only when you know what you're doing):"
+        echo "    ALLOW_PUSH_MAIN=1 git push"
+        echo ""
+        exit 1
+      fi
+    fi
+  done
+
+  # Block deletion of protected branches via push
+  zero="0000000000000000000000000000000000000000"
+  if [ "$local_sha" = "$zero" ]; then
+    for protected in $protected_branches; do
+      if [ "$branch" = "$protected" ]; then
+        echo "[pre-push] BLOCKED: refusing to delete protected branch '$branch'"
+        exit 1
+      fi
+    done
+  fi
+done
+
+exit 0

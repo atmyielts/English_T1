@@ -1,0 +1,49 @@
+#!/bin/sh
+# Block obvious secrets and env files from being committed.
+# Override (rare): SKIP_SECRET_SCAN=1 git commit ...
+
+if [ "$SKIP_SECRET_SCAN" = "1" ]; then
+  echo "[pre-commit] SKIP_SECRET_SCAN=1 set; skipping secret scan"
+  exit 0
+fi
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# 1. Refuse to commit any .env file (except *.example)
+for f in $staged; do
+  base=$(basename "$f")
+  case "$base" in
+    .env|.env.*)
+      case "$base" in
+        *.example) ;;
+        *)
+          echo ""
+          echo "[pre-commit] BLOCKED: refusing to commit env file: $f"
+          echo "  Env files belong only on disk and in CI secrets, never in git."
+          echo "  Override (rare): SKIP_SECRET_SCAN=1 git commit ..."
+          echo ""
+          exit 1
+          ;;
+      esac
+      ;;
+  esac
+done
+
+# 2. Scan staged content for high-confidence secret patterns.
+# Patterns kept narrow to avoid false positives on Supabase anon keys (public JWTs).
+patterns='AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|sk_live_[0-9a-zA-Z]{24,}|rk_live_[0-9a-zA-Z]{24,}|-----BEGIN ([A-Z]+ )?PRIVATE KEY-----|xox[baprs]-[0-9a-zA-Z-]{10,}|gh[pousr]_[A-Za-z0-9]{36,}|SUPABASE_SERVICE_ROLE_KEY[[:space:]]*='
+
+hits=$(git diff --cached -U0 --no-color -- $staged | grep -nE "$patterns" 2>/dev/null | head -5)
+if [ -n "$hits" ]; then
+  echo ""
+  echo "[pre-commit] BLOCKED: staged changes look like they contain a secret:"
+  echo "$hits"
+  echo ""
+  echo "  If this is a false positive, override with:"
+  echo "    SKIP_SECRET_SCAN=1 git commit ..."
+  echo ""
+  exit 1
+fi
+
+exit 0
