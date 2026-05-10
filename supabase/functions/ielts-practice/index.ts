@@ -4402,7 +4402,7 @@ serve(async (req) => {
         diagComputedAt && oldestPlanCreatedAt && diagComputedAt > oldestPlanCreatedAt,
       );
 
-      return json(200, {
+      return jsonCached(200, {
         scope: {
           user_id: auth.userId,
           language_id: scope.languageId,
@@ -4417,7 +4417,7 @@ serve(async (req) => {
         notebook: notebookItems,
         roadmap: roadmapItems,
         plan_stale: planStale,
-      });
+      }, 20);
     }
 
     if (req.method === "GET" && route === "/insights/trajectory") {

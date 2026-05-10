@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, BookOpen, Calendar, CheckCircle2, Flame, RefreshCw, Sparkles, TrendingUp } from 'lucide-react';
+import { useLazyVisible } from '../lib/useLazyVisible';
 import {
   playbookCatalogGet,
   playbookRecommendationGenerate,
@@ -252,11 +253,12 @@ export const PlaybookTrajectoryCard = ({ accessToken }: InsightsProps) => {
   type ChartKey = 'overall' | 'reading' | 'listening' | 'writing';
   const [activeKey, setActiveKey] = useState<ChartKey>('overall');
   const bandKey: BandKey = activeKey === 'overall' ? 'overall_band' : activeKey;
+  const { ref, visible } = useLazyVisible();
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data) return;
     practiceTrajectoryGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken]);
+  }, [accessToken, visible, data]);
 
   const w = 640;
   const h = 180;
@@ -267,7 +269,7 @@ export const PlaybookTrajectoryCard = ({ accessToken }: InsightsProps) => {
   const predictor: BandPredictorEntry | undefined = data?.predictor?.[activeKey];
 
   return (
-    <section className="glass" style={{ padding: 24 }}>
+    <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
         <div>
           <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Band trajectory</p>
@@ -324,10 +326,11 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
 export const PlaybookActivityCard = ({ accessToken }: InsightsProps) => {
   const [data, setData] = useState<PracticeActivityResponse | null>(null);
+  const { ref, visible } = useLazyVisible();
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data) return;
     practiceActivityGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken]);
+  }, [accessToken, visible, data]);
 
   const grid = useMemo(() => {
     const today = new Date();
@@ -358,7 +361,7 @@ export const PlaybookActivityCard = ({ accessToken }: InsightsProps) => {
   };
 
   return (
-    <section className="glass" style={{ padding: 24 }}>
+    <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ marginBottom: 14 }}>
         <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Activity</p>
         <h2 style={{ margin: '4px 0 4px', display: 'flex', alignItems: 'baseline', gap: 10 }}>
@@ -396,15 +399,22 @@ const STATUS_COPY: Record<string, { label: string; tone: string }> = {
 
 export const PlaybookMasteryCard = ({ accessToken }: InsightsProps) => {
   const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(null);
+  const { ref, visible } = useLazyVisible();
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken || !visible || data) return;
     practiceMasteryOverviewGet(accessToken).then((res) => setData(res)).catch(() => null);
-  }, [accessToken]);
+  }, [accessToken, visible, data]);
 
   if (!data) {
     return (
-      <section className="glass" style={{ padding: 24 }}>
-        <p className="muted">Loading mastery taxonomy…</p>
+      <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 14 }}>
+        <div>
+          <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery</p>
+          <span className="p2-skeleton p2-skeleton-line medium" style={{ marginTop: 8 }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+          {[0, 1, 2, 3].map((i) => <span key={i} className="p2-skeleton p2-skeleton-block" style={{ height: 80 }} />)}
+        </div>
       </section>
     );
   }
@@ -412,7 +422,7 @@ export const PlaybookMasteryCard = ({ accessToken }: InsightsProps) => {
   const order = ['weak', 'building', 'stable', 'mastered'];
 
   return (
-    <section className="glass" style={{ padding: 24, display: 'grid', gap: 16 }}>
+    <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 16 }}>
       <div>
         <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery</p>
         <h2 style={{ margin: '4px 0 4px' }}>
