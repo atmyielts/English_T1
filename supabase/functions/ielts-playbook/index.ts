@@ -30,7 +30,7 @@ import {
   buildPracticeTrajectory,
 } from "../_shared/ielts-insights.ts";
 import {
-  callOpenRouterJsonOrFallback,
+  callOpenRouterJsonWithStatus,
   isOpenRouterConfigured,
 } from "../_shared/ielts-ai.ts";
 
@@ -244,25 +244,17 @@ serve(async (req) => {
         };
       });
 
-      const fallbackExplanation = `This strategy walks through ${toText(page.title ?? "the technique", 80)}. ` +
-        `Re-read the page and try the strategy on your most recent missed attempt before moving on.`;
+      const fallbackExplanation = recentMistakes.length === 0
+        ? `Open a few practice labs first — the AI explainer is most useful once your mistake notebook has entries to anchor the strategy to.`
+        : `This strategy walks through ${toText(page.title ?? "the technique", 80)}. ` +
+          `Re-read the page and try the strategy on your most recent missed attempt before moving on.`;
 
-      if (!isOpenRouterConfigured()) {
-        return json(200, {
-          ok: true,
-          ai_available: false,
-          explanation: fallbackExplanation,
-          examples: [],
-          generated_at: new Date().toISOString(),
-        });
-      }
-
-      const result = await callOpenRouterJsonOrFallback<{
+      const { data: result, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{
         explanation?: unknown;
         examples?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS tutor explaining a strategy to a student. Read the strategy below and the student's recent mistakes. In strict JSON, return {explanation: 2-4 sentences grounded in the strategy text, citing how it would have caught their mistakes, examples: array (max 3) of {mistake_pattern, how_strategy_applies} where each item shows the named strategy step that resolves a real mistake the student made}. Be concrete; do NOT give generic test-taking advice.",
+          systemPrompt: "You are an IELTS tutor explaining a strategy to a student. Read the strategy below and the student's recent mistakes. In strict JSON, return {explanation: 2-4 sentences grounded in the strategy text, citing how it would have caught their mistakes, examples: array (max 3) of {mistake_pattern, how_strategy_applies} where each item shows the named strategy step that resolves a real mistake the student made}. Be concrete; do NOT give generic test-taking advice. If the student has no recent mistakes, instead return {explanation: 2-3 sentences distilling the single most important point in the strategy, examples: []}.",
           userPayload: JSON.stringify({
             page_title: page.title,
             page_module: page.module_key,
@@ -290,9 +282,12 @@ serve(async (req) => {
 
       return json(200, {
         ok: true,
-        ai_available: true,
+        ai_available: isOpenRouterConfigured(),
+        ai_status: aiStatus,
+        ai_error: aiError ?? null,
         explanation,
         examples,
+        recent_mistake_count: recentMistakes.length,
         generated_at: new Date().toISOString(),
       });
     }
