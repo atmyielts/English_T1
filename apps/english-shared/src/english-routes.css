@@ -88,6 +88,7 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.68) 100%);
   padding: 18px;
   display: grid;
+  align-content: start;
   gap: 12px;
 }
 
@@ -152,6 +153,7 @@
 .route-chip-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
@@ -159,12 +161,15 @@
 .route-outline-chip {
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 6px;
   min-height: 34px;
+  height: 34px;
   padding: 0 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .route-chip {
