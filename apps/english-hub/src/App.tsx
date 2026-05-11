@@ -7,6 +7,7 @@ import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/
 import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
+import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCards';
 
 type Service = {
   key: string;
@@ -827,7 +828,11 @@ const App = () => {
                 </header>
 
                 {session ? (
-                  <EcosystemSnapshot accessToken={session.access_token} />
+                  <>
+                    <EcosystemSnapshot accessToken={session.access_token} />
+                    <VocabInContextCard accessToken={session.access_token} />
+                    <GrammarDecoderCard accessToken={session.access_token} />
+                  </>
                 ) : null}
 
                 <section className="hero frame">
