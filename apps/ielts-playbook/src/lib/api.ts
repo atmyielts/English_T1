@@ -191,6 +191,96 @@ export const playbookPageExplain = (
     body: {},
   });
 
+// --- Deep diagnostic: AI skills probe + synthesis + AI plan ---
+export type SkillsProbePrompt = {
+  section: 'reading' | 'listening' | 'writing' | 'speaking' | string;
+  id: string;
+  instruction: string;
+  kind: string;
+  passage_or_audio_transcript: string | null;
+  options: string[] | null;
+  expected_format: string | null;
+};
+
+export type SkillsProbeResponse = {
+  ok: boolean;
+  probe_id: string | null;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  ai_error?: string | null;
+  prompts: SkillsProbePrompt[];
+};
+
+export const playbookProbeGenerate = (
+  accessToken: string,
+  body: { target_band?: number; self_assessment?: Record<string, unknown> },
+): Promise<SkillsProbeResponse> =>
+  callAuthed(accessToken, '/ielts-playbook/diagnostic/probe', { method: 'POST', body });
+
+export type SkillsProbeGradeResponse = {
+  ok: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  per_skill: Record<string, { band_estimate: number | null; reasoning: string }>;
+  overall_band_estimate: number | null;
+  confidence: 'low' | 'medium' | 'high' | string;
+  notes: string;
+};
+
+export const playbookProbeGrade = (
+  accessToken: string,
+  probe_id: string,
+  responses: Record<string, string | number>,
+): Promise<SkillsProbeGradeResponse> =>
+  callAuthed(accessToken, '/ielts-playbook/diagnostic/probe/grade', {
+    method: 'POST',
+    body: { probe_id, responses },
+  });
+
+export type DiagnosticSynthesisResponse = {
+  ok: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  narrative: string;
+  section_priority: string[];
+  risks: Array<{ risk: string; severity: 'low' | 'medium' | 'high' | string; mitigation: string }>;
+  weekly_hours_needed: number | null;
+  feasibility: 'comfortable' | 'tight' | 'aggressive' | 'unrealistic' | string;
+  generated_at: string;
+};
+
+export const playbookDiagnosticSynthesize = (
+  accessToken: string,
+): Promise<DiagnosticSynthesisResponse> =>
+  callAuthed(accessToken, '/ielts-playbook/diagnostic/synthesize', { method: 'POST', body: {} });
+
+export type PlanWeek = {
+  week_number: number;
+  theme: string;
+  focus_sections: string[];
+  hours: number;
+  key_activities: string[];
+  success_criteria: string;
+  playbook_modules: string[];
+};
+
+export type PlanAiResponse = {
+  ok: boolean;
+  ai_status?: 'ok' | 'unconfigured' | 'failed';
+  plan_slug: string;
+  intro: string;
+  weeks: PlanWeek[];
+  weekly_hours: number;
+  generated_at: string;
+};
+
+export const playbookPlanGenerateAi = (
+  accessToken: string,
+  slug: string,
+  body: { weekly_hours: number; section_priority: string[] },
+): Promise<PlanAiResponse> =>
+  callAuthed(accessToken, `/ielts-playbook/plans/${encodeURIComponent(slug)}/generate-ai`, {
+    method: 'POST',
+    body,
+  });
+
 // --- Enrichments: drills, diagnostic, section chat, worked example, band-render, notes ---
 export type PlaybookDrill = {
   id: string;
