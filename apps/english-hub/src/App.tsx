@@ -14,6 +14,8 @@ import { GoalTemplateCard, RubricCalibrationCard, ThemedWeekCard } from './compo
 import { ContentRecommendCard, PlacementTestCard, ShadowingPracticeCard } from './components/AIIter6Cards';
 import { PronunciationDrillCard, TutorCard } from './components/AIIter7Cards';
 import { VoiceConversationCard } from './components/AIIter8Cards';
+import { OfflineBanner } from './components/OfflineBanner';
+import { VoiceFirstFab } from './components/VoiceFirstFab';
 
 type Service = {
   key: string;
@@ -782,6 +784,9 @@ const App = () => {
 
   if (location.pathname === '/' || !session) {
     return (
+      <>
+      <OfflineBanner />
+      <VoiceFirstFab accessToken={session?.access_token ?? null} />
       <Routes>
         <Route
           path="/"
@@ -965,6 +970,7 @@ const App = () => {
         />
         <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
       </Routes>
+      </>
     );
   }
 
@@ -978,6 +984,8 @@ const App = () => {
 
   return (
     <div className="hub-root">
+      <OfflineBanner />
+      <VoiceFirstFab accessToken={session.access_token} />
       <div className="hub-ambient" aria-hidden />
       <main className="hub-shell">
         <header className="hub-nav frame">
