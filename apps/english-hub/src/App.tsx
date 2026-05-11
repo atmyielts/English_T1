@@ -10,6 +10,7 @@ import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCards';
 import { EssayGraderCard, IdiomExplorerCard, TranslationCompareCard } from './components/AIIter3Cards';
 import { CulturalNotesCard, DailyChallengeCard, DictationDrillCard } from './components/AIIter4Cards';
+import { GoalTemplateCard, RubricCalibrationCard, ThemedWeekCard } from './components/AIIter5Cards';
 
 type Service = {
   key: string;
@@ -840,6 +841,9 @@ const App = () => {
                     <DailyChallengeCard accessToken={session.access_token} />
                     <DictationDrillCard accessToken={session.access_token} />
                     <CulturalNotesCard accessToken={session.access_token} />
+                    <GoalTemplateCard accessToken={session.access_token} />
+                    <ThemedWeekCard accessToken={session.access_token} />
+                    <RubricCalibrationCard accessToken={session.access_token} />
                   </>
                 ) : null}
 
