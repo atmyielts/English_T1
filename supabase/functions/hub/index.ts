@@ -502,6 +502,164 @@ serve(async (req) => {
       });
     }
 
+    // Tier B #13 — Listening dictation drill. Generates a passage at the
+    // requested CEFR level (the frontend speaks it via browser TTS) plus
+    // optional difficulty knobs (speed cue, accent cue, contains_numbers).
+    // The AI returns BOTH the canonical text AND a list of tricky tokens
+    // so the frontend can score the user's typed transcription generously
+    // (case-insensitive, ignore terminal punctuation).
+    if (req.method === "POST" && route === "/ai/dictation/generate") {
+      const body = await parseBody(req);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B2";
+      const topic = toText((body as Record<string, unknown>).topic, 200);
+      const accent = toText((body as Record<string, unknown>).accent, 24).toLowerCase() || "neutral";
+      const speed = toText((body as Record<string, unknown>).speed, 16).toLowerCase() || "normal";
+      if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        text?: unknown;
+        tricky_tokens?: unknown;
+        comprehension_question?: unknown;
+        comprehension_answer?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English listening teacher generating a short dictation passage. Write 2-3 sentences (about 30-55 words) at the target CEFR reading-aloud level, on the requested topic, in natural spoken English suitable for being read aloud once. Return strict JSON: {text: the passage exactly as it should be heard, tricky_tokens: array (max 5) of words/phrases the learner is most likely to mishear or misspell, comprehension_question: 1 short follow-up question to confirm understanding, comprehension_answer: the expected answer in 1-3 words}.",
+          userPayload: JSON.stringify({
+            target_level: targetLevel,
+            topic: topic || "an everyday situation a learner would naturally encounter",
+            accent_hint: accent,
+            speed_hint: speed,
+          }),
+          temperature: 0.7,
+        },
+        { text: "", tricky_tokens: [], comprehension_question: "", comprehension_answer: "" },
+      );
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        target_level: targetLevel,
+        topic: topic || null,
+        accent,
+        speed,
+        text: toText(result.text, 1200),
+        tricky_tokens: Array.isArray(result.tricky_tokens)
+          ? (result.tricky_tokens as unknown[]).map((t) => toText(t, 80)).filter(Boolean).slice(0, 8)
+          : [],
+        comprehension_question: toText(result.comprehension_question, 240),
+        comprehension_answer: toText(result.comprehension_answer, 80),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier D #19 — Daily cross-skill challenge. Assembles a 5-task daily
+    // mission spanning all 6 skills, calibrated to the user's CEFR estimate
+    // and time budget. Pure compose — pulls from the existing skill catalogues
+    // via the daily plan; AI-shaped for variety + theming.
+    if (req.method === "POST" && route === "/ai/daily-challenge") {
+      const body = await parseBody(req);
+      const minutesBudget = Math.max(10, Math.min(120, Number((body as Record<string, unknown>).minutes_budget) || 30));
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      const overallLevel = cefr?.overall.level ?? "B1";
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        theme?: unknown;
+        why_this_theme?: unknown;
+        tasks?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English study coach generating a single daily cross-skill challenge for a learner. Pick ONE concrete theme (e.g., 'climate adaptation', 'how a sourdough starter works', 'ordering coffee in a noisy café'), then design EXACTLY 5 tasks that span the four core skills (reading, listening, writing, speaking) plus one of grammar or vocabulary. Each task should fit inside the time budget. Return strict JSON: {theme: 5-8 word theme, why_this_theme: 1 sentence connecting the theme to the learner's level, tasks: array of exactly 5 objects each {skill: 'reading'|'writing'|'listening'|'speaking'|'grammar'|'vocabulary', label: 4-8 word task name, instruction: 1-2 sentences telling the learner exactly what to do, estimated_minutes: integer 3-15, route_hint: relative URL like '/reading' or '/speaking' the learner can open in the matching skill app}}.",
+          userPayload: JSON.stringify({
+            cefr_level: overallLevel,
+            minutes_budget: minutesBudget,
+            recent_skill_snapshot: cefr?.estimates ?? [],
+          }),
+          temperature: 0.7,
+        },
+        { theme: "", why_this_theme: "", tasks: [] },
+      );
+
+      const tasks = Array.isArray(result.tasks)
+        ? (result.tasks as unknown[])
+            .filter((t): t is Record<string, unknown> => !!t && typeof t === "object" && !Array.isArray(t))
+            .map((t) => ({
+              skill: ["reading", "writing", "listening", "speaking", "grammar", "vocabulary"].includes(String(t.skill ?? "").toLowerCase())
+                ? String(t.skill).toLowerCase()
+                : "reading",
+              label: toText(t.label, 120),
+              instruction: toText(t.instruction, 600),
+              estimated_minutes: Math.max(2, Math.min(30, Number(t.estimated_minutes) || 5)),
+              route_hint: toText(t.route_hint, 120) || "/",
+            }))
+            .filter((t) => t.label && t.instruction)
+            .slice(0, 6)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        theme: toText(result.theme, 200),
+        why_this_theme: toText(result.why_this_theme, 600),
+        tasks,
+        cefr_level: overallLevel,
+        minutes_budget: minutesBudget,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier C #18 — Cultural context notes. Paste a passage; AI surfaces
+    // cultural references, register choices, and US/UK/AU usage notes worth
+    // knowing. Useful for advanced learners who want to read like a native
+    // and avoid the accidental tone mismatches that plague learners at C1+.
+    if (req.method === "POST" && route === "/ai/cultural-notes") {
+      const body = await parseBody(req);
+      const sourceText = toText((body as Record<string, unknown>).source_text, 4000);
+      if (!sourceText || sourceText.length < 30) {
+        return json(400, { error: "source_text is required (min 30 characters)" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        cultural_references?: unknown;
+        register_observations?: unknown;
+        regional_variants?: unknown;
+        tone_pitfalls?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English cultural and stylistic analyst. From the passage below, surface the most useful cultural and register-aware observations a non-native learner would benefit from. Return strict JSON with these arrays (each item brief, max 6 across each list): cultural_references (specific names/events/icons + 1-line meaning), register_observations (what the writer's register reveals + how to spot it elsewhere), regional_variants (US vs UK vs AU usage choices, with the alternative form noted), tone_pitfalls (where a learner might mistake the tone — sarcastic, polite-but-cool, formal, etc. — and what flags it).",
+          userPayload: JSON.stringify({ source_text: sourceText }),
+          temperature: 0.4,
+        },
+        { cultural_references: [], register_observations: [], regional_variants: [], tone_pitfalls: [] },
+      );
+
+      const safeArrayOfStrings = (raw: unknown): string[] =>
+        Array.isArray(raw) ? (raw as unknown[]).map((r) => toText(r, 400)).filter(Boolean).slice(0, 6) : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        cultural_references: safeArrayOfStrings(result.cultural_references),
+        register_observations: safeArrayOfStrings(result.register_observations),
+        regional_variants: safeArrayOfStrings(result.regional_variants),
+        tone_pitfalls: safeArrayOfStrings(result.tone_pitfalls),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
