@@ -8,6 +8,7 @@ import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCards';
+import { EssayGraderCard, IdiomExplorerCard, TranslationCompareCard } from './components/AIIter3Cards';
 
 type Service = {
   key: string;
@@ -832,6 +833,9 @@ const App = () => {
                     <EcosystemSnapshot accessToken={session.access_token} />
                     <VocabInContextCard accessToken={session.access_token} />
                     <GrammarDecoderCard accessToken={session.access_token} />
+                    <EssayGraderCard accessToken={session.access_token} />
+                    <TranslationCompareCard accessToken={session.access_token} />
+                    <IdiomExplorerCard accessToken={session.access_token} />
                   </>
                 ) : null}
 
