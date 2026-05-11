@@ -39,7 +39,7 @@ export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, co
         return;
       }
       const text = sel.toString().trim();
-      if (text.length < 6) {
+      if (text.length < 3) {
         setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
         return;
       }
@@ -49,11 +49,16 @@ export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, co
         setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
         return;
       }
+      // Viewport-relative coordinates — pair with position: fixed below so the
+      // floating button lands right above the selection regardless of which
+      // ancestor has position: relative. Previously combined window.scroll*
+      // with position: absolute, which placed the button thousands of pixels
+      // off-screen and made the feature look broken.
       const rect = range.getBoundingClientRect();
       setFloating({
         visible: true,
-        x: rect.left + rect.width / 2 + window.scrollX,
-        y: rect.top + window.scrollY - 8,
+        x: rect.left + rect.width / 2,
+        y: rect.top - 8,
         selectedText: text,
       });
     };
@@ -99,9 +104,10 @@ export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, co
       {floating.visible ? (
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={openComposer}
           style={{
-            position: 'absolute',
+            position: 'fixed',
             top: floating.y,
             left: floating.x,
             transform: 'translate(-50%, -100%)',
