@@ -338,3 +338,103 @@ export const extractCulturalNotes = (
   body: { source_text: string },
 ): Promise<CulturalNotesResponse> =>
   callEdgePost<CulturalNotesResponse>('/hub/ai/cultural-notes', accessToken, body);
+
+// === Iter 5: goal templates, writing rubric calibration, themed week ===
+
+export type EnglishGoalKey =
+  | 'study_abroad'
+  | 'business'
+  | 'immigration'
+  | 'academic'
+  | 'conversational'
+  | 'exam_prep';
+
+export interface GoalTemplateResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  goal: EnglishGoalKey;
+  cefr_level: CefrLevel;
+  horizon_weeks: number;
+  minutes_per_day: number;
+  plan_title: string;
+  narrative: string;
+  weekly_hours: Record<EnglishSkillKey, number>;
+  priorities: Array<{ skill: EnglishSkillKey; why: string }>;
+  skill_focus: Record<EnglishSkillKey, string>;
+  recommended_routes: Array<{ label: string; route: string; why: string }>;
+  success_criteria: string[];
+  risks: string[];
+  generated_at?: string;
+}
+
+export const generateGoalTemplate = (
+  accessToken: string,
+  body: { goal: EnglishGoalKey; horizon_weeks?: number; minutes_per_day?: number },
+): Promise<GoalTemplateResponse> =>
+  callEdgePost<GoalTemplateResponse>('/hub/ai/goal-templates', accessToken, body);
+
+export interface RubricCalibrateResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  prompt: string;
+  lower_level: CefrTargetLevel;
+  mid_level: CefrTargetLevel;
+  upper_level: CefrTargetLevel;
+  samples: Array<{
+    level: CefrTargetLevel | string;
+    word_count_target: number;
+    text: string;
+    examiner_note: string;
+  }>;
+  deltas: Array<{
+    from_level: CefrTargetLevel | string;
+    to_level: CefrTargetLevel | string;
+    axes: { task: string; coherence: string; range: string; accuracy: string; register: string };
+  }>;
+  what_to_practise: string[];
+  generated_at?: string;
+}
+
+export const calibrateWritingRubric = (
+  accessToken: string,
+  body: { prompt: string; lower_level?: CefrTargetLevel; mid_level?: CefrTargetLevel; upper_level?: CefrTargetLevel },
+): Promise<RubricCalibrateResponse> =>
+  callEdgePost<RubricCalibrateResponse>('/hub/ai/rubric-calibrate', accessToken, body);
+
+export interface ThemedWeekDay {
+  day_index: number;
+  day_label: string;
+  skill: 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+  activity_label: string;
+  instruction: string;
+  recycles_words: string[];
+  route_hint: string;
+}
+
+export interface ThemedWeekResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  theme: string;
+  why_this_theme: string;
+  cefr_level: CefrLevel;
+  minutes_per_day: number;
+  anchor_vocabulary: string[];
+  days: ThemedWeekDay[];
+  weekend_review: string;
+  generated_at?: string;
+}
+
+export const generateThemedWeek = (
+  accessToken: string,
+  body: { theme?: string; minutes_per_day?: number } = {},
+): Promise<ThemedWeekResponse> =>
+  callEdgePost<ThemedWeekResponse>('/hub/ai/themed-week', accessToken, body);

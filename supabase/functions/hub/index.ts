@@ -660,6 +660,304 @@ serve(async (req) => {
       });
     }
 
+    // Tier D #20 — Goal templates. Learner picks a high-level life goal
+    // (study abroad, business, immigration, academic, conversational,
+    // exam-prep) plus a target horizon; AI returns a tailored 12-week
+    // curriculum shape: weekly hour mix per skill, top 3 priorities,
+    // recommended skill apps + how to combine them, and a definition of
+    // "done" they should aim for.
+    if (req.method === "POST" && route === "/ai/goal-templates") {
+      const body = await parseBody(req);
+      const goalKey = toText((body as Record<string, unknown>).goal, 32).toLowerCase();
+      const horizonWeeks = Math.max(2, Math.min(52, Number((body as Record<string, unknown>).horizon_weeks) || 12));
+      const minutesPerDay = Math.max(10, Math.min(180, Number((body as Record<string, unknown>).minutes_per_day) || 30));
+      const validGoals = [
+        "study_abroad",
+        "business",
+        "immigration",
+        "academic",
+        "conversational",
+        "exam_prep",
+      ];
+      if (!validGoals.includes(goalKey)) {
+        return json(400, { error: `goal must be one of ${validGoals.join(", ")}` });
+      }
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      const overallLevel = cefr?.overall.level ?? "B1";
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        plan_title?: unknown;
+        narrative?: unknown;
+        weekly_hours?: unknown;
+        priorities?: unknown;
+        skill_focus?: unknown;
+        recommended_routes?: unknown;
+        success_criteria?: unknown;
+        risks?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English study planner. The learner has chosen a real-life GOAL (one of: study_abroad, business, immigration, academic, conversational, exam_prep). Build a tailored learning plan shape for the next N weeks at their current CEFR level and daily time budget. Return strict JSON: {plan_title: 6-10 words capturing the goal, narrative: 2-3 sentence motivation grounded in the goal + level, weekly_hours: object {reading, writing, listening, speaking, grammar, vocabulary} with integer hour totals per week (sum should be close to minutes_per_day*7/60), priorities: array (max 3) of {skill: one of the six, why: 1 sentence}, skill_focus: object {reading: 1-line micro-focus, writing: ..., listening: ..., speaking: ..., grammar: ..., vocabulary: ...}, recommended_routes: array (max 6) of {label: 3-6 word link label, route: relative URL like '/reading' or '/speaking', why: 1 sentence}, success_criteria: array (max 4) of concrete observable outcomes (e.g., 'Hold a 5-minute conversation about academic plans without translating in your head'), risks: array (max 3) of plausible failure modes + how to avoid them}.",
+          userPayload: JSON.stringify({
+            goal: goalKey,
+            horizon_weeks: horizonWeeks,
+            minutes_per_day: minutesPerDay,
+            cefr_level: overallLevel,
+            recent_skill_snapshot: cefr?.estimates ?? [],
+          }),
+          temperature: 0.55,
+        },
+        {
+          plan_title: "",
+          narrative: "",
+          weekly_hours: {},
+          priorities: [],
+          skill_focus: {},
+          recommended_routes: [],
+          success_criteria: [],
+          risks: [],
+        },
+      );
+
+      const safeStr = (v: unknown, max: number) => toText(v, max);
+      const skills = ["reading", "writing", "listening", "speaking", "grammar", "vocabulary"] as const;
+
+      const weeklyHoursRaw = (result.weekly_hours && typeof result.weekly_hours === "object" && !Array.isArray(result.weekly_hours))
+        ? (result.weekly_hours as Record<string, unknown>)
+        : {};
+      const weeklyHours: Record<string, number> = {};
+      for (const s of skills) {
+        const v = Number(weeklyHoursRaw[s]);
+        weeklyHours[s] = Number.isFinite(v) && v >= 0 ? Math.round(v) : 0;
+      }
+
+      const skillFocusRaw = (result.skill_focus && typeof result.skill_focus === "object" && !Array.isArray(result.skill_focus))
+        ? (result.skill_focus as Record<string, unknown>)
+        : {};
+      const skillFocus: Record<string, string> = {};
+      for (const s of skills) skillFocus[s] = safeStr(skillFocusRaw[s], 240);
+
+      const priorities = Array.isArray(result.priorities)
+        ? (result.priorities as unknown[])
+            .filter((p): p is Record<string, unknown> => !!p && typeof p === "object" && !Array.isArray(p))
+            .map((p) => ({
+              skill: skills.includes(String(p.skill ?? "").toLowerCase() as typeof skills[number])
+                ? String(p.skill).toLowerCase()
+                : "reading",
+              why: safeStr(p.why, 320),
+            }))
+            .filter((p) => p.why)
+            .slice(0, 4)
+        : [];
+
+      const recommendedRoutes = Array.isArray(result.recommended_routes)
+        ? (result.recommended_routes as unknown[])
+            .filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r))
+            .map((r) => ({
+              label: safeStr(r.label, 120),
+              route: safeStr(r.route, 200) || "/",
+              why: safeStr(r.why, 320),
+            }))
+            .filter((r) => r.label && r.why)
+            .slice(0, 6)
+        : [];
+
+      const arrOfStrings = (raw: unknown, max: number, charLimit: number) =>
+        Array.isArray(raw)
+          ? (raw as unknown[]).map((r) => safeStr(r, charLimit)).filter(Boolean).slice(0, max)
+          : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        goal: goalKey,
+        cefr_level: overallLevel,
+        horizon_weeks: horizonWeeks,
+        minutes_per_day: minutesPerDay,
+        plan_title: safeStr(result.plan_title, 200),
+        narrative: safeStr(result.narrative, 1200),
+        weekly_hours: weeklyHours,
+        priorities,
+        skill_focus: skillFocus,
+        recommended_routes: recommendedRoutes,
+        success_criteria: arrOfStrings(result.success_criteria, 4, 320),
+        risks: arrOfStrings(result.risks, 3, 320),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier D #21 — Writing rubric calibration. Given a single prompt, AI
+    // produces 3 sample answers — at A2/B1, B2, and C1/C2 — plus a delta
+    // analysis explaining what concretely changes between levels (cohesion,
+    // range, accuracy, register, lexical density). Lets the learner SEE
+    // what "next level" actually looks like for their writing.
+    if (req.method === "POST" && route === "/ai/rubric-calibrate") {
+      const body = await parseBody(req);
+      const prompt = toText((body as Record<string, unknown>).prompt, 800);
+      const lowerLevel = toText((body as Record<string, unknown>).lower_level, 8).toUpperCase() || "A2";
+      const midLevel = toText((body as Record<string, unknown>).mid_level, 8).toUpperCase() || "B2";
+      const upperLevel = toText((body as Record<string, unknown>).upper_level, 8).toUpperCase() || "C1";
+      const validLevels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+      for (const lv of [lowerLevel, midLevel, upperLevel]) {
+        if (!validLevels.includes(lv)) return json(400, { error: `levels must be one of ${validLevels.join(", ")}` });
+      }
+      if (!prompt || prompt.length < 20) {
+        return json(400, { error: "prompt is required (min 20 characters)" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        samples?: unknown;
+        deltas?: unknown;
+        what_to_practise?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are a CEFR writing examiner producing CALIBRATION samples. For the same writing prompt, write THREE complete sample answers at three target levels (lower, mid, upper). Each sample MUST sound authentic for that level (typical errors at the lower level, controlled fluency at mid, sophisticated range at upper). Then explain the deltas between consecutive levels along five rubric axes (task achievement, coherence, lexical range, grammatical range/accuracy, register). Return strict JSON: {samples: array of EXACTLY 3 objects {level: CEFR string, word_count_target: integer 80-260, text: the full essay/answer (do NOT use markdown headers), examiner_note: 1-2 sentence assessment of the sample's defining traits}, deltas: array of EXACTLY 2 objects {from_level, to_level, axes: {task: 1 sentence, coherence: 1 sentence, range: 1 sentence, accuracy: 1 sentence, register: 1 sentence}}, what_to_practise: array (max 4) of concrete drills the learner can do this week to climb one level}.",
+          userPayload: JSON.stringify({
+            prompt,
+            lower_level: lowerLevel,
+            mid_level: midLevel,
+            upper_level: upperLevel,
+          }),
+          temperature: 0.5,
+        },
+        { samples: [], deltas: [], what_to_practise: [] },
+      );
+
+      const samples = Array.isArray(result.samples)
+        ? (result.samples as unknown[])
+            .filter((s): s is Record<string, unknown> => !!s && typeof s === "object" && !Array.isArray(s))
+            .map((s) => ({
+              level: toText(s.level, 8).toUpperCase(),
+              word_count_target: Math.max(40, Math.min(400, Number(s.word_count_target) || 150)),
+              text: toText(s.text, 4000),
+              examiner_note: toText(s.examiner_note, 400),
+            }))
+            .filter((s) => s.text && s.level)
+            .slice(0, 3)
+        : [];
+
+      const deltas = Array.isArray(result.deltas)
+        ? (result.deltas as unknown[])
+            .filter((d): d is Record<string, unknown> => !!d && typeof d === "object" && !Array.isArray(d))
+            .map((d) => {
+              const axesRaw = (d.axes && typeof d.axes === "object" && !Array.isArray(d.axes))
+                ? (d.axes as Record<string, unknown>)
+                : {};
+              return {
+                from_level: toText(d.from_level, 8).toUpperCase(),
+                to_level: toText(d.to_level, 8).toUpperCase(),
+                axes: {
+                  task: toText(axesRaw.task, 320),
+                  coherence: toText(axesRaw.coherence, 320),
+                  range: toText(axesRaw.range, 320),
+                  accuracy: toText(axesRaw.accuracy, 320),
+                  register: toText(axesRaw.register, 320),
+                },
+              };
+            })
+            .filter((d) => d.from_level && d.to_level)
+            .slice(0, 2)
+        : [];
+
+      const whatToPractise = Array.isArray(result.what_to_practise)
+        ? (result.what_to_practise as unknown[]).map((r) => toText(r, 320)).filter(Boolean).slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        prompt,
+        lower_level: lowerLevel,
+        mid_level: midLevel,
+        upper_level: upperLevel,
+        samples,
+        deltas,
+        what_to_practise: whatToPractise,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier C #5 — Coordinated themed week. ONE theme, 7 days of activities,
+    // each day surfacing the same vocabulary/concepts through a different
+    // skill — so what you read on Monday you write about on Wednesday and
+    // discuss on Friday. Returns a deep-linkable schedule the learner can
+    // actually open in each skill app.
+    if (req.method === "POST" && route === "/ai/themed-week") {
+      const body = await parseBody(req);
+      const themeHint = toText((body as Record<string, unknown>).theme, 200);
+      const minutesPerDay = Math.max(10, Math.min(120, Number((body as Record<string, unknown>).minutes_per_day) || 25));
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      const overallLevel = cefr?.overall.level ?? "B1";
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        theme?: unknown;
+        why_this_theme?: unknown;
+        anchor_vocabulary?: unknown;
+        days?: unknown;
+        weekend_review?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English curriculum designer building a themed-week study schedule. Pick ONE concrete, evocative theme (or use the learner's hint if provided) and design 7 days that recycle the SAME core vocabulary and concepts through DIFFERENT skills — Mon: input, Tue: deeper input, Wed: production, Thu: interaction, Fri: refinement, Sat: stretch, Sun: review. Each day's activity should fit the daily minutes budget. Return strict JSON: {theme: 5-10 word theme, why_this_theme: 1-2 sentence pitch, anchor_vocabulary: array (8-12) of single words / short phrases that should recur across the week (these are the spine), days: array of EXACTLY 7 objects {day_index: 0-6 (Monday=0), day_label: 'Monday' etc, skill: 'reading'|'writing'|'listening'|'speaking'|'grammar'|'vocabulary', activity_label: 4-8 words, instruction: 2-3 sentences telling the learner exactly what to do, recycles_words: array of 2-4 anchor words this day's activity must surface, route_hint: relative URL the learner can open}, weekend_review: 1-2 sentence note on what 'success' looks like by Sunday}.",
+          userPayload: JSON.stringify({
+            theme_hint: themeHint || null,
+            cefr_level: overallLevel,
+            minutes_per_day: minutesPerDay,
+          }),
+          temperature: 0.7,
+        },
+        { theme: "", why_this_theme: "", anchor_vocabulary: [], days: [], weekend_review: "" },
+      );
+
+      const allowedSkills = ["reading", "writing", "listening", "speaking", "grammar", "vocabulary"];
+      const days = Array.isArray(result.days)
+        ? (result.days as unknown[])
+            .filter((d): d is Record<string, unknown> => !!d && typeof d === "object" && !Array.isArray(d))
+            .map((d) => ({
+              day_index: Math.max(0, Math.min(6, Number(d.day_index) || 0)),
+              day_label: toText(d.day_label, 24),
+              skill: allowedSkills.includes(String(d.skill ?? "").toLowerCase())
+                ? String(d.skill).toLowerCase()
+                : "reading",
+              activity_label: toText(d.activity_label, 160),
+              instruction: toText(d.instruction, 800),
+              recycles_words: Array.isArray(d.recycles_words)
+                ? (d.recycles_words as unknown[]).map((w) => toText(w, 80)).filter(Boolean).slice(0, 6)
+                : [],
+              route_hint: toText(d.route_hint, 200) || "/",
+            }))
+            .filter((d) => d.activity_label && d.instruction)
+            .slice(0, 7)
+        : [];
+
+      const anchorVocabulary = Array.isArray(result.anchor_vocabulary)
+        ? (result.anchor_vocabulary as unknown[]).map((w) => toText(w, 80)).filter(Boolean).slice(0, 14)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        theme: toText(result.theme, 200),
+        why_this_theme: toText(result.why_this_theme, 600),
+        cefr_level: overallLevel,
+        minutes_per_day: minutesPerDay,
+        anchor_vocabulary: anchorVocabulary,
+        days,
+        weekend_review: toText(result.weekend_review, 400),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
