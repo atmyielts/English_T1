@@ -550,3 +550,70 @@ export const stepPlacementTest = (
   body: { round?: number; history?: PlacementHistoryEntry[]; finalize?: boolean } = {},
 ): Promise<PlacementTestResponse> =>
   callEdgePost<PlacementTestResponse>('/hub/ai/placement-test', accessToken, body);
+
+// === Iter 7: AI tutor with cross-session memory + pronunciation analysis ===
+
+export type TutorMessageRole = 'user' | 'assistant';
+
+export interface TutorMessage {
+  role: TutorMessageRole;
+  content: string;
+}
+
+export type TutorMemoryKind = 'goal' | 'preference' | 'struggle' | 'win' | 'context' | 'deadline';
+
+export interface TutorMemory {
+  id: string;
+  kind: TutorMemoryKind | string;
+  text: string;
+  added_at: string;
+}
+
+export interface TutorChatResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  reply: string;
+  suggested_memories: Array<{ kind: TutorMemoryKind | string; text: string }>;
+  suggested_actions: Array<{ label: string; route: string; why: string }>;
+  generated_at?: string;
+}
+
+export const sendTutorMessage = (
+  accessToken: string,
+  body: { messages: TutorMessage[]; memories?: Array<Pick<TutorMemory, 'id' | 'kind' | 'text'>> },
+): Promise<TutorChatResponse> =>
+  callEdgePost<TutorChatResponse>('/hub/ai/tutor-chat', accessToken, body);
+
+export interface PronunciationPerWord {
+  target_word: string;
+  what_was_heard: string;
+  likely_issue: string;
+  fix_tip: string;
+}
+
+export interface PronunciationFeedbackResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  target_text: string;
+  recognized_text: string;
+  user_l1: string | null;
+  target_level: CefrTargetLevel;
+  accuracy_score: number;
+  per_word: PronunciationPerWord[];
+  prosody_notes: string[];
+  l1_interference: string[];
+  retry_priority: string;
+  generated_at?: string;
+}
+
+export const analyzePronunciation = (
+  accessToken: string,
+  body: { target_text: string; recognized_text: string; user_l1?: string; target_level?: CefrTargetLevel },
+): Promise<PronunciationFeedbackResponse> =>
+  callEdgePost<PronunciationFeedbackResponse>('/hub/ai/pronunciation-feedback', accessToken, body);
