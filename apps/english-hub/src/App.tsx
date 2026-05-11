@@ -13,6 +13,7 @@ import { CulturalNotesCard, DailyChallengeCard, DictationDrillCard } from './com
 import { GoalTemplateCard, RubricCalibrationCard, ThemedWeekCard } from './components/AIIter5Cards';
 import { ContentRecommendCard, PlacementTestCard, ShadowingPracticeCard } from './components/AIIter6Cards';
 import { PronunciationDrillCard, TutorCard } from './components/AIIter7Cards';
+import { VoiceConversationCard } from './components/AIIter8Cards';
 
 type Service = {
   key: string;
@@ -844,6 +845,7 @@ const App = () => {
                     <DictationDrillCard accessToken={session.access_token} />
                     <CulturalNotesCard accessToken={session.access_token} />
                     <TutorCard accessToken={session.access_token} />
+                    <VoiceConversationCard accessToken={session.access_token} />
                     <PlacementTestCard accessToken={session.access_token} />
                     <GoalTemplateCard accessToken={session.access_token} />
                     <ThemedWeekCard accessToken={session.access_token} />
