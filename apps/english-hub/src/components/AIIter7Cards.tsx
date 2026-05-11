@@ -16,9 +16,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -28,12 +28,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -44,7 +44,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -62,7 +62,7 @@ const CEFR_LEVELS: CefrTargetLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 const KIND_TONE: Record<string, string> = {
   goal: '#0f5752',
-  preference: '#0e4955',
+  preference: '#9c2c1a',
   struggle: '#9b1c1c',
   win: '#7c2d12',
   context: '#1f3a8a',
@@ -260,7 +260,7 @@ export const TutorCard = ({ accessToken }: Props) => {
                 key={idx}
                 style={{
                   alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                  background: m.role === 'user' ? '#0e4955' : '#fff',
+                  background: m.role === 'user' ? '#9c2c1a' : '#fff',
                   color: m.role === 'user' ? '#fff' : '#1a1814',
                   border: m.role === 'user' ? 'none' : '1px solid #e6dfca',
                   padding: '10px 14px',
@@ -297,7 +297,7 @@ export const TutorCard = ({ accessToken }: Props) => {
                           textTransform: 'uppercase',
                           fontWeight: 700,
                           letterSpacing: '0.1em',
-                          color: KIND_TONE[s.kind] ?? '#0e4955',
+                          color: KIND_TONE[s.kind] ?? '#9c2c1a',
                           marginRight: 8,
                         }}
                       >
@@ -328,9 +328,9 @@ export const TutorCard = ({ accessToken }: Props) => {
                   title={a.why}
                   style={{
                     padding: '6px 12px',
-                    border: '1px solid #0e4955',
+                    border: '1px solid #9c2c1a',
                     borderRadius: 999,
-                    color: '#0e4955',
+                    color: '#9c2c1a',
                     fontSize: 13,
                     textDecoration: 'none',
                     background: '#fff',
@@ -404,7 +404,7 @@ export const TutorCard = ({ accessToken }: Props) => {
             ) : null}
             {Object.entries(memoriesByKind).map(([kind, mems]) => (
               <div key={kind} style={{ display: 'grid', gap: 4 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: KIND_TONE[kind] ?? '#0e4955' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: KIND_TONE[kind] ?? '#9c2c1a' }}>
                   {KIND_LABEL[kind] ?? kind}
                 </div>
                 {mems.map((m) => (
@@ -625,7 +625,7 @@ export const PronunciationDrillCard = ({ accessToken }: Props) => {
       : data.accuracy_score >= 60
         ? '#8a5a1b'
         : '#9b1c1c'
-    : '#0e4955';
+    : '#9c2c1a';
 
   return (
     <section style={CARD}>
@@ -703,7 +703,7 @@ export const PronunciationDrillCard = ({ accessToken }: Props) => {
                 borderRadius: 12,
                 fontSize: 28,
                 fontWeight: 700,
-                fontFamily: 'Fraunces, Outfit, serif',
+                fontFamily: 'Outfit, sans-serif',
               }}
             >
               {data.accuracy_score}
@@ -717,8 +717,8 @@ export const PronunciationDrillCard = ({ accessToken }: Props) => {
           </div>
 
           {data.retry_priority ? (
-            <div style={{ background: '#0e4955', color: '#fff', borderRadius: 10, padding: 12 }}>
-              <p style={{ ...EYEBROW, color: '#cfe7ec', margin: 0 }}>Fix this on your next retry</p>
+            <div style={{ background: '#9c2c1a', color: '#fff', borderRadius: 10, padding: 12 }}>
+              <p style={{ ...EYEBROW, color: '#fae0db', margin: 0 }}>Fix this on your next retry</p>
               <p style={{ margin: '4px 0 0' }}>{data.retry_priority}</p>
             </div>
           ) : null}
@@ -736,7 +736,7 @@ export const PronunciationDrillCard = ({ accessToken }: Props) => {
                       ) : null}
                     </div>
                     <p style={{ margin: 0, fontSize: 13, color: '#3d3a32' }}>{w.likely_issue}</p>
-                    {w.fix_tip ? <p style={{ margin: 0, fontSize: 13, color: '#0e4955' }}><strong>Try:</strong> {w.fix_tip}</p> : null}
+                    {w.fix_tip ? <p style={{ margin: 0, fontSize: 13, color: '#9c2c1a' }}><strong>Try:</strong> {w.fix_tip}</p> : null}
                   </div>
                 ))}
               </div>

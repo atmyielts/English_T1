@@ -35,14 +35,14 @@ const SKILL_TONE: Record<EnglishSkillKey, string> = {
   listening: '#0f5752',
   speaking: '#7c2d12',
   grammar: '#581c87',
-  vocabulary: '#0e4955',
+  vocabulary: '#9c2c1a',
   immersion: '#365314',
 };
 
 const CEFR_TONE: Record<string, string> = {
   A1: '#94a3b8',
   A2: '#64748b',
-  B1: '#0e4955',
+  B1: '#9c2c1a',
   B2: '#166534',
   C1: '#b08020',
   C2: '#7c2d12',
@@ -99,7 +99,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
     if (events <= 2) return '#c4d2c8';
     if (events <= 5) return '#7faa92';
     if (events <= 9) return '#3f7d5e';
-    return '#0e4955';
+    return '#9c2c1a';
   };
 
   if (!accessToken) return null;
@@ -118,12 +118,12 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
     >
       {/* Header */}
       <header>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#0e4955', margin: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#9c2c1a', margin: 0 }}>
           Ecosystem snapshot
         </p>
-        <h2 style={{ fontFamily: 'Fraunces, Outfit, serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', margin: '4px 0 6px' }}>
+        <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 26, fontWeight: 600, letterSpacing: '-0.015em', margin: '4px 0 6px' }}>
           {dashboard?.cefr?.overall
-            ? <>You're at <span style={{ color: CEFR_TONE[dashboard.cefr.overall.level] ?? '#0e4955' }}>{dashboard.cefr.overall.level}</span> overall</>
+            ? <>You're at <span style={{ color: CEFR_TONE[dashboard.cefr.overall.level] ?? '#9c2c1a' }}>{dashboard.cefr.overall.level}</span> overall</>
             : 'Your English at a glance'}
         </h2>
         <p style={{ margin: 0, color: '#7a7263', fontSize: 14 }}>
@@ -140,7 +140,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             {dashboard.cefr.estimates.map((est: CefrEstimate) => {
-              const tone = SKILL_TONE[est.skill] ?? '#0e4955';
+              const tone = SKILL_TONE[est.skill] ?? '#9c2c1a';
               return (
                 <article
                   key={est.skill}
@@ -155,7 +155,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: tone, margin: 0 }}>
                     {SKILL_LABEL[est.skill]}
                   </p>
-                  <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontWeight: 600, fontSize: 28, marginTop: 2 }}>
+                  <strong style={{ display: 'block', fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: 28, marginTop: 2 }}>
                     {est.level}
                   </strong>
                   <p style={{ fontSize: 11, color: '#7a7263', margin: '4px 0 0' }}>
@@ -178,7 +178,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
               Activity · last year
             </p>
             <p style={{ margin: 0, fontSize: 14 }}>
-              <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 20, color: '#b15a1e' }}>
+              <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 20, color: '#b15a1e' }}>
                 {dashboard.activity.streak.current_days}
               </strong>{' '}
               <span style={{ color: '#7a7263' }}>day streak · {dashboard.activity.totals.last_30_days} sessions in 30 days</span>
@@ -203,11 +203,11 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
       {/* AI coach insights */}
       {coach && (coach.summary || coach.insights.length > 0) ? (
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#0e4955', margin: '0 0 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#9c2c1a', margin: '0 0 8px' }}>
             AI coach · {coach.ai_provider}
           </p>
           {coach.summary ? (
-            <p style={{ fontFamily: 'Fraunces, serif', fontSize: 17, fontWeight: 500, lineHeight: 1.45, margin: '0 0 14px' }}>
+            <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: 17, fontWeight: 500, lineHeight: 1.45, margin: '0 0 14px' }}>
               {coach.summary}
             </p>
           ) : null}
@@ -220,7 +220,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
                     padding: 12,
                     borderRadius: 10,
                     border: '1px solid #e8e2d0',
-                    borderLeft: '3px solid #0e4955',
+                    borderLeft: '3px solid #9c2c1a',
                     background: '#fbfaf6',
                   }}
                 >
@@ -229,7 +229,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
                   {ins.action_label && ins.action_route ? (
                     <a
                       href={ins.action_route}
-                      style={{ display: 'inline-block', marginTop: 6, fontSize: 12, fontWeight: 600, color: '#0e4955' }}
+                      style={{ display: 'inline-block', marginTop: 6, fontSize: 12, fontWeight: 600, color: '#9c2c1a' }}
                     >
                       {ins.action_label} →
                     </a>
@@ -266,7 +266,7 @@ export const EcosystemSnapshot = ({ accessToken }: Props) => {
                   fontSize: 12.5,
                 }}
               >
-                <strong style={{ color: SKILL_TONE[m.service] ?? '#0e4955', marginRight: 6, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <strong style={{ color: SKILL_TONE[m.service] ?? '#9c2c1a', marginRight: 6, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   {m.service}
                 </strong>
                 {m.pattern}

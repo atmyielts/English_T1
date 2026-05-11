@@ -17,9 +17,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -29,12 +29,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -45,7 +45,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -67,7 +67,7 @@ const SKILL_TONE: Record<string, string> = {
   listening: '#0f5752',
   speaking: '#7c2d12',
   grammar: '#581c87',
-  vocabulary: '#0e4955',
+  vocabulary: '#9c2c1a',
 };
 
 const aiNote = (status: string, provider?: string, error?: string | null) => {
@@ -139,7 +139,7 @@ export const GoalTemplateCard = ({ accessToken }: Props) => {
               textAlign: 'left',
               padding: 14,
               borderRadius: 10,
-              border: goal === g.key ? '2px solid #0e4955' : '1px solid #d6cfb8',
+              border: goal === g.key ? '2px solid #9c2c1a' : '1px solid #d6cfb8',
               background: goal === g.key ? '#f3f1ea' : '#fff',
               cursor: 'pointer',
               display: 'grid',
@@ -260,7 +260,7 @@ export const GoalTemplateCard = ({ accessToken }: Props) => {
                       color: '#1a1814',
                     }}
                   >
-                    <strong style={{ color: '#0e4955' }}>{r.label}</strong>
+                    <strong style={{ color: '#9c2c1a' }}>{r.label}</strong>
                     <span style={{ fontSize: 13, color: '#6f685a' }}>{r.why}</span>
                   </a>
                 ))}
@@ -389,8 +389,8 @@ export const RubricCalibrationCard = ({ accessToken }: Props) => {
                 onClick={() => setActiveSampleIdx(idx)}
                 style={{
                   ...GHOST_BTN,
-                  border: idx === activeSampleIdx ? '2px solid #0e4955' : '1px solid #c9c0a8',
-                  background: idx === activeSampleIdx ? '#0e4955' : '#fff',
+                  border: idx === activeSampleIdx ? '2px solid #9c2c1a' : '1px solid #c9c0a8',
+                  background: idx === activeSampleIdx ? '#9c2c1a' : '#fff',
                   color: idx === activeSampleIdx ? '#fff' : '#1a1814',
                   padding: '8px 14px',
                 }}
@@ -434,7 +434,7 @@ export const RubricCalibrationCard = ({ accessToken }: Props) => {
               <div style={{ display: 'grid', gap: 10 }}>
                 {data.deltas.map((d, idx) => (
                   <div key={idx} style={{ border: '1px solid #e6dfca', borderRadius: 10, padding: 12 }}>
-                    <strong style={{ color: '#0e4955' }}>{d.from_level} → {d.to_level}</strong>
+                    <strong style={{ color: '#9c2c1a' }}>{d.from_level} → {d.to_level}</strong>
                     <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'grid', gap: 4, color: '#3d3a32', fontSize: 14 }}>
                       <li><strong>Task:</strong> {d.axes.task}</li>
                       <li><strong>Coherence:</strong> {d.axes.coherence}</li>
@@ -589,7 +589,7 @@ export const ThemedWeekCard = ({ accessToken }: Props) => {
                   >
                     <div>
                       <div style={{ fontWeight: 700, color: '#1a1814' }}>{d.day_label}</div>
-                      <div style={{ fontSize: 12, textTransform: 'uppercase', color: SKILL_TONE[d.skill] ?? '#0e4955', fontWeight: 700, letterSpacing: '0.1em' }}>
+                      <div style={{ fontSize: 12, textTransform: 'uppercase', color: SKILL_TONE[d.skill] ?? '#9c2c1a', fontWeight: 700, letterSpacing: '0.1em' }}>
                         {d.skill}
                       </div>
                     </div>
@@ -611,7 +611,7 @@ export const ThemedWeekCard = ({ accessToken }: Props) => {
                       <button
                         type="button"
                         onClick={() => setDone((prev) => ({ ...prev, [idx]: !prev[idx] }))}
-                        style={{ ...GHOST_BTN, padding: '6px 12px', fontSize: 13, background: isDone ? '#0e4955' : '#fff', color: isDone ? '#fff' : '#1a1814' }}
+                        style={{ ...GHOST_BTN, padding: '6px 12px', fontSize: 13, background: isDone ? '#9c2c1a' : '#fff', color: isDone ? '#fff' : '#1a1814' }}
                       >
                         {isDone ? 'Done' : 'Mark'}
                       </button>

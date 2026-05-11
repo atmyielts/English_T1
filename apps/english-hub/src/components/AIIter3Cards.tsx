@@ -16,9 +16,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -28,12 +28,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -44,7 +44,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -54,7 +54,7 @@ const CEFR_LEVELS: CefrTargetLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const CEFR_TONE: Record<string, string> = {
   A1: '#94a3b8',
   A2: '#64748b',
-  B1: '#0e4955',
+  B1: '#9c2c1a',
   B2: '#166534',
   C1: '#b08020',
   C2: '#7c2d12',
@@ -64,7 +64,7 @@ const REGISTER_TONE: Record<string, string> = {
   formal: '#1f3a8a',
   academic: '#1f3a8a',
   literary: '#7c2d12',
-  neutral: '#0e4955',
+  neutral: '#9c2c1a',
   conversational: '#0f5752',
   informal: '#b08020',
 };
@@ -169,7 +169,7 @@ export const EssayGraderCard = ({ accessToken }: Props) => {
       {data ? (
         <div style={{ display: 'grid', gap: 14 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'baseline' }}>
-            <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 32, color: CEFR_TONE[String(data.overall_level)] ?? '#0e4955' }}>
+            <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 32, color: CEFR_TONE[String(data.overall_level)] ?? '#9c2c1a' }}>
               {data.overall_level}
             </strong>
             <span style={{ color: '#7a7263', fontSize: 14 }}>
@@ -179,7 +179,7 @@ export const EssayGraderCard = ({ accessToken }: Props) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
             {(['task', 'coherence', 'range', 'accuracy'] as const).map((key) => {
               const c = data.criteria[key];
-              const tone = CEFR_TONE[c?.level ?? ''] ?? '#0e4955';
+              const tone = CEFR_TONE[c?.level ?? ''] ?? '#9c2c1a';
               return (
                 <article key={key} style={{ padding: 12, background: '#fbfaf6', border: '1px solid #e8e2d0', borderLeft: `3px solid ${tone}`, borderRadius: 8 }}>
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: tone, margin: 0 }}>
@@ -207,7 +207,7 @@ export const EssayGraderCard = ({ accessToken }: Props) => {
             </div>
           ) : null}
           {data.actionable_next_step ? (
-            <div style={{ padding: 12, background: 'color-mix(in srgb, #0e4955 6%, white)', borderLeft: '3px solid #0e4955', borderRadius: 8 }}>
+            <div style={{ padding: 12, background: 'color-mix(in srgb, #9c2c1a 6%, white)', borderLeft: '3px solid #9c2c1a', borderRadius: 8 }}>
               <p style={EYEBROW}>Next step</p>
               <p style={{ margin: '4px 0 0', fontSize: 14, lineHeight: 1.55 }}>{data.actionable_next_step}</p>
             </div>
@@ -285,7 +285,7 @@ export const TranslationCompareCard = ({ accessToken }: Props) => {
             Detected source: <strong>{data.detected_language}</strong>
           </p>
           {data.translations.map((t, i) => {
-            const tone = REGISTER_TONE[t.register.toLowerCase()] ?? '#0e4955';
+            const tone = REGISTER_TONE[t.register.toLowerCase()] ?? '#9c2c1a';
             return (
               <article key={i} style={{ padding: 14, background: '#fbfaf6', border: '1px solid #e8e2d0', borderLeft: `3px solid ${tone}`, borderRadius: 8 }}>
                 <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: tone, margin: 0, fontWeight: 700 }}>
@@ -392,10 +392,10 @@ export const IdiomExplorerCard = ({ accessToken }: Props) => {
               <p style={EYEBROW}>Idioms</p>
               <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 10 }}>
                 {data.idioms.map((it, i) => {
-                  const tone = REGISTER_TONE[it.register.toLowerCase()] ?? '#0e4955';
+                  const tone = REGISTER_TONE[it.register.toLowerCase()] ?? '#9c2c1a';
                   return (
                     <li key={i} style={{ padding: 12, background: '#fbfaf6', border: '1px solid #e8e2d0', borderLeft: `3px solid ${tone}`, borderRadius: 8 }}>
-                      <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 16 }}>{it.phrase}</strong>
+                      <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 16 }}>{it.phrase}</strong>
                       <p style={{ margin: '4px 0 4px', fontSize: 13.5 }}>{it.meaning}</p>
                       <p style={{ margin: 0, fontSize: 12.5, color: '#7a7263', fontStyle: 'italic' }}>
                         <span style={{ color: tone, fontWeight: 700, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginRight: 6 }}>

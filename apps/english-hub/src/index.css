@@ -904,3 +904,329 @@ a {
     min-height: 0;
   }
 }
+
+/* ============ AI Studio shared styles ============ */
+/* Used by every AI feature card so they pick up the site's terracotta /
+   cream / Outfit / Manrope language instead of the iter-by-iter inline
+   styles each file used to ship with. */
+
+.studio-card {
+  padding: clamp(18px, 2.4vw, 28px);
+  display: grid;
+  gap: 14px;
+}
+
+.studio-card + .studio-card {
+  margin-top: 14px;
+}
+
+.studio-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.studio-title {
+  margin: 4px 0 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.studio-subtitle {
+  margin: 0;
+  color: var(--ink-700);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.studio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.studio-field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-500);
+  font-weight: 600;
+}
+
+.studio-input,
+.studio-textarea,
+.studio-select {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--ink-900);
+}
+
+.studio-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.studio-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.studio-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink-900);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studio-pill.is-active {
+  background: rgba(196, 58, 34, 0.12);
+  border-color: rgba(156, 44, 26, 0.4);
+  color: var(--accent-strong);
+}
+
+.studio-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid var(--line);
+  color: var(--ink-700);
+  font-size: 12px;
+}
+
+.studio-callout {
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.studio-callout-tone-info {
+  background: rgba(49, 104, 177, 0.07);
+  border-color: rgba(49, 104, 177, 0.18);
+}
+
+.studio-callout-tone-warn {
+  background: rgba(196, 58, 34, 0.08);
+  border-color: rgba(196, 58, 34, 0.22);
+}
+
+.studio-callout-tone-ok {
+  background: rgba(66, 116, 86, 0.08);
+  border-color: rgba(66, 116, 86, 0.22);
+}
+
+.studio-error {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 13px;
+}
+
+.studio-muted {
+  color: var(--ink-500);
+}
+
+.studio-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.studio-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.studio-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  color: var(--ink-700);
+  line-height: 1.5;
+}
+
+.studio-transcript {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  display: grid;
+  gap: 10px;
+  min-height: 200px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.studio-msg {
+  padding: 10px 14px;
+  border-radius: 14px;
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.studio-msg-user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #c94329 0%, #a62f1d 100%);
+  color: #fff;
+}
+
+.studio-msg-assistant {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  color: var(--ink-900);
+}
+
+/* Studio page tabs and layout */
+
+.studio-page {
+  display: grid;
+  gap: 14px;
+}
+
+.studio-hero {
+  padding: clamp(20px, 3vw, 30px);
+  display: grid;
+  gap: 10px;
+}
+
+.studio-tabs {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.studio-tab {
+  flex: 1 1 140px;
+  min-height: 46px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-700);
+  font: inherit;
+  font-weight: 700;
+  padding: 8px 14px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.studio-tab small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-500);
+  letter-spacing: 0.06em;
+}
+
+.studio-tab.is-active {
+  background: rgba(196, 58, 34, 0.1);
+  border-color: rgba(156, 44, 26, 0.32);
+  color: var(--accent-strong);
+}
+
+.studio-tab.is-active small {
+  color: var(--accent-strong);
+}
+
+.studio-section {
+  display: grid;
+  gap: 14px;
+}
+
+/* Home page lead-in card pointing to /studio */
+
+.studio-home-lead {
+  padding: clamp(20px, 2.6vw, 28px);
+  display: grid;
+  gap: 10px;
+}
+
+.studio-home-lead h2 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.08;
+}
+
+.studio-home-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Voice-first floating mic — terracotta to match the brand */
+
+.voice-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 7000;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: #fff;
+  background: linear-gradient(135deg, #c94329 0%, #a62f1d 100%);
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(156, 44, 26, 0.35);
+}
+
+.voice-fab-dormant {
+  width: 46px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--accent-strong);
+  border: 1px solid var(--line);
+  font-size: 18px;
+  box-shadow: 0 8px 18px rgba(31, 21, 14, 0.12);
+}
+
+.voice-fab-active {
+  width: 60px;
+  height: 60px;
+}
+
+.voice-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 7100;
+  width: min(380px, calc(100vw - 36px));
+  border: 1px solid var(--line);
+  background: var(--paper);
+  backdrop-filter: blur(8px);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(31, 21, 14, 0.18);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+/* Offline banner already aligns; just make sure typography matches. */
+@media (max-width: 720px) {
+  .studio-grid-2,
+  .studio-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
