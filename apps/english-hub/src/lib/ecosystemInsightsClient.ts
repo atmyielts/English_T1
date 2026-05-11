@@ -438,3 +438,115 @@ export const generateThemedWeek = (
   body: { theme?: string; minutes_per_day?: number } = {},
 ): Promise<ThemedWeekResponse> =>
   callEdgePost<ThemedWeekResponse>('/hub/ai/themed-week', accessToken, body);
+
+// === Iter 6: real content recommendation, shadowing prep, adaptive placement test ===
+
+export type ContentItemType = 'book' | 'article' | 'podcast' | 'youtube' | 'film' | 'newsletter' | 'tv_show';
+
+export interface ContentRecommendItem {
+  type: ContentItemType | string;
+  title: string;
+  creator: string;
+  why_for_you: string;
+  where_to_find: string;
+  difficulty_note: string;
+  first_step: string;
+}
+
+export interface ContentRecommendResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  cefr_level: CefrLevel;
+  interests: string[];
+  session_minutes: number;
+  items: ContentRecommendItem[];
+  immersion_tip: string;
+  generated_at?: string;
+}
+
+export const recommendContent = (
+  accessToken: string,
+  body: { interests?: string[]; session_minutes?: number; formats?: string[] } = {},
+): Promise<ContentRecommendResponse> =>
+  callEdgePost<ContentRecommendResponse>('/hub/ai/content-recommend', accessToken, body);
+
+export interface ShadowingChunk {
+  index: number;
+  text: string;
+  focus_label: string;
+  focus_explanation: string;
+  watch_for: string[];
+}
+
+export interface ShadowingPrepResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  target_level: CefrTargetLevel;
+  accent: string;
+  source_text_length: number;
+  warm_up: string;
+  chunks: ShadowingChunk[];
+  global_tips: string[];
+  generated_at?: string;
+}
+
+export const prepareShadowing = (
+  accessToken: string,
+  body: { source_text: string; target_level?: CefrTargetLevel; accent?: string },
+): Promise<ShadowingPrepResponse> =>
+  callEdgePost<ShadowingPrepResponse>('/hub/ai/shadowing-prep', accessToken, body);
+
+export interface PlacementQuestion {
+  skill: 'reading' | 'writing' | 'listening' | 'grammar';
+  prompt: string;
+  passage: string;
+  choices: string[];
+  expected_answer_pattern: string;
+}
+
+export interface PlacementHistoryEntry {
+  question: PlacementQuestion;
+  answer: string;
+}
+
+export interface PlacementTestRoundResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  finalized: false;
+  round: number;
+  target_level_guess: string;
+  rationale: string;
+  questions: PlacementQuestion[];
+  generated_at?: string;
+}
+
+export interface PlacementTestFinalResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  finalized: true;
+  overall_level: CefrLevel | string;
+  per_skill: Record<string, { level: string; evidence: string }>;
+  narrative: string;
+  next_steps: string[];
+  generated_at?: string;
+}
+
+export type PlacementTestResponse = PlacementTestRoundResponse | PlacementTestFinalResponse;
+
+export const stepPlacementTest = (
+  accessToken: string,
+  body: { round?: number; history?: PlacementHistoryEntry[]; finalize?: boolean } = {},
+): Promise<PlacementTestResponse> =>
+  callEdgePost<PlacementTestResponse>('/hub/ai/placement-test', accessToken, body);

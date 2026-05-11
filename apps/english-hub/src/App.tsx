@@ -11,6 +11,7 @@ import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCa
 import { EssayGraderCard, IdiomExplorerCard, TranslationCompareCard } from './components/AIIter3Cards';
 import { CulturalNotesCard, DailyChallengeCard, DictationDrillCard } from './components/AIIter4Cards';
 import { GoalTemplateCard, RubricCalibrationCard, ThemedWeekCard } from './components/AIIter5Cards';
+import { ContentRecommendCard, PlacementTestCard, ShadowingPracticeCard } from './components/AIIter6Cards';
 
 type Service = {
   key: string;
@@ -841,9 +842,12 @@ const App = () => {
                     <DailyChallengeCard accessToken={session.access_token} />
                     <DictationDrillCard accessToken={session.access_token} />
                     <CulturalNotesCard accessToken={session.access_token} />
+                    <PlacementTestCard accessToken={session.access_token} />
                     <GoalTemplateCard accessToken={session.access_token} />
                     <ThemedWeekCard accessToken={session.access_token} />
                     <RubricCalibrationCard accessToken={session.access_token} />
+                    <ShadowingPracticeCard accessToken={session.access_token} />
+                    <ContentRecommendCard accessToken={session.access_token} />
                   </>
                 ) : null}
 
