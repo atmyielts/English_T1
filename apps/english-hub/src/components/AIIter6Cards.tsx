@@ -19,9 +19,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -31,12 +31,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -47,7 +47,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -70,7 +70,7 @@ const CONTENT_TYPE_TONE: Record<string, string> = {
   youtube: '#9b1c1c',
   film: '#581c87',
   newsletter: '#8a5a1b',
-  tv_show: '#0e4955',
+  tv_show: '#9c2c1a',
 };
 
 const CONTENT_TYPE_LABEL: Record<string, string> = {
@@ -161,9 +161,9 @@ export const ContentRecommendCard = ({ accessToken }: Props) => {
               onClick={() => toggleFormat(f)}
               style={{
                 padding: '6px 12px',
-                border: formats.includes(f) ? '2px solid #0e4955' : '1px solid #d6cfb8',
+                border: formats.includes(f) ? '2px solid #9c2c1a' : '1px solid #d6cfb8',
                 borderRadius: 999,
-                background: formats.includes(f) ? '#0e4955' : '#fff',
+                background: formats.includes(f) ? '#9c2c1a' : '#fff',
                 color: formats.includes(f) ? '#fff' : '#1a1814',
                 fontSize: 13,
                 cursor: 'pointer',
@@ -207,7 +207,7 @@ export const ContentRecommendCard = ({ accessToken }: Props) => {
                         textTransform: 'uppercase',
                         fontWeight: 700,
                         letterSpacing: '0.1em',
-                        color: CONTENT_TYPE_TONE[item.type] ?? '#0e4955',
+                        color: CONTENT_TYPE_TONE[item.type] ?? '#9c2c1a',
                       }}
                     >
                       {CONTENT_TYPE_LABEL[item.type] ?? item.type}
@@ -227,7 +227,7 @@ export const ContentRecommendCard = ({ accessToken }: Props) => {
                     </p>
                   ) : null}
                   {item.first_step ? (
-                    <p style={{ margin: 0, fontSize: 13, color: '#0e4955' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#9c2c1a' }}>
                       <strong>5-min first step:</strong> {item.first_step}
                     </p>
                   ) : null}
@@ -408,9 +408,9 @@ export const ShadowingPracticeCard = ({ accessToken }: Props) => {
                 onClick={() => setActiveIdx(idx)}
                 style={{
                   padding: '6px 10px',
-                  border: idx === activeIdx ? '2px solid #0e4955' : '1px solid #d6cfb8',
+                  border: idx === activeIdx ? '2px solid #9c2c1a' : '1px solid #d6cfb8',
                   borderRadius: 6,
-                  background: completed[idx] ? '#0e4955' : idx === activeIdx ? '#fff' : '#faf7ee',
+                  background: completed[idx] ? '#9c2c1a' : idx === activeIdx ? '#fff' : '#faf7ee',
                   color: completed[idx] ? '#fff' : '#1a1814',
                   fontSize: 13,
                   fontWeight: 600,
@@ -432,7 +432,7 @@ export const ShadowingPracticeCard = ({ accessToken }: Props) => {
                     textTransform: 'uppercase',
                     fontWeight: 700,
                     letterSpacing: '0.12em',
-                    color: '#0e4955',
+                    color: '#9c2c1a',
                     background: '#e2eef0',
                     padding: '3px 8px',
                     borderRadius: 999,
@@ -464,7 +464,7 @@ export const ShadowingPracticeCard = ({ accessToken }: Props) => {
                   }}
                   style={{
                     ...GHOST_BTN,
-                    background: completed[activeIdx] ? '#0e4955' : '#fff',
+                    background: completed[activeIdx] ? '#9c2c1a' : '#fff',
                     color: completed[activeIdx] ? '#fff' : '#1a1814',
                   }}
                 >
@@ -708,7 +708,7 @@ export const PlacementTestCard = ({ accessToken }: Props) => {
         <div style={{ display: 'grid', gap: 14 }}>
           <div
             style={{
-              background: '#0e4955',
+              background: '#9c2c1a',
               color: '#fff',
               padding: 18,
               borderRadius: 12,
@@ -716,8 +716,8 @@ export const PlacementTestCard = ({ accessToken }: Props) => {
               gap: 6,
             }}
           >
-            <p style={{ ...EYEBROW, color: '#cfe7ec', margin: 0 }}>Your CEFR level</p>
-            <h4 style={{ margin: 0, fontSize: 36, fontWeight: 700, fontFamily: 'Fraunces, Outfit, serif' }}>{final.overall_level}</h4>
+            <p style={{ ...EYEBROW, color: '#fae0db', margin: 0 }}>Your CEFR level</p>
+            <h4 style={{ margin: 0, fontSize: 36, fontWeight: 700, fontFamily: 'Outfit, sans-serif' }}>{final.overall_level}</h4>
             {final.narrative ? <p style={{ margin: 0, opacity: 0.9 }}>{final.narrative}</p> : null}
           </div>
 
@@ -727,7 +727,7 @@ export const PlacementTestCard = ({ accessToken }: Props) => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
                 {Object.entries(final.per_skill).map(([skill, row]) => (
                   <div key={skill} style={{ border: '1px solid #e6dfca', borderRadius: 10, padding: 10, background: '#faf7ee' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0e4955' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9c2c1a' }}>
                       {skill}
                     </div>
                     <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{row.level}</div>

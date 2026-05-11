@@ -13,9 +13,9 @@ interface Props {
 const cardShell: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -25,12 +25,12 @@ const eyebrow: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const title: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -89,8 +89,8 @@ export const VocabInContextCard = ({ accessToken }: Props) => {
               key={i}
               title={data.translations[part.toLowerCase()] ?? ''}
               style={{
-                background: 'color-mix(in srgb, #0e4955 12%, transparent)',
-                borderBottom: '2px solid #0e4955',
+                background: 'color-mix(in srgb, #9c2c1a 12%, transparent)',
+                borderBottom: '2px solid #9c2c1a',
                 padding: '0 2px',
                 borderRadius: 2,
                 cursor: 'help',
@@ -132,7 +132,7 @@ export const VocabInContextCard = ({ accessToken }: Props) => {
             padding: '10px 18px',
             border: 'none',
             borderRadius: 8,
-            background: '#0e4955',
+            background: '#9c2c1a',
             color: 'white',
             fontWeight: 600,
             cursor: busy ? 'wait' : 'pointer',
@@ -161,7 +161,7 @@ export const VocabInContextCard = ({ accessToken }: Props) => {
 // === Tier B #14 — Grammar pattern decoder ===
 
 const ROLE_TONES: Record<string, string> = {
-  main: '#0e4955',
+  main: '#9c2c1a',
   subordinate: '#8a5a1b',
   relative: '#7c2d12',
   noun: '#1f3a8a',
@@ -222,7 +222,7 @@ export const GrammarDecoderCard = ({ accessToken }: Props) => {
               padding: '10px 18px',
               border: 'none',
               borderRadius: 8,
-              background: '#0e4955',
+              background: '#9c2c1a',
               color: 'white',
               fontWeight: 600,
               cursor: busy ? 'wait' : 'pointer',
@@ -259,7 +259,7 @@ export const GrammarDecoderCard = ({ accessToken }: Props) => {
               </p>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
                 {data.clauses.map((c, i) => {
-                  const tone = ROLE_TONES[c.role] ?? '#0e4955';
+                  const tone = ROLE_TONES[c.role] ?? '#9c2c1a';
                   return (
                     <li
                       key={i}

@@ -198,7 +198,7 @@ export const VoiceFirstFab = ({ accessToken }: Props) => {
           borderRadius: '50%',
           background: '#ffffff',
           border: '1px solid #d6cfb8',
-          color: '#0e4955',
+          color: '#9c2c1a',
           fontSize: 20,
           cursor: 'pointer',
           boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
@@ -223,7 +223,7 @@ export const VoiceFirstFab = ({ accessToken }: Props) => {
           width: 64,
           height: 64,
           borderRadius: '50%',
-          background: recording ? '#9b1c1c' : '#0e4955',
+          background: recording ? '#9b1c1c' : '#9c2c1a',
           border: 'none',
           color: 'white',
           fontSize: 28,
@@ -256,7 +256,7 @@ export const VoiceFirstFab = ({ accessToken }: Props) => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <strong style={{ fontFamily: 'Fraunces, Outfit, serif', fontSize: 17 }}>Voice tutor</strong>
+        <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 17 }}>Voice tutor</strong>
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             type="button"
@@ -306,7 +306,7 @@ export const VoiceFirstFab = ({ accessToken }: Props) => {
             key={idx}
             style={{
               alignSelf: t.role === 'user' ? 'flex-end' : 'flex-start',
-              background: t.role === 'user' ? '#0e4955' : '#fff',
+              background: t.role === 'user' ? '#9c2c1a' : '#fff',
               color: t.role === 'user' ? '#fff' : '#1a1814',
               border: t.role === 'user' ? 'none' : '1px solid #e6dfca',
               padding: '8px 10px',
@@ -346,7 +346,7 @@ export const VoiceFirstFab = ({ accessToken }: Props) => {
               padding: '10px 14px',
               border: 'none',
               borderRadius: 8,
-              background: '#0e4955',
+              background: '#9c2c1a',
               color: '#fff',
               fontWeight: 600,
               cursor: unsupported || busy || !accessToken ? 'not-allowed' : 'pointer',

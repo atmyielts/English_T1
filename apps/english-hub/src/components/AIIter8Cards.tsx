@@ -13,9 +13,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -25,12 +25,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -41,7 +41,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -300,9 +300,9 @@ export const VoiceConversationCard = ({ accessToken }: Props) => {
             onClick={() => swapScenario(s.id)}
             style={{
               padding: '6px 12px',
-              border: scenarioId === s.id ? '2px solid #0e4955' : '1px solid #d6cfb8',
+              border: scenarioId === s.id ? '2px solid #9c2c1a' : '1px solid #d6cfb8',
               borderRadius: 999,
-              background: scenarioId === s.id ? '#0e4955' : '#fff',
+              background: scenarioId === s.id ? '#9c2c1a' : '#fff',
               color: scenarioId === s.id ? '#fff' : '#1a1814',
               fontSize: 13,
               cursor: 'pointer',
@@ -355,7 +355,7 @@ export const VoiceConversationCard = ({ accessToken }: Props) => {
             key={idx}
             style={{
               alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-              background: m.role === 'user' ? '#0e4955' : '#fff',
+              background: m.role === 'user' ? '#9c2c1a' : '#fff',
               color: m.role === 'user' ? '#fff' : '#1a1814',
               border: m.role === 'user' ? 'none' : '1px solid #e6dfca',
               padding: '10px 14px',

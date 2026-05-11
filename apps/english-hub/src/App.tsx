@@ -7,15 +7,9 @@ import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/
 import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
-import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCards';
-import { EssayGraderCard, IdiomExplorerCard, TranslationCompareCard } from './components/AIIter3Cards';
-import { CulturalNotesCard, DailyChallengeCard, DictationDrillCard } from './components/AIIter4Cards';
-import { GoalTemplateCard, RubricCalibrationCard, ThemedWeekCard } from './components/AIIter5Cards';
-import { ContentRecommendCard, PlacementTestCard, ShadowingPracticeCard } from './components/AIIter6Cards';
-import { PronunciationDrillCard, TutorCard } from './components/AIIter7Cards';
-import { VoiceConversationCard } from './components/AIIter8Cards';
 import { OfflineBanner } from './components/OfflineBanner';
 import { VoiceFirstFab } from './components/VoiceFirstFab';
+import { StudioPage } from './pages/StudioPage';
 
 type Service = {
   key: string;
@@ -841,23 +835,20 @@ const App = () => {
                 {session ? (
                   <>
                     <EcosystemSnapshot accessToken={session.access_token} />
-                    <VocabInContextCard accessToken={session.access_token} />
-                    <GrammarDecoderCard accessToken={session.access_token} />
-                    <EssayGraderCard accessToken={session.access_token} />
-                    <TranslationCompareCard accessToken={session.access_token} />
-                    <IdiomExplorerCard accessToken={session.access_token} />
-                    <DailyChallengeCard accessToken={session.access_token} />
-                    <DictationDrillCard accessToken={session.access_token} />
-                    <CulturalNotesCard accessToken={session.access_token} />
-                    <TutorCard accessToken={session.access_token} />
-                    <VoiceConversationCard accessToken={session.access_token} />
-                    <PlacementTestCard accessToken={session.access_token} />
-                    <GoalTemplateCard accessToken={session.access_token} />
-                    <ThemedWeekCard accessToken={session.access_token} />
-                    <RubricCalibrationCard accessToken={session.access_token} />
-                    <PronunciationDrillCard accessToken={session.access_token} />
-                    <ShadowingPracticeCard accessToken={session.access_token} />
-                    <ContentRecommendCard accessToken={session.access_token} />
+                    <section className="frame studio-home-lead">
+                      <p className="kicker">AI Studio</p>
+                      <h2>Eighteen AI tools, organised by what you're trying to do.</h2>
+                      <p style={{ margin: 0, color: 'var(--ink-700)', maxWidth: '60ch', lineHeight: 1.55 }}>
+                        Tutor, diagnose, plan, practice, discover. Pick the phase you're in and the studio
+                        surfaces only the tools that belong there.
+                      </p>
+                      <div className="studio-home-tools">
+                        <Link className="btn btn-solid" to="/studio#tutor">Open AI Studio</Link>
+                        <Link className="btn btn-ghost" to="/studio#diagnose">Find my level</Link>
+                        <Link className="btn btn-ghost" to="/studio#plan">Plan my week</Link>
+                        <Link className="btn btn-ghost" to="/studio#practice">Practice now</Link>
+                      </div>
+                    </section>
                   </>
                 ) : null}
 
@@ -980,6 +971,7 @@ const App = () => {
     { label: 'Weaknesses', href: '/weaknesses', exact: true },
     { label: 'Review', href: '/review', exact: true },
     { label: 'Week', href: '/week', exact: true },
+    { label: 'AI Studio', href: '/studio', exact: false },
   ];
 
   return (
@@ -1658,6 +1650,8 @@ const App = () => {
               </>
             }
           />
+
+          <Route path="/studio" element={<StudioPage accessToken={session.access_token} />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

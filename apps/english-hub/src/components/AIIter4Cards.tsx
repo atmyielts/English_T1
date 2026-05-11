@@ -17,9 +17,9 @@ interface Props {
 const CARD: React.CSSProperties = {
   margin: '24px 0',
   padding: 28,
-  borderRadius: 16,
-  background: '#ffffff',
-  border: '1px solid #e8e2d0',
+  borderRadius: 24,
+  background: 'rgba(253, 248, 241, 0.92)',
+  border: '1px solid rgba(52, 38, 27, 0.2)',
   display: 'grid',
   gap: 16,
 };
@@ -29,12 +29,12 @@ const EYEBROW: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.18em',
   textTransform: 'uppercase',
-  color: '#0e4955',
+  color: '#9c2c1a',
   margin: 0,
 };
 
 const TITLE: React.CSSProperties = {
-  fontFamily: 'Fraunces, Outfit, serif',
+  fontFamily: 'Outfit, sans-serif',
   fontSize: 22,
   fontWeight: 600,
   letterSpacing: '-0.015em',
@@ -45,7 +45,7 @@ const SOLID_BTN: React.CSSProperties = {
   padding: '10px 18px',
   border: 'none',
   borderRadius: 8,
-  background: '#0e4955',
+  background: '#9c2c1a',
   color: 'white',
   fontWeight: 600,
 };
@@ -67,7 +67,7 @@ const SKILL_TONE: Record<string, string> = {
   listening: '#0f5752',
   speaking: '#7c2d12',
   grammar: '#581c87',
-  vocabulary: '#0e4955',
+  vocabulary: '#9c2c1a',
 };
 
 const aiNote = (status: string, provider?: string, error?: string | null) => {
@@ -224,7 +224,7 @@ export const DictationDrillCard = ({ accessToken }: Props) => {
                   padding: '6px 10px',
                   border: '1px solid #e8e2d0',
                   borderRadius: 6,
-                  background: level === lvl ? '#0e4955' : '#fbfaf6',
+                  background: level === lvl ? '#9c2c1a' : '#fbfaf6',
                   color: level === lvl ? 'white' : '#1a1814',
                   fontWeight: 600,
                   fontSize: 13,
@@ -276,7 +276,7 @@ export const DictationDrillCard = ({ accessToken }: Props) => {
           {score && typed.trim().length > 0 ? (
             <div>
               <p style={{ margin: 0, fontSize: 13, color: '#7a7263' }}>
-                <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 18, color: score.matched / Math.max(1, score.total) > 0.85 ? '#166534' : '#b08020' }}>
+                <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, color: score.matched / Math.max(1, score.total) > 0.85 ? '#166534' : '#b08020' }}>
                   {score.matched} / {score.total}
                 </strong>
                 {' '} words matched
@@ -397,7 +397,7 @@ export const DailyChallengeCard = ({ accessToken }: Props) => {
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#7a7263', margin: '0 0 6px' }}>Time today</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input type="range" min={10} max={120} step={5} value={budget} onChange={(e) => setBudget(Number(e.target.value))} />
-            <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 20, minWidth: 60 }}>{budget} min</strong>
+            <strong style={{ fontFamily: 'Outfit, sans-serif', fontSize: 20, minWidth: 60 }}>{budget} min</strong>
           </div>
         </div>
         <button type="button" onClick={() => void generate()} disabled={busy} style={SOLID_BTN}>
@@ -407,9 +407,9 @@ export const DailyChallengeCard = ({ accessToken }: Props) => {
       {error ? <p style={{ color: '#9b2c2c', margin: 0 }}>{error}</p> : null}
       {data ? (
         <div style={{ display: 'grid', gap: 14 }}>
-          <div style={{ padding: 14, background: 'color-mix(in srgb, #0e4955 5%, white)', borderLeft: '3px solid #0e4955', borderRadius: 8 }}>
+          <div style={{ padding: 14, background: 'color-mix(in srgb, #9c2c1a 5%, white)', borderLeft: '3px solid #9c2c1a', borderRadius: 8 }}>
             <p style={{ ...EYEBROW, margin: 0 }}>Theme — {data.cefr_level} · {data.minutes_budget} min</p>
-            <h3 style={{ fontFamily: 'Fraunces, serif', fontSize: 18, margin: '4px 0 4px' }}>{data.theme}</h3>
+            <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, margin: '4px 0 4px' }}>{data.theme}</h3>
             <p style={{ margin: 0, fontSize: 13.5, color: '#3b352a' }}>{data.why_this_theme}</p>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -420,7 +420,7 @@ export const DailyChallengeCard = ({ accessToken }: Props) => {
           </div>
           <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 10 }}>
             {data.tasks.map((task: DailyChallengeTask, i) => {
-              const tone = SKILL_TONE[task.skill] ?? '#0e4955';
+              const tone = SKILL_TONE[task.skill] ?? '#9c2c1a';
               const isDone = done[i];
               return (
                 <li
@@ -562,7 +562,7 @@ export const CulturalNotesCard = ({ accessToken }: Props) => {
       {data ? (
         <div style={{ display: 'grid', gap: 14 }}>
           {renderList('Cultural references', data.cultural_references, '#7c2d12')}
-          {renderList('Register observations', data.register_observations, '#0e4955')}
+          {renderList('Register observations', data.register_observations, '#9c2c1a')}
           {renderList('Regional variants', data.regional_variants, '#1f3a8a')}
           {renderList('Tone pitfalls', data.tone_pitfalls, '#b08020')}
           {data.cultural_references.length === 0 &&
