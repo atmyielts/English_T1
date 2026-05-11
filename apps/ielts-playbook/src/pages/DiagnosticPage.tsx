@@ -91,18 +91,29 @@ export const DiagnosticPage: React.FC = () => {
     if (!accessToken) return;
     let active = true;
     setLoading(true);
-    playbookRecommendationGenerate(accessToken, {})
-      .then((data) => {
-        if (!active) return;
-        setPayload(data.recommendation ?? null);
-      })
-      .catch((err: Error) => {
-        if (!active) return;
-        setError(err.message);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    setSynthesizing(true);
+    // Fire the rule-based recommendation and the AI synthesis in parallel —
+    // each takes ~1-2s on its own; serialising them made the page feel slow.
+    // Auto-running synthesis also removes a click and lets the user see real
+    // analysis straight away instead of an empty "Generate" panel.
+    Promise.allSettled([
+      playbookRecommendationGenerate(accessToken, {}),
+      playbookDiagnosticSynthesize(accessToken),
+    ]).then(([recRes, synthRes]) => {
+      if (!active) return;
+      if (recRes.status === 'fulfilled') {
+        setPayload(recRes.value.recommendation ?? null);
+      } else {
+        setError(recRes.reason instanceof Error ? recRes.reason.message : 'Could not load recommendation');
+      }
+      if (synthRes.status === 'fulfilled') {
+        setSynthesis(synthRes.value);
+      } else {
+        setSynthError(synthRes.reason instanceof Error ? synthRes.reason.message : 'Could not generate synthesis');
+      }
+      setLoading(false);
+      setSynthesizing(false);
+    });
     return () => {
       active = false;
     };
@@ -208,6 +219,13 @@ export const DiagnosticPage: React.FC = () => {
         </div>
 
         {synthError ? <p style={{ color: '#9b2c2c', margin: '10px 0 0', fontSize: 13.5 }}>{synthError}</p> : null}
+
+        {synthesizing && !synthesis ? (
+          <div style={{ marginTop: 16, padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, color: '#6c4ab8' }}>
+            <LoaderCircle size={18} className="spin" />
+            <span style={{ fontSize: 14 }}>Reading your profile, probe, and practice signals…</span>
+          </div>
+        ) : null}
 
         {synthesis ? (
           <div style={{ marginTop: 16, display: 'grid', gap: 14 }}>

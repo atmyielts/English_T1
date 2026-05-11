@@ -171,7 +171,20 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/profile") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
-      return json(200, { profile: await loadProfile(sb, scope, auth!.userId) });
+      // Short-cache so the onboarding wizard's repeated reads (when navigating
+      // between stages) don't all re-hit the database. Browser cache only —
+      // any PATCH on /profile invalidates by force-reload from the client.
+      return new Response(
+        JSON.stringify({ profile: await loadProfile(sb, scope, auth!.userId) }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "private, max-age=15",
+            ...corsHeaders,
+          },
+        },
+      );
     }
 
     if (req.method === "PATCH" && route === "/profile") {
@@ -982,6 +995,40 @@ serve(async (req) => {
         feasibility: "unknown",
       };
 
+      // Restructure the payload into clearly-labelled buckets so the model
+      // doesn't conflate self-assessment numbers (the student's perception of
+      // their CURRENT band per skill) with the target band. We hit this when
+      // the prompt fused them under "profile/metadata" and AI invented
+      // "target section bands all 9" out of self-assessment ratings.
+      const meta = (profile.metadata && typeof profile.metadata === "object" && !Array.isArray(profile.metadata))
+        ? profile.metadata as Record<string, unknown>
+        : {};
+      const goalBlock = {
+        target_overall_band: profile.target_overall_band,
+        exam_date: profile.deadline_date,
+        purpose: profile.purpose,
+        destination_country: (profile as Record<string, unknown>).destination_country_code ?? null,
+        delivery_mode: profile.preferred_delivery_mode,
+        provider: profile.provider_key,
+      };
+      const currentStateBlock = {
+        self_reported_current_band_overall: profile.current_band_or_estimate,
+        self_assessment_per_skill_NOT_TARGET: meta.self_assessment ?? null,
+        ielts_history: meta.ielts_history ?? null,
+        weakest_skill_user_reported: profile.weakest_skill,
+        latest_ai_probe: latestProbe,
+        practice_mastery_top_signals: practiceMastery,
+      };
+      const constraintsBlock = {
+        weekly_hours_available: (meta.constraints && typeof meta.constraints === "object")
+          ? (meta.constraints as Record<string, unknown>).hoursPerWeek ?? null
+          : null,
+        days_per_week: (meta.constraints && typeof meta.constraints === "object")
+          ? (meta.constraints as Record<string, unknown>).daysPerWeek ?? null
+          : null,
+        learner_style: meta.style ?? null,
+      };
+
       const { data: synth, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{
         narrative?: unknown;
         section_priority?: unknown;
@@ -990,20 +1037,11 @@ serve(async (req) => {
         feasibility?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS strategist synthesizing a student's diagnostic. You have: their profile (target band, deadline, purpose), the latest AI skills probe (if any), and their practice mastery signals. Return strict JSON: {narrative: 3-5 paragraphs of personalized analysis (CITE specific signals: 'your probe showed writing at 5.5 while your target is 7', etc), section_priority: ordered array of 4 sections by ROI for this student starting with the highest priority, risks: array (max 5) of {risk: 1-sentence callout, severity: 'low'|'medium'|'high', mitigation: 1-sentence action they can take this week}, weekly_hours_needed: integer estimate of weekly study hours required to hit target on time, feasibility: 'comfortable'|'tight'|'aggressive'|'unrealistic'}. Be honest about feasibility; do not pretend.",
+          systemPrompt: "You are an IELTS strategist synthesizing a student's diagnostic. The input is structured into THREE clearly-labelled buckets: `goal` (what they're aiming for), `current_state` (where they are now, including their own self-assessment AND any AI probe / practice signals), and `constraints` (time available, style). CRITICAL: the field `self_assessment_per_skill_NOT_TARGET` contains the student's own perception of their CURRENT level — these are NOT target bands; do not confuse the two. Only `goal.target_overall_band` is the target. Return strict JSON: {narrative: 3-5 paragraphs of personalised analysis citing specific signals by name (e.g. 'your probe scored writing 5.5 while your target_overall_band is 7'), section_priority: ordered array of 4 sections by ROI starting with the highest priority, risks: array (max 5) of {risk: 1-sentence callout, severity: 'low'|'medium'|'high', mitigation: 1-sentence action they can take this week}, weekly_hours_needed: integer estimate of weekly study hours to hit goal on time, feasibility: 'comfortable'|'tight'|'aggressive'|'unrealistic'}. Be honest about feasibility.",
           userPayload: JSON.stringify({
-            profile: {
-              target_band: profile.target_overall_band,
-              current_band_estimate: profile.current_band_or_estimate,
-              deadline: profile.deadline_date,
-              purpose: profile.purpose,
-              weakest_skill: profile.weakest_skill,
-              delivery_mode: profile.preferred_delivery_mode,
-              provider: profile.provider_key,
-              metadata: profile.metadata,
-            },
-            latest_probe: latestProbe,
-            practice_mastery_top: practiceMastery,
+            goal: goalBlock,
+            current_state: currentStateBlock,
+            constraints: constraintsBlock,
             today: new Date().toISOString().slice(0, 10),
           }),
           temperature: 0.55,

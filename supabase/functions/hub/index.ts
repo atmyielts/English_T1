@@ -958,6 +958,275 @@ serve(async (req) => {
       });
     }
 
+    // Tier C #15 — Real content recommendation. Given learner interests +
+    // their current CEFR + time-per-session preference, AI returns 6-10
+    // pieces of authentic English content (books, articles, podcasts,
+    // YouTube channels, films, newsletters) calibrated to comprehensible
+    // input territory (level minus 0 to +1). Each item: type, title,
+    // creator, why_for_you, where_to_find (no concrete URLs — those rot;
+    // we surface search hints), difficulty_note, and 1-line first-step.
+    if (req.method === "POST" && route === "/ai/content-recommend") {
+      const body = await parseBody(req);
+      const interestsRaw = (body as Record<string, unknown>).interests;
+      const interests = Array.isArray(interestsRaw)
+        ? (interestsRaw as unknown[]).map((i) => toText(i, 60)).filter(Boolean).slice(0, 8)
+        : [];
+      const sessionMinutes = Math.max(5, Math.min(180, Number((body as Record<string, unknown>).session_minutes) || 20));
+      const formatsRaw = (body as Record<string, unknown>).formats;
+      const requestedFormats = Array.isArray(formatsRaw)
+        ? (formatsRaw as unknown[]).map((f) => toText(f, 24).toLowerCase()).filter(Boolean)
+        : [];
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      const overallLevel = cefr?.overall.level ?? "B1";
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        items?: unknown;
+        immersion_tip?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English-immersion librarian recommending AUTHENTIC, real-world English content (NOT learner-graded readers). The learner's CEFR level and interests are given. Pick 6-10 pieces calibrated to their comprehensible-input zone (current level to one step above). Mix formats unless the learner restricted formats. Avoid suggesting specific URLs (they rot); instead give precise search hints (e.g., 'search YouTube for: Numberphile + topology'). Return strict JSON: {items: array of {type: 'book'|'article'|'podcast'|'youtube'|'film'|'newsletter'|'tv_show', title: exact title, creator: author/host/channel/director, why_for_you: 1-2 sentence connection to the learner's interests + level, where_to_find: 1-line search hint or platform name (no full URL), difficulty_note: 1 line on what makes it appropriate (vocabulary density, accent, pacing), first_step: 1 specific 5-minute starter task (e.g. 'read the first chapter and underline 5 unfamiliar phrasal verbs')}, immersion_tip: 1-2 sentences on how to extract the most language gain from this batch}.",
+          userPayload: JSON.stringify({
+            cefr_level: overallLevel,
+            interests: interests.length ? interests : ["general curiosity"],
+            session_minutes: sessionMinutes,
+            preferred_formats: requestedFormats.length ? requestedFormats : null,
+          }),
+          temperature: 0.7,
+        },
+        { items: [], immersion_tip: "" },
+      );
+
+      const allowedTypes = ["book", "article", "podcast", "youtube", "film", "newsletter", "tv_show"];
+      const items = Array.isArray(result.items)
+        ? (result.items as unknown[])
+            .filter((i): i is Record<string, unknown> => !!i && typeof i === "object" && !Array.isArray(i))
+            .map((i) => ({
+              type: allowedTypes.includes(String(i.type ?? "").toLowerCase()) ? String(i.type).toLowerCase() : "article",
+              title: toText(i.title, 200),
+              creator: toText(i.creator, 200),
+              why_for_you: toText(i.why_for_you, 600),
+              where_to_find: toText(i.where_to_find, 200),
+              difficulty_note: toText(i.difficulty_note, 240),
+              first_step: toText(i.first_step, 320),
+            }))
+            .filter((i) => i.title && i.why_for_you)
+            .slice(0, 12)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        cefr_level: overallLevel,
+        interests,
+        session_minutes: sessionMinutes,
+        items,
+        immersion_tip: toText(result.immersion_tip, 600),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier C #16 — Live caption shadowing. Paste a transcript (or any
+    // English passage); AI splits it into shadowing CHUNKS calibrated for
+    // the learner's level: 4-7 seconds each, with a focus tip per chunk
+    // (intonation, linking, weak forms, rhythm). The frontend uses browser
+    // SpeechSynthesis to read each chunk; the learner shadows aloud and
+    // self-rates. Stateless: no audio storage server-side.
+    if (req.method === "POST" && route === "/ai/shadowing-prep") {
+      const body = await parseBody(req);
+      const sourceText = toText((body as Record<string, unknown>).source_text, 4000);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B1";
+      const accent = toText((body as Record<string, unknown>).accent, 24).toLowerCase() || "neutral";
+      if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+      }
+      if (!sourceText || sourceText.length < 30) {
+        return json(400, { error: "source_text is required (min 30 characters)" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        chunks?: unknown;
+        global_tips?: unknown;
+        warm_up?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English pronunciation and prosody coach preparing a passage for SHADOWING practice. Split the source into 6-12 chunks of 4-7 seconds spoken time (~10-22 words each, naturally bounded by clauses or breath groups — never mid-phrase). For each chunk pick the SINGLE most useful pronunciation focus for a learner at the target level. Return strict JSON: {chunks: array of {index: 0-based, text: the exact words to shadow (preserve casing/punctuation as it should be spoken), focus_label: 1-3 word skill name (e.g. 'linking', 'weak forms', 'rising intonation', 'sentence stress', 'consonant clusters'), focus_explanation: 1 sentence telling the learner exactly what to do with their voice on THIS chunk, watch_for: 1-3 specific words/sounds in the chunk to nail}, warm_up: 1-2 sentence overall framing for the practice session, global_tips: array (max 3) of session-wide reminders}.",
+          userPayload: JSON.stringify({
+            source_text: sourceText,
+            target_level: targetLevel,
+            accent_hint: accent,
+          }),
+          temperature: 0.4,
+        },
+        { chunks: [], global_tips: [], warm_up: "" },
+      );
+
+      const chunks = Array.isArray(result.chunks)
+        ? (result.chunks as unknown[])
+            .filter((c): c is Record<string, unknown> => !!c && typeof c === "object" && !Array.isArray(c))
+            .map((c, idx) => ({
+              index: Number.isFinite(Number(c.index)) ? Number(c.index) : idx,
+              text: toText(c.text, 600),
+              focus_label: toText(c.focus_label, 80),
+              focus_explanation: toText(c.focus_explanation, 400),
+              watch_for: Array.isArray(c.watch_for)
+                ? (c.watch_for as unknown[]).map((w) => toText(w, 80)).filter(Boolean).slice(0, 5)
+                : [],
+            }))
+            .filter((c) => c.text && c.focus_label)
+            .slice(0, 14)
+        : [];
+
+      const globalTips = Array.isArray(result.global_tips)
+        ? (result.global_tips as unknown[]).map((t) => toText(t, 320)).filter(Boolean).slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        target_level: targetLevel,
+        accent,
+        source_text_length: sourceText.length,
+        warm_up: toText(result.warm_up, 400),
+        chunks,
+        global_tips: globalTips,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier A #7 — Adaptive CEFR placement test. Stateless multi-round flow:
+    //   round 0  → POST {} → AI returns 4 calibration questions targeting
+    //                          a guess level (start at B1) across 4 skills
+    //   round N  → POST {answers, history} → AI grades + either generates
+    //                          another round narrower in band, OR finalizes
+    //                          with per-skill estimates + overall CEFR.
+    // Frontend tracks the conversation state in component memory; backend
+    // is purely a function of the request body. Hard cap of 3 rounds (12 Q).
+    if (req.method === "POST" && route === "/ai/placement-test") {
+      const body = await parseBody(req);
+      const round = Math.max(0, Math.min(3, Number((body as Record<string, unknown>).round) || 0));
+      const historyRaw = (body as Record<string, unknown>).history;
+      const history = Array.isArray(historyRaw)
+        ? (historyRaw as unknown[])
+            .filter((h): h is Record<string, unknown> => !!h && typeof h === "object" && !Array.isArray(h))
+            .slice(0, 8)
+        : [];
+      const finalize = Boolean((body as Record<string, unknown>).finalize) || round >= 3;
+
+      if (!finalize) {
+        // Generate next round of questions.
+        const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+          target_level_guess?: unknown;
+          questions?: unknown;
+          rationale?: unknown;
+        }>(
+          {
+            systemPrompt:
+              "You are an adaptive CEFR placement examiner. Based on the conversation history (prior questions + the learner's answers, possibly empty for round 0), produce the NEXT round of EXACTLY 4 short questions, ONE per skill (reading, writing, listening, grammar). For listening, give a short script the frontend will speak via TTS plus the question about it; for reading, give a 2-3 sentence passage + question; for writing, give a sentence-completion or short rewrite prompt; for grammar, give a multiple-choice question with 4 options. Calibrate difficulty: round 0 target B1; subsequent rounds narrow in band based on prior performance. Return strict JSON: {target_level_guess: CEFR letter+digit (e.g. 'B1'), rationale: 1 sentence on why this band, questions: array of EXACTLY 4 objects {skill: 'reading'|'writing'|'listening'|'grammar', prompt: the question/instruction, passage: optional supporting text or listening script, choices: optional array of 2-4 strings (only for grammar MCQ), expected_answer_pattern: 1 line describing what 'correct' looks like (used for AI grading next round)}}.",
+            userPayload: JSON.stringify({ round, history }),
+            temperature: 0.5,
+          },
+          { target_level_guess: "B1", questions: [], rationale: "" },
+        );
+
+        const allowed = ["reading", "writing", "listening", "grammar"];
+        const questions = Array.isArray(result.questions)
+          ? (result.questions as unknown[])
+              .filter((q): q is Record<string, unknown> => !!q && typeof q === "object" && !Array.isArray(q))
+              .map((q) => ({
+                skill: allowed.includes(String(q.skill ?? "").toLowerCase()) ? String(q.skill).toLowerCase() : "reading",
+                prompt: toText(q.prompt, 600),
+                passage: toText(q.passage, 1200),
+                choices: Array.isArray(q.choices)
+                  ? (q.choices as unknown[]).map((c) => toText(c, 200)).filter(Boolean).slice(0, 5)
+                  : [],
+                expected_answer_pattern: toText(q.expected_answer_pattern, 400),
+              }))
+              .filter((q) => q.prompt)
+              .slice(0, 4)
+          : [];
+
+        return json(200, {
+          ok: true,
+          ai_available: isEnglishAIConfigured(),
+          ai_status: aiStatus,
+          ai_provider: provider,
+          ai_error: aiError ?? null,
+          finalized: false,
+          round,
+          target_level_guess: toText(result.target_level_guess, 8) || "B1",
+          rationale: toText(result.rationale, 400),
+          questions,
+          generated_at: new Date().toISOString(),
+        });
+      }
+
+      // Finalize: AI grades the full transcript + emits a CEFR estimate.
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        overall_level?: unknown;
+        per_skill?: unknown;
+        narrative?: unknown;
+        next_steps?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are a CEFR placement examiner finalizing a learner's level after a short adaptive interview. Read the full history (questions, the learner's answers, expected_answer_patterns) and produce a calibrated assessment. Be honest — a learner who clearly struggles at B1 should land at A2, not B1. Return strict JSON: {overall_level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2', per_skill: object with keys reading, writing, listening, grammar — each value an object {level, evidence: 1 line citing the answer that anchored this estimate}, narrative: 2-3 sentence summary of the learner's profile, next_steps: array (max 4) of concrete recommendations for closing the gap to the next CEFR band}.",
+          userPayload: JSON.stringify({ history }),
+          temperature: 0.3,
+        },
+        { overall_level: "B1", per_skill: {}, narrative: "", next_steps: [] },
+      );
+
+      const validLevels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+      const overallLevel = validLevels.includes(toText(result.overall_level, 8).toUpperCase())
+        ? toText(result.overall_level, 8).toUpperCase()
+        : "B1";
+
+      const perSkillRaw = (result.per_skill && typeof result.per_skill === "object" && !Array.isArray(result.per_skill))
+        ? (result.per_skill as Record<string, unknown>)
+        : {};
+      const skills = ["reading", "writing", "listening", "grammar"] as const;
+      const perSkill: Record<string, { level: string; evidence: string }> = {};
+      for (const s of skills) {
+        const row = perSkillRaw[s];
+        if (row && typeof row === "object" && !Array.isArray(row)) {
+          const r = row as Record<string, unknown>;
+          const lv = toText(r.level, 8).toUpperCase();
+          perSkill[s] = {
+            level: validLevels.includes(lv) ? lv : overallLevel,
+            evidence: toText(r.evidence, 400),
+          };
+        } else {
+          perSkill[s] = { level: overallLevel, evidence: "" };
+        }
+      }
+
+      const nextSteps = Array.isArray(result.next_steps)
+        ? (result.next_steps as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        finalized: true,
+        overall_level: overallLevel,
+        per_skill: perSkill,
+        narrative: toText(result.narrative, 1200),
+        next_steps: nextSteps,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
