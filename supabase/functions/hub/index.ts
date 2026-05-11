@@ -1405,6 +1405,91 @@ serve(async (req) => {
       });
     }
 
+    // Tier B #4 — Voice conversation partner. Stateless turn endpoint:
+    // frontend captures the learner's spoken turn via Web Speech
+    // Recognition, sends transcript + scenario + history; AI replies with
+    // (a) the partner's spoken response (frontend speaks via TTS),
+    // (b) one gentle correction (only if there's a clear error worth
+    // flagging — otherwise empty string), and (c) one suggested follow-up
+    // the learner could say next, to prevent dead-end conversations.
+    // Stays calibrated to the learner's CEFR level so it doesn't outpace
+    // them.
+    if (req.method === "POST" && route === "/ai/voice-conversation-turn") {
+      const body = await parseBody(req);
+      const messagesRaw = (body as Record<string, unknown>).messages;
+      const scenario = toText((body as Record<string, unknown>).scenario, 240);
+      const personaName = toText((body as Record<string, unknown>).persona_name, 60);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase();
+
+      const messages = Array.isArray(messagesRaw)
+        ? (messagesRaw as unknown[])
+            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+            .map((m) => ({
+              role: ["user", "assistant"].includes(String(m.role ?? "")) ? String(m.role) : "user",
+              content: toText(m.content, 2000),
+            }))
+            .filter((m) => m.content)
+            .slice(-12)
+        : [];
+      if (messages.length === 0) {
+        return json(400, { error: "messages must contain at least one entry with role/content" });
+      }
+
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      const effectiveLevel = ["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)
+        ? targetLevel
+        : cefr?.overall.level ?? "B1";
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        partner_reply?: unknown;
+        correction?: unknown;
+        suggested_user_reply?: unknown;
+        scenario_progress?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are a conversational English-practice partner playing a defined PERSONA in a specific SCENARIO. Speak as that persona — natural, human, calibrated to the learner's CEFR level (do NOT use vocabulary or sentence length above level+1). Keep your turn to 1-3 short sentences (under 60 words) so it sounds spoken, not written. After your reply, decide: did the learner's last message contain a clear English mistake (grammar, word choice, awkward phrasing) worth flagging? If yes, give ONE brief correction (the original phrase, the better version, 1-line why). If their message was fine, leave correction empty. Then suggest ONE concrete follow-up the learner could try next ('You could ask...', 'Try saying...') so the conversation doesn't stall. Return strict JSON: {partner_reply: your spoken response (no stage directions), correction: '' or {original, better, why}, suggested_user_reply: 1 short sentence the learner could say back, scenario_progress: 1 short note on whether the scenario is still going or naturally winding down}.",
+          userPayload: JSON.stringify({
+            scenario: scenario || "an everyday English conversation",
+            persona_name: personaName || "Alex",
+            cefr_level: effectiveLevel,
+            messages,
+          }),
+          temperature: 0.7,
+        },
+        {
+          partner_reply: "",
+          correction: "",
+          suggested_user_reply: "",
+          scenario_progress: "",
+        },
+      );
+
+      let correctionOut: { original: string; better: string; why: string } | null = null;
+      const corrRaw = result.correction;
+      if (corrRaw && typeof corrRaw === "object" && !Array.isArray(corrRaw)) {
+        const c = corrRaw as Record<string, unknown>;
+        const original = toText(c.original, 320);
+        const better = toText(c.better, 320);
+        const why = toText(c.why, 320);
+        if (original && better) correctionOut = { original, better, why };
+      }
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        cefr_level: effectiveLevel,
+        partner_reply: toText(result.partner_reply, 1200),
+        correction: correctionOut,
+        suggested_user_reply: toText(result.suggested_user_reply, 320),
+        scenario_progress: toText(result.scenario_progress, 240),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });

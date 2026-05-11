@@ -617,3 +617,36 @@ export const analyzePronunciation = (
   body: { target_text: string; recognized_text: string; user_l1?: string; target_level?: CefrTargetLevel },
 ): Promise<PronunciationFeedbackResponse> =>
   callEdgePost<PronunciationFeedbackResponse>('/hub/ai/pronunciation-feedback', accessToken, body);
+
+// === Iter 8: voice conversation partner ===
+
+export interface VoiceConversationCorrection {
+  original: string;
+  better: string;
+  why: string;
+}
+
+export interface VoiceConversationTurnResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  cefr_level: CefrLevel | string;
+  partner_reply: string;
+  correction: VoiceConversationCorrection | null;
+  suggested_user_reply: string;
+  scenario_progress: string;
+  generated_at?: string;
+}
+
+export const sendVoiceConversationTurn = (
+  accessToken: string,
+  body: {
+    messages: TutorMessage[];
+    scenario?: string;
+    persona_name?: string;
+    target_level?: CefrTargetLevel;
+  },
+): Promise<VoiceConversationTurnResponse> =>
+  callEdgePost<VoiceConversationTurnResponse>('/hub/ai/voice-conversation-turn', accessToken, body);
