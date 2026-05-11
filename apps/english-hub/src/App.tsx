@@ -9,6 +9,7 @@ import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebook
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { GrammarDecoderCard, VocabInContextCard } from './components/AIFeatureCards';
 import { EssayGraderCard, IdiomExplorerCard, TranslationCompareCard } from './components/AIIter3Cards';
+import { CulturalNotesCard, DailyChallengeCard, DictationDrillCard } from './components/AIIter4Cards';
 
 type Service = {
   key: string;
@@ -836,6 +837,9 @@ const App = () => {
                     <EssayGraderCard accessToken={session.access_token} />
                     <TranslationCompareCard accessToken={session.access_token} />
                     <IdiomExplorerCard accessToken={session.access_token} />
+                    <DailyChallengeCard accessToken={session.access_token} />
+                    <DictationDrillCard accessToken={session.access_token} />
+                    <CulturalNotesCard accessToken={session.access_token} />
                   </>
                 ) : null}
 
