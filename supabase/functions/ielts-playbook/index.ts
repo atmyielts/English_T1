@@ -790,6 +790,348 @@ serve(async (req) => {
       return json(200, { ok: true });
     }
 
+    // ===== Deep diagnostic: AI skills probe + synthesis + AI plan =====
+
+    if (req.method === "POST" && route === "/diagnostic/probe") {
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+      const body = await parseBody(req);
+      const targetBand = Math.max(4, Math.min(9, Number(body.target_band) || 6.5));
+      const selfAssessment = body.self_assessment && typeof body.self_assessment === "object" ? body.self_assessment : {};
+
+      const fallbackProbe = {
+        prompts: [
+          { section: "reading", id: "p-reading", instruction: "AI probe unavailable. Run a practice lab instead.", kind: "info" },
+          { section: "listening", id: "p-listening", instruction: "AI probe unavailable.", kind: "info" },
+          { section: "writing", id: "p-writing", instruction: "AI probe unavailable.", kind: "info" },
+          { section: "speaking", id: "p-speaking", instruction: "AI probe unavailable.", kind: "info" },
+        ],
+      };
+
+      const { data: result, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{ prompts?: unknown }>(
+        {
+          systemPrompt: "You are an IELTS examiner designing a 4-task diagnostic probe — one prompt for each of reading, listening, writing, speaking. Each prompt must be answerable in ~2 minutes via short typed responses. Return strict JSON: {prompts: [{section: 'reading'|'listening'|'writing'|'speaking', id: short slug, instruction: 1-2 sentences telling the student what to do, kind: 'mcq'|'short_text'|'essay_seed'|'speaking_outline', passage_or_audio_transcript: string (for reading: a 80-150 word passage; for listening: a 80-150 word transcript snippet; otherwise empty), options: optional [4 strings for mcq], expected_format: short hint on what a good answer looks like}]}. Calibrate difficulty to the student's target band ± 0.5. Do NOT include answer keys.",
+          userPayload: JSON.stringify({ target_band: targetBand, self_assessment: selfAssessment }),
+          temperature: 0.55,
+        },
+        fallbackProbe,
+      );
+
+      const prompts = Array.isArray(result.prompts)
+        ? (result.prompts as unknown[])
+            .filter((p): p is Record<string, unknown> => !!p && typeof p === "object" && !Array.isArray(p))
+            .map((p, idx) => {
+              const sectionRaw = String(p.section ?? "").toLowerCase();
+              const section = ["reading", "listening", "writing", "speaking"].includes(sectionRaw)
+                ? sectionRaw
+                : ["reading", "listening", "writing", "speaking"][idx % 4];
+              const options = Array.isArray(p.options)
+                ? (p.options as unknown[]).map((o) => toText(o, 240)).filter(Boolean).slice(0, 4)
+                : [];
+              return {
+                section,
+                id: toText(p.id, 80) || `${section}-probe`,
+                instruction: toText(p.instruction, 600),
+                kind: toText(p.kind, 32) || "short_text",
+                passage_or_audio_transcript: toText(p.passage_or_audio_transcript, 1200) || null,
+                options: options.length > 0 ? options : null,
+                expected_format: toText(p.expected_format, 200) || null,
+              };
+            })
+            .filter((p) => p.instruction)
+            .slice(0, 4)
+        : [];
+
+      const finalPrompts = prompts.length === 4 ? prompts : fallbackProbe.prompts;
+
+      const { data: probeRow } = await sb
+        .from("ielts_playbook_skills_probes")
+        .insert({
+          user_id: auth!.userId,
+          prompts: finalPrompts,
+          responses: {},
+          ai_estimates: {},
+          ai_status: aiStatus,
+        })
+        .select("id")
+        .single();
+
+      return json(200, {
+        ok: true,
+        probe_id: (probeRow as Record<string, unknown> | null)?.id ?? null,
+        ai_status: aiStatus,
+        ai_error: aiError ?? null,
+        prompts: finalPrompts,
+      });
+    }
+
+    if (req.method === "POST" && route === "/diagnostic/probe/grade") {
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+      const body = await parseBody(req);
+      const probeId = toText(body.probe_id, 60);
+      if (!probeId) return json(400, { error: "probe_id required" });
+      const responses = body.responses && typeof body.responses === "object" ? body.responses : {};
+
+      const { data: existing } = await sb
+        .from("ielts_playbook_skills_probes")
+        .select("prompts")
+        .eq("user_id", auth!.userId)
+        .eq("id", probeId)
+        .maybeSingle();
+      if (!existing) return json(404, { error: "Probe not found" });
+      const prompts = Array.isArray((existing as Record<string, unknown>).prompts)
+        ? ((existing as Record<string, unknown>).prompts as Array<Record<string, unknown>>)
+        : [];
+
+      const fallbackGrade = {
+        per_skill: {
+          reading: { band_estimate: null, reasoning: "AI grading unavailable." },
+          listening: { band_estimate: null, reasoning: "AI grading unavailable." },
+          writing: { band_estimate: null, reasoning: "AI grading unavailable." },
+          speaking: { band_estimate: null, reasoning: "AI grading unavailable." },
+        },
+        overall_band_estimate: null,
+        confidence: "low",
+        notes: "Connect AI to enable empirical band estimates.",
+      };
+
+      const { data: graded, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{
+        per_skill?: unknown;
+        overall_band_estimate?: unknown;
+        confidence?: unknown;
+        notes?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS examiner grading a 4-task diagnostic probe. For each section (reading, listening, writing, speaking) you have the prompt + the student's response. Return strict JSON: {per_skill: {reading: {band_estimate: number 0-9 in 0.5 steps, reasoning: 2-3 sentences citing what they did or didn't do}, listening: {...}, writing: {...}, speaking: {...}}, overall_band_estimate: number, confidence: 'low'|'medium'|'high', notes: 2-3 sentences calling out the single most important gap}. Be honest — if a response is empty or 1-word, the estimate must be low and you must say so. Score in 0.5 increments only.",
+          userPayload: JSON.stringify({ prompts, student_responses: responses }),
+          temperature: 0.3,
+        },
+        fallbackGrade,
+      );
+
+      const overall = Number(graded.overall_band_estimate);
+      const overallSafe = Number.isFinite(overall) ? Math.max(0, Math.min(9, overall)) : null;
+
+      await sb
+        .from("ielts_playbook_skills_probes")
+        .update({
+          responses,
+          ai_estimates: {
+            per_skill: graded.per_skill ?? {},
+            overall_band_estimate: overallSafe,
+            confidence: toText(graded.confidence, 16) || "low",
+            notes: toText(graded.notes, 600),
+            ai_status: aiStatus,
+          },
+          overall_band_estimate: overallSafe,
+          ai_status: aiStatus,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("user_id", auth!.userId)
+        .eq("id", probeId);
+
+      return json(200, {
+        ok: true,
+        ai_status: aiStatus,
+        ai_error: aiError ?? null,
+        per_skill: graded.per_skill ?? fallbackGrade.per_skill,
+        overall_band_estimate: overallSafe,
+        confidence: toText(graded.confidence, 16) || "low",
+        notes: toText(graded.notes, 600) || "",
+      });
+    }
+
+    if (req.method === "POST" && route === "/diagnostic/synthesize") {
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+
+      const profile = await loadProfile(sb, scope, auth!.userId);
+      const { data: latestProbe } = await sb
+        .from("ielts_playbook_skills_probes")
+        .select("ai_estimates, overall_band_estimate, completed_at")
+        .eq("user_id", auth!.userId)
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let practiceMastery: Array<Record<string, unknown>> = [];
+      try {
+        if (scope.languageId) {
+          const mastery = await buildPracticeMasteryOverview(sb, scope.languageId, auth!.userId);
+          if (mastery && typeof mastery === "object") {
+            const byStatus = (mastery as Record<string, unknown>).by_status;
+            if (byStatus && typeof byStatus === "object") {
+              practiceMastery = Object.values(byStatus as Record<string, unknown>)
+                .flatMap((rows) => (Array.isArray(rows) ? rows : []))
+                .filter((row): row is Record<string, unknown> => !!row && typeof row === "object" && !Array.isArray(row))
+                .slice(0, 25);
+            }
+          }
+        }
+      } catch {
+        practiceMastery = [];
+      }
+
+      const fallback = {
+        narrative: "AI synthesis unavailable. Your profile + the rule-based recommendation on the diagnostic page still apply.",
+        section_priority: ["reading", "listening", "writing", "speaking"],
+        risks: [],
+        weekly_hours_needed: null,
+        feasibility: "unknown",
+      };
+
+      const { data: synth, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{
+        narrative?: unknown;
+        section_priority?: unknown;
+        risks?: unknown;
+        weekly_hours_needed?: unknown;
+        feasibility?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS strategist synthesizing a student's diagnostic. You have: their profile (target band, deadline, purpose), the latest AI skills probe (if any), and their practice mastery signals. Return strict JSON: {narrative: 3-5 paragraphs of personalized analysis (CITE specific signals: 'your probe showed writing at 5.5 while your target is 7', etc), section_priority: ordered array of 4 sections by ROI for this student starting with the highest priority, risks: array (max 5) of {risk: 1-sentence callout, severity: 'low'|'medium'|'high', mitigation: 1-sentence action they can take this week}, weekly_hours_needed: integer estimate of weekly study hours required to hit target on time, feasibility: 'comfortable'|'tight'|'aggressive'|'unrealistic'}. Be honest about feasibility; do not pretend.",
+          userPayload: JSON.stringify({
+            profile: {
+              target_band: profile.target_overall_band,
+              current_band_estimate: profile.current_band_or_estimate,
+              deadline: profile.deadline_date,
+              purpose: profile.purpose,
+              weakest_skill: profile.weakest_skill,
+              delivery_mode: profile.preferred_delivery_mode,
+              provider: profile.provider_key,
+              metadata: profile.metadata,
+            },
+            latest_probe: latestProbe,
+            practice_mastery_top: practiceMastery,
+            today: new Date().toISOString().slice(0, 10),
+          }),
+          temperature: 0.55,
+        },
+        fallback,
+      );
+
+      const risks = Array.isArray(synth.risks)
+        ? (synth.risks as unknown[])
+            .filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r))
+            .map((r) => ({
+              risk: toText(r.risk, 320),
+              severity: ["low", "medium", "high"].includes(String(r.severity ?? "")) ? String(r.severity) : "medium",
+              mitigation: toText(r.mitigation, 320),
+            }))
+            .filter((r) => r.risk)
+            .slice(0, 5)
+        : [];
+
+      const sectionPriority = Array.isArray(synth.section_priority)
+        ? (synth.section_priority as unknown[])
+            .map((s) => String(s ?? "").toLowerCase())
+            .filter((s) => ["reading", "listening", "writing", "speaking"].includes(s))
+            .slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_status: aiStatus,
+        ai_error: aiError ?? null,
+        narrative: toText(synth.narrative, 4000) || fallback.narrative,
+        section_priority: sectionPriority.length === 4 ? sectionPriority : fallback.section_priority,
+        risks,
+        weekly_hours_needed: Number.isFinite(Number(synth.weekly_hours_needed))
+          ? Math.max(0, Math.min(60, Number(synth.weekly_hours_needed)))
+          : null,
+        feasibility: ["comfortable", "tight", "aggressive", "unrealistic"].includes(String(synth.feasibility ?? ""))
+          ? String(synth.feasibility)
+          : fallback.feasibility,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    if (req.method === "POST" && route.startsWith("/plans/") && route.endsWith("/generate-ai")) {
+      const slug = toText(route.replace("/plans/", "").replace(/\/generate-ai$/, ""), 160);
+      if (!slug) return json(400, { error: "plan slug required" });
+      const gate = await requirePremium();
+      if (!gate.ok) return gate.response;
+
+      const templates = await loadPlanTemplates(sb, scope);
+      const plan = templates.find((row) => row.slug === slug);
+      if (!plan) return json(404, { error: "Plan not found" });
+
+      const profile = await loadProfile(sb, scope, auth!.userId);
+      const body = await parseBody(req);
+      const weeklyHours = Math.max(0, Math.min(60, Number(body.weekly_hours) || 10));
+      const sectionPriority = Array.isArray(body.section_priority) ? body.section_priority : [];
+
+      const fallback = {
+        intro: "AI plan generation unavailable. The base plan template still applies.",
+        weeks: [],
+      };
+
+      const { data: result, status: aiStatus, error: aiError } = await callOpenRouterJsonWithStatus<{
+        intro?: unknown;
+        weeks?: unknown;
+      }>(
+        {
+          systemPrompt: "You are an IELTS coach drafting a concrete week-by-week study plan for a single student. You have: a base plan template, the student's profile, available weekly hours, and a prioritized section order. Return strict JSON: {intro: 2-3 sentences framing how this plan was tailored, weeks: [{week_number: 1..N, theme: short label, focus_sections: array of 1-3 section names, hours: total hours, key_activities: 3-5 specific bullets, success_criteria: 1-2 sentences, playbook_modules: optional module_keys}]}. Generate up to 8 weeks. Front-load the highest-priority section. Adapt to deadline: if 3 weeks out, make 3 weeks; if 12+ weeks, make 8.",
+          userPayload: JSON.stringify({
+            plan_template: {
+              title: plan.title,
+              summary: plan.summary,
+              duration_days: plan.duration_days,
+              intensity: plan.intensity,
+              focus_skill: plan.focus_skill,
+              band_min: plan.band_min,
+              band_max: plan.band_max,
+            },
+            profile: {
+              target_band: profile.target_overall_band,
+              current_band_estimate: profile.current_band_or_estimate,
+              deadline: profile.deadline_date,
+              weakest_skill: profile.weakest_skill,
+            },
+            weekly_hours: weeklyHours,
+            section_priority: sectionPriority,
+            today: new Date().toISOString().slice(0, 10),
+          }),
+          temperature: 0.5,
+        },
+        fallback,
+      );
+
+      const weeks = Array.isArray(result.weeks)
+        ? (result.weeks as unknown[])
+            .filter((w): w is Record<string, unknown> => !!w && typeof w === "object" && !Array.isArray(w))
+            .map((w, idx) => ({
+              week_number: Number.isFinite(Number(w.week_number)) ? Number(w.week_number) : idx + 1,
+              theme: toText(w.theme, 160),
+              focus_sections: Array.isArray(w.focus_sections)
+                ? (w.focus_sections as unknown[]).map((s) => toText(s, 32)).filter(Boolean).slice(0, 4)
+                : [],
+              hours: Number.isFinite(Number(w.hours)) ? Math.max(0, Math.min(40, Number(w.hours))) : weeklyHours,
+              key_activities: Array.isArray(w.key_activities)
+                ? (w.key_activities as unknown[]).map((a) => toText(a, 320)).filter(Boolean).slice(0, 6)
+                : [],
+              success_criteria: toText(w.success_criteria, 600),
+              playbook_modules: Array.isArray(w.playbook_modules)
+                ? (w.playbook_modules as unknown[]).map((m) => toText(m, 80)).filter(Boolean).slice(0, 4)
+                : [],
+            }))
+            .filter((w) => w.theme)
+            .slice(0, 12)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_status: aiStatus,
+        ai_error: aiError ?? null,
+        plan_slug: slug,
+        intro: toText(result.intro, 1500) || fallback.intro,
+        weeks,
+        weekly_hours: weeklyHours,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     // Mark a playbook module as visited so the dashboard can show progress.
     // Idempotent — repeated visits just refresh the timestamp.
     if (req.method === "POST" && route.startsWith("/modules/") && route.endsWith("/visit")) {

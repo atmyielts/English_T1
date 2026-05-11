@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   BookOpenCheck,
+  Brain,
   CheckCircle2,
   ClipboardList,
   Compass,
   LoaderCircle,
   Repeat2,
   Route,
+  Sparkles,
   TriangleAlert,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { playbookRecommendationGenerate } from '../lib/api';
+import {
+  playbookDiagnosticSynthesize,
+  playbookRecommendationGenerate,
+  type DiagnosticSynthesisResponse,
+} from '../lib/api';
 import { SiteChrome } from '../components/content/SiteChrome';
 import { useAccess } from '../lib/useAccess';
 
@@ -76,6 +83,9 @@ export const DiagnosticPage: React.FC = () => {
   const [payload, setPayload] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [synthesis, setSynthesis] = useState<DiagnosticSynthesisResponse | null>(null);
+  const [synthesizing, setSynthesizing] = useState(false);
+  const [synthError, setSynthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -97,6 +107,20 @@ export const DiagnosticPage: React.FC = () => {
       active = false;
     };
   }, [accessToken]);
+
+  const runSynthesis = async () => {
+    if (!accessToken) return;
+    setSynthesizing(true);
+    setSynthError(null);
+    try {
+      const res = await playbookDiagnosticSynthesize(accessToken);
+      setSynthesis(res);
+    } catch (err) {
+      setSynthError(err instanceof Error ? err.message : 'Could not generate synthesis');
+    } finally {
+      setSynthesizing(false);
+    }
+  };
 
   const planning = toRecord(payload?.planning);
   const decision = toRecord(payload?.decision);
@@ -155,6 +179,114 @@ export const DiagnosticPage: React.FC = () => {
 
       {loading ? <div className="route-loading">Generating recommendation...</div> : null}
       {error ? <p className="notice-banner notice-danger">{error}</p> : null}
+
+      <section
+        style={{
+          margin: '20px 0',
+          padding: 22,
+          borderRadius: 14,
+          border: '1px solid color-mix(in srgb, #6c4ab8 22%, transparent)',
+          background: 'color-mix(in srgb, #6c4ab8 4%, white)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <Brain size={22} style={{ color: '#6c4ab8', flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600, marginBottom: 4 }}>
+                AI strategist synthesis
+              </strong>
+              <p style={{ margin: 0, fontSize: 14, color: '#3b352a', maxWidth: 560 }}>
+                AI reads your profile, latest skills probe, and practice mastery, then produces a personalised
+                narrative, risk callouts, and a weekly-hours feasibility check.
+              </p>
+            </div>
+          </div>
+          <button type="button" className="button button-primary" onClick={() => void runSynthesis()} disabled={synthesizing}>
+            {synthesizing ? 'Synthesising…' : synthesis ? 'Re-run' : 'Generate'} <Sparkles size={14} style={{ marginLeft: 4 }} />
+          </button>
+        </div>
+
+        {synthError ? <p style={{ color: '#9b2c2c', margin: '10px 0 0', fontSize: 13.5 }}>{synthError}</p> : null}
+
+        {synthesis ? (
+          <div style={{ marginTop: 16, display: 'grid', gap: 14 }}>
+            <div style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
+              {synthesis.narrative.split(/\n\n+/).map((para: string, i: number) => (
+                <p key={i} style={{ margin: i === 0 ? '0 0 10px' : '10px 0', fontSize: 14.5, lineHeight: 1.65, color: '#1a1814' }}>
+                  {para}
+                </p>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 6px' }}>
+                  Section priority
+                </p>
+                <ol style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.6 }}>
+                  {synthesis.section_priority.map((s: string, i: number) => (
+                    <li key={i} style={{ textTransform: 'capitalize', fontWeight: i === 0 ? 700 : 400 }}>
+                      {s}
+                    </li>
+                  ))}
+                </ol>
+              </article>
+
+              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 6px' }}>
+                  Weekly hours needed
+                </p>
+                <h3 style={{ margin: 0, fontFamily: 'Fraunces, serif', fontSize: 30 }}>
+                  {synthesis.weekly_hours_needed ?? '-'}
+                  <span style={{ fontSize: 14, color: '#7a7263', marginLeft: 6 }}>h/wk</span>
+                </h3>
+                <p style={{ margin: '6px 0 0', fontSize: 13, color: '#3b352a' }}>
+                  Feasibility: <strong style={{ textTransform: 'capitalize' }}>{synthesis.feasibility}</strong>
+                </p>
+              </article>
+            </div>
+
+            {synthesis.risks.length > 0 ? (
+              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 10px' }}>
+                  Risk callouts
+                </p>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {synthesis.risks.map((r: DiagnosticSynthesisResponse['risks'][number], i: number) => {
+                    const color = r.severity === 'high' ? '#b6512c' : r.severity === 'medium' ? '#7b6a3d' : '#1f8a55';
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          padding: 10,
+                          borderLeft: `3px solid ${color}`,
+                          background: `color-mix(in srgb, ${color} 6%, white)`,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                          <AlertTriangle size={15} color={color} style={{ flexShrink: 0, marginTop: 2 }} />
+                          <div style={{ flex: 1 }}>
+                            <strong style={{ fontSize: 13.5, color: '#1a1814' }}>{r.risk}</strong>
+                            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#3b352a', lineHeight: 1.5 }}>
+                              <em style={{ color, fontWeight: 600, fontStyle: 'normal' }}>Mitigation:</em> {r.mitigation}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </article>
+            ) : null}
+
+            <p style={{ margin: 0, fontSize: 11, color: '#7a7263' }}>
+              Generated {new Date(synthesis.generated_at).toLocaleString()}
+            </p>
+          </div>
+        ) : null}
+      </section>
 
       {payload ? (
         <>
