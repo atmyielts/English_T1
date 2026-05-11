@@ -1227,6 +1227,184 @@ serve(async (req) => {
       });
     }
 
+    // Tier A #8 — Personal AI tutor with cross-session memory.
+    // Stateless backend; the frontend persists chat history + a list of
+    // "memories" (facts the learner has chosen to remember about themselves)
+    // in localStorage and passes both on every turn. The AI uses memories
+    // as context AND proposes new memories to add — the learner approves.
+    // This avoids a new RLS-gated table while still giving genuine
+    // cross-session continuity for as long as the browser holds storage.
+    if (req.method === "POST" && route === "/ai/tutor-chat") {
+      const body = await parseBody(req);
+      const messagesRaw = (body as Record<string, unknown>).messages;
+      const memoriesRaw = (body as Record<string, unknown>).memories;
+
+      const messages = Array.isArray(messagesRaw)
+        ? (messagesRaw as unknown[])
+            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+            .map((m) => ({
+              role: ["user", "assistant"].includes(String(m.role ?? "")) ? String(m.role) : "user",
+              content: toText(m.content, 4000),
+            }))
+            .filter((m) => m.content)
+            .slice(-12)
+        : [];
+      if (messages.length === 0) {
+        return json(400, { error: "messages must contain at least one entry with role/content" });
+      }
+
+      const memories = Array.isArray(memoriesRaw)
+        ? (memoriesRaw as unknown[])
+            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+            .map((m) => ({
+              id: toText(m.id, 64),
+              text: toText(m.text, 600),
+              kind: toText(m.kind, 24),
+            }))
+            .filter((m) => m.text)
+            .slice(0, 30)
+        : [];
+
+      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        reply?: unknown;
+        suggested_memories?: unknown;
+        suggested_actions?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English study tutor with personal continuity. The learner's message history and a list of MEMORIES (facts they previously asked you to remember about them — goals, preferences, struggles, wins, context) are provided. Use the memories naturally; do NOT recite them. Reply in 1-3 paragraphs, warm but concise, in the same language they wrote in (default English). When something in the conversation looks worth remembering long-term — a stated goal, a recurring weakness, a deadline, a preference about how they want to be coached, a notable win — propose 1-3 NEW memories to add. Do NOT suggest memories that duplicate what's already saved. Optionally suggest 1-2 short next-actions with relative routes ('/reading', '/writing', '/grammar', '/vocabulary', '/speaking', '/listening', '/'). Return strict JSON: {reply: the assistant message, suggested_memories: array (max 3) of {kind: 'goal'|'preference'|'struggle'|'win'|'context'|'deadline', text: 1-sentence fact in second person ('You prefer...', 'You aim to...')}, suggested_actions: array (max 2) of {label: 3-5 word CTA, route: relative URL, why: 1 short sentence}}.",
+          userPayload: JSON.stringify({
+            cefr_level: cefr?.overall.level ?? "B1",
+            existing_memories: memories,
+            messages,
+          }),
+          temperature: 0.6,
+        },
+        { reply: "", suggested_memories: [], suggested_actions: [] },
+      );
+
+      const allowedKinds = ["goal", "preference", "struggle", "win", "context", "deadline"];
+      const suggestedMemories = Array.isArray(result.suggested_memories)
+        ? (result.suggested_memories as unknown[])
+            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+            .map((m) => ({
+              kind: allowedKinds.includes(String(m.kind ?? "").toLowerCase()) ? String(m.kind).toLowerCase() : "context",
+              text: toText(m.text, 320),
+            }))
+            .filter((m) => m.text)
+            .slice(0, 3)
+        : [];
+
+      const suggestedActions = Array.isArray(result.suggested_actions)
+        ? (result.suggested_actions as unknown[])
+            .filter((a): a is Record<string, unknown> => !!a && typeof a === "object" && !Array.isArray(a))
+            .map((a) => ({
+              label: toText(a.label, 120),
+              route: toText(a.route, 200) || "/",
+              why: toText(a.why, 240),
+            }))
+            .filter((a) => a.label)
+            .slice(0, 3)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        reply: toText(result.reply, 4000),
+        suggested_memories: suggestedMemories,
+        suggested_actions: suggestedActions,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier B #9 — Pronunciation analysis (browser-mediated). The frontend
+    // captures the learner reading the target text aloud via Web Speech
+    // Recognition (Chrome/Edge) and sends BOTH the canonical target and
+    // what the recognizer transcribed. AI infers likely pronunciation
+    // problems from divergences (substitutions, omissions, run-ons) and
+    // gives per-word + prosodic feedback calibrated to common L1
+    // interference patterns the learner can self-correct.
+    if (req.method === "POST" && route === "/ai/pronunciation-feedback") {
+      const body = await parseBody(req);
+      const targetText = toText((body as Record<string, unknown>).target_text, 2000);
+      const recognized = toText((body as Record<string, unknown>).recognized_text, 2000);
+      const userL1 = toText((body as Record<string, unknown>).user_l1, 60);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B1";
+      if (!targetText || targetText.length < 10) {
+        return json(400, { error: "target_text is required (min 10 chars)" });
+      }
+      if (!recognized) {
+        return json(400, { error: "recognized_text is required (the speech-recognition transcript)" });
+      }
+      if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        accuracy_score?: unknown;
+        per_word?: unknown;
+        prosody_notes?: unknown;
+        l1_interference?: unknown;
+        retry_priority?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English pronunciation coach analysing a learner's spoken attempt. You receive (a) the canonical target text, (b) what a speech recognizer heard, (c) optional learner L1, (d) target CEFR level. Compare carefully — recognizer errors include substitutions ('three'→'tree'), omissions, and run-ons (worst-case word boundaries). Diagnose the likely pronunciation issues (specific phonemes, stress placement, weak forms, linking) — NOT spelling. Return strict JSON: {accuracy_score: integer 0-100 (rough overall match), per_word: array of {target_word, what_was_heard, likely_issue: 1 line on the phonetic problem, fix_tip: 1 line on how to articulate it}, prosody_notes: array (max 3) of observations on stress / rhythm / linking based on the divergence pattern, l1_interference: array (max 2) of common L1-driven issues likely behind these errors (only if user_l1 hints at it; else empty), retry_priority: 1 sentence telling the learner the SINGLE most useful thing to fix on the next attempt}.",
+          userPayload: JSON.stringify({
+            target_text: targetText,
+            recognized_text: recognized,
+            user_l1: userL1 || null,
+            target_level: targetLevel,
+          }),
+          temperature: 0.3,
+        },
+        { accuracy_score: 0, per_word: [], prosody_notes: [], l1_interference: [], retry_priority: "" },
+      );
+
+      const accuracyScore = Math.max(0, Math.min(100, Number(result.accuracy_score) || 0));
+      const perWord = Array.isArray(result.per_word)
+        ? (result.per_word as unknown[])
+            .filter((w): w is Record<string, unknown> => !!w && typeof w === "object" && !Array.isArray(w))
+            .map((w) => ({
+              target_word: toText(w.target_word, 80),
+              what_was_heard: toText(w.what_was_heard, 80),
+              likely_issue: toText(w.likely_issue, 240),
+              fix_tip: toText(w.fix_tip, 320),
+            }))
+            .filter((w) => w.target_word && w.likely_issue)
+            .slice(0, 12)
+        : [];
+      const prosodyNotes = Array.isArray(result.prosody_notes)
+        ? (result.prosody_notes as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 4)
+        : [];
+      const l1Interference = Array.isArray(result.l1_interference)
+        ? (result.l1_interference as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 3)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        target_text: targetText,
+        recognized_text: recognized,
+        user_l1: userL1 || null,
+        target_level: targetLevel,
+        accuracy_score: accuracyScore,
+        per_word: perWord,
+        prosody_notes: prosodyNotes,
+        l1_interference: l1Interference,
+        retry_priority: toText(result.retry_priority, 400),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
