@@ -48,6 +48,11 @@ export const OnboardingPage: React.FC = () => {
 
   const [stageIndex, setStageIndex] = useState(0);
   const stage: Stage = STAGE_LABELS[stageIndex] ?? STAGE_LABELS[0];
+  // Block the form behind a loading state until the saved profile lands.
+  // Otherwise the user sees default placeholders (target_overall_band: 6.5,
+  // self_assessment: 6, etc) flash in and can save them by mistake — that's
+  // exactly what produced the "AI thinks target is 6.5" bug in production.
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const [form, setForm] = useState<Record<string, unknown>>({
     target_overall_band: 6.5,
@@ -102,7 +107,13 @@ export const OnboardingPage: React.FC = () => {
       .then((data) => {
         if (!active) return;
         const profile = (data.profile ?? {}) as Record<string, unknown>;
-        setForm((current) => ({ ...current, ...profile }));
+        // Strip nullish profile fields so they don't overwrite our defaults
+        // with `null` (e.g. a never-saved target_overall_band would arrive as
+        // null and we'd display "" instead of 6.5).
+        const sanitised = Object.fromEntries(
+          Object.entries(profile).filter(([, v]) => v !== null && v !== undefined),
+        );
+        setForm((current) => ({ ...current, ...sanitised }));
         const meta = (profile.metadata && typeof profile.metadata === 'object' && !Array.isArray(profile.metadata))
           ? (profile.metadata as Record<string, unknown>)
           : {};
@@ -115,6 +126,9 @@ export const OnboardingPage: React.FC = () => {
       })
       .catch((err: Error) => {
         if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setProfileLoaded(true);
       });
     return () => {
       active = false;
@@ -210,6 +224,9 @@ export const OnboardingPage: React.FC = () => {
         </aside>
       </section>
 
+      {!profileLoaded ? (
+        <div className="route-loading">Loading your profile…</div>
+      ) : (
       <div className="onboarding-layout">
         <section className="form-panel">
           {stage === 'Goal' ? (
@@ -599,6 +616,7 @@ export const OnboardingPage: React.FC = () => {
           </div>
         </aside>
       </div>
+      )}
     </SiteChrome>
   );
 };
