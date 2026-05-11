@@ -266,3 +266,75 @@ export const extractIdioms = (
   body: { source_text: string; target_level?: CefrTargetLevel },
 ): Promise<IdiomExtractResponse> =>
   callEdgePost<IdiomExtractResponse>('/hub/ai/idiom-extract', accessToken, body);
+
+// === Iter 4: dictation, daily challenge, cultural notes ===
+
+export interface DictationGenerateResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  target_level: CefrTargetLevel;
+  topic: string | null;
+  accent: string;
+  speed: string;
+  text: string;
+  tricky_tokens: string[];
+  comprehension_question: string;
+  comprehension_answer: string;
+  generated_at?: string;
+}
+
+export const generateDictation = (
+  accessToken: string,
+  body: { target_level?: CefrTargetLevel; topic?: string; accent?: string; speed?: string },
+): Promise<DictationGenerateResponse> =>
+  callEdgePost<DictationGenerateResponse>('/hub/ai/dictation/generate', accessToken, body);
+
+export interface DailyChallengeTask {
+  skill: 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+  label: string;
+  instruction: string;
+  estimated_minutes: number;
+  route_hint: string;
+}
+
+export interface DailyChallengeResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  theme: string;
+  why_this_theme: string;
+  tasks: DailyChallengeTask[];
+  cefr_level: CefrLevel;
+  minutes_budget: number;
+  generated_at?: string;
+}
+
+export const generateDailyChallenge = (
+  accessToken: string,
+  body: { minutes_budget?: number } = {},
+): Promise<DailyChallengeResponse> =>
+  callEdgePost<DailyChallengeResponse>('/hub/ai/daily-challenge', accessToken, body);
+
+export interface CulturalNotesResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  cultural_references: string[];
+  register_observations: string[];
+  regional_variants: string[];
+  tone_pitfalls: string[];
+  generated_at?: string;
+}
+
+export const extractCulturalNotes = (
+  accessToken: string,
+  body: { source_text: string },
+): Promise<CulturalNotesResponse> =>
+  callEdgePost<CulturalNotesResponse>('/hub/ai/cultural-notes', accessToken, body);
