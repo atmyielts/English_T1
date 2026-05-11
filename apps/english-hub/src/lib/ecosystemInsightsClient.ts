@@ -200,3 +200,69 @@ export const decodeGrammar = (
   sentence: string,
 ): Promise<GrammarDecodeResponse> =>
   callEdgePost<GrammarDecodeResponse>('/hub/ai/grammar-decode', accessToken, { sentence });
+
+// === Iter 3: essay grader, translation comparison, idiom explorer ===
+
+export type CefrTargetLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+
+export interface EssayGradeResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  target_level: CefrTargetLevel;
+  word_count: number;
+  overall_level: CefrTargetLevel | string;
+  criteria: Record<'task' | 'coherence' | 'range' | 'accuracy', { level: string; comment: string }>;
+  strengths: string[];
+  improvements: string[];
+  actionable_next_step: string;
+  rewrite_sample: string;
+  generated_at?: string;
+}
+
+export const gradeEssay = (
+  accessToken: string,
+  body: { text: string; target_level?: CefrTargetLevel; prompt?: string },
+): Promise<EssayGradeResponse> =>
+  callEdgePost<EssayGradeResponse>('/hub/ai/essay-grade', accessToken, body);
+
+export interface TranslationCompareResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  source_text: string;
+  detected_language: string;
+  translations: Array<{ text: string; register: string; style_note: string }>;
+  nuance_summary: string;
+  generated_at?: string;
+}
+
+export const compareTranslations = (
+  accessToken: string,
+  body: { source_text: string; source_language?: string },
+): Promise<TranslationCompareResponse> =>
+  callEdgePost<TranslationCompareResponse>('/hub/ai/translation-compare', accessToken, body);
+
+export interface IdiomExtractResponse {
+  ok: boolean;
+  ai_available: boolean;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_provider?: 'openai' | 'anthropic' | 'google';
+  ai_error?: string | null;
+  target_level: CefrTargetLevel;
+  source_text_length: number;
+  idioms: Array<{ phrase: string; meaning: string; register: string; example: string }>;
+  collocations: Array<{ phrase: string; type: string; meaning: string; example: string }>;
+  cultural_notes: string[];
+  generated_at?: string;
+}
+
+export const extractIdioms = (
+  accessToken: string,
+  body: { source_text: string; target_level?: CefrTargetLevel },
+): Promise<IdiomExtractResponse> =>
+  callEdgePost<IdiomExtractResponse>('/hub/ai/idiom-extract', accessToken, body);

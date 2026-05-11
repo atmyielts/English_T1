@@ -299,6 +299,209 @@ serve(async (req) => {
       });
     }
 
+    // Tier B #11 — AI essay grader (general English, CEFR-aligned).
+    // Stateless. Takes a written response + target level, returns
+    // per-criterion scores with concrete feedback. Distinct from the
+    // IELTS rubric path; this one anchors to CEFR descriptors so it's
+    // useful for general English learners outside the test-prep flow.
+    if (req.method === "POST" && route === "/ai/essay-grade") {
+      const body = await parseBody(req);
+      const text = toText((body as Record<string, unknown>).text, 5000);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B2";
+      const prompt = toText((body as Record<string, unknown>).prompt, 1200);
+      if (!text || text.length < 40) {
+        return json(400, { error: "text is required (min 40 characters)" });
+      }
+      if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+      }
+
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        overall_level?: unknown;
+        criteria?: unknown;
+        strengths?: unknown;
+        improvements?: unknown;
+        actionable_next_step?: unknown;
+        rewrite_sample?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are a CEFR-aligned English writing examiner. Grade the response below against the target level using the four criteria: TASK (whether the response addresses the prompt fully and stays on topic), COHERENCE (logical flow, paragraph structure, cohesive devices), RANGE (lexical and grammatical range — variety, idiom, register), ACCURACY (grammatical and spelling correctness). Return strict JSON: {overall_level: one of A1 A2 B1 B2 C1 C2, criteria: {task: {level, comment}, coherence: {level, comment}, range: {level, comment}, accuracy: {level, comment}}, strengths: array of 2-3 short strings, improvements: array of 2-3 short strings, actionable_next_step: 1-2 sentence concrete next move for THIS learner, rewrite_sample: a short rewrite of the most pivotal 1-2 sentences from their text demonstrating the target level}.",
+          userPayload: JSON.stringify({
+            target_level: targetLevel,
+            prompt: prompt || "(no prompt provided)",
+            response_text: text,
+            word_count: wordCount,
+          }),
+          temperature: 0.3,
+        },
+        {
+          overall_level: targetLevel,
+          criteria: {},
+          strengths: [],
+          improvements: [],
+          actionable_next_step: "",
+          rewrite_sample: "",
+        },
+      );
+
+      const safeLevel = (raw: unknown): string => {
+        const v = String(raw ?? "").toUpperCase();
+        return ["A1", "A2", "B1", "B2", "C1", "C2"].includes(v) ? v : targetLevel;
+      };
+      const criteriaIn = (result.criteria && typeof result.criteria === "object" && !Array.isArray(result.criteria))
+        ? result.criteria as Record<string, unknown>
+        : {};
+      const criteria: Record<string, { level: string; comment: string }> = {};
+      for (const key of ["task", "coherence", "range", "accuracy"]) {
+        const c = criteriaIn[key];
+        if (c && typeof c === "object" && !Array.isArray(c)) {
+          const cr = c as Record<string, unknown>;
+          criteria[key] = { level: safeLevel(cr.level), comment: toText(cr.comment, 600) };
+        } else {
+          criteria[key] = { level: targetLevel, comment: "" };
+        }
+      }
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        target_level: targetLevel,
+        word_count: wordCount,
+        overall_level: safeLevel(result.overall_level),
+        criteria,
+        strengths: Array.isArray(result.strengths)
+          ? (result.strengths as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
+          : [],
+        improvements: Array.isArray(result.improvements)
+          ? (result.improvements as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
+          : [],
+        actionable_next_step: toText(result.actionable_next_step, 600),
+        rewrite_sample: toText(result.rewrite_sample, 1200),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier D #22 — Translation comparison. Useful for advanced learners
+    // refining nuance: paste a sentence in your L1, AI returns multiple
+    // English translations with register/style differences explained.
+    if (req.method === "POST" && route === "/ai/translation-compare") {
+      const body = await parseBody(req);
+      const sourceText = toText((body as Record<string, unknown>).source_text, 800);
+      const sourceLanguage = toText((body as Record<string, unknown>).source_language, 32) || "auto";
+      if (!sourceText || sourceText.length < 3) {
+        return json(400, { error: "source_text is required" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        detected_language?: unknown;
+        translations?: unknown;
+        nuance_summary?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an expert translator. Translate the source sentence into THREE distinct English versions chosen to demonstrate different registers and stylistic choices. Each translation should be natural English a competent speaker might actually say or write. Return strict JSON: {detected_language: ISO 639-1 code or 'unknown', translations: array of exactly 3 objects each {text: the English translation, register: 'formal'|'neutral'|'informal'|'literary'|'academic'|'conversational', style_note: 1 sentence describing what's distinctive about this version (word choice, structure, register)}, nuance_summary: 1-2 sentences explaining what the source carries that English forces a choice on}.",
+          userPayload: JSON.stringify({ source_text: sourceText, source_language: sourceLanguage }),
+          temperature: 0.5,
+        },
+        { detected_language: sourceLanguage, translations: [], nuance_summary: "" },
+      );
+
+      const translations = Array.isArray(result.translations)
+        ? (result.translations as unknown[])
+            .filter((t): t is Record<string, unknown> => !!t && typeof t === "object" && !Array.isArray(t))
+            .map((t) => ({
+              text: toText(t.text, 800),
+              register: toText(t.register, 32),
+              style_note: toText(t.style_note, 400),
+            }))
+            .filter((t) => t.text)
+            .slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        source_text: sourceText,
+        detected_language: toText(result.detected_language, 16) || "unknown",
+        translations,
+        nuance_summary: toText(result.nuance_summary, 600),
+        generated_at: new Date().toISOString(),
+      });
+    }
+
+    // Tier C #17 — Idiom & collocation explorer. Paste any English text
+    // (article, podcast transcript, dialogue), AI extracts notable idioms
+    // and collocations with definitions, register, and example sentences.
+    if (req.method === "POST" && route === "/ai/idiom-extract") {
+      const body = await parseBody(req);
+      const sourceText = toText((body as Record<string, unknown>).source_text, 4000);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B2";
+      if (!sourceText || sourceText.length < 30) {
+        return json(400, { error: "source_text is required (min 30 characters)" });
+      }
+
+      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+        idioms?: unknown;
+        collocations?: unknown;
+        cultural_notes?: unknown;
+      }>(
+        {
+          systemPrompt:
+            "You are an English vocabulary specialist. From the source text below, extract the most teaching-worthy idioms and collocations for a learner aiming at the target CEFR level. An IDIOM is a fixed expression whose meaning isn't deducible from its parts (e.g., 'cut to the chase'). A COLLOCATION is a strong, common word pairing (e.g., 'heavy traffic', 'make a decision', 'utterly convinced'). Return strict JSON: {idioms: array (max 6) of {phrase: exact phrase from text, meaning: 1 sentence, register: 'formal'|'neutral'|'informal'|'literary', example: 1 fresh example sentence using the idiom}, collocations: array (max 8) of {phrase: exact phrase from text, type: 'verb_noun'|'adj_noun'|'adv_adj'|'verb_adv'|'noun_noun', meaning: 1 short note, example: 1 fresh example}, cultural_notes: array (max 3) of short observations on cultural references, register choices, or US/UK differences worth knowing}.",
+          userPayload: JSON.stringify({ target_level: targetLevel, source_text: sourceText }),
+          temperature: 0.4,
+        },
+        { idioms: [], collocations: [], cultural_notes: [] },
+      );
+
+      const cleanList = <T extends Record<string, unknown>>(rows: unknown, mapper: (r: Record<string, unknown>) => T, max: number): T[] =>
+        Array.isArray(rows)
+          ? (rows as unknown[])
+              .filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r))
+              .map(mapper)
+              .filter((r) => Object.values(r).some(Boolean))
+              .slice(0, max)
+          : [];
+
+      const idioms = cleanList(result.idioms, (r) => ({
+        phrase: toText(r.phrase, 200),
+        meaning: toText(r.meaning, 400),
+        register: toText(r.register, 24),
+        example: toText(r.example, 400),
+      }), 6);
+      const collocations = cleanList(result.collocations, (r) => ({
+        phrase: toText(r.phrase, 160),
+        type: toText(r.type, 24),
+        meaning: toText(r.meaning, 240),
+        example: toText(r.example, 400),
+      }), 8);
+      const culturalNotes = Array.isArray(result.cultural_notes)
+        ? (result.cultural_notes as unknown[]).map((n) => toText(n, 400)).filter(Boolean).slice(0, 4)
+        : [];
+
+      return json(200, {
+        ok: true,
+        ai_available: isEnglishAIConfigured(),
+        ai_status: aiStatus,
+        ai_provider: provider,
+        ai_error: aiError ?? null,
+        target_level: targetLevel,
+        source_text_length: sourceText.length,
+        idioms,
+        collocations,
+        cultural_notes: culturalNotes,
+        generated_at: new Date().toISOString(),
+      });
+    }
+
     return json(405, { error: "Method not allowed" });
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
