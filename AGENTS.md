@@ -47,6 +47,7 @@ Source of truth for what's live (full list also in `.github/workflows/deploy-pag
 | `apps/ielts-simulator` | https://ielts.schood.online | `schood-ielts` |
 | `apps/ielts-practice` | https://practice.ielts.schood.online | `schood-ielts-practice` |
 | `apps/sat-simulator` | https://sat.schood.online | `schood-sat` |
+| `apps/sat-practice` | https://practice.sat.schood.online | `schood-sat-practice` |
 | `apps/toefl-ibt-simulator` | https://toefl.schood.online | `schood-toefl` |
 | `apps/itep-simulator` | https://itep.schood.online | `schood-itep` |
 | `apps/english-hub` | https://english.schood.online | `schood-english` |

@@ -403,6 +403,88 @@ const markPlaybookEvidenceFresh = async (
   return true;
 };
 
+const SAT_PRODUCT_ID = "5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef";
+
+const SAT_DOMAIN_ALIASES: Record<string, { section_type: "reading_writing" | "math"; domain: string }> = {
+  reading_writing: { section_type: "reading_writing", domain: "grammar" },
+  rw: { section_type: "reading_writing", domain: "grammar" },
+  grammar: { section_type: "reading_writing", domain: "grammar" },
+  transitions: { section_type: "reading_writing", domain: "transitions" },
+  rhetoric: { section_type: "reading_writing", domain: "rhetoric" },
+  vocabulary: { section_type: "reading_writing", domain: "vocabulary_in_context" },
+  vocabulary_in_context: { section_type: "reading_writing", domain: "vocabulary_in_context" },
+  command_of_evidence: { section_type: "reading_writing", domain: "command_of_evidence" },
+  math: { section_type: "math", domain: "algebra" },
+  algebra: { section_type: "math", domain: "algebra" },
+  advanced_math: { section_type: "math", domain: "advanced_math" },
+  problem_solving_data_analysis: { section_type: "math", domain: "problem_solving_data_analysis" },
+  geometry_trig: { section_type: "math", domain: "geometry_trig" },
+};
+
+interface SatFeedbackResult {
+  applicable: boolean;
+  seeded: number;
+  skipped: number;
+  reason?: string;
+}
+
+const canonicalizeSatBreakdownKey = (raw: unknown): { section_type: "reading_writing" | "math"; domain: string } | null => {
+  const key = String(raw ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_").replace(/&/g, "and");
+  return SAT_DOMAIN_ALIASES[key] ?? null;
+};
+
+const seedSatNotebookFromOutcome = async (
+  sb: any,
+  userId: string,
+  outcome: ExamOutcomeRow,
+): Promise<SatFeedbackResult> => {
+  if (outcome.product_id !== SAT_PRODUCT_ID) return { applicable: false, seeded: 0, skipped: 0 };
+  const breakdown = isObject(outcome.skill_breakdown) ? outcome.skill_breakdown : {};
+  const nowIso = new Date().toISOString();
+  let seeded = 0;
+  let skipped = 0;
+
+  for (const [rawKey, value] of Object.entries(breakdown)) {
+    if (!isObject(value)) continue;
+    const mapped = canonicalizeSatBreakdownKey(rawKey);
+    if (!mapped) { skipped += 1; continue; }
+    const ratio = toNumber((value as JsonRecord).ratio);
+    const rawScore = toNumber((value as JsonRecord).raw_score);
+    const maxScore = toNumber((value as JsonRecord).max_score);
+    const weak = ratio != null ? ratio < 0.72 : rawScore != null && maxScore != null && maxScore > 0 ? rawScore / maxScore < 0.72 : false;
+    if (!weak) continue;
+
+    const { error } = await sb.from("sat_practice_mistake_notebook").insert({
+      user_id: userId,
+      section_type: mapped.section_type,
+      domain: mapped.domain,
+      difficulty: "medium",
+      source: "simulator",
+      source_session_id: outcome.session_id,
+      question_id: null,
+      reason_tag: "unknown",
+      mistake_pattern: `${mapped.domain.replace(/_/g, " ")} weakness from SAT mock`,
+      coach_note: "Seeded from your SAT simulator result. Drill this domain in Practice Lab.",
+      status: "active",
+      review_count: 0,
+      next_review_at: nowIso,
+      last_seen_at: nowIso,
+    });
+    if (error) {
+      skipped += 1;
+      logOpsEvent("warn", opsDomain, "sat_notebook_seed_failed", {
+        user_id: userId,
+        domain: mapped.domain,
+        error: (error as { message?: string }).message ?? String(error),
+      });
+      continue;
+    }
+    seeded += 1;
+  }
+
+  return { applicable: true, seeded, skipped };
+};
+
 const parseEventContext = (
   event: OutboxEventRow,
 ): { userId: string; productId: string; sessionId: string } => {
@@ -606,9 +688,10 @@ serve(async (req) => {
           if (doneError) throw doneError;
         }
 
-        // IELTS feedback loop side-effect. Best-effort: failures here do not
+        // Product feedback loop side-effects. Best-effort: failures here do not
         // un-deliver the event (the profile upsert is the primary contract).
         let ieltsFeedback: IeltsFeedbackResult | null = null;
+        let satFeedback: SatFeedbackResult | null = null;
         if (!dryRun && latestOutcome && eventType === "exam.result") {
           try {
             ieltsFeedback = await seedIeltsSrsFromOutcome(sb, ctx.userId, latestOutcome);
@@ -622,6 +705,15 @@ serve(async (req) => {
               error: err instanceof Error ? err.message : String(err),
             });
           }
+          try {
+            satFeedback = await seedSatNotebookFromOutcome(sb, ctx.userId, latestOutcome);
+          } catch (err) {
+            logOpsEvent("warn", opsDomain, "sat_feedback_loop_failed", {
+              event_id: event.id,
+              user_id: ctx.userId,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
         }
 
         delivered += 1;
@@ -629,10 +721,13 @@ serve(async (req) => {
         const ieltsSuffix = ieltsFeedback?.applicable
           ? ` srs_seeded=${ieltsFeedback.seeded} srs_skipped=${ieltsFeedback.skipped}`
           : "";
+        const satSuffix = satFeedback?.applicable
+          ? ` sat_notebook_seeded=${satFeedback.seeded} sat_notebook_skipped=${satFeedback.skipped}`
+          : "";
         details.push({
           event_id: event.id,
           status: dryRun ? "validated" : "delivered",
-          message: `${baseMessage}${ieltsSuffix}`,
+          message: `${baseMessage}${ieltsSuffix}${satSuffix}`,
         });
       } catch (err) {
         failed += 1;

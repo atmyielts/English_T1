@@ -1,0 +1,13 @@
+{
+  "name": "@schood/sat-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./question-types": "./src/question-types.ts",
+    "./scoring": "./src/scoring.ts",
+    "./rubrics": "./src/rubrics.ts"
+  },
+  "types": "./src/index.ts"
+}
