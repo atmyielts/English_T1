@@ -158,6 +158,11 @@ export const SessionResultsPage: React.FC = () => {
     if (!Number.isFinite(raw) || !Number.isFinite(max) || max <= 0) return 'Not available';
     return `${Math.round((raw / max) * 100)}%`;
   };
+  const practiceLabUrl = (() => {
+    const url = new URL('https://practice.sat.schood.online/bank');
+    url.searchParams.set('mistake_history', 'previously_missed');
+    return url.toString();
+  })();
 
   // Auto-trigger writing grading for sessions that include Writing.
   useEffect(() => {
@@ -316,6 +321,26 @@ export const SessionResultsPage: React.FC = () => {
             </table>
           </div>
         </div>
+
+        {isSatSession ? (
+          <div className="mt-8 rounded-2xl border border-emerald-700/15 bg-emerald-50 p-5">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700">Practice Lab</div>
+                <h2 className="text-lg font-bold text-gray-900 mt-1">Turn this mock into tomorrow's drill plan.</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Missed SAT domains can be reviewed in the new Practice Lab with adaptive drills, notebook review, and AI explanations.
+                </p>
+              </div>
+              <a
+                href={practiceLabUrl}
+                className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-center"
+              >
+                Open Practice Lab
+              </a>
+            </div>
+          </div>
+        ) : null}
 
         {hasWriting ? (
           <div className="mt-10 pt-8 border-t border-gray-100">
