@@ -4449,6 +4449,82 @@ serve(async (req) => {
       return jsonCached(200, { ok: true, ...data });
     }
 
+    // Universal score-impact prediction. Takes the user's top 3 weak (or active)
+    // mistake-notebook entries plus their mastery rolling-accuracy, runs the
+    // expectedBandImpact heuristic per area, sums conservative+optimistic ranges
+    // capped to a sensible overall lift (1.5 bands max — no honest claim
+    // beyond that), returns a single range like { conservative: 0.5, optimistic: 1.0 }
+    // for the dashboard ScoreImpactCallout card.
+    if (req.method === "GET" && route === "/insights/score-impact") {
+      // Pull top weak/active mistake-notebook entries.
+      const { data: notebookRows } = await sb
+        .from("ielts_practice_mistake_notebook")
+        .select("question_type,section_type,review_count,last_seen_at,status")
+        .eq("user_id", auth.userId)
+        .in("status", ["active", "difficult"])
+        .order("priority", { ascending: false })
+        .order("last_seen_at", { ascending: false })
+        .limit(8);
+
+      const entries = Array.isArray(notebookRows) ? notebookRows as Array<Record<string, unknown>> : [];
+
+      // Pull mastery rows for the affected question types to grab rolling accuracy.
+      const questionTypes = [...new Set(entries.map((r) => String(r.question_type ?? "")))].filter(Boolean);
+      const masteryByType = new Map<string, { rolling_accuracy: number | null; attempts: number }>();
+      if (questionTypes.length > 0) {
+        const { data: masteryRows } = await sb
+          .from("ielts_practice_mastery")
+          .select("question_type,rolling_accuracy_ratio,attempts")
+          .eq("user_id", auth.userId)
+          .in("question_type", questionTypes);
+        for (const row of (masteryRows ?? []) as Array<Record<string, unknown>>) {
+          masteryByType.set(String(row.question_type ?? ""), {
+            rolling_accuracy: typeof row.rolling_accuracy_ratio === "number" ? row.rolling_accuracy_ratio : null,
+            attempts: typeof row.attempts === "number" ? row.attempts : 0,
+          });
+        }
+      }
+
+      // Compute per-area expected impact, take top 3 by optimistic gain.
+      const areaImpacts = entries.map((entry) => {
+        const qt = String(entry.question_type ?? "");
+        const mastery = masteryByType.get(qt) ?? { rolling_accuracy: null, attempts: 0 };
+        const frequency = Math.max(1, Number(entry.review_count) || 1);
+        // Inline the heuristic to avoid edge-function import of frontend package.
+        const accuracy = typeof mastery.rolling_accuracy === "number" && Number.isFinite(mastery.rolling_accuracy)
+          ? Math.max(0, Math.min(1, mastery.rolling_accuracy))
+          : 0.5;
+        const gap = Math.max(0.15, 1 - accuracy);
+        const freqClamped = Math.max(1, Math.min(10, frequency));
+        const base = 0.25 * gap * (0.5 + freqClamped * 0.07);
+        const conservative = Math.min(1.0, Math.round(base * 10) / 10);
+        const optimistic = Math.min(1.0, Math.round(base * 1.7 * 10) / 10);
+        return {
+          question_type: qt,
+          section_type: String(entry.section_type ?? ""),
+          conservative,
+          optimistic: Math.max(optimistic, conservative + 0.1),
+          rolling_accuracy: mastery.rolling_accuracy,
+          error_frequency: frequency,
+        };
+      })
+        .sort((a, b) => b.optimistic - a.optimistic)
+        .slice(0, 3);
+
+      const totalConservative = Math.min(1.5, Math.round(areaImpacts.reduce((s, a) => s + a.conservative, 0) * 10) / 10);
+      const totalOptimistic = Math.min(1.5, Math.round(areaImpacts.reduce((s, a) => s + a.optimistic, 0) * 10) / 10);
+
+      return jsonCached(200, {
+        ok: true,
+        areas: areaImpacts,
+        total: {
+          conservative: totalConservative,
+          optimistic: Math.max(totalOptimistic, totalConservative + 0.1),
+        },
+        sample_size: entries.length,
+      });
+    }
+
     // AI Writing prep — outline + band-8 sample for a user-supplied prompt.
     // Stateless; no DB read or write. Returns structured JSON the frontend
     // renders as a two-column scaffold (your plan vs. the model answer).

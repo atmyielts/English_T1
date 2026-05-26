@@ -40,6 +40,7 @@ import {
   DashboardSectionTitle,
   MockTestEntryCard,
   PreTestModeBanner,
+  ScoreImpactCallout,
   VocabFromMistakesCard,
 } from '../components/PracticeFocusExtras';
 
@@ -675,6 +676,8 @@ export const DashboardPage = () => {
             hint="The drills that keep what you've learned from slipping away."
             anchorId="dashboard-review"
           />
+
+          <ScoreImpactCallout accessToken={accessToken} />
 
           <VocabFromMistakesCard accessToken={accessToken} />
 
