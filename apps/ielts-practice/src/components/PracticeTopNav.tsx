@@ -20,6 +20,10 @@ type PracticeTopNavProps = {
   brandHref?: string;
   compact?: boolean;
   actions?: PracticeNavAction[];
+  // Optional element rendered alongside the action buttons in the top-right.
+  // Used by DashboardPage to mount the cross-app streak badge so it's visible
+  // ambient context without polluting the action list.
+  leadingNode?: React.ReactNode;
 };
 
 export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
@@ -28,6 +32,7 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
   brandTo = '/dashboard',
   brandHref,
   compact = false,
+  leadingNode,
   actions = [],
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -100,6 +105,7 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
         )}
 
         <div className="top-nav-actions">
+          {leadingNode}
           {actions.map((action) => renderAction(action))}
           {actions.length > 0 ? (
             <button

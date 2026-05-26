@@ -43,6 +43,7 @@ import {
   ScoreImpactCallout,
   VocabFromMistakesCard,
 } from '../components/PracticeFocusExtras';
+import { UniversalStreakBadge } from '../components/UniversalStreakBadge';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -535,6 +536,7 @@ export const DashboardPage = () => {
               </p>
             </div>
             <div className="top-nav-actions">
+              <UniversalStreakBadge accessToken={accessToken} />
               <Link to="/today" className="btn solid">Start today’s session</Link>
               <Link to="/plan" className="btn ghost">Daily Plan</Link>
               {nextLabItem ? (
