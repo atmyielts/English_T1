@@ -125,3 +125,34 @@ export const formatBand = (value: number | null | undefined): string => {
   if (value == null || !Number.isFinite(value)) return '-';
   return value.toFixed(1);
 };
+
+// Expected band-score impact for fixing a specific weak area. Mirrors the SAT
+// `expectedPointImpact` helper but in band units. Each of the 4 IELTS sections
+// contributes 25% to the overall band, so a 1-point band lift in one section
+// translates to roughly 0.25 of overall band lift if all else is held constant.
+//
+// Inputs:
+//   currentAccuracy — rolling accuracy (0..1) on the offending question type
+//   errorFrequency — how many times this trap has appeared in recent practice
+//                    (1..10+). Higher = more leverage in fixing it.
+//
+// Output: { conservative, optimistic } in band units. Bands are reported to
+// 0.1 precision, capped at 1.0 per area (no single question type fix can lift
+// the whole overall band by more than ~1.0).
+export const expectedBandImpact = (
+  currentAccuracy: number | null | undefined,
+  errorFrequency: number,
+): { conservative: number; optimistic: number } => {
+  const accuracy = typeof currentAccuracy === 'number' && Number.isFinite(currentAccuracy)
+    ? Math.max(0, Math.min(1, currentAccuracy))
+    : 0.5;
+  const gap = Math.max(0.15, 1 - accuracy);
+  const frequency = Math.max(1, Math.min(10, errorFrequency));
+  // Single-section contribution to overall (0.25) × gap × frequency factor.
+  // Tuned so a band-5 weak area with high error frequency yields ~0.3 conservative,
+  // ~0.5 optimistic on overall band. Cap at 1.0 per area.
+  const base = 0.25 * gap * (0.5 + frequency * 0.07);
+  const conservative = Math.min(1.0, Math.round(base * 10) / 10);
+  const optimistic = Math.min(1.0, Math.round(base * 1.7 * 10) / 10);
+  return { conservative, optimistic: Math.max(optimistic, conservative + 0.1) };
+};

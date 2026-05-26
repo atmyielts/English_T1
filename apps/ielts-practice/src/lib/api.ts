@@ -942,6 +942,25 @@ export type PracticeNarrativeResponse = {
 export const practiceNarrativeGet = (accessToken: string): Promise<PracticeNarrativeResponse> =>
   call(accessToken, "/ielts-practice/insights/plan-narrative");
 
+export type ScoreImpactArea = {
+  question_type: string;
+  section_type: string;
+  conservative: number;
+  optimistic: number;
+  rolling_accuracy: number | null;
+  error_frequency: number;
+};
+
+export type ScoreImpactResponse = {
+  ok: boolean;
+  areas: ScoreImpactArea[];
+  total: { conservative: number; optimistic: number };
+  sample_size: number;
+};
+
+export const practiceScoreImpactGet = (accessToken: string): Promise<ScoreImpactResponse> =>
+  call(accessToken, "/ielts-practice/insights/score-impact");
+
 export type WritingAnnotation = {
   task_id: string;
   phrase: string;

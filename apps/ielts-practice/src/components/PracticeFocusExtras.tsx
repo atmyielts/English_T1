@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { AlarmClock, BookmarkPlus, GraduationCap, Library, Moon, ShieldCheck, Sparkles } from 'lucide-react';
+import { AlarmClock, BookmarkPlus, GraduationCap, Library, Moon, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import {
+  practiceScoreImpactGet,
   practiceVocabFromMistakesGet,
+  type ScoreImpactResponse,
   type VocabFromMistakesEntry,
 } from '../lib/api';
 
@@ -266,3 +268,139 @@ export const DashboardSectionTitle = ({ eyebrow, title, hint, anchorId }: Sectio
     {hint ? <p className="muted" style={{ margin: 0, fontSize: 14 }}>{hint}</p> : null}
   </header>
 );
+
+// ============================================================
+// Score-impact callout
+// ============================================================
+// Converts the top-3 active mistake notebook entries into a band
+// range like "fixing these 3 weak areas could add roughly 0.5-1.0
+// to your overall band." Conservative/optimistic comes from
+// expectedBandImpact in packages/ielts-core.
+
+interface ScoreImpactProps {
+  accessToken: string | null;
+}
+
+const titleCase = (s: string) =>
+  s.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+export const ScoreImpactCallout = ({ accessToken }: ScoreImpactProps) => {
+  const [data, setData] = useState<ScoreImpactResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    setLoading(true);
+    practiceScoreImpactGet(accessToken)
+      .then((res) => {
+        if (active) setData(res);
+      })
+      .catch(() => {
+        if (active) setData(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accessToken]);
+
+  if (!accessToken) return null;
+
+  if (loading) {
+    return (
+      <article
+        style={{
+          padding: 18,
+          borderRadius: 14,
+          border: '1px solid color-mix(in srgb, #1f8a55 18%, transparent)',
+          background: 'color-mix(in srgb, #1f8a55 4%, white)',
+          minHeight: 110,
+        }}
+      >
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Calculating score impact…</p>
+      </article>
+    );
+  }
+
+  if (!data || data.areas.length === 0) {
+    return (
+      <article
+        style={{
+          padding: 18,
+          borderRadius: 14,
+          border: '1px solid #e5e7eb',
+          background: '#fafafa',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <TrendingUp size={20} style={{ color: '#9ca3af', flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 16 }}>Score impact</strong>
+            <p style={{ margin: '6px 0 0', fontSize: 14, color: '#6b7280' }}>
+              Complete a few labs and we'll show you which weak areas would lift your band the most.
+            </p>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  const { conservative, optimistic } = data.total;
+  return (
+    <article
+      style={{
+        padding: 20,
+        borderRadius: 14,
+        border: '1px solid color-mix(in srgb, #1f8a55 25%, transparent)',
+        background: 'color-mix(in srgb, #1f8a55 5%, white)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <TrendingUp size={22} style={{ color: '#1f8a55', flexShrink: 0, marginTop: 2 }} />
+        <div style={{ flex: 1 }}>
+          <p className="eyebrow" style={{ margin: 0, color: '#1f8a55' }}>Score impact</p>
+          <h3 style={{ fontFamily: 'Fraunces, serif', margin: '4px 0 6px', fontSize: 20 }}>
+            Fixing these {data.areas.length} weak areas could add roughly{' '}
+            <span style={{ color: '#1f8a55' }}>+{conservative} to +{optimistic}</span> to your overall band.
+          </h3>
+          <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 }}>
+            {data.areas.map((area, i) => (
+              <li
+                key={`${area.question_type}-${i}`}
+                style={{
+                  padding: '8px 12px',
+                  background: '#fff',
+                  border: '1px solid #e8e2d0',
+                  borderRadius: 8,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: 13.5,
+                }}
+              >
+                <span>
+                  <strong>{titleCase(area.question_type)}</strong>
+                  <span style={{ color: '#7a7263', marginLeft: 6, fontSize: 12.5 }}>
+                    {titleCase(area.section_type)}
+                  </span>
+                </span>
+                <span style={{ color: '#1f8a55', fontWeight: 600 }}>
+                  +{area.conservative}–{area.optimistic}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p style={{ margin: '10px 0 0', fontSize: 12, color: '#7a7263' }}>
+            Range assumes you bring these areas to your current strongest level. Not a guarantee.
+          </p>
+        </div>
+      </div>
+    </article>
+  );
+};
