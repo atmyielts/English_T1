@@ -18,6 +18,7 @@ import {
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { getPlanItemDescription, getPlanItemTitle } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
+import { pingUserStreak } from '../lib/useUserStreak';
 
 type AnswerMap = Record<string, Record<string, unknown>>;
 
@@ -313,6 +314,14 @@ export const LabPage = () => {
           // best-effort
         });
       }
+
+      // Cross-app streak ping: a completed lab counts as today's activity.
+      // Fire-and-forget; the streak badge re-fetches itself on next mount.
+      void pingUserStreak(accessToken, {
+        activity_type: 'practice_lab_completed',
+        xp: 25,
+        minutes: 10,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submit failed');
     } finally {
