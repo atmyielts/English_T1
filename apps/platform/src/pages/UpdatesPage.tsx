@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Bell, Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supportAnnouncementsList, type PlatformAnnouncement } from '../lib/platformClient';
+import { supportAnnouncementsList, supportAnnouncementsMarkRead, type PlatformAnnouncement } from '../lib/platformClient';
+import { supabase } from '../lib/supabase';
 import {
   MARKETING_UPDATES,
   markUpdateIdsSeen,
@@ -21,6 +22,7 @@ const fmt = (iso: string): string => {
 export const UpdatesPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
 
   const navItems: SiteHeaderNavItem[] = [
@@ -41,16 +43,22 @@ export const UpdatesPage: React.FC = () => {
   };
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setAccessToken(data.session?.access_token ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => setAccessToken(session?.access_token ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const run = async () => {
       try {
-        const res = await supportAnnouncementsList({ limit: 200 });
+        const res = await supportAnnouncementsList({ limit: 200, accessToken });
         setAnnouncements(res.announcements ?? []);
       } catch {
         setAnnouncements([]);
       }
     };
     void run();
-  }, []);
+  }, [accessToken]);
 
   const updateItems = useMemo(() => {
     const staticItems = MARKETING_UPDATES.map((item) => ({
@@ -70,6 +78,8 @@ export const UpdatesPage: React.FC = () => {
       created_at: item.created_at,
       cta_label: item.cta_label ?? undefined,
       cta_href: item.cta_href ?? undefined,
+      announcement_id: item.id,
+      is_read: item.is_read,
       source: 'Announcement',
     }));
 
@@ -78,7 +88,19 @@ export const UpdatesPage: React.FC = () => {
 
   useEffect(() => {
     markUpdateIdsSeen(updateItems.map((item) => item.key));
-  }, [updateItems]);
+    if (!accessToken) return;
+
+    const unreadAnnouncementIds = announcements.filter((item) => !item.is_read).map((item) => item.id);
+    if (unreadAnnouncementIds.length === 0) return;
+
+    const nowIso = new Date().toISOString();
+    setAnnouncements((prev) =>
+      prev.map((item) => (unreadAnnouncementIds.includes(item.id) ? { ...item, is_read: true, read_at: item.read_at ?? nowIso } : item)),
+    );
+    void supportAnnouncementsMarkRead(accessToken, unreadAnnouncementIds).catch(() => {
+      // Local read state still prevents the current page from presenting already-read items as new.
+    });
+  }, [accessToken, announcements, updateItems]);
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">

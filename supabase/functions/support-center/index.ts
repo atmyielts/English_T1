@@ -39,6 +39,10 @@ type PlatformAnnouncementInput = {
   metadata?: Json;
 };
 
+type PlatformAnnouncementReadInput = {
+  announcement_ids?: unknown[];
+};
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-user-jwt",
@@ -82,6 +86,8 @@ const normalizeIsoOrNull = (value: unknown): string | null => {
   if (Number.isNaN(dt.getTime())) throw new Error("Invalid datetime format");
   return dt.toISOString();
 };
+
+const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
 
 const getBearerToken = (req: Request): string | null => {
   const auth = req.headers.get("Authorization") ?? "";
@@ -152,7 +158,82 @@ serve(async (req) => {
         return startsOk && endsOk;
       }).slice(0, limit);
 
-      return jsonResponse(200, { announcements: visible });
+      let readsByAnnouncement = new Map<string, { read_at: string; announcement_updated_at: string | null }>();
+      if (authUser && visible.length > 0) {
+        const ids = visible.map((item: any) => String(item.id)).filter(Boolean);
+        try {
+          const { data: readRows, error: readError } = await sb
+            .from("platform_announcement_reads")
+            .select("announcement_id,read_at,announcement_updated_at")
+            .eq("user_id", authUser.id)
+            .in("announcement_id", ids);
+          if (readError) throw readError;
+          readsByAnnouncement = new Map(
+            (readRows ?? []).map((row: any) => [
+              String(row.announcement_id),
+              {
+                read_at: String(row.read_at),
+                announcement_updated_at: row.announcement_updated_at ? String(row.announcement_updated_at) : null,
+              },
+            ]),
+          );
+        } catch (_err) {
+          readsByAnnouncement = new Map();
+        }
+      }
+
+      const decorated = visible.map((item: any) => {
+        const read = readsByAnnouncement.get(String(item.id));
+        const updatedAt = Date.parse(String(item.updated_at ?? item.created_at ?? ""));
+        const readVersionAt = Date.parse(String(read?.announcement_updated_at ?? read?.read_at ?? ""));
+        const isRead = Boolean(read) && (!Number.isFinite(updatedAt) || (Number.isFinite(readVersionAt) && readVersionAt >= updatedAt));
+        return {
+          ...item,
+          is_read: isRead,
+          read_at: read?.read_at ?? null,
+        };
+      });
+
+      return jsonResponse(200, { announcements: decorated });
+    }
+
+    if (req.method === "POST" && action === "announcements-read") {
+      const authUser = await getAuthUser(sb, req);
+      if (!authUser) return jsonResponse(401, { error: "Unauthorized" });
+
+      const body = (await req.json().catch(() => ({}))) as PlatformAnnouncementReadInput;
+      const ids = Array.from(
+        new Set(
+          (Array.isArray(body?.announcement_ids) ? body.announcement_ids : [])
+            .map((id) => normalizeText(id, 64))
+            .filter(Boolean),
+        ),
+      ).slice(0, 200);
+
+      if (ids.length === 0) return jsonResponse(400, { error: "announcement_ids is required" });
+
+      const { data: announcementRows, error: announcementsError } = await sb
+        .from("platform_announcements")
+        .select("id,updated_at")
+        .in("id", ids);
+      if (announcementsError) throw announcementsError;
+
+      const nowIso = new Date().toISOString();
+      const rows = (announcementRows ?? []).map((row: any) => ({
+        announcement_id: row.id,
+        user_id: authUser.id,
+        read_at: nowIso,
+        announcement_updated_at: row.updated_at ?? nowIso,
+      }));
+
+      if (rows.length > 0) {
+        const { error: upsertError } = await sb
+          .from("platform_announcement_reads")
+          .upsert(rows, { onConflict: "announcement_id,user_id" });
+        if (upsertError) throw upsertError;
+      }
+
+      return jsonResponse(200, { ok: true, read_count: rows.length });
     }
 
     if (req.method === "POST" && action === "message") {
@@ -166,7 +247,7 @@ serve(async (req) => {
       const message = normalizeText(body?.message, 4000);
       const source = normalizeText(body?.source || "platform", 64) || "platform";
       const serviceSlug = normalizeText(body?.service_slug, 120) || null;
-      const metadata = body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
+      const metadata = isObject(body?.metadata)
         ? body.metadata
         : {};
 

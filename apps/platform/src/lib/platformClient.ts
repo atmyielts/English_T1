@@ -1684,6 +1684,8 @@ export type PlatformAnnouncement = {
   metadata: Json | null;
   created_by?: string | null;
   updated_by?: string | null;
+  is_read?: boolean;
+  read_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -1712,16 +1714,34 @@ export const supportLinksList = async (): Promise<{ links: SupportLink[] }> => {
 };
 
 export const supportAnnouncementsList = async (
-  opts?: { limit?: number },
+  opts?: { limit?: number; accessToken?: string | null },
 ): Promise<{ announcements: PlatformAnnouncement[] }> => {
   const qs = new URLSearchParams({ action: 'announcements' });
   if (typeof opts?.limit === 'number' && Number.isFinite(opts.limit)) qs.set('limit', String(Math.floor(opts.limit)));
-  const res = await fetch(`${edgeBase}/support-center?${qs.toString()}`, { method: 'GET', headers: publicApiHeaders });
+  const headers = opts?.accessToken ? apiHeaders(opts.accessToken) : publicApiHeaders;
+  const res = await fetch(`${edgeBase}/support-center?${qs.toString()}`, { method: 'GET', headers });
   if (!res.ok) {
     const details = await readJsonOrText(res);
     throw new Error(`GET /support-center?action=announcements failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as { announcements: PlatformAnnouncement[] };
+};
+
+export const supportAnnouncementsMarkRead = async (
+  accessToken: string,
+  announcementIds: string[],
+): Promise<{ ok: boolean; read_count: number }> => {
+  const ids = Array.from(new Set(announcementIds.filter((id) => typeof id === 'string' && id.length > 0))).slice(0, 200);
+  const res = await fetch(`${edgeBase}/support-center?action=announcements-read`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ announcement_ids: ids }),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /support-center?action=announcements-read failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { ok: boolean; read_count: number };
 };
 
 export const supportMessageCreate = async (

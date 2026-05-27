@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { supportAnnouncementsList, type PlatformAnnouncement } from '../../lib/platformClient';
+import { supportAnnouncementsList, supportAnnouncementsMarkRead, type PlatformAnnouncement } from '../../lib/platformClient';
+import { supabase } from '../../lib/supabase';
 import {
   MARKETING_UPDATES,
   UPDATES_SEEN_IDS_STORAGE_KEY,
@@ -19,6 +20,7 @@ export const UpdatesButton: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentItemIds, setCurrentItemIds] = useState<string[]>([]);
   const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
@@ -27,21 +29,26 @@ export const UpdatesButton: React.FC = () => {
   const isHidden = HIDDEN_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
   const hasUnread = unreadCount > 0;
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setAccessToken(data.session?.access_token ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => setAccessToken(session?.access_token ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
   const loadAnnouncements = useCallback(async () => {
     try {
-      const res = await supportAnnouncementsList({ limit: 100 });
+      const res = await supportAnnouncementsList({ limit: 100, accessToken });
       setAnnouncements(res.announcements ?? []);
     } catch {
       // Keep updates button non-blocking if announcements endpoint is temporarily unavailable.
       setAnnouncements([]);
     }
-  }, []);
+  }, [accessToken]);
 
   const refreshUnreadCount = useCallback(() => {
-    const ids = [
-      ...MARKETING_UPDATES.map((item) => marketingUpdateKey(item.id)),
-      ...announcements.map((item) => platformAnnouncementUpdateKey(item.id)),
-    ];
+    const marketingIds = MARKETING_UPDATES.map((item) => marketingUpdateKey(item.id));
+    const announcementIds = announcements.map((item) => platformAnnouncementUpdateKey(item.id));
+    const ids = [...marketingIds, ...announcementIds];
     setCurrentItemIds(ids);
 
     if (isUpdatesPage) {
@@ -51,9 +58,30 @@ export const UpdatesButton: React.FC = () => {
     }
 
     const seenIds = readSeenUpdateIds();
-    const count = ids.reduce((sum, id) => (seenIds.has(id) ? sum : sum + 1), 0);
+    const marketingUnread = marketingIds.reduce((sum, id) => (seenIds.has(id) ? sum : sum + 1), 0);
+    const announcementUnread = announcements.reduce((sum, item) => {
+      const key = platformAnnouncementUpdateKey(item.id);
+      if (accessToken) return item.is_read ? sum : sum + 1;
+      return seenIds.has(key) ? sum : sum + 1;
+    }, 0);
+    const count = marketingUnread + announcementUnread;
     setUnreadCount(count);
-  }, [announcements, isUpdatesPage]);
+  }, [accessToken, announcements, isUpdatesPage]);
+
+  const markAnnouncementsRead = useCallback((items: PlatformAnnouncement[]) => {
+    const ids = items.map((item) => item.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    const nowIso = new Date().toISOString();
+    setAnnouncements((prev) =>
+      prev.map((item) => (ids.includes(item.id) ? { ...item, is_read: true, read_at: item.read_at ?? nowIso } : item)),
+    );
+
+    if (!accessToken) return;
+    void supportAnnouncementsMarkRead(accessToken, ids).catch(() => {
+      // Local read state already hides the badge; server receipts will retry on the next visit/focus.
+    });
+  }, [accessToken]);
 
   useEffect(() => {
     void loadAnnouncements();
@@ -70,6 +98,12 @@ export const UpdatesButton: React.FC = () => {
       window.clearTimeout(timer);
     };
   }, [isUpdatesPage, refreshUnreadCount]);
+
+  useEffect(() => {
+    if (!isUpdatesPage || !accessToken || announcements.length === 0) return;
+    const unread = announcements.filter((item) => !item.is_read);
+    markAnnouncementsRead(unread);
+  }, [accessToken, announcements, isUpdatesPage, markAnnouncementsRead]);
 
   useEffect(() => {
     const onFocus = () => {
@@ -97,6 +131,7 @@ export const UpdatesButton: React.FC = () => {
       type="button"
       onClick={() => {
         markUpdateIdsSeen(currentItemIds);
+        markAnnouncementsRead(announcements.filter((item) => !item.is_read));
         setUnreadCount(0);
         navigate('/updates');
       }}
