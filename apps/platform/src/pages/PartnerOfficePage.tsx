@@ -11,6 +11,7 @@ import {
   ReceiptText,
   RefreshCw,
   Send,
+  ShieldCheck,
   Sparkles,
   Ticket,
   UserPlus,
@@ -196,6 +197,8 @@ export const PartnerOfficePage: React.FC = () => {
   const referralUrl = referrals?.referral_url_path ? `${origin}${referrals.referral_url_path}` : referrals?.account?.referral_code ? `${origin}/r/${encodeURIComponent(referrals.account.referral_code)}` : '';
   const legacyReferralUrl = referrals?.legacy_referral_url_path ? `${origin}${referrals.legacy_referral_url_path}` : referrals?.account?.referral_code ? `${origin}/?ref=${encodeURIComponent(referrals.account.referral_code)}` : '';
   const referralStrategy = referrals?.program_strategy;
+  const affiliateProgram = referrals?.affiliate_program;
+  const affiliateGuarantee = referrals?.affiliate_guarantee;
   const shareLinks = useMemo<ReferralShareLink[]>(() => {
     if (referrals?.share_links?.length) return referrals.share_links;
     if (!referrals?.account?.referral_code) return [];
@@ -207,6 +210,8 @@ export const PartnerOfficePage: React.FC = () => {
     ];
   }, [referrals?.account?.referral_code, referrals?.share_links]);
   const primaryShareLink = shareLinks.find((link) => link.primary) ?? shareLinks[0] ?? null;
+  const affiliateLinks = useMemo<ReferralShareLink[]>(() => referrals?.affiliate_links ?? [], [referrals?.affiliate_links]);
+  const primaryAffiliateLink = affiliateLinks.find((link) => link.primary) ?? affiliateLinks[0] ?? null;
   const convertedReferrals = useMemo(() => (referrals?.attributions ?? []).filter((row: any) => row.status === 'converted'), [referrals?.attributions]);
   const pendingReferrals = useMemo(() => (referrals?.attributions ?? []).filter((row: any) => row.status === 'pending'), [referrals?.attributions]);
   const availableCashRewards = useMemo(
@@ -917,6 +922,37 @@ export const PartnerOfficePage: React.FC = () => {
                 </div>
 
                 <div className="space-y-5">
+                  <div className="rounded-3xl border border-gray-900 bg-[#b6f24a] p-5 text-gray-950 shadow-sm md:p-6">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-700">
+                      <ShieldCheck className="h-4 w-4" />
+                      {affiliateProgram?.guarantee_label ?? 'Affiliate guarantee'}
+                    </div>
+                    <h3 className="mt-3 text-2xl font-bold">{affiliateProgram?.tagline ?? 'Tracked, qualified conversions are reserved for payout.'}</h3>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-2xl border border-gray-950/10 bg-white/65 p-3">
+                        <p className="text-gray-600">Tracked</p>
+                        <p className="mt-1 text-2xl font-bold">{affiliateGuarantee?.tracked_attributions ?? 0}</p>
+                      </div>
+                      <div className="rounded-2xl border border-gray-950/10 bg-white/65 p-3">
+                        <p className="text-gray-600">Guaranteed</p>
+                        <p className="mt-1 text-2xl font-bold">{affiliateGuarantee?.guaranteed_rewards ?? 0}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-gray-700">
+                      Reserved cash: <strong>{money(affiliateGuarantee?.reserved_cash_amount ?? 0, affiliateGuarantee?.currency ?? referrals?.cash?.currency ?? 'UZS')}</strong>
+                      {' '} / Reserved credit: <strong>{money(affiliateGuarantee?.reserved_credit_amount ?? 0, affiliateGuarantee?.currency ?? referrals?.credit?.currency ?? 'UZS')}</strong>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => primaryAffiliateLink && void copy(absoluteLink(origin, primaryAffiliateLink.path), 'Affiliate link copied.')}
+                      disabled={!primaryAffiliateLink}
+                      className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-50"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy affiliate link
+                    </button>
+                  </div>
+
                   <div className={`${panelClass} p-5 md:p-6`}>
                     <SectionTitle icon={Link2} label="Referral code" title={referrals?.account?.referral_code ?? '-'} />
                     <div className="mt-5 grid gap-3 text-sm">
@@ -980,6 +1016,39 @@ export const PartnerOfficePage: React.FC = () => {
                 </div>
 
                 <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={ShieldCheck} label="Affiliate guarantee" title={affiliateProgram?.brand_name ?? 'Schood Affiliate Guarantee'} />
+                  <p className="mt-4 text-sm leading-6 text-gray-600">
+                    {affiliateProgram?.description ??
+                      'Affiliate traffic keeps click context, account claim, eligible purchase, reward reservation, payout request, and admin settlement attached to one code.'}
+                  </p>
+                  <div className="mt-5 grid gap-3">
+                    {(affiliateProgram?.proof_points ?? []).slice(0, 5).map((point) => (
+                      <div key={point} className="flex gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                        <span>{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    {affiliateLinks.map((link) => {
+                      const fullLink = absoluteLink(origin, link.path);
+                      return (
+                        <div key={link.id} className="rounded-2xl border border-gray-900/10 bg-white p-4">
+                          <p className="font-semibold text-gray-900">{link.label}</p>
+                          {link.description ? <p className="mt-1 text-sm leading-6 text-gray-600">{link.description}</p> : null}
+                          <button type="button" onClick={() => fullLink && void copy(fullLink, `${link.label} copied.`)} disabled={!fullLink} className={`${secondaryButton} mt-3`}>
+                            <Copy className="h-4 w-4" />
+                            Copy
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+                <div className={`${panelClass} p-5 md:p-6`}>
                   <SectionTitle icon={WalletCards} label="Cash payout" title="Request cash" />
                   <div className="mt-5 grid gap-4">
                     <label className="text-sm font-semibold text-gray-800">
@@ -1024,6 +1093,26 @@ export const PartnerOfficePage: React.FC = () => {
                   >
                     Request cash payout
                   </button>
+                </div>
+
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={ShieldCheck} label="Guarantee terms" title="Qualified means tracked and settled" />
+                  <p className="mt-4 text-sm leading-6 text-gray-600">
+                    The affiliate promise is tied to visible ledger events, so creators can see what is tracked, what is pending, and what is reserved for settlement.
+                  </p>
+                  <div className="mt-5 grid gap-3">
+                    {(affiliateProgram?.terms ?? [
+                      'The first valid referral claim owns the attribution.',
+                      'Eligible purchases convert under the active program rules.',
+                      'Issued cash rewards stay reserved until admin settlement.',
+                      'Refunds, self-referrals, and reversals are excluded.',
+                    ]).slice(0, 4).map((term) => (
+                      <div key={term} className="flex gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                        <span>{term}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 

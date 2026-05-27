@@ -15,6 +15,7 @@ export const ReferralLandingPage: React.FC = () => {
   const [claiming, setClaiming] = useState(false);
 
   const code = useMemo(() => normalizeReferralCode(params.code ?? searchParams.get('ref')), [params.code, searchParams]);
+  const source = useMemo(() => String(searchParams.get('source') ?? 'rewards').trim().toLowerCase(), [searchParams]);
   const service = useMemo(() => String(searchParams.get('service') ?? 'platform').trim().toLowerCase(), [searchParams]);
   const audience = useMemo(() => String(searchParams.get('audience') ?? 'learner').trim().toLowerCase(), [searchParams]);
   const servicePath = useMemo(() => {
@@ -63,13 +64,15 @@ export const ReferralLandingPage: React.FC = () => {
             <div className="bg-[#0f172a] px-6 py-8 text-white md:px-10 md:py-12">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/75">
                 <Sparkles className="h-4 w-4" />
-                Schood Rewards
+                {source === 'affiliate' ? 'Schood Affiliate' : 'Schood Rewards'}
               </div>
               <h1 className="mt-5 max-w-3xl text-3xl font-bold leading-tight md:text-5xl">
                 Your Schood invite is ready.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/72">
-                This code is attached to your browser now. Sign up, explore the right service, and any active referral discount will follow you into eligible checkout.
+                {source === 'affiliate'
+                  ? 'This affiliate code is attached to your browser now. If the account and eligible purchase qualify, the conversion stays traceable through payout settlement.'
+                  : 'This code is attached to your browser now. Sign up, explore the right service, and any active referral discount will follow you into eligible checkout.'}
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <button
@@ -129,6 +132,10 @@ export const ReferralLandingPage: React.FC = () => {
               <div className="rounded-2xl border border-gray-900/10 bg-[#b6f24a] p-4 text-gray-950">
                 <p className="text-gray-700">Service</p>
                 <p className="mt-1 font-semibold capitalize">{service}</p>
+              </div>
+              <div className="col-span-2 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-gray-900">
+                <p className="text-gray-500">Source</p>
+                <p className="mt-1 font-semibold capitalize">{source}</p>
               </div>
             </div>
           </aside>

@@ -103,6 +103,28 @@ const DEFAULT_GROWTH_PROGRAM = {
   ],
 };
 
+const DEFAULT_AFFILIATE_PROGRAM = {
+  brand_name: "Schood Affiliate Guarantee",
+  tagline: "Tracked, qualified conversions are reserved for payout.",
+  guarantee_label: "Tracked conversion guarantee",
+  guarantee_window_days: 45,
+  description:
+    "Affiliate traffic uses the same referral ledger, but with stricter visibility: click context, account claim, eligible purchase, reward reservation, payout request, and admin settlement all stay attached to one code.",
+  terms: [
+    "The first valid referral claim for a referred account owns the attribution.",
+    "A reward is guaranteed only after an eligible purchase converts under the active program rules.",
+    "Issued cash rewards remain reserved as available, requested, approved, or paid until an admin rejects or reverses them.",
+    "Self-referrals, invalid codes, refunded purchases, and admin reversals are excluded.",
+  ],
+  proof_points: [
+    "Code captured from link",
+    "Account attribution stored",
+    "Payment conversion linked",
+    "Reward row issued",
+    "Cash payout settlement audited",
+  ],
+};
+
 const queryPath = (path: string, params: Record<string, string | null | undefined>): string => {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -118,6 +140,15 @@ const buildGrowthProgram = (program: any): Json => {
   const configured = isObject(metadata.growth_program) ? metadata.growth_program : {};
   return {
     ...DEFAULT_GROWTH_PROGRAM,
+    ...configured,
+  };
+};
+
+const buildAffiliateProgram = (program: any): Json => {
+  const metadata = isObject(program?.metadata) ? program.metadata : {};
+  const configured = isObject(metadata.affiliate_program) ? metadata.affiliate_program : {};
+  return {
+    ...DEFAULT_AFFILIATE_PROGRAM,
     ...configured,
   };
 };
@@ -175,6 +206,78 @@ const buildShareLinks = (code: string): Json[] => {
       service: "academy",
     },
   ];
+};
+
+const buildAffiliateLinks = (code: string): Json[] => {
+  const encoded = encodeURIComponent(code);
+  return [
+    {
+      id: "affiliate-main",
+      label: "Affiliate landing",
+      description: "Use this when you want the invite tracked as affiliate traffic.",
+      path: queryPath(`/r/${encoded}`, { source: "affiliate", audience: "creator", channel: "affiliate" }),
+      audience: "creator",
+      service: "platform",
+      primary: true,
+    },
+    {
+      id: "affiliate-pricing",
+      label: "Pricing-ready affiliate",
+      description: "Send warm leads directly to plans while preserving affiliate attribution.",
+      path: queryPath("/plans", { ref: code, source: "affiliate", audience: "buyer", target: "pricing" }),
+      audience: "buyer",
+      service: "platform",
+    },
+    {
+      id: "affiliate-ielts",
+      label: "IELTS affiliate",
+      description: "Track IELTS learner traffic from content, channels, or campaigns.",
+      path: queryPath("/ielts", { ref: code, source: "affiliate", audience: "student", service: "ielts" }),
+      audience: "student",
+      service: "ielts",
+    },
+    {
+      id: "affiliate-centers",
+      label: "Center affiliate",
+      description: "Track education-center and academy operator introductions.",
+      path: queryPath("/education-centers", { ref: code, source: "affiliate", audience: "center", service: "academy" }),
+      audience: "center",
+      service: "academy",
+    },
+  ];
+};
+
+const buildAffiliateGuarantee = (
+  program: any,
+  attributions: any[],
+  rewards: any[],
+  cash: { available: number; requested: number; paid: number },
+): Json => {
+  const converted = attributions.filter((row: any) => row.status === "converted").length;
+  const pending = attributions.filter((row: any) => row.status === "pending").length;
+  const issuedRewards = rewards.filter((row: any) => row.status === "issued");
+  const guaranteedRewards = issuedRewards.filter((row: any) =>
+    Number(row.credit_amount ?? 0) > 0 ||
+    ["available", "requested", "approved", "paid"].includes(String(row.cash_status ?? "")),
+  );
+  const creditReserved = guaranteedRewards.reduce((sum: number, row: any) => sum + Number(row.credit_amount ?? 0), 0);
+  return {
+    mode: "tracked_conversion",
+    status: program?.status === "active" ? "active" : "program_not_active",
+    tracked_attributions: attributions.length,
+    pending_attributions: pending,
+    converted_attributions: converted,
+    issued_rewards: issuedRewards.length,
+    guaranteed_rewards: guaranteedRewards.length,
+    reserved_credit_amount: creditReserved,
+    reserved_cash_amount: cash.available + cash.requested + cash.paid,
+    available_cash_amount: cash.available,
+    requested_cash_amount: cash.requested,
+    paid_cash_amount: cash.paid,
+    minimum_cash_payout_amount: Number(program?.minimum_cash_payout_amount ?? 0),
+    cash_payouts_enabled: Boolean(program?.cash_payouts_enabled),
+    currency: String(program?.currency ?? "UZS").toUpperCase(),
+  };
 };
 
 const randomReferralCode = (len = 8): string => {
@@ -297,6 +400,8 @@ serve(async (req) => {
       const cashPaid = cashRows
         .filter((row: any) => row.cash_status === "paid")
         .reduce((sum: number, row: any) => sum + Number(row.cash_amount ?? 0), 0);
+      const attributionRows = attributions ?? [];
+      const rewardRows = rewards ?? [];
 
       return json(200, {
         account,
@@ -310,6 +415,13 @@ serve(async (req) => {
         },
         share_links: buildShareLinks(account.referral_code),
         program_strategy: buildGrowthProgram(program),
+        affiliate_program: buildAffiliateProgram(program),
+        affiliate_links: buildAffiliateLinks(account.referral_code),
+        affiliate_guarantee: buildAffiliateGuarantee(program, attributionRows, rewardRows, {
+          available: cashAvailable,
+          requested: cashRequested,
+          paid: cashPaid,
+        }),
         credit: {
           currency,
           available_amount: Number(creditData ?? 0),
@@ -323,8 +435,8 @@ serve(async (req) => {
           payouts_enabled: Boolean(program?.cash_payouts_enabled),
           minimum_payout_amount: Number(program?.minimum_cash_payout_amount ?? 0),
         },
-        attributions: attributions ?? [],
-        rewards: rewards ?? [],
+        attributions: attributionRows,
+        rewards: rewardRows,
         ledger: ledger ?? [],
         cash_payout_requests: cashPayoutRequests ?? [],
       });

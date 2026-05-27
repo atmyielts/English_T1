@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Banknote, CheckCircle2, RefreshCw, Save, Sparkles, XCircle } from 'lucide-react';
+import { Banknote, CheckCircle2, RefreshCw, Save, ShieldCheck, Sparkles, XCircle } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
 import {
@@ -132,6 +132,7 @@ export const AdminReferralsPage: React.FC = () => {
     [summary?.rewards],
   );
   const growthProgram = useMemo(() => asRecord(asRecord(program?.metadata).growth_program), [program?.metadata]);
+  const affiliateProgram = useMemo(() => asRecord(asRecord(program?.metadata).affiliate_program), [program?.metadata]);
 
   return (
     <AdminLayout>
@@ -204,6 +205,38 @@ export const AdminReferralsPage: React.FC = () => {
                 <div key={audience.id ?? audience.label} className="rounded-2xl border border-gray-100 bg-white p-4">
                   <p className="font-medium text-gray-900">{audience.label ?? audience.id}</p>
                   <p className="mt-1 text-sm leading-6 text-gray-500">{audience.description ?? '-'}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {program ? (
+          <section className={panelClass}>
+            <div className="mb-4 flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Affiliate guarantee</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="rounded-2xl border border-gray-100 bg-emerald-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">{affiliateProgram.brand_name ?? 'Schood Affiliate Guarantee'}</p>
+                <p className="mt-2 text-2xl font-semibold text-gray-900">{affiliateProgram.tagline ?? 'Tracked, qualified conversions are reserved for payout.'}</p>
+                <p className="mt-2 text-sm leading-6 text-gray-600">{affiliateProgram.description ?? 'Affiliate traffic is guaranteed when code capture, account attribution, eligible purchase, reward issue, and payout settlement are all visible in the ledger.'}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                <p className="text-sm font-semibold text-gray-900">{affiliateProgram.guarantee_label ?? 'Tracked conversion guarantee'}</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between gap-3"><span>Window</span><span className="font-medium">{affiliateProgram.guarantee_window_days ?? 45} days</span></div>
+                  <div className="flex justify-between gap-3"><span>Cash status</span><span className="font-medium">{program.cash_payouts_enabled ? 'Reservable' : 'Credit only'}</span></div>
+                  <div className="flex justify-between gap-3"><span>Minimum payout</span><span className="font-medium">{money(program.minimum_cash_payout_amount ?? 0, program.currency)}</span></div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {(Array.isArray(affiliateProgram.terms) ? affiliateProgram.terms : []).slice(0, 4).map((term: string) => (
+                <div key={term} className="flex gap-3 rounded-2xl border border-gray-100 bg-white p-4 text-sm text-gray-600">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <span>{term}</span>
                 </div>
               ))}
             </div>

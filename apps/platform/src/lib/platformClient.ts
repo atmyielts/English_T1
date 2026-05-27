@@ -2645,6 +2645,34 @@ export type ReferralProgramStrategy = {
   rules?: string[];
 };
 
+export type AffiliateProgramStrategy = {
+  brand_name: string;
+  tagline: string;
+  guarantee_label?: string;
+  guarantee_window_days?: number;
+  description?: string;
+  terms?: string[];
+  proof_points?: string[];
+};
+
+export type AffiliateGuaranteeSummary = {
+  mode: string;
+  status: string;
+  tracked_attributions: number;
+  pending_attributions: number;
+  converted_attributions: number;
+  issued_rewards: number;
+  guaranteed_rewards: number;
+  reserved_credit_amount: number;
+  reserved_cash_amount: number;
+  available_cash_amount: number;
+  requested_cash_amount: number;
+  paid_cash_amount: number;
+  minimum_cash_payout_amount: number;
+  cash_payouts_enabled: boolean;
+  currency: string;
+};
+
 export type ReferralMeResponse = {
   account: { id: string; user_id: string; referral_code: string; status: string; metadata?: Json | null };
   program: ReferralProgram | null;
@@ -2653,6 +2681,9 @@ export type ReferralMeResponse = {
   affiliate_urls?: { landing?: string; signup?: string; plans?: string };
   share_links?: ReferralShareLink[];
   program_strategy?: ReferralProgramStrategy;
+  affiliate_links?: ReferralShareLink[];
+  affiliate_program?: AffiliateProgramStrategy;
+  affiliate_guarantee?: AffiliateGuaranteeSummary;
   credit: { currency: string; available_amount: number; earned_amount?: number };
   cash?: {
     currency: string;
