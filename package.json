@@ -8,6 +8,7 @@
     "apps/ielts-playbook",
     "apps/sat-simulator",
     "apps/sat-practice",
+    "apps/sat-playbook",
     "apps/toefl-ibt-simulator",
     "apps/itep-simulator",
     "apps/academy",

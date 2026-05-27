@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://practice.ielts.schood.online/sitemap.xml
+
