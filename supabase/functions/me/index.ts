@@ -14,6 +14,11 @@ type MembershipRow = {
   tenant_id: string;
   role: string;
   status: string;
+  tenants?: {
+    id?: string;
+    type?: string;
+    metadata?: Record<string, unknown> | null;
+  } | null;
 };
 type AdminSecurityPolicyRow = {
   require_mfa: boolean;
@@ -105,7 +110,7 @@ serve(async (req) => {
 
     const { data: memberships, error: membershipError } = await userClient
       .from("tenant_memberships")
-      .select("tenant_id, role, status")
+      .select("tenant_id, role, status, tenants ( id, type, metadata )")
       .eq("user_id", user.id)
       .eq("status", "active")
       .order("created_at", { ascending: true });

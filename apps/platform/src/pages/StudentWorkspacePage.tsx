@@ -268,7 +268,7 @@ export const StudentWorkspacePage: React.FC = () => {
       setError(t('student.error.academyUrlMissing'));
       return;
     }
-    const href = `${base}/academy/classrooms/${encodeURIComponent(classroomId)}?academy_id=${encodeURIComponent(academyId)}`;
+    const href = `${base}/academy/student/classrooms/${encodeURIComponent(classroomId)}?academy_id=${encodeURIComponent(academyId)}`;
     navigate(`/auth?returnTo=${encodeURIComponent(href)}`);
   };
 

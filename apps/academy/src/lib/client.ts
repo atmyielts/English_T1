@@ -5,7 +5,12 @@ export type Json = Record<string, unknown> | unknown[];
 export type MeResponse = {
   user: { id: string; email: string | null; role?: string | null };
   current_tenant: { id: string; name: string; slug: string; type: string } | null;
-  memberships: { tenant_id: string; role: string; status: string }[];
+  memberships: {
+    tenant_id: string;
+    role: string;
+    status: string;
+    tenants?: { id?: string; type?: string; metadata?: Record<string, unknown> | null } | null;
+  }[];
 };
 
 export type TeacherStudioAcademy = {

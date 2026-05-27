@@ -207,12 +207,22 @@ const loadStudentContacts = async (
 const loadMemberships = async (sb: SupabaseClientLike, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
     .from("tenant_memberships")
-    .select("tenant_id, role, status")
+    .select("tenant_id, role, status, tenants ( id, type, metadata )")
     .eq("user_id", userId)
     .eq("status", "active")
     .order("created_at", { ascending: true });
   if (error) throw new Error("Failed to load academy memberships");
-  return (data ?? []) as MembershipRow[];
+  return ((data ?? []) as unknown as Array<MembershipRow & { tenants?: Record<string, unknown> | Record<string, unknown>[] | null }>).filter((row) => {
+    const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
+    const tenantType = String(tenant?.type ?? "").toLowerCase();
+    const metadata = toJsonObject(tenant?.metadata);
+    return (
+      tenantType === "team" ||
+      String(metadata.service_family ?? "").toLowerCase() === "academy" ||
+      metadata.academy_service === true ||
+      metadata.center_owned === true
+    );
+  });
 };
 
 const resolveAcademyId = (memberships: MembershipRow[], requested: string | null): string => {
@@ -1645,6 +1655,11 @@ serve(async (req) => {
             slug: slugCandidate,
             type: "team",
             created_by: userId,
+            metadata: {
+              service_family: "academy",
+              academy_service: true,
+              created_from: "academy_app",
+            },
           })
           .select("id, name, slug, type, metadata, created_at")
           .maybeSingle();

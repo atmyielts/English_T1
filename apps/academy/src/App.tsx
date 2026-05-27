@@ -321,9 +321,20 @@ const weekSortNumber = (label: string): number | null => {
   return Number.isFinite(numeric) ? numeric : null;
 };
 
-const isAcademyStaffRole = (role: unknown): boolean => {
-  const normalized = String(role ?? '').toLowerCase();
-  return normalized === 'owner' || normalized === 'admin';
+const isAcademyStaffMembership = (membership: MeResponse['memberships'][number]): boolean => {
+  const normalizedRole = String(membership.role ?? '').toLowerCase();
+  if (normalizedRole !== 'owner' && normalizedRole !== 'admin') return false;
+  const tenant = Array.isArray((membership as any).tenants) ? (membership as any).tenants[0] : membership.tenants;
+  const tenantType = String(tenant?.type ?? '').toLowerCase();
+  const metadata: Record<string, unknown> = tenant?.metadata && typeof tenant.metadata === 'object' && !Array.isArray(tenant.metadata)
+    ? tenant.metadata
+    : {};
+  return (
+    tenantType === 'team' ||
+    String(metadata.service_family ?? '').toLowerCase() === 'academy' ||
+    metadata.academy_service === true ||
+    metadata.center_owned === true
+  );
 };
 
 const emptyStudentDashboard = (): TeacherStudioStudentDashboard => ({
@@ -534,7 +545,7 @@ const App = () => {
     [me],
   );
   const teacherMemberships = useMemo(
-    () => activeMemberships.filter((membership) => isAcademyStaffRole(membership.role)),
+    () => activeMemberships.filter(isAcademyStaffMembership),
     [activeMemberships],
   );
   const activeMembership = useMemo(
@@ -782,7 +793,7 @@ const App = () => {
 
       const meResponse = await getMe();
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
-      const teacherMembershipRows = memberships.filter((membership) => isAcademyStaffRole(membership.role));
+      const teacherMembershipRows = memberships.filter(isAcademyStaffMembership);
       let cachedStudentData: TeacherStudioStudentDashboard | null = null;
       const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
         if (cachedStudentData) return cachedStudentData;

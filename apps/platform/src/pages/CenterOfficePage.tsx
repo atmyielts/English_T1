@@ -15,6 +15,7 @@ import {
   ReceiptText,
   RefreshCw,
   Save,
+  School,
   Ticket,
   Trash2,
   UserPlus,
@@ -30,6 +31,8 @@ import {
   partnerOfficeAcceptStaffInvites,
   partnerOfficeCatalog,
   partnerOfficeCenter,
+  partnerOfficeAcademies,
+  partnerOfficeCreateAcademy,
   partnerOfficeCreateSeatPurchase,
   partnerOfficeCreateTicketPurchase,
   partnerOfficeCreateVoucherBatch,
@@ -69,6 +72,7 @@ import {
   partnerOfficeVouchers,
   partnerOfficeWallet,
   tspayStatus,
+  type PartnerCenterAcademy,
   type PartnerCenterProfile,
   type PartnerCenterCapabilities,
   type PartnerCenterGroup,
@@ -91,10 +95,11 @@ import {
   type PartnerVoucherBatch,
 } from '../lib/platformClient';
 
-type Tab = 'overview' | 'upgrade' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'groups' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
+type Tab = 'overview' | 'academies' | 'upgrade' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'groups' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'academies', label: 'Academies', icon: School },
   { id: 'upgrade', label: 'Upgrade', icon: Coins },
   { id: 'wallet', label: 'Wallet', icon: WalletCards },
   { id: 'buy', label: 'Buy', icon: CreditCard },
@@ -258,6 +263,7 @@ export const CenterOfficePage: React.FC = () => {
   const [batches, setBatches] = useState<PartnerVoucherBatch[]>([]);
   const [vouchers, setVouchers] = useState<PartnerVoucher[]>([]);
   const [students, setStudents] = useState<PartnerStudent[]>([]);
+  const [academies, setAcademies] = useState<PartnerCenterAcademy[]>([]);
   const [groups, setGroups] = useState<PartnerCenterGroup[]>([]);
   const [events, setEvents] = useState<PartnerCenterMockEvent[]>([]);
   const [reviewItems, setReviewItems] = useState<PartnerCenterReviewItem[]>([]);
@@ -297,6 +303,7 @@ export const CenterOfficePage: React.FC = () => {
   const [brandingForm, setBrandingForm] = useState({ display_name: '', slug: '', logo_url: '', public_instructions: '', powered_by_schood: true });
   const [cashPayout, setCashPayout] = useState({ payout_method: 'cash', payout_details: '', note: '' });
   const [staffForm, setStaffForm] = useState({ email: '', role: 'teacher' as 'admin' | 'teacher' | 'counselor' });
+  const [academyForm, setAcademyForm] = useState({ name: '', slug: '' });
   const [logoUploading, setLogoUploading] = useState(false);
   const [applicationForm, setApplicationForm] = useState({
     display_name: '',
@@ -376,6 +383,7 @@ export const CenterOfficePage: React.FC = () => {
         setVouchers([]);
         setBatches([]);
         setStudents([]);
+        setAcademies([]);
         setGroups([]);
         setEvents([]);
         setReviewItems([]);
@@ -391,7 +399,7 @@ export const CenterOfficePage: React.FC = () => {
       }
 
       const tenant_id = centerRes.center.tenant_id;
-      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
+      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, academyRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
@@ -403,6 +411,7 @@ export const CenterOfficePage: React.FC = () => {
           partnerOfficeVouchers(token, { tenant_id }),
           partnerOfficeVoucherBatches(token, tenant_id),
           partnerOfficeStudents(token, tenant_id),
+          partnerOfficeAcademies(token, tenant_id).catch(() => ({ academies: [] })),
           partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })),
           partnerOfficeResults(token, { tenant_id }),
           partnerOfficeReports(token, tenant_id),
@@ -426,6 +435,7 @@ export const CenterOfficePage: React.FC = () => {
       setVouchers(voucherRes.vouchers ?? []);
       setBatches(batchRes.batches ?? []);
       setStudents(studentRes.students ?? []);
+      setAcademies(academyRes.academies ?? []);
       setGroups(groupRes.groups ?? []);
       setEvents(eventRes.events ?? []);
       setReviewItems(reviewRes.review_items ?? []);
@@ -808,6 +818,30 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
+  const createAcademy = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !academyForm.name.trim()) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeCreateAcademy(token, {
+        tenant_id: centerTenantId,
+        center_office: true,
+        name: academyForm.name.trim(),
+        slug: academyForm.slug.trim() || null,
+      });
+      setAcademies(res.academies ?? (res.academy ? [res.academy] : []));
+      setAcademyForm({ name: '', slug: '' });
+      setTab('academies');
+      setSuccess('Academy created and linked to this education center.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createGroup = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId || !groupForm.name.trim()) return;
@@ -962,12 +996,16 @@ export const CenterOfficePage: React.FC = () => {
                 {center?.display_name ?? 'Education Center Office'}
               </div>
               <h1 className="mt-5 max-w-3xl text-3xl font-bold leading-tight text-gray-900 md:text-5xl">
-                Sell access, distribute vouchers, and monitor student outcomes.
+                Run the business layer for every academy you operate.
               </h1>
               <p className="mt-4 max-w-2xl text-base text-gray-600">
-                Manage mock exams, subscription access, seats, wallet activity, branded center pages, reports, and partner payments from one workspace.
+                Manage center billing, voucher access, staff, reporting, and linked delivery academies from one workspace.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
+                <button type="button" onClick={() => setTab('academies')} className={primaryButton} disabled={!centerIsActive}>
+                  <School className="h-4 w-4" />
+                  Manage academies
+                </button>
                 <button type="button" onClick={() => setTab('buy')} className={primaryButton} disabled={!centerIsActive}>
                   <CreditCard className="h-4 w-4" />
                   Buy or generate
@@ -1084,12 +1122,21 @@ export const CenterOfficePage: React.FC = () => {
 
           {centerIsActive && tab === 'overview' ? (
             <section className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-5">
                 <StatCard label="Wallet" value={money(wallet.available_amount, wallet.currency)} icon={WalletCards} tone="dark" />
+                <StatCard label="Academies" value={academies.length || dashboard?.counts?.academies || 0} icon={School} />
                 <StatCard label="Unused vouchers" value={dashboard?.counts?.vouchers_unused ?? 0} icon={Ticket} />
                 <StatCard label="Redeemed" value={dashboard?.counts?.vouchers_redeemed ?? 0} icon={UsersRound} />
                 <StatCard label="Completed exams" value={reports?.completed_exams ?? dashboard?.counts?.results ?? 0} icon={ClipboardList} />
               </div>
+              <AcademiesPanel
+                academies={academies}
+                academyForm={academyForm}
+                loading={loading}
+                onAcademyFormChange={setAcademyForm}
+                onCreate={() => void createAcademy()}
+                onCopy={(value, message) => void copy(value, message)}
+              />
               <TierCapabilitiesPanel capabilities={capabilities} />
               <div className={`${panelClass} overflow-hidden`}>
                 <div className="border-b border-gray-900/10 p-5 md:p-6">
@@ -1098,6 +1145,18 @@ export const CenterOfficePage: React.FC = () => {
                 <VoucherTable vouchers={recentVouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
               </div>
             </section>
+          ) : null}
+
+          {centerIsActive && tab === 'academies' ? (
+            <AcademiesPanel
+              academies={academies}
+              academyForm={academyForm}
+              loading={loading}
+              onAcademyFormChange={setAcademyForm}
+              onCreate={() => void createAcademy()}
+              onCopy={(value, message) => void copy(value, message)}
+              expanded
+            />
           ) : null}
 
           {centerIsActive && tab === 'upgrade' ? (
@@ -1525,6 +1584,84 @@ export const CenterOfficePage: React.FC = () => {
     </div>
   );
 };
+
+const AcademiesPanel: React.FC<{
+  academies: PartnerCenterAcademy[];
+  academyForm: { name: string; slug: string };
+  loading: boolean;
+  expanded?: boolean;
+  onAcademyFormChange: React.Dispatch<React.SetStateAction<{ name: string; slug: string }>>;
+  onCreate: () => void;
+  onCopy: (value: string, message?: string) => void;
+}> = ({ academies, academyForm, loading, expanded = false, onAcademyFormChange, onCreate, onCopy }) => (
+  <section className={`grid gap-5 ${expanded ? 'lg:grid-cols-[360px_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,1fr)_360px]'}`}>
+    <div className={`${panelClass} overflow-hidden ${expanded ? 'lg:order-2' : ''}`}>
+      <div className="border-b border-gray-900/10 p-5 md:p-6">
+        <SectionTitle icon={School} label="Delivery layer" title="Academies under this center" />
+        <p className="mt-3 max-w-2xl text-sm text-gray-600">
+          Center Office owns business controls. Each linked academy keeps its own Teacher Office and Student Workplace for learning delivery.
+        </p>
+      </div>
+      <div className="divide-y divide-gray-900/10">
+        {academies.map((academy) => (
+          <div key={academy.id} className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-lg font-bold text-gray-900">{academy.name || academy.slug || academy.id}</p>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">linked academy</span>
+              </div>
+              <p className="mt-1 break-all text-sm text-gray-600">{academy.slug || academy.id}</p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.staff ?? 0}</strong> staff</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.contacts ?? 0}</strong> contacts</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.classrooms ?? 0}</strong> classes</span>
+                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.offers ?? 0}</strong> offers</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 xl:justify-end">
+              <button type="button" className={primaryButton} onClick={() => academy.teacher_office_url && window.open(academy.teacher_office_url, '_blank', 'noopener,noreferrer')} disabled={!academy.teacher_office_url}>
+                <ArrowUpRight className="h-4 w-4" />
+                Teacher Office
+              </button>
+              <button type="button" className={secondaryButton} onClick={() => academy.academy_url && window.open(academy.academy_url, '_blank', 'noopener,noreferrer')} disabled={!academy.academy_url}>
+                <School className="h-4 w-4" />
+                Public academy
+              </button>
+              <button type="button" className={secondaryButton} onClick={() => onCopy(academy.teacher_office_url ?? '', 'Teacher Office link copied.')} disabled={!academy.teacher_office_url}>
+                <Copy className="h-4 w-4" />
+                Copy
+              </button>
+            </div>
+          </div>
+        ))}
+        {academies.length === 0 ? (
+          <div className="p-6">
+            <EmptyState icon={School} title="No academies linked yet" note="Create the first academy when this center is ready to run cohorts, classes, contacts, offers, and student communication." />
+          </div>
+        ) : null}
+      </div>
+    </div>
+
+    <div className={`${panelClass} p-5 md:p-6 ${expanded ? 'lg:order-1' : ''}`}>
+      <SectionTitle icon={School} label="Provisioning" title="Create linked academy" />
+      <label className="mt-5 block text-sm font-semibold text-gray-800">
+        Academy name
+        <input value={academyForm.name} onChange={(e) => onAcademyFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} placeholder="Atlas IELTS Academy" />
+      </label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">
+        Slug
+        <input value={academyForm.slug} onChange={(e) => onAcademyFormChange((prev) => ({ ...prev, slug: e.target.value }))} className={inputClass} placeholder="atlas-ielts-academy" />
+      </label>
+      <button type="button" onClick={onCreate} disabled={loading || !academyForm.name.trim()} className={`${primaryButton} mt-5 w-full`}>
+        <School className="h-4 w-4" />
+        Create academy
+      </button>
+      <p className="mt-3 text-xs leading-5 text-gray-500">
+        Center owners and admins are added to the academy as staff. Teachers and students still enter through separate Academy routes.
+      </p>
+    </div>
+  </section>
+);
 
 const TierUpgradePanel: React.FC<{
   catalog: PartnerCenterTierCatalog | null;

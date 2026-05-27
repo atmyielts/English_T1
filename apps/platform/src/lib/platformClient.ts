@@ -2477,6 +2477,29 @@ export type PartnerCenterTierCatalog = {
   requests: PartnerCenterTierRequest[];
 };
 
+export type PartnerCenterAcademy = {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  metadata?: Json | null;
+  created_at: string;
+  counts?: {
+    staff?: number;
+    admins?: number;
+    contacts?: number;
+    active_contacts?: number;
+    classrooms?: number;
+    active_classrooms?: number;
+    offers?: number;
+    active_offers?: number;
+  };
+  academy_url?: string;
+  teacher_office_url?: string;
+  student_workspace_url?: string;
+  classroom_directory_url?: string;
+};
+
 export type PartnerCenterGroup = {
   id: string;
   tenant_id: string;
@@ -2676,6 +2699,8 @@ export const partnerOfficeCenter = (accessToken: string, tenantId?: string | nul
     'center',
     { tenant_id: tenantId },
   );
+export const partnerOfficeAcademies = (accessToken: string, tenantId?: string | null) =>
+  partnerOfficeGet<{ academies: PartnerCenterAcademy[] }>(accessToken, 'academies', { tenant_id: tenantId });
 export const partnerOfficeCatalog = (accessToken: string) =>
   partnerOfficeGet<{ experiences: PartnerOfficeExperience[]; plans?: PartnerOfficePlan[]; products?: AdminProductRow[] }>(accessToken, 'catalog');
 export const partnerOfficeTickets = (accessToken: string, tenantId?: string | null) =>
@@ -2761,6 +2786,11 @@ export const partnerOfficeUpdateStaff = (
   accessToken: string,
   body: { tenant_id?: string | null; membership_id: string; role?: 'admin' | 'member' | 'teacher' | 'counselor'; status?: 'active' | 'disabled' },
 ) => partnerOfficePost<{ members: PartnerCenterStaffMember[]; invites: PartnerCenterStaffInvite[] }>(accessToken, { action: 'update_staff', ...body });
+
+export const partnerOfficeCreateAcademy = (
+  accessToken: string,
+  body: { tenant_id?: string | null; name: string; slug?: string | null; center_office?: boolean },
+) => partnerOfficePost<{ academy: PartnerCenterAcademy; academies: PartnerCenterAcademy[] }>(accessToken, { action: 'create_academy', ...body });
 
 export const partnerOfficeCreateGroup = (accessToken: string, body: { tenant_id?: string | null; name: string; description?: string | null; assigned_teacher_membership_id?: string | null; product_id?: string | null }) =>
   partnerOfficePost<{ group: PartnerCenterGroup; groups: PartnerCenterGroup[] }>(accessToken, { action: 'create_group', ...body });

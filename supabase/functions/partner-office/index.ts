@@ -433,6 +433,202 @@ const ensureCenterProfile = async (sb: any, tenantId: string, userId: string): P
   return inserted;
 };
 
+const getAcademyAppUrl = async (sb: any): Promise<string> => {
+  const { data } = await sb
+    .from("products")
+    .select("metadata")
+    .eq("status", "active")
+    .eq("metadata->>slug", "academy")
+    .maybeSingle();
+  const metadata = isObject(data?.metadata) ? data.metadata as Json : {};
+  return String(metadata.app_url ?? Deno.env.get("ACADEMY_APP_URL") ?? "https://academy.schood.online").replace(/\/+$/, "");
+};
+
+const academyLinks = (appUrl: string, academyId: string) => ({
+  academy_url: `${appUrl}/academy?academy_id=${encodeURIComponent(academyId)}`,
+  teacher_office_url: `${appUrl}/academy/teacher?academy_id=${encodeURIComponent(academyId)}`,
+  student_workspace_url: `${appUrl}/academy/student?academy_id=${encodeURIComponent(academyId)}`,
+  classroom_directory_url: `${appUrl}/academy/classrooms?academy_id=${encodeURIComponent(academyId)}`,
+});
+
+const loadCenterAcademies = async (sb: any, centerTenantId: string): Promise<any[]> => {
+  const appUrl = await getAcademyAppUrl(sb);
+  const { data, error } = await sb
+    .from("tenants")
+    .select("id, name, slug, type, metadata, created_at")
+    .eq("type", "team")
+    .contains("metadata", { parent_center_id: centerTenantId, service_family: "academy" })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+
+  const academies = data ?? [];
+  const academyIds = academies.map((row: any) => String(row.id ?? "")).filter(Boolean);
+  if (academyIds.length === 0) return [];
+
+  const [membersRes, contactsRes, classroomsRes, offersRes] = await Promise.all([
+    sb
+      .from("tenant_memberships")
+      .select("tenant_id, role, status")
+      .in("tenant_id", academyIds)
+      .eq("status", "active"),
+    sb
+      .from("academy_contacts")
+      .select("academy_id, status")
+      .in("academy_id", academyIds)
+      .limit(5000),
+    sb
+      .from("academy_classrooms")
+      .select("academy_id, is_active")
+      .in("academy_id", academyIds)
+      .limit(5000),
+    sb
+      .from("academy_offers")
+      .select("academy_id, is_active")
+      .in("academy_id", academyIds)
+      .limit(5000),
+  ]);
+  if (membersRes.error) throw membersRes.error;
+  if (contactsRes.error) throw contactsRes.error;
+  if (classroomsRes.error) throw classroomsRes.error;
+  if (offersRes.error) throw offersRes.error;
+
+  const countByAcademy = (rows: any[] | null | undefined, key: string, predicate: (row: any) => boolean = () => true) => {
+    const map = new Map<string, number>();
+    for (const row of rows ?? []) {
+      if (!predicate(row)) continue;
+      const academyId = String(row[key] ?? "");
+      if (!academyId) continue;
+      map.set(academyId, (map.get(academyId) ?? 0) + 1);
+    }
+    return map;
+  };
+
+  const activeStaff = countByAcademy(membersRes.data, "tenant_id");
+  const admins = countByAcademy(membersRes.data, "tenant_id", (row) => ["owner", "admin"].includes(String(row.role ?? "")));
+  const contacts = countByAcademy(contactsRes.data, "academy_id");
+  const activeContacts = countByAcademy(contactsRes.data, "academy_id", (row) => String(row.status ?? "") === "active");
+  const classrooms = countByAcademy(classroomsRes.data, "academy_id");
+  const activeClassrooms = countByAcademy(classroomsRes.data, "academy_id", (row) => Boolean(row.is_active));
+  const offers = countByAcademy(offersRes.data, "academy_id");
+  const activeOffers = countByAcademy(offersRes.data, "academy_id", (row) => Boolean(row.is_active));
+
+  return academies.map((row: any) => {
+    const academyId = String(row.id ?? "");
+    return {
+      id: academyId,
+      name: String(row.name ?? ""),
+      slug: String(row.slug ?? ""),
+      type: String(row.type ?? "team"),
+      metadata: isObject(row.metadata) ? row.metadata : {},
+      created_at: String(row.created_at ?? ""),
+      counts: {
+        staff: activeStaff.get(academyId) ?? 0,
+        admins: admins.get(academyId) ?? 0,
+        contacts: contacts.get(academyId) ?? 0,
+        active_contacts: activeContacts.get(academyId) ?? 0,
+        classrooms: classrooms.get(academyId) ?? 0,
+        active_classrooms: activeClassrooms.get(academyId) ?? 0,
+        offers: offers.get(academyId) ?? 0,
+        active_offers: activeOffers.get(academyId) ?? 0,
+      },
+      ...academyLinks(appUrl, academyId),
+    };
+  });
+};
+
+const createCenterAcademy = async (sb: any, centerTenantId: string, body: Json, userId: string): Promise<any> => {
+  const center = await getCenterProfile(sb, centerTenantId);
+  if (!center?.tenant_id) throw new Error("Education center profile is required");
+
+  const academyName = String(body.name ?? body.academy_name ?? "").trim().slice(0, 160);
+  if (!academyName) throw new Error("Academy name is required");
+
+  const baseSlug = normalizeSlug(
+    body.slug ?? `${center.slug ?? "center"}-${academyName}`,
+    `academy-${randomCodePart(4).toLowerCase()}`,
+  );
+  const slug = await ensureUniqueTenantSlug(sb, baseSlug, baseSlug);
+  const metadata = {
+    service_family: "academy",
+    academy_service: true,
+    center_owned: true,
+    parent_center_id: centerTenantId,
+    parent_center_slug: center.slug ?? null,
+    parent_center_name: center.display_name ?? null,
+    created_from: "center_office",
+    created_by_center_office_user: userId,
+    landing: {
+      headline: academyName,
+      subheadline: `${center.display_name ?? "Education center"} academy`,
+      teacher_cta_label: "Open Teacher Office",
+      student_cta_label: "Open Student Workplace",
+    },
+  };
+
+  const { data: academy, error: academyError } = await sb
+    .from("tenants")
+    .insert({
+      name: academyName,
+      slug,
+      type: "team",
+      created_by: userId,
+      metadata,
+    })
+    .select("id, name, slug, type, metadata, created_at")
+    .maybeSingle();
+  if (academyError || !academy?.id) throw academyError ?? new Error("Failed to create academy");
+
+  const { data: centerAdmins, error: staffError } = await sb
+    .from("tenant_memberships")
+    .select("user_id, role")
+    .eq("tenant_id", centerTenantId)
+    .eq("status", "active")
+    .in("role", ["owner", "admin"]);
+  if (staffError) throw staffError;
+
+  const membershipRows = (centerAdmins ?? [])
+    .filter((row: any) => row.user_id)
+    .map((row: any) => ({
+      tenant_id: academy.id,
+      user_id: row.user_id,
+      role: String(row.role ?? "") === "owner" ? "owner" : "admin",
+      status: "active",
+    }));
+
+  if (!membershipRows.some((row: any) => row.user_id === userId)) {
+    membershipRows.push({ tenant_id: academy.id, user_id: userId, role: "owner", status: "active" });
+  }
+
+  const { error: membershipError } = await sb
+    .from("tenant_memberships")
+    .upsert(membershipRows, { onConflict: "tenant_id,user_id" });
+  if (membershipError) throw membershipError;
+
+  const appUrl = await getAcademyAppUrl(sb);
+  const academyId = String(academy.id);
+  return {
+    academy: {
+      id: academyId,
+      name: String(academy.name ?? academyName),
+      slug: String(academy.slug ?? slug),
+      type: String(academy.type ?? "team"),
+      metadata: isObject(academy.metadata) ? academy.metadata : metadata,
+      created_at: String(academy.created_at ?? ""),
+      counts: {
+        staff: membershipRows.length,
+        admins: membershipRows.length,
+        contacts: 0,
+        active_contacts: 0,
+        classrooms: 0,
+        active_classrooms: 0,
+        offers: 0,
+        active_offers: 0,
+      },
+      ...academyLinks(appUrl, academyId),
+    },
+  };
+};
+
 const createCenterApplication = async (sb: any, body: Json, user: any): Promise<{ center: any; tenant: any }> => {
   await ensurePlatformUser(sb, user);
   const displayName = String(body.display_name ?? body.center_name ?? "").trim().slice(0, 120);
@@ -1020,6 +1216,13 @@ serve(async (req) => {
       return json(200, { center: withCenterCapabilities(center), tenant, needs_application: !center?.tenant_id });
     }
 
+    if (req.method === "GET" && action === "academies") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const gate = await requireActiveCenterOffice(sb, tenantId, { center_office: true });
+      if (gate) return gate;
+      return json(200, { academies: await loadCenterAcademies(sb, tenantId) });
+    }
+
     if (req.method === "GET" && (action === "catalog" || action === "experiences")) {
       const [experiencesRes, plansRes, productsRes] = await Promise.all([
         sb
@@ -1292,7 +1495,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "dashboard") {
-      const [center, tickets, seats, payments, results, vouchers, batches, wallet, students, groups, events, reviews] = await Promise.all([
+      const [center, tickets, seats, payments, results, vouchers, batches, wallet, students, groups, events, reviews, academies] = await Promise.all([
         getCenterProfile(sb, tenantId),
         sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
         sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
@@ -1305,6 +1508,7 @@ serve(async (req) => {
         sb.from("partner_center_groups").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_center_mock_events").select("id, status, starts_at", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_center_review_items").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
+        sb.from("tenants").select("id", { count: "exact", head: true }).eq("type", "team").contains("metadata", { parent_center_id: tenantId, service_family: "academy" }),
       ]);
       const voucherRows = vouchers.data ?? [];
       const eventRows = events.data ?? [];
@@ -1328,6 +1532,7 @@ serve(async (req) => {
           active_groups: (groups.data ?? []).filter((row: any) => row.status === "active").length,
           upcoming_events: eventRows.filter((row: any) => ["draft", "scheduled"].includes(row.status) && Date.parse(row.starts_at) >= Date.now()).length,
           pending_reviews: reviewRows.filter((row: any) => ["pending", "in_review"].includes(row.status)).length,
+          academies: academies.count ?? 0,
         },
         wallet: { currency: "UZS", available_amount: Number(wallet.data ?? 0) },
         credit: { currency: "UZS", available_amount: 0 },
@@ -1393,6 +1598,7 @@ serve(async (req) => {
 
       const adminOnlyActions = [
         "update_center_profile",
+        "create_academy",
         "create_wallet_topup",
         "create_voucher_batch",
         "void_voucher",
@@ -1424,6 +1630,7 @@ serve(async (req) => {
       if ([
         "invite_staff",
         "update_staff",
+        "create_academy",
         "create_group",
         "update_group",
         "assign_student_group",
@@ -1482,6 +1689,13 @@ serve(async (req) => {
         if (!data?.id) return json(400, { error: "Staff member not found or cannot modify your own owner access" });
         const staff = await loadCenterStaff(sb, tenantId);
         return json(200, staff);
+      }
+
+      if (actionBody === "create_academy") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, { ...(isObject(body) ? body : {}), center_office: true });
+        if (gate) return gate;
+        const result = await createCenterAcademy(sb, tenantId, body, userId);
+        return json(200, { ...result, academies: await loadCenterAcademies(sb, tenantId) });
       }
 
       if (actionBody === "create_group" || actionBody === "update_group") {
