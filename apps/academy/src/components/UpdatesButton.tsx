@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { platformUrl } from '../lib/supabase';
 import { teacherStudioStudentFeed } from '../lib/client';
 import {
@@ -70,7 +71,7 @@ export const UpdatesButton = () => {
       }}
       aria-label="Open updates center"
     >
-      <span aria-hidden="true">🔔</span>
+      <Bell size={17} aria-hidden="true" />
       Updates
       {unreadCount > 0 ? (
         <span className="updates-count">{unreadCount > 99 ? '99+' : unreadCount}</span>

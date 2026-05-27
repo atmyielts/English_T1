@@ -1,6 +1,23 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  Bell,
+  BookOpenCheck,
+  Building2,
+  CreditCard,
+  GraduationCap,
+  KeyRound,
+  LayoutDashboard,
+  LogOut,
+  Megaphone,
+  MessageSquare,
+  RefreshCw,
+  ShieldAlert,
+  Sparkles,
+  Store,
+  UsersRound,
+} from 'lucide-react';
+import {
   getMe,
   teacherStudioAcademies,
   teacherStudioAlerts,
@@ -1672,7 +1689,7 @@ const App = () => {
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Schood service</div>
+                <div className="market-eyebrow"><Sparkles size={14} /> Schood service</div>
                 <h1>Academy</h1>
                 <p>
                   A unified product for academy landing pages, classroom landings, teacher office, and student workplace.
@@ -3000,7 +3017,7 @@ const App = () => {
         <div className="ts-shell">
           <aside className="ts-sidebar">
             <div className="brand">
-              <span className="brand-dot" />
+              <span className="brand-mark" aria-hidden="true"><GraduationCap size={22} /></span>
               <div>
                 <strong>Student Workplace</strong>
                 <p>Academy access</p>
@@ -3012,6 +3029,7 @@ const App = () => {
               type="button"
               onClick={() => navigate('/academies')}
             >
+              <span className="nav-icon" aria-hidden="true"><Building2 size={17} /></span>
               Academies
             </button>
             <button
@@ -3019,6 +3037,7 @@ const App = () => {
               type="button"
               onClick={() => navigate(academyScopedPath('/academy/student', studentAcademyId))}
             >
+              <span className="nav-icon" aria-hidden="true"><LayoutDashboard size={17} /></span>
               Academy
             </button>
             <button
@@ -3026,6 +3045,7 @@ const App = () => {
               type="button"
               onClick={() => navigate(academyScopedPath('/academy/student/classrooms', studentAcademyId))}
             >
+              <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
               Classrooms
             </button>
             <button
@@ -3033,6 +3053,7 @@ const App = () => {
               type="button"
               onClick={() => navigate(academyScopedPath('/academy/student/messages', studentAcademyId))}
             >
+              <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
               Messages
             </button>
             <button
@@ -3040,6 +3061,7 @@ const App = () => {
               type="button"
               onClick={() => navigate(academyScopedPath('/academy/student/alerts', studentAcademyId))}
             >
+              <span className="nav-icon" aria-hidden="true"><Bell size={17} /></span>
               Alerts
             </button>
             <button
@@ -3047,6 +3069,7 @@ const App = () => {
               type="button"
               onClick={() => navigate(academyScopedPath('/academy/student/access', studentAcademyId))}
             >
+              <span className="nav-icon" aria-hidden="true"><KeyRound size={17} /></span>
               Access
             </button>
 
@@ -3069,9 +3092,11 @@ const App = () => {
               </div>
               <div className="topbar-actions">
                 <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
+                  <RefreshCw size={16} />
                   Refresh
                 </button>
                 <button className="ghost-btn" type="button" onClick={() => void signOut()}>
+                  <LogOut size={16} />
                   Sign out
                 </button>
               </div>
@@ -3079,22 +3104,27 @@ const App = () => {
 
             <section className="stats-grid">
               <article className="stat-card">
+                <span className="stat-icon" aria-hidden="true"><UsersRound size={18} /></span>
                 <span>Linked contacts</span>
                 <strong>{studentContacts.length}</strong>
               </article>
               <article className="stat-card">
+                <span className="stat-icon" aria-hidden="true"><BookOpenCheck size={18} /></span>
                 <span>Classrooms</span>
                 <strong>{studentClassrooms.length}</strong>
               </article>
               <article className="stat-card">
+                <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
                 <span>Active access</span>
                 <strong>{studentActiveEntitlements.length}</strong>
               </article>
               <article className="stat-card">
+                <span className="stat-icon" aria-hidden="true"><ShieldAlert size={18} /></span>
                 <span>Open alerts</span>
                 <strong>{openAlertsCount}</strong>
               </article>
               <article className="stat-card">
+                <span className="stat-icon" aria-hidden="true"><MessageSquare size={18} /></span>
                 <span>Messages</span>
                 <strong>{studentMessagesFiltered.length}</strong>
               </article>
@@ -3341,7 +3371,7 @@ const App = () => {
       <div className="ts-shell">
         <aside className="ts-sidebar">
         <div className="brand">
-          <span className="brand-dot" />
+          <span className="brand-mark" aria-hidden="true"><Store size={22} /></span>
           <div>
             <strong>Teacher Office</strong>
             <p>Academy operations</p>
@@ -3353,6 +3383,7 @@ const App = () => {
           type="button"
           onClick={() => navigate('/academies')}
         >
+          <span className="nav-icon" aria-hidden="true"><Building2 size={17} /></span>
           Academies
         </button>
 
@@ -3361,6 +3392,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher'))}
         >
+          <span className="nav-icon" aria-hidden="true"><LayoutDashboard size={17} /></span>
           Teacher office
         </button>
         <button
@@ -3368,6 +3400,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/contacts'))}
         >
+          <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
           Contacts
         </button>
         <button
@@ -3375,6 +3408,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/inbox'))}
         >
+          <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
           Inbox
         </button>
         <button
@@ -3382,6 +3416,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/announcements'))}
         >
+          <span className="nav-icon" aria-hidden="true"><Megaphone size={17} /></span>
           Announcements
         </button>
         <button
@@ -3389,6 +3424,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/alerts'))}
         >
+          <span className="nav-icon" aria-hidden="true"><ShieldAlert size={17} /></span>
           Alerts
         </button>
         <button
@@ -3396,6 +3432,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/offers'))}
         >
+          <span className="nav-icon" aria-hidden="true"><Store size={17} /></span>
           Offers
         </button>
         <button
@@ -3403,6 +3440,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
         >
+          <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
           Classrooms
         </button>
         <button
@@ -3410,6 +3448,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/payments'))}
         >
+          <span className="nav-icon" aria-hidden="true"><CreditCard size={17} /></span>
           Payments
         </button>
         <button
@@ -3417,6 +3456,7 @@ const App = () => {
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/entitlements'))}
         >
+          <span className="nav-icon" aria-hidden="true"><KeyRound size={17} /></span>
           Entitlements
         </button>
 
@@ -3451,9 +3491,11 @@ const App = () => {
               ))}
             </select>
             <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
+              <RefreshCw size={16} />
               Refresh
             </button>
             <button className="ghost-btn" type="button" onClick={() => void signOut()}>
+              <LogOut size={16} />
               Sign out
             </button>
           </div>
@@ -3461,22 +3503,27 @@ const App = () => {
 
         <section className="stats-grid">
           <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><UsersRound size={18} /></span>
             <span>Contacts</span>
             <strong>{summary?.counts.contacts ?? contacts.length}</strong>
           </article>
           <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><Store size={18} /></span>
             <span>Offers</span>
             <strong>{summary?.counts.offers ?? offers.length}</strong>
           </article>
           <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><BookOpenCheck size={18} /></span>
             <span>Classrooms</span>
             <strong>{summary?.counts.classrooms ?? classrooms.length}</strong>
           </article>
           <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
             <span>Active entitlements</span>
             <strong>{summary?.counts.active_entitlements ?? entitlements.filter((item) => item.status === 'active').length}</strong>
           </article>
           <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><ShieldAlert size={18} /></span>
             <span>Open alerts</span>
             <strong>{summary?.counts.open_alerts ?? 0}</strong>
           </article>
