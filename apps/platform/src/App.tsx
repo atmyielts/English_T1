@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RequireAuth } from './components/platform/RequireAuth';
 import { RequireAdmin } from './components/platform/RequireAdmin';
 import { RequireAdminPermission } from './components/platform/RequireAdminPermission';
-import { AdminIndexRedirect } from './components/platform/AdminIndexRedirect';
 import { ReferralCapture } from './components/platform/ReferralCapture';
 import { UpdatesButton } from './components/platform/UpdatesButton';
 import { useI18n } from './i18n';
@@ -59,6 +58,7 @@ const AdminReferralsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminR
 const AdminPartnersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPartnersPage').then((m) => ({ default: m.AdminPartnersPage })));
 const AdminPaymentsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })));
 const AdminUsersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
+const AdminDashboardPage = lazyWithChunkRetry(() => import('./pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })));
 const AdminAnalyticsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
 const AdminSettingsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
 const AdminTrialsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminTrialsPage').then((m) => ({ default: m.AdminTrialsPage })));
@@ -141,7 +141,7 @@ function App() {
             <Route path="/teacher" element={<Navigate to="/partner" replace />} />
           </Route>
           <Route element={<RequireAdmin />}>
-            <Route path="/admin" element={<AdminIndexRedirect />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route
               path="/admin/english"
               element={

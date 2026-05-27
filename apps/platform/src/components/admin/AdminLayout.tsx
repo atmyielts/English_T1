@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CreditCard, Tag, Receipt, Users, Settings, ArrowLeft, LayoutGrid, Inbox, BarChart3, Megaphone, BookOpen, HandCoins, Building2 } from 'lucide-react';
+import { CreditCard, Tag, Receipt, Users, Settings, ArrowLeft, LayoutGrid, Inbox, BarChart3, Megaphone, BookOpen, HandCoins, Building2, Home, Menu, X } from 'lucide-react';
 import { hasAdminPermission, useAdminAccess } from '../platform/adminAccess';
 
 type Props = { children: React.ReactNode };
@@ -18,7 +18,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
   const access = useAdminAccess();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(`${path}/`);
+  const isActive = (path: string) => (path === '/admin' ? location.pathname === '/admin' : location.pathname === path || location.pathname.startsWith(`${path}/`));
 
   const returnTo = useMemo(() => new URLSearchParams(location.search).get('returnTo') ?? '/', [location.search]);
 
@@ -28,6 +28,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
 
   const navItems = useMemo<NavItem[]>(
     () => [
+      { to: '/admin', label: 'Dashboard', icon: Home, permission: 'admin.portal.access' },
       { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, permission: 'admin.analytics.view' },
       { to: '/admin/english', label: 'English', icon: BookOpen, permission: 'admin.analytics.view' },
       { to: '/admin/products', label: 'Products', icon: LayoutGrid, permission: 'admin.products.manage' },
@@ -101,9 +102,12 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
             >
-              <span className="text-lg">=</span>
+              <Menu size={18} />
             </button>
-            <div className="text-sm font-semibold text-gray-700">Admin Control Center</div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-gray-800">Admin Control Center</div>
+              <div className="hidden text-xs text-gray-500 sm:block">Payments, access, content, partners, and support</div>
+            </div>
           </div>
           {access ? <div className="hidden md:block text-xs text-gray-500">Role: {access.role}</div> : null}
         </header>
@@ -126,7 +130,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close menu"
               >
-                x
+                <X size={18} />
               </button>
             </div>
             <Nav onNavigate={() => setMobileOpen(false)} />
