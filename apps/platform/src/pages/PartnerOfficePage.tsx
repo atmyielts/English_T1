@@ -11,6 +11,7 @@ import {
   ReceiptText,
   RefreshCw,
   Send,
+  Sparkles,
   Ticket,
   UserPlus,
   UsersRound,
@@ -42,6 +43,7 @@ import {
   type PartnerOfficeSeat,
   type PartnerOfficeTicket,
   type ReferralMeResponse,
+  type ReferralShareLink,
 } from '../lib/platformClient';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 
@@ -83,6 +85,12 @@ const formatDateTime = (value?: string | null) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '-';
   return date.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
+const absoluteLink = (origin: string, path?: string | null) => {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${origin}${path.startsWith('/') ? path : `/${path}`}`;
 };
 
 const statusTone = (status?: string | null) => {
@@ -187,6 +195,20 @@ export const PartnerOfficePage: React.FC = () => {
   const ticketReadyCount = useMemo(() => catalog.filter((item) => item.is_ticket_ready).length, [catalog]);
   const referralUrl = referrals?.referral_url_path ? `${origin}${referrals.referral_url_path}` : referrals?.account?.referral_code ? `${origin}/r/${encodeURIComponent(referrals.account.referral_code)}` : '';
   const legacyReferralUrl = referrals?.legacy_referral_url_path ? `${origin}${referrals.legacy_referral_url_path}` : referrals?.account?.referral_code ? `${origin}/?ref=${encodeURIComponent(referrals.account.referral_code)}` : '';
+  const referralStrategy = referrals?.program_strategy;
+  const shareLinks = useMemo<ReferralShareLink[]>(() => {
+    if (referrals?.share_links?.length) return referrals.share_links;
+    if (!referrals?.account?.referral_code) return [];
+    const code = encodeURIComponent(referrals.account.referral_code);
+    return [
+      { id: 'main', label: 'Universal invite', path: `/r/${code}`, primary: true, service: 'platform', audience: 'general' },
+      { id: 'signup', label: 'Direct signup', path: `/auth?mode=signup&ref=${code}`, service: 'platform', audience: 'student' },
+      { id: 'plans', label: 'Plans and pricing', path: `/plans?ref=${code}`, service: 'platform', audience: 'student' },
+    ];
+  }, [referrals?.account?.referral_code, referrals?.share_links]);
+  const primaryShareLink = shareLinks.find((link) => link.primary) ?? shareLinks[0] ?? null;
+  const convertedReferrals = useMemo(() => (referrals?.attributions ?? []).filter((row: any) => row.status === 'converted'), [referrals?.attributions]);
+  const pendingReferrals = useMemo(() => (referrals?.attributions ?? []).filter((row: any) => row.status === 'pending'), [referrals?.attributions]);
   const availableCashRewards = useMemo(
     () => (referrals?.rewards ?? []).filter((reward: any) => reward.referrer_user_id === referrals?.account?.user_id && reward.status === 'issued' && reward.cash_status === 'available' && Number(reward.cash_amount ?? 0) > 0),
     [referrals?.account?.user_id, referrals?.rewards],
@@ -822,48 +844,144 @@ export const PartnerOfficePage: React.FC = () => {
           ) : null}
 
           {tab === 'referrals' ? (
-            <section className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
-              <div className="space-y-5">
-                <div className={`${panelClass} p-5 md:p-6`}>
-                  <SectionTitle icon={Link2} label="Affiliate link" title="Share" />
-                  <p className="mt-5 font-mono text-3xl font-bold">{referrals?.account?.referral_code ?? '-'}</p>
-                  <div className="mt-4 rounded-2xl border border-gray-900/10 bg-gray-50 p-3 font-mono text-xs text-gray-700 break-all">
-                    {referralUrl || '-'}
+            <section className="space-y-5">
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="bg-[#0f172a] p-6 text-white md:p-7">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/75">
+                      <Sparkles className="h-4 w-4" />
+                      {referralStrategy?.brand_name ?? 'Schood Rewards'}
+                    </div>
+                    <h2 className="mt-5 max-w-2xl text-3xl font-bold leading-tight md:text-4xl">
+                      {referralStrategy?.tagline ?? 'Share Schood, fund the next study step.'}
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-white/72">
+                      {referralStrategy?.description ??
+                        'Use one referral code across students, teachers, academies, and centers. Schood keeps the source attached through signup and eligible checkout.'}
+                    </p>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => primaryShareLink && void copy(absoluteLink(origin, primaryShareLink.path), 'Schood Rewards link copied.')}
+                        disabled={!primaryShareLink}
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#b6f24a] px-4 py-2.5 text-sm font-bold text-gray-950 transition hover:bg-[#c8ff65] disabled:opacity-50"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy main invite
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => legacyReferralUrl && void copy(legacyReferralUrl, 'Legacy referral link copied.')}
+                        disabled={!legacyReferralUrl}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15 disabled:opacity-50"
+                      >
+                        <Link2 className="h-4 w-4" />
+                        Copy legacy link
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-4 grid gap-2">
-                    <button type="button" onClick={() => referralUrl && void copy(referralUrl, 'Affiliate link copied.')} disabled={!referralUrl} className={secondaryButton}>
-                      <Copy className="h-4 w-4" />
-                      Copy affiliate link
-                    </button>
-                    <button type="button" onClick={() => legacyReferralUrl && void copy(legacyReferralUrl, 'Legacy referral link copied.')} disabled={!legacyReferralUrl} className={secondaryButton}>
-                      <Copy className="h-4 w-4" />
-                      Copy legacy link
-                    </button>
+
+                  <div className="grid gap-3 p-5 md:grid-cols-2 md:p-6">
+                    {shareLinks.map((link) => {
+                      const fullLink = absoluteLink(origin, link.path);
+                      return (
+                        <div key={link.id} className="rounded-2xl border border-gray-900/10 bg-white p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-gray-900">{link.label}</p>
+                              <p className="mt-1 text-xs text-gray-500">
+                                {[link.audience, link.service].filter(Boolean).join(' / ') || 'platform'}
+                              </p>
+                            </div>
+                            {link.primary ? <span className="rounded-full bg-[#b6f24a] px-2.5 py-1 text-xs font-bold text-gray-950">Main</span> : null}
+                          </div>
+                          {link.description ? <p className="mt-3 text-sm leading-6 text-gray-600">{link.description}</p> : null}
+                          <div className="mt-4 rounded-xl border border-gray-900/10 bg-gray-50 p-3 font-mono text-xs text-gray-600 break-all">
+                            {fullLink || '-'}
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <button type="button" onClick={() => fullLink && void copy(fullLink, `${link.label} copied.`)} disabled={!fullLink} className={secondaryButton}>
+                              <Copy className="h-4 w-4" />
+                              Copy
+                            </button>
+                            <a href={fullLink || '#'} className={primaryButton}>
+                              <ArrowUpRight className="h-4 w-4" />
+                              Open
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {shareLinks.length === 0 ? <EmptyState icon={Link2} title="No share links yet" note="Your referral account will generate links after the referral service loads." /> : null}
                   </div>
                 </div>
 
-                <div className={`${panelClass} p-5 md:p-6`}>
-                  <SectionTitle icon={Coins} label="Balances" title="Rewards" />
-                  <div className="mt-5 grid gap-3">
-                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Platform credit</p>
-                      <p className="mt-2 text-xl font-bold">{money(referrals?.credit?.available_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+                <div className="space-y-5">
+                  <div className={`${panelClass} p-5 md:p-6`}>
+                    <SectionTitle icon={Link2} label="Referral code" title={referrals?.account?.referral_code ?? '-'} />
+                    <div className="mt-5 grid gap-3 text-sm">
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                        <span className="text-gray-600">Program status</span>
+                        <StatusPill status={referrals?.program?.status ?? 'not configured'} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-2xl border border-gray-900/10 bg-[#fff7dd] p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Pending</p>
+                          <p className="mt-2 text-2xl font-bold">{pendingReferrals.length}</p>
+                        </div>
+                        <div className="rounded-2xl border border-gray-900/10 bg-[#e9f9ff] p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Converted</p>
+                          <p className="mt-2 text-2xl font-bold">{convertedReferrals.length}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Cash available</p>
-                      <p className="mt-2 text-xl font-bold">{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Requested: {money(referrals?.cash?.requested_amount ?? 0, referrals?.cash?.currency ?? 'UZS')} - Paid: {money(referrals?.cash?.paid_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}
-                      </p>
+                  </div>
+
+                  <div className={`${panelClass} p-5 md:p-6`}>
+                    <SectionTitle icon={Coins} label="Balances" title="Rewards" />
+                    <div className="mt-5 grid gap-3">
+                      <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Platform credit</p>
+                        <p className="mt-2 text-xl font-bold">{money(referrals?.credit?.available_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+                        <p className="mt-1 text-xs text-gray-500">Earned total: {money(referrals?.credit?.earned_amount ?? 0, referrals?.credit?.currency ?? 'UZS')}</p>
+                      </div>
+                      <div className="rounded-2xl border border-gray-900/10 bg-gray-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Cash available</p>
+                        <p className="mt-2 text-xl font-bold">{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          Requested: {money(referrals?.cash?.requested_amount ?? 0, referrals?.cash?.currency ?? 'UZS')} - Paid: {money(referrals?.cash?.paid_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
                 <div className={`${panelClass} p-5 md:p-6`}>
-                  <SectionTitle icon={WalletCards} label="Cash payout" title="Request cash from admins" />
-                  <div className="mt-5 grid gap-4 md:grid-cols-[160px_minmax(0,1fr)]">
+                  <SectionTitle icon={UsersRound} label="Program flow" title="How referrals move" />
+                  <div className="mt-5 grid gap-3 md:grid-cols-4">
+                    {(referralStrategy?.milestones ?? []).slice(0, 4).map((milestone: any, index: number) => (
+                      <div key={`${milestone.label ?? index}`} className="rounded-2xl border border-gray-900/10 bg-white p-4">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#b6f24a] text-sm font-bold text-gray-950">{index + 1}</div>
+                        <p className="mt-3 font-semibold text-gray-900">{milestone.label ?? `Step ${index + 1}`}</p>
+                        <p className="mt-1 text-sm leading-6 text-gray-600">{milestone.description ?? 'Configured by the active referral program.'}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    {(referralStrategy?.rules ?? []).slice(0, 4).map((rule: string) => (
+                      <div key={rule} className="flex gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                        <span>{rule}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={WalletCards} label="Cash payout" title="Request cash" />
+                  <div className="mt-5 grid gap-4">
                     <label className="text-sm font-semibold text-gray-800">
                       Method
                       <select value={cashPayoutMethod} onChange={(event) => setCashPayoutMethod(event.target.value)} className={inputClass}>
@@ -882,21 +1000,21 @@ export const PartnerOfficePage: React.FC = () => {
                         className={inputClass}
                       />
                     </label>
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Note for admin
+                      <textarea
+                        value={cashPayoutNote}
+                        onChange={(event) => setCashPayoutNote(event.target.value)}
+                        placeholder="Optional note"
+                        className={`${inputClass} min-h-[86px]`}
+                      />
+                    </label>
                   </div>
-                  <label className="mt-4 block text-sm font-semibold text-gray-800">
-                    Note for admin
-                    <textarea
-                      value={cashPayoutNote}
-                      onChange={(event) => setCashPayoutNote(event.target.value)}
-                      placeholder="Optional note"
-                      className={`${inputClass} min-h-[86px]`}
-                    />
-                  </label>
-                  <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
-                    <span>
+                  <div className="mt-4 rounded-2xl border border-gray-900/10 bg-gray-50 p-4 text-sm text-gray-700">
+                    <p>
                       Available request amount: <strong>{money(referrals?.cash?.available_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</strong>
-                    </span>
-                    <span>Minimum: {money(referrals?.cash?.minimum_payout_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</span>
+                    </p>
+                    <p className="mt-1">Minimum: {money(referrals?.cash?.minimum_payout_amount ?? 0, referrals?.cash?.currency ?? 'UZS')}</p>
                   </div>
                   <button
                     type="button"
@@ -907,14 +1025,16 @@ export const PartnerOfficePage: React.FC = () => {
                     Request cash payout
                   </button>
                 </div>
+              </div>
 
+              <div className="grid gap-5 lg:grid-cols-2">
                 <div className={`${panelClass} overflow-hidden`}>
                   <div className="border-b border-gray-900/10 p-5 md:p-6">
                     <SectionTitle icon={Coins} label="Referral rewards" title="Active rewards and history" />
                   </div>
                   <div className="divide-y divide-gray-900/10">
                     {(referrals?.rewards ?? []).map((reward) => (
-                      <div key={reward.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                      <div key={reward.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto] md:items-center">
                         <div>
                           <p className="font-semibold">
                             Credit {money(reward.credit_amount ?? 0, reward.currency)} / Cash {money(reward.cash_amount ?? 0, reward.currency)}
@@ -925,7 +1045,6 @@ export const PartnerOfficePage: React.FC = () => {
                           <StatusPill status={reward.status} />
                           <StatusPill status={reward.cash_status} />
                         </div>
-                        <span className="font-mono text-xs text-gray-500">{reward.id}</span>
                       </div>
                     ))}
                     {(referrals?.rewards ?? []).length === 0 ? (
@@ -942,13 +1061,12 @@ export const PartnerOfficePage: React.FC = () => {
                   </div>
                   <div className="divide-y divide-gray-900/10">
                     {cashPayoutRequests.map((request: any) => (
-                      <div key={request.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                      <div key={request.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto] md:items-center">
                         <div>
                           <p className="font-semibold">{money(request.amount, request.currency)}</p>
                           <p className="mt-1 text-sm text-gray-600">{request.payout_method} - {formatDateTime(request.requested_at)}</p>
                         </div>
                         <StatusPill status={request.status} />
-                        <span className="font-mono text-xs text-gray-500">{request.id}</span>
                       </div>
                     ))}
                     {cashPayoutRequests.length === 0 ? (

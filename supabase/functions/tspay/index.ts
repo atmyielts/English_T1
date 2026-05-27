@@ -537,6 +537,34 @@ const normalizeReferralCode = (raw: unknown): string | null => {
   return code || null;
 };
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value && typeof value === "object" && !Array.isArray(value));
+
+const sanitizeReferralMetadata = (value: unknown): Record<string, unknown> => {
+  if (!isPlainObject(value)) return {};
+  const source = isPlainObject(value.referral_context) ? value.referral_context : value;
+  const allowed = [
+    "audience",
+    "service",
+    "source",
+    "target",
+    "channel",
+    "landing_path",
+    "landing_search",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+  ];
+  const out: Record<string, unknown> = {};
+  for (const key of allowed) {
+    const text = String(source[key] ?? "").trim();
+    if (text) out[key] = text.slice(0, key === "landing_search" ? 1000 : 240);
+  }
+  return out;
+};
+
 const normalizeMoney = (raw: unknown): number => {
   const n = Number(raw ?? 0);
   if (!Number.isFinite(n) || n <= 0) return 0;
@@ -643,11 +671,13 @@ const resolveReferralCheckout = async (
     purchaseKind: string;
     currency: string;
     originalAmount: number;
+    metadata?: Record<string, unknown> | null;
   },
 ): Promise<ReferralCheckoutResult> => {
   let attribution: any = null;
   let program: any = null;
   let referralCode = normalizeReferralCode(input.referralCode);
+  const referralMetadata = sanitizeReferralMetadata(input.metadata);
 
   const attributionId = String(input.referralAttributionId ?? "").trim();
   if (attributionId) {
@@ -709,7 +739,7 @@ const resolveReferralCheckout = async (
           referred_user_id: input.userId,
           referral_code: referralCode,
           status: "pending",
-          metadata: { source: "checkout" },
+          metadata: { source: "checkout", ...referralMetadata },
         })
         .select("id, program_id, referrer_user_id, referred_user_id, referral_code, status")
         .maybeSingle();
@@ -1844,6 +1874,7 @@ serve(async (req) => {
         purchaseKind,
         currency,
         originalAmount,
+        metadata: body.metadata ?? null,
       });
       if (!referralCheckout.ok) return referralCheckout.response;
 

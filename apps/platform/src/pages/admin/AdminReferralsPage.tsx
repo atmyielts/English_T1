@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Banknote, CheckCircle2, RefreshCw, Save, XCircle } from 'lucide-react';
+import { Banknote, CheckCircle2, RefreshCw, Save, Sparkles, XCircle } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
 import {
@@ -15,6 +15,9 @@ const money = (amount?: number | null, currency = 'UZS') =>
 
 const inputClass = 'mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm';
 const panelClass = 'rounded-2xl border border-gray-200 bg-white p-5';
+
+const asRecord = (value: unknown): Record<string, any> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, any>) : {};
 
 const statusClass = (status?: string | null) => {
   const value = String(status ?? '').toLowerCase();
@@ -128,6 +131,7 @@ export const AdminReferralsPage: React.FC = () => {
     () => (summary?.rewards ?? []).filter((row: any) => row.status === 'reversed' || row.archived_at || ['paid', 'void'].includes(String(row.cash_status ?? ''))),
     [summary?.rewards],
   );
+  const growthProgram = useMemo(() => asRecord(asRecord(program?.metadata).growth_program), [program?.metadata]);
 
   return (
     <AdminLayout>
@@ -173,6 +177,38 @@ export const AdminReferralsPage: React.FC = () => {
             <p className="mt-2 text-xl font-semibold">{money(summary?.analytics.paid_cash ?? 0, program?.currency ?? 'UZS')}</p>
           </div>
         </section>
+
+        {program ? (
+          <section className={panelClass}>
+            <div className="mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Program strategy</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{growthProgram.brand_name ?? program.name}</p>
+                <p className="mt-2 text-2xl font-semibold text-gray-900">{growthProgram.tagline ?? 'Share Schood, fund the next study step.'}</p>
+                <p className="mt-2 text-sm leading-6 text-gray-600">{growthProgram.description ?? 'Referral links route people into the right Schood service while keeping attribution through signup and checkout.'}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                <p className="text-sm font-semibold text-gray-900">Commercial guardrails</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between gap-3"><span>Status</span><StatusPill status={program.status} /></div>
+                  <div className="flex justify-between gap-3"><span>First purchase only</span><span className="font-medium">{program.first_purchase_only ? 'Yes' : 'No'}</span></div>
+                  <div className="flex justify-between gap-3"><span>Cash payouts</span><span className="font-medium">{program.cash_payouts_enabled ? 'Enabled' : 'Disabled'}</span></div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-4">
+              {(Array.isArray(growthProgram.audiences) ? growthProgram.audiences : []).slice(0, 4).map((audience: any) => (
+                <div key={audience.id ?? audience.label} className="rounded-2xl border border-gray-100 bg-white p-4">
+                  <p className="font-medium text-gray-900">{audience.label ?? audience.id}</p>
+                  <p className="mt-1 text-sm leading-6 text-gray-500">{audience.description ?? '-'}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {program ? (
           <section className={panelClass}>

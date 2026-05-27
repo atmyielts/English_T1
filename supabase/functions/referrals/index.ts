@@ -28,9 +28,153 @@ const normalizeCode = (raw: unknown): string => String(raw ?? "").trim().toUpper
 
 const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
 
+const safeText = (value: unknown, max = 240): string | null => {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, max) : null;
+};
+
+const sanitizeMetadata = (value: unknown): Json => {
+  if (!isObject(value)) return {};
+  const allowed = [
+    "audience",
+    "service",
+    "source",
+    "target",
+    "channel",
+    "landing_path",
+    "landing_search",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+  ];
+  const out: Json = {};
+  for (const key of allowed) {
+    const text = safeText(value[key], key === "landing_search" ? 1000 : 240);
+    if (text) out[key] = text;
+  }
+  return out;
+};
+
 const normalizeIdList = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
   return value.map((item) => String(item ?? "").trim()).filter(Boolean).slice(0, 100);
+};
+
+const DEFAULT_GROWTH_PROGRAM = {
+  brand_name: "Schood Rewards",
+  tagline: "Share Schood, fund the next study step.",
+  description:
+    "A cross-service referral program for students, teachers, academies, and education centers. Share the path that fits the person you are inviting, then Schood keeps the attribution through signup and eligible checkout.",
+  audiences: [
+    {
+      id: "student",
+      label: "Students",
+      description: "Invite learners into IELTS, SAT, TOEFL, English practice, and paid plans.",
+    },
+    {
+      id: "teacher",
+      label: "Teachers",
+      description: "Invite teachers who need classrooms, cohorts, and student progress tools.",
+    },
+    {
+      id: "center",
+      label: "Education centers",
+      description: "Invite centers to buy mock access, seats, vouchers, and academy workspaces.",
+    },
+    {
+      id: "academy",
+      label: "Academies",
+      description: "Invite operators building a structured academy on top of Schood.",
+    },
+  ],
+  milestones: [
+    { label: "Share", description: "Pick the link that matches the learner, teacher, or center." },
+    { label: "Claim", description: "The code is stored at first visit and claimed after signup or login." },
+    { label: "Convert", description: "Eligible first purchases trigger the configured reward." },
+    { label: "Use or cash out", description: "Platform credit is posted automatically; cash payouts follow admin review when enabled." },
+  ],
+  rules: [
+    "Self-referrals are blocked.",
+    "Discounts and rewards apply only while the program is active.",
+    "Eligibility, minimum purchase, and first-purchase rules are controlled by the admin program settings.",
+    "Cash payouts require the configured minimum amount and admin settlement.",
+  ],
+};
+
+const queryPath = (path: string, params: Record<string, string | null | undefined>): string => {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    const text = safeText(value);
+    if (text) qs.set(key, text);
+  });
+  const query = qs.toString();
+  return `${path}${query ? `?${query}` : ""}`;
+};
+
+const buildGrowthProgram = (program: any): Json => {
+  const metadata = isObject(program?.metadata) ? program.metadata : {};
+  const configured = isObject(metadata.growth_program) ? metadata.growth_program : {};
+  return {
+    ...DEFAULT_GROWTH_PROGRAM,
+    ...configured,
+  };
+};
+
+const buildShareLinks = (code: string): Json[] => {
+  const encoded = encodeURIComponent(code);
+  return [
+    {
+      id: "main",
+      label: "Universal invite",
+      description: "Best all-purpose link for a student, parent, teacher, or center.",
+      path: queryPath(`/r/${encoded}`, { source: "rewards", audience: "general" }),
+      audience: "general",
+      service: "platform",
+      primary: true,
+    },
+    {
+      id: "signup",
+      label: "Direct signup",
+      description: "Send someone straight to account creation with your code attached.",
+      path: queryPath("/auth", { mode: "signup", ref: code, source: "rewards", audience: "student" }),
+      audience: "student",
+      service: "platform",
+    },
+    {
+      id: "plans",
+      label: "Plans and pricing",
+      description: "Use when the person is already ready to compare paid plans.",
+      path: queryPath("/plans", { ref: code, source: "rewards", audience: "student" }),
+      audience: "student",
+      service: "platform",
+    },
+    {
+      id: "ielts",
+      label: "IELTS learners",
+      description: "Route IELTS candidates to the IELTS service discovery page.",
+      path: queryPath("/ielts", { ref: code, source: "rewards", audience: "student", service: "ielts" }),
+      audience: "student",
+      service: "ielts",
+    },
+    {
+      id: "sat",
+      label: "SAT learners",
+      description: "Route SAT candidates to SAT practice and simulator options.",
+      path: queryPath("/sat", { ref: code, source: "rewards", audience: "student", service: "sat" }),
+      audience: "student",
+      service: "sat",
+    },
+    {
+      id: "centers",
+      label: "Centers and academies",
+      description: "Use for education centers, academy operators, and teachers managing groups.",
+      path: queryPath("/education-centers", { ref: code, source: "rewards", audience: "center", service: "academy" }),
+      audience: "center",
+      service: "academy",
+    },
+  ];
 };
 
 const randomReferralCode = (len = 8): string => {
@@ -164,6 +308,8 @@ serve(async (req) => {
           signup: `/auth?mode=signup&ref=${encodeURIComponent(account.referral_code)}`,
           plans: `/plans?ref=${encodeURIComponent(account.referral_code)}`,
         },
+        share_links: buildShareLinks(account.referral_code),
+        program_strategy: buildGrowthProgram(program),
         credit: {
           currency,
           available_amount: Number(creditData ?? 0),
@@ -261,6 +407,7 @@ serve(async (req) => {
       const body = (await req.json().catch(() => ({}))) as Json;
       const code = normalizeCode(body.code ?? body.referral_code);
       if (!code) return json(400, { error: "referral code is required" });
+      const claimMetadata = sanitizeMetadata(body.metadata);
 
       await ensureReferralAccount(sb, userId);
 
@@ -283,7 +430,24 @@ serve(async (req) => {
         .eq("referred_user_id", userId)
         .maybeSingle();
       if (existingError) return json(500, { error: "Failed to load attribution", detail: existingError.message });
-      if (existing?.id) return json(200, { attribution: existing, program });
+      if (existing?.id) {
+        if (Object.keys(claimMetadata).length > 0 && String(existing.status ?? "") === "pending") {
+          const { data: updated } = await sb
+            .from("referral_attributions")
+            .update({
+              metadata: {
+                ...((isObject(existing.metadata) ? existing.metadata : {}) as Json),
+                ...claimMetadata,
+                latest_claim_at: new Date().toISOString(),
+              },
+            })
+            .eq("id", existing.id)
+            .select("id, program_id, referrer_user_id, referred_user_id, referral_code, status, claimed_at, converted_payment_id, converted_at, metadata")
+            .maybeSingle();
+          return json(200, { attribution: updated ?? existing, program });
+        }
+        return json(200, { attribution: existing, program });
+      }
 
       const { data: attribution, error: insertError } = await sb
         .from("referral_attributions")
@@ -293,7 +457,7 @@ serve(async (req) => {
           referred_user_id: userId,
           referral_code: code,
           status: "pending",
-          metadata: { source: "referrals.claim" },
+          metadata: { source: "referrals.claim", ...claimMetadata },
         })
         .select("id, program_id, referrer_user_id, referred_user_id, referral_code, status, claimed_at, converted_payment_id, converted_at, metadata")
         .maybeSingle();

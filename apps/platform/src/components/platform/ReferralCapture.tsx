@@ -1,11 +1,8 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { referralsClaim } from '../../lib/platformClient';
+import { buildReferralContext, normalizeReferralCode, storeReferral } from '../../lib/referralContext';
 import { supabase } from '../../lib/supabase';
-
-const REFERRAL_STORAGE_KEY = 'schood:referral_code';
-
-const normalizeReferralCode = (value?: string | null): string => String(value ?? '').trim().toUpperCase();
 
 export const ReferralCapture = () => {
   const location = useLocation();
@@ -16,13 +13,14 @@ export const ReferralCapture = () => {
     const code = normalizeReferralCode(params.get('ref'));
     if (!code) return;
 
-    window.localStorage.setItem(REFERRAL_STORAGE_KEY, code);
+    const context = buildReferralContext(location.pathname, location.search, code);
+    storeReferral(code, context);
 
     const claimIfAuthed = async () => {
       const { data } = await supabase.auth.getSession();
       const accessToken = data.session?.access_token;
       if (!accessToken) return;
-      await referralsClaim(accessToken, code).catch(() => null);
+      await referralsClaim(accessToken, code, context).catch(() => null);
     };
 
     void claimIfAuthed();

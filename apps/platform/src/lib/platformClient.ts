@@ -2626,12 +2626,33 @@ export type ReferralProgram = {
   updated_at?: string;
 };
 
+export type ReferralShareLink = {
+  id: string;
+  label: string;
+  description?: string;
+  path: string;
+  audience?: string;
+  service?: string;
+  primary?: boolean;
+};
+
+export type ReferralProgramStrategy = {
+  brand_name: string;
+  tagline: string;
+  description?: string;
+  audiences?: Array<{ id: string; label: string; description?: string }>;
+  milestones?: Array<{ label: string; description?: string }>;
+  rules?: string[];
+};
+
 export type ReferralMeResponse = {
   account: { id: string; user_id: string; referral_code: string; status: string; metadata?: Json | null };
   program: ReferralProgram | null;
   referral_url_path: string;
   legacy_referral_url_path?: string;
   affiliate_urls?: { landing?: string; signup?: string; plans?: string };
+  share_links?: ReferralShareLink[];
+  program_strategy?: ReferralProgramStrategy;
   credit: { currency: string; available_amount: number; earned_amount?: number };
   cash?: {
     currency: string;
@@ -2937,11 +2958,15 @@ export const referralsMe = async (accessToken: string): Promise<ReferralMeRespon
   return (await res.json()) as ReferralMeResponse;
 };
 
-export const referralsClaim = async (accessToken: string, code: string): Promise<{ attribution: any; program: ReferralProgram | null }> => {
+export const referralsClaim = async (
+  accessToken: string,
+  code: string,
+  metadata?: Record<string, unknown> | null,
+): Promise<{ attribution: any; program: ReferralProgram | null }> => {
   const res = await fetch(`${edgeBase}/referrals/claim`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, metadata: metadata ?? undefined }),
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);

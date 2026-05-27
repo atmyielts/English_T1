@@ -10,6 +10,12 @@ import {
   type BillingPlan,
   type BillingQuoteResponse,
 } from '../lib/platformClient';
+import {
+  buildReferralContext,
+  readStoredReferralContext,
+  REFERRAL_CODE_STORAGE_KEY,
+  storeReferral,
+} from '../lib/referralContext';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
@@ -67,7 +73,7 @@ export const CheckoutPage: React.FC = () => {
   const [applyCredit, setApplyCredit] = useState<boolean>(true);
   const [referralCode, setReferralCode] = useState<string>(() => {
     if (typeof window === 'undefined') return '';
-    return window.localStorage.getItem('schood:referral_code') ?? '';
+    return window.localStorage.getItem(REFERRAL_CODE_STORAGE_KEY) ?? '';
   });
   const [quote, setQuote] = useState<BillingQuoteResponse | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
@@ -97,10 +103,10 @@ export const CheckoutPage: React.FC = () => {
   useEffect(() => {
     const ref = searchParams.get('ref')?.trim().toUpperCase();
     if (ref) {
-      window.localStorage.setItem('schood:referral_code', ref);
+      storeReferral(ref, buildReferralContext(location.pathname, location.search, ref));
       setReferralCode(ref);
     }
-  }, [searchParams]);
+  }, [location.pathname, location.search, searchParams]);
 
   useEffect(() => {
     const init = async () => {
@@ -213,7 +219,7 @@ export const CheckoutPage: React.FC = () => {
       const res = await tspayCreateTransaction(data.session.access_token, {
         plan_id: planId,
         description,
-        metadata: { source: 'checkout_page' },
+        metadata: { source: 'checkout_page', referral_context: readStoredReferralContext() },
         coupon_code: couponCode.trim() || null,
         apply_credit: applyCredit,
         referral_code: referralCode.trim() || null,

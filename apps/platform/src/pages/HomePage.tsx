@@ -4,6 +4,7 @@ import { ArrowUpRight, Building2, ChevronRight, Crown, LayoutGrid, Sparkles, Use
 import { supabase } from '../lib/supabase';
 import { getAccessEffective, getMe, partnerOfficeCenter } from '../lib/platformClient';
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
+import { buildReferralContext, storeReferral } from '../lib/referralContext';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import {
@@ -68,8 +69,8 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     const ref = new URLSearchParams(location.search).get('ref')?.trim().toUpperCase();
-    if (ref) window.localStorage.setItem('schood:referral_code', ref);
-  }, [location.search]);
+    if (ref) storeReferral(ref, buildReferralContext(location.pathname, location.search, ref));
+  }, [location.pathname, location.search]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

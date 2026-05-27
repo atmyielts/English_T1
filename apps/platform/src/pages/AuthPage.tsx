@@ -3,6 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { referralsClaim } from '../lib/platformClient';
+import {
+  buildReferralContext,
+  clearStoredReferral,
+  readStoredReferralContext,
+  REFERRAL_CODE_STORAGE_KEY,
+  storeReferral,
+} from '../lib/referralContext';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
@@ -104,18 +111,18 @@ export const AuthPage: React.FC = () => {
 
   useEffect(() => {
     const ref = searchParams.get('ref')?.trim().toUpperCase();
-    if (ref) window.localStorage.setItem('schood:referral_code', ref);
-  }, [searchParams]);
+    if (ref) storeReferral(ref, buildReferralContext(location.pathname, location.search, ref));
+  }, [location.pathname, location.search, searchParams]);
 
   const claimStoredReferral = async (accessToken: string) => {
-    const code = window.localStorage.getItem('schood:referral_code')?.trim();
+    const code = window.localStorage.getItem(REFERRAL_CODE_STORAGE_KEY)?.trim();
     if (!code) return;
     try {
-      await referralsClaim(accessToken, code);
+      await referralsClaim(accessToken, code, readStoredReferralContext());
     } catch {
       // Referral claims are best-effort and should not block account access.
     } finally {
-      window.localStorage.removeItem('schood:referral_code');
+      clearStoredReferral();
     }
   };
 
