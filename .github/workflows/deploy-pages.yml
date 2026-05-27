@@ -37,6 +37,10 @@ jobs:
             workspace: apps/sat-practice
             dist: apps/sat-practice/dist
             project: schood-sat-practice
+          - label: sat-playbook
+            workspace: apps/sat-playbook
+            dist: apps/sat-playbook/dist
+            project: schood-sat-playbook
           - label: toefl
             workspace: apps/toefl-ibt-simulator
             dist: apps/toefl-ibt-simulator/dist
