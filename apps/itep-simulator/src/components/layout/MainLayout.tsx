@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -79,6 +79,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavId = useId();
   const returnTo = getReturnTo(location);
 
   const pageMeta = useMemo(() => {
@@ -103,6 +104,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
     navigate('/platform-home');
   };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMobileNavOpen(false), 0);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-[#111827]">
@@ -153,72 +159,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Mobile drawer */}
-      {mobileNavOpen ? (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileNavOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-[86vw] max-w-sm bg-[#f6f1e8] border-r border-[#151d2b]/10 p-5">
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={goPlatformHome}
-                className="h-10 px-4 rounded-full bg-[#111827] text-white text-sm font-semibold"
-              >
-                Platform
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(false)}
-                className="h-10 w-10 rounded-full border border-[#151d2b]/15 bg-white inline-flex items-center justify-center"
-                aria-label="Close navigation"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <nav className="mt-6 space-y-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const active = isMainActivePath(location.pathname, item.path);
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileNavOpen(false)}
-                    className={[
-                      'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors',
-                      active
-                        ? 'bg-[#c2410c] text-white border-[#c2410c]'
-                        : 'bg-white/80 text-[#111827] border-[#151d2b]/10 hover:bg-white',
-                    ].join(' ')}
-                  >
-                    <Icon size={18} />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mt-6 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => goPlatform('/pricing')}
-                className="h-10 rounded-xl border border-[#151d2b]/15 bg-white/80 text-sm font-semibold"
-              >
-                Pricing
-              </button>
-              <button
-                type="button"
-                onClick={() => goPlatform('/account')}
-                className="h-10 rounded-xl border border-[#151d2b]/15 bg-white/80 text-sm font-semibold"
-              >
-                Account
-              </button>
-            </div>
-          </aside>
-        </div>
-      ) : null}
-
       <div className="lg:pl-[120px]">
         <header className="sticky top-0 z-30 border-b border-[#151d2b]/10 bg-[#f6f1e8]/90 backdrop-blur px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-3">
@@ -226,10 +166,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <button
                 type="button"
                 className="lg:hidden h-10 w-10 rounded-full border border-[#151d2b]/15 bg-white/90 inline-flex items-center justify-center"
-                onClick={() => setMobileNavOpen(true)}
-                aria-label="Open navigation"
+                onClick={() => setMobileNavOpen((open) => !open)}
+                aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'}
+                aria-expanded={mobileNavOpen}
+                aria-controls={mobileNavId}
               >
-                <Menu size={18} />
+                {mobileNavOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
               <button type="button" onClick={() => navigate('/')} className="min-w-0 text-left hover:opacity-80">
                 <div className="text-[11px] uppercase tracking-[0.14em] text-[#64748b] font-semibold">iTEP Simulator</div>
@@ -257,6 +199,69 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </div>
         </header>
+
+        {mobileNavOpen ? (
+          <div
+            id={mobileNavId}
+            className="lg:hidden border-b border-[#151d2b]/10 bg-[#f6f1e8]/95 px-4 py-4 shadow-sm"
+          >
+            <nav className="space-y-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const active = isMainActivePath(location.pathname, item.path);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileNavOpen(false)}
+                    className={[
+                      'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors',
+                      active
+                        ? 'bg-[#c2410c] text-white border-[#c2410c]'
+                        : 'bg-white/80 text-[#111827] border-[#151d2b]/10 hover:bg-white',
+                    ].join(' ')}
+                  >
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  goPlatformHome();
+                }}
+                className="h-10 rounded-xl border border-[#151d2b]/15 bg-white/80 text-sm font-semibold"
+              >
+                Platform
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  goPlatform('/pricing');
+                }}
+                className="h-10 rounded-xl border border-[#151d2b]/15 bg-white/80 text-sm font-semibold"
+              >
+                Pricing
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileNavOpen(false);
+                  goPlatform('/account');
+                }}
+                className="h-10 rounded-xl border border-[#151d2b]/15 bg-white/80 text-sm font-semibold"
+              >
+                Account
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <main className="px-4 pb-8 pt-5 sm:px-6 lg:px-8">{children}</main>
       </div>

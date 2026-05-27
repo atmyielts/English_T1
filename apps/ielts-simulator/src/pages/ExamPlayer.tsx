@@ -1253,6 +1253,7 @@ export const ExamPlayer: React.FC = () => {
                         value={answers[u.id]}
                         onChange={(val) => queueSave(u, val)}
                         audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                        audioAutoStartEnabled={allAcknowledged}
                         onAudioEnded={() => handleAudioEnded(u)}
                         questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                       />
@@ -1291,6 +1292,7 @@ export const ExamPlayer: React.FC = () => {
                       value={answers[u.id]}
                       onChange={(val) => queueSave(u, val)}
                       audioContext={accessToken ? { accessToken, sessionId, volume } : null}
+                      audioAutoStartEnabled={allAcknowledged}
                       onAudioEnded={() => handleAudioEnded(u)}
                       questionNumber={range ? (range.start === range.end ? range.start : range) : undefined}
                     />

@@ -77,6 +77,8 @@ interface InputRendererProps {
   questionNumber?: number | { start: number; end: number };
   readOnly?: boolean;
   audioContext?: { accessToken: string; sessionId: string; volume?: number } | null;
+  audioAutoStartEnabled?: boolean;
+  onAudioEnded?: () => void;
 }
 
 const safeJson = (v: unknown): Json => (v && typeof v === 'object' ? (v as Json) : {});
@@ -151,7 +153,9 @@ const AudioUnit: React.FC<{
   data: AudioData;
   readOnly?: boolean;
   context?: { accessToken: string; sessionId: string; volume?: number } | null;
-}> = ({ unitId, data, readOnly, context }) => {
+  autoStartEnabled?: boolean;
+  onEnded?: () => void;
+}> = ({ unitId, data, readOnly, context, autoStartEnabled = true, onEnded }) => {
   const url = typeof data.url === 'string' && data.url.length > 0 ? data.url : null;
   const tone = data.tone && typeof data.tone.frequency_hz === 'number' ? data.tone : null;
   const playOnce = readOnly ? false : data.play_once === true;
@@ -267,6 +271,7 @@ const AudioUnit: React.FC<{
           setPlayedOnce(true);
           setPositionSeconds(dur);
           void pushEvent('end');
+          onEnded?.();
         }, dur * 1000);
         return;
       }
@@ -291,6 +296,7 @@ const AudioUnit: React.FC<{
     if (!playOnce) return;
     if (readOnly) return;
     if (!data.auto_start) return;
+    if (!autoStartEnabled) return;
     if (!url) return;
     if (locked || playedOnce) return;
 
@@ -308,7 +314,7 @@ const AudioUnit: React.FC<{
     return () => {
       cancelled = true;
     };
-  }, [data.auto_start, locked, playedOnce, playOnce, readOnly, url]);
+  }, [autoStartEnabled, data.auto_start, locked, playedOnce, playOnce, readOnly, url]);
 
   return (
     <div className="p-4 border rounded bg-blue-50 space-y-3">
@@ -412,6 +418,7 @@ const AudioUnit: React.FC<{
               setPlaying(false);
               setPlayedOnce(true);
               void pushEvent('end');
+              onEnded?.();
             }}
           />
         ) : (
@@ -435,7 +442,16 @@ const AudioUnit: React.FC<{
   );
 };
 
-export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onChange, questionNumber, readOnly, audioContext }) => {
+export const InputRenderer: React.FC<InputRendererProps> = ({
+  unit,
+  value,
+  onChange,
+  questionNumber,
+  readOnly,
+  audioContext,
+  audioAutoStartEnabled,
+  onAudioEnded,
+}) => {
   const data = safeJson(unit.data);
 
   const qPrefix = qPrefixFrom(questionNumber);
@@ -478,7 +494,16 @@ export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onCha
 
     case 'audio': {
       const d = data as unknown as AudioData;
-      return <AudioUnit unitId={unit.id} data={d} readOnly={readOnly} context={audioContext ?? null} />;
+      return (
+        <AudioUnit
+          unitId={unit.id}
+          data={d}
+          readOnly={readOnly}
+          context={audioContext ?? null}
+          autoStartEnabled={audioAutoStartEnabled ?? true}
+          onEnded={onAudioEnded}
+        />
+      );
     }
 
     case 'question_text': {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -104,6 +104,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
+    const mobileNavId = useId();
 
     const activeClass = 'bg-white/10 text-white border border-white/10';
     const inactiveClass = 'text-zinc-400 hover:text-white hover:bg-white/5 transition-colors';
@@ -197,85 +198,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     </div>
                 </aside>
 
-            {/* Mobile Drawer */}
-            {mobileNavOpen ? (
-                <div className="md:hidden fixed inset-0 z-40">
-                    <div
-                        className="absolute inset-0 bg-black/40"
-                        onClick={() => setMobileNavOpen(false)}
-                    />
-                    <aside className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-zinc-950/95 backdrop-blur flex flex-col border-r border-white/5">
-                    <div className="h-16 flex items-center justify-between px-5 border-b border-white/5">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setMobileNavOpen(false);
-                                navigate('/');
-                            }}
-                            className="text-white font-bold text-lg tracking-wide flex items-center gap-2 hover:text-emerald-300"
-                        >
-                            <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                            IELTS Simulator
-                        </button>
-                        <button
-                                type="button"
-                                className="h-10 w-10 inline-flex items-center justify-center rounded-xl text-white/80 hover:text-white hover:bg-white/10"
-                                onClick={() => setMobileNavOpen(false)}
-                                aria-label="Close menu"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        <MainNav
-                            pathname={location.pathname}
-                            inactiveClass={inactiveClass}
-                            activeClass={activeClass}
-                            goPlatformHome={goPlatformHome}
-                            goPlatform={goPlatform}
-                            onNavigate={() => setMobileNavOpen(false)}
-                        />
-
-                        <div className="p-4 border-t border-white/5">
-                            <div className="border border-white/10 bg-white/5 rounded-2xl p-4 text-center">
-                                <span className="text-zinc-300 text-xs font-bold uppercase tracking-wider block mb-1">Subscription</span>
-                                <span className="text-white font-bold block mb-3">Manage plans</span>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setMobileNavOpen(false);
-                                        goPlatform('/pricing');
-                                    }}
-                                    className="block w-full text-center text-xs bg-white/10 border border-white/10 text-white py-2 rounded-xl hover:bg-white/15 transition-colors"
-                                >
-                                    View pricing
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setMobileNavOpen(false);
-                                        goPlatformHome();
-                                    }}
-                                    className="mt-2 block w-full text-center text-xs bg-white/10 border border-white/10 text-white py-2 rounded-xl hover:bg-white/15 transition-colors"
-                                >
-                                    Back to platform
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setMobileNavOpen(false);
-                                        goPlatform('/contact');
-                                    }}
-                                    className="mt-2 block w-full text-center text-xs bg-white/10 border border-white/10 text-white py-2 rounded-xl hover:bg-white/15 transition-colors"
-                                >
-                                    Contact support
-                                </button>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            ) : null}
-
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
@@ -284,10 +206,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         <button
                             type="button"
                             className="md:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-700"
-                            onClick={() => setMobileNavOpen(true)}
-                            aria-label="Open menu"
+                            onClick={() => setMobileNavOpen((open) => !open)}
+                            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+                            aria-expanded={mobileNavOpen}
+                            aria-controls={mobileNavId}
                         >
-                            <Menu size={20} />
+                            {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
                         </button>
                         <h1 className="text-xl font-bold text-gray-800 truncate">{title}</h1>
                     </div>
@@ -301,6 +225,57 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </button>
                     </div>
                 </header>
+
+                {mobileNavOpen ? (
+                    <div
+                        id={mobileNavId}
+                        className="md:hidden shrink-0 border-b border-gray-200 bg-white/95 px-3 pb-4 shadow-sm"
+                    >
+                        <MainNav
+                            pathname={location.pathname}
+                            inactiveClass="border border-gray-200 bg-white text-gray-700 hover:text-gray-950 hover:bg-gray-50 transition-colors"
+                            activeClass="bg-zinc-950 text-white border border-zinc-950"
+                            goPlatformHome={goPlatformHome}
+                            goPlatform={goPlatform}
+                            onNavigate={() => setMobileNavOpen(false)}
+                        />
+
+                        <div className="mx-3 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center">
+                            <span className="text-gray-500 text-xs font-bold uppercase tracking-wider block mb-1">Subscription</span>
+                            <span className="text-gray-950 font-bold block mb-3">Manage plans</span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMobileNavOpen(false);
+                                    goPlatform('/pricing');
+                                }}
+                                className="block w-full text-center text-xs bg-white border border-gray-200 text-gray-900 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                            >
+                                View pricing
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMobileNavOpen(false);
+                                    goPlatformHome();
+                                }}
+                                className="mt-2 block w-full text-center text-xs bg-white border border-gray-200 text-gray-900 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                            >
+                                Back to platform
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMobileNavOpen(false);
+                                    goPlatform('/contact');
+                                }}
+                                className="mt-2 block w-full text-center text-xs bg-white border border-gray-200 text-gray-900 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+                            >
+                                Contact support
+                            </button>
+                        </div>
+                    </div>
+                ) : null}
 
                 {/* Content Scroll Area */}
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
