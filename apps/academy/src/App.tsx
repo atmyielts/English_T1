@@ -326,6 +326,33 @@ const isAcademyStaffRole = (role: unknown): boolean => {
   return normalized === 'owner' || normalized === 'admin';
 };
 
+const emptyStudentDashboard = (): TeacherStudioStudentDashboard => ({
+  academies: [],
+  contacts: [],
+  classrooms: [],
+  classroom_memberships: [],
+  announcements: [],
+  messages: [],
+  alerts: [],
+  entitlements: [],
+  payments: [],
+  offers: [],
+});
+
+const hasStudentWorkspaceAccess = (dashboard: TeacherStudioStudentDashboard | null): boolean =>
+  (dashboard?.contacts ?? []).length > 0;
+
+const teacherAcademyFromMembership = (membership: MeResponse['memberships'][number]): TeacherStudioAcademy => ({
+  id: membership.tenant_id,
+  name: membership.tenant_id,
+  slug: membership.tenant_id,
+  type: 'team',
+  metadata: {},
+  role: membership.role,
+  status: membership.status,
+  created_at: '',
+});
+
 const toEmbeddableVideoUrl = (rawUrl: string): string | null => {
   const value = String(rawUrl ?? '').trim();
   if (!value) return null;
@@ -453,7 +480,6 @@ const App = () => {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [academyId, setAcademyId] = useState('');
   const [academies, setAcademies] = useState<TeacherStudioAcademy[]>([]);
-  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('teacher');
   const [studentDashboard, setStudentDashboard] = useState<TeacherStudioStudentDashboard | null>(null);
 
   const [summary, setSummary] = useState<TeacherStudioSummary | null>(null);
@@ -513,21 +539,21 @@ const App = () => {
   );
   const activeMembership = useMemo(
     () => {
-      const pool = workspaceMode === 'teacher' ? teacherMemberships : activeMemberships;
+      const pool = teacherMemberships;
       return pool.find((membership) => membership.tenant_id === academyId) ?? pool[0] ?? null;
     },
-    [academyId, activeMemberships, teacherMemberships, workspaceMode],
+    [academyId, teacherMemberships],
   );
   const canManageLanding = ['owner', 'admin'].includes(String(activeMembership?.role ?? '').toLowerCase());
   const academyOptions = useMemo(
     () =>
       academies.length > 0
         ? academies.map((academy) => ({ id: academy.id, label: `${academy.name || academy.id} (${academy.role})` }))
-        : (workspaceMode === 'teacher' ? teacherMemberships : activeMemberships).map((membership) => ({
+        : teacherMemberships.map((membership) => ({
             id: membership.tenant_id,
             label: `${membership.tenant_id} (${membership.role})`,
           })),
-    [academies, activeMemberships, teacherMemberships, workspaceMode],
+    [academies, teacherMemberships],
   );
   const selectedOfficeAcademy = useMemo(
     () => academies.find((academy) => academy.id === academyId) ?? null,
@@ -550,6 +576,30 @@ const App = () => {
   const studentClassroomId = useMemo(() => studentClassroomIdFromPath(location.pathname), [location.pathname]);
   const isTeacherWorkspaceRoute = !!officeView || !!officeClassroomId;
   const isStudentWorkspaceRoute = !!studentPortalView || !!studentClassroomId;
+  const isSharedAcademyRoute =
+    isServiceLanding ||
+    isAcademyDirectory ||
+    isAcademyLanding ||
+    isAcademyClassroomsLanding ||
+    !!academyClassroomLandingId;
+  const hasTeacherAccess = teacherMemberships.length > 0;
+  const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
+  const teacherAcademyIds = useMemo(
+    () => new Set(teacherMemberships.map((membership) => membership.tenant_id)),
+    [teacherMemberships],
+  );
+  const studentAcademyIds = useMemo(
+    () => new Set((studentDashboard?.academies ?? []).map((academy) => academy.id)),
+    [studentDashboard],
+  );
+  const teacherDirectoryAcademies = useMemo(
+    () => (academies.length > 0 ? academies : teacherMemberships.map(teacherAcademyFromMembership)),
+    [academies, teacherMemberships],
+  );
+  const studentDirectoryAcademies = useMemo(
+    () => studentDashboard?.academies ?? [],
+    [studentDashboard],
+  );
 
   const selectedOfficeClassroom = useMemo(
     () => (officeClassroomId ? classrooms.find((classroom) => classroom.id === officeClassroomId) ?? null : null),
@@ -733,7 +783,6 @@ const App = () => {
       const meResponse = await getMe();
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
       const teacherMembershipRows = memberships.filter((membership) => isAcademyStaffRole(membership.role));
-      const preferStudentRoute = isStudentWorkspaceRoute || !!studentClassroomId;
       let cachedStudentData: TeacherStudioStudentDashboard | null = null;
       const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
         if (cachedStudentData) return cachedStudentData;
@@ -741,48 +790,41 @@ const App = () => {
         return cachedStudentData;
       };
 
-      if (preferStudentRoute) {
-        const studentData = await loadStudentDataOnce();
-        if ((studentData.contacts ?? []).length > 0) {
-          setMe(meResponse);
-          setWorkspaceMode('student');
-          setAcademies([]);
-          setStudentDashboard(studentData);
-          setState('ready');
-          return;
-        }
-      }
+      const shouldLoadStudentData =
+        isStudentWorkspaceRoute ||
+        (isSharedAcademyRoute && !isServiceLanding) ||
+        teacherMembershipRows.length === 0;
+      const studentData = shouldLoadStudentData ? await loadStudentDataOnce() : null;
+      const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
 
-      if (teacherMembershipRows.length === 0) {
-        const studentData = await loadStudentDataOnce();
-        if ((studentData.contacts ?? []).length === 0) {
-          setMe(meResponse);
-          setWorkspaceMode('teacher');
-          setStudentDashboard(null);
-          setState('error');
-          setError('No active academy membership or student contact found for this account.');
-          return;
-        }
+      if (teacherMembershipRows.length === 0 && !hasStudentRouteAccess) {
         setMe(meResponse);
-        setWorkspaceMode('student');
         setAcademies([]);
-        setStudentDashboard(studentData);
-        setState('ready');
+        setStudentDashboard(studentData ?? emptyStudentDashboard());
+        setState('error');
+        setError('No active academy membership or student contact found for this account.');
         return;
       }
 
-      const academyList = await teacherStudioAcademies();
-      const fallbackAcademyId =
-        teacherMembershipRows.find((membership) => membership.tenant_id === academyId)?.tenant_id ??
-        teacherMembershipRows[0].tenant_id;
-      const selectedAcademy =
-        teacherMembershipRows.find((membership) => membership.tenant_id === requestedAcademyId)?.tenant_id ?? fallbackAcademyId;
       setMe(meResponse);
-      setWorkspaceMode('teacher');
-      setStudentDashboard(null);
-      setAcademies(academyList);
-      setAcademyId(selectedAcademy);
-      await loadAcademyData(selectedAcademy);
+      setStudentDashboard(studentData);
+
+      const shouldLoadTeacherData = teacherMembershipRows.length > 0 && !isStudentWorkspaceRoute && !isServiceLanding;
+      if (shouldLoadTeacherData) {
+        const academyList = await teacherStudioAcademies();
+        const fallbackAcademyId =
+          teacherMembershipRows.find((membership) => membership.tenant_id === academyId)?.tenant_id ??
+          teacherMembershipRows[0].tenant_id;
+        const selectedAcademy =
+          teacherMembershipRows.find((membership) => membership.tenant_id === requestedAcademyId)?.tenant_id ?? fallbackAcademyId;
+        setAcademies(academyList);
+        setAcademyId(selectedAcademy);
+        await loadAcademyData(selectedAcademy);
+      } else {
+        setAcademies([]);
+        setAcademyId(requestedAcademyId || studentData?.academies[0]?.id || '');
+      }
+
       setState('ready');
     } catch (err) {
       const message = normalizeError(err);
@@ -795,7 +837,16 @@ const App = () => {
       setState('error');
       setError(message);
     }
-  }, [academyId, isStudentWorkspaceRoute, loadAcademyData, loadStudentData, requestedAcademyId, studentClassroomId]);
+  }, [
+    academyId,
+    isServiceLanding,
+    isSharedAcademyRoute,
+    isStudentWorkspaceRoute,
+    isTeacherWorkspaceRoute,
+    loadAcademyData,
+    loadStudentData,
+    requestedAcademyId,
+  ]);
 
   useEffect(() => {
     void bootstrap();
@@ -859,21 +910,13 @@ const App = () => {
     ) {
       return;
     }
-    if (workspaceMode === 'student') {
-      if (!isStudentWorkspaceRoute) {
-        const nextPath = '/academy/student';
-        navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
-      }
-      return;
-    }
-    if (!isTeacherWorkspaceRoute) {
-      const nextPath = '/academy/teacher';
-      navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
-    }
-  }, [academyClassroomLandingId, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, location.pathname, location.search, navigate, state, workspaceMode]);
+    if (isTeacherWorkspaceRoute || isStudentWorkspaceRoute) return;
+    const nextPath = '/academies';
+    navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
+  }, [academyClassroomLandingId, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, location.pathname, location.search, navigate, state]);
 
   const refresh = useCallback(async () => {
-    if (workspaceMode === 'student') {
+    if (isStudentWorkspaceRoute) {
       setBusy(true);
       setError('');
       try {
@@ -886,7 +929,20 @@ const App = () => {
       return;
     }
 
-    if (!academyId) return;
+    if (!isTeacherWorkspaceRoute) {
+      setBusy(true);
+      try {
+        await bootstrap();
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (!academyId) {
+      await bootstrap();
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -898,7 +954,7 @@ const App = () => {
     } finally {
       setBusy(false);
     }
-  }, [academyId, loadAcademyData, loadStudentData, selectedConversationId, workspaceMode]);
+  }, [academyId, bootstrap, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, loadAcademyData, loadStudentData, selectedConversationId]);
 
   const onSelectAcademy = useCallback(async (nextAcademyId: string) => {
     if (!nextAcademyId || nextAcademyId === academyId) return;
@@ -1247,11 +1303,11 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (state !== 'ready' || workspaceMode !== 'teacher') return;
+    if (state !== 'ready' || isStudentWorkspaceRoute || !hasTeacherAccess) return;
     if (!requestedAcademyId || requestedAcademyId === academyId) return;
     if (!teacherMemberships.some((membership) => membership.tenant_id === requestedAcademyId)) return;
     void onSelectAcademy(requestedAcademyId);
-  }, [academyId, onSelectAcademy, requestedAcademyId, state, teacherMemberships, workspaceMode]);
+  }, [academyId, hasTeacherAccess, isStudentWorkspaceRoute, onSelectAcademy, requestedAcademyId, state, teacherMemberships]);
 
   const submitAcademy = async (event: FormEvent) => {
     event.preventDefault();
@@ -1642,11 +1698,10 @@ const App = () => {
     setState('unauthenticated');
     setMe(null);
     setAcademies([]);
-    setWorkspaceMode('teacher');
     setStudentDashboard(null);
   };
 
-  const selectedViewLabel = workspaceMode === 'student'
+  const selectedViewLabel = isStudentWorkspaceRoute
     ? (studentClassroomId ? 'Classroom' : studentPortalView ? STUDENT_PORTAL_LABELS[studentPortalView] : 'Academy')
     : (officeClassroomId
       ? 'Classroom'
@@ -1928,28 +1983,65 @@ const App = () => {
     );
   }
 
+  if (state === 'ready' && isTeacherWorkspaceRoute && !hasTeacherAccess) {
+    return (
+      <>
+        <div className="ts-loading">
+          <div className="auth-card">
+            <h2>Teacher Office access required</h2>
+            <p>This route is only for academy owners and admins. Your account is linked as a student.</p>
+            {hasStudentAccess ? (
+              <button className="primary-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/student'))}>
+                Open Student Workplace
+              </button>
+            ) : null}
+            <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
+              Academy directory
+            </button>
+          </div>
+        </div>
+        <UpdatesButton />
+      </>
+    );
+  }
+
+  if (state === 'ready' && isStudentWorkspaceRoute && !hasStudentAccess) {
+    return (
+      <>
+        <div className="ts-loading">
+          <div className="auth-card">
+            <h2>Student Workplace access required</h2>
+            <p>This route is only for linked student contacts. Your account does not have a student profile here.</p>
+            {hasTeacherAccess ? (
+              <button className="primary-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/teacher'))}>
+                Open Teacher Office
+              </button>
+            ) : null}
+            <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
+              Academy directory
+            </button>
+          </div>
+        </div>
+        <UpdatesButton />
+      </>
+    );
+  }
+
   if (state === 'ready' && isAcademyDirectory) {
-    const teacherAcademies = academies.length > 0
-      ? academies
-      : teacherMemberships.map((membership) => ({
-          id: membership.tenant_id,
-          name: membership.tenant_id,
-          slug: membership.tenant_id,
-          type: 'team',
-          metadata: {},
-          role: membership.role,
-          status: membership.status,
-          created_at: '',
-        }));
-    const studentAcademies = studentDashboard?.academies ?? [];
+    const directoryDefaultAcademyId =
+      requestedAcademyId || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
 
     return (
       <>
         <div className="market-page">
           <div className="market-wrap">
             <div className="market-nav">
-              <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy'))}>
-                Current academy landing
+              <button
+                className="ghost-btn"
+                type="button"
+                onClick={() => navigate(academyScopedPath('/academy', directoryDefaultAcademyId))}
+              >
+                Academy landing
               </button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                 Refresh
@@ -1964,24 +2056,27 @@ const App = () => {
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Directory</div>
-                <h1>Academies</h1>
+                <div className="market-eyebrow">Academy directory</div>
+                <h1>Choose the right workspace</h1>
                 <p>
-                  {workspaceMode === 'teacher'
-                    ? 'Create and position academies, then open their public landing pages.'
-                    : 'Select an academy and continue from its landing page into your classroom workflow.'}
+                  Teacher Office and Student Workplace are now separate entry points. Shared academy pages stay public-facing,
+                  while role-specific routes only show the tools that belong to that role.
                 </p>
               </div>
               <div className="market-highlight">
-                <div className="market-badge">Directory stats</div>
+                <div className="market-badge">Access summary</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Academies</span>
-                    <strong>{workspaceMode === 'teacher' ? teacherAcademies.length : studentAcademies.length}</strong>
+                    <span>Teacher offices</span>
+                    <strong>{teacherDirectoryAcademies.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Mode</span>
-                    <strong>{workspaceMode === 'teacher' ? 'teacher' : 'student'}</strong>
+                    <span>Student academies</span>
+                    <strong>{studentDirectoryAcademies.length}</strong>
+                  </article>
+                  <article className="market-kpi">
+                    <span>Student classrooms</span>
+                    <strong>{studentDashboard?.classrooms.length ?? 0}</strong>
                   </article>
                 </div>
               </div>
@@ -1990,90 +2085,163 @@ const App = () => {
             {error ? <div className="error-banner">{error}</div> : null}
             {notice ? <div className="info-banner">{notice}</div> : null}
 
-            {workspaceMode === 'teacher' ? (
-              <>
-                <section className="market-grid">
-                  {teacherAcademies.map((academy) => (
-                    <article className="market-card" key={academy.id}>
-                      <div className="row between">
-                        <h3>{academy.name || academy.id}</h3>
-                        <span className={statusClass(academy.status)}>{academy.role}</span>
-                      </div>
-                      <p className="small muted">{academy.slug || academy.id}</p>
-                      <div className="market-actions">
-                        <button
-                          className="small-btn"
-                          type="button"
-                          onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
-                        >
-                          Open landing
-                        </button>
-                        <button
-                          className="small-btn"
-                          type="button"
-                          onClick={() => navigate(`/academy/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
-                        >
-                          Classrooms
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                  {teacherAcademies.length === 0 ? (
-                    <article className="market-card">
-                      <h3>No academies yet</h3>
-                      <p>Create your first academy to launch the service landing workflow.</p>
-                    </article>
-                  ) : null}
-                </section>
+            <section className="market-grid market-grid--wide">
+              <article className="market-card market-card--accent">
+                <div className="row between">
+                  <h3>Teacher Office</h3>
+                  <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{hasTeacherAccess ? 'available' : 'locked'}</span>
+                </div>
+                <p>Staff-only operations: contacts, classes, announcements, alerts, offers, payments, and entitlements.</p>
+                {hasTeacherAccess ? (
+                  <button
+                    className="small-btn"
+                    type="button"
+                    onClick={() => navigate(academyScopedPath('/academy/teacher', teacherDirectoryAcademies[0]?.id))}
+                  >
+                    Open Teacher Office
+                  </button>
+                ) : (
+                  <div className="small muted">No owner/admin academy membership on this account.</div>
+                )}
+              </article>
 
-                <section className="market-card">
-                  <h3>Create academy</h3>
-                  <form className="grid" onSubmit={submitAcademy}>
-                    <input
-                      className="input"
-                      placeholder="Academy name"
-                      value={academyNameDraft}
-                      onChange={(event) => setAcademyNameDraft(event.target.value)}
-                      required
-                    />
-                    <input
-                      className="input"
-                      placeholder="Slug (optional)"
-                      value={academySlugDraft}
-                      onChange={(event) => setAcademySlugDraft(event.target.value)}
-                    />
-                    <button className="primary-btn" type="submit" disabled={busy}>
-                      Create academy
+              <article className="market-card">
+                <div className="row between">
+                  <h3>Student Workplace</h3>
+                  <span className={hasStudentAccess ? 'status status--ok' : 'status'}>{hasStudentAccess ? 'available' : 'locked'}</span>
+                </div>
+                <p>Student-only learning: classrooms, announcements, direct messages, alerts, access grants, and payments.</p>
+                {hasStudentAccess ? (
+                  <button
+                    className="small-btn"
+                    type="button"
+                    onClick={() => navigate(academyScopedPath('/academy/student', studentDirectoryAcademies[0]?.id))}
+                  >
+                    Open Student Workplace
+                  </button>
+                ) : (
+                  <div className="small muted">No linked student contact was found for this account.</div>
+                )}
+              </article>
+            </section>
+
+            <section className="market-section-head">
+              <span className="market-badge">Teacher flow</span>
+              <h2>Office-owned academies</h2>
+              <p>These entries open staff controls. Student pages and student navigation stay outside this office shell.</p>
+            </section>
+
+            <section className="market-grid">
+              {teacherDirectoryAcademies.map((academy) => (
+                <article className="market-card" key={academy.id}>
+                  <div className="row between">
+                    <h3>{academy.name || academy.id}</h3>
+                    <span className={statusClass(academy.status)}>{academy.role}</span>
+                  </div>
+                  <p className="small muted">{academy.slug || academy.id}</p>
+                  <div className="market-actions">
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(`/academy/teacher?academy_id=${encodeURIComponent(academy.id)}`)}
+                    >
+                      Teacher Office
                     </button>
-                  </form>
-                </section>
-              </>
-            ) : (
-              <section className="market-grid">
-                {studentAcademies.map((academy) => (
-                  <article className="market-card" key={academy.id}>
-                    <div className="row between">
-                      <h3>{academy.name}</h3>
-                      <span className="status">student</span>
-                    </div>
-                    <p className="small muted">{academy.slug || academy.id}</p>
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(`/academy/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
+                    >
+                      Classroom landings
+                    </button>
                     <button
                       className="small-btn"
                       type="button"
                       onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
                     >
-                      Open academy landing
+                      Public landing
                     </button>
-                  </article>
-                ))}
-                {studentAcademies.length === 0 ? (
-                  <article className="market-card">
-                    <h3>No academies linked</h3>
-                    <p>Your account is not linked to any academy yet.</p>
-                  </article>
-                ) : null}
+                  </div>
+                </article>
+              ))}
+              {teacherDirectoryAcademies.length === 0 ? (
+                <article className="market-card">
+                  <h3>No Teacher Office access</h3>
+                  <p>This account can use Student Workplace only unless an academy owner adds it as staff.</p>
+                </article>
+              ) : null}
+            </section>
+
+            {hasTeacherAccess ? (
+              <section className="market-card">
+                <h3>Create academy</h3>
+                <form className="grid" onSubmit={submitAcademy}>
+                  <input
+                    className="input"
+                    placeholder="Academy name"
+                    value={academyNameDraft}
+                    onChange={(event) => setAcademyNameDraft(event.target.value)}
+                    required
+                  />
+                  <input
+                    className="input"
+                    placeholder="Slug (optional)"
+                    value={academySlugDraft}
+                    onChange={(event) => setAcademySlugDraft(event.target.value)}
+                  />
+                  <button className="primary-btn" type="submit" disabled={busy}>
+                    Create academy
+                  </button>
+                </form>
               </section>
-            )}
+            ) : null}
+
+            <section className="market-section-head">
+              <span className="market-badge">Student flow</span>
+              <h2>Linked student academies</h2>
+              <p>These entries open student learning spaces. Teacher operations never appear inside this route family.</p>
+            </section>
+
+            <section className="market-grid">
+              {studentDirectoryAcademies.map((academy) => (
+                <article className="market-card" key={academy.id}>
+                  <div className="row between">
+                    <h3>{academy.name}</h3>
+                    <span className="status status--ok">student</span>
+                  </div>
+                  <p className="small muted">{academy.slug || academy.id}</p>
+                  <div className="market-actions">
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(`/academy/student?academy_id=${encodeURIComponent(academy.id)}`)}
+                    >
+                      Student Workplace
+                    </button>
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(`/academy/student/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
+                    >
+                      My classrooms
+                    </button>
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
+                    >
+                      Public landing
+                    </button>
+                  </div>
+                </article>
+              ))}
+              {studentDirectoryAcademies.length === 0 ? (
+                <article className="market-card">
+                  <h3>No Student Workplace access</h3>
+                  <p>This account can use Teacher Office only unless it is linked to a student contact.</p>
+                </article>
+              ) : null}
+            </section>
           </div>
         </div>
         <UpdatesButton />
@@ -2082,42 +2250,55 @@ const App = () => {
   }
 
   if (state === 'ready' && isAcademyLanding) {
-    const selectedTeacherAcademy =
-      academies.find((academy) => academy.id === academyId) ??
-      academies.find((academy) => academy.id === requestedAcademyId) ??
-      null;
-    const selectedStudentAcademy =
-      studentDashboard?.academies.find((academy) => academy.id === requestedAcademyId) ??
-      studentDashboard?.academies[0] ??
-      null;
-
-    const currentAcademyId = workspaceMode === 'teacher'
-      ? (selectedTeacherAcademy?.id ?? academyId ?? '')
-      : (selectedStudentAcademy?.id ?? '');
-    const currentAcademyName = workspaceMode === 'teacher'
-      ? (selectedTeacherAcademy?.name ?? currentAcademyId ?? 'Academy')
-      : (selectedStudentAcademy?.name ?? currentAcademyId ?? 'Academy');
-    const currentAcademyMetadata = workspaceMode === 'teacher'
-      ? selectedTeacherAcademy?.metadata
-      : selectedStudentAcademy?.metadata;
+    const requestedTeacherAcademy = requestedAcademyId
+      ? teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId) ?? null
+      : null;
+    const requestedStudentAcademy = requestedAcademyId
+      ? studentDirectoryAcademies.find((academy) => academy.id === requestedAcademyId) ?? null
+      : null;
+    const fallbackTeacherAcademy =
+      teacherDirectoryAcademies.find((academy) => academy.id === academyId) ?? teacherDirectoryAcademies[0] ?? null;
+    const fallbackStudentAcademy = studentDirectoryAcademies[0] ?? null;
+    const currentAcademy =
+      requestedTeacherAcademy ?? requestedStudentAcademy ?? fallbackTeacherAcademy ?? fallbackStudentAcademy ?? null;
+    const currentAcademyId = currentAcademy?.id ?? requestedAcademyId ?? academyId ?? '';
+    const currentAcademyName = currentAcademy?.name ?? currentAcademyId ?? 'Academy';
+    const currentAcademyMetadata = currentAcademy?.metadata;
+    const canEnterTeacher = currentAcademyId ? teacherAcademyIds.has(currentAcademyId) : hasTeacherAccess;
+    const canEnterStudent = currentAcademyId ? studentAcademyIds.has(currentAcademyId) : hasStudentAccess;
     const academyLandingSettings = readAcademyLandingSettings(currentAcademyMetadata);
     const academyHeroTitle = academyLandingSettings.headline || currentAcademyName || 'Academy';
     const academyHeroSubtitle = academyLandingSettings.subheadline ||
-      (workspaceMode === 'teacher'
-        ? 'Market-facing front door for this academy, with direct routes into classroom pages and Teacher Office.'
-        : 'Market-facing front door for this academy, with direct routes into classroom pages and Student Workplace.');
+      'Public academy front door with separate entry points for Teacher Office and Student Workplace.';
     const academyPrimaryCtaLabel = academyLandingSettings.primary_cta_label || 'Open classroom landing pages';
-    const academySecondaryCtaLabel = academyLandingSettings.secondary_cta_label ||
-      (workspaceMode === 'teacher' ? 'Enter Teacher Office' : 'Enter Student Workplace');
-    const currentAcademyClassrooms = workspaceMode === 'teacher'
-      ? classrooms.filter((classroom) => !currentAcademyId || classroom.academy_id === currentAcademyId)
-      : (studentDashboard?.classrooms ?? []).filter((classroom) => !currentAcademyId || classroom.academy_id === currentAcademyId);
-    const currentAcademyContacts = workspaceMode === 'teacher'
-      ? contacts.filter((contact) => !currentAcademyId || contact.academy_id === currentAcademyId)
-      : (studentDashboard?.contacts ?? []).filter((contact) => !currentAcademyId || contact.academy_id === currentAcademyId);
-    const currentAcademyAnnouncements = workspaceMode === 'teacher'
-      ? announcements.filter((announcement) => !currentAcademyId || announcement.academy_id === currentAcademyId)
-      : (studentDashboard?.announcements ?? []).filter((announcement) => !currentAcademyId || announcement.academy_id === currentAcademyId);
+    const academySecondaryCtaLabel = academyLandingSettings.secondary_cta_label || 'Enter workspace';
+    const currentAcademyClassrooms = Array.from(
+      [
+        ...classrooms.filter((classroom) => !currentAcademyId || classroom.academy_id === currentAcademyId),
+        ...(studentDashboard?.classrooms ?? []).filter((classroom) => !currentAcademyId || classroom.academy_id === currentAcademyId),
+      ].reduce((map, classroom) => {
+        if (!map.has(classroom.id)) map.set(classroom.id, classroom);
+        return map;
+      }, new Map<string, TeacherStudioClassroom>()).values(),
+    );
+    const currentAcademyContacts = Array.from(
+      [
+        ...contacts.filter((contact) => !currentAcademyId || contact.academy_id === currentAcademyId),
+        ...(studentDashboard?.contacts ?? []).filter((contact) => !currentAcademyId || contact.academy_id === currentAcademyId),
+      ].reduce((map, contact) => {
+        if (!map.has(contact.id)) map.set(contact.id, contact);
+        return map;
+      }, new Map<string, TeacherStudioContact>()).values(),
+    );
+    const currentAcademyAnnouncements = Array.from(
+      [
+        ...announcements.filter((announcement) => !currentAcademyId || announcement.academy_id === currentAcademyId),
+        ...(studentDashboard?.announcements ?? []).filter((announcement) => !currentAcademyId || announcement.academy_id === currentAcademyId),
+      ].reduce((map, announcement) => {
+        if (!map.has(announcement.id)) map.set(announcement.id, announcement);
+        return map;
+      }, new Map<string, TeacherStudioAnnouncement>()).values(),
+    );
 
     return (
       <>
@@ -2155,23 +2336,24 @@ const App = () => {
                   >
                     {academyPrimaryCtaLabel}
                   </button>
-                  {workspaceMode === 'teacher' ? (
+                  {canEnterTeacher ? (
                     <button
                       className="ghost-btn"
                       type="button"
                       onClick={() => navigate(academyScopedPath('/academy/teacher', currentAcademyId))}
                     >
-                      {academySecondaryCtaLabel}
+                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter Teacher Office' : academySecondaryCtaLabel}
                     </button>
-                  ) : (
+                  ) : null}
+                  {canEnterStudent ? (
                     <button
                       className="ghost-btn"
                       type="button"
                       onClick={() => navigate(academyScopedPath('/academy/student', currentAcademyId))}
                     >
-                      {academySecondaryCtaLabel}
+                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter Student Workplace' : academySecondaryCtaLabel}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -2187,12 +2369,12 @@ const App = () => {
                     <strong>{currentAcademyClassrooms.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Contacts</span>
-                    <strong>{currentAcademyContacts.length}</strong>
+                    <span>Teacher Office</span>
+                    <strong>{canEnterTeacher ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Announcements</span>
-                    <strong>{currentAcademyAnnouncements.length}</strong>
+                    <span>Student Workplace</span>
+                    <strong>{canEnterStudent ? 'yes' : 'no'}</strong>
                   </article>
                 </div>
               </div>
@@ -2225,14 +2407,20 @@ const App = () => {
               {currentAcademyClassrooms.length === 0 ? (
                 <article className="market-card">
                   <h3>No classrooms yet</h3>
-                  <p>Create your first classroom in Teacher Office to publish a classroom landing page.</p>
-                  <button
-                    className="small-btn"
-                    type="button"
-                    onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms', currentAcademyId))}
-                  >
-                    Open Teacher Office classrooms
-                  </button>
+                  <p>
+                    {canEnterTeacher
+                      ? 'Create your first classroom in Teacher Office to publish a classroom landing page.'
+                      : 'No student classrooms are linked to this account for this academy yet.'}
+                  </p>
+                  {canEnterTeacher ? (
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms', currentAcademyId))}
+                    >
+                      Open Teacher Office classrooms
+                    </button>
+                  ) : null}
                 </article>
               ) : null}
             </section>
@@ -2241,31 +2429,43 @@ const App = () => {
               <article className="market-card market-card--accent">
                 <h3>Teacher Office flow</h3>
                 <p>Manage contacts, publish announcements, track alerts, and operate payments from one command center.</p>
-                <button
-                  className="small-btn"
-                  type="button"
-                  onClick={() => navigate(academyScopedPath('/academy/teacher', currentAcademyId))}
-                >
-                  Open Teacher Office
-                </button>
+                {canEnterTeacher ? (
+                  <button
+                    className="small-btn"
+                    type="button"
+                    onClick={() => navigate(academyScopedPath('/academy/teacher', currentAcademyId))}
+                  >
+                    Open Teacher Office
+                  </button>
+                ) : (
+                  <div className="small muted">Owner/admin access required for this academy.</div>
+                )}
               </article>
               <article className="market-card">
                 <h3>Student Workplace flow</h3>
                 <p>Students see their classrooms, messages, alerts, and access status without teacher-only controls.</p>
+                {canEnterStudent ? (
+                  <button
+                    className="small-btn"
+                    type="button"
+                    onClick={() => navigate(academyScopedPath('/academy/student', currentAcademyId))}
+                  >
+                    Open Student Workplace
+                  </button>
+                ) : (
+                  <div className="small muted">A linked student contact is required for this academy.</div>
+                )}
+              </article>
+              <article className="market-card">
+                <h3>Visible activity</h3>
+                <p>{currentAcademyContacts.length} contacts and {currentAcademyAnnouncements.length} announcements are linked to this academy across accessible roles.</p>
                 <button
                   className="small-btn"
                   type="button"
-                  onClick={() => navigate(academyScopedPath('/academy/student', currentAcademyId))}
+                  onClick={() => navigate(academyScopedPath('/academy/classrooms', currentAcademyId))}
                 >
-                  Open Student Workplace
+                  Review classroom landings
                 </button>
-              </article>
-              <article className="market-card">
-                <h3>Need support?</h3>
-                <p>Use platform-wide updates and support links to collect feedback and send important service notices.</p>
-                <a className="small-btn" href={`${platformUrl.replace(/\/$/, '')}/updates`}>
-                  Open updates center
-                </a>
               </article>
             </section>
           </div>
@@ -2278,17 +2478,19 @@ const App = () => {
   if (state === 'ready' && !!academyClassroomLandingId) {
     const activeClassroom = classroomRoom?.classroom ?? sharedClassroomScopeClassroom;
     const roomAcademyId = sharedClassroomAcademyId || activeClassroom?.academy_id || '';
+    const canOpenTeacherRoom = roomAcademyId ? teacherAcademyIds.has(roomAcademyId) : hasTeacherAccess;
+    const canOpenStudentRoom = roomAcademyId ? studentAcademyIds.has(roomAcademyId) : hasStudentAccess;
     const roomAcademyName =
       (roomAcademyId
-        ? (workspaceMode === 'teacher'
-            ? academies.find((academy) => academy.id === roomAcademyId)?.name
-            : studentDashboard?.academies.find((academy) => academy.id === roomAcademyId)?.name)
+        ? (teacherDirectoryAcademies.find((academy) => academy.id === roomAcademyId)?.name ??
+            studentDirectoryAcademies.find((academy) => academy.id === roomAcademyId)?.name)
         : null) ?? (roomAcademyId || 'Academy');
+    const fallbackRoomMode: WorkspaceMode = canOpenTeacherRoom ? 'teacher' : 'student';
     const roomViewer = classroomRoom?.viewer ?? {
-      type: workspaceMode === 'teacher' ? 'teacher' : 'student',
-      role: workspaceMode === 'teacher' ? 'member' : 'student',
+      type: fallbackRoomMode,
+      role: fallbackRoomMode === 'teacher' ? 'member' : 'student',
       contact_id: null,
-      display_name: workspaceMode === 'teacher' ? 'Teacher' : 'Student',
+      display_name: fallbackRoomMode === 'teacher' ? 'Teacher' : 'Student',
     };
     const canManageResources = roomViewer.type === 'teacher';
     const roomResources = classroomRoom?.resources ?? [];
@@ -2430,24 +2632,28 @@ const App = () => {
                 <div className="market-eyebrow">Classroom workspace</div>
                 <h1>{activeClassroom?.name ?? 'Classroom'}</h1>
                 <p>
-                  Shared classroom page for teachers, students, and admins. Publish lessons, assignments, mock tests,
-                  playbooks, and files so every enrolled student uses one structured learning space.
+                  Classroom hub with role-aware controls. Teachers can manage resources, while students get learning,
+                  discussion, and progress actions only.
                 </p>
                 <div className="market-actions">
-                  <button
-                    className="primary-btn"
-                    type="button"
-                    onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms', roomAcademyId))}
-                  >
-                    Teacher Office
-                  </button>
-                  <button
-                    className="ghost-btn"
-                    type="button"
-                    onClick={() => navigate(academyScopedPath('/academy/student/classrooms', roomAcademyId))}
-                  >
-                    Student Workplace
-                  </button>
+                  {canOpenTeacherRoom ? (
+                    <button
+                      className="primary-btn"
+                      type="button"
+                      onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms', roomAcademyId))}
+                    >
+                      Teacher Office
+                    </button>
+                  ) : null}
+                  {canOpenStudentRoom ? (
+                    <button
+                      className="ghost-btn"
+                      type="button"
+                      onClick={() => navigate(academyScopedPath('/academy/student/classrooms', roomAcademyId))}
+                    >
+                      Student Workplace
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -2893,36 +3099,31 @@ const App = () => {
   }
 
   if (state === 'ready' && isAcademyClassroomsLanding) {
-    const classroomScope = workspaceMode === 'teacher'
-      ? classrooms.filter((classroom) => !academyId || classroom.academy_id === academyId)
-      : (studentDashboard?.classrooms ?? []).filter((classroom) =>
-          !requestedAcademyId || classroom.academy_id === requestedAcademyId
-        );
-    const selectedLandingClassroom = academyClassroomLandingId
-      ? classroomScope.find((classroom) => classroom.id === academyClassroomLandingId) ?? null
-      : null;
-
-    const selectedLandingAcademyName = selectedLandingClassroom
-      ? (workspaceMode === 'teacher'
-          ? academies.find((academy) => academy.id === selectedLandingClassroom.academy_id)?.name
-          : studentDashboard?.academies.find((academy) => academy.id === selectedLandingClassroom.academy_id)?.name) ??
-        selectedLandingClassroom.academy_id
-      : 'Academy';
-    const selectedLandingSettings = selectedLandingClassroom
-      ? readClassroomLandingSettings(selectedLandingClassroom.metadata)
-      : null;
-    const classroomHeroTitle = selectedLandingClassroom
-      ? (selectedLandingSettings?.headline || selectedLandingClassroom.name)
-      : 'Classroom landing pages';
-    const classroomHeroSubtitle = selectedLandingClassroom
-      ? (selectedLandingSettings?.subheadline ||
-        `${selectedLandingAcademyName}: this page should be public-facing before users move into workspace screens.`)
-      : 'Choose a classroom to open its landing page, then route users into teacher or student workspace.';
-    const classroomTeacherCtaLabel = selectedLandingSettings?.teacher_cta_label || 'Enter Teacher Office';
-    const classroomStudentCtaLabel = selectedLandingSettings?.student_cta_label || 'Enter Student Workplace';
-    const selectedLandingDescription = selectedLandingClassroom
-      ? (selectedLandingSettings?.card_summary || selectedLandingClassroom.description || '')
-      : '';
+    const classroomDirectoryAcademyId = requestedAcademyId || academyId || studentDirectoryAcademies[0]?.id || '';
+    const teacherClassroomScope = classrooms.filter((classroom) =>
+      !classroomDirectoryAcademyId || classroom.academy_id === classroomDirectoryAcademyId
+    );
+    const studentClassroomScope = (studentDashboard?.classrooms ?? []).filter((classroom) =>
+      !classroomDirectoryAcademyId || classroom.academy_id === classroomDirectoryAcademyId
+    );
+    const classroomScope = Array.from(
+      [...teacherClassroomScope, ...studentClassroomScope].reduce((map, classroom) => {
+        if (!map.has(classroom.id)) map.set(classroom.id, classroom);
+        return map;
+      }, new Map<string, TeacherStudioClassroom>()).values(),
+    );
+    const classroomDirectoryAcademyName =
+      (
+        teacherDirectoryAcademies.find((academy) => academy.id === classroomDirectoryAcademyId)?.name ??
+        studentDirectoryAcademies.find((academy) => academy.id === classroomDirectoryAcademyId)?.name ??
+        classroomDirectoryAcademyId
+      ) || 'Academy';
+    const canManageClassroomDirectory = classroomDirectoryAcademyId
+      ? teacherAcademyIds.has(classroomDirectoryAcademyId)
+      : hasTeacherAccess;
+    const canStudyClassroomDirectory = classroomDirectoryAcademyId
+      ? studentAcademyIds.has(classroomDirectoryAcademyId)
+      : hasStudentAccess;
 
     return (
       <>
@@ -2943,85 +3144,38 @@ const App = () => {
             <section className="market-hero">
               <div className="market-copy">
                 <div className="market-eyebrow">Classroom landing</div>
-                <h1>{classroomHeroTitle}</h1>
-                <p>{classroomHeroSubtitle}</p>
-                {selectedLandingClassroom ? (
-                  <div className="market-actions">
-                    <button
-                      className="primary-btn"
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          academyScopedPath(
-                            `/academy/teacher/classrooms/${selectedLandingClassroom.id}`,
-                            selectedLandingClassroom.academy_id,
-                          ),
-                        )
-                      }
-                    >
-                      {classroomTeacherCtaLabel}
-                    </button>
-                    <button
-                      className="ghost-btn"
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          academyScopedPath(
-                            `/academy/student/classrooms/${selectedLandingClassroom.id}`,
-                            selectedLandingClassroom.academy_id,
-                          ),
-                        )
-                      }
-                    >
-                      {classroomStudentCtaLabel}
-                    </button>
-                  </div>
-                ) : null}
+                <h1>Classroom landing pages</h1>
+                <p>
+                  {classroomDirectoryAcademyName}: choose a classroom, then enter the teacher management view or
+                  the student learning view through separate routes.
+                </p>
               </div>
 
               <div className="market-highlight">
                 <div className="market-badge">Classroom overview</div>
-                {selectedLandingClassroom ? (
-                  <div className="market-kpis">
-                    <article className="market-kpi">
-                      <span>Academy</span>
-                      <strong>{selectedLandingAcademyName}</strong>
-                    </article>
-                    <article className="market-kpi">
-                      <span>Members</span>
-                      <strong>{selectedLandingClassroom.member_count}</strong>
-                    </article>
-                    <article className="market-kpi">
-                      <span>Status</span>
-                      <strong>{selectedLandingClassroom.is_active ? 'active' : 'inactive'}</strong>
-                    </article>
-                  </div>
-                ) : (
-                  <div className="market-kpis">
-                    <article className="market-kpi">
-                      <span>Available classrooms</span>
-                      <strong>{classroomScope.length}</strong>
-                    </article>
-                    <article className="market-kpi">
-                      <span>Entry mode</span>
-                      <strong>{workspaceMode === 'teacher' ? 'teacher-first' : 'student-first'}</strong>
-                    </article>
-                  </div>
-                )}
+                <div className="market-kpis">
+                  <article className="market-kpi">
+                    <span>Available classrooms</span>
+                    <strong>{classroomScope.length}</strong>
+                  </article>
+                  <article className="market-kpi">
+                    <span>Teacher Office</span>
+                    <strong>{canManageClassroomDirectory ? 'yes' : 'no'}</strong>
+                  </article>
+                  <article className="market-kpi">
+                    <span>Student Workplace</span>
+                    <strong>{canStudyClassroomDirectory ? 'yes' : 'no'}</strong>
+                  </article>
+                </div>
               </div>
             </section>
 
-            {selectedLandingClassroom && selectedLandingDescription ? (
-              <section className="market-card">
-                <h3>Description</h3>
-                <p>{selectedLandingDescription}</p>
-              </section>
-            ) : null}
-
             <section className="market-grid">
-              {(selectedLandingClassroom ? [selectedLandingClassroom] : classroomScope).map((classroom) => {
+              {classroomScope.map((classroom) => {
                 const landing = readClassroomLandingSettings(classroom.metadata);
                 const cardSummary = landing.card_summary || classroom.description || 'Classroom landing page with workspace routing for teachers and students.';
+                const teacherCanOpen = teacherAcademyIds.has(classroom.academy_id);
+                const studentCanOpen = (studentMembershipByClassroomId.get(classroom.id) ?? []).length > 0;
                 return (
                   <article className="market-card" key={classroom.id}>
                     <h3>{classroom.name}</h3>
@@ -3036,16 +3190,46 @@ const App = () => {
                         Open landing
                       </button>
                     </div>
+                    <div className="market-actions">
+                      {teacherCanOpen ? (
+                        <button
+                          className="small-btn"
+                          type="button"
+                          onClick={() => navigate(academyScopedPath(`/academy/teacher/classrooms/${classroom.id}`, classroom.academy_id))}
+                        >
+                          Teacher view
+                        </button>
+                      ) : null}
+                      {studentCanOpen ? (
+                        <button
+                          className="small-btn"
+                          type="button"
+                          onClick={() => navigate(academyScopedPath(`/academy/student/classrooms/${classroom.id}`, classroom.academy_id))}
+                        >
+                          Student view
+                        </button>
+                      ) : null}
+                    </div>
                   </article>
                 );
               })}
               {classroomScope.length === 0 ? (
                 <article className="market-card">
                   <h3>No classrooms available</h3>
-                  <p>Create a classroom first in Teacher Office, then publish its landing page.</p>
-                  <button className="small-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}>
-                    Create classroom
-                  </button>
+                  <p>
+                    {canManageClassroomDirectory
+                      ? 'Create a classroom first in Teacher Office, then publish its landing page.'
+                      : 'No student classrooms are linked to this account for the selected academy.'}
+                  </p>
+                  {canManageClassroomDirectory ? (
+                    <button
+                      className="small-btn"
+                      type="button"
+                      onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms', classroomDirectoryAcademyId))}
+                    >
+                      Create classroom
+                    </button>
+                  ) : null}
                 </article>
               ) : null}
             </section>
@@ -3074,7 +3258,7 @@ const App = () => {
     );
   }
 
-  if (workspaceMode === 'student' && studentDashboard && isStudentWorkspaceRoute) {
+  if (studentDashboard && hasStudentAccess && isStudentWorkspaceRoute) {
     const studentAcademyId =
       studentDashboard.academies.some((academy) => academy.id === requestedAcademyId)
         ? requestedAcademyId
@@ -3329,9 +3513,9 @@ const App = () => {
                               <button
                                 className="small-btn"
                                 type="button"
-                                onClick={() => navigate(academyScopedPath(`/academy/classrooms/${classroom.id}`, classroom.academy_id))}
+                                onClick={() => navigate(academyScopedPath(`/academy/student/classrooms/${classroom.id}`, classroom.academy_id))}
                               >
-                                Open
+                                Open student view
                               </button>
                             </td>
                           </tr>
@@ -3441,20 +3625,6 @@ const App = () => {
               </section>
             ) : null}
           </main>
-        </div>
-        <UpdatesButton />
-      </>
-    );
-  }
-
-  if (workspaceMode === 'student' && !isStudentWorkspaceRoute) {
-    return (
-      <>
-        <div className="ts-loading">
-          <div className="auth-card">
-            <h2>Student Workplace</h2>
-            <p>Redirecting to your workspace...</p>
-          </div>
         </div>
         <UpdatesButton />
       </>
@@ -3743,7 +3913,7 @@ const App = () => {
             onCreateClassroom={submitClassroom}
             onSaveMembership={submitClassroomMembership}
             onRemoveMembership={removeClassroomMembership}
-            onOpenClassroom={(classroomId) => navigate(academyScopedPath(`/academy/classrooms/${classroomId}`))}
+            onOpenClassroom={(classroomId) => navigate(academyScopedPath(`/academy/teacher/classrooms/${classroomId}`))}
             formatDate={formatDate}
           />
         ) : null}
