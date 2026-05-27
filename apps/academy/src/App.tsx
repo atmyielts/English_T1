@@ -115,6 +115,27 @@ const OFFICE_VIEWS: OfficeView[] = ['academy', 'contacts', 'inbox', 'announcemen
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
+const CLASSROOM_RESOURCE_KIND_LABELS: Record<TeacherStudioClassroomResource['kind'], string> = {
+  asset: 'Class asset',
+  assignment: 'Assignment',
+  book: 'Book / reading',
+  link: 'Reference link',
+  mock: 'Mock test',
+  playbook: 'Playbook',
+  practice: 'Practice set',
+  video: 'Video lesson',
+};
+const CLASSROOM_RESOURCE_FILTERS: Array<{ kind: 'all' | TeacherStudioClassroomResource['kind']; label: string }> = [
+  { kind: 'all', label: 'All' },
+  { kind: 'video', label: 'Videos' },
+  { kind: 'assignment', label: 'Assignments' },
+  { kind: 'mock', label: 'Mocks' },
+  { kind: 'practice', label: 'Practice' },
+  { kind: 'playbook', label: 'Playbooks' },
+  { kind: 'book', label: 'Books' },
+  { kind: 'asset', label: 'Files' },
+  { kind: 'link', label: 'Links' },
+];
 
 const OFFICE_LABELS: Record<OfficeView, string> = {
   academy: 'Academy',
@@ -2252,10 +2273,7 @@ const App = () => {
       });
     };
     const kindLabel = (kind: TeacherStudioClassroomResource['kind']): string => {
-      if (kind === 'video') return 'Video lesson';
-      if (kind === 'book') return 'Book / reading';
-      if (kind === 'asset') return 'Class asset';
-      return 'Reference link';
+      return CLASSROOM_RESOURCE_KIND_LABELS[kind] ?? 'Resource';
     };
 
     return (
@@ -2286,8 +2304,8 @@ const App = () => {
                 <div className="market-eyebrow">Classroom workspace</div>
                 <h1>{activeClassroom?.name ?? 'Classroom'}</h1>
                 <p>
-                  Shared classroom page for teachers, students, and admins. Publish lessons, videos, books, and files
-                  so every enrolled student uses one structured learning space.
+                  Shared classroom page for teachers, students, and admins. Publish lessons, assignments, mock tests,
+                  playbooks, and files so every enrolled student uses one structured learning space.
                 </p>
                 <div className="market-actions">
                   <button
@@ -2347,41 +2365,16 @@ const App = () => {
                 </p>
 
                 <div className="classroom-chip-row">
-                  <button
-                    className={`classroom-chip ${classroomResourceFilter === 'all' ? 'is-active' : ''}`}
-                    type="button"
-                    onClick={() => setClassroomResourceFilter('all')}
-                  >
-                    All ({roomResources.length})
-                  </button>
-                  <button
-                    className={`classroom-chip ${classroomResourceFilter === 'video' ? 'is-active' : ''}`}
-                    type="button"
-                    onClick={() => setClassroomResourceFilter('video')}
-                  >
-                    Videos
-                  </button>
-                  <button
-                    className={`classroom-chip ${classroomResourceFilter === 'book' ? 'is-active' : ''}`}
-                    type="button"
-                    onClick={() => setClassroomResourceFilter('book')}
-                  >
-                    Books
-                  </button>
-                  <button
-                    className={`classroom-chip ${classroomResourceFilter === 'asset' ? 'is-active' : ''}`}
-                    type="button"
-                    onClick={() => setClassroomResourceFilter('asset')}
-                  >
-                    Files
-                  </button>
-                  <button
-                    className={`classroom-chip ${classroomResourceFilter === 'link' ? 'is-active' : ''}`}
-                    type="button"
-                    onClick={() => setClassroomResourceFilter('link')}
-                  >
-                    Links
-                  </button>
+                  {CLASSROOM_RESOURCE_FILTERS.map((item) => (
+                    <button
+                      key={item.kind}
+                      className={`classroom-chip ${classroomResourceFilter === item.kind ? 'is-active' : ''}`}
+                      type="button"
+                      onClick={() => setClassroomResourceFilter(item.kind)}
+                    >
+                      {item.kind === 'all' ? `${item.label} (${roomResources.length})` : item.label}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="classroom-syllabus-groups">
@@ -2689,10 +2682,11 @@ const App = () => {
                         }
                         disabled={classroomRoomBusy}
                       >
-                        <option value="asset">Class asset</option>
-                        <option value="video">Video lesson</option>
-                        <option value="book">Book / reading</option>
-                        <option value="link">Reference link</option>
+                        {CLASSROOM_RESOURCE_FILTERS.filter((item) => item.kind !== 'all').map((item) => (
+                          <option key={item.kind} value={item.kind}>
+                            {item.label}
+                          </option>
+                        ))}
                       </select>
                       <div className="grid three">
                         <input

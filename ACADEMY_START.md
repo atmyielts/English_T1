@@ -1,6 +1,8 @@
-# Academy v1 (Start)
+# Academy Service
 
-Academy is implemented as a separate service on top of the shared platform identity.
+Academy is implemented as a separate production service on top of the shared platform identity.
+
+Production app URL: `https://academy.schood.online`
 
 ## What is live
 
@@ -23,6 +25,10 @@ Academy is implemented as a separate service on top of the shared platform ident
   - Combines personal entitlements + academy-sponsored product access
 - Service app scaffold:
   - `apps/academy`
+- Production catalog product:
+  - slug `academy`
+  - app URL `https://academy.schood.online`
+  - legacy `teacher-studio` entries remain archived/hidden
 
 ## Migrations
 
@@ -57,6 +63,11 @@ If `academy_id` is omitted, the first active tenant membership is used.
 - `action=create_payment`
 - `action=mark_payment_paid` (internally calls `apply_academy_payment`)
 - `action=grant_contact`
+- `action=classroom-chat`
+- `action=classroom-chat-send`
+- `action=classroom-resource-upsert`
+- `action=classroom-resource-delete`
+- `action=classroom-resource-progress-set`
 
 All write actions require academy admin role (`owner` or `admin`).
 
@@ -73,6 +84,10 @@ All write actions require academy admin role (`owner` or `admin`).
 - Contacts management
 - Classrooms management
 - Classroom membership management
+- Teacher/student classroom workspace
+- Classroom resources: video, book, file, link, assignment, mock, practice, playbook
+- Student resource progress
+- Live classroom discussion with refresh controls
 - Inbox (conversation list + direct teacher messages)
 - Announcements (all contacts or classroom scoped)
 - Alerts (create + resolve, with conversation timeline events)
@@ -84,5 +99,5 @@ All write actions require academy admin role (`owner` or `admin`).
 ## Next phase
 
 1. Provider-backed payment statuses (instead of manual `mark_paid`).
-2. Product entitlement guard hardening for Academy routes.
-3. Student-facing classroom/workstream expansion.
+2. Rich resource uploads through storage instead of URL-only resources.
+3. Academy commercial pricing approval for the placeholder platform plan.

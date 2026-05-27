@@ -4,7 +4,7 @@ type ProductLike = {
   metadata?: Record<string, unknown> | null;
 };
 
-const ARCHIVED_PRODUCT_SLUGS = new Set(['academy', 'teacher-studio']);
+const ARCHIVED_PRODUCT_SLUGS = new Set<string>();
 
 const slugify = (value: string | null): string =>
   (value ?? '')

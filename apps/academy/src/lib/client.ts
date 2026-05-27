@@ -230,7 +230,7 @@ export type TeacherStudioClassroomResource = {
   academy_id: string;
   classroom_id: string;
   title: string;
-  kind: 'video' | 'book' | 'asset' | 'link';
+  kind: 'video' | 'book' | 'asset' | 'link' | 'assignment' | 'mock' | 'practice' | 'playbook';
   url: string;
   description: string | null;
   metadata: Json;
@@ -589,7 +589,7 @@ export const teacherStudioUpsertClassroomResource = async (
     id?: string;
     classroom_id: string;
     title: string;
-    type: 'video' | 'book' | 'asset' | 'link';
+    type: TeacherStudioClassroomResource['kind'];
     url: string;
     description?: string;
     sort_order?: number;

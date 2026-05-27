@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type Json = Record<string, unknown>;
+type SupabaseClientLike = ReturnType<typeof createClient<any>>;
 
 type MembershipRow = { tenant_id: string; role: string; status: string };
 
@@ -12,7 +13,7 @@ type StudioBody = {
   slug?: string;
   url?: string;
   classroom_id?: string;
-  resource_id?: string;
+  resource_id?: string | null;
   conversation_id?: string;
   role?: string;
   first_name?: string;
@@ -38,7 +39,6 @@ type StudioBody = {
   contact_id?: string;
   grant_type?: string;
   resource_type?: string;
-  resource_id?: string | null;
   capability_key?: string | null;
   quantity?: number | null;
   offer_id?: string;
@@ -120,9 +120,18 @@ type ClassroomChatContext = {
   viewer: ClassroomChatViewer;
 };
 
-type ClassroomResourceKind = "video" | "book" | "asset" | "link";
+type ClassroomResourceKind = "video" | "book" | "asset" | "link" | "assignment" | "mock" | "practice" | "playbook";
 
-const CLASSROOM_RESOURCE_KINDS: ClassroomResourceKind[] = ["video", "book", "asset", "link"];
+const CLASSROOM_RESOURCE_KINDS: ClassroomResourceKind[] = [
+  "video",
+  "book",
+  "asset",
+  "link",
+  "assignment",
+  "mock",
+  "practice",
+  "playbook",
+];
 
 const contactDisplayName = (contact: Record<string, unknown> | null | undefined): string => {
   if (!contact) return "";
@@ -147,7 +156,7 @@ const STUDENT_CONTACT_SELECT =
   "id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at";
 
 const loadStudentContacts = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   userId: string,
   userEmail: string | null,
 ): Promise<Array<Record<string, unknown>>> => {
@@ -195,7 +204,7 @@ const loadStudentContacts = async (
   return (linkedRows ?? []) as Array<Record<string, unknown>>;
 };
 
-const loadMemberships = async (sb: ReturnType<typeof createClient>, userId: string): Promise<MembershipRow[]> => {
+const loadMemberships = async (sb: SupabaseClientLike, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
     .from("tenant_memberships")
     .select("tenant_id, role, status")
@@ -220,7 +229,7 @@ const requireAcademyAdmin = (memberships: MembershipRow[], academyId: string): v
 };
 
 const ensureConversationId = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   academyId: string,
   contactId: string,
 ): Promise<string> => {
@@ -246,7 +255,7 @@ const ensureConversationId = async (
 };
 
 const loadStudentFeed = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   userId: string,
   userEmail: string | null,
 ): Promise<Response> => {
@@ -333,7 +342,7 @@ const loadStudentFeed = async (
 };
 
 const loadStudentDashboard = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   userId: string,
   userEmail: string | null,
 ): Promise<Response> => {
@@ -536,7 +545,7 @@ const loadStudentDashboard = async (
 };
 
 const resolveClassroomChatContext = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -663,7 +672,7 @@ const resolveClassroomChatContext = async (
 };
 
 const loadClassroomChat = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -870,7 +879,7 @@ const loadClassroomChat = async (
 };
 
 const sendClassroomChatMessage = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -974,7 +983,7 @@ const sendClassroomChatMessage = async (
 };
 
 const upsertClassroomResource = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -1006,7 +1015,7 @@ const upsertClassroomResource = async (
   if (!title) return json(400, { error: "title is required" });
   if (!resourceUrl) return json(400, { error: "url is required" });
   if (!CLASSROOM_RESOURCE_KINDS.includes(kind)) {
-    return json(400, { error: "kind must be video, book, asset, or link" });
+    return json(400, { error: `kind must be one of ${CLASSROOM_RESOURCE_KINDS.join(", ")}` });
   }
 
   const payload = {
@@ -1050,7 +1059,7 @@ const upsertClassroomResource = async (
 };
 
 const deleteClassroomResource = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -1080,7 +1089,7 @@ const deleteClassroomResource = async (
 };
 
 const setClassroomResourceProgress = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   userId: string,
   userEmail: string | null,
@@ -1150,7 +1159,7 @@ const setClassroomResourceProgress = async (
 };
 
 const handleReadAction = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClientLike,
   memberships: MembershipRow[],
   action: string,
   academyIdRaw: string | null,
