@@ -1692,7 +1692,8 @@ const App = () => {
                 <div className="market-eyebrow"><Sparkles size={14} /> Schood service</div>
                 <h1>Academy</h1>
                 <p>
-                  A unified product for academy landing pages, classroom landings, teacher office, and student workplace.
+                  A living operating layer for education businesses: public academy pages, classroom hubs,
+                  teacher operations, student access, payments, alerts, and messaging in one connected flow.
                 </p>
                 <div className="market-actions">
                   {state === 'ready' ? (
@@ -1712,51 +1713,159 @@ const App = () => {
                     </button>
                   ) : null}
                 </div>
+                <div className="market-proof-strip" aria-label="Academy service highlights">
+                  <span>Public pages</span>
+                  <span>Teacher office</span>
+                  <span>Student workplace</span>
+                </div>
               </div>
 
-              <div className="market-highlight">
-                <div className="market-badge">Launch-ready workflow</div>
-                <ul className="market-points">
-                  <li>Public-facing academy and classroom landings</li>
-                  <li>Dedicated Teacher Office operations layer</li>
-                  <li>Dedicated Student Workplace experience</li>
-                </ul>
+              <div className="academy-command-card">
+                <div className="academy-command-head">
+                  <div>
+                    <span className="market-badge">Live command center</span>
+                    <h2>Run the academy week from one surface</h2>
+                  </div>
+                  <span className="pulse-dot" aria-hidden="true" />
+                </div>
+
+                <div className="academy-mini-chart" aria-label="Weekly academy activity chart">
+                  <span style={{ height: '42%' }} />
+                  <span style={{ height: '58%' }} />
+                  <span style={{ height: '49%' }} />
+                  <span style={{ height: '76%' }} />
+                  <span style={{ height: '63%' }} />
+                  <span style={{ height: '88%' }} />
+                  <span style={{ height: '70%' }} />
+                </div>
+
+                <div className="academy-command-grid">
+                  <article>
+                    <UsersRound size={18} />
+                    <strong>Contacts</strong>
+                    <span>Student records, family contacts, and academy roles.</span>
+                  </article>
+                  <article>
+                    <CreditCard size={18} />
+                    <strong>Revenue</strong>
+                    <span>Manual payments, offers, grants, and access windows.</span>
+                  </article>
+                  <article>
+                    <MessageSquare size={18} />
+                    <strong>Comms</strong>
+                    <span>Inbox, announcements, classroom discussion, and alerts.</span>
+                  </article>
+                  <article>
+                    <BookOpenCheck size={18} />
+                    <strong>Learning</strong>
+                    <span>Classroom landings, resources, progress, and mock links.</span>
+                  </article>
+                </div>
               </div>
             </section>
 
             {state === 'error' && error ? <div className="error-banner">{error}</div> : null}
 
-            <section className="market-grid">
-              <article className="market-card">
+            <section className="market-section-head">
+              <span className="market-badge">Structure</span>
+              <h2>Four surfaces, one academy identity</h2>
+              <p>
+                The service is not just a dashboard. It gives every academy a public face, a staff workspace,
+                a classroom layer, and a student portal that all understand the same access model.
+              </p>
+            </section>
+
+            <section className="market-grid academy-surface-grid">
+              <article className="market-card surface-card surface-card--lime">
+                <div className="surface-icon"><Building2 size={22} /></div>
                 <h3>Academy landing</h3>
-                <p>Position each academy with a clear narrative, calls-to-action, and quick entry points.</p>
+                <p>Tell the academy story, show the offer, and send families to the right classroom or office entry.</p>
+                <div className="surface-meta">Brand narrative · CTAs · directory cards</div>
               </article>
-              <article className="market-card">
+              <article className="market-card surface-card surface-card--sky">
+                <div className="surface-icon"><Store size={22} /></div>
+                <h3>Teacher Office</h3>
+                <p>Operate contacts, cohorts, offers, payments, entitlements, alerts, and messaging without leaving the service.</p>
+                <div className="surface-meta">Operations · billing · access control</div>
+              </article>
+              <article className="market-card surface-card surface-card--violet">
+                <div className="surface-icon"><BookOpenCheck size={22} /></div>
                 <h3>Classroom landing</h3>
-                <p>Each classroom has its own page before entering teacher or student workspace context.</p>
+                <p>Give each classroom a living home with resources, modules, lessons, progress, and discussion.</p>
+                <div className="surface-meta">Syllabus · resources · classroom chat</div>
               </article>
-              <article className="market-card">
-                <h3>Workspaces</h3>
-                <p>Teacher Office and Student Workplace stay separated, while sharing one entitlement model.</p>
+              <article className="market-card surface-card surface-card--coral">
+                <div className="surface-icon"><GraduationCap size={22} /></div>
+                <h3>Student Workplace</h3>
+                <p>Students see their classrooms, announcements, messages, alerts, access grants, and payments in one focused space.</p>
+                <div className="surface-meta">Learning view · alerts · access history</div>
               </article>
             </section>
 
-            <section className="market-steps">
-              <article className="market-step">
+            <section className="academy-rhythm">
+              <div className="market-section-head">
+                <span className="market-badge">Daily rhythm</span>
+                <h2>Built around the real week of an academy</h2>
+                <p>
+                  The flow follows how teams actually work: attract a student, enroll them, place them in a cohort,
+                  keep the family informed, collect payment, and keep access clean.
+                </p>
+              </div>
+              <div className="rhythm-track">
+                <article className="market-step">
                 <div className="market-step-index">01</div>
-                <h3>Create academy</h3>
-                <p>Start from your academy landing and define your brand, offers, and operating model.</p>
-              </article>
-              <article className="market-step">
+                  <h3>Publish the offer</h3>
+                  <p>Create a clear academy page and classroom pages that families can understand before they sign in.</p>
+                </article>
+                <article className="market-step">
                 <div className="market-step-index">02</div>
-                <h3>Publish classrooms</h3>
-                <p>Each classroom gets its own landing page before users move into teacher or student space.</p>
-              </article>
-              <article className="market-step">
+                  <h3>Enroll and place</h3>
+                  <p>Add contacts, create cohorts, assign students, and give each learner the right workspace.</p>
+                </article>
+                <article className="market-step">
                 <div className="market-step-index">03</div>
-                <h3>Operate day-to-day</h3>
-                <p>Run communication, offers, payments, alerts, and entitlement-controlled access in one workflow.</p>
-              </article>
+                  <h3>Teach and track</h3>
+                  <p>Attach resources, publish assignments, send announcements, and keep classroom discussion visible.</p>
+                </article>
+                <article className="market-step">
+                  <div className="market-step-index">04</div>
+                  <h3>Collect and retain</h3>
+                  <p>Connect offers to access grants, track payments, resolve alerts, and keep students active.</p>
+                </article>
+              </div>
+            </section>
+
+            <section className="academy-capability-panel">
+              <div>
+                <span className="market-badge">Substance</span>
+                <h2>What the service controls</h2>
+                <p>
+                  Academy is designed as the operational service behind Schood learning products, not a loose admin page.
+                </p>
+              </div>
+              <div className="capability-list">
+                <div><span>01</span> Academy and classroom public presentation</div>
+                <div><span>02</span> Contacts, membership roles, cohorts, and classroom access</div>
+                <div><span>03</span> Offers, manual payment tracking, grants, and entitlements</div>
+                <div><span>04</span> Announcements, direct inbox, alerts, and student feed</div>
+                <div><span>05</span> Classroom resources, progress, live refresh, and discussion</div>
+              </div>
+            </section>
+
+            <section className="academy-final-cta">
+              <div>
+                <span className="market-badge">Next step</span>
+                <h2>Open the office when you need control. Open the classroom when you need focus.</h2>
+              </div>
+              {state === 'ready' ? (
+                <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
+                  Open Academy
+                </button>
+              ) : (
+                <a className="primary-btn" href={toAuthUrl()}>
+                  Sign in to Academy
+                </a>
+              )}
             </section>
           </div>
         </div>
