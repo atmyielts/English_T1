@@ -184,6 +184,14 @@ export const CheckoutPage: React.FC = () => {
     }
   }, [loading, navigate, planId, productParam, resolvedProductId, returnTo]);
 
+  const continueTo = (target: string) => {
+    if (isExternalUrl(target)) {
+      navigate(`/auth?returnTo=${encodeURIComponent(target)}`, { replace: true });
+      return;
+    }
+    navigate(target, { replace: true });
+  };
+
   const createCheckout = async () => {
     if (!planId) return;
 
@@ -233,8 +241,7 @@ export const CheckoutPage: React.FC = () => {
         setStatus(res.status ?? 'paid');
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
-          if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-          else navigate(returnTo, { replace: true });
+          continueTo(returnTo);
         }
         return;
       }
@@ -269,8 +276,7 @@ export const CheckoutPage: React.FC = () => {
       if (isSuccessStatus(res.status)) {
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
-          if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-          else navigate(returnTo, { replace: true });
+          continueTo(returnTo);
         }
       }
     } catch (err) {
@@ -297,8 +303,7 @@ export const CheckoutPage: React.FC = () => {
         if (isSuccessStatus(res.status)) {
           const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
           if (ok) {
-            if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-            else navigate(returnTo, { replace: true });
+            continueTo(returnTo);
           }
         }
       } catch {

@@ -308,6 +308,14 @@ export const PricingPage: React.FC = () => {
     }
   };
 
+  const continueTo = (target: string, opts?: { replace?: boolean }) => {
+    if (isExternalUrl(target)) {
+      navigate(`/auth?returnTo=${encodeURIComponent(target)}`, { replace: opts?.replace ?? false });
+      return;
+    }
+    navigate(target, { replace: opts?.replace ?? false });
+  };
+
   const claimFreeTrial = async () => {
     if (!selectedProduct) return;
     setTrialBusy(true);
@@ -346,8 +354,7 @@ export const PricingPage: React.FC = () => {
       }
 
       const landingUrl = resolveProductLandingUrl(selectedProduct, returnTo);
-      if (isExternalUrl(landingUrl)) window.location.assign(landingUrl);
-      else navigate(landingUrl, { replace: true });
+      continueTo(landingUrl, { replace: true });
     } catch (e) {
       const raw = e instanceof Error ? e.message : t('pricing.trial.unavailable');
       if (/already claimed/i.test(raw)) setTrialError(t('pricing.trial.alreadyClaimed'));
@@ -398,8 +405,7 @@ export const PricingPage: React.FC = () => {
       id: 'back',
       label: t('common.back'),
       onClick: () => {
-        if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-        else navigate(returnTo, { replace: true });
+        continueTo(returnTo, { replace: true });
       },
     },
     { id: 'signout', label: t('common.signOut'), onClick: () => void signOut() },

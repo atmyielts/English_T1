@@ -11,6 +11,53 @@ const authDebug = (event: string, meta: Record<string, unknown>): void => {
   console.debug(`[useAccess] ${event}`, { at: new Date().toISOString(), ...meta });
 };
 
+const AUTH_HANDOFF_KEYS = ['access_token', 'refresh_token', 'expires_at', 'expires_in', 'token_type', 'type'];
+
+const parseUrlParams = (raw: string): URLSearchParams => {
+  const trimmed = raw.startsWith('#') ? raw.slice(1) : raw;
+  const cleaned = trimmed.startsWith('?') ? trimmed.slice(1) : trimmed;
+  return new URLSearchParams(cleaned);
+};
+
+const stripPlatformAuthHandoff = (): void => {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  AUTH_HANDOFF_KEYS.forEach((key) => url.searchParams.delete(key));
+  const hashParams = parseUrlParams(url.hash);
+  AUTH_HANDOFF_KEYS.forEach((key) => hashParams.delete(key));
+  const nextHash = hashParams.toString();
+  url.hash = nextHash ? `#${nextHash}` : '';
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+};
+
+const consumePlatformAuthHandoff = async (): Promise<Session | null> => {
+  if (typeof window === 'undefined') return null;
+  const hashParams = parseUrlParams(window.location.hash);
+  const queryParams = new URLSearchParams(window.location.search);
+  const type = hashParams.get('type') ?? queryParams.get('type');
+  if (type !== 'platform_handoff') return null;
+
+  const accessToken = hashParams.get('access_token') ?? queryParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token') ?? queryParams.get('refresh_token');
+  stripPlatformAuthHandoff();
+  if (!accessToken || !refreshToken) {
+    authDebug('handoff.missing-tokens', {});
+    return null;
+  }
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (error) {
+    authDebug('handoff.set-session-error', { message: error.message });
+    return null;
+  }
+
+  authDebug('handoff.set-session-ok', { userId: data.session?.user?.id ?? null });
+  return data.session ?? null;
+};
+
 type AccessState =
   | { status: 'loading' }
   | { status: 'unauthenticated' }
@@ -72,10 +119,17 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
       }
     };
 
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      const handoffSession = await consumePlatformAuthHandoff();
+      if (cancelled) return;
+      if (handoffSession) {
+        void hydrate(handoffSession);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       void hydrate(data.session);
-    });
+    })();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;

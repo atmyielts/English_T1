@@ -169,8 +169,12 @@ export const HomePage: React.FC = () => {
   const openProduct = (product: ProductRow) => {
     const appUrl = resolveProductLandingUrl(product);
     if (appUrl) {
-      if (isExternalUrl(appUrl)) window.location.assign(appUrl);
-      else navigate(appUrl);
+      if (isExternalUrl(appUrl)) {
+        if (isAuthed) navigate(`/auth?returnTo=${encodeURIComponent(appUrl)}`);
+        else window.location.assign(appUrl);
+      } else {
+        navigate(appUrl);
+      }
       return;
     }
     openPricing(product);

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { referralsClaim } from '../lib/platformClient';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
@@ -8,6 +9,38 @@ import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 import { SeoHead } from '../components/seo/SeoHead';
 
 type Mode = 'signin' | 'signup';
+
+const AUTH_HANDOFF_KEYS = [
+  'access_token',
+  'refresh_token',
+  'expires_at',
+  'expires_in',
+  'token_type',
+  'type',
+];
+
+const withPlatformAuthHandoff = (target: string, session: Session): string => {
+  const url = new URL(target);
+  const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash;
+  const hashParams = new URLSearchParams(hash);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const expiresIn =
+    typeof session.expires_in === 'number' && Number.isFinite(session.expires_in)
+      ? session.expires_in
+      : session.expires_at
+        ? Math.max(session.expires_at - nowSeconds, 1)
+        : 3600;
+  const expiresAt = session.expires_at ?? nowSeconds + expiresIn;
+  AUTH_HANDOFF_KEYS.forEach((key) => hashParams.delete(key));
+  hashParams.set('access_token', session.access_token);
+  hashParams.set('refresh_token', session.refresh_token);
+  hashParams.set('token_type', session.token_type || 'bearer');
+  hashParams.set('type', 'platform_handoff');
+  hashParams.set('expires_at', String(expiresAt));
+  hashParams.set('expires_in', String(expiresIn));
+  url.hash = hashParams.toString();
+  return url.toString();
+};
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -86,6 +119,20 @@ export const AuthPage: React.FC = () => {
     }
   };
 
+  const completeAuth = async (
+    session: Session,
+    profile: { first_name?: string; last_name?: string; phone?: string } = {},
+  ) => {
+    await syncProfile(session.user.id, profile);
+    await claimStoredReferral(session.access_token);
+
+    if (isExternalUrl(returnTo)) {
+      window.location.assign(withPlatformAuthHandoff(returnTo, session));
+      return;
+    }
+    navigate(returnTo, { replace: true });
+  };
+
   useEffect(() => {
     // If already logged in, go straight through.
       supabase.auth.getSession().then(({ data }) => {
@@ -96,10 +143,7 @@ export const AuthPage: React.FC = () => {
           last_name: typeof um.last_name === 'string' ? um.last_name.trim() : undefined,
           phone: typeof um.phone === 'string' ? um.phone.trim() : undefined,
         };
-        void syncProfile(data.session.user.id, profile);
-        void claimStoredReferral(data.session.access_token);
-        if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-        else navigate(returnTo, { replace: true });
+        void completeAuth(data.session, profile);
       });
   }, [navigate, returnTo]);
 
@@ -157,11 +201,7 @@ export const AuthPage: React.FC = () => {
           last_name: typeof um.last_name === 'string' ? um.last_name.trim() : undefined,
           phone: typeof um.phone === 'string' ? um.phone.trim() : undefined,
         };
-        await syncProfile(data.session.user.id, profile);
-        await claimStoredReferral(data.session.access_token);
-
-        if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-        else navigate(returnTo, { replace: true });
+        await completeAuth(data.session, profile);
         return;
       }
 
@@ -188,14 +228,11 @@ export const AuthPage: React.FC = () => {
       }
 
       if (data.session) {
-        await syncProfile(data.session.user.id, {
+        await completeAuth(data.session, {
           first_name: fn || undefined,
           last_name: ln || undefined,
           phone: ph || undefined,
         });
-        await claimStoredReferral(data.session.access_token);
-        if (isExternalUrl(returnTo)) window.location.assign(returnTo);
-        else navigate(returnTo, { replace: true });
         return;
       }
 
