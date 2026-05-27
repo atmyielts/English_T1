@@ -50,6 +50,7 @@ Source of truth for what's live (full list also in `.github/workflows/deploy-pag
 | `apps/sat-practice` | https://practice.sat.schood.online | `schood-sat-practice` |
 | `apps/sat-playbook` | https://playbook.sat.schood.online | `schood-sat-playbook` |
 | `apps/toefl-ibt-simulator` | https://toefl.schood.online | `schood-toefl` |
+| `apps/toefl-playbook` | https://playbook.toefl.schood.online | `schood-toefl-playbook` |
 | `apps/itep-simulator` | https://itep.schood.online | `schood-itep` |
 | `apps/english-hub` | https://english.schood.online | `schood-english` |
 | `apps/english-reading` | https://reading.english.schood.online | `schood-reading` |

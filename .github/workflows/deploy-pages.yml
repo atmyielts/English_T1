@@ -45,6 +45,10 @@ jobs:
             workspace: apps/toefl-ibt-simulator
             dist: apps/toefl-ibt-simulator/dist
             project: schood-toefl
+          - label: toefl-playbook
+            workspace: apps/toefl-playbook
+            dist: apps/toefl-playbook/dist
+            project: schood-toefl-playbook
           - label: itep
             workspace: apps/itep-simulator
             dist: apps/itep-simulator/dist
