@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, BookOpenCheck, Compass, ExternalLink, Sparkles, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { SiteHeader, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import {
   SeoHead,
@@ -18,8 +19,19 @@ type DiscoveryPageProps = {
 
 const isExternal = (href: string): boolean => /^https?:\/\//i.test(href);
 
-const openHref = (navigate: ReturnType<typeof useNavigate>, href: string) => {
+const openHref = async (navigate: ReturnType<typeof useNavigate>, href: string) => {
   if (isExternal(href)) {
+    let hasSession = false;
+    try {
+      const { data } = await supabase.auth.getSession();
+      hasSession = Boolean(data.session);
+    } catch {
+      hasSession = false;
+    }
+    if (hasSession) {
+      navigate(`/auth?returnTo=${encodeURIComponent(href)}`);
+      return;
+    }
     window.location.assign(href);
     return;
   }
@@ -36,7 +48,9 @@ const LinkButton: React.FC<{
   return (
     <button
       type="button"
-      onClick={() => openHref(navigate, href)}
+      onClick={() => {
+        void openHref(navigate, href);
+      }}
       className={[
         'inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-colors',
         primary ? 'bg-[#0f172a] text-white' : 'border border-[#1f2937] bg-white text-gray-900',
@@ -47,20 +61,29 @@ const LinkButton: React.FC<{
   );
 };
 
-const LinkCard: React.FC<{ link: DiscoveryLink }> = ({ link }) => (
-  <a
-    href={link.href}
-    className="rounded-2xl border border-gray-900/15 bg-white p-4 hover:bg-gray-50 transition-colors"
-    target={link.external ? '_self' : undefined}
-    rel={link.external ? 'noreferrer' : undefined}
-  >
-    <div className="flex items-start justify-between gap-3">
-      <div className="text-base font-semibold text-gray-900">{link.label}</div>
-      {link.external ? <ArrowUpRight size={16} className="text-gray-500 shrink-0" /> : <ExternalLink size={16} className="text-gray-500 shrink-0" />}
-    </div>
-    <p className="mt-2 text-sm text-gray-600">{link.description}</p>
-  </a>
-);
+const LinkCard: React.FC<{ link: DiscoveryLink }> = ({ link }) => {
+  const navigate = useNavigate();
+
+  return (
+    <a
+      href={link.href}
+      onClick={(event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        void openHref(navigate, link.href);
+      }}
+      className="rounded-2xl border border-gray-900/15 bg-white p-4 hover:bg-gray-50 transition-colors"
+      target={link.external ? '_self' : undefined}
+      rel={link.external ? 'noreferrer' : undefined}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-base font-semibold text-gray-900">{link.label}</div>
+        {link.external ? <ArrowUpRight size={16} className="text-gray-500 shrink-0" /> : <ExternalLink size={16} className="text-gray-500 shrink-0" />}
+      </div>
+      <p className="mt-2 text-sm text-gray-600">{link.description}</p>
+    </a>
+  );
+};
 
 export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
   const navigate = useNavigate();

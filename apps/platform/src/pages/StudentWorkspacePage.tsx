@@ -269,7 +269,7 @@ export const StudentWorkspacePage: React.FC = () => {
       return;
     }
     const href = `${base}/academy/classrooms/${encodeURIComponent(classroomId)}?academy_id=${encodeURIComponent(academyId)}`;
-    window.location.assign(href);
+    navigate(`/auth?returnTo=${encodeURIComponent(href)}`);
   };
 
   const openAcademyWorkspace = () => {
@@ -278,7 +278,7 @@ export const StudentWorkspacePage: React.FC = () => {
       setError(t('student.error.academyUrlMissing'));
       return;
     }
-    window.location.assign(`${base}/academy/student`);
+    navigate(`/auth?returnTo=${encodeURIComponent(`${base}/academy/student`)}`);
   };
 
   if (loading) {

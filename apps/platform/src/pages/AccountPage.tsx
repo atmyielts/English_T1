@@ -266,7 +266,7 @@ export const AccountPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (isExternalUrl(returnTo)) window.location.assign(returnTo);
+                  if (isExternalUrl(returnTo)) navigate(`/auth?returnTo=${encodeURIComponent(returnTo)}`, { replace: true });
                   else navigate(returnTo, { replace: true });
                 }}
                 className="px-4 py-2 rounded-full border border-gray-900 bg-white/70 text-sm font-semibold"
