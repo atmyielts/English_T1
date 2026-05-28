@@ -2902,6 +2902,11 @@ export const partnerOfficeCreateAcademy = (
   body: { tenant_id?: string | null; name: string; slug?: string | null; center_office?: boolean },
 ) => partnerOfficePost<{ academy: PartnerCenterAcademy; academies: PartnerCenterAcademy[] }>(accessToken, { action: 'create_academy', ...body });
 
+export const partnerOfficeSyncAcademyContacts = (
+  accessToken: string,
+  body: { tenant_id?: string | null; academy_id: string },
+) => partnerOfficePost<{ academy: PartnerCenterAcademy; academies: PartnerCenterAcademy[]; synced_count: number }>(accessToken, { action: 'sync_academy_contacts', ...body });
+
 export const partnerOfficeCreateGroup = (accessToken: string, body: { tenant_id?: string | null; name: string; description?: string | null; assigned_teacher_membership_id?: string | null; product_id?: string | null }) =>
   partnerOfficePost<{ group: PartnerCenterGroup; groups: PartnerCenterGroup[] }>(accessToken, { action: 'create_group', ...body });
 export const partnerOfficeUpdateGroup = (accessToken: string, body: { tenant_id?: string | null; group_id: string; name?: string; description?: string | null; status?: string; assigned_teacher_membership_id?: string | null; product_id?: string | null }) =>
@@ -3306,7 +3311,6 @@ export type PublicCenterResponse = {
   };
   services: { mock_exams: any[]; subscriptions: any[] };
   events?: PartnerCenterMockEvent[];
-  stats?: { mock_exams?: number; subscriptions?: number; upcoming_events?: number };
 };
 
 export const publicCenter = async (slug: string): Promise<PublicCenterResponse> => {

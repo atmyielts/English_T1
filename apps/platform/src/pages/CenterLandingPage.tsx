@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowUpRight,
   BookOpen,
@@ -30,9 +30,6 @@ const formatDateTime = (value?: string | null) => {
   return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-const money = (amount?: number | null, currency = 'UZS') =>
-  typeof amount === 'number' && Number.isFinite(amount) && amount > 0 ? `${amount.toLocaleString()} ${currency}` : 'Included by voucher';
-
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -62,16 +59,11 @@ export const CenterLandingPage: React.FC = () => {
   const contactName = String(branding.contact_name ?? '').trim();
   const address = String(branding.address ?? branding.location ?? '').trim();
   const upcomingEvents = data?.events ?? [];
-  const mockExams = data?.services.mock_exams ?? [];
-  const subscriptions = data?.services.subscriptions ?? [];
-  const statCards = useMemo(
-    () => [
-      { label: 'Mock tests', value: data?.stats?.mock_exams ?? mockExams.length, icon: Ticket, tone: 'bg-[#d8f266]' },
-      { label: 'Learning plans', value: data?.stats?.subscriptions ?? subscriptions.length, icon: BookOpen, tone: 'bg-[#9ee7ff]' },
-      { label: 'Upcoming events', value: data?.stats?.upcoming_events ?? upcomingEvents.length, icon: CalendarDays, tone: 'bg-[#ffd166]' },
-    ],
-    [data?.stats?.mock_exams, data?.stats?.subscriptions, data?.stats?.upcoming_events, mockExams.length, subscriptions.length, upcomingEvents.length],
-  );
+  const accessCards = [
+    { label: 'Mock access', value: 'Voucher required', icon: Ticket, tone: 'bg-[#d8f266]' },
+    { label: 'Learning access', value: 'Center issued', icon: BookOpen, tone: 'bg-[#9ee7ff]' },
+    { label: 'Events', value: upcomingEvents.length > 0 ? 'Public schedule' : 'Private roster', icon: CalendarDays, tone: 'bg-[#ffd166]' },
+  ];
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
@@ -124,13 +116,13 @@ export const CenterLandingPage: React.FC = () => {
                 </div>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  {statCards.map((card) => (
+                  {accessCards.map((card) => (
                     <div key={card.label} className={`rounded-2xl border border-gray-900 p-4 ${card.tone}`}>
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-xs font-semibold uppercase tracking-wider">{card.label}</p>
                         <card.icon className="h-5 w-5" />
                       </div>
-                      <p className="mt-3 text-3xl font-bold">{card.value}</p>
+                      <p className="mt-3 text-lg font-bold">{card.value}</p>
                     </div>
                   ))}
                 </div>
@@ -138,20 +130,16 @@ export const CenterLandingPage: React.FC = () => {
 
               <aside className="rounded-3xl border border-gray-900 bg-[#0f172a] p-6 text-white shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Access desk</p>
-                <h2 className="mt-2 text-2xl font-bold">Voucher, mock, result, repeat.</h2>
-                <div className="mt-5 space-y-3">
-                  {mockExams.slice(0, 4).map((item: any) => (
-                    <div key={`mock-${item.id}`} className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold">{item.name}</div>
-                          <p className="mt-1 text-xs text-white/60">{item.products?.name ?? 'Mock exam'}</p>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-[#d8f266] px-3 py-1 text-xs font-bold text-gray-950">{money(item.price_amount, item.price_currency)}</span>
-                      </div>
-                    </div>
-                  ))}
-                  {mockExams.length === 0 ? <p className="rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/70">No public mock catalog is attached yet.</p> : null}
+                <h2 className="mt-2 text-2xl font-bold">Your center controls who gets access.</h2>
+                <div className="mt-5 space-y-3 text-sm text-white/75">
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <div className="flex items-center gap-2 font-semibold text-white"><KeyRound className="h-4 w-4" />Code first</div>
+                    <p className="mt-2">Students enter with a center-issued voucher, event code, or account access.</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <div className="flex items-center gap-2 font-semibold text-white"><ShieldCheck className="h-4 w-4" />Private catalog</div>
+                    <p className="mt-2">Mock tests, seat inventory, pricing, and purchased stock stay inside the center office.</p>
+                  </div>
                 </div>
                 <button type="button" onClick={() => navigate('/redeem')} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
                   Continue
@@ -172,23 +160,22 @@ export const CenterLandingPage: React.FC = () => {
 
             <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
               <div className="rounded-3xl border border-gray-900 bg-white/90 p-5 shadow-sm md:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                      <BookOpen className="h-4 w-4" />
-                      Learning access
-                    </div>
-                    <h2 className="mt-2 text-2xl font-bold">Available through this center</h2>
-                  </div>
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <BookOpen className="h-4 w-4" />
+                  Private intake
                 </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {subscriptions.slice(0, 6).map((item: any) => (
-                    <article key={`plan-${item.id}`} className="rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="mt-1 text-sm text-gray-600">{item.products?.name ?? 'Subscription'}{item.duration_days ? ` - ${item.duration_days} days` : ''}</p>
+                <h2 className="mt-2 text-2xl font-bold">Nothing is public until the center chooses it.</h2>
+                <div className="mt-5 grid gap-3">
+                  {[
+                    ['Student invites', 'A center staff member prepares the roster or sends a direct invite.'],
+                    ['Voucher batches', 'Codes can be assigned privately to named students before they redeem.'],
+                    ['Public events', 'Only events explicitly marked public appear on this page.'],
+                  ].map(([title, copy]) => (
+                    <article key={title} className="rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
+                      <p className="font-semibold">{title}</p>
+                      <p className="mt-1 text-sm text-gray-600">{copy}</p>
                     </article>
                   ))}
-                  {subscriptions.length === 0 ? <p className="rounded-2xl border border-dashed border-gray-300 p-4 text-sm text-gray-600">No subscription catalog is attached yet.</p> : null}
                 </div>
               </div>
 

@@ -69,7 +69,7 @@ const CENTER_TIER_CAPABILITIES: Record<string, CenterCapabilities> = {
     public_events_enabled: true,
     payouts_enabled: false,
     white_label_enabled: false,
-    included_features: ["Groups/classes", "Mock events", "Teacher review queue", "Analytics", "Monthly statements"],
+    included_features: ["Academy contact handoff", "Mock events", "Teacher review queue", "Analytics", "Monthly statements"],
   },
   premium: {
     tier: "premium",
@@ -667,6 +667,94 @@ const createCenterAcademy = async (sb: any, centerTenantId: string, body: Json, 
       ...academyLinks(appUrl, academyId),
     },
   };
+};
+
+const splitFullName = (value: unknown): { first_name: string; last_name: string } => {
+  const parts = String(value ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first_name: "", last_name: "" };
+  if (parts.length === 1) return { first_name: parts[0], last_name: "" };
+  return { first_name: parts.slice(0, -1).join(" "), last_name: parts[parts.length - 1] };
+};
+
+const syncCenterStudentsToAcademyContacts = async (
+  sb: any,
+  centerTenantId: string,
+  academyId: string,
+  userId: string,
+): Promise<{ synced_count: number; academy: any; academies: any[] }> => {
+  const { data: academy, error: academyError } = await sb
+    .from("tenants")
+    .select("id, name, slug, type, metadata, created_at")
+    .eq("id", academyId)
+    .contains("metadata", { parent_center_id: centerTenantId, service_family: "academy" })
+    .maybeSingle();
+  if (academyError) throw academyError;
+  if (!academy?.id) throw new Error("Academy not found under this center");
+
+  const { data: centerStudents, error: studentsError } = await sb
+    .from("partner_center_students")
+    .select("id, user_id, full_name, email, phone, status, metadata")
+    .eq("tenant_id", centerTenantId)
+    .in("status", ["active", "invited"])
+    .limit(1000);
+  if (studentsError) throw studentsError;
+
+  let synced = 0;
+  for (const row of centerStudents ?? []) {
+    const email = normalizeEmail(row.email);
+    const phone = String(row.phone ?? "").trim();
+    if (!email && !phone) continue;
+    const names = splitFullName(row.full_name);
+    let existing: any | null = null;
+    if (email) {
+      const { data } = await sb
+        .from("academy_contacts")
+        .select("id, metadata")
+        .eq("academy_id", academyId)
+        .ilike("email", email)
+        .maybeSingle();
+      existing = data ?? null;
+    }
+    if (!existing && phone) {
+      const { data } = await sb
+        .from("academy_contacts")
+        .select("id, metadata")
+        .eq("academy_id", academyId)
+        .eq("phone", phone)
+        .maybeSingle();
+      existing = data ?? null;
+    }
+
+    const existingMeta = isObject(existing?.metadata) ? existing.metadata as Json : {};
+    const studentMeta = isObject(row.metadata) ? row.metadata as Json : {};
+    const payload = {
+      academy_id: academyId,
+      user_id: row.user_id ?? null,
+      first_name: names.first_name,
+      last_name: names.last_name,
+      email: email || null,
+      phone: phone || null,
+      status: row.status === "active" ? "active" : "trial",
+      metadata: {
+        ...existingMeta,
+        source: "center_office_sync",
+        center_tenant_id: centerTenantId,
+        center_student_id: row.id,
+        voucher_code: studentMeta.voucher_code ?? null,
+        synced_at: new Date().toISOString(),
+      },
+      created_by: userId,
+    };
+    const { error } = existing?.id
+      ? await sb.from("academy_contacts").update(payload).eq("id", existing.id)
+      : await sb.from("academy_contacts").insert(payload);
+    if (error) throw error;
+    synced += 1;
+  }
+
+  const academies = await loadCenterAcademies(sb, centerTenantId);
+  const syncedAcademy = academies.find((item: any) => item.id === academyId) ?? academy;
+  return { synced_count: synced, academy: syncedAcademy, academies };
 };
 
 const createCenterApplication = async (sb: any, body: Json, user: any): Promise<{ center: any; tenant: any }> => {
@@ -1737,6 +1825,7 @@ serve(async (req) => {
       const adminOnlyActions = [
         "update_center_profile",
         "create_academy",
+        "sync_academy_contacts",
         "create_wallet_topup",
         "create_voucher_batch",
         "void_voucher",
@@ -1771,6 +1860,7 @@ serve(async (req) => {
         "invite_staff",
         "update_staff",
         "create_academy",
+        "sync_academy_contacts",
         "create_group",
         "update_group",
         "assign_student_group",
@@ -1838,6 +1928,13 @@ serve(async (req) => {
         if (gate) return gate;
         const result = await createCenterAcademy(sb, tenantId, body, userId);
         return json(200, { ...result, academies: await loadCenterAcademies(sb, tenantId) });
+      }
+
+      if (actionBody === "sync_academy_contacts") {
+        const academyId = String(body.academy_id ?? "").trim();
+        if (!academyId) return json(400, { error: "academy_id is required" });
+        const result = await syncCenterStudentsToAcademyContacts(sb, tenantId, academyId, userId);
+        return json(200, result);
       }
 
       if (actionBody === "create_group" || actionBody === "update_group") {
@@ -2505,6 +2602,34 @@ serve(async (req) => {
 
         const { data: insertedVouchers, error: voucherError } = await sb.from("partner_vouchers").insert(vouchers).select("*");
         if (voucherError) return json(500, { error: "Failed to create vouchers", detail: voucherError.message });
+
+        const insertedRows = insertedVouchers ?? [];
+        for (let i = 0; i < Math.min(assignedStudents.length, insertedRows.length); i += 1) {
+          const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
+          const voucher = insertedRows[i];
+          const fullName = String(assigned.name ?? assigned.full_name ?? "").trim();
+          const email = normalizeEmail(assigned.email);
+          const phone = String(assigned.phone ?? "").trim();
+          if (!fullName && !email && !phone) continue;
+          await upsertCenterStudent(sb, {
+            tenantId,
+            fullName: fullName || null,
+            email,
+            phone: phone || null,
+            voucherId: voucher?.id ?? null,
+            createdBy: userId,
+            metadata: {
+              invite_source: "voucher_batch_roster",
+              batch_id: batch.id,
+              voucher_code: voucher?.code ?? null,
+              access_kind: accessKind,
+              product_id: productId,
+              experience_id: experienceId,
+              plan_id: planId,
+              expires_at: expiresAt,
+            },
+          });
+        }
 
         if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
           await sb.from("partner_wallet_ledger").insert({

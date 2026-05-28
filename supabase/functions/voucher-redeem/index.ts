@@ -44,48 +44,6 @@ const normalizeSlug = (raw: unknown): string =>
 const publicEventsEnabled = (center: any): boolean =>
   ["growth", "premium", "exclusive"].includes(String(center?.package_tier ?? "starter").trim().toLowerCase());
 
-const SIMULATOR_PRODUCT_SLUGS = new Set([
-  "ielts-academic-simulator",
-  "ielts-simulator",
-  "toefl-ibt-simulator",
-  "sat-exam-simulator",
-  "sat-simulator",
-  "itep-simulator",
-]);
-
-const productSlug = (product: unknown): string => {
-  const metadata = isObject((product as any)?.metadata) ? (product as any).metadata as Json : {};
-  return String(metadata.slug ?? "").trim().toLowerCase();
-};
-
-const isTicketEligible = (metadata: unknown): boolean => {
-  const ticketing = isObject(metadata) ? (metadata as any).ticketing : null;
-  return Boolean(ticketing?.eligible === true && String(ticketing?.mode ?? "") === "single_sitting");
-};
-
-const looksLikeMockExperience = (row: any): boolean => {
-  const metadata = isObject(row?.metadata) ? row.metadata as Json : {};
-  const name = String(row?.name ?? "").trim().toLowerCase();
-  const catalog = String(metadata.catalog ?? metadata.kind ?? metadata.type ?? "").trim().toLowerCase();
-  const format = String(metadata.format ?? metadata.exam_format ?? "").trim().toLowerCase();
-  return (
-    catalog === "full_test" ||
-    catalog === "mock_test" ||
-    catalog === "mock_exam" ||
-    format === "academic" ||
-    format === "digital_sat" ||
-    name.includes("mock") ||
-    name.includes("full test") ||
-    name.includes("practice test")
-  );
-};
-
-const isPublicMockExperience = (row: any): boolean => {
-  if (!row?.is_active) return false;
-  if (isTicketEligible(row.metadata)) return true;
-  return SIMULATOR_PRODUCT_SLUGS.has(productSlug(row.products)) && looksLikeMockExperience(row);
-};
-
 const publicCenterView = async (sb: any, center: any, tenant?: any) => ({
   tenant_id: center?.tenant_id ?? tenant?.id ?? null,
   name: center?.display_name ?? tenant?.name ?? "Education center",
@@ -335,38 +293,24 @@ serve(async (req) => {
       if (error) return json(500, { error: "Failed to load center", detail: error.message });
       if (!center?.tenant_id) return json(404, { error: "Center not found" });
 
-      const [experiences, plans, events] = await Promise.all([
-        sb
-          .from("experiences")
-          .select("id, name, is_active, product_id, price_amount, price_currency, metadata, products ( name, status, metadata )")
-          .eq("is_active", true)
-          .limit(60),
-        sb
-          .from("plans")
-          .select("id, name, duration_days, product_id, products ( name, metadata )")
-          .eq("is_active", true)
-          .limit(12),
-        sb
-          .from("partner_center_mock_events")
-          .select("id, title, starts_at, mode, location, meeting_url, capacity, status, experience_id, experiences ( name )")
-          .eq("tenant_id", center.tenant_id)
-          .eq("status", "scheduled")
-          .gte("starts_at", new Date().toISOString())
-          .order("starts_at", { ascending: true })
-          .limit(6),
-      ]);
+      const events = await sb
+        .from("partner_center_mock_events")
+        .select("id, title, starts_at, mode, location, capacity, status, experience_id, metadata, experiences ( name )")
+        .eq("tenant_id", center.tenant_id)
+        .eq("status", "scheduled")
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(12);
+      const publicEvents = publicEventsEnabled(center)
+        ? (events.data ?? []).filter((event: any) => {
+          const metadata = isObject(event?.metadata) ? event.metadata as Json : {};
+          return metadata.visibility === "public" || metadata.public_event === true;
+        }).slice(0, 6)
+        : [];
       return json(200, {
         center: await publicCenterView(sb, center, center.tenants),
-        services: {
-          mock_exams: (experiences.data ?? []).filter((row: any) => isPublicMockExperience(row)).slice(0, 8),
-          subscriptions: plans.data ?? [],
-        },
-        events: publicEventsEnabled(center) ? events.data ?? [] : [],
-        stats: {
-          mock_exams: (experiences.data ?? []).filter((row: any) => isPublicMockExperience(row)).length,
-          subscriptions: (plans.data ?? []).length,
-          upcoming_events: publicEventsEnabled(center) ? (events.data ?? []).length : 0,
-        },
+        services: { mock_exams: [], subscriptions: [] },
+        events: publicEvents,
       });
     }
 
