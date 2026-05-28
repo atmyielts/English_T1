@@ -1860,6 +1860,20 @@ const heuristicWritingBand = (answers: unknown): { band: number; wordCount: numb
 
   const words = text.split(/\s+/).map((entry) => entry.trim()).filter(Boolean);
   const wordCount = words.length;
+
+  // Honest floor: a blank / near-empty submission must not score like a band-4.5
+  // response. IELTS examiners give band 0 to non-responses and band 1-2 to a
+  // few-word attempt. The old base of 4.5 caused blank submits to combine with
+  // maxScore=9 → accuracy 0.5 → the band-from-accuracy formula returning 6.5.
+  if (wordCount < 10) {
+    notes.push("Response is empty or too short to be graded — this is treated as a non-response.");
+    return { band: 0, wordCount, notes };
+  }
+  if (wordCount < 40) {
+    notes.push("Far below the Task 2 minimum (250 words). Limited evidence to grade against.");
+    return { band: roundTo(clamp(2 + wordCount / 40, 2, 3.5), 1), wordCount, notes };
+  }
+
   let band = 4.5;
   if (wordCount >= 80) band += 0.7;
   if (wordCount >= 150) band += 0.8;
@@ -3267,18 +3281,41 @@ const submitLabAttempt = async (
   let rawScore = scoredSteps.reduce((sum, step) => sum + (toNumber(step.raw_score) ?? 0), 0);
   let maxScore = scoredSteps.reduce((sum, step) => sum + (toNumber(step.max_score) ?? 0), 0);
   let writingEvaluation: { evaluation_id: string | null; result: JsonRecord | null } = { evaluation_id: null, result: null };
+  // Track whether the AI grader produced an overall_band so we can use it
+  // directly as the estimated band instead of averaging per-step heuristics.
+  let aiWritingBand: number | null = null;
   if (sectionType === "writing") {
     writingEvaluation = await insertWritingLabResponsesAndGrade(sb, supabaseUrl, anonKey, token, bundle, labPayload, answers);
     const band = toNumber(writingEvaluation.result?.overall_band);
     if (band != null) {
       rawScore = band;
       maxScore = 9;
+      aiWritingBand = band;
     }
   }
 
   const nowIso = new Date().toISOString();
   const accuracy = maxScore > 0 ? clamp(rawScore / maxScore, 0, 1) : 0;
-  const estimatedBand = sectionType === "writing" && maxScore === 9 ? rawScore : roundTo(4 + accuracy * 5, 1);
+  // Writing: each scoredStep.raw_score is already a band on the 0-9 scale,
+  // so the honest aggregate is the per-step average — not (sum / 9*N) fed into
+  // the band-from-accuracy hack, which mapped a blank multi-step submission to
+  // band 6.5. When the AI grader returns overall_band, use it directly.
+  let estimatedBand: number;
+  if (sectionType === "writing") {
+    if (aiWritingBand != null) {
+      estimatedBand = roundTo(clamp(aiWritingBand, 0, 9), 1);
+    } else {
+      const stepBands = scoredSteps
+        .map((step) => toNumber(step.raw_score))
+        .filter((v): v is number => v != null);
+      const avgBand = stepBands.length > 0
+        ? stepBands.reduce((sum, b) => sum + b, 0) / stepBands.length
+        : 0;
+      estimatedBand = roundTo(clamp(avgBand, 0, 9), 1);
+    }
+  } else {
+    estimatedBand = roundTo(4 + accuracy * 5, 1);
+  }
   const scoreArtifacts = {
     schema_version: PRACTICE_LAB_ATTEMPT_SCHEMA_VERSION,
     lab_kind: labPayload.lab_kind,

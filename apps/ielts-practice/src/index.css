@@ -1946,8 +1946,19 @@ button:disabled {
 
 .lab-context-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Auto-fit so a reading-only lab (no audio/transcript) gets the full width
+     for its passage instead of stranding the second column empty and squishing
+     the passage to 50%. minmax(360px,...) keeps it side-by-side on wide layouts
+     when both panels are present. */
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 12px;
+}
+
+/* When only one context panel is present (e.g. reading passage, no audio),
+   ensure it spans the full lab-main width — auto-fit alone leaves the column
+   at minimum if only one child renders. */
+.lab-context-grid:has(> .lab-context-panel:only-child) {
+  grid-template-columns: 1fr;
 }
 
 .lab-context-panel,
@@ -1960,15 +1971,21 @@ button:disabled {
 
 .lab-scroll-text {
   margin-top: 10px;
-  max-height: 340px;
+  /* Reading passages need real room — old 340px capped a typical IELTS passage
+     to roughly the height of the question form below, making the passage feel
+     tiny. Bumped to 60vh with a sensible floor. */
+  max-height: min(60vh, 600px);
+  min-height: 320px;
   overflow: auto;
   white-space: pre-wrap;
-  line-height: 1.55;
+  line-height: 1.6;
   color: #263445;
+  font-size: 15px;
 }
 
 .lab-scroll-text.transcript {
-  max-height: 240px;
+  max-height: 320px;
+  min-height: auto;
 }
 
 .lab-audio {
@@ -2037,6 +2054,33 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
   gap: 12px;
+}
+
+/* Auto-generated mistake-notebook entries surfaced on the lab result, so
+   the user can act on them instead of just reading "add it to your notebook"
+   with nowhere to go. */
+.lab-notebook-callout {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent, #b6512c) 22%, transparent);
+  background: color-mix(in srgb, var(--accent, #b6512c) 5%, white);
+}
+
+.lab-notebook-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.lab-notebook-list li {
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-size: 13.5px;
 }
 
 @media (max-width: 1120px) {
