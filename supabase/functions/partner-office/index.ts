@@ -359,6 +359,46 @@ const isTicketEligible = (metadata: unknown): boolean => {
   return Boolean(ticketing?.eligible === true && String(ticketing?.mode ?? "") === "single_sitting");
 };
 
+const SIMULATOR_PRODUCT_SLUGS = new Set([
+  "ielts-academic-simulator",
+  "ielts-simulator",
+  "toefl-ibt-simulator",
+  "sat-exam-simulator",
+  "sat-simulator",
+  "itep-simulator",
+]);
+
+const productSlug = (product: unknown): string => {
+  const metadata = isObject((product as any)?.metadata) ? (product as any).metadata as Json : {};
+  return String(metadata.slug ?? "").trim().toLowerCase();
+};
+
+const looksLikeMockExperience = (row: any): boolean => {
+  const metadata = isObject(row?.metadata) ? row.metadata as Json : {};
+  const name = String(row?.name ?? "").trim().toLowerCase();
+  const catalog = String(metadata.catalog ?? metadata.kind ?? metadata.type ?? "").trim().toLowerCase();
+  const format = String(metadata.format ?? metadata.exam_format ?? "").trim().toLowerCase();
+  return (
+    catalog === "full_test" ||
+    catalog === "mock_test" ||
+    catalog === "mock_exam" ||
+    format === "academic" ||
+    format === "digital_sat" ||
+    name.includes("mock") ||
+    name.includes("full test") ||
+    name.includes("practice test")
+  );
+};
+
+const isMockCatalogExperience = (row: any): boolean => {
+  if (!row?.is_active) return false;
+  if (isTicketEligible(row.metadata)) return true;
+  return SIMULATOR_PRODUCT_SLUGS.has(productSlug(row.products)) && looksLikeMockExperience(row);
+};
+
+const isSellableMockExperience = (row: any): boolean =>
+  isMockCatalogExperience(row) && Number(row?.price_amount ?? 0) > 0;
+
 const getFirstTenant = async (sb: any, tenantId: string): Promise<{ id: string; name: string; slug: string } | null> => {
   const { data } = await sb.from("tenants").select("id, name, slug").eq("id", tenantId).maybeSingle();
   return data?.id ? { id: String(data.id), name: String(data.name ?? "Education center"), slug: String(data.slug ?? "center") } : null;
@@ -1027,19 +1067,111 @@ const loadCenterGroups = async (sb: any, tenantId: string): Promise<any[]> => {
   }));
 };
 
+const loadStudentInvites = async (sb: any, tenantId: string): Promise<any[]> => {
+  const { data, error } = await sb
+    .from("partner_center_student_invites")
+    .select("*, partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_vouchers ( code, status )")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(300);
+  if (error) throw error;
+  return data ?? [];
+};
+
 const loadMockEvents = async (sb: any, tenantId: string): Promise<any[]> => {
   const { data, error } = await sb
     .from("partner_center_mock_events")
-    .select("*, experiences ( name ), products ( name ), partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_center_event_registrations ( id, attendance_status, registration_status )")
+    .select("*, experiences ( name ), products ( name ), partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_center_event_registrations ( id, student_id, voucher_id, attendance_status, registration_status, checked_in_at, created_at, partner_center_students ( full_name, email, phone ), partner_vouchers ( code, assigned_name, assigned_email, assigned_phone, status ) )")
     .eq("tenant_id", tenantId)
     .order("starts_at", { ascending: false })
     .limit(200);
   if (error) throw error;
+  const sortRegistrations = (rows: any[]) =>
+    rows.sort((a, b) => {
+      const aName = String(a?.partner_center_students?.full_name ?? a?.partner_vouchers?.assigned_name ?? a?.partner_center_students?.email ?? a?.partner_vouchers?.assigned_email ?? "");
+      const bName = String(b?.partner_center_students?.full_name ?? b?.partner_vouchers?.assigned_name ?? b?.partner_center_students?.email ?? b?.partner_vouchers?.assigned_email ?? "");
+      return aName.localeCompare(bName);
+    });
   return (data ?? []).map((row: any) => ({
     ...row,
     registered_count: (row.partner_center_event_registrations ?? []).length,
     present_count: (row.partner_center_event_registrations ?? []).filter((r: any) => r.attendance_status === "present").length,
+    registrations: sortRegistrations(row.partner_center_event_registrations ?? []),
   }));
+};
+
+const seedEventRegistrations = async (sb: any, tenantId: string, event: any, userId: string): Promise<void> => {
+  const eventId = String(event?.id ?? "");
+  if (!eventId) return;
+
+  const registrationRows: any[] = [];
+  const seen = new Set<string>();
+  const pushRegistration = (row: { student_id?: string | null; voucher_id?: string | null }) => {
+    const studentId = String(row.student_id ?? "").trim() || null;
+    const voucherId = String(row.voucher_id ?? "").trim() || null;
+    if (!studentId && !voucherId) return;
+    const key = studentId ? `student:${studentId}` : `voucher:${voucherId}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    registrationRows.push({
+      tenant_id: tenantId,
+      event_id: eventId,
+      student_id: studentId,
+      voucher_id: voucherId,
+      registration_status: "registered",
+      attendance_status: "pending",
+      metadata: { source: "center_event_auto_register" },
+    });
+  };
+
+  if (event.group_id) {
+    const { data, error } = await sb
+      .from("partner_center_group_members")
+      .select("student_id")
+      .eq("tenant_id", tenantId)
+      .eq("group_id", event.group_id)
+      .eq("status", "active")
+      .limit(1000);
+    if (error) throw error;
+    for (const row of data ?? []) pushRegistration({ student_id: row.student_id });
+  }
+
+  if (event.voucher_batch_id) {
+    const { data, error } = await sb
+      .from("partner_vouchers")
+      .select("id, assigned_name, assigned_email, assigned_phone")
+      .eq("tenant_id", tenantId)
+      .eq("batch_id", event.voucher_batch_id)
+      .in("status", ["unused", "assigned", "redeemed"])
+      .order("created_at", { ascending: true })
+      .limit(Number(event.capacity ?? 500) || 500);
+    if (error) throw error;
+    for (const voucher of data ?? []) {
+      let studentId: string | null = null;
+      const email = normalizeEmail(voucher.assigned_email);
+      const phone = String(voucher.assigned_phone ?? "").trim();
+      const name = String(voucher.assigned_name ?? "").trim();
+      if (email || phone || name) {
+        const student = await upsertCenterStudent(sb, {
+          tenantId,
+          fullName: name || null,
+          email,
+          phone: phone || null,
+          voucherId: voucher.id,
+          createdBy: userId,
+          metadata: { invite_source: "center_event_batch" },
+        });
+        studentId = student?.id ?? null;
+      }
+      pushRegistration({ student_id: studentId, voucher_id: voucher.id });
+    }
+  }
+
+  for (const row of registrationRows) {
+    const conflictTarget = row.voucher_id ? "event_id,voucher_id" : "event_id,student_id";
+    const { error } = await sb.from("partner_center_event_registrations").upsert(row, { onConflict: conflictTarget });
+    if (error) throw error;
+  }
 };
 
 const loadReviewQueue = async (sb: any, tenantId: string): Promise<any[]> => {
@@ -1246,7 +1378,7 @@ serve(async (req) => {
       if (productsRes.error) return json(500, { error: "Failed to load products", detail: productsRes.error.message });
 
       const experiences = (experiencesRes.data ?? [])
-        .filter((row: any) => isTicketEligible(row.metadata))
+        .filter((row: any) => isMockCatalogExperience(row))
         .map((row: any) => ({
           id: row.id,
           name: row.name,
@@ -1256,7 +1388,7 @@ serve(async (req) => {
           price_amount: row.price_amount ?? null,
           price_currency: row.price_currency ?? "UZS",
           ticketing: row.metadata?.ticketing ?? null,
-          is_ticket_ready: Number(row.price_amount ?? 0) > 0,
+          is_ticket_ready: isSellableMockExperience(row),
         }));
 
       return json(200, { experiences, plans: plansRes.data ?? [], products: productsRes.data ?? [] });
@@ -1306,6 +1438,12 @@ serve(async (req) => {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
       const students = await loadCenterStudents(sb, tenantId);
       return json(200, { students });
+    }
+
+    if (req.method === "GET" && action === "student_invites") {
+      if (!canInviteCenterStudents(memberships, tenantId)) return json(403, { error: "Center counselor/admin access is required" });
+      const invites = await loadStudentInvites(sb, tenantId);
+      return json(200, { invites });
     }
 
     if (req.method === "GET" && action === "student_detail") {
@@ -1603,7 +1741,6 @@ serve(async (req) => {
         "create_voucher_batch",
         "void_voucher",
         "export_report",
-        "resend_student_invite",
         "invite_staff",
         "update_staff",
         "create_group",
@@ -1624,6 +1761,9 @@ serve(async (req) => {
       if (actionBody === "create_student_invites" && !canInviteCenterStudents(memberships, tenantId)) {
         return json(403, { error: "Center counselor/admin access is required" });
       }
+      if (["resend_student_invite", "revoke_student_invite"].includes(actionBody) && !canInviteCenterStudents(memberships, tenantId)) {
+        return json(403, { error: "Center counselor/admin access is required" });
+      }
       if (["mark_event_attendance", "update_review_item"].includes(actionBody) && !requireCenterOperator(memberships, tenantId)) {
         return json(403, { error: "Center staff access is required" });
       }
@@ -1635,6 +1775,8 @@ serve(async (req) => {
         "update_group",
         "assign_student_group",
         "create_student_invites",
+        "resend_student_invite",
+        "revoke_student_invite",
         "create_mock_event",
         "update_mock_event",
         "mark_event_attendance",
@@ -1832,7 +1974,59 @@ serve(async (req) => {
           if (error) return json(500, { error: "Failed to create student invite", detail: error.message });
           created.push(invite);
         }
-        return json(200, { invites: created, students: await loadCenterStudents(sb, tenantId) });
+        return json(200, { invites: created, all_invites: await loadStudentInvites(sb, tenantId), students: await loadCenterStudents(sb, tenantId) });
+      }
+
+      if (actionBody === "resend_student_invite") {
+        const inviteId = String(body.invite_id ?? "").trim();
+        if (!inviteId) return json(400, { error: "invite_id is required" });
+        const { data: existing, error: existingError } = await sb
+          .from("partner_center_student_invites")
+          .select("*")
+          .eq("tenant_id", tenantId)
+          .eq("id", inviteId)
+          .maybeSingle();
+        if (existingError) return json(500, { error: "Failed to load invite", detail: existingError.message });
+        if (!existing?.id) return json(404, { error: "Invite not found" });
+        if (String(existing.status) !== "pending") return json(400, { error: "Only pending invites can be resent" });
+
+        const metadata = isObject(existing.metadata) ? existing.metadata as Json : {};
+        const resendCount = Number(metadata.resend_count ?? 0) + 1;
+        const { data: invite, error } = await sb
+          .from("partner_center_student_invites")
+          .update({
+            metadata: { ...metadata, resend_count: resendCount, last_resent_at: new Date().toISOString(), resent_by: userId },
+          })
+          .eq("tenant_id", tenantId)
+          .eq("id", inviteId)
+          .select("*, partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_vouchers ( code, status )")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to resend invite", detail: error.message });
+        return json(200, {
+          invite,
+          invites: await loadStudentInvites(sb, tenantId),
+          message: invite?.message ?? existing.message ?? null,
+          status: "queued",
+        });
+      }
+
+      if (actionBody === "revoke_student_invite") {
+        const inviteId = String(body.invite_id ?? "").trim();
+        if (!inviteId) return json(400, { error: "invite_id is required" });
+        const { data: invite, error } = await sb
+          .from("partner_center_student_invites")
+          .update({
+            status: "revoked",
+            metadata: { revoked_by: userId, revoked_at: new Date().toISOString() },
+          })
+          .eq("tenant_id", tenantId)
+          .eq("id", inviteId)
+          .in("status", ["pending", "expired"])
+          .select("*, partner_center_groups ( name ), partner_voucher_batches ( batch_code ), partner_vouchers ( code, status )")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to revoke invite", detail: error.message });
+        if (!invite?.id) return json(400, { error: "Only pending or expired invites can be revoked" });
+        return json(200, { invite, invites: await loadStudentInvites(sb, tenantId) });
       }
 
       if (actionBody === "create_mock_event" || actionBody === "update_mock_event") {
@@ -1863,7 +2057,20 @@ serve(async (req) => {
         const startsAt = body.starts_at ? new Date(String(body.starts_at)).toISOString() : null;
         const payload: Json = {};
         if (title) payload.title = title;
-        if ("experience_id" in body) payload.experience_id = String(body.experience_id ?? "").trim() || null;
+        const requestedExperienceId = String(body.experience_id ?? "").trim() || null;
+        if (requestedExperienceId) {
+          const { data: exp, error: expError } = await sb
+            .from("experiences")
+            .select("id, product_id, is_active, name, price_amount, price_currency, metadata, products ( id, name, status, metadata )")
+            .eq("id", requestedExperienceId)
+            .maybeSingle();
+          if (expError) return json(500, { error: "Failed to load event mock", detail: expError.message });
+          if (!exp?.id || !isMockCatalogExperience(exp)) return json(400, { error: "Selected mock test is not available for center events" });
+          payload.experience_id = requestedExperienceId;
+          payload.product_id = exp.product_id ?? null;
+        } else if ("experience_id" in body) {
+          payload.experience_id = null;
+        }
         if ("product_id" in body) payload.product_id = String(body.product_id ?? "").trim() || null;
         if ("group_id" in body) payload.group_id = String(body.group_id ?? "").trim() || null;
         if ("voucher_batch_id" in body) payload.voucher_batch_id = String(body.voucher_batch_id ?? "").trim() || null;
@@ -1881,6 +2088,9 @@ serve(async (req) => {
           ? await query.insert({ tenant_id: tenantId, title, starts_at: startsAt ?? new Date(Date.now() + 86400000).toISOString(), mode: payload.mode ?? "online", status: payload.status ?? "scheduled", ...payload, created_by: userId }).select("*").maybeSingle()
           : await query.update(payload).eq("tenant_id", tenantId).eq("id", eventId).select("*").maybeSingle();
         if (error) return json(500, { error: "Failed to save mock event", detail: error.message });
+        if (actionBody === "create_mock_event" && data?.id) {
+          await seedEventRegistrations(sb, tenantId, data, userId);
+        }
         return json(200, { event: data, events: await loadMockEvents(sb, tenantId) });
       }
 
@@ -1889,21 +2099,43 @@ serve(async (req) => {
         const gate = requireTierCapability(profile, "mock_events_enabled", "Mock event attendance");
         if (gate) return gate;
         const eventId = String(body.event_id ?? "").trim();
+        const registrationId = String(body.registration_id ?? "").trim();
         const studentId = String(body.student_id ?? "").trim();
         const voucherId = String(body.voucher_id ?? "").trim() || null;
         const attendanceStatus = String(body.attendance_status ?? "present");
-        if (!eventId || !studentId) return json(400, { error: "event_id and student_id are required" });
-        const { data, error } = await sb
-          .from("partner_center_event_registrations")
-          .upsert({
+        const normalizedAttendance = ["present", "absent", "late", "pending"].includes(attendanceStatus) ? attendanceStatus : "present";
+        const updatePayload = {
+          attendance_status: normalizedAttendance,
+          checked_in_by: userId,
+          checked_in_at: normalizedAttendance === "pending" ? null : new Date().toISOString(),
+        };
+
+        if (registrationId) {
+          const { data, error } = await sb
+            .from("partner_center_event_registrations")
+            .update(updatePayload)
+            .eq("tenant_id", tenantId)
+            .eq("id", registrationId)
+            .select("*")
+            .maybeSingle();
+          if (error) return json(500, { error: "Failed to mark attendance", detail: error.message });
+          if (!data?.id) return json(404, { error: "Event registration not found" });
+          return json(200, { registration: data, events: await loadMockEvents(sb, tenantId) });
+        }
+
+        if (!eventId || (!studentId && !voucherId)) return json(400, { error: "event_id and student_id or voucher_id are required" });
+        const registrationPayload = {
             tenant_id: tenantId,
             event_id: eventId,
-            student_id: studentId,
+            student_id: studentId || null,
             voucher_id: voucherId,
             attendance_status: ["present", "absent", "late", "pending"].includes(attendanceStatus) ? attendanceStatus : "present",
             checked_in_by: userId,
             checked_in_at: new Date().toISOString(),
-          }, { onConflict: "event_id,student_id" })
+          };
+        const { data, error } = await sb
+          .from("partner_center_event_registrations")
+          .upsert(registrationPayload, { onConflict: voucherId ? "event_id,voucher_id" : "event_id,student_id" })
           .select("*")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to mark attendance", detail: error.message });
@@ -2127,11 +2359,11 @@ serve(async (req) => {
           if (!experienceId) return json(400, { error: "experience_id is required for mock vouchers" });
           const { data: exp, error } = await sb
             .from("experiences")
-            .select("id, product_id, is_active, price_amount, price_currency, metadata")
+            .select("id, product_id, is_active, name, price_amount, price_currency, metadata, products ( id, name, status, metadata )")
             .eq("id", experienceId)
             .maybeSingle();
           if (error || !exp?.id || !exp.is_active) return json(400, { error: "Invalid experience_id" });
-          if (!isTicketEligible(exp.metadata)) return json(400, { error: "Experience is not ticket eligible" });
+          if (!isSellableMockExperience(exp)) return json(400, { error: "Mock test is not priced or ticket eligible" });
           productId = exp.product_id;
           currency = String(exp.price_currency ?? "UZS");
           unitPrice = lookupWholesalePrice(profile, accessKind, experienceId, productId, Number(exp.price_amount ?? 0));
@@ -2331,12 +2563,6 @@ serve(async (req) => {
           .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
           .join("\n");
         return json(200, { filename: `schood-partner-report-${new Date().toISOString().slice(0, 10)}.csv`, csv });
-      }
-
-      if (actionBody === "resend_student_invite") {
-        const gate = await requireActiveCenterOffice(sb, tenantId, body);
-        if (gate) return gate;
-        return json(200, { ok: true, status: "queued", note: "Invite delivery provider is not configured; voucher link can be copied from the dashboard." });
       }
 
       if (actionBody === "assign_seat") {

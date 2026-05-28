@@ -10,6 +10,7 @@ import {
   CreditCard,
   Download,
   Link2,
+  Mail,
   Paintbrush,
   FileText,
   ReceiptText,
@@ -54,10 +55,15 @@ import {
   partnerOfficeCreateStudentInvites,
   partnerOfficeCreateTierUpgradePayment,
   partnerOfficeMarkEventAttendance,
+  partnerOfficeAssignStudentGroup,
   partnerOfficeRequestCashPayout,
+  partnerOfficeResendStudentInvite,
   partnerOfficeReviewQueue,
+  partnerOfficeRevokeStudentInvite,
   partnerOfficeStatements,
+  partnerOfficeStudentInvites,
   partnerOfficeTierCatalog,
+  partnerOfficeUpdateGroup,
   partnerOfficeUpdateReviewItem,
   partnerOfficeResults,
   partnerOfficeSeats,
@@ -66,6 +72,7 @@ import {
   partnerOfficeTickets,
   partnerOfficeUpdateCenter,
   partnerOfficeUpdateStaff,
+  partnerOfficeUpdateMockEvent,
   partnerOfficeUploadCenterLogo,
   partnerOfficeVoidVoucher,
   partnerOfficeVoucherBatches,
@@ -80,6 +87,7 @@ import {
   type PartnerCenterReviewItem,
   type PartnerCenterStaffInvite,
   type PartnerCenterStaffMember,
+  type PartnerCenterStudentInvite,
   type PartnerCreditLedgerEntry,
   type PartnerPaymentCapability,
   type PartnerCenterStatement,
@@ -266,6 +274,7 @@ export const CenterOfficePage: React.FC = () => {
   const [academies, setAcademies] = useState<PartnerCenterAcademy[]>([]);
   const [groups, setGroups] = useState<PartnerCenterGroup[]>([]);
   const [events, setEvents] = useState<PartnerCenterMockEvent[]>([]);
+  const [studentInvites, setStudentInvites] = useState<PartnerCenterStudentInvite[]>([]);
   const [reviewItems, setReviewItems] = useState<PartnerCenterReviewItem[]>([]);
   const [statements, setStatements] = useState<PartnerCenterStatement[]>([]);
   const [paymentCapabilities, setPaymentCapabilities] = useState<PartnerPaymentCapability[]>([]);
@@ -386,6 +395,7 @@ export const CenterOfficePage: React.FC = () => {
         setAcademies([]);
         setGroups([]);
         setEvents([]);
+        setStudentInvites([]);
         setReviewItems([]);
         setStatements([]);
         setPaymentCapabilities([]);
@@ -399,7 +409,7 @@ export const CenterOfficePage: React.FC = () => {
       }
 
       const tenant_id = centerRes.center.tenant_id;
-      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, academyRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
+      const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, inviteRes, academyRes, staffRes, resultRes, reportRes, groupRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
@@ -411,6 +421,7 @@ export const CenterOfficePage: React.FC = () => {
           partnerOfficeVouchers(token, { tenant_id }),
           partnerOfficeVoucherBatches(token, tenant_id),
           partnerOfficeStudents(token, tenant_id),
+          partnerOfficeStudentInvites(token, tenant_id).catch(() => ({ invites: [] })),
           partnerOfficeAcademies(token, tenant_id).catch(() => ({ academies: [] })),
           partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })),
           partnerOfficeResults(token, { tenant_id }),
@@ -435,6 +446,7 @@ export const CenterOfficePage: React.FC = () => {
       setVouchers(voucherRes.vouchers ?? []);
       setBatches(batchRes.batches ?? []);
       setStudents(studentRes.students ?? []);
+      setStudentInvites(inviteRes.invites ?? []);
       setAcademies(academyRes.academies ?? []);
       setGroups(groupRes.groups ?? []);
       setEvents(eventRes.events ?? []);
@@ -875,10 +887,81 @@ export const CenterOfficePage: React.FC = () => {
         students: [{ name: inviteForm.name, email: inviteForm.email, phone: inviteForm.phone }],
       });
       setStudents(res.students ?? []);
+      setStudentInvites(res.all_invites ?? res.invites ?? []);
       const invite = res.invites?.[0];
       if (invite?.message) await copy(String(invite.message), 'Student invite message copied.');
       setInviteForm({ name: '', email: '', phone: '', group_id: '', voucher_batch_id: '' });
       setSuccess('Student invite prepared.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendStudentInvite = async (invite_id: string) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeResendStudentInvite(token, { tenant_id: centerTenantId, invite_id, origin });
+      setStudentInvites(res.invites ?? []);
+      if (res.message) await copy(String(res.message), 'Student invite message copied.');
+      setSuccess('Invite refreshed.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const revokeStudentInvite = async (invite_id: string) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeRevokeStudentInvite(token, { tenant_id: centerTenantId, invite_id });
+      setStudentInvites(res.invites ?? []);
+      setSuccess('Invite revoked.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assignStudentToGroup = async (student_id: string, group_id: string, status: 'active' | 'removed' = 'active') => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !student_id || !group_id) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeAssignStudentGroup(token, { tenant_id: centerTenantId, student_id, group_id, status });
+      setGroups(res.groups ?? []);
+      setStudents(res.students ?? []);
+      setSuccess(status === 'removed' ? 'Student removed from group.' : 'Student added to group.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const archiveGroup = async (group_id: string) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !group_id) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeUpdateGroup(token, { tenant_id: centerTenantId, group_id, status: 'archived' });
+      setGroups(res.groups ?? []);
+      setSuccess('Group archived.');
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -915,11 +998,32 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
-  const markAttendance = async (event_id: string, student_id: string, attendance_status: 'present' | 'absent' | 'late') => {
+  const updateMockEventStatus = async (event_id: string, status: 'scheduled' | 'completed' | 'cancelled') => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !event_id) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeUpdateMockEvent(token, {
+        tenant_id: centerTenantId,
+        event_id,
+        status,
+      });
+      setEvents(res.events ?? []);
+      setSuccess(status === 'cancelled' ? 'Event cancelled.' : status === 'completed' ? 'Event completed.' : 'Event restored.');
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAttendance = async (payload: { event_id?: string; registration_id?: string | null; student_id?: string | null; voucher_id?: string | null }, attendance_status: 'pending' | 'present' | 'absent' | 'late') => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
     try {
-      const res = await partnerOfficeMarkEventAttendance(token, { tenant_id: centerTenantId, event_id, student_id, attendance_status });
+      const res = await partnerOfficeMarkEventAttendance(token, { tenant_id: centerTenantId, ...payload, attendance_status });
       setEvents(res.events ?? []);
       setSuccess('Attendance saved.');
     } catch (err) {
@@ -1270,6 +1374,7 @@ export const CenterOfficePage: React.FC = () => {
           {centerIsActive && tab === 'students' ? (
             <StudentsPanel
               students={students}
+              invites={studentInvites}
               inviteForm={inviteForm}
               groups={groups}
               batches={batches}
@@ -1277,17 +1382,23 @@ export const CenterOfficePage: React.FC = () => {
               loading={loading}
               onInviteFormChange={setInviteForm}
               onInvite={() => void createStudentInvite()}
+              onCopy={(value, message) => void copy(value, message)}
+              onResend={(id) => void resendStudentInvite(id)}
+              onRevoke={(id) => void revokeStudentInvite(id)}
             />
           ) : null}
 
           {centerIsActive && tab === 'groups' ? (
             <GroupsPanel
               groups={groups}
+              students={students}
               staffMembers={staffMembers}
               groupForm={groupForm}
               loading={loading}
               onGroupFormChange={setGroupForm}
               onCreate={() => void createGroup()}
+              onAssign={(studentId, groupId, status) => void assignStudentToGroup(studentId, groupId, status)}
+              onArchive={(groupId) => void archiveGroup(groupId)}
             />
           ) : null}
 
@@ -1302,7 +1413,8 @@ export const CenterOfficePage: React.FC = () => {
               loading={loading}
               onEventFormChange={setEventForm}
               onCreate={() => void createMockEvent()}
-              onAttendance={(eventId, studentId, status) => void markAttendance(eventId, studentId, status)}
+              onAttendance={(payload, status) => void markAttendance(payload, status)}
+              onStatus={(eventId, status) => void updateMockEventStatus(eventId, status)}
             />
           ) : null}
 
@@ -1783,6 +1895,7 @@ const TierUpgradePanel: React.FC<{
 
 const StudentsPanel: React.FC<{
   students: PartnerStudent[];
+  invites: PartnerCenterStudentInvite[];
   inviteForm: { name: string; email: string; phone: string; group_id: string; voucher_batch_id: string };
   groups: PartnerCenterGroup[];
   batches: PartnerVoucherBatch[];
@@ -1790,73 +1903,143 @@ const StudentsPanel: React.FC<{
   loading: boolean;
   onInviteFormChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; group_id: string; voucher_batch_id: string }>>;
   onInvite: () => void;
-}> = ({ students, inviteForm, groups, batches, capabilities, loading, onInviteFormChange, onInvite }) => (
-  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-    <div className={`${panelClass} p-5 md:p-6`}>
-      <SectionTitle icon={UserPlus} label="Invite" title="Add student" />
-      <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={inviteForm.name} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Email<input value={inviteForm.email} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Phone<input value={inviteForm.phone} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, phone: e.target.value }))} className={inputClass} /></label>
-      {capabilities.groups_enabled ? (
-        <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={inviteForm.group_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
-      ) : null}
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={inviteForm.voucher_batch_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No voucher</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
-      <button type="button" onClick={onInvite} disabled={loading || (!inviteForm.email.trim() && !inviteForm.phone.trim())} className={`${primaryButton} mt-5 w-full`}>Prepare invite</button>
-    </div>
-    <section className={`${panelClass} overflow-hidden`}>
-      <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" /></div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-900/10 text-sm">
-          <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-            <tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Groups</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Last activity</th></tr>
-          </thead>
-          <tbody className="divide-y divide-gray-900/10 bg-white/60">
-            {students.map((row) => (
-              <tr key={row.id}>
-                <td className="px-5 py-4"><p className="font-semibold">{row.name || row.email || 'Student'}</p><p className="text-xs text-gray-500">{row.email}</p></td>
-                <td className="px-5 py-4">{row.groups?.map((group) => group.name).join(', ') || '-'}</td>
-                <td className="px-5 py-4">{row.product_name ?? row.access_kind}</td>
-                <td className="px-5 py-4 font-mono">{row.voucher_code ?? '-'}</td>
-                <td className="px-5 py-4"><StatusPill status={row.status} /></td>
-                <td className="px-5 py-4">{formatDate(row.last_activity_at ?? row.redeemed_at)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  onCopy: (value: string, message?: string) => void;
+  onResend: (inviteId: string) => void;
+  onRevoke: (inviteId: string) => void;
+}> = ({ students, invites, inviteForm, groups, batches, capabilities, loading, onInviteFormChange, onInvite, onCopy, onResend, onRevoke }) => (
+  <section className="space-y-5">
+    <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className={`${panelClass} p-5 md:p-6`}>
+        <SectionTitle icon={UserPlus} label="Invite" title="Add student" />
+        <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={inviteForm.name} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Email<input value={inviteForm.email} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Phone<input value={inviteForm.phone} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, phone: e.target.value }))} className={inputClass} /></label>
+        {capabilities.groups_enabled ? (
+          <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={inviteForm.group_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.filter((group) => group.status === 'active').map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+        ) : null}
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={inviteForm.voucher_batch_id} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No voucher</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
+        <button type="button" onClick={onInvite} disabled={loading || (!inviteForm.email.trim() && !inviteForm.phone.trim())} className={`${primaryButton} mt-5 w-full`}>Prepare invite</button>
       </div>
-      {students.length === 0 ? <div className="p-6"><EmptyState icon={UsersRound} title="No students yet" note="Assigned and redeemed students will appear here." /></div> : null}
+      <section className={`${panelClass} overflow-hidden`}>
+        <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" /></div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-900/10 text-sm">
+            <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+              <tr><th className="px-5 py-3">Student</th><th className="px-5 py-3">Groups</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Voucher</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Last activity</th></tr>
+            </thead>
+            <tbody className="divide-y divide-gray-900/10 bg-white/60">
+              {students.map((row) => (
+                <tr key={row.id}>
+                  <td className="px-5 py-4"><p className="font-semibold">{row.name || row.email || 'Student'}</p><p className="text-xs text-gray-500">{row.email || row.phone}</p></td>
+                  <td className="px-5 py-4">{row.groups?.map((group) => group.name).join(', ') || '-'}</td>
+                  <td className="px-5 py-4">{row.product_name ?? row.access_kind}</td>
+                  <td className="px-5 py-4 font-mono">{row.voucher_code ?? '-'}</td>
+                  <td className="px-5 py-4"><StatusPill status={row.status} /></td>
+                  <td className="px-5 py-4">{formatDate(row.last_activity_at ?? row.redeemed_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {students.length === 0 ? <div className="p-6"><EmptyState icon={UsersRound} title="No students yet" note="Assigned and redeemed students will appear here." /></div> : null}
+      </section>
+    </div>
+
+    <section className={`${panelClass} overflow-hidden`}>
+      <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={Mail} label="Invitations" title="Student invite queue" /></div>
+      <div className="divide-y divide-gray-900/10">
+        {invites.map((invite) => (
+          <div key={invite.id} className="grid gap-3 p-5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold">{invite.full_name || invite.email || invite.phone || 'Student invite'}</p>
+                <StatusPill status={invite.status} />
+              </div>
+              <p className="mt-1 truncate text-sm text-gray-600">{invite.email || invite.phone || invite.invite_url}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                {invite.partner_center_groups?.name ?? 'No group'} - {invite.partner_voucher_batches?.batch_code ?? invite.partner_vouchers?.code ?? 'No voucher'} - expires {formatDate(invite.expires_at)}
+              </p>
+            </div>
+            <div className="font-mono text-xs text-gray-500">{invite.partner_vouchers?.code ?? '-'}</div>
+            <div className="flex flex-wrap gap-2">
+              {invite.invite_url ? <button type="button" className={secondaryButton} onClick={() => onCopy(invite.invite_url!, 'Invite link copied.')}><Copy className="h-4 w-4" />Link</button> : null}
+              {invite.message ? <button type="button" className={secondaryButton} onClick={() => onCopy(invite.message!, 'Invite message copied.')}><Copy className="h-4 w-4" />Message</button> : null}
+              <button type="button" className={secondaryButton} disabled={invite.status !== 'pending' || loading} onClick={() => onResend(invite.id)}><RefreshCw className="h-4 w-4" />Resend</button>
+              <button type="button" className={secondaryButton} disabled={!['pending', 'expired'].includes(invite.status) || loading} onClick={() => onRevoke(invite.id)}><Trash2 className="h-4 w-4" />Revoke</button>
+            </div>
+          </div>
+        ))}
+        {invites.length === 0 ? <div className="p-6"><EmptyState icon={Mail} title="No invitations yet" note="Prepared invite links and assigned voucher messages will appear here." /></div> : null}
+      </div>
     </section>
   </section>
 );
 
 const GroupsPanel: React.FC<{
   groups: PartnerCenterGroup[];
+  students: PartnerStudent[];
   staffMembers: PartnerCenterStaffMember[];
   groupForm: { name: string; description: string; assigned_teacher_membership_id: string };
   loading: boolean;
   onGroupFormChange: React.Dispatch<React.SetStateAction<{ name: string; description: string; assigned_teacher_membership_id: string }>>;
   onCreate: () => void;
-}> = ({ groups, staffMembers, groupForm, loading, onGroupFormChange, onCreate }) => (
-  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-    <div className={`${panelClass} p-5 md:p-6`}>
-      <SectionTitle icon={Building2} label="Classes" title="Create group" />
-      <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={groupForm.name} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Teacher<select value={groupForm.assigned_teacher_membership_id} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, assigned_teacher_membership_id: e.target.value }))} className={inputClass}><option value="">Unassigned</option>{staffMembers.filter((member) => ['owner', 'admin', 'teacher', 'member'].includes(member.role)).map((member) => <option key={member.id} value={member.id}>{member.users?.full_name || member.users?.email || member.role}</option>)}</select></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Description<textarea value={groupForm.description} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, description: e.target.value }))} className={`${inputClass} min-h-[90px]`} /></label>
-      <button type="button" onClick={onCreate} disabled={loading || !groupForm.name.trim()} className={`${primaryButton} mt-5 w-full`}>Create group</button>
-    </div>
-    <div className="grid gap-4 md:grid-cols-2">
-      {groups.map((group) => (
-        <div key={group.id} className={`${panelClass} p-5`}>
-          <div className="flex items-start justify-between gap-3"><h3 className="font-bold">{group.name}</h3><StatusPill status={group.status} /></div>
-          <p className="mt-2 text-sm text-gray-600">{group.description || 'No description'}</p>
-          <p className="mt-4 text-sm font-semibold">{group.student_count ?? 0} students</p>
-        </div>
-      ))}
-      {groups.length === 0 ? <EmptyState icon={Building2} title="No groups yet" note="Create classes or cohorts for teacher reporting." /> : null}
-    </div>
-  </section>
-);
+  onAssign: (studentId: string, groupId: string, status?: 'active' | 'removed') => void;
+  onArchive: (groupId: string) => void;
+}> = ({ groups, students, staffMembers, groupForm, loading, onGroupFormChange, onCreate, onAssign, onArchive }) => {
+  const [selectedStudents, setSelectedStudents] = useState<Record<string, string>>({});
+  const activeGroups = groups.filter((group) => group.status === 'active');
+  const teacherLabel = (group: PartnerCenterGroup) => {
+    const teacher = staffMembers.find((member) => member.id === group.assigned_teacher_membership_id);
+    return teacher?.users?.full_name || teacher?.users?.email || 'Unassigned';
+  };
+  const studentsForGroup = (groupId: string) => students.filter((student) => student.groups?.some((group) => group.id === groupId));
+
+  return (
+    <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+      <div className={`${panelClass} p-5 md:p-6`}>
+        <SectionTitle icon={Building2} label="Classes" title="Create group" />
+        <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={groupForm.name} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Teacher<select value={groupForm.assigned_teacher_membership_id} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, assigned_teacher_membership_id: e.target.value }))} className={inputClass}><option value="">Unassigned</option>{staffMembers.filter((member) => ['owner', 'admin', 'teacher', 'member'].includes(member.role)).map((member) => <option key={member.id} value={member.id}>{member.users?.full_name || member.users?.email || member.role}</option>)}</select></label>
+        <label className="mt-4 block text-sm font-semibold text-gray-800">Description<textarea value={groupForm.description} onChange={(e) => onGroupFormChange((prev) => ({ ...prev, description: e.target.value }))} className={`${inputClass} min-h-[90px]`} /></label>
+        <button type="button" onClick={onCreate} disabled={loading || !groupForm.name.trim()} className={`${primaryButton} mt-5 w-full`}>Create group</button>
+      </div>
+      <div className="grid gap-4 xl:grid-cols-2">
+        {activeGroups.map((group) => {
+          const roster = studentsForGroup(group.id);
+          const selectedStudent = selectedStudents[group.id] ?? '';
+          return (
+            <div key={group.id} className={`${panelClass} p-5`}>
+              <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">{group.name}</h3><p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">{teacherLabel(group)}</p></div><StatusPill status={group.status} /></div>
+              <p className="mt-3 text-sm text-gray-600">{group.description || 'No description'}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {roster.slice(0, 8).map((student) => (
+                  <button key={student.id} type="button" className="rounded-full border border-gray-900/15 bg-white px-3 py-1 text-xs font-semibold text-gray-700" onClick={() => onAssign(student.student_id || student.id, group.id, 'removed')}>
+                    {student.name || student.email || 'Student'} x
+                  </button>
+                ))}
+                {roster.length === 0 ? <span className="rounded-full border border-dashed border-gray-300 px-3 py-1 text-xs font-semibold text-gray-500">No students</span> : null}
+              </div>
+              <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
+                <select value={selectedStudent} onChange={(e) => setSelectedStudents((prev) => ({ ...prev, [group.id]: e.target.value }))} className={inputClass}>
+                  <option value="">Add student</option>
+                  {students.filter((student) => student.student_id && !student.groups?.some((g) => g.id === group.id)).map((student) => (
+                    <option key={student.id} value={student.student_id ?? ''}>{student.name || student.email || student.phone || 'Student'}</option>
+                  ))}
+                </select>
+                <button type="button" className={secondaryButton} disabled={!selectedStudent || loading} onClick={() => onAssign(selectedStudent, group.id, 'active')}>Add</button>
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+                <span className="font-semibold">{group.student_count ?? roster.length} students</span>
+                <button type="button" className={secondaryButton} disabled={loading} onClick={() => onArchive(group.id)}><Trash2 className="h-4 w-4" />Archive</button>
+              </div>
+            </div>
+          );
+        })}
+        {activeGroups.length === 0 ? <EmptyState icon={Building2} title="No groups yet" note="Create classes or cohorts for teacher reporting." /> : null}
+      </div>
+    </section>
+  );
+};
 
 const EventsPanel: React.FC<{
   events: PartnerCenterMockEvent[];
@@ -1868,28 +2051,68 @@ const EventsPanel: React.FC<{
   loading: boolean;
   onEventFormChange: React.Dispatch<React.SetStateAction<{ title: string; experience_id: string; starts_at: string; mode: 'online' | 'offline' | 'hybrid'; group_id: string; voucher_batch_id: string; location: string; meeting_url: string; capacity: number }>>;
   onCreate: () => void;
-  onAttendance: (eventId: string, studentId: string, status: 'present' | 'absent' | 'late') => void;
-}> = ({ events, students, catalog, groups, batches, eventForm, loading, onEventFormChange, onCreate, onAttendance }) => (
+  onAttendance: (payload: { event_id?: string; registration_id?: string | null; student_id?: string | null; voucher_id?: string | null }, status: 'pending' | 'present' | 'absent' | 'late') => void;
+  onStatus: (eventId: string, status: 'scheduled' | 'completed' | 'cancelled') => void;
+}> = ({ events, students, catalog, groups, batches, eventForm, loading, onEventFormChange, onCreate, onAttendance, onStatus }) => (
   <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
     <div className={`${panelClass} p-5 md:p-6`}>
       <SectionTitle icon={CalendarDays} label="Mock events" title="Schedule event" />
       <label className="mt-5 block text-sm font-semibold text-gray-800">Title<input value={eventForm.title} onChange={(e) => onEventFormChange((prev) => ({ ...prev, title: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock<select value={eventForm.experience_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock<select value={eventForm.experience_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Starts<input type="datetime-local" value={eventForm.starts_at} onChange={(e) => onEventFormChange((prev) => ({ ...prev, starts_at: e.target.value }))} className={inputClass} /></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Mode<select value={eventForm.mode} onChange={(e) => onEventFormChange((prev) => ({ ...prev, mode: e.target.value as any }))} className={inputClass}><option value="online">Online</option><option value="offline">Offline</option><option value="hybrid">Hybrid</option></select></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={eventForm.group_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={eventForm.voucher_batch_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Group<select value={eventForm.group_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, group_id: e.target.value }))} className={inputClass}><option value="">No group</option>{groups.filter((group) => group.status === 'active').map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={eventForm.voucher_batch_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No batch</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Location or link<input value={eventForm.location} onChange={(e) => onEventFormChange((prev) => ({ ...prev, location: e.target.value }))} className={inputClass} /></label>
-      <button type="button" onClick={onCreate} disabled={loading || !eventForm.title.trim() || !eventForm.starts_at} className={`${primaryButton} mt-5 w-full`}>Create event</button>
+      <button type="button" onClick={onCreate} disabled={loading || !eventForm.title.trim() || !eventForm.starts_at || !eventForm.experience_id} className={`${primaryButton} mt-5 w-full`}>Create event</button>
     </div>
     <div className="space-y-4">
       {events.map((event) => (
         <div key={event.id} className={`${panelClass} p-5`}>
-          <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{event.title}</h3><p className="text-sm text-gray-600">{formatDateTime(event.starts_at)} - {event.mode}</p></div><StatusPill status={event.status} /></div>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="font-bold">{event.title}</h3>
+              <p className="text-sm text-gray-600">{formatDateTime(event.starts_at)} - {event.mode} - {event.experiences?.name ?? 'Mock test'}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-500">{event.partner_center_groups?.name ?? 'Open roster'} - {event.partner_voucher_batches?.batch_code ?? 'No batch'}</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <StatusPill status={event.status} />
+              {event.status !== 'completed' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'completed')}>Complete</button> : null}
+              {event.status !== 'cancelled' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'cancelled')}>Cancel</button> : null}
+            </div>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3"><StatCard label="Registered" value={event.registered_count ?? 0} icon={UsersRound} /><StatCard label="Present" value={event.present_count ?? 0} icon={ClipboardList} /><StatCard label="Capacity" value={event.capacity ?? '-'} icon={Ticket} /></div>
-          {students.length > 0 ? (
+          {(event.registrations ?? []).length > 0 ? (
+            <div className="mt-4 overflow-x-auto rounded-2xl border border-gray-900/10">
+              <table className="min-w-full divide-y divide-gray-900/10 text-sm">
+                <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <tr><th className="px-4 py-3">Candidate</th><th className="px-4 py-3">Voucher</th><th className="px-4 py-3">Attendance</th><th className="px-4 py-3">Actions</th></tr>
+                </thead>
+                <tbody className="divide-y divide-gray-900/10 bg-white/60">
+                  {(event.registrations ?? []).map((registration) => {
+                    const studentName = registration.partner_center_students?.full_name || registration.partner_vouchers?.assigned_name || registration.partner_center_students?.email || registration.partner_vouchers?.assigned_email || 'Candidate';
+                    return (
+                      <tr key={registration.id}>
+                        <td className="px-4 py-3"><p className="font-semibold">{studentName}</p><p className="text-xs text-gray-500">{registration.partner_center_students?.phone || registration.partner_vouchers?.assigned_phone || ''}</p></td>
+                        <td className="px-4 py-3 font-mono">{registration.partner_vouchers?.code ?? '-'}</td>
+                        <td className="px-4 py-3"><StatusPill status={registration.attendance_status} /></td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button" className={secondaryButton} onClick={() => onAttendance({ registration_id: registration.id }, 'present')}>Present</button>
+                            <button type="button" className={secondaryButton} onClick={() => onAttendance({ registration_id: registration.id }, 'late')}>Late</button>
+                            <button type="button" className={secondaryButton} onClick={() => onAttendance({ registration_id: registration.id }, 'absent')}>Absent</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+          {(event.registrations ?? []).length === 0 && students.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
-              {students.slice(0, 8).map((student) => student.student_id ? <button key={student.id} type="button" onClick={() => onAttendance(event.id, student.student_id!, 'present')} className={secondaryButton}>Mark {student.name || student.email} present</button> : null)}
+              {students.slice(0, 8).map((student) => student.student_id ? <button key={student.id} type="button" onClick={() => onAttendance({ event_id: event.id, student_id: student.student_id }, 'present')} className={secondaryButton}>Mark {student.name || student.email} present</button> : null)}
             </div>
           ) : null}
         </div>
@@ -1977,7 +2200,7 @@ const BuyMockPanel: React.FC<{
 }> = ({ catalog, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, loading, pending, onChange, onBuy, onCheck }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={Ticket} label="Wholesale pack" title="Buy mock tickets" />
-    <label className="mt-5 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
+    <label className="mt-5 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}{item.is_ticket_ready ? '' : ' (price needed)'}</option>)}</select></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={200} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
     <label className="mt-4 block text-sm font-semibold text-gray-800">Expiry days<input type="number" min={1} max={30} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
     <p className="mt-4 text-sm text-gray-600">Estimate: <strong>{money((selected?.price_amount ?? 0) * form.quantity, selected?.price_currency ?? 'UZS')}</strong></p>
@@ -1989,7 +2212,12 @@ const BuyMockPanel: React.FC<{
         This pack is above the current online checkout limit{maxOnlineQuantity > 0 ? `; buy up to ${maxOnlineQuantity} online, or use wallet for the full pack.` : '; use wallet top-up for this item.'}
       </p>
     ) : null}
-    <button type="button" onClick={onBuy} disabled={loading || !selected || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
+    {catalog.length === 0 ? (
+      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+        No active single-sitting mock tests are configured for center sales yet.
+      </p>
+    ) : null}
+    <button type="button" onClick={onBuy} disabled={loading || !selected || !selected.is_ticket_ready || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
     {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
   </div>
 );
@@ -2039,7 +2267,7 @@ const VoucherGeneratorPanel: React.FC<{
     <SectionTitle icon={UserPlus} label="Distribution" title="Generate vouchers" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Access type<select value={form.access_kind} onChange={(e) => onChange((prev) => ({ ...prev, access_kind: e.target.value as any }))} className={inputClass}><option value="mock_exam">Mock exam</option><option value="subscription">Subscription</option><option value="seat">Seat voucher</option></select></label>
     {form.access_kind === 'mock_exam' ? (
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
+      <label className="mt-4 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}{item.is_ticket_ready ? '' : ' (price needed)'}</option>)}</select></label>
     ) : (
       <label className="mt-4 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
     )}
@@ -2051,7 +2279,7 @@ const VoucherGeneratorPanel: React.FC<{
     <label className="mt-4 block text-sm font-semibold text-gray-800">Commercial model<select value={form.source_model} onChange={(e) => onChange((prev) => ({ ...prev, source_model: e.target.value }))} className={inputClass}><option value="prepaid_wallet">Prepaid wallet</option><option value="wholesale">Wholesale</option><option value="revenue_share">Revenue share</option><option value="manual">Manual</option></select></label>
     <p className="mt-4 text-sm text-gray-600">Wallet available: <strong>{money(wallet.available_amount, wallet.currency)}</strong></p>
     <p className="mt-2 text-xs text-gray-500">Your current tier allows up to {maxQuantity} vouchers per batch.</p>
-    <button type="button" onClick={onCreate} disabled={loading} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
+    <button type="button" onClick={onCreate} disabled={loading || (form.access_kind === 'mock_exam' && !catalog.some((item) => item.id === form.experience_id && item.is_ticket_ready))} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
   </div>
 );
 

@@ -1,5 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowUpRight, BookOpen, CalendarDays, ClipboardList, KeyRound, Loader2, Mail, MapPin, Phone, ShieldCheck, Ticket } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowUpRight,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  ClipboardList,
+  KeyRound,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Ticket,
+  UsersRound,
+} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { publicCenter, type PublicCenterResponse } from '../lib/platformClient';
@@ -7,7 +21,7 @@ import { publicCenter, type PublicCenterResponse } from '../lib/platformClient';
 const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
 const secondaryButton =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-white';
+  'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/85 px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-white';
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return '-';
@@ -15,6 +29,9 @@ const formatDateTime = (value?: string | null) => {
   if (Number.isNaN(date.getTime())) return '-';
   return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
+
+const money = (amount?: number | null, currency = 'UZS') =>
+  typeof amount === 'number' && Number.isFinite(amount) && amount > 0 ? `${amount.toLocaleString()} ${currency}` : 'Included by voucher';
 
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +44,7 @@ export const CenterLandingPage: React.FC = () => {
     const slug = String(params.slug ?? '').trim();
     if (!slug) return;
     setLoading(true);
+    setError(null);
     publicCenter(slug)
       .then(setData)
       .catch((err) => setError(err instanceof Error ? err.message : 'Center not found'))
@@ -37,88 +55,169 @@ export const CenterLandingPage: React.FC = () => {
     { id: 'redeem', label: 'Redeem', onClick: () => navigate('/redeem') },
     { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
   ];
+
   const branding = (data?.center.branding && typeof data.center.branding === 'object' ? data.center.branding : {}) as Record<string, any>;
   const contactEmail = String(branding.contact_email ?? branding.email ?? '').trim();
   const contactPhone = String(branding.contact_phone ?? branding.phone ?? '').trim();
   const contactName = String(branding.contact_name ?? '').trim();
+  const address = String(branding.address ?? branding.location ?? '').trim();
   const upcomingEvents = data?.events ?? [];
+  const mockExams = data?.services.mock_exams ?? [];
+  const subscriptions = data?.services.subscriptions ?? [];
+  const statCards = useMemo(
+    () => [
+      { label: 'Mock tests', value: data?.stats?.mock_exams ?? mockExams.length, icon: Ticket, tone: 'bg-[#d8f266]' },
+      { label: 'Learning plans', value: data?.stats?.subscriptions ?? subscriptions.length, icon: BookOpen, tone: 'bg-[#9ee7ff]' },
+      { label: 'Upcoming events', value: data?.stats?.upcoming_events ?? upcomingEvents.length, icon: CalendarDays, tone: 'bg-[#ffd166]' },
+    ],
+    [data?.stats?.mock_exams, data?.stats?.subscriptions, data?.stats?.upcoming_events, mockExams.length, subscriptions.length, upcomingEvents.length],
+  );
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
       <SiteHeader actions={actions} brandLabel={data?.center.name ?? 'schood center'} />
-      <main className="px-6 py-10 md:px-10">
+      <main className="px-5 py-8 md:px-10 md:py-10">
         {loading ? (
-          <div className="mx-auto flex max-w-3xl items-center justify-center rounded-3xl border border-gray-900 bg-white/80 p-10">
+          <div className="mx-auto flex max-w-3xl items-center justify-center rounded-3xl border border-gray-900 bg-white/85 p-10">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : error || !data ? (
           <div className="mx-auto max-w-3xl rounded-3xl border border-red-200 bg-red-50 p-8 text-red-700">Center not found or not active.</div>
         ) : (
-          <section className="mx-auto max-w-6xl space-y-6">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-            <div className="rounded-3xl border border-gray-900 bg-white/85 p-6 shadow-sm md:p-10">
-              <div className="flex flex-wrap items-center gap-4">
-                {data.center.logo_url ? <img src={data.center.logo_url} alt="" className="h-16 w-16 rounded-2xl border border-gray-900/10 object-contain bg-white" /> : null}
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-800">
-                    <ShieldCheck className="h-4 w-4" />
-                    Verified Schood partner
+          <section className="mx-auto max-w-7xl space-y-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+              <section className="rounded-3xl border border-gray-900 bg-white/90 p-6 shadow-sm md:p-9">
+                <div className="flex flex-wrap items-center gap-4">
+                  {data.center.logo_url ? (
+                    <img src={data.center.logo_url} alt="" className="h-20 w-20 rounded-3xl border border-gray-900/10 bg-white object-contain p-2" />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-gray-900 bg-[#d8f266]">
+                      <Building2 className="h-8 w-8" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 bg-[#d8f266] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-900">
+                      <ShieldCheck className="h-4 w-4" />
+                      Verified Schood partner
+                    </div>
+                    <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">{data.center.name}</h1>
                   </div>
-                  <h1 className="mt-3 text-3xl font-bold leading-tight md:text-5xl">{data.center.name}</h1>
                 </div>
-              </div>
-              <p className="mt-6 max-w-2xl text-base text-gray-600">
-                {data.center.public_instructions || 'Redeem your center voucher to activate your mock exam or digital learning access.'}
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button type="button" onClick={() => navigate('/redeem')} className={primaryButton}>
-                  <KeyRound className="h-4 w-4" />
-                  Redeem your code
+
+                <p className="mt-6 max-w-3xl text-base leading-7 text-gray-600 md:text-lg">
+                  {data.center.public_instructions || 'Redeem your center voucher to activate your mock exam or digital learning access.'}
+                </p>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button type="button" onClick={() => navigate('/redeem')} className={primaryButton}>
+                    <KeyRound className="h-4 w-4" />
+                    Redeem your code
+                  </button>
+                  <button type="button" onClick={() => navigate('/candidate')} className={secondaryButton}>
+                    <Ticket className="h-4 w-4" />
+                    Take mock exam
+                  </button>
+                  <button type="button" onClick={() => navigate('/account')} className={secondaryButton}>
+                    <ClipboardList className="h-4 w-4" />
+                    View access
+                  </button>
+                </div>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  {statCards.map((card) => (
+                    <div key={card.label} className={`rounded-2xl border border-gray-900 p-4 ${card.tone}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider">{card.label}</p>
+                        <card.icon className="h-5 w-5" />
+                      </div>
+                      <p className="mt-3 text-3xl font-bold">{card.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="rounded-3xl border border-gray-900 bg-[#0f172a] p-6 text-white shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Access desk</p>
+                <h2 className="mt-2 text-2xl font-bold">Voucher, mock, result, repeat.</h2>
+                <div className="mt-5 space-y-3">
+                  {mockExams.slice(0, 4).map((item: any) => (
+                    <div key={`mock-${item.id}`} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold">{item.name}</div>
+                          <p className="mt-1 text-xs text-white/60">{item.products?.name ?? 'Mock exam'}</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-[#d8f266] px-3 py-1 text-xs font-bold text-gray-950">{money(item.price_amount, item.price_currency)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {mockExams.length === 0 ? <p className="rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/70">No public mock catalog is attached yet.</p> : null}
+                </div>
+                <button type="button" onClick={() => navigate('/redeem')} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+                  Continue
+                  <ArrowUpRight className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => navigate('/candidate')} className={secondaryButton}>
-                  <Ticket className="h-4 w-4" />
-                  Take mock exam
-                </button>
-                <button type="button" onClick={() => navigate('/account')} className={secondaryButton}>
-                  <ClipboardList className="h-4 w-4" />
-                  View access
-                </button>
-              </div>
+
+                {(contactName || contactEmail || contactPhone || address) ? (
+                  <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/75">
+                    {contactName ? <p className="font-semibold text-white">{contactName}</p> : null}
+                    {contactEmail ? <p className="mt-2 flex items-center gap-2"><Mail className="h-4 w-4" />{contactEmail}</p> : null}
+                    {contactPhone ? <p className="mt-2 flex items-center gap-2"><Phone className="h-4 w-4" />{contactPhone}</p> : null}
+                    {address ? <p className="mt-2 flex items-center gap-2"><MapPin className="h-4 w-4" />{address}</p> : null}
+                  </div>
+                ) : null}
+                {data.center.powered_by_schood ? <p className="mt-5 text-center text-xs text-white/50">Powered by Schood</p> : null}
+              </aside>
             </div>
 
-            <aside className="rounded-3xl border border-gray-900 bg-[#0f172a] p-6 text-white shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Available through Schood</p>
-              <div className="mt-5 space-y-3">
-                {data.services.mock_exams.slice(0, 4).map((item: any) => (
-                  <div key={`mock-${item.id}`} className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold"><Ticket className="h-4 w-4" />{item.name}</div>
-                    <p className="mt-1 text-xs text-white/60">{item.products?.name ?? 'Mock exam'}</p>
+            <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+              <div className="rounded-3xl border border-gray-900 bg-white/90 p-5 shadow-sm md:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                      <BookOpen className="h-4 w-4" />
+                      Learning access
+                    </div>
+                    <h2 className="mt-2 text-2xl font-bold">Available through this center</h2>
                   </div>
-                ))}
-                {data.services.subscriptions.slice(0, 4).map((item: any) => (
-                  <div key={`plan-${item.id}`} className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold"><BookOpen className="h-4 w-4" />{item.name}</div>
-                    <p className="mt-1 text-xs text-white/60">{item.products?.name ?? 'Subscription'}{item.duration_days ? ` - ${item.duration_days} days` : ''}</p>
-                  </div>
-                ))}
-              </div>
-              <button type="button" onClick={() => navigate('/redeem')} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
-                Continue
-                <ArrowUpRight className="h-4 w-4" />
-              </button>
-              {contactName || contactEmail || contactPhone ? (
-                <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/75">
-                  {contactName ? <p className="font-semibold text-white">{contactName}</p> : null}
-                  {contactEmail ? <p className="mt-2 flex items-center gap-2"><Mail className="h-4 w-4" />{contactEmail}</p> : null}
-                  {contactPhone ? <p className="mt-2 flex items-center gap-2"><Phone className="h-4 w-4" />{contactPhone}</p> : null}
                 </div>
-              ) : null}
-              {data.center.powered_by_schood ? <p className="mt-5 text-center text-xs text-white/50">Powered by Schood</p> : null}
-            </aside>
-            </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {subscriptions.slice(0, 6).map((item: any) => (
+                    <article key={`plan-${item.id}`} className="rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="mt-1 text-sm text-gray-600">{item.products?.name ?? 'Subscription'}{item.duration_days ? ` - ${item.duration_days} days` : ''}</p>
+                    </article>
+                  ))}
+                  {subscriptions.length === 0 ? <p className="rounded-2xl border border-dashed border-gray-300 p-4 text-sm text-gray-600">No subscription catalog is attached yet.</p> : null}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-gray-900 bg-white/90 p-5 shadow-sm md:p-6">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  <UsersRound className="h-4 w-4" />
+                  Student path
+                </div>
+                <h2 className="mt-2 text-2xl font-bold">From voucher to outcome</h2>
+                <div className="mt-5 grid gap-3">
+                  {[
+                    ['Redeem', 'Use the center voucher or event code.'],
+                    ['Sit', 'Open the assigned mock or learning service.'],
+                    ['Review', 'Return to Schood for access, results, and next steps.'],
+                  ].map(([title, copy], index) => (
+                    <div key={title} className="flex gap-4 rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-900 bg-[#9ee7ff] text-sm font-bold">{index + 1}</span>
+                      <div>
+                        <p className="font-semibold">{title}</p>
+                        <p className="mt-1 text-sm text-gray-600">{copy}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
 
             {upcomingEvents.length > 0 ? (
-              <section className="rounded-3xl border border-gray-900 bg-white/85 p-5 shadow-sm md:p-6">
+              <section className="rounded-3xl border border-gray-900 bg-white/90 p-5 shadow-sm md:p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -134,12 +233,12 @@ export const CenterLandingPage: React.FC = () => {
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
                   {upcomingEvents.slice(0, 6).map((event) => (
-                    <article key={event.id} className="rounded-2xl border border-gray-900/15 bg-white/75 p-4">
+                    <article key={event.id} className="rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
                       <p className="font-semibold">{event.title}</p>
-                      <p className="mt-2 text-sm text-gray-600">{event.experiences?.name ?? 'Mock exam'} · {formatDateTime(event.starts_at)}</p>
+                      <p className="mt-2 text-sm text-gray-600">{event.experiences?.name ?? 'Mock exam'} - {formatDateTime(event.starts_at)}</p>
                       <p className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                         <MapPin className="h-4 w-4" />
-                        {event.mode}{event.location ? ` · ${event.location}` : ''}
+                        {event.mode}{event.location ? ` - ${event.location}` : ''}
                       </p>
                     </article>
                   ))}
