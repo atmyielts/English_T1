@@ -1,6 +1,6 @@
-import { useEffect, useId, useMemo, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { PracticeShell } from '../components/PracticeShell';
 import {
   practiceDashboardGet,
   practiceGeneratePlan,
@@ -153,9 +153,6 @@ const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null })
   return labPayload.version === 'ielts.practice.lab.v1';
 };
 
-const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
-const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
-
 const LAB_FEATURES = [
   { title: 'Mistake Coach', copy: 'Explains why today\'s lab was selected and what trap to watch.' },
   { title: 'Evidence Locator', copy: 'Prove Reading answers with the exact sentence or paragraph.' },
@@ -193,14 +190,13 @@ const humanizeError = (message: string): string => {
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
-  const sidebarMenuId = useId();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { accessToken, me, session } = useAccess({ includeEffective: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
   const [averageBand, setAverageBand] = useState<number | null>(null);
   const [goal, setGoal] = useState<PracticeGoal | null>(null);
+  const [planDate, setPlanDate] = useState<string | null>(null);
   const [plan, setPlan] = useState<PracticePlanItem[]>([]);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsPayload | null>(null);
   const [notebook, setNotebook] = useState<PracticeNotebookItem[]>([]);
@@ -256,6 +252,7 @@ export const DashboardPage = () => {
       const [dashboardRes] = await Promise.all([practiceDashboardGet(accessToken), refreshSrs()]);
 
       setGoal(dashboardRes.goals);
+      setPlanDate(String(dashboardRes.plan_date ?? ''));
       setTargetBand(toNumber(dashboardRes.goals.target_overall_band));
 
       const diagnosticPayload = normalizeDiagnostics(dashboardRes.diagnostics_snapshot?.diagnostics);
@@ -441,6 +438,15 @@ export const DashboardPage = () => {
     const completion = total > 0 ? Math.round((completed / total) * 100) : 0;
     return { total, completed, active, pending, completion };
   }, [plan]);
+  const formattedPlanDate = useMemo(() => {
+    if (!planDate) return 'today';
+    const parts = planDate.split('-').map((part) => Number(part));
+    if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return planDate;
+    const year = parts[0] ?? 0;
+    const month = parts[1] ?? 1;
+    const day = parts[2] ?? 1;
+    return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(year, month - 1, day));
+  }, [planDate]);
 
   const notebookPreview = useMemo(() => notebook.slice(0, 4), [notebook]);
   const roadmapPreview = useMemo(() => roadmap.slice(0, 5), [roadmap]);
@@ -448,103 +454,53 @@ export const DashboardPage = () => {
     () => plan.find((item) => item.status !== 'completed' && (item.blueprint_id || item.delivery_build_id)) ?? plan.find((item) => item.blueprint_id || item.delivery_build_id) ?? null,
     [plan],
   );
-  const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="practice-root">
-      <div className="practice-workspace">
-        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`}>
-          <div className="practice-sidebar-head">
-            <Link to="/dashboard" className="practice-sidebar-brand" onClick={closeSidebar}>
-              <img src="/schood-logo.png" alt="Schood" />
-              <div>
-                <strong>IELTS Practice</strong>
-                <span>Practice Labs workspace</span>
-              </div>
-            </Link>
-            <button
-              className="sidebar-menu-button"
-              type="button"
-              onClick={() => setSidebarOpen((open) => !open)}
-              aria-expanded={sidebarOpen}
-              aria-controls={sidebarMenuId}
-            >
-              {sidebarOpen ? <X size={17} strokeWidth={2.4} /> : <Menu size={17} strokeWidth={2.4} />}
-              Menu
-            </button>
-          </div>
-
-          <div id={sidebarMenuId} className="practice-sidebar-menu">
-            <nav className="practice-sidebar-nav">
-              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar}>Dashboard</Link>
-              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
-              <Link to="/plan" className="sidebar-link" onClick={closeSidebar}>Plan Builder</Link>
-              <Link to="/practice/reviews" className="sidebar-link" onClick={closeSidebar}>
-                Reviews due{srsSummary.due > 0 ? ` (${srsSummary.due})` : ''}
-              </Link>
-              <Link to="/practice/stats/by-type" className="sidebar-link" onClick={closeSidebar}>Stats by type</Link>
-              <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
-              <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
-              <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
-              <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link" onClick={closeSidebar}>IELTS Playbook</a>
-            </nav>
-
-            <section className="sidebar-panel sidebar-score-panel">
-              <h4>Band Target</h4>
-              <div className="sidebar-score-grid">
-                <div className="sidebar-target-row">
-                  <strong>{targetBand != null ? targetBand.toFixed(1) : '-'}</strong>
-                  <span>goal</span>
-                </div>
-                <div className="sidebar-target-row muted">
-                  <strong>{averageBand != null ? averageBand.toFixed(1) : '-'}</strong>
-                  <span>current</span>
-                </div>
-              </div>
-            </section>
-
-            <section className="sidebar-panel sidebar-actions-panel">
-              <h4>Quick Actions</h4>
-              <button
-                className="btn solid full"
-                type="button"
-                onClick={() => {
-                  closeSidebar();
-                  void handleGenerate();
-                }}
-                disabled={generating}
-              >
-                {generating ? 'Generating...' : 'Regenerate Plan'}
-              </button>
-              <Link to="/plan" className="btn ghost full" onClick={closeSidebar}>Open Plan Builder</Link>
-            </section>
-          </div>
-        </aside>
-
-        <main className="practice-main">
+    <PracticeShell reviewsDueCount={srsSummary.due}>
           <header className="practice-header glass">
             <div>
-              <p className="eyebrow">Schood IELTS Practice</p>
+              <p className="eyebrow">Today - {formattedPlanDate}</p>
               <h1>Welcome back, {displayName}</h1>
               <p className="muted">
-                Train inside Practice Labs built from your IELTS Simulator results: coaching, repair, replay, rewriting, notebook, and roadmap.
+                One workspace for today&apos;s labs, the review queue, weak question types, notebook, and band roadmap.
               </p>
             </div>
             <div className="top-nav-actions">
-              <Link to="/plan" className="btn ghost">Daily Plan</Link>
+              <Link to="/plan" className="btn ghost">Plan</Link>
               {nextLabItem ? (
                 <button className="btn solid" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
                   {launchingId === nextLabItem.id ? 'Opening...' : 'Start next lab'}
                 </button>
               ) : null}
               <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                {generating ? 'Regenerating...' : 'Regenerate'}
+                {generating ? 'Regenerating...' : planSummary.total > 0 ? 'Regenerate today' : 'Generate today'}
               </button>
             </div>
           </header>
 
           {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
           {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+
+          <section className="today-command-grid" aria-label="IELTS Practice daily workflow">
+            <article className="glass today-command-card reading">
+              <span className="eyebrow">Today labs</span>
+              <strong>{planSummary.pending}</strong>
+              <p>{planSummary.completed}/{planSummary.total} completed for {formattedPlanDate}.</p>
+              <a href="#practice-labs" className="btn ghost compact">Open labs</a>
+            </article>
+            <article className="glass today-command-card listening">
+              <span className="eyebrow">Queue</span>
+              <strong>{srsSummary.due}</strong>
+              <p>{srsSummary.total} tracked question types, {srsSummary.mastered} mastered.</p>
+              <Link to="/practice/reviews" className="btn ghost compact">Open queue</Link>
+            </article>
+            <article className="glass today-command-card writing">
+              <span className="eyebrow">Weak types</span>
+              <strong>{topWeaknesses.length}</strong>
+              <p>Add weak question types to the queue when they need deliberate review.</p>
+              <Link to="/practice/stats/by-type" className="btn ghost compact">Review types</Link>
+            </article>
+          </section>
 
           <section className="glass labs-hero-card" id="practice-labs">
             <div className="labs-hero-copy">
@@ -605,7 +561,7 @@ export const DashboardPage = () => {
               <p className="muted">Derived from recent simulator and practice outcomes.</p>
             </article>
             <article className="glass kpi-card">
-              <h3>Today&apos;s Labs</h3>
+              <h3>Today Plan</h3>
               <div className="kpi-value">{planSummary.total}</div>
               <p className="muted">{planSummary.pending} pending across Reading, Listening, and Writing.</p>
             </article>
@@ -638,14 +594,14 @@ export const DashboardPage = () => {
               <div className="task-card-head">
                 <div className="srs-card-head-titles">
                   <span className="eyebrow">Spaced repetition</span>
-                  <h3>Reviews due today</h3>
+                  <h3>Review Queue</h3>
                 </div>
                 <div className="srs-card-head-actions">
                   <span className="srs-summary-pill">
                     <strong>{srsSummary.due}</strong> due
                   </span>
                   <span className="srs-summary-pill muted">
-                    {srsQueueKeys.size} tracked - {srsSummary.mastered} mastered
+                    {srsQueueKeys.size} tracked, {srsSummary.mastered} mastered
                   </span>
                   <Link to="/practice/reviews" className="btn solid compact">
                     Open queue
@@ -776,7 +732,7 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card task-card">
               <div className="task-card-head">
-                <h3>Today's Adaptive Sessions</h3>
+                <h3>Today&apos;s Lab Queue</h3>
                 <div className="task-summary">
                   <span>Total {planSummary.total}</span>
                   <span>Done {planSummary.completed}</span>
@@ -851,8 +807,6 @@ export const DashboardPage = () => {
               )}
             </article>
           </section>
-        </main>
-      </div>
-    </div>
+    </PracticeShell>
   );
 };

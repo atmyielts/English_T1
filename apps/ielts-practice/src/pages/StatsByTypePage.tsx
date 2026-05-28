@@ -149,16 +149,16 @@ export const StatsByTypePage = () => {
     <PracticeShell reviewsDueCount={reviewsDueCount}>
       <header className="practice-page-head">
         <div>
-          <span className="eyebrow">Stats</span>
-          <h1>Per-question-type breakdown</h1>
+          <span className="eyebrow">Question Types</span>
+          <h1>Question Type Library</h1>
           <p className="muted">
-            Every IELTS question type you&apos;ve attempted, its accuracy, and your current SRS box.
-            Click <strong>Add to queue</strong> to start tracking a type without waiting for a fresh lab attempt.
+            Every IELTS question type you&apos;ve attempted, its accuracy, and its queue status.
+            Add a weak type when it needs deliberate review.
           </p>
         </div>
         <div className="kpi-row">
-          <Link to="/practice/reviews" className="btn solid compact">Reviews due</Link>
-          <Link to="/dashboard" className="btn ghost compact">Dashboard</Link>
+          <Link to="/practice/reviews" className="btn solid compact">Queue</Link>
+          <Link to="/dashboard" className="btn ghost compact">Today</Link>
         </div>
       </header>
 
@@ -229,7 +229,7 @@ export const StatsByTypePage = () => {
                       {srs.is_archived ? <span style={{ color: 'var(--success, #047857)' }}>Mastered</span> : null}
                     </>
                   ) : (
-                    <span className="muted">Not in SRS queue</span>
+                    <span className="muted">Not queued</span>
                   )}
                 </div>
                 <div className="srs-review-row-actions">

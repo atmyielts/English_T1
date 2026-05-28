@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PracticeTopNav } from '../components/PracticeTopNav';
+import { PracticeShell } from '../components/PracticeShell';
 import {
   practiceGeneratePlan,
   practiceGoalsGet,
@@ -191,19 +191,22 @@ export const PlanPage = () => {
   }, [planItems]);
 
   return (
-    <div className="practice-root">
-      <PracticeTopNav
-        compact
-        title="Daily Practice Plan"
-        subtitle="Configure goals and generate today's focused IELTS sessions"
-        actions={[
-          { id: 'back', label: 'Back', to: '/dashboard' },
-          { id: 'playbook', label: 'Playbook', href: `${PLAYBOOK_URL}/study-plans?source=practice` },
-          { id: 'regenerate', label: saving ? 'Working...' : 'Regenerate', onClick: () => void regenerate(), variant: 'solid', disabled: saving },
-        ]}
-      />
+    <PracticeShell>
+      <header className="practice-page-head">
+        <div>
+          <span className="eyebrow">Plan</span>
+          <h1>Daily Practice Plan</h1>
+          <p className="muted">Set the learner target, time budget, and date range, then generate today&apos;s focused IELTS labs.</p>
+        </div>
+        <div className="kpi-row">
+          <button className="btn solid compact" type="button" onClick={() => void regenerate()} disabled={saving}>
+            {saving ? 'Working...' : 'Regenerate today'}
+          </button>
+          <a className="btn ghost compact" href={`${PLAYBOOK_URL}/study-plans?source=practice`}>Playbook</a>
+        </div>
+      </header>
 
-      <main className="dashboard-grid">
+      <section className="dashboard-grid">
         <section className="glass stat-card">
           <h3>Goal bands</h3>
           <label>Overall target band<input value={targetBand} onChange={(event) => setTargetBand(event.target.value)} /></label>
@@ -275,7 +278,7 @@ export const PlanPage = () => {
             ))}
           </ul>
         </section>
-      </main>
-    </div>
+      </section>
+    </PracticeShell>
   );
 };

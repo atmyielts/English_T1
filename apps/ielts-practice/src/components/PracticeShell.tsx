@@ -11,10 +11,10 @@ interface PracticeShellProps {
 }
 
 const NAV_ITEMS: Array<{ label: string; to?: string; href?: string; matchPath?: string }> = [
-  { label: 'Dashboard', to: '/dashboard', matchPath: '/dashboard' },
-  { label: 'Plan Builder', to: '/plan', matchPath: '/plan' },
-  { label: 'Reviews due', to: '/practice/reviews', matchPath: '/practice/reviews' },
-  { label: 'Stats by type', to: '/practice/stats/by-type', matchPath: '/practice/stats/by-type' },
+  { label: 'Today', to: '/dashboard', matchPath: '/dashboard' },
+  { label: 'Plan', to: '/plan', matchPath: '/plan' },
+  { label: 'Queue', to: '/practice/reviews', matchPath: '/practice/reviews' },
+  { label: 'Question Types', to: '/practice/stats/by-type', matchPath: '/practice/stats/by-type' },
 ];
 
 const EXTERNAL_ITEMS: Array<{ label: string; href: string }> = [
@@ -62,8 +62,8 @@ export const PracticeShell = ({ children, reviewsDueCount = 0 }: PracticeShellPr
                 const isActive = item.matchPath === location.pathname;
                 const className = `sidebar-link${isActive ? ' active' : ''}`;
                 const label =
-                  item.label === 'Reviews due' && reviewsDueCount > 0
-                    ? `Reviews due (${reviewsDueCount})`
+                  item.label === 'Queue' && reviewsDueCount > 0
+                    ? `Queue (${reviewsDueCount})`
                     : item.label;
                 return (
                   <Link key={item.label} to={item.to ?? '/dashboard'} className={className} onClick={closeSidebar}>
