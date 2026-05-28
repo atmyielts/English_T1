@@ -825,6 +825,9 @@ export const LabPage = () => {
               <div className="lab-result-actions">
                 <Link className="btn solid" to="/dashboard">Dashboard</Link>
                 <Link className="btn ghost" to="/plan">Next Plan</Link>
+                {notebook.length > 0 ? (
+                  <Link className="btn ghost" to="/practice/reviews">Open notebook ({notebook.length})</Link>
+                ) : null}
               </div>
               <div className="lab-feedback-list">
                 {scoredSteps.map((step) => (
@@ -834,6 +837,28 @@ export const LabPage = () => {
                   </article>
                 ))}
               </div>
+              {notebook.length > 0 ? (
+                <div className="lab-notebook-callout">
+                  <p className="eyebrow">Added to your mistake notebook</p>
+                  <p className="muted" style={{ marginTop: 4 }}>
+                    {notebook.length === 1
+                      ? "1 weakness was auto-saved for spaced review. Tag the reason or open it now."
+                      : `${notebook.length} weaknesses were auto-saved for spaced review. Tag the reasons or open them now.`}
+                  </p>
+                  <ul className="lab-notebook-list">
+                    {notebook.slice(0, 6).map((item) => (
+                      <li key={item.id}>
+                        <strong>{titleCase(item.question_type)}</strong>
+                        {item.mistake_pattern ? <span> — {toText(item.mistake_pattern)}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    <Link className="btn solid" to="/practice/reviews">Open notebook</Link>
+                    <Link className="btn ghost" to="/dashboard#dashboard-review">Review on dashboard</Link>
+                  </div>
+                </div>
+              ) : null}
             </section>
           ) : null}
 
