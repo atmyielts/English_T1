@@ -11,7 +11,8 @@ interface PracticeShellProps {
 }
 
 const NAV_ITEMS: Array<{ label: string; to?: string; href?: string; matchPath?: string }> = [
-  { label: 'Today', to: '/dashboard', matchPath: '/dashboard' },
+  { label: 'Today\'s Session', to: '/today', matchPath: '/today' },
+  { label: 'Overview', to: '/dashboard', matchPath: '/dashboard' },
   { label: 'Plan', to: '/plan', matchPath: '/plan' },
   { label: 'Queue', to: '/practice/reviews', matchPath: '/practice/reviews' },
   { label: 'Question Types', to: '/practice/stats/by-type', matchPath: '/practice/stats/by-type' },

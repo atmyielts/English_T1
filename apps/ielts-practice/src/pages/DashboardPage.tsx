@@ -466,6 +466,7 @@ export const DashboardPage = () => {
               </p>
             </div>
             <div className="top-nav-actions">
+              <Link to="/today" className="btn solid">Start today&apos;s session</Link>
               <Link to="/plan" className="btn ghost">Plan</Link>
               {nextLabItem ? (
                 <button className="btn solid" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
@@ -483,10 +484,10 @@ export const DashboardPage = () => {
 
           <section className="today-command-grid" aria-label="IELTS Practice daily workflow">
             <article className="glass today-command-card reading">
-              <span className="eyebrow">Today labs</span>
+              <span className="eyebrow">Today session</span>
               <strong>{planSummary.pending}</strong>
               <p>{planSummary.completed}/{planSummary.total} completed for {formattedPlanDate}.</p>
-              <a href="#practice-labs" className="btn ghost compact">Open labs</a>
+              <Link to="/today" className="btn ghost compact">Open session</Link>
             </article>
             <article className="glass today-command-card listening">
               <span className="eyebrow">Queue</span>

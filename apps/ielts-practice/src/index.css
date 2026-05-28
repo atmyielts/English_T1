@@ -2477,14 +2477,68 @@ button:disabled {
   color: rgba(255, 255, 255, 0.76);
 }
 
+.session-phase-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.session-phase-button {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  text-align: left;
+  padding: 14px 16px;
+  min-height: 102px;
+  cursor: pointer;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+
+.session-phase-button span,
+.session-phase-button small {
+  color: var(--muted);
+}
+
+.session-phase-button strong {
+  font-size: 1.02rem;
+}
+
+.session-phase-button.active {
+  border-color: rgba(31, 104, 125, 0.24);
+  background: #eaf6f8;
+  color: #0b5363;
+}
+
+.session-phase-button.complete {
+  border-color: rgba(42, 147, 109, 0.28);
+}
+
+.session-lab-card {
+  display: grid;
+  gap: 12px;
+}
+
+.session-lab-card h3 {
+  margin: 8px 0 6px;
+}
+
+.session-continue-card {
+  padding: 12px 14px;
+}
+
 @media (max-width: 1120px) {
-  .queue-mode-row {
+  .queue-mode-row,
+  .session-phase-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 760px) {
-  .queue-mode-row {
+  .queue-mode-row,
+  .session-phase-row {
     grid-template-columns: 1fr;
   }
 
