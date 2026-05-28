@@ -2064,6 +2064,66 @@ const updateMasteryBuckets = async (
 ): Promise<JsonRecord[]> => {
   if (buckets.length === 0) return [];
 
+  const bucketByKey = new Map<string, {
+    section_type: "reading" | "listening" | "writing";
+    question_type: string;
+    raw_score: number | null;
+    max_score: number | null;
+    weighted_accuracy_total: number;
+    weight_total: number;
+    practiced_at: string;
+    sources: Set<string>;
+  }>();
+
+  for (const bucket of buckets) {
+    const questionType = toText(bucket.question_type, 120).toLowerCase() || "question_unknown";
+    const key = `${bucket.section_type}::${questionType}`;
+    const accuracy = clamp(bucket.accuracy_ratio, 0, 1);
+    const rawScore = toNumber(bucket.raw_score);
+    const maxScore = toNumber(bucket.max_score);
+    const weight = maxScore != null && maxScore > 0 ? maxScore : 1;
+    const existing = bucketByKey.get(key);
+    const practicedAt = existing && Date.parse(existing.practiced_at) > Date.parse(bucket.practiced_at)
+      ? existing.practiced_at
+      : bucket.practiced_at;
+
+    if (!existing) {
+      bucketByKey.set(key, {
+        section_type: bucket.section_type,
+        question_type: questionType,
+        raw_score: rawScore,
+        max_score: maxScore,
+        weighted_accuracy_total: accuracy * weight,
+        weight_total: weight,
+        practiced_at: practicedAt,
+        sources: new Set([bucket.source]),
+      });
+      continue;
+    }
+
+    existing.weighted_accuracy_total += accuracy * weight;
+    existing.weight_total += weight;
+    existing.practiced_at = practicedAt;
+    existing.sources.add(bucket.source);
+    existing.raw_score = existing.raw_score != null && rawScore != null ? existing.raw_score + rawScore : null;
+    existing.max_score = existing.max_score != null && maxScore != null ? existing.max_score + maxScore : null;
+  }
+
+  const uniqueBuckets = Array.from(bucketByKey.values()).map((bucket) => {
+    const accuracyFromScores = bucket.raw_score != null && bucket.max_score != null && bucket.max_score > 0
+      ? bucket.raw_score / bucket.max_score
+      : null;
+    return {
+      section_type: bucket.section_type,
+      question_type: bucket.question_type,
+      accuracy_ratio: clamp(accuracyFromScores ?? (bucket.weighted_accuracy_total / Math.max(bucket.weight_total, 1)), 0, 1),
+      raw_score: bucket.raw_score,
+      max_score: bucket.max_score,
+      practiced_at: bucket.practiced_at,
+      source: Array.from(bucket.sources).sort().join("+"),
+    };
+  });
+
   const { data: existingData } = await sb
     .from("ielts_practice_mastery")
     .select("section_type,question_type,attempts,best_accuracy_ratio,rolling_accuracy_ratio,mastery_level,metadata")
@@ -2079,7 +2139,7 @@ const updateMasteryBuckets = async (
     existingByKey.set(`${section}::${questionType}`, row as JsonRecord);
   }
 
-  const upsertRows = buckets.map((bucket) => {
+  const upsertRows = uniqueBuckets.map((bucket) => {
     const questionType = toText(bucket.question_type, 120).toLowerCase() || "question_unknown";
     const key = `${bucket.section_type}::${questionType}`;
     const current = existingByKey.get(key);
@@ -2126,7 +2186,18 @@ const updateMasteryBuckets = async (
     .upsert(upsertRows, { onConflict: "user_id,language_id,section_type,question_type" })
     .select("section_type,question_type,attempts,mastery_level,mastery_status,rolling_accuracy_ratio");
 
-  if (error) throw new Error("Failed to update IELTS practice mastery");
+  if (error) {
+    console.error("Failed to update IELTS practice mastery", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      bucket_count: buckets.length,
+      unique_bucket_count: uniqueBuckets.length,
+      keys: uniqueBuckets.map((bucket) => `${bucket.section_type}::${bucket.question_type}`).slice(0, 20),
+    });
+    return [];
+  }
   return (Array.isArray(data) ? data : []) as JsonRecord[];
 };
 
