@@ -396,9 +396,41 @@ const optionsFromUnit = (unit: any): JsonRecord[] => {
     .filter((entry) => toText(entry.id, 80) || toText(entry.label, 1200));
 };
 
-const responseShapeFromCorrect = (correct: unknown): JsonRecord => {
+const responseShapeFromCorrect = (correct: unknown, unitData?: unknown): JsonRecord => {
   if (!isObject(correct)) return { kind: "free_text", keys: [] };
-  for (const key of ["blanks", "matches", "cells", "labels", "targets"]) {
+
+  // Gap-fill is rendered inline (sentence with embedded blanks) the same way
+  // the simulator does it — so we also pass the sentence template and ordered
+  // blank IDs through to the frontend. Without these the practice lab showed
+  // just numbered input boxes with no surrounding sentence text, leaving the
+  // user unable to know which gap was which.
+  if (isObject(correct.blanks)) {
+    const blanksAnswer = correct.blanks as JsonRecord;
+    const keys = Object.keys(blanksAnswer);
+    let template = "";
+    let blankIds: string[] = keys;
+    if (isObject(unitData)) {
+      const d = unitData as JsonRecord;
+      if (typeof d.text === "string") template = d.text;
+      else if (typeof d.template === "string") template = d.template;
+      else if (typeof d.sentence === "string") template = d.sentence;
+      else if (typeof d.passage === "string") template = d.passage;
+      if (Array.isArray(d.blanks)) {
+        const ordered = (d.blanks as unknown[])
+          .map((b) => (isObject(b) ? toText((b as JsonRecord).id, 80) : ""))
+          .filter(Boolean);
+        if (ordered.length > 0) blankIds = ordered;
+      }
+    }
+    return {
+      kind: "gap_fill",
+      map_key: "blanks",
+      keys: blankIds,
+      template,
+    };
+  }
+
+  for (const key of ["matches", "cells", "labels", "targets"]) {
     if (isObject(correct[key])) return { kind: "map", map_key: key, keys: Object.keys(correct[key] as JsonRecord) };
   }
   if (Array.isArray(correct.option_ids)) return { kind: "multi_choice" };
@@ -478,7 +510,7 @@ const createPracticeLabStep = (
     question_type: questionType,
     prompt,
     options: optionsFromUnit(unit),
-    response_shape: responseShapeFromCorrect(correct),
+    response_shape: responseShapeFromCorrect(correct, data),
     source_content_unit_id: sourceUnitId,
     delivery_content_unit_id: clonedUnitIdBySourceUnitId?.get(sourceUnitId) ?? null,
     context,
