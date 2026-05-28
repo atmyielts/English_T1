@@ -102,7 +102,8 @@ export const ReviewsDuePage = () => {
           <h1>Reviews due now</h1>
           <p className="muted">
             Question types you&apos;ve missed before, scheduled by Leitner intervals (1, 2, 4, 8, 16 days).
-            Mark each one as you go.
+            Each row is a quick self-grade — confirm you still know it, or send it back to box 1. To redo
+            a real question of the same type, use the <strong>Drill this type</strong> button.
           </p>
         </div>
         <div className="kpi-row">
@@ -180,13 +181,19 @@ export const ReviewsDuePage = () => {
                   <span>Wrong: {item.incorrect_count}</span>
                 </div>
                 <div className="srs-review-row-actions">
+                  <Link
+                    to={`/practice/today?focus_section=${encodeURIComponent(item.section_type)}&focus_question_type=${encodeURIComponent(item.question_type)}`}
+                    className="btn solid compact"
+                  >
+                    Drill this type
+                  </Link>
                   <button
                     type="button"
-                    className="btn solid compact"
+                    className="btn ghost compact"
                     disabled={isBusy}
                     onClick={() => void submit(item, 'got_it')}
                   >
-                    {isBusy ? 'Saving...' : `Got it - move to box ${Math.min(5, item.leitner_box + 1)} (next in ${nextDays}d)`}
+                    {isBusy ? 'Saving...' : `Self-grade: Got it (box ${Math.min(5, item.leitner_box + 1)}, ${nextDays}d)`}
                   </button>
                   <button
                     type="button"
@@ -194,7 +201,7 @@ export const ReviewsDuePage = () => {
                     disabled={isBusy}
                     onClick={() => void submit(item, 'need_more')}
                   >
-                    Need more practice - back to box 1
+                    Self-grade: Need more (box 1)
                   </button>
                 </div>
               </li>

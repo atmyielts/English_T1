@@ -507,7 +507,76 @@ export const LabPage = () => {
       );
     }
 
-    if (kind === 'map') {
+    if (kind === 'gap_fill') {
+      // Render the sentence template with inputs inline at each placeholder —
+      // the simulator does this and the practice lab used to just show numeric
+      // labels above empty inputs, losing all sentence context.
+      const mapValues = asRecord(response[mapKey]);
+      const template = toText(shape.template);
+      const keys = mapKeysForStep(step);
+      const setBlank = (id: string, val: string) =>
+        updateStepAnswer(stepId, updateNestedMapAnswer(response, mapKey, id, val));
+
+      if (template) {
+        // Split on placeholder patterns: __1__, ___1___, {1}, {{1}}, [1], (1)
+        const parts: Array<{ kind: 'text'; value: string } | { kind: 'blank'; id: string }> = [];
+        const regex = /(_{2,}|\{\{|\{|\[|\()\s*([A-Za-z0-9_-]+)\s*(_{2,}|\}\}|\}|\]|\))/g;
+        let last = 0;
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(template)) != null) {
+          if (match.index > last) parts.push({ kind: 'text', value: template.slice(last, match.index) });
+          parts.push({ kind: 'blank', id: String(match[2]) });
+          last = match.index + match[0].length;
+        }
+        if (last < template.length) parts.push({ kind: 'text', value: template.slice(last) });
+
+        // If the regex matched no placeholders but we have keys, fall back to
+        // numbered inputs below the template text.
+        const hasPlaceholders = parts.some((p) => p.kind === 'blank');
+        if (hasPlaceholders) {
+          return (
+            <div className="lab-gap-fill">
+              <p className="lab-gap-fill-template">
+                {parts.map((p, i) =>
+                  p.kind === 'text' ? (
+                    <span key={i}>{p.value}</span>
+                  ) : (
+                    <input
+                      key={i}
+                      className="lab-gap-fill-input"
+                      value={toText(mapValues[p.id])}
+                      onChange={(e) => setBlank(p.id, e.target.value)}
+                      placeholder={p.id}
+                      disabled={isScored}
+                    />
+                  ),
+                )}
+              </p>
+            </div>
+          );
+        }
+        return (
+          <div className="lab-gap-fill">
+            <p className="lab-gap-fill-template">{template}</p>
+            <div className="lab-map-inputs">
+              {keys.map((key) => (
+                <label key={key}>
+                  {key}
+                  <input
+                    value={toText(mapValues[key])}
+                    onChange={(e) => setBlank(key, e.target.value)}
+                    disabled={isScored}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      // No template at all — fall through to legacy map rendering below.
+    }
+
+    if (kind === 'map' || kind === 'gap_fill') {
       const mapValues = asRecord(response[mapKey]);
       return (
         <div className="lab-map-inputs">

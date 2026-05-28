@@ -2083,6 +2083,44 @@ button:disabled {
   font-size: 13.5px;
 }
 
+/* Inline gap-fill: sentence template with embedded inputs. The old "map"
+   renderer just numbered the inputs (6, 7, 8, 9) without the sentence around
+   them, so users had no idea what each blank was asking. */
+.lab-gap-fill {
+  display: grid;
+  gap: 12px;
+}
+
+.lab-gap-fill-template {
+  margin: 0;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  line-height: 2.1;
+  font-size: 15px;
+  color: #1a1814;
+  white-space: pre-wrap;
+}
+
+.lab-gap-fill-input {
+  display: inline-block;
+  min-width: 110px;
+  margin: 0 4px;
+  padding: 4px 8px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  font-size: 14px;
+  vertical-align: baseline;
+  background: color-mix(in srgb, #d4a85a 6%, white);
+}
+
+.lab-gap-fill-input:focus {
+  outline: 2px solid #0e4955;
+  outline-offset: 1px;
+  border-color: #0e4955;
+}
+
 @media (max-width: 1120px) {
   .practice-workspace {
     grid-template-columns: 1fr;

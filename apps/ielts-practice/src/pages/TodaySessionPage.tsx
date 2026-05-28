@@ -54,6 +54,8 @@ export const TodaySessionPage = () => {
   const { accessToken, status } = useAccess();
   const [searchParams] = useSearchParams();
   const returningFromLab = searchParams.get('returning') === 'lab';
+  const focusSection = searchParams.get('focus_section');
+  const focusQuestionType = searchParams.get('focus_question_type');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +192,16 @@ export const TodaySessionPage = () => {
             One guided path: a short warm-up of spaced reviews, a focused lab from your plan, and a closing
             mastery check. {targetBand != null ? `Target band ${targetBand.toFixed(1)}.` : ''}
           </p>
+          {focusQuestionType ? (
+            <div
+              className="glass dashboard-alert"
+              style={{ marginTop: 12, borderLeft: '3px solid #b6512c' }}
+            >
+              <strong>Drilling {focusQuestionType.replace(/_/g, ' ')}</strong>
+              {focusSection ? <span> ({focusSection})</span> : null} — opened from your reviews queue.
+              Pick the matching lab below if it’s in today’s plan, otherwise generate a fresh one.
+            </div>
+          ) : null}
         </div>
       </header>
 
