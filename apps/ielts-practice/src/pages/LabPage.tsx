@@ -578,8 +578,33 @@ export const LabPage = () => {
 
     if (kind === 'map' || kind === 'gap_fill') {
       const mapValues = asRecord(response[mapKey]);
+      // Legacy gap-fill payloads (generated before the template-aware blueprint
+      // shipped) only have numbered keys and no sentence template stored.
+      // Surface the situation explicitly so users don't think the form is
+      // broken — and point them at Today's "Generate" button which rebuilds
+      // the lab with the new shape.
+      const isLegacyGapFill = mapKey === 'blanks' && !toText(shape.template);
       return (
         <div className="lab-map-inputs">
+          {isLegacyGapFill ? (
+            <div
+              className="dashboard-alert"
+              style={{
+                gridColumn: '1 / -1',
+                padding: '10px 12px',
+                background: 'color-mix(in srgb, #b6512c 6%, white)',
+                border: '1px solid color-mix(in srgb, #b6512c 22%, transparent)',
+                borderRadius: 8,
+                fontSize: 13.5,
+                lineHeight: 1.45,
+              }}
+            >
+              <strong>Old gap-fill format.</strong> This lab was generated before we shipped the
+              inline-sentence renderer, so each blank only shows a number. Refresh today's labs
+              (sidebar → <em>Generate</em>) to get a new gap-fill with the sentence shown around
+              each blank.
+            </div>
+          ) : null}
           {mapKeysForStep(step).map((key) => (
             <label key={key}>
               {titleCase(key)}
