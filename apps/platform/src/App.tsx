@@ -60,6 +60,7 @@ const AdminPaymentsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminPa
 const AdminUsersPage = lazyWithChunkRetry(() => import('./pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
 const AdminDashboardPage = lazyWithChunkRetry(() => import('./pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })));
 const AdminAnalyticsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminAnalyticsPage').then((m) => ({ default: m.AdminAnalyticsPage })));
+const AdminFunctionErrorsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminFunctionErrorsPage'));
 const AdminSettingsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
 const AdminTrialsPage = lazyWithChunkRetry(() => import('./pages/admin/AdminTrialsPage').then((m) => ({ default: m.AdminTrialsPage })));
 const AdminSupportPage = lazyWithChunkRetry(() => import('./pages/admin/AdminSupportPage').then((m) => ({ default: m.AdminSupportPage })));
@@ -179,6 +180,14 @@ function App() {
               element={
                 <RequireAdminPermission permission="admin.analytics.view" title="Analytics">
                   <AdminAnalyticsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/function-errors"
+              element={
+                <RequireAdminPermission permission="admin.analytics.view" title="Function errors">
+                  <AdminFunctionErrorsPage />
                 </RequireAdminPermission>
               }
             />
