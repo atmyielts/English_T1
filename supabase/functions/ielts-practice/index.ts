@@ -2624,7 +2624,10 @@ const responseDataForStep = (step: JsonRecord, response: unknown): unknown => {
   if (kind === "multi_choice") {
     return { selected_options: Array.isArray(response.selected_options) ? response.selected_options : Array.isArray(response.answer) ? response.answer : [] };
   }
-  if (kind === "map") {
+  if (kind === "map" || kind === "gap_fill") {
+    // gap_fill (new) and map (legacy) both store the answer as
+    // response[map_key] = { blank_id: value }. The scoring helper expects
+    // that shape verbatim, so don't unwrap it.
     const mapKey = toText(shape.map_key, 80);
     if (mapKey && isObject(response[mapKey])) return response;
     if (isObject(response.answers)) return response.answers;
