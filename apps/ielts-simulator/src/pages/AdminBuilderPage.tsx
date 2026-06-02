@@ -971,9 +971,29 @@ const validateUnitConfiguration = (
 
   if (unitType === 'question_gap_fill' || unitType === 'question_select_from_list') {
     const blanksFromData = getDataIds((data as any).blanks);
-    const blanksFromText = extractPlaceholderIds(readString((data as any).text));
+    const textValue = readString((data as any).text);
+    const blanksFromText = extractPlaceholderIds(textValue);
     const blankIds = new Set((blanksFromData.length > 0 ? blanksFromData : blanksFromText).map((id) => id.trim()).filter(Boolean));
     if (blankIds.size === 0) issues.push('Gap-fill/select-from-list question has no blanks defined.');
+
+    // Sentence template lint: the practice lab renders gap-fill inline (sentence
+    // with embedded inputs). If data.text is missing entirely, the lab will only
+    // show numbered boxes — the bug users hit on real readings. Surface this at
+    // authoring time so it never reaches production.
+    if (blankIds.size > 0 && !textValue.trim()) {
+      issues.push('Gap-fill question is missing data.text — the practice lab will render numbered inputs with no sentence around them. Add a sentence template that includes each blank as __1__ / __2__ / etc.');
+    } else if (blankIds.size > 0 && textValue.trim() && blanksFromText.length === 0) {
+      issues.push('Gap-fill data.text has no placeholder markers (e.g. __1__, __2__). The practice lab needs these to render inputs inline within the sentence.');
+    } else if (blankIds.size > 0 && blanksFromText.length > 0) {
+      const textBlankSet = new Set(blanksFromText.map((id) => id.trim()).filter(Boolean));
+      const missing: string[] = [];
+      blankIds.forEach((id) => {
+        if (!textBlankSet.has(id)) missing.push(id);
+      });
+      if (missing.length > 0) {
+        issues.push(`Gap-fill blank IDs ${missing.map((id) => `"${id}"`).join(', ')} have no matching placeholder in data.text. Add __${missing[0]}__ (or similar) to the sentence template.`);
+      }
+    }
 
     if (unitType === 'question_select_from_list') {
       const optionIds = new Set(getDataIds((data as any).options).map(normalizeChoiceToken).filter(Boolean));

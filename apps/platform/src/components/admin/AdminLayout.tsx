@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CreditCard, Tag, Receipt, Users, Settings, ArrowLeft, LayoutGrid, Inbox, BarChart3, Megaphone, BookOpen, HandCoins, Building2, Home, Menu, X } from 'lucide-react';
+import { CreditCard, Tag, Receipt, Users, Settings, ArrowLeft, LayoutGrid, Inbox, BarChart3, Megaphone, BookOpen, HandCoins, Building2, Home, Menu, X, AlertTriangle } from 'lucide-react';
 import { hasAdminPermission, useAdminAccess } from '../platform/adminAccess';
 
 type Props = { children: React.ReactNode };
@@ -30,6 +30,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
     () => [
       { to: '/admin', label: 'Dashboard', icon: Home, permission: 'admin.portal.access' },
       { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, permission: 'admin.analytics.view' },
+      { to: '/admin/function-errors', label: 'Function errors', icon: AlertTriangle, permission: 'admin.analytics.view' },
       { to: '/admin/english', label: 'English', icon: BookOpen, permission: 'admin.analytics.view' },
       { to: '/admin/products', label: 'Products', icon: LayoutGrid, permission: 'admin.products.manage' },
       { to: '/admin/billing', label: 'Billing', icon: CreditCard, permission: 'admin.billing.manage' },

@@ -1628,6 +1628,38 @@ export const adminAnalyticsOverview = async (accessToken: string): Promise<Admin
   return (await res.json()) as AdminAnalyticsOverviewResponse;
 };
 
+export type FunctionErrorLogRow = {
+  id: string;
+  function_name: string;
+  route: string | null;
+  http_status: number | null;
+  user_id: string | null;
+  error_message: string;
+  error_stack: string | null;
+  request_summary: Record<string, unknown> | null;
+  occurred_at: string;
+};
+
+export const adminFunctionErrors = async (
+  accessToken: string,
+  opts?: { limit?: number; function_name?: string; since?: string },
+): Promise<{ ok: boolean; rows: FunctionErrorLogRow[] }> => {
+  const params = new URLSearchParams();
+  if (opts?.limit) params.set('limit', String(opts.limit));
+  if (opts?.function_name) params.set('function_name', opts.function_name);
+  if (opts?.since) params.set('since', opts.since);
+  const qs = params.toString();
+  const res = await fetch(`${edgeBase}/admin-function-errors${qs ? `?${qs}` : ''}`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /admin-function-errors failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { ok: boolean; rows: FunctionErrorLogRow[] };
+};
+
 export type SupportLink = {
   id: string;
   label: string;

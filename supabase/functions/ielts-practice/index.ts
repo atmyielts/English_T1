@@ -26,6 +26,7 @@ import {
   buildPracticeMasteryOverview as buildPracticeMasteryOverviewShared,
   buildPracticeTrajectory as buildPracticeTrajectoryShared,
 } from "../_shared/ielts-insights.ts";
+import { logFunctionError } from "../_shared/error-log.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -2465,16 +2466,65 @@ const hydrateLabPayloadMedia = async (
   ));
   if (questionUnitIds.length === 0) return payload;
 
+  // Pull `data` for self-heal: legacy gap-fill payloads were saved with
+  // response_shape = { kind: "map", map_key: "blanks", keys: [...] } and no
+  // sentence template, so the frontend rendered numbered boxes only. We now
+  // hydrate those payloads at load time from the source unit's data.text so
+  // existing in-flight attempts switch to the inline-blank renderer without
+  // needing a regenerate.
   const { data: questionRows } = await sb
     .from("content_units")
-    .select("id,part_id")
+    .select("id,part_id,data")
     .in("id", questionUnitIds);
 
   const partIdByQuestionUnitId = new Map<string, string>();
+  const dataByQuestionUnitId = new Map<string, JsonRecord>();
   for (const row of Array.isArray(questionRows) ? questionRows : []) {
     const id = toNullableText((row as any).id, 80);
     const partId = toNullableText((row as any).part_id, 80);
     if (id && partId) partIdByQuestionUnitId.set(id, partId);
+    if (id && isObject((row as any).data)) {
+      dataByQuestionUnitId.set(id, (row as any).data as JsonRecord);
+    }
+  }
+
+  // Self-heal: walk steps and rewrite legacy gap-fill shapes in-place.
+  for (const step of steps) {
+    const shape = isObject(step.response_shape) ? (step.response_shape as JsonRecord) : null;
+    if (!shape) continue;
+    const kind = toText(shape.kind, 80).toLowerCase();
+    const mapKey = toText(shape.map_key, 80).toLowerCase();
+    const alreadyGapFill = kind === "gap_fill" && typeof shape.template === "string" && shape.template.length > 0;
+    if (alreadyGapFill) continue;
+    const isLegacyGapFill = (kind === "map" || kind === "gap_fill") && mapKey === "blanks";
+    if (!isLegacyGapFill) continue;
+
+    const deliveryUnitId = toNullableText(step.delivery_content_unit_id, 80);
+    const sourceUnitId = toNullableText(step.source_content_unit_id, 80);
+    const unitData = (deliveryUnitId && dataByQuestionUnitId.get(deliveryUnitId))
+      ?? (sourceUnitId && dataByQuestionUnitId.get(sourceUnitId))
+      ?? null;
+    if (!unitData) continue;
+
+    let template = "";
+    if (typeof unitData.text === "string") template = unitData.text;
+    else if (typeof unitData.template === "string") template = unitData.template;
+    else if (typeof unitData.sentence === "string") template = unitData.sentence;
+    if (!template) continue;
+
+    let blankIds: string[] = Array.isArray(shape.keys) ? shape.keys.map((k) => toText(k, 80)).filter(Boolean) : [];
+    if (Array.isArray(unitData.blanks)) {
+      const ordered = (unitData.blanks as unknown[])
+        .map((b) => (isObject(b) ? toText((b as JsonRecord).id, 80) : ""))
+        .filter(Boolean);
+      if (ordered.length > 0) blankIds = ordered;
+    }
+    (step as JsonRecord).response_shape = {
+      kind: "gap_fill",
+      map_key: "blanks",
+      keys: blankIds,
+      template,
+    };
   }
 
   const partIds = Array.from(new Set(Array.from(partIdByQuestionUnitId.values()).filter(Boolean)));
@@ -2668,26 +2718,47 @@ const scoreLabStep = (
     maxScore = scored && scored.max > 0 ? scored.max : 1;
   }
 
+  // Process-credit scoring is intentionally a check on whether the user
+  // engaged with the lab's process steps (evidence, distractors, prediction,
+  // paraphrase). Previously this granted full credit for any 8-12 character
+  // string — a user typing "asdfasdf" got the same credit as one quoting a
+  // real passage line. We now check for actual content quality:
+  //   - Minimum length raised
+  //   - Word count >= 3 (so single-token gibberish doesn't pass)
+  //   - For evidence_locator: the evidence has to appear in the source passage
+  //     (case-insensitive substring) — otherwise it's not "evidence"
+  const wordCount = (value: string): number =>
+    value.trim().split(/\s+/).map((w) => w.trim()).filter(Boolean).length;
+  const passageText = isObject(step.context)
+    ? toText((step.context as JsonRecord).passage_text ?? (step.context as JsonRecord).text ?? "", 20000).toLowerCase()
+    : "";
+
   let processScore = 0;
   let processMax = 0;
   if (isObject(response)) {
     if (kind === "evidence_locator") {
       processMax += 1;
       const evidence = firstTextValue(response, ["evidence", "evidence_text", "highlight"]);
-      if (evidence.length >= 12) processScore += 1;
+      const evidenceWords = wordCount(evidence);
+      const appearsInPassage = passageText && evidence.length >= 10
+        ? passageText.includes(evidence.toLowerCase().trim())
+        : false;
+      if (appearsInPassage) processScore += 1;
+      else if (evidence.length >= 30 && evidenceWords >= 5) processScore += 0.5; // partial: substantive but unverified
     }
     if (kind === "distractor_elimination") {
       processMax += 1;
       const trap = toText(response.trap_type, 80);
       const reason = firstTextValue(response, ["reason", "explanation"]);
-      if (trap && reason.length >= 8) processScore += 1;
+      if (trap && reason.length >= 30 && wordCount(reason) >= 6) processScore += 1;
+      else if (trap && reason.length >= 12) processScore += 0.4; // partial: tagged but thin reason
     }
     if (kind === "listening_replay") {
       processMax += 1;
       const prediction = firstTextValue(response, ["prediction"]);
       const paraphrase = firstTextValue(response, ["paraphrase", "signpost"]);
-      if (prediction.length >= 2) processScore += 0.4;
-      if (paraphrase.length >= 6) processScore += 0.6;
+      if (wordCount(prediction) >= 3) processScore += 0.4;
+      if (wordCount(paraphrase) >= 4) processScore += 0.6;
     }
   }
 
@@ -4365,6 +4436,12 @@ const buildPlanNarrative = async (
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // Hoisted so the outer catch can log structured error context (route,
+  // user_id) — see app_function_error_log table + logFunctionError helper.
+  let loggingSb: any = null;
+  let loggingRoute = "";
+  let loggingUserId: string | null = null;
+
   try {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseAnonKey = getEnv("SUPABASE_ANON_KEY");
@@ -4376,13 +4453,16 @@ serve(async (req) => {
     const sb = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false },
     });
+    loggingSb = sb;
 
     const auth = await authUser(authSb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
+    loggingUserId = auth.userId;
 
     const scope = await resolveScope(sb);
     const url = new URL(req.url);
     const route = extractRoute(url);
+    loggingRoute = route;
 
     const hasPracticeAccess = await userHasPracticeAccess(sb, auth.userId, scope);
     if (!hasPracticeAccess) {
@@ -5678,6 +5758,18 @@ serve(async (req) => {
     return json(404, { error: "Not found" });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    // Persist the error so the admin function-log surface can show what's
+    // breaking in prod without us scraping Supabase dashboard logs.
+    if (loggingSb) {
+      await logFunctionError(loggingSb, {
+        function_name: "ielts-practice",
+        route: loggingRoute,
+        http_status: 500,
+        user_id: loggingUserId,
+        error: err,
+        request_summary: { method: req.method, url: req.url.slice(0, 240) },
+      });
+    }
     return json(500, { error: message });
   }
 });
