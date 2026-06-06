@@ -41,12 +41,15 @@ const normalizeSlug = (raw: unknown): string =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
+const isUuid = (value: unknown): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value ?? "").trim());
+
 const publicEventsEnabled = (center: any): boolean =>
   ["growth", "premium", "exclusive"].includes(String(center?.package_tier ?? "starter").trim().toLowerCase());
 
 const publicCenterView = async (sb: any, center: any, tenant?: any) => ({
   tenant_id: center?.tenant_id ?? tenant?.id ?? null,
   name: center?.display_name ?? tenant?.name ?? "Education center",
+  display_name: center?.display_name ?? tenant?.name ?? "Education center",
   slug: center?.slug ?? tenant?.slug ?? null,
   logo_url: isObject(center?.branding?.logo_storage)
     ? await signStorageRef(sb, center.branding.logo_storage, 60 * 60 * 6, { route: "voucher-redeem:center" })
@@ -149,11 +152,118 @@ const upsertCenterStudentForVoucher = async (sb: any, voucher: any, user: any): 
   await sb.from("partner_center_students").insert(payload);
 };
 
+const splitFullName = (value: unknown): { first_name: string; last_name: string } => {
+  const parts = String(value ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first_name: "", last_name: "" };
+  if (parts.length === 1) return { first_name: parts[0], last_name: "" };
+  return { first_name: parts.slice(0, -1).join(" "), last_name: parts[parts.length - 1] };
+};
+
+const enrollVoucherUserInClassroom = async (sb: any, voucher: any, user: any): Promise<void> => {
+  const classroomId = String(voucher?.classroom_id ?? "").trim();
+  if (!isUuid(classroomId)) return;
+
+  const { data: classroom } = await sb
+    .from("academy_classrooms")
+    .select("id, academy_id, name, is_active")
+    .eq("id", classroomId)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!classroom?.id) return;
+
+  const { data: academy } = await sb
+    .from("tenants")
+    .select("id")
+    .eq("id", classroom.academy_id)
+    .contains("metadata", { parent_center_id: voucher.tenant_id, service_family: "academy" })
+    .maybeSingle();
+  if (!academy?.id) return;
+
+  const meta = isObject(user.user_metadata) ? user.user_metadata as Json : {};
+  const email = String(user.email ?? voucher.assigned_email ?? "").trim().toLowerCase();
+  const phone = String((meta as any).phone ?? voucher.assigned_phone ?? "").trim();
+  const names = splitFullName(meta.full_name ?? meta.name ?? voucher.assigned_name ?? user.email ?? "");
+
+  let existing: any | null = null;
+  const { data: byUser } = await sb
+    .from("academy_contacts")
+    .select("id, metadata")
+    .eq("academy_id", classroom.academy_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  existing = byUser ?? null;
+
+  if (!existing && email) {
+    const { data } = await sb
+      .from("academy_contacts")
+      .select("id, metadata")
+      .eq("academy_id", classroom.academy_id)
+      .ilike("email", email)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+
+  if (!existing && phone) {
+    const { data } = await sb
+      .from("academy_contacts")
+      .select("id, metadata")
+      .eq("academy_id", classroom.academy_id)
+      .eq("phone", phone)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+
+  const existingMeta = isObject(existing?.metadata) ? existing.metadata as Json : {};
+  const nowIso = new Date().toISOString();
+  const contactPayload = {
+    academy_id: classroom.academy_id,
+    user_id: user.id,
+    first_name: names.first_name,
+    last_name: names.last_name,
+    email: email || null,
+    phone: phone || null,
+    status: "active",
+    last_activity_at: nowIso,
+    metadata: {
+      ...existingMeta,
+      source: "partner_voucher_redeem",
+      center_tenant_id: voucher.tenant_id,
+      voucher_id: voucher.id,
+      voucher_code: voucher.code,
+      classroom_id: classroom.id,
+      enrolled_at: nowIso,
+    },
+  };
+
+  const { data: contact, error: contactError } = existing?.id
+    ? await sb.from("academy_contacts").update(contactPayload).eq("id", existing.id).select("id").maybeSingle()
+    : await sb.from("academy_contacts").insert(contactPayload).select("id").maybeSingle();
+  if (contactError || !contact?.id) return;
+
+  await sb
+    .from("academy_classroom_memberships")
+    .upsert(
+      {
+        academy_id: classroom.academy_id,
+        classroom_id: classroom.id,
+        contact_id: contact.id,
+        role: "student",
+        metadata: {
+          source: "partner_voucher_redeem",
+          center_tenant_id: voucher.tenant_id,
+          voucher_id: voucher.id,
+          voucher_code: voucher.code,
+        },
+      },
+      { onConflict: "classroom_id,contact_id" },
+    );
+};
+
 const loadVoucher = async (sb: any, code: string) => {
   const { data, error } = await sb
     .from("partner_vouchers")
     .select(
-      "*, products ( id, name, metadata ), experiences ( id, name ), plans ( id, name, duration_days, metadata, product_id )",
+      "*, products ( id, name, metadata ), experiences ( id, name ), plans ( id, name, duration_days, metadata, product_id ), academy_classrooms ( id, name, academy_id )",
     )
     .eq("code", code)
     .maybeSingle();
@@ -394,6 +504,9 @@ serve(async (req) => {
     });
     await upsertCenterStudentForVoucher(sb, voucher, authData.user).catch((err) => {
       console.warn("voucher-redeem: failed to upsert center student", err instanceof Error ? err.message : err);
+    });
+    await enrollVoucherUserInClassroom(sb, voucher, authData.user).catch((err) => {
+      console.warn("voucher-redeem: failed to enroll academy classroom", err instanceof Error ? err.message : err);
     });
 
     return json(200, {

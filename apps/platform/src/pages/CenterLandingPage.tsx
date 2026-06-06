@@ -14,7 +14,7 @@ import {
   Ticket,
   UsersRound,
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { publicCenter, type PublicCenterResponse } from '../lib/platformClient';
 
@@ -33,7 +33,9 @@ const formatDateTime = (value?: string | null) => {
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState<PublicCenterResponse | null>(null);
+  const [voucherCode, setVoucherCode] = useState(() => String(searchParams.get('code') ?? '').trim().toUpperCase());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +56,7 @@ export const CenterLandingPage: React.FC = () => {
   ];
 
   const branding = (data?.center.branding && typeof data.center.branding === 'object' ? data.center.branding : {}) as Record<string, any>;
+  const accentColor = String(branding.accent_color ?? branding.primary_color ?? '#d8f266').trim() || '#d8f266';
   const contactEmail = String(branding.contact_email ?? branding.email ?? '').trim();
   const contactPhone = String(branding.contact_phone ?? branding.phone ?? '').trim();
   const contactName = String(branding.contact_name ?? '').trim();
@@ -64,6 +67,10 @@ export const CenterLandingPage: React.FC = () => {
     { label: 'Learning access', value: 'Center issued', icon: BookOpen, tone: 'bg-[#9ee7ff]' },
     { label: 'Events', value: upcomingEvents.length > 0 ? 'Public schedule' : 'Private roster', icon: CalendarDays, tone: 'bg-[#ffd166]' },
   ];
+  const openRedeem = () => {
+    const clean = voucherCode.trim().toUpperCase();
+    navigate(clean ? `/redeem/${encodeURIComponent(clean)}` : '/redeem');
+  };
 
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900">
@@ -88,7 +95,7 @@ export const CenterLandingPage: React.FC = () => {
                     </div>
                   )}
                   <div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 bg-[#d8f266] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-900">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-gray-900 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-900" style={{ backgroundColor: accentColor }}>
                       <ShieldCheck className="h-4 w-4" />
                       Verified Schood partner
                     </div>
@@ -100,8 +107,26 @@ export const CenterLandingPage: React.FC = () => {
                   {data.center.public_instructions || 'Redeem your center voucher to activate your mock exam or digital learning access.'}
                 </p>
 
+                <div className="mt-7 rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Enter your unique Schood voucher code
+                    <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                      <input
+                        value={voucherCode}
+                        onChange={(event) => setVoucherCode(event.target.value.toUpperCase())}
+                        className="min-h-12 flex-1 rounded-2xl border border-gray-900/25 bg-white px-4 py-3 font-mono text-sm text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                        placeholder="SCH-CENTER-A12B7"
+                      />
+                      <button type="button" onClick={openRedeem} className={primaryButton}>
+                        <KeyRound className="h-4 w-4" />
+                        Begin
+                      </button>
+                    </div>
+                  </label>
+                </div>
+
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <button type="button" onClick={() => navigate('/redeem')} className={primaryButton}>
+                  <button type="button" onClick={openRedeem} className={primaryButton}>
                     <KeyRound className="h-4 w-4" />
                     Redeem your code
                   </button>
@@ -141,7 +166,7 @@ export const CenterLandingPage: React.FC = () => {
                     <p className="mt-2">Mock tests, seat inventory, pricing, and purchased stock stay inside the center office.</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => navigate('/redeem')} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+                <button type="button" onClick={openRedeem} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
                   Continue
                   <ArrowUpRight className="h-4 w-4" />
                 </button>
@@ -213,7 +238,7 @@ export const CenterLandingPage: React.FC = () => {
                     </div>
                     <h2 className="mt-2 text-2xl font-bold">Center mock exam events</h2>
                   </div>
-                  <button type="button" onClick={() => navigate('/redeem')} className={secondaryButton}>
+                  <button type="button" onClick={openRedeem} className={secondaryButton}>
                     <KeyRound className="h-4 w-4" />
                     Redeem event code
                   </button>

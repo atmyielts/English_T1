@@ -2378,6 +2378,7 @@ export type PartnerVoucherBatch = {
   product_id: string | null;
   experience_id: string | null;
   plan_id: string | null;
+  classroom_id?: string | null;
   quantity: number;
   expires_at: string;
   status: string;
@@ -2388,6 +2389,7 @@ export type PartnerVoucherBatch = {
   products?: { name: string | null; metadata?: Json | null } | null;
   experiences?: { name: string | null } | null;
   plans?: { name: string | null; duration_days?: number | null } | null;
+  academy_classrooms?: { id?: string | null; name?: string | null; academy_id?: string | null } | null;
 };
 
 export type PartnerVoucher = {
@@ -2399,6 +2401,7 @@ export type PartnerVoucher = {
   product_id: string | null;
   experience_id: string | null;
   plan_id: string | null;
+  classroom_id?: string | null;
   exam_token_id?: string | null;
   seat_license_id?: string | null;
   status: string;
@@ -2415,6 +2418,7 @@ export type PartnerVoucher = {
   products?: { name: string | null; metadata?: Json | null } | null;
   experiences?: { name: string | null } | null;
   plans?: { name: string | null; duration_days?: number | null } | null;
+  academy_classrooms?: { id?: string | null; name?: string | null; academy_id?: string | null } | null;
 };
 
 export type PartnerStudent = {
@@ -2546,6 +2550,7 @@ export type PartnerCenterAcademy = {
     offers?: number;
     active_offers?: number;
   };
+  classrooms?: Array<{ id: string; academy_id: string; name: string; is_active: boolean }>;
   academy_url?: string;
   teacher_office_url?: string;
   student_workspace_url?: string;
@@ -3011,6 +3016,7 @@ export const partnerOfficeCreateVoucherBatch = (
     expires_at?: string | null;
     prefix?: string | null;
     source_model?: string | null;
+    classroom_id?: string | null;
     center_office?: boolean;
     assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
   },
@@ -3333,6 +3339,7 @@ export type PublicCenterResponse = {
   center: {
     tenant_id: string;
     name: string;
+    display_name?: string | null;
     slug: string;
     logo_url?: string | null;
     status: string;
