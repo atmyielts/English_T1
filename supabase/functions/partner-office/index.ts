@@ -161,6 +161,8 @@ const normalizeCode = (raw: unknown): string =>
     .replace(/^-|-$/g, "")
     .slice(0, 64);
 
+const isUuid = (value: unknown): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value ?? "").trim());
+
 const normalizeSlug = (raw: unknown, fallback: string): string => {
   const base = String(raw ?? fallback)
     .trim()
@@ -518,7 +520,7 @@ const loadCenterAcademies = async (sb: any, centerTenantId: string): Promise<any
       .limit(5000),
     sb
       .from("academy_classrooms")
-      .select("academy_id, is_active")
+      .select("id, academy_id, name, is_active")
       .in("academy_id", academyIds)
       .limit(5000),
     sb
@@ -554,6 +556,14 @@ const loadCenterAcademies = async (sb: any, centerTenantId: string): Promise<any
 
   return academies.map((row: any) => {
     const academyId = String(row.id ?? "");
+    const academyClassrooms = (classroomsRes.data ?? [])
+      .filter((classroom: any) => String(classroom.academy_id ?? "") === academyId)
+      .map((classroom: any) => ({
+        id: String(classroom.id ?? ""),
+        academy_id: academyId,
+        name: String(classroom.name ?? "Classroom"),
+        is_active: Boolean(classroom.is_active),
+      }));
     return {
       id: academyId,
       name: String(row.name ?? ""),
@@ -571,6 +581,7 @@ const loadCenterAcademies = async (sb: any, centerTenantId: string): Promise<any
         offers: offers.get(academyId) ?? 0,
         active_offers: activeOffers.get(academyId) ?? 0,
       },
+      classrooms: academyClassrooms,
       ...academyLinks(appUrl, academyId),
     };
   });
@@ -1495,7 +1506,7 @@ serve(async (req) => {
     if (req.method === "GET" && action === "voucher_batches") {
       const { data, error } = await sb
         .from("partner_voucher_batches")
-        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days )")
+        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days ), academy_classrooms ( id, name, academy_id )")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -1507,7 +1518,7 @@ serve(async (req) => {
       const status = String(url.searchParams.get("status") ?? "").trim();
       let query = sb
         .from("partner_vouchers")
-        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days )")
+        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days ), academy_classrooms ( id, name, academy_id )")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(300);
@@ -2449,8 +2460,37 @@ serve(async (req) => {
         let productId = String(body.product_id ?? "").trim() || null;
         let experienceId = String(body.experience_id ?? "").trim() || null;
         let planId = String(body.plan_id ?? "").trim() || null;
+        const requestedClassroomId = String(body.classroom_id ?? "").trim();
+        let classroomBinding: { id: string; academy_id: string; name: string } | null = null;
         let unitPrice = 0;
         let currency = "UZS";
+
+        if (requestedClassroomId) {
+          if (!isUuid(requestedClassroomId)) return json(400, { error: "classroom_id is invalid" });
+          const { data: classroom, error: classroomError } = await sb
+            .from("academy_classrooms")
+            .select("id, academy_id, name, is_active")
+            .eq("id", requestedClassroomId)
+            .eq("is_active", true)
+            .maybeSingle();
+          if (classroomError) return json(500, { error: "Failed to validate classroom", detail: classroomError.message });
+          if (!classroom?.id) return json(400, { error: "Classroom not found or inactive" });
+
+          const { data: academy, error: academyError } = await sb
+            .from("tenants")
+            .select("id")
+            .eq("id", classroom.academy_id)
+            .contains("metadata", { parent_center_id: tenantId, service_family: "academy" })
+            .maybeSingle();
+          if (academyError) return json(500, { error: "Failed to validate classroom academy", detail: academyError.message });
+          if (!academy?.id) return json(403, { error: "Classroom must belong to a center-owned academy" });
+
+          classroomBinding = {
+            id: String(classroom.id),
+            academy_id: String(classroom.academy_id),
+            name: String(classroom.name ?? "Classroom"),
+          };
+        }
 
         if (accessKind === "mock_exam") {
           if (!experienceId) return json(400, { error: "experience_id is required for mock vouchers" });
@@ -2508,6 +2548,7 @@ serve(async (req) => {
             product_id: productId,
             experience_id: experienceId,
             plan_id: planId,
+            classroom_id: classroomBinding?.id ?? null,
             quantity,
             expires_at: expiresAt,
             prefix,
@@ -2518,6 +2559,7 @@ serve(async (req) => {
               total_amount: totalAmount,
               currency,
               assigned_students: Array.isArray(body.assigned_students) ? body.assigned_students.length : 0,
+              classroom: classroomBinding,
             },
           })
           .select("*")
@@ -2540,7 +2582,7 @@ serve(async (req) => {
                 max_uses: 1,
                 uses_count: 0,
                 created_by: userId,
-                metadata: { source: "partner_voucher", batch_id: batch.id },
+                metadata: { source: "partner_voucher", batch_id: batch.id, classroom_id: classroomBinding?.id ?? null },
               })
               .select("id")
               .maybeSingle();
@@ -2555,13 +2597,14 @@ serve(async (req) => {
               experience_id: experienceId,
               plan_id: null,
               exam_token_id: tokenRow.id,
+              classroom_id: classroomBinding?.id ?? null,
               status: "unused",
               expires_at: expiresAt,
               assigned_name: String(assigned.name ?? "").trim() || null,
               assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
               assigned_phone: String(assigned.phone ?? "").trim() || null,
               source_payment_id: null,
-              metadata: { batch_code: batchCode },
+              metadata: { batch_code: batchCode, classroom: classroomBinding },
             });
           }
         } else {
@@ -2589,13 +2632,14 @@ serve(async (req) => {
               experience_id: null,
               plan_id: planId,
               seat_license_id: accessKind === "seat" ? seatRows[i]?.id ?? null : null,
+              classroom_id: classroomBinding?.id ?? null,
               status: "unused",
               expires_at: expiresAt,
               assigned_name: String(assigned.name ?? "").trim() || null,
               assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
               assigned_phone: String(assigned.phone ?? "").trim() || null,
               source_payment_id: null,
-              metadata: { batch_code: batchCode },
+              metadata: { batch_code: batchCode, classroom: classroomBinding },
             });
           }
         }
@@ -2626,6 +2670,7 @@ serve(async (req) => {
               product_id: productId,
               experience_id: experienceId,
               plan_id: planId,
+              classroom_id: classroomBinding?.id ?? null,
               expires_at: expiresAt,
             },
           });

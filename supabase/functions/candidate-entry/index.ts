@@ -54,6 +54,8 @@ const normalizePhoneForCompare = (value: unknown): string =>
   normalizePhone(value)
     .replace(/\D+/g, "");
 
+const isUuid = (value: unknown): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value ?? "").trim());
+
 const nonEmpty = (value: unknown): string | null => {
   const s = String(value ?? "").trim();
   return s.length > 0 ? s : null;
@@ -238,6 +240,109 @@ const findReusableSession = async (
   return { id: String(row.id), experience_id: String(row.experience_id) };
 };
 
+const enrollVoucherUserInClassroom = async (
+  sbAdmin: any,
+  voucher: any,
+  userId: string,
+  details: { firstName: string; lastName: string; email: string; phone: string },
+): Promise<void> => {
+  const classroomId = String(voucher?.classroom_id ?? "").trim();
+  if (!isUuid(classroomId)) return;
+
+  const { data: classroom } = await sbAdmin
+    .from("academy_classrooms")
+    .select("id, academy_id, name, is_active")
+    .eq("id", classroomId)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!classroom?.id) return;
+
+  const { data: academy } = await sbAdmin
+    .from("tenants")
+    .select("id")
+    .eq("id", classroom.academy_id)
+    .contains("metadata", { parent_center_id: voucher.tenant_id, service_family: "academy" })
+    .maybeSingle();
+  if (!academy?.id) return;
+
+  const email = details.email.trim().toLowerCase();
+  const phone = details.phone.trim();
+  let existing: any | null = null;
+  const { data: byUser } = await sbAdmin
+    .from("academy_contacts")
+    .select("id, metadata")
+    .eq("academy_id", classroom.academy_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+  existing = byUser ?? null;
+
+  if (!existing && email) {
+    const { data } = await sbAdmin
+      .from("academy_contacts")
+      .select("id, metadata")
+      .eq("academy_id", classroom.academy_id)
+      .ilike("email", email)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+
+  if (!existing && phone) {
+    const { data } = await sbAdmin
+      .from("academy_contacts")
+      .select("id, metadata")
+      .eq("academy_id", classroom.academy_id)
+      .eq("phone", phone)
+      .maybeSingle();
+    existing = data ?? null;
+  }
+
+  const existingMeta = existing?.metadata && typeof existing.metadata === "object" && !Array.isArray(existing.metadata)
+    ? existing.metadata
+    : {};
+  const contactPayload = {
+    academy_id: classroom.academy_id,
+    user_id: userId,
+    first_name: details.firstName,
+    last_name: details.lastName,
+    email: email || null,
+    phone: phone || null,
+    status: "active",
+    last_activity_at: new Date().toISOString(),
+    metadata: {
+      ...existingMeta,
+      source: "partner_voucher_redeem",
+      center_tenant_id: voucher.tenant_id,
+      voucher_id: voucher.id,
+      voucher_code: voucher.code,
+      classroom_id: classroom.id,
+      enrolled_at: new Date().toISOString(),
+    },
+  };
+
+  const { data: contact, error: contactError } = existing?.id
+    ? await sbAdmin.from("academy_contacts").update(contactPayload).eq("id", existing.id).select("id").maybeSingle()
+    : await sbAdmin.from("academy_contacts").insert(contactPayload).select("id").maybeSingle();
+  if (contactError || !contact?.id) return;
+
+  await sbAdmin
+    .from("academy_classroom_memberships")
+    .upsert(
+      {
+        academy_id: classroom.academy_id,
+        classroom_id: classroom.id,
+        contact_id: contact.id,
+        role: "student",
+        metadata: {
+          source: "partner_voucher_redeem",
+          center_tenant_id: voucher.tenant_id,
+          voucher_id: voucher.id,
+          voucher_code: voucher.code,
+        },
+      },
+      { onConflict: "classroom_id,contact_id" },
+    );
+};
+
 const markPartnerVoucherForToken = async (
   sbAdmin: any,
   tokenId: string,
@@ -246,7 +351,7 @@ const markPartnerVoucherForToken = async (
 ): Promise<void> => {
   const { data: voucher } = await sbAdmin
     .from("partner_vouchers")
-    .select("id, tenant_id, code, access_kind, status, redeemed_by, metadata, expires_at")
+    .select("id, tenant_id, code, access_kind, status, redeemed_by, metadata, expires_at, classroom_id")
     .eq("exam_token_id", tokenId)
     .maybeSingle();
   if (!voucher?.id) return;
@@ -303,6 +408,10 @@ const markPartnerVoucherForToken = async (
   } catch (error) {
     console.warn("Failed to upsert partner center student", error);
   }
+
+  await enrollVoucherUserInClassroom(sbAdmin, voucher, userId, details).catch((error) => {
+    console.warn("Failed to enroll partner voucher user in academy classroom", error);
+  });
 };
 
 const buildCandidateResponse = (

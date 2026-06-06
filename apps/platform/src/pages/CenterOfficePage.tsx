@@ -329,6 +329,7 @@ export const CenterOfficePage: React.FC = () => {
     access_kind: 'mock_exam' as 'mock_exam' | 'subscription' | 'seat',
     experience_id: '',
     plan_id: '',
+    classroom_id: '',
     quantity: 10,
     expires_in_days: 30,
     prefix: 'SCH',
@@ -365,7 +366,10 @@ export const CenterOfficePage: React.FC = () => {
 
   const origin = typeof window === 'undefined' ? '' : window.location.origin;
   const centerUrl = center?.slug ? `${origin}/center/${center.slug}` : '';
-  const redeemUrl = (code?: string | null) => `${origin}/redeem${code ? `/${encodeURIComponent(code)}` : ''}`;
+  const redeemUrl = (code?: string | null) =>
+    center?.slug && code
+      ? `${origin}/center/${center.slug}?code=${encodeURIComponent(code)}`
+      : `${origin}/redeem${code ? `/${encodeURIComponent(code)}` : ''}`;
   const centerTenantId = center?.tenant_id ?? null;
   const centerIsActive = center?.status === 'active';
   const capabilities = center?.capabilities ?? STARTER_CAPABILITIES;
@@ -378,6 +382,18 @@ export const CenterOfficePage: React.FC = () => {
         return true;
       }),
     [capabilities, center?.commercial_model],
+  );
+  const classroomOptions = useMemo(
+    () =>
+      academies.flatMap((academy) =>
+        (academy.classrooms ?? [])
+          .filter((classroom) => classroom.is_active)
+          .map((classroom) => ({
+            ...classroom,
+            academy_name: academy.name,
+          })),
+      ),
+    [academies],
   );
   const selectedExperience = useMemo(() => catalog.find((item) => item.id === ticketForm.experience_id), [catalog, ticketForm.experience_id]);
   const selectedPlan = useMemo(() => plans.find((item) => item.id === seatForm.plan_id), [plans, seatForm.plan_id]);
@@ -651,6 +667,7 @@ export const CenterOfficePage: React.FC = () => {
         center_office: true,
         experience_id: voucherForm.access_kind === 'mock_exam' ? voucherForm.experience_id : null,
         plan_id: voucherForm.access_kind === 'mock_exam' ? null : voucherForm.plan_id,
+        classroom_id: voucherForm.classroom_id || null,
         assigned_students: assignedStudents,
       };
       const res = await partnerOfficeCreateVoucherBatch(token, payload);
@@ -1392,6 +1409,7 @@ export const CenterOfficePage: React.FC = () => {
                 plans={plans}
                 wallet={wallet}
                 form={voucherForm}
+                classrooms={classroomOptions}
                 assignedText={voucherRosterText}
                 maxQuantity={capabilities.max_voucher_batch_quantity}
                 loading={loading}
@@ -1422,6 +1440,9 @@ export const CenterOfficePage: React.FC = () => {
                         <p className="mt-1 text-sm text-gray-600">
                           {batch.access_kind.replace('_', ' ')} - {batch.quantity} codes - expires {formatDate(batch.expires_at)}
                         </p>
+                        {batch.academy_classrooms?.name ? (
+                          <p className="mt-1 text-sm font-semibold text-gray-700">Classroom: {batch.academy_classrooms.name}</p>
+                        ) : null}
                       </div>
                       <StatusPill status={batch.status} />
                       <span className="text-sm font-semibold">{String((batch.metadata as any)?.total_amount ?? 0).toLocaleString()} {(batch.metadata as any)?.currency ?? 'UZS'}</span>
@@ -2170,7 +2191,7 @@ const VoucherTable: React.FC<{ vouchers: PartnerVoucher[]; onCopy: (code: string
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-900/10 text-sm">
         <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-          <tr><th className="px-5 py-3">Code</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th><th className="px-5 py-3">Actions</th></tr>
+          <tr><th className="px-5 py-3">Code</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Classroom</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th><th className="px-5 py-3">Actions</th></tr>
         </thead>
         <tbody className="divide-y divide-gray-900/10 bg-white/60">
           {vouchers.map((voucher) => (
@@ -2178,6 +2199,7 @@ const VoucherTable: React.FC<{ vouchers: PartnerVoucher[]; onCopy: (code: string
               <td className="px-5 py-4 font-mono font-bold">{voucher.code}</td>
               <td className="px-5 py-4 capitalize">{voucher.access_kind.replace('_', ' ')}</td>
               <td className="px-5 py-4">{voucher.products?.name ?? voucher.experiences?.name ?? voucher.plans?.name ?? '-'}</td>
+              <td className="px-5 py-4">{voucher.academy_classrooms?.name ?? '-'}</td>
               <td className="px-5 py-4"><StatusPill status={voucher.status} /></td>
               <td className="px-5 py-4">{formatDate(voucher.expires_at)}</td>
               <td className="px-5 py-4">
@@ -2284,14 +2306,15 @@ const VoucherGeneratorPanel: React.FC<{
   catalog: PartnerOfficeExperience[];
   plans: PartnerOfficePlan[];
   wallet: { currency: string; available_amount: number };
-  form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string };
+  form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string };
+  classrooms: Array<{ id: string; academy_id: string; name: string; academy_name: string; is_active: boolean }>;
   assignedText: string;
   maxQuantity: number;
   loading: boolean;
-  onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
+  onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
   onAssignedTextChange: React.Dispatch<React.SetStateAction<string>>;
   onCreate: () => void;
-}> = ({ catalog, plans, wallet, form, assignedText, maxQuantity, loading, onChange, onAssignedTextChange, onCreate }) => {
+}> = ({ catalog, plans, wallet, form, classrooms, assignedText, maxQuantity, loading, onChange, onAssignedTextChange, onCreate }) => {
   const assignedCount = parseBulkStudents(assignedText).length;
   const exceedsBatchLimit = assignedCount > maxQuantity;
   return (
@@ -2303,6 +2326,15 @@ const VoucherGeneratorPanel: React.FC<{
       ) : (
         <label className="mt-4 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
       )}
+      <label className="mt-4 block text-sm font-semibold text-gray-800">
+        Bind to academy classroom
+        <select value={form.classroom_id} onChange={(e) => onChange((prev) => ({ ...prev, classroom_id: e.target.value }))} className={inputClass}>
+          <option value="">No classroom binding</option>
+          {classrooms.map((classroom) => (
+            <option key={classroom.id} value={classroom.id}>{classroom.academy_name} - {classroom.name}</option>
+          ))}
+        </select>
+      </label>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <label className="text-sm font-semibold text-gray-800">Quantity<input type="number" min={1} max={maxQuantity} value={form.quantity} onChange={(e) => onChange((prev) => ({ ...prev, quantity: Number(e.target.value) }))} className={inputClass} /></label>
         <label className="text-sm font-semibold text-gray-800">Days<input type="number" min={1} max={365} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
