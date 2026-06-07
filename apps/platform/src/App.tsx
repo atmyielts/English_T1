@@ -47,6 +47,11 @@ const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEnt
 const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLandingPage').then((m) => ({ default: m.ReferralLandingPage })));
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePage').then((m) => ({ default: m.CenterOfficePage })));
+const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyControlPage').then((m) => ({ default: m.AcademyControlPage })));
+const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
+const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
+const WritingTutorPage = lazyWithChunkRetry(() => import('./pages/WritingTutorPage').then((m) => ({ default: m.WritingTutorPage })));
+const StudentAcademyPage = lazyWithChunkRetry(() => import('./pages/StudentAcademyPage').then((m) => ({ default: m.StudentAcademyPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
@@ -127,6 +132,8 @@ function App() {
           <Route path="/center-initiation" element={<CenterInitiationPage />} />
           <Route path="/center/:slug" element={<CenterLandingPage />} />
           <Route path="/partners/:slug" element={<CenterLandingPage />} />
+          <Route path="/certificate" element={<CertificatePage />} />
+          <Route path="/parent-report" element={<ParentReportPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />
@@ -137,6 +144,9 @@ function App() {
             <Route path="/student-workspace" element={<Navigate to="/" replace />} />
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
+            <Route path="/academy-control" element={<AcademyControlPage />} />
+            <Route path="/my-academy" element={<StudentAcademyPage />} />
+            <Route path="/writing-tutor" element={<WritingTutorPage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
             <Route path="/teacher" element={<Navigate to="/partner" replace />} />

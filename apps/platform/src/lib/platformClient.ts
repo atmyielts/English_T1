@@ -1003,7 +1003,7 @@ export const adminPaymentsRetryGrant = async (
   return (await res.json()) as { payment: AdminPayment | null };
 };
 
-export type TspayCreateInput = {
+export type ClickCreateInput = {
   plan_id?: string;
   product_id?: string;
   purchase_type?: string;
@@ -1022,10 +1022,9 @@ export type TspayCreateInput = {
   referral_attribution_id?: string | null;
 };
 
-export type TspayCreateResponse = {
+export type ClickCreateResponse = {
   payment_url: string | null;
   transaction_id: string;
-  order_id?: string;
   status?: string;
   amount: number;
   currency: string;
@@ -1040,23 +1039,28 @@ export type TspayCreateResponse = {
   product_id: string | null;
 };
 
-export const tspayCreateTransaction = async (
+export const clickCreateTransaction = async (
   accessToken: string,
-  body: TspayCreateInput,
-): Promise<TspayCreateResponse> => {
-  const res = await fetch(`${edgeBase}/tspay/create-transaction`, {
+  body: ClickCreateInput,
+): Promise<ClickCreateResponse> => {
+  const res = await fetch(`${edgeBase}/click/create-transaction`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`POST /tspay/create-transaction failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(`POST /click/create-transaction failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as TspayCreateResponse;
+  return (await res.json()) as ClickCreateResponse;
 };
 
-export type TspayStatusResponse = {
+// Legacy alias — kept so any callers not yet updated still compile.
+export const tspayCreateTransaction = clickCreateTransaction;
+export type TspayCreateInput = ClickCreateInput;
+export type TspayCreateResponse = ClickCreateResponse;
+
+export type ClickStatusResponse = {
   status: string;
   api_status?: string;
   status_query_id?: string;
@@ -1065,15 +1069,19 @@ export type TspayStatusResponse = {
   final_amount?: number;
 };
 
-export const tspayStatus = async (accessToken: string, transactionId: string): Promise<TspayStatusResponse> => {
-  const url = `${edgeBase}/tspay/status?transaction_id=${encodeURIComponent(transactionId)}`;
+export const clickStatus = async (accessToken: string, transactionId: string): Promise<ClickStatusResponse> => {
+  const url = `${edgeBase}/click/status?transaction_id=${encodeURIComponent(transactionId)}`;
   const res = await fetch(url, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`GET /tspay/status failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(`GET /click/status failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as TspayStatusResponse;
+  return (await res.json()) as ClickStatusResponse;
 };
+
+// Legacy alias.
+export const tspayStatus = clickStatus;
+export type TspayStatusResponse = ClickStatusResponse;
 
 export type ScoreSessionResponse = {
   evaluation: unknown;
@@ -3360,4 +3368,145 @@ export const publicCenter = async (slug: string): Promise<PublicCenterResponse> 
     throw new Error(`GET /voucher-redeem center failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as PublicCenterResponse;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Academy LMS — Teacher Control Panel
+// ─────────────────────────────────────────────────────────────────────────────
+
+const academyGet = async <T>(accessToken: string, action: string, params?: Record<string, string>): Promise<T> => {
+  const qs = new URLSearchParams({ action, ...(params ?? {}) });
+  const res = await fetch(`${edgeBase}/academy?${qs.toString()}`, { method: 'GET', headers: apiHeaders(accessToken) });
+  if (!res.ok) { const d = await readJsonOrText(res); throw new Error(`GET /academy?action=${action} failed (${res.status}): ${JSON.stringify(d)}`); }
+  return (await res.json()) as T;
+};
+
+const academyPost = async <T>(accessToken: string, body: Json): Promise<T> => {
+  const res = await fetch(`${edgeBase}/academy`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res.ok) { const d = await readJsonOrText(res); throw new Error(`POST /academy failed (${res.status}): ${JSON.stringify(d)}`); }
+  return (await res.json()) as T;
+};
+
+export type AcademyAssignment = {
+  id: string; academy_id: string; classroom_id: string; title: string;
+  description: string | null; assignment_type: string; experience_id: string | null;
+  due_at: string | null; released_at: string | null; prerequisite_id: string | null;
+  position: number; max_score: number | null; score_weight: number; status: string;
+  metadata: Json | null; created_by: string | null; created_at: string; updated_at: string;
+};
+
+export type AcademySubmission = {
+  id: string; assignment_id: string; contact_id: string; score: number | null;
+  max_score: number | null; status: string; submitted_at: string | null;
+  graded_at: string | null; notes: string | null;
+};
+
+export type AcademyGradebookRow = {
+  contact_id: string; first_name: string; last_name: string; email: string | null;
+  status: string; role: string;
+  submissions: Record<string, { score: number | null; max_score: number | null; status: string; submitted_at: string | null; graded_at: string | null; notes: string | null }>;
+  composite_score: number | null; submitted_count: number; total_assignments: number;
+};
+
+export type AcademyGradebook = {
+  classroom_id: string;
+  assignments: Pick<AcademyAssignment, 'id' | 'title' | 'assignment_type' | 'due_at' | 'max_score' | 'score_weight' | 'position' | 'status'>[];
+  rows: AcademyGradebookRow[];
+};
+
+export type AcademyAttendanceRecord = {
+  id?: string; classroom_id: string; contact_id: string; session_date: string;
+  status: string; notes: string | null; marked_by?: string | null; marked_at?: string | null;
+};
+
+export type AcademyStudentProgress = {
+  contact: Json; classrooms: Json[]; submissions: Json[]; attendance: Json[];
+  stats: { total_submissions: number; graded_submissions: number; avg_score: number | null; attendance_rate: number | null; total_attendance_days: number; present_days: number };
+};
+
+export const academyListAssignments = (accessToken: string, academyId: string, classroomId?: string) =>
+  academyGet<{ assignments: AcademyAssignment[] }>(accessToken, 'assignments', { academy_id: academyId, ...(classroomId ? { classroom_id: classroomId } : {}) });
+
+export const academyCreateAssignment = (accessToken: string, body: { academy_id: string; classroom_id: string; title: string; description?: string | null; assignment_type?: string; experience_id?: string | null; due_at?: string | null; released_at?: string | null; prerequisite_id?: string | null; position?: number; max_score?: number | null; score_weight?: number; status?: string }) =>
+  academyPost<{ assignment: AcademyAssignment }>(accessToken, { action: 'create_assignment', ...body });
+
+export const academyUpdateAssignment = (accessToken: string, body: { academy_id: string; assignment_id: string } & Partial<AcademyAssignment>) =>
+  academyPost<{ assignment: AcademyAssignment }>(accessToken, { action: 'update_assignment', ...body });
+
+export const academySubmitAssignment = (accessToken: string, body: { academy_id: string; assignment_id: string; contact_id: string; score?: number | null; max_score?: number | null; session_id?: string | null; notes?: string | null }) =>
+  academyPost<{ submission: AcademySubmission }>(accessToken, { action: 'submit_assignment', ...body });
+
+export const academyGradeSubmission = (accessToken: string, body: { academy_id: string; submission_id?: string; assignment_id?: string; contact_id?: string; score: number; max_score?: number | null; notes?: string | null }) =>
+  academyPost<{ submission: AcademySubmission }>(accessToken, { action: 'grade_submission', ...body });
+
+export const academyGradebook = (accessToken: string, academyId: string, classroomId: string) =>
+  academyGet<AcademyGradebook>(accessToken, 'gradebook', { academy_id: academyId, classroom_id: classroomId });
+
+export const academyStudentProgress = (accessToken: string, academyId: string, contactId: string) =>
+  academyGet<AcademyStudentProgress>(accessToken, 'student_progress', { academy_id: academyId, contact_id: contactId });
+
+export const academyListAttendance = (accessToken: string, academyId: string, classroomId: string) =>
+  academyGet<{ attendance: AcademyAttendanceRecord[] }>(accessToken, 'attendance', { academy_id: academyId, classroom_id: classroomId });
+
+export const academyMarkAttendance = (accessToken: string, body: { academy_id: string; classroom_id: string; session_date?: string; records: Array<{ contact_id: string; status: string; notes?: string | null }> }) =>
+  academyPost<{ attendance: AcademyAttendanceRecord[]; count: number }>(accessToken, { action: 'mark_attendance', ...body });
+
+export const academyBulkInvite = (accessToken: string, body: { academy_id: string; classroom_id?: string | null; contacts: Array<{ email: string; first_name?: string; last_name?: string }> }) =>
+  academyPost<{ results: Json[]; summary: { ok: number; failed: number; total: number } }>(accessToken, { action: 'bulk_invite', ...body });
+
+export const academyUpdateClassroomSettings = (accessToken: string, body: { academy_id: string; classroom_id: string; name?: string; description?: string | null; is_active?: boolean; score_weights?: Json | null }) =>
+  academyPost<{ classroom: Json }>(accessToken, { action: 'update_classroom_settings', ...body });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Certificates
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type IssuedCertificate = { id: string; public_token: string; exam_type: string; overall_band: number | null; overall_score: number | null; candidate_name: string; exam_date: string; center_name: string | null; issued_at: string };
+
+export const certificateIssue = async (accessToken: string, body: { session_id?: string; exam_type: string; candidate_name?: string; overall_band?: number | null; overall_score?: number | null; center_name?: string }) =>
+  (await fetch(`${edgeBase}/certificates`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'issue', ...body }) }).then((r) => r.json())) as { certificate: IssuedCertificate; share_url: string };
+
+export const certificateList = async (accessToken: string) =>
+  (await fetch(`${edgeBase}/certificates?action=list`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { certificates: IssuedCertificate[] };
+
+export const certificateGet = async (token: string) =>
+  (await fetch(`${edgeBase}/certificates?token=${encodeURIComponent(token)}`).then((r) => r.json())) as { certificate: IssuedCertificate & { exam_config: Json } };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Score Prediction
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ScorePrediction = { exam_type: string; current_score: number; predicted_next: number; confidence_low: number; confidence_high: number; trend: 'improving' | 'stable' | 'declining'; data_points: number; uses_band: boolean; max_score: number; history: { index: number; date: string; score: number }[]; message: string };
+
+export const scorePredictions = async (accessToken: string, examType?: string) =>
+  (await fetch(`${edgeBase}/score-prediction${examType ? `?exam_type=${encodeURIComponent(examType)}` : ''}`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { predictions: ScorePrediction[]; total_exams: number };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Parent Report
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const parentReportGenerateToken = async (accessToken: string, body: { academy_id: string; contact_id: string; label?: string; expires_in_days?: number }) =>
+  (await fetch(`${edgeBase}/parent-report`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate_token', ...body }) }).then((r) => r.json())) as { token: { id: string; token: string; label: string | null; expires_at: string | null }; share_url: string; contact: { id: string; name: string } };
+
+export const parentReportListTokens = async (accessToken: string, academyId: string) =>
+  (await fetch(`${edgeBase}/parent-report?action=list_tokens&academy_id=${encodeURIComponent(academyId)}`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { tokens: Json[] };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Writing Tutor
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const writingTutorQuota = async (accessToken: string) =>
+  (await fetch(`${edgeBase}/writing-tutor?action=quota`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { used: number; limit: number; remaining: number; has_paid_access: boolean };
+
+export const writingTutorGrade = async (accessToken: string, body: { essay: string; prompt?: string; exam_type?: string; task_type?: string }) =>
+  (await fetch(`${edgeBase}/writing-tutor`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'grade', ...body }) }).then((r) => r.json())) as Json;
+
+export const academyExportGradebook = async (accessToken: string, academyId: string, classroomId: string): Promise<string> => {
+  const res = await fetch(`${edgeBase}/academy`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'export_gradebook', academy_id: academyId, classroom_id: classroomId }),
+  });
+  if (!res.ok) { const d = await readJsonOrText(res); throw new Error(`export_gradebook failed (${res.status}): ${JSON.stringify(d)}`); }
+  return res.text();
 };
