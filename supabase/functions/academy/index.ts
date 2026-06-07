@@ -1193,6 +1193,7 @@ const handleReadAction = async (
       "offer-grants",
       "payments",
       "entitlements",
+      "schedule",
     ].includes(action)
   ) {
     return null;
@@ -1675,6 +1676,17 @@ const handleReadAction = async (
     return json(200, { bulk_invites: data ?? [] });
   }
 
+  if (action === "schedule") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    let query = sb.from("academy_classroom_schedules")
+      .select("id, academy_id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active, created_at")
+      .eq("academy_id", academyId).eq("is_active", true).order("day_of_week").order("start_time");
+    if (classroomId) query = query.eq("classroom_id", classroomId);
+    const { data, error } = await query.limit(200);
+    if (error) return json(500, { error: "Failed to load schedule", detail: error.message });
+    return json(200, { schedule: data ?? [] });
+  }
+
   const { data, error } = await sb
     .from("academy_entitlements")
     .select("id, academy_id, contact_id, user_id, offer_id, payment_id, grant_type, resource_type, resource_id, capability_key, quantity, remaining, starts_at, expires_at, status, source, metadata, created_at, updated_at")
@@ -1790,6 +1802,94 @@ serve(async (req) => {
         body?.completed,
         normalizeText(body?.contact_id, 64) || null,
       );
+    }
+
+    // ── Student: list assignments + submission status ────────────────────────
+    if (requestedAction === "student_assignments") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(200, { assignments: [] });
+
+      const academyIdParam = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
+      const classroomIdParam = normalizeText(req.method === "POST" ? body?.classroom_id : url.searchParams.get("classroom_id"), 64);
+      const contact = contacts.find((c) => !academyIdParam || String(c.academy_id) === academyIdParam) ?? contacts[0];
+      const contactAcademyId = String(contact.academy_id);
+      const contactId = String(contact.id);
+
+      let assignmentsQuery = sb.from("academy_assignments")
+        .select("id, academy_id, classroom_id, title, description, assignment_type, experience_url, due_at, released_at, max_score, score_weight, status, metadata, created_at")
+        .eq("academy_id", contactAcademyId).eq("status", "active").order("position", { ascending: true }).limit(500);
+      if (classroomIdParam) assignmentsQuery = assignmentsQuery.eq("classroom_id", classroomIdParam);
+
+      const [assignmentsRes, submissionsRes, membershipsRes] = await Promise.all([
+        assignmentsQuery,
+        sb.from("academy_submissions")
+          .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, submission_content, submission_url")
+          .eq("academy_id", contactAcademyId).eq("contact_id", contactId).limit(1000),
+        sb.from("academy_classroom_memberships").select("classroom_id").eq("academy_id", contactAcademyId).eq("contact_id", contactId).limit(100),
+      ]);
+
+      if (assignmentsRes.error) return json(500, { error: "Failed to load assignments" });
+      const enrolledClassrooms = new Set((membershipsRes.data ?? []).map((m: any) => String(m.classroom_id)));
+      const subMap = new Map<string, Record<string, unknown>>();
+      for (const s of (submissionsRes.data ?? []) as Array<Record<string, unknown>>) {
+        subMap.set(String(s.assignment_id), s);
+      }
+
+      const assignments = ((assignmentsRes.data ?? []) as Array<Record<string, unknown>>)
+        .filter((a) => enrolledClassrooms.has(String(a.classroom_id)))
+        .map((a) => ({ ...a, submission: subMap.get(String(a.id)) ?? null }));
+
+      return json(200, { assignments, contact_id: contactId, academy_id: contactAcademyId });
+    }
+
+    // ── Student: submit an assignment ────────────────────────────────────────
+    if (requestedAction === "submit_assignment" && req.method === "POST") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(403, { error: "No academy enrollment found" });
+
+      const assignmentId = normalizeText(body?.assignment_id, 64);
+      if (!assignmentId) return json(400, { error: "assignment_id is required" });
+
+      const { data: asgn } = await sb.from("academy_assignments")
+        .select("id, academy_id, classroom_id, max_score, status")
+        .eq("id", assignmentId).maybeSingle();
+      if (!asgn?.id) return json(404, { error: "Assignment not found" });
+      if (asgn.status !== "active") return json(400, { error: "Assignment is not open for submission" });
+
+      const contact = contacts.find((c) => String(c.academy_id) === String(asgn.academy_id));
+      if (!contact) return json(403, { error: "Not enrolled in this academy" });
+      const contactId = String(contact.id);
+
+      // Verify classroom membership
+      const { data: membership } = await sb.from("academy_classroom_memberships")
+        .select("id").eq("classroom_id", asgn.classroom_id).eq("contact_id", contactId).maybeSingle();
+      if (!membership?.id) return json(403, { error: "Not enrolled in this classroom" });
+
+      const submissionContent = normalizeText(body?.content ?? body?.submission_content, 10000) || null;
+      const submissionUrl = normalizeText(body?.url ?? body?.submission_url, 2000) || null;
+
+      const payload = {
+        academy_id: String(asgn.academy_id),
+        assignment_id: assignmentId,
+        classroom_id: String(asgn.classroom_id),
+        contact_id: contactId,
+        user_id: userId,
+        submission_content: submissionContent,
+        submission_url: submissionUrl,
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
+        notes: normalizeText(body?.notes, 500) || null,
+        metadata: {},
+      };
+
+      const { data, error } = await sb.from("academy_submissions")
+        .upsert(payload, { onConflict: "assignment_id,contact_id" })
+        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, notes, submission_content, submission_url, updated_at")
+        .maybeSingle();
+      if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
+      return json(200, { submission: data });
     }
 
     if (memberships.length === 0) return json(403, { error: "No active academy membership" });
@@ -3124,6 +3224,129 @@ serve(async (req) => {
         return new Response(csvRows.join("\n"), {
           status: 200,
           headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="gradebook.csv"`, ...corsHeaders },
+        });
+      }
+
+      if (actionBody === "upsert_schedule") {
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+        const dayOfWeek = toIntOrNull(body?.day_of_week);
+        if (dayOfWeek === null || dayOfWeek < 0 || dayOfWeek > 6) return json(400, { error: "day_of_week 0–6 is required" });
+        const startTime = normalizeText(body?.start_time, 10);
+        if (!startTime) return json(400, { error: "start_time is required (HH:MM)" });
+        const scheduleId = normalizeText(body?.id, 64);
+        const payload = {
+          academy_id: academyId,
+          classroom_id: classroomId,
+          day_of_week: dayOfWeek,
+          start_time: startTime,
+          end_time: normalizeText(body?.end_time, 10) || null,
+          timezone: normalizeText(body?.timezone, 60) || "Asia/Tashkent",
+          label: normalizeText(body?.label, 120) || null,
+          is_active: body?.is_active !== false,
+          created_by: userId,
+        };
+        if (scheduleId) {
+          const { data, error } = await sb.from("academy_classroom_schedules").update(payload).eq("id", scheduleId).eq("academy_id", academyId)
+            .select("id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active").maybeSingle();
+          if (error) return json(500, { error: "Failed to update schedule", detail: error.message });
+          return json(200, { schedule: data });
+        }
+        const { data, error } = await sb.from("academy_classroom_schedules").insert(payload)
+          .select("id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active").maybeSingle();
+        if (error) return json(500, { error: "Failed to create schedule slot", detail: error.message });
+        return json(200, { schedule: data });
+      }
+
+      if (actionBody === "delete_schedule") {
+        const scheduleId = normalizeText(body?.id, 64);
+        if (!scheduleId) return json(400, { error: "id is required" });
+        const { error } = await sb.from("academy_classroom_schedules").delete().eq("id", scheduleId).eq("academy_id", academyId);
+        if (error) return json(500, { error: "Failed to delete schedule slot", detail: error.message });
+        return json(200, { ok: true });
+      }
+
+      if (actionBody === "issue_academy_certificate") {
+        const contactId = normalizeText(body?.contact_id, 64);
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        const examType = normalizeText(body?.exam_type, 40).toLowerCase() || "academy";
+
+        if (!contactId) return json(400, { error: "contact_id is required" });
+
+        const { data: contact } = await sb.from("academy_contacts")
+          .select("id, user_id, first_name, last_name, email").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
+        if (!contact?.id) return json(404, { error: "Contact not found" });
+
+        const targetUserId = contact.user_id ? String(contact.user_id) : null;
+        if (!targetUserId) return json(400, { error: "Student has no linked user account yet" });
+
+        const { data: academyRow } = await sb.from("tenants").select("name, metadata").eq("id", academyId).maybeSingle();
+        const centerName = normalizeText(body?.center_name, 120) || String(academyRow?.name ?? "");
+        const centerLogoUrl = (academyRow?.metadata as any)?.logo_url ?? null;
+        const candidateName = normalizeText(body?.candidate_name, 120) ||
+          `${String(contact.first_name ?? "")} ${String(contact.last_name ?? "")}`.trim() ||
+          String(contact.email ?? "Student");
+
+        let compositeScore: number | null = typeof body?.overall_score === "number" ? body.overall_score : null;
+        if (!compositeScore && classroomId) {
+          const [asgnRes, subRes] = await Promise.all([
+            sb.from("academy_assignments").select("id, max_score, score_weight").eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived").limit(200),
+            sb.from("academy_submissions").select("assignment_id, score, max_score").eq("academy_id", academyId).eq("contact_id", contactId).eq("classroom_id", classroomId).limit(500),
+          ]);
+          const subMap = new Map((asgnRes.data ?? []).map((a: any) => [a.id, a]));
+          let totalScore = 0, totalWeight = 0;
+          for (const s of (subRes.data ?? []) as Array<any>) {
+            if (typeof s.score !== "number") continue;
+            const asgn = subMap.get(s.assignment_id) as any;
+            if (!asgn) continue;
+            const maxS = Number(s.max_score ?? asgn.max_score ?? 100);
+            if (maxS <= 0) continue;
+            const w = Number(asgn.score_weight ?? 1);
+            totalScore += (s.score / maxS) * 100 * w;
+            totalWeight += w;
+          }
+          if (totalWeight > 0) compositeScore = Math.round((totalScore / totalWeight) * 10) / 10;
+        }
+
+        const { data: cert, error: certErr } = await sb.from("issued_certificates").insert({
+          user_id: targetUserId,
+          tenant_id: academyId,
+          exam_type: examType,
+          overall_score: compositeScore,
+          candidate_name: candidateName,
+          exam_date: new Date().toISOString().slice(0, 10),
+          center_name: centerName,
+          center_logo_url: centerLogoUrl,
+          is_public: true,
+          metadata: { academy_id: academyId, contact_id: contactId, classroom_id: classroomId || null, issued_by: userId },
+        }).select("id, public_token, candidate_name, overall_score, issued_at").maybeSingle();
+        if (certErr) return json(500, { error: "Failed to issue certificate", detail: certErr.message });
+
+        const siteUrl = Deno.env.get("SITE_URL") ?? "https://schood.online";
+        return json(200, { certificate: cert, share_url: `${siteUrl}/certificate?token=${cert?.public_token}` });
+      }
+
+      if (actionBody === "generate_parent_report") {
+        const contactId = normalizeText(body?.contact_id, 64);
+        const label = normalizeText(body?.label, 120) || null;
+        const expiresInDays = typeof body?.expires_in_days === "number" ? Math.min(Math.max(1, body.expires_in_days), 365) : 180;
+
+        if (!contactId) return json(400, { error: "contact_id is required" });
+
+        const { data: contact } = await sb.from("academy_contacts").select("id, first_name, last_name").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
+        if (!contact?.id) return json(404, { error: "Contact not found" });
+
+        const expiresAt = new Date(Date.now() + expiresInDays * 86400000).toISOString();
+        const { data: tokenRow, error: tokenErr } = await sb.from("parent_report_tokens")
+          .insert({ academy_id: academyId, contact_id: contactId, created_by: userId, label, expires_at: expiresAt })
+          .select("id, token, label, expires_at").maybeSingle();
+        if (tokenErr) return json(500, { error: "Failed to generate report link", detail: tokenErr.message });
+
+        const siteUrl = Deno.env.get("SITE_URL") ?? "https://schood.online";
+        return json(200, {
+          token: tokenRow,
+          share_url: `${siteUrl}/parent-report?token=${tokenRow?.token}`,
+          contact: { id: contact.id, name: `${contact.first_name} ${contact.last_name}`.trim() },
         });
       }
 

@@ -25,7 +25,7 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = 'overview' | 'classrooms' | 'students' | 'announcements';
-type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'settings';
+type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'settings';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -139,9 +139,35 @@ const StudentProgressModal: React.FC<{
   contact: TeacherStudioStudentContact;
   token: string;
   onClose: () => void;
-}> = ({ academyId, contact, token, onClose }) => {
+  classroomId?: string;
+}> = ({ academyId, contact, token, onClose, classroomId }) => {
   const [progress, setProgress] = useState<AcademyStudentProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reportUrl, setReportUrl] = useState<string | null>(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [certUrl, setCertUrl] = useState<string | null>(null);
+  const [issuingCert, setIssuingCert] = useState(false);
+  const [copied, setCopied] = useState<'report' | 'cert' | null>(null);
+
+  const generateReport = async () => {
+    setGeneratingReport(true);
+    const res = await callAcademyCtrl(token, { action: 'generate_parent_report', academy_id: academyId, contact_id: contact.id, expires_in_days: 180 });
+    setReportUrl(res.share_url ?? null);
+    setGeneratingReport(false);
+  };
+
+  const issueCert = async () => {
+    setIssuingCert(true);
+    const res = await callAcademyCtrl(token, { action: 'issue_academy_certificate', academy_id: academyId, contact_id: contact.id, classroom_id: classroomId ?? null });
+    setCertUrl(res.share_url ?? null);
+    setIssuingCert(false);
+  };
+
+  const copy = (url: string, type: 'report' | 'cert') => {
+    navigator.clipboard.writeText(url);
+    setCopied(type);
+    setTimeout(() => setCopied(null), 2000);
+  };
 
   useEffect(() => {
     academyStudentProgress(token, academyId, contact.id)
@@ -154,7 +180,7 @@ const StudentProgressModal: React.FC<{
     <Modal title={`${contact.first_name} ${contact.last_name} — Progress`} onClose={onClose}>
       {loading ? <div className="text-center text-gray-500 py-8">Loading…</div> : !progress ? (
         <div className="text-sm text-red-600">Failed to load progress</div>
-      ) : (
+      ) : (<>
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
@@ -197,7 +223,38 @@ const StudentProgressModal: React.FC<{
             </div>
           )}
         </div>
-      )}
+
+        {/* Parent report + certificate actions */}
+        <div className="mt-5 pt-4 border-t border-gray-100 space-y-3">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</div>
+          <div className="flex flex-wrap gap-2">
+            {!reportUrl ? (
+              <button onClick={() => void generateReport()} disabled={generatingReport} className="px-3 py-2 border border-gray-200 text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50">
+                {generatingReport ? 'Generating…' : '📋 Generate Parent Report Link'}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                <span className="text-xs text-blue-700 font-medium">Report link ready</span>
+                <button onClick={() => copy(reportUrl, 'report')} className="text-xs text-blue-600 underline">
+                  {copied === 'report' ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
+            {!certUrl ? (
+              <button onClick={() => void issueCert()} disabled={issuingCert} className="px-3 py-2 border border-amber-200 bg-amber-50 text-amber-900 text-sm rounded-xl hover:bg-amber-100 disabled:opacity-50">
+                {issuingCert ? 'Issuing…' : '🏆 Issue Certificate'}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                <span className="text-xs text-amber-700 font-medium">Certificate issued</span>
+                <button onClick={() => copy(certUrl, 'cert')} className="text-xs text-amber-600 underline">
+                  {copied === 'cert' ? 'Copied!' : 'Copy link'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </>)}
     </Modal>
   );
 };
@@ -217,7 +274,7 @@ const AssignmentsTab: React.FC<{
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    title: '', description: '', assignment_type: 'task', due_at: '', max_score: '', score_weight: '1', status: 'active',
+    title: '', description: '', assignment_type: 'task', due_at: '', max_score: '', score_weight: '1', status: 'active', experience_url: '',
   });
 
   const refresh = useCallback(() => {
@@ -230,9 +287,9 @@ const AssignmentsTab: React.FC<{
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const openCreate = () => { setForm({ title: '', description: '', assignment_type: 'task', due_at: '', max_score: '', score_weight: '1', status: 'active' }); setShowCreate(true); setEditTarget(null); };
+  const openCreate = () => { setForm({ title: '', description: '', assignment_type: 'task', due_at: '', max_score: '', score_weight: '1', status: 'active', experience_url: '' }); setShowCreate(true); setEditTarget(null); };
   const openEdit = (a: AcademyAssignment) => {
-    setForm({ title: a.title, description: a.description ?? '', assignment_type: a.assignment_type, due_at: a.due_at ? a.due_at.slice(0, 16) : '', max_score: a.max_score !== null ? String(a.max_score) : '', score_weight: String(a.score_weight), status: a.status });
+    setForm({ title: a.title, description: a.description ?? '', assignment_type: a.assignment_type, due_at: a.due_at ? a.due_at.slice(0, 16) : '', max_score: a.max_score !== null ? String(a.max_score) : '', score_weight: String(a.score_weight), status: a.status, experience_url: (a as any).experience_url ?? '' });
     setEditTarget(a);
     setShowCreate(true);
   };
@@ -246,6 +303,7 @@ const AssignmentsTab: React.FC<{
         description: form.description || null, assignment_type: form.assignment_type,
         due_at: form.due_at || null, max_score: form.max_score ? Number(form.max_score) : null,
         score_weight: form.score_weight ? Number(form.score_weight) : 1, status: form.status,
+        experience_url: form.experience_url || null,
       };
       if (editTarget) {
         await academyUpdateAssignment(token, { ...payload, assignment_id: editTarget.id });
@@ -343,6 +401,11 @@ const AssignmentsTab: React.FC<{
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Weight</label>
                 <input type="number" step="0.1" min="0" value={form.score_weight} onChange={(e) => setForm((f) => ({ ...f, score_weight: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Schood Practice Link (optional)</label>
+              <input value={form.experience_url} onChange={(e) => setForm((f) => ({ ...f, experience_url: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="https://practice.ielts.schood.online/…" />
+              <p className="text-xs text-gray-400 mt-1">Students will see a direct link to this Schood resource alongside the assignment.</p>
             </div>
             <button onClick={save} disabled={saving || !form.title.trim()} className="w-full bg-gray-900 text-white py-2.5 rounded-xl font-semibold hover:bg-black disabled:bg-gray-300 text-sm">
               {saving ? 'Saving…' : editTarget ? 'Save Changes' : 'Create Assignment'}
@@ -473,10 +536,64 @@ const GradebookTab: React.FC<{ academyId: string; classroomId: string; token: st
         </table>
       </div>
 
+      {/* Pending submission review queue */}
+      {(() => {
+        const pending = gb.rows.flatMap((row) =>
+          gb.assignments
+            .filter((a) => {
+              const sub = row.submissions[a.id] as any;
+              return sub?.status === 'submitted';
+            })
+            .map((a) => {
+              const sub = row.submissions[a.id] as any;
+              return { row, assignment: a, sub };
+            }),
+        );
+        if (pending.length === 0) return null;
+        return (
+          <div className="mt-5">
+            <div className="text-sm font-semibold text-gray-700 mb-2">Pending Review ({pending.length})</div>
+            <div className="space-y-2">
+              {pending.map(({ row, assignment, sub }) => (
+                <div key={`${assignment.id}-${row.contact_id}`} className="border border-blue-200 bg-blue-50 rounded-xl px-4 py-3 flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{row.first_name} {row.last_name} — {assignment.title}</div>
+                    {sub.submission_content && (
+                      <div className="text-xs text-gray-600 mt-1 line-clamp-3 bg-white rounded-lg px-2 py-1.5 border border-gray-200">{sub.submission_content}</div>
+                    )}
+                    {sub.submission_url && (
+                      <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline mt-1 block">View attached file</a>
+                    )}
+                  </div>
+                  <button onClick={() => openGrade(row, assignment)} className="shrink-0 text-xs px-2.5 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-black">Grade</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {gradeTarget && (
         <Modal title={`Grade: ${gradeTarget.assignment.title}`} onClose={() => setGradeTarget(null)}>
           <div className="space-y-4">
             <div className="text-sm text-gray-600">Student: <strong>{gradeTarget.row.first_name} {gradeTarget.row.last_name}</strong></div>
+            {(() => {
+              const sub = gradeTarget.row.submissions[gradeTarget.assignment.id] as any;
+              if (!sub) return null;
+              return (
+                <div className="space-y-2">
+                  {sub.submission_content && (
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 mb-1">Student's answer</div>
+                      <div className="text-sm text-gray-700 bg-gray-50 rounded-xl p-3 border border-gray-200 max-h-40 overflow-y-auto whitespace-pre-wrap">{sub.submission_content}</div>
+                    </div>
+                  )}
+                  {sub.submission_url && (
+                    <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline block">View attached file</a>
+                  )}
+                </div>
+              );
+            })()}
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Score{gradeTarget.assignment.max_score ? ` (out of ${gradeTarget.assignment.max_score})` : ''}</label>
               <input type="number" value={gradeScore} onChange={(e) => setGradeScore(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
@@ -788,7 +905,149 @@ const ClassroomStudentsTab: React.FC<{
       )}
 
       {progressContact && (
-        <StudentProgressModal academyId={academyId} contact={progressContact} token={token} onClose={() => setProgressContact(null)} />
+        <StudentProgressModal academyId={academyId} contact={progressContact} token={token} onClose={() => setProgressContact(null)} classroomId={classroom.id} />
+      )}
+    </div>
+  );
+};
+
+// ─── Schedule Tab ─────────────────────────────────────────────────────────────
+
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const SUPABASE_URL_CTRL = import.meta.env.VITE_SUPABASE_URL as string;
+
+const callAcademyCtrl = (token: string, body: Record<string, unknown>) =>
+  fetch(`${SUPABASE_URL_CTRL}/functions/v1/academy`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).then((r) => r.json());
+
+type ScheduleSlot = {
+  id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string | null;
+  timezone: string;
+  label: string | null;
+  is_active: boolean;
+};
+
+const ScheduleTab: React.FC<{ academyId: string; classroomId: string; token: string }> = ({ academyId, classroomId, token }) => {
+  const [slots, setSlots] = useState<ScheduleSlot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editSlot, setEditSlot] = useState<ScheduleSlot | null>(null);
+  const [form, setForm] = useState({ day_of_week: '1', start_time: '09:00', end_time: '', label: '', timezone: 'Asia/Tashkent' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await callAcademyCtrl(token, { action: 'schedule', academy_id: academyId, classroom_id: classroomId });
+    setSlots((res.schedule ?? []) as ScheduleSlot[]);
+    setLoading(false);
+  }, [token, academyId, classroomId]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const openCreate = () => { setForm({ day_of_week: '1', start_time: '09:00', end_time: '', label: '', timezone: 'Asia/Tashkent' }); setEditSlot(null); setShowForm(true); };
+  const openEdit = (s: ScheduleSlot) => { setForm({ day_of_week: String(s.day_of_week), start_time: s.start_time, end_time: s.end_time ?? '', label: s.label ?? '', timezone: s.timezone }); setEditSlot(s); setShowForm(true); };
+
+  const save = async () => {
+    setSaving(true);
+    const payload: Record<string, unknown> = {
+      action: 'upsert_schedule', academy_id: academyId, classroom_id: classroomId,
+      day_of_week: Number(form.day_of_week), start_time: form.start_time,
+      end_time: form.end_time || null, label: form.label || null, timezone: form.timezone,
+    };
+    if (editSlot) payload.id = editSlot.id;
+    await callAcademyCtrl(token, payload);
+    setSaving(false);
+    setShowForm(false);
+    void load();
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm('Remove this session slot?')) return;
+    await callAcademyCtrl(token, { action: 'delete_schedule', academy_id: academyId, id });
+    void load();
+  };
+
+  const byDay = DAY_NAMES.map((day, idx) => ({ day, idx, slots: slots.filter((s) => s.day_of_week === idx) })).filter((d) => d.slots.length > 0);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800">Class Schedule</h3>
+        <button onClick={openCreate} className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-black">+ Add Slot</button>
+      </div>
+
+      {loading ? <div className="text-center text-gray-400 py-8">Loading…</div> : slots.length === 0 ? (
+        <div className="text-center text-gray-400 py-12 border-2 border-dashed border-gray-200 rounded-2xl">
+          No schedule set. Add recurring session slots.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {byDay.map(({ day, slots: daySlots }) => (
+            <div key={day}>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{day}</div>
+              <div className="space-y-1.5">
+                {daySlots.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5">
+                    <div>
+                      <span className="font-medium text-gray-900 text-sm">
+                        {s.start_time}{s.end_time ? ` – ${s.end_time}` : ''}
+                      </span>
+                      {s.label && <span className="ml-2 text-xs text-gray-500">{s.label}</span>}
+                      <div className="text-xs text-gray-400">{s.timezone}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => openEdit(s)} className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">Edit</button>
+                      <button onClick={() => remove(s.id)} className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-red-400">Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showForm && (
+        <Modal title={editSlot ? 'Edit Session Slot' : 'New Session Slot'} onClose={() => setShowForm(false)}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Day</label>
+                <select value={form.day_of_week} onChange={(e) => setForm((f) => ({ ...f, day_of_week: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                  {DAY_NAMES.map((d, i) => <option key={d} value={i}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Timezone</label>
+                <input value={form.timezone} onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Start Time</label>
+                <input type="time" value={form.start_time} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">End Time (optional)</label>
+                <input type="time" value={form.end_time} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Label (optional)</label>
+              <input value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="e.g. Speaking practice" />
+            </div>
+            <button onClick={save} disabled={saving} className="w-full bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-black disabled:bg-gray-300">
+              {saving ? 'Saving…' : editSlot ? 'Save Changes' : 'Add Slot'}
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );
@@ -811,6 +1070,7 @@ const ClassroomDetail: React.FC<{
     { key: 'assignments', label: 'Assignments' },
     { key: 'gradebook', label: 'Gradebook' },
     { key: 'attendance', label: 'Attendance' },
+    { key: 'schedule', label: 'Schedule' },
     { key: 'settings', label: 'Settings' },
   ];
 
@@ -843,6 +1103,7 @@ const ClassroomDetail: React.FC<{
       {tab === 'assignments' && <AssignmentsTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'gradebook' && <GradebookTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'attendance' && <AttendanceTab academyId={academyId} classroomId={classroom.id} token={token} members={contacts} />}
+      {tab === 'schedule' && <ScheduleTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'settings' && <SettingsTab academyId={academyId} classroom={classroom} token={token} onSaved={onRefresh} />}
     </div>
   );
