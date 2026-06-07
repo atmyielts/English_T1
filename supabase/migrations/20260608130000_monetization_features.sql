@@ -4,7 +4,7 @@
 
 create table if not exists public.issued_certificates (
   id              uuid primary key default gen_random_uuid(),
-  public_token    text not null unique default encode(gen_random_bytes(24), 'base64url'),
+  public_token    text not null unique default replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
   user_id         uuid not null references public.users(id) on delete cascade,
   session_id      uuid references public.sessions(id) on delete set null,
   outcome_id      uuid references public.exam_outcomes(id) on delete set null,
@@ -44,7 +44,7 @@ create policy "Certificates insert by owner"
 
 create table if not exists public.parent_report_tokens (
   id          uuid primary key default gen_random_uuid(),
-  token       text not null unique default encode(gen_random_bytes(24), 'base64url'),
+  token       text not null unique default replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
   academy_id  uuid not null references public.tenants(id) on delete cascade,
   contact_id  uuid not null references public.academy_contacts(id) on delete cascade,
   created_by  uuid not null references public.users(id),

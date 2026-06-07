@@ -1,156 +1,186 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
-const edgeBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 type ReportData = {
-  contact: { id: string; first_name: string; last_name: string; email: string | null; status: string };
-  academy: { id: string; name: string; logo_url: string | null };
-  classrooms: Array<{ id: string; name: string; is_active: boolean }>;
-  stats: { avg_score: number | null; attendance_rate: number | null; total_submissions: number; graded_submissions: number; present_days: number; total_attendance_days: number };
-  recent_submissions: Array<{ id: string; score: number | null; max_score: number | null; status: string; submitted_at: string | null; graded_at: string | null; notes: string | null; academy_assignments: { title: string; assignment_type: string; due_at: string | null; max_score: number | null } | null }>;
+  contact: { first_name: string; last_name: string; email: string; status: string };
+  academy: { name: string; logo_url: string | null };
+  classrooms: Array<{ name: string }>;
+  stats: {
+    avg_score: number | null;
+    attendance_rate: number | null;
+    total_submissions: number;
+    graded_submissions: number;
+    present_days: number;
+    total_attendance_days: number;
+  };
+  recent_submissions: Array<{
+    status: string;
+    score: number | null;
+    submitted_at: string;
+    academy_assignments: { title: string; max_score: number | null };
+  }>;
   recent_attendance: Array<{ session_date: string; status: string }>;
   trend: Array<{ date: string | null; label: string; score_pct: number | null }>;
   report_label: string | null;
 };
 
-const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-const attendanceColor = (s: string) => s === 'present' ? 'bg-emerald-400' : s === 'late' ? 'bg-amber-400' : s === 'excused' ? 'bg-gray-300' : 'bg-red-400';
+const fmtDate = (s: string | null) =>
+  s ? new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '—';
+const pct = (v: number | null) => (v !== null ? `${v}%` : '—');
 
-const StatCard: React.FC<{ label: string; value: string; sub?: string; color?: string }> = ({ label, value, sub, color = 'text-gray-900' }) => (
-  <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
-    <div className={`text-3xl font-bold ${color}`}>{value}</div>
-    <div className="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wide">{label}</div>
-    {sub && <div className="text-xs text-gray-400 mt-0.5">{sub}</div>}
-  </div>
-);
-
-const TrendBar: React.FC<{ points: ReportData['trend'] }> = ({ points }) => {
-  if (points.length < 2) return null;
-  const valid = points.filter((p) => p.score_pct !== null);
-  if (valid.length < 2) return null;
-  const maxH = 60;
-  const maxVal = Math.max(...valid.map((p) => p.score_pct!), 100);
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-5">
-      <div className="text-sm font-semibold text-gray-700 mb-4">Score Trend</div>
-      <div className="flex items-end gap-2 h-16">
-        {valid.map((p, i) => {
-          const h = Math.max(4, Math.round((p.score_pct! / maxVal) * maxH));
-          const isLast = i === valid.length - 1;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className="text-xs text-gray-500 font-medium">{p.score_pct}%</div>
-              <div className={`w-full rounded-t-lg ${isLast ? 'bg-emerald-500' : 'bg-gray-300'}`} style={{ height: `${h}px` }} />
-              <div className="text-xs text-gray-400 truncate w-full text-center">{p.date?.slice(5) ?? ''}</div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+const StatusDot: React.FC<{ status: string }> = ({ status }) => {
+  const color =
+    status === 'present' ? 'bg-emerald-400' : status === 'late' ? 'bg-amber-400' : 'bg-red-400';
+  return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color}`} title={status} />;
 };
 
 export const ParentReportPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const [report, setReport] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const token = new URLSearchParams(window.location.search).get('token');
+  const [data, setData] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) { setLoading(false); setError('No report token provided.'); return; }
-    fetch(`${edgeBase}/parent-report?token=${encodeURIComponent(token)}`)
-      .then((r) => r.json())
-      .then((d) => { if (d.contact) setReport(d as ReportData); else setError(d.error ?? 'Report not found'); })
-      .catch(() => setError('Failed to load report'))
+    if (!token) {
+      setError('No report token provided.');
+      setLoading(false);
+      return;
+    }
+    fetch(`${SUPABASE_URL}/functions/v1/parent-report?token=${encodeURIComponent(token)}`)
+      .then(async (r) => {
+        const body = await r.json();
+        if (!r.ok) throw new Error(body.error ?? 'Failed to load report');
+        setData(body);
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
       .finally(() => setLoading(false));
   }, [token]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-gray-400">Loading report…</div>
-    </div>
-  );
-
-  if (error || !report) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="text-center max-w-sm">
-        <div className="text-4xl mb-4">📋</div>
-        <div className="text-xl font-semibold text-gray-900 mb-2">Report unavailable</div>
-        <div className="text-gray-500 text-sm">{error ?? 'This report link may have expired.'}</div>
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-sm">Loading report…</div>
       </div>
-    </div>
-  );
+    );
 
-  const { contact, academy, stats, recent_submissions, recent_attendance, trend, classrooms } = report;
-  const name = `${contact.first_name} ${contact.last_name}`.trim();
-  const classroomNames = classrooms.map((c) => c.name).join(', ');
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-5">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
-          {academy.logo_url && <img src={academy.logo_url} alt={academy.name} className="h-10 object-contain" />}
-          <div>
-            <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{academy.name}</div>
-            <div className="text-lg font-bold text-gray-900">Progress Report: {name}</div>
-            {classroomNames && <div className="text-xs text-gray-500 mt-0.5">{classroomNames}</div>}
+  if (error || !data)
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <div className="text-2xl mb-3">📋</div>
+          <div className="text-gray-700 font-semibold">Report not available</div>
+          <div className="text-gray-500 text-sm mt-1">
+            {error ?? 'The link may have expired or been revoked.'}
           </div>
         </div>
       </div>
+    );
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard
-            label="Avg Score"
-            value={stats.avg_score !== null ? `${stats.avg_score}%` : '—'}
-            sub={`${stats.graded_submissions} graded`}
-            color={stats.avg_score !== null && stats.avg_score >= 70 ? 'text-emerald-600' : stats.avg_score !== null && stats.avg_score >= 50 ? 'text-amber-600' : 'text-red-600'}
-          />
-          <StatCard
-            label="Attendance"
-            value={stats.attendance_rate !== null ? `${stats.attendance_rate}%` : '—'}
-            sub={`${stats.present_days}/${stats.total_attendance_days} days`}
-            color={stats.attendance_rate !== null && stats.attendance_rate >= 80 ? 'text-emerald-600' : 'text-amber-600'}
-          />
-          <StatCard
-            label="Assignments"
-            value={`${stats.graded_submissions}/${stats.total_submissions}`}
-            sub="graded / total"
-            color="text-blue-600"
-          />
+  const { contact, academy, classrooms, stats, recent_submissions, recent_attendance, trend, report_label } =
+    data;
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto space-y-5">
+        {/* Header */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 flex items-center gap-4">
+          {academy.logo_url && (
+            <img
+              src={academy.logo_url}
+              alt={academy.name}
+              className="w-14 h-14 rounded-xl object-contain border border-gray-100"
+            />
+          )}
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              {academy.name}
+            </div>
+            <div className="text-xl font-bold text-gray-900 mt-0.5">
+              {contact.first_name} {contact.last_name}
+            </div>
+            {classrooms.length > 0 && (
+              <div className="text-sm text-gray-500 mt-0.5">
+                {classrooms.map((c) => c.name).join(' · ')}
+              </div>
+            )}
+            {report_label && <div className="text-xs text-blue-600 mt-1">{report_label}</div>}
+          </div>
         </div>
 
-        {/* Trend */}
-        <TrendBar points={trend} />
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: 'Avg Score', value: pct(stats.avg_score), color: 'text-blue-700 bg-blue-50' },
+            { label: 'Attendance', value: pct(stats.attendance_rate), color: 'text-emerald-700 bg-emerald-50' },
+            {
+              label: 'Assignments',
+              value: `${stats.graded_submissions}/${stats.total_submissions}`,
+              color: 'text-violet-700 bg-violet-50',
+            },
+            {
+              label: 'Present Days',
+              value: `${stats.present_days}/${stats.total_attendance_days}`,
+              color: 'text-amber-700 bg-amber-50',
+            },
+          ].map((s) => (
+            <div key={s.label} className={`rounded-2xl p-5 ${s.color}`}>
+              <div className="text-2xl font-bold">{s.value}</div>
+              <div className="text-xs font-medium opacity-75 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
 
-        {/* Recent Assignments */}
+        {/* Score trend */}
+        {trend.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="text-sm font-semibold text-gray-700 mb-4">Score Trend</div>
+            <div className="flex items-end gap-2 h-24">
+              {trend.map((t, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="text-xs text-gray-500">
+                    {t.score_pct !== null ? `${t.score_pct}%` : '—'}
+                  </div>
+                  <div
+                    className="w-full bg-blue-400 rounded-t"
+                    style={{
+                      height:
+                        t.score_pct !== null ? `${Math.max(4, t.score_pct * 0.7)}px` : '4px',
+                      opacity: t.score_pct !== null ? 1 : 0.15,
+                    }}
+                  />
+                  <div className="text-xs text-gray-400 truncate w-full text-center">
+                    {t.date ? fmtDate(t.date) : '—'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent submissions */}
         {recent_submissions.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <div className="text-sm font-semibold text-gray-700 mb-3">Recent Assignments</div>
             <div className="space-y-2">
               {recent_submissions.slice(0, 8).map((s, i) => {
-                const maxS = s.academy_assignments?.max_score ?? s.max_score ?? 100;
-                const pct = s.score !== null && Number(maxS) > 0 ? Math.round((Number(s.score) / Number(maxS)) * 100) : null;
+                const maxS = s.academy_assignments?.max_score ?? null;
+                const scoreLabel =
+                  s.score !== null ? (maxS ? `${s.score}/${maxS}` : String(s.score)) : '—';
+                const statusColor =
+                  s.status === 'graded'
+                    ? 'text-emerald-600'
+                    : s.status === 'submitted'
+                      ? 'text-blue-600'
+                      : 'text-gray-400';
                 return (
-                  <div key={s.id ?? i} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-gray-800 truncate">{s.academy_assignments?.title ?? 'Assignment'}</div>
-                      <div className="text-xs text-gray-400">{s.academy_assignments?.assignment_type} · {fmtDate(s.submitted_at)}</div>
-                    </div>
-                    <div className="text-right shrink-0 ml-3">
-                      {pct !== null ? (
-                        <div>
-                          <div className="font-semibold text-gray-900">{s.score}/{maxS}</div>
-                          <div className={`text-xs ${pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600'}`}>{pct}%</div>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">{s.status}</span>
-                      )}
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700 truncate max-w-[55%]">
+                      {s.academy_assignments?.title ?? 'Assignment'}
+                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-gray-500">{scoreLabel}</span>
+                      <span className={`text-xs font-medium ${statusColor}`}>{s.status}</span>
                     </div>
                   </div>
                 );
@@ -159,76 +189,39 @@ export const ParentReportPage: React.FC = () => {
           </div>
         )}
 
-        {/* Attendance Calendar */}
+        {/* Attendance dots */}
         {recent_attendance.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <div className="text-sm font-semibold text-gray-700 mb-3">Recent Attendance (last {recent_attendance.length} sessions)</div>
-            <div className="flex flex-wrap gap-1.5">
-              {recent_attendance.map((a) => (
-                <div key={a.session_date} title={`${a.session_date}: ${a.status}`} className="flex flex-col items-center gap-1">
-                  <div className={`w-4 h-4 rounded ${attendanceColor(a.status)}`} />
-                  <div className="text-xs text-gray-400">{a.session_date.slice(8)}</div>
+            <div className="text-sm font-semibold text-gray-700 mb-3">Recent Attendance</div>
+            <div className="flex flex-wrap gap-2">
+              {recent_attendance.map((a, i) => (
+                <div key={i} className="flex items-center gap-1 text-xs text-gray-500">
+                  <StatusDot status={a.status} />
+                  <span>{fmtDate(a.session_date)}</span>
                 </div>
               ))}
             </div>
-            <div className="flex gap-4 mt-3 text-xs text-gray-400">
-              {[{ color: 'bg-emerald-400', label: 'Present' }, { color: 'bg-amber-400', label: 'Late' }, { color: 'bg-red-400', label: 'Absent' }, { color: 'bg-gray-300', label: 'Excused' }].map((l) => (
-                <div key={l.label} className="flex items-center gap-1"><div className={`w-3 h-3 rounded ${l.color}`} />{l.label}</div>
-              ))}
+            <div className="flex gap-3 mt-3 text-xs text-gray-400">
+              <span>
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1" />
+                Present
+              </span>
+              <span>
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1" />
+                Late
+              </span>
+              <span>
+                <span className="inline-block w-2 h-2 rounded-full bg-red-400 mr-1" />
+                Absent
+              </span>
             </div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-xs text-gray-400 pt-2">
-          Report generated by Schood · For questions, contact the academy directly.
+        <div className="text-center text-xs text-gray-400 pb-4">
+          Report by <span className="font-medium">{academy.name}</span> via Schood
         </div>
       </div>
     </div>
-  );
-};
-
-// ─── Teacher: Generate Link Widget (embedded in AcademyControlPage) ───────────
-
-export const GenerateParentLinkButton: React.FC<{
-  academyId: string;
-  contactId: string;
-  contactName: string;
-  token: string;
-}> = ({ academyId, contactId, contactName, token: accessToken }) => {
-  const [loading, setLoading] = useState(false);
-  const [link, setLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const generate = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${edgeBase}/parent-report`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate_token', academy_id: academyId, contact_id: contactId }),
-      });
-      if (res.ok) { const d = await res.json(); setLink(d.share_url); }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copy = () => { if (link) { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); } };
-
-  if (link) return (
-    <div className="text-xs text-gray-500 space-y-1">
-      <div className="font-medium text-gray-700">Parent link for {contactName}</div>
-      <div className="flex gap-2">
-        <input readOnly value={link} className="flex-1 border border-gray-300 rounded-lg px-2 py-1 text-xs font-mono bg-gray-50" />
-        <button onClick={copy} className="px-2 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs">{copied ? '✓' : 'Copy'}</button>
-      </div>
-    </div>
-  );
-
-  return (
-    <button onClick={generate} disabled={loading} className="text-xs px-2.5 py-1.5 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 disabled:opacity-50">
-      {loading ? '…' : '👨‍👩‍👧 Parent link'}
-    </button>
   );
 };
