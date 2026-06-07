@@ -1477,6 +1477,204 @@ const handleReadAction = async (
     return json(200, { payments: data ?? [] });
   }
 
+  // ── LMS: Assignments ────────────────────────────────────────────────────
+
+  if (action === "assignments") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    let query = sb
+      .from("academy_assignments")
+      .select("id, academy_id, classroom_id, title, description, assignment_type, experience_id, due_at, released_at, prerequisite_id, position, max_score, score_weight, status, metadata, created_by, created_at, updated_at")
+      .eq("academy_id", academyId)
+      .neq("status", "archived")
+      .order("position", { ascending: true });
+    if (classroomId) query = query.eq("classroom_id", classroomId);
+    const { data, error } = await query.limit(500);
+    if (error) return json(500, { error: "Failed to load assignments", detail: error.message });
+    return json(200, { assignments: data ?? [] });
+  }
+
+  // ── LMS: Submissions / Gradebook ────────────────────────────────────────
+
+  if (action === "submissions") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    const assignmentId = normalizeText(contactIdRaw, 64) || null; // reuse contactId param slot
+    let query = sb
+      .from("academy_submissions")
+      .select("id, academy_id, assignment_id, classroom_id, contact_id, user_id, session_id, score, max_score, status, submitted_at, graded_at, graded_by, notes, metadata, created_at, updated_at")
+      .eq("academy_id", academyId)
+      .order("submitted_at", { ascending: false });
+    if (classroomId) query = query.eq("classroom_id", classroomId);
+    if (assignmentId) query = query.eq("assignment_id", assignmentId);
+    const { data, error } = await query.limit(2000);
+    if (error) return json(500, { error: "Failed to load submissions", detail: error.message });
+    return json(200, { submissions: data ?? [] });
+  }
+
+  if (action === "gradebook") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (!classroomId) return json(400, { error: "classroom_id is required for gradebook" });
+
+    const [assignmentsResult, submissionsResult, membersResult] = await Promise.all([
+      sb.from("academy_assignments")
+        .select("id, title, assignment_type, due_at, max_score, score_weight, position, status")
+        .eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived")
+        .order("position", { ascending: true }).limit(200),
+      sb.from("academy_submissions")
+        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, notes")
+        .eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
+      sb.from("academy_classroom_memberships")
+        .select("contact_id, role, academy_contacts(id, first_name, last_name, email, status)")
+        .eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(500),
+    ]);
+
+    if (assignmentsResult.error) return json(500, { error: "Failed to load assignments", detail: assignmentsResult.error.message });
+    if (submissionsResult.error) return json(500, { error: "Failed to load submissions", detail: submissionsResult.error.message });
+    if (membersResult.error) return json(500, { error: "Failed to load members", detail: membersResult.error.message });
+
+    const submissionMap = new Map<string, Record<string, unknown>>();
+    for (const s of (submissionsResult.data ?? []) as Array<Record<string, unknown>>) {
+      submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, s);
+    }
+
+    const students = ((membersResult.data ?? []) as Array<Record<string, unknown>>).map((m) => {
+      const contact = (m.academy_contacts as Record<string, unknown>) ?? {};
+      return {
+        contact_id: String(contact.id ?? m.contact_id ?? ""),
+        first_name: String(contact.first_name ?? ""),
+        last_name: String(contact.last_name ?? ""),
+        email: contact.email ?? null,
+        status: String(contact.status ?? "active"),
+        role: String(m.role ?? "student"),
+      };
+    });
+
+    const assignments = assignmentsResult.data ?? [];
+
+    const rows = students.map((student) => {
+      const submissions: Record<string, unknown> = {};
+      let totalScore = 0;
+      let totalWeight = 0;
+      let submittedCount = 0;
+
+      for (const asgn of assignments as Array<Record<string, unknown>>) {
+        const key = `${String(asgn.id)}__${student.contact_id}`;
+        const sub = submissionMap.get(key) ?? null;
+        submissions[String(asgn.id)] = sub ? {
+          score: sub.score ?? null,
+          max_score: sub.max_score ?? asgn.max_score ?? null,
+          status: sub.status,
+          submitted_at: sub.submitted_at ?? null,
+          graded_at: sub.graded_at ?? null,
+          notes: sub.notes ?? null,
+        } : { status: "missing", score: null };
+
+        if (sub && typeof sub.score === "number" && typeof (sub.max_score ?? asgn.max_score) === "number") {
+          const maxS = Number(sub.max_score ?? asgn.max_score);
+          if (maxS > 0) {
+            const w = Number((asgn.score_weight as number) ?? 1);
+            totalScore += (Number(sub.score) / maxS) * 100 * w;
+            totalWeight += w;
+            submittedCount++;
+          }
+        }
+      }
+
+      return {
+        ...student,
+        submissions,
+        composite_score: totalWeight > 0 ? Math.round((totalScore / totalWeight) * 10) / 10 : null,
+        submitted_count: submittedCount,
+        total_assignments: assignments.length,
+      };
+    });
+
+    return json(200, { classroom_id: classroomId, assignments, rows });
+  }
+
+  // ── LMS: Student Progress ────────────────────────────────────────────────
+
+  if (action === "student_progress") {
+    const contactId = normalizeText(contactIdRaw, 64) || null;
+    if (!contactId) return json(400, { error: "contact_id is required for student_progress" });
+
+    const [contactResult, membershipsResult, submissionsResult, attendanceResult] = await Promise.all([
+      sb.from("academy_contacts")
+        .select("id, first_name, last_name, email, phone, status, last_activity_at, metadata, created_at")
+        .eq("academy_id", academyId).eq("id", contactId).maybeSingle(),
+      sb.from("academy_classroom_memberships")
+        .select("classroom_id, role, joined_at, academy_classrooms(id, name, is_active)")
+        .eq("academy_id", academyId).eq("contact_id", contactId).limit(50),
+      sb.from("academy_submissions")
+        .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, academy_assignments(title, assignment_type, due_at, max_score)")
+        .eq("academy_id", academyId).eq("contact_id", contactId)
+        .order("submitted_at", { ascending: false }).limit(200),
+      sb.from("academy_attendance")
+        .select("session_date, status, notes, marked_at")
+        .eq("academy_id", academyId).eq("contact_id", contactId)
+        .order("session_date", { ascending: false }).limit(90),
+    ]);
+
+    if (!contactResult.data) return json(404, { error: "Contact not found" });
+
+    const submissions = (submissionsResult.data ?? []) as Array<Record<string, unknown>>;
+    const graded = submissions.filter((s) => typeof s.score === "number");
+    const avgScore = graded.length > 0
+      ? Math.round(graded.reduce((acc, s) => {
+          const ms = Number((s.academy_assignments as Record<string, unknown>)?.max_score ?? s.max_score ?? 100);
+          return acc + (ms > 0 ? (Number(s.score) / ms) * 100 : 0);
+        }, 0) / graded.length * 10) / 10
+      : null;
+
+    const attendance = (attendanceResult.data ?? []) as Array<Record<string, unknown>>;
+    const presentDays = attendance.filter((a) => a.status === "present" || a.status === "late").length;
+    const attendanceRate = attendance.length > 0 ? Math.round((presentDays / attendance.length) * 100) : null;
+
+    return json(200, {
+      contact: contactResult.data,
+      classrooms: (membershipsResult.data ?? []),
+      submissions,
+      attendance: attendance.slice(0, 30),
+      stats: {
+        total_submissions: submissions.length,
+        graded_submissions: graded.length,
+        avg_score: avgScore,
+        attendance_rate: attendanceRate,
+        total_attendance_days: attendance.length,
+        present_days: presentDays,
+      },
+    });
+  }
+
+  // ── LMS: Attendance ──────────────────────────────────────────────────────
+
+  if (action === "attendance") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (!classroomId) return json(400, { error: "classroom_id is required" });
+
+    const { data, error } = await sb
+      .from("academy_attendance")
+      .select("id, classroom_id, contact_id, session_date, status, notes, marked_by, marked_at")
+      .eq("academy_id", academyId).eq("classroom_id", classroomId)
+      .order("session_date", { ascending: false }).limit(2000);
+    if (error) return json(500, { error: "Failed to load attendance", detail: error.message });
+    return json(200, { attendance: data ?? [] });
+  }
+
+  // ── LMS: Bulk Invites ────────────────────────────────────────────────────
+
+  if (action === "bulk_invites") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    let query = sb
+      .from("academy_bulk_invites")
+      .select("id, classroom_id, email, first_name, last_name, status, invited_at, joined_at, error")
+      .eq("academy_id", academyId)
+      .order("invited_at", { ascending: false });
+    if (classroomId) query = query.eq("classroom_id", classroomId);
+    const { data, error } = await query.limit(500);
+    if (error) return json(500, { error: "Failed to load bulk invites", detail: error.message });
+    return json(200, { bulk_invites: data ?? [] });
+  }
+
   const { data, error } = await sb
     .from("academy_entitlements")
     .select("id, academy_id, contact_id, user_id, offer_id, payment_id, grant_type, resource_type, resource_id, capability_key, quantity, remaining, starts_at, expires_at, status, source, metadata, created_at, updated_at")
@@ -2628,6 +2826,305 @@ serve(async (req) => {
 
         if (error) return json(500, { error: "Failed to create entitlement", detail: error.message });
         return json(200, { entitlement: data });
+      }
+
+      // ── LMS Write Actions ─────────────────────────────────────────────────
+
+      if (actionBody === "create_assignment") {
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        const title = normalizeText(body?.title, 220);
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!title) return json(400, { error: "title is required" });
+
+        const { data: classroomRow } = await sb.from("academy_classrooms").select("id").eq("id", classroomId).eq("academy_id", academyId).maybeSingle();
+        if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
+
+        const { count: pos } = await sb.from("academy_assignments").select("id", { count: "exact", head: true }).eq("classroom_id", classroomId).neq("status", "archived");
+
+        const payload = {
+          academy_id: academyId,
+          classroom_id: classroomId,
+          title,
+          description: normalizeText(body?.description, 4000) || null,
+          assignment_type: normalizeText(body?.assignment_type, 40) || "task",
+          experience_id: normalizeText(body?.experience_id, 64) || null,
+          due_at: body?.due_at ? String(body.due_at) : null,
+          released_at: body?.released_at ? String(body.released_at) : new Date().toISOString(),
+          prerequisite_id: normalizeText(body?.prerequisite_id, 64) || null,
+          position: typeof body?.position === "number" ? Math.floor(body.position) : (pos ?? 0),
+          max_score: typeof body?.max_score === "number" ? body.max_score : null,
+          score_weight: typeof body?.score_weight === "number" ? body.score_weight : 1.0,
+          status: normalizeText(body?.status, 20) || "active",
+          metadata: typeof body?.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata) ? body.metadata : {},
+          created_by: userId,
+        };
+
+        const { data, error } = await sb.from("academy_assignments").insert(payload)
+          .select("id, academy_id, classroom_id, title, description, assignment_type, experience_id, due_at, released_at, prerequisite_id, position, max_score, score_weight, status, metadata, created_by, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to create assignment", detail: error.message });
+        return json(200, { assignment: data });
+      }
+
+      if (actionBody === "update_assignment") {
+        const assignmentId = normalizeText(body?.assignment_id ?? body?.id, 64);
+        if (!assignmentId) return json(400, { error: "assignment_id is required" });
+
+        const { data: existing } = await sb.from("academy_assignments").select("id, classroom_id").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
+        if (!existing?.id) return json(404, { error: "Assignment not found" });
+
+        const patch: Record<string, unknown> = {};
+        if (typeof body?.title === "string") patch.title = normalizeText(body.title, 220);
+        if (typeof body?.description !== "undefined") patch.description = normalizeText(body.description, 4000) || null;
+        if (typeof body?.assignment_type === "string") patch.assignment_type = normalizeText(body.assignment_type, 40);
+        if (typeof body?.experience_id !== "undefined") patch.experience_id = normalizeText(body.experience_id, 64) || null;
+        if (typeof body?.due_at !== "undefined") patch.due_at = body.due_at ? String(body.due_at) : null;
+        if (typeof body?.released_at !== "undefined") patch.released_at = body.released_at ? String(body.released_at) : null;
+        if (typeof body?.prerequisite_id !== "undefined") patch.prerequisite_id = normalizeText(body.prerequisite_id, 64) || null;
+        if (typeof body?.position === "number") patch.position = Math.floor(body.position);
+        if (typeof body?.max_score !== "undefined") patch.max_score = typeof body.max_score === "number" ? body.max_score : null;
+        if (typeof body?.score_weight === "number") patch.score_weight = body.score_weight;
+        if (typeof body?.status === "string") patch.status = normalizeText(body.status, 20);
+
+        if (Object.keys(patch).length === 0) return json(400, { error: "No fields to update" });
+
+        const { data, error } = await sb.from("academy_assignments").update(patch).eq("id", assignmentId).eq("academy_id", academyId)
+          .select("id, academy_id, classroom_id, title, description, assignment_type, experience_id, due_at, released_at, prerequisite_id, position, max_score, score_weight, status, metadata, created_by, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update assignment", detail: error.message });
+        return json(200, { assignment: data });
+      }
+
+      if (actionBody === "submit_assignment") {
+        const assignmentId = normalizeText(body?.assignment_id, 64);
+        const contactId = normalizeText(body?.contact_id, 64);
+        if (!assignmentId) return json(400, { error: "assignment_id is required" });
+        if (!contactId) return json(400, { error: "contact_id is required" });
+
+        const { data: asgn } = await sb.from("academy_assignments").select("id, classroom_id, max_score").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
+        if (!asgn?.id) return json(404, { error: "Assignment not found" });
+
+        const { data: contact } = await sb.from("academy_contacts").select("id, user_id").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
+        if (!contact?.id) return json(404, { error: "Contact not found" });
+
+        const score = typeof body?.score === "number" ? body.score : null;
+        const maxScore = typeof body?.max_score === "number" ? body.max_score : (asgn.max_score ?? null);
+        const submissionStatus = score !== null ? "graded" : "submitted";
+
+        const payload = {
+          academy_id: academyId,
+          assignment_id: assignmentId,
+          classroom_id: asgn.classroom_id,
+          contact_id: contactId,
+          user_id: (contact.user_id as string | null) ?? null,
+          session_id: normalizeText(body?.session_id, 64) || null,
+          score,
+          max_score: maxScore,
+          status: submissionStatus,
+          submitted_at: new Date().toISOString(),
+          notes: normalizeText(body?.notes, 2000) || null,
+          metadata: typeof body?.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata) ? body.metadata : {},
+        };
+
+        const { data, error } = await sb.from("academy_submissions").upsert(payload, { onConflict: "assignment_id,contact_id" })
+          .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, notes, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
+        return json(200, { submission: data });
+      }
+
+      if (actionBody === "grade_submission") {
+        const submissionId = normalizeText(body?.submission_id ?? body?.id, 64);
+        const assignmentId = normalizeText(body?.assignment_id, 64);
+        const contactId = normalizeText(body?.contact_id, 64);
+        const score = typeof body?.score === "number" ? body.score : null;
+
+        if (score === null) return json(400, { error: "score is required" });
+
+        let targetId = submissionId;
+        if (!targetId && assignmentId && contactId) {
+          const { data: sub } = await sb.from("academy_submissions").select("id").eq("assignment_id", assignmentId).eq("contact_id", contactId).eq("academy_id", academyId).maybeSingle();
+          targetId = sub?.id ? String(sub.id) : null;
+        }
+        if (!targetId) return json(404, { error: "Submission not found" });
+
+        const patch: Record<string, unknown> = {
+          score,
+          status: "graded",
+          graded_at: new Date().toISOString(),
+          graded_by: userId,
+        };
+        if (typeof body?.max_score === "number") patch.max_score = body.max_score;
+        if (typeof body?.notes === "string") patch.notes = normalizeText(body.notes, 2000) || null;
+
+        const { data, error } = await sb.from("academy_submissions").update(patch).eq("id", targetId).eq("academy_id", academyId)
+          .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, graded_by, notes, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to grade submission", detail: error.message });
+        return json(200, { submission: data });
+      }
+
+      if (actionBody === "mark_attendance") {
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+
+        const records = Array.isArray(body?.records) ? body.records as Array<Record<string, unknown>> : [];
+        if (records.length === 0) return json(400, { error: "records array is required" });
+        if (records.length > 200) return json(400, { error: "Maximum 200 attendance records per call" });
+
+        const sessionDate = normalizeText(body?.session_date, 20) || new Date().toISOString().slice(0, 10);
+
+        const rows = records.map((r) => ({
+          academy_id: academyId,
+          classroom_id: classroomId,
+          contact_id: normalizeText(r.contact_id, 64),
+          user_id: normalizeText(r.user_id, 64) || null,
+          session_date: sessionDate,
+          status: (["present", "absent", "late", "excused"].includes(String(r.status ?? "")) ? String(r.status) : "present"),
+          notes: normalizeText(r.notes, 500) || null,
+          marked_by: userId,
+          marked_at: new Date().toISOString(),
+        })).filter((r) => r.contact_id);
+
+        const { data, error } = await sb.from("academy_attendance")
+          .upsert(rows, { onConflict: "classroom_id,contact_id,session_date" })
+          .select("id, classroom_id, contact_id, session_date, status, notes");
+        if (error) return json(500, { error: "Failed to mark attendance", detail: error.message });
+        return json(200, { attendance: data ?? [], count: (data ?? []).length });
+      }
+
+      if (actionBody === "bulk_invite") {
+        const classroomId = normalizeText(body?.classroom_id, 64) || null;
+        const entries = Array.isArray(body?.contacts) ? body.contacts as Array<Record<string, unknown>> : [];
+        if (entries.length === 0) return json(400, { error: "contacts array is required" });
+        if (entries.length > 200) return json(400, { error: "Maximum 200 contacts per bulk invite" });
+
+        const results: Array<Record<string, unknown>> = [];
+
+        for (const entry of entries) {
+          const email = normalizeEmail(entry.email) || null;
+          const firstName = normalizeText(entry.first_name, 120) || "";
+          const lastName = normalizeText(entry.last_name, 120) || "";
+
+          if (!email) {
+            results.push({ email: entry.email, status: "failed", error: "Invalid email" });
+            continue;
+          }
+
+          try {
+            // Upsert the contact
+            let contactId: string | null = null;
+            const { data: existingContact } = await sb.from("academy_contacts").select("id").eq("academy_id", academyId).eq("email", email).maybeSingle();
+            if (existingContact?.id) {
+              contactId = String(existingContact.id);
+            } else {
+              const { data: userRow } = await sb.from("users").select("id").eq("email", email).maybeSingle();
+              const { data: newContact, error: contactErr } = await sb.from("academy_contacts").insert({
+                academy_id: academyId,
+                first_name: firstName,
+                last_name: lastName,
+                email,
+                user_id: userRow?.id ? String(userRow.id) : null,
+                status: "active",
+                created_by: userId,
+              }).select("id").maybeSingle();
+              if (contactErr) { results.push({ email, status: "failed", error: contactErr.message }); continue; }
+              contactId = newContact?.id ? String(newContact.id) : null;
+            }
+
+            if (classroomId && contactId) {
+              await sb.from("academy_classroom_memberships").upsert({
+                academy_id: academyId,
+                classroom_id: classroomId,
+                contact_id: contactId,
+                role: "student",
+              }, { onConflict: "classroom_id,contact_id", ignoreDuplicates: true });
+            }
+
+            await sb.from("academy_bulk_invites").upsert({
+              academy_id: academyId,
+              classroom_id: classroomId,
+              invited_by: userId,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              status: "sent",
+              invited_at: new Date().toISOString(),
+            }, { onConflict: "academy_id,email" }).select();
+
+            results.push({ email, contact_id: contactId, status: "ok" });
+          } catch (e) {
+            results.push({ email, status: "failed", error: e instanceof Error ? e.message : String(e) });
+          }
+        }
+
+        const ok = results.filter((r) => r.status === "ok").length;
+        const failed = results.filter((r) => r.status === "failed").length;
+        return json(200, { results, summary: { ok, failed, total: results.length } });
+      }
+
+      if (actionBody === "update_classroom_settings") {
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+
+        const { data: existing } = await sb.from("academy_classrooms").select("id, metadata, score_weights").eq("id", classroomId).eq("academy_id", academyId).maybeSingle();
+        if (!existing?.id) return json(404, { error: "Classroom not found" });
+
+        const patch: Record<string, unknown> = {};
+        if (typeof body?.name === "string") patch.name = normalizeText(body.name, 160);
+        if (typeof body?.description !== "undefined") patch.description = normalizeText(body.description, 2000) || null;
+        if (typeof body?.is_active === "boolean") patch.is_active = body.is_active;
+        if (typeof body?.score_weights === "object" && body.score_weights !== null && !Array.isArray(body.score_weights)) {
+          patch.score_weights = body.score_weights;
+        }
+
+        if (Object.keys(patch).length === 0) return json(400, { error: "No settings to update" });
+
+        const { data, error } = await sb.from("academy_classrooms").update(patch).eq("id", classroomId).eq("academy_id", academyId)
+          .select("id, academy_id, name, description, is_active, score_weights, metadata, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update classroom settings", detail: error.message });
+        return json(200, { classroom: data });
+      }
+
+      if (actionBody === "export_gradebook") {
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+
+        const [assignmentsResult, submissionsResult, membersResult] = await Promise.all([
+          sb.from("academy_assignments").select("id, title, assignment_type, due_at, max_score, position").eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived").order("position").limit(200),
+          sb.from("academy_submissions").select("assignment_id, contact_id, score, max_score, status, submitted_at").eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
+          sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, last_name, email)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student"]).limit(500),
+        ]);
+
+        const assignments = (assignmentsResult.data ?? []) as Array<Record<string, unknown>>;
+        const subMap = new Map<string, Record<string, unknown>>();
+        for (const s of (submissionsResult.data ?? []) as Array<Record<string, unknown>>) {
+          subMap.set(`${s.assignment_id}__${s.contact_id}`, s);
+        }
+
+        const headers = ["First Name", "Last Name", "Email", ...assignments.map((a) => String(a.title ?? ""))];
+        const csvRows = [headers.join(",")];
+
+        for (const m of (membersResult.data ?? []) as Array<Record<string, unknown>>) {
+          const c = (m.academy_contacts as Record<string, unknown>) ?? {};
+          const contactId = String(c.id ?? "");
+          const row = [
+            `"${String(c.first_name ?? "")}"`,
+            `"${String(c.last_name ?? "")}"`,
+            `"${String(c.email ?? "")}"`,
+            ...assignments.map((a) => {
+              const sub = subMap.get(`${a.id}__${contactId}`);
+              return sub?.score !== null && sub?.score !== undefined ? String(sub.score) : "";
+            }),
+          ];
+          csvRows.push(row.join(","));
+        }
+
+        return new Response(csvRows.join("\n"), {
+          status: 200,
+          headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="gradebook.csv"`, ...corsHeaders },
+        });
       }
 
       return json(400, { error: "Unknown action" });
