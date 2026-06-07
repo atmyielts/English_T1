@@ -52,7 +52,7 @@ serve(async (req) => {
     }
 
     if (action === "get_submission") {
-      const subId = String(url.searchParams.get("submission_id") || body?.submission_id ?? "").trim();
+      const subId = String(url.searchParams.get("submission_id") || body?.submission_id || "").trim();
       if (!subId) return json(400, { error: "submission_id required" });
       const { data } = await sb.from("peer_review_submissions")
         .select("id, user_id, exam_type, task_type, prompt_text, essay_text, word_count, target_band, status, reviews_count, reviews_needed, created_at")
