@@ -3457,6 +3457,50 @@ export const academyBulkInvite = (accessToken: string, body: { academy_id: strin
 export const academyUpdateClassroomSettings = (accessToken: string, body: { academy_id: string; classroom_id: string; name?: string; description?: string | null; is_active?: boolean; score_weights?: Json | null }) =>
   academyPost<{ classroom: Json }>(accessToken, { action: 'update_classroom_settings', ...body });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Certificates
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type IssuedCertificate = { id: string; public_token: string; exam_type: string; overall_band: number | null; overall_score: number | null; candidate_name: string; exam_date: string; center_name: string | null; issued_at: string };
+
+export const certificateIssue = async (accessToken: string, body: { session_id?: string; exam_type: string; candidate_name?: string; overall_band?: number | null; overall_score?: number | null; center_name?: string }) =>
+  (await fetch(`${edgeBase}/certificates`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'issue', ...body }) }).then((r) => r.json())) as { certificate: IssuedCertificate; share_url: string };
+
+export const certificateList = async (accessToken: string) =>
+  (await fetch(`${edgeBase}/certificates?action=list`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { certificates: IssuedCertificate[] };
+
+export const certificateGet = async (token: string) =>
+  (await fetch(`${edgeBase}/certificates?token=${encodeURIComponent(token)}`).then((r) => r.json())) as { certificate: IssuedCertificate & { exam_config: Json } };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Score Prediction
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ScorePrediction = { exam_type: string; current_score: number; predicted_next: number; confidence_low: number; confidence_high: number; trend: 'improving' | 'stable' | 'declining'; data_points: number; uses_band: boolean; max_score: number; history: { index: number; date: string; score: number }[]; message: string };
+
+export const scorePredictions = async (accessToken: string, examType?: string) =>
+  (await fetch(`${edgeBase}/score-prediction${examType ? `?exam_type=${encodeURIComponent(examType)}` : ''}`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { predictions: ScorePrediction[]; total_exams: number };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Parent Report
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const parentReportGenerateToken = async (accessToken: string, body: { academy_id: string; contact_id: string; label?: string; expires_in_days?: number }) =>
+  (await fetch(`${edgeBase}/parent-report`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate_token', ...body }) }).then((r) => r.json())) as { token: { id: string; token: string; label: string | null; expires_at: string | null }; share_url: string; contact: { id: string; name: string } };
+
+export const parentReportListTokens = async (accessToken: string, academyId: string) =>
+  (await fetch(`${edgeBase}/parent-report?action=list_tokens&academy_id=${encodeURIComponent(academyId)}`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { tokens: Json[] };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Writing Tutor
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const writingTutorQuota = async (accessToken: string) =>
+  (await fetch(`${edgeBase}/writing-tutor?action=quota`, { headers: apiHeaders(accessToken) }).then((r) => r.json())) as { used: number; limit: number; remaining: number; has_paid_access: boolean };
+
+export const writingTutorGrade = async (accessToken: string, body: { essay: string; prompt?: string; exam_type?: string; task_type?: string }) =>
+  (await fetch(`${edgeBase}/writing-tutor`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'grade', ...body }) }).then((r) => r.json())) as Json;
+
 export const academyExportGradebook = async (accessToken: string, academyId: string, classroomId: string): Promise<string> => {
   const res = await fetch(`${edgeBase}/academy`, {
     method: 'POST',
