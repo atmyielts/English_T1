@@ -47,6 +47,7 @@ const CandidateEntryPage = lazyWithChunkRetry(() => import('./pages/CandidateEnt
 const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLandingPage').then((m) => ({ default: m.ReferralLandingPage })));
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePage').then((m) => ({ default: m.CenterOfficePage })));
+const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyControlPage').then((m) => ({ default: m.AcademyControlPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
@@ -137,6 +138,7 @@ function App() {
             <Route path="/student-workspace" element={<Navigate to="/" replace />} />
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
+            <Route path="/academy-control" element={<AcademyControlPage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
             <Route path="/teacher" element={<Navigate to="/partner" replace />} />
