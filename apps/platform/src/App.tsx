@@ -51,6 +51,7 @@ const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyContr
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
 const WritingTutorPage = lazyWithChunkRetry(() => import('./pages/WritingTutorPage').then((m) => ({ default: m.WritingTutorPage })));
+const StudentAcademyPage = lazyWithChunkRetry(() => import('./pages/StudentAcademyPage').then((m) => ({ default: m.StudentAcademyPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
@@ -144,6 +145,7 @@ function App() {
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
             <Route path="/academy-control" element={<AcademyControlPage />} />
+            <Route path="/my-academy" element={<StudentAcademyPage />} />
             <Route path="/writing-tutor" element={<WritingTutorPage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
