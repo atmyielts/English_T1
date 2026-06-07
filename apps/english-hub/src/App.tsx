@@ -1,15 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { withEnglishRouteContext } from '../../english-shared/src/routeContext';
 import { supabase } from './lib/supabase';
 import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/learningProfileClient';
 import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
+import { getMe } from './lib/platformClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
+import { EntitledRoute } from './components/EntitledRoute';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { OfflineBanner } from './components/OfflineBanner';
 import { VoiceFirstFab } from './components/VoiceFirstFab';
 import { StudioPage } from './pages/StudioPage';
+import ReadingApp from './modules/reading/App';
+import WritingApp from './modules/writing/App';
+import ListeningApp from './modules/listening/App';
+import SpeakingApp from './modules/speaking/App';
+import GrammarApp from './modules/grammar/App';
+import VocabularyApp from './modules/vocabulary/App';
+import ImmersionApp from './modules/immersion/App';
 
 type Service = {
   key: string;
@@ -55,13 +64,28 @@ type TimelineItem = {
   when: string;
 };
 
+type EnglishProductSlug =
+  | 'english-reading'
+  | 'english-listening'
+  | 'english-writing'
+  | 'english-speaking'
+  | 'english-grammar'
+  | 'english-vocabulary'
+  | 'english-immersion';
+
+type ModuleRoute = {
+  path: string;
+  productSlug: EnglishProductSlug;
+  element: ReactNode;
+};
+
 const SERVICES: Service[] = [
   {
     key: 'reading',
     label: 'Reading',
     role: 'Input + structure',
     summary: 'Interactive text, sentence structure work, and cloze-based comprehension.',
-    href: 'https://reading.english.schood.online',
+    href: '/reading',
     className: 'is-reading',
     fallbackProgress: 82,
   },
@@ -70,7 +94,7 @@ const SERVICES: Service[] = [
     label: 'Listening',
     role: 'Comprehension training',
     summary: 'Sentence-level listening, dictation loops, and missed-word recovery.',
-    href: 'https://listening.english.schood.online',
+    href: '/listening',
     className: 'is-listening',
     fallbackProgress: 78,
   },
@@ -79,7 +103,7 @@ const SERVICES: Service[] = [
     label: 'Writing',
     role: 'Structured output',
     summary: 'Task writing with active correction, rewrites, and grammar-aware feedback.',
-    href: 'https://writing.english.schood.online',
+    href: '/writing',
     className: 'is-writing',
     fallbackProgress: 73,
   },
@@ -88,7 +112,7 @@ const SERVICES: Service[] = [
     label: 'Speaking',
     role: 'Active production',
     summary: 'Guided speaking prompts, conversation mode, and fluency-focused drills.',
-    href: 'https://speaking.english.schood.online',
+    href: '/speaking',
     className: 'is-speaking',
     fallbackProgress: 69,
   },
@@ -97,7 +121,7 @@ const SERVICES: Service[] = [
     label: 'Grammar',
     role: 'Precision fixing',
     summary: 'Targeted error drills and short, repeated pattern training loops.',
-    href: 'https://grammar.english.schood.online',
+    href: '/grammar',
     className: 'is-grammar',
     fallbackProgress: 81,
   },
@@ -106,7 +130,7 @@ const SERVICES: Service[] = [
     label: 'Vocabulary',
     role: 'Memory system',
     summary: 'Context-based review with adaptive recall fed from other English services.',
-    href: 'https://vocabulary.english.schood.online',
+    href: '/vocabulary',
     className: 'is-vocabulary',
     fallbackProgress: 76,
   },
@@ -115,7 +139,7 @@ const SERVICES: Service[] = [
     label: 'Immersion',
     role: 'Real-world application',
     summary: 'Scenario missions that combine reading, speaking, and writing in context.',
-    href: 'https://immersion.english.schood.online',
+    href: '/immersion',
     className: 'is-immersion',
     fallbackProgress: 71,
   },
@@ -132,6 +156,26 @@ const PRODUCT_LABEL_BY_ID: Record<string, string> = {
   'b1c98e87-84d3-4ddc-8f07-c72bcf7a716a': 'Vocabulary',
   '7ce43052-2f35-42ca-b305-0d9c358f73f0': 'Immersion',
 };
+
+const PRODUCT_IDS_BY_SLUG: Record<EnglishProductSlug, string> = {
+  'english-reading': '0e8ad198-6284-4406-9e07-11ba7da0f42d',
+  'english-listening': 'f9c4a14b-d5a2-4a66-9cd8-5b3a0d6e7bf1',
+  'english-writing': '2f7c2d09-08e4-4f9f-9e8d-4f5916ef8532',
+  'english-speaking': '94ac6f14-15f3-4f35-a8a2-01f5aaecf66d',
+  'english-grammar': '6c4f0566-6f50-4fb4-b176-c4397ecb8ec5',
+  'english-vocabulary': 'b1c98e87-84d3-4ddc-8f07-c72bcf7a716a',
+  'english-immersion': '7ce43052-2f35-42ca-b305-0d9c358f73f0',
+};
+
+const MODULE_ROUTES: ModuleRoute[] = [
+  { path: '/reading/*', productSlug: 'english-reading', element: <ReadingApp /> },
+  { path: '/writing/*', productSlug: 'english-writing', element: <WritingApp /> },
+  { path: '/listening/*', productSlug: 'english-listening', element: <ListeningApp /> },
+  { path: '/speaking/*', productSlug: 'english-speaking', element: <SpeakingApp /> },
+  { path: '/grammar/*', productSlug: 'english-grammar', element: <GrammarApp /> },
+  { path: '/vocabulary/*', productSlug: 'english-vocabulary', element: <VocabularyApp /> },
+  { path: '/immersion/*', productSlug: 'english-immersion', element: <ImmersionApp /> },
+];
 
 const SERVICE_TASK_LIBRARY: Record<Service['key'], Array<{ title: string; intent: string; skill: string }>> = {
   reading: [
@@ -302,14 +346,29 @@ const buildTaskHref = (
   },
 ): string => {
   const routePath = serviceRouteForIntent(service.key, payload.intent);
-  const targetUrl = new URL(routePath, `${service.href}/`);
-  return withEnglishRouteContext(targetUrl.toString(), {
+  return withEnglishRouteContext(`${service.href}${routePath}`, {
     sourceService: payload.sourceService ?? 'english-hub',
     intent: payload.intent,
     skill: payload.skill,
     reason: payload.reason,
     planItemId: payload.planItemId ?? null,
     targetId: payload.targetId ?? null,
+  });
+};
+
+const hasActiveEnglishProduct = (
+  entitlements: Array<{ resource_type: string; resource_id: string | null; ends_at: string | null }>,
+  productSlug: EnglishProductSlug,
+): boolean => {
+  const productId = PRODUCT_IDS_BY_SLUG[productSlug];
+  const now = Date.now();
+
+  return entitlements.some((entry) => {
+    if (entry.resource_type !== 'product') return false;
+    if (entry.resource_id !== productSlug && entry.resource_id !== productId) return false;
+    if (!entry.ends_at) return true;
+    const endsAt = new Date(entry.ends_at).getTime();
+    return Number.isNaN(endsAt) || endsAt > now;
   });
 };
 
@@ -329,6 +388,7 @@ const renderStatusStrip = ({
   profileSnapshot,
   hubPlanLoading,
   hubPlanError,
+  entitlementError,
 }: {
   session: Session | null;
   profileLoading: boolean;
@@ -336,6 +396,7 @@ const renderStatusStrip = ({
   profileSnapshot: LearningProfileSnapshot | null;
   hubPlanLoading: boolean;
   hubPlanError: string | null;
+  entitlementError?: string | null;
 }) => {
   if (!session) return null;
 
@@ -345,6 +406,7 @@ const renderStatusStrip = ({
       {profileError ? <div className="status-pill frame warning">{profileError}</div> : null}
       {hubPlanLoading ? <div className="status-pill frame">Generating hub plan...</div> : null}
       {hubPlanError ? <div className="status-pill frame warning">{hubPlanError}</div> : null}
+      {entitlementError ? <div className="status-pill frame warning">{entitlementError}</div> : null}
       {!profileLoading && !profileError && profileSnapshot?.scope?.language_code ? (
         <div className="status-pill frame">
           Scope: {String(profileSnapshot.scope.language_name ?? 'English')} ({String(profileSnapshot.scope.language_code).toUpperCase()})
@@ -369,6 +431,10 @@ const App = () => {
   const [hubPlanLoading, setHubPlanLoading] = useState(false);
   const [hubPlanError, setHubPlanError] = useState<string | null>(null);
   const [hubPlanSnapshot, setHubPlanSnapshot] = useState<HubPlanSnapshot | null>(null);
+  const [entitlementLoading, setEntitlementLoading] = useState(false);
+  const [entitlementError, setEntitlementError] = useState<string | null>(null);
+  const [entitlementResolved, setEntitlementResolved] = useState(false);
+  const [unlockedProductSlugs, setUnlockedProductSlugs] = useState<Set<EnglishProductSlug>>(new Set());
   const [planSeed, setPlanSeed] = useState(1);
   const [selectedPlanTaskId, setSelectedPlanTaskId] = useState<string | null>(null);
 
@@ -445,6 +511,55 @@ const App = () => {
     };
 
     void loadNotebook();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    if (!session?.access_token) {
+      setUnlockedProductSlugs(new Set());
+      setEntitlementError(null);
+      setEntitlementResolved(false);
+      setEntitlementLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const loadEntitlements = async () => {
+      setEntitlementLoading(true);
+      setEntitlementError(null);
+      try {
+        const me = await getMe(session.access_token);
+        if (cancelled) return;
+        setUnlockedProductSlugs(
+          new Set(
+            (Object.keys(PRODUCT_IDS_BY_SLUG) as EnglishProductSlug[]).filter((productSlug) =>
+              hasActiveEnglishProduct(me.entitlements, productSlug),
+            ),
+          ),
+        );
+        setEntitlementResolved(true);
+      } catch (error) {
+        if (cancelled) return;
+        const status = (error as { status?: number } | null)?.status ?? null;
+        if (status === 401 || status === 403) {
+          try {
+            await supabase.auth.signOut({ scope: 'local' });
+          } catch {
+            // Ignore sign-out failures.
+          }
+          return;
+        }
+        setUnlockedProductSlugs(new Set());
+        setEntitlementError('Could not verify English module access right now.');
+        setEntitlementResolved(true);
+      } finally {
+        if (!cancelled) setEntitlementLoading(false);
+      }
+    };
+
+    void loadEntitlements();
     return () => {
       cancelled = true;
     };
@@ -1026,6 +1141,22 @@ const App = () => {
         </header>
 
         <Routes>
+          {MODULE_ROUTES.map((moduleRoute) => (
+            <Route
+              key={moduleRoute.path}
+              path={moduleRoute.path}
+              element={
+                <EntitledRoute
+                  productSlug={moduleRoute.productSlug}
+                  hasAccess={unlockedProductSlugs.has(moduleRoute.productSlug)}
+                  checkingAccess={entitlementLoading || !entitlementResolved}
+                >
+                  {moduleRoute.element}
+                </EntitledRoute>
+              }
+            />
+          ))}
+
           <Route
             path="/dashboard"
             element={
@@ -1073,6 +1204,7 @@ const App = () => {
                   profileSnapshot,
                   hubPlanLoading,
                   hubPlanError,
+                  entitlementError,
                 })}
 
                 <section className="dashboard-grid">
@@ -1222,6 +1354,7 @@ const App = () => {
                   profileSnapshot,
                   hubPlanLoading,
                   hubPlanError,
+                  entitlementError,
                 })}
 
                 <section className="dashboard-grid">
@@ -1344,6 +1477,7 @@ const App = () => {
                   profileSnapshot,
                   hubPlanLoading,
                   hubPlanError,
+                  entitlementError,
                 })}
 
                 <section className="dashboard-grid">
@@ -1439,7 +1573,7 @@ const App = () => {
                         intent: 'leitner-review',
                         skill: 'vocabulary',
                         reason: 'hub-review',
-                      }).replace('reading.english.schood.online', 'vocabulary.english.schood.online')}
+                      }).replace('/reading/', '/vocabulary/')}
                     >
                       Open vocabulary review
                     </a>
@@ -1456,6 +1590,7 @@ const App = () => {
                   profileSnapshot,
                   hubPlanLoading,
                   hubPlanError,
+                  entitlementError,
                 })}
 
                 <section className="dashboard-grid">
@@ -1478,7 +1613,7 @@ const App = () => {
                         </li>
                       ))}
                     </ul>
-                    <a className="btn btn-ghost" href="https://vocabulary.english.schood.online/review">
+                    <a className="btn btn-ghost" href="/vocabulary/review">
                       Open vocabulary review
                     </a>
                   </article>
@@ -1569,6 +1704,7 @@ const App = () => {
                   profileSnapshot,
                   hubPlanLoading,
                   hubPlanError,
+                  entitlementError,
                 })}
 
                 <section className="focus-map frame">

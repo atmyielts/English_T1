@@ -13,13 +13,6 @@
     "apps/toefl-playbook",
     "apps/itep-simulator",
     "apps/academy",
-    "apps/english-reading",
-    "apps/english-writing",
-    "apps/english-listening",
-    "apps/english-speaking",
-    "apps/english-grammar",
-    "apps/english-vocabulary",
-    "apps/english-immersion",
     "apps/english-hub",
     "packages/*"
   ],

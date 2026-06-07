@@ -57,34 +57,6 @@ jobs:
             workspace: apps/itep-simulator
             dist: apps/itep-simulator/dist
             project: schood-itep
-          - label: reading
-            workspace: apps/english-reading
-            dist: apps/english-reading/dist
-            project: schood-reading
-          - label: writing
-            workspace: apps/english-writing
-            dist: apps/english-writing/dist
-            project: schood-writing
-          - label: listening
-            workspace: apps/english-listening
-            dist: apps/english-listening/dist
-            project: schood-listening
-          - label: speaking
-            workspace: apps/english-speaking
-            dist: apps/english-speaking/dist
-            project: schood-speaking
-          - label: grammar
-            workspace: apps/english-grammar
-            dist: apps/english-grammar/dist
-            project: schood-grammar
-          - label: vocabulary
-            workspace: apps/english-vocabulary
-            dist: apps/english-vocabulary/dist
-            project: schood-vocabulary
-          - label: immersion
-            workspace: apps/english-immersion
-            dist: apps/english-immersion/dist
-            project: schood-immersion
           - label: english-hub
             workspace: apps/english-hub
             dist: apps/english-hub/dist

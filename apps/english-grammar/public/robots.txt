@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://grammar.english.schood.online/sitemap.xml
