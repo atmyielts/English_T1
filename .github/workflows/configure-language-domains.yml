@@ -10,34 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: reading
-            pages_project: schood-reading
-            custom_domain: reading.english.schood.online
-            cname_target: schood-reading.pages.dev
-          - label: writing
-            pages_project: schood-writing
-            custom_domain: writing.english.schood.online
-            cname_target: schood-writing.pages.dev
-          - label: listening
-            pages_project: schood-listening
-            custom_domain: listening.english.schood.online
-            cname_target: schood-listening.pages.dev
-          - label: speaking
-            pages_project: schood-speaking
-            custom_domain: speaking.english.schood.online
-            cname_target: schood-speaking.pages.dev
-          - label: grammar
-            pages_project: schood-grammar
-            custom_domain: grammar.english.schood.online
-            cname_target: schood-grammar.pages.dev
-          - label: vocabulary
-            pages_project: schood-vocabulary
-            custom_domain: vocabulary.english.schood.online
-            cname_target: schood-vocabulary.pages.dev
-          - label: immersion
-            pages_project: schood-immersion
-            custom_domain: immersion.english.schood.online
-            cname_target: schood-immersion.pages.dev
           - label: english-hub
             pages_project: schood-english
             custom_domain: english.schood.online
