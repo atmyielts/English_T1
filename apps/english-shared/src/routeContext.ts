@@ -49,7 +49,12 @@ export const withEnglishRouteContext = (
   href: string,
   context: Partial<EnglishRouteContext>,
 ): string => {
-  const url = new URL(href);
+  const isAbsoluteHref = /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith('//');
+  const base =
+    typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://english.schood.online';
+  const url = new URL(href, base);
   const entries: Array<[string, string | null | undefined]> = [
     ['source_service', context.sourceService],
     ['intent', context.intent],
@@ -63,7 +68,7 @@ export const withEnglishRouteContext = (
     if (value && value.trim()) url.searchParams.set(key, value.trim());
   });
 
-  return url.toString();
+  return isAbsoluteHref ? url.toString() : `${url.pathname}${url.search}${url.hash}`;
 };
 
 export const formatRouteContextReason = (reason: string | null): string | null =>
