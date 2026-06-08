@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Serve the bot from the Schood domain instead of the default *.workers.dev.
+routes = [
+  { pattern = "bot.schood.online", custom_domain = true },
+]
+
 [vars]
 SITE_URL = "https://schood.online"
 TELEGRAM_BOT_NAME = "schoodonlinebot"
