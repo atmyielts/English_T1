@@ -275,6 +275,96 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
 };
 
 // ============================================================
+// Exam readiness — countdown + predicted-vs-target verdict
+// ============================================================
+
+interface ReadinessProps {
+  accessToken: string | null;
+}
+
+export const ExamReadinessCard = ({ accessToken }: ReadinessProps) => {
+  const [narrative, setNarrative] = useState<PracticeNarrativeResponse | null>(null);
+  const [predictor, setPredictor] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    let cancelled = false;
+    practiceNarrativeGet(accessToken).then((r) => { if (!cancelled) setNarrative(r); }).catch(() => null);
+    practiceTrajectoryGet(accessToken)
+      .then((r) => { if (!cancelled) setPredictor(typeof r.predictor?.overall === 'number' ? r.predictor.overall : null); })
+      .catch(() => null);
+    return () => { cancelled = true; };
+  }, [accessToken]);
+
+  if (!narrative) return null;
+
+  const target = narrative.target_band;
+  const targetDate = narrative.target_date ? new Date(narrative.target_date) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysLeft = targetDate
+    ? Math.ceil((targetDate.getTime() - today.getTime()) / 86400000)
+    : null;
+  const gap = predictor != null ? Math.round((target - predictor) * 10) / 10 : null;
+
+  let tone = '#7a7263';
+  let verdict = 'Keep practising — a few more sessions and we can predict your readiness.';
+  let cta: { label: string; to: string } = { label: 'Start today’s session', to: '/today' };
+
+  if (!targetDate) {
+    tone = '#365c96';
+    verdict = 'Set your exam date so we can track readiness and pace your plan.';
+    cta = { label: 'Set exam date', to: '/plan' };
+  } else if (daysLeft != null && daysLeft < 0) {
+    tone = '#9b2c2c';
+    verdict = 'Your exam date has passed — set a new date to keep a live readiness target.';
+    cta = { label: 'Update exam date', to: '/plan' };
+  } else if (predictor != null && gap != null) {
+    if (gap <= 0) {
+      tone = '#166534';
+      verdict = `On track — your predicted band (${predictor.toFixed(1)}) is at or above your ${target.toFixed(1)} target. Hold the line and keep reviews warm.`;
+      cta = { label: 'Take a timed mock', to: '/generator' };
+    } else if (gap <= 0.5) {
+      tone = '#9a6b00';
+      verdict = `Close — predicted ${predictor.toFixed(1)} vs target ${target.toFixed(1)}. A focused push on your weak types should close the gap.`;
+      cta = { label: 'Drill weak types', to: '/practice/stats/by-type' };
+    } else {
+      tone = '#9b2c2c';
+      verdict = `Behind — predicted ${predictor.toFixed(1)} vs target ${target.toFixed(1)} (${gap.toFixed(1)} to go). Prioritise daily sessions on your weakest sections.`;
+      cta = { label: 'Start today’s session', to: '/today' };
+    }
+  }
+
+  return (
+    <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 14, borderLeft: `3px solid ${tone}` }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Exam readiness</p>
+          <h2 style={{ margin: '4px 0 2px' }}>
+            {daysLeft != null && daysLeft >= 0
+              ? <>{daysLeft} day{daysLeft === 1 ? '' : 's'} <span className="muted" style={{ fontWeight: 400 }}>to your exam</span></>
+              : 'How ready are you?'}
+          </h2>
+          <p className="muted" style={{ margin: 0, maxWidth: '60ch' }}>{verdict}</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: tone, fontWeight: 700 }}>
+            Predicted
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: tone }}>
+            {predictor != null ? predictor.toFixed(1) : '—'}
+          </div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>target {target.toFixed(1)}</div>
+        </div>
+      </div>
+      <div>
+        <Link to={cta.to} className="btn solid compact">{cta.label}</Link>
+      </div>
+    </section>
+  );
+};
+
+// ============================================================
 // Band trajectory chart (custom SVG) + predictor
 // ============================================================
 

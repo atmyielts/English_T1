@@ -7,9 +7,16 @@ import {
   practiceModelAnswer,
   practiceNotebookRetest,
   type CoachChatTurn,
+  type CoachLang,
   type ModelAnswerTask,
   type NotebookRetestResponse,
 } from '../lib/api';
+
+const COACH_LANGS: Array<{ id: CoachLang; label: string }> = [
+  { id: 'en', label: 'EN' },
+  { id: 'uz', label: 'UZ' },
+  { id: 'ru', label: 'RU' },
+];
 
 // ============================================================
 // 1. Plan stale banner — reactive replanning prompt
@@ -220,6 +227,7 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
   const [busy, setBusy] = useState(false);
   const [followups, setFollowups] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [lang, setLang] = useState<CoachLang>('en');
 
   const send = async (text: string) => {
     if (!accessToken || !text.trim() || busy) return;
@@ -231,7 +239,7 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
     setError(null);
     setFollowups([]);
     try {
-      const res = await practiceCoachAsk(accessToken, { messages: newHistory, question: text.trim() });
+      const res = await practiceCoachAsk(accessToken, { messages: newHistory, question: text.trim(), lang });
       setHistory((prev) => [...prev, { role: 'assistant', content: res.reply }]);
       setFollowups(res.suggested_followups ?? []);
     } catch (err) {
@@ -243,12 +251,34 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
 
   return (
     <section className="glass stat-card wide" style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <div>
-        <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Ask your tutor</p>
-        <h3 style={{ margin: '4px 0 0' }}>Stuck on something? Ask anything.</h3>
-        <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
-          A question type, a grammar or vocabulary point, essay structure, or what to focus on next — grounded in your own results.
-        </p>
+      <div className="task-card-head" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Ask your tutor</p>
+          <h3 style={{ margin: '4px 0 0' }}>Stuck on something? Ask anything.</h3>
+          <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
+            A question type, a grammar or vocabulary point, essay structure, or what to focus on next — grounded in your own results.
+          </p>
+        </div>
+        <div style={{ display: 'inline-flex', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title="Answer language">
+          {COACH_LANGS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => setLang(l.id)}
+              className="btn compact"
+              style={{
+                padding: '3px 10px',
+                borderRadius: 999,
+                fontSize: 12,
+                background: lang === l.id ? 'var(--accent-soft)' : 'transparent',
+                fontWeight: lang === l.id ? 700 : 500,
+              }}
+              aria-pressed={lang === l.id}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {history.length > 0 ? (

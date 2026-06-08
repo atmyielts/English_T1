@@ -1011,9 +1011,11 @@ export const practiceLabCoachChat = (
 
 // Always-available tutor (not tied to a finished session) — grounded in the
 // learner's own profile (target, predictors, weak types, traps).
+export type CoachLang = 'en' | 'uz' | 'ru';
+
 export const practiceCoachAsk = (
   accessToken: string,
-  body: { messages: CoachChatTurn[]; question: string },
+  body: { messages: CoachChatTurn[]; question: string; lang?: CoachLang },
 ): Promise<PracticeCoachConversation & { ai_available?: boolean }> =>
   call(accessToken, '/ielts-practice/insights/coach-ask', {
     method: 'POST',
