@@ -43,8 +43,8 @@ serve(async (req) => {
       await sb.from("academy_contacts").update({ telegram_id: chatId }).eq("user_id", tokenRow.user_id);
 
       // Get user display name
-      const { data: userRow } = await sb.from("users").select("email, raw_user_meta_data").eq("id", tokenRow.user_id).maybeSingle();
-      const name = (userRow?.raw_user_meta_data as any)?.full_name || (userRow?.email as string)?.split("@")[0] || "Student";
+      const { data: userRow } = await sb.from("users").select("email, full_name").eq("id", tokenRow.user_id).maybeSingle();
+      const name = (userRow?.full_name as string) || (userRow?.email as string)?.split("@")[0] || "Student";
 
       return json(200, { ok: true, user_id: tokenRow.user_id, name });
     }
@@ -62,8 +62,8 @@ serve(async (req) => {
     if (action === "status") {
       const chatId = String(url.searchParams.get("chat_id") || body?.chat_id || "").trim();
       if (!chatId) return json(400, { error: "chat_id required" });
-      const { data } = await sb.from("users").select("id, email, raw_user_meta_data").eq("telegram_chat_id", chatId).maybeSingle();
-      return json(200, { linked: !!data, user: data ? { id: data.id, name: (data.raw_user_meta_data as any)?.full_name || data.email } : null });
+      const { data } = await sb.from("users").select("id, email, full_name").eq("telegram_chat_id", chatId).maybeSingle();
+      return json(200, { linked: !!data, user: data ? { id: data.id, name: (data.full_name as string) || data.email } : null });
     }
 
     // ── Generate: creates a one-time link token (called by authenticated user) ─
