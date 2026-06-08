@@ -1035,6 +1035,20 @@ export const practiceCoachAsk = (
     body,
   });
 
+export type PracticeSkillLesson = {
+  title: string;
+  what_it_tests: string;
+  steps: string[];
+  common_traps: string[];
+  worked_example: string;
+};
+
+export const practiceTeach = (
+  accessToken: string,
+  body: { question_type: string; section_type?: string; lang?: CoachLang },
+): Promise<{ ok: boolean; ai_available?: boolean; lesson: PracticeSkillLesson }> =>
+  call(accessToken, '/ielts-practice/insights/teach', { method: 'POST', body });
+
 export type PracticeLabHintResponse = { ok: boolean; hint: string };
 
 export const practiceLabHint = (
