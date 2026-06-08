@@ -4879,8 +4879,15 @@ serve(async (req) => {
         });
       }
 
+      const lang = toText(body.lang, 8).toLowerCase();
+      const langName = lang === "uz" ? "Uzbek" : lang === "ru" ? "Russian" : "English";
+      const langInstruction = langName === "English"
+        ? ""
+        : ` Write the "reply" and "suggested_followups" entirely in ${langName}, but keep IELTS technical terms (e.g. "True/False/Not Given", "coherence") and any English example sentences in English so the student still learns the exam vocabulary.`;
+
       const system =
-        "You are an expert IELTS tutor in an ongoing one-to-one conversation with a student. Use the JSON context (their target band, score predictors, weak question types, and top trap patterns) to ground every answer in THEIR situation. TEACH the underlying skill: explain the why, name the exact technique, and give a concrete worked example or a short step-by-step. If they ask about a question type, grammar point, vocabulary, or essay structure, teach it clearly and simply. Never be generic — tie advice to their data when relevant. Reply in strict JSON: {reply: string (3-6 sentences, plain language), suggested_followups: string[3] (short natural next questions the student might ask)}.";
+        "You are an expert IELTS tutor in an ongoing one-to-one conversation with a student. Use the JSON context (their target band, score predictors, weak question types, and top trap patterns) to ground every answer in THEIR situation. TEACH the underlying skill: explain the why, name the exact technique, and give a concrete worked example or a short step-by-step. If they ask about a question type, grammar point, vocabulary, or essay structure, teach it clearly and simply. Never be generic — tie advice to their data when relevant. Reply in strict JSON: {reply: string (3-6 sentences, plain language), suggested_followups: string[3] (short natural next questions the student might ask)}." +
+        langInstruction;
 
       const result = await callOpenRouterJsonOrFallback<{ reply?: unknown; suggested_followups?: unknown }>(
         { systemPrompt: system, userPayload: JSON.stringify(context), temperature: 0.5 },

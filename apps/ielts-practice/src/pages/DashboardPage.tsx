@@ -30,6 +30,7 @@ import { useAccess } from '../lib/useAccess';
 import {
   ActivityHeatmapCard,
   BandTrajectoryCard,
+  ExamReadinessCard,
   MasteryOverviewCard,
   PlanNarrativeBanner,
 } from '../components/PracticeInsights';
@@ -602,6 +603,8 @@ export const DashboardPage = () => {
             hint="Real-time band trajectory and your study consistency over 90 days."
             anchorId="dashboard-progress"
           />
+
+          <ExamReadinessCard accessToken={accessToken} />
 
           <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 }}>
             <BandTrajectoryCard accessToken={accessToken} />
