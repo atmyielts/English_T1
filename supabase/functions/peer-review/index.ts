@@ -41,13 +41,22 @@ serve(async (req) => {
     }
 
     if (action === "queue") {
-      // Return submissions waiting for review (not the user's own, not already reviewed by this user)
-      const { data } = await sb.from("peer_review_submissions")
+      // Get submission IDs this user already reviewed, then exclude them
+      const { data: alreadyReviewed } = await sb
+        .from("peer_reviews")
+        .select("submission_id")
+        .eq("reviewer_id", userId);
+      const reviewedIds = (alreadyReviewed ?? []).map((r: any) => String(r.submission_id)).filter(Boolean);
+
+      let query = sb.from("peer_review_submissions")
         .select("id, exam_type, task_type, prompt_text, word_count, target_band, reviews_needed, reviews_count, created_at")
         .eq("status", "pending_review")
         .neq("user_id", userId)
-        .not("id", "in", `(select submission_id from public.peer_reviews where reviewer_id = '${userId}')`)
-        .order("created_at").limit(10);
+        .order("created_at").limit(20);
+      if (reviewedIds.length > 0) {
+        query = query.not("id", "in", `(${reviewedIds.map((id) => `'${id}'`).join(",")})`) as typeof query;
+      }
+      const { data } = await query.limit(10);
       return json(200, { submissions: data ?? [] });
     }
 
