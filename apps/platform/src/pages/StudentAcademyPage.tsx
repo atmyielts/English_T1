@@ -4,7 +4,16 @@ import { supabase } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'home' | 'assignments' | 'grades' | 'attendance' | 'chat';
+type Tab = 'home' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
+
+export type BillingItem = {
+  academy_id: string;
+  classroom_id: string;
+  contact_id: string;
+  paid: boolean;
+  offer: { id: string; name: string; price_amount: number; currency: string; description: string | null };
+  last_payment: { status: string; created_at: string } | null;
+};
 
 type Academy = { id: string; name: string; slug: string; metadata: Record<string, unknown> };
 type Classroom = { id: string; name: string; description: string | null; is_active: boolean; member_count: number };
@@ -294,6 +303,179 @@ const ChatTab: React.FC<{
   );
 };
 
+// ─── Billing Tab ──────────────────────────────────────────────────────────────
+
+const fmtMoney = (amount: number, currency: string) =>
+  `${new Intl.NumberFormat().format(amount)} ${currency}`;
+
+const BillingTab: React.FC<{
+  token: string;
+  classroomNames: Record<string, string>;
+}> = ({ token, classroomNames }) => {
+  const [items, setItems] = useState<BillingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [payingOfferId, setPayingOfferId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await callAcademy(token, { action: 'student_billing' });
+    setItems((res.items ?? []) as BillingItem[]);
+    setLoading(false);
+  }, [token]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const pay = async (item: BillingItem) => {
+    setPayingOfferId(item.offer.id);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/click/create-transaction`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: `Tuition: ${item.offer.name}`,
+          purchase_type: 'academy_tuition',
+          redirect_url: `${window.location.origin}/my-academy`,
+          metadata: { academy_id: item.academy_id, offer_id: item.offer.id, contact_id: item.contact_id },
+        }),
+      }).then((r) => r.json());
+      if (res.payment_url) {
+        window.location.href = res.payment_url;
+      } else {
+        alert(res.error ?? 'Could not start payment');
+        setPayingOfferId(null);
+      }
+    } catch {
+      setPayingOfferId(null);
+    }
+  };
+
+  if (loading) return <div className="text-center text-gray-400 py-8">Loading…</div>;
+
+  if (items.length === 0)
+    return (
+      <div className="text-center text-gray-400 py-12 border-2 border-dashed border-gray-200 rounded-2xl">
+        No tuition due. Your classrooms are all set.
+      </div>
+    );
+
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-gray-800 mb-1">Tuition & Payments</h3>
+      {items.map((item) => (
+        <div
+          key={`${item.classroom_id}-${item.offer.id}`}
+          className={`border rounded-2xl p-5 ${item.paid ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                {classroomNames[item.classroom_id] ?? 'Classroom'}
+              </div>
+              <div className="font-semibold text-gray-900 mt-0.5">{item.offer.name}</div>
+              {item.offer.description && (
+                <div className="text-sm text-gray-600 mt-1">{item.offer.description}</div>
+              )}
+              <div className="text-lg font-bold text-gray-900 mt-2">
+                {fmtMoney(item.offer.price_amount, item.offer.currency)}
+              </div>
+            </div>
+            <div className="shrink-0 text-right">
+              {item.paid ? (
+                <span className="inline-block px-3 py-1.5 rounded-xl text-sm font-medium bg-emerald-100 text-emerald-700">
+                  ✓ Paid
+                </span>
+              ) : (
+                <button
+                  onClick={() => void pay(item)}
+                  disabled={payingOfferId === item.offer.id}
+                  className="px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-black disabled:bg-gray-300"
+                >
+                  {payingOfferId === item.offer.id ? 'Redirecting…' : 'Pay with Click'}
+                </button>
+              )}
+              {item.last_payment && item.last_payment.status === 'pending' && !item.paid && (
+                <div className="text-xs text-amber-600 mt-1.5">Payment pending…</div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+      <p className="text-xs text-gray-400 mt-2">
+        Payments are processed securely by Click.uz. Access unlocks automatically once confirmed.
+      </p>
+    </div>
+  );
+};
+
+// ─── Referral Card ────────────────────────────────────────────────────────────
+
+const ReferralCard: React.FC<{ token: string }> = ({ token }) => {
+  const [code, setCode] = useState<string | null>(null);
+  const [referrals, setReferrals] = useState<Array<{ status: string }>>([]);
+  const [copied, setCopied] = useState(false);
+  const [claimCode, setClaimCode] = useState('');
+  const [claimMsg, setClaimMsg] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
+
+  const load = useCallback(async () => {
+    const res = await callAcademy(token, { action: 'student_referral' });
+    setCode(res.code ?? null);
+    setReferrals(res.referrals ?? []);
+  }, [token]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const copy = () => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const claim = async () => {
+    if (!claimCode.trim()) return;
+    setClaiming(true);
+    setClaimMsg(null);
+    const res = await callAcademy(token, { action: 'claim_referral', referral_code: claimCode.trim().toUpperCase() });
+    setClaimMsg(res.error ? res.error : 'Thanks! Your referral was recorded.');
+    setClaiming(false);
+    if (!res.error) { setClaimCode(''); void load(); }
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-2xl p-5 bg-gradient-to-br from-violet-50 to-blue-50">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-semibold text-gray-900">Invite friends</div>
+          <div className="text-xs text-gray-500 mt-0.5">Share your code — earn recognition when they join.</div>
+        </div>
+        {referrals.length > 0 && (
+          <div className="text-right">
+            <div className="text-2xl font-bold text-violet-700">{referrals.length}</div>
+            <div className="text-xs text-gray-500">referred</div>
+          </div>
+        )}
+      </div>
+      {code && (
+        <div className="flex items-center gap-2 mt-3">
+          <code className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono font-semibold tracking-wider text-gray-900">{code}</code>
+          <button onClick={copy} className="px-3 py-2 bg-gray-900 text-white text-sm rounded-xl hover:bg-black">{copied ? 'Copied!' : 'Copy'}</button>
+        </div>
+      )}
+      <div className="mt-3 pt-3 border-t border-white/60">
+        <div className="text-xs font-semibold text-gray-600 mb-1.5">Were you referred? Enter their code:</div>
+        <div className="flex items-center gap-2">
+          <input value={claimCode} onChange={(e) => setClaimCode(e.target.value)} className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none font-mono" placeholder="FRIEND CODE" />
+          <button onClick={() => void claim()} disabled={claiming || !claimCode.trim()} className="px-3 py-2 border border-gray-300 bg-white text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50">
+            {claiming ? '…' : 'Apply'}
+          </button>
+        </div>
+        {claimMsg && <div className="text-xs text-gray-600 mt-1.5">{claimMsg}</div>}
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export const StudentAcademyPage: React.FC = () => {
@@ -411,8 +593,12 @@ export const StudentAcademyPage: React.FC = () => {
     { key: 'assignments', label: 'Assignments', badge: pendingCount || undefined },
     { key: 'grades', label: 'Grades' },
     { key: 'attendance', label: 'Attendance' },
+    { key: 'billing', label: 'Billing' },
     { key: 'chat', label: 'Chat' },
   ];
+
+  const classroomNames: Record<string, string> = {};
+  for (const c of myClassrooms) classroomNames[c.id] = c.name;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -490,6 +676,9 @@ export const StudentAcademyPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Referral */}
+              {token && <ReferralCard token={token} />}
 
               {/* Announcements */}
               {(dashboard.announcements ?? []).length > 0 && (
@@ -710,6 +899,9 @@ export const StudentAcademyPage: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* ── Billing ── */}
+          {tab === 'billing' && token && <BillingTab token={token} classroomNames={classroomNames} />}
 
           {/* ── Chat ── */}
           {tab === 'chat' && token && academyId && selectedClassroom && (

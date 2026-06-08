@@ -51,6 +51,13 @@ const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyContr
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
 const WritingTutorPage = lazyWithChunkRetry(() => import('./pages/WritingTutorPage').then((m) => ({ default: m.WritingTutorPage })));
+const SpeakingCoachPage = lazyWithChunkRetry(() => import('./pages/SpeakingCoachPage').then((m) => ({ default: m.SpeakingCoachPage })));
+const LearningPathPage = lazyWithChunkRetry(() => import('./pages/LearningPathPage').then((m) => ({ default: m.LearningPathPage })));
+const VocabDrillPage = lazyWithChunkRetry(() => import('./pages/VocabDrillPage').then((m) => ({ default: m.VocabDrillPage })));
+const PeerReviewPage = lazyWithChunkRetry(() => import('./pages/PeerReviewPage').then((m) => ({ default: m.PeerReviewPage })));
+const WhitelabelPage = lazyWithChunkRetry(() => import('./pages/WhitelabelPage').then((m) => ({ default: m.WhitelabelPage })));
+const CorporateAssessmentPage = lazyWithChunkRetry(() => import('./pages/CorporateAssessmentPage').then((m) => ({ default: m.CorporateAssessmentPage })));
+const TeacherMarketplacePage = lazyWithChunkRetry(() => import('./pages/TeacherMarketplacePage').then((m) => ({ default: m.TeacherMarketplacePage })));
 const StudentAcademyPage = lazyWithChunkRetry(() => import('./pages/StudentAcademyPage').then((m) => ({ default: m.StudentAcademyPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
@@ -147,6 +154,13 @@ function App() {
             <Route path="/academy-control" element={<AcademyControlPage />} />
             <Route path="/my-academy" element={<StudentAcademyPage />} />
             <Route path="/writing-tutor" element={<WritingTutorPage />} />
+            <Route path="/speaking-coach" element={<SpeakingCoachPage />} />
+            <Route path="/learning-path" element={<LearningPathPage />} />
+            <Route path="/vocab-drill" element={<VocabDrillPage />} />
+            <Route path="/peer-review" element={<PeerReviewPage />} />
+            <Route path="/whitelabel" element={<WhitelabelPage />} />
+            <Route path="/corporate-assessment" element={<CorporateAssessmentPage />} />
+            <Route path="/marketplace" element={<TeacherMarketplacePage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
             <Route path="/teacher" element={<Navigate to="/partner" replace />} />

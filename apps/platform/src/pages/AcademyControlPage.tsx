@@ -24,8 +24,8 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'classrooms' | 'students' | 'announcements';
-type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'settings';
+type Tab = 'overview' | 'director' | 'classrooms' | 'students' | 'announcements';
+type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'billing' | 'settings';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,63 @@ const Modal: React.FC<{ title: string; onClose: () => void; children: React.Reac
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-const OverviewTab: React.FC<{ dashboard: TeacherStudioStudentDashboard; academyId: string }> = ({ dashboard }) => {
+const AtRiskPanel: React.FC<{ academyId: string; token: string }> = ({ academyId, token }) => {
+  const [scanning, setScanning] = useState(false);
+  const [dispatching, setDispatching] = useState(false);
+  const [result, setResult] = useState<Array<{ contact_id: string; name: string; attendance_rate: number | null; missing: number; severity: string; reasons: string[] }> | null>(null);
+  const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
+
+  const scan = async () => {
+    setScanning(true);
+    setDispatchMsg(null);
+    const res = await callAcademyCtrl(token, { action: 'compute_at_risk', academy_id: academyId });
+    setResult(res.at_risk ?? []);
+    setScanning(false);
+  };
+
+  const dispatch = async () => {
+    setDispatching(true);
+    const res = await callAcademyCtrl(token, { action: 'dispatch_notifications', academy_id: academyId });
+    setDispatchMsg(`${res.sent ?? 0} sent · ${res.failed ?? 0} failed · ${res.skipped ?? 0} skipped`);
+    setDispatching(false);
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-800">At-Risk Students</h3>
+        <div className="flex gap-2">
+          <button onClick={() => void scan()} disabled={scanning} className="px-3 py-1.5 border border-gray-300 text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50">
+            {scanning ? 'Scanning…' : 'Scan now'}
+          </button>
+          <button onClick={() => void dispatch()} disabled={dispatching} className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-black disabled:opacity-50">
+            {dispatching ? 'Sending…' : 'Send nudges'}
+          </button>
+        </div>
+      </div>
+      {dispatchMsg && <div className="text-xs text-gray-500 mb-2">{dispatchMsg}</div>}
+      {result === null ? (
+        <p className="text-sm text-gray-400">Run a scan to flag students with low attendance or stacked missing assignments. Flagged students get a teacher alert and an optional Telegram nudge.</p>
+      ) : result.length === 0 ? (
+        <p className="text-sm text-emerald-600">No at-risk students 🎉</p>
+      ) : (
+        <div className="space-y-2">
+          {result.map((r) => (
+            <div key={r.contact_id} className={`flex items-center justify-between rounded-xl px-4 py-2.5 ${r.severity === 'high' ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{r.name}</div>
+                <div className="text-xs text-gray-500">{r.reasons.join(' · ')}</div>
+              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${r.severity === 'high' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{r.severity}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const OverviewTab: React.FC<{ dashboard: TeacherStudioStudentDashboard; academyId: string; token: string }> = ({ dashboard, academyId, token }) => {
   const totalContacts = dashboard.contacts?.length ?? 0;
   const totalClassrooms = dashboard.classrooms?.length ?? 0;
   const activeEntitlements = (dashboard.entitlements ?? []).filter((e) => (e as any).status === 'active').length;
@@ -100,6 +156,8 @@ const OverviewTab: React.FC<{ dashboard: TeacherStudioStudentDashboard; academyI
           </div>
         ))}
       </div>
+
+      <AtRiskPanel academyId={academyId} token={token} />
 
       {recentAnnouncements.length > 0 && (
         <div>
@@ -148,6 +206,17 @@ const StudentProgressModal: React.FC<{
   const [certUrl, setCertUrl] = useState<string | null>(null);
   const [issuingCert, setIssuingCert] = useState(false);
   const [copied, setCopied] = useState<'report' | 'cert' | null>(null);
+  const [placementScore, setPlacementScore] = useState('');
+  const [placementResult, setPlacementResult] = useState<{ level: string; suggested_classrooms: Array<{ name: string }> } | null>(null);
+  const [recordingPlacement, setRecordingPlacement] = useState(false);
+
+  const recordPlacement = async () => {
+    if (placementScore === '') return;
+    setRecordingPlacement(true);
+    const res = await callAcademyCtrl(token, { action: 'record_placement', academy_id: academyId, contact_id: contact.id, diagnostic_score: Number(placementScore) });
+    if (res.level) setPlacementResult({ level: res.level, suggested_classrooms: res.suggested_classrooms ?? [] });
+    setRecordingPlacement(false);
+  };
 
   const generateReport = async () => {
     setGeneratingReport(true);
@@ -220,6 +289,25 @@ const StudentProgressModal: React.FC<{
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Placement / diagnostic */}
+        <div className="mt-5 pt-4 border-t border-gray-100">
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Placement</div>
+          <div className="flex items-center gap-2">
+            <input type="number" min="0" max="100" value={placementScore} onChange={(e) => setPlacementScore(e.target.value)} className="w-28 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="Score /100" />
+            <button onClick={() => void recordPlacement()} disabled={recordingPlacement || placementScore === ''} className="px-3 py-2 border border-gray-200 text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50">
+              {recordingPlacement ? 'Saving…' : 'Record placement'}
+            </button>
+          </div>
+          {placementResult && (
+            <div className="mt-2 text-sm text-gray-700 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+              Suggested level: <strong>{placementResult.level}</strong>
+              {placementResult.suggested_classrooms.length > 0 && (
+                <span> · Classrooms: {placementResult.suggested_classrooms.map((c) => c.name).join(', ')}</span>
+              )}
             </div>
           )}
         </div>
@@ -1053,6 +1141,139 @@ const ScheduleTab: React.FC<{ academyId: string; classroomId: string; token: str
   );
 };
 
+// ─── Classroom Billing Tab ────────────────────────────────────────────────────
+
+type BillingOffer = { id: string; name: string; price_amount: number; currency: string; duration_days: number | null; is_active: boolean };
+type BillingStudent = {
+  contact_id: string; first_name: string; last_name: string; email: string | null;
+  paid: boolean; last_payment: { amount: number; currency: string; status: string; created_at: string } | null;
+};
+
+const ClassroomBillingTab: React.FC<{ academyId: string; classroomId: string; token: string }> = ({ academyId, classroomId, token }) => {
+  const [data, setData] = useState<{ has_tuition: boolean; offers: BillingOffer[]; students: BillingStudent[]; paid_count: number; unpaid_count: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({ name: '', price_amount: '', currency: 'UZS', duration_days: '30', description: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await callAcademyCtrl(token, { action: 'classroom_billing', academy_id: academyId, classroom_id: classroomId });
+    setData(res?.classroom_id ? res : { has_tuition: false, offers: [], students: [], paid_count: 0, unpaid_count: 0 });
+    setLoading(false);
+  }, [token, academyId, classroomId]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const createOffer = async () => {
+    if (!form.name.trim() || !form.price_amount) return;
+    setSaving(true);
+    await callAcademyCtrl(token, {
+      action: 'create_offer', academy_id: academyId, classroom_id: classroomId,
+      name: form.name.trim(), type: 'cohort', price_amount: Number(form.price_amount),
+      currency: form.currency, duration_days: form.duration_days ? Number(form.duration_days) : null,
+      description: form.description || null,
+    });
+    setSaving(false);
+    setShowCreate(false);
+    setForm({ name: '', price_amount: '', currency: 'UZS', duration_days: '30', description: '' });
+    void load();
+  };
+
+  if (loading) return <div className="text-center text-gray-400 py-8">Loading…</div>;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800">Tuition & Billing</h3>
+        <button onClick={() => setShowCreate(true)} className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-black">+ Tuition Offer</button>
+      </div>
+
+      {!data?.has_tuition ? (
+        <div className="text-center text-gray-400 py-10 border-2 border-dashed border-gray-200 rounded-2xl">
+          This classroom is free. Add a tuition offer to bill students and gate access on payment.
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="rounded-2xl p-4 bg-emerald-50 text-emerald-700">
+              <div className="text-2xl font-bold">{data.paid_count}</div>
+              <div className="text-xs font-medium opacity-75 mt-1">Paid</div>
+            </div>
+            <div className="rounded-2xl p-4 bg-amber-50 text-amber-700">
+              <div className="text-2xl font-bold">{data.unpaid_count}</div>
+              <div className="text-xs font-medium opacity-75 mt-1">Outstanding</div>
+            </div>
+            <div className="rounded-2xl p-4 bg-blue-50 text-blue-700">
+              <div className="text-2xl font-bold">{data.offers.length}</div>
+              <div className="text-xs font-medium opacity-75 mt-1">Offers</div>
+            </div>
+          </div>
+
+          <div className="mb-4 space-y-1.5">
+            {data.offers.map((o) => (
+              <div key={o.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+                <span className="font-medium text-gray-900">{o.name}</span>
+                <span className="text-gray-600">{new Intl.NumberFormat().format(o.price_amount)} {o.currency}{o.duration_days ? ` / ${o.duration_days}d` : ''}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Students</div>
+          <div className="space-y-1.5">
+            {data.students.map((s) => (
+              <div key={s.contact_id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5">
+                <div>
+                  <div className="font-medium text-gray-900 text-sm">{s.first_name} {s.last_name}</div>
+                  <div className="text-xs text-gray-400">{s.email ?? ''}</div>
+                </div>
+                {s.paid ? (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">Paid</span>
+                ) : (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">Outstanding</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {showCreate && (
+        <Modal title="New Tuition Offer" onClose={() => setShowCreate(false)}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Name *</label>
+              <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="e.g. Monthly tuition — June" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Price *</label>
+                <input type="number" value={form.price_amount} onChange={(e) => setForm((f) => ({ ...f, price_amount: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="e.g. 500000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Currency</label>
+                <input value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value.toUpperCase() }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Access duration (days)</label>
+              <input type="number" value={form.duration_days} onChange={(e) => setForm((f) => ({ ...f, duration_days: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="30 (blank = lifetime)" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+              <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+            </div>
+            <button onClick={createOffer} disabled={saving || !form.name.trim() || !form.price_amount} className="w-full bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-black disabled:bg-gray-300">
+              {saving ? 'Creating…' : 'Create Tuition Offer'}
+            </button>
+            <p className="text-xs text-gray-400">Once created, students see a Pay button in their portal. Paying unlocks classroom access automatically via Click.uz.</p>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
 // ─── Classroom Detail ─────────────────────────────────────────────────────────
 
 const ClassroomDetail: React.FC<{
@@ -1071,6 +1292,7 @@ const ClassroomDetail: React.FC<{
     { key: 'gradebook', label: 'Gradebook' },
     { key: 'attendance', label: 'Attendance' },
     { key: 'schedule', label: 'Schedule' },
+    { key: 'billing', label: 'Billing' },
     { key: 'settings', label: 'Settings' },
   ];
 
@@ -1104,6 +1326,7 @@ const ClassroomDetail: React.FC<{
       {tab === 'gradebook' && <GradebookTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'attendance' && <AttendanceTab academyId={academyId} classroomId={classroom.id} token={token} members={contacts} />}
       {tab === 'schedule' && <ScheduleTab academyId={academyId} classroomId={classroom.id} token={token} />}
+      {tab === 'billing' && <ClassroomBillingTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'settings' && <SettingsTab academyId={academyId} classroom={classroom} token={token} onSaved={onRefresh} />}
     </div>
   );
@@ -1403,6 +1626,255 @@ const AnnouncementsTab: React.FC<{
   );
 };
 
+// ─── Director Dashboard Tab ───────────────────────────────────────────────────
+
+type OwnerDashboard = {
+  revenue: { currency: string; collected_total: number; collected_this_month: number; outstanding: number; paid_count: number };
+  funnel: Record<string, number>;
+  total_students: number;
+  total_classrooms: number;
+  classroom_stats: Array<{ classroom_id: string; name: string; is_active: boolean; students: number; assignments: number; avg_score: number | null; attendance_rate: number | null }>;
+  attendance_trend: Array<{ date: string; rate: number | null }>;
+};
+
+type StaffRow = { id: string; email: string; display_name: string | null; role: string; classroom_ids: string[]; is_active: boolean; user_id: string | null };
+
+const money = (amount: number, currency: string) => `${new Intl.NumberFormat().format(amount)} ${currency}`;
+
+const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudentDashboard; token: string }> = ({ academyId, dashboard, token }) => {
+  const [data, setData] = useState<OwnerDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [leaderboard, setLeaderboard] = useState<Array<{ contact_id: string; name: string; referrals: number; enrolled: number }>>([]);
+  const [showStaff, setShowStaff] = useState(false);
+  const [staffForm, setStaffForm] = useState({ email: '', name: '', role: 'teacher', classroom_ids: [] as string[] });
+  const [savingStaff, setSavingStaff] = useState(false);
+
+  const classrooms = dashboard.classrooms ?? [];
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [d, s, lb] = await Promise.all([
+      callAcademyCtrl(token, { action: 'owner_dashboard', academy_id: academyId }),
+      callAcademyCtrl(token, { action: 'staff', academy_id: academyId }),
+      callAcademyCtrl(token, { action: 'referral_leaderboard', academy_id: academyId }),
+    ]);
+    setData(d?.revenue ? d : null);
+    setStaff((s.staff ?? []) as StaffRow[]);
+    setLeaderboard((lb.leaderboard ?? []) as Array<{ contact_id: string; name: string; referrals: number; enrolled: number }>);
+    setLoading(false);
+  }, [token, academyId]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const saveStaff = async () => {
+    if (!staffForm.email.trim()) return;
+    setSavingStaff(true);
+    await callAcademyCtrl(token, {
+      action: 'upsert_staff', academy_id: academyId,
+      staff_email: staffForm.email.trim(), name: staffForm.name || null,
+      staff_role: staffForm.role, classroom_ids: staffForm.classroom_ids,
+    });
+    setSavingStaff(false);
+    setShowStaff(false);
+    setStaffForm({ email: '', name: '', role: 'teacher', classroom_ids: [] });
+    void load();
+  };
+
+  const removeStaff = async (id: string) => {
+    if (!confirm('Remove this staff member?')) return;
+    await callAcademyCtrl(token, { action: 'remove_staff', academy_id: academyId, id });
+    void load();
+  };
+
+  if (loading) return <div className="text-center text-gray-400 py-8">Loading director view…</div>;
+  if (!data) return <div className="text-center text-gray-400 py-8">No data available.</div>;
+
+  const maxTrend = Math.max(100, ...data.attendance_trend.map((t) => t.rate ?? 0));
+
+  return (
+    <div className="space-y-6">
+      {/* Revenue */}
+      <div>
+        <h3 className="font-semibold text-gray-800 mb-3">Revenue</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="rounded-2xl p-5 bg-emerald-50 text-emerald-700">
+            <div className="text-2xl font-bold">{money(data.revenue.collected_this_month, data.revenue.currency)}</div>
+            <div className="text-xs font-medium opacity-75 mt-1">This Month</div>
+          </div>
+          <div className="rounded-2xl p-5 bg-blue-50 text-blue-700">
+            <div className="text-2xl font-bold">{money(data.revenue.collected_total, data.revenue.currency)}</div>
+            <div className="text-xs font-medium opacity-75 mt-1">Collected (all time)</div>
+          </div>
+          <div className="rounded-2xl p-5 bg-amber-50 text-amber-700">
+            <div className="text-2xl font-bold">{money(data.revenue.outstanding, data.revenue.currency)}</div>
+            <div className="text-xs font-medium opacity-75 mt-1">Outstanding</div>
+          </div>
+          <div className="rounded-2xl p-5 bg-violet-50 text-violet-700">
+            <div className="text-2xl font-bold">{data.revenue.paid_count}</div>
+            <div className="text-xs font-medium opacity-75 mt-1">Paid Transactions</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enrollment funnel */}
+      <div>
+        <h3 className="font-semibold text-gray-800 mb-3">Enrollment</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Trial', value: data.funnel.trial ?? 0, color: 'text-amber-700 bg-amber-50' },
+            { label: 'Active', value: data.funnel.active ?? 0, color: 'text-emerald-700 bg-emerald-50' },
+            { label: 'Paused', value: data.funnel.paused ?? 0, color: 'text-gray-700 bg-gray-100' },
+            { label: 'Inactive', value: data.funnel.inactive ?? 0, color: 'text-red-700 bg-red-50' },
+          ].map((s) => (
+            <div key={s.label} className={`rounded-2xl p-4 ${s.color}`}>
+              <div className="text-2xl font-bold">{s.value}</div>
+              <div className="text-xs font-medium opacity-75 mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Attendance trend */}
+      {data.attendance_trend.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-3">Attendance Trend (academy-wide)</h3>
+          <div className="flex items-end gap-2 h-24 border border-gray-100 rounded-2xl p-4">
+            {data.attendance_trend.map((t) => (
+              <div key={t.date} className="flex-1 flex flex-col items-center gap-1">
+                <div className="text-xs text-gray-500">{t.rate !== null ? `${t.rate}%` : '—'}</div>
+                <div className="w-full bg-emerald-400 rounded-t" style={{ height: t.rate !== null ? `${Math.max(4, (t.rate / maxTrend) * 60)}px` : '4px', opacity: t.rate !== null ? 1 : 0.15 }} />
+                <div className="text-xs text-gray-400">{t.date.slice(5)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Classroom performance */}
+      <div>
+        <h3 className="font-semibold text-gray-800 mb-3">Classroom Performance</h3>
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-left">
+                <th className="px-4 py-2.5 font-semibold text-gray-700">Classroom</th>
+                <th className="px-4 py-2.5 font-medium text-gray-600 text-center">Students</th>
+                <th className="px-4 py-2.5 font-medium text-gray-600 text-center">Assignments</th>
+                <th className="px-4 py-2.5 font-medium text-gray-600 text-center">Avg Score</th>
+                <th className="px-4 py-2.5 font-medium text-gray-600 text-center">Attendance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.classroom_stats.map((c) => (
+                <tr key={c.classroom_id} className="border-b border-gray-100">
+                  <td className="px-4 py-2.5 font-medium text-gray-900">{c.name}{!c.is_active && <span className="text-xs text-gray-400 ml-1">(inactive)</span>}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-600">{c.students}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-600">{c.assignments}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-600">{c.avg_score !== null ? `${c.avg_score}%` : '—'}</td>
+                  <td className="px-4 py-2.5 text-center text-gray-600">{c.attendance_rate !== null ? `${c.attendance_rate}%` : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Referral leaderboard */}
+      {leaderboard.length > 0 && (
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-3">Top Referrers</h3>
+          <div className="space-y-1.5">
+            {leaderboard.slice(0, 10).map((r, i) => (
+              <div key={r.contact_id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-bold w-6 text-center ${i < 3 ? 'text-amber-500' : 'text-gray-400'}`}>#{i + 1}</span>
+                  <span className="font-medium text-gray-900 text-sm">{r.name}</span>
+                </div>
+                <div className="text-xs text-gray-500">{r.referrals} referred{r.enrolled > 0 ? ` · ${r.enrolled} enrolled` : ''}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Staff */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-800">Staff & Teachers</h3>
+          <button onClick={() => setShowStaff(true)} className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-xl hover:bg-black">+ Add Staff</button>
+        </div>
+        {staff.length === 0 ? (
+          <div className="text-center text-gray-400 py-8 border-2 border-dashed border-gray-200 rounded-2xl text-sm">
+            No staff added. Assign teachers to classrooms here.
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {staff.map((s) => {
+              const assigned = (s.classroom_ids ?? []).map((id) => classrooms.find((c) => c.id === id)?.name).filter(Boolean).join(', ');
+              return (
+                <div key={s.id} className="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-2.5">
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{s.display_name || s.email}</div>
+                    <div className="text-xs text-gray-400">
+                      {s.role}{assigned ? ` · ${assigned}` : ' · no classrooms'}{!s.user_id ? ' · (not registered yet)' : ''}
+                    </div>
+                  </div>
+                  <button onClick={() => removeStaff(s.id)} className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-red-400">Remove</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {showStaff && (
+        <Modal title="Add Staff Member" onClose={() => setShowStaff(false)}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Email *</label>
+              <input value={staffForm.email} onChange={(e) => setStaffForm((f) => ({ ...f, email: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="teacher@example.com" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Name</label>
+                <input value={staffForm.name} onChange={(e) => setStaffForm((f) => ({ ...f, name: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Role</label>
+                <select value={staffForm.role} onChange={(e) => setStaffForm((f) => ({ ...f, role: e.target.value }))} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                  {['teacher', 'manager', 'assistant'].map((r) => <option key={r}>{r}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Assigned Classrooms</label>
+              <div className="space-y-1 max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-2">
+                {classrooms.length === 0 ? <div className="text-xs text-gray-400 px-1">No classrooms yet.</div> : classrooms.map((c) => (
+                  <label key={c.id} className="flex items-center gap-2 text-sm px-1 py-0.5">
+                    <input
+                      type="checkbox"
+                      checked={staffForm.classroom_ids.includes(c.id)}
+                      onChange={(e) => setStaffForm((f) => ({
+                        ...f,
+                        classroom_ids: e.target.checked ? [...f.classroom_ids, c.id] : f.classroom_ids.filter((id) => id !== c.id),
+                      }))}
+                    />
+                    <span className="text-gray-700">{c.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button onClick={saveStaff} disabled={savingStaff || !staffForm.email.trim()} className="w-full bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-black disabled:bg-gray-300">
+              {savingStaff ? 'Saving…' : 'Save Staff'}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export const AcademyControlPage: React.FC = () => {
@@ -1494,6 +1966,7 @@ export const AcademyControlPage: React.FC = () => {
 
   const topTabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: 'Overview' },
+    { key: 'director', label: 'Director' },
     { key: 'classrooms', label: 'Classrooms' },
     { key: 'students', label: 'Students' },
     { key: 'announcements', label: 'Announcements' },
@@ -1539,7 +2012,8 @@ export const AcademyControlPage: React.FC = () => {
 
         {/* Tab content */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          {tab === 'overview' && <OverviewTab dashboard={dashboard} academyId={academyId} />}
+          {tab === 'overview' && <OverviewTab dashboard={dashboard} academyId={academyId} token={token} />}
+          {tab === 'director' && <DirectorTab academyId={academyId} dashboard={dashboard} token={token} />}
           {tab === 'classrooms' && <ClassroomsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
           {tab === 'students' && <StudentsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
           {tab === 'announcements' && <AnnouncementsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}

@@ -2,6 +2,59 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircleAlert, CreditCard, LogOut, Trash2, User2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+
+// ─── Telegram Link Card ───────────────────────────────────────────────────────
+
+const edgeBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+
+const TelegramLinkCard: React.FC = () => {
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [alreadyLinked, setAlreadyLinked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const generate = async () => {
+    setLoading(true);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) return;
+    try {
+      const res = await fetch(`${edgeBase}/telegram-link`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'generate' }),
+      }).then((r) => r.json());
+      if (res.link_url) { setLinkUrl(res.link_url); setAlreadyLinked(res.already_linked ?? false); }
+    } finally { setLoading(false); }
+  };
+
+  const copy = () => { if (linkUrl) { navigator.clipboard.writeText(linkUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); } };
+
+  return (
+    <div className="rounded-3xl border border-blue-200 bg-blue-50/70 p-6">
+      <div className="text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2">Telegram</div>
+      <div className="text-lg font-bold text-gray-900 mb-1">Link your Telegram</div>
+      <p className="text-sm text-gray-600 mb-4">
+        Get score results, assignment reminders, certificates, and class schedules directly in Telegram. Also run vocab drills from the chat.
+      </p>
+      {!linkUrl ? (
+        <button onClick={generate} disabled={loading} className="px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
+          {loading ? 'Generating…' : 'Link Telegram'}
+        </button>
+      ) : (
+        <div className="space-y-3">
+          {alreadyLinked && <div className="text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2">A Telegram is already linked — this new link will replace it.</div>}
+          <a href={linkUrl} target="_blank" rel="noreferrer" className="block w-full text-center px-4 py-2.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
+            🔗 Open in Telegram
+          </a>
+          <button onClick={copy} className="w-full px-4 py-2 rounded-full border border-blue-300 text-sm text-blue-700 hover:bg-blue-100">
+            {copied ? '✓ Copied' : 'Copy link'}
+          </button>
+          <p className="text-xs text-gray-400">Link expires in 15 minutes. Generate a new one if it expires.</p>
+        </div>
+      )}
+    </div>
+  );
+};
 import { getMe, type MeResponse } from '../lib/platformClient';
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
@@ -432,6 +485,9 @@ export const AccountPage: React.FC = () => {
                   {t('common.contactSupport')}
                 </button>
               </div>
+
+              <TelegramLinkCard />
+
 
               <div className="rounded-3xl border border-red-300 bg-red-50/70 p-6">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-700">

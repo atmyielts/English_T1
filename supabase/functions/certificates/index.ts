@@ -171,6 +171,20 @@ serve(async (req) => {
 
       const config = EXAM_CONFIG[examType] ?? { label: examType, scoreLabel: "Score", maxScore: null, useBand: false };
       const shareUrl = `${Deno.env.get("SITE_URL") ?? "https://schood.online"}/certificate?token=${cert?.public_token}`;
+
+      // Notify user on Telegram — fire and forget
+      const score = cert?.overall_band ?? cert?.overall_score;
+      const scoreStr = score !== null && score !== undefined ? ` Score: <b>${score}</b>` : "";
+      fetch(`${sbUrl}/functions/v1/send-telegram`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${sbService}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          notification_type: "cert_issued",
+          text: `🏆 <b>Certificate issued!</b>\n\n${config.label}${scoreStr}\n\n<a href="${shareUrl}">View & Share Certificate</a>`,
+        }),
+      }).catch(() => {});
+
       return json(200, { certificate: cert, share_url: shareUrl, exam_config: config });
     }
 

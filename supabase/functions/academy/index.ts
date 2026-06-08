@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { placementBand } from "../_shared/academy-scoring.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -46,6 +47,48 @@ type StudioBody = {
   provider_transaction_id?: string;
   severity?: string;
   landing?: Json;
+  // LMS + loops fields
+  assignment_id?: string;
+  assignment_type?: string;
+  submission_id?: string;
+  session_id?: string;
+  score?: number;
+  max_score?: number;
+  score_weight?: number;
+  notes?: string;
+  due_at?: string | null;
+  experience_url?: string | null;
+  submission_content?: string | null;
+  submission_url?: string | null;
+  records?: Array<Record<string, unknown>>;
+  contacts?: Array<Record<string, unknown>>;
+  session_date?: string;
+  score_weights?: Json;
+  // schedule
+  day_of_week?: number | string;
+  start_time?: string;
+  end_time?: string | null;
+  timezone?: string;
+  label?: string | null;
+  // certificate / parent report
+  exam_type?: string;
+  overall_score?: number;
+  overall_band?: number;
+  candidate_name?: string;
+  center_name?: string;
+  expires_in_days?: number;
+  // engagement / operations / acquisition
+  payment_id?: string;
+  channel?: string;
+  message?: string;
+  staff_user_id?: string;
+  staff_email?: string;
+  staff_role?: string;
+  classroom_ids?: string[];
+  level?: string;
+  referral_code?: string;
+  diagnostic_score?: number;
+  [key: string]: unknown;
 };
 
 const corsHeaders: Record<string, string> = {
@@ -1194,6 +1237,11 @@ const handleReadAction = async (
       "payments",
       "entitlements",
       "schedule",
+      "classroom_billing",
+      "notifications",
+      "owner_dashboard",
+      "staff",
+      "referral_leaderboard",
     ].includes(action)
   ) {
     return null;
@@ -1676,6 +1724,196 @@ const handleReadAction = async (
     return json(200, { bulk_invites: data ?? [] });
   }
 
+  if (action === "referral_leaderboard") {
+    const { data: refs, error } = await sb.from("academy_referrals")
+      .select("referrer_contact_id, status").eq("academy_id", academyId).not("referred_contact_id", "is", null).limit(20000);
+    if (error) return json(500, { error: "Failed to load referrals", detail: error.message });
+
+    const byReferrer = new Map<string, { joined: number; enrolled: number }>();
+    for (const r of (refs ?? []) as Array<Record<string, unknown>>) {
+      const id = String(r.referrer_contact_id);
+      const entry = byReferrer.get(id) ?? { joined: 0, enrolled: 0 };
+      entry.joined += 1;
+      if (String(r.status) === "enrolled") entry.enrolled += 1;
+      byReferrer.set(id, entry);
+    }
+    const referrerIds = Array.from(byReferrer.keys());
+    if (referrerIds.length === 0) return json(200, { leaderboard: [] });
+
+    const { data: contactRows } = await sb.from("academy_contacts")
+      .select("id, first_name, last_name, email").eq("academy_id", academyId).in("id", referrerIds);
+    const contactById = new Map(((contactRows ?? []) as Array<Record<string, unknown>>).map((c) => [String(c.id), c]));
+
+    const leaderboard = referrerIds.map((id) => {
+      const c = contactById.get(id) ?? {};
+      const stats = byReferrer.get(id)!;
+      return {
+        contact_id: id,
+        name: `${String((c as any).first_name ?? "")} ${String((c as any).last_name ?? "")}`.trim() || String((c as any).email ?? "Student"),
+        referrals: stats.joined,
+        enrolled: stats.enrolled,
+      };
+    }).sort((a, b) => b.referrals - a.referrals).slice(0, 50);
+
+    return json(200, { leaderboard });
+  }
+
+  if (action === "staff") {
+    const { data, error } = await sb.from("academy_staff")
+      .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
+      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500);
+    if (error) return json(500, { error: "Failed to load staff", detail: error.message });
+    return json(200, { staff: data ?? [] });
+  }
+
+  if (action === "owner_dashboard") {
+    const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+    const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+
+    const [contactsRes, classroomsRes, paymentsRes, membersRes, subsRes, attRes, asgnRes] = await Promise.all([
+      sb.from("academy_contacts").select("id, status").eq("academy_id", academyId).limit(10000),
+      sb.from("academy_classrooms").select("id, name, is_active").eq("academy_id", academyId).limit(1000),
+      sb.from("academy_payments").select("amount, currency, status, created_at").eq("academy_id", academyId).limit(20000),
+      sb.from("academy_classroom_memberships").select("classroom_id, contact_id, role").eq("academy_id", academyId).in("role", ["student", "observer"]).limit(20000),
+      sb.from("academy_submissions").select("classroom_id, contact_id, score, max_score, status").eq("academy_id", academyId).limit(50000),
+      sb.from("academy_attendance").select("classroom_id, status, session_date").eq("academy_id", academyId).gte("session_date", since30).limit(50000),
+      sb.from("academy_assignments").select("id, classroom_id, status").eq("academy_id", academyId).neq("status", "archived").limit(5000),
+    ]);
+
+    const contacts = (contactsRes.data ?? []) as Array<Record<string, unknown>>;
+    const classrooms = (classroomsRes.data ?? []) as Array<Record<string, unknown>>;
+    const payments = (paymentsRes.data ?? []) as Array<Record<string, unknown>>;
+    const members = (membersRes.data ?? []) as Array<Record<string, unknown>>;
+    const subs = (subsRes.data ?? []) as Array<Record<string, unknown>>;
+    const attendance = (attRes.data ?? []) as Array<Record<string, unknown>>;
+    const assignments = (asgnRes.data ?? []) as Array<Record<string, unknown>>;
+
+    // Revenue
+    const paid = payments.filter((p) => String(p.status) === "paid");
+    const collectedTotal = paid.reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+    const collectedThisMonth = paid.filter((p) => String(p.created_at ?? "") >= monthStart).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+    const outstanding = payments.filter((p) => String(p.status) === "pending").reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+    const currency = String(paid[0]?.currency ?? payments[0]?.currency ?? "UZS");
+
+    // Enrollment funnel
+    const funnel = { trial: 0, active: 0, paused: 0, inactive: 0 } as Record<string, number>;
+    for (const c of contacts) {
+      const s = String(c.status ?? "active");
+      funnel[s] = (funnel[s] ?? 0) + 1;
+    }
+
+    // Per-classroom performance
+    const membersByClassroom = new Map<string, number>();
+    for (const m of members) membersByClassroom.set(String(m.classroom_id), (membersByClassroom.get(String(m.classroom_id)) ?? 0) + 1);
+    const classroomStats = classrooms.map((cl) => {
+      const cid = String(cl.id);
+      const clSubs = subs.filter((s) => String(s.classroom_id) === cid && typeof s.score === "number" && Number(s.max_score ?? 0) > 0);
+      const avgScore = clSubs.length > 0
+        ? Math.round(clSubs.reduce((acc, s) => acc + (Number(s.score) / Number(s.max_score)) * 100, 0) / clSubs.length * 10) / 10
+        : null;
+      const clAtt = attendance.filter((a) => String(a.classroom_id) === cid);
+      const present = clAtt.filter((a) => a.status === "present" || a.status === "late").length;
+      const attendanceRate = clAtt.length > 0 ? Math.round((present / clAtt.length) * 100) : null;
+      const clAsgn = assignments.filter((a) => String(a.classroom_id) === cid).length;
+      return {
+        classroom_id: cid, name: String(cl.name ?? ""), is_active: Boolean(cl.is_active),
+        students: membersByClassroom.get(cid) ?? 0, assignments: clAsgn,
+        avg_score: avgScore, attendance_rate: attendanceRate,
+      };
+    });
+
+    // Attendance trend: last 8 distinct session dates academy-wide
+    const dates = Array.from(new Set(attendance.map((a) => String(a.session_date)))).sort().reverse().slice(0, 8).reverse();
+    const trend = dates.map((d) => {
+      const recs = attendance.filter((a) => String(a.session_date) === d);
+      const present = recs.filter((a) => a.status === "present" || a.status === "late").length;
+      return { date: d, rate: recs.length > 0 ? Math.round((present / recs.length) * 100) : null };
+    });
+
+    return json(200, {
+      revenue: { currency, collected_total: collectedTotal, collected_this_month: collectedThisMonth, outstanding, paid_count: paid.length },
+      funnel,
+      total_students: contacts.length,
+      total_classrooms: classrooms.length,
+      classroom_stats: classroomStats,
+      attendance_trend: trend,
+    });
+  }
+
+  if (action === "branding") {
+    const { data, error } = await sb.from("academy_branding")
+      .select("id, academy_id, display_name, tagline, logo_url, favicon_url, primary_color, accent_color, hide_schood_logo, custom_domain, custom_domain_verified, footer_text, metadata, updated_at")
+      .eq("academy_id", academyId).maybeSingle();
+    if (error) return json(500, { error: "Failed to load branding", detail: error.message });
+    return json(200, { branding: data ?? null });
+  }
+
+  if (action === "notifications") {
+    const { data, error } = await sb.from("academy_notifications")
+      .select("id, contact_id, channel, type, title, body, status, error, sent_at, scheduled_at, created_at")
+      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200);
+    if (error) return json(500, { error: "Failed to load notifications", detail: error.message });
+    return json(200, { notifications: data ?? [] });
+  }
+
+  if (action === "classroom_billing") {
+    const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (!classroomId) return json(400, { error: "classroom_id is required" });
+
+    const [offersRes, membersRes, entRes, paymentsRes] = await Promise.all([
+      sb.from("academy_offers")
+        .select("id, name, price_amount, currency, duration_days, is_active")
+        .eq("academy_id", academyId).eq("classroom_id", classroomId).eq("is_active", true),
+      sb.from("academy_classroom_memberships")
+        .select("contact_id, academy_contacts(id, first_name, last_name, email, status)")
+        .eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(500),
+      sb.from("academy_entitlements")
+        .select("contact_id, resource_id, status, expires_at")
+        .eq("academy_id", academyId).eq("resource_type", "classroom").eq("resource_id", classroomId).limit(2000),
+      sb.from("academy_payments")
+        .select("contact_id, amount, currency, status, created_at")
+        .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(2000),
+    ]);
+    if (offersRes.error) return json(500, { error: "Failed to load offers", detail: offersRes.error.message });
+    if (membersRes.error) return json(500, { error: "Failed to load members", detail: membersRes.error.message });
+
+    const offers = offersRes.data ?? [];
+    const hasTuition = offers.length > 0;
+    const paidContacts = new Set(
+      ((entRes.data ?? []) as Array<Record<string, unknown>>)
+        .filter((e) => String(e.status) === "active" && (!e.expires_at || new Date(String(e.expires_at)) > new Date()))
+        .map((e) => String(e.contact_id)),
+    );
+    const lastPaymentByContact = new Map<string, Record<string, unknown>>();
+    for (const p of (paymentsRes.data ?? []) as Array<Record<string, unknown>>) {
+      const cid = String(p.contact_id ?? "");
+      if (cid && !lastPaymentByContact.has(cid)) lastPaymentByContact.set(cid, p);
+    }
+
+    const students = ((membersRes.data ?? []) as Array<Record<string, unknown>>).map((m) => {
+      const c = (m.academy_contacts as Record<string, unknown>) ?? {};
+      const contactId = String(c.id ?? m.contact_id ?? "");
+      return {
+        contact_id: contactId,
+        first_name: String(c.first_name ?? ""),
+        last_name: String(c.last_name ?? ""),
+        email: c.email ?? null,
+        // No tuition offer => classroom is free => everyone has access.
+        paid: hasTuition ? paidContacts.has(contactId) : true,
+        last_payment: lastPaymentByContact.get(contactId) ?? null,
+      };
+    });
+
+    return json(200, {
+      classroom_id: classroomId,
+      has_tuition: hasTuition,
+      offers,
+      students,
+      paid_count: students.filter((s) => s.paid).length,
+      unpaid_count: students.filter((s) => !s.paid).length,
+    });
+  }
+
   if (action === "schedule") {
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     let query = sb.from("academy_classroom_schedules")
@@ -1697,6 +1935,262 @@ const handleReadAction = async (
   return json(200, { entitlements: data ?? [] });
 };
 
+// ── Engagement maintenance (shared by manual actions + cron worker) ───────────
+
+type AtRiskEntry = {
+  contact_id: string;
+  name: string;
+  attendance_rate: number | null;
+  missing: number;
+  severity: string;
+  reasons: string[];
+};
+
+const computeAtRiskForAcademy = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  classroomId: string | null = null,
+): Promise<{ atRisk: AtRiskEntry[]; scanned: number }> => {
+  const sinceIso = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const nowIso = new Date().toISOString();
+
+  let memQuery = sb.from("academy_classroom_memberships")
+    .select("contact_id, classroom_id, academy_contacts(id, first_name, last_name, email, telegram_id, status, notify_enabled)")
+    .eq("academy_id", academyId).in("role", ["student", "observer"]).limit(5000);
+  if (classroomId) memQuery = memQuery.eq("classroom_id", classroomId);
+  const { data: memberRows } = await memQuery;
+
+  const members = (memberRows ?? []) as Array<Record<string, unknown>>;
+  const contactIds = Array.from(new Set(members.map((m) => String((m.academy_contacts as any)?.id ?? m.contact_id ?? "")).filter(Boolean)));
+  const classroomIds = Array.from(new Set(members.map((m) => String(m.classroom_id)).filter(Boolean)));
+  if (contactIds.length === 0) return { atRisk: [], scanned: 0 };
+
+  const [attRes, subRes, asgnRes] = await Promise.all([
+    sb.from("academy_attendance").select("contact_id, status, session_date").eq("academy_id", academyId).in("contact_id", contactIds).gte("session_date", sinceIso).limit(20000),
+    sb.from("academy_submissions").select("contact_id, assignment_id, status").eq("academy_id", academyId).in("contact_id", contactIds).limit(20000),
+    sb.from("academy_assignments").select("id, classroom_id, due_at, status").eq("academy_id", academyId).in("classroom_id", classroomIds.length > 0 ? classroomIds : ["none"]).eq("status", "active").limit(2000),
+  ]);
+
+  const attendance = (attRes.data ?? []) as Array<Record<string, unknown>>;
+  const submissions = (subRes.data ?? []) as Array<Record<string, unknown>>;
+  const assignments = (asgnRes.data ?? []) as Array<Record<string, unknown>>;
+
+  const dueAssignmentsByClassroom = new Map<string, string[]>();
+  for (const a of assignments) {
+    if (!a.due_at || new Date(String(a.due_at)) >= new Date()) continue;
+    const cid = String(a.classroom_id);
+    if (!dueAssignmentsByClassroom.has(cid)) dueAssignmentsByClassroom.set(cid, []);
+    dueAssignmentsByClassroom.get(cid)!.push(String(a.id));
+  }
+  const submittedKey = new Set(submissions.filter((s) => s.status !== "missing").map((s) => `${s.contact_id}__${s.assignment_id}`));
+
+  const atRisk: AtRiskEntry[] = [];
+  const memberByContact = new Map<string, Record<string, unknown>>();
+  for (const m of members) {
+    const c = (m.academy_contacts as Record<string, unknown>) ?? {};
+    const cid = String(c.id ?? m.contact_id ?? "");
+    if (cid && !memberByContact.has(cid)) memberByContact.set(cid, { contact: c, classroom_id: String(m.classroom_id) });
+  }
+
+  for (const [contactId, info] of memberByContact) {
+    const c = (info as any).contact as Record<string, unknown>;
+    const classroom = String((info as any).classroom_id);
+    const att = attendance.filter((a) => String(a.contact_id) === contactId);
+    const present = att.filter((a) => a.status === "present" || a.status === "late").length;
+    const attendanceRate = att.length >= 4 ? Math.round((present / att.length) * 100) : null;
+
+    const dueIds = dueAssignmentsByClassroom.get(classroom) ?? [];
+    const missing = dueIds.filter((aid) => !submittedKey.has(`${contactId}__${aid}`)).length;
+
+    const reasons: string[] = [];
+    if (attendanceRate !== null && attendanceRate < 70) reasons.push(`Attendance ${attendanceRate}%`);
+    if (missing >= 3) reasons.push(`${missing} missing assignments`);
+    if (reasons.length === 0) continue;
+
+    const severity = (attendanceRate !== null && attendanceRate < 50) || missing >= 5 ? "high" : "medium";
+    atRisk.push({ contact_id: contactId, name: `${String(c.first_name ?? "")} ${String(c.last_name ?? "")}`.trim(), attendance_rate: attendanceRate, missing, severity, reasons });
+
+    const { data: existingAlert } = await sb.from("academy_alerts")
+      .select("id").eq("academy_id", academyId).eq("contact_id", contactId).eq("type", "at_risk").eq("resolved", false).maybeSingle();
+    if (!existingAlert?.id) {
+      await sb.from("academy_alerts").insert({
+        academy_id: academyId, contact_id: contactId, type: "at_risk", severity,
+        message: `At risk: ${reasons.join("; ")}`, metadata: { attendance_rate: attendanceRate, missing, classroom_id: classroom },
+      });
+      const telegram = normalizeText(c.telegram_id, 120);
+      if (telegram && c.notify_enabled !== false) {
+        await sb.from("academy_notifications").insert({
+          academy_id: academyId, contact_id: contactId, channel: "telegram", type: "at_risk",
+          title: "Let's get back on track", body: `Hi ${String(c.first_name ?? "")}, your teacher noticed: ${reasons.join("; ")}. Check your assignments in the Schood app.`,
+          target: telegram, status: "queued", scheduled_at: nowIso,
+        });
+      }
+    }
+  }
+
+  return { atRisk, scanned: memberByContact.size };
+};
+
+const dispatchQueuedNotifications = async (
+  sb: SupabaseClientLike,
+  academyId: string | null = null,
+): Promise<{ sent: number; failed: number; skipped: number; processed: number }> => {
+  const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+  let q = sb.from("academy_notifications")
+    .select("id, channel, type, title, body, target, attempts")
+    .eq("status", "queued").lte("scheduled_at", new Date().toISOString())
+    .order("scheduled_at", { ascending: true }).limit(200);
+  if (academyId) q = q.eq("academy_id", academyId);
+  const { data: queued } = await q;
+
+  let sent = 0, failed = 0, skipped = 0;
+  for (const n of (queued ?? []) as Array<Record<string, unknown>>) {
+    const id = String(n.id);
+    const target = normalizeText(n.target, 120);
+    if (n.channel === "telegram") {
+      if (!botToken) { await sb.from("academy_notifications").update({ status: "skipped", error: "TELEGRAM_BOT_TOKEN not set" }).eq("id", id); skipped++; continue; }
+      if (!target) { await sb.from("academy_notifications").update({ status: "skipped", error: "No telegram target" }).eq("id", id); skipped++; continue; }
+      try {
+        const text = `${n.title ? `*${String(n.title)}*\n` : ""}${String(n.body ?? "")}`;
+        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: target, text, parse_mode: "Markdown" }),
+        });
+        if (res.ok) {
+          await sb.from("academy_notifications").update({ status: "sent", sent_at: new Date().toISOString(), attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+          sent++;
+        } else {
+          const detail = await res.text();
+          await sb.from("academy_notifications").update({ status: Number(n.attempts ?? 0) >= 2 ? "failed" : "queued", error: detail.slice(0, 400), attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+          failed++;
+        }
+      } catch (e) {
+        await sb.from("academy_notifications").update({ status: "queued", error: String(e instanceof Error ? e.message : e).slice(0, 400), attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+        failed++;
+      }
+    } else {
+      await sb.from("academy_notifications").update({ status: "skipped", error: `Channel ${String(n.channel)} not enabled` }).eq("id", id);
+      skipped++;
+    }
+  }
+  return { sent, failed, skipped, processed: (queued ?? []).length };
+};
+
+// Queue reminders for assignments due in the next 24h (one per student, deduped).
+const queueDueReminders = async (sb: SupabaseClientLike): Promise<number> => {
+  const nowIso = new Date().toISOString();
+  const in24hIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const { data: asgnRows } = await sb.from("academy_assignments")
+    .select("id, academy_id, classroom_id, title, due_at")
+    .eq("status", "active").gte("due_at", nowIso).lte("due_at", in24hIso).limit(2000);
+  const assignments = (asgnRows ?? []) as Array<Record<string, unknown>>;
+  if (assignments.length === 0) return 0;
+
+  let queued = 0;
+  for (const a of assignments) {
+    const academyId = String(a.academy_id);
+    const classroomId = String(a.classroom_id);
+    const assignmentId = String(a.id);
+
+    const [{ data: members }, { data: subs }, { data: existing }] = await Promise.all([
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_submissions").select("contact_id, status").eq("assignment_id", assignmentId).limit(2000),
+      sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "assignment_due").eq("metadata->>assignment_id", assignmentId).limit(5000),
+    ]);
+    const submitted = new Set(((subs ?? []) as Array<Record<string, unknown>>).filter((s) => s.status !== "missing").map((s) => String(s.contact_id)));
+    const reminded = new Set(((existing ?? []) as Array<Record<string, unknown>>).map((e) => String(e.contact_id)));
+
+    for (const m of (members ?? []) as Array<Record<string, unknown>>) {
+      const c = (m.academy_contacts as any) ?? {};
+      const contactId = String(c.id ?? m.contact_id ?? "");
+      if (!contactId || submitted.has(contactId) || reminded.has(contactId)) continue;
+      const telegram = normalizeText(c.telegram_id, 120);
+      if (!telegram || c.notify_enabled === false) continue;
+      await sb.from("academy_notifications").insert({
+        academy_id: academyId, contact_id: contactId, channel: "telegram", type: "assignment_due",
+        title: "Assignment due soon", body: `Reminder: "${String(a.title)}" is due ${new Date(String(a.due_at)).toLocaleString()}.`,
+        target: telegram, status: "queued", scheduled_at: nowIso, metadata: { assignment_id: assignmentId },
+      });
+      queued++;
+    }
+  }
+  return queued;
+};
+
+// Queue reminders for class sessions scheduled today (one per student per slot, deduped).
+const queueClassReminders = async (sb: SupabaseClientLike): Promise<number> => {
+  const now = new Date();
+  const dow = now.getUTCDay();
+  const today = now.toISOString().slice(0, 10);
+  const nowIso = now.toISOString();
+
+  const { data: slotRows } = await sb.from("academy_classroom_schedules")
+    .select("id, academy_id, classroom_id, start_time, label").eq("is_active", true).eq("day_of_week", dow).limit(1000);
+  const slots = (slotRows ?? []) as Array<Record<string, unknown>>;
+  if (slots.length === 0) return 0;
+
+  let queued = 0;
+  for (const slot of slots) {
+    const academyId = String(slot.academy_id);
+    const classroomId = String(slot.classroom_id);
+    const slotId = String(slot.id);
+
+    const [{ data: members }, { data: existing }, { data: cl }] = await Promise.all([
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "class_reminder").eq("metadata->>slot_id", slotId).eq("metadata->>date", today).limit(5000),
+      sb.from("academy_classrooms").select("name").eq("id", classroomId).maybeSingle(),
+    ]);
+    const reminded = new Set(((existing ?? []) as Array<Record<string, unknown>>).map((e) => String(e.contact_id)));
+    const className = cl?.name ? `"${String(cl.name)}"` : "class";
+
+    for (const m of (members ?? []) as Array<Record<string, unknown>>) {
+      const c = (m.academy_contacts as any) ?? {};
+      const contactId = String(c.id ?? m.contact_id ?? "");
+      if (!contactId || reminded.has(contactId)) continue;
+      const telegram = normalizeText(c.telegram_id, 120);
+      if (!telegram || c.notify_enabled === false) continue;
+      await sb.from("academy_notifications").insert({
+        academy_id: academyId, contact_id: contactId, channel: "telegram", type: "class_reminder",
+        title: "Class today", body: `You have ${className} today at ${String(slot.start_time)}${slot.label ? ` (${String(slot.label)})` : ""}.`,
+        target: telegram, status: "queued", scheduled_at: nowIso, metadata: { slot_id: slotId, date: today },
+      });
+      queued++;
+    }
+  }
+  return queued;
+};
+
+const isAcademyTenant = (tenant: Record<string, unknown>): boolean => {
+  const meta = toJsonObject(tenant.metadata);
+  return String(tenant.type ?? "").toLowerCase() === "team" ||
+    String(meta.service_family ?? "").toLowerCase() === "academy" ||
+    meta.academy_service === true || meta.center_owned === true;
+};
+
+const runAcademyMaintenance = async (
+  sb: SupabaseClientLike,
+  cycle: string,
+): Promise<Record<string, unknown>> => {
+  if (cycle === "at_risk") {
+    const { data: tenants } = await sb.from("tenants").select("id, type, metadata").limit(10000);
+    let scanned = 0, flagged = 0, academies = 0;
+    for (const t of (tenants ?? []) as Array<Record<string, unknown>>) {
+      if (!isAcademyTenant(t)) continue;
+      academies++;
+      const r = await computeAtRiskForAcademy(sb, String(t.id));
+      scanned += r.scanned;
+      flagged += r.atRisk.length;
+    }
+    return { cycle: "at_risk", academies, scanned, flagged };
+  }
+
+  // Default "dispatch" cycle: queue reminders, then send everything pending.
+  const dueQueued = await queueDueReminders(sb);
+  const classQueued = await queueClassReminders(sb);
+  const dispatch = await dispatchQueuedNotifications(sb, null);
+  return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -1705,11 +2199,29 @@ serve(async (req) => {
     const anonKey = getEnv("SUPABASE_ANON_KEY");
     const serviceRole = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
+    const sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+
+    // ── Cron worker path: authenticated via DB-managed x-worker-secret ────────
+    const workerSecret = req.headers.get("x-worker-secret");
+    if (workerSecret) {
+      const { data: secretRow } = await sb
+        .from("internal_runtime_secrets")
+        .select("secret")
+        .eq("key", "academy_worker_secret")
+        .maybeSingle();
+      if (!secretRow?.secret || String(secretRow.secret) !== workerSecret) {
+        return json(401, { error: "Unauthorized" });
+      }
+      const cronBody = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+      const cycle = normalizeText((cronBody as Record<string, unknown>)?.worker_cycle, 30).toLowerCase() || "dispatch";
+      const result = await runAcademyMaintenance(sb, cycle);
+      return json(200, { ok: true, ...result });
+    }
+
     const token = getBearerToken(req);
     if (!token) return json(401, { error: "Unauthorized" });
 
     const authSb = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } });
-    const sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
     const { data: authData, error: authError } = await authSb.auth.getUser(token);
     if (authError || !authData?.user) return json(401, { error: "Unauthorized" });
@@ -1890,6 +2402,126 @@ serve(async (req) => {
         .maybeSingle();
       if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
       return json(200, { submission: data });
+    }
+
+    // ── Student: tuition / billing status ────────────────────────────────────
+    if (requestedAction === "student_billing") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(200, { items: [] });
+
+      const academyIds = Array.from(new Set(contacts.map((c) => String(c.academy_id)).filter(Boolean)));
+      const contactIds = contacts.map((c) => String(c.id));
+
+      const [membershipsRes, offersRes, entRes, paymentsRes] = await Promise.all([
+        sb.from("academy_classroom_memberships").select("classroom_id, contact_id, academy_id").in("contact_id", contactIds).limit(2000),
+        sb.from("academy_offers").select("id, academy_id, classroom_id, name, price_amount, currency, duration_days, description, is_active").in("academy_id", academyIds).eq("is_active", true).not("classroom_id", "is", null).limit(1000),
+        sb.from("academy_entitlements").select("contact_id, resource_id, status, expires_at, resource_type").in("contact_id", contactIds).eq("resource_type", "classroom").limit(2000),
+        sb.from("academy_payments").select("id, contact_id, offer_id, amount, currency, status, created_at").in("contact_id", contactIds).order("created_at", { ascending: false }).limit(2000),
+      ]);
+
+      const memberships = (membershipsRes.data ?? []) as Array<Record<string, unknown>>;
+      const offers = (offersRes.data ?? []) as Array<Record<string, unknown>>;
+      const activeClassroomEnt = new Set(
+        ((entRes.data ?? []) as Array<Record<string, unknown>>)
+          .filter((e) => String(e.status) === "active" && (!e.expires_at || new Date(String(e.expires_at)) > new Date()))
+          .map((e) => `${e.contact_id}__${e.resource_id}`),
+      );
+      const lastPaymentByOffer = new Map<string, Record<string, unknown>>();
+      for (const p of (paymentsRes.data ?? []) as Array<Record<string, unknown>>) {
+        const key = `${p.contact_id}__${p.offer_id}`;
+        if (!lastPaymentByOffer.has(key)) lastPaymentByOffer.set(key, p);
+      }
+
+      // For each (contact, classroom) the student is enrolled in that has a tuition offer.
+      const items: Array<Record<string, unknown>> = [];
+      for (const m of memberships) {
+        const classroomId = String(m.classroom_id);
+        const contactId = String(m.contact_id);
+        const academyId = String(m.academy_id);
+        const offer = offers.find((o) => String(o.classroom_id) === classroomId && String(o.academy_id) === academyId);
+        if (!offer) continue; // free classroom, no billing
+        const paid = activeClassroomEnt.has(`${contactId}__${classroomId}`);
+        items.push({
+          academy_id: academyId,
+          classroom_id: classroomId,
+          contact_id: contactId,
+          offer,
+          paid,
+          last_payment: lastPaymentByOffer.get(`${contactId}__${offer.id}`) ?? null,
+        });
+      }
+
+      return json(200, { items });
+    }
+
+    // ── Student: referral code + referrals ───────────────────────────────────
+    if (requestedAction === "student_referral") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(200, { code: null, referrals: [] });
+
+      const academyIdParam = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
+      const contact = contacts.find((c) => !academyIdParam || String(c.academy_id) === academyIdParam) ?? contacts[0];
+      const contactAcademyId = String(contact.academy_id);
+      const contactId = String(contact.id);
+
+      // Find an existing self-code (referred_contact_id null), else create one.
+      const { data: existing } = await sb.from("academy_referrals")
+        .select("code").eq("academy_id", contactAcademyId).eq("referrer_contact_id", contactId).is("referred_contact_id", null).maybeSingle();
+
+      let code = existing?.code ? String(existing.code) : "";
+      if (!code) {
+        const base = (String(contact.first_name ?? "").slice(0, 4) || "REF").toUpperCase().replace(/[^A-Z0-9]/g, "");
+        for (let attempt = 0; attempt < 8 && !code; attempt++) {
+          const candidate = `${base}${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+          const { error: insErr } = await sb.from("academy_referrals").insert({
+            academy_id: contactAcademyId, referrer_contact_id: contactId, code: candidate, status: "pending",
+          });
+          if (!insErr) code = candidate;
+        }
+        if (!code) return json(500, { error: "Could not generate referral code" });
+      }
+
+      const { data: referrals } = await sb.from("academy_referrals")
+        .select("id, referred_email, status, created_at, joined_at, referred_contact_id")
+        .eq("academy_id", contactAcademyId).eq("referrer_contact_id", contactId).not("referred_contact_id", "is", null)
+        .order("created_at", { ascending: false }).limit(100);
+
+      return json(200, { code, academy_id: contactAcademyId, referrals: referrals ?? [] });
+    }
+
+    // ── Student: claim a referral code they were invited with ────────────────
+    if (requestedAction === "claim_referral" && req.method === "POST") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(403, { error: "No academy enrollment found" });
+
+      const code = normalizeText(body?.referral_code, 40).toUpperCase();
+      if (!code) return json(400, { error: "referral_code is required" });
+
+      // Find the referrer's self-code in any of the student's academies.
+      for (const contact of contacts) {
+        const contactAcademyId = String(contact.academy_id);
+        const contactId = String(contact.id);
+        const { data: referrer } = await sb.from("academy_referrals")
+          .select("referrer_contact_id").eq("academy_id", contactAcademyId).eq("code", code).is("referred_contact_id", null).maybeSingle();
+        if (!referrer?.referrer_contact_id) continue;
+        if (String(referrer.referrer_contact_id) === contactId) return json(400, { error: "You cannot refer yourself" });
+
+        const { error: insErr } = await sb.from("academy_referrals").insert({
+          academy_id: contactAcademyId,
+          referrer_contact_id: referrer.referrer_contact_id,
+          code,
+          referred_contact_id: contactId,
+          referred_email: contact.email ?? null,
+          status: "joined",
+          joined_at: new Date().toISOString(),
+        });
+        if (insErr) return json(500, { error: "Failed to record referral", detail: insErr.message });
+        return json(200, { ok: true, academy_id: contactAcademyId });
+      }
+      return json(404, { error: "Referral code not found in your academy" });
     }
 
     if (memberships.length === 0) return json(403, { error: "No active academy membership" });
@@ -2708,6 +3340,13 @@ serve(async (req) => {
         }
         if (priceAmount === null || priceAmount < 0) return json(400, { error: "price_amount is required" });
 
+        const offerClassroomId = normalizeText(body?.classroom_id, 64) || null;
+        if (offerClassroomId) {
+          const { data: classroomRow } = await sb
+            .from("academy_classrooms").select("id").eq("academy_id", academyId).eq("id", offerClassroomId).maybeSingle();
+          if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
+        }
+
         const payload = {
           academy_id: academyId,
           name,
@@ -2715,6 +3354,7 @@ serve(async (req) => {
           price_amount: priceAmount,
           currency,
           duration_days: durationDays,
+          classroom_id: offerClassroomId,
           description: normalizeText(body?.description, 2000) || null,
           is_active: body?.is_active !== false,
           metadata: body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
@@ -2726,9 +3366,24 @@ serve(async (req) => {
         const { data, error } = await sb
           .from("academy_offers")
           .insert(payload)
-          .select("id, academy_id, name, type, price_amount, currency, duration_days, description, is_active, metadata, created_at, updated_at")
+          .select("id, academy_id, name, type, price_amount, currency, duration_days, classroom_id, description, is_active, metadata, created_at, updated_at")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to create offer", detail: error.message });
+
+        // For a classroom-linked tuition offer, auto-create the access grant so a
+        // completed payment unlocks the classroom via apply_academy_payment.
+        if (data?.id && offerClassroomId) {
+          await sb.from("academy_offer_grants").insert({
+            academy_id: academyId,
+            offer_id: data.id,
+            grant_type: "classroom_access",
+            resource_type: "classroom",
+            resource_id: offerClassroomId,
+            quantity: 1,
+            duration_days: durationDays,
+            metadata: { auto_created: true },
+          });
+        }
         return json(200, { offer: data });
       }
 
@@ -3041,7 +3696,7 @@ serve(async (req) => {
 
         if (score === null) return json(400, { error: "score is required" });
 
-        let targetId = submissionId;
+        let targetId: string | null = submissionId;
         if (!targetId && assignmentId && contactId) {
           const { data: sub } = await sb.from("academy_submissions").select("id").eq("assignment_id", assignmentId).eq("contact_id", contactId).eq("academy_id", academyId).maybeSingle();
           targetId = sub?.id ? String(sub.id) : null;
@@ -3266,6 +3921,73 @@ serve(async (req) => {
         return json(200, { ok: true });
       }
 
+      if (actionBody === "record_placement") {
+        const contactId = normalizeText(body?.contact_id, 64);
+        if (!contactId) return json(400, { error: "contact_id is required" });
+        const score = typeof body?.diagnostic_score === "number" ? body.diagnostic_score
+          : typeof body?.score === "number" ? body.score : null;
+        const manualLevel = normalizeText(body?.level, 20).toUpperCase() || null;
+
+        const { data: contactRow } = await sb.from("academy_contacts").select("id").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
+        if (!contactRow?.id) return json(404, { error: "Contact not found" });
+
+        // CEFR placement bands (0–100). Manual level overrides.
+        const level = manualLevel ?? (score !== null ? placementBand(score) : null);
+        if (!level) return json(400, { error: "score or level is required" });
+
+        const { error: updErr } = await sb.from("academy_contacts")
+          .update({ placement_level: level, placement_score: score })
+          .eq("academy_id", academyId).eq("id", contactId);
+        if (updErr) return json(500, { error: "Failed to record placement", detail: updErr.message });
+
+        // Suggest classrooms tagged with this level in metadata.level
+        const { data: classroomRows } = await sb.from("academy_classrooms")
+          .select("id, name, metadata, is_active").eq("academy_id", academyId).eq("is_active", true).limit(500);
+        const suggested = ((classroomRows ?? []) as Array<Record<string, unknown>>)
+          .filter((c) => String((toJsonObject(c.metadata).level) ?? "").toUpperCase() === level)
+          .map((c) => ({ id: String(c.id), name: String(c.name ?? "") }));
+
+        return json(200, { contact_id: contactId, level, score, suggested_classrooms: suggested });
+      }
+
+      if (actionBody === "upsert_staff") {
+        const staffEmail = normalizeEmail(body?.staff_email ?? body?.email);
+        if (!staffEmail) return json(400, { error: "staff_email is required" });
+        const role = normalizeText(body?.staff_role ?? body?.role, 20).toLowerCase() || "teacher";
+        if (!["teacher", "manager", "assistant"].includes(role)) return json(400, { error: "Invalid role" });
+        const classroomIds = Array.isArray(body?.classroom_ids)
+          ? (body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)
+          : [];
+
+        const { data: userRow } = await sb.from("users").select("id").eq("email", staffEmail).maybeSingle();
+
+        const payload = {
+          academy_id: academyId,
+          user_id: userRow?.id ? String(userRow.id) : null,
+          email: staffEmail,
+          display_name: normalizeText(body?.name ?? body?.title, 160) || null,
+          role,
+          classroom_ids: classroomIds,
+          is_active: body?.is_active !== false,
+          created_by: userId,
+        };
+
+        const { data, error } = await sb.from("academy_staff")
+          .upsert(payload, { onConflict: "academy_id,email" })
+          .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to save staff", detail: error.message });
+        return json(200, { staff: data });
+      }
+
+      if (actionBody === "remove_staff") {
+        const staffId = normalizeText(body?.id, 64);
+        if (!staffId) return json(400, { error: "id is required" });
+        const { error } = await sb.from("academy_staff").delete().eq("id", staffId).eq("academy_id", academyId);
+        if (error) return json(500, { error: "Failed to remove staff", detail: error.message });
+        return json(200, { ok: true });
+      }
+
       if (actionBody === "issue_academy_certificate") {
         const contactId = normalizeText(body?.contact_id, 64);
         const classroomId = normalizeText(body?.classroom_id, 64);
@@ -3326,6 +4048,17 @@ serve(async (req) => {
         return json(200, { certificate: cert, share_url: `${siteUrl}/certificate?token=${cert?.public_token}` });
       }
 
+      if (actionBody === "compute_at_risk") {
+        const classroomId = normalizeText(body?.classroom_id, 64) || null;
+        const { atRisk, scanned } = await computeAtRiskForAcademy(sb, academyId, classroomId);
+        return json(200, { at_risk: atRisk, scanned });
+      }
+
+      if (actionBody === "dispatch_notifications") {
+        const result = await dispatchQueuedNotifications(sb, academyId);
+        return json(200, result);
+      }
+
       if (actionBody === "generate_parent_report") {
         const contactId = normalizeText(body?.contact_id, 64);
         const label = normalizeText(body?.label, 120) || null;
@@ -3348,6 +4081,22 @@ serve(async (req) => {
           share_url: `${siteUrl}/parent-report?token=${tokenRow?.token}`,
           contact: { id: contact.id, name: `${contact.first_name} ${contact.last_name}`.trim() },
         });
+      }
+
+      if (actionBody === "upsert_branding") {
+        const payload: Record<string, unknown> = { academy_id: academyId, updated_at: new Date().toISOString() };
+        const fields = ["display_name", "tagline", "logo_url", "favicon_url", "primary_color", "accent_color", "hide_schood_logo", "custom_domain", "footer_text"];
+        for (const field of fields) {
+          if (body && Object.prototype.hasOwnProperty.call(body, field)) {
+            payload[field] = field === "hide_schood_logo" ? Boolean(body[field]) : normalizeText(body[field], field.includes("url") ? 500 : 300) || null;
+          }
+        }
+        const { data, error } = await sb.from("academy_branding")
+          .upsert(payload, { onConflict: "academy_id" })
+          .select("id, academy_id, display_name, tagline, logo_url, primary_color, accent_color, hide_schood_logo, custom_domain, footer_text, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to save branding", detail: error.message });
+        return json(200, { branding: data });
       }
 
       return json(400, { error: "Unknown action" });

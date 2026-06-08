@@ -17,7 +17,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "npm run test:sat && npm run test:english-core",
+    "test": "npm run test:sat && npm run test:shared",
+    "test:shared": "deno test supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/english-learning.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
     "verify:english": "node scripts/run-english-verifications.mjs",
