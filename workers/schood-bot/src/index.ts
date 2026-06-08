@@ -71,10 +71,10 @@ const sbEdge = async (env: Env, fn: string, body: unknown, noVerifyJwt = false) 
 // ─── Get linked user from chat_id ─────────────────────────────────────────────
 
 const getUser = async (env: Env, chatId: number): Promise<{ id: string; email: string; name: string } | null> => {
-  const rows = await sbGet(env, "users", { telegram_chat_id: `eq.${chatId}`, select: "id,email,raw_user_meta_data", limit: "1" });
+  const rows = await sbGet(env, "users", { telegram_chat_id: `eq.${chatId}`, select: "id,email,full_name", limit: "1" });
   if (!rows || rows.length === 0) return null;
   const u = rows[0];
-  const name = u.raw_user_meta_data?.full_name || u.email?.split("@")[0] || "Student";
+  const name = u.full_name || u.email?.split("@")[0] || "Student";
   return { id: u.id, email: u.email, name };
 };
 
@@ -147,7 +147,7 @@ const handleMe = async (env: Env, chatId: number, user: { id: string; name: stri
 const handleResults = async (env: Env, chatId: number, user: { id: string; name: string }) => {
   const outcomes = await sbGet(env, "exam_outcomes", {
     user_id: `eq.${user.id}`, status: `eq.completed`,
-    select: "exam_type,overall_band,overall_score,computed_at",
+    select: "overall_band,overall_score,computed_at,products(name)",
     order: "computed_at.desc", limit: "5",
   });
 
@@ -160,7 +160,7 @@ const handleResults = async (env: Env, chatId: number, user: { id: string; name:
   for (const o of outcomes) {
     const score = o.overall_band ?? o.overall_score ?? "—";
     const date = new Date(o.computed_at).toLocaleDateString();
-    lines.push(`• <b>${String(o.exam_type ?? "").toUpperCase()}</b>: ${score} — ${date}`);
+    lines.push(`• <b>${String(o.products?.name ?? "Exam")}</b>: ${score} — ${date}`);
   }
   await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
 };
@@ -221,7 +221,7 @@ const handleSchedule = async (env: Env, chatId: number, user: { id: string }) =>
   const classroomIds = [...new Set(memberships.map((m: any) => m.classroom_id))];
   const schedules = await sbGet(env, "academy_classroom_schedules", {
     classroom_id: `in.(${classroomIds.join(",")})`,
-    select: "day_of_week,start_time,end_time,label,meet_url,academy_classrooms(name)",
+    select: "day_of_week,start_time,end_time,label,academy_classrooms(name)",
     order: "day_of_week.asc,start_time.asc", limit: "14",
   });
 
@@ -230,15 +230,15 @@ const handleSchedule = async (env: Env, chatId: number, user: { id: string }) =>
     return;
   }
 
-  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  // day_of_week is 0=Sun … 6=Sat (matches academy_classroom_schedules).
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const lines = [`📅 <b>Your weekly schedule</b>\n`];
   for (const s of schedules) {
-    const day = DAYS[(s.day_of_week - 1) % 7] ?? s.day_of_week;
+    const day = DAYS[s.day_of_week] ?? s.day_of_week;
     const time = `${s.start_time}${s.end_time ? `–${s.end_time}` : ""}`;
     const name = s.academy_classrooms?.name ?? "Class";
     const label = s.label ? ` (${s.label})` : "";
-    const link = s.meet_url ? ` 🔗 <a href="${s.meet_url}">Join</a>` : "";
-    lines.push(`• <b>${day}</b> ${time} — ${name}${label}${link}`);
+    lines.push(`• <b>${day}</b> ${time} — ${name}${label}`);
   }
   await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
 };
@@ -426,20 +426,15 @@ const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
 // ─── Entry point ─────────────────────────────────────────────────────────────
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // Health check
     if (url.pathname === "/") return new Response("Schood Bot is running", { status: 200 });
 
+
     // Telegram sends updates to /webhook
     if (url.pathname === "/webhook" && request.method === "POST") {
-      // Verify the request is from Telegram using the secret token header
-      const secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
-      if (env.WEBHOOK_SECRET && secret !== env.WEBHOOK_SECRET) {
-        return new Response("Forbidden", { status: 403 });
-      }
-
       let update: Record<string, unknown>;
       try {
         update = await request.json();
@@ -447,14 +442,10 @@ export default {
         return new Response("Bad request", { status: 400 });
       }
 
-      // Handle the update asynchronously — Telegram needs a 200 fast
-      // Use waitUntil if available (Cloudflare Workers)
-      const ctx = (request as any)[Symbol.for("cloudflare")]?.ctx;
-      const handlePromise = handleUpdate(env, update).catch((err) => {
+      // Handle asynchronously — return 200 to Telegram immediately
+      ctx.waitUntil(handleUpdate(env, update).catch((err) => {
         console.error("handleUpdate error:", err);
-      });
-      if (ctx?.waitUntil) ctx.waitUntil(handlePromise);
-      else await handlePromise;
+      }));
 
       return new Response("OK", { status: 200 });
     }
