@@ -1613,17 +1613,7 @@ const grantPaidPaymentOnce = async (
       });
 
       const payload = targetProductIds.map((pid) => {
-        let targetEndsAt: string | null = null;
-        if (terms.durationDays && terms.durationDays > 0) {
-          const nowMs = Date.now();
-          const existing = existingMap.get(pid);
-          const baseMs = existing
-            ? Math.max(nowMs, Date.parse(existing))
-            : nowMs;
-          targetEndsAt = new Date(
-            baseMs + terms.durationDays * 24 * 60 * 60 * 1000,
-          ).toISOString();
-        }
+        const targetEndsAt = computeEntitlementEndsAt(terms.durationDays, existingMap.get(pid) ?? null);
 
         return {
           user_id: payment.user_id,
@@ -1923,9 +1913,9 @@ const handleClickWebhook = async (
     if (updatedPayment?.user_id) {
       const amt = updatedPayment.amount ?? 0;
       const currency = String(updatedPayment.currency ?? "UZS");
-      fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
+      fetch(`${getEnv("SUPABASE_URL")}/functions/v1/send-telegram`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${supabaseServiceKey}`, "Content-Type": "application/json" },
+        headers: { "Authorization": `Bearer ${getEnv("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: updatedPayment.user_id,
           notification_type: "payment_confirmed",

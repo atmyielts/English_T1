@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { placementBand } from "../_shared/academy-scoring.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -3931,9 +3932,7 @@ serve(async (req) => {
         if (!contactRow?.id) return json(404, { error: "Contact not found" });
 
         // CEFR placement bands (0–100). Manual level overrides.
-        const bandFor = (s: number): string =>
-          s < 30 ? "A1" : s < 45 ? "A2" : s < 60 ? "B1" : s < 75 ? "B2" : s < 90 ? "C1" : "C2";
-        const level = manualLevel ?? (score !== null ? bandFor(score) : null);
+        const level = manualLevel ?? (score !== null ? placementBand(score) : null);
         if (!level) return json(400, { error: "score or level is required" });
 
         const { error: updErr } = await sb.from("academy_contacts")
@@ -4088,7 +4087,7 @@ serve(async (req) => {
         const payload: Record<string, unknown> = { academy_id: academyId, updated_at: new Date().toISOString() };
         const fields = ["display_name", "tagline", "logo_url", "favicon_url", "primary_color", "accent_color", "hide_schood_logo", "custom_domain", "footer_text"];
         for (const field of fields) {
-          if (Object.prototype.hasOwnProperty.call(body, field)) {
+          if (body && Object.prototype.hasOwnProperty.call(body, field)) {
             payload[field] = field === "hide_schood_logo" ? Boolean(body[field]) : normalizeText(body[field], field.includes("url") ? 500 : 300) || null;
           }
         }

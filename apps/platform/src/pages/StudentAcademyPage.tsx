@@ -407,6 +407,75 @@ const BillingTab: React.FC<{
   );
 };
 
+// ─── Referral Card ────────────────────────────────────────────────────────────
+
+const ReferralCard: React.FC<{ token: string }> = ({ token }) => {
+  const [code, setCode] = useState<string | null>(null);
+  const [referrals, setReferrals] = useState<Array<{ status: string }>>([]);
+  const [copied, setCopied] = useState(false);
+  const [claimCode, setClaimCode] = useState('');
+  const [claimMsg, setClaimMsg] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
+
+  const load = useCallback(async () => {
+    const res = await callAcademy(token, { action: 'student_referral' });
+    setCode(res.code ?? null);
+    setReferrals(res.referrals ?? []);
+  }, [token]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const copy = () => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const claim = async () => {
+    if (!claimCode.trim()) return;
+    setClaiming(true);
+    setClaimMsg(null);
+    const res = await callAcademy(token, { action: 'claim_referral', referral_code: claimCode.trim().toUpperCase() });
+    setClaimMsg(res.error ? res.error : 'Thanks! Your referral was recorded.');
+    setClaiming(false);
+    if (!res.error) { setClaimCode(''); void load(); }
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-2xl p-5 bg-gradient-to-br from-violet-50 to-blue-50">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-semibold text-gray-900">Invite friends</div>
+          <div className="text-xs text-gray-500 mt-0.5">Share your code — earn recognition when they join.</div>
+        </div>
+        {referrals.length > 0 && (
+          <div className="text-right">
+            <div className="text-2xl font-bold text-violet-700">{referrals.length}</div>
+            <div className="text-xs text-gray-500">referred</div>
+          </div>
+        )}
+      </div>
+      {code && (
+        <div className="flex items-center gap-2 mt-3">
+          <code className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono font-semibold tracking-wider text-gray-900">{code}</code>
+          <button onClick={copy} className="px-3 py-2 bg-gray-900 text-white text-sm rounded-xl hover:bg-black">{copied ? 'Copied!' : 'Copy'}</button>
+        </div>
+      )}
+      <div className="mt-3 pt-3 border-t border-white/60">
+        <div className="text-xs font-semibold text-gray-600 mb-1.5">Were you referred? Enter their code:</div>
+        <div className="flex items-center gap-2">
+          <input value={claimCode} onChange={(e) => setClaimCode(e.target.value)} className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none font-mono" placeholder="FRIEND CODE" />
+          <button onClick={() => void claim()} disabled={claiming || !claimCode.trim()} className="px-3 py-2 border border-gray-300 bg-white text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50">
+            {claiming ? '…' : 'Apply'}
+          </button>
+        </div>
+        {claimMsg && <div className="text-xs text-gray-600 mt-1.5">{claimMsg}</div>}
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export const StudentAcademyPage: React.FC = () => {
@@ -607,6 +676,9 @@ export const StudentAcademyPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Referral */}
+              {token && <ReferralCard token={token} />}
 
               {/* Announcements */}
               {(dashboard.announcements ?? []).length > 0 && (
