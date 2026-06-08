@@ -430,7 +430,7 @@ export const TodaySessionPage = () => {
             </p>
             <div className="srs-review-row-actions">
               <Link to="/dashboard" className="btn solid compact">
-                Back to dashboard
+                View progress
               </Link>
               <Link to="/practice/reviews" className="btn ghost compact">
                 Open the full review queue
