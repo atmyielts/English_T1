@@ -3158,6 +3158,24 @@ const callOpenRouterCoach = async (
   }
 };
 
+// Per-user daily cap on AI coaching calls (cost guardrail). Fail-open: a cap
+// infra error must never block a paying learner from getting help.
+const PRACTICE_AI_DAILY_LIMIT = 50;
+const enforcePracticeAiCap = async (sb: any, userId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await sb.rpc("consume_ielts_practice_ai", {
+      p_user_id: userId,
+      p_limit: PRACTICE_AI_DAILY_LIMIT,
+      p_amount: 1,
+    });
+    if (error) return true;
+    const row = Array.isArray(data) ? data[0] : data;
+    return row?.allowed !== false;
+  } catch {
+    return true;
+  }
+};
+
 // Coach explanation language (L1 support). Default English; UZ/RU translate the
 // explanation prose while keeping IELTS terms + quoted evidence in English.
 const coachLangName = (lang: string): string =>
@@ -4858,6 +4876,15 @@ serve(async (req) => {
         return json(400, { error: "question required" });
       }
 
+      if (!(await enforcePracticeAiCap(sb, auth.userId))) {
+        return json(200, {
+          ok: true,
+          ai_available: false,
+          reply: "You've reached today's AI tutor limit. It resets tomorrow — in the meantime, try a strategy lesson or keep practising in today's session.",
+          suggested_followups: [],
+        });
+      }
+
       const [trajectory, mastery] = await Promise.all([
         buildPracticeTrajectoryShared(sb, scope.practiceProductId, auth.userId).catch(() => null),
         buildPracticeMasteryOverviewShared(sb, scope.languageId, auth.userId).catch(() => null),
@@ -4929,8 +4956,26 @@ serve(async (req) => {
       const lang = toText(body.lang, 8).toLowerCase();
       if (!questionType) return json(400, { error: "question_type required" });
 
-      const goals = await getGoals(sb, auth.userId, scope).catch(() => null);
       const label = formatQuestionLabel(questionType);
+      if (!(await enforcePracticeAiCap(sb, auth.userId))) {
+        return json(200, {
+          ok: true,
+          ai_available: false,
+          lesson: {
+            title: `How to approach ${label}`,
+            what_it_tests: "You've reached today's AI limit — here's the quick version. It resets tomorrow.",
+            steps: [
+              "Underline the keywords in the question.",
+              "Scan for the matching idea in the text (expect paraphrase, not identical words).",
+              "Confirm the evidence proves the answer before committing.",
+            ],
+            common_traps: ["Matching identical words instead of meaning", "Picking a plausible distractor without checking the text"],
+            worked_example: "",
+          },
+        });
+      }
+
+      const goals = await getGoals(sb, auth.userId, scope).catch(() => null);
 
       const fallback = {
         title: `How to approach ${label}`,
@@ -5587,6 +5632,16 @@ serve(async (req) => {
         const messages = Array.isArray((body as JsonRecord).messages) ? (body as JsonRecord).messages as unknown[] : [];
         const userQuestion = toText((body as JsonRecord).question, 800);
         const lang = toText((body as JsonRecord).lang, 8).toLowerCase();
+
+        if (!(await enforcePracticeAiCap(sb, auth.userId))) {
+          return json(200, {
+            ok: true,
+            reply: "You've reached today's AI coaching limit. It resets tomorrow — your scored results and notebook are still here to review.",
+            suggested_followups: [],
+            steps: [],
+            generated_at: new Date().toISOString(),
+          });
+        }
 
         // Conversational mode: prior messages provided OR a question supplied.
         if (messages.length > 0 || userQuestion) {
