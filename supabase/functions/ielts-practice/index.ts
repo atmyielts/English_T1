@@ -4920,6 +4920,66 @@ serve(async (req) => {
       return json(200, { ok: true, ai_available: true, reply, suggested_followups: followups });
     }
 
+    // Teaching layer — an on-demand strategy micro-lesson for a question type,
+    // so learners can LEARN the technique, not just drill it. L1-aware.
+    if (req.method === "POST" && route === "/insights/teach") {
+      const body = (await parseBody(req)) as JsonRecord;
+      const questionType = toText(body.question_type, 80);
+      const sectionType = toText(body.section_type, 32).toLowerCase();
+      const lang = toText(body.lang, 8).toLowerCase();
+      if (!questionType) return json(400, { error: "question_type required" });
+
+      const goals = await getGoals(sb, auth.userId, scope).catch(() => null);
+      const label = formatQuestionLabel(questionType);
+
+      const fallback = {
+        title: `How to approach ${label}`,
+        what_it_tests: `${label} checks whether you can locate and verify the right information under time pressure.`,
+        steps: [
+          "Read the question and underline the keywords you must match.",
+          "Scan the text for the matching idea — expect paraphrase, not identical words.",
+          "Confirm the evidence proves the answer before committing.",
+        ],
+        common_traps: ["Matching identical words instead of meaning", "Choosing a plausible distractor without checking the text"],
+        worked_example: "",
+      };
+
+      if (!isOpenRouterConfigured()) {
+        return json(200, { ok: true, ai_available: false, lesson: fallback });
+      }
+
+      const system =
+        "You are an expert IELTS tutor writing a SHORT strategy micro-lesson for one question type, for a student about to practise it. Teach the technique clearly and concretely. Return strict JSON: {title: string (<=8 words), what_it_tests: string (1 sentence), steps: string[3-5] (imperative, specific to this question type), common_traps: string[2-3], worked_example: string (2-4 sentences showing the technique on a tiny made-up example)}. Be specific to the question type — no generic study advice." +
+        coachLangInstruction(lang);
+
+      const context = {
+        question_type: questionType,
+        section: sectionType || "reading",
+        target_band: goals?.target_overall_band ?? null,
+      };
+
+      const result = await callOpenRouterJsonOrFallback<{
+        title?: unknown; what_it_tests?: unknown; steps?: unknown; common_traps?: unknown; worked_example?: unknown;
+      }>(
+        { systemPrompt: system, userPayload: JSON.stringify(context), temperature: 0.4 },
+        fallback,
+      );
+
+      const lesson = {
+        title: toText(result.title, 120) || fallback.title,
+        what_it_tests: toText(result.what_it_tests, 400) || fallback.what_it_tests,
+        steps: Array.isArray(result.steps)
+          ? (result.steps as unknown[]).map((s) => toText(s, 300)).filter(Boolean).slice(0, 5)
+          : fallback.steps,
+        common_traps: Array.isArray(result.common_traps)
+          ? (result.common_traps as unknown[]).map((s) => toText(s, 300)).filter(Boolean).slice(0, 3)
+          : fallback.common_traps,
+        worked_example: toText(result.worked_example, 800),
+      };
+
+      return json(200, { ok: true, ai_available: true, lesson });
+    }
+
     // AI mock generator — produces a one-off IELTS-style passage + questions
     // calibrated to the student's target band. Returned for in-memory practice;
     // not persisted as a delivery_build (those go through the admin pipeline).

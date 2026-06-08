@@ -45,6 +45,7 @@ import {
   VocabFromMistakesCard,
 } from '../components/PracticeFocusExtras';
 import { UniversalStreakBadge } from '../components/UniversalStreakBadge';
+import { TeachSkillButton } from '../components/TeachSkillButton';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -778,6 +779,7 @@ export const DashboardPage = () => {
                           <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
                         </div>
                         <div className="weakness-actions" style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          <TeachSkillButton accessToken={accessToken} sectionType={row.section_type} questionType={row.question_type} />
                           {inQueue ? (
                             <Link to="/practice/reviews" className="btn ghost compact">In queue</Link>
                           ) : (
