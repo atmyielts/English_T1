@@ -215,6 +215,17 @@ verify_jwt = false
 [functions.academy]
 verify_jwt = false
 
+# click is the Click.uz payment webhook (unauthenticated POST) — must not verify JWT
+[functions.click]
+verify_jwt = false
+
+# Telegram functions do their own auth / are called server-to-server
+[functions.send-telegram]
+verify_jwt = false
+
+[functions.telegram-link]
+verify_jwt = false
+
 [functions.access-effective]
 verify_jwt = false
 
