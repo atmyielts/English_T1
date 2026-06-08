@@ -4831,6 +4831,72 @@ serve(async (req) => {
       );
     }
 
+    // Always-available conversational tutor, grounded in the learner's own
+    // profile (target, predictors, weak types, traps) rather than a single
+    // finished session. This is the "ask anything while studying" coach.
+    if (req.method === "POST" && route === "/insights/coach-ask") {
+      const body = (await parseBody(req)) as JsonRecord;
+      const userQuestion = toText(body.question, 1000);
+      const rawMessages = Array.isArray(body.messages) ? (body.messages as unknown[]) : [];
+      if (!userQuestion && rawMessages.length === 0) {
+        return json(400, { error: "question required" });
+      }
+
+      const [trajectory, mastery] = await Promise.all([
+        buildPracticeTrajectoryShared(sb, scope.practiceProductId, auth.userId).catch(() => null),
+        buildPracticeMasteryOverviewShared(sb, scope.languageId, auth.userId).catch(() => null),
+      ]);
+      const goals = await getGoals(sb, auth.userId, scope);
+
+      const history = rawMessages
+        .map((m) => (isObject(m)
+          ? { role: m.role === "assistant" ? "assistant" : "user", content: toText(m.content, 800) }
+          : null))
+        .filter((m): m is { role: string; content: string } => m !== null && m.content.length > 0)
+        .slice(-8);
+
+      const context = {
+        target_band: goals.target_overall_band,
+        target_date: goals.target_date,
+        predictor: trajectory?.predictor ?? null,
+        weak_types: mastery
+          ? {
+              weak: mastery.totals.weak,
+              tracked: mastery.totals.tracked,
+              top_traps: mastery.trap_patterns.slice(0, 5),
+            }
+          : null,
+        history,
+        user_question: userQuestion || "Continue the explanation.",
+      };
+
+      if (!isOpenRouterConfigured()) {
+        return json(200, {
+          ok: true,
+          ai_available: false,
+          reply: "The AI tutor is unavailable right now. Try a strategy primer in the IELTS Playbook, or open today's session to keep practising.",
+          suggested_followups: [],
+        });
+      }
+
+      const system =
+        "You are an expert IELTS tutor in an ongoing one-to-one conversation with a student. Use the JSON context (their target band, score predictors, weak question types, and top trap patterns) to ground every answer in THEIR situation. TEACH the underlying skill: explain the why, name the exact technique, and give a concrete worked example or a short step-by-step. If they ask about a question type, grammar point, vocabulary, or essay structure, teach it clearly and simply. Never be generic — tie advice to their data when relevant. Reply in strict JSON: {reply: string (3-6 sentences, plain language), suggested_followups: string[3] (short natural next questions the student might ask)}.";
+
+      const result = await callOpenRouterJsonOrFallback<{ reply?: unknown; suggested_followups?: unknown }>(
+        { systemPrompt: system, userPayload: JSON.stringify(context), temperature: 0.5 },
+        { reply: "", suggested_followups: [] },
+      );
+
+      const reply = typeof result.reply === "string" && result.reply.trim().length > 0
+        ? result.reply.trim()
+        : "Could you tell me a bit more about what you'd like help with — a specific question type, a grammar or vocabulary point, or your study plan?";
+      const followups = Array.isArray(result.suggested_followups)
+        ? (result.suggested_followups as unknown[]).map((v) => String(v).trim()).filter(Boolean).slice(0, 3)
+        : [];
+
+      return json(200, { ok: true, ai_available: true, reply, suggested_followups: followups });
+    }
+
     // AI mock generator — produces a one-off IELTS-style passage + questions
     // calibrated to the student's target band. Returned for in-memory practice;
     // not persisted as a delivery_build (those go through the admin pipeline).

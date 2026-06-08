@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertCircle, CheckCircle2, MessageSquare, RefreshCw, ScrollText, Send, XCircle } from 'lucide-react';
 import {
+  practiceCoachAsk,
   practiceGeneratePlan,
   practiceLabCoachChat,
   practiceModelAnswer,
@@ -191,6 +192,118 @@ export const ConversationalCoach = ({ accessToken, practiceSessionId }: CoachCha
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask the coach a follow-up…"
+          disabled={busy}
+          style={{ flex: 1 }}
+        />
+        <button type="submit" className="btn solid compact" disabled={busy || !input.trim()}>
+          <Send size={14} />
+        </button>
+      </form>
+    </section>
+  );
+};
+
+// ============================================================
+// 2b. Always-available tutor — ask anything, grounded in your profile
+// ============================================================
+
+const ASK_STARTERS = [
+  'Explain the difference between True/False/Not Given and Yes/No/Not Given.',
+  'How do I improve Task 2 coherence and cohesion?',
+  'What should I focus on this week to reach my target band?',
+  'Give me a strategy for matching headings.',
+];
+
+export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) => {
+  const [history, setHistory] = useState<CoachChatTurn[]>([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [followups, setFollowups] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const send = async (text: string) => {
+    if (!accessToken || !text.trim() || busy) return;
+    const userTurn: CoachChatTurn = { role: 'user', content: text.trim() };
+    const newHistory = [...history, userTurn];
+    setHistory(newHistory);
+    setInput('');
+    setBusy(true);
+    setError(null);
+    setFollowups([]);
+    try {
+      const res = await practiceCoachAsk(accessToken, { messages: newHistory, question: text.trim() });
+      setHistory((prev) => [...prev, { role: 'assistant', content: res.reply }]);
+      setFollowups(res.suggested_followups ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Tutor is unavailable right now');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="glass stat-card wide" style={{ padding: 24, display: 'grid', gap: 12 }}>
+      <div>
+        <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Ask your tutor</p>
+        <h3 style={{ margin: '4px 0 0' }}>Stuck on something? Ask anything.</h3>
+        <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
+          A question type, a grammar or vocabulary point, essay structure, or what to focus on next — grounded in your own results.
+        </p>
+      </div>
+
+      {history.length > 0 ? (
+        <div style={{ display: 'grid', gap: 10, maxHeight: 360, overflowY: 'auto', paddingRight: 4 }}>
+          {history.map((turn, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                alignSelf: turn.role === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '85%',
+                background: turn.role === 'user' ? 'var(--accent-soft)' : 'var(--card-subtle)',
+                border: '1px solid var(--card-border)',
+                fontSize: 14,
+                lineHeight: 1.55,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              <span className="muted" style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                {turn.role === 'user' ? 'You' : 'Tutor'}
+              </span>
+              {turn.content}
+            </div>
+          ))}
+          {busy ? <p className="muted" style={{ fontSize: 13 }}>Tutor is thinking…</p> : null}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {ASK_STARTERS.map((s) => (
+            <button key={s} type="button" className="btn ghost compact" onClick={() => void send(s)} disabled={busy} style={{ fontSize: 12 }}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {error ? <p className="error-text">{error}</p> : null}
+
+      {followups.length > 0 ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {followups.map((f) => (
+            <button key={f} type="button" className="btn ghost compact" onClick={() => void send(f)} disabled={busy} style={{ fontSize: 12 }}>
+              {f}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      <form onSubmit={(e) => { e.preventDefault(); void send(input); }} style={{ display: 'flex', gap: 8 }}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask your tutor anything about IELTS…"
           disabled={busy}
           style={{ flex: 1 }}
         />
