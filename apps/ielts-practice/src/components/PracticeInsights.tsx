@@ -1,20 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Calendar, Flame, GraduationCap, Sparkles, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Calendar, CheckCircle2, Flag, Flame, GraduationCap, Sparkles, TrendingUp } from 'lucide-react';
 import { useLazyVisible } from '../lib/useLazyVisible';
 import {
   practiceActivityGet,
+  practiceGeneratePlan,
+  practiceGoalsGet,
+  practiceGoalsPatch,
   practiceMasteryOverviewGet,
   practiceNarrativeGet,
   practiceTrajectoryGet,
   type ActivityDay,
   type MasteryRow,
   type PracticeActivityResponse,
+  type PracticeGoal,
   type PracticeMasteryOverviewResponse,
   type PracticeNarrativeResponse,
   type PracticeTrajectoryResponse,
   type TrajectoryPoint,
 } from '../lib/api';
 import { formatPracticeLabel } from '../lib/practiceExperience';
+
+const BAND_OPTIONS = ['4.0', '4.5', '5.0', '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0'];
+
+const isRecordObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -31,23 +41,197 @@ const PACE_COPY: Record<PracticeNarrativeResponse['pace_label'], { label: string
 
 interface PlanNarrativeProps {
   accessToken: string | null;
+  // Lets the dashboard refresh after a new cycle is started.
+  onChanged?: () => void;
 }
 
-export const PlanNarrativeBanner = ({ accessToken }: PlanNarrativeProps) => {
+const todayMidnight = (): Date => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const addDaysIso = (days: number): string => {
+  const d = todayMidnight();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativeProps) => {
   const [data, setData] = useState<PracticeNarrativeResponse | null>(null);
+  const [goal, setGoal] = useState<PracticeGoal | null>(null);
+  const [achieved, setAchieved] = useState<string>('');
+  const [tookTest, setTookTest] = useState(false);
+  const [savingResult, setSavingResult] = useState(false);
+  const [resultSaved, setResultSaved] = useState(false);
+  const [startingCycle, setStartingCycle] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = (token: string) => {
+    practiceNarrativeGet(token).then(setData).catch(() => null);
+    practiceGoalsGet(token).then((r) => setGoal(r.goals)).catch(() => null);
+  };
+
   useEffect(() => {
     if (!accessToken) return;
     let cancelled = false;
     practiceNarrativeGet(accessToken).then((res) => { if (!cancelled) setData(res); }).catch(() => null);
+    practiceGoalsGet(accessToken).then((r) => { if (!cancelled) setGoal(r.goals); }).catch(() => null);
     return () => { cancelled = true; };
   }, [accessToken]);
+
+  // Pre-fill the achieved band from any previously recorded result.
+  useEffect(() => {
+    const meta = isRecordObj(goal?.metadata) ? goal!.metadata as Record<string, unknown> : {};
+    const results = Array.isArray(meta.cycle_results) ? meta.cycle_results : [];
+    const last = results.length > 0 ? results[results.length - 1] : null;
+    if (isRecordObj(last) && typeof last.achieved_band === 'number') {
+      setAchieved(last.achieved_band.toFixed(1));
+      setResultSaved(true);
+    }
+  }, [goal]);
+
   if (!data) return null;
 
-  const pct = data.total_days ? Math.min(100, Math.round((data.day_n / data.total_days) * 100)) : null;
   const pace = PACE_COPY[data.pace_label];
   const subtitle = data.target_date
     ? `Target band ${data.target_band.toFixed(1)} by ${new Date(data.target_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
     : `Target band ${data.target_band.toFixed(1)}`;
+
+  const targetPassed = data.target_date ? new Date(data.target_date) < todayMidnight() : false;
+  const overrun = data.total_days != null && data.day_n > data.total_days;
+  const ended = targetPassed || overrun;
+
+  // ── Plan finished: turn the dead counter into a decision point ──────────────
+  if (ended) {
+    const cycleDays = data.total_days ?? goal?.program_duration_days ?? 56;
+    const achievedNum = achieved ? Number(achieved) : null;
+    const reachedTarget = achievedNum != null && achievedNum >= data.target_band;
+
+    const saveResult = async () => {
+      if (!accessToken || achievedNum == null) return;
+      setSavingResult(true);
+      setError(null);
+      try {
+        const meta = isRecordObj(goal?.metadata) ? { ...(goal!.metadata as Record<string, unknown>) } : {};
+        const prior = Array.isArray(meta.cycle_results) ? meta.cycle_results : [];
+        meta.cycle_results = [
+          ...prior,
+          {
+            target_band: data.target_band,
+            target_date: data.target_date,
+            achieved_band: achievedNum,
+            took_official_test: tookTest,
+            recorded_at: new Date().toISOString(),
+          },
+        ];
+        const res = await practiceGoalsPatch(accessToken, { metadata: meta });
+        setGoal(res.goals);
+        setResultSaved(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not save your result');
+      } finally {
+        setSavingResult(false);
+      }
+    };
+
+    const startNewCycle = async (nextTargetBand: number) => {
+      if (!accessToken) return;
+      setStartingCycle(true);
+      setError(null);
+      try {
+        await practiceGoalsPatch(accessToken, {
+          target_overall_band: nextTargetBand,
+          practice_start_date: addDaysIso(0),
+          target_date: addDaysIso(cycleDays),
+          program_duration_days: cycleDays,
+        });
+        await practiceGeneratePlan(accessToken, { refresh_diagnostics: true }).catch(() => null);
+        reload(accessToken);
+        onChanged?.();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not start a new cycle');
+      } finally {
+        setStartingCycle(false);
+      }
+    };
+
+    const weeks = Math.round(cycleDays / 7);
+    // If they hit the goal, the natural next target is half a band higher.
+    const nextBand = reachedTarget ? Math.min(9, data.target_band + 0.5) : data.target_band;
+
+    return (
+      <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 16, borderLeft: '3px solid #b6512c' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <Flag size={18} style={{ marginTop: 3, color: '#b6512c' }} />
+          <div>
+            <p className="eyebrow">Study plan complete</p>
+            <h2 style={{ margin: '4px 0 2px' }}>Your plan window has ended</h2>
+            <p className="muted" style={{ margin: 0 }}>
+              You trained for {data.day_n} day{data.day_n === 1 ? '' : 's'} toward {subtitle.toLowerCase()}. Lock in the
+              result, then set your next goal — the daily plan keeps working until you do.
+            </p>
+          </div>
+        </div>
+
+        {error ? <div className="dashboard-alert error" style={{ margin: 0 }}>{error}</div> : null}
+
+        {/* Reflection — record the end result */}
+        <div style={{ display: 'grid', gap: 10, background: 'color-mix(in srgb, #0e4955 5%, transparent)', borderRadius: 12, padding: 16 }}>
+          <strong style={{ fontSize: 14 }}>How did it go?</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label className="muted" style={{ fontSize: 13 }}>Band reached</label>
+            <select
+              value={achieved}
+              onChange={(e) => { setAchieved(e.target.value); setResultSaved(false); }}
+              style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #d8d2c6' }}
+            >
+              <option value="">Select…</option>
+              {BAND_OPTIONS.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+            <label className="muted" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input type="checkbox" checked={tookTest} onChange={(e) => setTookTest(e.target.checked)} />
+              I sat the official test
+            </label>
+            <button
+              type="button"
+              className="btn ghost compact"
+              disabled={savingResult || achievedNum == null}
+              onClick={() => void saveResult()}
+            >
+              {savingResult ? 'Saving…' : resultSaved ? 'Update result' : 'Save result'}
+            </button>
+          </div>
+          {resultSaved && achievedNum != null ? (
+            <p style={{ margin: 0, fontSize: 13, color: reachedTarget ? '#166534' : '#9b2c2c', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <CheckCircle2 size={14} />
+              {reachedTarget
+                ? `Goal reached — band ${achievedNum.toFixed(1)} vs target ${data.target_band.toFixed(1)}. Time to aim higher.`
+                : `Band ${achievedNum.toFixed(1)} — ${(data.target_band - achievedNum).toFixed(1)} below your ${data.target_band.toFixed(1)} target. Another focused cycle can close the gap.`}
+            </p>
+          ) : null}
+        </div>
+
+        {/* Next step — start a fresh cycle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn solid compact"
+            disabled={startingCycle}
+            onClick={() => void startNewCycle(nextBand)}
+          >
+            {startingCycle
+              ? 'Setting up…'
+              : `Start a new ${weeks}-week cycle → band ${nextBand.toFixed(1)}`}
+          </button>
+          <Link to="/plan" className="btn ghost compact">Adjust target &amp; dates</Link>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Active plan (unchanged) ─────────────────────────────────────────────────
+  const pct = data.total_days ? Math.min(100, Math.round((data.day_n / data.total_days) * 100)) : null;
 
   return (
     <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 12 }}>

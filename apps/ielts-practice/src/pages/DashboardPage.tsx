@@ -554,7 +554,7 @@ export const DashboardPage = () => {
 
           <PreTestModeBanner targetDate={goal?.target_date ?? null} />
 
-          <PlanNarrativeBanner accessToken={accessToken} />
+          <PlanNarrativeBanner accessToken={accessToken} onChanged={() => { void load(); }} />
 
           <PlanStaleBanner
             accessToken={accessToken}
