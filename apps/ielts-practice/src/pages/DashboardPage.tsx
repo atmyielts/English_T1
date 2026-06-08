@@ -33,7 +33,7 @@ import {
   MasteryOverviewCard,
   PlanNarrativeBanner,
 } from '../components/PracticeInsights';
-import { NotebookRetestButton, PlanStaleBanner } from '../components/PracticeAdaptiveExtras';
+import { AskCoachPanel, NotebookRetestButton, PlanStaleBanner } from '../components/PracticeAdaptiveExtras';
 import { PracticeAICoachCard } from '../components/PracticeAICoachCard';
 import { PracticeOnboarding } from '../components/PracticeOnboarding';
 import {
@@ -570,6 +570,8 @@ export const DashboardPage = () => {
           />
 
           <PracticeAICoachCard accessToken={accessToken} />
+
+          <AskCoachPanel accessToken={accessToken} />
 
           <DashboardSectionTitle
             eyebrow="Today"
