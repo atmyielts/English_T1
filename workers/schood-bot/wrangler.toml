@@ -5,10 +5,10 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 SITE_URL = "https://schood.online"
+TELEGRAM_BOT_NAME = "schoodonlinebot"
 
 # Secrets (set via `wrangler secret put`):
 # TELEGRAM_BOT_TOKEN
-# TELEGRAM_BOT_NAME       (your bot's @username without @)
 # SUPABASE_URL
 # SUPABASE_SERVICE_KEY    (service role key — Worker is server-side only)
 # WEBHOOK_SECRET          (any random string — verify Telegram is the caller)
