@@ -495,13 +495,16 @@ export const DashboardPage = () => {
 
           <div id={sidebarMenuId} className="practice-sidebar-menu">
             <nav className="practice-sidebar-nav">
-              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar}>Dashboard</Link>
-              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
-              <Link to="/plan" className="sidebar-link" onClick={closeSidebar}>Plan Builder</Link>
+              <Link to="/today" className="sidebar-link" onClick={closeSidebar} title="Your guided daily session">Today</Link>
+              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar} title="Bands, mastery & mistakes">Progress</Link>
+              <Link to="/plan" className="sidebar-link" onClick={closeSidebar} title="Goal & schedule">Plan</Link>
+
+              <span className="sidebar-nav-label muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6, padding: '8px 0 2px' }}>More</span>
               <Link to="/practice/reviews" className="sidebar-link" onClick={closeSidebar}>
                 Reviews due{srsSummary.due > 0 ? ` (${srsSummary.due})` : ''}
               </Link>
               <Link to="/practice/stats/by-type" className="sidebar-link" onClick={closeSidebar}>Stats by type</Link>
+              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
               <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
               <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
               <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
@@ -529,23 +532,17 @@ export const DashboardPage = () => {
         <main className="practice-main">
           <header className="practice-header glass">
             <div>
-              <p className="eyebrow">Schood IELTS Practice</p>
+              <p className="eyebrow">Progress &amp; insights</p>
               <h1>Welcome back, {displayName}</h1>
               <p className="muted">
-                Train inside Practice Labs built from your IELTS Simulator results: coaching, repair, replay, rewriting, notebook, and roadmap.
+                Your bands, mastery, mistakes, and roadmap. When you’re ready to train, head to today’s guided session.
               </p>
             </div>
             <div className="top-nav-actions">
               <UniversalStreakBadge accessToken={accessToken} />
-              <Link to="/today" className="btn solid">Start today’s session</Link>
-              <Link to="/plan" className="btn ghost">Daily Plan</Link>
-              {nextLabItem ? (
-                <button className="btn ghost" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
-                  {launchingId === nextLabItem.id ? 'Opening…' : 'Start next lab'}
-                </button>
-              ) : null}
+              <Link to="/today" className="btn solid">▶ Start today’s session</Link>
               <button className="btn ghost" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                {generating ? 'Regenerating…' : 'Regenerate'}
+                {generating ? 'Regenerating…' : 'Regenerate plan'}
               </button>
             </div>
           </header>

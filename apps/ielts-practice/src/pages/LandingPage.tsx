@@ -5,8 +5,10 @@ import { buildPlatformUrl } from '../lib/platformUrls';
 import { useAccess } from '../lib/useAccess';
 
 const resolveDashboardReturnTo = (): string => {
-  if (typeof window === 'undefined') return '/dashboard';
-  return `${window.location.origin}/dashboard`;
+  // Land signed-in learners on the guided daily session (the clear start→finish path),
+  // not the dense analytics view.
+  if (typeof window === 'undefined') return '/today';
+  return `${window.location.origin}/today`;
 };
 
 export const LandingPage = () => {
@@ -23,7 +25,7 @@ export const LandingPage = () => {
         brandHref="https://schood.online"
         actions={[
           status === 'authenticated'
-            ? { id: 'dashboard', label: 'Dashboard', to: '/dashboard' }
+            ? { id: 'today', label: 'Continue', to: '/today' }
             : { id: 'signin', label: 'Sign in', href: authHref },
           { id: 'access', label: 'Get access', href: pricingHref, variant: 'solid' },
         ]}
@@ -41,7 +43,7 @@ export const LandingPage = () => {
           </p>
           <div className="hero-actions">
             <Link to="/today" className="btn solid">Start today’s session</Link>
-            <Link to="/dashboard" className="btn ghost">Open dashboard</Link>
+            <Link to="/dashboard" className="btn ghost">View progress</Link>
           </div>
         </section>
 
