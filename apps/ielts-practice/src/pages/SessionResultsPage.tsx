@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PracticeTopNav } from '../components/PracticeTopNav';
 import {
+  getCoachLang,
   practiceGeneratePlan,
   practiceLabCoach,
   practiceSessionResultsGet,
@@ -170,7 +171,7 @@ export const SessionResultsPage = () => {
     setCoachLoading(true);
     setCoachError(null);
     try {
-      const response = await practiceLabCoach(accessToken, sessionId);
+      const response = await practiceLabCoach(accessToken, sessionId, getCoachLang());
       setCoachSteps(response.steps);
     } catch (err) {
       setCoachError(err instanceof Error ? err.message : 'Coaching unavailable right now');

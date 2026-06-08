@@ -855,10 +855,11 @@ export type PracticeCoachResponse = {
 export const practiceLabCoach = (
   accessToken: string,
   practiceSessionId: string,
+  lang?: CoachLang,
 ): Promise<PracticeCoachResponse> =>
   call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/coach`, {
     method: "POST",
-    body: {},
+    body: lang ? { lang } : {},
   });
 
 // ============================================================
@@ -1002,7 +1003,7 @@ export type PracticeCoachConversation = {
 export const practiceLabCoachChat = (
   accessToken: string,
   practiceSessionId: string,
-  body: { messages: CoachChatTurn[]; question: string },
+  body: { messages: CoachChatTurn[]; question: string; lang?: CoachLang },
 ): Promise<PracticeCoachConversation> =>
   call(accessToken, `/ielts-practice/labs/${encodeURIComponent(practiceSessionId)}/coach`, {
     method: "POST",
@@ -1012,6 +1013,18 @@ export const practiceLabCoachChat = (
 // Always-available tutor (not tied to a finished session) — grounded in the
 // learner's own profile (target, predictors, weak types, traps).
 export type CoachLang = 'en' | 'uz' | 'ru';
+
+// Persisted, app-wide preference for the language the AI coach explains in.
+// One choice (set in the tutor) follows the learner across every coaching surface.
+const COACH_LANG_KEY = 'ielts_coach_lang';
+export const getCoachLang = (): CoachLang => {
+  if (typeof localStorage === 'undefined') return 'en';
+  const v = localStorage.getItem(COACH_LANG_KEY);
+  return v === 'uz' || v === 'ru' ? v : 'en';
+};
+export const setCoachLang = (lang: CoachLang): void => {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(COACH_LANG_KEY, lang);
+};
 
 export const practiceCoachAsk = (
   accessToken: string,

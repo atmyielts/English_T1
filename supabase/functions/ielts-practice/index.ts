@@ -3158,12 +3158,25 @@ const callOpenRouterCoach = async (
   }
 };
 
+// Coach explanation language (L1 support). Default English; UZ/RU translate the
+// explanation prose while keeping IELTS terms + quoted evidence in English.
+const coachLangName = (lang: string): string =>
+  lang === "uz" ? "Uzbek" : lang === "ru" ? "Russian" : "English";
+
+const coachLangInstruction = (lang: string): string => {
+  const name = coachLangName(lang);
+  return name === "English"
+    ? ""
+    : ` Write your explanation prose entirely in ${name}, but keep IELTS technical terms and any quoted English evidence or example sentences in English.`;
+};
+
 const coachLabAttempt = async (
   sb: any,
   scope: ResolvedScope,
   userId: string,
   practiceSessionId: string,
   labPayload: JsonRecord,
+  lang = "en",
 ): Promise<CoachResponse> => {
   // unused scope check kept for future per-product gating
   void scope;
@@ -3203,7 +3216,8 @@ const coachLabAttempt = async (
 
   const prompt = JSON.stringify({
     instruction:
-      "For each item below, return a JSON object with key 'steps' whose value is an array of objects. Each object must have: step_id, what_went_wrong (1-2 sentences citing the evidence), correct_approach (1-2 sentences naming the technique), trap_pattern (one of: distractor, paraphrase, scope, off-topic, range, grammar, unknown).",
+      "For each item below, return a JSON object with key 'steps' whose value is an array of objects. Each object must have: step_id, what_went_wrong (1-2 sentences citing the evidence), correct_approach (1-2 sentences naming the technique), trap_pattern (one of: distractor, paraphrase, scope, off-topic, range, grammar, unknown)."
+      + coachLangInstruction(lang),
     items: items.map((item) => ({
       step_id: item.step_id,
       question_type: item.question_type,
@@ -3558,6 +3572,7 @@ const coachConversation = async (
   labPayload: JsonRecord,
   history: CoachMessage[],
   userQuestion: string,
+  lang = "en",
 ): Promise<{ ok: true; reply: string; suggested_followups: string[] }> => {
   const attempt = await loadLatestLabAttempt(sb, practiceSessionId, userId);
   const scoreArtifacts = isObject(attempt?.score_artifacts) ? attempt!.score_artifacts as JsonRecord : {};
@@ -3577,7 +3592,8 @@ const coachConversation = async (
   }
   const model = Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/auto";
 
-  const system = "You are an expert IELTS coach having a focused conversation with a student about a specific practice attempt. Be concise, cite the evidence, name the trap pattern, and stay grounded in IELTS rubrics. Reply in strict JSON: {reply: string, suggested_followups: string[3]}. Keep the reply 2-4 sentences. Suggested followups are short questions the student might ask next.";
+  const system = "You are an expert IELTS coach having a focused conversation with a student about a specific practice attempt. Be concise, cite the evidence, name the trap pattern, and stay grounded in IELTS rubrics. Reply in strict JSON: {reply: string, suggested_followups: string[3]}. Keep the reply 2-4 sentences. Suggested followups are short questions the student might ask next."
+    + coachLangInstruction(lang);
 
   const context = {
     section: sectionType,
@@ -5510,6 +5526,7 @@ serve(async (req) => {
         const body = await parseBody(req);
         const messages = Array.isArray((body as JsonRecord).messages) ? (body as JsonRecord).messages as unknown[] : [];
         const userQuestion = toText((body as JsonRecord).question, 800);
+        const lang = toText((body as JsonRecord).lang, 8).toLowerCase();
 
         // Conversational mode: prior messages provided OR a question supplied.
         if (messages.length > 0 || userQuestion) {
@@ -5525,12 +5542,13 @@ serve(async (req) => {
             labPayload,
             history,
             userQuestion || "Continue the analysis.",
+            lang,
           );
           return json(200, result);
         }
 
         // Default: single-shot initial coaching summary
-        const result = await coachLabAttempt(sb, scope, auth.userId, toText(practiceSession.id, 80), labPayload);
+        const result = await coachLabAttempt(sb, scope, auth.userId, toText(practiceSession.id, 80), labPayload, lang);
         return json(200, result);
       }
 

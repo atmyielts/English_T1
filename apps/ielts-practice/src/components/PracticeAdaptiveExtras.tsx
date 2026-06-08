@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { AlertCircle, CheckCircle2, MessageSquare, RefreshCw, ScrollText, Send, XCircle } from 'lucide-react';
 import {
+  getCoachLang,
   practiceCoachAsk,
   practiceGeneratePlan,
   practiceLabCoachChat,
   practiceModelAnswer,
   practiceNotebookRetest,
+  setCoachLang,
   type CoachChatTurn,
   type CoachLang,
   type ModelAnswerTask,
@@ -99,6 +101,9 @@ export const ConversationalCoach = ({ accessToken, practiceSessionId }: CoachCha
   const [followups, setFollowups] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
+  const [lang, setLang] = useState<CoachLang>(() => getCoachLang());
+
+  const chooseLang = (next: CoachLang) => { setLang(next); setCoachLang(next); };
 
   const send = async (text: string) => {
     if (!accessToken || !text.trim()) return;
@@ -113,6 +118,7 @@ export const ConversationalCoach = ({ accessToken, practiceSessionId }: CoachCha
       const res = await practiceLabCoachChat(accessToken, practiceSessionId, {
         messages: newHistory,
         question: text.trim(),
+        lang,
       });
       setHistory((prev) => [...prev, { role: 'assistant', content: res.reply }]);
       setFollowups(res.suggested_followups ?? []);
@@ -148,7 +154,23 @@ export const ConversationalCoach = ({ accessToken, practiceSessionId }: CoachCha
 
   return (
     <section className="glass stat-card wide" style={{ padding: 24, display: 'grid', gap: 12 }}>
-      <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Coach chat</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <p className="eyebrow" style={{ margin: 0 }}><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Coach chat</p>
+        <div style={{ display: 'inline-flex', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title="Answer language">
+          {COACH_LANGS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => chooseLang(l.id)}
+              className="btn compact"
+              style={{ padding: '3px 10px', borderRadius: 999, fontSize: 12, background: lang === l.id ? 'var(--accent-soft)' : 'transparent', fontWeight: lang === l.id ? 700 : 500 }}
+              aria-pressed={lang === l.id}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div style={{ display: 'grid', gap: 10, maxHeight: 360, overflowY: 'auto', paddingRight: 4 }}>
         {history.map((turn, i) => (
           <div
@@ -227,7 +249,9 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
   const [busy, setBusy] = useState(false);
   const [followups, setFollowups] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [lang, setLang] = useState<CoachLang>('en');
+  const [lang, setLang] = useState<CoachLang>(() => getCoachLang());
+
+  const chooseLang = (next: CoachLang) => { setLang(next); setCoachLang(next); };
 
   const send = async (text: string) => {
     if (!accessToken || !text.trim() || busy) return;
@@ -264,7 +288,7 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
             <button
               key={l.id}
               type="button"
-              onClick={() => setLang(l.id)}
+              onClick={() => chooseLang(l.id)}
               className="btn compact"
               style={{
                 padding: '3px 10px',
