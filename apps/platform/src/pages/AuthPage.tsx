@@ -15,7 +15,7 @@ import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 import { SeoHead } from '../components/seo/SeoHead';
 
-type Mode = 'signin' | 'signup';
+type Mode = 'signin' | 'signup' | 'forgot' | 'reset';
 
 const AUTH_HANDOFF_KEYS = [
   'access_token',
@@ -25,6 +25,14 @@ const AUTH_HANDOFF_KEYS = [
   'token_type',
   'type',
 ];
+
+const passwordChecks = (value: string): Array<'length' | 'letter' | 'number'> => {
+  const missing: Array<'length' | 'letter' | 'number'> = [];
+  if (value.length < 8) missing.push('length');
+  if (!/[A-Za-z]/.test(value)) missing.push('letter');
+  if (!/\d/.test(value)) missing.push('number');
+  return missing;
+};
 
 const withPlatformAuthHandoff = (target: string, session: Session): string => {
   const url = new URL(target);
@@ -61,11 +69,18 @@ export const AuthPage: React.FC = () => {
     if (!raw) return null;
     if (raw === 'signup' || raw === 'register' || raw === 'create') return 'signup';
     if (raw === 'signin' || raw === 'login') return 'signin';
+    if (raw === 'forgot' || raw === 'recover') return 'forgot';
+    if (raw === 'reset' || raw === 'recovery') return 'reset';
     return null;
   }, [searchParams]);
   const emailRedirectTo = useMemo(() => `${window.location.origin}/auth`, []);
+  const passwordResetRedirectTo = useMemo(() => `${window.location.origin}/auth?mode=reset`, []);
+  const isRecoveryLink = useMemo(() => {
+    const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
+    return new URLSearchParams(hash).get('type') === 'recovery';
+  }, [location.hash]);
 
-  const [mode, setMode] = useState<Mode>(modeParam ?? 'signin');
+  const [mode, setMode] = useState<Mode>(isRecoveryLink ? 'reset' : modeParam ?? 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -83,8 +98,26 @@ export const AuthPage: React.FC = () => {
     const lower = message.toLowerCase();
     const status = (err as { status?: number } | null)?.status;
 
+    if (lower.includes('weak password') || lower.includes('password should') || lower.includes('password must') || lower.includes('password is too')) {
+      return t('auth.error.weakPassword');
+    }
+
+    if (lower.includes('invalid') && lower.includes('email')) {
+      return t('auth.error.invalidEmail');
+    }
+
     if (lower.includes('email not confirmed')) {
       return t('auth.error.emailNotConfirmed');
+    }
+
+    if (currentMode === 'forgot') {
+      if (status === 429) return t('auth.error.tooManyAttempts');
+      return t('auth.error.resetRequestGeneric');
+    }
+
+    if (currentMode === 'reset') {
+      if (status === 429) return t('auth.error.tooManyAttempts');
+      return t('auth.error.resetGeneric');
     }
 
     if (currentMode === 'signup') {
@@ -92,6 +125,7 @@ export const AuthPage: React.FC = () => {
         return t('auth.error.signupExists');
       }
       if (status === 429) return t('auth.error.tooManyAttempts');
+      if (lower) return message;
       return t('auth.error.signupGeneric');
     }
 
@@ -144,6 +178,7 @@ export const AuthPage: React.FC = () => {
     // If already logged in, go straight through.
       supabase.auth.getSession().then(({ data }) => {
         if (!data.session) return;
+        if (mode === 'reset' || isRecoveryLink) return;
         const um: any = data.session.user.user_metadata ?? {};
         const profile = {
           first_name: typeof um.first_name === 'string' ? um.first_name.trim() : undefined,
@@ -152,15 +187,15 @@ export const AuthPage: React.FC = () => {
         };
         void completeAuth(data.session, profile);
       });
-  }, [navigate, returnTo]);
+  }, [isRecoveryLink, mode, navigate, returnTo]);
 
   useEffect(() => {
-    if (!modeParam) return;
-    setMode(modeParam);
+    if (!modeParam && !isRecoveryLink) return;
+    setMode(isRecoveryLink ? 'reset' : modeParam ?? 'signin');
     setConfirmPassword('');
     setError(null);
     setMessage(null);
-  }, [modeParam]);
+  }, [isRecoveryLink, modeParam]);
 
   const syncProfile = async (
     userId: string,
@@ -185,7 +220,29 @@ export const AuthPage: React.FC = () => {
   const submit = async () => {
     setError(null);
     setMessage(null);
+
+    const trimmedEmail = email.trim();
+
+    if ((mode === 'signin' || mode === 'signup' || mode === 'forgot') && !trimmedEmail) {
+      setError(t('auth.error.emailRequired'));
+      return;
+    }
+
+    if ((mode === 'signin' || mode === 'signup' || mode === 'reset') && !password) {
+      setError(t('auth.error.passwordRequired'));
+      return;
+    }
+
+    if ((mode === 'signup' || mode === 'reset') && passwordChecks(password).length > 0) {
+      setError(t('auth.error.weakPassword'));
+      return;
+    }
+
     if (mode === 'signup' && password !== confirmPassword) {
+      setError(t('auth.error.passwordMismatch'));
+      return;
+    }
+    if (mode === 'reset' && password !== confirmPassword) {
       setError(t('auth.error.passwordMismatch'));
       return;
     }
@@ -197,8 +254,28 @@ export const AuthPage: React.FC = () => {
     setBusy(true);
 
     try {
+      if (mode === 'forgot') {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+          redirectTo: passwordResetRedirectTo,
+        });
+        if (resetError) throw resetError;
+        setMessage(t('auth.message.resetEmailSent'));
+        setMode('signin');
+        return;
+      }
+
+      if (mode === 'reset') {
+        const { error: updateError } = await supabase.auth.updateUser({ password });
+        if (updateError) throw updateError;
+        setMessage(t('auth.message.passwordUpdated'));
+        setPassword('');
+        setConfirmPassword('');
+        setMode('signin');
+        return;
+      }
+
       if (mode === 'signin') {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
         if (signInError) throw signInError;
         if (!data.session) throw new Error('No session returned');
 
@@ -221,7 +298,7 @@ export const AuthPage: React.FC = () => {
       if (ph) meta.phone = ph;
 
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password,
         options: { data: meta, emailRedirectTo },
       });
@@ -252,6 +329,61 @@ export const AuthPage: React.FC = () => {
       }
     };
 
+  const authTitle =
+    mode === 'signin'
+      ? t('auth.welcomeBack')
+      : mode === 'signup'
+        ? t('auth.createAccount')
+        : mode === 'forgot'
+          ? t('auth.forgot.title')
+          : t('auth.reset.title');
+
+  const authSubtitle =
+    mode === 'signin'
+      ? t('auth.subtitle.signIn')
+      : mode === 'signup'
+        ? t('auth.subtitle.signUp')
+        : mode === 'forgot'
+          ? t('auth.forgot.subtitle')
+          : t('auth.reset.subtitle');
+
+  const formHeading =
+    mode === 'signin'
+      ? t('auth.heading.signIn')
+      : mode === 'signup'
+        ? t('auth.heading.create')
+        : mode === 'forgot'
+          ? t('auth.forgot.heading')
+          : t('auth.reset.heading');
+
+  const formHelper =
+    mode === 'signin'
+      ? t('auth.helper.signIn')
+      : mode === 'signup'
+        ? t('auth.helper.signUp')
+        : mode === 'forgot'
+          ? t('auth.forgot.helper')
+          : t('auth.reset.helper');
+
+  const primaryLabel =
+    mode === 'signin'
+      ? t('header.signIn')
+      : mode === 'signup'
+        ? t('header.signUp')
+        : mode === 'forgot'
+          ? t('auth.button.sendReset')
+          : t('auth.button.updatePassword');
+
+  const passwordMissing = passwordChecks(password);
+  const requiresPassword = mode === 'signin' || mode === 'signup' || mode === 'reset';
+  const requiresConfirmPassword = mode === 'signup' || mode === 'reset';
+  const primaryDisabled =
+    busy ||
+    ((mode === 'signin' || mode === 'signup' || mode === 'forgot') && !email.trim()) ||
+    (requiresPassword && !password) ||
+    ((mode === 'signup' || mode === 'reset') && password !== confirmPassword) ||
+    (mode === 'signup' && !phone.trim());
+
   return (
     <div className="min-h-screen bg-[#f6f1e8] text-gray-900 relative overflow-hidden flex items-center justify-center p-6">
       <SeoHead
@@ -279,12 +411,8 @@ export const AuthPage: React.FC = () => {
             </button>
             <LanguageSwitcher compact />
           </div>
-          <h1 className="text-3xl font-bold mt-4">{mode === 'signin' ? t('auth.welcomeBack') : t('auth.createAccount')}</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            {mode === 'signin'
-              ? t('auth.subtitle.signIn')
-              : t('auth.subtitle.signUp')}
-          </p>
+          <h1 className="text-3xl font-bold mt-4">{authTitle}</h1>
+          <p className="text-sm text-gray-600 mt-2">{authSubtitle}</p>
           <div className="mt-6 space-y-3 text-sm text-gray-700">
             <div className="rounded-2xl border border-gray-900/15 bg-white/90 p-3">
               {t('auth.benefit.oneAccount')}
@@ -309,12 +437,8 @@ export const AuthPage: React.FC = () => {
           <div className="w-full bg-white/90 border border-gray-900 rounded-3xl shadow-sm p-8">
             <div className="mb-6">
               <div className="text-xs font-semibold tracking-wider uppercase text-gray-600 mb-2">{t('auth.section.account')}</div>
-              <h2 className="text-2xl font-bold text-gray-900">{mode === 'signin' ? t('auth.heading.signIn') : t('auth.heading.create')}</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {mode === 'signin'
-                  ? t('auth.helper.signIn')
-                  : t('auth.helper.signUp')}
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">{formHeading}</h2>
+              <p className="text-sm text-gray-500 mt-1">{formHelper}</p>
             </div>
 
             {error && (
@@ -327,6 +451,7 @@ export const AuthPage: React.FC = () => {
             )}
 
             <div className="space-y-4">
+              {mode !== 'reset' ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.label.email')}</label>
                 <input
@@ -338,6 +463,7 @@ export const AuthPage: React.FC = () => {
                   autoComplete="email"
                 />
               </div>
+              ) : null}
               {mode === 'signup' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -377,6 +503,7 @@ export const AuthPage: React.FC = () => {
                 </div>
               ) : null}
 
+              {requiresPassword ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.label.password')}</label>
                 <div className="relative">
@@ -396,9 +523,23 @@ export const AuthPage: React.FC = () => {
                     {showPassword ? t('auth.button.hide') : t('auth.button.show')}
                   </button>
                 </div>
+                {(mode === 'signup' || mode === 'reset') ? (
+                  <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
+                    <div className={passwordMissing.includes('length') ? 'text-gray-700' : 'text-emerald-700'}>
+                      {t('auth.passwordRule.length')}
+                    </div>
+                    <div className={passwordMissing.includes('letter') ? 'text-gray-700' : 'text-emerald-700'}>
+                      {t('auth.passwordRule.letter')}
+                    </div>
+                    <div className={passwordMissing.includes('number') ? 'text-gray-700' : 'text-emerald-700'}>
+                      {t('auth.passwordRule.number')}
+                    </div>
+                  </div>
+                ) : null}
               </div>
+              ) : null}
 
-              {mode === 'signup' ? (
+              {requiresConfirmPassword ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.label.confirmPassword')}</label>
                   <div className="relative">
@@ -426,13 +567,13 @@ export const AuthPage: React.FC = () => {
 
               <button
                 onClick={submit}
-                disabled={busy || !email || !password || (mode === 'signup' && (!phone.trim() || password !== confirmPassword))}
+                disabled={primaryDisabled}
                 className="w-full bg-[#0f172a] hover:bg-black disabled:bg-gray-300 text-white font-semibold py-3 rounded-full transition-colors"
               >
-                {busy ? t('auth.button.working') : mode === 'signin' ? t('header.signIn') : t('header.signUp')}
+                {busy ? t('auth.button.working') : primaryLabel}
               </button>
 
-              <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
                 <button
                   onClick={() => {
                     setError(null);
@@ -444,6 +585,22 @@ export const AuthPage: React.FC = () => {
                 >
                   {mode === 'signin' ? t('auth.button.create') : t('auth.button.haveAccount')}
                 </button>
+
+                {mode === 'signin' ? (
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      setMessage(null);
+                      setPassword('');
+                      setConfirmPassword('');
+                      setMode('forgot');
+                    }}
+                    className="hover:text-gray-900 font-medium"
+                    type="button"
+                  >
+                    {t('auth.button.forgotPassword')}
+                  </button>
+                ) : null}
 
                 <button
                   onClick={() => {
