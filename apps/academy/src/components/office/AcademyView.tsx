@@ -34,6 +34,11 @@ type QuickTarget = {
 
 const QUICK_TARGETS: QuickTarget[] = [
   {
+    title: 'Education OS',
+    caption: 'Run learning, ops, staff, reports, and engagement',
+    path: '/academy/teacher/os',
+  },
+  {
     title: 'Contacts',
     caption: 'Manage students and assistants',
     path: '/academy/teacher/contacts',
