@@ -19,6 +19,7 @@ import {
 import { formatBand } from '@schood/ielts-core';
 import { AnnotatedWritingRetro } from '../components/AnnotatedWritingRetro';
 import { ConversationalCoach, ModelAnswerComparator } from '../components/PracticeAdaptiveExtras';
+import { MistakeCauseTagger } from '../components/MistakeCauseInsights';
 
 // IELTS writing criteria. grade-writing returns the score under any of
 // these aliases depending on the model — accept all, render none if missing.
@@ -394,10 +395,16 @@ export const SessionResultsPage = () => {
                   </div>
                   <p><strong>Why it’s wrong:</strong> {step.what_went_wrong}</p>
                   <p><strong>Correct approach:</strong> {step.correct_approach}</p>
-                  <div className="inline-actions">
+                  <div className="inline-actions" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                     <a className="btn ghost compact" href={step.strategy_url} target="_blank" rel="noreferrer">
                       Open playbook strategy
                     </a>
+                    <MistakeCauseTagger
+                      accessToken={accessToken}
+                      sessionId={sessionId}
+                      sectionType={resultSection}
+                      questionType={step.question_type}
+                    />
                   </div>
                 </li>
               ))}

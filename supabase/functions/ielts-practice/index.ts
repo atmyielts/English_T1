@@ -4947,6 +4947,48 @@ serve(async (req) => {
       return json(200, { ok: true, ai_available: true, reply, suggested_followups: followups });
     }
 
+    // Error-cause tagging — record why a question was missed (no AI).
+    if (req.method === "POST" && route === "/insights/mistake-cause") {
+      const body = (await parseBody(req)) as JsonRecord;
+      const cause = toText(body.cause, 20).toLowerCase();
+      const allowed = ["misread", "vocabulary", "distractor", "timing", "careless", "other"];
+      if (!allowed.includes(cause)) return json(400, { error: "invalid cause" });
+
+      const { error } = await sb.from("ielts_practice_mistake_causes").insert({
+        user_id: auth.userId,
+        product_id: scope.practiceProductId,
+        session_id: toText(body.session_id, 64) || null,
+        section_type: toText(body.section_type, 32).toLowerCase() || null,
+        question_type: toText(body.question_type, 80) || null,
+        cause,
+      });
+      if (error) return json(500, { error: "Failed to record cause", detail: error.message });
+      return json(200, { ok: true });
+    }
+
+    // Error-cause breakdown — "where you lose marks" over the last 30 days.
+    if (req.method === "GET" && route === "/insights/mistake-causes") {
+      const sinceIso = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data, error } = await sb.from("ielts_practice_mistake_causes")
+        .select("cause, created_at")
+        .eq("user_id", auth.userId)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      if (error) return json(500, { error: "Failed to load causes", detail: error.message });
+
+      const counts: Record<string, number> = {};
+      for (const row of (data ?? []) as Array<JsonRecord>) {
+        const c = toText(row.cause, 20);
+        if (c) counts[c] = (counts[c] ?? 0) + 1;
+      }
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+      const breakdown = Object.entries(counts)
+        .map(([cause, count]) => ({ cause, count }))
+        .sort((a, b) => b.count - a.count);
+      return json(200, { ok: true, total, breakdown });
+    }
+
     // Teaching layer — an on-demand strategy micro-lesson for a question type,
     // so learners can LEARN the technique, not just drill it. L1-aware.
     if (req.method === "POST" && route === "/insights/teach") {

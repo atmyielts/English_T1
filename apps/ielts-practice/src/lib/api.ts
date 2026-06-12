@@ -1049,6 +1049,23 @@ export const practiceTeach = (
 ): Promise<{ ok: boolean; ai_available?: boolean; lesson: PracticeSkillLesson }> =>
   call(accessToken, '/ielts-practice/insights/teach', { method: 'POST', body });
 
+export type MistakeCause = 'misread' | 'vocabulary' | 'distractor' | 'timing' | 'careless' | 'other';
+
+export const practiceRecordMistakeCause = (
+  accessToken: string,
+  body: { cause: MistakeCause; session_id?: string; section_type?: string; question_type?: string },
+): Promise<{ ok: boolean }> =>
+  call(accessToken, '/ielts-practice/insights/mistake-cause', { method: 'POST', body });
+
+export type MistakeCausesResponse = {
+  ok: boolean;
+  total: number;
+  breakdown: Array<{ cause: MistakeCause; count: number }>;
+};
+
+export const practiceMistakeCauses = (accessToken: string): Promise<MistakeCausesResponse> =>
+  call(accessToken, '/ielts-practice/insights/mistake-causes');
+
 export type PracticeLabHintResponse = { ok: boolean; hint: string };
 
 export const practiceLabHint = (
