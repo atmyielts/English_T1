@@ -10,6 +10,7 @@ import { formatPracticeLabel } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { PracticeShell } from '../components/PracticeShell';
+import { TeachSkillButton } from '../components/TeachSkillButton';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -233,6 +234,7 @@ export const StatsByTypePage = () => {
                   )}
                 </div>
                 <div className="srs-review-row-actions">
+                  <TeachSkillButton accessToken={accessToken} sectionType={row.section_type} questionType={row.question_type} />
                   {srs ? (
                     <Link to="/practice/reviews" className="btn ghost compact">Open in queue</Link>
                   ) : (
