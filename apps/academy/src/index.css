@@ -879,6 +879,23 @@ p {
   flex-wrap: wrap;
 }
 
+.wrap {
+  flex-wrap: wrap;
+}
+
+.segmented-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.segmented-row .small-btn.is-active {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: rgba(20, 22, 18, 0.12);
+}
+
 .input {
   width: 100%;
   border: 1px solid var(--line);
@@ -897,6 +914,28 @@ p {
 .input:focus {
   outline: 3px solid rgba(155, 211, 61, 0.22);
   border-color: var(--accent-strong);
+}
+
+.compact-input {
+  min-height: 34px;
+  padding: 7px 9px;
+}
+
+.monospaced-area {
+  min-height: 140px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.staff-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .academy-select {
@@ -1123,6 +1162,10 @@ textarea.input {
   overflow-x: auto;
   border: 1px solid rgba(20, 22, 18, 0.08);
   border-radius: 8px;
+}
+
+.os-wide-table table {
+  min-width: 920px;
 }
 
 table {

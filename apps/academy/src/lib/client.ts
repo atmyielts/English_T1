@@ -45,6 +45,10 @@ export type TeacherStudioContact = {
   phone: string | null;
   telegram_id: string | null;
   status: string;
+  last_activity_at?: string | null;
+  placement_level?: string | null;
+  placement_score?: number | null;
+  notify_enabled?: boolean;
   metadata: Json;
   created_at: string;
   updated_at: string;
@@ -305,6 +309,174 @@ export type TeacherStudioStudentDashboard = {
   entitlements: TeacherStudioEntitlement[];
   payments: TeacherStudioPayment[];
   offers: TeacherStudioOffer[];
+};
+
+export type TeacherStudioAssignment = {
+  id: string;
+  academy_id: string;
+  classroom_id: string;
+  title: string;
+  description: string | null;
+  assignment_type: string;
+  experience_id?: string | null;
+  experience_url?: string | null;
+  due_at: string | null;
+  released_at: string | null;
+  prerequisite_id: string | null;
+  position: number;
+  max_score: number | null;
+  score_weight: number;
+  status: string;
+  metadata: Json;
+  created_by: string | null;
+  created_at: string;
+  updated_at?: string;
+};
+
+export type TeacherStudioSubmission = {
+  id: string;
+  academy_id?: string;
+  assignment_id: string;
+  classroom_id?: string;
+  contact_id: string;
+  user_id?: string | null;
+  session_id?: string | null;
+  score: number | null;
+  max_score: number | null;
+  status: string;
+  submitted_at: string | null;
+  graded_at: string | null;
+  graded_by?: string | null;
+  notes: string | null;
+  submission_content?: string | null;
+  submission_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type TeacherStudioGradebook = {
+  classroom_id: string;
+  assignments: TeacherStudioAssignment[];
+  rows: Array<{
+    contact_id: string;
+    first_name: string;
+    last_name: string;
+    email: string | null;
+    status: string;
+    role: string;
+    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null }>;
+    composite_score: number | null;
+    submitted_count: number;
+    total_assignments: number;
+  }>;
+};
+
+export type TeacherStudioAttendance = {
+  id: string;
+  classroom_id: string;
+  contact_id: string;
+  session_date: string;
+  status: string;
+  notes: string | null;
+  marked_by?: string | null;
+  marked_at?: string | null;
+};
+
+export type TeacherStudioScheduleSlot = {
+  id: string;
+  academy_id?: string;
+  classroom_id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string | null;
+  timezone: string;
+  label: string | null;
+  is_active: boolean;
+  created_at?: string;
+};
+
+export type TeacherStudioStaff = {
+  id: string;
+  academy_id: string;
+  user_id: string | null;
+  email: string;
+  display_name: string | null;
+  role: string;
+  classroom_ids: string[] | Json;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type TeacherStudioNotification = {
+  id: string;
+  contact_id: string | null;
+  channel: string;
+  type: string;
+  title: string | null;
+  body: string;
+  status: string;
+  error: string | null;
+  sent_at: string | null;
+  scheduled_at: string;
+  created_at: string;
+};
+
+export type TeacherStudioOwnerDashboard = {
+  revenue: {
+    currency: string;
+    collected_total: number;
+    collected_this_month: number;
+    outstanding: number;
+    paid_count: number;
+  };
+  funnel: Record<string, number>;
+  total_students: number;
+  total_classrooms: number;
+  classroom_stats: Array<{
+    classroom_id: string;
+    name: string;
+    is_active: boolean;
+    students: number;
+    assignments: number;
+    avg_score: number | null;
+    attendance_rate: number | null;
+  }>;
+  attendance_trend: Array<{ date: string; rate: number | null }>;
+};
+
+export type TeacherStudioBranding = {
+  id: string;
+  academy_id: string;
+  display_name: string | null;
+  tagline: string | null;
+  logo_url: string | null;
+  favicon_url?: string | null;
+  primary_color: string | null;
+  accent_color: string | null;
+  hide_schood_logo: boolean;
+  custom_domain: string | null;
+  custom_domain_verified?: boolean;
+  footer_text: string | null;
+  metadata?: Json;
+  updated_at: string;
+};
+
+export type TeacherStudioReferralLeader = {
+  contact_id: string;
+  name: string;
+  referrals: number;
+  enrolled: number;
+};
+
+export type TeacherStudioAtRiskStudent = {
+  contact_id: string;
+  name: string;
+  email: string | null;
+  classroom_id: string | null;
+  classroom_name: string | null;
+  reasons: string[];
+  missing_assignments: number;
+  recent_absences: number;
 };
 
 type InvokeErrorLike = {
@@ -911,4 +1083,370 @@ export const teacherStudioMarkPaymentPaid = async (
     academyId,
     body: { id: paymentId },
   });
+};
+
+export const teacherStudioOwnerDashboard = async (academyId: string): Promise<TeacherStudioOwnerDashboard> => {
+  return callTeacherStudio<TeacherStudioOwnerDashboard>({ action: 'owner_dashboard', academyId });
+};
+
+export const teacherStudioAssignments = async (
+  academyId: string,
+  classroomId?: string | null,
+): Promise<TeacherStudioAssignment[]> => {
+  const data = await callTeacherStudio<{ assignments: TeacherStudioAssignment[] }>({
+    action: 'assignments',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+  return data.assignments ?? [];
+};
+
+export const teacherStudioSubmissions = async (
+  academyId: string,
+  params?: { classroom_id?: string | null; assignment_id?: string | null },
+): Promise<TeacherStudioSubmission[]> => {
+  const data = await callTeacherStudio<{ submissions: TeacherStudioSubmission[] }>({
+    action: 'submissions',
+    academyId,
+    params: {
+      classroom_id: params?.classroom_id ?? undefined,
+      contact_id: params?.assignment_id ?? undefined,
+    },
+  });
+  return data.submissions ?? [];
+};
+
+export const teacherStudioGradebook = async (
+  academyId: string,
+  classroomId: string,
+): Promise<TeacherStudioGradebook> => {
+  return callTeacherStudio<TeacherStudioGradebook>({
+    action: 'gradebook',
+    academyId,
+    params: { classroom_id: classroomId },
+  });
+};
+
+export const teacherStudioAttendance = async (
+  academyId: string,
+  classroomId: string,
+): Promise<TeacherStudioAttendance[]> => {
+  const data = await callTeacherStudio<{ attendance: TeacherStudioAttendance[] }>({
+    action: 'attendance',
+    academyId,
+    params: { classroom_id: classroomId },
+  });
+  return data.attendance ?? [];
+};
+
+export const teacherStudioSchedule = async (
+  academyId: string,
+  classroomId?: string | null,
+): Promise<TeacherStudioScheduleSlot[]> => {
+  const data = await callTeacherStudio<{ schedule: TeacherStudioScheduleSlot[] }>({
+    action: 'schedule',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+  return data.schedule ?? [];
+};
+
+export const teacherStudioBulkInvites = async (
+  academyId: string,
+  classroomId?: string | null,
+): Promise<Array<{ id: string; classroom_id: string | null; email: string; first_name: string | null; last_name: string | null; status: string; invited_at: string; joined_at: string | null; error: string | null }>> => {
+  const data = await callTeacherStudio<{ bulk_invites: Array<{ id: string; classroom_id: string | null; email: string; first_name: string | null; last_name: string | null; status: string; invited_at: string; joined_at: string | null; error: string | null }> }>({
+    action: 'bulk_invites',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+  return data.bulk_invites ?? [];
+};
+
+export const teacherStudioStaff = async (academyId: string): Promise<TeacherStudioStaff[]> => {
+  const data = await callTeacherStudio<{ staff: TeacherStudioStaff[] }>({ action: 'staff', academyId });
+  return data.staff ?? [];
+};
+
+export const teacherStudioNotifications = async (academyId: string): Promise<TeacherStudioNotification[]> => {
+  const data = await callTeacherStudio<{ notifications: TeacherStudioNotification[] }>({ action: 'notifications', academyId });
+  return data.notifications ?? [];
+};
+
+export const teacherStudioBranding = async (academyId: string): Promise<TeacherStudioBranding | null> => {
+  const data = await callTeacherStudio<{ branding: TeacherStudioBranding | null }>({ action: 'branding', academyId });
+  return data.branding ?? null;
+};
+
+export const teacherStudioReferralLeaderboard = async (academyId: string): Promise<TeacherStudioReferralLeader[]> => {
+  const data = await callTeacherStudio<{ leaderboard: TeacherStudioReferralLeader[] }>({ action: 'referral_leaderboard', academyId });
+  return data.leaderboard ?? [];
+};
+
+export const teacherStudioCreateAssignment = async (
+  academyId: string,
+  body: {
+    classroom_id: string;
+    title: string;
+    description?: string | null;
+    assignment_type?: string;
+    due_at?: string | null;
+    max_score?: number | null;
+    score_weight?: number;
+    status?: string;
+  },
+): Promise<TeacherStudioAssignment> => {
+  const data = await callTeacherStudio<{ assignment: TeacherStudioAssignment }>({
+    method: 'POST',
+    action: 'create_assignment',
+    academyId,
+    body,
+  });
+  return data.assignment;
+};
+
+export const teacherStudioUpdateAssignment = async (
+  academyId: string,
+  body: {
+    id: string;
+    title?: string;
+    description?: string | null;
+    assignment_type?: string;
+    due_at?: string | null;
+    max_score?: number | null;
+    score_weight?: number;
+    status?: string;
+  },
+): Promise<TeacherStudioAssignment> => {
+  const data = await callTeacherStudio<{ assignment: TeacherStudioAssignment }>({
+    method: 'POST',
+    action: 'update_assignment',
+    academyId,
+    body,
+  });
+  return data.assignment;
+};
+
+export const teacherStudioSubmitAssignmentForContact = async (
+  academyId: string,
+  body: {
+    assignment_id: string;
+    contact_id: string;
+    score?: number | null;
+    max_score?: number | null;
+    notes?: string | null;
+    session_id?: string | null;
+  },
+): Promise<TeacherStudioSubmission> => {
+  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
+    method: 'POST',
+    action: 'submit_assignment',
+    academyId,
+    body,
+  });
+  return data.submission;
+};
+
+export const teacherStudioGradeSubmission = async (
+  academyId: string,
+  body: {
+    submission_id?: string;
+    assignment_id?: string;
+    contact_id?: string;
+    score: number;
+    max_score?: number | null;
+    notes?: string | null;
+  },
+): Promise<TeacherStudioSubmission> => {
+  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
+    method: 'POST',
+    action: 'grade_submission',
+    academyId,
+    body,
+  });
+  return data.submission;
+};
+
+export const teacherStudioMarkAttendance = async (
+  academyId: string,
+  body: {
+    classroom_id: string;
+    session_date: string;
+    records: Array<{ contact_id: string; status: string; notes?: string | null }>;
+  },
+): Promise<{ attendance: TeacherStudioAttendance[]; count: number }> => {
+  return callTeacherStudio<{ attendance: TeacherStudioAttendance[]; count: number }>({
+    method: 'POST',
+    action: 'mark_attendance',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioBulkInvite = async (
+  academyId: string,
+  body: {
+    classroom_id?: string | null;
+    contacts: Array<{ first_name?: string; last_name?: string; email: string }>;
+  },
+): Promise<{ results: Array<Record<string, unknown>>; summary: { ok: number; failed: number; total: number } }> => {
+  return callTeacherStudio<{ results: Array<Record<string, unknown>>; summary: { ok: number; failed: number; total: number } }>({
+    method: 'POST',
+    action: 'bulk_invite',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioUpsertSchedule = async (
+  academyId: string,
+  body: {
+    id?: string;
+    classroom_id: string;
+    day_of_week: number;
+    start_time: string;
+    end_time?: string | null;
+    timezone?: string;
+    label?: string | null;
+    is_active?: boolean;
+  },
+): Promise<TeacherStudioScheduleSlot> => {
+  const data = await callTeacherStudio<{ schedule: TeacherStudioScheduleSlot }>({
+    method: 'POST',
+    action: 'upsert_schedule',
+    academyId,
+    body,
+  });
+  return data.schedule;
+};
+
+export const teacherStudioDeleteSchedule = async (
+  academyId: string,
+  id: string,
+): Promise<{ ok: boolean }> => {
+  return callTeacherStudio<{ ok: boolean }>({
+    method: 'POST',
+    action: 'delete_schedule',
+    academyId,
+    body: { id },
+  });
+};
+
+export const teacherStudioRecordPlacement = async (
+  academyId: string,
+  body: { contact_id: string; diagnostic_score?: number | null; level?: string | null },
+): Promise<{ contact_id: string; level: string; score: number | null; suggested_classrooms: Array<{ id: string; name: string }> }> => {
+  return callTeacherStudio<{ contact_id: string; level: string; score: number | null; suggested_classrooms: Array<{ id: string; name: string }> }>({
+    method: 'POST',
+    action: 'record_placement',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioUpsertStaff = async (
+  academyId: string,
+  body: {
+    staff_email: string;
+    name?: string;
+    staff_role?: string;
+    classroom_ids?: string[];
+    is_active?: boolean;
+  },
+): Promise<TeacherStudioStaff> => {
+  const data = await callTeacherStudio<{ staff: TeacherStudioStaff }>({
+    method: 'POST',
+    action: 'upsert_staff',
+    academyId,
+    body,
+  });
+  return data.staff;
+};
+
+export const teacherStudioRemoveStaff = async (
+  academyId: string,
+  id: string,
+): Promise<{ ok: boolean }> => {
+  return callTeacherStudio<{ ok: boolean }>({
+    method: 'POST',
+    action: 'remove_staff',
+    academyId,
+    body: { id },
+  });
+};
+
+export const teacherStudioIssueAcademyCertificate = async (
+  academyId: string,
+  body: {
+    contact_id: string;
+    classroom_id?: string | null;
+    exam_type?: string;
+    overall_score?: number | null;
+    candidate_name?: string;
+    center_name?: string;
+  },
+): Promise<{ certificate: Record<string, unknown> | null; share_url: string }> => {
+  return callTeacherStudio<{ certificate: Record<string, unknown> | null; share_url: string }>({
+    method: 'POST',
+    action: 'issue_academy_certificate',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioComputeAtRisk = async (
+  academyId: string,
+  classroomId?: string | null,
+): Promise<{ at_risk: TeacherStudioAtRiskStudent[]; scanned: number }> => {
+  return callTeacherStudio<{ at_risk: TeacherStudioAtRiskStudent[]; scanned: number }>({
+    method: 'POST',
+    action: 'compute_at_risk',
+    academyId,
+    body: { classroom_id: classroomId ?? undefined },
+  });
+};
+
+export const teacherStudioDispatchNotifications = async (
+  academyId: string,
+): Promise<Record<string, unknown>> => {
+  return callTeacherStudio<Record<string, unknown>>({
+    method: 'POST',
+    action: 'dispatch_notifications',
+    academyId,
+  });
+};
+
+export const teacherStudioGenerateParentReport = async (
+  academyId: string,
+  body: { contact_id: string; label?: string | null; expires_in_days?: number },
+): Promise<{ token: Record<string, unknown> | null; share_url: string; contact: { id: string; name: string } }> => {
+  return callTeacherStudio<{ token: Record<string, unknown> | null; share_url: string; contact: { id: string; name: string } }>({
+    method: 'POST',
+    action: 'generate_parent_report',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioUpsertBranding = async (
+  academyId: string,
+  body: {
+    display_name?: string | null;
+    tagline?: string | null;
+    logo_url?: string | null;
+    favicon_url?: string | null;
+    primary_color?: string | null;
+    accent_color?: string | null;
+    hide_schood_logo?: boolean;
+    custom_domain?: string | null;
+    footer_text?: string | null;
+  },
+): Promise<TeacherStudioBranding> => {
+  const data = await callTeacherStudio<{ branding: TeacherStudioBranding }>({
+    method: 'POST',
+    action: 'upsert_branding',
+    academyId,
+    body,
+  });
+  return data.branding;
 };

@@ -1236,8 +1236,15 @@ const handleReadAction = async (
       "offer-grants",
       "payments",
       "entitlements",
+      "assignments",
+      "submissions",
+      "gradebook",
+      "student_progress",
+      "attendance",
+      "bulk_invites",
       "schedule",
       "classroom_billing",
+      "branding",
       "notifications",
       "owner_dashboard",
       "staff",
@@ -1310,7 +1317,7 @@ const handleReadAction = async (
   if (action === "contacts") {
     const { data, error } = await sb
       .from("academy_contacts")
-      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, metadata, created_at, updated_at")
+      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, notify_enabled, metadata, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("created_at", { ascending: false })
       .limit(300);
@@ -2356,7 +2363,7 @@ serve(async (req) => {
     }
 
     // ── Student: submit an assignment ────────────────────────────────────────
-    if (requestedAction === "submit_assignment" && req.method === "POST") {
+    if (requestedAction === "submit_assignment" && req.method === "POST" && !normalizeText(body?.contact_id, 64)) {
       let contacts: Array<Record<string, unknown>> = [];
       try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
       if (contacts.length === 0) return json(403, { error: "No academy enrollment found" });

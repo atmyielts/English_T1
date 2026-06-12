@@ -78,6 +78,7 @@ import { AnnouncementsView } from './components/office/AnnouncementsView';
 import { ClassroomDetailView } from './components/office/ClassroomDetailView';
 import { ClassroomsView } from './components/office/ClassroomsView';
 import { ContactsView } from './components/office/ContactsView';
+import { EducationOSView } from './components/office/EducationOSView';
 import { EntitlementsView } from './components/office/EntitlementsView';
 import { InboxView } from './components/office/InboxView';
 import { OffersView } from './components/office/OffersView';
@@ -97,7 +98,7 @@ import type {
 
 type LoadState = 'loading' | 'ready' | 'unauthenticated' | 'error';
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'academy' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type OfficeView = 'academy' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
 type AcademyLandingFormState = {
   name: string;
@@ -128,7 +129,7 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['academy', 'contacts', 'inbox', 'announcements', 'alerts', 'classrooms', 'offers', 'payments', 'entitlements'];
+const OFFICE_VIEWS: OfficeView[] = ['academy', 'os', 'contacts', 'inbox', 'announcements', 'alerts', 'classrooms', 'offers', 'payments', 'entitlements'];
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
@@ -156,6 +157,7 @@ const CLASSROOM_RESOURCE_FILTERS: Array<{ kind: 'all' | TeacherStudioClassroomRe
 
 const OFFICE_LABELS: Record<OfficeView, string> = {
   academy: 'Academy',
+  os: 'Education OS',
   contacts: 'Contacts',
   inbox: 'Inbox',
   announcements: 'Announcements',
@@ -895,7 +897,7 @@ const App = () => {
       navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
       return;
     }
-    const teacherLegacyMatch = normalized.match(/^\/academy\/(contacts|inbox|announcements|alerts|offers|payments|entitlements)$/);
+    const teacherLegacyMatch = normalized.match(/^\/academy\/(os|contacts|inbox|announcements|alerts|offers|payments|entitlements)$/);
     if (teacherLegacyMatch) {
       const nextPath = `/academy/teacher/${teacherLegacyMatch[1]}`;
       navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
@@ -3686,6 +3688,14 @@ const App = () => {
           Teacher office
         </button>
         <button
+          className={`nav-btn ${officeView === 'os' ? 'is-active' : ''}`}
+          type="button"
+          onClick={() => navigate(academyScopedPath('/academy/teacher/os'))}
+        >
+          <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
+          Education OS
+        </button>
+        <button
           className={`nav-btn ${officeView === 'contacts' ? 'is-active' : ''}`}
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/contacts'))}
@@ -3843,6 +3853,17 @@ const App = () => {
             busy={busy}
             canManageLanding={canManageLanding}
             onNavigate={(path) => navigate(academyScopedPath(path))}
+          />
+        ) : null}
+
+        {officeView === 'os' ? (
+          <EducationOSView
+            academyId={academyId}
+            classrooms={classrooms}
+            contacts={contacts}
+            classroomMemberships={classroomMemberships}
+            formatDate={formatDate}
+            statusClass={statusClass}
           />
         ) : null}
 
