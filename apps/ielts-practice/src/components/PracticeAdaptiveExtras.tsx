@@ -274,7 +274,7 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
   };
 
   return (
-    <section className="glass stat-card wide" style={{ padding: 24, display: 'grid', gap: 12 }}>
+    <section className="glass" style={{ padding: 24, display: 'grid', gap: 12 }}>
       <div className="task-card-head" style={{ alignItems: 'flex-start' }}>
         <div>
           <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Ask your tutor</p>
