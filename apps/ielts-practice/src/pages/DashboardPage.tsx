@@ -46,6 +46,7 @@ import {
 } from '../components/PracticeFocusExtras';
 import { UniversalStreakBadge } from '../components/UniversalStreakBadge';
 import { TeachSkillButton } from '../components/TeachSkillButton';
+import { MistakeCausesCard } from '../components/MistakeCauseInsights';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -606,6 +607,8 @@ export const DashboardPage = () => {
           />
 
           <ExamReadinessCard accessToken={accessToken} />
+
+          <MistakeCausesCard accessToken={accessToken} />
 
           <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 }}>
             <BandTrajectoryCard accessToken={accessToken} />
