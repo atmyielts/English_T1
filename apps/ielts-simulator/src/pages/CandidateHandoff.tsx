@@ -25,6 +25,12 @@ export const CandidateHandoff: React.FC = () => {
       const refreshToken = hashParams.get('refresh_token') ?? queryParams.get('refresh_token');
       const session = hashParams.get('session_id') ?? queryParams.get('session_id');
       const firstSection = hashParams.get('first_section_id') ?? queryParams.get('first_section_id');
+      const strictMode = (hashParams.get('strict_mode') ?? queryParams.get('strict_mode')) !== '0';
+      const launchKind = hashParams.get('launch_kind') ?? queryParams.get('launch_kind') ?? 'candidate_id';
+      const voucherCode = hashParams.get('voucher_code') ?? queryParams.get('voucher_code');
+      const centerTenantId = hashParams.get('center_tenant_id') ?? queryParams.get('center_tenant_id');
+      const classroomId = hashParams.get('classroom_id') ?? queryParams.get('classroom_id');
+      const centerSlug = hashParams.get('center_slug') ?? queryParams.get('center_slug');
 
       // Strip tokens from the URL ASAP (history-safe for the current entry).
       if (typeof window !== 'undefined') {
@@ -85,7 +91,17 @@ export const CandidateHandoff: React.FC = () => {
 
       localStorage.setItem(
         'ielts:candidate_session',
-        JSON.stringify({ sessionId: session, firstSectionId: firstSection ?? null, startedAt: new Date().toISOString() }),
+        JSON.stringify({
+          sessionId: session,
+          firstSectionId: firstSection ?? null,
+          startedAt: new Date().toISOString(),
+          strictMode,
+          launchKind,
+          voucherCode,
+          centerTenantId,
+          classroomId,
+          centerSlug,
+        }),
       );
 
       setSessionId(session);

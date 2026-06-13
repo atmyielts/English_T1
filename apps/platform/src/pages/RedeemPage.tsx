@@ -3,7 +3,7 @@ import { ArrowUpRight, CheckCircle2, KeyRound, Loader2, Ticket } from 'lucide-re
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
-import { candidateEntry, voucherPreview, voucherRedeem, type VoucherPreview } from '../lib/platformClient';
+import { buildCandidateHandoffUrl, candidateEntry, voucherPreview, voucherRedeem, type VoucherPreview } from '../lib/platformClient';
 
 const inputClass =
   'mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100';
@@ -101,16 +101,11 @@ export const RedeemPage: React.FC = () => {
         email: candidate.email,
         phone: candidate.phone,
       });
-      const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
-      if (!appBase) throw new Error('Exam app URL is not configured');
-      const qs = new URLSearchParams({
-        access_token: res.session.access_token,
-        refresh_token: res.session.refresh_token,
-        expires_in: String(res.session.expires_in),
-        session_id: res.session_id,
+      const target = buildCandidateHandoffUrl(res, {
+        launchKind: voucher.center ? 'center_voucher' : 'candidate_id',
+        voucherCode: voucher.code,
+        centerTenantId: String((voucher.center as any)?.tenant_id ?? '').trim() || null,
       });
-      if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
-      const target = `${appBase}/candidate?${qs.toString()}`;
       setHandoffUrl(target);
       window.location.assign(target);
     } catch (err) {

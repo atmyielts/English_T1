@@ -18,6 +18,16 @@ type SessionPayload = {
   token_type: string;
 };
 
+type VoucherLaunchContext = {
+  launch_kind: "center_voucher";
+  strict_mode: true;
+  voucher_id: string;
+  voucher_code: string;
+  center_tenant_id: string;
+  access_kind: string;
+  classroom_id: string | null;
+};
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -67,6 +77,95 @@ const pickFirstNonEmpty = (...values: unknown[]): string | null => {
     if (s) return s;
   }
   return null;
+};
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+
+const buildVoucherLaunchContext = (voucher: any): VoucherLaunchContext | null => {
+  if (!voucher?.id) return null;
+  const centerTenantId = String(voucher.tenant_id ?? "").trim();
+  const code = String(voucher.code ?? "").trim();
+  if (!centerTenantId || !code) return null;
+  return {
+    launch_kind: "center_voucher",
+    strict_mode: true,
+    voucher_id: String(voucher.id),
+    voucher_code: code,
+    center_tenant_id: centerTenantId,
+    access_kind: String(voucher.access_kind ?? "mock_exam"),
+    classroom_id: isUuid(voucher.classroom_id) ? String(voucher.classroom_id) : null,
+  };
+};
+
+const buildSessionMetadata = (input: {
+  tokenCode: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  launch: VoucherLaunchContext | null;
+}): Json => {
+  const candidateName = `${input.firstName} ${input.lastName}`.trim();
+  const base: Json = {
+    exam_mode: "token",
+    strict_mode: true,
+    launch_kind: input.launch?.launch_kind ?? "candidate_id",
+    source: input.launch ? "partner_voucher_redeem" : "candidate_entry",
+    token_code: input.tokenCode,
+    candidate_name: candidateName,
+    candidate_email: input.email,
+  };
+
+  if (!input.launch) return base;
+
+  return {
+    ...base,
+    voucher_id: input.launch.voucher_id,
+    voucher_code: input.launch.voucher_code,
+    center_tenant_id: input.launch.center_tenant_id,
+    classroom_id: input.launch.classroom_id,
+    partner_voucher: {
+      id: input.launch.voucher_id,
+      code: input.launch.voucher_code,
+      center_tenant_id: input.launch.center_tenant_id,
+      access_kind: input.launch.access_kind,
+      classroom_id: input.launch.classroom_id,
+    },
+  };
+};
+
+const mergeSessionMetadata = async (
+  sbAdmin: any,
+  sessionId: string,
+  patch: Json,
+): Promise<void> => {
+  const { data: sessionRow } = await sbAdmin
+    .from("sessions")
+    .select("metadata")
+    .eq("id", sessionId)
+    .maybeSingle();
+
+  const current = asRecord(sessionRow?.metadata);
+  const next: Json = { ...current, ...patch };
+  const currentVoucher = asRecord(current.partner_voucher);
+  const patchVoucher = asRecord(patch.partner_voucher);
+  if (Object.keys(currentVoucher).length > 0 || Object.keys(patchVoucher).length > 0) {
+    next.partner_voucher = { ...currentVoucher, ...patchVoucher };
+  }
+
+  await sbAdmin.from("sessions").update({ metadata: next }).eq("id", sessionId);
+};
+
+const loadPartnerVoucherContext = async (
+  sbAdmin: any,
+  tokenId: string,
+): Promise<VoucherLaunchContext | null> => {
+  const { data: voucher } = await sbAdmin
+    .from("partner_vouchers")
+    .select("id, tenant_id, code, access_kind, classroom_id")
+    .eq("exam_token_id", tokenId)
+    .maybeSingle();
+  return buildVoucherLaunchContext(voucher);
 };
 
 const buildPassword = (): string => {
@@ -348,14 +447,15 @@ const markPartnerVoucherForToken = async (
   tokenId: string,
   userId: string,
   details: { firstName: string; lastName: string; email: string; phone: string },
-): Promise<void> => {
+): Promise<VoucherLaunchContext | null> => {
   const { data: voucher } = await sbAdmin
     .from("partner_vouchers")
     .select("id, tenant_id, code, access_kind, status, redeemed_by, metadata, expires_at, classroom_id")
     .eq("exam_token_id", tokenId)
     .maybeSingle();
-  if (!voucher?.id) return;
-  if (voucher.status === "redeemed" && voucher.redeemed_by && voucher.redeemed_by !== userId) return;
+  if (!voucher?.id) return null;
+  const launch = buildVoucherLaunchContext(voucher);
+  if (voucher.status === "redeemed" && voucher.redeemed_by && voucher.redeemed_by !== userId) return null;
 
   await sbAdmin
     .from("partner_vouchers")
@@ -412,6 +512,8 @@ const markPartnerVoucherForToken = async (
   await enrollVoucherUserInClassroom(sbAdmin, voucher, userId, details).catch((error) => {
     console.warn("Failed to enroll partner voucher user in academy classroom", error);
   });
+
+  return launch;
 };
 
 const buildCandidateResponse = (
@@ -420,6 +522,7 @@ const buildCandidateResponse = (
   experienceId: string,
   firstSectionId: string | null,
   product: { id: string; slug: string | null; appUrl: string | null } | null,
+  launch: VoucherLaunchContext | null,
 ) =>
   json(200, {
     session: {
@@ -434,6 +537,12 @@ const buildCandidateResponse = (
     product_id: product?.id ?? null,
     product_slug: product?.slug ?? null,
     app_url: product?.appUrl ?? null,
+    strict_mode: true,
+    launch_kind: launch?.launch_kind ?? "candidate_id",
+    voucher_id: launch?.voucher_id ?? null,
+    voucher_code: launch?.voucher_code ?? null,
+    center_tenant_id: launch?.center_tenant_id ?? null,
+    classroom_id: launch?.classroom_id ?? null,
   });
 
 serve(async (req) => {
@@ -526,6 +635,8 @@ serve(async (req) => {
 
     if (!firstSection?.id) return json(400, { error: "Test is not ready yet. Please contact your teacher." });
 
+    const pendingLaunch = await loadPartnerVoucherContext(sbDb, tokenRow.id);
+
     const maxUses = Number(tokenRow.max_uses ?? 1);
     const usesCount = Number(tokenRow.uses_count ?? 0);
     const isAlreadyUsed = Boolean(tokenRow.claimed_by) || usesCount >= Math.max(1, maxUses);
@@ -576,7 +687,12 @@ serve(async (req) => {
           if (!claimedEmail) return json(500, { error: "Failed to recover candidate session" });
 
           const { session } = await ensureUserSession(sbDb, sbAuth, sbAnon, claimedEmail, firstName, lastName, phone);
-          await markPartnerVoucherForToken(sbDb, tokenRow.id, claimedBy, { firstName, lastName, email: claimedEmail, phone });
+          const launch = await markPartnerVoucherForToken(sbDb, tokenRow.id, claimedBy, { firstName, lastName, email: claimedEmail, phone });
+          await mergeSessionMetadata(
+            sbDb,
+            existingSession.id,
+            buildSessionMetadata({ tokenCode, firstName, lastName, email: claimedEmail, launch: launch ?? pendingLaunch }),
+          );
           return buildCandidateResponse(
             {
               access_token: session.access_token,
@@ -588,6 +704,7 @@ serve(async (req) => {
             existingSession.experience_id,
             String(firstSection.id),
             product,
+            launch ?? pendingLaunch,
           );
         }
       }
@@ -645,7 +762,12 @@ serve(async (req) => {
       if (latestToken?.claimed_by === userId && String(latestToken?.status) === "claimed") {
         const existingSession = await findReusableSession(sbDb, tokenRow.id, userId);
         if (existingSession) {
-          await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
+          const launch = await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
+          await mergeSessionMetadata(
+            sbDb,
+            existingSession.id,
+            buildSessionMetadata({ tokenCode, firstName, lastName, email, launch: launch ?? pendingLaunch }),
+          );
           return buildCandidateResponse(
             {
               access_token: session.access_token,
@@ -657,6 +779,7 @@ serve(async (req) => {
             existingSession.experience_id,
             String(firstSection.id),
             product,
+            launch ?? pendingLaunch,
           );
         }
       }
@@ -664,12 +787,7 @@ serve(async (req) => {
       return json(400, { error: "Candidate ID has already been used" });
     }
 
-    const sessionMetadata: Json = {
-      exam_mode: "token",
-      token_code: tokenCode,
-      candidate_name: `${firstName} ${lastName}`.trim(),
-      candidate_email: email,
-    };
+    const sessionMetadata = buildSessionMetadata({ tokenCode, firstName, lastName, email, launch: pendingLaunch });
 
     const { data: sessionRow, error: sessionErr } = await sbDb
       .from("sessions")
@@ -715,7 +833,14 @@ serve(async (req) => {
       await sbDb.from("sessions").update({ registration_id: registrationRow.id }).eq("id", sessionRow.id);
     }
 
-    await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
+    const launch = await markPartnerVoucherForToken(sbDb, tokenRow.id, userId, { firstName, lastName, email, phone });
+    if (launch) {
+      await mergeSessionMetadata(
+        sbDb,
+        sessionRow.id,
+        buildSessionMetadata({ tokenCode, firstName, lastName, email, launch }),
+      );
+    }
 
     return buildCandidateResponse(
       {
@@ -728,6 +853,7 @@ serve(async (req) => {
       tokenRow.experience_id,
       String(firstSection.id),
       product,
+      launch ?? pendingLaunch,
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
