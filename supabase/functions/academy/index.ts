@@ -200,6 +200,23 @@ const toStringArray = (value: unknown): string[] => {
   return Array.from(new Set(value.map((item) => normalizeText(item, 64)).filter((item) => item.length > 0)));
 };
 
+const weakAreaLabel = (value: unknown): string => {
+  if (typeof value === "string") return value.trim();
+  if (isJsonObject(value)) {
+    return normalizeText(
+      value.label ?? value.name ?? value.skill ?? value.area,
+      180,
+    );
+  }
+  return "";
+};
+
+const relatedClassroom = (row: Record<string, unknown>): Record<string, unknown> | null => {
+  const raw = row.academy_classrooms;
+  if (Array.isArray(raw)) return (raw[0] ?? null) as Record<string, unknown> | null;
+  return isJsonObject(raw) ? raw : null;
+};
+
 const normalizeAcademyRole = (roleRaw: unknown): string => {
   const role = normalizeText(roleRaw, 40).toLowerCase();
   if (role === "center-admin" || role === "center admin") return "center_admin";
@@ -2241,6 +2258,8 @@ const handleReadAction = async (
         total_classrooms: 0,
         classroom_stats: [],
         attendance_trend: [],
+        center_voucher_source: { center_tenant_id: null },
+        center_voucher_heatmaps: [],
       });
     }
     const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
@@ -2306,6 +2325,10 @@ const handleReadAction = async (
       return { date: d, rate: recs.length > 0 ? Math.round((present / recs.length) * 100) : null };
     });
 
+    const centerTenantId = await loadAcademyParentCenterId(sb, academyId, access);
+    const classroomIds = classrooms.map((classroom) => normalizeText(classroom.id, 64)).filter(Boolean);
+    const centerVoucherHeatmaps = await loadAcademyCenterVoucherHeatmaps(sb, academyId, centerTenantId, classroomIds);
+
     return json(200, {
       revenue: { currency, collected_total: collectedTotal, collected_this_month: collectedThisMonth, outstanding, paid_count: paid.length },
       funnel,
@@ -2313,6 +2336,8 @@ const handleReadAction = async (
       total_classrooms: classrooms.length,
       classroom_stats: classroomStats,
       attendance_trend: trend,
+      center_voucher_source: { center_tenant_id: centerTenantId },
+      center_voucher_heatmaps: centerVoucherHeatmaps,
     });
   }
 
@@ -2691,6 +2716,192 @@ const syncEducationActionItems = async (
     if (byPriority !== 0) return byPriority;
     return String(a.due_at ?? a.created_at ?? "").localeCompare(String(b.due_at ?? b.created_at ?? ""));
   });
+};
+
+const loadAcademyParentCenterId = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  access: MembershipRow,
+): Promise<string | null> => {
+  const delegatedCenterId = normalizeText(access.center_tenant_id, 64);
+  if (delegatedCenterId) return delegatedCenterId;
+  const { data, error } = await sb
+    .from("tenants")
+    .select("metadata")
+    .eq("id", academyId)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to load academy center link: ${error.message}`);
+  const metadata = toJsonObject((data as Record<string, unknown> | null)?.metadata);
+  return normalizeText(metadata.parent_center_id, 64) || null;
+};
+
+const loadCenterVoucherExamResults = async (
+  sb: SupabaseClientLike,
+  centerTenantId: string,
+): Promise<Array<Record<string, unknown>>> => {
+  const { data, error } = await sb
+    .from("exam_registrations")
+    .select(
+      "id, token_id, status, created_at, first_name, last_name, legal_name, email, phone, session_id, experiences ( name ), exam_tokens ( token_code ), sessions!exam_registrations_session_id_fkey ( status )",
+    )
+    .eq("tenant_id", centerTenantId)
+    .order("created_at", { ascending: false })
+    .limit(20000);
+  if (error) throw new Error(`Failed to load center voucher exam results: ${error.message}`);
+
+  const rows = (data ?? []) as Array<Record<string, any>>;
+  const sessionIds = Array.from(new Set(rows.map((row) => normalizeText(row.session_id, 64)).filter(Boolean)));
+  const evalMap = new Map<string, Record<string, unknown>>();
+  if (sessionIds.length > 0) {
+    const { data: evalRows, error: evalError } = await sb
+      .from("evaluations")
+      .select("session_id, method, status, result")
+      .in("session_id", sessionIds);
+    if (evalError) throw new Error(`Failed to load center voucher evaluations: ${evalError.message}`);
+    for (const row of (evalRows ?? []) as Array<Record<string, unknown>>) {
+      const sessionId = normalizeText(row.session_id, 64);
+      if (!sessionId) continue;
+      const existing = evalMap.get(sessionId);
+      if (!existing || row.method === "auto") evalMap.set(sessionId, row);
+    }
+  }
+
+  return rows.map((row) => {
+    const evaluation = evalMap.get(normalizeText(row.session_id, 64)) ?? null;
+    const result = toJsonObject(evaluation?.result);
+    const overallScore = result.overall_score ?? null;
+    return {
+      id: row.id,
+      token_id: row.token_id,
+      token_code: row.exam_tokens?.token_code ?? null,
+      experience_name: row.experiences?.name ?? null,
+      candidate_name: row.legal_name || `${row.first_name ?? ""} ${row.last_name ?? ""}`.trim(),
+      email: row.email,
+      phone: row.phone,
+      session_id: row.session_id,
+      session_status: row.sessions?.status ?? null,
+      registration_status: row.status,
+      overall_score: overallScore,
+      overall_band: result.overall_band ?? overallScore,
+      listening_score: result.listening_score ?? result.listening_band ?? null,
+      reading_score: result.reading_score ?? result.reading_band ?? null,
+      writing_score: result.writing_score ?? result.writing_band ?? null,
+      speaking_score: result.speaking_score ?? result.speaking_band ?? null,
+      weak_areas: Array.isArray(result.weak_areas) ? result.weak_areas : [],
+      created_at: row.created_at,
+    };
+  });
+};
+
+const buildCenterVoucherHeatmaps = (
+  results: Array<Record<string, unknown>>,
+  vouchers: Array<Record<string, unknown>>,
+): Array<Record<string, unknown>> => {
+  const voucherByCode = new Map<string, Record<string, unknown>>();
+  for (const voucher of vouchers) {
+    const code = normalizeText(voucher.code, 120).toUpperCase();
+    if (code) voucherByCode.set(code, voucher);
+  }
+
+  const metrics = [
+    ["listening", "Listening", "listening_score"],
+    ["reading", "Reading", "reading_score"],
+    ["writing", "Writing", "writing_score"],
+    ["speaking", "Speaking", "speaking_score"],
+  ] as const;
+  const groups = new Map<string, Record<string, any>>();
+
+  for (const result of results) {
+    const code = normalizeText(result.token_code, 120).toUpperCase();
+    const voucher = voucherByCode.get(code);
+    if (!voucher) continue;
+    const classroomId = normalizeText(voucher.classroom_id, 64);
+    if (!classroomId) continue;
+    const classroom = relatedClassroom(voucher);
+    const classroomName = normalizeText(classroom?.name, 180) || "Assigned classroom";
+    const heatmap = groups.get(classroomId) ?? {
+      classroom_id: classroomId,
+      classroom_name: classroomName,
+      attempts: 0,
+      completed_attempts: 0,
+      average_score: null,
+      skills: metrics.map(([id, label]) => ({ id, label, average_score: null, attempts: 0 })),
+      weakest_subskill: null,
+      systemic_gaps: [],
+      focus_areas: [],
+      __scores: [],
+      __weak: {},
+    };
+
+    heatmap.attempts += 1;
+    if (normalizeText(result.registration_status ?? result.session_status, 40).toLowerCase() === "completed") heatmap.completed_attempts += 1;
+    const overall = Number(result.overall_band ?? result.overall_score ?? NaN);
+    if (Number.isFinite(overall)) heatmap.__scores.push(overall);
+
+    heatmap.skills = heatmap.skills.map((skill: Record<string, any>) => {
+      const metric = metrics.find(([id]) => id === skill.id);
+      const value = metric ? Number(result[metric[2]] ?? NaN) : NaN;
+      const scores = Array.isArray(skill.__scores) ? skill.__scores : [];
+      if (Number.isFinite(value)) scores.push(value);
+      return { ...skill, __scores: scores };
+    });
+
+    const weakAreas = Array.isArray(result.weak_areas) ? result.weak_areas : [];
+    for (const area of weakAreas) {
+      const label = weakAreaLabel(area);
+      if (!label) continue;
+      heatmap.__weak[label] = Number(heatmap.__weak[label] ?? 0) + 1;
+    }
+    groups.set(classroomId, heatmap);
+  }
+
+  return Array.from(groups.values()).map((heatmap) => {
+    const scores = Array.isArray(heatmap.__scores) ? heatmap.__scores : [];
+    const weakEntries = Object.entries(heatmap.__weak ?? {})
+      .map(([label, count]) => ({ label, count: Number(count), share: heatmap.attempts ? Number(count) / heatmap.attempts : 0 }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    return {
+      classroom_id: heatmap.classroom_id,
+      classroom_name: heatmap.classroom_name,
+      attempts: heatmap.attempts,
+      completed_attempts: heatmap.completed_attempts,
+      average_score: scores.length ? Math.round((scores.reduce((sum: number, value: number) => sum + value, 0) / scores.length) * 10) / 10 : null,
+      skills: heatmap.skills.map((skill: Record<string, any>) => {
+        const skillScores = Array.isArray(skill.__scores) ? skill.__scores : [];
+        return {
+          id: skill.id,
+          label: skill.label,
+          average_score: skillScores.length ? Math.round((skillScores.reduce((sum: number, value: number) => sum + value, 0) / skillScores.length) * 10) / 10 : null,
+          attempts: skillScores.length,
+        };
+      }),
+      weakest_subskill: weakEntries[0]?.label ?? null,
+      systemic_gaps: weakEntries.filter((entry) => entry.share >= 0.35 || entry.count >= 3),
+      focus_areas: weakEntries.slice(0, 3).map((entry) => entry.label),
+    };
+  }).sort((a, b) => Number(b.attempts) - Number(a.attempts));
+};
+
+const loadAcademyCenterVoucherHeatmaps = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  centerTenantId: string | null,
+  classroomIds: string[],
+): Promise<Array<Record<string, unknown>>> => {
+  if (!centerTenantId || classroomIds.length === 0) return [];
+  const { data: vouchers, error: voucherError } = await sb
+    .from("partner_vouchers")
+    .select("id, code, status, classroom_id, academy_classrooms ( id, name, academy_id )")
+    .eq("tenant_id", centerTenantId)
+    .in("classroom_id", classroomIds)
+    .limit(10000);
+  if (voucherError) throw new Error(`Failed to load center vouchers for academy heatmap: ${voucherError.message}`);
+  const voucherRows = ((vouchers ?? []) as Array<Record<string, unknown>>)
+    .filter((voucher) => normalizeText(relatedClassroom(voucher)?.academy_id, 64) === academyId);
+  if (voucherRows.length === 0) return [];
+  const results = await loadCenterVoucherExamResults(sb, centerTenantId);
+  return buildCenterVoucherHeatmaps(results, voucherRows);
 };
 
 const buildEducationOS = async (

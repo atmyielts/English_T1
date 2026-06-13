@@ -19,6 +19,7 @@ import {
   type AcademyAssignment,
   type AcademyGradebook,
   type AcademyStudentProgress,
+  type PartnerClassroomHeatmap,
   type TeacherStudioStudentClassroom,
   type TeacherStudioStudentContact,
   type TeacherStudioStudentDashboard,
@@ -1647,6 +1648,8 @@ type OwnerDashboard = {
   total_classrooms: number;
   classroom_stats: Array<{ classroom_id: string; name: string; is_active: boolean; students: number; assignments: number; avg_score: number | null; attendance_rate: number | null }>;
   attendance_trend: Array<{ date: string; rate: number | null }>;
+  center_voucher_source?: { center_tenant_id: string | null };
+  center_voucher_heatmaps?: PartnerClassroomHeatmap[];
 };
 
 type StaffRow = { id: string; email: string; display_name: string | null; role: string; classroom_ids: string[]; is_active: boolean; user_id: string | null };
@@ -1703,6 +1706,8 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
   if (!data) return <div className="text-center text-gray-400 py-8">No data available.</div>;
 
   const maxTrend = Math.max(100, ...data.attendance_trend.map((t) => t.rate ?? 0));
+  const centerVoucherHeatmaps = data.center_voucher_heatmaps ?? [];
+  const hasCenterVoucherSource = Boolean(data.center_voucher_source?.center_tenant_id);
 
   return (
     <div className="space-y-6">
@@ -1791,6 +1796,63 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
           </table>
         </div>
       </div>
+
+      {hasCenterVoucherSource && (
+        <div>
+          <h3 className="font-semibold text-gray-800 mb-3">Center Voucher Cohorts</h3>
+          {centerVoucherHeatmaps.length > 0 ? (
+            <div className="space-y-3">
+              {centerVoucherHeatmaps.map((heatmap) => (
+                <div key={heatmap.classroom_id ?? heatmap.classroom_name} className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="font-semibold text-gray-900">{heatmap.classroom_name}</div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {heatmap.completed_attempts}/{heatmap.attempts} voucher attempts completed
+                        {heatmap.weakest_subskill ? ` - weakest: ${heatmap.weakest_subskill}` : ''}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-gray-50 px-3 py-2 text-right">
+                      <div className="text-xs font-medium text-gray-500">Mock average</div>
+                      <div className="text-xl font-bold text-gray-900">{heatmap.average_score ?? '-'}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-2 md:grid-cols-4">
+                    {heatmap.skills.map((skill) => {
+                      const width = Math.max(4, Math.min(100, Number(skill.average_score ?? 0) * 10));
+                      return (
+                        <div key={skill.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                          <div className="flex items-center justify-between gap-2 text-xs font-semibold text-gray-700">
+                            <span>{skill.label}</span>
+                            <span>{skill.average_score ?? '-'}</span>
+                          </div>
+                          <div className="mt-2 h-1.5 rounded-full bg-gray-200">
+                            <div className="h-1.5 rounded-full bg-gray-900" style={{ width: `${width}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {(heatmap.focus_areas.length ? heatmap.focus_areas : ['No repeated weakness yet']).map((area) => (
+                      <span key={area} className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600">{area}</span>
+                    ))}
+                  </div>
+                  {heatmap.systemic_gaps.length > 0 ? (
+                    <div className="mt-3 text-xs text-gray-500">
+                      Systemic gaps: {heatmap.systemic_gaps.map((gap) => `${gap.label} (${Math.round(gap.share * 100)}%)`).join(', ')}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">
+              Bind center voucher batches to Academy classrooms and complete mock sessions to populate cohort weakness heatmaps here.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Referral leaderboard */}
       {leaderboard.length > 0 && (
