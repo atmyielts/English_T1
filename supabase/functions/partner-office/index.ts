@@ -2786,6 +2786,7 @@ serve(async (req) => {
               amount,
               currency,
               description: `${profile?.display_name ?? "Education center"} wallet top-up`,
+              redirect_url: body.redirect_url ?? null,
               apply_credit: false,
               credit_amount: 0,
               metadata: {
@@ -3434,6 +3435,7 @@ serve(async (req) => {
           purchase_type: "center_tier_upgrade",
           tenant_id: tenantId,
           description: `${profile.display_name ?? "Education center"} ${CENTER_TIER_CAPABILITIES[requestedTier].tier_label} ${billingPeriod} tier`,
+          redirect_url: body.redirect_url ?? null,
           apply_credit: false,
           credit_amount: 0,
           metadata: {
