@@ -124,7 +124,7 @@ These rules keep the system safe and sane long-term:
 │ │ ├─ platform/
 │ │ │ ├─ me.ts
 │ │ │ ├─ billing.ts
-│ │ │ ├─ tspay.ts
+│ │ │ ├─ click.ts
 │ │ │ └─ admin/
 │ │ │
 │ │ ├─ ielts/
