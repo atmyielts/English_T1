@@ -537,7 +537,7 @@ const getAcademyAppUrl = async (sb: any): Promise<string> => {
     .maybeSingle();
   const metadata = isObject(data?.metadata) ? data.metadata as Json : {};
   const configured = String(metadata.app_url ?? Deno.env.get("ACADEMY_APP_URL") ?? "").trim().replace(/\/+$/, "");
-  if (!configured || /^https:\/\/academy\.schood\.online$/i.test(configured)) return getPlatformUrl();
+  if (!configured || /^https:\/\/academy\.schood\.online$/i.test(configured)) return platformBaseUrl();
   return configured;
 };
 
@@ -1526,6 +1526,12 @@ type DispatchRecipient = {
   telegram_chat_id?: string | null;
 };
 
+type DispatchResult = {
+  status: "prepared" | "sent" | "failed";
+  provider?: string | null;
+  detail?: unknown;
+};
+
 const parseDispatchRecipients = (input: unknown): DispatchRecipient[] => {
   if (Array.isArray(input)) {
     return input
@@ -1561,7 +1567,7 @@ const sendDispatchMessage = async (
   channel: string,
   recipient: DispatchRecipient,
   message: string,
-): Promise<{ status: string; provider?: string | null; detail?: unknown }> => {
+): Promise<DispatchResult> => {
   if (channel === "telegram" && recipient.telegram_chat_id) {
     const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!botToken) return { status: "prepared", provider: "telegram", detail: "TELEGRAM_BOT_TOKEN is not configured" };
@@ -1587,6 +1593,13 @@ const sendDispatchMessage = async (
     body: JSON.stringify({ phone: recipient.phone, message }),
   });
   return { status: res.ok ? "sent" : "failed", provider: "sms", detail: await res.text().catch(() => null) };
+};
+
+const dispatchProviderResponse = (detail: unknown): Json => {
+  if (isObject(detail)) return detail;
+  if (Array.isArray(detail)) return { detail };
+  if (detail === null || typeof detail === "undefined") return {};
+  return { detail: String(detail) };
 };
 
 const weakAreaLabel = (value: unknown): string => {
@@ -1822,7 +1835,7 @@ serve(async (req) => {
       const status = String(url.searchParams.get("status") ?? "").trim();
       let query = sb
         .from("partner_vouchers")
-        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days ), academy_classrooms ( id, name, academy_id )")
+        .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days ), academy_classrooms ( id, name, academy_id ), partner_voucher_dispatches ( id, channel, provider, recipient_name, recipient_phone, recipient_email, telegram_chat_id, redeem_url, status, attempted_at )")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(300);
@@ -3131,6 +3144,32 @@ serve(async (req) => {
             .replace(/\{code\}/g, String(voucher.code))
             .replace(/\{url\}/g, link);
           const result = await sendDispatchMessage(channel, recipient, message);
+          const attemptedAt = new Date().toISOString();
+          const providerResponse = dispatchProviderResponse(result.detail);
+          const { data: dispatchLog, error: dispatchLogError } = await sb
+            .from("partner_voucher_dispatches")
+            .insert({
+              tenant_id: tenantId,
+              batch_id: batchId,
+              voucher_id: voucher.id,
+              channel,
+              provider: result.provider ?? null,
+              recipient_name: name || null,
+              recipient_phone: recipient.phone ?? null,
+              recipient_email: recipient.email ?? null,
+              telegram_chat_id: recipient.telegram_chat_id ?? null,
+              message,
+              redeem_url: link,
+              status: result.status,
+              provider_response: providerResponse,
+              attempted_by: userId,
+              attempted_at: attemptedAt,
+            })
+            .select("id")
+            .maybeSingle();
+          if (dispatchLogError) {
+            console.warn("voucher dispatch audit insert failed", dispatchLogError.message);
+          }
           const existingMeta = isObject(voucher.metadata) ? voucher.metadata as Json : {};
           await sb
             .from("partner_vouchers")
@@ -3144,10 +3183,11 @@ serve(async (req) => {
                   channel,
                   status: result.status,
                   provider: result.provider ?? null,
-                  sent_at: new Date().toISOString(),
+                  sent_at: attemptedAt,
                   phone: recipient.phone ?? null,
                   telegram_chat_id: recipient.telegram_chat_id ?? null,
                   redeem_url: link,
+                  dispatch_log_id: dispatchLog?.id ?? null,
                 },
               },
             })
@@ -3166,9 +3206,20 @@ serve(async (req) => {
               voucher_code: voucher.code,
               dispatch_status: result.status,
               redeem_url: link,
+              dispatch_log_id: dispatchLog?.id ?? null,
             },
           });
-          dispatches.push({ voucher_id: voucher.id, code: voucher.code, recipient, message, redeem_url: link, ...result });
+          dispatches.push({
+            dispatch_id: dispatchLog?.id ?? null,
+            audit_error: dispatchLogError?.message ?? null,
+            voucher_id: voucher.id,
+            code: voucher.code,
+            recipient,
+            message,
+            redeem_url: link,
+            provider_response: providerResponse,
+            ...result,
+          });
         }
 
         const sent = dispatches.filter((row) => row.status === "sent").length;

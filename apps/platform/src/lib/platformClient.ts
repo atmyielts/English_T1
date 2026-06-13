@@ -2475,6 +2475,19 @@ export type PartnerVoucherBatch = {
   academy_classrooms?: { id?: string | null; name?: string | null; academy_id?: string | null } | null;
 };
 
+export type PartnerVoucherDispatch = {
+  id: string;
+  channel: 'sms' | 'telegram';
+  provider?: string | null;
+  recipient_name?: string | null;
+  recipient_phone?: string | null;
+  recipient_email?: string | null;
+  telegram_chat_id?: string | null;
+  redeem_url?: string | null;
+  status: 'prepared' | 'sent' | 'failed';
+  attempted_at: string;
+};
+
 export type PartnerVoucher = {
   id: string;
   tenant_id: string;
@@ -2502,6 +2515,7 @@ export type PartnerVoucher = {
   experiences?: { name: string | null } | null;
   plans?: { name: string | null; duration_days?: number | null } | null;
   academy_classrooms?: { id?: string | null; name?: string | null; academy_id?: string | null } | null;
+  partner_voucher_dispatches?: PartnerVoucherDispatch[];
 };
 
 export type PartnerStudent = {
