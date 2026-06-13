@@ -6,6 +6,7 @@ import {
   academyBulkInvite,
   academyCreateAssignment,
   academyExportGradebook,
+  academyGenerateClassroomLessonPlan,
   academyGradebook,
   academyGradeSubmission,
   academyListAcademies,
@@ -17,6 +18,7 @@ import {
   academyUpdateClassroomSettings,
   type AcademyListItem,
   type AcademyAssignment,
+  type AcademyClassroomLessonPlan,
   type AcademyGradebook,
   type AcademyStudentProgress,
   type PartnerClassroomHeatmap,
@@ -28,7 +30,7 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = 'overview' | 'director' | 'classrooms' | 'students' | 'announcements';
-type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'billing' | 'settings';
+type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'plan' | 'billing' | 'settings';
 
 const TAB_KEYS: Tab[] = ['overview', 'director', 'classrooms', 'students', 'announcements'];
 
@@ -1156,6 +1158,86 @@ const ScheduleTab: React.FC<{ academyId: string; classroomId: string; token: str
 
 // ─── Classroom Billing Tab ────────────────────────────────────────────────────
 
+const ClassroomPlanTab: React.FC<{ academyId: string; classroom: TeacherStudioStudentClassroom; token: string }> = ({ academyId, classroom, token }) => {
+  const [plan, setPlan] = useState<AcademyClassroomLessonPlan | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const result = await academyGenerateClassroomLessonPlan(token, { academy_id: academyId, classroom_id: classroom.id });
+      setPlan(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate lesson plan');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const lms = (plan?.evidence?.lms ?? {}) as Record<string, any>;
+  const focusAreas = Array.isArray(plan?.evidence?.focus_areas) ? plan.evidence.focus_areas : [];
+  const heatmap = plan?.heatmap ?? plan?.evidence?.center_voucher_heatmap ?? null;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h3 className="font-semibold text-gray-800">Instruction Plan</h3>
+          <p className="mt-1 text-sm text-gray-500">{classroom.name}</p>
+        </div>
+        <button onClick={() => void generate()} disabled={generating} className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-black disabled:bg-gray-300">
+          {generating ? 'Generating...' : plan ? 'Regenerate plan' : 'Generate plan'}
+        </button>
+      </div>
+
+      {error ? <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+
+      {plan ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${plan.ai_status === 'ok' ? 'bg-emerald-100 text-emerald-700' : plan.ai_status === 'unconfigured' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700'}`}>
+                AI {plan.ai_status}
+              </span>
+              {heatmap ? <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">Voucher heatmap included</span> : null}
+            </div>
+            <pre className="mt-4 max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-800">
+              {plan.lesson_plan}
+            </pre>
+          </div>
+
+          <div className="space-y-3">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Evidence</div>
+              <div className="mt-3 space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between gap-3"><span>Avg score</span><span className="font-semibold">{lms.average_score ?? '-'}</span></div>
+                <div className="flex justify-between gap-3"><span>Attendance</span><span className="font-semibold">{lms.attendance_rate ?? '-'}{lms.attendance_rate !== null && typeof lms.attendance_rate !== 'undefined' ? '%' : ''}</span></div>
+                <div className="flex justify-between gap-3"><span>Missing work</span><span className="font-semibold">{lms.missing_assignments ?? 0}</span></div>
+                <div className="flex justify-between gap-3"><span>Voucher avg</span><span className="font-semibold">{heatmap?.average_score ?? '-'}</span></div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Focus</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(focusAreas.length ? focusAreas : ['Classroom performance']).map((area) => (
+                  <span key={area} className="rounded-full border border-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-600">{area}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border-2 border-dashed border-gray-200 p-8 text-center text-sm text-gray-400">
+          Generate a plan from gradebook, attendance, alerts, schedule, and any linked center voucher results.
+        </div>
+      )}
+    </div>
+  );
+};
+
 type BillingOffer = { id: string; name: string; price_amount: number; currency: string; duration_days: number | null; is_active: boolean };
 type BillingStudent = {
   contact_id: string; first_name: string; last_name: string; email: string | null;
@@ -1305,6 +1387,7 @@ const ClassroomDetail: React.FC<{
     { key: 'gradebook', label: 'Gradebook' },
     { key: 'attendance', label: 'Attendance' },
     { key: 'schedule', label: 'Schedule' },
+    { key: 'plan', label: 'Plan' },
     { key: 'billing', label: 'Billing' },
     { key: 'settings', label: 'Settings' },
   ];
@@ -1339,6 +1422,7 @@ const ClassroomDetail: React.FC<{
       {tab === 'gradebook' && <GradebookTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'attendance' && <AttendanceTab academyId={academyId} classroomId={classroom.id} token={token} members={contacts} />}
       {tab === 'schedule' && <ScheduleTab academyId={academyId} classroomId={classroom.id} token={token} />}
+      {tab === 'plan' && <ClassroomPlanTab academyId={academyId} classroom={classroom} token={token} />}
       {tab === 'billing' && <ClassroomBillingTab academyId={academyId} classroomId={classroom.id} token={token} />}
       {tab === 'settings' && <SettingsTab academyId={academyId} classroom={classroom} token={token} onSaved={onRefresh} />}
     </div>
@@ -1664,6 +1748,9 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
   const [showStaff, setShowStaff] = useState(false);
   const [staffForm, setStaffForm] = useState({ email: '', name: '', role: 'teacher', classroom_ids: [] as string[] });
   const [savingStaff, setSavingStaff] = useState(false);
+  const [lessonPlan, setLessonPlan] = useState<AcademyClassroomLessonPlan | null>(null);
+  const [lessonPlanError, setLessonPlanError] = useState<string | null>(null);
+  const [generatingLessonPlan, setGeneratingLessonPlan] = useState<string | null>(null);
 
   const classrooms = dashboard.classrooms ?? [];
 
@@ -1700,6 +1787,20 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
     if (!confirm('Remove this staff member?')) return;
     await callAcademyCtrl(token, { action: 'remove_staff', academy_id: academyId, id });
     void load();
+  };
+
+  const generateLessonPlan = async (classroomId: string | null | undefined) => {
+    if (!classroomId) return;
+    setGeneratingLessonPlan(classroomId);
+    setLessonPlanError(null);
+    try {
+      const result = await academyGenerateClassroomLessonPlan(token, { academy_id: academyId, classroom_id: classroomId });
+      setLessonPlan(result);
+    } catch (err) {
+      setLessonPlanError(err instanceof Error ? err.message : 'Failed to generate lesson plan');
+    } finally {
+      setGeneratingLessonPlan(null);
+    }
   };
 
   if (loading) return <div className="text-center text-gray-400 py-8">Loading director view…</div>;
@@ -1843,6 +1944,15 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
                       Systemic gaps: {heatmap.systemic_gaps.map((gap) => `${gap.label} (${Math.round(gap.share * 100)}%)`).join(', ')}
                     </div>
                   ) : null}
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={() => void generateLessonPlan(heatmap.classroom_id)}
+                      disabled={!heatmap.classroom_id || generatingLessonPlan === heatmap.classroom_id}
+                      className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-black disabled:bg-gray-300"
+                    >
+                      {generatingLessonPlan === heatmap.classroom_id ? 'Generating...' : 'Generate lesson plan'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1853,6 +1963,25 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
           )}
         </div>
       )}
+
+      {lessonPlanError ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{lessonPlanError}</div>
+      ) : null}
+
+      {lessonPlan ? (
+        <div className="rounded-2xl border border-gray-200 bg-white p-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h3 className="font-semibold text-gray-800">{lessonPlan.classroom_name} Lesson Plan</h3>
+              <div className="mt-1 text-xs text-gray-500">AI status: {lessonPlan.ai_status}</div>
+            </div>
+            {lessonPlan.heatmap ? <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">Voucher heatmap included</span> : null}
+          </div>
+          <pre className="mt-4 max-h-[560px] overflow-auto whitespace-pre-wrap rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-800">
+            {lessonPlan.lesson_plan}
+          </pre>
+        </div>
+      ) : null}
 
       {/* Referral leaderboard */}
       {leaderboard.length > 0 && (

@@ -3635,6 +3635,22 @@ export type AcademyStudentProgress = {
   stats: { total_submissions: number; graded_submissions: number; avg_score: number | null; attendance_rate: number | null; total_attendance_days: number; present_days: number };
 };
 
+export type AcademyClassroomLessonPlan = {
+  classroom_id: string;
+  classroom_name: string;
+  ai_status: 'ok' | 'unconfigured' | 'failed';
+  ai_error?: string | null;
+  evidence: {
+    classroom?: Json;
+    lms?: Json;
+    focus_areas?: string[];
+    center_voucher_heatmap?: PartnerClassroomHeatmap | null;
+  };
+  heatmap?: PartnerClassroomHeatmap | null;
+  plan?: Json;
+  lesson_plan: string;
+};
+
 export const academyListAssignments = (accessToken: string, academyId: string, classroomId?: string) =>
   academyGet<{ assignments: AcademyAssignment[] }>(accessToken, 'assignments', { academy_id: academyId, ...(classroomId ? { classroom_id: classroomId } : {}) });
 
@@ -3667,6 +3683,11 @@ export const academyBulkInvite = (accessToken: string, body: { academy_id: strin
 
 export const academyUpdateClassroomSettings = (accessToken: string, body: { academy_id: string; classroom_id: string; name?: string; description?: string | null; is_active?: boolean; score_weights?: Json | null }) =>
   academyPost<{ classroom: Json }>(accessToken, { action: 'update_classroom_settings', ...body });
+
+export const academyGenerateClassroomLessonPlan = (
+  accessToken: string,
+  body: { academy_id: string; classroom_id?: string | null },
+) => academyPost<AcademyClassroomLessonPlan>(accessToken, { action: 'generate_classroom_lesson_plan', ...body });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Certificates
