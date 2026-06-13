@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { candidateEntry } from '../lib/platformClient';
+import { buildCandidateHandoffUrl, candidateEntry } from '../lib/platformClient';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 import { SeoHead } from '../components/seo/SeoHead';
@@ -67,16 +67,7 @@ export const CandidateEntryPage: React.FC = () => {
         phone: form.phone,
       });
 
-      const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
-      if (!appBase) throw new Error('Exam app URL is not configured');
-      const qs = new URLSearchParams({
-        access_token: res.session.access_token,
-        refresh_token: res.session.refresh_token,
-        expires_in: String(res.session.expires_in),
-        session_id: res.session_id,
-      });
-      if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
-      const target = `${appBase}/candidate?${qs.toString()}`;
+      const target = buildCandidateHandoffUrl(res, { launchKind: 'candidate_id' });
       setHandoffUrl(target);
       window.location.assign(target);
     } catch (err) {

@@ -3392,6 +3392,12 @@ export type CandidateEntryResponse = {
   product_id: string | null;
   product_slug: string | null;
   app_url: string | null;
+  strict_mode?: boolean;
+  launch_kind?: 'candidate_id' | 'center_voucher' | string;
+  voucher_id?: string | null;
+  voucher_code?: string | null;
+  center_tenant_id?: string | null;
+  classroom_id?: string | null;
 };
 
 export const candidateEntry = async (body: {
@@ -3411,6 +3417,41 @@ export const candidateEntry = async (body: {
     throw new Error(`POST /candidate-entry failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as CandidateEntryResponse;
+};
+
+export const buildCandidateHandoffUrl = (
+  res: CandidateEntryResponse,
+  opts?: {
+    launchKind?: 'candidate_id' | 'center_voucher' | string;
+    voucherCode?: string | null;
+    centerTenantId?: string | null;
+    classroomId?: string | null;
+    centerSlug?: string | null;
+  },
+): string => {
+  const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
+  if (!appBase) throw new Error('Exam app URL is not configured');
+
+  const qs = new URLSearchParams({
+    access_token: res.session.access_token,
+    refresh_token: res.session.refresh_token,
+    expires_in: String(res.session.expires_in),
+    session_id: res.session_id,
+    strict_mode: res.strict_mode === false ? '0' : '1',
+    launch_kind: String(res.launch_kind ?? opts?.launchKind ?? 'candidate_id'),
+  });
+
+  if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
+  const voucherCode = String(res.voucher_code ?? opts?.voucherCode ?? '').trim();
+  if (voucherCode) qs.set('voucher_code', voucherCode);
+  const centerTenantId = String(res.center_tenant_id ?? opts?.centerTenantId ?? '').trim();
+  if (centerTenantId) qs.set('center_tenant_id', centerTenantId);
+  const classroomId = String(res.classroom_id ?? opts?.classroomId ?? '').trim();
+  if (classroomId) qs.set('classroom_id', classroomId);
+  const centerSlug = String(opts?.centerSlug ?? '').trim();
+  if (centerSlug) qs.set('center_slug', centerSlug);
+
+  return `${appBase}/candidate?${qs.toString()}`;
 };
 
 export type VoucherPreview = {

@@ -18,7 +18,7 @@ import {
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
-import { candidateEntry, publicCenter, voucherPreview, voucherRedeem, type PublicCenterResponse, type VoucherPreview } from '../lib/platformClient';
+import { buildCandidateHandoffUrl, candidateEntry, publicCenter, voucherPreview, voucherRedeem, type PublicCenterResponse, type VoucherPreview } from '../lib/platformClient';
 
 const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
@@ -175,16 +175,12 @@ export const CenterLandingPage: React.FC = () => {
         email: candidate.email,
         phone: candidate.phone,
       });
-      const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
-      if (!appBase) throw new Error('Exam app URL is not configured');
-      const qs = new URLSearchParams({
-        access_token: res.session.access_token,
-        refresh_token: res.session.refresh_token,
-        expires_in: String(res.session.expires_in),
-        session_id: res.session_id,
+      const target = buildCandidateHandoffUrl(res, {
+        launchKind: 'center_voucher',
+        voucherCode: voucher.code,
+        centerTenantId: String(data?.center.tenant_id ?? '').trim() || null,
+        centerSlug: String(params.slug ?? '').trim() || null,
       });
-      if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
-      const target = `${appBase}/candidate?${qs.toString()}`;
       setHandoffUrl(target);
       window.location.assign(target);
     } catch (err) {
