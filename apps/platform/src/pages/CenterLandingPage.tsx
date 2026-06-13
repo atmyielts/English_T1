@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import {
   ArrowUpRight,
   BookOpen,
@@ -7,12 +8,14 @@ import {
   CheckCircle2,
   ClipboardList,
   KeyRound,
+  LogIn,
   Loader2,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
   Ticket,
+  UserPlus,
   UsersRound,
 } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -52,6 +55,21 @@ const splitName = (value?: string | null) => {
   return { first_name: parts.slice(0, -1).join(' '), last_name: parts[parts.length - 1] };
 };
 
+const textFromMeta = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+
+const candidateProfileFromSession = (session: Session | null) => {
+  const user = session?.user;
+  const meta = (user?.user_metadata && typeof user.user_metadata === 'object' ? user.user_metadata : {}) as Record<string, unknown>;
+  const fullName = textFromMeta(meta.full_name) || textFromMeta(meta.name);
+  const split = splitName(fullName);
+  return {
+    first_name: textFromMeta(meta.first_name) || textFromMeta(meta.given_name) || split.first_name,
+    last_name: textFromMeta(meta.last_name) || textFromMeta(meta.family_name) || split.last_name,
+    email: user?.email?.trim() || textFromMeta(meta.email),
+    phone: textFromMeta(meta.phone) || textFromMeta(meta.phone_number),
+  };
+};
+
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -67,6 +85,42 @@ export const CenterLandingPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
   const [candidate, setCandidate] = useState({ first_name: '', last_name: '', email: '', phone: '' });
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  const applySessionToCandidate = (nextSession: Session | null) => {
+    const profile = candidateProfileFromSession(nextSession);
+    setCandidate((prev) => ({
+      first_name: prev.first_name || profile.first_name,
+      last_name: prev.last_name || profile.last_name,
+      email: prev.email || profile.email,
+      phone: prev.phone || profile.phone,
+    }));
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data: authData }) => {
+      if (!mounted) return;
+      const nextSession = authData.session ?? null;
+      setSession(nextSession);
+      applySessionToCandidate(nextSession);
+      setAuthLoading(false);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!mounted) return;
+      setSession(nextSession);
+      applySessionToCandidate(nextSession);
+      setAuthLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const slug = String(params.slug ?? '').trim();
@@ -96,6 +150,31 @@ export const CenterLandingPage: React.FC = () => {
     { label: 'Learning access', value: 'Center issued', icon: BookOpen, tone: 'bg-[#9ee7ff]' },
     { label: 'Events', value: upcomingEvents.length > 0 ? 'Public schedule' : 'Private roster', icon: CalendarDays, tone: 'bg-[#ffd166]' },
   ];
+  const buildCenterReturnPath = (code = voucher?.code ?? voucherCode) => {
+    const slug = String(params.slug ?? '').trim();
+    const cleanCode = normalizeCode(code);
+    return `/center/${encodeURIComponent(slug)}${cleanCode ? `?code=${encodeURIComponent(cleanCode)}` : ''}`;
+  };
+  const buildAuthPath = (mode: 'signin' | 'signup') => `/auth?mode=${mode}&returnTo=${encodeURIComponent(buildCenterReturnPath())}`;
+  const startGoogleAuth = async () => {
+    setGoogleBusy(true);
+    setVoucherError(null);
+    setSuccess(null);
+    try {
+      const redirectTo = `${window.location.origin}/auth?returnTo=${encodeURIComponent(buildCenterReturnPath())}`;
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: { prompt: 'select_account' },
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setVoucherError(toErrorMessage(err));
+      setGoogleBusy(false);
+    }
+  };
   const previewCenterVoucher = async (targetCode = voucherCode) => {
     const clean = normalizeCode(targetCode);
     if (!clean) {
@@ -118,11 +197,12 @@ export const CenterLandingPage: React.FC = () => {
       setVoucher(res.voucher);
       setVoucherCode(res.voucher.code);
       const names = splitName(res.voucher.assigned_name);
+      const profile = candidateProfileFromSession(session);
       setCandidate((prev) => ({
-        first_name: prev.first_name || names.first_name,
-        last_name: prev.last_name || names.last_name,
-        email: prev.email || res.voucher.assigned_email || '',
-        phone: prev.phone,
+        first_name: prev.first_name || names.first_name || profile.first_name,
+        last_name: prev.last_name || names.last_name || profile.last_name,
+        email: prev.email || res.voucher.assigned_email || profile.email,
+        phone: prev.phone || profile.phone,
       }));
     } catch (err) {
       setVoucher(null);
@@ -146,8 +226,7 @@ export const CenterLandingPage: React.FC = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       if (!token) {
-        const slug = String(params.slug ?? '').trim();
-        navigate(`/auth?mode=signin&returnTo=${encodeURIComponent(`/center/${slug}?code=${encodeURIComponent(voucher.code)}`)}`);
+        navigate(buildAuthPath('signin'));
         return;
       }
       const res = await voucherRedeem(voucher.code, token);
@@ -277,6 +356,48 @@ export const CenterLandingPage: React.FC = () => {
                         </div>
                       ) : null}
 
+                      {voucher.status === 'unused' ? (
+                        <div className="mt-5 rounded-2xl border border-gray-900/15 bg-[#fbfaf7] p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-gray-900 bg-white">
+                              <ShieldCheck className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">{session ? 'Account ready' : 'Quick account'}</p>
+                              <p className="mt-1 text-sm text-gray-600">
+                                {session
+                                  ? `Signed in as ${session.user.email ?? 'your Schood account'}.`
+                                  : voucher.access_kind === 'mock_exam'
+                                    ? 'Sign in with Google or Schood to prefill your exam identity, or enter the student details below.'
+                                    : 'Sign in or create an account before activating this learning access.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {authLoading ? (
+                            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-gray-500">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Checking account
+                            </div>
+                          ) : !session ? (
+                            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                              <button type="button" onClick={() => void startGoogleAuth()} disabled={googleBusy} className={secondaryButton}>
+                                {googleBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="text-sm font-black">G</span>}
+                                Google
+                              </button>
+                              <button type="button" onClick={() => navigate(buildAuthPath('signin'))} className={secondaryButton}>
+                                <LogIn className="h-4 w-4" />
+                                Sign in
+                              </button>
+                              <button type="button" onClick={() => navigate(buildAuthPath('signup'))} className={primaryButton}>
+                                <UserPlus className="h-4 w-4" />
+                                Create account
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
                       {voucher.access_kind === 'mock_exam' && voucher.status === 'unused' ? (
                         <form onSubmit={redeemMock} className="mt-5 grid gap-3 md:grid-cols-2">
                           <label className="text-sm font-semibold text-gray-800">First name<input required value={candidate.first_name} onChange={(e) => setCandidate((prev) => ({ ...prev, first_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
@@ -293,9 +414,9 @@ export const CenterLandingPage: React.FC = () => {
                       ) : null}
 
                       {voucher.access_kind !== 'mock_exam' && voucher.status === 'unused' ? (
-                        <button type="button" onClick={() => void redeemSubscription()} disabled={redeeming} className={`${primaryButton} mt-5`}>
+                        <button type="button" onClick={() => void redeemSubscription()} disabled={redeeming || authLoading} className={`${primaryButton} mt-5`}>
                           {redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                          Activate access
+                          {session ? 'Activate access' : 'Sign in to activate'}
                         </button>
                       ) : null}
                     </div>

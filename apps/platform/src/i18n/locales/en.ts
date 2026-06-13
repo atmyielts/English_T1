@@ -575,6 +575,8 @@ export const en = {
   'auth.button.forgotPassword': 'Forgot your password?',
   'auth.button.sendReset': 'Send reset link',
   'auth.button.updatePassword': 'Update password',
+  'auth.button.google': 'Continue with Google',
+  'auth.divider.email': 'or use email',
   'auth.passwordRule.length': 'At least 8 characters',
   'auth.passwordRule.letter': 'At least one letter',
   'auth.passwordRule.number': 'At least one number',

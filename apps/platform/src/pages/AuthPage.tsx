@@ -73,7 +73,8 @@ export const AuthPage: React.FC = () => {
     if (raw === 'reset' || raw === 'recovery') return 'reset';
     return null;
   }, [searchParams]);
-  const emailRedirectTo = useMemo(() => `${window.location.origin}/auth`, []);
+  const authRedirectTo = useMemo(() => `${window.location.origin}/auth?returnTo=${encodeURIComponent(returnTo)}`, [returnTo]);
+  const emailRedirectTo = authRedirectTo;
   const passwordResetRedirectTo = useMemo(() => `${window.location.origin}/auth?mode=reset`, []);
   const isRecoveryLink = useMemo(() => {
     const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
@@ -90,6 +91,7 @@ export const AuthPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -329,6 +331,25 @@ export const AuthPage: React.FC = () => {
       }
     };
 
+  const signInWithGoogle = async () => {
+    setError(null);
+    setMessage(null);
+    setOauthBusy(true);
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: authRedirectTo,
+          queryParams: { prompt: 'select_account' },
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setError(mapAuthError(err, mode));
+      setOauthBusy(false);
+    }
+  };
+
   const authTitle =
     mode === 'signin'
       ? t('auth.welcomeBack')
@@ -379,6 +400,7 @@ export const AuthPage: React.FC = () => {
   const requiresConfirmPassword = mode === 'signup' || mode === 'reset';
   const primaryDisabled =
     busy ||
+    oauthBusy ||
     ((mode === 'signin' || mode === 'signup' || mode === 'forgot') && !email.trim()) ||
     (requiresPassword && !password) ||
     ((mode === 'signup' || mode === 'reset') && password !== confirmPassword) ||
@@ -451,6 +473,25 @@ export const AuthPage: React.FC = () => {
             )}
 
             <div className="space-y-4">
+              {mode === 'signin' || mode === 'signup' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void signInWithGoogle()}
+                    disabled={busy || oauthBusy}
+                    className="flex w-full items-center justify-center gap-3 rounded-full border border-gray-900 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-sm font-bold">G</span>
+                    {oauthBusy ? t('auth.button.working') : t('auth.button.google')}
+                  </button>
+                  <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    <span className="h-px flex-1 bg-gray-200" />
+                    {t('auth.divider.email')}
+                    <span className="h-px flex-1 bg-gray-200" />
+                  </div>
+                </>
+              ) : null}
+
               {mode !== 'reset' ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.label.email')}</label>
