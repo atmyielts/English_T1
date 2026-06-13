@@ -186,25 +186,120 @@ const formatDateTime = (value?: string | null) => {
   return date.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-const parseBulkStudents = (raw: string): Array<{ name?: string; email?: string; phone?: string }> =>
-  raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const parts = line
-        .split(/[,;\t]/)
-        .map((part) => part.trim())
-        .filter(Boolean);
-      const emailIndex = parts.findIndex((part) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(part));
-      const phoneIndex = parts.findIndex((part, index) => index !== emailIndex && /^\+?[0-9()\-\s]{6,}$/.test(part));
-      const email = emailIndex >= 0 ? parts[emailIndex] : '';
-      const phone = phoneIndex >= 0 ? parts[phoneIndex] : '';
-      const name = parts.filter((_, index) => index !== emailIndex && index !== phoneIndex).join(' ').trim();
-      return { name: name || undefined, email: email || undefined, phone: phone || undefined };
+type ImportedRecipient = { name?: string; email?: string; phone?: string; telegram_chat_id?: string };
+
+const IMPORT_HEADER_ALIASES: Record<string, keyof ImportedRecipient> = {
+  name: 'name',
+  student: 'name',
+  studentname: 'name',
+  fullname: 'name',
+  full: 'name',
+  candidate: 'name',
+  candidatename: 'name',
+  email: 'email',
+  emailaddress: 'email',
+  mail: 'email',
+  phone: 'phone',
+  phonenumber: 'phone',
+  mobile: 'phone',
+  mobilenumber: 'phone',
+  number: 'phone',
+  telegram: 'telegram_chat_id',
+  telegramid: 'telegram_chat_id',
+  telegramchatid: 'telegram_chat_id',
+  chatid: 'telegram_chat_id',
+  tgchatid: 'telegram_chat_id',
+};
+
+const normalizeImportHeader = (value: string) =>
+  value.replace(/^\uFEFF/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+const splitDelimitedLine = (line: string): string[] => {
+  const cells: string[] = [];
+  let current = '';
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      index += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (!quoted && (char === ',' || char === ';' || char === '\t')) {
+      cells.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  cells.push(current.trim());
+  return cells;
+};
+
+const parseRecipientImport = (raw: string, limit = 1000): ImportedRecipient[] => {
+  const parsed = raw.split(/\r?\n/).map((line) => splitDelimitedLine(line.trim())).filter((cells) => cells.some(Boolean));
+  if (parsed.length === 0) return [];
+
+  const headerKeys = parsed[0].map((cell) => IMPORT_HEADER_ALIASES[normalizeImportHeader(cell)] ?? null);
+  const hasHeader = headerKeys.some(Boolean);
+  const rows = hasHeader ? parsed.slice(1) : parsed;
+
+  return rows
+    .map((cells) => {
+      if (hasHeader) {
+        const row: ImportedRecipient = {};
+        cells.forEach((cell, index) => {
+          const key = headerKeys[index];
+          if (!key || !cell.trim()) return;
+          row[key] = cell.trim();
+        });
+        return row;
+      }
+
+      const emailIndex = cells.findIndex((part) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(part));
+      const phoneIndex = cells.findIndex((part, index) => index !== emailIndex && /^\+?[0-9()\-\s]{6,}$/.test(part));
+      const chatIndex = cells.findIndex((part, index) => index !== emailIndex && index !== phoneIndex && /^(telegram:)?-?\d{5,}$/.test(part));
+      const email = emailIndex >= 0 ? cells[emailIndex] : '';
+      const phone = phoneIndex >= 0 ? cells[phoneIndex] : '';
+      const telegramChatId = chatIndex >= 0 ? cells[chatIndex].replace(/^telegram:/i, '') : '';
+      const name = cells.filter((_, index) => index !== emailIndex && index !== phoneIndex && index !== chatIndex).join(' ').trim();
+      return {
+        name: name || undefined,
+        email: email || undefined,
+        phone: phone || undefined,
+        telegram_chat_id: telegramChatId || undefined,
+      };
     })
-    .filter((student) => student.name || student.email || student.phone)
-    .slice(0, 200);
+    .map((row) => ({
+      name: row.name?.trim() || undefined,
+      email: row.email?.trim() || undefined,
+      phone: row.phone?.trim() || undefined,
+      telegram_chat_id: row.telegram_chat_id?.trim() || undefined,
+    }))
+    .filter((row) => row.name || row.email || row.phone || row.telegram_chat_id)
+    .slice(0, limit);
+};
+
+const recipientImportLine = (row: ImportedRecipient) =>
+  [row.name, row.phone, row.email, row.telegram_chat_id ? `telegram:${row.telegram_chat_id}` : '']
+    .map((value) => String(value ?? '').trim())
+    .filter(Boolean)
+    .join(', ');
+
+const importRecipientFile = async (file: File, limit = 1000) => {
+  const rows = parseRecipientImport(await file.text(), limit);
+  return { rows, text: rows.map(recipientImportLine).join('\n') };
+};
+
+const parseBulkStudents = (raw: string): Array<{ name?: string; email?: string; phone?: string }> =>
+  parseRecipientImport(raw, 200)
+    .map((student) => ({ name: student.name, email: student.email, phone: student.phone }))
+    .filter((student) => student.name || student.email || student.phone);
+
+const parseDispatchRecipients = (raw: string): ImportedRecipient[] => parseRecipientImport(raw, 1000);
 
 const isPublicCenterEvent = (event: PartnerCenterMockEvent) => {
   const metadata = event.metadata && typeof event.metadata === 'object' && !Array.isArray(event.metadata) ? event.metadata as Record<string, unknown> : {};
@@ -402,6 +497,10 @@ export const CenterOfficePage: React.FC = () => {
   const centerTenantId = center?.tenant_id ?? null;
   const centerIsActive = center?.status === 'active';
   const capabilities = center?.capabilities ?? STARTER_CAPABILITIES;
+  const dispatchRecipientCount = useMemo(
+    () => parseDispatchRecipients(dispatchForm.recipients).length,
+    [dispatchForm.recipients],
+  );
   const visibleTabs = useMemo(
     () => {
       const allowed: Record<Tab, boolean> = {
@@ -720,6 +819,27 @@ export const CenterOfficePage: React.FC = () => {
       setError(parseError(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const importVoucherRoster = async (file: File) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const imported = await importRecipientFile(file, 1000);
+      if (imported.rows.length === 0) {
+        setError('No student rows were found in that file.');
+        return;
+      }
+      const limitedRows = imported.rows.slice(0, capabilities.max_voucher_batch_quantity);
+      setVoucherRosterText(limitedRows.map(recipientImportLine).join('\n'));
+      setSuccess(
+        imported.rows.length > limitedRows.length
+          ? `Imported the first ${limitedRows.length} students from ${file.name}; this center tier allows ${capabilities.max_voucher_batch_quantity} vouchers per batch.`
+          : `Imported ${limitedRows.length} student${limitedRows.length === 1 ? '' : 's'} from ${file.name}.`,
+      );
+    } catch (err) {
+      setError(parseError(err));
     }
   };
 
@@ -1247,11 +1367,28 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
+  const importDispatchRecipients = async (file: File) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const imported = await importRecipientFile(file, 1000);
+      if (imported.rows.length === 0) {
+        setError('No recipient rows were found in that file.');
+        return;
+      }
+      setDispatchForm((prev) => ({ ...prev, recipients: imported.text }));
+      setSuccess(`Imported ${imported.rows.length} recipient${imported.rows.length === 1 ? '' : 's'} from ${file.name}.`);
+    } catch (err) {
+      setError(parseError(err));
+    }
+  };
+
   const dispatchVoucherBatch = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
-    if (!dispatchForm.batch_id || !dispatchForm.recipients.trim()) {
-      setError('Choose a voucher batch and paste at least one recipient line.');
+    const recipients = parseDispatchRecipients(dispatchForm.recipients);
+    if (!dispatchForm.batch_id || recipients.length === 0) {
+      setError('Choose a voucher batch and add at least one recipient.');
       return;
     }
     setLoading(true);
@@ -1262,7 +1399,7 @@ export const CenterOfficePage: React.FC = () => {
         tenant_id: centerTenantId,
         batch_id: dispatchForm.batch_id,
         channel: dispatchForm.channel,
-        recipients: dispatchForm.recipients,
+        recipients,
         message_template: dispatchForm.message_template.trim() || null,
         origin,
         center_office: true,
@@ -1622,6 +1759,7 @@ export const CenterOfficePage: React.FC = () => {
                 loading={loading}
                 onChange={setVoucherForm}
                 onAssignedTextChange={setVoucherRosterText}
+                onImportRosterFile={(file) => void importVoucherRoster(file)}
                 onCreate={() => void createVoucherBatch()}
               />
             </section>
@@ -1697,6 +1835,25 @@ export const CenterOfficePage: React.FC = () => {
                         placeholder="Student name, phone, email, telegram_chat_id"
                       />
                     </label>
+                    <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+                      <label className={secondaryButton}>
+                        <FileText className="h-4 w-4" />
+                        Import CSV/TSV
+                        <input
+                          type="file"
+                          accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.currentTarget.files?.[0];
+                            if (file) void importDispatchRecipients(file);
+                            event.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                      <span className="text-xs font-semibold text-gray-500">
+                        {dispatchRecipientCount} recipient{dispatchRecipientCount === 1 ? '' : 's'} ready
+                      </span>
+                    </div>
                     <label className="text-sm font-semibold text-gray-800 md:col-span-2">
                       Message template
                       <textarea
@@ -1707,7 +1864,7 @@ export const CenterOfficePage: React.FC = () => {
                       />
                     </label>
                   </div>
-                  <button type="button" onClick={() => void dispatchVoucherBatch()} disabled={loading || !dispatchForm.batch_id || !dispatchForm.recipients.trim()} className={`${primaryButton} mt-5`}>
+                  <button type="button" onClick={() => void dispatchVoucherBatch()} disabled={loading || !dispatchForm.batch_id || dispatchRecipientCount === 0} className={`${primaryButton} mt-5`}>
                     <Send className="h-4 w-4" />
                     Dispatch vouchers
                   </button>
@@ -2672,8 +2829,9 @@ const VoucherGeneratorPanel: React.FC<{
   loading: boolean;
   onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
   onAssignedTextChange: React.Dispatch<React.SetStateAction<string>>;
+  onImportRosterFile: (file: File) => void;
   onCreate: () => void;
-}> = ({ catalog, plans, wallet, form, classrooms, assignedText, maxQuantity, loading, onChange, onAssignedTextChange, onCreate }) => {
+}> = ({ catalog, plans, wallet, form, classrooms, assignedText, maxQuantity, loading, onChange, onAssignedTextChange, onImportRosterFile, onCreate }) => {
   const assignedCount = parseBulkStudents(assignedText).length;
   const exceedsBatchLimit = assignedCount > maxQuantity;
   return (
@@ -2699,6 +2857,22 @@ const VoucherGeneratorPanel: React.FC<{
         <label className="text-sm font-semibold text-gray-800">Days<input type="number" min={1} max={365} value={form.expires_in_days} onChange={(e) => onChange((prev) => ({ ...prev, expires_in_days: Number(e.target.value) }))} className={inputClass} /></label>
       </div>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Assigned roster<textarea value={assignedText} onChange={(e) => onAssignedTextChange(e.target.value)} className={`${inputClass} min-h-[110px]`} placeholder="Student name, email, phone" /></label>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className={secondaryButton}>
+          <FileText className="h-4 w-4" />
+          Import CSV/TSV
+          <input
+            type="file"
+            accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              if (file) onImportRosterFile(file);
+              event.currentTarget.value = '';
+            }}
+          />
+        </label>
+      </div>
       <p className={`mt-2 text-xs font-semibold ${exceedsBatchLimit ? 'text-red-700' : 'text-gray-500'}`}>
         {assignedCount ? `${assignedCount} students parsed; voucher quantity will follow the roster.` : `No roster attached; quantity stays ${form.quantity}.`}
       </p>
