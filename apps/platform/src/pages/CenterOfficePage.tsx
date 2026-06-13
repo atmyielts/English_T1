@@ -634,6 +634,13 @@ export const CenterOfficePage: React.FC = () => {
     () => parseDispatchRecipients(dispatchForm.recipients).length,
     [dispatchForm.recipients],
   );
+  const dispatchMissingDestinationCount = useMemo(
+    () =>
+      parseDispatchRecipients(dispatchForm.recipients).filter((recipient) =>
+        dispatchForm.channel === 'telegram' ? !recipient.telegram_chat_id : !recipient.phone,
+      ).length,
+    [dispatchForm.channel, dispatchForm.recipients],
+  );
   const visibleTabs = useMemo(
     () => {
       const allowed: Record<Tab, boolean> = {
@@ -1524,6 +1531,17 @@ export const CenterOfficePage: React.FC = () => {
       setError('Choose a voucher batch and add at least one recipient.');
       return;
     }
+    const missingDestination = recipients.filter((recipient) =>
+      dispatchForm.channel === 'telegram' ? !recipient.telegram_chat_id : !recipient.phone,
+    );
+    if (missingDestination.length > 0) {
+      setError(
+        dispatchForm.channel === 'telegram'
+          ? `${missingDestination.length} Telegram recipient${missingDestination.length === 1 ? '' : 's'} missing telegram_chat_id.`
+          : `${missingDestination.length} SMS recipient${missingDestination.length === 1 ? '' : 's'} missing phone number.`,
+      );
+      return;
+    }
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -1965,7 +1983,7 @@ export const CenterOfficePage: React.FC = () => {
                         value={dispatchForm.recipients}
                         onChange={(e) => setDispatchForm((prev) => ({ ...prev, recipients: e.target.value }))}
                         className={`${inputClass} min-h-[130px]`}
-                        placeholder="Student name, phone, email, telegram_chat_id"
+                        placeholder={dispatchForm.channel === 'telegram' ? 'Student name, telegram_chat_id, email' : 'Student name, phone, email'}
                       />
                     </label>
                     <div className="flex flex-wrap items-center gap-3 md:col-span-2">
@@ -1985,6 +2003,7 @@ export const CenterOfficePage: React.FC = () => {
                       </label>
                       <span className="text-xs font-semibold text-gray-500">
                         {dispatchRecipientCount} recipient{dispatchRecipientCount === 1 ? '' : 's'} ready
+                        {dispatchMissingDestinationCount > 0 ? ` - ${dispatchMissingDestinationCount} missing ${dispatchForm.channel === 'telegram' ? 'telegram_chat_id' : 'phone'}` : ''}
                       </span>
                     </div>
                     <label className="text-sm font-semibold text-gray-800 md:col-span-2">
@@ -1997,7 +2016,7 @@ export const CenterOfficePage: React.FC = () => {
                       />
                     </label>
                   </div>
-                  <button type="button" onClick={() => void dispatchVoucherBatch()} disabled={loading || !dispatchForm.batch_id || dispatchRecipientCount === 0} className={`${primaryButton} mt-5`}>
+                  <button type="button" onClick={() => void dispatchVoucherBatch()} disabled={loading || !dispatchForm.batch_id || dispatchRecipientCount === 0 || dispatchMissingDestinationCount > 0} className={`${primaryButton} mt-5`}>
                     <Send className="h-4 w-4" />
                     Dispatch vouchers
                   </button>
