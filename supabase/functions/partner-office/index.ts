@@ -211,6 +211,12 @@ const centerRedeemUrl = (center: any, code: string, origin?: unknown): string =>
   return `${base}${path}${param}`;
 };
 
+const centerLandingUrl = (center: any, origin?: unknown): string => {
+  const base = String(origin ?? "").trim().replace(/\/+$/, "") || platformBaseUrl();
+  const slug = String(center?.slug ?? "").trim();
+  return slug ? `${base}/center/${encodeURIComponent(slug)}` : `${base}/redeem`;
+};
+
 const sanitizeFilename = (name: string): string =>
   name
     .trim()
@@ -2380,7 +2386,7 @@ serve(async (req) => {
             await sb.from("partner_center_group_members").upsert({ tenant_id: tenantId, group_id: groupId, student_id: student.id, status: "active", created_by: userId }, { onConflict: "group_id,student_id" });
           }
           let voucherId: string | null = null;
-          let inviteUrl = origin + "/redeem";
+          let inviteUrl = centerLandingUrl(profile, origin);
           if (voucherBatchId) {
             const { data: voucher } = await sb
               .from("partner_vouchers")
@@ -2394,7 +2400,7 @@ serve(async (req) => {
               .maybeSingle();
             if (voucher?.id) {
               voucherId = voucher.id;
-              inviteUrl = `${origin}/redeem/${encodeURIComponent(voucher.code)}`;
+              inviteUrl = centerRedeemUrl(profile, voucher.code, origin);
               await sb.from("partner_vouchers").update({
                 assigned_name: student?.full_name ?? null,
                 assigned_email: student?.email ?? null,

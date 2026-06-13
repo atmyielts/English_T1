@@ -3480,6 +3480,7 @@ export type VoucherPreview = {
   product: { id: string | null; name: string | null; slug?: string | null; app_url?: string | null };
   experience: { id: string | null; name: string | null } | null;
   plan: { id: string | null; name: string | null; duration_days?: number | null } | null;
+  classroom: { id: string; name: string | null; academy_id: string | null } | null;
 };
 
 export type VoucherPreviewResponse = {

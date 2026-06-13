@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, CheckCircle2, KeyRound, Loader2, Ticket } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CheckCircle2, KeyRound, Loader2, Ticket } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
@@ -182,6 +182,15 @@ export const RedeemPage: React.FC = () => {
                   <p className="mt-2">Status: {voucher.status}</p>
                   <p>Expires: {voucher.expires_at ? new Date(voucher.expires_at).toLocaleDateString() : '-'}</p>
                 </div>
+                {voucher.classroom ? (
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/60">
+                      <BookOpen className="h-4 w-4" />
+                      Academy classroom
+                    </div>
+                    <p className="mt-2 font-semibold">{voucher.classroom.name ?? 'Assigned classroom'}</p>
+                  </div>
+                ) : null}
                 {voucher.center ? (
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Center</p>
