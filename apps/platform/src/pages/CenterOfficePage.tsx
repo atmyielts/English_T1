@@ -453,10 +453,10 @@ const isPaid = (status?: string | null) => ['paid', 'success', 'completed'].incl
 
 const statusTone = (status?: string | null) => {
   const normalized = String(status ?? '').toLowerCase();
-  if (['active', 'paid', 'success', 'completed', 'issued', 'unused', 'unassigned', 'redeemed'].includes(normalized)) {
+  if (['active', 'paid', 'success', 'completed', 'issued', 'unused', 'unassigned', 'redeemed', 'sent'].includes(normalized)) {
     return 'border-emerald-200 bg-emerald-50 text-emerald-800';
   }
-  if (['pending', 'reserved', 'processing'].includes(normalized)) return 'border-amber-200 bg-amber-50 text-amber-900';
+  if (['pending', 'reserved', 'processing', 'prepared'].includes(normalized)) return 'border-amber-200 bg-amber-50 text-amber-900';
   if (['claimed', 'assigned'].includes(normalized)) return 'border-sky-200 bg-sky-50 text-sky-800';
   if (['failed', 'canceled', 'cancelled', 'expired', 'void', 'disabled'].includes(normalized)) return 'border-red-200 bg-red-50 text-red-700';
   return 'border-gray-200 bg-gray-50 text-gray-700';
@@ -2823,30 +2823,55 @@ const ReviewQueuePanel: React.FC<{ reviewItems: PartnerCenterReviewItem[]; onUpd
   </section>
 );
 
+const latestVoucherDispatch = (voucher: PartnerVoucher) =>
+  [...(voucher.partner_voucher_dispatches ?? [])].sort((a, b) => Date.parse(b.attempted_at) - Date.parse(a.attempted_at))[0] ?? null;
+
+const voucherDispatchRecipient = (dispatch: NonNullable<ReturnType<typeof latestVoucherDispatch>>) =>
+  dispatch.recipient_name || dispatch.recipient_phone || dispatch.recipient_email || dispatch.telegram_chat_id || 'Recipient not captured';
+
 const VoucherTable: React.FC<{ vouchers: PartnerVoucher[]; onCopy: (code: string) => void; onVoid: (id: string) => void }> = ({ vouchers, onCopy, onVoid }) => (
   <>
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-900/10 text-sm">
         <thead className="bg-[#efe6d8]/70 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-          <tr><th className="px-5 py-3">Code</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Classroom</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Expires</th><th className="px-5 py-3">Actions</th></tr>
+          <tr><th className="px-5 py-3">Code</th><th className="px-5 py-3">Access</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Classroom</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Delivery</th><th className="px-5 py-3">Expires</th><th className="px-5 py-3">Actions</th></tr>
         </thead>
         <tbody className="divide-y divide-gray-900/10 bg-white/60">
-          {vouchers.map((voucher) => (
-            <tr key={voucher.id}>
-              <td className="px-5 py-4 font-mono font-bold">{voucher.code}</td>
-              <td className="px-5 py-4 capitalize">{voucher.access_kind.replace('_', ' ')}</td>
-              <td className="px-5 py-4">{voucher.products?.name ?? voucher.experiences?.name ?? voucher.plans?.name ?? '-'}</td>
-              <td className="px-5 py-4">{voucher.academy_classrooms?.name ?? '-'}</td>
-              <td className="px-5 py-4"><StatusPill status={voucher.status} /></td>
-              <td className="px-5 py-4">{formatDate(voucher.expires_at)}</td>
-              <td className="px-5 py-4">
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => onCopy(voucher.code)} className={secondaryButton}><Copy className="h-4 w-4" />Copy</button>
-                  <button type="button" onClick={() => onVoid(voucher.id)} disabled={voucher.status !== 'unused'} className={secondaryButton}><Trash2 className="h-4 w-4" />Void</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {vouchers.map((voucher) => {
+            const latestDispatch = latestVoucherDispatch(voucher);
+            return (
+              <tr key={voucher.id}>
+                <td className="px-5 py-4 font-mono font-bold">{voucher.code}</td>
+                <td className="px-5 py-4 capitalize">{voucher.access_kind.replace('_', ' ')}</td>
+                <td className="px-5 py-4">{voucher.products?.name ?? voucher.experiences?.name ?? voucher.plans?.name ?? '-'}</td>
+                <td className="px-5 py-4">{voucher.academy_classrooms?.name ?? '-'}</td>
+                <td className="px-5 py-4"><StatusPill status={voucher.status} /></td>
+                <td className="px-5 py-4">
+                  {latestDispatch ? (
+                    <div className="min-w-[190px] space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusPill status={latestDispatch.status} />
+                        <span className="text-xs font-semibold uppercase text-gray-500">{latestDispatch.channel}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-700">{voucherDispatchRecipient(latestDispatch)}</p>
+                      <p className="text-xs text-gray-500">
+                        {latestDispatch.provider ? `${latestDispatch.provider} - ` : ''}{formatDateTime(latestDispatch.attempted_at)}
+                      </p>
+                    </div>
+                  ) : (
+                    <span className="text-xs font-semibold text-gray-500">Not dispatched</span>
+                  )}
+                </td>
+                <td className="px-5 py-4">{formatDate(voucher.expires_at)}</td>
+                <td className="px-5 py-4">
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => onCopy(voucher.code)} className={secondaryButton}><Copy className="h-4 w-4" />Copy</button>
+                    <button type="button" onClick={() => onVoid(voucher.id)} disabled={voucher.status !== 'unused'} className={secondaryButton}><Trash2 className="h-4 w-4" />Void</button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
