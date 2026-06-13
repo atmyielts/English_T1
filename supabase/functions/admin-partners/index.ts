@@ -151,7 +151,7 @@ serve(async (req) => {
       ]);
       const { data: tierRequests, error: tierRequestsError } = await sb
         .from("partner_center_tier_change_requests")
-        .select("*, payments ( id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, status, amount, currency, created_at )")
+        .select("*, payments ( id, provider, provider_transaction_id, status, amount, currency, created_at )")
         .order("created_at", { ascending: false })
         .limit(100);
       if (profiles.error) return json(500, { error: "Failed to load partners", detail: profiles.error.message });

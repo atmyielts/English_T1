@@ -87,7 +87,7 @@ export const WhitelabelPage: React.FC = () => {
           <div className="text-sm font-semibold text-gray-700">Custom Domain</div>
           <div><label className="block text-xs font-semibold text-gray-600 mb-1">Domain</label><input value={form.custom_domain} onChange={f('custom_domain')} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none" placeholder="academy.yourdomain.com" /></div>
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800">
-            <strong>Setup:</strong> Create a CNAME record pointing <code>{form.custom_domain || 'your-domain.com'}</code> → <code>academy.schood.online</code> with your DNS provider. Contact support after DNS propagation.
+            <strong>Setup:</strong> Create a CNAME record pointing <code>{form.custom_domain || 'your-domain.com'}</code> to <code>schood.online</code> with your DNS provider. Contact support after DNS propagation.
           </div>
           <div><label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" checked={form.hide_schood_logo} onChange={(e) => setForm((p) => ({ ...p, hide_schood_logo: e.target.checked }))} /><span>Hide "Powered by Schood" footer logo</span></label></div>
           <div><label className="block text-xs font-semibold text-gray-600 mb-1">Custom Footer Text</label><input value={form.footer_text} onChange={f('footer_text')} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="© 2026 My Academy. All rights reserved." /></div>
