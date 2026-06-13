@@ -10,6 +10,7 @@ type ContactsViewProps = {
   onSubmit: (e: FormEvent) => Promise<void>;
   statusClass: (status: string) => string;
   formatDate: (iso: string | null | undefined) => string;
+  canManageContacts: boolean;
 };
 
 export const ContactsView = ({
@@ -20,21 +21,24 @@ export const ContactsView = ({
   onSubmit,
   statusClass,
   formatDate,
+  canManageContacts,
 }: ContactsViewProps) => {
   return (
-    <section className="grid two">
-      <form className="panel" onSubmit={onSubmit}>
-        <h3>Add contact</h3>
-        <div className="grid two">
-          <input className="input" placeholder="First name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
-          <input className="input" placeholder="Last name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
-        </div>
-        <input className="input" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
-        <input className="input" placeholder="Phone (optional)" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
-        <button className="primary-btn" type="submit" disabled={busy}>
-          Save contact
-        </button>
-      </form>
+    <section className={canManageContacts ? 'grid two' : ''}>
+      {canManageContacts ? (
+        <form className="panel" onSubmit={onSubmit}>
+          <h3>Add contact</h3>
+          <div className="grid two">
+            <input className="input" placeholder="First name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
+            <input className="input" placeholder="Last name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
+          </div>
+          <input className="input" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
+          <input className="input" placeholder="Phone (optional)" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
+          <button className="primary-btn" type="submit" disabled={busy}>
+            Save contact
+          </button>
+        </form>
+      ) : null}
 
       <div className="panel">
         <h3>Contacts</h3>

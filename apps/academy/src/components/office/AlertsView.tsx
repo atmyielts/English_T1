@@ -11,6 +11,9 @@ type AlertsViewProps = {
   onCreate: (e: FormEvent) => Promise<void>;
   onResolve: (alertId: string) => Promise<void>;
   formatDate: (iso: string | null | undefined) => string;
+  canCreateAlerts: boolean;
+  canCreateGlobalAlerts: boolean;
+  canResolveAlerts: boolean;
 };
 
 const severityClass = (severity: string): string => {
@@ -29,55 +32,65 @@ export const AlertsView = ({
   onCreate,
   onResolve,
   formatDate,
+  canCreateAlerts,
+  canCreateGlobalAlerts,
+  canResolveAlerts,
 }: AlertsViewProps) => {
   const contactById = new Map(contacts.map((item) => [item.id, item]));
 
   return (
     <>
-      <form className="panel" onSubmit={onCreate}>
-        <h3>Create alert</h3>
-        <select
-          className="input"
-          value={form.contact_id}
-          onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
-        >
-          <option value="">Academy-wide alert</option>
-          {contacts.map((item) => (
-            <option key={item.id} value={item.id}>
-              {(item.first_name || item.last_name) ? `${item.first_name} ${item.last_name}`.trim() : item.email || item.id}
-            </option>
-          ))}
-        </select>
-        <div className="grid two">
-          <input
-            className="input"
-            placeholder="Type (payment, attendance...)"
-            value={form.type}
-            onChange={(e) => setForm((previous) => ({ ...previous, type: e.target.value }))}
-            required
-          />
+      {canCreateAlerts ? (
+        <form className="panel" onSubmit={onCreate}>
+          <h3>Create alert</h3>
           <select
             className="input"
-            value={form.severity}
-            onChange={(e) => setForm((previous) => ({ ...previous, severity: e.target.value }))}
+            value={form.contact_id}
+            onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
           >
-            <option value="low">low</option>
-            <option value="medium">medium</option>
-            <option value="high">high</option>
-            <option value="critical">critical</option>
+            {canCreateGlobalAlerts ? <option value="">Academy-wide alert</option> : null}
+            {!canCreateGlobalAlerts ? <option value="">Select contact</option> : null}
+            {contacts.map((item) => (
+              <option key={item.id} value={item.id}>
+                {(item.first_name || item.last_name) ? `${item.first_name} ${item.last_name}`.trim() : item.email || item.id}
+              </option>
+            ))}
           </select>
-        </div>
-        <textarea
-          className="input"
-          placeholder="Alert message"
-          value={form.content}
-          onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
-          required
-        />
-        <button className="primary-btn" type="submit" disabled={busy || !form.type.trim() || !form.content.trim()}>
-          Create alert
-        </button>
-      </form>
+          <div className="grid two">
+            <input
+              className="input"
+              placeholder="Type (attendance, progress...)"
+              value={form.type}
+              onChange={(e) => setForm((previous) => ({ ...previous, type: e.target.value }))}
+              required
+            />
+            <select
+              className="input"
+              value={form.severity}
+              onChange={(e) => setForm((previous) => ({ ...previous, severity: e.target.value }))}
+            >
+              <option value="low">low</option>
+              <option value="medium">medium</option>
+              <option value="high">high</option>
+              <option value="critical">critical</option>
+            </select>
+          </div>
+          <textarea
+            className="input"
+            placeholder="Alert message"
+            value={form.content}
+            onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
+            required
+          />
+          <button
+            className="primary-btn"
+            type="submit"
+            disabled={busy || !form.type.trim() || !form.content.trim() || (!canCreateGlobalAlerts && !form.contact_id)}
+          >
+            Create alert
+          </button>
+        </form>
+      ) : null}
 
       <section className="panel">
         <h3>Alert history</h3>
@@ -109,7 +122,7 @@ export const AlertsView = ({
                     <td>{item.resolved ? 'Resolved' : 'Open'}</td>
                     <td>{formatDate(item.created_at)}</td>
                     <td>
-                      {!item.resolved ? (
+                      {!item.resolved && canResolveAlerts ? (
                         <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolve(item.id)}>
                           Resolve
                         </button>

@@ -10,6 +10,8 @@ type AnnouncementsViewProps = {
   announcements: TeacherStudioAnnouncement[];
   onSubmit: (e: FormEvent) => Promise<void>;
   formatDate: (iso: string | null | undefined) => string;
+  canSendAnnouncements: boolean;
+  canSendGlobalAnnouncements: boolean;
 };
 
 export const AnnouncementsView = ({
@@ -20,43 +22,52 @@ export const AnnouncementsView = ({
   announcements,
   onSubmit,
   formatDate,
+  canSendAnnouncements,
+  canSendGlobalAnnouncements,
 }: AnnouncementsViewProps) => {
   const classroomNameById = new Map(classrooms.map((item) => [item.id, item.name]));
 
   return (
     <>
-      <form className="panel" onSubmit={onSubmit}>
-        <h3>Send announcement</h3>
-        <select
-          className="input"
-          value={form.classroom_id}
-          onChange={(e) => setForm((previous) => ({ ...previous, classroom_id: e.target.value }))}
-        >
-          <option value="">All active contacts</option>
-          {classrooms.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <input
-          className="input"
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm((previous) => ({ ...previous, title: e.target.value }))}
-          required
-        />
-        <textarea
-          className="input"
-          placeholder="Announcement message"
-          value={form.content}
-          onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
-          required
-        />
-        <button className="primary-btn" type="submit" disabled={busy || !form.title.trim() || !form.content.trim()}>
-          Send announcement
-        </button>
-      </form>
+      {canSendAnnouncements ? (
+        <form className="panel" onSubmit={onSubmit}>
+          <h3>Send announcement</h3>
+          <select
+            className="input"
+            value={form.classroom_id}
+            onChange={(e) => setForm((previous) => ({ ...previous, classroom_id: e.target.value }))}
+          >
+            {canSendGlobalAnnouncements ? <option value="">All active contacts</option> : null}
+            {!canSendGlobalAnnouncements ? <option value="">Select classroom</option> : null}
+            {classrooms.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+          <input
+            className="input"
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => setForm((previous) => ({ ...previous, title: e.target.value }))}
+            required
+          />
+          <textarea
+            className="input"
+            placeholder="Announcement message"
+            value={form.content}
+            onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
+            required
+          />
+          <button
+            className="primary-btn"
+            type="submit"
+            disabled={busy || !form.title.trim() || !form.content.trim() || (!canSendGlobalAnnouncements && !form.classroom_id)}
+          >
+            Send announcement
+          </button>
+        </form>
+      ) : null}
 
       <section className="panel">
         <h3>Announcement history</h3>

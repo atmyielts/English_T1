@@ -13,6 +13,45 @@ export type MeResponse = {
   }[];
 };
 
+export type TeacherStudioAccessProfile = {
+  role: string;
+  source: 'tenant' | 'staff' | 'center' | string;
+  scope: 'academy' | 'assigned_classrooms' | string;
+  classroom_ids: string[];
+  center_tenant_id?: string | null;
+  permissions: {
+    viewAcademy?: boolean;
+    manageAcademy?: boolean;
+    manageStaff?: boolean;
+    manageFinance?: boolean;
+    manageOffers?: boolean;
+    manageBranding?: boolean;
+    manageAutomation?: boolean;
+    viewContacts?: boolean;
+    manageContacts?: boolean;
+    viewClassrooms?: boolean;
+    manageClassrooms?: boolean;
+    manageRoster?: boolean;
+    manageMessages?: boolean;
+    manageAnnouncements?: boolean;
+    sendGlobalAnnouncements?: boolean;
+    manageAlerts?: boolean;
+    resolveAlerts?: boolean;
+    viewEducationOS?: boolean;
+    resolveActionItems?: boolean;
+    manageAssignments?: boolean;
+    gradeSubmissions?: boolean;
+    markAttendance?: boolean;
+    manageSchedule?: boolean;
+    manageResources?: boolean;
+    viewReports?: boolean;
+    issueCertificates?: boolean;
+    dispatchNotifications?: boolean;
+    viewNotifications?: boolean;
+    viewReferrals?: boolean;
+  };
+};
+
 export type TeacherStudioAcademy = {
   id: string;
   name: string;
@@ -22,6 +61,7 @@ export type TeacherStudioAcademy = {
   role: string;
   status: string;
   created_at: string;
+  access?: TeacherStudioAccessProfile;
 };
 
 export type TeacherStudioSummary = {
@@ -562,6 +602,7 @@ export type TeacherStudioInsight = {
 
 export type TeacherStudioEducationOS = {
   generated_at: string;
+  access?: TeacherStudioAccessProfile;
   action_queue: TeacherStudioActionItem[];
   pipeline: TeacherStudioLifecycleRow[];
   pipeline_counts: Record<string, number>;
