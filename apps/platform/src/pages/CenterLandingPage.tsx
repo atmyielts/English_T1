@@ -4,6 +4,7 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  CheckCircle2,
   ClipboardList,
   KeyRound,
   Loader2,
@@ -16,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
-import { publicCenter, type PublicCenterResponse } from '../lib/platformClient';
+import { supabase } from '../lib/supabase';
+import { candidateEntry, publicCenter, voucherPreview, voucherRedeem, type PublicCenterResponse, type VoucherPreview } from '../lib/platformClient';
 
 const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full bg-[#0f172a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50';
@@ -30,14 +32,41 @@ const formatDateTime = (value?: string | null) => {
   return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
+const normalizeCode = (value?: string | null) => String(value ?? '').trim().toUpperCase();
+
+const toErrorMessage = (err: unknown) => {
+  const raw = err instanceof Error ? err.message : String(err ?? 'Something went wrong');
+  const explicit = raw.match(/"error":"([^"]+)"/i)?.[1];
+  if (explicit) return explicit;
+  if (/not found/i.test(raw)) return 'Voucher not found.';
+  if (/expired/i.test(raw)) return 'Voucher has expired.';
+  if (/already/i.test(raw)) return 'Voucher has already been redeemed.';
+  if (/login|unauthorized|401/i.test(raw)) return 'Please log in to redeem this voucher.';
+  return raw;
+};
+
+const splitName = (value?: string | null) => {
+  const parts = String(value ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first_name: '', last_name: '' };
+  if (parts.length === 1) return { first_name: parts[0], last_name: '' };
+  return { first_name: parts.slice(0, -1).join(' '), last_name: parts[parts.length - 1] };
+};
+
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<PublicCenterResponse | null>(null);
-  const [voucherCode, setVoucherCode] = useState(() => String(searchParams.get('code') ?? '').trim().toUpperCase());
+  const [voucherCode, setVoucherCode] = useState(() => normalizeCode(searchParams.get('code')));
+  const [voucher, setVoucher] = useState<VoucherPreview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
+  const [candidate, setCandidate] = useState({ first_name: '', last_name: '', email: '', phone: '' });
 
   useEffect(() => {
     const slug = String(params.slug ?? '').trim();
@@ -67,9 +96,102 @@ export const CenterLandingPage: React.FC = () => {
     { label: 'Learning access', value: 'Center issued', icon: BookOpen, tone: 'bg-[#9ee7ff]' },
     { label: 'Events', value: upcomingEvents.length > 0 ? 'Public schedule' : 'Private roster', icon: CalendarDays, tone: 'bg-[#ffd166]' },
   ];
-  const openRedeem = () => {
-    const clean = voucherCode.trim().toUpperCase();
-    navigate(clean ? `/redeem/${encodeURIComponent(clean)}` : '/redeem');
+  const previewCenterVoucher = async (targetCode = voucherCode) => {
+    const clean = normalizeCode(targetCode);
+    if (!clean) {
+      navigate('/redeem');
+      return;
+    }
+    setVoucherLoading(true);
+    setVoucherError(null);
+    setSuccess(null);
+    setHandoffUrl(null);
+    try {
+      const res = await voucherPreview(clean);
+      const voucherCenterId = String((res.voucher.center as any)?.tenant_id ?? '').trim();
+      const currentCenterId = String(data?.center.tenant_id ?? '').trim();
+      if (voucherCenterId && currentCenterId && voucherCenterId !== currentCenterId) {
+        setVoucher(null);
+        setVoucherError('This voucher belongs to a different center.');
+        return;
+      }
+      setVoucher(res.voucher);
+      setVoucherCode(res.voucher.code);
+      const names = splitName(res.voucher.assigned_name);
+      setCandidate((prev) => ({
+        first_name: prev.first_name || names.first_name,
+        last_name: prev.last_name || names.last_name,
+        email: prev.email || res.voucher.assigned_email || '',
+        phone: prev.phone,
+      }));
+    } catch (err) {
+      setVoucher(null);
+      setVoucherError(toErrorMessage(err));
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (data?.center.tenant_id && voucherCode && !voucher) void previewCenterVoucher(voucherCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.center.tenant_id]);
+
+  const redeemSubscription = async () => {
+    if (!voucher) return;
+    setRedeeming(true);
+    setVoucherError(null);
+    setSuccess(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        const slug = String(params.slug ?? '').trim();
+        navigate(`/auth?mode=signin&returnTo=${encodeURIComponent(`/center/${slug}?code=${encodeURIComponent(voucher.code)}`)}`);
+        return;
+      }
+      const res = await voucherRedeem(voucher.code, token);
+      setVoucher(res.voucher);
+      setSuccess('Access activated.');
+      if (res.next_url) window.setTimeout(() => window.location.assign(res.next_url || '/account'), 450);
+    } catch (err) {
+      setVoucherError(toErrorMessage(err));
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
+  const redeemMock = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!voucher) return;
+    setRedeeming(true);
+    setVoucherError(null);
+    setSuccess(null);
+    try {
+      const res = await candidateEntry({
+        token_code: voucher.code,
+        first_name: candidate.first_name,
+        last_name: candidate.last_name,
+        email: candidate.email,
+        phone: candidate.phone,
+      });
+      const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
+      if (!appBase) throw new Error('Exam app URL is not configured');
+      const qs = new URLSearchParams({
+        access_token: res.session.access_token,
+        refresh_token: res.session.refresh_token,
+        expires_in: String(res.session.expires_in),
+        session_id: res.session_id,
+      });
+      if (res.first_section_id) qs.set('first_section_id', res.first_section_id);
+      const target = `${appBase}/candidate?${qs.toString()}`;
+      setHandoffUrl(target);
+      window.location.assign(target);
+    } catch (err) {
+      setVoucherError(toErrorMessage(err));
+    } finally {
+      setRedeeming(false);
+    }
   };
 
   return (
@@ -113,20 +235,69 @@ export const CenterLandingPage: React.FC = () => {
                     <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                       <input
                         value={voucherCode}
-                        onChange={(event) => setVoucherCode(event.target.value.toUpperCase())}
+                        onChange={(event) => {
+                          const next = event.target.value.toUpperCase();
+                          setVoucherCode(next);
+                          if (voucher && normalizeCode(next) !== voucher.code) {
+                            setVoucher(null);
+                            setSuccess(null);
+                            setHandoffUrl(null);
+                          }
+                        }}
                         className="min-h-12 flex-1 rounded-2xl border border-gray-900/25 bg-white px-4 py-3 font-mono text-sm text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
                         placeholder="SCH-CENTER-A12B7"
                       />
-                      <button type="button" onClick={openRedeem} className={primaryButton}>
-                        <KeyRound className="h-4 w-4" />
-                        Begin
+                      <button type="button" onClick={() => void previewCenterVoucher()} disabled={voucherLoading || !voucherCode.trim()} className={primaryButton}>
+                        {voucherLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                        Check code
                       </button>
                     </div>
                   </label>
+                  {voucherError ? <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{voucherError}</div> : null}
+                  {success ? <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+                  {handoffUrl ? (
+                    <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+                      Redirecting to your exam. <button type="button" className="font-semibold underline" onClick={() => window.location.assign(handoffUrl)}>Open again</button>
+                    </div>
+                  ) : null}
+                  {voucher ? (
+                    <div className="mt-5 rounded-2xl border border-gray-900/15 bg-white p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="font-mono text-lg font-bold text-gray-900">{voucher.code}</p>
+                          <p className="mt-1 text-sm text-gray-600 capitalize">{voucher.access_kind.replace('_', ' ')} - {voucher.status}</p>
+                          <p className="mt-2 text-sm font-semibold text-gray-900">{voucher.product?.name ?? voucher.experience?.name ?? voucher.plan?.name ?? 'Schood access'}</p>
+                        </div>
+                        {voucher.status === 'unused' ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Ready</span> : null}
+                      </div>
+
+                      {voucher.access_kind === 'mock_exam' && voucher.status === 'unused' ? (
+                        <form onSubmit={redeemMock} className="mt-5 grid gap-3 md:grid-cols-2">
+                          <label className="text-sm font-semibold text-gray-800">First name<input required value={candidate.first_name} onChange={(e) => setCandidate((prev) => ({ ...prev, first_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
+                          <label className="text-sm font-semibold text-gray-800">Last name<input required value={candidate.last_name} onChange={(e) => setCandidate((prev) => ({ ...prev, last_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
+                          <label className="text-sm font-semibold text-gray-800">Email<input required type="email" value={candidate.email} onChange={(e) => setCandidate((prev) => ({ ...prev, email: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
+                          <label className="text-sm font-semibold text-gray-800">Phone<input required value={candidate.phone} onChange={(e) => setCandidate((prev) => ({ ...prev, phone: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
+                          <div className="md:col-span-2">
+                            <button type="submit" disabled={redeeming} className={primaryButton}>
+                              {redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />}
+                              Start mock exam
+                            </button>
+                          </div>
+                        </form>
+                      ) : null}
+
+                      {voucher.access_kind !== 'mock_exam' && voucher.status === 'unused' ? (
+                        <button type="button" onClick={() => void redeemSubscription()} disabled={redeeming} className={`${primaryButton} mt-5`}>
+                          {redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                          Activate access
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <button type="button" onClick={openRedeem} className={primaryButton}>
+                  <button type="button" onClick={() => void previewCenterVoucher()} className={primaryButton}>
                     <KeyRound className="h-4 w-4" />
                     Redeem your code
                   </button>
@@ -166,7 +337,7 @@ export const CenterLandingPage: React.FC = () => {
                     <p className="mt-2">Mock tests, seat inventory, pricing, and purchased stock stay inside the center office.</p>
                   </div>
                 </div>
-                <button type="button" onClick={openRedeem} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+                <button type="button" onClick={() => void previewCenterVoucher()} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
                   Continue
                   <ArrowUpRight className="h-4 w-4" />
                 </button>
@@ -238,7 +409,7 @@ export const CenterLandingPage: React.FC = () => {
                     </div>
                     <h2 className="mt-2 text-2xl font-bold">Center mock exam events</h2>
                   </div>
-                  <button type="button" onClick={openRedeem} className={secondaryButton}>
+                  <button type="button" onClick={() => void previewCenterVoucher()} className={secondaryButton}>
                     <KeyRound className="h-4 w-4" />
                     Redeem event code
                   </button>
