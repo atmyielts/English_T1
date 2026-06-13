@@ -25,6 +25,7 @@ declare global {
         expand?: () => void;
         close?: () => void;
         openLink?: (url: string) => void;
+        openTelegramLink?: (url: string) => void;
         themeParams?: Record<string, string>;
       };
     };
@@ -122,6 +123,39 @@ const openExternal = (url: string) => {
   else window.location.href = url;
 };
 
+const openTelegram = (url: string) => {
+  if (window.Telegram?.WebApp?.openTelegramLink) window.Telegram.WebApp.openTelegramLink(url);
+  else window.location.href = url;
+};
+
+const waitForTelegramWebApp = async () => {
+  if (window.Telegram?.WebApp) return window.Telegram.WebApp;
+
+  const scriptId = 'telegram-web-app-sdk';
+  let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+  if (!script) {
+    script = document.createElement('script');
+    script.id = scriptId;
+    script.src = 'https://telegram.org/js/telegram-web-app.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+
+  await new Promise<void>((resolve) => {
+    const started = Date.now();
+    const finish = () => resolve();
+    const poll = () => {
+      if (window.Telegram?.WebApp || Date.now() - started > 2500) finish();
+      else window.setTimeout(poll, 50);
+    };
+    script.addEventListener('load', finish, { once: true });
+    script.addEventListener('error', finish, { once: true });
+    poll();
+  });
+
+  return window.Telegram?.WebApp ?? null;
+};
+
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
   <section className={`rounded-2xl border border-gray-900 bg-white p-4 shadow-[0_2px_0_#111827] ${className}`}>{children}</section>
 );
@@ -199,16 +233,15 @@ export const TelegramAppPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
+      const telegramApp = await waitForTelegramWebApp();
+      telegramApp?.ready?.();
+      telegramApp?.expand?.();
       const activeInitData = getInitData();
       setInitData(activeInitData);
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready?.();
-        window.Telegram.WebApp.expand?.();
-      }
       if (!activeInitData) {
         setData({
           linked: false,
-          message: 'Open this page from the Schood Telegram bot so Telegram can verify your account.',
+          message: 'Open this page from the Schood Telegram bot. Telegram must provide a verified app session before Schood can load your student dashboard.',
           link_account_url: `${window.location.origin}/account`,
           site_url: window.location.origin,
         });
@@ -236,14 +269,6 @@ export const TelegramAppPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const scriptId = 'telegram-web-app-sdk';
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = 'https://telegram.org/js/telegram-web-app.js';
-      script.async = true;
-      document.head.appendChild(script);
-    }
     void load();
   }, [load]);
 
@@ -318,6 +343,7 @@ export const TelegramAppPage: React.FC = () => {
   }
 
   if (error || !data?.linked) {
+    const hasTelegramSession = Boolean(initData || getInitData());
     return (
       <div className="min-h-screen bg-[#f6f1e8] px-4 py-8 text-gray-900">
         <div className="mx-auto max-w-md space-y-4">
@@ -325,17 +351,42 @@ export const TelegramAppPage: React.FC = () => {
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-500">
               <GraduationCap size={16} /> Schood in Telegram
             </div>
-            <h1 className="mt-3 text-2xl font-black">Link your account</h1>
+            <h1 className="mt-3 text-2xl font-black">{hasTelegramSession ? 'Connect this Telegram' : 'Open from Telegram'}</h1>
             <p className="mt-2 text-sm text-gray-600">
               {error ?? data?.message ?? 'Open your Schood account profile and link Telegram, then reopen this app.'}
             </p>
+            {hasTelegramSession ? (
+              <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-sm text-blue-900">
+                Sign in to Schood once, press <b>Link Telegram</b>, then return here. This app will refresh into your Telegram student dashboard after the link is complete.
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+                Telegram did not provide app auth data. Use the bot button or the Telegram app menu, not a normal browser tab.
+              </div>
+            )}
             <button
               type="button"
-              onClick={() => openExternal(data?.link_account_url ?? `${siteUrl}/account`)}
+              onClick={() => openExternal(data?.link_account_url ?? `${siteUrl}/account?returnTo=${encodeURIComponent('/telegram')}`)}
               className="mt-5 w-full rounded-xl bg-gray-950 px-4 py-3 text-sm font-bold text-white"
             >
-              Open Schood Account
+              Link Telegram in Schood
             </button>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => void load()}
+                className="rounded-xl border border-gray-900 bg-white px-4 py-3 text-sm font-bold"
+              >
+                I linked it, retry
+              </button>
+              <button
+                type="button"
+                onClick={() => openTelegram('https://t.me/schoodonlinebot?startapp')}
+                className="rounded-xl border border-gray-900 bg-white px-4 py-3 text-sm font-bold"
+              >
+                Back to bot
+              </button>
+            </div>
           </Card>
         </div>
       </div>
