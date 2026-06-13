@@ -1563,12 +1563,15 @@ const parseDispatchRecipients = (input: unknown): DispatchRecipient[] => {
     .slice(0, 1000);
 };
 
+type DispatchChannel = "sms" | "telegram";
+
 const sendDispatchMessage = async (
-  channel: string,
+  channel: DispatchChannel,
   recipient: DispatchRecipient,
   message: string,
 ): Promise<DispatchResult> => {
-  if (channel === "telegram" && recipient.telegram_chat_id) {
+  if (channel === "telegram") {
+    if (!recipient.telegram_chat_id) return { status: "prepared", provider: "telegram", detail: "recipient telegram_chat_id is missing" };
     const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
     if (!botToken) return { status: "prepared", provider: "telegram", detail: "TELEGRAM_BOT_TOKEN is not configured" };
     const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -3108,9 +3111,23 @@ serve(async (req) => {
         if (gate) return gate;
         const batchId = String(body.batch_id ?? "").trim();
         if (!isUuid(batchId)) return json(400, { error: "batch_id is required" });
-        const channel = String(body.channel ?? "sms").trim().toLowerCase() === "telegram" ? "telegram" : "sms";
+        const channel: DispatchChannel = String(body.channel ?? "sms").trim().toLowerCase() === "telegram" ? "telegram" : "sms";
         const recipients = parseDispatchRecipients(body.recipients ?? body.csv ?? body.roster ?? "");
         if (recipients.length === 0) return json(400, { error: "At least one recipient is required" });
+        const missingDestination = recipients.filter((recipient) =>
+          channel === "telegram" ? !recipient.telegram_chat_id : !recipient.phone
+        );
+        if (missingDestination.length > 0) {
+          return json(400, {
+            error: channel === "telegram"
+              ? "Every Telegram recipient must include telegram_chat_id."
+              : "Every SMS recipient must include a phone number.",
+            error_code: "voucher_dispatch_missing_destination",
+            channel,
+            missing_count: missingDestination.length,
+            required_field: channel === "telegram" ? "telegram_chat_id" : "phone",
+          });
+        }
         const [center, batchRes, vouchersRes] = await Promise.all([
           getCenterProfile(sb, tenantId),
           sb.from("partner_voucher_batches").select("*").eq("tenant_id", tenantId).eq("id", batchId).maybeSingle(),
