@@ -447,6 +447,8 @@ export const CenterOfficePage: React.FC = () => {
   const ticketEstimate = (selectedExperience?.price_amount ?? 0) * ticketForm.quantity;
   const ticketCurrency = selectedExperience?.price_currency ?? 'UZS';
   const paymentCapability = paymentCapabilities.find((item) => item.currency === ticketCurrency && item.enabled) ?? paymentCapabilities[0];
+  const clickPaymentCapability = paymentCapabilities.find((item) => item.provider === 'click' && item.currency === 'UZS') ?? paymentCapabilities.find((item) => item.provider === 'click');
+  const clickPaymentsEnabled = Boolean(clickPaymentCapability?.enabled);
   const onlineMaxAmount = paymentCapability?.max_amount ?? FALLBACK_ONLINE_PAYMENT_MAX_AMOUNT_UZS;
   const ticketMaxOnlineQuantity = selectedExperience?.price_amount ? Math.floor(onlineMaxAmount / selectedExperience.price_amount) : 0;
   const ticketOnlineBlocked = ticketCurrency === 'UZS' && ticketEstimate > onlineMaxAmount;
@@ -621,6 +623,11 @@ export const CenterOfficePage: React.FC = () => {
   const buyTickets = async () => {
     const token = await getValidToken();
     if (!token || !ticketForm.experience_id || !centerTenantId) return;
+    if (!clickPaymentsEnabled) {
+      setTab('wallet');
+      setError('Click checkout is not configured yet. Request a manual wallet top-up or ask a Schood admin to add Click merchant credentials.');
+      return;
+    }
     if (ticketOnlineBlocked) {
       setTab('wallet');
       setError(`Current online checkout limit is ${money(onlineMaxAmount, 'UZS')} per transaction. For larger center packs, use wallet top-up or split the purchase.`);
@@ -651,6 +658,11 @@ export const CenterOfficePage: React.FC = () => {
   const buySeats = async () => {
     const token = await getValidToken();
     if (!token || !seatForm.plan_id || !centerTenantId) return;
+    if (!clickPaymentsEnabled) {
+      setTab('wallet');
+      setError('Click checkout is not configured yet. Request a manual wallet top-up or ask a Schood admin to add Click merchant credentials.');
+      return;
+    }
     if (seatOnlineBlocked) {
       setTab('wallet');
       setError(`Current online checkout limit is ${money(onlineMaxAmount, 'UZS')} per transaction. For larger seat bundles, use wallet top-up or split the purchase.`);
@@ -749,6 +761,11 @@ export const CenterOfficePage: React.FC = () => {
   const buyTier = async (plan: PartnerCenterTierPlan) => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
+    if (!clickPaymentsEnabled) {
+      setTab('wallet');
+      setError('Click checkout is not configured yet. Ask Schood admin to add Click merchant credentials before online tier upgrades.');
+      return;
+    }
     if (plan.currency === 'UZS' && plan.amount > onlineMaxAmount) {
       setTab('wallet');
       setError(`Current online payment limit is ${money(onlineMaxAmount, 'UZS')} per transaction. Ask Schood admin to invoice this tier manually.`);
@@ -794,7 +811,7 @@ export const CenterOfficePage: React.FC = () => {
         currency: wallet.currency,
         note: walletTopup.note,
         center_office: true,
-        settlement_mode: 'online',
+        settlement_mode: clickPaymentsEnabled ? 'online' : 'manual',
       });
       if ('transaction_id' in res) {
         setPendingTransactionId(res.transaction_id);
@@ -809,7 +826,7 @@ export const CenterOfficePage: React.FC = () => {
         }
       } else {
         await refreshAll();
-        setSuccess('Manual top-up request recorded.');
+        setSuccess(clickPaymentsEnabled ? 'Manual top-up request recorded.' : 'Click is not configured yet. Manual top-up request recorded for admin settlement.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -1525,6 +1542,7 @@ export const CenterOfficePage: React.FC = () => {
               loading={loading}
               pending={pendingKind === 'tier' ? pendingTransactionId : null}
               maxOnlineAmount={onlineMaxAmount}
+              paymentsEnabled={clickPaymentsEnabled}
               onBillingPeriodChange={setTierBillingPeriod}
               onBuy={(plan) => void buyTier(plan)}
               onCheck={() => void checkPayment()}
@@ -1534,7 +1552,7 @@ export const CenterOfficePage: React.FC = () => {
           {centerIsActive && access.can_manage_finance && tab === 'wallet' ? (
             <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
               <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={WalletCards} label="Prepaid wallet" title="Top up with Click" />
+                <SectionTitle icon={WalletCards} label="Prepaid wallet" title={clickPaymentsEnabled ? 'Top up with Click' : 'Request wallet top-up'} />
                 <label className="mt-5 block text-sm font-semibold text-gray-800">
                   Amount
                   <input type="number" min={1} value={walletTopup.amount} onChange={(e) => setWalletTopup((prev) => ({ ...prev, amount: Number(e.target.value) }))} className={inputClass} />
@@ -1545,9 +1563,13 @@ export const CenterOfficePage: React.FC = () => {
                 </label>
                 <button type="button" onClick={() => void requestTopup()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
                   <WalletCards className="h-4 w-4" />
-                  Pay with Click
+                  {clickPaymentsEnabled ? 'Pay with Click' : 'Request manual top-up'}
                 </button>
-                <p className="mt-3 text-xs text-gray-500">Wallet credit posts automatically after Click confirms payment.</p>
+                <p className="mt-3 text-xs text-gray-500">
+                  {clickPaymentsEnabled
+                    ? 'Wallet credit posts automatically after Click confirms payment.'
+                    : 'Click credentials are not configured yet, so this records a manual settlement request for Schood admin.'}
+                </p>
                 {pendingKind === 'wallet' && pendingTransactionId ? (
                   <button type="button" onClick={() => void checkPayment()} disabled={loading} className={`${secondaryButton} mt-3 w-full`}>
                     <RefreshCw className="h-4 w-4" />
@@ -1568,6 +1590,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineAmount={onlineMaxAmount}
                 maxOnlineQuantity={ticketMaxOnlineQuantity}
                 onlineBlocked={ticketOnlineBlocked}
+                paymentsEnabled={clickPaymentsEnabled}
                 loading={loading}
                 pending={pendingKind === 'tickets' ? pendingTransactionId : null}
                 onChange={setTicketForm}
@@ -1581,6 +1604,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineAmount={onlineMaxAmount}
                 maxOnlineQuantity={seatMaxOnlineQuantity}
                 onlineBlocked={seatOnlineBlocked}
+                paymentsEnabled={clickPaymentsEnabled}
                 loading={loading}
                 pending={pendingKind === 'seats' ? pendingTransactionId : null}
                 onChange={setSeatForm}
@@ -2167,10 +2191,11 @@ const TierUpgradePanel: React.FC<{
   loading: boolean;
   pending: string | null;
   maxOnlineAmount: number;
+  paymentsEnabled: boolean;
   onBillingPeriodChange: React.Dispatch<React.SetStateAction<'monthly' | 'annual'>>;
   onBuy: (plan: PartnerCenterTierPlan) => void;
   onCheck: () => void;
-}> = ({ catalog, currentTier, billingPeriod, loading, pending, maxOnlineAmount, onBillingPeriodChange, onBuy, onCheck }) => {
+}> = ({ catalog, currentTier, billingPeriod, loading, pending, maxOnlineAmount, paymentsEnabled, onBillingPeriodChange, onBuy, onCheck }) => {
   const tiers = catalog?.tiers ?? [];
   const activeRequests = (catalog?.requests ?? []).filter((request) => ['pending_payment', 'paid', 'manual_review'].includes(request.status));
   return (
@@ -2195,6 +2220,11 @@ const TierUpgradePanel: React.FC<{
           Tier payments are charged to the center tenant. After online payment is confirmed, Schood upgrades the center automatically and records the subscription period for admin audit.
         </p>
         <p className="mt-2 text-xs font-semibold text-gray-500">Current online payment limit: {money(maxOnlineAmount, 'UZS')}</p>
+        {!paymentsEnabled ? (
+          <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+            Click checkout is not configured yet. Schood admin must add Click merchant credentials before online tier upgrades.
+          </p>
+        ) : null}
       </div>
 
       {pending ? (
@@ -2238,7 +2268,7 @@ const TierUpgradePanel: React.FC<{
                 <button
                   type="button"
                   onClick={() => plan && onBuy(plan)}
-                  disabled={loading || !plan || onlineBlocked || (isCurrent && billingPeriod === 'monthly')}
+                  disabled={loading || !plan || !paymentsEnabled || onlineBlocked || (isCurrent && billingPeriod === 'monthly')}
                   className={`${isCurrent ? secondaryButton : primaryButton} w-full`}
                 >
                   <CreditCard className="h-4 w-4" />
@@ -2558,12 +2588,13 @@ const BuyMockPanel: React.FC<{
   maxOnlineAmount: number;
   maxOnlineQuantity: number;
   onlineBlocked: boolean;
+  paymentsEnabled: boolean;
   loading: boolean;
   pending: string | null;
   onChange: React.Dispatch<React.SetStateAction<{ experience_id: string; quantity: number; expires_in_days: number; apply_credit: boolean }>>;
   onBuy: () => void;
   onCheck: () => void;
-}> = ({ catalog, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, loading, pending, onChange, onBuy, onCheck }) => (
+}> = ({ catalog, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, paymentsEnabled, loading, pending, onChange, onBuy, onCheck }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={Ticket} label="Wholesale pack" title="Buy mock tickets" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}{item.is_ticket_ready ? '' : ' (price needed)'}</option>)}</select></label>
@@ -2578,12 +2609,17 @@ const BuyMockPanel: React.FC<{
         This pack is above the current online checkout limit{maxOnlineQuantity > 0 ? `; buy up to ${maxOnlineQuantity} online, or use wallet for the full pack.` : '; use wallet top-up for this item.'}
       </p>
     ) : null}
+    {!paymentsEnabled ? (
+      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+        Click checkout is not configured yet. Use manual wallet top-up or admin settlement for center purchases.
+      </p>
+    ) : null}
     {catalog.length === 0 ? (
       <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
         No active single-sitting mock tests are configured for center sales yet.
       </p>
     ) : null}
-    <button type="button" onClick={onBuy} disabled={loading || !selected || !selected.is_ticket_ready || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
+    <button type="button" onClick={onBuy} disabled={loading || !selected || !selected.is_ticket_ready || !paymentsEnabled || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy tickets</button>
     {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
   </div>
 );
@@ -2595,12 +2631,13 @@ const BuySeatPanel: React.FC<{
   maxOnlineAmount: number;
   maxOnlineQuantity: number;
   onlineBlocked: boolean;
+  paymentsEnabled: boolean;
   loading: boolean;
   pending: string | null;
   onChange: React.Dispatch<React.SetStateAction<{ plan_id: string; seat_count: number; apply_credit: boolean }>>;
   onBuy: () => void;
   onCheck: () => void;
-}> = ({ plans, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, loading, pending, onChange, onBuy, onCheck }) => (
+}> = ({ plans, form, selected, maxOnlineAmount, maxOnlineQuantity, onlineBlocked, paymentsEnabled, loading, pending, onChange, onBuy, onCheck }) => (
   <div className={`${panelClass} p-5 md:p-6`}>
     <SectionTitle icon={UsersRound} label="Seat pack" title="Buy subscriptions" />
     <label className="mt-5 block text-sm font-semibold text-gray-800">Plan<select value={form.plan_id} onChange={(e) => onChange((prev) => ({ ...prev, plan_id: e.target.value }))} className={inputClass}>{plans.map((item) => <option key={item.id} value={item.id}>{item.products?.name ? `${item.products.name} - ${item.name}` : item.name}</option>)}</select></label>
@@ -2614,7 +2651,12 @@ const BuySeatPanel: React.FC<{
         This bundle is above the current online checkout limit{maxOnlineQuantity > 0 ? `; buy up to ${maxOnlineQuantity} online, or use wallet for the full bundle.` : '; use wallet top-up for this plan.'}
       </p>
     ) : null}
-    <button type="button" onClick={onBuy} disabled={loading || !selected || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy seats</button>
+    {!paymentsEnabled ? (
+      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+        Click checkout is not configured yet. Use manual wallet top-up or admin settlement for center purchases.
+      </p>
+    ) : null}
+    <button type="button" onClick={onBuy} disabled={loading || !selected || !paymentsEnabled || onlineBlocked} className={`${primaryButton} mt-5 w-full`}>Buy seats</button>
     {pending ? <button type="button" onClick={onCheck} className={`${secondaryButton} mt-3 w-full`}>Check payment</button> : null}
   </div>
 );
