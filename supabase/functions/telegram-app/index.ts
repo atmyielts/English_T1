@@ -457,8 +457,8 @@ serve(async (req) => {
       return json(200, {
         linked: false,
         telegram_user_id: telegramId,
-        link_account_url: `${getSiteUrl()}/account`,
-        message: "Link your Telegram from your Schood account profile, then reopen this app.",
+        link_account_url: `${getSiteUrl()}/account?returnTo=${encodeURIComponent("/telegram")}`,
+        message: "Telegram verified this app session, but this Telegram account is not linked to a Schood account yet.",
       });
     }
 

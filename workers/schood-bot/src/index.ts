@@ -85,9 +85,9 @@ const sbEdge = async (env: Env, fn: string, body: unknown) => {
   return res.ok ? res.json() : null;
 };
 
-const getUser = async (env: Env, chatId: number): Promise<LinkedUser | null> => {
+const getUser = async (env: Env, telegramUserId: number): Promise<LinkedUser | null> => {
   const rows = await sbGet(env, "users", {
-    telegram_chat_id: `eq.${chatId}`,
+    telegram_chat_id: `eq.${telegramUserId}`,
     select: "id,email,full_name",
     limit: "1",
   });
@@ -105,7 +105,8 @@ const sendAppEntry = async (env: Env, chatId: number, user: LinkedUser | null, c
     await send(
       env,
       chatId,
-      `Your Telegram is not linked to Schood yet.\n\nOpen <a href="${escapeHtml(env.SITE_URL)}">${escapeHtml(env.SITE_URL)}</a>, sign in, then use Account -> Link Telegram.`,
+      `Your Telegram is not linked to Schood yet.\n\nOpen Schood from the button below, sign in once, then use <b>Account -> Link Telegram</b>. After that, come back here and tap Open Schood again.`,
+      { reply_markup: webAppMarkup(env, "Open Schood Mini App") },
     );
     return;
   }
@@ -119,9 +120,9 @@ const sendAppEntry = async (env: Env, chatId: number, user: LinkedUser | null, c
   );
 };
 
-const handleStart = async (env: Env, chatId: number, from: { first_name?: string }, param: string) => {
+const handleStart = async (env: Env, chatId: number, from: { id?: number; first_name?: string }, param: string) => {
   if (param) {
-    const result = await sbEdge(env, "telegram-link", { action: "validate", token: param, chat_id: String(chatId) });
+    const result = await sbEdge(env, "telegram-link", { action: "validate", token: param, chat_id: String(from.id ?? chatId) });
     if (result?.ok) {
       await send(
         env,
@@ -139,7 +140,7 @@ const handleStart = async (env: Env, chatId: number, from: { first_name?: string
     return;
   }
 
-  const user = await getUser(env, chatId);
+  const user = await getUser(env, from.id ?? chatId);
   if (user) {
     await send(
       env,
@@ -337,7 +338,7 @@ const handleUnlink = async (env: Env, chatId: number) => {
 const handleCallback = async (env: Env, query: { id: string; from: { id: number }; data?: string; message?: { chat: { id: number } } }) => {
   await answerCallback(env, query.id);
   const chatId = query.message?.chat.id ?? query.from.id;
-  const user = await getUser(env, chatId);
+  const user = await getUser(env, query.from.id);
   await sendAppEntry(env, chatId, user);
 };
 
@@ -351,6 +352,7 @@ const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
   if (!msg) return;
   const chatId = (msg.chat as any)?.id as number;
   const from = (msg.from ?? {}) as { id: number; first_name?: string };
+  const telegramUserId = from.id || chatId;
   const text = String(msg.text ?? "").trim();
   if (!chatId || !text) return;
 
@@ -359,17 +361,18 @@ const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
   const param = args.join(" ");
 
   if (command === "/start") { await handleStart(env, chatId, from, param); return; }
-  if (command === "/help") { await handleHelp(env, chatId, await getUser(env, chatId)); return; }
-  if (command === "/unlink") { await handleUnlink(env, chatId); return; }
+  if (command === "/help") { await handleHelp(env, chatId, await getUser(env, telegramUserId)); return; }
+  if (command === "/unlink") { await handleUnlink(env, telegramUserId); return; }
 
-  const user = await getUser(env, chatId);
+  const user = await getUser(env, telegramUserId);
   if (command === "/app" || command === "/dashboard") { await sendAppEntry(env, chatId, user); return; }
 
   if (!user) {
     await send(
       env,
       chatId,
-      `Your Telegram is not linked to Schood yet.\n\nOpen <a href="${escapeHtml(env.SITE_URL)}">${escapeHtml(env.SITE_URL)}</a>, sign in, then use Account -> Link Telegram.`,
+      `Your Telegram is not linked to Schood yet.\n\nOpen the Schood Mini App below, sign in once, then use <b>Account -> Link Telegram</b>. After linking, commands like /assignments and /drill will work here.`,
+      { reply_markup: webAppMarkup(env, "Open Schood Mini App") },
     );
     return;
   }
