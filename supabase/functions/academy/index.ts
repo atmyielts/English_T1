@@ -5,7 +5,50 @@ import { placementBand } from "../_shared/academy-scoring.ts";
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
 
-type MembershipRow = { tenant_id: string; role: string; status: string };
+type AcademyAccessSource = "tenant" | "staff" | "center";
+type AcademyScope = "academy" | "assigned_classrooms";
+
+type AcademyAccessPermissions = {
+  viewAcademy: boolean;
+  manageAcademy: boolean;
+  manageStaff: boolean;
+  manageFinance: boolean;
+  manageOffers: boolean;
+  manageBranding: boolean;
+  manageAutomation: boolean;
+  viewContacts: boolean;
+  manageContacts: boolean;
+  viewClassrooms: boolean;
+  manageClassrooms: boolean;
+  manageRoster: boolean;
+  manageMessages: boolean;
+  manageAnnouncements: boolean;
+  sendGlobalAnnouncements: boolean;
+  manageAlerts: boolean;
+  resolveAlerts: boolean;
+  viewEducationOS: boolean;
+  resolveActionItems: boolean;
+  manageAssignments: boolean;
+  gradeSubmissions: boolean;
+  markAttendance: boolean;
+  manageSchedule: boolean;
+  manageResources: boolean;
+  viewReports: boolean;
+  issueCertificates: boolean;
+  dispatchNotifications: boolean;
+  viewNotifications: boolean;
+  viewReferrals: boolean;
+};
+
+type MembershipRow = {
+  tenant_id: string;
+  role: string;
+  status: string;
+  source?: AcademyAccessSource;
+  staff_id?: string | null;
+  classroom_ids?: string[];
+  center_tenant_id?: string | null;
+};
 
 type StudioBody = {
   action?: string;
@@ -152,6 +195,191 @@ const isJsonObject = (value: unknown): value is Json =>
 
 const toJsonObject = (value: unknown): Json => (isJsonObject(value) ? value : {});
 
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(value.map((item) => normalizeText(item, 64)).filter((item) => item.length > 0)));
+};
+
+const normalizeAcademyRole = (roleRaw: unknown): string => {
+  const role = normalizeText(roleRaw, 40).toLowerCase();
+  if (role === "center-admin" || role === "center admin") return "center_admin";
+  if (role === "administrator") return "admin";
+  return role || "member";
+};
+
+const academyRoleRank = (roleRaw: unknown): number => {
+  const role = normalizeAcademyRole(roleRaw);
+  if (role === "owner") return 100;
+  if (role === "admin") return 90;
+  if (role === "center_admin") return 85;
+  if (role === "manager") return 70;
+  if (role === "counselor") return 60;
+  if (role === "teacher") return 50;
+  if (role === "assistant") return 40;
+  return 20;
+};
+
+const isAcademyAdminRole = (roleRaw: unknown): boolean =>
+  ["owner", "admin", "center_admin"].includes(normalizeAcademyRole(roleRaw));
+
+const isAcademyManagerRole = (roleRaw: unknown): boolean =>
+  ["manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
+
+const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
+  ["teacher", "assistant", "member"].includes(normalizeAcademyRole(roleRaw));
+
+const academyAccessScope = (access: MembershipRow): AcademyScope => {
+  const role = normalizeAcademyRole(access.role);
+  if (isAcademyAdminRole(role) || isAcademyManagerRole(role)) return "academy";
+  return "assigned_classrooms";
+};
+
+const academyAccessClassroomIds = (access: MembershipRow): string[] | null => {
+  if (academyAccessScope(access) === "academy") return null;
+  return toStringArray(access.classroom_ids);
+};
+
+const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermissions => {
+  const role = normalizeAcademyRole(access.role);
+  const admin = isAcademyAdminRole(role);
+  const manager = isAcademyManagerRole(role);
+  const teacher = isAcademyTeachingRole(role);
+  const ops = admin || manager;
+  const teaching = ops || teacher;
+
+  return {
+    viewAcademy: ops,
+    manageAcademy: admin,
+    manageStaff: admin,
+    manageFinance: admin,
+    manageOffers: admin,
+    manageBranding: admin,
+    manageAutomation: admin,
+    viewContacts: ops || teaching,
+    manageContacts: ops,
+    viewClassrooms: teaching,
+    manageClassrooms: ops,
+    manageRoster: ops,
+    manageMessages: teaching,
+    manageAnnouncements: teaching,
+    sendGlobalAnnouncements: ops,
+    manageAlerts: teaching,
+    resolveAlerts: teaching,
+    viewEducationOS: teaching,
+    resolveActionItems: teaching,
+    manageAssignments: teaching,
+    gradeSubmissions: teaching,
+    markAttendance: teaching,
+    manageSchedule: teaching,
+    manageResources: teaching,
+    viewReports: ops,
+    issueCertificates: ops,
+    dispatchNotifications: ops,
+    viewNotifications: ops,
+    viewReferrals: ops,
+  };
+};
+
+const academyAccessProfile = (access: MembershipRow): Record<string, unknown> => {
+  const scope = academyAccessScope(access);
+  return {
+    role: normalizeAcademyRole(access.role),
+    source: access.source ?? "tenant",
+    scope,
+    classroom_ids: scope === "academy" ? [] : toStringArray(access.classroom_ids),
+    center_tenant_id: access.center_tenant_id ?? null,
+    permissions: buildAcademyPermissions(access),
+  };
+};
+
+const academyAccessHas = (access: MembershipRow, permission: keyof AcademyAccessPermissions): boolean =>
+  buildAcademyPermissions(access)[permission] === true;
+
+const requireAcademyPermission = (access: MembershipRow, permission: keyof AcademyAccessPermissions): void => {
+  if (!academyAccessHas(access, permission)) throw new Error("Forbidden");
+};
+
+const resolveAcademyAccess = (memberships: MembershipRow[], academyId: string): MembershipRow | null =>
+  memberships.find((m) => m.tenant_id === academyId && String(m.status ?? "active") === "active") ?? null;
+
+const requireAcademyAccess = (memberships: MembershipRow[], academyId: string): MembershipRow => {
+  const found = resolveAcademyAccess(memberships, academyId);
+  if (!found) throw new Error("Forbidden");
+  return found;
+};
+
+const accessCanUseClassroom = (access: MembershipRow, classroomIdRaw: unknown): boolean => {
+  const classroomId = normalizeText(classroomIdRaw, 64);
+  if (!classroomId) return false;
+  const scopedIds = academyAccessClassroomIds(access);
+  return scopedIds === null || scopedIds.includes(classroomId);
+};
+
+const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
+  const byAcademy = new Map<string, MembershipRow>();
+  for (const row of rows) {
+    const tenantId = normalizeText(row.tenant_id, 64);
+    if (!tenantId) continue;
+    const normalizedRow: MembershipRow = {
+      ...row,
+      tenant_id: tenantId,
+      role: normalizeAcademyRole(row.role),
+      status: String(row.status ?? "active"),
+      classroom_ids: toStringArray(row.classroom_ids),
+    };
+    const existing = byAcademy.get(tenantId);
+    if (!existing) {
+      byAcademy.set(tenantId, normalizedRow);
+      continue;
+    }
+
+    const classroomIds = Array.from(new Set([...(existing.classroom_ids ?? []), ...(normalizedRow.classroom_ids ?? [])]));
+    const keepNew = academyRoleRank(normalizedRow.role) > academyRoleRank(existing.role);
+    byAcademy.set(tenantId, {
+      ...(keepNew ? normalizedRow : existing),
+      classroom_ids: classroomIds,
+      center_tenant_id: normalizedRow.center_tenant_id ?? existing.center_tenant_id ?? null,
+    });
+  }
+  return Array.from(byAcademy.values()).sort((a, b) => academyRoleRank(b.role) - academyRoleRank(a.role));
+};
+
+const loadScopedContactIds = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  classroomIds: string[] | null,
+): Promise<Set<string> | null> => {
+  if (classroomIds === null) return null;
+  if (classroomIds.length === 0) return new Set();
+  const { data, error } = await sb
+    .from("academy_classroom_memberships")
+    .select("contact_id")
+    .eq("academy_id", academyId)
+    .in("classroom_id", classroomIds)
+    .limit(10000);
+  if (error) throw new Error(`Failed to load classroom contact scope: ${error.message}`);
+  return new Set(
+    ((data ?? []) as Array<{ contact_id: string | null }>)
+      .map((row) => (row.contact_id ? String(row.contact_id) : ""))
+      .filter((id) => id.length > 0),
+  );
+};
+
+const ensureContactInAccessScope = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  access: MembershipRow,
+  contactIdRaw: unknown,
+): Promise<string> => {
+  const contactId = normalizeText(contactIdRaw, 64);
+  if (!contactId) throw new Error("contact_id is required");
+  const scopedIds = academyAccessClassroomIds(access);
+  if (scopedIds === null) return contactId;
+  const contactIds = await loadScopedContactIds(sb, academyId, scopedIds);
+  if (!contactIds?.has(contactId)) throw new Error("Forbidden");
+  return contactId;
+};
+
 type ClassroomChatViewer = {
   type: "teacher" | "student";
   role: string;
@@ -252,7 +480,22 @@ const loadStudentContacts = async (
   return (linkedRows ?? []) as Array<Record<string, unknown>>;
 };
 
-const loadMemberships = async (sb: SupabaseClientLike, userId: string): Promise<MembershipRow[]> => {
+const isAcademyTenantRow = (tenant: Record<string, unknown> | null | undefined): boolean => {
+  const tenantType = String(tenant?.type ?? "").toLowerCase();
+  const metadata = toJsonObject(tenant?.metadata);
+  return (
+    tenantType === "team" ||
+    String(metadata.service_family ?? "").toLowerCase() === "academy" ||
+    metadata.academy_service === true ||
+    metadata.center_owned === true
+  );
+};
+
+const loadMemberships = async (
+  sb: SupabaseClientLike,
+  userId: string,
+  userEmail: string | null = null,
+): Promise<MembershipRow[]> => {
   const { data, error } = await sb
     .from("tenant_memberships")
     .select("tenant_id, role, status, tenants ( id, type, metadata )")
@@ -260,17 +503,105 @@ const loadMemberships = async (sb: SupabaseClientLike, userId: string): Promise<
     .eq("status", "active")
     .order("created_at", { ascending: true });
   if (error) throw new Error("Failed to load academy memberships");
-  return ((data ?? []) as unknown as Array<MembershipRow & { tenants?: Record<string, unknown> | Record<string, unknown>[] | null }>).filter((row) => {
+
+  const membershipRows = (data ?? []) as unknown as Array<
+    MembershipRow & { tenants?: Record<string, unknown> | Record<string, unknown>[] | null }
+  >;
+
+  const accessRows: MembershipRow[] = [];
+
+  for (const row of membershipRows) {
     const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
-    const tenantType = String(tenant?.type ?? "").toLowerCase();
-    const metadata = toJsonObject(tenant?.metadata);
-    return (
-      tenantType === "team" ||
-      String(metadata.service_family ?? "").toLowerCase() === "academy" ||
-      metadata.academy_service === true ||
-      metadata.center_owned === true
-    );
-  });
+    if (!isAcademyTenantRow(tenant)) continue;
+    accessRows.push({
+      tenant_id: String(row.tenant_id ?? ""),
+      role: normalizeAcademyRole(row.role),
+      status: String(row.status ?? "active"),
+      source: "tenant",
+      classroom_ids: [],
+    });
+  }
+
+  const centerCandidateIds = Array.from(
+    new Set(
+      membershipRows
+        .filter((row) => ["owner", "admin"].includes(normalizeAcademyRole(row.role)))
+        .map((row) => String(row.tenant_id ?? ""))
+        .filter((id) => id.length > 0),
+    ),
+  );
+
+  if (centerCandidateIds.length > 0) {
+    const { data: centerProfiles, error: centerError } = await sb
+      .from("partner_center_profiles")
+      .select("tenant_id")
+      .in("tenant_id", centerCandidateIds);
+    if (centerError) throw new Error(`Failed to load education center profiles: ${centerError.message}`);
+
+    for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null }>) {
+      const centerTenantId = center.tenant_id ? String(center.tenant_id) : "";
+      if (!centerTenantId) continue;
+      const { data: childAcademies, error: childError } = await sb
+        .from("tenants")
+        .select("id")
+        .contains("metadata", { parent_center_id: centerTenantId, service_family: "academy" })
+        .limit(500);
+      if (childError) throw new Error(`Failed to load center academies: ${childError.message}`);
+      for (const academy of (childAcademies ?? []) as Array<{ id: string | null }>) {
+        const academyId = academy.id ? String(academy.id) : "";
+        if (!academyId) continue;
+        accessRows.push({
+          tenant_id: academyId,
+          role: "center_admin",
+          status: "active",
+          source: "center",
+          center_tenant_id: centerTenantId,
+          classroom_ids: [],
+        });
+      }
+    }
+  }
+
+  const staffRowsById = new Map<string, Record<string, unknown>>();
+  const { data: staffByUser, error: staffUserError } = await sb
+    .from("academy_staff")
+    .select("id, academy_id, user_id, email, role, classroom_ids, is_active")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .limit(1000);
+  if (staffUserError) throw new Error(`Failed to load academy staff access: ${staffUserError.message}`);
+  for (const row of (staffByUser ?? []) as Array<Record<string, unknown>>) {
+    staffRowsById.set(String(row.id ?? crypto.randomUUID()), row);
+  }
+
+  const normalizedEmail = normalizeEmail(userEmail);
+  if (normalizedEmail) {
+    const { data: staffByEmail, error: staffEmailError } = await sb
+      .from("academy_staff")
+      .select("id, academy_id, user_id, email, role, classroom_ids, is_active")
+      .eq("email", normalizedEmail)
+      .eq("is_active", true)
+      .limit(1000);
+    if (staffEmailError) throw new Error(`Failed to load academy staff email access: ${staffEmailError.message}`);
+    for (const row of (staffByEmail ?? []) as Array<Record<string, unknown>>) {
+      staffRowsById.set(String(row.id ?? crypto.randomUUID()), row);
+    }
+  }
+
+  for (const staff of staffRowsById.values()) {
+    const academyId = String(staff.academy_id ?? "");
+    if (!academyId) continue;
+    accessRows.push({
+      tenant_id: academyId,
+      role: normalizeAcademyRole(staff.role),
+      status: "active",
+      source: "staff",
+      staff_id: staff.id ? String(staff.id) : null,
+      classroom_ids: toStringArray(staff.classroom_ids),
+    });
+  }
+
+  return mergeAccessRows(accessRows);
 };
 
 const resolveAcademyId = (memberships: MembershipRow[], requested: string | null): string => {
@@ -278,12 +609,6 @@ const resolveAcademyId = (memberships: MembershipRow[], requested: string | null
   const found = memberships.find((m) => m.tenant_id === requested);
   if (!found) throw new Error("Forbidden");
   return requested;
-};
-
-const requireAcademyAdmin = (memberships: MembershipRow[], academyId: string): void => {
-  const found = memberships.find((m) => m.tenant_id === academyId);
-  if (!found) throw new Error("Forbidden");
-  if (!["owner", "admin"].includes(String(found.role))) throw new Error("Forbidden");
 };
 
 const ensureConversationId = async (
@@ -624,12 +949,11 @@ const resolveClassroomChatContext = async (
   if (classroomError) return json(500, { error: "Failed to load classroom", detail: classroomError.message });
   if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
 
+  const academyAccess = resolveAcademyAccess(memberships, academyId);
   const teacherMembership =
-    memberships.find((row) => {
-      if (row.tenant_id !== academyId || row.status !== "active") return false;
-      const role = String(row.role ?? "").toLowerCase();
-      return role === "owner" || role === "admin";
-    }) ?? null;
+    academyAccess && academyAccessHas(academyAccess, "viewClassrooms") && accessCanUseClassroom(academyAccess, classroomId)
+      ? academyAccess
+      : null;
   let viewerType: ClassroomChatViewer["type"] = "teacher";
   let viewerRole = String(teacherMembership?.role ?? "member");
   let viewerContactId: string | null = null;
@@ -1292,6 +1616,7 @@ const handleReadAction = async (
             created_at: String(academy.created_at ?? ""),
             role: String(membership.role ?? "member"),
             status: String(membership.status ?? "active"),
+            access: academyAccessProfile(membership),
           };
         })
         .filter((item): item is NonNullable<typeof item> => !!item),
@@ -1299,8 +1624,32 @@ const handleReadAction = async (
   }
 
   const academyId = resolveAcademyId(memberships, academyIdRaw);
+  const access = requireAcademyAccess(memberships, academyId);
+  const scopedClassroomIds = academyAccessClassroomIds(access);
 
   if (action === "summary") {
+    if (scopedClassroomIds !== null) {
+      const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+      const contactIds = Array.from(scopedContactIds ?? []);
+      const alertsQuery = sb
+        .from("academy_alerts")
+        .select("id", { count: "exact", head: true })
+        .eq("academy_id", academyId)
+        .eq("resolved", false);
+      const alertsResult = contactIds.length > 0 ? await alertsQuery.in("contact_id", contactIds) : { count: 0 };
+      return json(200, {
+        academy_id: academyId,
+        access: academyAccessProfile(access),
+        counts: {
+          contacts: contactIds.length,
+          classrooms: scopedClassroomIds.length,
+          offers: 0,
+          active_entitlements: 0,
+          open_alerts: alertsResult.count ?? 0,
+        },
+      });
+    }
+
     const [{ count: contacts }, { count: classrooms }, { count: offers }, { count: entitlements }, { count: alertsOpen }] =
       await Promise.all([
         sb.from("academy_contacts").select("id", { count: "exact", head: true }).eq("academy_id", academyId),
@@ -1312,41 +1661,55 @@ const handleReadAction = async (
 
     return json(200, {
       academy_id: academyId,
+      access: academyAccessProfile(access),
       counts: {
         contacts: contacts ?? 0,
         classrooms: classrooms ?? 0,
-        offers: offers ?? 0,
-        active_entitlements: entitlements ?? 0,
+        offers: academyAccessHas(access, "manageOffers") ? offers ?? 0 : 0,
+        active_entitlements: academyAccessHas(access, "manageFinance") ? entitlements ?? 0 : 0,
         open_alerts: alertsOpen ?? 0,
       },
     });
   }
 
   if (action === "contacts") {
-    const { data, error } = await sb
+    requireAcademyPermission(access, "viewContacts");
+    const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+    if (scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { contacts: [] });
+
+    let query = sb
       .from("academy_contacts")
       .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("created_at", { ascending: false })
       .limit(300);
+    if (scopedContactIds !== null) query = query.in("id", Array.from(scopedContactIds));
+    const { data, error } = await query;
     if (error) return json(500, { error: "Failed to load contacts", detail: error.message });
     return json(200, { contacts: data ?? [] });
   }
 
   if (action === "classrooms") {
-    const { data, error } = await sb
+    requireAcademyPermission(access, "viewClassrooms");
+    if (scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { classrooms: [] });
+
+    let classroomQuery = sb
       .from("academy_classrooms")
       .select("id, academy_id, name, description, is_active, metadata, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("created_at", { ascending: false })
       .limit(300);
+    if (scopedClassroomIds !== null) classroomQuery = classroomQuery.in("id", scopedClassroomIds);
+    const { data, error } = await classroomQuery;
     if (error) return json(500, { error: "Failed to load classrooms", detail: error.message });
 
-    const { data: membershipRows, error: membershipError } = await sb
+    let membershipQuery = sb
       .from("academy_classroom_memberships")
       .select("classroom_id")
       .eq("academy_id", academyId)
       .limit(5000);
+    if (scopedClassroomIds !== null) membershipQuery = membershipQuery.in("classroom_id", scopedClassroomIds);
+    const { data: membershipRows, error: membershipError } = await membershipQuery;
     if (membershipError) {
       return json(500, { error: "Failed to load classroom memberships", detail: membershipError.message });
     }
@@ -1370,7 +1733,12 @@ const handleReadAction = async (
   }
 
   if (action === "classroom-memberships") {
+    requireAcademyPermission(access, "viewClassrooms");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) {
+      return json(200, { classroom_memberships: [] });
+    }
 
     let query = sb
       .from("academy_classroom_memberships")
@@ -1380,18 +1748,25 @@ const handleReadAction = async (
       .limit(1000);
 
     if (classroomId) query = query.eq("classroom_id", classroomId);
+    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
     const { data, error } = await query;
     if (error) return json(500, { error: "Failed to load classroom memberships", detail: error.message });
     return json(200, { classroom_memberships: data ?? [] });
   }
 
   if (action === "conversations") {
-    const { data: conversations, error: conversationError } = await sb
+    requireAcademyPermission(access, "manageMessages");
+    const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+    if (scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { conversations: [] });
+
+    let conversationQuery = sb
       .from("academy_conversations")
       .select("id, academy_id, contact_id, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("updated_at", { ascending: false })
       .limit(500);
+    if (scopedContactIds !== null) conversationQuery = conversationQuery.in("contact_id", Array.from(scopedContactIds));
+    const { data: conversations, error: conversationError } = await conversationQuery;
     if (conversationError) return json(500, { error: "Failed to load conversations", detail: conversationError.message });
 
     const rows = (conversations ?? []) as Array<{ id: string; contact_id: string; created_at: string; updated_at: string }>;
@@ -1436,6 +1811,7 @@ const handleReadAction = async (
   }
 
   if (action === "conversation-messages") {
+    requireAcademyPermission(access, "manageMessages");
     const conversationIdParam = normalizeText(conversationIdRaw, 64) || null;
     const contactIdParam = normalizeText(contactIdRaw, 64) || null;
 
@@ -1463,6 +1839,7 @@ const handleReadAction = async (
       .maybeSingle();
     if (validateError) return json(500, { error: "Failed to load conversation", detail: validateError.message });
     if (!conversationRow?.id) return json(404, { error: "Conversation not found" });
+    await ensureContactInAccessScope(sb, academyId, access, conversationRow.contact_id);
 
     const { data, error } = await sb
       .from("academy_messages")
@@ -1476,7 +1853,43 @@ const handleReadAction = async (
   }
 
   if (action === "announcements") {
+    requireAcademyPermission(access, "manageAnnouncements");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null) {
+      const [globalRes, classroomRes] = await Promise.all([
+        sb
+          .from("academy_announcements")
+          .select("id, academy_id, classroom_id, title, body, metadata, created_by, created_at")
+          .eq("academy_id", academyId)
+          .is("classroom_id", null)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        scopedClassroomIds.length > 0
+          ? sb
+            .from("academy_announcements")
+            .select("id, academy_id, classroom_id, title, body, metadata, created_by, created_at")
+            .eq("academy_id", academyId)
+            .in("classroom_id", scopedClassroomIds)
+            .order("created_at", { ascending: false })
+            .limit(300)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (globalRes.error) return json(500, { error: "Failed to load announcements", detail: globalRes.error.message });
+      if (classroomRes.error) return json(500, { error: "Failed to load announcements", detail: classroomRes.error.message });
+      const announcementById = new Map<string, Record<string, unknown>>();
+      for (const row of [...(globalRes.data ?? []), ...(classroomRes.data ?? [])] as Array<Record<string, unknown>>) {
+        const id = String(row.id ?? "");
+        if (!id || announcementById.has(id)) continue;
+        announcementById.set(id, row);
+      }
+      return json(200, {
+        announcements: Array.from(announcementById.values()).sort((a, b) =>
+          Date.parse(String(b.created_at ?? "")) - Date.parse(String(a.created_at ?? "")),
+        ),
+      });
+    }
+
     let query = sb
       .from("academy_announcements")
       .select("id, academy_id, classroom_id, title, body, metadata, created_by, created_at")
@@ -1490,7 +1903,12 @@ const handleReadAction = async (
   }
 
   if (action === "alerts") {
+    requireAcademyPermission(access, "manageAlerts");
     const contactId = normalizeText(contactIdRaw, 64) || null;
+    const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+    if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
+    if (!contactId && scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { alerts: [] });
+
     let query = sb
       .from("academy_alerts")
       .select("id, academy_id, contact_id, type, severity, message, resolved, resolved_at, metadata, created_at")
@@ -1498,12 +1916,14 @@ const handleReadAction = async (
       .order("created_at", { ascending: false })
       .limit(500);
     if (contactId) query = query.eq("contact_id", contactId);
+    else if (scopedContactIds !== null) query = query.in("contact_id", Array.from(scopedContactIds));
     const { data, error } = await query;
     if (error) return json(500, { error: "Failed to load alerts", detail: error.message });
     return json(200, { alerts: data ?? [] });
   }
 
   if (action === "offers") {
+    if (!academyAccessHas(access, "manageOffers")) return json(200, { offers: [] });
     const { data, error } = await sb
       .from("academy_offers")
       .select("id, academy_id, name, type, price_amount, currency, duration_days, description, is_active, metadata, created_at, updated_at")
@@ -1515,6 +1935,7 @@ const handleReadAction = async (
   }
 
   if (action === "offer-grants") {
+    if (!academyAccessHas(access, "manageOffers")) return json(200, { offer_grants: [] });
     const offerId = normalizeText(offerIdRaw, 64) || null;
 
     let query = sb
@@ -1531,6 +1952,7 @@ const handleReadAction = async (
   }
 
   if (action === "payments") {
+    if (!academyAccessHas(access, "manageFinance")) return json(200, { payments: [] });
     const { data, error } = await sb
       .from("academy_payments")
       .select("id, academy_id, contact_id, offer_id, provider, provider_transaction_id, amount, currency, status, metadata, created_by, created_at, updated_at")
@@ -1544,7 +1966,10 @@ const handleReadAction = async (
   // ── LMS: Assignments ────────────────────────────────────────────────────
 
   if (action === "assignments") {
+    requireAcademyPermission(access, "manageAssignments");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { assignments: [] });
     let query = sb
       .from("academy_assignments")
       .select("id, academy_id, classroom_id, title, description, assignment_type, experience_id, due_at, released_at, prerequisite_id, position, max_score, score_weight, status, metadata, created_by, created_at, updated_at")
@@ -1552,6 +1977,7 @@ const handleReadAction = async (
       .neq("status", "archived")
       .order("position", { ascending: true });
     if (classroomId) query = query.eq("classroom_id", classroomId);
+    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
     const { data, error } = await query.limit(500);
     if (error) return json(500, { error: "Failed to load assignments", detail: error.message });
     return json(200, { assignments: data ?? [] });
@@ -1560,14 +1986,18 @@ const handleReadAction = async (
   // ── LMS: Submissions / Gradebook ────────────────────────────────────────
 
   if (action === "submissions") {
+    requireAcademyPermission(access, "gradeSubmissions");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     const assignmentId = normalizeText(assignmentIdRaw || contactIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { submissions: [] });
     let query = sb
       .from("academy_submissions")
       .select("id, academy_id, assignment_id, classroom_id, contact_id, user_id, session_id, score, max_score, status, submitted_at, graded_at, graded_by, notes, metadata, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("submitted_at", { ascending: false });
     if (classroomId) query = query.eq("classroom_id", classroomId);
+    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
     if (assignmentId) query = query.eq("assignment_id", assignmentId);
     const { data, error } = await query.limit(2000);
     if (error) return json(500, { error: "Failed to load submissions", detail: error.message });
@@ -1575,8 +2005,10 @@ const handleReadAction = async (
   }
 
   if (action === "gradebook") {
+    requireAcademyPermission(access, "gradeSubmissions");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     if (!classroomId) return json(400, { error: "classroom_id is required for gradebook" });
+    if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
     const [assignmentsResult, submissionsResult, membersResult] = await Promise.all([
       sb.from("academy_assignments")
@@ -1658,24 +2090,35 @@ const handleReadAction = async (
   // ── LMS: Student Progress ────────────────────────────────────────────────
 
   if (action === "student_progress") {
+    requireAcademyPermission(access, "viewContacts");
     const contactId = normalizeText(contactIdRaw, 64) || null;
     if (!contactId) return json(400, { error: "contact_id is required for student_progress" });
+    await ensureContactInAccessScope(sb, academyId, access, contactId);
+
+    let membershipsQuery = sb.from("academy_classroom_memberships")
+      .select("classroom_id, role, joined_at, academy_classrooms(id, name, is_active)")
+      .eq("academy_id", academyId).eq("contact_id", contactId).limit(50);
+    let submissionsQuery = sb.from("academy_submissions")
+      .select("id, assignment_id, classroom_id, score, max_score, status, submitted_at, graded_at, notes, academy_assignments(title, assignment_type, due_at, max_score)")
+      .eq("academy_id", academyId).eq("contact_id", contactId)
+      .order("submitted_at", { ascending: false }).limit(200);
+    let attendanceQuery = sb.from("academy_attendance")
+      .select("classroom_id, session_date, status, notes, marked_at")
+      .eq("academy_id", academyId).eq("contact_id", contactId)
+      .order("session_date", { ascending: false }).limit(90);
+    if (scopedClassroomIds !== null) {
+      membershipsQuery = scopedClassroomIds.length > 0 ? membershipsQuery.in("classroom_id", scopedClassroomIds) : membershipsQuery.eq("classroom_id", "__none__");
+      submissionsQuery = scopedClassroomIds.length > 0 ? submissionsQuery.in("classroom_id", scopedClassroomIds) : submissionsQuery.eq("classroom_id", "__none__");
+      attendanceQuery = scopedClassroomIds.length > 0 ? attendanceQuery.in("classroom_id", scopedClassroomIds) : attendanceQuery.eq("classroom_id", "__none__");
+    }
 
     const [contactResult, membershipsResult, submissionsResult, attendanceResult] = await Promise.all([
       sb.from("academy_contacts")
         .select("id, first_name, last_name, email, phone, status, last_activity_at, metadata, created_at")
         .eq("academy_id", academyId).eq("id", contactId).maybeSingle(),
-      sb.from("academy_classroom_memberships")
-        .select("classroom_id, role, joined_at, academy_classrooms(id, name, is_active)")
-        .eq("academy_id", academyId).eq("contact_id", contactId).limit(50),
-      sb.from("academy_submissions")
-        .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, academy_assignments(title, assignment_type, due_at, max_score)")
-        .eq("academy_id", academyId).eq("contact_id", contactId)
-        .order("submitted_at", { ascending: false }).limit(200),
-      sb.from("academy_attendance")
-        .select("session_date, status, notes, marked_at")
-        .eq("academy_id", academyId).eq("contact_id", contactId)
-        .order("session_date", { ascending: false }).limit(90),
+      membershipsQuery,
+      submissionsQuery,
+      attendanceQuery,
     ]);
 
     if (!contactResult.data) return json(404, { error: "Contact not found" });
@@ -1712,8 +2155,10 @@ const handleReadAction = async (
   // ── LMS: Attendance ──────────────────────────────────────────────────────
 
   if (action === "attendance") {
+    requireAcademyPermission(access, "markAttendance");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     if (!classroomId) return json(400, { error: "classroom_id is required" });
+    if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
     const { data, error } = await sb
       .from("academy_attendance")
@@ -1727,19 +2172,24 @@ const handleReadAction = async (
   // ── LMS: Bulk Invites ────────────────────────────────────────────────────
 
   if (action === "bulk_invites") {
+    requireAcademyPermission(access, "manageRoster");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { bulk_invites: [] });
     let query = sb
       .from("academy_bulk_invites")
       .select("id, classroom_id, email, first_name, last_name, status, invited_at, joined_at, error")
       .eq("academy_id", academyId)
       .order("invited_at", { ascending: false });
     if (classroomId) query = query.eq("classroom_id", classroomId);
+    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
     const { data, error } = await query.limit(500);
     if (error) return json(500, { error: "Failed to load bulk invites", detail: error.message });
     return json(200, { bulk_invites: data ?? [] });
   }
 
   if (action === "referral_leaderboard") {
+    if (!academyAccessHas(access, "viewReferrals")) return json(200, { leaderboard: [] });
     const { data: refs, error } = await sb.from("academy_referrals")
       .select("referrer_contact_id, status").eq("academy_id", academyId).not("referred_contact_id", "is", null).limit(20000);
     if (error) return json(500, { error: "Failed to load referrals", detail: error.message });
@@ -1774,6 +2224,7 @@ const handleReadAction = async (
   }
 
   if (action === "staff") {
+    if (!academyAccessHas(access, "manageStaff")) return json(200, { staff: [] });
     const { data, error } = await sb.from("academy_staff")
       .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500);
@@ -1782,6 +2233,16 @@ const handleReadAction = async (
   }
 
   if (action === "owner_dashboard") {
+    if (!academyAccessHas(access, "manageFinance")) {
+      return json(200, {
+        revenue: { currency: "UZS", collected_total: 0, collected_this_month: 0, outstanding: 0, paid_count: 0 },
+        funnel: {},
+        total_students: 0,
+        total_classrooms: 0,
+        classroom_stats: [],
+        attendance_trend: [],
+      });
+    }
     const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
@@ -1856,16 +2317,19 @@ const handleReadAction = async (
   }
 
   if (action === "education_os") {
+    requireAcademyPermission(access, "viewEducationOS");
     const os = await buildEducationOS(sb, academyId, null);
-    return json(200, os);
+    return json(200, await filterEducationOSForAccess(sb, academyId, access, os));
   }
 
   if (action === "automation_rules") {
+    if (!academyAccessHas(access, "manageAutomation")) return json(200, { automation_rules: [] });
     const automationRules = await loadEducationAutomationRules(sb, academyId, null);
     return json(200, { automation_rules: automationRules });
   }
 
   if (action === "branding") {
+    if (!academyAccessHas(access, "manageBranding")) return json(200, { branding: null });
     const { data, error } = await sb.from("academy_branding")
       .select("id, academy_id, display_name, tagline, logo_url, favicon_url, primary_color, accent_color, hide_schood_logo, custom_domain, custom_domain_verified, footer_text, metadata, updated_at")
       .eq("academy_id", academyId).maybeSingle();
@@ -1874,6 +2338,7 @@ const handleReadAction = async (
   }
 
   if (action === "notifications") {
+    if (!academyAccessHas(access, "viewNotifications")) return json(200, { notifications: [] });
     const { data, error } = await sb.from("academy_notifications")
       .select("id, contact_id, channel, type, title, body, status, error, sent_at, scheduled_at, created_at")
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200);
@@ -1882,8 +2347,12 @@ const handleReadAction = async (
   }
 
   if (action === "classroom_billing") {
+    if (!academyAccessHas(access, "manageFinance")) {
+      return json(200, { classroom_id: normalizeText(classroomIdRaw, 64) || null, has_tuition: false, offers: [], students: [], paid_count: 0, unpaid_count: 0 });
+    }
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     if (!classroomId) return json(400, { error: "classroom_id is required" });
+    if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
     const [offersRes, membersRes, entRes, paymentsRes] = await Promise.all([
       sb.from("academy_offers")
@@ -1940,15 +2409,21 @@ const handleReadAction = async (
   }
 
   if (action === "schedule") {
+    requireAcademyPermission(access, "manageSchedule");
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
+    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { schedule: [] });
     let query = sb.from("academy_classroom_schedules")
       .select("id, academy_id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active, created_at")
       .eq("academy_id", academyId).eq("is_active", true).order("day_of_week").order("start_time");
     if (classroomId) query = query.eq("classroom_id", classroomId);
+    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
     const { data, error } = await query.limit(200);
     if (error) return json(500, { error: "Failed to load schedule", detail: error.message });
     return json(200, { schedule: data ?? [] });
   }
+
+  if (!academyAccessHas(access, "manageFinance")) return json(200, { entitlements: [] });
 
   const { data, error } = await sb
     .from("academy_entitlements")
@@ -2755,6 +3230,122 @@ const buildEducationOS = async (
 
 // ── Engagement maintenance (shared by manual actions + cron worker) ───────────
 
+const filterEducationOSForAccess = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  access: MembershipRow,
+  os: Record<string, unknown>,
+): Promise<Record<string, unknown>> => {
+  const scopedClassroomIds = academyAccessClassroomIds(access);
+  const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+  const canSeeFinance = academyAccessHas(access, "manageFinance");
+  const canManageAutomation = academyAccessHas(access, "manageAutomation");
+  const canIssueCertificates = academyAccessHas(access, "issueCertificates");
+  const canUseGrowthOps = academyAccessHas(access, "viewReports");
+  const allowedTeacherActionSources = new Set([
+    "alert",
+    "grading_backlog",
+    "missing_assignment",
+    "schedule_gap",
+    "attendance_roll_call",
+  ]);
+
+  const classroomAllowed = (value: unknown): boolean => {
+    const classroomId = normalizeText(value, 64);
+    if (!classroomId) return scopedClassroomIds === null;
+    return scopedClassroomIds === null || scopedClassroomIds.includes(classroomId);
+  };
+
+  const contactAllowed = (value: unknown): boolean => {
+    const contactId = normalizeText(value, 64);
+    if (!contactId) return scopedContactIds === null;
+    return scopedContactIds === null || scopedContactIds.has(contactId);
+  };
+
+  const rowAllowed = (row: Record<string, unknown>): boolean => {
+    const classroomId = normalizeText(row.classroom_id, 64);
+    const contactId = normalizeText(row.contact_id, 64);
+    if (classroomId && !classroomAllowed(classroomId)) return false;
+    if (contactId && !contactAllowed(contactId)) return false;
+    if (!classroomId && !contactId && scopedClassroomIds !== null) return false;
+    return true;
+  };
+
+  const actionQueue = ((os.action_queue ?? []) as Array<Record<string, unknown>>)
+    .filter(rowAllowed)
+    .filter((item) => {
+      const sourceType = normalizeText(item.source_type, 80);
+      if (!canSeeFinance && ["renewal", "payment", "payment_due"].includes(sourceType)) return false;
+      if (!canIssueCertificates && sourceType === "certificate_ready") return false;
+      if (scopedClassroomIds !== null && !allowedTeacherActionSources.has(sourceType)) return false;
+      return true;
+    });
+
+  const pipeline = ((os.pipeline ?? []) as Array<Record<string, unknown>>)
+    .filter((row) => {
+      const contactId = normalizeText(row.contact_id, 64);
+      if (contactId && !contactAllowed(contactId)) return false;
+      if (scopedClassroomIds === null) return true;
+      const classroomIds = toStringArray(row.classroom_ids);
+      return classroomIds.some((classroomId) => scopedClassroomIds.includes(classroomId));
+    })
+    .map((row) => {
+      if (canSeeFinance) return row;
+      return {
+        ...row,
+        pending_amount: 0,
+        entitlement_expires_at: null,
+      };
+    });
+
+  const pipelineCounts = pipeline.reduce<Record<string, number>>((acc, row) => {
+    const stage = normalizeText(row.stage, 40) || "enrolled";
+    acc[stage] = (acc[stage] ?? 0) + 1;
+    return acc;
+  }, { lead: 0, placement: 0, enrolled: 0, learning: 0, attention: 0, renewal: 0, completion: 0 } as Record<string, number>);
+
+  const calendarEvents = ((os.calendar_events ?? []) as Array<Record<string, unknown>>)
+    .filter(rowAllowed)
+    .filter((event) => {
+      const eventType = normalizeText(event.type, 80);
+      if (!canSeeFinance && ["payment", "renewal", "notification"].includes(eventType)) return false;
+      return true;
+    });
+
+  const intelligence = ((os.intelligence ?? []) as Array<Record<string, unknown>>)
+    .filter((insight) => {
+      if (!rowAllowed(insight)) return false;
+      const type = normalizeText(insight.type, 80);
+      if (!canSeeFinance && ["revenue", "renewal", "payment"].includes(type)) return false;
+      if (!canManageAutomation && type === "automation") return false;
+      if (!canUseGrowthOps && ["growth", "queue"].includes(type) && scopedClassroomIds !== null) return false;
+      return scopedClassroomIds === null || Boolean(insight.classroom_id || insight.contact_id) || ["learning", "attendance"].includes(type);
+    });
+
+  const gradingBacklog = actionQueue.filter((item) => normalizeText(item.source_type, 80) === "grading_backlog").length;
+  const certificateReady = pipeline.filter((row) => row.certificate_ready === true).length;
+  const placementGap = pipeline.filter((row) => normalizeText(row.stage, 40) === "placement").length;
+  const highPriorityActions = actionQueue.filter((item) => ["critical", "high"].includes(String(item.priority))).length;
+
+  return {
+    ...os,
+    access: academyAccessProfile(access),
+    action_queue: actionQueue,
+    pipeline,
+    pipeline_counts: pipelineCounts,
+    automation_rules: canManageAutomation ? os.automation_rules ?? [] : [],
+    calendar_events: calendarEvents,
+    intelligence,
+    stats: {
+      open_actions: actionQueue.filter((item) => String(item.status ?? "open") === "open").length,
+      urgent_actions: highPriorityActions,
+      grading_backlog: gradingBacklog,
+      certificate_ready: canIssueCertificates ? certificateReady : 0,
+      placement_gap: placementGap,
+    },
+  };
+};
+
 type AtRiskEntry = {
   contact_id: string;
   name: string;
@@ -3151,7 +3742,7 @@ serve(async (req) => {
       return await loadStudentDashboard(sb, userId, userEmail);
     }
 
-    const memberships = await loadMemberships(sb, userId);
+    const memberships = await loadMemberships(sb, userId, userEmail);
 
     if (requestedAction === "classroom-chat") {
       const academyId =
@@ -3531,18 +4122,90 @@ serve(async (req) => {
             created_at: String(academyRow.created_at ?? ""),
             role: "owner",
             status: "active",
+            access: academyAccessProfile({
+              tenant_id: String(academyRow.id),
+              role: "owner",
+              status: "active",
+              source: "tenant",
+              classroom_ids: [],
+            }),
           },
         });
       }
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
-      requireAcademyAdmin(memberships, academyId);
+      const access = requireAcademyAccess(memberships, academyId);
+      const actionPermissions: Record<string, keyof AcademyAccessPermissions> = {
+        resolve_action_item: "resolveActionItems",
+        set_lifecycle_stage: "manageContacts",
+        upsert_automation_rule: "manageAutomation",
+        run_automation_rules: "manageAutomation",
+        update_academy_landing: "manageAcademy",
+        update_classroom_landing: "manageClassrooms",
+        upsert_contact: "manageContacts",
+        create_classroom: "manageClassrooms",
+        upsert_classroom_membership: "manageRoster",
+        remove_classroom_membership: "manageRoster",
+        send_message: "manageMessages",
+        send_announcement: "manageAnnouncements",
+        create_alert: "manageAlerts",
+        resolve_alert: "resolveAlerts",
+        create_offer: "manageOffers",
+        upsert_offer_grant: "manageOffers",
+        create_payment: "manageFinance",
+        mark_payment_paid: "manageFinance",
+        grant_contact: "manageFinance",
+        create_assignment: "manageAssignments",
+        update_assignment: "manageAssignments",
+        submit_assignment: "manageAssignments",
+        grade_submission: "gradeSubmissions",
+        mark_attendance: "markAttendance",
+        bulk_invite: "manageRoster",
+        update_classroom_settings: "manageClassrooms",
+        export_gradebook: "gradeSubmissions",
+        upsert_schedule: "manageSchedule",
+        delete_schedule: "manageSchedule",
+        record_placement: "manageContacts",
+        upsert_staff: "manageStaff",
+        remove_staff: "manageStaff",
+        issue_academy_certificate: "issueCertificates",
+        compute_at_risk: "viewEducationOS",
+        dispatch_notifications: "dispatchNotifications",
+        generate_parent_report: "viewReports",
+        upsert_branding: "manageBranding",
+      };
+      const requiredPermission = actionPermissions[actionBody];
+      if (requiredPermission) requireAcademyPermission(access, requiredPermission);
 
       if (actionBody === "resolve_action_item") {
         const actionItemId = normalizeText(body?.id, 64);
         const nextStatus = normalizeText(body?.status, 20).toLowerCase() || "resolved";
         if (!actionItemId) return json(400, { error: "id is required" });
         if (!["resolved", "dismissed", "snoozed", "open"].includes(nextStatus)) return json(400, { error: "Invalid action item status" });
+
+        const { data: existingAction, error: existingActionError } = await sb.from("academy_action_items")
+          .select("id, source_type, contact_id, classroom_id")
+          .eq("academy_id", academyId)
+          .eq("id", actionItemId)
+          .maybeSingle();
+        if (existingActionError) return json(500, { error: "Failed to load action item", detail: existingActionError.message });
+        if (!existingAction?.id) return json(404, { error: "Action item not found" });
+        const sourceType = normalizeText(existingAction.source_type, 80);
+        if (!academyAccessHas(access, "manageFinance") && ["renewal", "payment", "payment_due"].includes(sourceType)) {
+          return json(403, { error: "Forbidden" });
+        }
+        if (!academyAccessHas(access, "issueCertificates") && sourceType === "certificate_ready") {
+          return json(403, { error: "Forbidden" });
+        }
+        if (existingAction.classroom_id && !accessCanUseClassroom(access, existingAction.classroom_id)) {
+          return json(403, { error: "Forbidden" });
+        }
+        if (existingAction.contact_id) {
+          await ensureContactInAccessScope(sb, academyId, access, existingAction.contact_id);
+        }
+        if (!existingAction.classroom_id && !existingAction.contact_id && academyAccessClassroomIds(access) !== null) {
+          return json(403, { error: "Forbidden" });
+        }
 
         const patch: Record<string, unknown> = {
           status: nextStatus,
@@ -3693,6 +4356,7 @@ serve(async (req) => {
             created_at: String(updatedAcademy.created_at ?? academyRow.created_at ?? ""),
             role: String(membership?.role ?? "member"),
             status: String(membership?.status ?? "active"),
+            access: academyAccessProfile(access),
           },
         });
       }
@@ -3979,6 +4643,7 @@ serve(async (req) => {
           if (!contactRow?.id) return json(404, { error: "Contact not found" });
           conversationId = await ensureConversationId(sb, academyId, contactId);
         }
+        if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         const metadata = body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
           ? body.metadata
@@ -4010,6 +4675,10 @@ serve(async (req) => {
         const classroomId = normalizeText(body?.classroom_id, 64) || null;
         if (!title) return json(400, { error: "title is required" });
         if (!announcementBody) return json(400, { error: "content is required" });
+        if (!classroomId && !academyAccessHas(access, "sendGlobalAnnouncements")) {
+          return json(403, { error: "Forbidden" });
+        }
+        if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         if (classroomId) {
           const { data: classroomRow, error: classroomError } = await sb
@@ -4157,6 +4826,10 @@ serve(async (req) => {
         if (!["low", "medium", "high", "critical"].includes(severity)) {
           return json(400, { error: "severity must be low, medium, high, or critical" });
         }
+        if (!contactId && !academyAccessHas(access, "sendGlobalAnnouncements")) {
+          return json(403, { error: "Forbidden" });
+        }
+        if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         if (contactId) {
           const { data: contactRow, error: contactError } = await sb
@@ -4172,6 +4845,8 @@ serve(async (req) => {
         const alertMetadata = body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
           ? body.metadata
           : {};
+        const alertClassroomId = normalizeText((alertMetadata as Record<string, unknown>).classroom_id, 64);
+        if (alertClassroomId && !accessCanUseClassroom(access, alertClassroomId)) return json(403, { error: "Forbidden" });
 
         const { data: alertRow, error: alertError } = await sb
           .from("academy_alerts")
@@ -4290,6 +4965,23 @@ serve(async (req) => {
       if (actionBody === "resolve_alert") {
         const alertId = normalizeText(body?.id, 64);
         if (!alertId) return json(400, { error: "id is required" });
+
+        const { data: existingAlert, error: loadAlertError } = await sb
+          .from("academy_alerts")
+          .select("id, contact_id, metadata")
+          .eq("academy_id", academyId)
+          .eq("id", alertId)
+          .maybeSingle();
+        if (loadAlertError) return json(500, { error: "Failed to load alert", detail: loadAlertError.message });
+        if (!existingAlert?.id) return json(404, { error: "Alert not found" });
+        if (existingAlert.contact_id) await ensureContactInAccessScope(sb, academyId, access, existingAlert.contact_id);
+        const existingAlertClassroomId = normalizeText(toJsonObject(existingAlert.metadata).classroom_id, 64);
+        if (existingAlertClassroomId && !accessCanUseClassroom(access, existingAlertClassroomId)) {
+          return json(403, { error: "Forbidden" });
+        }
+        if (!existingAlert.contact_id && !existingAlertClassroomId && academyAccessClassroomIds(access) !== null) {
+          return json(403, { error: "Forbidden" });
+        }
 
         const { data: alertRow, error: alertError } = await sb
           .from("academy_alerts")
@@ -4585,6 +5277,7 @@ serve(async (req) => {
         const title = normalizeText(body?.title, 220);
         if (!classroomId) return json(400, { error: "classroom_id is required" });
         if (!title) return json(400, { error: "title is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const { data: classroomRow } = await sb.from("academy_classrooms").select("id").eq("id", classroomId).eq("academy_id", academyId).maybeSingle();
         if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
@@ -4622,6 +5315,7 @@ serve(async (req) => {
 
         const { data: existing } = await sb.from("academy_assignments").select("id, classroom_id").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
         if (!existing?.id) return json(404, { error: "Assignment not found" });
+        if (!accessCanUseClassroom(access, existing.classroom_id)) return json(403, { error: "Forbidden" });
 
         const patch: Record<string, unknown> = {};
         if (typeof body?.title === "string") patch.title = normalizeText(body.title, 220);
@@ -4653,6 +5347,8 @@ serve(async (req) => {
 
         const { data: asgn } = await sb.from("academy_assignments").select("id, classroom_id, max_score").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
         if (!asgn?.id) return json(404, { error: "Assignment not found" });
+        if (!accessCanUseClassroom(access, asgn.classroom_id)) return json(403, { error: "Forbidden" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         const { data: contact } = await sb.from("academy_contacts").select("id, user_id").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
         if (!contact?.id) return json(404, { error: "Contact not found" });
@@ -4698,6 +5394,16 @@ serve(async (req) => {
         }
         if (!targetId) return json(404, { error: "Submission not found" });
 
+        const { data: existingSubmission, error: existingSubmissionError } = await sb.from("academy_submissions")
+          .select("id, classroom_id, contact_id")
+          .eq("id", targetId)
+          .eq("academy_id", academyId)
+          .maybeSingle();
+        if (existingSubmissionError) return json(500, { error: "Failed to load submission", detail: existingSubmissionError.message });
+        if (!existingSubmission?.id) return json(404, { error: "Submission not found" });
+        if (!accessCanUseClassroom(access, existingSubmission.classroom_id)) return json(403, { error: "Forbidden" });
+        await ensureContactInAccessScope(sb, academyId, access, existingSubmission.contact_id);
+
         const patch: Record<string, unknown> = {
           score,
           status: "graded",
@@ -4717,6 +5423,7 @@ serve(async (req) => {
       if (actionBody === "mark_attendance") {
         const classroomId = normalizeText(body?.classroom_id, 64);
         if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const records = Array.isArray(body?.records) ? body.records as Array<Record<string, unknown>> : [];
         if (records.length === 0) return json(400, { error: "records array is required" });
@@ -4735,6 +5442,15 @@ serve(async (req) => {
           marked_by: userId,
           marked_at: new Date().toISOString(),
         })).filter((r) => r.contact_id);
+        const { data: memberRows, error: memberRowsError } = await sb.from("academy_classroom_memberships")
+          .select("contact_id")
+          .eq("academy_id", academyId)
+          .eq("classroom_id", classroomId)
+          .in("role", ["student", "observer"])
+          .limit(1000);
+        if (memberRowsError) return json(500, { error: "Failed to verify classroom members", detail: memberRowsError.message });
+        const memberContactIds = new Set(((memberRows ?? []) as Array<{ contact_id: string | null }>).map((row) => String(row.contact_id ?? "")));
+        if (rows.some((row) => !memberContactIds.has(row.contact_id))) return json(403, { error: "Forbidden" });
 
         const { data, error } = await sb.from("academy_attendance")
           .upsert(rows, { onConflict: "classroom_id,contact_id,session_date" })
@@ -4745,6 +5461,7 @@ serve(async (req) => {
 
       if (actionBody === "bulk_invite") {
         const classroomId = normalizeText(body?.classroom_id, 64) || null;
+        if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
         const entries = Array.isArray(body?.contacts) ? body.contacts as Array<Record<string, unknown>> : [];
         if (entries.length === 0) return json(400, { error: "contacts array is required" });
         if (entries.length > 200) return json(400, { error: "Maximum 200 contacts per bulk invite" });
@@ -4816,6 +5533,7 @@ serve(async (req) => {
       if (actionBody === "update_classroom_settings") {
         const classroomId = normalizeText(body?.classroom_id, 64);
         if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const { data: existing } = await sb.from("academy_classrooms").select("id, metadata, score_weights").eq("id", classroomId).eq("academy_id", academyId).maybeSingle();
         if (!existing?.id) return json(404, { error: "Classroom not found" });
@@ -4840,6 +5558,7 @@ serve(async (req) => {
       if (actionBody === "export_gradebook") {
         const classroomId = normalizeText(body?.classroom_id, 64);
         if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const [assignmentsResult, submissionsResult, membersResult] = await Promise.all([
           sb.from("academy_assignments").select("id, title, assignment_type, due_at, max_score, position").eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived").order("position").limit(200),
@@ -4880,6 +5599,7 @@ serve(async (req) => {
       if (actionBody === "upsert_schedule") {
         const classroomId = normalizeText(body?.classroom_id, 64);
         if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
         const dayOfWeek = toIntOrNull(body?.day_of_week);
         if (dayOfWeek === null || dayOfWeek < 0 || dayOfWeek > 6) return json(400, { error: "day_of_week 0–6 is required" });
         const startTime = normalizeText(body?.start_time, 10);
@@ -4911,6 +5631,14 @@ serve(async (req) => {
       if (actionBody === "delete_schedule") {
         const scheduleId = normalizeText(body?.id, 64);
         if (!scheduleId) return json(400, { error: "id is required" });
+        const { data: scheduleRow, error: scheduleLoadError } = await sb.from("academy_classroom_schedules")
+          .select("id, classroom_id")
+          .eq("id", scheduleId)
+          .eq("academy_id", academyId)
+          .maybeSingle();
+        if (scheduleLoadError) return json(500, { error: "Failed to load schedule slot", detail: scheduleLoadError.message });
+        if (!scheduleRow?.id) return json(404, { error: "Schedule slot not found" });
+        if (!accessCanUseClassroom(access, scheduleRow.classroom_id)) return json(403, { error: "Forbidden" });
         const { error } = await sb.from("academy_classroom_schedules").delete().eq("id", scheduleId).eq("academy_id", academyId);
         if (error) return json(500, { error: "Failed to delete schedule slot", detail: error.message });
         return json(200, { ok: true });
@@ -4989,6 +5717,8 @@ serve(async (req) => {
         const examType = normalizeText(body?.exam_type, 40).toLowerCase() || "academy";
 
         if (!contactId) return json(400, { error: "contact_id is required" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
+        if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const { data: contact } = await sb.from("academy_contacts")
           .select("id, user_id, first_name, last_name, email").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
@@ -5044,7 +5774,13 @@ serve(async (req) => {
       }
 
       if (actionBody === "compute_at_risk") {
-        const classroomId = normalizeText(body?.classroom_id, 64) || null;
+        let classroomId = normalizeText(body?.classroom_id, 64) || null;
+        const scopedClassroomIds = academyAccessClassroomIds(access);
+        if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+        if (!classroomId && scopedClassroomIds !== null) {
+          if (scopedClassroomIds.length !== 1) return json(400, { error: "classroom_id is required" });
+          classroomId = scopedClassroomIds[0];
+        }
         const { atRisk, scanned } = await computeAtRiskForAcademy(sb, academyId, classroomId);
         return json(200, { at_risk: atRisk, scanned });
       }
@@ -5060,6 +5796,7 @@ serve(async (req) => {
         const expiresInDays = typeof body?.expires_in_days === "number" ? Math.min(Math.max(1, body.expires_in_days), 365) : 180;
 
         if (!contactId) return json(400, { error: "contact_id is required" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         const { data: contact } = await sb.from("academy_contacts").select("id, first_name, last_name").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
         if (!contact?.id) return json(404, { error: "Contact not found" });

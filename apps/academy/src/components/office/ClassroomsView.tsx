@@ -29,6 +29,9 @@ type ClassroomsViewProps = {
   onResolveActionItem: (item: TeacherStudioActionItem, status?: ActionStatus) => Promise<void>;
   onOpenActionItem: (item: TeacherStudioActionItem) => void;
   formatDate: (iso: string | null | undefined) => string;
+  canManageClassrooms: boolean;
+  canManageRoster: boolean;
+  canResolveActionItems: boolean;
 };
 
 const priorityClass = (priority: string): string => {
@@ -92,6 +95,9 @@ export const ClassroomsView = ({
   onResolveActionItem,
   onOpenActionItem,
   formatDate,
+  canManageClassrooms,
+  canManageRoster,
+  canResolveActionItems,
 }: ClassroomsViewProps) => {
   const classroomNameById = new Map(classrooms.map((item) => [item.id, item.name]));
   const contactById = new Map(contacts.map((item) => [item.id, item]));
@@ -211,9 +217,11 @@ export const ClassroomsView = ({
                     <button className="small-btn" type="button" onClick={() => onOpenActionItem(item)}>
                       Open
                     </button>
-                    <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
-                      Done
-                    </button>
+                    {canResolveActionItems ? (
+                      <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
+                        Done
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               );
@@ -273,68 +281,74 @@ export const ClassroomsView = ({
         </div>
       </section>
 
-      <section className="grid two">
-        <form className="panel" onSubmit={onCreateClassroom}>
-          <h3>Create classroom</h3>
-          <input
-            className="input"
-            placeholder="Classroom name"
-            value={classroomForm.name}
-            onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))}
-            required
-          />
-          <textarea
-            className="input"
-            placeholder="Description (optional)"
-            value={classroomForm.description}
-            onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))}
-          />
-          <button className="primary-btn" type="submit" disabled={busy}>
-            Save classroom
-          </button>
-        </form>
+      {canManageClassrooms || canManageRoster ? (
+        <section className="grid two">
+          {canManageClassrooms ? (
+            <form className="panel" onSubmit={onCreateClassroom}>
+              <h3>Create classroom</h3>
+              <input
+                className="input"
+                placeholder="Classroom name"
+                value={classroomForm.name}
+                onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))}
+                required
+              />
+              <textarea
+                className="input"
+                placeholder="Description (optional)"
+                value={classroomForm.description}
+                onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))}
+              />
+              <button className="primary-btn" type="submit" disabled={busy}>
+                Save classroom
+              </button>
+            </form>
+          ) : null}
 
-        <form className="panel" onSubmit={onSaveMembership}>
-          <h3>Assign student</h3>
-          <select
-            className="input"
-            value={membershipForm.classroom_id}
-            onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))}
-            required
-          >
-            <option value="">Select classroom</option>
-            {classrooms.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="input"
-            value={membershipForm.contact_id}
-            onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))}
-            required
-          >
-            <option value="">Select contact</option>
-            {contacts.map((item) => (
-              <option key={item.id} value={item.id}>
-                {contactLabel(item, item.id)}
-              </option>
-            ))}
-          </select>
-          <select
-            className="input"
-            value={membershipForm.role}
-            onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}
-          >
-            <option value="student">student</option>
-            <option value="assistant">assistant</option>
-          </select>
-          <button className="primary-btn" type="submit" disabled={busy}>
-            Save membership
-          </button>
-        </form>
-      </section>
+          {canManageRoster ? (
+            <form className="panel" onSubmit={onSaveMembership}>
+              <h3>Assign student</h3>
+              <select
+                className="input"
+                value={membershipForm.classroom_id}
+                onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))}
+                required
+              >
+                <option value="">Select classroom</option>
+                {classrooms.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="input"
+                value={membershipForm.contact_id}
+                onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))}
+                required
+              >
+                <option value="">Select contact</option>
+                {contacts.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {contactLabel(item, item.id)}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="input"
+                value={membershipForm.role}
+                onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}
+              >
+                <option value="student">student</option>
+                <option value="assistant">assistant</option>
+              </select>
+              <button className="primary-btn" type="submit" disabled={busy}>
+                Save membership
+              </button>
+            </form>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="panel">
         <h3>Classrooms</h3>
@@ -409,14 +423,16 @@ export const ClassroomsView = ({
                     <td>{item.role}</td>
                     <td>{formatDate(item.joined_at)}</td>
                     <td>
-                      <button
-                        className="small-btn danger-btn"
-                        type="button"
-                        disabled={busy}
-                        onClick={() => void onRemoveMembership(item.id)}
-                      >
-                        Remove
-                      </button>
+                      {canManageRoster ? (
+                        <button
+                          className="small-btn danger-btn"
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void onRemoveMembership(item.id)}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
                     </td>
                   </tr>
                 );

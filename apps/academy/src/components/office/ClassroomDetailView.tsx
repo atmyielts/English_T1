@@ -35,6 +35,7 @@ type ClassroomDetailViewProps = {
   educationOS: TeacherStudioEducationOS | null;
   onResolveActionItem: (item: TeacherStudioActionItem, status?: ActionStatus) => Promise<void>;
   onOpenActionItem: (item: TeacherStudioActionItem) => void;
+  canResolveActionItems: boolean;
   formatDate: (iso: string | null | undefined) => string;
   statusClass: (status: string) => string;
   onBack: () => void;
@@ -85,6 +86,7 @@ export const ClassroomDetailView = ({
   educationOS,
   onResolveActionItem,
   onOpenActionItem,
+  canResolveActionItems,
   formatDate,
   statusClass,
   onBack,
@@ -244,7 +246,7 @@ export const ClassroomDetailView = ({
                     {row.certificateReady ? <div className="small status status--ok">certificate ready</div> : null}
                   </td>
                   <td>
-                    {row.nextAction ? (
+                    {row.nextAction && canResolveActionItems ? (
                       <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(row.nextAction!)}>
                         Done
                       </button>
@@ -286,9 +288,11 @@ export const ClassroomDetailView = ({
                     <button className="small-btn" type="button" onClick={() => onOpenActionItem(item)}>
                       Open
                     </button>
-                    <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
-                      Done
-                    </button>
+                    {canResolveActionItems ? (
+                      <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
+                        Done
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               );

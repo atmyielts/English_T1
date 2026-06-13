@@ -56,6 +56,7 @@ import {
   teacherStudioUpsertContact,
   teacherStudioUpsertOfferGrant,
   type TeacherStudioAcademy,
+  type TeacherStudioAccessProfile,
   type TeacherStudioActionItem,
   type TeacherStudioAlert,
   type TeacherStudioAnnouncement,
@@ -170,6 +171,86 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   offers: 'Offers',
   payments: 'Payments',
   entitlements: 'Entitlements',
+};
+
+type AccessPermissionKey = keyof TeacherStudioAccessProfile['permissions'];
+
+const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
+  academy: 'viewAcademy',
+  os: 'viewEducationOS',
+  contacts: 'viewContacts',
+  inbox: 'manageMessages',
+  announcements: 'manageAnnouncements',
+  alerts: 'manageAlerts',
+  classrooms: 'viewClassrooms',
+  offers: 'manageOffers',
+  payments: 'manageFinance',
+  entitlements: 'manageFinance',
+};
+
+const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile['source'] = 'tenant'): TeacherStudioAccessProfile => {
+  const role = String(roleRaw || 'member').toLowerCase();
+  const admin = role === 'owner' || role === 'admin' || role === 'center_admin';
+  const manager = role === 'manager' || role === 'counselor';
+  const teaching = admin || manager || role === 'teacher' || role === 'assistant' || role === 'member';
+  return {
+    role,
+    source,
+    scope: admin || manager ? 'academy' : 'assigned_classrooms',
+    classroom_ids: [],
+    center_tenant_id: null,
+    permissions: {
+      viewAcademy: admin || manager,
+      manageAcademy: admin,
+      manageStaff: admin,
+      manageFinance: admin,
+      manageOffers: admin,
+      manageBranding: admin,
+      manageAutomation: admin,
+      viewContacts: teaching,
+      manageContacts: admin || manager,
+      viewClassrooms: teaching,
+      manageClassrooms: admin || manager,
+      manageRoster: admin || manager,
+      manageMessages: teaching,
+      manageAnnouncements: teaching,
+      sendGlobalAnnouncements: admin || manager,
+      manageAlerts: teaching,
+      resolveAlerts: teaching,
+      viewEducationOS: teaching,
+      resolveActionItems: teaching,
+      manageAssignments: teaching,
+      gradeSubmissions: teaching,
+      markAttendance: teaching,
+      manageSchedule: teaching,
+      manageResources: teaching,
+      viewReports: admin || manager,
+      issueCertificates: admin || manager,
+      dispatchNotifications: admin || manager,
+      viewNotifications: admin || manager,
+      viewReferrals: admin || manager,
+    },
+  };
+};
+
+const hasAccessPermission = (
+  access: TeacherStudioAccessProfile | null | undefined,
+  permission: AccessPermissionKey,
+): boolean => access?.permissions?.[permission] === true;
+
+const accessRoleLabel = (access: TeacherStudioAccessProfile | null | undefined): string => {
+  const role = String(access?.role ?? 'member').replace(/_/g, ' ');
+  return role.charAt(0).toUpperCase() + role.slice(1);
+};
+
+const officeShellLabel = (access: TeacherStudioAccessProfile | null | undefined): { title: string; subtitle: string } => {
+  if (hasAccessPermission(access, 'manageFinance')) {
+    return { title: 'Academy Control', subtitle: 'Owner administration' };
+  }
+  if (hasAccessPermission(access, 'manageClassrooms')) {
+    return { title: 'Academy LMS', subtitle: 'Operations control' };
+  }
+  return { title: 'Teacher Workspace', subtitle: 'Assigned classrooms' };
 };
 
 const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
@@ -368,6 +449,7 @@ const teacherAcademyFromMembership = (membership: MeResponse['memberships'][numb
   role: membership.role,
   status: membership.status,
   created_at: '',
+  access: buildFallbackAccess(membership.role),
 });
 
 const toEmbeddableVideoUrl = (rawUrl: string): string | null => {
@@ -555,6 +637,10 @@ const App = () => {
     () => activeMemberships.filter(isAcademyStaffMembership),
     [activeMemberships],
   );
+  const teacherDirectoryAcademies = useMemo(
+    () => (academies.length > 0 ? academies : teacherMemberships.map(teacherAcademyFromMembership)),
+    [academies, teacherMemberships],
+  );
   const activeMembership = useMemo(
     () => {
       const pool = teacherMemberships;
@@ -562,20 +648,43 @@ const App = () => {
     },
     [academyId, teacherMemberships],
   );
-  const canManageLanding = ['owner', 'admin'].includes(String(activeMembership?.role ?? '').toLowerCase());
+  const selectedOfficeAcademy = useMemo(
+    () => teacherDirectoryAcademies.find((academy) => academy.id === academyId) ?? null,
+    [teacherDirectoryAcademies, academyId],
+  );
+  const selectedAcademyAccess = useMemo<TeacherStudioAccessProfile | null>(() => {
+    if (selectedOfficeAcademy?.access) return selectedOfficeAcademy.access;
+    if (activeMembership) return buildFallbackAccess(activeMembership.role);
+    return null;
+  }, [activeMembership, selectedOfficeAcademy]);
+  const canManageLanding = hasAccessPermission(selectedAcademyAccess, 'manageAcademy');
+  const canManageAcademy = hasAccessPermission(selectedAcademyAccess, 'manageAcademy');
+  const canManageContacts = hasAccessPermission(selectedAcademyAccess, 'manageContacts');
+  const canManageClassrooms = hasAccessPermission(selectedAcademyAccess, 'manageClassrooms');
+  const canManageRoster = hasAccessPermission(selectedAcademyAccess, 'manageRoster');
+  const canManageAnnouncements = hasAccessPermission(selectedAcademyAccess, 'manageAnnouncements');
+  const canSendGlobalAnnouncements = hasAccessPermission(selectedAcademyAccess, 'sendGlobalAnnouncements');
+  const canManageAlerts = hasAccessPermission(selectedAcademyAccess, 'manageAlerts');
+  const canResolveAlerts = hasAccessPermission(selectedAcademyAccess, 'resolveAlerts');
+  const canResolveActionItems = hasAccessPermission(selectedAcademyAccess, 'resolveActionItems');
+  const canManageFinance = hasAccessPermission(selectedAcademyAccess, 'manageFinance');
+  const canManageOffers = hasAccessPermission(selectedAcademyAccess, 'manageOffers');
+  const allowedOfficeViews = useMemo(
+    () => OFFICE_VIEWS.filter((view) => hasAccessPermission(selectedAcademyAccess, OFFICE_VIEW_PERMISSIONS[view])),
+    [selectedAcademyAccess],
+  );
+  const defaultOfficeView = allowedOfficeViews.includes('academy')
+    ? 'academy'
+    : allowedOfficeViews.includes('classrooms')
+      ? 'classrooms'
+      : allowedOfficeViews[0] ?? 'classrooms';
   const academyOptions = useMemo(
     () =>
-      academies.length > 0
-        ? academies.map((academy) => ({ id: academy.id, label: `${academy.name || academy.id} (${academy.role})` }))
-        : teacherMemberships.map((membership) => ({
-            id: membership.tenant_id,
-            label: `${membership.tenant_id} (${membership.role})`,
-          })),
-    [academies, teacherMemberships],
-  );
-  const selectedOfficeAcademy = useMemo(
-    () => academies.find((academy) => academy.id === academyId) ?? null,
-    [academies, academyId],
+      teacherDirectoryAcademies.map((academy) => ({
+        id: academy.id,
+        label: `${academy.name || academy.id} (${accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role))})`,
+      })),
+    [teacherDirectoryAcademies],
   );
 
   const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
@@ -600,19 +709,15 @@ const App = () => {
     isAcademyLanding ||
     isAcademyClassroomsLanding ||
     !!academyClassroomLandingId;
-  const hasTeacherAccess = teacherMemberships.length > 0;
+  const hasTeacherAccess = teacherDirectoryAcademies.length > 0;
   const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
   const teacherAcademyIds = useMemo(
-    () => new Set(teacherMemberships.map((membership) => membership.tenant_id)),
-    [teacherMemberships],
+    () => new Set(teacherDirectoryAcademies.map((academy) => academy.id)),
+    [teacherDirectoryAcademies],
   );
   const studentAcademyIds = useMemo(
     () => new Set((studentDashboard?.academies ?? []).map((academy) => academy.id)),
     [studentDashboard],
-  );
-  const teacherDirectoryAcademies = useMemo(
-    () => (academies.length > 0 ? academies : teacherMemberships.map(teacherAcademyFromMembership)),
-    [academies, teacherMemberships],
   );
   const studentDirectoryAcademies = useMemo(
     () => studentDashboard?.academies ?? [],
@@ -807,6 +912,18 @@ const App = () => {
       const meResponse = await getMe();
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
       const teacherMembershipRows = memberships.filter(isAcademyStaffMembership);
+      let academyList: TeacherStudioAcademy[] = [];
+      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isServiceLanding;
+      if (shouldAttemptTeacherData) {
+        try {
+          academyList = await teacherStudioAcademies();
+        } catch (teacherErr) {
+          if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory) {
+            throw teacherErr;
+          }
+        }
+      }
+      const hasTeacherRouteAccess = academyList.length > 0 || teacherMembershipRows.length > 0;
       let cachedStudentData: TeacherStudioStudentDashboard | null = null;
       const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
         if (cachedStudentData) return cachedStudentData;
@@ -817,11 +934,11 @@ const App = () => {
       const shouldLoadStudentData =
         isStudentWorkspaceRoute ||
         (isSharedAcademyRoute && !isServiceLanding) ||
-        teacherMembershipRows.length === 0;
+        !hasTeacherRouteAccess;
       const studentData = shouldLoadStudentData ? await loadStudentDataOnce() : null;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
 
-      if (teacherMembershipRows.length === 0 && !hasStudentRouteAccess) {
+      if (!hasTeacherRouteAccess && !hasStudentRouteAccess) {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(studentData ?? emptyStudentDashboard());
@@ -833,17 +950,20 @@ const App = () => {
       setMe(meResponse);
       setStudentDashboard(studentData);
 
-      const shouldLoadTeacherData = teacherMembershipRows.length > 0 && !isStudentWorkspaceRoute && !isServiceLanding;
+      const shouldLoadTeacherData = hasTeacherRouteAccess && !isStudentWorkspaceRoute && !isServiceLanding;
       if (shouldLoadTeacherData) {
-        const academyList = await teacherStudioAcademies();
+        if (academyList.length === 0) academyList = teacherMembershipRows.map(teacherAcademyFromMembership);
+        const academyIds = new Set(academyList.map((academy) => academy.id));
         const fallbackAcademyId =
-          teacherMembershipRows.find((membership) => membership.tenant_id === academyId)?.tenant_id ??
-          teacherMembershipRows[0].tenant_id;
+          academyList.find((academy) => academy.id === academyId)?.id ??
+          academyList[0]?.id ??
+          teacherMembershipRows[0]?.tenant_id ??
+          '';
         const selectedAcademy =
-          teacherMembershipRows.find((membership) => membership.tenant_id === requestedAcademyId)?.tenant_id ?? fallbackAcademyId;
+          (requestedAcademyId && academyIds.has(requestedAcademyId) ? requestedAcademyId : '') || fallbackAcademyId;
         setAcademies(academyList);
         setAcademyId(selectedAcademy);
-        await loadAcademyData(selectedAcademy);
+        if (selectedAcademy) await loadAcademyData(selectedAcademy);
       } else {
         setAcademies([]);
         setAcademyId(requestedAcademyId || studentData?.academies[0]?.id || '');
@@ -863,6 +983,7 @@ const App = () => {
     }
   }, [
     academyId,
+    isAcademyDirectory,
     isServiceLanding,
     isSharedAcademyRoute,
     isStudentWorkspaceRoute,
@@ -1007,6 +1128,23 @@ const App = () => {
     params.set('academy_id', scopedAcademyId);
     return `${path}?${params.toString()}`;
   }, [academyId, requestedAcademyId, studentDashboard]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || allowedOfficeViews.length === 0) return;
+    const targetView = officeClassroomId ? 'classrooms' : officeView;
+    if (!targetView || allowedOfficeViews.includes(targetView)) return;
+    const nextPath = defaultOfficeView === 'academy' ? '/academy/teacher' : `/academy/teacher/${defaultOfficeView}`;
+    navigate(academyScopedPath(nextPath), { replace: true });
+  }, [
+    academyScopedPath,
+    allowedOfficeViews,
+    defaultOfficeView,
+    isTeacherWorkspaceRoute,
+    navigate,
+    officeClassroomId,
+    officeView,
+    state,
+  ]);
 
   const scrollClassroomThreadToBottom = useCallback(() => {
     const node = classroomThreadRef.current;
@@ -1329,9 +1467,9 @@ const App = () => {
   useEffect(() => {
     if (state !== 'ready' || isStudentWorkspaceRoute || !hasTeacherAccess) return;
     if (!requestedAcademyId || requestedAcademyId === academyId) return;
-    if (!teacherMemberships.some((membership) => membership.tenant_id === requestedAcademyId)) return;
+    if (!teacherAcademyIds.has(requestedAcademyId)) return;
     void onSelectAcademy(requestedAcademyId);
-  }, [academyId, hasTeacherAccess, isStudentWorkspaceRoute, onSelectAcademy, requestedAcademyId, state, teacherMemberships]);
+  }, [academyId, hasTeacherAccess, isStudentWorkspaceRoute, onSelectAcademy, requestedAcademyId, state, teacherAcademyIds]);
 
   const submitAcademy = async (event: FormEvent) => {
     event.preventDefault();
@@ -1775,6 +1913,8 @@ const App = () => {
       : officeView
         ? OFFICE_LABELS[officeView]
         : 'Academy');
+  const teacherShell = officeShellLabel(selectedAcademyAccess);
+  const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
 
   const studentAnnouncements = useMemo(
     () => [...(studentDashboard?.announcements ?? [])].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
@@ -3719,8 +3859,8 @@ const App = () => {
         <div className="brand">
           <span className="brand-mark" aria-hidden="true"><Store size={22} /></span>
           <div>
-            <strong>Teacher Office</strong>
-            <p>Academy operations</p>
+            <strong>{teacherShell.title}</strong>
+            <p>{teacherShell.subtitle}</p>
           </div>
         </div>
 
@@ -3733,86 +3873,106 @@ const App = () => {
           Academies
         </button>
 
-        <button
-          className={`nav-btn ${officeView === 'academy' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><LayoutDashboard size={17} /></span>
-          Teacher office
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'classrooms' || !!officeClassroomId ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
-          Classrooms
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'contacts' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/contacts'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
-          Contacts
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'inbox' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/inbox'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
-          Inbox
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'announcements' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/announcements'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><Megaphone size={17} /></span>
-          Announcements
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'alerts' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/alerts'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><ShieldAlert size={17} /></span>
-          Alerts
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'offers' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/offers'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><Store size={17} /></span>
-          Offers
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'payments' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/payments'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><CreditCard size={17} /></span>
-          Payments
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'entitlements' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/entitlements'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><KeyRound size={17} /></span>
-          Entitlements
-        </button>
-        <button
-          className={`nav-btn ${officeView === 'os' ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/os'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
-          Command Center
-        </button>
+        {officeCanOpen('academy') ? (
+          <button
+            className={`nav-btn ${officeView === 'academy' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><LayoutDashboard size={17} /></span>
+            Academy control
+          </button>
+        ) : null}
+        {officeCanOpen('classrooms') ? (
+          <button
+            className={`nav-btn ${officeView === 'classrooms' || !!officeClassroomId ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
+            Classrooms
+          </button>
+        ) : null}
+        {officeCanOpen('contacts') ? (
+          <button
+            className={`nav-btn ${officeView === 'contacts' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/contacts'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
+            Contacts
+          </button>
+        ) : null}
+        {officeCanOpen('inbox') ? (
+          <button
+            className={`nav-btn ${officeView === 'inbox' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/inbox'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
+            Inbox
+          </button>
+        ) : null}
+        {officeCanOpen('announcements') ? (
+          <button
+            className={`nav-btn ${officeView === 'announcements' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/announcements'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><Megaphone size={17} /></span>
+            Announcements
+          </button>
+        ) : null}
+        {officeCanOpen('alerts') ? (
+          <button
+            className={`nav-btn ${officeView === 'alerts' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/alerts'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><ShieldAlert size={17} /></span>
+            Alerts
+          </button>
+        ) : null}
+        {officeCanOpen('offers') ? (
+          <button
+            className={`nav-btn ${officeView === 'offers' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/offers'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><Store size={17} /></span>
+            Offers
+          </button>
+        ) : null}
+        {officeCanOpen('payments') ? (
+          <button
+            className={`nav-btn ${officeView === 'payments' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/payments'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><CreditCard size={17} /></span>
+            Payments
+          </button>
+        ) : null}
+        {officeCanOpen('entitlements') ? (
+          <button
+            className={`nav-btn ${officeView === 'entitlements' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/entitlements'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><KeyRound size={17} /></span>
+            Entitlements
+          </button>
+        ) : null}
+        {officeCanOpen('os') ? (
+          <button
+            className={`nav-btn ${officeView === 'os' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath('/academy/teacher/os'))}
+          >
+            <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
+            {canManageAcademy ? 'Command Center' : 'LMS Center'}
+          </button>
+        ) : null}
 
         <div className="sidebar-footer">
           <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
@@ -3826,7 +3986,10 @@ const App = () => {
           <div>
             <h1>{selectedViewLabel}</h1>
             <p className="muted">
-              Academy: {activeMembership?.tenant_id || academyId || '-'} ({activeMembership?.role || 'member'})
+              {selectedOfficeAcademy?.name || academyId || '-'} | {accessRoleLabel(selectedAcademyAccess)}
+              {selectedAcademyAccess?.scope === 'assigned_classrooms'
+                ? ` | ${selectedAcademyAccess.classroom_ids.length} assigned classroom${selectedAcademyAccess.classroom_ids.length === 1 ? '' : 's'}`
+                : ' | academy scope'}
             </p>
           </div>
           <div className="topbar-actions">
@@ -3862,11 +4025,6 @@ const App = () => {
             <strong>{summary?.counts.contacts ?? contacts.length}</strong>
           </article>
           <article className="stat-card">
-            <span className="stat-icon" aria-hidden="true"><Store size={18} /></span>
-            <span>Offers</span>
-            <strong>{summary?.counts.offers ?? offers.length}</strong>
-          </article>
-          <article className="stat-card">
             <span className="stat-icon" aria-hidden="true"><BookOpenCheck size={18} /></span>
             <span>Classrooms</span>
             <strong>{summary?.counts.classrooms ?? classrooms.length}</strong>
@@ -3876,11 +4034,20 @@ const App = () => {
             <span>LMS actions</span>
             <strong>{educationOS?.stats.open_actions ?? educationOS?.action_queue.filter((item) => item.status === 'open').length ?? 0}</strong>
           </article>
-          <article className="stat-card">
-            <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
-            <span>Active entitlements</span>
-            <strong>{summary?.counts.active_entitlements ?? entitlements.filter((item) => item.status === 'active').length}</strong>
-          </article>
+          {canManageOffers ? (
+            <article className="stat-card">
+              <span className="stat-icon" aria-hidden="true"><Store size={18} /></span>
+              <span>Offers</span>
+              <strong>{summary?.counts.offers ?? offers.length}</strong>
+            </article>
+          ) : null}
+          {canManageFinance ? (
+            <article className="stat-card">
+              <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
+              <span>Active entitlements</span>
+              <strong>{summary?.counts.active_entitlements ?? entitlements.filter((item) => item.status === 'active').length}</strong>
+            </article>
+          ) : null}
           <article className="stat-card">
             <span className="stat-icon" aria-hidden="true"><ShieldAlert size={18} /></span>
             <span>Open alerts</span>
@@ -3891,7 +4058,7 @@ const App = () => {
         {error ? <div className="error-banner">{error}</div> : null}
         {notice ? <div className="info-banner">{notice}</div> : null}
 
-        {officeView === 'academy' ? (
+        {officeView === 'academy' && officeCanOpen('academy') ? (
           <AcademyView
             academyId={academyId}
             role={activeMembership?.role || 'member'}
@@ -3915,18 +4082,19 @@ const App = () => {
           />
         ) : null}
 
-        {officeView === 'os' ? (
+        {officeView === 'os' && officeCanOpen('os') ? (
           <EducationOSView
             academyId={academyId}
             classrooms={classrooms}
             contacts={contacts}
             classroomMemberships={classroomMemberships}
+            access={selectedAcademyAccess}
             formatDate={formatDate}
             statusClass={statusClass}
           />
         ) : null}
 
-        {officeView === 'contacts' ? (
+        {officeView === 'contacts' && officeCanOpen('contacts') ? (
           <ContactsView
             busy={busy}
             form={contactForm}
@@ -3935,10 +4103,11 @@ const App = () => {
             onSubmit={submitContact}
             formatDate={formatDate}
             statusClass={statusClass}
+            canManageContacts={canManageContacts}
           />
         ) : null}
 
-        {officeView === 'inbox' ? (
+        {officeView === 'inbox' && officeCanOpen('inbox') ? (
           <InboxView
             busy={busy}
             conversations={conversations}
@@ -3952,7 +4121,7 @@ const App = () => {
           />
         ) : null}
 
-        {officeView === 'announcements' ? (
+        {officeView === 'announcements' && officeCanOpen('announcements') ? (
           <AnnouncementsView
             busy={busy}
             classrooms={classrooms}
@@ -3961,10 +4130,12 @@ const App = () => {
             announcements={announcements}
             onSubmit={submitAnnouncement}
             formatDate={formatDate}
+            canSendAnnouncements={canManageAnnouncements}
+            canSendGlobalAnnouncements={canSendGlobalAnnouncements}
           />
         ) : null}
 
-        {officeView === 'alerts' ? (
+        {officeView === 'alerts' && officeCanOpen('alerts') ? (
           <AlertsView
             busy={busy}
             contacts={contacts}
@@ -3974,10 +4145,13 @@ const App = () => {
             onCreate={submitAlert}
             onResolve={resolveAlert}
             formatDate={formatDate}
+            canCreateAlerts={canManageAlerts}
+            canCreateGlobalAlerts={canSendGlobalAnnouncements}
+            canResolveAlerts={canResolveAlerts}
           />
         ) : null}
 
-        {officeView === 'offers' ? (
+        {officeView === 'offers' && officeCanOpen('offers') ? (
           <OffersView
             busy={busy}
             offerForm={offerForm}
@@ -3991,7 +4165,7 @@ const App = () => {
           />
         ) : null}
 
-        {officeView === 'classrooms' ? (
+        {officeView === 'classrooms' && officeCanOpen('classrooms') ? (
           <ClassroomsView
             busy={busy}
             classroomForm={classroomForm}
@@ -4009,10 +4183,13 @@ const App = () => {
             onResolveActionItem={resolveLmsActionItem}
             onOpenActionItem={openLmsActionItem}
             formatDate={formatDate}
+            canManageClassrooms={canManageClassrooms}
+            canManageRoster={canManageRoster}
+            canResolveActionItems={canResolveActionItems}
           />
         ) : null}
 
-        {officeClassroomId ? (
+        {officeClassroomId && officeCanOpen('classrooms') ? (
           <ClassroomDetailView
             classroom={selectedOfficeClassroom}
             memberships={selectedOfficeClassroomMemberships}
@@ -4032,13 +4209,14 @@ const App = () => {
             educationOS={educationOS}
             onResolveActionItem={resolveLmsActionItem}
             onOpenActionItem={openLmsActionItem}
+            canResolveActionItems={canResolveActionItems}
             formatDate={formatDate}
             statusClass={statusClass}
             onBack={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
           />
         ) : null}
 
-        {officeView === 'payments' ? (
+        {officeView === 'payments' && officeCanOpen('payments') ? (
           <PaymentsView
             busy={busy}
             paymentForm={paymentForm}
@@ -4053,7 +4231,7 @@ const App = () => {
           />
         ) : null}
 
-        {officeView === 'entitlements' ? (
+        {officeView === 'entitlements' && officeCanOpen('entitlements') ? (
           <EntitlementsView
             entitlements={entitlements}
             contacts={contacts}
