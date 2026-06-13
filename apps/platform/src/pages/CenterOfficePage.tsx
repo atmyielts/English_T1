@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpRight,
   BarChart3,
@@ -26,7 +26,7 @@ import {
   WalletCards,
   type LucideIcon,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { getAuthSession, refreshAuthSession, supabase } from '../lib/supabase';
 import {
@@ -107,6 +107,7 @@ import {
 } from '../lib/platformClient';
 
 type Tab = 'overview' | 'academies' | 'upgrade' | 'wallet' | 'buy' | 'vouchers' | 'students' | 'events' | 'reviews' | 'staff' | 'results' | 'reports' | 'branding' | 'payments';
+type PendingKind = 'tickets' | 'seats' | 'tier' | 'wallet';
 
 const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -133,6 +134,40 @@ const primaryButton =
 const secondaryButton =
   'inline-flex items-center justify-center gap-2 rounded-full border border-gray-900 bg-white/80 px-4 py-2.5 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50';
 const FALLBACK_ONLINE_PAYMENT_MAX_AMOUNT_UZS = 200_000_000;
+
+const tabIds = new Set(tabs.map((item) => item.id));
+const pendingKindLabels: Record<PendingKind, string> = {
+  tickets: 'mock ticket pack payment',
+  seats: 'seat pack payment',
+  tier: 'tier payment',
+  wallet: 'wallet top-up',
+};
+const pendingKindTabs: Record<PendingKind, Tab> = {
+  tickets: 'buy',
+  seats: 'buy',
+  tier: 'upgrade',
+  wallet: 'wallet',
+};
+
+const parseTabParam = (value: string | null): Tab | null => {
+  const tab = String(value ?? '').trim();
+  return tabIds.has(tab as Tab) ? (tab as Tab) : null;
+};
+
+const parsePendingKind = (value: string | null): PendingKind | null => {
+  const kind = String(value ?? '').trim().toLowerCase();
+  if (kind === 'token_pack' || kind === 'ticket' || kind === 'tickets') return 'tickets';
+  if (kind === 'seat_pack' || kind === 'seat' || kind === 'seats') return 'seats';
+  if (kind === 'center_tier_upgrade' || kind === 'tier') return 'tier';
+  if (kind === 'center_wallet_topup' || kind === 'wallet') return 'wallet';
+  return null;
+};
+
+const normalizePaymentRef = (value: string | null): string | null => {
+  const ref = String(value ?? '').trim();
+  if (!ref || ref.length > 160) return null;
+  return /^[A-Za-z0-9_-]+$/.test(ref) ? ref : null;
+};
 
 const STARTER_CAPABILITIES: PartnerCenterCapabilities = {
   tier: 'starter',
@@ -540,7 +575,10 @@ const StatCard: React.FC<{ label: string; value: string | number; icon: LucideIc
 
 export const CenterOfficePage: React.FC = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('overview');
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const returnedPaymentRef = useRef<string | null>(null);
+  const [tab, setTab] = useState<Tab>(() => parseTabParam(searchParams.get('tab')) ?? 'overview');
   const [center, setCenter] = useState<PartnerCenterProfile | null>(null);
   const [access, setAccess] = useState<PartnerCenterAccess>(EMPTY_ACCESS);
   const [catalog, setCatalog] = useState<PartnerOfficeExperience[]>([]);
@@ -567,10 +605,13 @@ export const CenterOfficePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
-  const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | 'tier' | 'wallet' | null>(null);
+  const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(() => normalizePaymentRef(searchParams.get('payment') ?? searchParams.get('transaction_id')));
+  const [pendingKind, setPendingKind] = useState<PendingKind | null>(() => parsePendingKind(searchParams.get('kind')));
   const [pendingPaymentUrl, setPendingPaymentUrl] = useState<string | null>(null);
-  const [pendingPaymentLabel, setPendingPaymentLabel] = useState<string>('payment');
+  const [pendingPaymentLabel, setPendingPaymentLabel] = useState<string>(() => {
+    const kind = parsePendingKind(searchParams.get('kind'));
+    return kind ? pendingKindLabels[kind] : 'payment';
+  });
   const [tierBillingPeriod, setTierBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   const [ticketForm, setTicketForm] = useState({ experience_id: '', quantity: 10, expires_in_days: 30, apply_credit: false });
@@ -715,6 +756,13 @@ export const CenterOfficePage: React.FC = () => {
     const raw = err instanceof Error ? err.message : String(err ?? 'Something went wrong');
     const explicit = raw.match(/"error":"([^"]+)"/i)?.[1];
     return explicit || raw;
+  };
+
+  const buildPaymentReturnUrl = (kind: PendingKind): string => {
+    const url = new URL('/center-office', window.location.origin);
+    url.searchParams.set('tab', pendingKindTabs[kind]);
+    url.searchParams.set('kind', kind);
+    return url.toString();
   };
 
   const refreshAll = async () => {
@@ -876,7 +924,12 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTicketPurchase(token, { ...ticketForm, tenant_id: centerTenantId, center_office: true });
+      const res = await partnerOfficeCreateTicketPurchase(token, {
+        ...ticketForm,
+        tenant_id: centerTenantId,
+        center_office: true,
+        redirect_url: buildPaymentReturnUrl('tickets'),
+      });
       setPendingTransactionId(res.transaction_id);
       setPendingKind('tickets');
       if (res.payment_url) {
@@ -911,7 +964,12 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateSeatPurchase(token, { ...seatForm, tenant_id: centerTenantId, center_office: true });
+      const res = await partnerOfficeCreateSeatPurchase(token, {
+        ...seatForm,
+        tenant_id: centerTenantId,
+        center_office: true,
+        redirect_url: buildPaymentReturnUrl('seats'),
+      });
       setPendingTransactionId(res.transaction_id);
       setPendingKind('seats');
       if (res.payment_url) {
@@ -929,16 +987,16 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
-  const checkPayment = async () => {
-    if (!pendingTransactionId) return;
+  const checkPayment = async (transactionId = pendingTransactionId, kindOverride: PendingKind | null = pendingKind) => {
+    if (!transactionId) return;
     const token = await getValidToken();
     if (!token) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await clickStatus(token, pendingTransactionId);
+      const res = await clickStatus(token, transactionId);
       if (isPaid(res.status)) {
-        const completedKind = pendingKind;
+        const completedKind = kindOverride ?? pendingKind;
         setPendingTransactionId(null);
         setPendingKind(null);
         setPendingPaymentUrl(null);
@@ -961,6 +1019,28 @@ export const CenterOfficePage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const requestedTab = parseTabParam(params.get('tab'));
+    if (requestedTab) setTab(requestedTab);
+
+    const paymentRef = normalizePaymentRef(params.get('payment') ?? params.get('transaction_id'));
+    if (!paymentRef || returnedPaymentRef.current === paymentRef) return;
+
+    const kind = parsePendingKind(params.get('kind') ?? params.get('purchase_type'));
+    returnedPaymentRef.current = paymentRef;
+    setPendingTransactionId(paymentRef);
+    setPendingPaymentUrl(null);
+    if (kind) {
+      setPendingKind(kind);
+      setPendingPaymentLabel(pendingKindLabels[kind]);
+      setTab(pendingKindTabs[kind]);
+    }
+    setSuccess('Returned from Click. Checking payment status...');
+    void checkPayment(paymentRef, kind);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   const importVoucherRoster = async (file: File) => {
     setError(null);
@@ -1040,6 +1120,7 @@ export const CenterOfficePage: React.FC = () => {
         requested_tier: plan.tier,
         billing_period: plan.billing_period,
         center_office: true,
+        redirect_url: buildPaymentReturnUrl('tier'),
       });
       setPendingTransactionId(res.transaction_id);
       setPendingKind('tier');
@@ -1072,6 +1153,7 @@ export const CenterOfficePage: React.FC = () => {
         note: walletTopup.note,
         center_office: true,
         settlement_mode: clickPaymentsEnabled ? 'online' : 'manual',
+        redirect_url: buildPaymentReturnUrl('wallet'),
       });
       if ('transaction_id' in res) {
         setPendingTransactionId(res.transaction_id);

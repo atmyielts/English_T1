@@ -228,6 +228,23 @@ const normalizeRedirectUrl = (raw: unknown): string | null => {
   }
 };
 
+const withPaymentReturnParams = (
+  returnUrl: string | null,
+  paymentId: string,
+  purchaseKind: string,
+): string | null => {
+  if (!returnUrl) return null;
+  try {
+    const parsed = new URL(returnUrl);
+    parsed.searchParams.set("payment", paymentId);
+    parsed.searchParams.set("kind", purchaseKind);
+    parsed.searchParams.set("provider", "click");
+    return parsed.toString();
+  } catch {
+    return returnUrl;
+  }
+};
+
 const readJsonPayload = async (res: Response): Promise<any> => {
   const text = await res.text();
   if (!text) return {};
@@ -2206,7 +2223,11 @@ serve(async (req) => {
           getClickMerchantId(),
           tuitionAmount,
           tuitionUuid,
-          normalizeRedirectUrl(body.redirect_url),
+          withPaymentReturnParams(
+            normalizeRedirectUrl(body.redirect_url),
+            tuitionUuid,
+            "academy_tuition",
+          ),
         );
 
         await supabase
@@ -2752,7 +2773,7 @@ serve(async (req) => {
         merchantId,
         amount,
         paymentUuid,
-        redirectUrl,
+        withPaymentReturnParams(redirectUrl, paymentUuid, purchaseKind),
       );
 
       await supabase

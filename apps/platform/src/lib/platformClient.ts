@@ -3113,7 +3113,7 @@ export const partnerOfficeUploadCenterLogo = async (
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,
-  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual' },
+  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
 ) => partnerOfficePost<ClickCreateResponse | { ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
 
 export const partnerOfficeCreateVoucherBatch = (
@@ -3205,6 +3205,7 @@ export const partnerOfficeCreateTicketPurchase = (
     credit_amount?: number | null;
     referral_code?: string | null;
     center_office?: boolean;
+    redirect_url?: string | null;
   },
 ) => partnerOfficePost<ClickCreateResponse>(accessToken, { action: 'create_ticket_purchase', ...body });
 
@@ -3218,6 +3219,7 @@ export const partnerOfficeCreateSeatPurchase = (
     credit_amount?: number | null;
     referral_code?: string | null;
     center_office?: boolean;
+    redirect_url?: string | null;
   },
 ) => partnerOfficePost<ClickCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
 
@@ -3228,6 +3230,7 @@ export const partnerOfficeCreateTierUpgradePayment = (
     requested_tier: 'growth' | 'premium' | 'exclusive';
     billing_period: 'monthly' | 'annual';
     center_office?: boolean;
+    redirect_url?: string | null;
   },
 ) => partnerOfficePost<ClickCreateResponse & { tier_request?: PartnerCenterTierRequest }>(accessToken, { action: 'create_tier_upgrade_payment', ...body });
 
