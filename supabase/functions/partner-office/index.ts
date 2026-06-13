@@ -10,6 +10,11 @@ const CENTER_TIER_PRODUCT_ID = "00000000-0000-4000-8000-000000000701";
 const CLICK_MIN_AMOUNT_UZS = 1000;
 const CLICK_MAX_AMOUNT_UZS = 2_000_000_000;
 const CLICK_REQUIRED_SECRETS = ["CLICK_SERVICE_ID", "CLICK_MERCHANT_ID", "CLICK_MERCHANT_USER_ID", "CLICK_SECRET_KEY"] as const;
+const ESKIZ_SMS_DEFAULT_BASE_URL = "https://notify.eskiz.uz/api";
+const ESKIZ_SMS_DEFAULT_FROM = "4546";
+const ESKIZ_TOKEN_CACHE_MS = 50 * 60 * 1000;
+
+let eskizTokenCache: { token: string; expiresAt: number } | null = null;
 
 type CenterCapabilities = {
   tier: "starter" | "growth" | "premium" | "exclusive";
@@ -1571,6 +1576,130 @@ const parseDispatchRecipients = (input: unknown): DispatchRecipient[] => {
 
 type DispatchChannel = "sms" | "telegram";
 
+const readProviderResponse = async (res: Response): Promise<unknown> => {
+  const text = await res.text().catch(() => "");
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text.slice(0, 2000);
+  }
+};
+
+const smsProvider = (): string =>
+  String(Deno.env.get("PARTNER_SMS_PROVIDER") ?? "generic")
+    .trim()
+    .toLowerCase();
+
+const eskizApiBaseUrl = (): string => {
+  const raw = String(Deno.env.get("ESKIZ_SMS_BASE_URL") ?? ESKIZ_SMS_DEFAULT_BASE_URL).trim().replace(/\/+$/, "");
+  if (!raw) return ESKIZ_SMS_DEFAULT_BASE_URL;
+  return raw.endsWith("/api") ? raw : `${raw}/api`;
+};
+
+const extractEskizToken = (payload: unknown): string => {
+  const data = isObject(payload) && isObject(payload.data) ? payload.data : {};
+  const candidates = [
+    isObject(payload) ? payload.token : null,
+    isObject(payload) ? payload.access_token : null,
+    data.token,
+    data.access_token,
+  ];
+  return candidates.map((value) => String(value ?? "").trim()).find(Boolean) ?? "";
+};
+
+const getEskizToken = async (forceRefresh = false): Promise<{ token: string } | { result: DispatchResult }> => {
+  const now = Date.now();
+  if (!forceRefresh && eskizTokenCache?.token && eskizTokenCache.expiresAt > now) return { token: eskizTokenCache.token };
+
+  const email = String(Deno.env.get("ESKIZ_SMS_EMAIL") ?? "").trim();
+  const password = String(Deno.env.get("ESKIZ_SMS_PASSWORD") ?? "");
+  if (!email || !password) {
+    return {
+      result: {
+        status: "prepared",
+        provider: "eskiz",
+        detail: "ESKIZ_SMS_EMAIL and ESKIZ_SMS_PASSWORD must be configured",
+      },
+    };
+  }
+
+  const res = await fetch(`${eskizApiBaseUrl()}/auth/login`, {
+    method: "POST",
+    headers: { Accept: "application/json" },
+    body: new URLSearchParams({ email, password }),
+  });
+  const detail = await readProviderResponse(res);
+  if (!res.ok) {
+    eskizTokenCache = null;
+    return { result: { status: "failed", provider: "eskiz", detail } };
+  }
+
+  const token = extractEskizToken(detail);
+  if (!token) {
+    eskizTokenCache = null;
+    return {
+      result: {
+        status: "failed",
+        provider: "eskiz",
+        detail: { error: "Eskiz login succeeded but no token was returned", response: detail },
+      },
+    };
+  }
+
+  eskizTokenCache = { token, expiresAt: now + ESKIZ_TOKEN_CACHE_MS };
+  return { token };
+};
+
+const sendEskizSms = async (
+  recipient: DispatchRecipient,
+  message: string,
+  retryOnUnauthorized = true,
+): Promise<DispatchResult> => {
+  if (!recipient.phone) return { status: "prepared", provider: "eskiz", detail: "recipient phone is missing" };
+  const mobilePhone = recipient.phone.replace(/\D/g, "");
+  if (!mobilePhone) return { status: "failed", provider: "eskiz", detail: "recipient phone is invalid" };
+
+  const tokenResult = await getEskizToken(!retryOnUnauthorized);
+  if ("result" in tokenResult) return tokenResult.result;
+
+  const body = new FormData();
+  body.set("mobile_phone", mobilePhone);
+  body.set("message", message);
+  body.set("from", String(Deno.env.get("ESKIZ_SMS_FROM") ?? ESKIZ_SMS_DEFAULT_FROM).trim() || ESKIZ_SMS_DEFAULT_FROM);
+  const callbackUrl = String(Deno.env.get("ESKIZ_SMS_CALLBACK_URL") ?? "").trim();
+  if (callbackUrl) body.set("callback_url", callbackUrl);
+
+  const res = await fetch(`${eskizApiBaseUrl()}/message/sms/send`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${tokenResult.token}`, Accept: "application/json" },
+    body,
+  });
+  const detail = await readProviderResponse(res);
+  if (res.status === 401 && retryOnUnauthorized) {
+    eskizTokenCache = null;
+    return sendEskizSms(recipient, message, false);
+  }
+  return { status: res.ok ? "sent" : "failed", provider: "eskiz", detail };
+};
+
+const sendGenericSms = async (recipient: DispatchRecipient, message: string): Promise<DispatchResult> => {
+  const gatewayUrl = Deno.env.get("PARTNER_SMS_GATEWAY_URL");
+  const gatewayToken = Deno.env.get("PARTNER_SMS_GATEWAY_TOKEN");
+  if (!gatewayUrl || !recipient.phone) {
+    return { status: "prepared", provider: "sms", detail: !recipient.phone ? "recipient phone is missing" : "PARTNER_SMS_GATEWAY_URL is not configured" };
+  }
+  const res = await fetch(gatewayUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(gatewayToken ? { Authorization: `Bearer ${gatewayToken}` } : {}),
+    },
+    body: JSON.stringify({ phone: recipient.phone, message }),
+  });
+  return { status: res.ok ? "sent" : "failed", provider: "sms", detail: await readProviderResponse(res) };
+};
+
 const sendDispatchMessage = async (
   channel: DispatchChannel,
   recipient: DispatchRecipient,
@@ -1585,23 +1714,19 @@ const sendDispatchMessage = async (
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat_id: recipient.telegram_chat_id, text: message }),
     });
-    return { status: res.ok ? "sent" : "failed", provider: "telegram", detail: await res.json().catch(() => null) };
+    return { status: res.ok ? "sent" : "failed", provider: "telegram", detail: await readProviderResponse(res) };
   }
 
-  const gatewayUrl = Deno.env.get("PARTNER_SMS_GATEWAY_URL");
-  const gatewayToken = Deno.env.get("PARTNER_SMS_GATEWAY_TOKEN");
-  if (!gatewayUrl || !recipient.phone) {
-    return { status: "prepared", provider: "sms", detail: !recipient.phone ? "recipient phone is missing" : "PARTNER_SMS_GATEWAY_URL is not configured" };
+  const provider = smsProvider();
+  if (provider === "eskiz") return sendEskizSms(recipient, message);
+  if (provider !== "generic" && provider !== "webhook" && provider !== "sms") {
+    return {
+      status: "prepared",
+      provider,
+      detail: `Unsupported PARTNER_SMS_PROVIDER "${provider}". Use "generic" or "eskiz".`,
+    };
   }
-  const res = await fetch(gatewayUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(gatewayToken ? { Authorization: `Bearer ${gatewayToken}` } : {}),
-    },
-    body: JSON.stringify({ phone: recipient.phone, message }),
-  });
-  return { status: res.ok ? "sent" : "failed", provider: "sms", detail: await res.text().catch(() => null) };
+  return sendGenericSms(recipient, message);
 };
 
 const dispatchProviderResponse = (detail: unknown): Json => {
