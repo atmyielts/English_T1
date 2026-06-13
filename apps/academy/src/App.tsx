@@ -35,11 +35,13 @@ import {
   teacherStudioCreateOffer,
   teacherStudioCreatePayment,
   teacherStudioEntitlements,
+  teacherStudioEducationOS,
   teacherStudioMarkPaymentPaid,
   teacherStudioOfferGrants,
   teacherStudioOffers,
   teacherStudioPayments,
   teacherStudioResolveAlert,
+  teacherStudioResolveActionItem,
   teacherStudioSummary,
   teacherStudioStudentDashboard,
   teacherStudioSendAnnouncement,
@@ -54,6 +56,7 @@ import {
   teacherStudioUpsertContact,
   teacherStudioUpsertOfferGrant,
   type TeacherStudioAcademy,
+  type TeacherStudioActionItem,
   type TeacherStudioAlert,
   type TeacherStudioAnnouncement,
   type TeacherStudioClassroom,
@@ -61,6 +64,7 @@ import {
   type TeacherStudioClassroomRoom,
   type TeacherStudioClassroomMembership,
   type TeacherStudioConversation,
+  type TeacherStudioEducationOS,
   type MeResponse,
   type TeacherStudioContact,
   type TeacherStudioEntitlement,
@@ -129,7 +133,7 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['academy', 'os', 'contacts', 'inbox', 'announcements', 'alerts', 'classrooms', 'offers', 'payments', 'entitlements'];
+const OFFICE_VIEWS: OfficeView[] = ['academy', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
@@ -157,7 +161,7 @@ const CLASSROOM_RESOURCE_FILTERS: Array<{ kind: 'all' | TeacherStudioClassroomRe
 
 const OFFICE_LABELS: Record<OfficeView, string> = {
   academy: 'Academy',
-  os: 'Education OS',
+  os: 'Command Center',
   contacts: 'Contacts',
   inbox: 'Inbox',
   announcements: 'Announcements',
@@ -507,6 +511,7 @@ const App = () => {
   const [offerGrants, setOfferGrants] = useState<TeacherStudioOfferGrant[]>([]);
   const [payments, setPayments] = useState<TeacherStudioPayment[]>([]);
   const [entitlements, setEntitlements] = useState<TeacherStudioEntitlement[]>([]);
+  const [educationOS, setEducationOS] = useState<TeacherStudioEducationOS | null>(null);
   const [selectedConversationId, setSelectedConversationId] = useState('');
 
   const [contactForm, setContactForm] = useState<ContactFormState>(defaultContactForm);
@@ -705,6 +710,7 @@ const App = () => {
       grantsData,
       paymentsData,
       entitlementsData,
+      educationOSData,
     ] = await Promise.all([
       teacherStudioSummary(academy),
       teacherStudioContacts(academy),
@@ -717,6 +723,10 @@ const App = () => {
       teacherStudioOfferGrants(academy),
       teacherStudioPayments(academy),
       teacherStudioEntitlements(academy),
+      teacherStudioEducationOS(academy).catch((err) => {
+        console.warn('Failed to load Academy LMS operations engine', err);
+        return null;
+      }),
     ]);
 
     setSummary(summaryData);
@@ -730,6 +740,7 @@ const App = () => {
     setOfferGrants(grantsData);
     setPayments(paymentsData);
     setEntitlements(entitlementsData);
+    setEducationOS(educationOSData);
 
     setPaymentForm((previous) => ({
       ...previous,
@@ -1640,6 +1651,48 @@ const App = () => {
     }
   };
 
+  const resolveLmsActionItem = async (
+    item: TeacherStudioActionItem,
+    status: 'resolved' | 'dismissed' | 'snoozed' | 'open' = 'resolved',
+  ) => {
+    if (!academyId) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await teacherStudioResolveActionItem(academyId, {
+        id: item.id,
+        status,
+        resolution_note: status === 'resolved' ? 'Resolved from Academy LMS.' : 'Updated from Academy LMS.',
+      });
+      await loadAcademyData(academyId, selectedConversationId);
+      setNotice(status === 'resolved' ? 'LMS action resolved.' : 'LMS action updated.');
+    } catch (err) {
+      setError(normalizeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openLmsActionItem = useCallback((item: TeacherStudioActionItem) => {
+    if (item.classroom_id) {
+      navigate(academyScopedPath(`/academy/teacher/classrooms/${item.classroom_id}`));
+      return;
+    }
+
+    if (item.source_type === 'alert') {
+      navigate(academyScopedPath('/academy/teacher/alerts'));
+      return;
+    }
+
+    if (['placement_needed', 'trial_follow_up', 'renewal', 'parent_follow_up'].includes(item.source_type)) {
+      navigate(academyScopedPath('/academy/teacher/contacts'));
+      return;
+    }
+
+    navigate(academyScopedPath('/academy/teacher/os'));
+  }, [academyScopedPath, navigate]);
+
   const submitOfferGrant = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId) return;
@@ -1712,6 +1765,7 @@ const App = () => {
     setMe(null);
     setAcademies([]);
     setStudentDashboard(null);
+    setEducationOS(null);
   };
 
   const selectedViewLabel = isStudentWorkspaceRoute
@@ -3688,12 +3742,12 @@ const App = () => {
           Teacher office
         </button>
         <button
-          className={`nav-btn ${officeView === 'os' ? 'is-active' : ''}`}
+          className={`nav-btn ${officeView === 'classrooms' || !!officeClassroomId ? 'is-active' : ''}`}
           type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/os'))}
+          onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
         >
-          <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
-          Education OS
+          <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
+          Classrooms
         </button>
         <button
           className={`nav-btn ${officeView === 'contacts' ? 'is-active' : ''}`}
@@ -3736,14 +3790,6 @@ const App = () => {
           Offers
         </button>
         <button
-          className={`nav-btn ${officeView === 'classrooms' || !!officeClassroomId ? 'is-active' : ''}`}
-          type="button"
-          onClick={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
-        >
-          <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
-          Classrooms
-        </button>
-        <button
           className={`nav-btn ${officeView === 'payments' ? 'is-active' : ''}`}
           type="button"
           onClick={() => navigate(academyScopedPath('/academy/teacher/payments'))}
@@ -3758,6 +3804,14 @@ const App = () => {
         >
           <span className="nav-icon" aria-hidden="true"><KeyRound size={17} /></span>
           Entitlements
+        </button>
+        <button
+          className={`nav-btn ${officeView === 'os' ? 'is-active' : ''}`}
+          type="button"
+          onClick={() => navigate(academyScopedPath('/academy/teacher/os'))}
+        >
+          <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
+          Command Center
         </button>
 
         <div className="sidebar-footer">
@@ -3816,6 +3870,11 @@ const App = () => {
             <span className="stat-icon" aria-hidden="true"><BookOpenCheck size={18} /></span>
             <span>Classrooms</span>
             <strong>{summary?.counts.classrooms ?? classrooms.length}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="stat-icon" aria-hidden="true"><Sparkles size={18} /></span>
+            <span>LMS actions</span>
+            <strong>{educationOS?.stats.open_actions ?? educationOS?.action_queue.filter((item) => item.status === 'open').length ?? 0}</strong>
           </article>
           <article className="stat-card">
             <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
@@ -3946,6 +4005,9 @@ const App = () => {
             onSaveMembership={submitClassroomMembership}
             onRemoveMembership={removeClassroomMembership}
             onOpenClassroom={(classroomId) => navigate(academyScopedPath(`/academy/teacher/classrooms/${classroomId}`))}
+            educationOS={educationOS}
+            onResolveActionItem={resolveLmsActionItem}
+            onOpenActionItem={openLmsActionItem}
             formatDate={formatDate}
           />
         ) : null}
@@ -3967,6 +4029,9 @@ const App = () => {
             onSaveLanding={submitClassroomLanding}
             busy={busy}
             canManageLanding={canManageLanding}
+            educationOS={educationOS}
+            onResolveActionItem={resolveLmsActionItem}
+            onOpenActionItem={openLmsActionItem}
             formatDate={formatDate}
             statusClass={statusClass}
             onBack={() => navigate(academyScopedPath('/academy/teacher/classrooms'))}
