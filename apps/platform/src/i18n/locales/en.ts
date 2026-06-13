@@ -277,7 +277,7 @@ export const en = {
 
   'checkout.loading': 'Loading checkout...',
   'checkout.badge': 'Checkout',
-  'checkout.title': 'Pay with TsPay',
+  'checkout.title': 'Pay with Click',
   'checkout.subtitle': 'After payment, check status to grant entitlement.',
   'checkout.selectedPlan': 'Selected plan',
   'checkout.discountOff': '{amount} off',
@@ -285,7 +285,7 @@ export const en = {
   'checkout.accessActiveTitle': 'You already have access.',
   'checkout.accessActiveHint': 'You can still purchase again to extend access.',
   'checkout.step1.title': '1. Create payment',
-  'checkout.step1.desc': 'This creates a TsPay cheque using server-priced plan data.',
+  'checkout.step1.desc': 'This creates a Click payment link using server-priced plan data.',
   'checkout.step1.button': 'Create payment link and continue',
   'checkout.step2.title': '2. Verify status',
   'checkout.step2.desc': 'After paying, check status to grant entitlement.',

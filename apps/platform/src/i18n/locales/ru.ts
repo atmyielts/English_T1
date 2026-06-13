@@ -288,7 +288,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
 
   'checkout.loading': 'Загрузка оплаты...',
   'checkout.badge': 'Оплата',
-  'checkout.title': 'Оплата через TsPay',
+  'checkout.title': 'Оплата через Click',
   'checkout.subtitle': 'После оплаты проверьте статус, чтобы активировать доступ.',
   'checkout.selectedPlan': 'Выбранный план',
   'checkout.discountOff': 'Скидка {amount}',
@@ -296,7 +296,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'checkout.accessActiveTitle': 'Доступ уже есть.',
   'checkout.accessActiveHint': 'Чтобы продлить срок, вы можете купить план ещё раз.',
   'checkout.step1.title': '1. Создать платёж',
-  'checkout.step1.desc': 'Сервер создаст ссылку TsPay по данным выбранного плана.',
+  'checkout.step1.desc': 'Сервер создаст ссылку Click по данным выбранного плана.',
   'checkout.step1.button': 'Создать ссылку оплаты и продолжить',
   'checkout.step2.title': '2. Проверить статус',
   'checkout.step2.desc': 'После оплаты нажмите проверку статуса, чтобы выдать доступ.',

@@ -32,6 +32,8 @@ type CreateTransactionInput = {
   quantity?: number | null;
   expires_in_days?: number | null;
   seat_count?: number | null;
+  amount?: number | null;
+  currency?: string | null;
   description: string;
   redirect_url?: string | null;
   metadata?: Record<string, unknown> | null;
@@ -402,7 +404,7 @@ const fetchClickStatusFromApi = async (
 };
 
 // ---------------------------------------------------------------------------
-// Coupon helpers (unchanged business logic from tspay)
+// Coupon helpers (unchanged business logic from the prior payment flow)
 // ---------------------------------------------------------------------------
 
 const getWindowError = (
@@ -577,7 +579,7 @@ const validateCoupon = async (
 };
 
 // ---------------------------------------------------------------------------
-// Referral helpers (unchanged from tspay)
+// Referral helpers (unchanged from the prior payment flow)
 // ---------------------------------------------------------------------------
 
 const sanitizeReferralMetadata = (
@@ -1411,6 +1413,93 @@ const applyCenterTierUpgrade = async (
   return null;
 };
 
+const applyCenterWalletTopup = async (
+  supabase: any,
+  payment: PaymentGrantRow,
+): Promise<Response | null> => {
+  const meta = payment.metadata ?? {};
+  const amount = normalizeMoney(
+    (meta as any).wallet_topup_amount ?? payment.original_amount ?? payment.amount ?? 0,
+  );
+  const currency = String(
+    (meta as any).wallet_topup_currency ?? payment.currency ?? "UZS",
+  ).toUpperCase();
+
+  if (!payment.tenant_id || !payment.user_id || amount <= 0) {
+    await supabase
+      .from("payments")
+      .update({
+        granted_at: null,
+        grant_error: "Invalid center wallet top-up metadata",
+      })
+      .eq("id", payment.id);
+    return jsonResponse(500, {
+      error: "Invalid center wallet top-up metadata",
+    });
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("partner_wallet_ledger")
+    .select("id")
+    .eq("payment_id", payment.id)
+    .eq("entry_kind", "topup")
+    .maybeSingle();
+  if (existingError) {
+    await supabase
+      .from("payments")
+      .update({ granted_at: null, grant_error: existingError.message })
+      .eq("id", payment.id);
+    return jsonResponse(500, {
+      error: "Failed to inspect wallet ledger",
+      details: existingError,
+    });
+  }
+  if (existing?.id) return null;
+
+  const { error } = await supabase.from("partner_wallet_ledger").insert({
+    tenant_id: payment.tenant_id,
+    user_id: payment.user_id,
+    entry_kind: "topup",
+    status: "posted",
+    amount,
+    currency,
+    payment_id: payment.id,
+    created_by: payment.user_id,
+    metadata: {
+      source: "click",
+      click_payment_id: payment.id,
+      click_transaction_id: payment.provider_transaction_id ?? null,
+      note: (meta as any).note ?? null,
+    },
+  });
+  if (error) {
+    await supabase
+      .from("payments")
+      .update({
+        granted_at: null,
+        grant_error: String(error.message ?? error),
+      })
+      .eq("id", payment.id);
+    return jsonResponse(500, {
+      error: "Failed to post wallet top-up",
+      details: error,
+    });
+  }
+
+  await supabase
+    .from("payments")
+    .update({
+      metadata: {
+        ...meta,
+        center_wallet_topup_posted: true,
+        center_wallet_topup_posted_at: new Date().toISOString(),
+      },
+    })
+    .eq("id", payment.id);
+
+  return null;
+};
+
 const grantPaidPaymentOnce = async (
   supabase: any,
   payment: PaymentGrantRow,
@@ -1435,6 +1524,9 @@ const grantPaidPaymentOnce = async (
 
     if (purchaseType === "center_tier_upgrade") {
       const response = await applyCenterTierUpgrade(supabase, payment);
+      if (response) return response;
+    } else if (purchaseType === "center_wallet_topup") {
+      const response = await applyCenterWalletTopup(supabase, payment);
       if (response) return response;
     } else if (purchaseType === "academy_tuition") {
       const academyPaymentId = String((meta as any)?.academy_payment_id ?? "").trim();
@@ -2168,8 +2260,31 @@ serve(async (req) => {
       let experience: ExperiencePriceRow | null = null;
       let quantity = 1;
       let expiresInDays: number | null = null;
+      let directAmount: number | null = null;
+      let directCurrency = "UZS";
 
-      if (purchaseType === "token_pack") {
+      if (purchaseType === "center_wallet_topup") {
+        directAmount = normalizeMoney((body as any).amount);
+        directCurrency = String((body as any).currency ?? "UZS").toUpperCase();
+        if (directAmount <= 0) {
+          return jsonResponse(400, { error: "amount must be positive" });
+        }
+        if (directCurrency !== "UZS") {
+          return jsonResponse(400, {
+            error: "Center wallet top-up currently supports UZS only",
+          });
+        }
+        if (body.apply_credit || typeof body.credit_amount !== "undefined") {
+          return jsonResponse(400, {
+            error: "Platform credit cannot be used to top up a center wallet",
+          });
+        }
+        if (body.referral_code || body.referral_attribution_id) {
+          return jsonResponse(400, {
+            error: "Referral discounts cannot be used to top up a center wallet",
+          });
+        }
+      } else if (purchaseType === "token_pack") {
         const experienceId = String(body.experience_id ?? "");
         if (!experienceId) {
           return jsonResponse(400, { error: "experience_id is required" });
@@ -2286,7 +2401,10 @@ serve(async (req) => {
       const productId = plan?.product_id ?? experience?.product_id ?? null;
       const planId = plan?.id ?? null;
 
-      if (purchaseType === "token_pack") {
+      if (purchaseType === "center_wallet_topup") {
+        originalAmount = directAmount ?? 0;
+        currency = directCurrency;
+      } else if (purchaseType === "token_pack") {
         const unitAmount = Number(experience?.price_amount ?? NaN);
         originalAmount = unitAmount * quantity;
         currency = String(experience?.price_currency ?? "UZS");
@@ -2307,7 +2425,8 @@ serve(async (req) => {
       const normalizedCouponCode = normalizeCouponCode(body.coupon_code);
       if (normalizedCouponCode) {
         if (
-          purchaseType === "token_pack" || purchaseType === "seat_pack"
+          purchaseType === "token_pack" || purchaseType === "seat_pack" ||
+          purchaseType === "center_wallet_topup"
         ) {
           return jsonResponse(400, {
             error: "Coupons are not supported for this purchase type",
@@ -2422,6 +2541,11 @@ serve(async (req) => {
           metadata.purchase_type = "seat_pack";
           metadata.seat_count = quantity;
           metadata.seat_plan_id = plan?.id ?? null;
+        } else if (purchaseType === "center_wallet_topup") {
+          metadata.purchase_type = "center_wallet_topup";
+          metadata.wallet_topup_amount = originalAmount;
+          metadata.wallet_topup_currency = currency;
+          metadata.center_tenant_id = tenantId;
         }
 
         const planSnapshot = plan ? buildPlanSnapshot(plan) : {};
@@ -2545,6 +2669,11 @@ serve(async (req) => {
         metadata.purchase_type = "seat_pack";
         metadata.seat_count = quantity;
         metadata.seat_plan_id = plan?.id ?? null;
+      } else if (purchaseType === "center_wallet_topup") {
+        metadata.purchase_type = "center_wallet_topup";
+        metadata.wallet_topup_amount = originalAmount;
+        metadata.wallet_topup_currency = currency;
+        metadata.center_tenant_id = tenantId;
       }
 
       const planSnapshot = plan ? buildPlanSnapshot(plan) : {};

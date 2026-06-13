@@ -8,8 +8,8 @@ import {
   teacherOfficeSeats,
   teacherOfficeAssignSeat,
   teacherOfficeTokens,
-  tspayCreateTransaction,
-  tspayStatus,
+  clickCreateTransaction,
+  clickStatus,
   type TeacherOfficeExperience,
   type TeacherOfficePlan,
   type TeacherOfficeResult,
@@ -48,7 +48,7 @@ export const TeacherOfficePage: React.FC = () => {
     if (/invalid jwt|unauthorized|\b401\b/i.test(raw)) return t('teacher.error.sessionExpired');
     if (/rate limit|\b429\b/i.test(raw)) return t('teacher.error.rateLimit');
     if (/failed to fetch|network|cors|blocked by cors/i.test(raw)) return t('teacher.error.network');
-    if (/tspay status returned invalid json/i.test(raw)) return t('teacher.error.paymentSync');
+    if (/click status returned invalid json|payment status returned invalid json/i.test(raw)) return t('teacher.error.paymentSync');
     if (/payment not found/i.test(raw)) return t('teacher.error.paymentNotFound');
     if (/popup/i.test(raw)) return raw;
 
@@ -135,7 +135,7 @@ export const TeacherOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await tspayCreateTransaction(token, {
+      const res = await clickCreateTransaction(token, {
         purchase_type: 'token_pack',
         experience_id: experienceId,
         quantity: tokenQuantity,
@@ -176,7 +176,7 @@ export const TeacherOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await tspayStatus(token, tokenTransactionId);
+      const res = await clickStatus(token, tokenTransactionId);
       setTokenStatus(res.status);
       if (['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase())) {
         setTokenTransactionId(null);
@@ -203,7 +203,7 @@ export const TeacherOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await tspayCreateTransaction(token, {
+      const res = await clickCreateTransaction(token, {
         purchase_type: 'seat_pack',
         plan_id: seatPlanId,
         seat_count: seatQuantity,
@@ -244,7 +244,7 @@ export const TeacherOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await tspayStatus(token, seatTransactionId);
+      const res = await clickStatus(token, seatTransactionId);
       setSeatStatus(res.status);
       if (['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase())) {
         setSeatTransactionId(null);

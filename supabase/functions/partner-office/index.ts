@@ -1,13 +1,14 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import QRCode from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
 const CENTER_TIER_PRODUCT_ID = "00000000-0000-4000-8000-000000000701";
-const TSPAY_MIN_AMOUNT_UZS = 1000;
-const TSPAY_MAX_AMOUNT_UZS = 200000000;
+const CLICK_MIN_AMOUNT_UZS = 1000;
+const CLICK_MAX_AMOUNT_UZS = 2_000_000_000;
 
 type CenterCapabilities = {
   tier: "starter" | "growth" | "premium" | "exclusive";
@@ -161,6 +162,12 @@ const normalizeCode = (raw: unknown): string =>
     .replace(/^-|-$/g, "")
     .slice(0, 64);
 
+const normalizePhone = (raw: unknown): string =>
+  String(raw ?? "")
+    .trim()
+    .replace(/[^\d+]/g, "")
+    .slice(0, 32);
+
 const isUuid = (value: unknown): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value ?? "").trim());
 
 const normalizeSlug = (raw: unknown, fallback: string): string => {
@@ -179,6 +186,28 @@ const randomCodePart = (len = 6): string => {
   let out = "";
   for (let i = 0; i < len; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
   return out;
+};
+
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  let binary = "";
+  bytes.forEach((byte) => binary += String.fromCharCode(byte));
+  return btoa(binary);
+};
+
+const base64DataUrlToBytes = (dataUrl: string): Uint8Array => {
+  const base64 = dataUrl.includes(",") ? dataUrl.split(",").pop() ?? "" : dataUrl;
+  return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+};
+
+const platformBaseUrl = (): string =>
+  String(Deno.env.get("PLATFORM_URL") ?? Deno.env.get("VITE_PLATFORM_URL") ?? "https://schood.online").replace(/\/+$/, "");
+
+const centerRedeemUrl = (center: any, code: string, origin?: unknown): string => {
+  const base = String(origin ?? "").trim().replace(/\/+$/, "") || platformBaseUrl();
+  const slug = String(center?.slug ?? "").trim();
+  const path = slug ? `/center/${encodeURIComponent(slug)}` : "/redeem";
+  const param = slug ? `?code=${encodeURIComponent(code)}` : `/${encodeURIComponent(code)}`;
+  return `${base}${path}${param}`;
 };
 
 const sanitizeFilename = (name: string): string =>
@@ -254,6 +283,29 @@ const canOperateCenter = (memberships: MembershipRow[], tenantId: string): boole
 
 const canInviteCenterStudents = (memberships: MembershipRow[], tenantId: string): boolean =>
   memberships.some((m) => m.tenant_id === tenantId && m.status === "active" && ["owner", "admin", "counselor"].includes(normalizeCenterRole(m.role)));
+
+const currentCenterRole = (memberships: MembershipRow[], tenantId: string): "owner" | "admin" | "teacher" | "counselor" | null => {
+  const match = memberships.find((m) => m.tenant_id === tenantId && m.status === "active");
+  return match ? normalizeCenterRole(match.role) : null;
+};
+
+const centerAccessFor = (memberships: MembershipRow[], tenantId: string) => {
+  const canManage = canManageCenter(memberships, tenantId);
+  const canOperate = canOperateCenter(memberships, tenantId);
+  return {
+    role: currentCenterRole(memberships, tenantId),
+    can_manage: canManage,
+    can_operate: canOperate,
+    can_invite_students: canInviteCenterStudents(memberships, tenantId),
+    can_manage_finance: canManage,
+    can_manage_inventory: canManage,
+    can_manage_staff: canManage,
+    can_manage_academies: canManage,
+    can_manage_branding: canManage,
+    can_view_results: canOperate,
+    can_manage_reviews: canOperate,
+  };
+};
 
 const normalizeMoney = (raw: unknown): number => {
   const num = typeof raw === "number" ? raw : Number(raw);
@@ -1287,16 +1339,16 @@ const loadReviewQueue = async (sb: any, tenantId: string): Promise<any[]> => {
 const buildPaymentCapabilities = () => ({
   providers: [
     {
-      provider: "tspay",
-      label: "TSPay",
+      provider: "click",
+      label: "Click",
       currency: "UZS",
-      min_amount: TSPAY_MIN_AMOUNT_UZS,
-      max_amount: TSPAY_MAX_AMOUNT_UZS,
-      enabled: Boolean(Deno.env.get("TSPAY_USERNAME") && Deno.env.get("TSPAY_PASSWORD")),
+      min_amount: CLICK_MIN_AMOUNT_UZS,
+      max_amount: CLICK_MAX_AMOUNT_UZS,
+      enabled: Boolean(Deno.env.get("CLICK_SERVICE_ID") && Deno.env.get("CLICK_MERCHANT_ID") && Deno.env.get("CLICK_SECRET_KEY")),
       temporary: false,
     },
   ],
-  default_provider: "tspay",
+  default_provider: "click",
 });
 
 const planCenterTier = (plan: any): CenterCapabilities["tier"] | null => {
@@ -1380,9 +1432,240 @@ const createSimplePdf = async (title: string, lines: string[]): Promise<string> 
   }
   page.drawText("Powered by Schood", { x: 48, y: 40, size: 9, font, color: rgb(0.45, 0.48, 0.55) });
   const bytes = await pdf.save();
-  let binary = "";
-  bytes.forEach((byte) => binary += String.fromCharCode(byte));
-  return btoa(binary);
+  return bytesToBase64(bytes);
+};
+
+const createVoucherSheetPdf = async (
+  center: any,
+  batch: any,
+  vouchers: any[],
+  origin?: unknown,
+): Promise<string> => {
+  const pdf = await PDFDocument.create();
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const centerName = String(center?.display_name ?? center?.tenants?.name ?? "Schood partner center").slice(0, 70);
+  const batchCode = String(batch?.batch_code ?? "Voucher batch").slice(0, 64);
+  const slipsPerPage = 10;
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 30;
+  const gap = 12;
+  const slipWidth = (pageWidth - margin * 2 - gap) / 2;
+  const slipHeight = 142;
+
+  for (let i = 0; i < vouchers.length; i += slipsPerPage) {
+    const page = pdf.addPage([pageWidth, pageHeight]);
+    page.drawText(centerName, { x: margin, y: pageHeight - 30, size: 13, font: bold, color: rgb(0.06, 0.09, 0.16) });
+    page.drawText(`${batchCode} - print voucher sheet`, { x: margin, y: pageHeight - 48, size: 8, font, color: rgb(0.38, 0.42, 0.48) });
+    page.drawText("Cut along the boxes. Each student scans the QR, registers, and starts the assigned Schood access.", {
+      x: margin,
+      y: pageHeight - 63,
+      size: 8,
+      font,
+      color: rgb(0.38, 0.42, 0.48),
+    });
+
+    const pageVouchers = vouchers.slice(i, i + slipsPerPage);
+    for (let j = 0; j < pageVouchers.length; j += 1) {
+      const voucher = pageVouchers[j];
+      const col = j % 2;
+      const row = Math.floor(j / 2);
+      const x = margin + col * (slipWidth + gap);
+      const y = pageHeight - 90 - row * (slipHeight + 9);
+      const code = String(voucher.code ?? "").trim();
+      const redeem = centerRedeemUrl(center, code, origin);
+      page.drawRectangle({
+        x,
+        y: y - slipHeight,
+        width: slipWidth,
+        height: slipHeight,
+        borderColor: rgb(0.06, 0.09, 0.16),
+        borderWidth: 1,
+        color: rgb(0.99, 0.98, 0.96),
+      });
+      page.drawText(centerName.slice(0, 36), { x: x + 12, y: y - 18, size: 8, font: bold, color: rgb(0.06, 0.09, 0.16) });
+      page.drawText("SCHood voucher", { x: x + 12, y: y - 32, size: 7, font, color: rgb(0.38, 0.42, 0.48) });
+      page.drawText(code, { x: x + 12, y: y - 58, size: 15, font: bold, color: rgb(0.06, 0.09, 0.16) });
+      page.drawText(String(voucher.assigned_name ?? voucher.assigned_phone ?? voucher.assigned_email ?? "").slice(0, 36), {
+        x: x + 12,
+        y: y - 74,
+        size: 7,
+        font,
+        color: rgb(0.38, 0.42, 0.48),
+      });
+      const qrDataUrl = await QRCode.toDataURL(redeem, { type: "image/png", margin: 1, width: 106 });
+      const qrImage = await pdf.embedPng(base64DataUrlToBytes(qrDataUrl));
+      page.drawImage(qrImage, { x: x + slipWidth - 88, y: y - 101, width: 72, height: 72 });
+      page.drawText("1. Scan QR", { x: x + 12, y: y - 98, size: 7, font, color: rgb(0.17, 0.2, 0.25) });
+      page.drawText("2. Register or confirm details", { x: x + 12, y: y - 111, size: 7, font, color: rgb(0.17, 0.2, 0.25) });
+      page.drawText("3. Start the assigned test", { x: x + 12, y: y - 124, size: 7, font, color: rgb(0.17, 0.2, 0.25) });
+    }
+  }
+
+  const bytes = await pdf.save();
+  return bytesToBase64(bytes);
+};
+
+type DispatchRecipient = {
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  telegram_chat_id?: string | null;
+};
+
+const parseDispatchRecipients = (input: unknown): DispatchRecipient[] => {
+  if (Array.isArray(input)) {
+    return input
+      .map((row) => isObject(row) ? {
+        name: String((row as any).name ?? (row as any).full_name ?? "").trim() || null,
+        phone: normalizePhone((row as any).phone ?? (row as any).phone_number),
+        email: normalizeEmail((row as any).email),
+        telegram_chat_id: String((row as any).telegram_chat_id ?? (row as any).chat_id ?? "").trim() || null,
+      } : null)
+      .filter(Boolean) as DispatchRecipient[];
+  }
+
+  return String(input ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split(/[,;\t]/).map((part) => part.trim()).filter(Boolean);
+      const emailIndex = parts.findIndex((part) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(part));
+      const phoneIndex = parts.findIndex((part, index) => index !== emailIndex && /^\+?[0-9()\-\s]{6,}$/.test(part));
+      const chatIndex = parts.findIndex((part, index) => index !== emailIndex && index !== phoneIndex && /^(telegram:)?-?\d{5,}$/.test(part));
+      const email = emailIndex >= 0 ? parts[emailIndex] : "";
+      const phone = phoneIndex >= 0 ? normalizePhone(parts[phoneIndex]) : "";
+      const telegramChatId = chatIndex >= 0 ? parts[chatIndex].replace(/^telegram:/i, "") : "";
+      const name = parts.filter((_, index) => index !== emailIndex && index !== phoneIndex && index !== chatIndex).join(" ").trim();
+      return { name: name || null, email: normalizeEmail(email), phone: phone || null, telegram_chat_id: telegramChatId || null };
+    })
+    .filter((row) => row.name || row.email || row.phone || row.telegram_chat_id)
+    .slice(0, 1000);
+};
+
+const sendDispatchMessage = async (
+  channel: string,
+  recipient: DispatchRecipient,
+  message: string,
+): Promise<{ status: string; provider?: string | null; detail?: unknown }> => {
+  if (channel === "telegram" && recipient.telegram_chat_id) {
+    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    if (!botToken) return { status: "prepared", provider: "telegram", detail: "TELEGRAM_BOT_TOKEN is not configured" };
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: recipient.telegram_chat_id, text: message }),
+    });
+    return { status: res.ok ? "sent" : "failed", provider: "telegram", detail: await res.json().catch(() => null) };
+  }
+
+  const gatewayUrl = Deno.env.get("PARTNER_SMS_GATEWAY_URL");
+  const gatewayToken = Deno.env.get("PARTNER_SMS_GATEWAY_TOKEN");
+  if (!gatewayUrl || !recipient.phone) {
+    return { status: "prepared", provider: "sms", detail: !recipient.phone ? "recipient phone is missing" : "PARTNER_SMS_GATEWAY_URL is not configured" };
+  }
+  const res = await fetch(gatewayUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(gatewayToken ? { Authorization: `Bearer ${gatewayToken}` } : {}),
+    },
+    body: JSON.stringify({ phone: recipient.phone, message }),
+  });
+  return { status: res.ok ? "sent" : "failed", provider: "sms", detail: await res.text().catch(() => null) };
+};
+
+const weakAreaLabel = (value: unknown): string => {
+  if (typeof value === "string") return value.trim();
+  if (isObject(value)) return String((value as any).label ?? (value as any).name ?? (value as any).skill ?? (value as any).area ?? "").trim();
+  return "";
+};
+
+const buildClassroomHeatmaps = (results: any[], vouchers: any[]) => {
+  const voucherByCode = new Map<string, any>();
+  for (const voucher of vouchers) {
+    const code = String(voucher?.code ?? "").trim().toUpperCase();
+    if (code) voucherByCode.set(code, voucher);
+  }
+
+  const metrics = [
+    ["listening", "Listening", "listening_score"],
+    ["reading", "Reading", "reading_score"],
+    ["writing", "Writing", "writing_score"],
+    ["speaking", "Speaking", "speaking_score"],
+  ] as const;
+  const groups = new Map<string, any>();
+
+  for (const result of results) {
+    const code = String(result?.token_code ?? "").trim().toUpperCase();
+    const voucher = voucherByCode.get(code) ?? null;
+    const classroomId = String(voucher?.classroom_id ?? "unassigned");
+    const classroomName = String(voucher?.academy_classrooms?.name ?? "Unassigned vouchers");
+    const key = classroomId || "unassigned";
+    const heatmap = groups.get(key) ?? {
+      classroom_id: classroomId === "unassigned" ? null : classroomId,
+      classroom_name: classroomName,
+      attempts: 0,
+      completed_attempts: 0,
+      average_score: null,
+      skills: metrics.map(([id, label]) => ({ id, label, average_score: null, attempts: 0 })),
+      weakest_subskill: null,
+      systemic_gaps: [],
+      focus_areas: [],
+    };
+    heatmap.attempts += 1;
+    if (String(result?.registration_status ?? result?.session_status ?? "").toLowerCase() === "completed") heatmap.completed_attempts += 1;
+    const allScores = Array.isArray(heatmap.__scores) ? heatmap.__scores : [];
+    const overall = Number(result?.overall_band ?? result?.overall_score ?? NaN);
+    if (Number.isFinite(overall)) allScores.push(overall);
+    heatmap.__scores = allScores;
+    heatmap.__weak = heatmap.__weak ?? {};
+
+    heatmap.skills = heatmap.skills.map((skill: any) => {
+      const metric = metrics.find(([id]) => id === skill.id);
+      const value = metric ? Number(result?.[metric[2]] ?? NaN) : NaN;
+      const scores = Array.isArray(skill.__scores) ? skill.__scores : [];
+      if (Number.isFinite(value)) scores.push(value);
+      return { ...skill, __scores: scores };
+    });
+
+    const weakAreas = Array.isArray(result?.weak_areas) ? result.weak_areas : [];
+    for (const area of weakAreas) {
+      const label = weakAreaLabel(area);
+      if (!label) continue;
+      heatmap.__weak[label] = Number(heatmap.__weak[label] ?? 0) + 1;
+    }
+    groups.set(key, heatmap);
+  }
+
+  return Array.from(groups.values()).map((heatmap) => {
+    const scores = Array.isArray(heatmap.__scores) ? heatmap.__scores : [];
+    const weakEntries = Object.entries(heatmap.__weak ?? {})
+      .map(([label, count]) => ({ label, count: Number(count), share: heatmap.attempts ? Number(count) / heatmap.attempts : 0 }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    return {
+      classroom_id: heatmap.classroom_id,
+      classroom_name: heatmap.classroom_name,
+      attempts: heatmap.attempts,
+      completed_attempts: heatmap.completed_attempts,
+      average_score: scores.length ? Math.round((scores.reduce((sum: number, value: number) => sum + value, 0) / scores.length) * 10) / 10 : null,
+      skills: heatmap.skills.map((skill: any) => {
+        const skillScores = Array.isArray(skill.__scores) ? skill.__scores : [];
+        return {
+          id: skill.id,
+          label: skill.label,
+          average_score: skillScores.length ? Math.round((skillScores.reduce((sum: number, value: number) => sum + value, 0) / skillScores.length) * 10) / 10 : null,
+          attempts: skillScores.length,
+        };
+      }),
+      weakest_subskill: weakEntries[0]?.label ?? null,
+      systemic_gaps: weakEntries.filter((entry) => entry.share >= 0.35 || entry.count >= 3),
+      focus_areas: weakEntries.slice(0, 3).map((entry) => entry.label),
+    };
+  }).sort((a, b) => b.attempts - a.attempts);
 };
 
 const analyticsFrom = (students: any[], groups: any[], events: any[], reviews: any[], results: any[], vouchers: any[]) => {
@@ -1402,6 +1685,7 @@ const analyticsFrom = (students: any[], groups: any[], events: any[], reviews: a
       acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     }, {}),
+    classroom_heatmaps: buildClassroomHeatmaps(results, vouchers),
   };
 };
 
@@ -1444,7 +1728,12 @@ serve(async (req) => {
       const center = requestedTenantId ? await getCenterProfile(sb, tenantId) : await findCenterProfileForMemberships(sb, memberships);
       const resolvedTenantId = center?.tenant_id ?? tenantId;
       const tenant = await getFirstTenant(sb, resolvedTenantId);
-      return json(200, { center: withCenterCapabilities(center), tenant, needs_application: !center?.tenant_id });
+      return json(200, {
+        center: withCenterCapabilities(center),
+        tenant,
+        access: centerAccessFor(memberships, resolvedTenantId),
+        needs_application: !center?.tenant_id,
+      });
     }
 
     if (req.method === "GET" && action === "academies") {
@@ -1494,6 +1783,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "tickets") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const { data, error } = await sb
         .from("exam_tokens")
         .select("id, token_code, status, expires_at, created_at, experience_id, uses_count, max_uses, claimed_by, experiences ( name, product_id )")
@@ -1504,6 +1794,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "voucher_batches") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const { data, error } = await sb
         .from("partner_voucher_batches")
         .select("*, products ( name, metadata ), experiences ( name ), plans ( name, duration_days ), academy_classrooms ( id, name, academy_id )")
@@ -1515,6 +1806,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "vouchers") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const status = String(url.searchParams.get("status") ?? "").trim();
       let query = sb
         .from("partner_vouchers")
@@ -1529,6 +1821,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "results") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
       const results = await loadResults(sb, tenantId, url.searchParams.get("token_id"));
       return json(200, { results });
     }
@@ -1633,6 +1926,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "seats") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const { data, error } = await sb
         .from("seat_licenses")
         .select("id, status, expires_at, assigned_at, starts_at, ends_at, plan_id, product_id, assigned_user_id, plans ( name, duration_days ), assigned_user:users!seat_licenses_assigned_user_id_fkey ( email )")
@@ -1643,6 +1937,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "payments") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const { data, error } = await sb
         .from("payments")
         .select("id, provider, provider_transaction_id, status, amount, original_amount, discount_amount, credit_amount, referral_discount_amount, currency, purchase_type, product_id, plan_id, created_at, granted_at, metadata")
@@ -1654,6 +1949,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && (action === "wallet" || action === "credits")) {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const currency = String(url.searchParams.get("currency") ?? "UZS").toUpperCase();
       const [{ data: walletBalance }, walletRows, { data: platformCredit }] = await Promise.all([
         sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency }),
@@ -1680,6 +1976,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "commissions") {
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "referrals/me", { method: "GET" });
       const body = await forwarded.json().catch(() => ({}));
       return json(forwarded.status, {
@@ -1691,6 +1988,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "reports") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
       const [results, vouchersRes, seatsRes, students, groups, events, reviews] = await Promise.all([
         loadResults(sb, tenantId),
         sb.from("partner_vouchers").select("id, status, redeemed_by, expires_at").eq("tenant_id", tenantId).limit(1000),
@@ -1725,13 +2023,18 @@ serve(async (req) => {
         loadMockEvents(sb, tenantId),
         loadReviewQueue(sb, tenantId),
         loadResults(sb, tenantId),
-        sb.from("partner_vouchers").select("id, status, access_kind, expires_at, created_at").eq("tenant_id", tenantId).limit(5000),
+        sb
+          .from("partner_vouchers")
+          .select("id, code, status, access_kind, expires_at, created_at, classroom_id, academy_classrooms ( id, name, academy_id )")
+          .eq("tenant_id", tenantId)
+          .limit(5000),
       ]);
       if (vouchersRes.error) return json(500, { error: "Failed to load voucher analytics", detail: vouchersRes.error.message });
       return json(200, { analytics: analyticsFrom(students, groups, events, reviews, results, vouchersRes.data ?? []) });
     }
 
     if (req.method === "GET" && action === "dashboard") {
+      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
       const [center, tickets, seats, payments, results, vouchers, batches, wallet, students, groups, events, reviews, academies] = await Promise.all([
         getCenterProfile(sb, tenantId),
         sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
@@ -1753,6 +2056,7 @@ serve(async (req) => {
       return json(200, {
         tenant_id: tenantId,
         center: withCenterCapabilities(center),
+        access: centerAccessFor(memberships, tenantId),
         capabilities: getCenterCapabilities(center),
         counts: {
           tickets: tickets.count ?? 0,
@@ -1839,8 +2143,9 @@ serve(async (req) => {
         "sync_academy_contacts",
         "create_wallet_topup",
         "create_voucher_batch",
+        "export_voucher_sheet",
+        "dispatch_voucher_batch",
         "void_voucher",
-        "export_report",
         "invite_staff",
         "update_staff",
         "create_group",
@@ -1849,9 +2154,6 @@ serve(async (req) => {
         "create_mock_event",
         "update_mock_event",
         "assign_review_item",
-        "export_student_report_pdf",
-        "export_group_report_pdf",
-        "export_event_report_pdf",
         "generate_statement",
         "request_cash_payout",
       ];
@@ -1864,7 +2166,15 @@ serve(async (req) => {
       if (["resend_student_invite", "revoke_student_invite"].includes(actionBody) && !canInviteCenterStudents(memberships, tenantId)) {
         return json(403, { error: "Center counselor/admin access is required" });
       }
-      if (["mark_event_attendance", "update_review_item"].includes(actionBody) && !requireCenterOperator(memberships, tenantId)) {
+      if ([
+        "mark_event_attendance",
+        "update_review_item",
+        "export_report",
+        "export_student_report_pdf",
+        "export_group_report_pdf",
+        "export_event_report_pdf",
+        "generate_classroom_lesson_plan",
+      ].includes(actionBody) && !requireCenterOperator(memberships, tenantId)) {
         return json(403, { error: "Center staff access is required" });
       }
       if ([
@@ -1887,6 +2197,9 @@ serve(async (req) => {
         "export_group_report_pdf",
         "export_event_report_pdf",
         "generate_statement",
+        "export_voucher_sheet",
+        "dispatch_voucher_batch",
+        "generate_classroom_lesson_plan",
       ].includes(actionBody)) {
         const gate = await requireActiveCenterOffice(sb, tenantId, { ...(isObject(body) ? body : {}), center_office: true });
         if (gate) return gate;
@@ -2416,6 +2729,43 @@ serve(async (req) => {
         const amount = normalizeQuantity(body.amount, 1000000000);
         const currency = String(body.currency ?? "UZS").toUpperCase();
         if (!amount) return json(400, { error: "amount must be positive" });
+        const settlementMode = String(body.settlement_mode ?? body.mode ?? "online").trim().toLowerCase();
+        if (settlementMode !== "manual") {
+          if (currency !== "UZS") return json(400, { error: "Online wallet top-up currently supports UZS only" });
+          if (amount < CLICK_MIN_AMOUNT_UZS || amount > CLICK_MAX_AMOUNT_UZS) {
+            return json(400, {
+              error: `Online wallet top-up must be between ${CLICK_MIN_AMOUNT_UZS} and ${CLICK_MAX_AMOUNT_UZS} UZS.`,
+              error_code: "online_payment_amount_limit",
+              min_amount: CLICK_MIN_AMOUNT_UZS,
+              max_amount: CLICK_MAX_AMOUNT_UZS,
+              amount,
+              currency,
+            });
+          }
+          const profile = await getCenterProfile(sb, tenantId);
+          const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
+            method: "POST",
+            body: JSON.stringify({
+              purchase_type: "center_wallet_topup",
+              tenant_id: tenantId,
+              amount,
+              currency,
+              description: `${profile?.display_name ?? "Education center"} wallet top-up`,
+              apply_credit: false,
+              credit_amount: 0,
+              metadata: {
+                center_office: true,
+                center_tenant_id: tenantId,
+                wallet_topup: true,
+                wallet_topup_amount: amount,
+                wallet_topup_currency: currency,
+                note: body.note ?? null,
+              },
+            }),
+          });
+          const text = await forwarded.text();
+          return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        }
         const { data, error } = await sb
           .from("partner_wallet_ledger")
           .insert({
@@ -2693,6 +3043,168 @@ serve(async (req) => {
         return json(200, { batch, vouchers: insertedVouchers ?? [] });
       }
 
+      if (actionBody === "export_voucher_sheet") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const batchId = String(body.batch_id ?? "").trim();
+        if (!isUuid(batchId)) return json(400, { error: "batch_id is required" });
+        const [center, batchRes, vouchersRes] = await Promise.all([
+          getCenterProfile(sb, tenantId),
+          sb
+            .from("partner_voucher_batches")
+            .select("*, products ( name ), experiences ( name ), plans ( name ), academy_classrooms ( id, name, academy_id )")
+            .eq("tenant_id", tenantId)
+            .eq("id", batchId)
+            .maybeSingle(),
+          sb
+            .from("partner_vouchers")
+            .select("*, academy_classrooms ( id, name, academy_id )")
+            .eq("tenant_id", tenantId)
+            .eq("batch_id", batchId)
+            .order("created_at", { ascending: true }),
+        ]);
+        if (batchRes.error) return json(500, { error: "Failed to load voucher batch", detail: batchRes.error.message });
+        if (!batchRes.data?.id) return json(404, { error: "Voucher batch not found" });
+        if (vouchersRes.error) return json(500, { error: "Failed to load vouchers", detail: vouchersRes.error.message });
+        const vouchers = vouchersRes.data ?? [];
+        if (vouchers.length === 0) return json(400, { error: "This batch has no vouchers" });
+        const pdf_base64 = await createVoucherSheetPdf(center, batchRes.data, vouchers, body.origin);
+        return json(200, {
+          filename: `schood-vouchers-${String(batchRes.data.batch_code ?? "batch").toLowerCase()}.pdf`,
+          content_type: "application/pdf",
+          pdf_base64,
+          count: vouchers.length,
+        });
+      }
+
+      if (actionBody === "dispatch_voucher_batch") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const batchId = String(body.batch_id ?? "").trim();
+        if (!isUuid(batchId)) return json(400, { error: "batch_id is required" });
+        const channel = String(body.channel ?? "sms").trim().toLowerCase() === "telegram" ? "telegram" : "sms";
+        const recipients = parseDispatchRecipients(body.recipients ?? body.csv ?? body.roster ?? "");
+        if (recipients.length === 0) return json(400, { error: "At least one recipient is required" });
+        const [center, batchRes, vouchersRes] = await Promise.all([
+          getCenterProfile(sb, tenantId),
+          sb.from("partner_voucher_batches").select("*").eq("tenant_id", tenantId).eq("id", batchId).maybeSingle(),
+          sb
+            .from("partner_vouchers")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .eq("batch_id", batchId)
+            .eq("status", "unused")
+            .order("created_at", { ascending: true })
+            .limit(recipients.length),
+        ]);
+        if (batchRes.error) return json(500, { error: "Failed to load voucher batch", detail: batchRes.error.message });
+        if (!batchRes.data?.id) return json(404, { error: "Voucher batch not found" });
+        if (vouchersRes.error) return json(500, { error: "Failed to load vouchers", detail: vouchersRes.error.message });
+        const vouchers = vouchersRes.data ?? [];
+        if (vouchers.length < recipients.length) {
+          return json(400, { error: "Not enough unused vouchers remain in this batch", available: vouchers.length, requested: recipients.length });
+        }
+
+        const centerName = String(center?.display_name ?? "your education center");
+        const dispatches = [];
+        for (let i = 0; i < recipients.length; i += 1) {
+          const recipient = recipients[i];
+          const voucher = vouchers[i];
+          const name = String(recipient.name ?? "").trim();
+          const link = centerRedeemUrl(center, voucher.code, body.origin);
+          const message = String(body.message_template ?? "Salom {name}! Sizning {center} computer-based mock test kodingiz: {code}. Sinovni boshlash uchun: {url}")
+            .replace(/\{name\}/g, name || "o'quvchi")
+            .replace(/\{center\}/g, centerName)
+            .replace(/\{code\}/g, String(voucher.code))
+            .replace(/\{url\}/g, link);
+          const result = await sendDispatchMessage(channel, recipient, message);
+          const existingMeta = isObject(voucher.metadata) ? voucher.metadata as Json : {};
+          await sb
+            .from("partner_vouchers")
+            .update({
+              assigned_name: (name || voucher.assigned_name) ?? null,
+              assigned_email: (recipient.email || voucher.assigned_email) ?? null,
+              assigned_phone: (recipient.phone || voucher.assigned_phone) ?? null,
+              metadata: {
+                ...existingMeta,
+                dispatch: {
+                  channel,
+                  status: result.status,
+                  provider: result.provider ?? null,
+                  sent_at: new Date().toISOString(),
+                  phone: recipient.phone ?? null,
+                  telegram_chat_id: recipient.telegram_chat_id ?? null,
+                  redeem_url: link,
+                },
+              },
+            })
+            .eq("id", voucher.id)
+            .eq("tenant_id", tenantId);
+          await upsertCenterStudent(sb, {
+            tenantId,
+            fullName: name || null,
+            email: recipient.email ?? null,
+            phone: recipient.phone ?? null,
+            voucherId: voucher.id,
+            createdBy: userId,
+            metadata: {
+              invite_source: `${channel}_voucher_batch_dispatch`,
+              batch_id: batchId,
+              voucher_code: voucher.code,
+              dispatch_status: result.status,
+              redeem_url: link,
+            },
+          });
+          dispatches.push({ voucher_id: voucher.id, code: voucher.code, recipient, message, redeem_url: link, ...result });
+        }
+
+        const sent = dispatches.filter((row) => row.status === "sent").length;
+        const prepared = dispatches.filter((row) => row.status === "prepared").length;
+        const failed = dispatches.filter((row) => row.status === "failed").length;
+        return json(200, { batch_id: batchId, channel, sent, prepared, failed, dispatches });
+      }
+
+      if (actionBody === "generate_classroom_lesson_plan") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const classroomId = String(body.classroom_id ?? "").trim();
+        const [students, groups, events, reviews, results, vouchersRes] = await Promise.all([
+          loadCenterStudents(sb, tenantId),
+          loadCenterGroups(sb, tenantId),
+          loadMockEvents(sb, tenantId),
+          loadReviewQueue(sb, tenantId),
+          loadResults(sb, tenantId),
+          sb
+            .from("partner_vouchers")
+            .select("id, code, status, access_kind, classroom_id, academy_classrooms ( id, name, academy_id )")
+            .eq("tenant_id", tenantId)
+            .limit(5000),
+        ]);
+        if (vouchersRes.error) return json(500, { error: "Failed to load voucher analytics", detail: vouchersRes.error.message });
+        const heatmaps = analyticsFrom(students, groups, events, reviews, results, vouchersRes.data ?? []).classroom_heatmaps as any[];
+        const selected = (classroomId ? heatmaps.find((row) => row.classroom_id === classroomId) : heatmaps[0]) ?? null;
+        if (!selected) return json(404, { error: "No classroom heatmap is available yet" });
+        const focusAreas = Array.isArray(selected.focus_areas) && selected.focus_areas.length > 0 ? selected.focus_areas : ["timed accuracy", "error review", "test strategy"];
+        const lesson_plan = [
+          `# ${selected.classroom_name} intervention plan`,
+          "",
+          `Average score: ${selected.average_score ?? "not enough data"} across ${selected.attempts} attempt${selected.attempts === 1 ? "" : "s"}.`,
+          "",
+          "## Focus areas",
+          ...focusAreas.map((area: string, index: number) => `${index + 1}. ${area}`),
+          "",
+          "## 60-minute classroom plan",
+          "1. 10 min diagnostic review: show 3 anonymized examples from the focus areas.",
+          "2. 20 min guided correction: model the thinking process and make students explain the distractor trap.",
+          "3. 20 min paired practice: students solve a short set targeting the same weakness.",
+          "4. 10 min exit ticket: each student writes one rule, one mistake to avoid, and one next action.",
+          "",
+          "## Homework",
+          `Assign a focused worksheet on ${focusAreas.slice(0, 2).join(" and ")} and re-test within 7 days.`,
+        ].join("\n");
+        return json(200, { classroom_id: selected.classroom_id, classroom_name: selected.classroom_name, heatmap: selected, lesson_plan });
+      }
+
       if (actionBody === "void_voucher") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
@@ -2795,11 +3307,11 @@ serve(async (req) => {
         const amount = normalizeMoney((plan as any).amount);
         const currency = String((plan as any).currency ?? "UZS").toUpperCase();
         if (!amount) return json(400, { error: "Tier plan amount is not configured" });
-        if (currency === "UZS" && amount > TSPAY_MAX_AMOUNT_UZS) {
+        if (currency === "UZS" && amount > CLICK_MAX_AMOUNT_UZS) {
           return json(400, {
-            error: "Current online payment limit is 200,000,000 UZS per transaction. Ask Schood admin to invoice this tier manually.",
+            error: `Current Click payment limit is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction. Ask Schood admin to invoice this tier manually.`,
             error_code: "online_payment_amount_limit",
-            max_amount: TSPAY_MAX_AMOUNT_UZS,
+            max_amount: CLICK_MAX_AMOUNT_UZS,
             amount,
             currency,
           });
@@ -2847,7 +3359,7 @@ serve(async (req) => {
           },
         };
 
-        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "tspay/create-transaction", {
+        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
           method: "POST",
           body: JSON.stringify(payload),
         });
@@ -2862,21 +3374,20 @@ serve(async (req) => {
         if (!forwarded.ok) {
           await sb
             .from("partner_center_tier_change_requests")
-            .update({ status: "failed", metadata: { ...(tierRequest.metadata ?? {}), tspay_error: parsed ?? text } })
+            .update({ status: "failed", metadata: { ...(tierRequest.metadata ?? {}), click_error: parsed ?? text } })
             .eq("id", tierRequest.id);
           return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
 
-        const orderId = String(parsed?.order_id ?? "").trim();
         const transactionId = String(parsed?.transaction_id ?? "").trim();
         let paymentId: string | null = null;
-        if (orderId || transactionId) {
+        if (transactionId) {
           const { data: paymentRow } = await sb
             .from("payments")
             .select("id")
             .eq("tenant_id", tenantId)
             .eq("purchase_type", "center_tier_upgrade")
-            .or(`tspay_order_id.eq.${orderId || "__none__"},provider_transaction_id.eq.${orderId || "__none__"},tspay_cheque_id.eq.${transactionId || "__none__"}`)
+            .eq("provider_transaction_id", transactionId)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -2889,8 +3400,7 @@ serve(async (req) => {
             payment_id: paymentId,
             metadata: {
               ...(tierRequest.metadata ?? {}),
-              tspay_order_id: parsed?.order_id ?? null,
-              tspay_transaction_id: parsed?.transaction_id ?? null,
+              click_transaction_id: parsed?.transaction_id ?? null,
               payment_url: parsed?.payment_url ?? null,
             },
           })
@@ -2977,12 +3487,12 @@ serve(async (req) => {
             : 0;
           const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
           const finalAmount = Math.max(0, originalAmount - creditAmount);
-          if (finalAmount > TSPAY_MAX_AMOUNT_UZS) {
+          if (finalAmount > CLICK_MAX_AMOUNT_UZS) {
             return json(400, {
-              error: "Current online checkout limit is 200,000,000 UZS per transaction. For larger education center purchases, use wallet top-up/admin settlement or split the purchase.",
+              error: `Current Click checkout limit is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction. For larger education center purchases, use wallet top-up/admin settlement or split the purchase.`,
               error_code: "online_payment_amount_limit",
               temporary: false,
-              max_amount: TSPAY_MAX_AMOUNT_UZS,
+              max_amount: CLICK_MAX_AMOUNT_UZS,
               original_amount: originalAmount,
               credit_amount: creditAmount,
               final_amount: finalAmount,
@@ -3012,7 +3522,7 @@ serve(async (req) => {
           (payload as any).expires_in_days = 30;
         }
 
-        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "tspay/create-transaction", {
+        const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
           method: "POST",
           body: JSON.stringify(payload),
         });

@@ -35,7 +35,7 @@ import {
   partnerOfficeResults,
   partnerOfficeSeats,
   partnerOfficeTickets,
-  tspayStatus,
+  clickStatus,
   type PartnerCreditLedgerEntry,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
@@ -370,7 +370,7 @@ export const PartnerOfficePage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await tspayStatus(token, pendingTransactionId);
+      const res = await clickStatus(token, pendingTransactionId);
       if (isPaid(res.status)) {
         setPendingTransactionId(null);
         setPendingKind(null);

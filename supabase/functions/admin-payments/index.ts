@@ -43,6 +43,8 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+const CLICK_MERCHANT_API_BASE = "https://api.click.uz/v2/merchant";
+
 const getEnv = (key: string): string => {
   const value = Deno.env.get(key);
   if (!value) throw new Error(`Missing env var: ${key}`);
@@ -55,12 +57,19 @@ const normalizePaymentStatus = (raw: unknown): string => {
 };
 
 const parseSuccessStatuses = (raw: string | undefined): Set<string> => {
-  // TSPay docs use "success"; the app stores successful provider payments as "paid".
   const list = (raw ?? "paid,success,completed").split(",").map((v) => v.trim().toLowerCase());
   return new Set(list.filter(Boolean));
 };
 
 const normalizePurchaseType = (raw: unknown): string => String(raw ?? "").trim().toLowerCase();
+
+const paymentSuccessStatuses = (): Set<string> =>
+  parseSuccessStatuses(Deno.env.get("PAYMENT_SUCCESS_STATUSES"));
+
+const normalizeMoney = (raw: unknown): number => {
+  const value = Number(raw);
+  return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
+};
 
 const normalizeCenterTier = (raw: unknown): "starter" | "growth" | "premium" | "exclusive" | null => {
   const tier = String(raw ?? "").trim().toLowerCase();
@@ -201,6 +210,100 @@ const readJsonPayload = async (res: Response): Promise<any> => {
   } catch {
     return { detail: text };
   }
+};
+
+const sha1Hex = async (message: string): Promise<string> => {
+  const data = new TextEncoder().encode(message);
+  const hash = await crypto.subtle.digest("SHA-1", data);
+  return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+const buildClickMerchantAuthHeader = async (
+  merchantUserId: string,
+  secretKey: string,
+): Promise<string> => {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const digest = await sha1Hex(`${timestamp}${secretKey}`);
+  return `${merchantUserId}:${digest}:${timestamp}`;
+};
+
+const normalizeClickPaymentStatus = (statusCode: unknown): string => {
+  const code = Number(statusCode);
+  if (code === 2) return "paid";
+  if (code === -1) return "canceled";
+  if (code === 1) return "pending";
+  return normalizePaymentStatus(statusCode) || "pending";
+};
+
+const fetchClickStatus = async (
+  payment: PaymentRow,
+): Promise<{ ok: boolean; statusJson: any; statusQueryId: string; paymentStatus: string; apiStatus: string }> => {
+  const merchantUserId = Deno.env.get("CLICK_MERCHANT_USER_ID");
+  const secretKey = Deno.env.get("CLICK_SECRET_KEY");
+  const serviceId = Deno.env.get("CLICK_SERVICE_ID");
+  if (!merchantUserId || !secretKey || !serviceId) {
+    return {
+      ok: false,
+      statusJson: { error: "missing_click_config" },
+      statusQueryId: payment.provider_transaction_id,
+      paymentStatus: "pending",
+      apiStatus: "missing_config",
+    };
+  }
+
+  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
+    ? payment.metadata
+    : {};
+  const candidates = uniqIds([
+    (meta as any)?.click_trans_id,
+    payment.provider_transaction_id,
+  ]).filter((candidate) => !looksLikeUuid(candidate));
+
+  if (candidates.length === 0) {
+    return {
+      ok: false,
+      statusJson: { error: "missing_click_transaction_id" },
+      statusQueryId: payment.provider_transaction_id,
+      paymentStatus: "pending",
+      apiStatus: "missing_transaction_id",
+    };
+  }
+
+  const authHeader = await buildClickMerchantAuthHeader(merchantUserId, secretKey);
+  for (const candidate of candidates) {
+    const res = await fetch(`${CLICK_MERCHANT_API_BASE}/payment/status/${serviceId}/${encodeURIComponent(candidate)}`, {
+      method: "GET",
+      headers: { "Auth": authHeader, "Content-Type": "application/json" },
+    });
+    const statusJson = await readJsonPayload(res);
+    if (!res.ok) {
+      if (res.status !== 404) {
+        return {
+          ok: false,
+          statusJson,
+          statusQueryId: candidate,
+          paymentStatus: "pending",
+          apiStatus: normalizePaymentStatus(statusJson?.status ?? statusJson?.error ?? "click_api_error"),
+        };
+      }
+      continue;
+    }
+    return {
+      ok: true,
+      statusJson,
+      statusQueryId: candidate,
+      paymentStatus: normalizeClickPaymentStatus(statusJson?.payment_status),
+      apiStatus: normalizePaymentStatus(statusJson?.status ?? "click_api"),
+    };
+  }
+
+  return {
+    ok: false,
+    statusJson: { detail: "Click transaction not found" },
+    statusQueryId: candidates[0],
+    paymentStatus: "pending",
+    apiStatus: "not_found",
+  };
 };
 
 const fetchTspayStatus = async (
@@ -354,9 +457,79 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
   return true;
 };
 
+const applyCenterWalletTopupOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
+  if (!payment.tenant_id || !payment.user_id) return false;
+  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
+  const amount = normalizeMoney((meta as any).wallet_topup_amount ?? (meta as any).topup_amount ?? payment.original_amount ?? payment.amount);
+  const currency = String((meta as any).wallet_topup_currency ?? payment.currency ?? "UZS").toUpperCase();
+  if (amount <= 0) {
+    await sb.from("payments").update({ granted_at: null, grant_error: "Invalid center wallet top-up metadata" }).eq("id", payment.id);
+    throw new Error("Invalid center wallet top-up metadata");
+  }
+
+  const nowIso = new Date().toISOString();
+  const { data: claim, error: claimErr } = await sb
+    .from("payments")
+    .update({ granted_at: nowIso, grant_error: null })
+    .eq("id", payment.id)
+    .is("granted_at", null)
+    .select("id")
+    .maybeSingle();
+  if (claimErr) throw claimErr;
+  if (!claim) return false;
+
+  const { data: existing, error: existingError } = await sb
+    .from("partner_wallet_ledger")
+    .select("id")
+    .eq("payment_id", payment.id)
+    .eq("entry_kind", "topup")
+    .maybeSingle();
+  if (existingError) {
+    await sb.from("payments").update({ granted_at: null, grant_error: existingError.message }).eq("id", payment.id);
+    throw existingError;
+  }
+  if (existing?.id) return true;
+
+  const { error: ledgerError } = await sb.from("partner_wallet_ledger").insert({
+    tenant_id: payment.tenant_id,
+    user_id: payment.user_id,
+    entry_kind: "topup",
+    status: "posted",
+    amount,
+    currency,
+    payment_id: payment.id,
+    created_by: payment.user_id,
+    metadata: {
+      source: "admin_retry_click",
+      provider: payment.provider,
+      click_payment_id: payment.id,
+      click_transaction_id: payment.provider_transaction_id ?? null,
+      note: (meta as any).note ?? null,
+    },
+  });
+  if (ledgerError) {
+    await sb.from("payments").update({ granted_at: null, grant_error: String(ledgerError.message ?? ledgerError) }).eq("id", payment.id);
+    throw ledgerError;
+  }
+
+  await sb
+    .from("payments")
+    .update({
+      metadata: {
+        ...meta,
+        center_wallet_topup_posted: true,
+        center_wallet_topup_posted_at: nowIso,
+      },
+    })
+    .eq("id", payment.id);
+
+  return true;
+};
+
 const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
   const purchaseType = normalizePurchaseType(payment.purchase_type ?? (payment.metadata as any)?.purchase_type);
   if (purchaseType === "center_tier_upgrade") return applyCenterTierUpgradeOnce(sb, payment);
+  if (purchaseType === "center_wallet_topup") return applyCenterWalletTopupOnce(sb, payment);
   if (!payment.tenant_id || !payment.product_id || !payment.user_id) return false;
 
   const terms = await resolveGrantTerms(sb, payment);
@@ -406,7 +579,7 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
       is_active: true,
       starts_at: nowIso,
       ends_at: endsAt,
-      source: "tspay",
+      source: payment.provider || "payment",
       value: entitlementValue,
     };
   });
@@ -536,7 +709,7 @@ serve(async (req) => {
       const minutes = Number.isFinite(minutesRaw) ? Math.max(1, Math.min(180, Math.floor(minutesRaw))) : 5;
       const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(500, Math.floor(limitRaw))) : 100;
       const cutoffIso = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-      const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
+      const successStatuses = paymentSuccessStatuses();
 
       const { data: pending, error: pendingErr } = await sb
         .from("payments")
@@ -588,35 +761,54 @@ serve(async (req) => {
       }
 
       const payment = paymentRow as PaymentRow;
-      if (String(payment.provider).toLowerCase() !== "tspay") {
-        return new Response(JSON.stringify({ error: "Only tspay payments are supported right now" }), {
+      const provider = String(payment.provider ?? "").toLowerCase();
+      const successStatuses = paymentSuccessStatuses();
+
+      const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
+        ? payment.metadata
+        : {};
+      let statusJson: any = {};
+      let usedStatusId = payment.provider_transaction_id;
+      let paymentStatus = "pending";
+      let apiStatus = "unknown";
+
+      if (provider === "click") {
+        const checked = await fetchClickStatus(payment);
+        statusJson = checked.statusJson;
+        usedStatusId = checked.statusQueryId;
+        paymentStatus = checked.paymentStatus;
+        apiStatus = checked.apiStatus;
+        if (!checked.ok) {
+          return new Response(JSON.stringify({ error: "Click status failed", details: statusJson }), {
+            status: 502,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+      } else if (provider === "tspay") {
+        const tspayBaseUrl = normalizeTspayApiBaseUrl(Deno.env.get("TSPAY_API_BASE_URL") ?? Deno.env.get("TSPAY_BASE_URL"));
+        const checked = await fetchTspayStatus(tspayBaseUrl, payment);
+        statusJson = checked.statusJson;
+        usedStatusId = checked.statusQueryId;
+        if (!checked.ok) {
+          return new Response(JSON.stringify({ error: "TSPay status failed", details: statusJson }), {
+            status: 502,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
+        }
+        const parsed = parseStatusResponse(statusJson);
+        paymentStatus = parsed.paymentStatus;
+        apiStatus = parsed.apiStatus;
+      } else {
+        return new Response(JSON.stringify({ error: `Unsupported payment provider: ${payment.provider}` }), {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
       }
 
-      const tspayBaseUrl = normalizeTspayApiBaseUrl(Deno.env.get("TSPAY_API_BASE_URL") ?? Deno.env.get("TSPAY_BASE_URL"));
-      const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
-
-      const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
-        ? payment.metadata
-        : {};
-      const checked = await fetchTspayStatus(tspayBaseUrl, payment);
-      const statusJson = checked.statusJson;
-      const usedStatusId = checked.statusQueryId;
-
-      if (!checked.ok) {
-        return new Response(JSON.stringify({ error: "TSPay status failed", details: statusJson }), {
-          status: 502,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      const { paymentStatus, apiStatus } = parseStatusResponse(statusJson);
       const normalized = paymentStatus;
       const nextMeta = {
         ...meta,
-        tspay_status_id: usedStatusId,
+        ...(provider === "click" ? { click_status_id: usedStatusId } : { tspay_status_id: usedStatusId }),
       };
 
       const { error: updateError } = await sb
@@ -627,7 +819,7 @@ serve(async (req) => {
 
       if (isSuccessStatus(successStatuses, normalized)) {
         try {
-          await grantEntitlementOnce(sb, payment);
+          await grantEntitlementOnce(sb, { ...payment, status: normalized, metadata: nextMeta });
         } catch (e) {
           // Store error for support; do not fail the whole request.
           const msg = e instanceof Error ? e.message : String(e);
@@ -653,7 +845,7 @@ serve(async (req) => {
         });
       }
 
-      const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
+      const successStatuses = paymentSuccessStatuses();
 
       const { data: paymentRow, error: payErr } = await sb
         .from("payments")
