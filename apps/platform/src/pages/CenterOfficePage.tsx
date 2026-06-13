@@ -9,6 +9,7 @@ import {
   Copy,
   CreditCard,
   Download,
+  FileDown,
   Link2,
   Mail,
   Paintbrush,
@@ -17,6 +18,7 @@ import {
   RefreshCw,
   Save,
   School,
+  Send,
   Ticket,
   Trash2,
   UserPlus,
@@ -39,8 +41,11 @@ import {
   partnerOfficeCreateVoucherBatch,
   partnerOfficeCreateWalletTopup,
   partnerOfficeDashboard,
+  partnerOfficeDispatchVoucherBatch,
   partnerOfficeExportReport,
   partnerOfficeExportPdfReport,
+  partnerOfficeExportVoucherSheet,
+  partnerOfficeGenerateClassroomLessonPlan,
   partnerOfficeGenerateStatement,
   partnerOfficeAnalytics,
   partnerOfficePayments,
@@ -75,7 +80,7 @@ import {
   partnerOfficeVoucherBatches,
   partnerOfficeVouchers,
   partnerOfficeWallet,
-  tspayStatus,
+  clickStatus,
   type PartnerCenterAcademy,
   type PartnerCenterProfile,
   type PartnerCenterCapabilities,
@@ -89,6 +94,8 @@ import {
   type PartnerCenterStatement,
   type PartnerCenterTierCatalog,
   type PartnerCenterTierPlan,
+  type PartnerCenterAccess,
+  type PartnerClassroomHeatmap,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
   type PartnerOfficePlan,
@@ -146,6 +153,20 @@ const STARTER_CAPABILITIES: PartnerCenterCapabilities = {
   payouts_enabled: false,
   white_label_enabled: false,
   included_features: ['Voucher generation', 'Student registry', 'CSV reports', 'Logo and public page'],
+};
+
+const EMPTY_ACCESS: PartnerCenterAccess = {
+  role: null,
+  can_manage: false,
+  can_operate: false,
+  can_invite_students: false,
+  can_manage_finance: false,
+  can_manage_inventory: false,
+  can_manage_staff: false,
+  can_manage_academies: false,
+  can_manage_branding: false,
+  can_view_results: false,
+  can_manage_reviews: false,
 };
 
 const money = (amount?: number | null, currency = 'UZS') =>
@@ -293,6 +314,7 @@ export const CenterOfficePage: React.FC = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('overview');
   const [center, setCenter] = useState<PartnerCenterProfile | null>(null);
+  const [access, setAccess] = useState<PartnerCenterAccess>(EMPTY_ACCESS);
   const [catalog, setCatalog] = useState<PartnerOfficeExperience[]>([]);
   const [plans, setPlans] = useState<PartnerOfficePlan[]>([]);
   const [payments, setPayments] = useState<PartnerOfficePayment[]>([]);
@@ -318,7 +340,7 @@ export const CenterOfficePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [pendingTransactionId, setPendingTransactionId] = useState<string | null>(null);
-  const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | 'tier' | null>(null);
+  const [pendingKind, setPendingKind] = useState<'tickets' | 'seats' | 'tier' | 'wallet' | null>(null);
   const [pendingPaymentUrl, setPendingPaymentUrl] = useState<string | null>(null);
   const [pendingPaymentLabel, setPendingPaymentLabel] = useState<string>('payment');
   const [tierBillingPeriod, setTierBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
@@ -336,9 +358,16 @@ export const CenterOfficePage: React.FC = () => {
     source_model: 'prepaid_wallet',
   });
   const [walletTopup, setWalletTopup] = useState({ amount: 1000000, note: '' });
+  const [dispatchForm, setDispatchForm] = useState({
+    batch_id: '',
+    channel: 'sms' as 'sms' | 'telegram',
+    recipients: '',
+    message_template: '',
+  });
   const [inviteForm, setInviteForm] = useState({ name: '', email: '', phone: '', voucher_batch_id: '' });
   const [bulkInviteText, setBulkInviteText] = useState('');
   const [voucherRosterText, setVoucherRosterText] = useState('');
+  const [lessonPlan, setLessonPlan] = useState<{ classroom_name: string; lesson_plan: string } | null>(null);
   const [eventForm, setEventForm] = useState({
     title: '',
     experience_id: '',
@@ -374,15 +403,33 @@ export const CenterOfficePage: React.FC = () => {
   const centerIsActive = center?.status === 'active';
   const capabilities = center?.capabilities ?? STARTER_CAPABILITIES;
   const visibleTabs = useMemo(
-    () =>
-      tabs.filter((item) => {
-        if (item.id === 'events') return capabilities.mock_events_enabled;
-        if (item.id === 'reviews') return capabilities.review_queue_enabled;
-        if (item.id === 'payments') return capabilities.payouts_enabled || center?.commercial_model === 'revenue_share' || center?.commercial_model === 'hybrid';
-        return true;
-      }),
-    [capabilities, center?.commercial_model],
+    () => {
+      const allowed: Record<Tab, boolean> = {
+        overview: access.can_operate,
+        academies: access.can_manage_academies,
+        upgrade: access.can_manage_finance,
+        wallet: access.can_manage_finance,
+        buy: access.can_manage_finance,
+        vouchers: access.can_manage_inventory,
+        students: access.can_operate || access.can_invite_students,
+        events: access.can_operate && capabilities.mock_events_enabled,
+        reviews: access.can_manage_reviews && capabilities.review_queue_enabled,
+        staff: access.can_manage_staff,
+        results: access.can_view_results,
+        reports: access.can_view_results,
+        branding: access.can_manage_branding,
+        payments: access.can_manage_finance && (capabilities.payouts_enabled || center?.commercial_model === 'revenue_share' || center?.commercial_model === 'hybrid'),
+      };
+      return tabs.filter((item) => allowed[item.id]);
+    },
+    [access, capabilities, center?.commercial_model],
   );
+
+  useEffect(() => {
+    if (!centerIsActive || visibleTabs.length === 0) return;
+    if (!visibleTabs.some((item) => item.id === tab)) setTab(visibleTabs[0].id);
+  }, [centerIsActive, tab, visibleTabs]);
+
   const classroomOptions = useMemo(
     () =>
       academies.flatMap((academy) =>
@@ -411,6 +458,10 @@ export const CenterOfficePage: React.FC = () => {
     () => academies.reduce((total, academy) => total + Number(academy.counts?.active_classrooms ?? academy.counts?.classrooms ?? 0), 0),
     [academies],
   );
+  const classroomHeatmaps = useMemo<PartnerClassroomHeatmap[]>(
+    () => (Array.isArray(analytics?.classroom_heatmaps) ? (analytics.classroom_heatmaps as PartnerClassroomHeatmap[]) : []),
+    [analytics],
+  );
 
   const getValidToken = async (): Promise<string | null> => {
     const session = await getAuthSession();
@@ -436,7 +487,9 @@ export const CenterOfficePage: React.FC = () => {
       }
       await partnerOfficeAcceptStaffInvites(token).catch(() => null);
       const centerRes = await partnerOfficeCenter(token);
+      const currentAccess = centerRes.access ?? EMPTY_ACCESS;
       setCenter(centerRes.center);
+      setAccess(currentAccess);
       if (!centerRes.center?.tenant_id) {
         const { data } = await supabase.auth.getUser();
         setApplicationForm((prev) => ({
@@ -463,33 +516,35 @@ export const CenterOfficePage: React.FC = () => {
         setStaffInvites([]);
         setResults([]);
         setReports(null);
+        setAccess(EMPTY_ACCESS);
         return;
       }
 
       const tenant_id = centerRes.center.tenant_id;
+      const currentCapabilities = centerRes.center.capabilities ?? STARTER_CAPABILITIES;
       const [dashRes, catalogRes, plansRes, ticketRes, seatRes, paymentRes, walletRes, voucherRes, batchRes, studentRes, inviteRes, academyRes, staffRes, resultRes, reportRes, eventRes, reviewRes, statementRes, capsRes, tierCatalogRes, analyticsRes] =
         await Promise.all([
           partnerOfficeDashboard(token, tenant_id),
           partnerOfficeCatalog(token),
           partnerOfficePlans(token),
-          partnerOfficeTickets(token, tenant_id),
-          partnerOfficeSeats(token, tenant_id),
-          partnerOfficePayments(token, tenant_id),
-          partnerOfficeWallet(token, tenant_id),
-          partnerOfficeVouchers(token, { tenant_id }),
-          partnerOfficeVoucherBatches(token, tenant_id),
-          partnerOfficeStudents(token, tenant_id),
-          partnerOfficeStudentInvites(token, tenant_id).catch(() => ({ invites: [] })),
-          partnerOfficeAcademies(token, tenant_id).catch(() => ({ academies: [] })),
-          partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })),
-          partnerOfficeResults(token, { tenant_id }),
-          partnerOfficeReports(token, tenant_id),
-          partnerOfficeMockEvents(token, tenant_id).catch(() => ({ events: [] })),
-          partnerOfficeReviewQueue(token, tenant_id).catch(() => ({ review_items: [] })),
-          partnerOfficeStatements(token, tenant_id).catch(() => ({ statements: [] })),
+          currentAccess.can_manage_finance ? partnerOfficeTickets(token, tenant_id) : Promise.resolve({ tickets: [] }),
+          currentAccess.can_manage_finance ? partnerOfficeSeats(token, tenant_id) : Promise.resolve({ seats: [] }),
+          currentAccess.can_manage_finance ? partnerOfficePayments(token, tenant_id) : Promise.resolve({ payments: [] }),
+          currentAccess.can_manage_finance ? partnerOfficeWallet(token, tenant_id) : Promise.resolve({ wallet: { currency: 'UZS', available_amount: 0 }, ledger: [] }),
+          currentAccess.can_manage_inventory ? partnerOfficeVouchers(token, { tenant_id }) : Promise.resolve({ vouchers: [] }),
+          currentAccess.can_manage_inventory ? partnerOfficeVoucherBatches(token, tenant_id) : Promise.resolve({ batches: [] }),
+          currentAccess.can_operate || currentAccess.can_invite_students ? partnerOfficeStudents(token, tenant_id) : Promise.resolve({ students: [] }),
+          currentAccess.can_invite_students ? partnerOfficeStudentInvites(token, tenant_id).catch(() => ({ invites: [] })) : Promise.resolve({ invites: [] }),
+          currentAccess.can_manage_academies ? partnerOfficeAcademies(token, tenant_id).catch(() => ({ academies: [] })) : Promise.resolve({ academies: [] }),
+          currentAccess.can_manage_staff ? partnerOfficeStaff(token, tenant_id).catch(() => ({ members: [], invites: [] })) : Promise.resolve({ members: [], invites: [] }),
+          currentAccess.can_view_results ? partnerOfficeResults(token, { tenant_id }) : Promise.resolve({ results: [] }),
+          currentAccess.can_view_results ? partnerOfficeReports(token, tenant_id) : Promise.resolve({ reports: null }),
+          currentAccess.can_operate && currentCapabilities.mock_events_enabled ? partnerOfficeMockEvents(token, tenant_id).catch(() => ({ events: [] })) : Promise.resolve({ events: [] }),
+          currentAccess.can_manage_reviews && currentCapabilities.review_queue_enabled ? partnerOfficeReviewQueue(token, tenant_id).catch(() => ({ review_items: [] })) : Promise.resolve({ review_items: [] }),
+          currentAccess.can_manage_finance ? partnerOfficeStatements(token, tenant_id).catch(() => ({ statements: [] })) : Promise.resolve({ statements: [] }),
           partnerOfficePaymentCapabilities(token).catch(() => ({ providers: [] })),
-          partnerOfficeTierCatalog(token, tenant_id).catch(() => null),
-          partnerOfficeAnalytics(token, tenant_id).catch(() => ({ analytics: {} })),
+          currentAccess.can_manage_finance ? partnerOfficeTierCatalog(token, tenant_id).catch(() => null) : Promise.resolve(null),
+          currentAccess.can_view_results ? partnerOfficeAnalytics(token, tenant_id).catch(() => ({ analytics: {} })) : Promise.resolve({ analytics: {} }),
         ]);
 
       setDashboard(dashRes);
@@ -630,13 +685,22 @@ export const CenterOfficePage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await tspayStatus(token, pendingTransactionId);
+      const res = await clickStatus(token, pendingTransactionId);
       if (isPaid(res.status)) {
+        const completedKind = pendingKind;
         setPendingTransactionId(null);
         setPendingKind(null);
         setPendingPaymentUrl(null);
         await refreshAll();
-        setSuccess(pendingKind === 'seats' ? 'Seats added.' : pendingKind === 'tier' ? 'Center tier updated.' : 'Mock tickets generated.');
+        setSuccess(
+          completedKind === 'seats'
+            ? 'Seats added.'
+            : completedKind === 'tier'
+              ? 'Center tier updated.'
+              : completedKind === 'wallet'
+                ? 'Wallet topped up.'
+                : 'Mock tickets generated.',
+        );
       } else {
         setSuccess(`Payment status: ${res.status}`);
       }
@@ -724,9 +788,29 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      await partnerOfficeCreateWalletTopup(token, { tenant_id: centerTenantId, amount: walletTopup.amount, currency: wallet.currency, note: walletTopup.note, center_office: true });
-      await refreshAll();
-      setSuccess('Top-up request recorded. Admin settlement is required before funds become available.');
+      const res = await partnerOfficeCreateWalletTopup(token, {
+        tenant_id: centerTenantId,
+        amount: walletTopup.amount,
+        currency: wallet.currency,
+        note: walletTopup.note,
+        center_office: true,
+        settlement_mode: 'online',
+      });
+      if ('transaction_id' in res) {
+        setPendingTransactionId(res.transaction_id);
+        setPendingKind('wallet');
+        if (res.payment_url) {
+          openPayment(res.payment_url, 'wallet top-up');
+          setSuccess('Click payment opened. Wallet credit posts automatically after payment is confirmed.');
+        } else if (isPaid(res.status)) {
+          setPendingPaymentUrl(null);
+          await refreshAll();
+          setSuccess('Wallet topped up.');
+        }
+      } else {
+        await refreshAll();
+        setSuccess('Manual top-up request recorded.');
+      }
     } catch (err) {
       setError(parseError(err));
     } finally {
@@ -1129,6 +1213,74 @@ export const CenterOfficePage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportVoucherSheet = async (batch_id: string) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId || !batch_id) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeExportVoucherSheet(token, { tenant_id: centerTenantId, batch_id, origin, center_office: true });
+      downloadBase64Pdf(res.filename, res.pdf_base64);
+      setSuccess(`Voucher sheet exported with ${res.count} code${res.count === 1 ? '' : 's'}.`);
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const dispatchVoucherBatch = async () => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    if (!dispatchForm.batch_id || !dispatchForm.recipients.trim()) {
+      setError('Choose a voucher batch and paste at least one recipient line.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeDispatchVoucherBatch(token, {
+        tenant_id: centerTenantId,
+        batch_id: dispatchForm.batch_id,
+        channel: dispatchForm.channel,
+        recipients: dispatchForm.recipients,
+        message_template: dispatchForm.message_template.trim() || null,
+        origin,
+        center_office: true,
+      });
+      await refreshAll();
+      setDispatchForm((prev) => ({ ...prev, recipients: '' }));
+      setSuccess(`Dispatch prepared: ${res.sent} sent, ${res.prepared} prepared, ${res.failed} failed.`);
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateLessonPlan = async (classroom_id?: string | null) => {
+    const token = await getValidToken();
+    if (!token || !centerTenantId) return;
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await partnerOfficeGenerateClassroomLessonPlan(token, {
+        tenant_id: centerTenantId,
+        classroom_id: classroom_id ?? null,
+        center_office: true,
+      });
+      setLessonPlan({ classroom_name: res.classroom_name, lesson_plan: res.lesson_plan });
+      setSuccess(`Lesson plan generated for ${res.classroom_name}.`);
+    } catch (err) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const exportPdf = async (report_type: 'student' | 'group' | 'event') => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
@@ -1157,6 +1309,7 @@ export const CenterOfficePage: React.FC = () => {
   };
 
   const recentVouchers = vouchers.slice(0, 12);
+  const roleLabel = access.role ? `${access.role.slice(0, 1).toUpperCase()}${access.role.slice(1)}` : 'No center role';
 
   const headerActions: SiteHeaderAction[] = [
     { id: 'account', label: 'Account', onClick: () => navigate('/account'), primary: true },
@@ -1180,12 +1333,13 @@ export const CenterOfficePage: React.FC = () => {
               <p className="mt-4 max-w-2xl text-base text-gray-600">
                 Manage center billing, voucher access, staff, reporting, and linked delivery academies from one workspace.
               </p>
+              <p className="mt-3 text-sm font-semibold text-gray-700">Current access: {roleLabel}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <button type="button" onClick={() => setTab('academies')} className={primaryButton} disabled={!centerIsActive}>
+                <button type="button" onClick={() => setTab('academies')} className={primaryButton} disabled={!centerIsActive || !access.can_manage_academies}>
                   <School className="h-4 w-4" />
                   Manage academies
                 </button>
-                <button type="button" onClick={() => setTab('buy')} className={primaryButton} disabled={!centerIsActive}>
+                <button type="button" onClick={() => setTab('buy')} className={primaryButton} disabled={!centerIsActive || !access.can_manage_finance}>
                   <CreditCard className="h-4 w-4" />
                   Buy or generate
                 </button>
@@ -1201,16 +1355,24 @@ export const CenterOfficePage: React.FC = () => {
             </div>
 
             <div className="rounded-3xl border border-gray-900 bg-[#0f172a] p-6 text-white shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Partner wallet</p>
-              <p className="mt-3 text-3xl font-bold">{money(wallet.available_amount, wallet.currency)}</p>
-              <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Public center page</p>
-                <p className="mt-2 break-all font-mono text-sm">{centerUrl || '-'}</p>
-                <button type="button" onClick={() => void copy(centerUrl, 'Center page copied.')} disabled={!centerUrl} className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/30 px-3 py-2 text-sm font-semibold text-white">
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </button>
-              </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{access.can_manage_finance ? 'Partner wallet' : 'Role workspace'}</p>
+              <p className="mt-3 text-3xl font-bold">{access.can_manage_finance ? money(wallet.available_amount, wallet.currency) : roleLabel}</p>
+              {access.can_manage_finance ? (
+                <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Public center page</p>
+                  <p className="mt-2 break-all font-mono text-sm">{centerUrl || '-'}</p>
+                  <button type="button" onClick={() => void copy(centerUrl, 'Center page copied.')} disabled={!centerUrl} className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/30 px-3 py-2 text-sm font-semibold text-white">
+                    <Copy className="h-4 w-4" />
+                    Copy
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-white/75">
+                  {access.can_invite_students ? <p>Student invitations and roster controls are enabled.</p> : null}
+                  {access.can_view_results ? <p>Results, reports, reviews, and classroom plans are enabled.</p> : null}
+                  {!access.can_operate ? <p>Ask a center owner to assign your center role.</p> : null}
+                </div>
+              )}
               <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{capabilities.tier_label} tier</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/75">
@@ -1302,32 +1464,47 @@ export const CenterOfficePage: React.FC = () => {
           {centerIsActive && tab === 'overview' ? (
             <section className="space-y-5">
               <div className="grid gap-4 md:grid-cols-5">
-                <StatCard label="Wallet" value={money(wallet.available_amount, wallet.currency)} icon={WalletCards} tone="dark" />
-                <StatCard label="Academies" value={academies.length || dashboard?.counts?.academies || 0} icon={School} />
-                <StatCard label="Unused vouchers" value={dashboard?.counts?.vouchers_unused ?? 0} icon={Ticket} />
-                <StatCard label="Redeemed" value={dashboard?.counts?.vouchers_redeemed ?? 0} icon={UsersRound} />
+                {access.can_manage_finance ? <StatCard label="Wallet" value={money(wallet.available_amount, wallet.currency)} icon={WalletCards} tone="dark" /> : null}
+                {access.can_manage_academies ? <StatCard label="Academies" value={academies.length || dashboard?.counts?.academies || 0} icon={School} /> : null}
+                {access.can_manage_inventory ? <StatCard label="Unused vouchers" value={dashboard?.counts?.vouchers_unused ?? 0} icon={Ticket} /> : null}
+                {access.can_manage_inventory ? <StatCard label="Redeemed" value={dashboard?.counts?.vouchers_redeemed ?? 0} icon={UsersRound} /> : null}
+                <StatCard label="Students" value={dashboard?.counts?.students ?? students.length} icon={UsersRound} />
                 <StatCard label="Completed exams" value={reports?.completed_exams ?? dashboard?.counts?.results ?? 0} icon={ClipboardList} />
+                {access.can_manage_reviews ? <StatCard label="Pending reviews" value={dashboard?.counts?.pending_reviews ?? reviewItems.length} icon={FileText} /> : null}
               </div>
-              <AcademiesPanel
-                academies={academies}
-                academyForm={academyForm}
-                loading={loading}
-                onAcademyFormChange={setAcademyForm}
-                onCreate={() => void createAcademy()}
-                onSync={(academyId) => void syncAcademyContacts(academyId)}
-                onCopy={(value, message) => void copy(value, message)}
-              />
+              {access.can_manage_academies ? (
+                <AcademiesPanel
+                  academies={academies}
+                  academyForm={academyForm}
+                  loading={loading}
+                  onAcademyFormChange={setAcademyForm}
+                  onCreate={() => void createAcademy()}
+                  onSync={(academyId) => void syncAcademyContacts(academyId)}
+                  onCopy={(value, message) => void copy(value, message)}
+                />
+              ) : null}
               <TierCapabilitiesPanel capabilities={capabilities} />
-              <div className={`${panelClass} overflow-hidden`}>
-                <div className="border-b border-gray-900/10 p-5 md:p-6">
-                  <SectionTitle icon={Ticket} label="Recent inventory" title="Latest vouchers" />
+              {access.can_manage_inventory ? (
+                <div className={`${panelClass} overflow-hidden`}>
+                  <div className="border-b border-gray-900/10 p-5 md:p-6">
+                    <SectionTitle icon={Ticket} label="Recent inventory" title="Latest vouchers" />
+                  </div>
+                  <VoucherTable vouchers={recentVouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
                 </div>
-                <VoucherTable vouchers={recentVouchers} onCopy={(code) => void copy(redeemUrl(code), 'Redeem link copied.')} onVoid={(id) => void voidVoucher(id)} />
-              </div>
+              ) : (
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={ClipboardList} label="Learning operations" title="Students, results, and classroom plans" />
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    {(access.can_operate || access.can_invite_students) ? <button type="button" onClick={() => setTab('students')} className={secondaryButton}><UsersRound className="h-4 w-4" />Students</button> : null}
+                    {access.can_view_results ? <button type="button" onClick={() => setTab('results')} className={secondaryButton}><ClipboardList className="h-4 w-4" />Results</button> : null}
+                    {access.can_view_results ? <button type="button" onClick={() => setTab('reports')} className={secondaryButton}><Download className="h-4 w-4" />Reports</button> : null}
+                  </div>
+                </div>
+              )}
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'academies' ? (
+          {centerIsActive && access.can_manage_academies && tab === 'academies' ? (
             <AcademiesPanel
               academies={academies}
               academyForm={academyForm}
@@ -1340,7 +1517,7 @@ export const CenterOfficePage: React.FC = () => {
             />
           ) : null}
 
-          {centerIsActive && tab === 'upgrade' ? (
+          {centerIsActive && access.can_manage_finance && tab === 'upgrade' ? (
             <TierUpgradePanel
               catalog={tierCatalog}
               currentTier={capabilities.tier}
@@ -1354,10 +1531,10 @@ export const CenterOfficePage: React.FC = () => {
             />
           ) : null}
 
-          {centerIsActive && tab === 'wallet' ? (
+          {centerIsActive && access.can_manage_finance && tab === 'wallet' ? (
             <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
               <div className={`${panelClass} p-5 md:p-6`}>
-                <SectionTitle icon={WalletCards} label="Prepaid wallet" title="Request top-up" />
+                <SectionTitle icon={WalletCards} label="Prepaid wallet" title="Top up with Click" />
                 <label className="mt-5 block text-sm font-semibold text-gray-800">
                   Amount
                   <input type="number" min={1} value={walletTopup.amount} onChange={(e) => setWalletTopup((prev) => ({ ...prev, amount: Number(e.target.value) }))} className={inputClass} />
@@ -1368,15 +1545,21 @@ export const CenterOfficePage: React.FC = () => {
                 </label>
                 <button type="button" onClick={() => void requestTopup()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
                   <WalletCards className="h-4 w-4" />
-                  Request top-up
+                  Pay with Click
                 </button>
-                <p className="mt-3 text-xs text-gray-500">Top-up requests require admin settlement before they become available balance.</p>
+                <p className="mt-3 text-xs text-gray-500">Wallet credit posts automatically after Click confirms payment.</p>
+                {pendingKind === 'wallet' && pendingTransactionId ? (
+                  <button type="button" onClick={() => void checkPayment()} disabled={loading} className={`${secondaryButton} mt-3 w-full`}>
+                    <RefreshCw className="h-4 w-4" />
+                    Check Click status
+                  </button>
+                ) : null}
               </div>
               <LedgerPanel ledger={ledger} />
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'buy' ? (
+          {centerIsActive && access.can_manage_finance && tab === 'buy' ? (
             <section className="grid gap-5 lg:grid-cols-3">
               <BuyMockPanel
                 catalog={catalog}
@@ -1420,7 +1603,7 @@ export const CenterOfficePage: React.FC = () => {
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'vouchers' ? (
+          {centerIsActive && access.can_manage_inventory && tab === 'vouchers' ? (
             <section className="space-y-5">
               <div className={`${panelClass} overflow-hidden`}>
                 <div className="border-b border-gray-900/10 p-5 md:p-6">
@@ -1434,7 +1617,7 @@ export const CenterOfficePage: React.FC = () => {
                 </div>
                 <div className="divide-y divide-gray-900/10">
                   {batches.map((batch) => (
-                    <div key={batch.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto] md:items-center">
+                    <div key={batch.id} className="grid gap-3 p-5 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
                       <div>
                         <p className="font-mono font-bold">{batch.batch_code}</p>
                         <p className="mt-1 text-sm text-gray-600">
@@ -1446,21 +1629,77 @@ export const CenterOfficePage: React.FC = () => {
                       </div>
                       <StatusPill status={batch.status} />
                       <span className="text-sm font-semibold">{String((batch.metadata as any)?.total_amount ?? 0).toLocaleString()} {(batch.metadata as any)?.currency ?? 'UZS'}</span>
+                      <div className="flex flex-wrap gap-2 md:justify-end">
+                        <button type="button" onClick={() => void exportVoucherSheet(batch.id)} disabled={loading} className={secondaryButton}>
+                          <FileDown className="h-4 w-4" />
+                          Print sheets
+                        </button>
+                        <button type="button" onClick={() => setDispatchForm((prev) => ({ ...prev, batch_id: batch.id }))} className={secondaryButton}>
+                          <Send className="h-4 w-4" />
+                          Dispatch
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {batches.length === 0 ? <div className="p-6"><EmptyState icon={Ticket} title="No batches yet" note="Generated voucher batches will appear here." /></div> : null}
                 </div>
               </div>
+              {batches.length > 0 ? (
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={Send} label="Bulk delivery" title="Dispatch voucher batch" />
+                  <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_180px]">
+                    <label className="text-sm font-semibold text-gray-800">
+                      Batch
+                      <select value={dispatchForm.batch_id} onChange={(e) => setDispatchForm((prev) => ({ ...prev, batch_id: e.target.value }))} className={inputClass}>
+                        <option value="">Choose batch</option>
+                        {batches.filter((batch) => batch.status === 'active').map((batch) => (
+                          <option key={batch.id} value={batch.id}>{batch.batch_code} - {batch.quantity} codes</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-800">
+                      Channel
+                      <select value={dispatchForm.channel} onChange={(e) => setDispatchForm((prev) => ({ ...prev, channel: e.target.value as 'sms' | 'telegram' }))} className={inputClass}>
+                        <option value="sms">SMS</option>
+                        <option value="telegram">Telegram</option>
+                      </select>
+                    </label>
+                    <label className="text-sm font-semibold text-gray-800 md:col-span-2">
+                      Recipients
+                      <textarea
+                        value={dispatchForm.recipients}
+                        onChange={(e) => setDispatchForm((prev) => ({ ...prev, recipients: e.target.value }))}
+                        className={`${inputClass} min-h-[130px]`}
+                        placeholder="Student name, phone, email, telegram_chat_id"
+                      />
+                    </label>
+                    <label className="text-sm font-semibold text-gray-800 md:col-span-2">
+                      Message template
+                      <textarea
+                        value={dispatchForm.message_template}
+                        onChange={(e) => setDispatchForm((prev) => ({ ...prev, message_template: e.target.value }))}
+                        className={`${inputClass} min-h-[90px]`}
+                        placeholder="Use {name}, {center}, {code}, and {url}. Leave blank for the default message."
+                      />
+                    </label>
+                  </div>
+                  <button type="button" onClick={() => void dispatchVoucherBatch()} disabled={loading || !dispatchForm.batch_id || !dispatchForm.recipients.trim()} className={`${primaryButton} mt-5`}>
+                    <Send className="h-4 w-4" />
+                    Dispatch vouchers
+                  </button>
+                </div>
+              ) : null}
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'students' ? (
+          {centerIsActive && (access.can_operate || access.can_invite_students) && tab === 'students' ? (
             <StudentsPanel
               students={students}
               invites={studentInvites}
               inviteForm={inviteForm}
               batches={batches}
               loading={loading}
+              canInvite={access.can_invite_students}
               onInviteFormChange={setInviteForm}
               bulkInviteText={bulkInviteText}
               onBulkInviteTextChange={setBulkInviteText}
@@ -1472,7 +1711,7 @@ export const CenterOfficePage: React.FC = () => {
             />
           ) : null}
 
-          {centerIsActive && tab === 'events' ? (
+          {centerIsActive && access.can_operate && tab === 'events' ? (
             <EventsPanel
               events={events}
               students={students}
@@ -1480,6 +1719,7 @@ export const CenterOfficePage: React.FC = () => {
               batches={batches}
               eventForm={eventForm}
               loading={loading}
+              canManageEvents={access.can_manage}
               onEventFormChange={setEventForm}
               onCreate={() => void createMockEvent()}
               onAttendance={(payload, status) => void markAttendance(payload, status)}
@@ -1488,11 +1728,11 @@ export const CenterOfficePage: React.FC = () => {
             />
           ) : null}
 
-          {centerIsActive && tab === 'reviews' ? (
+          {centerIsActive && access.can_manage_reviews && tab === 'reviews' ? (
             <ReviewQueuePanel reviewItems={reviewItems} onUpdate={(id, status) => void updateReview(id, status)} />
           ) : null}
 
-          {centerIsActive && tab === 'staff' ? (
+          {centerIsActive && access.can_manage_staff && tab === 'staff' ? (
             <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
               <div className={`${panelClass} p-5 md:p-6`}>
                 <SectionTitle icon={UserPlus} label="Staff access" title="Invite center staff" />
@@ -1567,9 +1807,9 @@ export const CenterOfficePage: React.FC = () => {
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'results' ? <ResultsPanel results={results} /> : null}
+          {centerIsActive && access.can_view_results && tab === 'results' ? <ResultsPanel results={results} /> : null}
 
-          {centerIsActive && tab === 'reports' ? (
+          {centerIsActive && access.can_view_results && tab === 'reports' ? (
             <section className="space-y-5">
               <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
                 <StatCard label="Completed" value={reports?.completed_exams ?? 0} icon={ClipboardList} />
@@ -1611,14 +1851,16 @@ export const CenterOfficePage: React.FC = () => {
                   )}
                 </div>
 
-                <div className={`${panelClass} p-5 md:p-6`}>
-                  <SectionTitle icon={ReceiptText} label="Statements" title="Monthly center statement" />
-                  <p className="mt-4 text-sm text-gray-600">Statements summarize wallet credits, debits, paid purchases, voucher batches, and payouts for the center tenant.</p>
-                  <button type="button" onClick={() => void generateStatement()} disabled={loading || !capabilities.statements_enabled} className={`${primaryButton} mt-5 w-full`}>
-                    <ReceiptText className="h-4 w-4" />
-                    {capabilities.statements_enabled ? 'Generate statement' : 'Growth tier required'}
-                  </button>
-                </div>
+                {access.can_manage_finance ? (
+                  <div className={`${panelClass} p-5 md:p-6`}>
+                    <SectionTitle icon={ReceiptText} label="Statements" title="Monthly center statement" />
+                    <p className="mt-4 text-sm text-gray-600">Statements summarize wallet credits, debits, paid purchases, voucher batches, and payouts for the center tenant.</p>
+                    <button type="button" onClick={() => void generateStatement()} disabled={loading || !capabilities.statements_enabled} className={`${primaryButton} mt-5 w-full`}>
+                      <ReceiptText className="h-4 w-4" />
+                      {capabilities.statements_enabled ? 'Generate statement' : 'Growth tier required'}
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               <div className="grid gap-5 lg:grid-cols-2">
@@ -1648,7 +1890,7 @@ export const CenterOfficePage: React.FC = () => {
                   )}
                 </div>
 
-                <div className={`${panelClass} overflow-hidden`}>
+                {access.can_manage_finance ? <div className={`${panelClass} overflow-hidden`}>
                   <div className="border-b border-gray-900/10 p-5 md:p-6">
                     <SectionTitle icon={ReceiptText} label="Ledger statements" title="Recent statements" />
                   </div>
@@ -1664,12 +1906,80 @@ export const CenterOfficePage: React.FC = () => {
                         <StatusPill status={statement.status} />
                       </div>
                     ))}
-                    {statements.length === 0 ? <div className="p-6"><EmptyState icon={ReceiptText} title="No statements yet" note="Generate a statement when the center needs monthly financial paperwork." /></div> : null}
+                  {statements.length === 0 ? <div className="p-6"><EmptyState icon={ReceiptText} title="No statements yet" note="Generate a statement when the center needs monthly financial paperwork." /></div> : null}
                   </div>
-                </div>
+                </div> : null}
               </div>
 
-              <div className={`${panelClass} p-5 md:p-6`}>
+              <div className={`${panelClass} overflow-hidden`}>
+                <div className="border-b border-gray-900/10 p-5 md:p-6">
+                  <SectionTitle icon={School} label="Academy LMS" title="Classroom weakness heatmaps" />
+                </div>
+                {capabilities.analytics_enabled ? (
+                  <div className="divide-y divide-gray-900/10">
+                    {classroomHeatmaps.map((heatmap) => (
+                      <div key={heatmap.classroom_id ?? 'unassigned'} className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_220px]">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-lg font-bold text-gray-900">{heatmap.classroom_name}</h3>
+                            <StatusPill status={`${heatmap.completed_attempts}/${heatmap.attempts} completed`} />
+                          </div>
+                          <div className="mt-4 grid gap-3 md:grid-cols-4">
+                            {heatmap.skills.map((skill) => {
+                              const width = Math.max(4, Math.min(100, Number(skill.average_score ?? 0) * 10));
+                              return (
+                                <div key={skill.id} className="rounded-2xl border border-gray-900/10 bg-white/70 p-3">
+                                  <div className="flex items-center justify-between gap-2 text-xs font-semibold">
+                                    <span>{skill.label}</span>
+                                    <span>{skill.average_score ?? '-'}</span>
+                                  </div>
+                                  <div className="mt-3 h-2 rounded-full bg-gray-200">
+                                    <div className="h-2 rounded-full bg-[#0f172a]" style={{ width: `${width}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {(heatmap.focus_areas.length ? heatmap.focus_areas : ['No repeated weakness yet']).map((area) => (
+                              <span key={area} className="rounded-full border border-gray-900/15 bg-white px-3 py-1 text-xs font-semibold text-gray-700">{area}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Average score</p>
+                          <p className="mt-2 text-3xl font-bold">{heatmap.average_score ?? '-'}</p>
+                          <p className="mt-2 text-sm text-gray-600">Weakest: {heatmap.weakest_subskill ?? 'not enough data'}</p>
+                          <button type="button" onClick={() => void generateLessonPlan(heatmap.classroom_id)} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
+                            <FileText className="h-4 w-4" />
+                            Generate plan
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {classroomHeatmaps.length === 0 ? (
+                      <div className="p-6"><EmptyState icon={School} title="No classroom heatmaps yet" note="Bind voucher batches to academy classrooms and complete mock sessions to populate classroom-level weakness data." /></div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="p-6">
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      Classroom heatmaps unlock on Growth, Premium, and Exclusive center tiers.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {lessonPlan ? (
+                <div className={`${panelClass} p-5 md:p-6`}>
+                  <SectionTitle icon={FileText} label="Intervention" title={`${lessonPlan.classroom_name} lesson plan`} />
+                  <pre className="mt-5 max-h-[520px] overflow-auto whitespace-pre-wrap rounded-2xl border border-gray-900/10 bg-white/80 p-4 text-sm leading-6 text-gray-800">
+                    {lessonPlan.lesson_plan}
+                  </pre>
+                </div>
+              ) : null}
+
+              {access.can_manage_inventory ? <div className={`${panelClass} p-5 md:p-6`}>
                 <SectionTitle
                   icon={Ticket}
                   label="Operational signals"
@@ -1689,11 +1999,11 @@ export const CenterOfficePage: React.FC = () => {
                     <p className="mt-2 text-2xl font-bold">{reports?.unassigned_seats ?? 0}</p>
                   </div>
                 </div>
-              </div>
+              </div> : null}
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'branding' ? (
+          {centerIsActive && access.can_manage_branding && tab === 'branding' ? (
             <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div className={`${panelClass} p-5 md:p-6`}>
                 <SectionTitle icon={Paintbrush} label="Center profile" title="Branding and instructions" />
@@ -1747,7 +2057,7 @@ export const CenterOfficePage: React.FC = () => {
             </section>
           ) : null}
 
-          {centerIsActive && tab === 'payments' ? (
+          {centerIsActive && access.can_manage_finance && tab === 'payments' ? (
             <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
               <PaymentsPanel payments={payments} />
               <div className={`${panelClass} p-5 md:p-6`}>
@@ -1974,6 +2284,7 @@ const StudentsPanel: React.FC<{
   inviteForm: { name: string; email: string; phone: string; voucher_batch_id: string };
   batches: PartnerVoucherBatch[];
   loading: boolean;
+  canInvite: boolean;
   onInviteFormChange: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; voucher_batch_id: string }>>;
   bulkInviteText: string;
   onBulkInviteTextChange: React.Dispatch<React.SetStateAction<string>>;
@@ -1988,6 +2299,7 @@ const StudentsPanel: React.FC<{
   inviteForm,
   batches,
   loading,
+  canInvite,
   onInviteFormChange,
   bulkInviteText,
   onBulkInviteTextChange,
@@ -2013,8 +2325,8 @@ const StudentsPanel: React.FC<{
         <StatCard label="Academy-ready" value={students.filter((student) => student.email || student.phone).length} icon={School} />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[380px_minmax(0,1fr)]">
-        <div className={`${panelClass} p-5 md:p-6`}>
+      <div className={`grid gap-5 ${canInvite ? 'lg:grid-cols-[380px_minmax(0,1fr)]' : ''}`}>
+        {canInvite ? <div className={`${panelClass} p-5 md:p-6`}>
           <SectionTitle icon={UserPlus} label="Intake" title="Student roster" />
           <label className="mt-5 block text-sm font-semibold text-gray-800">Name<input value={inviteForm.name} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, name: e.target.value }))} className={inputClass} /></label>
           <label className="mt-4 block text-sm font-semibold text-gray-800">Email<input value={inviteForm.email} onChange={(e) => onInviteFormChange((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
@@ -2028,7 +2340,7 @@ const StudentsPanel: React.FC<{
             </div>
           </div>
           <button type="button" onClick={onInvite} disabled={loading || (!inviteForm.email.trim() && !inviteForm.phone.trim())} className={`${primaryButton} mt-5 w-full`}>Prepare invite</button>
-        </div>
+        </div> : null}
         <section className={`${panelClass} overflow-hidden`}>
           <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={UsersRound} label="Students" title="Assigned and redeemed students" /></div>
           <div className="overflow-x-auto">
@@ -2054,7 +2366,7 @@ const StudentsPanel: React.FC<{
         </section>
       </div>
 
-      <section className={`${panelClass} overflow-hidden`}>
+      {canInvite ? <section className={`${panelClass} overflow-hidden`}>
         <div className="border-b border-gray-900/10 p-5 md:p-6"><SectionTitle icon={Mail} label="Invitations" title="Student invite queue" /></div>
         <div className="divide-y divide-gray-900/10">
           {invites.map((invite) => (
@@ -2080,7 +2392,7 @@ const StudentsPanel: React.FC<{
           ))}
           {invites.length === 0 ? <div className="p-6"><EmptyState icon={Mail} title="No invitations yet" note="Prepared invite links and assigned voucher messages will appear here." /></div> : null}
         </div>
-      </section>
+      </section> : null}
     </section>
   );
 };
@@ -2092,14 +2404,15 @@ const EventsPanel: React.FC<{
   batches: PartnerVoucherBatch[];
   eventForm: { title: string; experience_id: string; starts_at: string; mode: 'online' | 'offline' | 'hybrid'; visibility: 'private' | 'public'; voucher_batch_id: string; location: string; meeting_url: string; capacity: number };
   loading: boolean;
+  canManageEvents: boolean;
   onEventFormChange: React.Dispatch<React.SetStateAction<{ title: string; experience_id: string; starts_at: string; mode: 'online' | 'offline' | 'hybrid'; visibility: 'private' | 'public'; voucher_batch_id: string; location: string; meeting_url: string; capacity: number }>>;
   onCreate: () => void;
   onAttendance: (payload: { event_id?: string; registration_id?: string | null; student_id?: string | null; voucher_id?: string | null }, status: 'pending' | 'present' | 'absent' | 'late') => void;
   onStatus: (eventId: string, status: 'scheduled' | 'completed' | 'cancelled') => void;
   onVisibility: (eventId: string, visibility: 'private' | 'public') => void;
-}> = ({ events, students, catalog, batches, eventForm, loading, onEventFormChange, onCreate, onAttendance, onStatus, onVisibility }) => (
-  <section className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-    <div className={`${panelClass} p-5 md:p-6`}>
+}> = ({ events, students, catalog, batches, eventForm, loading, canManageEvents, onEventFormChange, onCreate, onAttendance, onStatus, onVisibility }) => (
+  <section className={`grid gap-5 ${canManageEvents ? 'lg:grid-cols-[360px_minmax(0,1fr)]' : ''}`}>
+    {canManageEvents ? <div className={`${panelClass} p-5 md:p-6`}>
       <SectionTitle icon={CalendarDays} label="Mock events" title="Schedule event" />
       <label className="mt-5 block text-sm font-semibold text-gray-800">Title<input value={eventForm.title} onChange={(e) => onEventFormChange((prev) => ({ ...prev, title: e.target.value }))} className={inputClass} /></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Mock<select value={eventForm.experience_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}</option>)}</select></label>
@@ -2109,7 +2422,7 @@ const EventsPanel: React.FC<{
       <label className="mt-4 block text-sm font-semibold text-gray-800">Voucher batch<select value={eventForm.voucher_batch_id} onChange={(e) => onEventFormChange((prev) => ({ ...prev, voucher_batch_id: e.target.value }))} className={inputClass}><option value="">No batch</option>{batches.filter((batch) => batch.status === 'active').map((batch) => <option key={batch.id} value={batch.id}>{batch.batch_code}</option>)}</select></label>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Location or link<input value={eventForm.location} onChange={(e) => onEventFormChange((prev) => ({ ...prev, location: e.target.value }))} className={inputClass} /></label>
       <button type="button" onClick={onCreate} disabled={loading || !eventForm.title.trim() || !eventForm.starts_at || !eventForm.experience_id} className={`${primaryButton} mt-5 w-full`}>Create event</button>
-    </div>
+    </div> : null}
     <div className="space-y-4">
       {events.map((event) => (
         <div key={event.id} className={`${panelClass} p-5`}>
@@ -2122,11 +2435,15 @@ const EventsPanel: React.FC<{
             <div className="flex flex-wrap items-center justify-end gap-2">
               <StatusPill status={event.status} />
               <StatusPill status={isPublicCenterEvent(event) ? 'public' : 'private'} />
-              <button type="button" className={secondaryButton} disabled={loading} onClick={() => onVisibility(event.id, isPublicCenterEvent(event) ? 'private' : 'public')}>
-                {isPublicCenterEvent(event) ? 'Make private' : 'Make public'}
-              </button>
-              {event.status !== 'completed' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'completed')}>Complete</button> : null}
-              {event.status !== 'cancelled' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'cancelled')}>Cancel</button> : null}
+              {canManageEvents ? (
+                <>
+                  <button type="button" className={secondaryButton} disabled={loading} onClick={() => onVisibility(event.id, isPublicCenterEvent(event) ? 'private' : 'public')}>
+                    {isPublicCenterEvent(event) ? 'Make private' : 'Make public'}
+                  </button>
+                  {event.status !== 'completed' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'completed')}>Complete</button> : null}
+                  {event.status !== 'cancelled' ? <button type="button" className={secondaryButton} disabled={loading} onClick={() => onStatus(event.id, 'cancelled')}>Cancel</button> : null}
+                </>
+              ) : null}
             </div>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3"><StatCard label="Registered" value={event.registered_count ?? 0} icon={UsersRound} /><StatCard label="Present" value={event.present_count ?? 0} icon={ClipboardList} /><StatCard label="Capacity" value={event.capacity ?? '-'} icon={Ticket} /></div>

@@ -754,7 +754,7 @@ export const adminPaymentsRetryGrant = async (
   return (await res.json()) as { payment: AdminPayment | null };
 };
 
-export type TspayCreateInput = {
+export type ClickCreateInput = {
   plan_id?: string;
   product_id?: string;
   purchase_type?: string;
@@ -768,7 +768,7 @@ export type TspayCreateInput = {
   coupon_code?: string | null;
 };
 
-export type TspayCreateResponse = {
+export type ClickCreateResponse = {
   payment_url: string;
   transaction_id: string;
   amount: number;
@@ -780,36 +780,36 @@ export type TspayCreateResponse = {
   product_id: string | null;
 };
 
-export const tspayCreateTransaction = async (
+export const clickCreateTransaction = async (
   accessToken: string,
-  body: TspayCreateInput,
-): Promise<TspayCreateResponse> => {
-  const res = await fetch(`${edgeBase}/tspay/create-transaction`, {
+  body: ClickCreateInput,
+): Promise<ClickCreateResponse> => {
+  const res = await fetch(`${edgeBase}/click/create-transaction`, {
     method: 'POST',
     headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`POST /tspay/create-transaction failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(`POST /click/create-transaction failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as TspayCreateResponse;
+  return (await res.json()) as ClickCreateResponse;
 };
 
-export type TspayStatusResponse = {
+export type ClickStatusResponse = {
   status: string;
   api_status?: string;
   status_query_id?: string;
 };
 
-export const tspayStatus = async (accessToken: string, transactionId: string): Promise<TspayStatusResponse> => {
-  const url = `${edgeBase}/tspay/status?transaction_id=${encodeURIComponent(transactionId)}`;
+export const clickStatus = async (accessToken: string, transactionId: string): Promise<ClickStatusResponse> => {
+  const url = `${edgeBase}/click/status?transaction_id=${encodeURIComponent(transactionId)}`;
   const res = await fetch(url, { method: 'GET', headers: apiHeaders(accessToken) });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`GET /tspay/status failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new Error(`GET /click/status failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as TspayStatusResponse;
+  return (await res.json()) as ClickStatusResponse;
 };
 
 export type ScoreSessionResponse = {

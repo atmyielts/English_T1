@@ -4,9 +4,9 @@ import { supabase } from '../lib/supabase';
 import {
   billingPlansList,
   billingQuote,
+  clickCreateTransaction,
+  clickStatus,
   getMe,
-  tspayCreateTransaction,
-  tspayStatus,
   type BillingPlan,
   type BillingQuoteResponse,
 } from '../lib/platformClient';
@@ -39,7 +39,7 @@ const productSlug = (p: ProductRow): string => {
   return slugify(raw);
 };
 
-// Server returns TsPay payment status (e.g. "paid", "pending"), not API-level "success".
+// Server returns provider payment status (e.g. "paid", "pending"), not API-level "success".
 const isSuccessStatus = (status: string): boolean => ['paid', 'success', 'completed'].includes(status.trim().toLowerCase());
 
 const formatMoney = (amount: number, currency: string): string => {
@@ -216,7 +216,7 @@ export const CheckoutPage: React.FC = () => {
 
       const description = selectedPlan?.name ? `Plan: ${selectedPlan.name}` : t('checkout.selectedPlan');
 
-      const res = await tspayCreateTransaction(data.session.access_token, {
+      const res = await clickCreateTransaction(data.session.access_token, {
         plan_id: planId,
         description,
         metadata: { source: 'checkout_page', referral_context: readStoredReferralContext() },
@@ -276,7 +276,7 @@ export const CheckoutPage: React.FC = () => {
         return;
       }
 
-      const res = await tspayStatus(data.session.access_token, transactionId);
+      const res = await clickStatus(data.session.access_token, transactionId);
       setStatus(res.status);
 
       if (isSuccessStatus(res.status)) {
@@ -303,7 +303,7 @@ export const CheckoutPage: React.FC = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
-        const res = await tspayStatus(data.session.access_token, transactionId);
+        const res = await clickStatus(data.session.access_token, transactionId);
         if (cancelled) return;
         setStatus(res.status);
         if (isSuccessStatus(res.status)) {

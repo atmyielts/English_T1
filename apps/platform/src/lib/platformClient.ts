@@ -1011,6 +1011,8 @@ export type ClickCreateInput = {
   quantity?: number;
   expires_in_days?: number;
   seat_count?: number;
+  amount?: number;
+  currency?: string;
   description: string;
   redirect_url?: string | null;
   metadata?: Json;
@@ -1055,11 +1057,6 @@ export const clickCreateTransaction = async (
   return (await res.json()) as ClickCreateResponse;
 };
 
-// Legacy alias — kept so any callers not yet updated still compile.
-export const tspayCreateTransaction = clickCreateTransaction;
-export type TspayCreateInput = ClickCreateInput;
-export type TspayCreateResponse = ClickCreateResponse;
-
 export type ClickStatusResponse = {
   status: string;
   api_status?: string;
@@ -1078,10 +1075,6 @@ export const clickStatus = async (accessToken: string, transactionId: string): P
   }
   return (await res.json()) as ClickStatusResponse;
 };
-
-// Legacy alias.
-export const tspayStatus = clickStatus;
-export type TspayStatusResponse = ClickStatusResponse;
 
 export type ScoreSessionResponse = {
   evaluation: unknown;
@@ -2378,6 +2371,20 @@ export type PartnerCenterCapabilities = {
   included_features: string[];
 };
 
+export type PartnerCenterAccess = {
+  role: 'owner' | 'admin' | 'teacher' | 'counselor' | null;
+  can_manage: boolean;
+  can_operate: boolean;
+  can_invite_students: boolean;
+  can_manage_finance: boolean;
+  can_manage_inventory: boolean;
+  can_manage_staff: boolean;
+  can_manage_academies: boolean;
+  can_manage_branding: boolean;
+  can_view_results: boolean;
+  can_manage_reviews: boolean;
+};
+
 export type PartnerVoucherBatch = {
   id: string;
   tenant_id: string;
@@ -2490,6 +2497,22 @@ export type PartnerPaymentCapability = {
   max_amount: number;
   enabled: boolean;
   temporary?: boolean;
+};
+
+export type PartnerClassroomHeatmap = {
+  classroom_id: string | null;
+  classroom_name: string;
+  attempts: number;
+  completed_attempts: number;
+  average_score: number | null;
+  skills: Array<{ id: string; label: string; average_score: number | null; attempts: number }>;
+  weakest_subskill: string | null;
+  systemic_gaps: Array<{ label: string; count: number; share: number }>;
+  focus_areas: string[];
+};
+
+export type PartnerOfficeAnalytics = Json & {
+  classroom_heatmaps?: PartnerClassroomHeatmap[];
 };
 
 export type PartnerCenterTierPlan = {
@@ -2847,7 +2870,7 @@ export const partnerOfficeDashboard = (accessToken: string, tenantId?: string | 
     { tenant_id: tenantId },
   );
 export const partnerOfficeCenter = (accessToken: string, tenantId?: string | null) =>
-  partnerOfficeGet<{ center: PartnerCenterProfile | null; tenant: { id: string; name: string; slug: string } | null; needs_application?: boolean }>(
+  partnerOfficeGet<{ center: PartnerCenterProfile | null; tenant: { id: string; name: string; slug: string } | null; access?: PartnerCenterAccess; needs_application?: boolean }>(
     accessToken,
     'center',
     { tenant_id: tenantId },
@@ -2901,7 +2924,7 @@ export const partnerOfficeMockEvents = (accessToken: string, tenantId?: string |
 export const partnerOfficeReviewQueue = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ review_items: PartnerCenterReviewItem[] }>(accessToken, 'review_queue', { tenant_id: tenantId });
 export const partnerOfficeAnalytics = (accessToken: string, tenantId?: string | null) =>
-  partnerOfficeGet<{ analytics: Json }>(accessToken, 'analytics', { tenant_id: tenantId });
+  partnerOfficeGet<{ analytics: PartnerOfficeAnalytics }>(accessToken, 'analytics', { tenant_id: tenantId });
 export const partnerOfficeStatements = (accessToken: string, tenantId?: string | null) =>
   partnerOfficeGet<{ statements: PartnerCenterStatement[] }>(accessToken, 'statements', { tenant_id: tenantId });
 
@@ -3008,8 +3031,8 @@ export const partnerOfficeUploadCenterLogo = async (
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,
-  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean },
-) => partnerOfficePost<{ ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
+  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual' },
+) => partnerOfficePost<ClickCreateResponse | { ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
 
 export const partnerOfficeCreateVoucherBatch = (
   accessToken: string,
@@ -3029,6 +3052,35 @@ export const partnerOfficeCreateVoucherBatch = (
     assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
   },
 ) => partnerOfficePost<{ batch: PartnerVoucherBatch; vouchers: PartnerVoucher[] }>(accessToken, { action: 'create_voucher_batch', ...body });
+
+export const partnerOfficeExportVoucherSheet = (
+  accessToken: string,
+  body: { tenant_id?: string | null; batch_id: string; origin?: string; center_office?: boolean },
+) => partnerOfficePost<{ filename: string; content_type: string; pdf_base64: string; count: number }>(accessToken, { action: 'export_voucher_sheet', ...body });
+
+export const partnerOfficeDispatchVoucherBatch = (
+  accessToken: string,
+  body: {
+    tenant_id?: string | null;
+    batch_id: string;
+    channel?: 'sms' | 'telegram';
+    recipients: string | Array<{ name?: string; full_name?: string; email?: string; phone?: string; phone_number?: string; telegram_chat_id?: string; chat_id?: string }>;
+    message_template?: string | null;
+    origin?: string;
+    center_office?: boolean;
+  },
+) => partnerOfficePost<{ batch_id: string; channel: string; sent: number; prepared: number; failed: number; dispatches: Array<Json> }>(
+  accessToken,
+  { action: 'dispatch_voucher_batch', ...body },
+);
+
+export const partnerOfficeGenerateClassroomLessonPlan = (
+  accessToken: string,
+  body: { tenant_id?: string | null; classroom_id?: string | null; center_office?: boolean },
+) => partnerOfficePost<{ classroom_id: string | null; classroom_name: string; heatmap: PartnerClassroomHeatmap; lesson_plan: string }>(
+  accessToken,
+  { action: 'generate_classroom_lesson_plan', ...body },
+);
 
 export const partnerOfficeVoidVoucher = (
   accessToken: string,
@@ -3072,7 +3124,7 @@ export const partnerOfficeCreateTicketPurchase = (
     referral_code?: string | null;
     center_office?: boolean;
   },
-) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_ticket_purchase', ...body });
+) => partnerOfficePost<ClickCreateResponse>(accessToken, { action: 'create_ticket_purchase', ...body });
 
 export const partnerOfficeCreateSeatPurchase = (
   accessToken: string,
@@ -3085,7 +3137,7 @@ export const partnerOfficeCreateSeatPurchase = (
     referral_code?: string | null;
     center_office?: boolean;
   },
-) => partnerOfficePost<TspayCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
+) => partnerOfficePost<ClickCreateResponse>(accessToken, { action: 'create_seat_purchase', ...body });
 
 export const partnerOfficeCreateTierUpgradePayment = (
   accessToken: string,
@@ -3095,7 +3147,7 @@ export const partnerOfficeCreateTierUpgradePayment = (
     billing_period: 'monthly' | 'annual';
     center_office?: boolean;
   },
-) => partnerOfficePost<TspayCreateResponse & { tier_request?: PartnerCenterTierRequest }>(accessToken, { action: 'create_tier_upgrade_payment', ...body });
+) => partnerOfficePost<ClickCreateResponse & { tier_request?: PartnerCenterTierRequest }>(accessToken, { action: 'create_tier_upgrade_payment', ...body });
 
 export const referralsMe = async (accessToken: string): Promise<ReferralMeResponse> => {
   const res = await fetch(`${edgeBase}/referrals/me`, { method: 'GET', headers: apiHeaders(accessToken) });

@@ -274,7 +274,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
 
   'checkout.loading': 'Checkout yuklanmoqda...',
   'checkout.badge': 'Checkout',
-  'checkout.title': "TsPay orqali to‘lov",
+  'checkout.title': "Click orqali to'lov",
   'checkout.subtitle': "To‘lovdan so‘ng statusni tekshirib kirishni faollashtiring.",
   'checkout.selectedPlan': 'Tanlangan tarif',
   'checkout.discountOff': '{amount} chegirma',
@@ -282,7 +282,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'checkout.accessActiveTitle': "Sizda allaqachon kirish bor.",
   'checkout.accessActiveHint': "Muddatni uzaytirish uchun yana sotib olishingiz mumkin.",
   'checkout.step1.title': "1. To‘lovni yaratish",
-  'checkout.step1.desc': "Server hisoblagan tarif ma’lumotlari bilan TsPay to‘lov havolasini yaratadi.",
+  'checkout.step1.desc': "Server hisoblagan tarif ma'lumotlari bilan Click to'lov havolasini yaratadi.",
   'checkout.step1.button': "To‘lov havolasini yaratish va davom etish",
   'checkout.step2.title': "2. Holatni tekshirish",
   'checkout.step2.desc': "To‘lovdan so‘ng kirishni berish uchun holatni tekshiring.",

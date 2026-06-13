@@ -175,7 +175,7 @@ serve(async (req) => {
     const since5m = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const since30m = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const since2h = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    const successStatuses = parseSuccessStatuses(Deno.env.get("TSPAY_SUCCESS_STATUSES"));
+    const successStatuses = parseSuccessStatuses(Deno.env.get("PAYMENT_SUCCESS_STATUSES"));
 
     const [
       usersTotal,

@@ -32,7 +32,7 @@ Override env vars exist but are last-resort: `ALLOW_PUSH_MAIN=1`, `SKIP_SECRET_S
 | Cloudflare | Pages hosting + DNS for `*.schood.online` | `wrangler` CLI logged in on this machine | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` repo secrets |
 | AWS S3 | Media storage | n/a (only edge functions hit it) | Stored as Supabase Edge Function secrets |
 | OpenRouter | AI grading | n/a | Supabase secret `OPENROUTER_API_KEY` |
-| TsPay | Payments | n/a | Supabase secrets `TSPAY_*` |
+| Click | Payments | n/a | Supabase secrets `CLICK_*` |
 | Gmail SMTP | Auth emails | n/a | Supabase secrets `GMAIL_SMTP_*` |
 
 The Supabase **anon** key is a public JWT — fine to ship in built frontends. The **service-role** key is not — it must never appear in any frontend bundle, repo file, or commit.
