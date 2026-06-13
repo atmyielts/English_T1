@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { placementBand } from "../_shared/academy-scoring.ts";
+import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -2904,6 +2905,467 @@ const loadAcademyCenterVoucherHeatmaps = async (
   return buildCenterVoucherHeatmaps(results, voucherRows);
 };
 
+type AcademyLessonPlanDraft = {
+  title: string;
+  evidence_summary: string[];
+  objectives: string[];
+  sequence: Array<{
+    minutes: number;
+    phase: string;
+    teacher_moves: string;
+    student_output: string;
+    evidence_link: string;
+  }>;
+  grouping: string[];
+  homework: string[];
+  follow_up_checks: string[];
+  teacher_notes: string[];
+};
+
+type AcademyLessonPlanContext = {
+  classroom: {
+    id: string;
+    name: string;
+    description: string | null;
+    student_count: number;
+    is_active: boolean;
+  };
+  lms: {
+    average_score: number | null;
+    graded_submissions: number;
+    submitted_submissions: number;
+    missing_assignments: number;
+    attendance_rate: number | null;
+    recent_absences: number;
+    assignments: Array<Record<string, unknown>>;
+    open_alerts: Array<Record<string, unknown>>;
+    schedule: Array<Record<string, unknown>>;
+  };
+  center_voucher_heatmap: Record<string, unknown> | null;
+  focus_areas: string[];
+};
+
+const averageRounded = (values: number[]): number | null => {
+  const clean = values.filter((value) => Number.isFinite(value));
+  if (clean.length === 0) return null;
+  return Math.round((clean.reduce((sum, value) => sum + value, 0) / clean.length) * 10) / 10;
+};
+
+const lessonTextList = (value: unknown, fallback: string[], max = 8): string[] => {
+  if (!Array.isArray(value)) return fallback;
+  const items = value
+    .map((item) => normalizeText(item, 320))
+    .filter((item) => item.length > 0)
+    .slice(0, max);
+  return items.length > 0 ? items : fallback;
+};
+
+const lessonSequence = (
+  value: unknown,
+  fallback: AcademyLessonPlanDraft["sequence"],
+): AcademyLessonPlanDraft["sequence"] => {
+  if (!Array.isArray(value)) return fallback;
+  const rows = value
+    .map((item) => {
+      const row = isJsonObject(item) ? item : {};
+      const minutes = Math.max(5, Math.min(45, toIntOrNull(row.minutes) ?? 10));
+      return {
+        minutes,
+        phase: normalizeText(row.phase, 120),
+        teacher_moves: normalizeText(row.teacher_moves, 500),
+        student_output: normalizeText(row.student_output, 500),
+        evidence_link: normalizeText(row.evidence_link, 280),
+      };
+    })
+    .filter((row) => row.phase && row.teacher_moves && row.student_output)
+    .slice(0, 8);
+  return rows.length > 0 ? rows : fallback;
+};
+
+const buildFallbackAcademyLessonPlanDraft = (context: AcademyLessonPlanContext): AcademyLessonPlanDraft => {
+  const focusAreas = context.focus_areas.length > 0 ? context.focus_areas : ["attendance consistency", "assignment completion", "error correction"];
+  const primary = focusAreas[0] ?? "classroom performance";
+  const secondary = focusAreas[1] ?? "independent practice";
+  const attendance = context.lms.attendance_rate === null ? "not enough attendance data" : `${context.lms.attendance_rate}% recent attendance`;
+  const score = context.lms.average_score === null ? "not enough graded submissions" : `${context.lms.average_score}% average LMS score`;
+  const voucherAverage = context.center_voucher_heatmap?.average_score ?? null;
+
+  return {
+    title: `${context.classroom.name} intervention plan`,
+    evidence_summary: [
+      `${context.classroom.student_count} enrolled learner${context.classroom.student_count === 1 ? "" : "s"} in this classroom.`,
+      `LMS signal: ${score}; ${attendance}; ${context.lms.missing_assignments} missing assignment${context.lms.missing_assignments === 1 ? "" : "s"}.`,
+      voucherAverage === null || typeof voucherAverage === "undefined"
+        ? "Center voucher mock signal: no linked completed mock evidence yet."
+        : `Center voucher mock signal: ${voucherAverage} average with weakest area ${context.center_voucher_heatmap?.weakest_subskill ?? "not enough data"}.`,
+    ],
+    objectives: [
+      `Repair the highest-frequency weakness: ${primary}.`,
+      `Make students explain their correction process for ${secondary}.`,
+      "Leave class with one measurable follow-up task for each learner.",
+    ],
+    sequence: [
+      {
+        minutes: 10,
+        phase: "Evidence warm-up",
+        teacher_moves: `Show anonymized patterns from ${primary} and ask students to identify the mistake trigger.`,
+        student_output: "Each student writes one rule and one example correction.",
+        evidence_link: "Uses classroom heatmap, missing work, and recent score trends.",
+      },
+      {
+        minutes: 20,
+        phase: "Guided repair",
+        teacher_moves: `Model two worked examples for ${primary}; pause after each step for students to predict the next move.`,
+        student_output: "Pairs annotate the exact clue, distractor, or rubric requirement.",
+        evidence_link: "Targets the weakest repeated skill instead of reteaching the whole unit.",
+      },
+      {
+        minutes: 20,
+        phase: "Controlled practice",
+        teacher_moves: `Run a short set focused on ${primary} and ${secondary}; collect answers before revealing feedback.`,
+        student_output: "Students submit answers plus a one-sentence reason for each choice.",
+        evidence_link: "Produces a checkable artifact for the next gradebook or mock review.",
+      },
+      {
+        minutes: 10,
+        phase: "Exit ticket",
+        teacher_moves: "Sort exit tickets into ready, needs reteach, and absent/missing-work follow-up groups.",
+        student_output: "One corrected answer, one rule, and one personal homework target.",
+        evidence_link: "Creates the next action queue for follow-up.",
+      },
+    ],
+    grouping: [
+      "Put students with missing work beside a student who submitted the same task successfully.",
+      "Keep low-attendance students in the teacher-check group for the first practice cycle.",
+    ],
+    homework: [
+      `Assign a focused worksheet on ${primary}.`,
+      "Require one written correction note per missed item.",
+      "Re-test the same focus within 7 days and compare the new result to this heatmap.",
+    ],
+    follow_up_checks: [
+      "Record attendance and exit-ticket completion after class.",
+      "Grade the short practice artifact before the next session.",
+      "If the same weakness remains above 35% of attempts, schedule another repair block.",
+    ],
+    teacher_notes: [
+      "Use anonymized examples only; do not put individual student results on the board.",
+      "Treat the plan as a class intervention, then adapt support for individual learners from the gradebook.",
+    ],
+  };
+};
+
+const normalizeAcademyLessonPlanDraft = (
+  value: unknown,
+  fallback: AcademyLessonPlanDraft,
+): AcademyLessonPlanDraft => {
+  const raw = isJsonObject(value) ? value : {};
+  return {
+    title: normalizeText(raw.title, 180) || fallback.title,
+    evidence_summary: lessonTextList(raw.evidence_summary, fallback.evidence_summary, 6),
+    objectives: lessonTextList(raw.objectives, fallback.objectives, 6),
+    sequence: lessonSequence(raw.sequence, fallback.sequence),
+    grouping: lessonTextList(raw.grouping, fallback.grouping, 6),
+    homework: lessonTextList(raw.homework, fallback.homework, 6),
+    follow_up_checks: lessonTextList(raw.follow_up_checks, fallback.follow_up_checks, 6),
+    teacher_notes: lessonTextList(raw.teacher_notes, fallback.teacher_notes, 6),
+  };
+};
+
+const renderAcademyLessonPlanMarkdown = (
+  context: AcademyLessonPlanContext,
+  draft: AcademyLessonPlanDraft,
+  aiStatus: AIStatus,
+): string => {
+  const lines: string[] = [
+    `# ${draft.title}`,
+    "",
+    `Generated from Academy LMS data${context.center_voucher_heatmap ? " and linked center voucher mock evidence" : ""}. AI status: ${aiStatus}.`,
+    "",
+    "## Evidence used",
+    ...draft.evidence_summary.map((item) => `- ${item}`),
+    "",
+    "## Objectives",
+    ...draft.objectives.map((item, index) => `${index + 1}. ${item}`),
+    "",
+    "## Classroom sequence",
+  ];
+
+  for (const item of draft.sequence) {
+    lines.push(
+      "",
+      `### ${item.minutes} min - ${item.phase}`,
+      `Teacher: ${item.teacher_moves}`,
+      `Students: ${item.student_output}`,
+      `Evidence link: ${item.evidence_link}`,
+    );
+  }
+
+  lines.push(
+    "",
+    "## Grouping",
+    ...draft.grouping.map((item) => `- ${item}`),
+    "",
+    "## Homework",
+    ...draft.homework.map((item) => `- ${item}`),
+    "",
+    "## Follow-up checks",
+    ...draft.follow_up_checks.map((item) => `- ${item}`),
+    "",
+    "## Teacher notes",
+    ...draft.teacher_notes.map((item) => `- ${item}`),
+  );
+
+  return lines.join("\n");
+};
+
+const loadAcademyClassroomLessonContext = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  classroomId: string,
+  centerTenantId: string | null,
+): Promise<AcademyLessonPlanContext | null> => {
+  const since45 = dateOnly(addDays(new Date(), -45));
+  const [
+    classroomRes,
+    membersRes,
+    assignmentsRes,
+    submissionsRes,
+    attendanceRes,
+    schedulesRes,
+    alertsRes,
+  ] = await Promise.all([
+    sb.from("academy_classrooms")
+      .select("id, name, description, is_active, metadata")
+      .eq("academy_id", academyId)
+      .eq("id", classroomId)
+      .maybeSingle(),
+    sb.from("academy_classroom_memberships")
+      .select("contact_id, role, academy_contacts(id, first_name, last_name, status, placement_level, placement_score, lifecycle_stage)")
+      .eq("academy_id", academyId)
+      .eq("classroom_id", classroomId)
+      .in("role", ["student", "observer"])
+      .limit(5000),
+    sb.from("academy_assignments")
+      .select("id, title, assignment_type, due_at, max_score, score_weight, status, created_at")
+      .eq("academy_id", academyId)
+      .eq("classroom_id", classroomId)
+      .neq("status", "archived")
+      .order("created_at", { ascending: false })
+      .limit(500),
+    sb.from("academy_submissions")
+      .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, notes")
+      .eq("academy_id", academyId)
+      .eq("classroom_id", classroomId)
+      .limit(20000),
+    sb.from("academy_attendance")
+      .select("contact_id, status, session_date, notes")
+      .eq("academy_id", academyId)
+      .eq("classroom_id", classroomId)
+      .gte("session_date", since45)
+      .limit(20000),
+    sb.from("academy_classroom_schedules")
+      .select("day_of_week, start_time, end_time, timezone, label, is_active")
+      .eq("academy_id", academyId)
+      .eq("classroom_id", classroomId)
+      .eq("is_active", true)
+      .order("day_of_week", { ascending: true })
+      .limit(20),
+    sb.from("academy_alerts")
+      .select("id, contact_id, type, severity, message, metadata, created_at")
+      .eq("academy_id", academyId)
+      .eq("resolved", false)
+      .limit(1000),
+  ]);
+
+  for (const result of [classroomRes, membersRes, assignmentsRes, submissionsRes, attendanceRes, schedulesRes, alertsRes]) {
+    if (result.error) throw new Error(`Failed to load lesson-plan context: ${result.error.message}`);
+  }
+
+  const classroom = classroomRes.data as Record<string, unknown> | null;
+  if (!classroom?.id) return null;
+
+  const members = (membersRes.data ?? []) as Array<Record<string, unknown>>;
+  const assignments = (assignmentsRes.data ?? []) as Array<Record<string, unknown>>;
+  const submissions = (submissionsRes.data ?? []) as Array<Record<string, unknown>>;
+  const attendance = (attendanceRes.data ?? []) as Array<Record<string, unknown>>;
+  const schedules = (schedulesRes.data ?? []) as Array<Record<string, unknown>>;
+  const alerts = (alertsRes.data ?? []) as Array<Record<string, unknown>>;
+  const contactIds = new Set(members.map((member) => normalizeText(member.contact_id, 64)).filter(Boolean));
+
+  const submissionsByAssignment = new Map<string, Array<Record<string, unknown>>>();
+  const submissionKeys = new Set<string>();
+  for (const submission of submissions) {
+    const assignmentId = normalizeText(submission.assignment_id, 64);
+    const contactId = normalizeText(submission.contact_id, 64);
+    if (assignmentId) {
+      if (!submissionsByAssignment.has(assignmentId)) submissionsByAssignment.set(assignmentId, []);
+      submissionsByAssignment.get(assignmentId)!.push(submission);
+    }
+    if (assignmentId && contactId && String(submission.status ?? "") !== "missing") {
+      submissionKeys.add(`${assignmentId}__${contactId}`);
+    }
+  }
+
+  const nowIso = new Date().toISOString();
+  let missingAssignments = 0;
+  const assignmentSignals = assignments.map((assignment) => {
+    const assignmentId = normalizeText(assignment.id, 64);
+    const rows = submissionsByAssignment.get(assignmentId) ?? [];
+    const scored = rows
+      .map((row) => {
+        const score = safeNumber(row.score);
+        const maxScore = safeNumber(row.max_score) ?? safeNumber(assignment.max_score) ?? 100;
+        if (score === null || !maxScore) return null;
+        return Math.max(0, Math.min(100, (score / maxScore) * 100));
+      })
+      .filter((value): value is number => value !== null);
+    const dueAt = normalizeText(assignment.due_at, 80);
+    let missing = 0;
+    if (dueAt && dueAt < nowIso) {
+      for (const contactId of contactIds) {
+        if (!submissionKeys.has(`${assignmentId}__${contactId}`)) missing++;
+      }
+      missingAssignments += missing;
+    }
+    return {
+      id: assignmentId,
+      title: normalizeText(assignment.title, 160),
+      type: normalizeText(assignment.assignment_type, 60),
+      due_at: dueAt || null,
+      status: normalizeText(assignment.status, 40),
+      graded_count: scored.length,
+      average_score: averageRounded(scored),
+      missing_count: missing,
+    };
+  })
+    .sort((a, b) => {
+      const aScore = typeof a.average_score === "number" ? a.average_score : 101;
+      const bScore = typeof b.average_score === "number" ? b.average_score : 101;
+      if (a.missing_count !== b.missing_count) return b.missing_count - a.missing_count;
+      return aScore - bScore;
+    })
+    .slice(0, 12);
+
+  const scoreValues = submissions
+    .map((row) => {
+      const score = safeNumber(row.score);
+      const maxScore = safeNumber(row.max_score) ?? 100;
+      if (score === null || !maxScore) return null;
+      return Math.max(0, Math.min(100, (score / maxScore) * 100));
+    })
+    .filter((value): value is number => value !== null);
+
+  const present = attendance.filter((record) => ["present", "late"].includes(String(record.status))).length;
+  const attendanceRate = attendance.length > 0 ? Math.round((present / attendance.length) * 100) : null;
+  const since14 = dateOnly(addDays(new Date(), -14));
+  const recentAbsences = attendance.filter((record) => String(record.session_date ?? "") >= since14 && String(record.status) === "absent").length;
+  const classroomAlerts = alerts
+    .filter((alert) => {
+      const metadata = toJsonObject(alert.metadata);
+      const alertClassroomId = normalizeText(metadata.classroom_id, 64);
+      const contactId = normalizeText(alert.contact_id, 64);
+      return alertClassroomId === classroomId || (contactId && contactIds.has(contactId));
+    })
+    .slice(0, 12)
+    .map((alert) => ({
+      type: normalizeText(alert.type, 80),
+      severity: normalizeText(alert.severity, 40),
+      message: normalizeText(alert.message, 240),
+      created_at: normalizeText(alert.created_at, 80),
+    }));
+
+  const centerHeatmaps = await loadAcademyCenterVoucherHeatmaps(sb, academyId, centerTenantId, [classroomId]);
+  const centerVoucherHeatmap = centerHeatmaps[0] ?? null;
+  const voucherFocus = centerVoucherHeatmap ? toStringArray(centerVoucherHeatmap.focus_areas) : [];
+  const assignmentFocus = assignmentSignals
+    .filter((item) => item.missing_count > 0 || (typeof item.average_score === "number" && item.average_score < 75))
+    .map((item) => item.title || item.type || "assignment performance")
+    .filter(Boolean)
+    .slice(0, 3);
+  const focusAreas = Array.from(new Set([
+    ...voucherFocus,
+    ...assignmentFocus,
+    attendanceRate !== null && attendanceRate < 75 ? "attendance consistency" : "",
+    missingAssignments > 0 ? "missing assignment recovery" : "",
+  ].filter(Boolean))).slice(0, 6);
+
+  return {
+    classroom: {
+      id: classroomId,
+      name: normalizeText(classroom.name, 180) || "Classroom",
+      description: normalizeText(classroom.description, 500) || null,
+      student_count: contactIds.size,
+      is_active: classroom.is_active !== false,
+    },
+    lms: {
+      average_score: averageRounded(scoreValues),
+      graded_submissions: scoreValues.length,
+      submitted_submissions: submissions.filter((row) => ["submitted", "late", "graded"].includes(String(row.status))).length,
+      missing_assignments: missingAssignments,
+      attendance_rate: attendanceRate,
+      recent_absences: recentAbsences,
+      assignments: assignmentSignals,
+      open_alerts: classroomAlerts,
+      schedule: schedules.map((slot) => ({
+        day_of_week: slot.day_of_week,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        timezone: slot.timezone,
+        label: slot.label,
+      })),
+    },
+    center_voucher_heatmap: centerVoucherHeatmap,
+    focus_areas: focusAreas,
+  };
+};
+
+const generateAcademyClassroomLessonPlan = async (
+  context: AcademyLessonPlanContext,
+): Promise<{
+  ai_status: AIStatus;
+  ai_error: string | null;
+  plan: AcademyLessonPlanDraft;
+  lesson_plan: string;
+}> => {
+  const fallback = buildFallbackAcademyLessonPlanDraft(context);
+  const ai = await callOpenRouterJsonWithStatus<AcademyLessonPlanDraft>({
+    temperature: 0.25,
+    systemPrompt: [
+      "You are Schood Education OS, helping an English or test-prep teacher plan a real class.",
+      "Use only the evidence in the payload. Do not invent student names or private details.",
+      "Create a practical teacher-ready plan for a 60 to 90 minute lesson.",
+      "Return strict JSON with keys: title, evidence_summary, objectives, sequence, grouping, homework, follow_up_checks, teacher_notes.",
+      "sequence must be an array of objects with minutes, phase, teacher_moves, student_output, evidence_link.",
+    ].join(" "),
+    userPayload: JSON.stringify({
+      classroom: context.classroom,
+      lms_signals: context.lms,
+      center_voucher_heatmap: context.center_voucher_heatmap,
+      focus_areas: context.focus_areas,
+      output_constraints: {
+        language: "English",
+        avoid_private_student_data: true,
+        make_actions_specific: true,
+        include_follow_up_measurement: true,
+      },
+    }),
+  }, fallback);
+  let aiStatus = ai.status;
+  let aiError = ai.error ?? null;
+  const plan = normalizeAcademyLessonPlanDraft(ai.data, fallback);
+  if (ai.status === "ok" && plan.sequence.length === 0) {
+    aiStatus = "failed";
+    aiError = "ai_invalid_lesson_plan";
+  }
+  return {
+    ai_status: aiStatus,
+    ai_error: aiStatus === "failed" ? aiError : null,
+    plan,
+    lesson_plan: renderAcademyLessonPlanMarkdown(context, plan, aiStatus),
+  };
+};
+
 const buildEducationOS = async (
   sb: SupabaseClientLike,
   academyId: string,
@@ -4381,6 +4843,7 @@ serve(async (req) => {
         remove_staff: "manageStaff",
         issue_academy_certificate: "issueCertificates",
         compute_at_risk: "viewEducationOS",
+        generate_classroom_lesson_plan: "viewEducationOS",
         dispatch_notifications: "dispatchNotifications",
         generate_parent_report: "viewReports",
         upsert_branding: "manageBranding",
@@ -5479,6 +5942,32 @@ serve(async (req) => {
 
         if (error) return json(500, { error: "Failed to create entitlement", detail: error.message });
         return json(200, { entitlement: data });
+      }
+
+      if (actionBody === "generate_classroom_lesson_plan") {
+        let classroomId = normalizeText(body?.classroom_id, 64);
+        const scopedIds = academyAccessClassroomIds(access);
+        if (!classroomId && scopedIds !== null && scopedIds.length === 1) classroomId = scopedIds[0];
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+
+        const centerTenantId = await loadAcademyParentCenterId(sb, academyId, access);
+        const context = await loadAcademyClassroomLessonContext(sb, academyId, classroomId, centerTenantId);
+        if (!context) return json(404, { error: "Classroom not found" });
+
+        const generated = await generateAcademyClassroomLessonPlan(context);
+        return json(200, {
+          classroom_id: context.classroom.id,
+          classroom_name: context.classroom.name,
+          evidence: {
+            classroom: context.classroom,
+            lms: context.lms,
+            focus_areas: context.focus_areas,
+            center_voucher_heatmap: context.center_voucher_heatmap,
+          },
+          heatmap: context.center_voucher_heatmap,
+          ...generated,
+        });
       }
 
       // ── LMS Write Actions ─────────────────────────────────────────────────
