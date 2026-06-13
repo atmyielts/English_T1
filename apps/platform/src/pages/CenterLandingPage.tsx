@@ -267,6 +267,16 @@ export const CenterLandingPage: React.FC = () => {
                         {voucher.status === 'unused' ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Ready</span> : null}
                       </div>
 
+                      {voucher.classroom ? (
+                        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+                          <BookOpen className="mt-0.5 h-4 w-4 shrink-0" />
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-sky-700">Academy classroom</p>
+                            <p className="mt-1 font-semibold">{voucher.classroom.name ?? 'Assigned classroom'}</p>
+                          </div>
+                        </div>
+                      ) : null}
+
                       {voucher.access_kind === 'mock_exam' && voucher.status === 'unused' ? (
                         <form onSubmit={redeemMock} className="mt-5 grid gap-3 md:grid-cols-2">
                           <label className="text-sm font-semibold text-gray-800">First name<input required value={candidate.first_name} onChange={(e) => setCandidate((prev) => ({ ...prev, first_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
