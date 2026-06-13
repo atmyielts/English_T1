@@ -536,7 +536,9 @@ const getAcademyAppUrl = async (sb: any): Promise<string> => {
     .eq("metadata->>slug", "academy")
     .maybeSingle();
   const metadata = isObject(data?.metadata) ? data.metadata as Json : {};
-  return String(metadata.app_url ?? Deno.env.get("ACADEMY_APP_URL") ?? "https://academy.schood.online").replace(/\/+$/, "");
+  const configured = String(metadata.app_url ?? Deno.env.get("ACADEMY_APP_URL") ?? "").trim().replace(/\/+$/, "");
+  if (!configured || /^https:\/\/academy\.schood\.online$/i.test(configured)) return getPlatformUrl();
+  return configured;
 };
 
 const academyLinks = (appUrl: string, academyId: string) => ({
@@ -1410,7 +1412,7 @@ const buildTierCatalog = async (sb: any, profile: any) => {
     sb.from("partner_center_tier_subscriptions").select("*").eq("tenant_id", profile.tenant_id).maybeSingle(),
     sb
       .from("partner_center_tier_change_requests")
-      .select("*, payments ( id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, status, amount, currency, created_at )")
+      .select("*, payments ( id, provider, provider_transaction_id, status, amount, currency, created_at )")
       .eq("tenant_id", profile.tenant_id)
       .order("created_at", { ascending: false })
       .limit(20),

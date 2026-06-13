@@ -2036,8 +2036,74 @@ export type TeacherStudioStudentOffer = {
   updated_at: string;
 };
 
+export type AcademyAccessPermissions = Partial<Record<
+  | 'viewAcademy'
+  | 'manageAcademy'
+  | 'manageStaff'
+  | 'manageFinance'
+  | 'manageOffers'
+  | 'manageBranding'
+  | 'manageAutomation'
+  | 'viewContacts'
+  | 'manageContacts'
+  | 'viewClassrooms'
+  | 'manageClassrooms'
+  | 'manageRoster'
+  | 'manageMessages'
+  | 'manageAnnouncements'
+  | 'sendGlobalAnnouncements'
+  | 'manageAlerts'
+  | 'resolveAlerts'
+  | 'viewEducationOS'
+  | 'resolveActionItems'
+  | 'manageAssignments'
+  | 'gradeSubmissions'
+  | 'markAttendance'
+  | 'manageSchedule'
+  | 'manageResources'
+  | 'viewReports'
+  | 'issueCertificates'
+  | 'dispatchNotifications'
+  | 'viewNotifications'
+  | 'viewReferrals',
+  boolean
+>>;
+
+export type AcademyAccessProfile = {
+  role: string;
+  source?: string | null;
+  scope?: 'academy' | 'assigned_classrooms' | string;
+  classroom_ids?: string[];
+  center_tenant_id?: string | null;
+  permissions?: AcademyAccessPermissions;
+};
+
+export type AcademyListItem = {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  metadata?: Json | null;
+  created_at?: string;
+  role: string;
+  status?: string;
+  access?: AcademyAccessProfile;
+};
+
+export type AcademySummary = {
+  academy_id: string;
+  access?: AcademyAccessProfile;
+  counts?: {
+    contacts?: number;
+    classrooms?: number;
+    offers?: number;
+    active_entitlements?: number;
+    open_alerts?: number;
+  };
+};
+
 export type TeacherStudioStudentDashboard = {
-  academies: { id: string; name: string; slug: string; type: string; metadata?: Json | null }[];
+  academies: AcademyListItem[];
   contacts: TeacherStudioStudentContact[];
   classrooms: TeacherStudioStudentClassroom[];
   classroom_memberships: TeacherStudioStudentClassroomMembership[];
@@ -2047,6 +2113,8 @@ export type TeacherStudioStudentDashboard = {
   entitlements: TeacherStudioStudentEntitlement[];
   payments: TeacherStudioStudentPayment[];
   offers: TeacherStudioStudentOffer[];
+  access?: AcademyAccessProfile | null;
+  summary?: AcademySummary | null;
 };
 
 const academyFeedFunctions = ['academy', 'teacher-studio'] as const;
@@ -3437,6 +3505,41 @@ const academyPost = async <T>(accessToken: string, body: Json): Promise<T> => {
   const res = await fetch(`${edgeBase}/academy`, { method: 'POST', headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   if (!res.ok) { const d = await readJsonOrText(res); throw new Error(`POST /academy failed (${res.status}): ${JSON.stringify(d)}`); }
   return (await res.json()) as T;
+};
+
+export const academyListAcademies = (accessToken: string) =>
+  academyGet<{ academies: AcademyListItem[] }>(accessToken, 'academies');
+
+export const academyControlDashboard = async (
+  accessToken: string,
+  academyId: string,
+): Promise<TeacherStudioStudentDashboard> => {
+  const params = { academy_id: academyId };
+  const summary = await academyGet<AcademySummary>(accessToken, 'summary', params);
+  const [contacts, classrooms, memberships, announcements, alerts, offers, payments] = await Promise.all([
+    academyGet<{ contacts: TeacherStudioStudentContact[] }>(accessToken, 'contacts', params),
+    academyGet<{ classrooms: TeacherStudioStudentClassroom[] }>(accessToken, 'classrooms', params),
+    academyGet<{ classroom_memberships: TeacherStudioStudentClassroomMembership[] }>(accessToken, 'classroom-memberships', params),
+    academyGet<{ announcements: TeacherStudioStudentAnnouncement[] }>(accessToken, 'announcements', params),
+    academyGet<{ alerts: TeacherStudioStudentFeed['alerts'] }>(accessToken, 'alerts', params),
+    academyGet<{ offers: TeacherStudioStudentOffer[] }>(accessToken, 'offers', params),
+    academyGet<{ payments: TeacherStudioStudentPayment[] }>(accessToken, 'payments', params),
+  ]);
+
+  return {
+    academies: [],
+    contacts: contacts.contacts ?? [],
+    classrooms: classrooms.classrooms ?? [],
+    classroom_memberships: memberships.classroom_memberships ?? [],
+    announcements: announcements.announcements ?? [],
+    messages: [],
+    alerts: alerts.alerts ?? [],
+    entitlements: [],
+    payments: payments.payments ?? [],
+    offers: offers.offers ?? [],
+    access: summary.access ?? null,
+    summary,
+  };
 };
 
 export type AcademyAssignment = {

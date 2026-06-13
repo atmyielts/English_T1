@@ -164,6 +164,12 @@ function App() {
             <Route path="/student-workspace" element={<Navigate to="/" replace />} />
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
+            <Route path="/academy" element={<AcademyControlPage />} />
+            <Route path="/academy/teacher" element={<AcademyControlPage />} />
+            <Route path="/academy/teacher/os" element={<AcademyControlPage />} />
+            <Route path="/academy/admin" element={<AcademyControlPage />} />
+            <Route path="/academy/classrooms" element={<AcademyControlPage />} />
+            <Route path="/academy/student" element={<StudentAcademyPage />} />
             <Route path="/academy-control" element={<AcademyControlPage />} />
             <Route path="/my-academy" element={<StudentAcademyPage />} />
             <Route path="/writing-tutor" element={<WritingTutorPage />} />
@@ -176,7 +182,7 @@ function App() {
             <Route path="/marketplace" element={<TeacherMarketplacePage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
-            <Route path="/teacher" element={<Navigate to="/partner" replace />} />
+            <Route path="/teacher" element={<Navigate to="/academy/teacher" replace />} />
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/admin" element={<AdminDashboardPage />} />

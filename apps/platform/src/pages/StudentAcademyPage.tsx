@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -16,10 +16,10 @@ export type BillingItem = {
 };
 
 type Academy = { id: string; name: string; slug: string; metadata: Record<string, unknown> };
-type Classroom = { id: string; name: string; description: string | null; is_active: boolean; member_count: number };
-type Announcement = { id: string; title: string; body: string; classroom_id: string | null; created_at: string };
-type Offer = { id: string; name: string; price_amount: number; currency: string; description: string | null };
-type ClassroomMembership = { classroom_id: string; contact_id: string };
+type Classroom = { id: string; academy_id?: string; name: string; description: string | null; is_active: boolean; member_count: number };
+type Announcement = { id: string; academy_id?: string; title: string; body: string; classroom_id: string | null; created_at: string };
+type Offer = { id: string; academy_id?: string; name: string; price_amount: number; currency: string; description: string | null };
+type ClassroomMembership = { academy_id?: string; classroom_id: string; contact_id: string };
 
 type Assignment = {
   id: string;
@@ -480,6 +480,8 @@ const ReferralCard: React.FC<{ token: string }> = ({ token }) => {
 
 export const StudentAcademyPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>('home');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -490,8 +492,10 @@ export const StudentAcademyPage: React.FC = () => {
   const [submitTarget, setSubmitTarget] = useState<Assignment | null>(null);
   const [selectedClassroomId, setSelectedClassroomId] = useState<string | null>(null);
 
-  const loadAssignments = useCallback(async (tok: string) => {
-    const res = await callAcademy(tok, { action: 'student_assignments' });
+  const requestedAcademyId = useMemo(() => searchParams.get('academy_id')?.trim() || null, [searchParams]);
+
+  const loadAssignments = useCallback(async (tok: string, targetAcademyId?: string | null) => {
+    const res = await callAcademy(tok, { action: 'student_assignments', academy_id: targetAcademyId || undefined });
     setAssignments((res.assignments ?? []) as Assignment[]);
   }, []);
 
@@ -506,7 +510,8 @@ export const StudentAcademyPage: React.FC = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) {
-          navigate('/auth?returnTo=/my-academy', { replace: true });
+          const returnTo = `${location.pathname}${location.search}`;
+          navigate(`/auth?returnTo=${encodeURIComponent(returnTo || '/my-academy')}`, { replace: true });
           return;
         }
         const tok = data.session.access_token;
@@ -514,16 +519,35 @@ export const StudentAcademyPage: React.FC = () => {
 
         const res = await callAcademy(tok, { action: 'student-dashboard' });
         if (res.error) throw new Error(res.error);
-        setDashboard(res as StudentDashboard);
+        const raw = res as StudentDashboard;
+        const selectedAcademyId = requestedAcademyId && raw.contacts?.some((contact) => contact.academy_id === requestedAcademyId)
+          ? requestedAcademyId
+          : raw.contacts?.[0]?.academy_id ?? null;
+        const scopedMemberships = selectedAcademyId
+          ? (raw.classroom_memberships ?? []).filter((membership) => membership.academy_id === selectedAcademyId)
+          : raw.classroom_memberships ?? [];
+        const scopedClassroomIds = new Set(scopedMemberships.map((membership) => membership.classroom_id));
+        const scopedDashboard: StudentDashboard = selectedAcademyId
+          ? {
+            ...raw,
+            academies: (raw.academies ?? []).filter((academy) => academy.id === selectedAcademyId),
+            contacts: (raw.contacts ?? []).filter((contact) => contact.academy_id === selectedAcademyId),
+            classrooms: (raw.classrooms ?? []).filter((classroom) => classroom.academy_id === selectedAcademyId || scopedClassroomIds.has(classroom.id)),
+            classroom_memberships: scopedMemberships,
+            announcements: (raw.announcements ?? []).filter((announcement) => !announcement.academy_id || announcement.academy_id === selectedAcademyId),
+            offers: (raw.offers ?? []).filter((offer) => !offer.academy_id || offer.academy_id === selectedAcademyId),
+          }
+          : raw;
+        setDashboard(scopedDashboard);
 
-        const memberships = (res.classroom_memberships ?? []) as ClassroomMembership[];
+        const memberships = scopedDashboard.classroom_memberships ?? [];
         const firstClassroomId = memberships[0]?.classroom_id ?? null;
         setSelectedClassroomId(firstClassroomId);
 
-        await loadAssignments(tok);
+        await loadAssignments(tok, selectedAcademyId);
 
-        if (firstClassroomId && res.contacts?.[0]?.academy_id) {
-          await loadAttendance(tok, String(res.contacts[0].academy_id), firstClassroomId);
+        if (firstClassroomId && selectedAcademyId) {
+          await loadAttendance(tok, selectedAcademyId, firstClassroomId);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load');
@@ -532,7 +556,7 @@ export const StudentAcademyPage: React.FC = () => {
       }
     };
     void init();
-  }, [navigate, loadAssignments, loadAttendance]);
+  }, [navigate, location.pathname, requestedAcademyId, loadAssignments, loadAttendance]);
 
   const academyId = useMemo(() => dashboard?.contacts?.[0]?.academy_id ?? null, [dashboard]);
   const contact = useMemo(() => dashboard?.contacts?.[0] ?? null, [dashboard]);

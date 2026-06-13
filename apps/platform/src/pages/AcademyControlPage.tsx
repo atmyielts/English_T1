@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
+  academyControlDashboard,
   academyBulkInvite,
   academyCreateAssignment,
   academyExportGradebook,
   academyGradebook,
   academyGradeSubmission,
+  academyListAcademies,
   academyListAssignments,
   academyListAttendance,
   academyMarkAttendance,
   academyStudentProgress,
   academyUpdateAssignment,
   academyUpdateClassroomSettings,
-  teacherStudioStudentDashboard,
+  type AcademyListItem,
   type AcademyAssignment,
   type AcademyGradebook,
   type AcademyStudentProgress,
@@ -26,6 +28,15 @@ import {
 
 type Tab = 'overview' | 'director' | 'classrooms' | 'students' | 'announcements';
 type ClassroomTab = 'students' | 'assignments' | 'gradebook' | 'attendance' | 'schedule' | 'billing' | 'settings';
+
+const TAB_KEYS: Tab[] = ['overview', 'director', 'classrooms', 'students', 'announcements'];
+
+const isTab = (value: string | null): value is Tab => Boolean(value && (TAB_KEYS as string[]).includes(value));
+
+const defaultTabForPath = (pathname: string): Tab => {
+  if (pathname.includes('/classrooms')) return 'classrooms';
+  return 'overview';
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -135,10 +146,11 @@ const AtRiskPanel: React.FC<{ academyId: string; token: string }> = ({ academyId
 };
 
 const OverviewTab: React.FC<{ dashboard: TeacherStudioStudentDashboard; academyId: string; token: string }> = ({ dashboard, academyId, token }) => {
-  const totalContacts = dashboard.contacts?.length ?? 0;
-  const totalClassrooms = dashboard.classrooms?.length ?? 0;
-  const activeEntitlements = (dashboard.entitlements ?? []).filter((e) => (e as any).status === 'active').length;
-  const openAlerts = (dashboard.alerts ?? []).filter((a) => !(a as any).resolved).length;
+  const counts = dashboard.summary?.counts ?? {};
+  const totalContacts = counts.contacts ?? dashboard.contacts?.length ?? 0;
+  const totalClassrooms = counts.classrooms ?? dashboard.classrooms?.length ?? 0;
+  const activeEntitlements = counts.active_entitlements ?? (dashboard.entitlements ?? []).filter((e) => (e as any).status === 'active').length;
+  const openAlerts = counts.open_alerts ?? (dashboard.alerts ?? []).filter((a) => !(a as any).resolved).length;
   const recentAnnouncements = (dashboard.announcements ?? []).slice(0, 5);
 
   return (
@@ -1879,29 +1891,33 @@ const DirectorTab: React.FC<{ academyId: string; dashboard: TeacherStudioStudent
 
 export const AcademyControlPage: React.FC = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('overview');
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => {
+    const requested = searchParams.get('tab');
+    return isTab(requested) ? requested : defaultTabForPath(location.pathname);
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<TeacherStudioStudentDashboard | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [academies, setAcademies] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [academies, setAcademies] = useState<AcademyListItem[]>([]);
   const [academyId, setAcademyId] = useState<string | null>(null);
   const loadSeq = useRef(0);
 
-  const loadDashboard = useCallback(async (tok: string, _aid: string) => {
+  const requestedAcademyId = useMemo(() => searchParams.get('academy_id')?.trim() || null, [searchParams]);
+
+  const loadDashboard = useCallback(async (tok: string, aid: string) => {
     const seq = ++loadSeq.current;
     try {
-      // Load academies list
-      const ares = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/academy?action=academies`, {
-        headers: { Authorization: `Bearer ${tok}` },
-      });
-      if (ares.ok) {
-        const aj = await ares.json();
-        setAcademies((aj.academies ?? []) as any[]);
-      }
-
-      const d = await teacherStudioStudentDashboard(tok);
-      if (seq === loadSeq.current) setDashboard(d);
+      const [academyRes, controlDashboard] = await Promise.all([
+        academyListAcademies(tok),
+        academyControlDashboard(tok, aid),
+      ]);
+      if (seq !== loadSeq.current) return;
+      const nextAcademies = academyRes.academies ?? [];
+      setAcademies(nextAcademies);
+      setDashboard({ ...controlDashboard, academies: nextAcademies });
     } catch (e) {
       if (seq === loadSeq.current) setError(e instanceof Error ? e.message : 'Failed to load');
     }
@@ -1912,24 +1928,25 @@ export const AcademyControlPage: React.FC = () => {
       setLoading(true);
       try {
         const { data } = await supabase.auth.getSession();
-        if (!data.session) { navigate('/auth?returnTo=/academy-control', { replace: true }); return; }
+        if (!data.session) {
+          const returnTo = `${location.pathname}${location.search}`;
+          navigate(`/auth?returnTo=${encodeURIComponent(returnTo || '/academy-control')}`, { replace: true });
+          return;
+        }
         const tok = data.session.access_token;
         setToken(tok);
 
-        // Get academies
-        const ares = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/academy?action=academies`, {
-          headers: { Authorization: `Bearer ${tok}` },
-        });
-        if (!ares.ok) { setError('Failed to load academies'); return; }
-        const aj = await ares.json();
-        const acads = (aj.academies ?? []) as { id: string; name: string; role: string }[];
+        const academyRes = await academyListAcademies(tok);
+        const acads = academyRes.academies ?? [];
         setAcademies(acads);
 
         if (acads.length === 0) { setError('No academy found. Create one first.'); return; }
 
-        const firstId = acads[0].id;
-        setAcademyId(firstId);
-        await loadDashboard(tok, firstId);
+        const selectedId = requestedAcademyId && acads.some((academy) => academy.id === requestedAcademyId)
+          ? requestedAcademyId
+          : acads[0].id;
+        setAcademyId(selectedId);
+        await loadDashboard(tok, selectedId);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
@@ -1937,12 +1954,24 @@ export const AcademyControlPage: React.FC = () => {
       }
     };
     void init();
-  }, [navigate, loadDashboard]);
+  }, [navigate, location.pathname, requestedAcademyId, loadDashboard]);
 
   const refresh = useCallback(async () => {
     if (!token || !academyId) return;
     await loadDashboard(token, academyId);
   }, [token, academyId, loadDashboard]);
+
+  const updateUrlState = useCallback((next: { academy_id?: string | null; tab?: Tab | null }) => {
+    const params = new URLSearchParams(searchParams);
+    if (next.academy_id) params.set('academy_id', next.academy_id);
+    if (next.tab) params.set('tab', next.tab);
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const selectTab = useCallback((nextTab: Tab) => {
+    setTab(nextTab);
+    updateUrlState({ academy_id: academyId, tab: nextTab });
+  }, [academyId, updateUrlState]);
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -1963,14 +1992,19 @@ export const AcademyControlPage: React.FC = () => {
   if (!dashboard || !academyId || !token) return null;
 
   const currentAcademy = academies.find((a) => a.id === academyId);
+  const currentAccess = dashboard.access ?? currentAcademy?.access ?? null;
+  const permissions = currentAccess?.permissions ?? {};
+  const roleLabel = String(currentAccess?.role ?? currentAcademy?.role ?? 'member').replace(/_/g, ' ');
 
-  const topTabs: { key: Tab; label: string }[] = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'director', label: 'Director' },
-    { key: 'classrooms', label: 'Classrooms' },
-    { key: 'students', label: 'Students' },
-    { key: 'announcements', label: 'Announcements' },
+  const allTabs: { key: Tab; label: string; visible: boolean }[] = [
+    { key: 'overview', label: 'Overview', visible: true },
+    { key: 'director', label: 'Director', visible: Boolean(permissions.manageFinance || permissions.manageStaff || permissions.viewReports) },
+    { key: 'classrooms', label: 'Classrooms', visible: Boolean(permissions.viewClassrooms) },
+    { key: 'students', label: 'Students', visible: Boolean(permissions.viewContacts) },
+    { key: 'announcements', label: 'Announcements', visible: Boolean(permissions.manageAnnouncements) },
   ];
+  const topTabs = allTabs.filter((item) => item.visible);
+  const activeTab = topTabs.some((item) => item.key === tab) ? tab : topTabs[0]?.key ?? 'overview';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1982,12 +2016,23 @@ export const AcademyControlPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               {currentAcademy?.name ?? 'Academy'}
             </h1>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              <span className="capitalize">{roleLabel}</span>
+              <span>·</span>
+              <span>{currentAccess?.scope === 'assigned_classrooms' ? 'Assigned classrooms only' : 'Academy-wide access'}</span>
+              {currentAccess?.source === 'center' ? <span>· Center delegated</span> : null}
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {academies.length > 1 && (
               <select
                 value={academyId}
-                onChange={(e) => { setAcademyId(e.target.value); void loadDashboard(token, e.target.value); }}
+                onChange={(e) => {
+                  const nextAcademyId = e.target.value;
+                  setAcademyId(nextAcademyId);
+                  updateUrlState({ academy_id: nextAcademyId, tab: activeTab });
+                  void loadDashboard(token, nextAcademyId);
+                }}
                 className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none"
               >
                 {academies.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -2002,8 +2047,8 @@ export const AcademyControlPage: React.FC = () => {
           {topTabs.map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === t.key ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+              onClick={() => selectTab(t.key)}
+              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === t.key ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             >
               {t.label}
             </button>
@@ -2012,11 +2057,11 @@ export const AcademyControlPage: React.FC = () => {
 
         {/* Tab content */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          {tab === 'overview' && <OverviewTab dashboard={dashboard} academyId={academyId} token={token} />}
-          {tab === 'director' && <DirectorTab academyId={academyId} dashboard={dashboard} token={token} />}
-          {tab === 'classrooms' && <ClassroomsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
-          {tab === 'students' && <StudentsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
-          {tab === 'announcements' && <AnnouncementsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
+          {activeTab === 'overview' && <OverviewTab dashboard={dashboard} academyId={academyId} token={token} />}
+          {activeTab === 'director' && <DirectorTab academyId={academyId} dashboard={dashboard} token={token} />}
+          {activeTab === 'classrooms' && <ClassroomsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
+          {activeTab === 'students' && <StudentsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
+          {activeTab === 'announcements' && <AnnouncementsTab academyId={academyId} dashboard={dashboard} token={token} onRefresh={refresh} />}
         </div>
       </div>
     </div>
