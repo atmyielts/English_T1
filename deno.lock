@@ -3065,6 +3065,7 @@
             "npm:eslint-plugin-react-refresh@~0.4.24",
             "npm:eslint@^9.39.1",
             "npm:globals@^16.5.0",
+            "npm:lucide-react@0.562",
             "npm:react-dom@^19.2.0",
             "npm:react-router-dom@^7.13.1",
             "npm:react@^19.2.0",
@@ -3074,126 +3075,16 @@
           ]
         }
       },
-      "apps/english-grammar": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
       "apps/english-hub": {
         "packageJson": {
           "dependencies": [
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-immersion": {
-        "packageJson": {
-          "dependencies": [
             "npm:@supabase/supabase-js@^2.89.0",
             "npm:@types/node@^24.10.1",
             "npm:@types/react-dom@^19.2.3",
             "npm:@types/react@^19.2.5",
             "npm:@vitejs/plugin-react@^5.1.1",
             "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-listening": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-reading": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-speaking": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-vocabulary": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
-            "npm:react@^19.2.0",
-            "npm:typescript@~5.9.3",
-            "npm:vite@^7.2.4"
-          ]
-        }
-      },
-      "apps/english-writing": {
-        "packageJson": {
-          "dependencies": [
-            "npm:@supabase/supabase-js@^2.89.0",
-            "npm:@types/node@^24.10.1",
-            "npm:@types/react-dom@^19.2.3",
-            "npm:@types/react@^19.2.5",
-            "npm:@vitejs/plugin-react@^5.1.1",
-            "npm:react-dom@^19.2.0",
-            "npm:react-router-dom@^7.13.1",
+            "npm:react-router-dom@^7.17.0",
             "npm:react@^19.2.0",
             "npm:typescript@~5.9.3",
             "npm:vite@^7.2.4"
@@ -3314,6 +3205,26 @@
           ]
         }
       },
+      "apps/sat-playbook": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@schood/sat-core@*",
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/node@^24.10.1",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:@vitejs/plugin-react@^5.1.1",
+            "npm:lucide-react@0.562",
+            "npm:react-dom@^19.2.0",
+            "npm:react-markdown@^10.1.0",
+            "npm:react-router-dom@^7.13.1",
+            "npm:react@^19.2.0",
+            "npm:remark-gfm@^4.0.1",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
       "apps/sat-practice": {
         "packageJson": {
           "dependencies": [
@@ -3379,6 +3290,33 @@
             "npm:typescript-eslint@^8.46.4",
             "npm:typescript@~5.9.3",
             "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "apps/toefl-playbook": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/node@^24.10.1",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:@vitejs/plugin-react@^5.1.1",
+            "npm:lucide-react@0.562",
+            "npm:react-dom@^19.2.0",
+            "npm:react-markdown@^10.1.0",
+            "npm:react-router-dom@^7.13.1",
+            "npm:react@^19.2.0",
+            "npm:remark-gfm@^4.0.1",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "workers/schood-bot": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@^4.20240925.0",
+            "npm:wrangler@^3.80.0"
           ]
         }
       }

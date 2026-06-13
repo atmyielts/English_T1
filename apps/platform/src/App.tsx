@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RequireAuth } from './components/platform/RequireAuth';
 import { RequireAdmin } from './components/platform/RequireAdmin';
 import { RequireAdminPermission } from './components/platform/RequireAdminPermission';
@@ -50,6 +50,7 @@ const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePa
 const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyControlPage').then((m) => ({ default: m.AcademyControlPage })));
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
+const TelegramAppPage = lazyWithChunkRetry(() => import('./pages/TelegramAppPage').then((m) => ({ default: m.TelegramAppPage })));
 const WritingTutorPage = lazyWithChunkRetry(() => import('./pages/WritingTutorPage').then((m) => ({ default: m.WritingTutorPage })));
 const SpeakingCoachPage = lazyWithChunkRetry(() => import('./pages/SpeakingCoachPage').then((m) => ({ default: m.SpeakingCoachPage })));
 const LearningPathPage = lazyWithChunkRetry(() => import('./pages/LearningPathPage').then((m) => ({ default: m.LearningPathPage })));
@@ -111,6 +112,17 @@ const RouteLoading: React.FC<{ label?: string }> = ({ label }) => {
   );
 };
 
+const AppChrome: React.FC = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/telegram')) return null;
+  return (
+    <>
+      <ReferralCapture />
+      <UpdatesButton />
+    </>
+  );
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -141,6 +153,7 @@ function App() {
           <Route path="/partners/:slug" element={<CenterLandingPage />} />
           <Route path="/certificate" element={<CertificatePage />} />
           <Route path="/parent-report" element={<ParentReportPage />} />
+          <Route path="/telegram" element={<TelegramAppPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />
@@ -307,8 +320,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-      <ReferralCapture />
-      <UpdatesButton />
+      <AppChrome />
     </BrowserRouter>
   );
 }

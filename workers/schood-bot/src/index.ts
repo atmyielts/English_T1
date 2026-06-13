@@ -1,19 +1,8 @@
 /**
- * Schood Telegram Bot — Cloudflare Worker
+ * Schood Telegram Bot - Cloudflare Worker.
  *
- * Handles inbound Telegram webhook updates.
- * Calls Supabase REST API for all data.
- * Calls Telegram Bot API for all outbound messages.
- *
- * Setup:
- *   wrangler secret put TELEGRAM_BOT_TOKEN
- *   wrangler secret put TELEGRAM_BOT_NAME   (without @)
- *   wrangler secret put SUPABASE_URL
- *   wrangler secret put SUPABASE_SERVICE_KEY
- *   wrangler secret put WEBHOOK_SECRET      (random string, set in setWebhook)
- *   wrangler deploy
- *   Then: POST https://api.telegram.org/bot<TOKEN>/setWebhook
- *         { url: "https://schood-bot.<subdomain>.workers.dev/webhook", secret_token: <WEBHOOK_SECRET> }
+ * Handles Telegram webhook updates and points linked learners into the
+ * Schood Telegram Mini App.
  */
 
 export interface Env {
@@ -23,9 +12,19 @@ export interface Env {
   SUPABASE_SERVICE_KEY: string;
   WEBHOOK_SECRET: string;
   SITE_URL: string;
+  WEB_APP_URL?: string;
 }
 
-// ─── Telegram helpers ─────────────────────────────────────────────────────────
+type LinkedUser = { id: string; email: string; name: string };
+
+const escapeHtml = (value: unknown): string =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+const webAppUrl = (env: Env): string => env.WEB_APP_URL || `${env.SITE_URL.replace(/\/$/, "")}/telegram`;
 
 const tg = (token: string, method: string, body?: unknown) =>
   fetch(`https://api.telegram.org/bot${token}/${method}`, {
@@ -34,354 +33,315 @@ const tg = (token: string, method: string, body?: unknown) =>
     body: body ? JSON.stringify(body) : undefined,
   }).then((r) => r.json());
 
-const send = (token: string, chatId: number | string, text: string, extra?: Record<string, unknown>) =>
-  tg(token, "sendMessage", { chat_id: chatId, text, parse_mode: "HTML", ...extra });
+const webAppMarkup = (env: Env, label = "Open Schood") => ({
+  inline_keyboard: [[{ text: label, web_app: { url: webAppUrl(env) } }]],
+});
 
-const answerCallback = (token: string, callbackQueryId: string, text?: string) =>
-  tg(token, "answerCallbackQuery", { callback_query_id: callbackQueryId, text });
+const send = (env: Env, chatId: number | string, text: string, extra?: Record<string, unknown>) =>
+  tg(env.TELEGRAM_BOT_TOKEN, "sendMessage", {
+    chat_id: chatId,
+    text,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+    ...extra,
+  });
 
-// ─── Supabase REST helpers ────────────────────────────────────────────────────
+const answerCallback = (env: Env, callbackQueryId: string, text?: string) =>
+  tg(env.TELEGRAM_BOT_TOKEN, "answerCallbackQuery", { callback_query_id: callbackQueryId, text });
 
 const sbGet = async (env: Env, table: string, params: Record<string, string>) => {
   const qs = new URLSearchParams(params);
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?${qs}`, {
-    headers: { "apikey": env.SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Accept": "application/json" },
+    headers: {
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      Accept: "application/json",
+    },
   });
   return res.ok ? res.json() : null;
 };
 
-const sbRpc = async (env: Env, fn: string, body: unknown) => {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    headers: { "apikey": env.SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Content-Type": "application/json", "Accept": "application/json" },
+const sbPatch = async (env: Env, table: string, params: Record<string, string>, body: unknown) => {
+  const qs = new URLSearchParams(params);
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?${qs}`, {
+    method: "PATCH",
+    headers: {
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
     body: JSON.stringify(body),
   });
-  return res.ok ? res.json() : null;
+  return res.ok;
 };
 
-const sbEdge = async (env: Env, fn: string, body: unknown, noVerifyJwt = false) => {
+const sbEdge = async (env: Env, fn: string, body: unknown) => {
   const res = await fetch(`${env.SUPABASE_URL}/functions/v1/${fn}`, {
     method: "POST",
-    headers: { "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   return res.ok ? res.json() : null;
 };
 
-// ─── Get linked user from chat_id ─────────────────────────────────────────────
-
-const getUser = async (env: Env, chatId: number): Promise<{ id: string; email: string; name: string } | null> => {
-  const rows = await sbGet(env, "users", { telegram_chat_id: `eq.${chatId}`, select: "id,email,full_name", limit: "1" });
-  if (!rows || rows.length === 0) return null;
+const getUser = async (env: Env, chatId: number): Promise<LinkedUser | null> => {
+  const rows = await sbGet(env, "users", {
+    telegram_chat_id: `eq.${chatId}`,
+    select: "id,email,full_name",
+    limit: "1",
+  });
+  if (!rows?.length) return null;
   const u = rows[0];
-  const name = u.full_name || u.email?.split("@")[0] || "Student";
-  return { id: u.id, email: u.email, name };
+  return {
+    id: String(u.id),
+    email: String(u.email ?? ""),
+    name: String(u.full_name || u.email?.split("@")[0] || "Student"),
+  };
 };
 
-// ─── Command handlers ─────────────────────────────────────────────────────────
-
-const handleStart = async (env: Env, chatId: number, from: { first_name?: string }, param: string) => {
-  // param is the token from the deep link (?start=<token>)
-  if (param) {
-    const result = await sbEdge(env, "telegram-link", { action: "validate", token: param, chat_id: String(chatId) });
-    if (result?.ok) {
-      await send(env.TELEGRAM_BOT_TOKEN, chatId,
-        `✅ <b>Account linked!</b>\n\nWelcome to Schood, <b>${result.name}</b>! 🎓\n\nYou'll now receive notifications here for scores, assignments, certificates, and more.\n\nType /help to see all commands.`
-      );
-    } else {
-      await send(env.TELEGRAM_BOT_TOKEN, chatId,
-        `❌ <b>Link failed.</b>\n\n${result?.error || "Invalid or expired link."}\n\nGenerate a new link from your Schood account at <a href="${env.SITE_URL}">${env.SITE_URL}</a>`
-      );
-    }
-    return;
-  }
-
-  // No param — show welcome
-  const user = await getUser(env, chatId);
-  if (user) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId,
-      `👋 Welcome back, <b>${user.name}</b>!\n\nType /help for all commands.`
-    );
-  } else {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId,
-      `👋 Hi ${from.first_name ?? "there"}! I'm the <b>Schood</b> bot.\n\nTo get started, link your Schood account:\n1. Go to <a href="${env.SITE_URL}">${env.SITE_URL}</a>\n2. Open your profile\n3. Click <b>"Link Telegram"</b>\n\nYou'll get a button that opens this chat automatically.`
-    );
-  }
-};
-
-const handleHelp = async (env: Env, chatId: number, user: { name: string } | null) => {
-  const linked = !!user;
-  const msg = `<b>Schood Bot Commands</b>\n\n`
-    + (linked ? `` : `⚠️ <i>Link your account first: /start</i>\n\n`)
-    + `/results — Your recent test scores\n`
-    + `/assignments — Assignments due this week\n`
-    + `/schedule — Your class timetable\n`
-    + `/cert — Your latest certificate\n`
-    + `/drill — Start a vocabulary flashcard session\n`
-    + `/me — Your profile & active plans\n`
-    + `/unlink — Disconnect this Telegram from Schood\n`
-    + `/help — This message`;
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, msg);
-};
-
-const handleMe = async (env: Env, chatId: number, user: { id: string; name: string; email: string }) => {
-  // Load entitlements
-  const entitlements = await sbGet(env, "entitlements", {
-    user_id: `eq.${user.id}`, is_active: "eq.true", select: "resource_id,ends_at,products(name)", limit: "5",
-  });
-
-  const lines = [`👤 <b>${user.name}</b>\n📧 ${user.email}\n`];
-  if (entitlements?.length > 0) {
-    lines.push(`\n🎟 <b>Active access:</b>`);
-    for (const e of entitlements) {
-      const product = e.products?.name ?? e.resource_id;
-      const expiry = e.ends_at ? ` (until ${new Date(e.ends_at).toLocaleDateString()})` : " (lifetime)";
-      lines.push(`• ${product}${expiry}`);
-    }
-  } else {
-    lines.push(`\nNo active plans. Visit <a href="${env.SITE_URL}/pricing">${env.SITE_URL}/pricing</a>`);
-  }
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
-};
-
-const handleResults = async (env: Env, chatId: number, user: { id: string; name: string }) => {
-  const outcomes = await sbGet(env, "exam_outcomes", {
-    user_id: `eq.${user.id}`, status: `eq.completed`,
-    select: "overall_band,overall_score,computed_at,products(name)",
-    order: "computed_at.desc", limit: "5",
-  });
-
-  if (!outcomes?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `📊 No completed exams yet.\n\nTake a practice test at <a href="${env.SITE_URL}">${env.SITE_URL}</a>`);
-    return;
-  }
-
-  const lines = [`📊 <b>Your recent scores</b>\n`];
-  for (const o of outcomes) {
-    const score = o.overall_band ?? o.overall_score ?? "—";
-    const date = new Date(o.computed_at).toLocaleDateString();
-    lines.push(`• <b>${String(o.products?.name ?? "Exam")}</b>: ${score} — ${date}`);
-  }
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
-};
-
-const handleAssignments = async (env: Env, chatId: number, user: { id: string }) => {
-  // Find the user as an academy contact
-  const contacts = await sbGet(env, "academy_contacts", { user_id: `eq.${user.id}`, select: "id,academy_id", limit: "5" });
-  if (!contacts?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `📋 You're not enrolled in any academy classrooms yet.`);
-    return;
-  }
-
-  const contactIds = contacts.map((c: any) => c.id);
-  const weekEnd = new Date(Date.now() + 7 * 86400000).toISOString();
-
-  // Get pending submissions grouped by assignment
-  const subs = await sbGet(env, "academy_submissions", {
-    contact_id: `in.(${contactIds.join(",")})`,
-    status: `in.(missing,submitted)`,
-    select: "assignment_id,status,academy_assignments(title,due_at,classroom_id)",
-    limit: "10",
-  });
-
-  if (!subs?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `✅ No pending assignments this week!`);
-    return;
-  }
-
-  const lines = [`📋 <b>Your assignments</b>\n`];
-  for (const s of subs) {
-    const a = s.academy_assignments;
-    if (!a) continue;
-    const due = a.due_at ? ` — due ${new Date(a.due_at).toLocaleDateString()}` : "";
-    const emoji = s.status === "missing" ? "⚠️" : "📝";
-    lines.push(`${emoji} ${a.title}${due}`);
-  }
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
-};
-
-const handleSchedule = async (env: Env, chatId: number, user: { id: string }) => {
-  const contacts = await sbGet(env, "academy_contacts", { user_id: `eq.${user.id}`, select: "id", limit: "5" });
-  if (!contacts?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `📅 No class schedule found. Ask your teacher to set up a timetable.`);
-    return;
-  }
-  const contactIds = contacts.map((c: any) => c.id);
-
-  // Get classroom memberships
-  const memberships = await sbGet(env, "academy_classroom_memberships", {
-    contact_id: `in.(${contactIds.join(",")})`, role: `in.(student,observer)`,
-    select: "classroom_id", limit: "10",
-  });
-  if (!memberships?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `📅 You're not in any classrooms yet.`);
-    return;
-  }
-
-  const classroomIds = [...new Set(memberships.map((m: any) => m.classroom_id))];
-  const schedules = await sbGet(env, "academy_classroom_schedules", {
-    classroom_id: `in.(${classroomIds.join(",")})`,
-    select: "day_of_week,start_time,end_time,label,academy_classrooms(name)",
-    order: "day_of_week.asc,start_time.asc", limit: "14",
-  });
-
-  if (!schedules?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `📅 Your teacher hasn't set a schedule yet.`);
-    return;
-  }
-
-  // day_of_week is 0=Sun … 6=Sat (matches academy_classroom_schedules).
-  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const lines = [`📅 <b>Your weekly schedule</b>\n`];
-  for (const s of schedules) {
-    const day = DAYS[s.day_of_week] ?? s.day_of_week;
-    const time = `${s.start_time}${s.end_time ? `–${s.end_time}` : ""}`;
-    const name = s.academy_classrooms?.name ?? "Class";
-    const label = s.label ? ` (${s.label})` : "";
-    lines.push(`• <b>${day}</b> ${time} — ${name}${label}`);
-  }
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
-};
-
-const handleCert = async (env: Env, chatId: number, user: { id: string; name: string }) => {
-  const certs = await sbGet(env, "issued_certificates", {
-    user_id: `eq.${user.id}`, is_public: "eq.true",
-    select: "public_token,exam_type,overall_band,overall_score,exam_date",
-    order: "issued_at.desc", limit: "3",
-  });
-
-  if (!certs?.length) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId,
-      `🏆 No certificates yet.\n\nComplete a mock exam and issue your first certificate at <a href="${env.SITE_URL}/certificate">${env.SITE_URL}/certificate</a>`
+const sendAppEntry = async (env: Env, chatId: number, user: LinkedUser | null, context = "dashboard") => {
+  if (!user) {
+    await send(
+      env,
+      chatId,
+      `Your Telegram is not linked to Schood yet.\n\nOpen <a href="${escapeHtml(env.SITE_URL)}">${escapeHtml(env.SITE_URL)}</a>, sign in, then use Account -> Link Telegram.`,
     );
     return;
   }
 
-  const lines = [`🏆 <b>Your certificates</b>\n`];
-  for (const c of certs) {
-    const score = c.overall_band ?? c.overall_score ?? "—";
-    const date = new Date(c.exam_date).toLocaleDateString();
-    const url = `${env.SITE_URL}/certificate?token=${c.public_token}`;
-    lines.push(`• <b>${String(c.exam_type ?? "").toUpperCase()}</b> ${score} — ${date}\n  <a href="${url}">View & Share</a>`);
-  }
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, lines.join("\n"));
-};
-
-const handleUnlink = async (env: Env, chatId: number) => {
-  await sbEdge(env, "telegram-link", { action: "unlink", chat_id: String(chatId) });
-  await send(env.TELEGRAM_BOT_TOKEN, chatId,
-    `✅ Your Telegram has been unlinked from Schood.\n\nYou won't receive any more notifications here. You can re-link anytime from your Schood profile.`
+  const title = context === "drill" ? "Practice from Telegram" : context === "assignments" ? "Assignments in Telegram" : "Schood in Telegram";
+  await send(
+    env,
+    chatId,
+    `<b>${title}</b>\n\nOpen your student command center for today's work, assignments, grades, payments, vocab drills, certificates, and support.`,
+    { reply_markup: webAppMarkup(env) },
   );
 };
 
-// ─── Vocab drill ─────────────────────────────────────────────────────────────
-// Stateless: each drill message contains the card ID + answer in callback data.
-// Telegram inline keyboards carry the state.
-
-const handleDrill = async (env: Env, chatId: number, user: { id: string }) => {
-  const card = await getNextDrillCard(env, user.id);
-  if (!card) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `🎉 <b>All done!</b> No cards due right now. Come back tomorrow!`);
+const handleStart = async (env: Env, chatId: number, from: { first_name?: string }, param: string) => {
+  if (param) {
+    const result = await sbEdge(env, "telegram-link", { action: "validate", token: param, chat_id: String(chatId) });
+    if (result?.ok) {
+      await send(
+        env,
+        chatId,
+        `<b>Account linked.</b>\n\nWelcome to Schood, <b>${escapeHtml(result.name)}</b>.\n\nUse the button below to open your Telegram student command center.`,
+        { reply_markup: webAppMarkup(env, "Open Schood") },
+      );
+    } else {
+      await send(
+        env,
+        chatId,
+        `<b>Link failed.</b>\n\n${escapeHtml(result?.error || "Invalid or expired link.")}\n\nGenerate a new link from your Schood account.`,
+      );
+    }
     return;
   }
-  await sendDrillCard(env, chatId, card);
+
+  const user = await getUser(env, chatId);
+  if (user) {
+    await send(
+      env,
+      chatId,
+      `Welcome back, <b>${escapeHtml(user.name)}</b>.\n\nOpen Schood here or type /help for commands.`,
+      { reply_markup: webAppMarkup(env) },
+    );
+    return;
+  }
+
+  await send(
+    env,
+    chatId,
+    `Hi ${escapeHtml(from.first_name ?? "there")}.\n\nI am the Schood bot. Link your account from Schood Account -> Link Telegram, then come back here to use the student command center.`,
+  );
+};
+
+const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => {
+  const msg = `<b>Schood Bot Commands</b>\n\n`
+    + (user ? "" : `<i>Link your Schood account first with /start.</i>\n\n`)
+    + `/app - Open the Schood Telegram app\n`
+    + `/dashboard - Open your student command center\n`
+    + `/results - Recent scores\n`
+    + `/assignments - Assignments due this week\n`
+    + `/schedule - Weekly class timetable\n`
+    + `/cert - Latest certificates\n`
+    + `/drill - Vocabulary flashcards\n`
+    + `/me - Profile and active plans\n`
+    + `/unlink - Disconnect Telegram\n`
+    + `/help - This message`;
+  await send(env, chatId, msg, user ? { reply_markup: webAppMarkup(env) } : undefined);
+};
+
+const handleMe = async (env: Env, chatId: number, user: LinkedUser) => {
+  const entitlements = await sbGet(env, "entitlements", {
+    user_id: `eq.${user.id}`,
+    is_active: "eq.true",
+    select: "resource_id,ends_at,products(name)",
+    limit: "5",
+  });
+  const lines = [`<b>${escapeHtml(user.name)}</b>`, escapeHtml(user.email), ""];
+  if (entitlements?.length) {
+    lines.push("<b>Active access:</b>");
+    for (const e of entitlements) {
+      const product = e.products?.name ?? e.resource_id;
+      const expiry = e.ends_at ? ` until ${new Date(e.ends_at).toLocaleDateString()}` : " lifetime";
+      lines.push(`- ${escapeHtml(product)} (${escapeHtml(expiry)})`);
+    }
+  } else {
+    lines.push(`No active plans. Visit <a href="${escapeHtml(env.SITE_URL)}/pricing">pricing</a>.`);
+  }
+  await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env) });
+};
+
+const handleResults = async (env: Env, chatId: number, user: LinkedUser) => {
+  const outcomes = await sbGet(env, "exam_outcomes", {
+    user_id: `eq.${user.id}`,
+    status: "eq.completed",
+    select: "overall_band,overall_score,computed_at,products(name)",
+    order: "computed_at.desc",
+    limit: "5",
+  });
+  if (!outcomes?.length) {
+    await send(env, chatId, `No completed exams yet.\n\nOpen Schood to start practice.`, { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const lines = ["<b>Your recent scores</b>", ""];
+  for (const o of outcomes) {
+    const score = o.overall_band ?? o.overall_score ?? "-";
+    const date = o.computed_at ? new Date(o.computed_at).toLocaleDateString() : "";
+    lines.push(`- <b>${escapeHtml(o.products?.name ?? "Exam")}</b>: ${escapeHtml(score)} ${escapeHtml(date)}`);
+  }
+  await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env) });
+};
+
+const handleAssignments = async (env: Env, chatId: number, user: LinkedUser) => {
+  const contacts = await sbGet(env, "academy_contacts", { user_id: `eq.${user.id}`, select: "id,academy_id", limit: "10" });
+  if (!contacts?.length) {
+    await send(env, chatId, "You are not enrolled in any academy classrooms yet.", { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const contactIds = contacts.map((c: any) => c.id).filter(Boolean);
+  const subs = await sbGet(env, "academy_submissions", {
+    contact_id: `in.(${contactIds.join(",")})`,
+    status: "in.(missing,submitted)",
+    select: "assignment_id,status,academy_assignments(title,due_at,classroom_id)",
+    limit: "10",
+  });
+  if (!subs?.length) {
+    await send(env, chatId, "No pending assignments right now.", { reply_markup: webAppMarkup(env, "Open assignments") });
+    return;
+  }
+  const lines = ["<b>Your assignments</b>", ""];
+  for (const s of subs) {
+    const a = s.academy_assignments;
+    if (!a) continue;
+    const due = a.due_at ? ` due ${new Date(a.due_at).toLocaleDateString()}` : "";
+    lines.push(`- ${escapeHtml(a.title)}${escapeHtml(due)} (${escapeHtml(s.status)})`);
+  }
+  await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env, "Open assignments") });
+};
+
+const handleSchedule = async (env: Env, chatId: number, user: LinkedUser) => {
+  const contacts = await sbGet(env, "academy_contacts", { user_id: `eq.${user.id}`, select: "id", limit: "10" });
+  if (!contacts?.length) {
+    await send(env, chatId, "No class schedule found.", { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const contactIds = contacts.map((c: any) => c.id).filter(Boolean);
+  const memberships = await sbGet(env, "academy_classroom_memberships", {
+    contact_id: `in.(${contactIds.join(",")})`,
+    role: "in.(student,observer)",
+    select: "classroom_id",
+    limit: "20",
+  });
+  const classroomIds = [...new Set((memberships ?? []).map((m: any) => m.classroom_id).filter(Boolean))];
+  if (!classroomIds.length) {
+    await send(env, chatId, "You are not in any classrooms yet.", { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const schedules = await sbGet(env, "academy_classroom_schedules", {
+    classroom_id: `in.(${classroomIds.join(",")})`,
+    select: "day_of_week,start_time,end_time,label,academy_classrooms(name)",
+    order: "day_of_week.asc,start_time.asc",
+    limit: "20",
+  });
+  if (!schedules?.length) {
+    await send(env, chatId, "Your teacher has not set a schedule yet.", { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const lines = ["<b>Your weekly schedule</b>", ""];
+  for (const s of schedules) {
+    const day = days[s.day_of_week] ?? String(s.day_of_week);
+    const time = `${s.start_time}${s.end_time ? `-${s.end_time}` : ""}`;
+    const name = s.academy_classrooms?.name ?? "Class";
+    const label = s.label ? ` (${s.label})` : "";
+    lines.push(`- <b>${escapeHtml(day)}</b> ${escapeHtml(time)} - ${escapeHtml(name)}${escapeHtml(label)}`);
+  }
+  await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env, "Open schedule") });
+};
+
+const handleCert = async (env: Env, chatId: number, user: LinkedUser) => {
+  const certs = await sbGet(env, "issued_certificates", {
+    user_id: `eq.${user.id}`,
+    is_public: "eq.true",
+    select: "public_token,exam_type,overall_band,overall_score,exam_date",
+    order: "issued_at.desc",
+    limit: "3",
+  });
+  if (!certs?.length) {
+    await send(env, chatId, "No certificates yet.", { reply_markup: webAppMarkup(env) });
+    return;
+  }
+  const lines = ["<b>Your certificates</b>", ""];
+  for (const c of certs) {
+    const score = c.overall_band ?? c.overall_score ?? "-";
+    const url = `${env.SITE_URL}/certificate?token=${c.public_token}`;
+    lines.push(`- <b>${escapeHtml(String(c.exam_type ?? "").toUpperCase())}</b> ${escapeHtml(score)} - <a href="${escapeHtml(url)}">View</a>`);
+  }
+  await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env) });
 };
 
 const getNextDrillCard = async (env: Env, userId: string) => {
   const today = new Date().toISOString().slice(0, 10);
-  // First ensure deck exists (call vocab-drill edge function to seed if needed)
-  await fetch(`${env.SUPABASE_URL}/functions/v1/vocab-drill`, {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "stats" }),
-  });
-
   const rows = await sbGet(env, "vocab_drill_cards", {
-    user_id: `eq.${userId}`, next_review: `lte.${today}`,
-    select: "id,word,definition,example", order: "next_review.asc", limit: "1",
+    user_id: `eq.${userId}`,
+    next_review: `lte.${today}`,
+    select: "id,word,definition,example",
+    order: "next_review.asc",
+    limit: "1",
   });
   return rows?.[0] ?? null;
 };
 
-const sendDrillCard = async (env: Env, chatId: number, card: { id: string; word: string; definition: string; example?: string | null }) => {
-  const keyboard = {
-    inline_keyboard: [[
-      { text: "Show answer", callback_data: `drill_reveal:${card.id}` },
-    ]],
-  };
-  await send(env.TELEGRAM_BOT_TOKEN, chatId,
-    `📚 <b>Vocab Drill</b>\n\n<b>${card.word}</b>\n\nDo you know this word?`,
-    { reply_markup: keyboard }
-  );
-};
-
-const sendDrillReveal = async (env: Env, chatId: number, card: { id: string; word: string; definition: string; example?: string | null }) => {
-  const keyboard = {
-    inline_keyboard: [[
-      { text: "❌ Again", callback_data: `drill_rate:${card.id}:1` },
-      { text: "😓 Hard", callback_data: `drill_rate:${card.id}:3` },
-      { text: "👍 Good", callback_data: `drill_rate:${card.id}:4` },
-      { text: "⚡ Easy", callback_data: `drill_rate:${card.id}:5` },
-    ]],
-  };
-  const example = card.example ? `\n\n<i>"${card.example}"</i>` : "";
-  await send(env.TELEGRAM_BOT_TOKEN, chatId,
-    `📚 <b>${card.word}</b>\n\n${card.definition}${example}\n\nHow well did you know it?`,
-    { reply_markup: keyboard }
-  );
-};
-
-const handleDrillRate = async (env: Env, chatId: number, userId: string, cardId: string, quality: number) => {
-  // Submit rating
-  await fetch(`${env.SUPABASE_URL}/functions/v1/vocab-drill`, {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "review", card_id: cardId, quality }),
-  });
-
-  // Get next card
-  const next = await getNextDrillCard(env, userId);
-  if (!next) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `🎉 Session complete! All due cards reviewed.\n\nType /drill again tomorrow.`);
-  } else {
-    await sendDrillCard(env, chatId, next);
+const handleDrill = async (env: Env, chatId: number, user: LinkedUser) => {
+  const card = await getNextDrillCard(env, user.id);
+  if (!card) {
+    await send(env, chatId, "No vocabulary cards are due right now.", { reply_markup: webAppMarkup(env, "Open practice") });
+    return;
   }
+  await send(
+    env,
+    chatId,
+    `<b>Vocab drill</b>\n\n<b>${escapeHtml(card.word)}</b>\n\nUse the Mini App for reveal, rating, and next card.`,
+    { reply_markup: webAppMarkup(env, "Open drill") },
+  );
 };
 
-// ─── Callback query handler ───────────────────────────────────────────────────
+const handleUnlink = async (env: Env, chatId: number) => {
+  await sbEdge(env, "telegram-link", { action: "unlink", chat_id: String(chatId) });
+  await send(env, chatId, "Your Telegram has been unlinked from Schood. You can re-link any time from your Schood account.");
+};
 
-const handleCallback = async (env: Env, query: { id: string; from: { id: number }; data?: string; message?: { chat: { id: number }; message_id: number } }) => {
+const handleCallback = async (env: Env, query: { id: string; from: { id: number }; data?: string; message?: { chat: { id: number } } }) => {
+  await answerCallback(env, query.id);
   const chatId = query.message?.chat.id ?? query.from.id;
-  const data = query.data ?? "";
-
-  await answerCallback(env.TELEGRAM_BOT_TOKEN, query.id);
-
   const user = await getUser(env, chatId);
-  if (!user) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId, `Please link your account first. Type /start`);
-    return;
-  }
-
-  if (data.startsWith("drill_reveal:")) {
-    const cardId = data.split(":")[1];
-    const rows = await sbGet(env, "vocab_drill_cards", { id: `eq.${cardId}`, select: "id,word,definition,example", limit: "1" });
-    const card = rows?.[0];
-    if (card) await sendDrillReveal(env, chatId, card);
-    return;
-  }
-
-  if (data.startsWith("drill_rate:")) {
-    const [, cardId, qualityStr] = data.split(":");
-    const quality = parseInt(qualityStr, 10);
-    await handleDrillRate(env, chatId, user.id, cardId, quality);
-    return;
-  }
+  await sendAppEntry(env, chatId, user);
 };
-
-// ─── Main webhook handler ─────────────────────────────────────────────────────
 
 const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
-  // Callback queries (button taps)
   if (update.callback_query) {
     await handleCallback(env, update.callback_query as any);
     return;
@@ -389,52 +349,53 @@ const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
 
   const msg = update.message as Record<string, unknown> | undefined;
   if (!msg) return;
-
   const chatId = (msg.chat as any)?.id as number;
   const from = (msg.from ?? {}) as { id: number; first_name?: string };
   const text = String(msg.text ?? "").trim();
   if (!chatId || !text) return;
 
   const [cmd, ...args] = text.split(/\s+/);
-  const command = cmd.replace(/@\w+$/, "").toLowerCase(); // strip @botname suffix
+  const command = cmd.replace(/@\w+$/, "").toLowerCase();
   const param = args.join(" ");
 
   if (command === "/start") { await handleStart(env, chatId, from, param); return; }
   if (command === "/help") { await handleHelp(env, chatId, await getUser(env, chatId)); return; }
   if (command === "/unlink") { await handleUnlink(env, chatId); return; }
 
-  // All other commands require a linked account
   const user = await getUser(env, chatId);
+  if (command === "/app" || command === "/dashboard") { await sendAppEntry(env, chatId, user); return; }
+
   if (!user) {
-    await send(env.TELEGRAM_BOT_TOKEN, chatId,
-      `👋 Your Telegram isn't linked to a Schood account yet.\n\nVisit <a href="${env.SITE_URL}">${env.SITE_URL}</a>, open your profile, and click <b>"Link Telegram"</b>.`
+    await send(
+      env,
+      chatId,
+      `Your Telegram is not linked to Schood yet.\n\nOpen <a href="${escapeHtml(env.SITE_URL)}">${escapeHtml(env.SITE_URL)}</a>, sign in, then use Account -> Link Telegram.`,
     );
     return;
   }
 
-  if (command === "/me")          { await handleMe(env, chatId, user); return; }
-  if (command === "/results")     { await handleResults(env, chatId, user); return; }
+  if (command === "/me") { await handleMe(env, chatId, user); return; }
+  if (command === "/results") { await handleResults(env, chatId, user); return; }
   if (command === "/assignments") { await handleAssignments(env, chatId, user); return; }
-  if (command === "/schedule")    { await handleSchedule(env, chatId, user); return; }
-  if (command === "/cert")        { await handleCert(env, chatId, user); return; }
-  if (command === "/drill")       { await handleDrill(env, chatId, user); return; }
+  if (command === "/schedule") { await handleSchedule(env, chatId, user); return; }
+  if (command === "/cert") { await handleCert(env, chatId, user); return; }
+  if (command === "/drill") { await handleDrill(env, chatId, user); return; }
 
-  // Unknown command — suggest help
-  await send(env.TELEGRAM_BOT_TOKEN, chatId, `Unknown command. Type /help to see what I can do.`);
+  await send(env, chatId, "Unknown command. Type /help to see what I can do.", { reply_markup: webAppMarkup(env) });
 };
-
-// ─── Entry point ─────────────────────────────────────────────────────────────
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // Health check
     if (url.pathname === "/") return new Response("Schood Bot is running", { status: 200 });
 
-
-    // Telegram sends updates to /webhook
     if (url.pathname === "/webhook" && request.method === "POST") {
+      const receivedSecret = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
+      if (env.WEBHOOK_SECRET && receivedSecret !== env.WEBHOOK_SECRET) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+
       let update: Record<string, unknown>;
       try {
         update = await request.json();
@@ -442,7 +403,6 @@ export default {
         return new Response("Bad request", { status: 400 });
       }
 
-      // Handle asynchronously — return 200 to Telegram immediately
       ctx.waitUntil(handleUpdate(env, update).catch((err) => {
         console.error("handleUpdate error:", err);
       }));
