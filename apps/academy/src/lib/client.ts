@@ -48,6 +48,7 @@ export type TeacherStudioContact = {
   last_activity_at?: string | null;
   placement_level?: string | null;
   placement_score?: number | null;
+  lifecycle_stage?: string | null;
   notify_enabled?: boolean;
   metadata: Json;
   created_at: string;
@@ -477,6 +478,103 @@ export type TeacherStudioAtRiskStudent = {
   reasons: string[];
   missing_assignments: number;
   recent_absences: number;
+};
+
+export type TeacherStudioActionItem = {
+  id: string;
+  academy_id: string;
+  dedupe_key: string;
+  source_type: string;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  title: string;
+  description: string;
+  recommended_action: string | null;
+  contact_id: string | null;
+  classroom_id: string | null;
+  due_at: string | null;
+  status: 'open' | 'snoozed' | 'resolved' | 'dismissed';
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TeacherStudioLifecycleRow = {
+  contact_id: string;
+  name: string;
+  email: string | null;
+  status: string;
+  stage: string;
+  derived_stage: string;
+  next_action: string;
+  placement_level: string | null;
+  placement_score: number | null;
+  classroom_ids: string[];
+  classroom_names: string[];
+  attendance_rate: number | null;
+  recent_absences: number;
+  missing_assignments: number;
+  composite_score: number | null;
+  certificate_ready: boolean;
+  pending_amount: number;
+  entitlement_expires_at: string | null;
+  last_activity_at: string | null;
+};
+
+export type TeacherStudioAutomationRule = {
+  id: string;
+  academy_id: string;
+  rule_key: string;
+  name: string;
+  description: string;
+  channel: 'telegram' | 'email' | 'inapp';
+  threshold: number | null;
+  is_active: boolean;
+  metadata: Json;
+  last_run_at: string | null;
+  last_run_summary: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TeacherStudioCalendarEvent = {
+  id: string;
+  type: string;
+  title: string;
+  starts_at: string;
+  ends_at: string | null;
+  classroom_id: string | null;
+  contact_id: string | null;
+  priority: string;
+  metadata: Json;
+};
+
+export type TeacherStudioInsight = {
+  id: string;
+  type: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'positive';
+  title: string;
+  detail: string;
+  recommended_action: string;
+  metric: number | null;
+  classroom_id?: string | null;
+  contact_id?: string | null;
+};
+
+export type TeacherStudioEducationOS = {
+  generated_at: string;
+  action_queue: TeacherStudioActionItem[];
+  pipeline: TeacherStudioLifecycleRow[];
+  pipeline_counts: Record<string, number>;
+  automation_rules: TeacherStudioAutomationRule[];
+  calendar_events: TeacherStudioCalendarEvent[];
+  intelligence: TeacherStudioInsight[];
+  stats: {
+    open_actions: number;
+    urgent_actions: number;
+    grading_backlog: number;
+    certificate_ready: number;
+    placement_gap: number;
+  };
 };
 
 type InvokeErrorLike = {
@@ -1089,6 +1187,67 @@ export const teacherStudioOwnerDashboard = async (academyId: string): Promise<Te
   return callTeacherStudio<TeacherStudioOwnerDashboard>({ action: 'owner_dashboard', academyId });
 };
 
+export const teacherStudioEducationOS = async (academyId: string): Promise<TeacherStudioEducationOS> => {
+  return callTeacherStudio<TeacherStudioEducationOS>({ action: 'education_os', academyId });
+};
+
+export const teacherStudioResolveActionItem = async (
+  academyId: string,
+  body: { id: string; status?: 'resolved' | 'dismissed' | 'snoozed' | 'open'; resolution_note?: string | null },
+): Promise<TeacherStudioActionItem> => {
+  const data = await callTeacherStudio<{ action_item: TeacherStudioActionItem }>({
+    method: 'POST',
+    action: 'resolve_action_item',
+    academyId,
+    body,
+  });
+  return data.action_item;
+};
+
+export const teacherStudioSetLifecycleStage = async (
+  academyId: string,
+  body: { contact_id: string; lifecycle_stage: string },
+): Promise<TeacherStudioContact> => {
+  const data = await callTeacherStudio<{ contact: TeacherStudioContact }>({
+    method: 'POST',
+    action: 'set_lifecycle_stage',
+    academyId,
+    body,
+  });
+  return data.contact;
+};
+
+export const teacherStudioUpsertAutomationRule = async (
+  academyId: string,
+  body: {
+    rule_key: string;
+    name?: string;
+    description?: string;
+    channel?: 'telegram' | 'email' | 'inapp';
+    threshold?: number | null;
+    is_active?: boolean;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<TeacherStudioAutomationRule> => {
+  const data = await callTeacherStudio<{ automation_rule: TeacherStudioAutomationRule }>({
+    method: 'POST',
+    action: 'upsert_automation_rule',
+    academyId,
+    body,
+  });
+  return data.automation_rule;
+};
+
+export const teacherStudioRunAutomationRules = async (
+  academyId: string,
+): Promise<Record<string, unknown>> => {
+  return callTeacherStudio<Record<string, unknown>>({
+    method: 'POST',
+    action: 'run_automation_rules',
+    academyId,
+  });
+};
+
 export const teacherStudioAssignments = async (
   academyId: string,
   classroomId?: string | null,
@@ -1110,7 +1269,7 @@ export const teacherStudioSubmissions = async (
     academyId,
     params: {
       classroom_id: params?.classroom_id ?? undefined,
-      contact_id: params?.assignment_id ?? undefined,
+      assignment_id: params?.assignment_id ?? undefined,
     },
   });
   return data.submissions ?? [];

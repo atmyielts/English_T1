@@ -9,6 +9,7 @@ import {
   teacherStudioCreateAssignment,
   teacherStudioDeleteSchedule,
   teacherStudioDispatchNotifications,
+  teacherStudioEducationOS,
   teacherStudioGenerateParentReport,
   teacherStudioGradebook,
   teacherStudioIssueAcademyCertificate,
@@ -18,20 +19,28 @@ import {
   teacherStudioRecordPlacement,
   teacherStudioReferralLeaderboard,
   teacherStudioRemoveStaff,
+  teacherStudioResolveActionItem,
+  teacherStudioRunAutomationRules,
   teacherStudioSchedule,
+  teacherStudioSetLifecycleStage,
   teacherStudioStaff,
   teacherStudioSubmitAssignmentForContact,
+  teacherStudioUpsertAutomationRule,
   teacherStudioUpsertBranding,
   teacherStudioUpsertSchedule,
   teacherStudioUpsertStaff,
+  type TeacherStudioActionItem,
   type TeacherStudioAssignment,
   type TeacherStudioAtRiskStudent,
+  type TeacherStudioAutomationRule,
   type TeacherStudioAttendance,
   type TeacherStudioBranding,
   type TeacherStudioClassroom,
   type TeacherStudioClassroomMembership,
   type TeacherStudioContact,
+  type TeacherStudioEducationOS,
   type TeacherStudioGradebook,
+  type TeacherStudioLifecycleRow,
   type TeacherStudioNotification,
   type TeacherStudioOwnerDashboard,
   type TeacherStudioReferralLeader,
@@ -39,7 +48,18 @@ import {
   type TeacherStudioStaff,
 } from '../../lib/client';
 
-type EducationOSTab = 'command' | 'learning' | 'attendance' | 'growth' | 'engagement' | 'brand';
+type EducationOSTab =
+  | 'today'
+  | 'pipeline'
+  | 'automation'
+  | 'calendar'
+  | 'intelligence'
+  | 'command'
+  | 'learning'
+  | 'attendance'
+  | 'growth'
+  | 'engagement'
+  | 'brand';
 
 type EducationOSViewProps = {
   academyId: string;
@@ -53,6 +73,30 @@ type EducationOSViewProps = {
 type BulkInviteRow = Awaited<ReturnType<typeof teacherStudioBulkInvites>>[number];
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const lifecycleStages = [
+  { id: 'lead', label: 'Lead' },
+  { id: 'placement', label: 'Placement' },
+  { id: 'enrolled', label: 'Enrolled' },
+  { id: 'learning', label: 'Learning' },
+  { id: 'attention', label: 'Attention' },
+  { id: 'renewal', label: 'Renewal' },
+  { id: 'completion', label: 'Completion' },
+];
+
+const priorityClass = (priority: string): string => {
+  if (priority === 'critical' || priority === 'high') return 'status status--bad';
+  if (priority === 'medium') return 'status status--pending';
+  return 'status status--ok';
+};
+
+const severityClass = (severity: string): string => {
+  if (severity === 'critical' || severity === 'high') return 'status status--bad';
+  if (severity === 'positive') return 'status status--ok';
+  return 'status status--pending';
+};
+
+const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
 
 const todayDate = (): string => new Date().toISOString().slice(0, 10);
 
@@ -103,12 +147,13 @@ export const EducationOSView = ({
   formatDate,
   statusClass,
 }: EducationOSViewProps) => {
-  const [activeTab, setActiveTab] = useState<EducationOSTab>('command');
+  const [activeTab, setActiveTab] = useState<EducationOSTab>('today');
   const [selectedClassroomId, setSelectedClassroomId] = useState('');
   const [localBusy, setLocalBusy] = useState(false);
   const [localError, setLocalError] = useState('');
   const [localNotice, setLocalNotice] = useState('');
 
+  const [osEngine, setOsEngine] = useState<TeacherStudioEducationOS | null>(null);
   const [dashboard, setDashboard] = useState<TeacherStudioOwnerDashboard | null>(null);
   const [assignments, setAssignments] = useState<TeacherStudioAssignment[]>([]);
   const [gradebook, setGradebook] = useState<TeacherStudioGradebook | null>(null);
@@ -190,18 +235,47 @@ export const EducationOSView = ({
     return map;
   }, [attendance, attendanceDate]);
 
+  const actionQueue = osEngine?.action_queue ?? [];
+  const lifecycleRows = osEngine?.pipeline ?? [];
+  const automationRules = osEngine?.automation_rules ?? [];
+  const calendarEvents = osEngine?.calendar_events ?? [];
+  const intelligence = osEngine?.intelligence ?? [];
+
+  const rowsByStage = useMemo(() => {
+    const map = new Map<string, TeacherStudioLifecycleRow[]>();
+    for (const stage of lifecycleStages) map.set(stage.id, []);
+    for (const row of lifecycleRows) {
+      const bucket = map.get(row.stage) ?? [];
+      bucket.push(row);
+      map.set(row.stage, bucket);
+    }
+    return map;
+  }, [lifecycleRows]);
+
+  const nextEvents = useMemo(
+    () => calendarEvents.slice(0, 20),
+    [calendarEvents],
+  );
+
+  const topInsights = useMemo(
+    () => intelligence.slice(0, 6),
+    [intelligence],
+  );
+
   const loadOsData = useCallback(async () => {
     if (!academyId) return;
     setLocalBusy(true);
     setLocalError('');
     try {
       const [
+        osData,
         dashboardData,
         staffData,
         notificationsData,
         brandingData,
         referralData,
       ] = await Promise.all([
+        teacherStudioEducationOS(academyId),
         teacherStudioOwnerDashboard(academyId),
         teacherStudioStaff(academyId),
         teacherStudioNotifications(academyId),
@@ -209,6 +283,7 @@ export const EducationOSView = ({
         teacherStudioReferralLeaderboard(academyId),
       ]);
 
+      setOsEngine(osData);
       setDashboard(dashboardData);
       setStaff(staffData);
       setNotifications(notificationsData);
@@ -323,12 +398,65 @@ export const EducationOSView = ({
     try {
       await action();
       await loadOsData();
-      setLocalNotice(success);
+      setLocalNotice((current) => current || success);
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : String(err));
     } finally {
       setLocalBusy(false);
     }
+  };
+
+  const openActionTarget = (item: TeacherStudioActionItem) => {
+    if (item.classroom_id) setSelectedClassroomId(item.classroom_id);
+    if (['grading_backlog', 'missing_assignment'].includes(item.source_type)) setActiveTab('learning');
+    else if (['attendance_roll_call', 'schedule_gap'].includes(item.source_type)) setActiveTab('attendance');
+    else if (['placement_needed', 'trial_follow_up', 'renewal'].includes(item.source_type)) setActiveTab('growth');
+    else if (['certificate_ready', 'alert', 'parent_follow_up'].includes(item.source_type)) setActiveTab('engagement');
+    else setActiveTab('today');
+  };
+
+  const resolveActionItem = async (item: TeacherStudioActionItem, status: 'resolved' | 'dismissed' | 'snoozed' | 'open') => {
+    if (!academyId) return;
+    await runAction(status === 'open' ? 'Action item reopened.' : `Action item ${status}.`, async () => {
+      await teacherStudioResolveActionItem(academyId, {
+        id: item.id,
+        status,
+        resolution_note: status === 'resolved' ? 'Resolved from Education OS.' : null,
+      });
+    });
+  };
+
+  const updateLifecycleStage = async (row: TeacherStudioLifecycleRow, stage: string) => {
+    if (!academyId || !stage || row.stage === stage) return;
+    await runAction('Lifecycle stage updated.', async () => {
+      await teacherStudioSetLifecycleStage(academyId, {
+        contact_id: row.contact_id,
+        lifecycle_stage: stage,
+      });
+    });
+  };
+
+  const updateAutomationRule = async (
+    rule: TeacherStudioAutomationRule,
+    patch: { is_active?: boolean; channel?: 'telegram' | 'email' | 'inapp'; threshold?: number | null },
+  ) => {
+    if (!academyId) return;
+    await runAction('Automation rule updated.', async () => {
+      await teacherStudioUpsertAutomationRule(academyId, {
+        rule_key: rule.rule_key,
+        ...patch,
+      });
+    });
+  };
+
+  const runAutomations = async () => {
+    if (!academyId) return;
+    await runAction('Automation rules ran.', async () => {
+      const result = await teacherStudioRunAutomationRules(academyId);
+      setLocalNotice(
+        `Automation run: ${String(result.due_queued ?? 0)} assignment, ${String(result.class_queued ?? 0)} class, ${String(result.attendance_queued ?? 0)} attendance follow-up queued.`,
+      );
+    });
   };
 
   const submitAssignment = async (event: FormEvent) => {
@@ -525,6 +653,11 @@ export const EducationOSView = ({
   };
 
   const tabs: Array<{ id: EducationOSTab; label: string }> = [
+    { id: 'today', label: 'Today' },
+    { id: 'pipeline', label: 'Pipeline' },
+    { id: 'automation', label: 'Automations' },
+    { id: 'calendar', label: 'Calendar' },
+    { id: 'intelligence', label: 'Insights' },
     { id: 'command', label: 'Command' },
     { id: 'learning', label: 'Learning' },
     { id: 'attendance', label: 'Attendance' },
@@ -539,7 +672,7 @@ export const EducationOSView = ({
         <div className="row between wrap">
           <div>
             <h3>Education OS</h3>
-            <p className="muted">Run learning, operations, engagement, growth, reporting, and brand control from one academy surface.</p>
+            <p className="muted">Run the academy from action queue to lifecycle, automation, calendar, intelligence, and execution tools.</p>
           </div>
           <div className="topbar-actions">
             <select className="input academy-select" value={selectedClassroomId} onChange={(event) => setSelectedClassroomId(event.target.value)}>
@@ -575,6 +708,233 @@ export const EducationOSView = ({
         <div className="info-banner">
           Share link: <a href={lastShareUrl} target="_blank" rel="noreferrer">{lastShareUrl}</a>
         </div>
+      ) : null}
+
+      {activeTab === 'today' ? (
+        <section className="grid">
+          <section className="stats-grid">
+            <article className="stat-card">
+              <span>Open actions</span>
+              <strong>{osEngine?.stats.open_actions ?? actionQueue.length}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Urgent</span>
+              <strong>{osEngine?.stats.urgent_actions ?? actionQueue.filter((item) => ['critical', 'high'].includes(item.priority)).length}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Grade backlog</span>
+              <strong>{osEngine?.stats.grading_backlog ?? 0}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Placement gap</span>
+              <strong>{osEngine?.stats.placement_gap ?? 0}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Certificate ready</span>
+              <strong>{osEngine?.stats.certificate_ready ?? 0}</strong>
+            </article>
+          </section>
+
+          <section className="grid two">
+            <div className="panel">
+              <div className="row between wrap">
+                <div>
+                  <h3>Daily action queue</h3>
+                  <p className="small muted">Generated from attendance, grading, missing work, placement, renewal, and completion signals.</p>
+                </div>
+                <button className="ghost-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>Run automations</button>
+              </div>
+              <div className="os-action-list">
+                {actionQueue.slice(0, 14).map((item) => (
+                  <article className="os-action-card" key={item.id}>
+                    <div className="row between wrap">
+                      <div>
+                        <span className={priorityClass(item.priority)}>{item.priority}</span>
+                        <strong>{item.title}</strong>
+                      </div>
+                      <div className="row wrap">
+                        <button className="small-btn" type="button" onClick={() => openActionTarget(item)}>Open</button>
+                        <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'resolved')} disabled={localBusy}>Done</button>
+                        <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'dismissed')} disabled={localBusy}>Dismiss</button>
+                      </div>
+                    </div>
+                    <p>{item.description}</p>
+                    <div className="small muted">
+                      {eventTypeLabel(item.source_type)}
+                      {item.due_at ? ` | due ${formatDate(item.due_at)}` : ''}
+                    </div>
+                    {item.recommended_action ? <div className="small">{item.recommended_action}</div> : null}
+                  </article>
+                ))}
+                {actionQueue.length === 0 ? <div className="empty-state">No action items right now. The OS will populate this as students, classes, assignments, payments, and alerts move.</div> : null}
+              </div>
+            </div>
+
+            <div className="panel">
+              <h3>Operating focus</h3>
+              <ul className="list">
+                {topInsights.map((insight) => (
+                  <li key={insight.id}>
+                    <div className="row between">
+                      <strong>{insight.title}</strong>
+                      <span className={severityClass(insight.severity)}>{insight.severity}</span>
+                    </div>
+                    <div>{insight.detail}</div>
+                    <div className="small muted">{insight.recommended_action}</div>
+                  </li>
+                ))}
+                {topInsights.length === 0 ? <li>No intelligence signals yet.</li> : null}
+              </ul>
+              <h3>Next calendar items</h3>
+              <ul className="list">
+                {nextEvents.slice(0, 8).map((event) => (
+                  <li key={event.id}>
+                    <div className="row between">
+                      <strong>{event.title}</strong>
+                      <span className={priorityClass(event.priority)}>{eventTypeLabel(event.type)}</span>
+                    </div>
+                    <div className="small muted">{formatDate(event.starts_at)}</div>
+                  </li>
+                ))}
+                {nextEvents.length === 0 ? <li>No upcoming operating events.</li> : null}
+              </ul>
+            </div>
+          </section>
+        </section>
+      ) : null}
+
+      {activeTab === 'pipeline' ? (
+        <section className="grid">
+          <section className="stats-grid">
+            {lifecycleStages.map((stage) => (
+              <article className="stat-card" key={stage.id}>
+                <span>{stage.label}</span>
+                <strong>{osEngine?.pipeline_counts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
+              </article>
+            ))}
+          </section>
+          <div className="os-pipeline-board">
+            {lifecycleStages.map((stage) => (
+              <section className="panel os-pipeline-column" key={stage.id}>
+                <div className="row between">
+                  <h3>{stage.label}</h3>
+                  <span className="status">{rowsByStage.get(stage.id)?.length ?? 0}</span>
+                </div>
+                <div className="os-pipeline-list">
+                  {(rowsByStage.get(stage.id) ?? []).slice(0, 12).map((row) => (
+                    <article className="os-pipeline-card" key={row.contact_id}>
+                      <div className="row between wrap">
+                        <strong>{row.name}</strong>
+                        <select className="input compact-input" value={row.stage} onChange={(event) => void updateLifecycleStage(row, event.target.value)} disabled={localBusy}>
+                          {lifecycleStages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                        </select>
+                      </div>
+                      <div className="small muted">{row.classroom_names.join(', ') || row.email || 'No classroom yet'}</div>
+                      <div className="os-metric-strip">
+                        <span>Score {row.composite_score !== null ? `${row.composite_score}%` : '-'}</span>
+                        <span>Attendance {row.attendance_rate !== null ? `${row.attendance_rate}%` : '-'}</span>
+                        <span>Missing {row.missing_assignments}</span>
+                      </div>
+                      <p className="small">{row.next_action}</p>
+                    </article>
+                  ))}
+                  {(rowsByStage.get(stage.id) ?? []).length === 0 ? <div className="small muted">No students in this stage.</div> : null}
+                </div>
+              </section>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {activeTab === 'automation' ? (
+        <section className="grid">
+          <div className="panel">
+            <div className="row between wrap">
+              <div>
+                <h3>Automation rules</h3>
+                <p className="small muted">Rules queue reminders, follow-ups, alerts, and completion actions. Dispatch still happens through the notification outbox.</p>
+              </div>
+              <button className="primary-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>Run now</button>
+            </div>
+          </div>
+          <section className="grid two">
+            {automationRules.map((rule) => (
+              <article className="panel os-rule-card" key={rule.id}>
+                <div className="row between wrap">
+                  <div>
+                    <h3>{rule.name}</h3>
+                    <p className="small muted">{rule.description}</p>
+                  </div>
+                  <label className="classroom-publish-toggle">
+                    <input type="checkbox" checked={rule.is_active} onChange={(event) => void updateAutomationRule(rule, { is_active: event.target.checked })} disabled={localBusy} />
+                    {rule.is_active ? 'On' : 'Off'}
+                  </label>
+                </div>
+                <div className="grid two">
+                  <label className="grid">
+                    <span className="small muted">Channel</span>
+                    <select className="input" value={rule.channel} onChange={(event) => void updateAutomationRule(rule, { channel: event.target.value as TeacherStudioAutomationRule['channel'] })} disabled={localBusy}>
+                      <option value="telegram">Telegram</option>
+                      <option value="email">Email</option>
+                      <option value="inapp">In-app</option>
+                    </select>
+                  </label>
+                  <label className="grid">
+                    <span className="small muted">Threshold</span>
+                    <input className="input" type="number" value={rule.threshold ?? ''} onChange={(event) => void updateAutomationRule(rule, { threshold: event.target.value ? Number(event.target.value) : null })} disabled={localBusy} />
+                  </label>
+                </div>
+                <div className="small muted">
+                  Last run: {rule.last_run_at ? formatDate(rule.last_run_at) : 'not run yet'}
+                </div>
+              </article>
+            ))}
+            {automationRules.length === 0 ? <div className="panel">No automation rules loaded yet.</div> : null}
+          </section>
+        </section>
+      ) : null}
+
+      {activeTab === 'calendar' ? (
+        <section className="panel">
+          <h3>Operating calendar</h3>
+          <div className="os-agenda">
+            {calendarEvents.map((event) => (
+              <article className="os-agenda-item" key={event.id}>
+                <div>
+                  <strong>{formatDate(event.starts_at)}</strong>
+                  {event.ends_at ? <div className="small muted">Ends {formatDate(event.ends_at)}</div> : null}
+                </div>
+                <div>
+                  <div className="row wrap">
+                    <span className={priorityClass(event.priority)}>{eventTypeLabel(event.type)}</span>
+                    <strong>{event.title}</strong>
+                  </div>
+                  <div className="small muted">
+                    {event.classroom_id ? classroomById.get(event.classroom_id)?.name ?? 'Classroom' : 'Academy-wide'}
+                  </div>
+                </div>
+              </article>
+            ))}
+            {calendarEvents.length === 0 ? <div className="empty-state">No schedule slots, due dates, notifications, or action deadlines are in the OS calendar yet.</div> : null}
+          </div>
+        </section>
+      ) : null}
+
+      {activeTab === 'intelligence' ? (
+        <section className="grid two">
+          {intelligence.map((insight) => (
+            <article className="panel os-insight-card" key={insight.id}>
+              <div className="row between wrap">
+                <h3>{insight.title}</h3>
+                <span className={severityClass(insight.severity)}>{insight.severity}</span>
+              </div>
+              <p>{insight.detail}</p>
+              <div className="small muted">{insight.recommended_action}</div>
+              {typeof insight.metric === 'number' ? <strong className="os-insight-metric">{insight.metric}</strong> : null}
+            </article>
+          ))}
+          {intelligence.length === 0 ? <div className="panel">No decision intelligence yet. As attendance, assignments, payments, and alerts accumulate, this panel will start recommending action.</div> : null}
+        </section>
       ) : null}
 
       {activeTab === 'command' ? (
