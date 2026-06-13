@@ -119,6 +119,8 @@ verify_jwt = false
 [functions.platform-settings]
 verify_jwt = false
 
+# Legacy TsPay endpoint is intentionally retired; keep the function path deployed
+# as a 410 JSON response so stale clients fail safely and move to Click.
 [functions.tspay]
 verify_jwt = false
 

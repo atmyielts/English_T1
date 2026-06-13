@@ -86,30 +86,6 @@ const normalizeBillingPeriod = (raw: unknown): "monthly" | "annual" | "manual" =
 
 const isSuccessStatus = (successes: Set<string>, status: string): boolean => successes.has(status.trim().toLowerCase());
 
-const normalizeTsPaymentStatus = (raw: unknown): string => {
-  const s = normalizePaymentStatus(raw);
-  if (s === "success" || s === "paid" || s === "completed") return "paid";
-  if (s === "canceled" || s === "cancelled") return "canceled";
-  return s;
-};
-
-const parseStatusResponse = (statusJson: any): { paymentStatus: string; apiStatus: string } => {
-  const apiStatus = normalizePaymentStatus(statusJson?.status);
-
-  const hasStructuredPaymentStatus =
-    statusJson?.data?.pay_status ??
-    statusJson?.data?.status ??
-    statusJson?.transaction?.pay_status ??
-    statusJson?.transaction?.status ??
-    statusJson?.pay_status ??
-    null;
-
-  // Fallback for TsPay variants where top-level status is the payment status.
-  const payStatus = hasStructuredPaymentStatus ?? statusJson?.status ?? null;
-
-  return { paymentStatus: normalizeTsPaymentStatus(payStatus), apiStatus };
-};
-
 const uniqIds = (ids: Array<string | null | undefined>): string[] => {
   const set = new Set<string>();
   for (const id of ids) {
@@ -193,13 +169,6 @@ const resolveGrantTerms = async (sb: any, payment: PaymentRow): Promise<Resolved
     limits: extractPlanLimits(meta),
     sourcePlanId: String((planRow as any).id ?? payment.plan_id),
   };
-};
-
-const normalizeTspayApiBaseUrl = (raw: string | undefined): string => {
-  const value = String(raw ?? "").trim();
-  if (!value) return "https://api.tspay.uz/api";
-  if (/\/api\/v1\/?$/i.test(value)) return "https://api.tspay.uz/api";
-  return value.replace(/\/+$/, "");
 };
 
 const readJsonPayload = async (res: Response): Promise<any> => {
@@ -304,34 +273,6 @@ const fetchClickStatus = async (
     paymentStatus: "pending",
     apiStatus: "not_found",
   };
-};
-
-const fetchTspayStatus = async (
-  tspayBaseUrl: string,
-  payment: PaymentRow,
-): Promise<{ ok: boolean; statusJson: any; statusQueryId: string }> => {
-  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
-    ? payment.metadata
-    : {};
-  const candidates = uniqIds([
-    payment.tspay_cheque_id,
-    (meta as any)?.tspay_cheque_id,
-    payment.provider_transaction_id,
-    payment.tspay_order_id,
-    (meta as any)?.tspay_order_id,
-  ]);
-
-  for (const candidate of candidates) {
-    const endpoint = looksLikeUuid(candidate)
-      ? `${tspayBaseUrl}/transactions/cheque/${encodeURIComponent(candidate)}`
-      : `${tspayBaseUrl}/transactions/${encodeURIComponent(candidate)}`;
-    const res = await fetch(endpoint, { method: "GET" });
-    const statusJson = await readJsonPayload(res);
-    if (res.ok) return { ok: true, statusJson, statusQueryId: candidate };
-    if (res.status !== 404) return { ok: false, statusJson, statusQueryId: candidate };
-  }
-
-  return { ok: false, statusJson: { detail: "Transaction not found" }, statusQueryId: candidates[0] ?? payment.provider_transaction_id };
 };
 
 const selectPaymentView = () =>
@@ -785,19 +726,15 @@ serve(async (req) => {
           });
         }
       } else if (provider === "tspay") {
-        const tspayBaseUrl = normalizeTspayApiBaseUrl(Deno.env.get("TSPAY_API_BASE_URL") ?? Deno.env.get("TSPAY_BASE_URL"));
-        const checked = await fetchTspayStatus(tspayBaseUrl, payment);
-        statusJson = checked.statusJson;
-        usedStatusId = checked.statusQueryId;
-        if (!checked.ok) {
-          return new Response(JSON.stringify({ error: "TSPay status failed", details: statusJson }), {
-            status: 502,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          });
-        }
-        const parsed = parseStatusResponse(statusJson);
-        paymentStatus = parsed.paymentStatus;
-        apiStatus = parsed.apiStatus;
+        return new Response(JSON.stringify({
+          error: "TsPay has been retired. Historical TsPay rows remain visible, but status refresh is disabled. Use Click for all new payments.",
+          error_code: "tspay_retired",
+          provider: "tspay",
+          replacement_provider: "click",
+        }), {
+          status: 410,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
       } else {
         return new Response(JSON.stringify({ error: `Unsupported payment provider: ${payment.provider}` }), {
           status: 400,
@@ -808,7 +745,7 @@ serve(async (req) => {
       const normalized = paymentStatus;
       const nextMeta = {
         ...meta,
-        ...(provider === "click" ? { click_status_id: usedStatusId } : { tspay_status_id: usedStatusId }),
+        click_status_id: usedStatusId,
       };
 
       const { error: updateError } = await sb
