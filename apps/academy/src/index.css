@@ -1249,6 +1249,87 @@ tbody tr:hover {
   border-color: rgba(180, 35, 24, 0.22);
 }
 
+.os-action-list,
+.os-pipeline-list,
+.os-agenda {
+  display: grid;
+  gap: 10px;
+}
+
+.os-action-card,
+.os-pipeline-card,
+.os-agenda-item {
+  border: 1px solid rgba(20, 22, 18, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  background: #fff;
+}
+
+.os-action-card p,
+.os-pipeline-card p,
+.os-insight-card p {
+  margin: 0;
+}
+
+.os-pipeline-board {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(7, minmax(230px, 1fr));
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.os-pipeline-column {
+  align-content: start;
+  min-height: 360px;
+}
+
+.os-metric-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.os-metric-strip span {
+  border: 1px solid rgba(20, 22, 18, 0.08);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 780;
+  color: var(--muted-strong);
+  background: var(--panel-subtle);
+}
+
+.os-rule-card {
+  align-content: start;
+}
+
+.os-agenda-item {
+  grid-template-columns: minmax(150px, 0.28fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.os-insight-card {
+  align-content: start;
+  position: relative;
+  overflow: hidden;
+}
+
+.os-insight-metric {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.empty-state {
+  border: 1px dashed rgba(20, 22, 18, 0.18);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--muted);
+  background: var(--panel-subtle);
+}
+
 .danger-btn {
   border-color: rgba(180, 35, 24, 0.22);
   color: var(--danger);

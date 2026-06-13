@@ -88,6 +88,11 @@ type StudioBody = {
   level?: string;
   referral_code?: string;
   diagnostic_score?: number;
+  dedupe_key?: string;
+  resolution_note?: string;
+  lifecycle_stage?: string;
+  rule_key?: string;
+  threshold?: number;
   [key: string]: unknown;
 };
 
@@ -1220,6 +1225,7 @@ const handleReadAction = async (
   classroomIdRaw: string | null,
   contactIdRaw: string | null,
   conversationIdRaw: string | null,
+  assignmentIdRaw: string | null = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -1247,6 +1253,8 @@ const handleReadAction = async (
       "branding",
       "notifications",
       "owner_dashboard",
+      "education_os",
+      "automation_rules",
       "staff",
       "referral_leaderboard",
     ].includes(action)
@@ -1317,7 +1325,7 @@ const handleReadAction = async (
   if (action === "contacts") {
     const { data, error } = await sb
       .from("academy_contacts")
-      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, notify_enabled, metadata, created_at, updated_at")
+      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at, updated_at")
       .eq("academy_id", academyId)
       .order("created_at", { ascending: false })
       .limit(300);
@@ -1553,7 +1561,7 @@ const handleReadAction = async (
 
   if (action === "submissions") {
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
-    const assignmentId = normalizeText(contactIdRaw, 64) || null; // reuse contactId param slot
+    const assignmentId = normalizeText(assignmentIdRaw || contactIdRaw, 64) || null;
     let query = sb
       .from("academy_submissions")
       .select("id, academy_id, assignment_id, classroom_id, contact_id, user_id, session_id, score, max_score, status, submitted_at, graded_at, graded_by, notes, metadata, created_at, updated_at")
@@ -1847,6 +1855,16 @@ const handleReadAction = async (
     });
   }
 
+  if (action === "education_os") {
+    const os = await buildEducationOS(sb, academyId, null);
+    return json(200, os);
+  }
+
+  if (action === "automation_rules") {
+    const automationRules = await loadEducationAutomationRules(sb, academyId, null);
+    return json(200, { automation_rules: automationRules });
+  }
+
   if (action === "branding") {
     const { data, error } = await sb.from("academy_branding")
       .select("id, academy_id, display_name, tagline, logo_url, favicon_url, primary_color, accent_color, hide_schood_logo, custom_domain, custom_domain_verified, footer_text, metadata, updated_at")
@@ -1940,6 +1958,799 @@ const handleReadAction = async (
     .limit(500);
   if (error) return json(500, { error: "Failed to load entitlements", detail: error.message });
   return json(200, { entitlements: data ?? [] });
+};
+
+// Education OS engine: generated actions, lifecycle pipeline, automations, calendar, and intelligence.
+type EducationActionCandidate = {
+  dedupe_key: string;
+  source_type: string;
+  priority: "critical" | "high" | "medium" | "low";
+  title: string;
+  description: string;
+  recommended_action: string;
+  contact_id?: string | null;
+  classroom_id?: string | null;
+  due_at?: string | null;
+  metadata?: Json;
+};
+
+type EducationPipelineRow = {
+  contact_id: string;
+  name: string;
+  email: string | null;
+  status: string;
+  stage: string;
+  derived_stage: string;
+  next_action: string;
+  placement_level: string | null;
+  placement_score: number | null;
+  classroom_ids: string[];
+  classroom_names: string[];
+  attendance_rate: number | null;
+  recent_absences: number;
+  missing_assignments: number;
+  composite_score: number | null;
+  certificate_ready: boolean;
+  pending_amount: number;
+  entitlement_expires_at: string | null;
+  last_activity_at: string | null;
+};
+
+type EducationCalendarEvent = {
+  id: string;
+  type: string;
+  title: string;
+  starts_at: string;
+  ends_at: string | null;
+  classroom_id: string | null;
+  contact_id: string | null;
+  priority: string;
+  metadata: Json;
+};
+
+type EducationInsight = {
+  id: string;
+  type: string;
+  severity: "critical" | "high" | "medium" | "low" | "positive";
+  title: string;
+  detail: string;
+  recommended_action: string;
+  metric: number | null;
+  classroom_id?: string | null;
+  contact_id?: string | null;
+};
+
+const generatedEducationActionSources = [
+  "alert",
+  "grading_backlog",
+  "missing_assignment",
+  "attendance_roll_call",
+  "placement_needed",
+  "schedule_gap",
+  "trial_follow_up",
+  "renewal",
+  "certificate_ready",
+  "parent_follow_up",
+];
+
+const defaultAutomationRules = [
+  {
+    rule_key: "assignment_due_reminder",
+    name: "Assignment due reminder",
+    description: "Queue a student reminder when active work is due in the next 24 hours.",
+    channel: "telegram",
+    threshold: 24,
+  },
+  {
+    rule_key: "class_reminder",
+    name: "Class reminder",
+    description: "Queue a same-day class reminder for students in scheduled classrooms.",
+    channel: "telegram",
+    threshold: 0,
+  },
+  {
+    rule_key: "attendance_follow_up",
+    name: "Attendance follow-up",
+    description: "Queue a follow-up when a student has repeated absences in the last 14 days.",
+    channel: "telegram",
+    threshold: 2,
+  },
+  {
+    rule_key: "at_risk_scan",
+    name: "At-risk scan",
+    description: "Create alerts when attendance or missing work indicates a student needs intervention.",
+    channel: "inapp",
+    threshold: 70,
+  },
+  {
+    rule_key: "trial_conversion_follow_up",
+    name: "Trial conversion follow-up",
+    description: "Create an action item for trial students who have not converted yet.",
+    channel: "inapp",
+    threshold: 7,
+  },
+  {
+    rule_key: "course_completion_certificate",
+    name: "Certificate readiness",
+    description: "Create an action item when a student is ready for a certificate or next course.",
+    channel: "inapp",
+    threshold: 80,
+  },
+];
+
+const priorityWeight = (priority: string): number => {
+  if (priority === "critical") return 0;
+  if (priority === "high") return 1;
+  if (priority === "medium") return 2;
+  return 3;
+};
+
+const dateOnly = (value: Date): string => value.toISOString().slice(0, 10);
+const addDays = (value: Date, days: number): Date => new Date(value.getTime() + days * 86400000);
+
+const safeNumber = (value: unknown): number | null => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+};
+
+const ensureDefaultAutomationRules = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  userId: string | null = null,
+): Promise<void> => {
+  const rows = defaultAutomationRules.map((rule) => ({
+    academy_id: academyId,
+    rule_key: rule.rule_key,
+    name: rule.name,
+    description: rule.description,
+    channel: rule.channel,
+    threshold: rule.threshold,
+    is_active: true,
+    metadata: { system_default: true },
+    created_by: userId,
+  }));
+  await sb.from("academy_automation_rules").upsert(rows, {
+    onConflict: "academy_id,rule_key",
+    ignoreDuplicates: true,
+  });
+};
+
+const loadEducationAutomationRules = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  userId: string | null = null,
+): Promise<Array<Record<string, unknown>>> => {
+  await ensureDefaultAutomationRules(sb, academyId, userId);
+  const { data, error } = await sb.from("academy_automation_rules")
+    .select("id, academy_id, rule_key, name, description, channel, threshold, is_active, metadata, last_run_at, last_run_summary, created_at, updated_at")
+    .eq("academy_id", academyId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(`Failed to load automation rules: ${error.message}`);
+  return (data ?? []) as Array<Record<string, unknown>>;
+};
+
+const ruleIsActive = (rules: Array<Record<string, unknown>>, key: string): boolean => {
+  const rule = rules.find((item) => String(item.rule_key) === key);
+  return !rule || rule.is_active !== false;
+};
+
+const ruleChannel = (rules: Array<Record<string, unknown>>, key: string, fallback = "telegram"): string => {
+  const rule = rules.find((item) => String(item.rule_key) === key);
+  return normalizeText(rule?.channel, 20) || fallback;
+};
+
+const ruleThreshold = (rules: Array<Record<string, unknown>>, key: string, fallback: number): number => {
+  const rule = rules.find((item) => String(item.rule_key) === key);
+  const value = safeNumber(rule?.threshold);
+  return value === null ? fallback : value;
+};
+
+const syncEducationActionItems = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  candidates: EducationActionCandidate[],
+): Promise<Array<Record<string, unknown>>> => {
+  const activeKeys = new Set(candidates.map((item) => item.dedupe_key));
+  const existingByKey = new Map<string, Record<string, unknown>>();
+
+  if (activeKeys.size > 0) {
+    const { data: existing } = await sb.from("academy_action_items")
+      .select("id, dedupe_key, status")
+      .eq("academy_id", academyId)
+      .in("dedupe_key", Array.from(activeKeys))
+      .limit(1000);
+    for (const item of (existing ?? []) as Array<Record<string, unknown>>) {
+      existingByKey.set(String(item.dedupe_key), item);
+    }
+  }
+
+  for (const candidate of candidates.slice(0, 200)) {
+    const existing = existingByKey.get(candidate.dedupe_key);
+    if (existing && ["resolved", "dismissed"].includes(String(existing.status))) continue;
+    const payload = {
+      academy_id: academyId,
+      dedupe_key: candidate.dedupe_key,
+      source_type: candidate.source_type,
+      priority: candidate.priority,
+      title: candidate.title,
+      description: candidate.description,
+      recommended_action: candidate.recommended_action,
+      contact_id: candidate.contact_id ?? null,
+      classroom_id: candidate.classroom_id ?? null,
+      due_at: candidate.due_at ?? null,
+      status: "open",
+      metadata: candidate.metadata ?? {},
+    };
+    if (existing?.id) {
+      await sb.from("academy_action_items").update(payload).eq("academy_id", academyId).eq("id", String(existing.id));
+    } else {
+      await sb.from("academy_action_items").insert(payload);
+    }
+  }
+
+  const { data: stale } = await sb.from("academy_action_items")
+    .select("id, dedupe_key")
+    .eq("academy_id", academyId)
+    .eq("status", "open")
+    .in("source_type", generatedEducationActionSources)
+    .limit(1000);
+  const staleIds = ((stale ?? []) as Array<Record<string, unknown>>)
+    .filter((item) => !activeKeys.has(String(item.dedupe_key)))
+    .map((item) => String(item.id));
+  if (staleIds.length > 0) {
+    await sb.from("academy_action_items")
+      .update({ status: "resolved", resolved_at: new Date().toISOString(), resolution_note: "Auto-resolved because the underlying condition cleared." })
+      .eq("academy_id", academyId)
+      .in("id", staleIds);
+  }
+
+  const { data, error } = await sb.from("academy_action_items")
+    .select("id, academy_id, dedupe_key, source_type, priority, title, description, recommended_action, contact_id, classroom_id, due_at, status, metadata, created_at, updated_at")
+    .eq("academy_id", academyId)
+    .in("status", ["open", "snoozed"])
+    .limit(300);
+  if (error) throw new Error(`Failed to load action queue: ${error.message}`);
+
+  return ((data ?? []) as Array<Record<string, unknown>>).sort((a, b) => {
+    const byPriority = priorityWeight(String(a.priority)) - priorityWeight(String(b.priority));
+    if (byPriority !== 0) return byPriority;
+    return String(a.due_at ?? a.created_at ?? "").localeCompare(String(b.due_at ?? b.created_at ?? ""));
+  });
+};
+
+const buildEducationOS = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  userId: string | null = null,
+): Promise<Record<string, unknown>> => {
+  const now = new Date();
+  const today = dateOnly(now);
+  const since30 = dateOnly(addDays(now, -30));
+  const since14 = dateOnly(addDays(now, -14));
+  const in14 = addDays(now, 14).toISOString();
+  const in30 = addDays(now, 30).toISOString();
+  const rules = await loadEducationAutomationRules(sb, academyId, userId);
+
+  const [
+    contactsRes,
+    classroomsRes,
+    membersRes,
+    assignmentsRes,
+    submissionsRes,
+    attendanceRes,
+    schedulesRes,
+    paymentsRes,
+    entitlementsRes,
+    alertsRes,
+    notificationsRes,
+  ] = await Promise.all([
+    sb.from("academy_contacts").select("id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at").eq("academy_id", academyId).limit(10000),
+    sb.from("academy_classrooms").select("id, name, is_active, metadata").eq("academy_id", academyId).limit(1000),
+    sb.from("academy_classroom_memberships").select("classroom_id, contact_id, role, joined_at").eq("academy_id", academyId).in("role", ["student", "observer"]).limit(20000),
+    sb.from("academy_assignments").select("id, classroom_id, title, assignment_type, due_at, max_score, score_weight, status").eq("academy_id", academyId).neq("status", "archived").limit(5000),
+    sb.from("academy_submissions").select("id, assignment_id, classroom_id, contact_id, score, max_score, status, submitted_at, graded_at").eq("academy_id", academyId).limit(50000),
+    sb.from("academy_attendance").select("id, classroom_id, contact_id, session_date, status").eq("academy_id", academyId).gte("session_date", since30).limit(50000),
+    sb.from("academy_classroom_schedules").select("id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active").eq("academy_id", academyId).eq("is_active", true).limit(1000),
+    sb.from("academy_payments").select("id, contact_id, amount, currency, status, created_at").eq("academy_id", academyId).limit(20000),
+    sb.from("academy_entitlements").select("id, contact_id, resource_type, resource_id, status, expires_at").eq("academy_id", academyId).eq("status", "active").limit(20000),
+    sb.from("academy_alerts").select("id, contact_id, type, severity, message, resolved, metadata, created_at").eq("academy_id", academyId).eq("resolved", false).limit(1000),
+    sb.from("academy_notifications").select("id, contact_id, channel, type, title, body, status, scheduled_at, metadata").eq("academy_id", academyId).order("scheduled_at", { ascending: true }).limit(500),
+  ]);
+
+  for (const result of [contactsRes, classroomsRes, membersRes, assignmentsRes, submissionsRes, attendanceRes, schedulesRes, paymentsRes, entitlementsRes, alertsRes, notificationsRes]) {
+    if (result.error) throw new Error(`Failed to build Education OS: ${result.error.message}`);
+  }
+
+  const contacts = (contactsRes.data ?? []) as Array<Record<string, unknown>>;
+  const classrooms = (classroomsRes.data ?? []) as Array<Record<string, unknown>>;
+  const members = (membersRes.data ?? []) as Array<Record<string, unknown>>;
+  const assignments = (assignmentsRes.data ?? []) as Array<Record<string, unknown>>;
+  const submissions = (submissionsRes.data ?? []) as Array<Record<string, unknown>>;
+  const attendance = (attendanceRes.data ?? []) as Array<Record<string, unknown>>;
+  const schedules = (schedulesRes.data ?? []) as Array<Record<string, unknown>>;
+  const payments = (paymentsRes.data ?? []) as Array<Record<string, unknown>>;
+  const entitlements = (entitlementsRes.data ?? []) as Array<Record<string, unknown>>;
+  const alerts = (alertsRes.data ?? []) as Array<Record<string, unknown>>;
+  const notifications = (notificationsRes.data ?? []) as Array<Record<string, unknown>>;
+
+  const contactById = new Map(contacts.map((contact) => [String(contact.id), contact]));
+  const classroomById = new Map(classrooms.map((classroom) => [String(classroom.id), classroom]));
+  const membersByContact = new Map<string, Array<Record<string, unknown>>>();
+  const membersByClassroom = new Map<string, Array<Record<string, unknown>>>();
+  for (const member of members) {
+    const contactId = String(member.contact_id ?? "");
+    const classroomId = String(member.classroom_id ?? "");
+    if (!contactId || !classroomId) continue;
+    if (!membersByContact.has(contactId)) membersByContact.set(contactId, []);
+    if (!membersByClassroom.has(classroomId)) membersByClassroom.set(classroomId, []);
+    membersByContact.get(contactId)!.push(member);
+    membersByClassroom.get(classroomId)!.push(member);
+  }
+
+  const assignmentsByClassroom = new Map<string, Array<Record<string, unknown>>>();
+  for (const assignment of assignments) {
+    const classroomId = String(assignment.classroom_id ?? "");
+    if (!classroomId) continue;
+    if (!assignmentsByClassroom.has(classroomId)) assignmentsByClassroom.set(classroomId, []);
+    assignmentsByClassroom.get(classroomId)!.push(assignment);
+  }
+
+  const submissionByKey = new Map<string, Record<string, unknown>>();
+  for (const submission of submissions) {
+    submissionByKey.set(`${String(submission.assignment_id)}__${String(submission.contact_id)}`, submission);
+  }
+
+  const attendanceByContact = new Map<string, Array<Record<string, unknown>>>();
+  const attendanceByClassDate = new Map<string, Array<Record<string, unknown>>>();
+  for (const record of attendance) {
+    const contactId = String(record.contact_id ?? "");
+    const classDate = `${String(record.classroom_id)}__${String(record.session_date)}`;
+    if (!attendanceByContact.has(contactId)) attendanceByContact.set(contactId, []);
+    attendanceByContact.get(contactId)!.push(record);
+    if (!attendanceByClassDate.has(classDate)) attendanceByClassDate.set(classDate, []);
+    attendanceByClassDate.get(classDate)!.push(record);
+  }
+
+  const openAlertsByContact = new Map<string, Array<Record<string, unknown>>>();
+  for (const alert of alerts) {
+    const contactId = String(alert.contact_id ?? "");
+    if (!contactId) continue;
+    if (!openAlertsByContact.has(contactId)) openAlertsByContact.set(contactId, []);
+    openAlertsByContact.get(contactId)!.push(alert);
+  }
+
+  const pendingPaymentsByContact = new Map<string, Array<Record<string, unknown>>>();
+  for (const payment of payments.filter((payment) => String(payment.status) === "pending")) {
+    const contactId = String(payment.contact_id ?? "");
+    if (!pendingPaymentsByContact.has(contactId)) pendingPaymentsByContact.set(contactId, []);
+    pendingPaymentsByContact.get(contactId)!.push(payment);
+  }
+
+  const expiringEntitlementsByContact = new Map<string, Array<Record<string, unknown>>>();
+  for (const entitlement of entitlements) {
+    const expiresAt = String(entitlement.expires_at ?? "");
+    if (!expiresAt || expiresAt > in14) continue;
+    const contactId = String(entitlement.contact_id ?? "");
+    if (!expiringEntitlementsByContact.has(contactId)) expiringEntitlementsByContact.set(contactId, []);
+    expiringEntitlementsByContact.get(contactId)!.push(entitlement);
+  }
+
+  const pipeline: EducationPipelineRow[] = [];
+  const certificateCandidates: EducationPipelineRow[] = [];
+  const missingAssignmentCandidates: EducationActionCandidate[] = [];
+  const gradingCandidates: EducationActionCandidate[] = [];
+  const pipelineCounts: Record<string, number> = { lead: 0, placement: 0, enrolled: 0, learning: 0, attention: 0, renewal: 0, completion: 0 };
+
+  for (const contact of contacts) {
+    const contactId = String(contact.id ?? "");
+    const contactMemberships = membersByContact.get(contactId) ?? [];
+    const classroomIds = contactMemberships.map((member) => String(member.classroom_id));
+    const classroomNames = classroomIds.map((id) => String(classroomById.get(id)?.name ?? "Classroom")).filter(Boolean);
+    const contactAttendance = attendanceByContact.get(contactId) ?? [];
+    const present = contactAttendance.filter((item) => ["present", "late"].includes(String(item.status))).length;
+    const recentAbsences = contactAttendance.filter((item) => String(item.session_date ?? "") >= since14 && String(item.status) === "absent").length;
+    const attendanceRate = contactAttendance.length > 0 ? Math.round((present / contactAttendance.length) * 100) : null;
+
+    let missingAssignments = 0;
+    let weightedScore = 0;
+    let totalWeight = 0;
+    let submittedAssignments = 0;
+    let totalAssignments = 0;
+
+    for (const classroomId of classroomIds) {
+      for (const assignment of assignmentsByClassroom.get(classroomId) ?? []) {
+        totalAssignments++;
+        const assignmentId = String(assignment.id ?? "");
+        const dueAt = String(assignment.due_at ?? "");
+        const submission = submissionByKey.get(`${assignmentId}__${contactId}`);
+        const isSubmitted = submission && String(submission.status) !== "missing";
+        if (isSubmitted) submittedAssignments++;
+        if (dueAt && dueAt < now.toISOString() && !isSubmitted) {
+          missingAssignments++;
+          missingAssignmentCandidates.push({
+            dedupe_key: `missing_assignment:${assignmentId}:${contactId}`,
+            source_type: "missing_assignment",
+            priority: dueAt < addDays(now, -7).toISOString() ? "high" : "medium",
+            title: `${contactDisplayName(contact) || "Student"} is missing ${String(assignment.title ?? "an assignment")}`,
+            description: `Due ${dueAt.slice(0, 10)} in ${String(classroomById.get(classroomId)?.name ?? "classroom")}.`,
+            recommended_action: "Send a reminder or mark the assignment after reviewing the student's work.",
+            contact_id: contactId,
+            classroom_id: classroomId,
+            due_at: dueAt,
+            metadata: { assignment_id: assignmentId },
+          });
+        }
+        if (submission && typeof submission.score === "number") {
+          const maxScore = Number(submission.max_score ?? assignment.max_score ?? 100);
+          if (maxScore > 0) {
+            const weight = Number(assignment.score_weight ?? 1);
+            weightedScore += (Number(submission.score) / maxScore) * 100 * weight;
+            totalWeight += weight;
+          }
+        }
+      }
+    }
+
+    const compositeScore = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 10) / 10 : null;
+    const hasMembership = classroomIds.length > 0;
+    const placementLevel = normalizeText(contact.placement_level, 20) || null;
+    const explicitStage = normalizeText(contact.lifecycle_stage, 30).toLowerCase();
+    const pendingAmount = (pendingPaymentsByContact.get(contactId) ?? []).reduce((acc, item) => acc + Number(item.amount ?? 0), 0);
+    const expiring = (expiringEntitlementsByContact.get(contactId) ?? []).sort((a, b) => String(a.expires_at).localeCompare(String(b.expires_at)))[0] ?? null;
+    const hasAttention = (openAlertsByContact.get(contactId) ?? []).length > 0 || missingAssignments >= 3 || recentAbsences >= 2 || (attendanceRate !== null && attendanceRate < 70);
+    const certificateReady = hasMembership && totalAssignments > 0 && submittedAssignments >= totalAssignments && compositeScore !== null && compositeScore >= ruleThreshold(rules, "course_completion_certificate", 80);
+
+    let derivedStage = "enrolled";
+    if (!hasMembership || String(contact.status) === "trial") derivedStage = "lead";
+    if (hasMembership && !placementLevel) derivedStage = "placement";
+    if (hasMembership && (submittedAssignments > 0 || contactAttendance.length > 0)) derivedStage = "learning";
+    if (pendingAmount > 0 || expiring) derivedStage = "renewal";
+    if (certificateReady) derivedStage = "completion";
+    if (hasAttention) derivedStage = "attention";
+
+    const validStage = ["lead", "placement", "enrolled", "learning", "attention", "renewal", "completion"].includes(explicitStage);
+    const stage = validStage ? explicitStage : derivedStage;
+    pipelineCounts[stage] = (pipelineCounts[stage] ?? 0) + 1;
+
+    const nextActionByStage: Record<string, string> = {
+      lead: "Convert the lead: invite them to placement or enroll them in a class.",
+      placement: "Record diagnostic score and place the student into the right level.",
+      enrolled: "Confirm timetable, teacher, and first assignment.",
+      learning: "Monitor attendance, grade submissions, and keep momentum.",
+      attention: "Follow up with the student or parent today.",
+      renewal: "Collect payment, renew entitlement, or assign the next offer.",
+      completion: "Issue a certificate and recommend the next course.",
+    };
+
+    const row: EducationPipelineRow = {
+      contact_id: contactId,
+      name: contactDisplayName(contact) || "Student",
+      email: contact.email ? String(contact.email) : null,
+      status: String(contact.status ?? "active"),
+      stage,
+      derived_stage: derivedStage,
+      next_action: nextActionByStage[stage] ?? nextActionByStage.enrolled,
+      placement_level: placementLevel,
+      placement_score: safeNumber(contact.placement_score),
+      classroom_ids: classroomIds,
+      classroom_names: classroomNames,
+      attendance_rate: attendanceRate,
+      recent_absences: recentAbsences,
+      missing_assignments: missingAssignments,
+      composite_score: compositeScore,
+      certificate_ready: certificateReady,
+      pending_amount: pendingAmount,
+      entitlement_expires_at: expiring?.expires_at ? String(expiring.expires_at) : null,
+      last_activity_at: contact.last_activity_at ? String(contact.last_activity_at) : null,
+    };
+    pipeline.push(row);
+    if (certificateReady) certificateCandidates.push(row);
+  }
+
+  for (const submission of submissions) {
+    if (!["submitted", "late"].includes(String(submission.status)) || typeof submission.score === "number") continue;
+    const contact = contactById.get(String(submission.contact_id));
+    const assignment = assignments.find((item) => String(item.id) === String(submission.assignment_id));
+    gradingCandidates.push({
+      dedupe_key: `grading_backlog:${String(submission.id)}`,
+      source_type: "grading_backlog",
+      priority: String(submission.submitted_at ?? "") < addDays(now, -3).toISOString() ? "high" : "medium",
+      title: `Grade ${contactDisplayName(contact) || "student"}'s submission`,
+      description: `${String(assignment?.title ?? "Assignment")} is waiting for a score.`,
+      recommended_action: "Open the gradebook and record a score with feedback.",
+      contact_id: String(submission.contact_id ?? ""),
+      classroom_id: String(submission.classroom_id ?? ""),
+      due_at: submission.submitted_at ? String(submission.submitted_at) : null,
+      metadata: { submission_id: String(submission.id), assignment_id: String(submission.assignment_id) },
+    });
+  }
+
+  const actionCandidates: EducationActionCandidate[] = [
+    ...alerts.map((alert) => {
+      const contactId = alert.contact_id ? String(alert.contact_id) : null;
+      const contact = contactId ? contactById.get(contactId) : null;
+      const severity = String(alert.severity ?? "medium");
+      return {
+        dedupe_key: `alert:${String(alert.id)}`,
+        source_type: "alert",
+        priority: severity === "critical" ? "critical" : severity === "high" ? "high" : "medium",
+        title: contact ? `Resolve alert for ${contactDisplayName(contact) || "student"}` : "Resolve academy alert",
+        description: String(alert.message ?? "Open alert"),
+        recommended_action: "Review the alert, contact the student or parent, then resolve it.",
+        contact_id: contactId,
+        classroom_id: String((toJsonObject(alert.metadata).classroom_id as string) ?? "") || null,
+        due_at: String(alert.created_at ?? ""),
+        metadata: { alert_id: String(alert.id), alert_type: String(alert.type ?? "") },
+      } satisfies EducationActionCandidate;
+    }),
+    ...gradingCandidates.slice(0, 80),
+    ...missingAssignmentCandidates.slice(0, 120),
+  ];
+
+  for (const classroom of classrooms.filter((item) => item.is_active !== false)) {
+    const classroomId = String(classroom.id);
+    if ((schedules.filter((slot) => String(slot.classroom_id) === classroomId)).length === 0) {
+      actionCandidates.push({
+        dedupe_key: `schedule_gap:${classroomId}`,
+        source_type: "schedule_gap",
+        priority: "medium",
+        title: `${String(classroom.name ?? "Classroom")} has no timetable`,
+        description: "Students cannot receive class reminders until a weekly slot exists.",
+        recommended_action: "Add at least one weekly schedule slot.",
+        classroom_id: classroomId,
+        metadata: {},
+      });
+    }
+  }
+
+  const todayDow = now.getUTCDay();
+  for (const slot of schedules.filter((item) => Number(item.day_of_week) === todayDow)) {
+    const classroomId = String(slot.classroom_id ?? "");
+    const expected = (membersByClassroom.get(classroomId) ?? []).length;
+    const marked = (attendanceByClassDate.get(`${classroomId}__${today}`) ?? []).length;
+    if (expected > 0 && marked < expected) {
+      actionCandidates.push({
+        dedupe_key: `attendance_roll_call:${String(slot.id)}:${today}`,
+        source_type: "attendance_roll_call",
+        priority: "high",
+        title: `Take attendance for ${String(classroomById.get(classroomId)?.name ?? "today's class")}`,
+        description: `${marked}/${expected} students have attendance marked for today.`,
+        recommended_action: "Open Attendance and save the roll call.",
+        classroom_id: classroomId,
+        due_at: `${today}T${String(slot.start_time ?? "00:00")}:00Z`,
+        metadata: { schedule_id: String(slot.id), date: today },
+      });
+    }
+  }
+
+  for (const row of pipeline) {
+    if (row.stage === "placement") {
+      actionCandidates.push({
+        dedupe_key: `placement_needed:${row.contact_id}`,
+        source_type: "placement_needed",
+        priority: "medium",
+        title: `Place ${row.name}`,
+        description: "No placement level is recorded yet.",
+        recommended_action: "Record a diagnostic score or manual CEFR level.",
+        contact_id: row.contact_id,
+        metadata: {},
+      });
+    }
+    if (row.status === "trial" && ruleIsActive(rules, "trial_conversion_follow_up")) {
+      actionCandidates.push({
+        dedupe_key: `trial_follow_up:${row.contact_id}`,
+        source_type: "trial_follow_up",
+        priority: "medium",
+        title: `Convert trial student ${row.name}`,
+        description: "Trial students should have a clear enrollment or follow-up next step.",
+        recommended_action: "Send a follow-up, create payment, or enroll into the right classroom.",
+        contact_id: row.contact_id,
+        metadata: {},
+      });
+    }
+    if (row.pending_amount > 0 || row.entitlement_expires_at) {
+      actionCandidates.push({
+        dedupe_key: `renewal:${row.contact_id}`,
+        source_type: "renewal",
+        priority: row.pending_amount > 0 ? "high" : "medium",
+        title: `Renew or collect payment for ${row.name}`,
+        description: row.pending_amount > 0 ? `Pending balance: ${row.pending_amount.toLocaleString()}.` : `Entitlement expires ${row.entitlement_expires_at?.slice(0, 10)}.`,
+        recommended_action: "Open payments, collect tuition, or grant the next offer.",
+        contact_id: row.contact_id,
+        due_at: row.entitlement_expires_at,
+        metadata: { pending_amount: row.pending_amount },
+      });
+    }
+    if (row.certificate_ready && ruleIsActive(rules, "course_completion_certificate")) {
+      actionCandidates.push({
+        dedupe_key: `certificate_ready:${row.contact_id}:${row.classroom_ids[0] ?? "academy"}`,
+        source_type: "certificate_ready",
+        priority: "low",
+        title: `${row.name} is ready for completion`,
+        description: `Composite score ${row.composite_score ?? "-"}% with required work submitted.`,
+        recommended_action: "Issue a certificate and recommend the next class.",
+        contact_id: row.contact_id,
+        classroom_id: row.classroom_ids[0] ?? null,
+        metadata: { composite_score: row.composite_score },
+      });
+    }
+  }
+
+  const actionQueue = await syncEducationActionItems(sb, academyId, actionCandidates);
+
+  const calendarEvents: EducationCalendarEvent[] = [];
+  for (let offset = 0; offset <= 13; offset++) {
+    const day = addDays(now, offset);
+    const dayDate = dateOnly(day);
+    const dow = day.getUTCDay();
+    for (const slot of schedules.filter((item) => Number(item.day_of_week) === dow)) {
+      const classroomId = String(slot.classroom_id ?? "");
+      calendarEvents.push({
+        id: `class:${String(slot.id)}:${dayDate}`,
+        type: "class",
+        title: `${String(classroomById.get(classroomId)?.name ?? "Class")} ${slot.label ? `- ${String(slot.label)}` : ""}`.trim(),
+        starts_at: `${dayDate}T${String(slot.start_time ?? "00:00")}:00`,
+        ends_at: slot.end_time ? `${dayDate}T${String(slot.end_time)}:00` : null,
+        classroom_id: classroomId,
+        contact_id: null,
+        priority: "medium",
+        metadata: { timezone: String(slot.timezone ?? "UTC"), schedule_id: String(slot.id) },
+      });
+    }
+  }
+
+  for (const assignment of assignments) {
+    const dueAt = String(assignment.due_at ?? "");
+    if (!dueAt || dueAt > in30 || dueAt < addDays(now, -7).toISOString()) continue;
+    const classroomId = String(assignment.classroom_id ?? "");
+    calendarEvents.push({
+      id: `assignment:${String(assignment.id)}`,
+      type: "assignment_due",
+      title: `Due: ${String(assignment.title ?? "Assignment")}`,
+      starts_at: dueAt,
+      ends_at: null,
+      classroom_id: classroomId,
+      contact_id: null,
+      priority: dueAt < now.toISOString() ? "high" : "medium",
+      metadata: { assignment_id: String(assignment.id), classroom_name: String(classroomById.get(classroomId)?.name ?? "") },
+    });
+  }
+
+  for (const notification of notifications) {
+    const scheduledAt = String(notification.scheduled_at ?? "");
+    if (!scheduledAt || scheduledAt > in14) continue;
+    calendarEvents.push({
+      id: `notification:${String(notification.id)}`,
+      type: "notification",
+      title: String(notification.title ?? notification.type ?? "Notification"),
+      starts_at: scheduledAt,
+      ends_at: null,
+      classroom_id: null,
+      contact_id: notification.contact_id ? String(notification.contact_id) : null,
+      priority: String(notification.status) === "failed" ? "high" : "low",
+      metadata: { channel: String(notification.channel ?? ""), status: String(notification.status ?? "") },
+    });
+  }
+
+  for (const item of actionQueue.slice(0, 80)) {
+    const dueAt = String(item.due_at ?? "");
+    if (!dueAt) continue;
+    calendarEvents.push({
+      id: `action:${String(item.id)}`,
+      type: "action",
+      title: String(item.title ?? "Action item"),
+      starts_at: dueAt,
+      ends_at: null,
+      classroom_id: item.classroom_id ? String(item.classroom_id) : null,
+      contact_id: item.contact_id ? String(item.contact_id) : null,
+      priority: String(item.priority ?? "medium"),
+      metadata: { action_item_id: String(item.id), source_type: String(item.source_type ?? "") },
+    });
+  }
+
+  calendarEvents.sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+
+  const insights: EducationInsight[] = [];
+  const highPriorityActions = actionQueue.filter((item) => ["critical", "high"].includes(String(item.priority))).length;
+  if (highPriorityActions > 0) {
+    insights.push({
+      id: "high-priority-actions",
+      type: "queue",
+      severity: highPriorityActions >= 10 ? "critical" : "high",
+      title: "High-priority queue needs attention",
+      detail: `${highPriorityActions} urgent item(s) are open across the academy.`,
+      recommended_action: "Start with the Today queue and resolve attendance, risk, and payment items first.",
+      metric: highPriorityActions,
+    });
+  }
+
+  const gradeBacklog = gradingCandidates.length;
+  if (gradeBacklog > 0) {
+    insights.push({
+      id: "grading-backlog",
+      type: "learning",
+      severity: gradeBacklog >= 20 ? "high" : "medium",
+      title: "Grading backlog is building",
+      detail: `${gradeBacklog} submission(s) are waiting for grades.`,
+      recommended_action: "Batch-grade the oldest submissions and send feedback.",
+      metric: gradeBacklog,
+    });
+  }
+
+  for (const classroom of classrooms) {
+    const classroomId = String(classroom.id);
+    const classAttendance = attendance.filter((item) => String(item.classroom_id) === classroomId);
+    if (classAttendance.length < 4) continue;
+    const presentCount = classAttendance.filter((item) => ["present", "late"].includes(String(item.status))).length;
+    const rate = Math.round((presentCount / classAttendance.length) * 100);
+    if (rate < 75) {
+      insights.push({
+        id: `attendance-${classroomId}`,
+        type: "attendance",
+        severity: rate < 60 ? "high" : "medium",
+        title: `${String(classroom.name ?? "Classroom")} attendance is weak`,
+        detail: `Recent attendance is ${rate}%.`,
+        recommended_action: "Run attendance follow-up and contact absent students.",
+        metric: rate,
+        classroom_id: classroomId,
+      });
+    }
+  }
+
+  const placementGap = pipeline.filter((row) => row.stage === "placement").length;
+  if (placementGap > 0) {
+    insights.push({
+      id: "placement-gap",
+      type: "growth",
+      severity: placementGap >= 10 ? "high" : "medium",
+      title: "Students are waiting for placement",
+      detail: `${placementGap} student(s) need level placement before the next class decision.`,
+      recommended_action: "Record diagnostic scores and move them into matching classrooms.",
+      metric: placementGap,
+    });
+  }
+
+  const disabledRules = rules.filter((rule) => rule.is_active === false).length;
+  if (disabledRules > 0) {
+    insights.push({
+      id: "disabled-automation",
+      type: "automation",
+      severity: "low",
+      title: "Some automations are disabled",
+      detail: `${disabledRules} automation rule(s) are off.`,
+      recommended_action: "Review the automation panel and turn on the rules that match academy policy.",
+      metric: disabledRules,
+    });
+  }
+
+  if (certificateCandidates.length > 0) {
+    insights.push({
+      id: "completion-ready",
+      type: "completion",
+      severity: "positive",
+      title: "Students are ready to complete",
+      detail: `${certificateCandidates.length} student(s) appear ready for a certificate or next course.`,
+      recommended_action: "Issue certificates and offer the next level.",
+      metric: certificateCandidates.length,
+    });
+  }
+
+  return {
+    generated_at: now.toISOString(),
+    action_queue: actionQueue,
+    pipeline,
+    pipeline_counts: pipelineCounts,
+    automation_rules: rules,
+    calendar_events: calendarEvents.slice(0, 300),
+    intelligence: insights.slice(0, 30),
+    stats: {
+      open_actions: actionQueue.length,
+      urgent_actions: highPriorityActions,
+      grading_backlog: gradeBacklog,
+      certificate_ready: certificateCandidates.length,
+      placement_gap: placementGap,
+    },
+  };
 };
 
 // ── Engagement maintenance (shared by manual actions + cron worker) ───────────
@@ -2084,23 +2895,28 @@ const dispatchQueuedNotifications = async (
 };
 
 // Queue reminders for assignments due in the next 24h (one per student, deduped).
-const queueDueReminders = async (sb: SupabaseClientLike): Promise<number> => {
+const queueDueReminders = async (sb: SupabaseClientLike, academyIdFilter: string | null = null): Promise<number> => {
   const nowIso = new Date().toISOString();
   const in24hIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-  const { data: asgnRows } = await sb.from("academy_assignments")
+  let assignmentQuery = sb.from("academy_assignments")
     .select("id, academy_id, classroom_id, title, due_at")
     .eq("status", "active").gte("due_at", nowIso).lte("due_at", in24hIso).limit(2000);
+  if (academyIdFilter) assignmentQuery = assignmentQuery.eq("academy_id", academyIdFilter);
+  const { data: asgnRows } = await assignmentQuery;
   const assignments = (asgnRows ?? []) as Array<Record<string, unknown>>;
   if (assignments.length === 0) return 0;
 
   let queued = 0;
   for (const a of assignments) {
     const academyId = String(a.academy_id);
+    const rules = await loadEducationAutomationRules(sb, academyId, null);
+    if (!ruleIsActive(rules, "assignment_due_reminder")) continue;
+    const channel = ruleChannel(rules, "assignment_due_reminder", "telegram");
     const classroomId = String(a.classroom_id);
     const assignmentId = String(a.id);
 
     const [{ data: members }, { data: subs }, { data: existing }] = await Promise.all([
-      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
       sb.from("academy_submissions").select("contact_id, status").eq("assignment_id", assignmentId).limit(2000),
       sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "assignment_due").eq("metadata->>assignment_id", assignmentId).limit(5000),
     ]);
@@ -2111,12 +2927,12 @@ const queueDueReminders = async (sb: SupabaseClientLike): Promise<number> => {
       const c = (m.academy_contacts as any) ?? {};
       const contactId = String(c.id ?? m.contact_id ?? "");
       if (!contactId || submitted.has(contactId) || reminded.has(contactId)) continue;
-      const telegram = normalizeText(c.telegram_id, 120);
-      if (!telegram || c.notify_enabled === false) continue;
+      const target = channel === "email" ? normalizeEmail(c.email) : normalizeText(c.telegram_id, 120);
+      if ((!target && channel !== "inapp") || c.notify_enabled === false) continue;
       await sb.from("academy_notifications").insert({
-        academy_id: academyId, contact_id: contactId, channel: "telegram", type: "assignment_due",
+        academy_id: academyId, contact_id: contactId, channel, type: "assignment_due",
         title: "Assignment due soon", body: `Reminder: "${String(a.title)}" is due ${new Date(String(a.due_at)).toLocaleString()}.`,
-        target: telegram, status: "queued", scheduled_at: nowIso, metadata: { assignment_id: assignmentId },
+        target: target || null, status: "queued", scheduled_at: nowIso, metadata: { assignment_id: assignmentId, automation_rule: "assignment_due_reminder" },
       });
       queued++;
     }
@@ -2125,25 +2941,30 @@ const queueDueReminders = async (sb: SupabaseClientLike): Promise<number> => {
 };
 
 // Queue reminders for class sessions scheduled today (one per student per slot, deduped).
-const queueClassReminders = async (sb: SupabaseClientLike): Promise<number> => {
+const queueClassReminders = async (sb: SupabaseClientLike, academyIdFilter: string | null = null): Promise<number> => {
   const now = new Date();
   const dow = now.getUTCDay();
   const today = now.toISOString().slice(0, 10);
   const nowIso = now.toISOString();
 
-  const { data: slotRows } = await sb.from("academy_classroom_schedules")
+  let slotQuery = sb.from("academy_classroom_schedules")
     .select("id, academy_id, classroom_id, start_time, label").eq("is_active", true).eq("day_of_week", dow).limit(1000);
+  if (academyIdFilter) slotQuery = slotQuery.eq("academy_id", academyIdFilter);
+  const { data: slotRows } = await slotQuery;
   const slots = (slotRows ?? []) as Array<Record<string, unknown>>;
   if (slots.length === 0) return 0;
 
   let queued = 0;
   for (const slot of slots) {
     const academyId = String(slot.academy_id);
+    const rules = await loadEducationAutomationRules(sb, academyId, null);
+    if (!ruleIsActive(rules, "class_reminder")) continue;
+    const channel = ruleChannel(rules, "class_reminder", "telegram");
     const classroomId = String(slot.classroom_id);
     const slotId = String(slot.id);
 
     const [{ data: members }, { data: existing }, { data: cl }] = await Promise.all([
-      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
       sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "class_reminder").eq("metadata->>slot_id", slotId).eq("metadata->>date", today).limit(5000),
       sb.from("academy_classrooms").select("name").eq("id", classroomId).maybeSingle(),
     ]);
@@ -2154,17 +2975,99 @@ const queueClassReminders = async (sb: SupabaseClientLike): Promise<number> => {
       const c = (m.academy_contacts as any) ?? {};
       const contactId = String(c.id ?? m.contact_id ?? "");
       if (!contactId || reminded.has(contactId)) continue;
-      const telegram = normalizeText(c.telegram_id, 120);
-      if (!telegram || c.notify_enabled === false) continue;
+      const target = channel === "email" ? normalizeEmail(c.email) : normalizeText(c.telegram_id, 120);
+      if ((!target && channel !== "inapp") || c.notify_enabled === false) continue;
       await sb.from("academy_notifications").insert({
-        academy_id: academyId, contact_id: contactId, channel: "telegram", type: "class_reminder",
+        academy_id: academyId, contact_id: contactId, channel, type: "class_reminder",
         title: "Class today", body: `You have ${className} today at ${String(slot.start_time)}${slot.label ? ` (${String(slot.label)})` : ""}.`,
-        target: telegram, status: "queued", scheduled_at: nowIso, metadata: { slot_id: slotId, date: today },
+        target: target || null, status: "queued", scheduled_at: nowIso, metadata: { slot_id: slotId, date: today, automation_rule: "class_reminder" },
       });
       queued++;
     }
   }
   return queued;
+};
+
+const queueAttendanceFollowupsForAcademy = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  rules: Array<Record<string, unknown>>,
+): Promise<number> => {
+  if (!ruleIsActive(rules, "attendance_follow_up")) return 0;
+  const threshold = Math.max(1, ruleThreshold(rules, "attendance_follow_up", 2));
+  const channel = ruleChannel(rules, "attendance_follow_up", "telegram");
+  const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+  const period = `${since}:${new Date().toISOString().slice(0, 10)}`;
+  const nowIso = new Date().toISOString();
+  const [{ data: attendanceRows }, { data: existing }] = await Promise.all([
+    sb.from("academy_attendance").select("contact_id, status").eq("academy_id", academyId).gte("session_date", since).limit(20000),
+    sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "attendance_follow_up").eq("metadata->>period", period).limit(10000),
+  ]);
+  const existingContacts = new Set(((existing ?? []) as Array<Record<string, unknown>>).map((item) => String(item.contact_id)));
+  const absences = new Map<string, number>();
+  for (const record of (attendanceRows ?? []) as Array<Record<string, unknown>>) {
+    if (String(record.status) !== "absent") continue;
+    const contactId = String(record.contact_id ?? "");
+    if (contactId) absences.set(contactId, (absences.get(contactId) ?? 0) + 1);
+  }
+  const contactIds = Array.from(absences.entries()).filter(([, count]) => count >= threshold).map(([contactId]) => contactId);
+  if (contactIds.length === 0) return 0;
+
+  const { data: contacts } = await sb.from("academy_contacts")
+    .select("id, first_name, email, telegram_id, notify_enabled")
+    .eq("academy_id", academyId)
+    .in("id", contactIds)
+    .limit(1000);
+
+  let queued = 0;
+  for (const contact of (contacts ?? []) as Array<Record<string, unknown>>) {
+    const contactId = String(contact.id);
+    if (existingContacts.has(contactId) || contact.notify_enabled === false) continue;
+    const target = channel === "email" ? normalizeEmail(contact.email) : normalizeText(contact.telegram_id, 120);
+    if (!target && channel !== "inapp") continue;
+    const count = absences.get(contactId) ?? threshold;
+    await sb.from("academy_notifications").insert({
+      academy_id: academyId,
+      contact_id: contactId,
+      channel,
+      type: "attendance_follow_up",
+      title: "Attendance follow-up",
+      body: `Hi ${String(contact.first_name ?? "") || "there"}, we noticed ${count} missed class sessions recently. Please contact your teacher so we can help you catch up.`,
+      target: target || null,
+      status: "queued",
+      scheduled_at: nowIso,
+      metadata: { period, absence_count: count, automation_rule: "attendance_follow_up" },
+    });
+    queued++;
+  }
+  return queued;
+};
+
+const runEducationAutomationRules = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  userId: string | null = null,
+): Promise<Record<string, unknown>> => {
+  const rules = await loadEducationAutomationRules(sb, academyId, userId);
+  const dueQueued = await queueDueReminders(sb, academyId);
+  const classQueued = await queueClassReminders(sb, academyId);
+  const attendanceQueued = await queueAttendanceFollowupsForAcademy(sb, academyId, rules);
+  const riskResult = ruleIsActive(rules, "at_risk_scan")
+    ? await computeAtRiskForAcademy(sb, academyId)
+    : { atRisk: [], scanned: 0 };
+  await buildEducationOS(sb, academyId, userId);
+
+  const summary = {
+    due_queued: dueQueued,
+    class_queued: classQueued,
+    attendance_queued: attendanceQueued,
+    at_risk_flagged: riskResult.atRisk.length,
+    at_risk_scanned: riskResult.scanned,
+  };
+  await sb.from("academy_automation_rules")
+    .update({ last_run_at: new Date().toISOString(), last_run_summary: summary })
+    .eq("academy_id", academyId);
+  return summary;
 };
 
 const isAcademyTenant = (tenant: Record<string, unknown>): boolean => {
@@ -2543,6 +3446,7 @@ serve(async (req) => {
         normalizeText(url.searchParams.get("classroom_id"), 64) || null,
         normalizeText(url.searchParams.get("contact_id"), 64) || null,
         normalizeText(url.searchParams.get("conversation_id"), 64) || null,
+        normalizeText(url.searchParams.get("assignment_id"), 64) || null,
       );
       if (readResponse) return readResponse;
     }
@@ -2557,6 +3461,7 @@ serve(async (req) => {
         normalizeText(body?.classroom_id, 64) || null,
         normalizeText(body?.contact_id, 64) || null,
         normalizeText(body?.conversation_id, 64) || null,
+        normalizeText(body?.assignment_id, 64) || null,
       );
       if (readResponse) return readResponse;
 
@@ -2632,6 +3537,89 @@ serve(async (req) => {
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
       requireAcademyAdmin(memberships, academyId);
+
+      if (actionBody === "resolve_action_item") {
+        const actionItemId = normalizeText(body?.id, 64);
+        const nextStatus = normalizeText(body?.status, 20).toLowerCase() || "resolved";
+        if (!actionItemId) return json(400, { error: "id is required" });
+        if (!["resolved", "dismissed", "snoozed", "open"].includes(nextStatus)) return json(400, { error: "Invalid action item status" });
+
+        const patch: Record<string, unknown> = {
+          status: nextStatus,
+          resolution_note: normalizeText(body?.resolution_note, 500) || null,
+        };
+        if (["resolved", "dismissed"].includes(nextStatus)) {
+          patch.resolved_at = new Date().toISOString();
+          patch.resolved_by = userId;
+        } else {
+          patch.resolved_at = null;
+          patch.resolved_by = null;
+        }
+
+        const { data, error } = await sb.from("academy_action_items")
+          .update(patch)
+          .eq("academy_id", academyId)
+          .eq("id", actionItemId)
+          .select("id, academy_id, dedupe_key, source_type, priority, title, description, recommended_action, contact_id, classroom_id, due_at, status, metadata, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update action item", detail: error.message });
+        if (!data?.id) return json(404, { error: "Action item not found" });
+        return json(200, { action_item: data });
+      }
+
+      if (actionBody === "set_lifecycle_stage") {
+        const contactId = normalizeText(body?.contact_id, 64);
+        const lifecycleStage = normalizeText(body?.lifecycle_stage, 30).toLowerCase();
+        if (!contactId) return json(400, { error: "contact_id is required" });
+        if (!["lead", "placement", "enrolled", "learning", "attention", "renewal", "completion"].includes(lifecycleStage)) {
+          return json(400, { error: "Invalid lifecycle_stage" });
+        }
+
+        const { data, error } = await sb.from("academy_contacts")
+          .update({ lifecycle_stage: lifecycleStage })
+          .eq("academy_id", academyId)
+          .eq("id", contactId)
+          .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update lifecycle stage", detail: error.message });
+        if (!data?.id) return json(404, { error: "Contact not found" });
+        return json(200, { contact: data });
+      }
+
+      if (actionBody === "upsert_automation_rule") {
+        const ruleKey = normalizeText(body?.rule_key, 80);
+        if (!ruleKey) return json(400, { error: "rule_key is required" });
+        await ensureDefaultAutomationRules(sb, academyId, userId);
+
+        const patch: Record<string, unknown> = {};
+        if (typeof body?.name === "string") patch.name = normalizeText(body.name, 160);
+        if (typeof body?.description === "string") patch.description = normalizeText(body.description, 1000);
+        if (typeof body?.channel === "string") {
+          const channel = normalizeText(body.channel, 20).toLowerCase();
+          if (!["telegram", "email", "inapp"].includes(channel)) return json(400, { error: "Invalid channel" });
+          patch.channel = channel;
+        }
+        if (typeof body?.threshold !== "undefined") patch.threshold = toIntOrNull(body.threshold);
+        if (typeof body?.is_active === "boolean") patch.is_active = body.is_active;
+        if (typeof body?.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata)) patch.metadata = body.metadata;
+
+        if (Object.keys(patch).length === 0) return json(400, { error: "No rule fields to update" });
+
+        const { data, error } = await sb.from("academy_automation_rules")
+          .update(patch)
+          .eq("academy_id", academyId)
+          .eq("rule_key", ruleKey)
+          .select("id, academy_id, rule_key, name, description, channel, threshold, is_active, metadata, last_run_at, last_run_summary, created_at, updated_at")
+          .maybeSingle();
+        if (error) return json(500, { error: "Failed to update automation rule", detail: error.message });
+        if (!data?.id) return json(404, { error: "Automation rule not found" });
+        return json(200, { automation_rule: data });
+      }
+
+      if (actionBody === "run_automation_rules") {
+        const result = await runEducationAutomationRules(sb, academyId, userId);
+        return json(200, result);
+      }
 
       if (actionBody === "update_academy_landing") {
         const requestedName = normalizeText(body?.name, 160);
