@@ -170,6 +170,7 @@ function App() {
             <Route path="/academy/admin" element={<AcademyControlPage />} />
             <Route path="/academy/classrooms" element={<AcademyControlPage />} />
             <Route path="/academy/student" element={<StudentAcademyPage />} />
+            <Route path="/academy/student/classrooms/:classroomId" element={<StudentAcademyPage />} />
             <Route path="/academy-control" element={<AcademyControlPage />} />
             <Route path="/my-academy" element={<StudentAcademyPage />} />
             <Route path="/writing-tutor" element={<WritingTutorPage />} />

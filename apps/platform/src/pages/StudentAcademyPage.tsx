@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -106,6 +106,25 @@ const statusBadge = (status: string) => {
       {status}
     </span>
   );
+};
+
+const isStudentTab = (value: string | null): value is Tab =>
+  value === 'home'
+  || value === 'assignments'
+  || value === 'grades'
+  || value === 'attendance'
+  || value === 'billing'
+  || value === 'chat';
+
+const buildStudentAcademyPath = (input: { academyId?: string | null; classroomId?: string | null; tab?: Tab | null }) => {
+  const path = input.classroomId
+    ? `/academy/student/classrooms/${encodeURIComponent(input.classroomId)}`
+    : '/academy/student';
+  const params = new URLSearchParams();
+  if (input.academyId) params.set('academy_id', input.academyId);
+  if (input.tab && input.tab !== 'home') params.set('tab', input.tab);
+  const query = params.toString();
+  return `${path}${query ? `?${query}` : ''}`;
 };
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -311,7 +330,8 @@ const fmtMoney = (amount: number, currency: string) =>
 const BillingTab: React.FC<{
   token: string;
   classroomNames: Record<string, string>;
-}> = ({ token, classroomNames }) => {
+  returnUrl: string;
+}> = ({ token, classroomNames, returnUrl }) => {
   const [items, setItems] = useState<BillingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingOfferId, setPayingOfferId] = useState<string | null>(null);
@@ -334,7 +354,7 @@ const BillingTab: React.FC<{
         body: JSON.stringify({
           description: `Tuition: ${item.offer.name}`,
           purchase_type: 'academy_tuition',
-          redirect_url: `${window.location.origin}/my-academy`,
+          redirect_url: returnUrl,
           metadata: { academy_id: item.academy_id, offer_id: item.offer.id, contact_id: item.contact_id },
         }),
       }).then((r) => r.json());
@@ -481,6 +501,7 @@ const ReferralCard: React.FC<{ token: string }> = ({ token }) => {
 export const StudentAcademyPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { classroomId: routeClassroomId } = useParams<{ classroomId?: string }>();
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>('home');
   const [loading, setLoading] = useState(true);
@@ -493,6 +514,15 @@ export const StudentAcademyPage: React.FC = () => {
   const [selectedClassroomId, setSelectedClassroomId] = useState<string | null>(null);
 
   const requestedAcademyId = useMemo(() => searchParams.get('academy_id')?.trim() || null, [searchParams]);
+  const requestedTab = useMemo(() => {
+    const value = searchParams.get('tab')?.trim() ?? null;
+    return isStudentTab(value) ? value : null;
+  }, [searchParams]);
+  const requestedClassroomId = useMemo(() => routeClassroomId?.trim() || null, [routeClassroomId]);
+
+  useEffect(() => {
+    if (requestedTab && requestedTab !== tab) setTab(requestedTab);
+  }, [requestedTab, tab]);
 
   const loadAssignments = useCallback(async (tok: string, targetAcademyId?: string | null) => {
     const res = await callAcademy(tok, { action: 'student_assignments', academy_id: targetAcademyId || undefined });
@@ -541,13 +571,16 @@ export const StudentAcademyPage: React.FC = () => {
         setDashboard(scopedDashboard);
 
         const memberships = scopedDashboard.classroom_memberships ?? [];
-        const firstClassroomId = memberships[0]?.classroom_id ?? null;
-        setSelectedClassroomId(firstClassroomId);
+        const routeClassroomAllowed = requestedClassroomId
+          ? memberships.some((membership) => membership.classroom_id === requestedClassroomId)
+          : false;
+        const activeClassroomId = routeClassroomAllowed ? requestedClassroomId : memberships[0]?.classroom_id ?? null;
+        setSelectedClassroomId(activeClassroomId);
 
         await loadAssignments(tok, selectedAcademyId);
 
-        if (firstClassroomId && selectedAcademyId) {
-          await loadAttendance(tok, selectedAcademyId, firstClassroomId);
+        if (activeClassroomId && selectedAcademyId) {
+          await loadAttendance(tok, selectedAcademyId, activeClassroomId);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load');
@@ -556,7 +589,7 @@ export const StudentAcademyPage: React.FC = () => {
       }
     };
     void init();
-  }, [navigate, location.pathname, requestedAcademyId, loadAssignments, loadAttendance]);
+  }, [navigate, location.pathname, requestedAcademyId, requestedClassroomId, loadAssignments, loadAttendance]);
 
   const academyId = useMemo(() => dashboard?.contacts?.[0]?.academy_id ?? null, [dashboard]);
   const contact = useMemo(() => dashboard?.contacts?.[0] ?? null, [dashboard]);
@@ -576,6 +609,27 @@ export const StudentAcademyPage: React.FC = () => {
     () => (selectedClassroom ? assignments.filter((a) => a.classroom_id === selectedClassroom.id) : assignments),
     [assignments, selectedClassroom],
   );
+
+  const studentReturnPath = useMemo(
+    () => buildStudentAcademyPath({ academyId, classroomId: selectedClassroom?.id ?? selectedClassroomId, tab }),
+    [academyId, selectedClassroom?.id, selectedClassroomId, tab],
+  );
+
+  const studentReturnUrl = useMemo(
+    () => `${window.location.origin}${studentReturnPath}`,
+    [studentReturnPath],
+  );
+
+  const openClassroom = useCallback((classroomId: string, nextTab = tab) => {
+    setSelectedClassroomId(classroomId);
+    if (token && academyId) void loadAttendance(token, academyId, classroomId);
+    navigate(buildStudentAcademyPath({ academyId, classroomId, tab: nextTab }), { replace: true });
+  }, [academyId, loadAttendance, navigate, tab, token]);
+
+  const openTab = useCallback((nextTab: Tab) => {
+    setTab(nextTab);
+    navigate(buildStudentAcademyPath({ academyId, classroomId: selectedClassroom?.id ?? selectedClassroomId, tab: nextTab }), { replace: true });
+  }, [academyId, navigate, selectedClassroom?.id, selectedClassroomId]);
 
   const pendingCount = useMemo(
     () => assignments.filter((a) => !a.submission || a.submission.status === 'missing').length,
@@ -648,10 +702,7 @@ export const StudentAcademyPage: React.FC = () => {
             {myClassrooms.map((c) => (
               <button
                 key={c.id}
-                onClick={() => {
-                  setSelectedClassroomId(c.id);
-                  if (token && academyId) void loadAttendance(token, academyId, c.id);
-                }}
+                onClick={() => openClassroom(c.id)}
                 className={`px-3 py-1.5 text-sm rounded-xl border transition-colors ${selectedClassroomId === c.id ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'}`}
               >
                 {c.name}
@@ -665,7 +716,7 @@ export const StudentAcademyPage: React.FC = () => {
           {tabs.map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => openTab(t.key)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors relative ${tab === t.key ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
             >
               {t.label}
@@ -731,7 +782,7 @@ export const StudentAcademyPage: React.FC = () => {
                       .map((a) => (
                         <button
                           key={a.id}
-                          onClick={() => { setSubmitTarget(a); setTab('assignments'); }}
+                          onClick={() => { setSubmitTarget(a); openTab('assignments'); }}
                           className="w-full text-left border border-gray-200 rounded-xl px-4 py-3 hover:border-gray-400 transition-colors"
                         >
                           <div className="flex items-center justify-between">
@@ -925,7 +976,7 @@ export const StudentAcademyPage: React.FC = () => {
           )}
 
           {/* ── Billing ── */}
-          {tab === 'billing' && token && <BillingTab token={token} classroomNames={classroomNames} />}
+          {tab === 'billing' && token && <BillingTab token={token} classroomNames={classroomNames} returnUrl={studentReturnUrl} />}
 
           {/* ── Chat ── */}
           {tab === 'chat' && token && academyId && selectedClassroom && (
@@ -949,7 +1000,7 @@ export const StudentAcademyPage: React.FC = () => {
           token={token}
           onClose={() => setSubmitTarget(null)}
           onSuccess={() => {
-            if (token) void loadAssignments(token);
+            if (token) void loadAssignments(token, academyId);
           }}
         />
       )}
