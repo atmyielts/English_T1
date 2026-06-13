@@ -9,6 +9,7 @@ type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: s
 const CENTER_TIER_PRODUCT_ID = "00000000-0000-4000-8000-000000000701";
 const CLICK_MIN_AMOUNT_UZS = 1000;
 const CLICK_MAX_AMOUNT_UZS = 2_000_000_000;
+const CLICK_REQUIRED_SECRETS = ["CLICK_SERVICE_ID", "CLICK_MERCHANT_ID", "CLICK_MERCHANT_USER_ID", "CLICK_SECRET_KEY"] as const;
 
 type CenterCapabilities = {
   tier: "starter" | "growth" | "premium" | "exclusive";
@@ -1344,12 +1345,21 @@ const buildPaymentCapabilities = () => ({
       currency: "UZS",
       min_amount: CLICK_MIN_AMOUNT_UZS,
       max_amount: CLICK_MAX_AMOUNT_UZS,
-      enabled: Boolean(Deno.env.get("CLICK_SERVICE_ID") && Deno.env.get("CLICK_MERCHANT_ID") && Deno.env.get("CLICK_SECRET_KEY")),
+      enabled: isClickConfigured(),
       temporary: false,
     },
   ],
   default_provider: "click",
 });
+
+const isClickConfigured = () => CLICK_REQUIRED_SECRETS.every((secret) => Boolean(Deno.env.get(secret)));
+
+const clickNotConfigured = (scope = "Click checkout") =>
+  json(503, {
+    error: `${scope} is not configured yet.`,
+    error_code: "click_not_configured",
+    required_secrets: [...CLICK_REQUIRED_SECRETS],
+  });
 
 const planCenterTier = (plan: any): CenterCapabilities["tier"] | null => {
   const tier = normalizeCenterTier(plan?.metadata?.center_tier);
@@ -2731,6 +2741,7 @@ serve(async (req) => {
         if (!amount) return json(400, { error: "amount must be positive" });
         const settlementMode = String(body.settlement_mode ?? body.mode ?? "online").trim().toLowerCase();
         if (settlementMode !== "manual") {
+          if (!isClickConfigured()) return clickNotConfigured("Click checkout for center wallet top-ups");
           if (currency !== "UZS") return json(400, { error: "Online wallet top-up currently supports UZS only" });
           if (amount < CLICK_MIN_AMOUNT_UZS || amount > CLICK_MAX_AMOUNT_UZS) {
             return json(400, {
@@ -3307,6 +3318,7 @@ serve(async (req) => {
         const amount = normalizeMoney((plan as any).amount);
         const currency = String((plan as any).currency ?? "UZS").toUpperCase();
         if (!amount) return json(400, { error: "Tier plan amount is not configured" });
+        if (!isClickConfigured()) return clickNotConfigured("Click checkout for center tier upgrades");
         if (currency === "UZS" && amount > CLICK_MAX_AMOUNT_UZS) {
           return json(400, {
             error: `Current Click payment limit is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction. Ask Schood admin to invoice this tier manually.`,
@@ -3453,6 +3465,7 @@ serve(async (req) => {
       if (actionBody === "create_ticket_purchase" || actionBody === "create_seat_purchase") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
+        if (!isClickConfigured()) return clickNotConfigured("Click checkout for center purchases");
         const purchaseType = actionBody === "create_ticket_purchase" ? "token_pack" : "seat_pack";
         const quantity = normalizeQuantity(purchaseType === "token_pack" ? body.quantity : body.seat_count ?? body.quantity, 200) ?? 1;
         let originalAmount = 0;
