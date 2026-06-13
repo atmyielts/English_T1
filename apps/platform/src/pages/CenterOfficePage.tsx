@@ -283,6 +283,138 @@ const parseRecipientImport = (raw: string, limit = 1000): ImportedRecipient[] =>
     .slice(0, limit);
 };
 
+type ZipEntry = {
+  name: string;
+  method: number;
+  compressedSize: number;
+  localHeaderOffset: number;
+};
+
+const readZipEntries = (buffer: ArrayBuffer): ZipEntry[] => {
+  const view = new DataView(buffer);
+  let eocdOffset = -1;
+  for (let offset = view.byteLength - 22; offset >= Math.max(0, view.byteLength - 65557); offset -= 1) {
+    if (view.getUint32(offset, true) === 0x06054b50) {
+      eocdOffset = offset;
+      break;
+    }
+  }
+  if (eocdOffset < 0) throw new Error('Could not read Excel workbook.');
+
+  const entryCount = view.getUint16(eocdOffset + 10, true);
+  const centralDirOffset = view.getUint32(eocdOffset + 16, true);
+  const decoder = new TextDecoder();
+  const entries: ZipEntry[] = [];
+  let offset = centralDirOffset;
+
+  for (let index = 0; index < entryCount; index += 1) {
+    if (view.getUint32(offset, true) !== 0x02014b50) break;
+    const method = view.getUint16(offset + 10, true);
+    const compressedSize = view.getUint32(offset + 20, true);
+    const nameLength = view.getUint16(offset + 28, true);
+    const extraLength = view.getUint16(offset + 30, true);
+    const commentLength = view.getUint16(offset + 32, true);
+    const localHeaderOffset = view.getUint32(offset + 42, true);
+    const name = decoder.decode(new Uint8Array(buffer, offset + 46, nameLength));
+    entries.push({ name, method, compressedSize, localHeaderOffset });
+    offset += 46 + nameLength + extraLength + commentLength;
+  }
+
+  return entries;
+};
+
+const inflateZipEntry = async (buffer: ArrayBuffer, entry: ZipEntry): Promise<string> => {
+  const view = new DataView(buffer);
+  const decoder = new TextDecoder();
+  const headerOffset = entry.localHeaderOffset;
+  if (view.getUint32(headerOffset, true) !== 0x04034b50) throw new Error('Could not read Excel workbook entry.');
+  const nameLength = view.getUint16(headerOffset + 26, true);
+  const extraLength = view.getUint16(headerOffset + 28, true);
+  const dataOffset = headerOffset + 30 + nameLength + extraLength;
+  const compressed = buffer.slice(dataOffset, dataOffset + entry.compressedSize);
+
+  if (entry.method === 0) return decoder.decode(compressed);
+  if (entry.method !== 8) throw new Error('Unsupported Excel compression method.');
+  if (!('DecompressionStream' in window)) throw new Error('This browser cannot read Excel files. Export the roster as CSV instead.');
+
+  const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw' as CompressionFormat));
+  const inflated = await new Response(stream).arrayBuffer();
+  return decoder.decode(inflated);
+};
+
+const xmlText = (node: Element | null | undefined): string => node?.textContent?.trim() ?? '';
+
+const xmlAttr = (node: Element, name: string): string =>
+  node.getAttribute(name) ?? node.getAttribute(`r:${name}`) ?? '';
+
+const normalizeWorkbookTarget = (target: string) => {
+  const cleaned = target.replace(/^\/+/, '');
+  if (cleaned.startsWith('xl/')) return cleaned;
+  if (cleaned.startsWith('worksheets/') || cleaned.startsWith('sharedStrings')) return `xl/${cleaned}`;
+  return `xl/${cleaned}`;
+};
+
+const columnIndexFromRef = (ref: string) => {
+  const letters = ref.match(/[A-Z]+/i)?.[0]?.toUpperCase() ?? '';
+  let index = 0;
+  for (const letter of letters) index = index * 26 + letter.charCodeAt(0) - 64;
+  return Math.max(0, index - 1);
+};
+
+const parseXlsxRecipients = async (file: File, limit = 1000): Promise<ImportedRecipient[]> => {
+  const buffer = await file.arrayBuffer();
+  const entries = readZipEntries(buffer);
+  const entryByName = new Map(entries.map((entry) => [entry.name, entry]));
+  const workbookEntry = entryByName.get('xl/workbook.xml');
+  if (!workbookEntry) throw new Error('Excel workbook is missing xl/workbook.xml.');
+
+  const parser = new DOMParser();
+  const workbook = parser.parseFromString(await inflateZipEntry(buffer, workbookEntry), 'application/xml');
+  const firstSheet = workbook.querySelector('sheet');
+  const firstSheetRid = firstSheet ? xmlAttr(firstSheet, 'id') : '';
+  let sheetPath = 'xl/worksheets/sheet1.xml';
+
+  const relsEntry = entryByName.get('xl/_rels/workbook.xml.rels');
+  if (relsEntry && firstSheetRid) {
+    const rels = parser.parseFromString(await inflateZipEntry(buffer, relsEntry), 'application/xml');
+    const rel = Array.from(rels.querySelectorAll('Relationship')).find((item) => item.getAttribute('Id') === firstSheetRid);
+    const target = rel?.getAttribute('Target') ?? '';
+    if (target) sheetPath = normalizeWorkbookTarget(target);
+  }
+
+  const sheetEntry = entryByName.get(sheetPath);
+  if (!sheetEntry) throw new Error('Excel workbook does not contain a readable first sheet.');
+
+  const sharedStringsEntry = entryByName.get('xl/sharedStrings.xml');
+  const sharedStrings = sharedStringsEntry
+    ? Array.from(parser.parseFromString(await inflateZipEntry(buffer, sharedStringsEntry), 'application/xml').querySelectorAll('si'))
+      .map((si) => Array.from(si.querySelectorAll('t')).map((t) => t.textContent ?? '').join('').trim())
+    : [];
+
+  const sheet = parser.parseFromString(await inflateZipEntry(buffer, sheetEntry), 'application/xml');
+  const rows = Array.from(sheet.querySelectorAll('sheetData row')).map((row) => {
+    const cells: string[] = [];
+    for (const cell of Array.from(row.querySelectorAll('c'))) {
+      const ref = cell.getAttribute('r') ?? '';
+      const columnIndex = columnIndexFromRef(ref) || cells.length;
+      const type = cell.getAttribute('t') ?? '';
+      let value = '';
+      if (type === 's') {
+        const sharedIndex = Number(xmlText(cell.querySelector('v')));
+        value = Number.isFinite(sharedIndex) ? sharedStrings[sharedIndex] ?? '' : '';
+      } else if (type === 'inlineStr') {
+        value = Array.from(cell.querySelectorAll('is t')).map((t) => t.textContent ?? '').join('').trim();
+      } else {
+        value = xmlText(cell.querySelector('v'));
+      }
+      cells[columnIndex] = value;
+    }
+    return cells.map((cell) => cell ?? '');
+  }).filter((row) => row.some((cell) => String(cell ?? '').trim()));
+
+  return parseRecipientImport(rows.map((row) => row.join('\t')).join('\n'), limit);
+};
+
 const recipientImportLine = (row: ImportedRecipient) =>
   [row.name, row.phone, row.email, row.telegram_chat_id ? `telegram:${row.telegram_chat_id}` : '']
     .map((value) => String(value ?? '').trim())
@@ -290,7 +422,8 @@ const recipientImportLine = (row: ImportedRecipient) =>
     .join(', ');
 
 const importRecipientFile = async (file: File, limit = 1000) => {
-  const rows = parseRecipientImport(await file.text(), limit);
+  const isXlsx = /\.xlsx$/i.test(file.name) || file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const rows = isXlsx ? await parseXlsxRecipients(file, limit) : parseRecipientImport(await file.text(), limit);
   return { rows, text: rows.map(recipientImportLine).join('\n') };
 };
 
@@ -1838,10 +1971,10 @@ export const CenterOfficePage: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-3 md:col-span-2">
                       <label className={secondaryButton}>
                         <FileText className="h-4 w-4" />
-                        Import CSV/TSV
+                        Import CSV/XLSX
                         <input
                           type="file"
-                          accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
+                          accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                           className="sr-only"
                           onChange={(event) => {
                             const file = event.currentTarget.files?.[0];
@@ -2860,10 +2993,10 @@ const VoucherGeneratorPanel: React.FC<{
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <label className={secondaryButton}>
           <FileText className="h-4 w-4" />
-          Import CSV/TSV
+          Import CSV/XLSX
           <input
             type="file"
-            accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
+            accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             className="sr-only"
             onChange={(event) => {
               const file = event.currentTarget.files?.[0];
