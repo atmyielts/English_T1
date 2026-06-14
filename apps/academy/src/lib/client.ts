@@ -362,6 +362,37 @@ export type TeacherStudioStudentDashboard = {
   offers: TeacherStudioOffer[];
 };
 
+export type TeacherStudioStudentAssignment = TeacherStudioAssignment & {
+  submission: TeacherStudioSubmission | null;
+};
+
+export type TeacherStudioStudentBillingItem = {
+  academy_id: string;
+  classroom_id: string;
+  contact_id: string;
+  paid: boolean;
+  offer: {
+    id: string;
+    academy_id?: string;
+    classroom_id?: string | null;
+    name: string;
+    price_amount: number;
+    currency: string;
+    duration_days?: number | null;
+    description: string | null;
+    is_active?: boolean;
+  };
+  last_payment: {
+    id?: string;
+    contact_id?: string;
+    offer_id?: string;
+    amount?: number;
+    currency?: string;
+    status: string;
+    created_at: string;
+  } | null;
+};
+
 export type TeacherStudioAssignment = {
   id: string;
   academy_id: string;
@@ -879,6 +910,66 @@ export const teacherStudioStudentFeed = async (): Promise<TeacherStudioStudentFe
 
 export const teacherStudioStudentDashboard = async (): Promise<TeacherStudioStudentDashboard> => {
   return callTeacherStudio<TeacherStudioStudentDashboard>({ action: 'student-dashboard' });
+};
+
+export const teacherStudioStudentAssignments = async (
+  academyId?: string | null,
+  classroomId?: string | null,
+): Promise<{ assignments: TeacherStudioStudentAssignment[]; contact_id?: string; academy_id?: string }> => {
+  const data = await callTeacherStudio<{ assignments: TeacherStudioStudentAssignment[]; contact_id?: string; academy_id?: string }>({
+    action: 'student_assignments',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+  return {
+    assignments: data.assignments ?? [],
+    contact_id: data.contact_id,
+    academy_id: data.academy_id,
+  };
+};
+
+export const teacherStudioStudentAttendance = async (
+  academyId?: string | null,
+  classroomId?: string | null,
+): Promise<{ attendance: TeacherStudioAttendance[]; contact_id?: string; academy_id?: string }> => {
+  const data = await callTeacherStudio<{ attendance: TeacherStudioAttendance[]; contact_id?: string; academy_id?: string }>({
+    action: 'student_attendance',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+  return {
+    attendance: data.attendance ?? [],
+    contact_id: data.contact_id,
+    academy_id: data.academy_id,
+  };
+};
+
+export const teacherStudioStudentBilling = async (
+  academyId?: string | null,
+): Promise<TeacherStudioStudentBillingItem[]> => {
+  const data = await callTeacherStudio<{ items: TeacherStudioStudentBillingItem[] }>({
+    action: 'student_billing',
+    academyId,
+  });
+  return data.items ?? [];
+};
+
+export const teacherStudioSubmitStudentAssignment = async (
+  academyId: string,
+  body: {
+    assignment_id: string;
+    submission_content?: string | null;
+    submission_url?: string | null;
+    notes?: string | null;
+  },
+): Promise<TeacherStudioSubmission> => {
+  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
+    method: 'POST',
+    action: 'submit_assignment',
+    academyId,
+    body,
+  });
+  return data.submission;
 };
 
 export const teacherStudioClassroomChat = async (

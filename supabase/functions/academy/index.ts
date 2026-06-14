@@ -4546,6 +4546,45 @@ serve(async (req) => {
       return json(200, { assignments, contact_id: contactId, academy_id: contactAcademyId });
     }
 
+    if (requestedAction === "student_attendance") {
+      let contacts: Array<Record<string, unknown>> = [];
+      try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
+      if (contacts.length === 0) return json(200, { attendance: [] });
+
+      const academyIdParam = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
+      const classroomIdParam = normalizeText(req.method === "POST" ? body?.classroom_id : url.searchParams.get("classroom_id"), 64);
+      const contact = academyIdParam
+        ? contacts.find((c) => String(c.academy_id) === academyIdParam)
+        : contacts[0];
+      if (!contact) return json(403, { error: "No enrollment found for this academy" });
+      const contactAcademyId = String(contact.academy_id);
+      const contactId = String(contact.id);
+
+      if (classroomIdParam) {
+        const { data: membership, error: membershipError } = await sb
+          .from("academy_classroom_memberships")
+          .select("id")
+          .eq("academy_id", contactAcademyId)
+          .eq("classroom_id", classroomIdParam)
+          .eq("contact_id", contactId)
+          .maybeSingle();
+        if (membershipError) return json(500, { error: "Failed to verify classroom enrollment", detail: membershipError.message });
+        if (!membership?.id) return json(403, { error: "Not enrolled in this classroom" });
+      }
+
+      let attendanceQuery = sb
+        .from("academy_attendance")
+        .select("id, classroom_id, contact_id, session_date, status, notes, marked_at")
+        .eq("academy_id", contactAcademyId)
+        .eq("contact_id", contactId)
+        .order("session_date", { ascending: false })
+        .limit(200);
+      if (classroomIdParam) attendanceQuery = attendanceQuery.eq("classroom_id", classroomIdParam);
+      const { data, error } = await attendanceQuery;
+      if (error) return json(500, { error: "Failed to load attendance", detail: error.message });
+      return json(200, { attendance: data ?? [], contact_id: contactId, academy_id: contactAcademyId });
+    }
+
     // ── Student: submit an assignment ────────────────────────────────────────
     if (requestedAction === "submit_assignment" && req.method === "POST" && !normalizeText(body?.contact_id, 64)) {
       let contacts: Array<Record<string, unknown>> = [];
@@ -4601,8 +4640,14 @@ serve(async (req) => {
       try { contacts = await loadStudentContacts(sb, userId, userEmail); } catch { return json(500, { error: "Failed to load contacts" }); }
       if (contacts.length === 0) return json(200, { items: [] });
 
-      const academyIds = Array.from(new Set(contacts.map((c) => String(c.academy_id)).filter(Boolean)));
-      const contactIds = contacts.map((c) => String(c.id));
+      const academyIdParam = normalizeText(body?.academy_id, 64);
+      const scopedContacts = academyIdParam
+        ? contacts.filter((c) => String(c.academy_id) === academyIdParam)
+        : contacts;
+      if (scopedContacts.length === 0) return json(403, { error: "No enrollment found for this academy" });
+
+      const academyIds = Array.from(new Set(scopedContacts.map((c) => String(c.academy_id)).filter(Boolean)));
+      const contactIds = scopedContacts.map((c) => String(c.id));
 
       const [membershipsRes, offersRes, entRes, paymentsRes] = await Promise.all([
         sb.from("academy_classroom_memberships").select("classroom_id, contact_id, academy_id").in("contact_id", contactIds).limit(2000),
@@ -4653,7 +4698,10 @@ serve(async (req) => {
       if (contacts.length === 0) return json(200, { code: null, referrals: [] });
 
       const academyIdParam = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
-      const contact = contacts.find((c) => !academyIdParam || String(c.academy_id) === academyIdParam) ?? contacts[0];
+      const contact = academyIdParam
+        ? contacts.find((c) => String(c.academy_id) === academyIdParam)
+        : contacts[0];
+      if (!contact) return json(403, { error: "No enrollment found for this academy" });
       const contactAcademyId = String(contact.academy_id);
       const contactId = String(contact.id);
 
