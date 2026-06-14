@@ -3960,8 +3960,6 @@ const filterEducationOSForAccess = async (
   };
 
   const sanitizePipelineRow = (row: Record<string, unknown>): Record<string, unknown> => {
-    if (canSeeFinance) return row;
-
     const stage = normalizeText(row.stage, 40);
     const derivedStage = normalizeText(row.derived_stage, 40);
     const hasRenewalSignal =
@@ -3969,17 +3967,32 @@ const filterEducationOSForAccess = async (
       derivedStage === "renewal" ||
       Number(row.pending_amount ?? 0) > 0 ||
       Boolean(normalizeText(row.entitlement_expires_at, 80));
-    const visibleStage = hasRenewalSignal ? "learning" : stage;
+    const hasCertificateSignal =
+      stage === "completion" ||
+      derivedStage === "completion" ||
+      row.certificate_ready === true;
+    const hideRenewalSignal = !canSeeFinance && hasRenewalSignal;
+    const hideCertificateSignal = !canIssueCertificates && hasCertificateSignal;
+    if (!hideRenewalSignal && !hideCertificateSignal) return row;
+
+    const visibleStage = hideRenewalSignal || (hideCertificateSignal && stage === "completion") ? "learning" : stage;
+    const visibleDerivedStage =
+      (hideRenewalSignal && derivedStage === "renewal") || (hideCertificateSignal && derivedStage === "completion")
+        ? visibleStage
+        : derivedStage;
 
     return {
       ...row,
       stage: visibleStage,
-      derived_stage: derivedStage === "renewal" ? visibleStage : derivedStage,
-      next_action: hasRenewalSignal
+      derived_stage: visibleDerivedStage,
+      next_action: hideRenewalSignal
         ? "Monitor attendance, grade submissions, and keep learning momentum."
+        : hideCertificateSignal
+          ? "Review progress, feedback, and the next learning milestone."
         : row.next_action,
-      pending_amount: 0,
-      entitlement_expires_at: null,
+      pending_amount: hideRenewalSignal ? 0 : row.pending_amount,
+      entitlement_expires_at: hideRenewalSignal ? null : row.entitlement_expires_at,
+      certificate_ready: canIssueCertificates ? row.certificate_ready === true : false,
     };
   };
 
