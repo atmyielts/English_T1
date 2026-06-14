@@ -2507,11 +2507,13 @@ const AcademiesPanel: React.FC<{
       <div className="border-b border-gray-900/10 p-5 md:p-6">
         <SectionTitle icon={School} label="Delivery layer" title="Academies under this center" />
         <p className="mt-3 max-w-2xl text-sm text-gray-600">
-          Center Office owns business controls. Each linked academy keeps its own Teacher Office and Student Workplace for learning delivery.
+          Center Office owns business controls. Each linked academy keeps its own Academy Office and Student Workplace for learning delivery.
         </p>
       </div>
       <div className="divide-y divide-gray-900/10">
-        {academies.map((academy) => (
+        {academies.map((academy) => {
+          const academyOfficeUrl = academy.academy_office_url ?? academy.teacher_office_url ?? '';
+          return (
           <div key={academy.id} className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -2531,21 +2533,22 @@ const AcademiesPanel: React.FC<{
                 <RefreshCw className="h-4 w-4" />
                 Sync students
               </button>
-              <button type="button" className={primaryButton} onClick={() => academy.teacher_office_url && window.open(academy.teacher_office_url, '_blank', 'noopener,noreferrer')} disabled={!academy.teacher_office_url}>
+              <button type="button" className={primaryButton} onClick={() => academyOfficeUrl && window.open(academyOfficeUrl, '_blank', 'noopener,noreferrer')} disabled={!academyOfficeUrl}>
                 <ArrowUpRight className="h-4 w-4" />
-                Teacher Office
+                Academy Office
               </button>
               <button type="button" className={secondaryButton} onClick={() => academy.academy_url && window.open(academy.academy_url, '_blank', 'noopener,noreferrer')} disabled={!academy.academy_url}>
                 <School className="h-4 w-4" />
                 Public academy
               </button>
-              <button type="button" className={secondaryButton} onClick={() => onCopy(academy.teacher_office_url ?? '', 'Teacher Office link copied.')} disabled={!academy.teacher_office_url}>
+              <button type="button" className={secondaryButton} onClick={() => onCopy(academyOfficeUrl, 'Academy Office link copied.')} disabled={!academyOfficeUrl}>
                 <Copy className="h-4 w-4" />
                 Copy
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
         {academies.length === 0 ? (
           <div className="p-6">
             <EmptyState icon={School} title="No academies linked yet" note="Create the first academy when this center is ready to run cohorts, classes, contacts, offers, and student communication." />
