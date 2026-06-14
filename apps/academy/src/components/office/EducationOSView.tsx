@@ -63,6 +63,7 @@ type EducationOSTab =
   | 'brand';
 
 type EducationOSMode = 'office' | 'admin' | 'teacher' | 'center';
+type EducationOSPermission = keyof TeacherStudioAccessProfile['permissions'];
 
 type EducationOSViewProps = {
   academyId: string;
@@ -85,6 +86,54 @@ const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
   center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'growth', 'engagement', 'brand'],
 };
+
+const OS_MODE_PERMISSION_CAPS: Record<EducationOSMode, ReadonlySet<EducationOSPermission> | null> = {
+  office: null,
+  admin: null,
+  teacher: new Set<EducationOSPermission>([
+    'viewContacts',
+    'viewClassrooms',
+    'manageMessages',
+    'manageAnnouncements',
+    'manageAlerts',
+    'resolveAlerts',
+    'viewEducationOS',
+    'resolveActionItems',
+    'manageAssignments',
+    'gradeSubmissions',
+    'markAttendance',
+    'manageSchedule',
+    'manageResources',
+  ]),
+  center: new Set<EducationOSPermission>([
+    'viewAcademy',
+    'manageAcademy',
+    'manageStaff',
+    'manageFinance',
+    'manageOffers',
+    'manageBranding',
+    'manageAutomation',
+    'viewContacts',
+    'manageContacts',
+    'viewClassrooms',
+    'manageClassrooms',
+    'manageRoster',
+    'manageMessages',
+    'manageAnnouncements',
+    'sendGlobalAnnouncements',
+    'manageAlerts',
+    'resolveAlerts',
+    'viewEducationOS',
+    'resolveActionItems',
+    'viewReports',
+    'issueCertificates',
+    'dispatchNotifications',
+    'viewNotifications',
+    'viewReferrals',
+  ]),
+};
+
+const EMPTY_PERMISSIONS: TeacherStudioAccessProfile['permissions'] = {};
 
 const lifecycleStages = [
   { id: 'lead', label: 'Lead' },
@@ -109,6 +158,19 @@ const severityClass = (severity: string): string => {
 };
 
 const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
+
+const permissionAllowedByMode = (mode: EducationOSMode, permission: EducationOSPermission): boolean => {
+  const permissionCaps = OS_MODE_PERMISSION_CAPS[mode] ?? OS_MODE_PERMISSION_CAPS.office;
+  return permissionCaps === null || permissionCaps.has(permission);
+};
+
+const actionTargetTab = (sourceType: string): EducationOSTab => {
+  if (['grading_backlog', 'missing_assignment'].includes(sourceType)) return 'learning';
+  if (['attendance_roll_call', 'schedule_gap'].includes(sourceType)) return 'attendance';
+  if (['placement_needed', 'trial_follow_up', 'renewal', 'payment', 'payment_due'].includes(sourceType)) return 'growth';
+  if (['certificate_ready', 'alert', 'parent_follow_up'].includes(sourceType)) return 'engagement';
+  return 'today';
+};
 
 const todayDate = (): string => new Date().toISOString().slice(0, 10);
 
@@ -227,8 +289,33 @@ export const EducationOSView = ({
 
   const contactById = useMemo(() => new Map(contacts.map((contact) => [contact.id, contact])), [contacts]);
   const classroomById = useMemo(() => new Map(classrooms.map((classroom) => [classroom.id, classroom])), [classrooms]);
-  const permissions = access?.permissions ?? {};
-  const canUse = (permission: keyof TeacherStudioAccessProfile['permissions']): boolean => permissions[permission] === true;
+  const permissions = access?.permissions ?? EMPTY_PERMISSIONS;
+  const canUse = useCallback((permission: EducationOSPermission): boolean => permissions[permission] === true, [permissions]);
+  const modeCanUse = useCallback(
+    (permission: EducationOSPermission): boolean => permissionAllowedByMode(mode, permission) && canUse(permission),
+    [canUse, mode],
+  );
+  const requireRoutePermission = (permission: EducationOSPermission, label: string): boolean => {
+    if (modeCanUse(permission)) return true;
+    setLocalError(`${label} is not available in this Academy route.`);
+    return false;
+  };
+
+  const tabCaps = OS_MODE_TAB_CAPS[mode] ?? OS_MODE_TAB_CAPS.office;
+  const tabAllowedByMode = useCallback((tab: EducationOSTab): boolean => tabCaps.includes(tab), [tabCaps]);
+  const tabAvailable = useCallback((tab: EducationOSTab): boolean => {
+    if (!tabAllowedByMode(tab)) return false;
+    if (tab === 'today' || tab === 'calendar' || tab === 'intelligence') return modeCanUse('viewEducationOS');
+    if (tab === 'pipeline') return modeCanUse('viewContacts');
+    if (tab === 'automation') return modeCanUse('manageAutomation');
+    if (tab === 'command') return modeCanUse('manageFinance') || modeCanUse('viewReports') || modeCanUse('dispatchNotifications');
+    if (tab === 'learning') return modeCanUse('manageAssignments') || modeCanUse('gradeSubmissions');
+    if (tab === 'attendance') return modeCanUse('markAttendance') || modeCanUse('manageSchedule');
+    if (tab === 'growth') return modeCanUse('viewReports') || modeCanUse('manageStaff') || modeCanUse('manageContacts') || modeCanUse('manageRoster');
+    if (tab === 'engagement') return modeCanUse('viewEducationOS') || modeCanUse('issueCertificates') || modeCanUse('viewNotifications') || modeCanUse('viewReferrals');
+    if (tab === 'brand') return modeCanUse('manageBranding');
+    return false;
+  }, [modeCanUse, tabAllowedByMode]);
 
   const selectedClassroom = selectedClassroomId ? classroomById.get(selectedClassroomId) ?? null : null;
 
@@ -251,27 +338,108 @@ export const EducationOSView = ({
     return map;
   }, [attendance, attendanceDate]);
 
-  const actionQueue = osEngine?.action_queue ?? [];
-  const lifecycleRows = osEngine?.pipeline ?? [];
-  const pipelineCounts = osEngine?.pipeline_counts ?? {};
-  const automationRules = osEngine?.automation_rules ?? [];
-  const calendarEvents = osEngine?.calendar_events ?? [];
-  const intelligence = osEngine?.intelligence ?? [];
+  const actionAllowedByRoute = useCallback((item: TeacherStudioActionItem): boolean => {
+    const sourceType = item.source_type;
+    const targetTab = actionTargetTab(sourceType);
+    if (!tabAvailable(targetTab)) return false;
+    if (['grading_backlog', 'missing_assignment'].includes(sourceType)) return modeCanUse('gradeSubmissions') || modeCanUse('manageAssignments');
+    if (sourceType === 'attendance_roll_call') return modeCanUse('markAttendance');
+    if (sourceType === 'schedule_gap') return modeCanUse('manageSchedule');
+    if (['placement_needed', 'trial_follow_up'].includes(sourceType)) return modeCanUse('manageContacts') || modeCanUse('viewContacts');
+    if (['renewal', 'payment', 'payment_due'].includes(sourceType)) return modeCanUse('manageFinance');
+    if (sourceType === 'certificate_ready') return modeCanUse('issueCertificates');
+    if (sourceType === 'alert') return modeCanUse('manageAlerts') || modeCanUse('resolveAlerts') || modeCanUse('viewEducationOS');
+    if (sourceType === 'parent_follow_up') return modeCanUse('viewReports');
+    return modeCanUse('viewEducationOS');
+  }, [modeCanUse, tabAvailable]);
+
+  const actionQueue = useMemo(
+    () => (osEngine?.action_queue ?? []).filter(actionAllowedByRoute),
+    [actionAllowedByRoute, osEngine?.action_queue],
+  );
+
+  const lifecycleRows = useMemo(() => {
+    const canSeeFinance = modeCanUse('manageFinance');
+    return (osEngine?.pipeline ?? []).map((row) => {
+      const hasRenewalSignal =
+        row.stage === 'renewal' ||
+        row.derived_stage === 'renewal' ||
+        row.pending_amount > 0 ||
+        Boolean(row.entitlement_expires_at);
+      if (canSeeFinance || !hasRenewalSignal) return row;
+      return {
+        ...row,
+        stage: 'learning',
+        derived_stage: row.derived_stage === 'renewal' ? 'learning' : row.derived_stage,
+        next_action: 'Monitor attendance, grade submissions, and keep learning momentum.',
+        pending_amount: 0,
+        entitlement_expires_at: null,
+      };
+    });
+  }, [modeCanUse, osEngine?.pipeline]);
+
+  const visibleLifecycleStages = useMemo(
+    () => lifecycleStages.filter((stage) => stage.id !== 'renewal' || modeCanUse('manageFinance') || modeCanUse('manageContacts')),
+    [modeCanUse],
+  );
+
+  const pipelineCounts = useMemo(() => {
+    const counts = visibleLifecycleStages.reduce<Record<string, number>>((acc, stage) => {
+      acc[stage.id] = 0;
+      return acc;
+    }, {});
+    for (const row of lifecycleRows) {
+      if (counts[row.stage] === undefined) continue;
+      counts[row.stage] += 1;
+    }
+    return counts;
+  }, [lifecycleRows, visibleLifecycleStages]);
+
+  const automationRules = useMemo(
+    () => (modeCanUse('manageAutomation') ? osEngine?.automation_rules ?? [] : []),
+    [modeCanUse, osEngine?.automation_rules],
+  );
+
+  const calendarEvents = useMemo(() => (osEngine?.calendar_events ?? []).filter((event) => {
+    if (!tabAvailable('calendar')) return false;
+    if (event.type === 'assignment_due') return modeCanUse('manageAssignments') || modeCanUse('gradeSubmissions');
+    if (event.type === 'notification') return modeCanUse('viewNotifications') || modeCanUse('dispatchNotifications');
+    if (event.type === 'action') {
+      const metadata = event.metadata && !Array.isArray(event.metadata) ? event.metadata as Record<string, unknown> : {};
+      const sourceType = String(metadata.source_type ?? '');
+      return actionAllowedByRoute({ source_type: sourceType } as TeacherStudioActionItem);
+    }
+    if (['payment', 'renewal'].includes(event.type)) return modeCanUse('manageFinance');
+    return modeCanUse('viewEducationOS');
+  }), [actionAllowedByRoute, modeCanUse, osEngine?.calendar_events, tabAvailable]);
+
   const highPriorityQueue = useMemo(
     () => actionQueue.filter((item) => ['critical', 'high'].includes(item.priority)),
     [actionQueue],
   );
 
+  const intelligence = useMemo(() => (osEngine?.intelligence ?? []).filter((insight) => {
+    if (!tabAvailable('intelligence')) return false;
+    if (insight.id === 'high-priority-actions') return highPriorityQueue.length > 0;
+    if (insight.type === 'learning') return modeCanUse('manageAssignments') || modeCanUse('gradeSubmissions');
+    if (insight.type === 'attendance') return modeCanUse('markAttendance') || modeCanUse('manageSchedule');
+    if (insight.type === 'growth') return modeCanUse('viewReports') || modeCanUse('manageContacts') || modeCanUse('manageRoster');
+    if (insight.type === 'automation') return modeCanUse('manageAutomation');
+    if (insight.type === 'completion') return modeCanUse('issueCertificates');
+    if (['revenue', 'renewal', 'payment'].includes(insight.type)) return modeCanUse('manageFinance');
+    return modeCanUse('viewEducationOS');
+  }), [highPriorityQueue.length, modeCanUse, osEngine?.intelligence, tabAvailable]);
+
   const rowsByStage = useMemo(() => {
     const map = new Map<string, TeacherStudioLifecycleRow[]>();
-    for (const stage of lifecycleStages) map.set(stage.id, []);
+    for (const stage of visibleLifecycleStages) map.set(stage.id, []);
     for (const row of lifecycleRows) {
       const bucket = map.get(row.stage) ?? [];
       bucket.push(row);
       map.set(row.stage, bucket);
     }
     return map;
-  }, [lifecycleRows]);
+  }, [lifecycleRows, visibleLifecycleStages]);
 
   const nextEvents = useMemo(
     () => calendarEvents.slice(0, 20),
@@ -297,11 +465,11 @@ export const EducationOSView = ({
         referralData,
       ] = await Promise.all([
         teacherStudioEducationOS(academyId),
-        canUse('manageFinance') ? teacherStudioOwnerDashboard(academyId) : Promise.resolve(null),
-        canUse('manageStaff') ? teacherStudioStaff(academyId) : Promise.resolve([]),
-        canUse('viewNotifications') ? teacherStudioNotifications(academyId) : Promise.resolve([]),
-        canUse('manageBranding') ? teacherStudioBranding(academyId) : Promise.resolve(null),
-        canUse('viewReferrals') ? teacherStudioReferralLeaderboard(academyId) : Promise.resolve([]),
+        modeCanUse('manageFinance') ? teacherStudioOwnerDashboard(academyId) : Promise.resolve(null),
+        modeCanUse('manageStaff') ? teacherStudioStaff(academyId) : Promise.resolve([]),
+        modeCanUse('viewNotifications') ? teacherStudioNotifications(academyId) : Promise.resolve([]),
+        modeCanUse('manageBranding') ? teacherStudioBranding(academyId) : Promise.resolve(null),
+        modeCanUse('viewReferrals') ? teacherStudioReferralLeaderboard(academyId) : Promise.resolve([]),
       ]);
 
       setOsEngine(osData);
@@ -319,11 +487,11 @@ export const EducationOSView = ({
           scheduleData,
           inviteData,
         ] = await Promise.all([
-          canUse('manageAssignments') ? teacherStudioAssignments(academyId, selectedClassroomId) : Promise.resolve([]),
-          canUse('gradeSubmissions') ? teacherStudioGradebook(academyId, selectedClassroomId) : Promise.resolve(null),
-          canUse('markAttendance') ? teacherStudioAttendance(academyId, selectedClassroomId) : Promise.resolve([]),
-          canUse('manageSchedule') ? teacherStudioSchedule(academyId, selectedClassroomId) : Promise.resolve([]),
-          canUse('manageRoster') ? teacherStudioBulkInvites(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('manageAssignments') ? teacherStudioAssignments(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('gradeSubmissions') ? teacherStudioGradebook(academyId, selectedClassroomId) : Promise.resolve(null),
+          modeCanUse('markAttendance') ? teacherStudioAttendance(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('manageSchedule') ? teacherStudioSchedule(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('manageRoster') ? teacherStudioBulkInvites(academyId, selectedClassroomId) : Promise.resolve([]),
         ]);
         setAssignments(assignmentData);
         setGradebook(gradebookData);
@@ -342,7 +510,7 @@ export const EducationOSView = ({
     } finally {
       setLocalBusy(false);
     }
-  }, [academyId, selectedClassroomId, access]);
+  }, [academyId, selectedClassroomId, modeCanUse]);
 
   useEffect(() => {
     if (selectedClassroomId && classrooms.some((classroom) => classroom.id === selectedClassroomId)) return;
@@ -429,17 +597,12 @@ export const EducationOSView = ({
 
   const openActionTarget = (item: TeacherStudioActionItem) => {
     if (item.classroom_id) setSelectedClassroomId(item.classroom_id);
-    const modeTabs = OS_MODE_TAB_CAPS[mode] ?? OS_MODE_TAB_CAPS.office;
-    const setModeTab = (tab: EducationOSTab) => setActiveTab(modeTabs.includes(tab) ? tab : 'today');
-    if (['grading_backlog', 'missing_assignment'].includes(item.source_type)) setModeTab('learning');
-    else if (['attendance_roll_call', 'schedule_gap'].includes(item.source_type)) setModeTab('attendance');
-    else if (['placement_needed', 'trial_follow_up', 'renewal'].includes(item.source_type)) setModeTab('growth');
-    else if (['certificate_ready', 'alert', 'parent_follow_up'].includes(item.source_type)) setModeTab('engagement');
-    else setActiveTab('today');
+    const targetTab = actionTargetTab(item.source_type);
+    setActiveTab(tabAvailable(targetTab) ? targetTab : 'today');
   };
 
   const resolveActionItem = async (item: TeacherStudioActionItem, status: 'resolved' | 'dismissed' | 'snoozed' | 'open') => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('resolveActionItems', 'Action resolution')) return;
     await runAction(status === 'open' ? 'Action item reopened.' : `Action item ${status}.`, async () => {
       await teacherStudioResolveActionItem(academyId, {
         id: item.id,
@@ -450,7 +613,7 @@ export const EducationOSView = ({
   };
 
   const updateLifecycleStage = async (row: TeacherStudioLifecycleRow, stage: string) => {
-    if (!academyId || !stage || row.stage === stage) return;
+    if (!academyId || !stage || row.stage === stage || !requireRoutePermission('manageContacts', 'Lifecycle management')) return;
     await runAction('Lifecycle stage updated.', async () => {
       await teacherStudioSetLifecycleStage(academyId, {
         contact_id: row.contact_id,
@@ -463,7 +626,7 @@ export const EducationOSView = ({
     rule: TeacherStudioAutomationRule,
     patch: { is_active?: boolean; channel?: 'telegram' | 'email' | 'inapp'; threshold?: number | null },
   ) => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageAutomation', 'Automation controls')) return;
     await runAction('Automation rule updated.', async () => {
       await teacherStudioUpsertAutomationRule(academyId, {
         rule_key: rule.rule_key,
@@ -473,7 +636,7 @@ export const EducationOSView = ({
   };
 
   const runAutomations = async () => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageAutomation', 'Automation controls')) return;
     await runAction('Automation rules ran.', async () => {
       const result = await teacherStudioRunAutomationRules(academyId);
       setLocalNotice(
@@ -484,7 +647,7 @@ export const EducationOSView = ({
 
   const submitAssignment = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedClassroomId) return;
+    if (!academyId || !selectedClassroomId || !requireRoutePermission('manageAssignments', 'Assignment controls')) return;
     await runAction('Assignment created.', async () => {
       await teacherStudioCreateAssignment(academyId, {
         classroom_id: selectedClassroomId,
@@ -501,7 +664,7 @@ export const EducationOSView = ({
 
   const submitGrade = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !gradeForm.assignment_id || !gradeForm.contact_id) return;
+    if (!academyId || !gradeForm.assignment_id || !gradeForm.contact_id || !requireRoutePermission('gradeSubmissions', 'Gradebook controls')) return;
     await runAction('Grade recorded.', async () => {
       await teacherStudioSubmitAssignmentForContact(academyId, {
         assignment_id: gradeForm.assignment_id,
@@ -516,7 +679,7 @@ export const EducationOSView = ({
 
   const submitAttendance = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedClassroomId) return;
+    if (!academyId || !selectedClassroomId || !requireRoutePermission('markAttendance', 'Attendance controls')) return;
     await runAction('Attendance saved.', async () => {
       await teacherStudioMarkAttendance(academyId, {
         classroom_id: selectedClassroomId,
@@ -532,7 +695,7 @@ export const EducationOSView = ({
 
   const submitSchedule = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedClassroomId) return;
+    if (!academyId || !selectedClassroomId || !requireRoutePermission('manageSchedule', 'Schedule controls')) return;
     await runAction('Schedule slot saved.', async () => {
       await teacherStudioUpsertSchedule(academyId, {
         classroom_id: selectedClassroomId,
@@ -547,7 +710,7 @@ export const EducationOSView = ({
   };
 
   const removeSchedule = async (id: string) => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageSchedule', 'Schedule controls')) return;
     await runAction('Schedule slot removed.', async () => {
       await teacherStudioDeleteSchedule(academyId, id);
     });
@@ -555,7 +718,7 @@ export const EducationOSView = ({
 
   const submitInvites = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageRoster', 'Roster controls')) return;
     const entries = parseInviteLines(inviteText);
     if (entries.length === 0) {
       setLocalError('Add at least one invite line with an email address.');
@@ -572,7 +735,7 @@ export const EducationOSView = ({
 
   const submitPlacement = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !placementForm.contact_id) return;
+    if (!academyId || !placementForm.contact_id || !requireRoutePermission('manageContacts', 'Placement controls')) return;
     await runAction('Placement recorded.', async () => {
       const result = await teacherStudioRecordPlacement(academyId, {
         contact_id: placementForm.contact_id,
@@ -585,7 +748,7 @@ export const EducationOSView = ({
 
   const submitStaff = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !staffForm.staff_email.trim()) return;
+    if (!academyId || !staffForm.staff_email.trim() || !requireRoutePermission('manageStaff', 'Staff controls')) return;
     await runAction('Staff member saved.', async () => {
       await teacherStudioUpsertStaff(academyId, {
         staff_email: staffForm.staff_email.trim(),
@@ -598,14 +761,14 @@ export const EducationOSView = ({
   };
 
   const removeStaff = async (id: string) => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
     await runAction('Staff member removed.', async () => {
       await teacherStudioRemoveStaff(academyId, id);
     });
   };
 
   const computeAtRisk = async () => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('viewEducationOS', 'Risk scanning')) return;
     setLocalBusy(true);
     setLocalError('');
     setLocalNotice('');
@@ -622,7 +785,7 @@ export const EducationOSView = ({
   };
 
   const dispatchNotifications = async () => {
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('dispatchNotifications', 'Notification dispatch')) return;
     await runAction('Notification dispatch attempted.', async () => {
       await teacherStudioDispatchNotifications(academyId);
     });
@@ -630,7 +793,7 @@ export const EducationOSView = ({
 
   const submitParentReport = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !reportForm.contact_id) return;
+    if (!academyId || !reportForm.contact_id || !requireRoutePermission('viewReports', 'Parent reports')) return;
     await runAction('Parent report generated.', async () => {
       const result = await teacherStudioGenerateParentReport(academyId, {
         contact_id: reportForm.contact_id,
@@ -643,7 +806,7 @@ export const EducationOSView = ({
 
   const submitCertificate = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !certificateForm.contact_id) return;
+    if (!academyId || !certificateForm.contact_id || !requireRoutePermission('issueCertificates', 'Certificate issuing')) return;
     await runAction('Certificate issued.', async () => {
       const result = await teacherStudioIssueAcademyCertificate(academyId, {
         contact_id: certificateForm.contact_id,
@@ -659,7 +822,7 @@ export const EducationOSView = ({
 
   const submitBranding = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireRoutePermission('manageBranding', 'Brand controls')) return;
     await runAction('Branding saved.', async () => {
       await teacherStudioUpsertBranding(academyId, {
         display_name: brandingForm.display_name.trim() || null,
@@ -675,26 +838,26 @@ export const EducationOSView = ({
     });
   };
 
-  const canManageFinance = canUse('manageFinance');
-  const canViewReports = canUse('viewReports');
-  const canDispatchNotifications = canUse('dispatchNotifications');
-  const tabCaps = OS_MODE_TAB_CAPS[mode] ?? OS_MODE_TAB_CAPS.office;
-  const tabAllowedByMode = (tab: EducationOSTab): boolean => tabCaps.includes(tab);
+  const canManageFinance = modeCanUse('manageFinance');
+  const canViewReports = modeCanUse('viewReports');
+  const canDispatchNotifications = modeCanUse('dispatchNotifications');
+  const canResolveActionItems = modeCanUse('resolveActionItems');
 
   const allTabs: Array<{ id: EducationOSTab; label: string; visible: boolean }> = [
-    { id: 'today', label: 'Today', visible: tabAllowedByMode('today') && canUse('viewEducationOS') },
-    { id: 'pipeline', label: 'Pipeline', visible: tabAllowedByMode('pipeline') && canUse('viewContacts') },
-    { id: 'automation', label: 'Automations', visible: tabAllowedByMode('automation') && canUse('manageAutomation') },
-    { id: 'calendar', label: 'Calendar', visible: tabAllowedByMode('calendar') && canUse('viewEducationOS') },
-    { id: 'intelligence', label: 'Insights', visible: tabAllowedByMode('intelligence') && canUse('viewEducationOS') },
-    { id: 'command', label: 'Command', visible: tabAllowedByMode('command') && (canManageFinance || canViewReports || canDispatchNotifications) },
-    { id: 'learning', label: 'Learning', visible: tabAllowedByMode('learning') && (canUse('manageAssignments') || canUse('gradeSubmissions')) },
-    { id: 'attendance', label: 'Attendance', visible: tabAllowedByMode('attendance') && (canUse('markAttendance') || canUse('manageSchedule')) },
-    { id: 'growth', label: 'Growth', visible: tabAllowedByMode('growth') && (canUse('viewReports') || canUse('manageStaff')) },
-    { id: 'engagement', label: 'Engagement', visible: tabAllowedByMode('engagement') && (canUse('viewEducationOS') || canUse('issueCertificates') || canUse('viewNotifications') || canUse('viewReferrals')) },
-    { id: 'brand', label: 'Brand', visible: tabAllowedByMode('brand') && canUse('manageBranding') },
+    { id: 'today', label: 'Today', visible: tabAvailable('today') },
+    { id: 'pipeline', label: 'Pipeline', visible: tabAvailable('pipeline') },
+    { id: 'automation', label: 'Automations', visible: tabAvailable('automation') },
+    { id: 'calendar', label: 'Calendar', visible: tabAvailable('calendar') },
+    { id: 'intelligence', label: 'Insights', visible: tabAvailable('intelligence') },
+    { id: 'command', label: 'Command', visible: tabAvailable('command') },
+    { id: 'learning', label: 'Learning', visible: tabAvailable('learning') },
+    { id: 'attendance', label: 'Attendance', visible: tabAvailable('attendance') },
+    { id: 'growth', label: 'Growth', visible: tabAvailable('growth') },
+    { id: 'engagement', label: 'Engagement', visible: tabAvailable('engagement') },
+    { id: 'brand', label: 'Brand', visible: tabAvailable('brand') },
   ];
   const tabs = allTabs.filter((tab) => tab.visible);
+  const visibleActiveTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : tabs[0]?.id ?? 'today';
 
   useEffect(() => {
     if (tabs.some((tab) => tab.id === activeTab)) return;
@@ -727,7 +890,7 @@ export const EducationOSView = ({
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`small-btn ${activeTab === tab.id ? 'is-active' : ''}`}
+              className={`small-btn ${visibleActiveTab === tab.id ? 'is-active' : ''}`}
               type="button"
               onClick={() => setActiveTab(tab.id)}
             >
@@ -745,28 +908,28 @@ export const EducationOSView = ({
         </div>
       ) : null}
 
-      {activeTab === 'today' ? (
+      {visibleActiveTab === 'today' ? (
         <section className="grid">
           <section className="stats-grid">
             <article className="stat-card">
               <span>Open actions</span>
-              <strong>{osEngine?.stats.open_actions ?? actionQueue.length}</strong>
+              <strong>{actionQueue.length}</strong>
             </article>
             <article className="stat-card">
               <span>Urgent</span>
-              <strong>{osEngine?.stats.urgent_actions ?? actionQueue.filter((item) => ['critical', 'high'].includes(item.priority)).length}</strong>
+              <strong>{highPriorityQueue.length}</strong>
             </article>
             <article className="stat-card">
               <span>Grade backlog</span>
-              <strong>{osEngine?.stats.grading_backlog ?? 0}</strong>
+              <strong>{modeCanUse('gradeSubmissions') ? actionQueue.filter((item) => item.source_type === 'grading_backlog').length : 0}</strong>
             </article>
             <article className="stat-card">
               <span>Placement gap</span>
-              <strong>{osEngine?.stats.placement_gap ?? 0}</strong>
+              <strong>{modeCanUse('manageContacts') ? pipelineCounts.placement ?? 0 : 0}</strong>
             </article>
             <article className="stat-card">
               <span>Certificate ready</span>
-              <strong>{osEngine?.stats.certificate_ready ?? 0}</strong>
+              <strong>{modeCanUse('issueCertificates') ? lifecycleRows.filter((row) => row.certificate_ready).length : 0}</strong>
             </article>
           </section>
 
@@ -775,9 +938,9 @@ export const EducationOSView = ({
               <div className="row between wrap">
                 <div>
                   <h3>Daily action queue</h3>
-                  <p className="small muted">Generated from attendance, grading, missing work, placement, renewal, and completion signals.</p>
+                  <p className="small muted">Generated from the attendance, learning, lifecycle, and engagement signals available in this route.</p>
                 </div>
-                {canUse('manageAutomation') ? (
+                {modeCanUse('manageAutomation') ? (
                   <button className="ghost-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>Run automations</button>
                 ) : null}
               </div>
@@ -791,8 +954,12 @@ export const EducationOSView = ({
                       </div>
                       <div className="row wrap">
                         <button className="small-btn" type="button" onClick={() => openActionTarget(item)}>Open</button>
-                        <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'resolved')} disabled={localBusy}>Done</button>
-                        <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'dismissed')} disabled={localBusy}>Dismiss</button>
+                        {canResolveActionItems ? (
+                          <>
+                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'resolved')} disabled={localBusy}>Done</button>
+                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'dismissed')} disabled={localBusy}>Dismiss</button>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                     <p>{item.description}</p>
@@ -803,7 +970,7 @@ export const EducationOSView = ({
                     {item.recommended_action ? <div className="small">{item.recommended_action}</div> : null}
                   </article>
                 ))}
-                {actionQueue.length === 0 ? <div className="empty-state">No action items right now. The OS will populate this as students, classes, assignments, payments, and alerts move.</div> : null}
+                {actionQueue.length === 0 ? <div className="empty-state">No action items right now. The OS will populate this as students, classes, assignments, and alerts move.</div> : null}
               </div>
             </div>
 
@@ -840,18 +1007,18 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'pipeline' ? (
+      {visibleActiveTab === 'pipeline' ? (
         <section className="grid">
           <section className="stats-grid">
-            {lifecycleStages.map((stage) => (
+            {visibleLifecycleStages.map((stage) => (
               <article className="stat-card" key={stage.id}>
                 <span>{stage.label}</span>
-                <strong>{osEngine?.pipeline_counts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
+                  <strong>{pipelineCounts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
               </article>
             ))}
           </section>
           <div className="os-pipeline-board">
-            {lifecycleStages.map((stage) => (
+            {visibleLifecycleStages.map((stage) => (
               <section className="panel os-pipeline-column" key={stage.id}>
                 <div className="row between">
                   <h3>{stage.label}</h3>
@@ -862,8 +1029,8 @@ export const EducationOSView = ({
                     <article className="os-pipeline-card" key={row.contact_id}>
                       <div className="row between wrap">
                         <strong>{row.name}</strong>
-                        <select className="input compact-input" value={row.stage} onChange={(event) => void updateLifecycleStage(row, event.target.value)} disabled={localBusy || !canUse('manageContacts')}>
-                          {lifecycleStages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                        <select className="input compact-input" value={row.stage} onChange={(event) => void updateLifecycleStage(row, event.target.value)} disabled={localBusy || !modeCanUse('manageContacts')}>
+                          {visibleLifecycleStages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
                         </select>
                       </div>
                       <div className="small muted">{row.classroom_names.join(', ') || row.email || 'No classroom yet'}</div>
@@ -883,7 +1050,7 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'automation' ? (
+      {visibleActiveTab === 'automation' ? (
         <section className="grid">
           <div className="panel">
             <div className="row between wrap">
@@ -931,7 +1098,7 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'calendar' ? (
+      {visibleActiveTab === 'calendar' ? (
         <section className="panel">
           <h3>Operating calendar</h3>
           <div className="os-agenda">
@@ -957,7 +1124,7 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'intelligence' ? (
+      {visibleActiveTab === 'intelligence' ? (
         <section className="grid two">
           {intelligence.map((insight) => (
             <article className="panel os-insight-card" key={insight.id}>
@@ -970,11 +1137,11 @@ export const EducationOSView = ({
               {typeof insight.metric === 'number' ? <strong className="os-insight-metric">{insight.metric}</strong> : null}
             </article>
           ))}
-          {intelligence.length === 0 ? <div className="panel">No decision intelligence yet. As attendance, assignments, payments, and alerts accumulate, this panel will start recommending action.</div> : null}
+          {intelligence.length === 0 ? <div className="panel">No decision intelligence yet. As attendance, assignments, lifecycle, and alerts accumulate, this panel will start recommending action.</div> : null}
         </section>
       ) : null}
 
-      {activeTab === 'command' ? (
+      {visibleActiveTab === 'command' ? (
         canManageFinance ? (
           <>
             <section className="stats-grid">
@@ -1071,11 +1238,11 @@ export const EducationOSView = ({
               </article>
               <article className="stat-card">
                 <span>Open actions</span>
-                <strong>{osEngine?.stats.open_actions ?? actionQueue.length}</strong>
+                <strong>{actionQueue.length}</strong>
               </article>
               <article className="stat-card">
                 <span>Urgent</span>
-                <strong>{osEngine?.stats.urgent_actions ?? highPriorityQueue.length}</strong>
+                <strong>{highPriorityQueue.length}</strong>
               </article>
               <article className="stat-card">
                 <span>Attention</span>
@@ -1113,14 +1280,14 @@ export const EducationOSView = ({
               <div className="panel">
                 <h3>Operations snapshot</h3>
                 <div className="metric-list">
-                  {lifecycleStages.map((stage) => (
+                  {visibleLifecycleStages.map((stage) => (
                     <div className="metric-row" key={stage.id}>
                       <span>{stage.label}</span>
                       <strong>{pipelineCounts[stage.id] ?? 0}</strong>
                     </div>
                   ))}
                 </div>
-                {canUse('viewReferrals') ? (
+                {modeCanUse('viewReferrals') ? (
                   <>
                     <h3>Referral leaders</h3>
                     <ul className="list">
@@ -1142,10 +1309,10 @@ export const EducationOSView = ({
         )
       ) : null}
 
-      {activeTab === 'learning' ? (
+      {visibleActiveTab === 'learning' ? (
         <section className="grid">
           <div className="grid two">
-            {canUse('manageAssignments') ? (
+            {modeCanUse('manageAssignments') ? (
               <div className="panel">
                 <h3>Create assignment</h3>
                 <form className="grid" onSubmit={submitAssignment}>
@@ -1164,7 +1331,7 @@ export const EducationOSView = ({
               </div>
             ) : null}
 
-            {canUse('gradeSubmissions') ? (
+            {modeCanUse('gradeSubmissions') ? (
               <div className="panel">
                 <h3>Record grade</h3>
                 <form className="grid" onSubmit={submitGrade}>
@@ -1227,10 +1394,10 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'attendance' ? (
+      {visibleActiveTab === 'attendance' ? (
         <section className="grid">
           <div className="grid two">
-            {canUse('markAttendance') ? (
+            {modeCanUse('markAttendance') ? (
               <div className="panel">
                 <h3>Take attendance</h3>
                 <form className="grid" onSubmit={submitAttendance}>
@@ -1272,7 +1439,7 @@ export const EducationOSView = ({
               </div>
             ) : null}
 
-            {canUse('manageSchedule') ? (
+            {modeCanUse('manageSchedule') ? (
               <div className="panel">
                 <h3>Weekly timetable</h3>
                 <form className="grid" onSubmit={submitSchedule}>
@@ -1307,9 +1474,9 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'growth' ? (
+      {visibleActiveTab === 'growth' ? (
         <section className="grid two">
-          {canUse('manageRoster') ? (
+          {modeCanUse('manageRoster') ? (
             <div className="panel">
               <h3>Bulk enroll</h3>
               <form className="grid" onSubmit={submitInvites}>
@@ -1331,10 +1498,10 @@ export const EducationOSView = ({
             </div>
           ) : null}
 
-          {canUse('manageContacts') || canUse('manageStaff') ? (
+          {modeCanUse('manageContacts') || modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>{canUse('manageContacts') && canUse('manageStaff') ? 'Placement and staff' : canUse('manageContacts') ? 'Placement' : 'Staff'}</h3>
-              {canUse('manageContacts') ? (
+              <h3>{modeCanUse('manageContacts') && modeCanUse('manageStaff') ? 'Placement and staff' : modeCanUse('manageContacts') ? 'Placement' : 'Staff'}</h3>
+              {modeCanUse('manageContacts') ? (
                 <form className="grid" onSubmit={submitPlacement}>
                   <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
                     {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
@@ -1347,7 +1514,7 @@ export const EducationOSView = ({
                 </form>
               ) : null}
 
-              {canUse('manageStaff') ? (
+              {modeCanUse('manageStaff') ? (
                 <>
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
@@ -1395,11 +1562,11 @@ export const EducationOSView = ({
             </div>
           ) : null}
 
-          {!canUse('manageRoster') && !canUse('manageContacts') && !canUse('manageStaff') ? (
+          {!modeCanUse('manageRoster') && !modeCanUse('manageContacts') && !modeCanUse('manageStaff') ? (
             <div className="panel">
               <h3>Growth reporting</h3>
               <div className="metric-list">
-                {lifecycleStages.map((stage) => (
+                {visibleLifecycleStages.map((stage) => (
                   <div className="metric-row" key={stage.id}>
                     <span>{stage.label}</span>
                     <strong>{pipelineCounts[stage.id] ?? 0}</strong>
@@ -1411,15 +1578,15 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'engagement' ? (
+      {visibleActiveTab === 'engagement' ? (
         <section className="grid two">
           <div className="panel">
             <h3>Risk and notifications</h3>
             <div className="row wrap">
-              {canUse('viewEducationOS') ? (
+              {modeCanUse('viewEducationOS') ? (
                 <button className="primary-btn" type="button" onClick={() => void computeAtRisk()} disabled={localBusy}>Compute at risk</button>
               ) : null}
-              {canUse('dispatchNotifications') ? (
+              {modeCanUse('dispatchNotifications') ? (
                 <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>Dispatch queued</button>
               ) : null}
             </div>
@@ -1436,7 +1603,7 @@ export const EducationOSView = ({
               ))}
               {atRisk.length === 0 ? <li>No at-risk results loaded.</li> : null}
             </ul>
-            {canUse('viewNotifications') ? (
+            {modeCanUse('viewNotifications') ? (
               <>
                 <h3>Notification outbox</h3>
                 <ul className="list">
@@ -1456,10 +1623,10 @@ export const EducationOSView = ({
             ) : null}
           </div>
 
-          {canUse('viewReports') || canUse('issueCertificates') ? (
+          {modeCanUse('viewReports') || modeCanUse('issueCertificates') ? (
             <div className="panel">
             <h3>Reports and certificates</h3>
-              {canUse('viewReports') ? (
+              {modeCanUse('viewReports') ? (
                 <form className="grid" onSubmit={submitParentReport}>
                   <select className="input" value={reportForm.contact_id} onChange={(event) => setReportForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
                     {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
@@ -1472,7 +1639,7 @@ export const EducationOSView = ({
                 </form>
               ) : null}
 
-              {canUse('issueCertificates') ? (
+              {modeCanUse('issueCertificates') ? (
                 <form className="grid" onSubmit={submitCertificate}>
                   <select className="input" value={certificateForm.contact_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
                     {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
@@ -1495,7 +1662,7 @@ export const EducationOSView = ({
         </section>
       ) : null}
 
-      {activeTab === 'brand' ? (
+      {visibleActiveTab === 'brand' ? (
         <section className="panel">
           <h3>White-label brand controls</h3>
           <form className="grid" onSubmit={submitBranding}>
