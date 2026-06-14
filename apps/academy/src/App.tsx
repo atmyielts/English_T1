@@ -244,6 +244,15 @@ const hasAccessPermission = (
   permission: AccessPermissionKey,
 ): boolean => access?.permissions?.[permission] === true;
 
+const canEnterAcademyOffice = (access: TeacherStudioAccessProfile | null | undefined): boolean =>
+  OFFICE_VIEWS.some((view) => hasAccessPermission(access, OFFICE_VIEW_PERMISSIONS[view]));
+
+const academyOfficeAccess = (academy: TeacherStudioAcademy): TeacherStudioAccessProfile =>
+  academy.access ?? buildFallbackAccess(academy.role);
+
+const academyCanEnterOffice = (academy: TeacherStudioAcademy): boolean =>
+  canEnterAcademyOffice(academyOfficeAccess(academy));
+
 const accessRoleLabel = (access: TeacherStudioAccessProfile | null | undefined): string => {
   const role = String(access?.role ?? 'member').replace(/_/g, ' ');
   return role.charAt(0).toUpperCase() + role.slice(1);
@@ -648,7 +657,7 @@ const App = () => {
     [activeMemberships],
   );
   const teacherDirectoryAcademies = useMemo(
-    () => (academies.length > 0 ? academies : teacherMemberships.map(teacherAcademyFromMembership)),
+    () => (academies.length > 0 ? academies : teacherMemberships.map(teacherAcademyFromMembership)).filter(academyCanEnterOffice),
     [academies, teacherMemberships],
   );
   const activeMembership = useMemo(
@@ -940,6 +949,7 @@ const App = () => {
       if (shouldAttemptTeacherData) {
         try {
           academyList = await teacherStudioAcademies();
+          academyList = academyList.filter(academyCanEnterOffice);
         } catch (teacherErr) {
           if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory) {
             throw teacherErr;
@@ -975,7 +985,7 @@ const App = () => {
 
       const shouldLoadTeacherData = hasTeacherRouteAccess && !isStudentWorkspaceRoute && !isServiceLanding;
       if (shouldLoadTeacherData) {
-        if (academyList.length === 0) academyList = teacherMembershipRows.map(teacherAcademyFromMembership);
+        if (academyList.length === 0) academyList = teacherMembershipRows.map(teacherAcademyFromMembership).filter(academyCanEnterOffice);
         const academyIds = new Set(academyList.map((academy) => academy.id));
         const fallbackAcademyId =
           academyList.find((academy) => academy.id === academyId)?.id ??
@@ -1948,6 +1958,9 @@ const App = () => {
         : 'Academy');
   const teacherShell = officeShellLabel(selectedAcademyAccess);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
+  const requestedOfficeAcademyDenied = Boolean(
+    isTeacherWorkspaceRoute && requestedAcademyId && !teacherAcademyIds.has(requestedAcademyId),
+  );
 
   const studentAnnouncements = useMemo(
     () => [...(studentDashboard?.announcements ?? [])].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
@@ -2223,15 +2236,31 @@ const App = () => {
     );
   }
 
-  if (state === 'ready' && isTeacherWorkspaceRoute && !hasTeacherAccess) {
+  if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasTeacherAccess || allowedOfficeViews.length === 0)) {
+    const fallbackOfficeAcademyId = teacherDirectoryAcademies[0]?.id ?? '';
     return (
       <>
         <div className="ts-loading">
           <div className="auth-card">
             <h2>Academy Office access required</h2>
-            <p>This route is for academy staff. Your account is linked as a student.</p>
+            <p>
+              {requestedOfficeAcademyDenied
+                ? 'Your account does not have Academy Office permissions for the requested academy.'
+                : hasTeacherAccess
+                ? 'Your account does not have Academy Office permissions for this academy.'
+                : 'This route is for academy staff. Your account is linked as a student.'}
+            </p>
+            {fallbackOfficeAcademyId ? (
+              <button
+                className="primary-btn"
+                type="button"
+                onClick={() => navigate(academyScopedPath(academyOfficePath(), fallbackOfficeAcademyId))}
+              >
+                Open my Academy Office
+              </button>
+            ) : null}
             {hasStudentAccess ? (
-              <button className="primary-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/student'))}>
+              <button className={fallbackOfficeAcademyId ? 'ghost-btn' : 'primary-btn'} type="button" onClick={() => navigate(academyScopedPath('/academy/student'))}>
                 Open Student Workplace
               </button>
             ) : null}
