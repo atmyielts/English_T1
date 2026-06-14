@@ -5890,12 +5890,20 @@ serve(async (req) => {
           .maybeSingle();
         if (!offerRow?.id) return json(404, { error: "Offer not found" });
 
+        const resourceType = normalizeText(body?.resource_type, 60) || null;
+        const resourceId = normalizeText(body?.resource_id, 64) || null;
+        if (resourceType?.toLowerCase() === "classroom") {
+          if (!resourceId) return json(400, { error: "resource_id is required for classroom grants" });
+          const validClassroomIds = await loadValidAcademyClassroomIds(sb, academyId, [resourceId]);
+          if (!validClassroomIds.has(resourceId)) return json(404, { error: "Classroom not found" });
+        }
+
         const payload = {
           academy_id: academyId,
           offer_id: offerId,
           grant_type: grantType,
-          resource_type: normalizeText(body?.resource_type, 60) || null,
-          resource_id: normalizeText(body?.resource_id, 64) || null,
+          resource_type: resourceType,
+          resource_id: resourceId,
           capability_key: normalizeText(body?.capability_key, 100) || null,
           quantity: positiveIntOrNull(body?.quantity),
           duration_days: positiveIntOrNull(body?.duration_days),
@@ -5949,6 +5957,7 @@ serve(async (req) => {
           .maybeSingle();
         if (contactErr) return json(500, { error: "Failed to load contact", detail: contactErr.message });
         if (!contactRow?.id) return json(404, { error: "Contact not found" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         const provider = normalizeText(body?.provider, 60).toLowerCase() || "manual";
         if (provider === "click") {
@@ -5998,12 +6007,13 @@ serve(async (req) => {
 
         const { data: paymentRow, error: paymentLoadErr } = await sb
           .from("academy_payments")
-          .select("id, academy_id, status")
+          .select("id, academy_id, contact_id, status")
           .eq("id", paymentId)
           .eq("academy_id", academyId)
           .maybeSingle();
         if (paymentLoadErr) return json(500, { error: "Failed to load payment", detail: paymentLoadErr.message });
         if (!paymentRow?.id) return json(404, { error: "Payment not found" });
+        await ensureContactInAccessScope(sb, academyId, access, paymentRow.contact_id);
 
         const { data: applyResult, error: applyErr } = await sb.rpc("apply_academy_payment", {
           p_payment_id: paymentId,
@@ -6031,6 +6041,11 @@ serve(async (req) => {
 
         if (!contactId) return json(400, { error: "contact_id is required" });
         if (!grantType) return json(400, { error: "grant_type is required" });
+        if (resourceType?.toLowerCase() === "classroom") {
+          if (!resourceId) return json(400, { error: "resource_id is required for classroom entitlements" });
+          const validClassroomIds = await loadValidAcademyClassroomIds(sb, academyId, [resourceId]);
+          if (!validClassroomIds.has(resourceId)) return json(404, { error: "Classroom not found" });
+        }
 
         const { data: contactRow } = await sb
           .from("academy_contacts")
@@ -6040,6 +6055,7 @@ serve(async (req) => {
           .maybeSingle();
 
         if (!contactRow?.id) return json(404, { error: "Contact not found" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         const durationDays = positiveIntOrNull(body?.duration_days);
         const startsAt = new Date();
