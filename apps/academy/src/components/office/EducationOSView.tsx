@@ -242,9 +242,14 @@ export const EducationOSView = ({
 
   const actionQueue = osEngine?.action_queue ?? [];
   const lifecycleRows = osEngine?.pipeline ?? [];
+  const pipelineCounts = osEngine?.pipeline_counts ?? {};
   const automationRules = osEngine?.automation_rules ?? [];
   const calendarEvents = osEngine?.calendar_events ?? [];
   const intelligence = osEngine?.intelligence ?? [];
+  const highPriorityQueue = useMemo(
+    () => actionQueue.filter((item) => ['critical', 'high'].includes(item.priority)),
+    [actionQueue],
+  );
 
   const rowsByStage = useMemo(() => {
     const map = new Map<string, TeacherStudioLifecycleRow[]>();
@@ -657,13 +662,17 @@ export const EducationOSView = ({
     });
   };
 
+  const canManageFinance = canUse('manageFinance');
+  const canViewReports = canUse('viewReports');
+  const canDispatchNotifications = canUse('dispatchNotifications');
+
   const allTabs: Array<{ id: EducationOSTab; label: string; visible: boolean }> = [
     { id: 'today', label: 'Today', visible: canUse('viewEducationOS') },
     { id: 'pipeline', label: 'Pipeline', visible: canUse('viewContacts') },
     { id: 'automation', label: 'Automations', visible: canUse('manageAutomation') },
     { id: 'calendar', label: 'Calendar', visible: canUse('viewEducationOS') },
     { id: 'intelligence', label: 'Insights', visible: canUse('viewEducationOS') },
-    { id: 'command', label: 'Command', visible: canUse('viewReports') || canUse('dispatchNotifications') },
+    { id: 'command', label: 'Command', visible: canManageFinance || canViewReports || canDispatchNotifications },
     { id: 'learning', label: 'Learning', visible: canUse('manageAssignments') || canUse('gradeSubmissions') },
     { id: 'attendance', label: 'Attendance', visible: canUse('markAttendance') || canUse('manageSchedule') },
     { id: 'growth', label: 'Growth', visible: canUse('viewReports') || canUse('manageStaff') },
@@ -951,88 +960,171 @@ export const EducationOSView = ({
       ) : null}
 
       {activeTab === 'command' ? (
-        <>
-          <section className="stats-grid">
-            <article className="stat-card">
-              <span>Collected total</span>
-              <strong>{dashboard ? `${dashboard.revenue.collected_total.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
-            </article>
-            <article className="stat-card">
-              <span>This month</span>
-              <strong>{dashboard ? `${dashboard.revenue.collected_this_month.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
-            </article>
-            <article className="stat-card">
-              <span>Outstanding</span>
-              <strong>{dashboard ? `${dashboard.revenue.outstanding.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
-            </article>
-            <article className="stat-card">
-              <span>Students</span>
-              <strong>{dashboard?.total_students ?? contacts.length}</strong>
-            </article>
-            <article className="stat-card">
-              <span>Classrooms</span>
-              <strong>{dashboard?.total_classrooms ?? classrooms.length}</strong>
-            </article>
-          </section>
+        canManageFinance ? (
+          <>
+            <section className="stats-grid">
+              <article className="stat-card">
+                <span>Collected total</span>
+                <strong>{dashboard ? `${dashboard.revenue.collected_total.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+              </article>
+              <article className="stat-card">
+                <span>This month</span>
+                <strong>{dashboard ? `${dashboard.revenue.collected_this_month.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Outstanding</span>
+                <strong>{dashboard ? `${dashboard.revenue.outstanding.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Students</span>
+                <strong>{dashboard?.total_students ?? contacts.length}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Classrooms</span>
+                <strong>{dashboard?.total_classrooms ?? classrooms.length}</strong>
+              </article>
+            </section>
 
-          <section className="grid two">
-            <div className="panel">
-              <h3>Classroom performance</h3>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Classroom</th>
-                      <th>Students</th>
-                      <th>Assignments</th>
-                      <th>Avg score</th>
-                      <th>Attendance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(dashboard?.classroom_stats ?? []).map((item) => (
-                      <tr key={item.classroom_id}>
-                        <td>{item.name}</td>
-                        <td>{item.students}</td>
-                        <td>{item.assignments}</td>
-                        <td>{item.avg_score ?? '-'}</td>
-                        <td>{item.attendance_rate !== null ? `${item.attendance_rate}%` : '-'}</td>
+            <section className="grid two">
+              <div className="panel">
+                <h3>Classroom performance</h3>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Classroom</th>
+                        <th>Students</th>
+                        <th>Assignments</th>
+                        <th>Avg score</th>
+                        <th>Attendance</th>
                       </tr>
-                    ))}
-                    {(dashboard?.classroom_stats ?? []).length === 0 ? (
-                      <tr><td colSpan={5}>No classroom metrics yet.</td></tr>
-                    ) : null}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {(dashboard?.classroom_stats ?? []).map((item) => (
+                        <tr key={item.classroom_id}>
+                          <td>{item.name}</td>
+                          <td>{item.students}</td>
+                          <td>{item.assignments}</td>
+                          <td>{item.avg_score ?? '-'}</td>
+                          <td>{item.attendance_rate !== null ? `${item.attendance_rate}%` : '-'}</td>
+                        </tr>
+                      ))}
+                      {(dashboard?.classroom_stats ?? []).length === 0 ? (
+                        <tr><td colSpan={5}>No classroom metrics yet.</td></tr>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
 
-            <div className="panel">
-              <h3>Enrollment funnel</h3>
-              <div className="metric-list">
-                {Object.entries(dashboard?.funnel ?? {}).map(([status, count]) => (
-                  <div className="metric-row" key={status}>
-                    <span>{status}</span>
-                    <strong>{count}</strong>
-                  </div>
-                ))}
-                {!dashboard ? <div className="small muted">Loading OS dashboard...</div> : null}
-              </div>
-              <h3>Referral leaders</h3>
-              <ul className="list">
-                {referralLeaderboard.map((leader) => (
-                  <li key={leader.contact_id}>
-                    <div className="row between">
-                      <strong>{leader.name}</strong>
-                      <span className="small muted">{leader.referrals} joined / {leader.enrolled} enrolled</span>
+              <div className="panel">
+                <h3>Enrollment funnel</h3>
+                <div className="metric-list">
+                  {Object.entries(dashboard?.funnel ?? {}).map(([status, count]) => (
+                    <div className="metric-row" key={status}>
+                      <span>{status}</span>
+                      <strong>{count}</strong>
                     </div>
-                  </li>
-                ))}
-                {referralLeaderboard.length === 0 ? <li>No referral activity yet.</li> : null}
-              </ul>
-            </div>
-          </section>
-        </>
+                  ))}
+                  {!dashboard ? <div className="small muted">Loading OS dashboard...</div> : null}
+                </div>
+                <h3>Referral leaders</h3>
+                <ul className="list">
+                  {referralLeaderboard.map((leader) => (
+                    <li key={leader.contact_id}>
+                      <div className="row between">
+                        <strong>{leader.name}</strong>
+                        <span className="small muted">{leader.referrals} joined / {leader.enrolled} enrolled</span>
+                      </div>
+                    </li>
+                  ))}
+                  {referralLeaderboard.length === 0 ? <li>No referral activity yet.</li> : null}
+                </ul>
+              </div>
+            </section>
+          </>
+        ) : (
+          <>
+            <section className="stats-grid">
+              <article className="stat-card">
+                <span>Students</span>
+                <strong>{contacts.length}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Classrooms</span>
+                <strong>{classrooms.length}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Open actions</span>
+                <strong>{osEngine?.stats.open_actions ?? actionQueue.length}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Urgent</span>
+                <strong>{osEngine?.stats.urgent_actions ?? highPriorityQueue.length}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Attention</span>
+                <strong>{pipelineCounts.attention ?? lifecycleRows.filter((row) => row.stage === 'attention').length}</strong>
+              </article>
+            </section>
+
+            <section className="grid two">
+              <div className="panel">
+                <div className="row between wrap">
+                  <div>
+                    <h3>Role action queue</h3>
+                    <p className="small muted">Only actions available in your Academy role scope are shown here.</p>
+                  </div>
+                  {canDispatchNotifications ? (
+                    <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>
+                      Dispatch queued
+                    </button>
+                  ) : null}
+                </div>
+                <ul className="list">
+                  {(highPriorityQueue.length > 0 ? highPriorityQueue : actionQueue).slice(0, 10).map((item) => (
+                    <li key={item.id}>
+                      <div className="row between wrap">
+                        <strong>{item.title}</strong>
+                        <span className={priorityClass(item.priority)}>{item.priority}</span>
+                      </div>
+                      <div className="small muted">{eventTypeLabel(item.source_type)}{item.due_at ? ` | due ${formatDate(item.due_at)}` : ''}</div>
+                    </li>
+                  ))}
+                  {actionQueue.length === 0 ? <li>No command actions in your role scope.</li> : null}
+                </ul>
+              </div>
+
+              <div className="panel">
+                <h3>Operations snapshot</h3>
+                <div className="metric-list">
+                  {lifecycleStages.map((stage) => (
+                    <div className="metric-row" key={stage.id}>
+                      <span>{stage.label}</span>
+                      <strong>{pipelineCounts[stage.id] ?? 0}</strong>
+                    </div>
+                  ))}
+                </div>
+                {canUse('viewReferrals') ? (
+                  <>
+                    <h3>Referral leaders</h3>
+                    <ul className="list">
+                      {referralLeaderboard.slice(0, 5).map((leader) => (
+                        <li key={leader.contact_id}>
+                          <div className="row between">
+                            <strong>{leader.name}</strong>
+                            <span className="small muted">{leader.referrals} joined / {leader.enrolled} enrolled</span>
+                          </div>
+                        </li>
+                      ))}
+                      {referralLeaderboard.length === 0 ? <li>No referral activity yet.</li> : null}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            </section>
+          </>
+        )
       ) : null}
 
       {activeTab === 'learning' ? (
@@ -1202,41 +1294,46 @@ export const EducationOSView = ({
 
       {activeTab === 'growth' ? (
         <section className="grid two">
-          <div className="panel">
-            <h3>Bulk enroll</h3>
-            <form className="grid" onSubmit={submitInvites}>
-              <textarea className="input monospaced-area" value={inviteText} onChange={(event) => setInviteText(event.target.value)} />
-              <button className="primary-btn" type="submit" disabled={localBusy}>Invite and enroll</button>
-            </form>
-            <ul className="list">
-              {bulkInvites.slice(0, 8).map((invite) => (
-                <li key={invite.id}>
-                  <div className="row between">
-                    <strong>{invite.email}</strong>
-                    <span className={statusClass(invite.status)}>{invite.status}</span>
+          {canUse('manageRoster') ? (
+            <div className="panel">
+              <h3>Bulk enroll</h3>
+              <form className="grid" onSubmit={submitInvites}>
+                <textarea className="input monospaced-area" value={inviteText} onChange={(event) => setInviteText(event.target.value)} />
+                <button className="primary-btn" type="submit" disabled={localBusy}>Invite and enroll</button>
+              </form>
+              <ul className="list">
+                {bulkInvites.slice(0, 8).map((invite) => (
+                  <li key={invite.id}>
+                    <div className="row between">
+                      <strong>{invite.email}</strong>
+                      <span className={statusClass(invite.status)}>{invite.status}</span>
+                    </div>
+                    <div className="small muted">{formatDate(invite.invited_at)} {invite.error ? `| ${invite.error}` : ''}</div>
+                  </li>
+                ))}
+                {bulkInvites.length === 0 ? <li>No bulk invite history for this classroom.</li> : null}
+              </ul>
+            </div>
+          ) : null}
+
+          {canUse('manageContacts') || canUse('manageStaff') ? (
+            <div className="panel">
+              <h3>{canUse('manageContacts') && canUse('manageStaff') ? 'Placement and staff' : canUse('manageContacts') ? 'Placement' : 'Staff'}</h3>
+              {canUse('manageContacts') ? (
+                <form className="grid" onSubmit={submitPlacement}>
+                  <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
+                    {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
+                  </select>
+                  <div className="grid two">
+                    <input className="input" type="number" min="0" max="100" placeholder="Diagnostic score" value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
+                    <input className="input" placeholder="Manual CEFR level" value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
                   </div>
-                  <div className="small muted">{formatDate(invite.invited_at)} {invite.error ? `| ${invite.error}` : ''}</div>
-                </li>
-              ))}
-              {bulkInvites.length === 0 ? <li>No bulk invite history for this classroom.</li> : null}
-            </ul>
-          </div>
+                  <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>Record placement</button>
+                </form>
+              ) : null}
 
-          <div className="panel">
-            <h3>Placement and staff</h3>
-            <form className="grid" onSubmit={submitPlacement}>
-              <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
-                {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
-              </select>
-              <div className="grid two">
-                <input className="input" type="number" min="0" max="100" placeholder="Diagnostic score" value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
-                <input className="input" placeholder="Manual CEFR level" value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
-              </div>
-              <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>Record placement</button>
-            </form>
-
-            {canUse('manageStaff') ? (
-              <>
+              {canUse('manageStaff') ? (
+                <>
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
@@ -1278,9 +1375,24 @@ export const EducationOSView = ({
                   ))}
                   {staff.length === 0 ? <li>No staff records yet.</li> : null}
                 </ul>
-              </>
-            ) : null}
-          </div>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          {!canUse('manageRoster') && !canUse('manageContacts') && !canUse('manageStaff') ? (
+            <div className="panel">
+              <h3>Growth reporting</h3>
+              <div className="metric-list">
+                {lifecycleStages.map((stage) => (
+                  <div className="metric-row" key={stage.id}>
+                    <span>{stage.label}</span>
+                    <strong>{pipelineCounts[stage.id] ?? 0}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
@@ -1289,7 +1401,9 @@ export const EducationOSView = ({
           <div className="panel">
             <h3>Risk and notifications</h3>
             <div className="row wrap">
-              <button className="primary-btn" type="button" onClick={() => void computeAtRisk()} disabled={localBusy}>Compute at risk</button>
+              {canUse('viewEducationOS') ? (
+                <button className="primary-btn" type="button" onClick={() => void computeAtRisk()} disabled={localBusy}>Compute at risk</button>
+              ) : null}
               {canUse('dispatchNotifications') ? (
                 <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>Dispatch queued</button>
               ) : null}
@@ -1307,52 +1421,62 @@ export const EducationOSView = ({
               ))}
               {atRisk.length === 0 ? <li>No at-risk results loaded.</li> : null}
             </ul>
-            <h3>Notification outbox</h3>
-            <ul className="list">
-              {notifications.slice(0, 10).map((notification) => (
-                <li key={notification.id}>
-                  <div className="row between">
-                    <strong>{notification.title || notification.type}</strong>
-                    <span className={statusClass(notification.status)}>{notification.status}</span>
-                  </div>
-                  <div className="small muted">{notification.channel} | {formatDate(notification.scheduled_at)}</div>
-                  <div>{notification.body}</div>
-                </li>
-              ))}
-              {notifications.length === 0 ? <li>No notifications queued.</li> : null}
-            </ul>
+            {canUse('viewNotifications') ? (
+              <>
+                <h3>Notification outbox</h3>
+                <ul className="list">
+                  {notifications.slice(0, 10).map((notification) => (
+                    <li key={notification.id}>
+                      <div className="row between">
+                        <strong>{notification.title || notification.type}</strong>
+                        <span className={statusClass(notification.status)}>{notification.status}</span>
+                      </div>
+                      <div className="small muted">{notification.channel} | {formatDate(notification.scheduled_at)}</div>
+                      <div>{notification.body}</div>
+                    </li>
+                  ))}
+                  {notifications.length === 0 ? <li>No notifications queued.</li> : null}
+                </ul>
+              </>
+            ) : null}
           </div>
 
-          <div className="panel">
+          {canUse('viewReports') || canUse('issueCertificates') ? (
+            <div className="panel">
             <h3>Reports and certificates</h3>
-            <form className="grid" onSubmit={submitParentReport}>
-              <select className="input" value={reportForm.contact_id} onChange={(event) => setReportForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
-                {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
-              </select>
-              <div className="grid two">
-                <input className="input" value={reportForm.label} onChange={(event) => setReportForm((prev) => ({ ...prev, label: event.target.value }))} />
-                <input className="input" type="number" min="1" max="365" value={reportForm.expires_in_days} onChange={(event) => setReportForm((prev) => ({ ...prev, expires_in_days: event.target.value }))} />
-              </div>
-              <button className="primary-btn" type="submit" disabled={localBusy || !reportForm.contact_id}>Generate parent report</button>
-            </form>
+              {canUse('viewReports') ? (
+                <form className="grid" onSubmit={submitParentReport}>
+                  <select className="input" value={reportForm.contact_id} onChange={(event) => setReportForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
+                    {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
+                  </select>
+                  <div className="grid two">
+                    <input className="input" value={reportForm.label} onChange={(event) => setReportForm((prev) => ({ ...prev, label: event.target.value }))} />
+                    <input className="input" type="number" min="1" max="365" value={reportForm.expires_in_days} onChange={(event) => setReportForm((prev) => ({ ...prev, expires_in_days: event.target.value }))} />
+                  </div>
+                  <button className="primary-btn" type="submit" disabled={localBusy || !reportForm.contact_id}>Generate parent report</button>
+                </form>
+              ) : null}
 
-            <form className="grid" onSubmit={submitCertificate}>
-              <select className="input" value={certificateForm.contact_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
-                {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
-              </select>
-              <select className="input" value={certificateForm.classroom_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, classroom_id: event.target.value }))}>
-                <option value="">Use selected classroom</option>
-                {classrooms.map((classroom) => <option key={classroom.id} value={classroom.id}>{classroom.name}</option>)}
-              </select>
-              <div className="grid two">
-                <input className="input" placeholder="Exam type" value={certificateForm.exam_type} onChange={(event) => setCertificateForm((prev) => ({ ...prev, exam_type: event.target.value }))} />
-                <input className="input" type="number" step="0.1" placeholder="Overall score" value={certificateForm.overall_score} onChange={(event) => setCertificateForm((prev) => ({ ...prev, overall_score: event.target.value }))} />
-              </div>
-              <input className="input" placeholder="Candidate name override" value={certificateForm.candidate_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, candidate_name: event.target.value }))} />
-              <input className="input" placeholder="Center name override" value={certificateForm.center_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, center_name: event.target.value }))} />
-              <button className="primary-btn" type="submit" disabled={localBusy || !certificateForm.contact_id}>Issue certificate</button>
-            </form>
-          </div>
+              {canUse('issueCertificates') ? (
+                <form className="grid" onSubmit={submitCertificate}>
+                  <select className="input" value={certificateForm.contact_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
+                    {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
+                  </select>
+                  <select className="input" value={certificateForm.classroom_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, classroom_id: event.target.value }))}>
+                    <option value="">Use selected classroom</option>
+                    {classrooms.map((classroom) => <option key={classroom.id} value={classroom.id}>{classroom.name}</option>)}
+                  </select>
+                  <div className="grid two">
+                    <input className="input" placeholder="Exam type" value={certificateForm.exam_type} onChange={(event) => setCertificateForm((prev) => ({ ...prev, exam_type: event.target.value }))} />
+                    <input className="input" type="number" step="0.1" placeholder="Overall score" value={certificateForm.overall_score} onChange={(event) => setCertificateForm((prev) => ({ ...prev, overall_score: event.target.value }))} />
+                  </div>
+                  <input className="input" placeholder="Candidate name override" value={certificateForm.candidate_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, candidate_name: event.target.value }))} />
+                  <input className="input" placeholder="Center name override" value={certificateForm.center_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, center_name: event.target.value }))} />
+                  <button className="primary-btn" type="submit" disabled={localBusy || !certificateForm.contact_id}>Issue certificate</button>
+                </form>
+              ) : null}
+            </div>
+          ) : null}
         </section>
       ) : null}
 
