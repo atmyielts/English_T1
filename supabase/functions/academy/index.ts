@@ -5607,9 +5607,6 @@ serve(async (req) => {
         if (!["low", "medium", "high", "critical"].includes(severity)) {
           return json(400, { error: "severity must be low, medium, high, or critical" });
         }
-        if (!contactId && !academyAccessHas(access, "sendGlobalAnnouncements")) {
-          return json(403, { error: "Forbidden" });
-        }
         if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
 
         if (contactId) {
@@ -5627,7 +5624,20 @@ serve(async (req) => {
           ? body.metadata
           : {};
         const alertClassroomId = normalizeText((alertMetadata as Record<string, unknown>).classroom_id, 64);
-        if (alertClassroomId && !accessCanUseClassroom(access, alertClassroomId)) return json(403, { error: "Forbidden" });
+        if (alertClassroomId) {
+          if (!accessCanUseClassroom(access, alertClassroomId)) return json(403, { error: "Forbidden" });
+          const { data: classroomRow, error: classroomError } = await sb
+            .from("academy_classrooms")
+            .select("id")
+            .eq("academy_id", academyId)
+            .eq("id", alertClassroomId)
+            .maybeSingle();
+          if (classroomError) return json(500, { error: "Failed to load classroom", detail: classroomError.message });
+          if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
+        }
+        if (!contactId && !alertClassroomId && !academyAccessHas(access, "sendGlobalAnnouncements")) {
+          return json(403, { error: "Forbidden" });
+        }
 
         const { data: alertRow, error: alertError } = await sb
           .from("academy_alerts")
@@ -5661,20 +5671,29 @@ serve(async (req) => {
             });
             await sb.from("academy_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
           } else {
-            const { data: contactRows, error: contactRowsError } = await sb
-              .from("academy_contacts")
-              .select("id")
-              .eq("academy_id", academyId)
-              .neq("status", "inactive")
-              .limit(5000);
+            const contactRowsResult = alertClassroomId
+              ? await sb
+                .from("academy_classroom_memberships")
+                .select("contact_id")
+                .eq("academy_id", academyId)
+                .eq("classroom_id", alertClassroomId)
+                .in("role", ["student", "observer"])
+                .limit(5000)
+              : await sb
+                .from("academy_contacts")
+                .select("id")
+                .eq("academy_id", academyId)
+                .neq("status", "inactive")
+                .limit(5000);
+            const { data: contactRows, error: contactRowsError } = contactRowsResult;
             if (contactRowsError) {
               return json(500, { error: "Failed to load alert contacts", detail: contactRowsError.message });
             }
 
             const contactIds = Array.from(
               new Set(
-                ((contactRows ?? []) as Array<{ id: string | null }>)
-                  .map((row) => (row.id ? String(row.id) : ""))
+                ((contactRows ?? []) as Array<{ id?: string | null; contact_id?: string | null }>)
+                  .map((row) => String(row.contact_id ?? row.id ?? ""))
                   .filter((id) => id.length > 0),
               ),
             );
@@ -5720,7 +5739,8 @@ serve(async (req) => {
                       alert_id: alertRow.id,
                       type: alertType,
                       severity,
-                      scope: "academy",
+                      scope: alertClassroomId ? "classroom" : "academy",
+                      classroom_id: alertClassroomId || null,
                     },
                   };
                 })
