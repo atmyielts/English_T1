@@ -3931,6 +3931,30 @@ const filterEducationOSForAccess = async (
     return true;
   };
 
+  const sanitizePipelineRow = (row: Record<string, unknown>): Record<string, unknown> => {
+    if (canSeeFinance) return row;
+
+    const stage = normalizeText(row.stage, 40);
+    const derivedStage = normalizeText(row.derived_stage, 40);
+    const hasRenewalSignal =
+      stage === "renewal" ||
+      derivedStage === "renewal" ||
+      Number(row.pending_amount ?? 0) > 0 ||
+      Boolean(normalizeText(row.entitlement_expires_at, 80));
+    const visibleStage = hasRenewalSignal ? "learning" : stage;
+
+    return {
+      ...row,
+      stage: visibleStage,
+      derived_stage: derivedStage === "renewal" ? visibleStage : derivedStage,
+      next_action: hasRenewalSignal
+        ? "Monitor attendance, grade submissions, and keep learning momentum."
+        : row.next_action,
+      pending_amount: 0,
+      entitlement_expires_at: null,
+    };
+  };
+
   const actionQueue = ((os.action_queue ?? []) as Array<Record<string, unknown>>)
     .filter(rowAllowed)
     .filter((item) => {
@@ -3949,14 +3973,7 @@ const filterEducationOSForAccess = async (
       const classroomIds = toStringArray(row.classroom_ids);
       return classroomIds.some((classroomId) => scopedClassroomIds.includes(classroomId));
     })
-    .map((row) => {
-      if (canSeeFinance) return row;
-      return {
-        ...row,
-        pending_amount: 0,
-        entitlement_expires_at: null,
-      };
-    });
+    .map(sanitizePipelineRow);
 
   const pipelineCounts = pipeline.reduce<Record<string, number>>((acc, row) => {
     const stage = normalizeText(row.stage, 40) || "enrolled";
@@ -3974,6 +3991,7 @@ const filterEducationOSForAccess = async (
 
   const intelligence = ((os.intelligence ?? []) as Array<Record<string, unknown>>)
     .filter((insight) => {
+      if (normalizeText(insight.id, 80) === "high-priority-actions") return false;
       if (!rowAllowed(insight)) return false;
       const type = normalizeText(insight.type, 80);
       if (!canSeeFinance && ["revenue", "renewal", "payment"].includes(type)) return false;
@@ -3986,6 +4004,18 @@ const filterEducationOSForAccess = async (
   const certificateReady = pipeline.filter((row) => row.certificate_ready === true).length;
   const placementGap = pipeline.filter((row) => normalizeText(row.stage, 40) === "placement").length;
   const highPriorityActions = actionQueue.filter((item) => ["critical", "high"].includes(String(item.priority))).length;
+
+  if (highPriorityActions > 0) {
+    intelligence.unshift({
+      id: "high-priority-actions",
+      type: "queue",
+      severity: highPriorityActions >= 10 ? "critical" : "high",
+      title: "High-priority queue needs attention",
+      detail: `${highPriorityActions} urgent item(s) are open in your role scope.`,
+      recommended_action: "Start with the Today queue and resolve the most time-sensitive class items first.",
+      metric: highPriorityActions,
+    });
+  }
 
   return {
     ...os,
@@ -6148,7 +6178,9 @@ serve(async (req) => {
 
       if (actionBody === "bulk_invite") {
         const classroomId = normalizeText(body?.classroom_id, 64) || null;
+        const scopedClassroomIds = academyAccessClassroomIds(access);
         if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+        if (!classroomId && scopedClassroomIds !== null) return json(400, { error: "classroom_id is required" });
         const entries = Array.isArray(body?.contacts) ? body.contacts as Array<Record<string, unknown>> : [];
         if (entries.length === 0) return json(400, { error: "contacts array is required" });
         if (entries.length > 200) return json(400, { error: "Maximum 200 contacts per bulk invite" });
@@ -6334,6 +6366,7 @@ serve(async (req) => {
       if (actionBody === "record_placement") {
         const contactId = normalizeText(body?.contact_id, 64);
         if (!contactId) return json(400, { error: "contact_id is required" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
         const score = typeof body?.diagnostic_score === "number" ? body.diagnostic_score
           : typeof body?.score === "number" ? body.score : null;
         const manualLevel = normalizeText(body?.level, 20).toUpperCase() || null;
@@ -6351,8 +6384,14 @@ serve(async (req) => {
         if (updErr) return json(500, { error: "Failed to record placement", detail: updErr.message });
 
         // Suggest classrooms tagged with this level in metadata.level
-        const { data: classroomRows } = await sb.from("academy_classrooms")
+        const scopedClassroomIds = academyAccessClassroomIds(access);
+        let classroomQuery = sb.from("academy_classrooms")
           .select("id, name, metadata, is_active").eq("academy_id", academyId).eq("is_active", true).limit(500);
+        if (scopedClassroomIds !== null) {
+          if (scopedClassroomIds.length === 0) return json(200, { contact_id: contactId, level, score, suggested_classrooms: [] });
+          classroomQuery = classroomQuery.in("id", scopedClassroomIds);
+        }
+        const { data: classroomRows } = await classroomQuery;
         const suggested = ((classroomRows ?? []) as Array<Record<string, unknown>>)
           .filter((c) => String((toJsonObject(c.metadata).level) ?? "").toUpperCase() === level)
           .map((c) => ({ id: String(c.id), name: String(c.name ?? "") }));
