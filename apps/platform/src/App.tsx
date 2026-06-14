@@ -48,6 +48,7 @@ const ReferralLandingPage = lazyWithChunkRetry(() => import('./pages/ReferralLan
 const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOfficePage').then((m) => ({ default: m.PartnerOfficePage })));
 const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePage').then((m) => ({ default: m.CenterOfficePage })));
 const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyControlPage').then((m) => ({ default: m.AcademyControlPage })));
+const AcademyStudentRedirectPage = lazyWithChunkRetry(() => import('./pages/AcademyStudentRedirectPage').then((m) => ({ default: m.AcademyStudentRedirectPage })));
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
 const TelegramAppPage = lazyWithChunkRetry(() => import('./pages/TelegramAppPage').then((m) => ({ default: m.TelegramAppPage })));
@@ -59,7 +60,6 @@ const PeerReviewPage = lazyWithChunkRetry(() => import('./pages/PeerReviewPage')
 const WhitelabelPage = lazyWithChunkRetry(() => import('./pages/WhitelabelPage').then((m) => ({ default: m.WhitelabelPage })));
 const CorporateAssessmentPage = lazyWithChunkRetry(() => import('./pages/CorporateAssessmentPage').then((m) => ({ default: m.CorporateAssessmentPage })));
 const TeacherMarketplacePage = lazyWithChunkRetry(() => import('./pages/TeacherMarketplacePage').then((m) => ({ default: m.TeacherMarketplacePage })));
-const StudentAcademyPage = lazyWithChunkRetry(() => import('./pages/StudentAcademyPage').then((m) => ({ default: m.StudentAcademyPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
@@ -169,10 +169,10 @@ function App() {
             <Route path="/academy/teacher/os" element={<AcademyControlPage />} />
             <Route path="/academy/admin" element={<AcademyControlPage />} />
             <Route path="/academy/classrooms" element={<AcademyControlPage />} />
-            <Route path="/academy/student" element={<StudentAcademyPage />} />
-            <Route path="/academy/student/classrooms/:classroomId" element={<StudentAcademyPage />} />
+            <Route path="/academy/student" element={<AcademyStudentRedirectPage />} />
+            <Route path="/academy/student/*" element={<AcademyStudentRedirectPage />} />
             <Route path="/academy-control" element={<AcademyControlPage />} />
-            <Route path="/my-academy" element={<StudentAcademyPage />} />
+            <Route path="/my-academy" element={<AcademyStudentRedirectPage />} />
             <Route path="/writing-tutor" element={<WritingTutorPage />} />
             <Route path="/speaking-coach" element={<SpeakingCoachPage />} />
             <Route path="/learning-path" element={<LearningPathPage />} />

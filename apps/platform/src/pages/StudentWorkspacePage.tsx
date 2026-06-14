@@ -57,7 +57,7 @@ const CARD_PALETTE = [
   { bg: 'bg-[#d9f99d]', border: 'border-[#2a3b14]' },
 ] as const;
 
-const defaultAcademyUrl = String(import.meta.env.VITE_ACADEMY_URL ?? '').trim();
+const defaultAcademyUrl = String(import.meta.env.VITE_ACADEMY_URL ?? '').trim() || 'https://academy.schood.online';
 
 const toRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
