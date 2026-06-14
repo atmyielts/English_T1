@@ -100,7 +100,13 @@ export const PaymentsView = ({
               <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
             ))}
           </select>
-          <button className="primary-btn" type="submit" disabled={busy}>Create payment</button>
+          <select className="input" value={paymentForm.provider} onChange={(e) => setPaymentForm((p) => ({ ...p, provider: e.target.value }))}>
+            <option value="click">Click checkout</option>
+            <option value="manual">Manual settlement</option>
+          </select>
+          <button className="primary-btn" type="submit" disabled={busy}>
+            {paymentForm.provider === 'manual' ? 'Record manual payment' : 'Create Click checkout'}
+          </button>
         </form>
 
         <div className="panel">
@@ -131,12 +137,13 @@ export const PaymentsView = ({
 
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Created</th><th>Status</th><th>Amount</th><th>Offer</th><th>Contact</th><th>Action</th></tr></thead>
+            <thead><tr><th>Created</th><th>Status</th><th>Provider</th><th>Amount</th><th>Offer</th><th>Contact</th><th>Action</th></tr></thead>
             <tbody>
               {filteredPayments.map((p) => (
                 <tr key={p.id}>
                   <td>{formatDate(p.created_at)}</td>
                   <td><span className={statusClass(p.status)}>{p.status}</span></td>
+                  <td>{p.provider || 'manual'}</td>
                   <td>{p.amount} {p.currency}</td>
                   <td>{offers.find((o) => o.id === p.offer_id)?.name ?? p.offer_id}</td>
                   <td>{contacts.find((c) => c.id === p.contact_id)?.email ?? p.contact_id}</td>
@@ -149,7 +156,7 @@ export const PaymentsView = ({
                   </td>
                 </tr>
               ))}
-              {filteredPayments.length === 0 ? <tr><td colSpan={6}>No payments match these filters.</td></tr> : null}
+              {filteredPayments.length === 0 ? <tr><td colSpan={7}>No payments match these filters.</td></tr> : null}
             </tbody>
           </table>
         </div>

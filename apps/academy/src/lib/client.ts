@@ -221,6 +221,15 @@ export type TeacherStudioPayment = {
   updated_at: string;
 };
 
+export type TeacherStudioClickTuitionTransaction = {
+  payment_url: string;
+  transaction_id: string;
+  academy_payment_id: string;
+  amount: number;
+  currency: string;
+  final_amount: number;
+};
+
 export type TeacherStudioEntitlement = {
   id: string;
   academy_id: string;
@@ -1211,6 +1220,26 @@ export const teacherStudioCreatePayment = async (
     body,
   });
   return data.payment;
+};
+
+export const teacherStudioCreateClickTuitionPayment = async (
+  academyId: string,
+  body: { contact_id: string; offer_id: string; redirect_url?: string | null },
+): Promise<TeacherStudioClickTuitionTransaction> => {
+  return invokeEdge<TeacherStudioClickTuitionTransaction>('click/create-transaction', {
+    method: 'POST',
+    body: {
+      description: 'Academy tuition',
+      purchase_type: 'academy_tuition',
+      redirect_url: body.redirect_url ?? null,
+      metadata: {
+        source: 'academy_office',
+        academy_id: academyId,
+        offer_id: body.offer_id,
+        contact_id: body.contact_id,
+      },
+    },
+  });
 };
 
 export const teacherStudioMarkPaymentPaid = async (

@@ -5841,6 +5841,9 @@ serve(async (req) => {
         if (!contactRow?.id) return json(404, { error: "Contact not found" });
 
         const provider = normalizeText(body?.provider, 60).toLowerCase() || "manual";
+        if (provider === "click") {
+          return json(400, { error: "Use Click checkout to create Click payments" });
+        }
         const providerTxn = normalizeText(body?.provider_transaction_id, 120) || `${provider}-${crypto.randomUUID()}`;
 
         const payload = {
