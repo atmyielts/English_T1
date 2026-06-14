@@ -305,6 +305,63 @@ const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
   center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
 };
 
+const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet<AccessPermissionKey> | null> = {
+  office: null,
+  admin: null,
+  teacher: new Set<AccessPermissionKey>([
+    'viewContacts',
+    'viewClassrooms',
+    'manageMessages',
+    'manageAnnouncements',
+    'manageAlerts',
+    'resolveAlerts',
+    'viewEducationOS',
+    'resolveActionItems',
+    'manageAssignments',
+    'gradeSubmissions',
+    'markAttendance',
+    'manageSchedule',
+    'manageResources',
+  ]),
+  center: new Set<AccessPermissionKey>([
+    'viewAcademy',
+    'manageAcademy',
+    'manageStaff',
+    'manageFinance',
+    'manageOffers',
+    'manageBranding',
+    'manageAutomation',
+    'viewContacts',
+    'manageContacts',
+    'viewClassrooms',
+    'manageClassrooms',
+    'manageRoster',
+    'manageMessages',
+    'manageAnnouncements',
+    'sendGlobalAnnouncements',
+    'manageAlerts',
+    'resolveAlerts',
+    'viewEducationOS',
+    'resolveActionItems',
+    'viewReports',
+    'issueCertificates',
+    'dispatchNotifications',
+    'viewNotifications',
+    'viewReferrals',
+  ]),
+};
+
+const officeIntentAllowsPermission = (intent: OfficeRouteIntent, permission: AccessPermissionKey): boolean => {
+  const permissionCaps = OFFICE_ROUTE_PERMISSION_CAPS[intent] ?? OFFICE_ROUTE_PERMISSION_CAPS.office;
+  return permissionCaps === null || permissionCaps.has(permission);
+};
+
+const hasOfficeRoutePermission = (
+  access: TeacherStudioAccessProfile | null | undefined,
+  intent: OfficeRouteIntent,
+  permission: AccessPermissionKey,
+): boolean => officeIntentAllowsPermission(intent, permission) && hasAccessPermission(access, permission);
+
 const officeIntentCanEnter = (
   access: TeacherStudioAccessProfile | null | undefined,
   intent: OfficeRouteIntent,
@@ -312,14 +369,14 @@ const officeIntentCanEnter = (
   if (!access) return false;
   if (intent === 'office') return canEnterAcademyOffice(access);
   if (intent === 'teacher') {
-    return hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS');
+    return hasOfficeRoutePermission(access, intent, 'viewClassrooms') || hasOfficeRoutePermission(access, intent, 'viewEducationOS');
   }
   if (intent === 'admin') {
     return (
-      hasAccessPermission(access, 'manageAcademy') ||
-      hasAccessPermission(access, 'manageStaff') ||
-      hasAccessPermission(access, 'manageFinance') ||
-      hasAccessPermission(access, 'manageOffers')
+      hasOfficeRoutePermission(access, intent, 'manageAcademy') ||
+      hasOfficeRoutePermission(access, intent, 'manageStaff') ||
+      hasOfficeRoutePermission(access, intent, 'manageFinance') ||
+      hasOfficeRoutePermission(access, intent, 'manageOffers')
     );
   }
   return access.source === 'center' || String(access.role ?? '').toLowerCase() === 'center_admin';
@@ -331,7 +388,110 @@ const officeViewsForIntent = (
 ): OfficeView[] => {
   if (!officeIntentCanEnter(access, intent)) return [];
   const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
-  return caps.filter((view) => hasAccessPermission(access, OFFICE_VIEW_PERMISSIONS[view]));
+  return caps.filter((view) => hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
+};
+
+const actionAllowedForOfficeRoute = (
+  item: TeacherStudioActionItem,
+  access: TeacherStudioAccessProfile | null | undefined,
+  intent: OfficeRouteIntent,
+): boolean => {
+  const sourceType = item.source_type;
+  if (['grading_backlog', 'missing_assignment'].includes(sourceType)) {
+    return hasOfficeRoutePermission(access, intent, 'gradeSubmissions') || hasOfficeRoutePermission(access, intent, 'manageAssignments');
+  }
+  if (sourceType === 'attendance_roll_call') return hasOfficeRoutePermission(access, intent, 'markAttendance');
+  if (sourceType === 'schedule_gap') return hasOfficeRoutePermission(access, intent, 'manageSchedule');
+  if (['placement_needed', 'trial_follow_up'].includes(sourceType)) return hasOfficeRoutePermission(access, intent, 'viewContacts');
+  if (['renewal', 'payment', 'payment_due'].includes(sourceType)) return hasOfficeRoutePermission(access, intent, 'manageFinance');
+  if (sourceType === 'certificate_ready') return hasOfficeRoutePermission(access, intent, 'issueCertificates');
+  if (sourceType === 'parent_follow_up') return hasOfficeRoutePermission(access, intent, 'viewReports');
+  if (sourceType === 'alert') {
+    return (
+      hasOfficeRoutePermission(access, intent, 'manageAlerts') ||
+      hasOfficeRoutePermission(access, intent, 'resolveAlerts') ||
+      hasOfficeRoutePermission(access, intent, 'viewEducationOS')
+    );
+  }
+  return hasOfficeRoutePermission(access, intent, 'viewEducationOS');
+};
+
+const filterEducationOSForOfficeRoute = (
+  os: TeacherStudioEducationOS | null,
+  access: TeacherStudioAccessProfile | null | undefined,
+  intent: OfficeRouteIntent,
+): TeacherStudioEducationOS | null => {
+  if (!os) return null;
+  if (intent === 'office' || intent === 'admin') return os;
+
+  const canSeeFinance = hasOfficeRoutePermission(access, intent, 'manageFinance');
+  const canIssueCertificates = hasOfficeRoutePermission(access, intent, 'issueCertificates');
+  const action_queue = os.action_queue.filter((item) => actionAllowedForOfficeRoute(item, access, intent));
+  const pipeline = os.pipeline.map((row) => {
+    const hasRenewalSignal =
+      row.stage === 'renewal' ||
+      row.derived_stage === 'renewal' ||
+      row.pending_amount > 0 ||
+      Boolean(row.entitlement_expires_at);
+    if (canSeeFinance || !hasRenewalSignal) return row;
+    return {
+      ...row,
+      stage: 'learning',
+      derived_stage: row.derived_stage === 'renewal' ? 'learning' : row.derived_stage,
+      next_action: 'Monitor attendance, grade submissions, and keep learning momentum.',
+      pending_amount: 0,
+      entitlement_expires_at: null,
+    };
+  });
+  const pipeline_counts = pipeline.reduce<Record<string, number>>((acc, row) => {
+    const stage = row.stage || 'enrolled';
+    acc[stage] = (acc[stage] ?? 0) + 1;
+    return acc;
+  }, { lead: 0, placement: 0, enrolled: 0, learning: 0, attention: 0, renewal: 0, completion: 0 });
+  const calendar_events = os.calendar_events.filter((event) => {
+    if (event.type === 'assignment_due') {
+      return hasOfficeRoutePermission(access, intent, 'manageAssignments') || hasOfficeRoutePermission(access, intent, 'gradeSubmissions');
+    }
+    if (event.type === 'notification') {
+      return hasOfficeRoutePermission(access, intent, 'viewNotifications') || hasOfficeRoutePermission(access, intent, 'dispatchNotifications');
+    }
+    if (['payment', 'renewal'].includes(event.type)) return canSeeFinance;
+    if (event.type === 'action') {
+      const metadata = event.metadata && !Array.isArray(event.metadata) ? event.metadata as Record<string, unknown> : {};
+      return actionAllowedForOfficeRoute({ source_type: String(metadata.source_type ?? '') } as TeacherStudioActionItem, access, intent);
+    }
+    return hasOfficeRoutePermission(access, intent, 'viewEducationOS');
+  });
+  const intelligence = os.intelligence.filter((insight) => {
+    if (insight.type === 'learning') {
+      return hasOfficeRoutePermission(access, intent, 'manageAssignments') || hasOfficeRoutePermission(access, intent, 'gradeSubmissions');
+    }
+    if (insight.type === 'attendance') {
+      return hasOfficeRoutePermission(access, intent, 'markAttendance') || hasOfficeRoutePermission(access, intent, 'manageSchedule');
+    }
+    if (insight.type === 'growth') {
+      return hasOfficeRoutePermission(access, intent, 'viewReports') || hasOfficeRoutePermission(access, intent, 'manageContacts');
+    }
+    if (insight.type === 'completion') return canIssueCertificates;
+    if (['revenue', 'renewal', 'payment'].includes(insight.type)) return canSeeFinance;
+    return hasOfficeRoutePermission(access, intent, 'viewEducationOS');
+  });
+
+  return {
+    ...os,
+    action_queue,
+    pipeline,
+    pipeline_counts,
+    calendar_events,
+    intelligence,
+    stats: {
+      open_actions: action_queue.length,
+      urgent_actions: action_queue.filter((item) => ['critical', 'high'].includes(item.priority)).length,
+      grading_backlog: action_queue.filter((item) => item.source_type === 'grading_backlog').length,
+      certificate_ready: canIssueCertificates ? pipeline.filter((row) => row.certificate_ready).length : 0,
+      placement_gap: pipeline_counts.placement ?? 0,
+    },
+  };
 };
 
 const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
@@ -762,19 +922,31 @@ const App = () => {
     if (activeMembership) return buildFallbackAccess(activeMembership.role);
     return null;
   }, [activeMembership, selectedOfficeAcademy]);
-  const canManageLanding = hasAccessPermission(selectedAcademyAccess, 'manageAcademy');
-  const canManageAcademy = hasAccessPermission(selectedAcademyAccess, 'manageAcademy');
-  const canManageContacts = hasAccessPermission(selectedAcademyAccess, 'manageContacts');
-  const canManageClassrooms = hasAccessPermission(selectedAcademyAccess, 'manageClassrooms');
-  const canManageRoster = hasAccessPermission(selectedAcademyAccess, 'manageRoster');
-  const canManageAnnouncements = hasAccessPermission(selectedAcademyAccess, 'manageAnnouncements');
-  const canSendGlobalAnnouncements = hasAccessPermission(selectedAcademyAccess, 'sendGlobalAnnouncements');
-  const canManageAlerts = hasAccessPermission(selectedAcademyAccess, 'manageAlerts');
-  const canResolveAlerts = hasAccessPermission(selectedAcademyAccess, 'resolveAlerts');
-  const canResolveActionItems = hasAccessPermission(selectedAcademyAccess, 'resolveActionItems');
-  const canManageFinance = hasAccessPermission(selectedAcademyAccess, 'manageFinance');
-  const canManageOffers = hasAccessPermission(selectedAcademyAccess, 'manageOffers');
-  const canViewReports = hasAccessPermission(selectedAcademyAccess, 'viewReports');
+  const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
+  const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
+  const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
+  const canUseOfficePermission = useCallback(
+    (permission: AccessPermissionKey): boolean => hasOfficeRoutePermission(selectedAcademyAccess, officeRouteIntent, permission),
+    [officeRouteIntent, selectedAcademyAccess],
+  );
+  const requireOfficePermission = (permission: AccessPermissionKey, label: string): boolean => {
+    if (canUseOfficePermission(permission)) return true;
+    setError(`${label} is not available in this Academy route.`);
+    return false;
+  };
+  const canManageLanding = canUseOfficePermission('manageAcademy');
+  const canManageAcademy = canUseOfficePermission('manageAcademy');
+  const canManageContacts = canUseOfficePermission('manageContacts');
+  const canManageClassrooms = canUseOfficePermission('manageClassrooms');
+  const canManageRoster = canUseOfficePermission('manageRoster');
+  const canManageAnnouncements = canUseOfficePermission('manageAnnouncements');
+  const canSendGlobalAnnouncements = canUseOfficePermission('sendGlobalAnnouncements');
+  const canManageAlerts = canUseOfficePermission('manageAlerts');
+  const canResolveAlerts = canUseOfficePermission('resolveAlerts');
+  const canResolveActionItems = canUseOfficePermission('resolveActionItems');
+  const canManageFinance = canUseOfficePermission('manageFinance');
+  const canManageOffers = canUseOfficePermission('manageOffers');
+  const canViewReports = canUseOfficePermission('viewReports');
   const academyHomeLabel = canManageAcademy
     ? 'Academy control'
     : canManageClassrooms || canManageContacts
@@ -785,9 +957,6 @@ const App = () => {
     : canViewReports || canManageClassrooms || canManageContacts
       ? 'Operations Center'
       : 'LMS Center';
-  const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
-  const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
-  const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
   const officeRouteAcademies = useMemo(
     () =>
       teacherDirectoryAcademies.filter((academy) =>
@@ -967,14 +1136,14 @@ const App = () => {
   const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string) => {
     const summaryData = await teacherStudioSummary(academy);
     const access = summaryData.access ?? null;
-    const canLoadContacts = hasAccessPermission(access, 'viewContacts');
-    const canLoadClassrooms = hasAccessPermission(access, 'viewClassrooms');
-    const canLoadMessages = hasAccessPermission(access, 'manageMessages');
-    const canLoadAnnouncements = hasAccessPermission(access, 'manageAnnouncements');
-    const canLoadAlerts = hasAccessPermission(access, 'manageAlerts');
-    const canLoadOffers = hasAccessPermission(access, 'manageOffers');
-    const canLoadFinance = hasAccessPermission(access, 'manageFinance');
-    const canLoadEducationOS = hasAccessPermission(access, 'viewEducationOS');
+    const canLoadContacts = hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
+    const canLoadClassrooms = hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
+    const canLoadMessages = hasOfficeRoutePermission(access, officeRouteIntent, 'manageMessages');
+    const canLoadAnnouncements = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAnnouncements');
+    const canLoadAlerts = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
+    const canLoadOffers = hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
+    const canLoadFinance = hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
+    const canLoadEducationOS = hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
 
     const [
       contactsData,
@@ -1023,7 +1192,7 @@ const App = () => {
     setOfferGrants(grantsData);
     setPayments(paymentsData);
     setEntitlements(entitlementsData);
-    setEducationOS(educationOSData);
+    setEducationOS(filterEducationOSForOfficeRoute(educationOSData, access, officeRouteIntent));
 
     setPaymentForm((previous) => ({
       ...previous,
@@ -1066,7 +1235,7 @@ const App = () => {
 
     const messagesData = await teacherStudioConversationMessages(academy, { conversation_id: nextConversationId });
     setMessages(messagesData.messages ?? []);
-  }, []);
+  }, [officeRouteIntent]);
 
   const loadStudentData = useCallback(async (): Promise<TeacherStudioStudentDashboard> => {
     const data = await teacherStudioStudentDashboard();
@@ -1730,7 +1899,7 @@ const App = () => {
 
   const submitAcademyLanding = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageAcademy', 'Academy landing')) return;
 
     const fallbackName = selectedOfficeAcademy?.name ?? '';
     const nextName = academyLandingForm.name.trim() || fallbackName;
@@ -1773,7 +1942,7 @@ const App = () => {
 
   const submitContact = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageContacts', 'Contact management')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1796,7 +1965,7 @@ const App = () => {
 
   const submitOffer = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageOffers', 'Offer management')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1821,7 +1990,7 @@ const App = () => {
 
   const submitClassroom = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageClassrooms', 'Classroom management')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1842,7 +2011,7 @@ const App = () => {
 
   const submitClassroomLanding = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedOfficeClassroom) return;
+    if (!academyId || !selectedOfficeClassroom || !requireOfficePermission('manageAcademy', 'Classroom landing')) return;
 
     setBusy(true);
     setError('');
@@ -1877,7 +2046,7 @@ const App = () => {
 
   const submitClassroomMembership = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1897,7 +2066,7 @@ const App = () => {
   };
 
   const removeClassroomMembership = async (membershipId: string) => {
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1918,6 +2087,7 @@ const App = () => {
       setMessages([]);
       return;
     }
+    if (!requireOfficePermission('manageMessages', 'Inbox')) return;
 
     setBusy(true);
     setError('');
@@ -1933,7 +2103,7 @@ const App = () => {
 
   const submitMessage = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedConversationId) return;
+    if (!academyId || !selectedConversationId || !requireOfficePermission('manageMessages', 'Inbox')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1954,7 +2124,7 @@ const App = () => {
 
   const submitAnnouncement = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageAnnouncements', 'Announcements')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -1979,7 +2149,7 @@ const App = () => {
 
   const submitAlert = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageAlerts', 'Alerts')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -2004,7 +2174,7 @@ const App = () => {
   };
 
   const resolveAlert = async (alertId: string) => {
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('resolveAlerts', 'Alert resolution')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -2023,7 +2193,7 @@ const App = () => {
     item: TeacherStudioActionItem,
     status: 'resolved' | 'dismissed' | 'snoozed' | 'open' = 'resolved',
   ) => {
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('resolveActionItems', 'LMS action resolution')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -2063,7 +2233,7 @@ const App = () => {
 
   const submitOfferGrant = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageOffers', 'Offer grants')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -2092,7 +2262,7 @@ const App = () => {
 
   const submitPayment = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -2126,7 +2296,7 @@ const App = () => {
   };
 
   const markPaid = async (paymentId: string) => {
-    if (!academyId) return;
+    if (!academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
     setBusy(true);
     setError('');
     setNotice('');
