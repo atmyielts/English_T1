@@ -403,6 +403,7 @@ type ClassroomChatViewer = {
   role: string;
   contact_id: string | null;
   display_name: string;
+  can_manage_resources: boolean;
 };
 
 type ClassroomChatContext = {
@@ -412,6 +413,7 @@ type ClassroomChatContext = {
   classroom_memberships: Array<Record<string, unknown>>;
   contacts_by_id: Map<string, Record<string, unknown>>;
   viewer: ClassroomChatViewer;
+  teacher_access: MembershipRow | null;
 };
 
 type ClassroomResourceKind = "video" | "book" | "asset" | "link" | "assignment" | "mock" | "practice" | "playbook";
@@ -976,6 +978,7 @@ const resolveClassroomChatContext = async (
   let viewerRole = String(teacherMembership?.role ?? "member");
   let viewerContactId: string | null = null;
   let viewerDisplayName = "";
+  let viewerCanManageResources = Boolean(teacherMembership && academyAccessHas(teacherMembership, "manageResources"));
 
   if (!teacherMembership) {
     let contacts: Array<Record<string, unknown>> = [];
@@ -1007,6 +1010,7 @@ const resolveClassroomChatContext = async (
     viewerRole = String(classroomMembershipRow.role ?? "student");
     viewerContactId = contactId;
     viewerDisplayName = contactDisplayName(matchedContact) || fallbackDisplayName(userEmail, "Student");
+    viewerCanManageResources = false;
   } else {
     const { data: selfContactRow } = await sb
       .from("academy_contacts")
@@ -1067,9 +1071,15 @@ const resolveClassroomChatContext = async (
       role: viewerRole,
       contact_id: viewerContactId,
       display_name: viewerDisplayName,
+      can_manage_resources: viewerCanManageResources,
     },
+    teacher_access: teacherMembership,
   };
 };
+
+const classroomContextCanManageResources = (context: ClassroomChatContext): boolean =>
+  context.viewer.type === "teacher" &&
+  Boolean(context.teacher_access && academyAccessHas(context.teacher_access, "manageResources"));
 
 const loadClassroomChat = async (
   sb: SupabaseClientLike,
@@ -1401,7 +1411,7 @@ const upsertClassroomResource = async (
   const contextResult = await resolveClassroomChatContext(sb, memberships, userId, userEmail, academyIdRaw, classroomIdRaw);
   if (contextResult instanceof Response) return contextResult;
   const context = contextResult;
-  if (context.viewer.type === "student") return json(403, { error: "Forbidden" });
+  if (!classroomContextCanManageResources(context)) return json(403, { error: "Forbidden" });
 
   const resourceId = normalizeText(resourceIdRaw, 64);
   const title = normalizeText(titleRaw, 220);
@@ -1470,7 +1480,7 @@ const deleteClassroomResource = async (
   const contextResult = await resolveClassroomChatContext(sb, memberships, userId, userEmail, academyIdRaw, classroomIdRaw);
   if (contextResult instanceof Response) return contextResult;
   const context = contextResult;
-  if (context.viewer.type === "student") return json(403, { error: "Forbidden" });
+  if (!classroomContextCanManageResources(context)) return json(403, { error: "Forbidden" });
 
   const resourceId = normalizeText(resourceIdRaw, 64);
   if (!resourceId) return json(400, { error: "id is required" });
@@ -1521,6 +1531,7 @@ const setClassroomResourceProgress = async (
 
   let targetContactId = context.viewer.contact_id;
   if (context.viewer.type === "teacher") {
+    if (!classroomContextCanManageResources(context)) return json(403, { error: "Forbidden" });
     const requestedContactId = normalizeText(contactIdRaw, 64);
     if (requestedContactId) targetContactId = requestedContactId;
   }
