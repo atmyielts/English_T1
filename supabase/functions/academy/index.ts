@@ -333,6 +333,23 @@ const accessCanUseClassroom = (access: MembershipRow, classroomIdRaw: unknown): 
   return scopedIds === null || scopedIds.includes(classroomId);
 };
 
+const loadValidAcademyClassroomIds = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+  classroomIds: string[],
+): Promise<Set<string>> => {
+  const uniqueIds = Array.from(new Set(classroomIds.map((id) => normalizeText(id, 64)).filter(Boolean)));
+  if (uniqueIds.length === 0) return new Set();
+  const { data, error } = await sb
+    .from("academy_classrooms")
+    .select("id")
+    .eq("academy_id", academyId)
+    .in("id", uniqueIds)
+    .limit(uniqueIds.length);
+  if (error) throw new Error(`Failed to validate classrooms: ${error.message}`);
+  return new Set(((data ?? []) as Array<{ id: string | null }>).map((row) => String(row.id ?? "")).filter(Boolean));
+};
+
 const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
   const byAcademy = new Map<string, MembershipRow>();
   for (const row of rows) {
@@ -5298,6 +5315,7 @@ serve(async (req) => {
         if (!classroomId) return json(400, { error: "classroom_id is required" });
         if (!contactId) return json(400, { error: "contact_id is required" });
         if (!["student", "assistant"].includes(role)) return json(400, { error: "role must be student or assistant" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
 
         const { data: classroomRow } = await sb
           .from("academy_classrooms")
@@ -5341,6 +5359,21 @@ serve(async (req) => {
         const classroomId = normalizeText(body?.classroom_id, 64);
         const contactId = normalizeText(body?.contact_id, 64);
 
+        if (membershipId) {
+          const { data: existingMembership, error: existingMembershipError } = await sb
+            .from("academy_classroom_memberships")
+            .select("id, classroom_id, contact_id")
+            .eq("academy_id", academyId)
+            .eq("id", membershipId)
+            .maybeSingle();
+          if (existingMembershipError) return json(500, { error: "Failed to load classroom membership", detail: existingMembershipError.message });
+          if (!existingMembership?.id) return json(404, { error: "Classroom membership not found" });
+          if (!accessCanUseClassroom(access, existingMembership.classroom_id)) return json(403, { error: "Forbidden" });
+        } else {
+          if (!classroomId || !contactId) return json(400, { error: "id or both classroom_id and contact_id are required" });
+          if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+        }
+
         let query = sb
           .from("academy_classroom_memberships")
           .delete()
@@ -5349,7 +5382,6 @@ serve(async (req) => {
         if (membershipId) {
           query = query.eq("id", membershipId);
         } else {
-          if (!classroomId || !contactId) return json(400, { error: "id or both classroom_id and contact_id are required" });
           query = query.eq("classroom_id", classroomId).eq("contact_id", contactId);
         }
 
@@ -6470,6 +6502,11 @@ serve(async (req) => {
         const classroomIds = Array.isArray(body?.classroom_ids)
           ? (body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)
           : [];
+        const validClassroomIds = await loadValidAcademyClassroomIds(sb, academyId, classroomIds);
+        const invalidClassroomIds = Array.from(new Set(classroomIds)).filter((id) => !validClassroomIds.has(id));
+        if (invalidClassroomIds.length > 0) {
+          return json(400, { error: "Invalid classroom_ids", classroom_ids: invalidClassroomIds });
+        }
 
         const { data: userRow } = await sb.from("users").select("id").eq("email", staffEmail).maybeSingle();
 
