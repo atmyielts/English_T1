@@ -4906,7 +4906,6 @@ serve(async (req) => {
         grant_contact: "manageFinance",
         create_assignment: "manageAssignments",
         update_assignment: "manageAssignments",
-        submit_assignment: "manageAssignments",
         grade_submission: "gradeSubmissions",
         mark_attendance: "markAttendance",
         bulk_invite: "manageRoster",
@@ -6123,6 +6122,9 @@ serve(async (req) => {
         const contactId = normalizeText(body?.contact_id, 64);
         if (!assignmentId) return json(400, { error: "assignment_id is required" });
         if (!contactId) return json(400, { error: "contact_id is required" });
+        const score = typeof body?.score === "number" ? body.score : null;
+        const hasGradePatch = score !== null || typeof body?.max_score === "number";
+        requireAcademyPermission(access, hasGradePatch ? "gradeSubmissions" : "manageAssignments");
 
         const { data: asgn } = await sb.from("academy_assignments").select("id, classroom_id, max_score").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
         if (!asgn?.id) return json(404, { error: "Assignment not found" });
@@ -6132,7 +6134,6 @@ serve(async (req) => {
         const { data: contact } = await sb.from("academy_contacts").select("id, user_id").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
         if (!contact?.id) return json(404, { error: "Contact not found" });
 
-        const score = typeof body?.score === "number" ? body.score : null;
         const maxScore = typeof body?.max_score === "number" ? body.max_score : (asgn.max_score ?? null);
         const submissionStatus = score !== null ? "graded" : "submitted";
 
