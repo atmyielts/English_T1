@@ -6,14 +6,27 @@ const academyAppUrl = (String(import.meta.env.VITE_ACADEMY_URL ?? '').trim() || 
 
 const officePathForLegacyRoute = (pathname: string, search: string): string => {
   const normalized = pathname.replace(/\/+$/, '') || '/academy';
-  if (normalized === '/academy/teacher/os') return '/academy/office/os';
-  if (normalized === '/academy/classrooms') return '/academy/office/classrooms';
+  const roleBase = normalized === '/academy/office' || normalized.startsWith('/academy/office/')
+    ? '/academy/office'
+    : normalized === '/academy/admin' || normalized.startsWith('/academy/admin/')
+      ? '/academy/admin'
+      : normalized === '/academy/teacher' || normalized.startsWith('/academy/teacher/')
+        ? '/academy/teacher'
+        : normalized === '/academy/center' || normalized.startsWith('/academy/center/')
+          ? '/academy/center'
+          : null;
+
+  if (roleBase && normalized !== roleBase) return normalized;
+  if (roleBase) return roleBase;
+  if (normalized.startsWith('/academy/classrooms/')) return normalized;
+  if (normalized === '/academy/classrooms') return '/academy/teacher/classrooms';
+  if (normalized === '/academy-control') return '/academy/admin';
 
   const tab = new URLSearchParams(search).get('tab');
-  if (tab === 'classrooms') return '/academy/office/classrooms';
-  if (tab === 'students') return '/academy/office/contacts';
-  if (tab === 'announcements') return '/academy/office/announcements';
-  if (tab === 'director') return '/academy/office/os';
+  if (tab === 'classrooms') return '/academy/teacher/classrooms';
+  if (tab === 'students') return '/academy/admin/contacts';
+  if (tab === 'announcements') return '/academy/teacher/announcements';
+  if (tab === 'director') return '/academy/admin/os';
   return '/academy/office';
 };
 
