@@ -1241,7 +1241,7 @@ export const EducationOSView = ({
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
                   <select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_role: event.target.value }))}>
-                    {['teacher', 'manager', 'assistant'].map((role) => <option key={role} value={role}>{role}</option>)}
+                    {['teacher', 'manager', 'counselor', 'assistant'].map((role) => <option key={role} value={role}>{role}</option>)}
                   </select>
                   <div className="chip-grid">
                     {classrooms.map((classroom) => {

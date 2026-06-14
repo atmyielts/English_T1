@@ -244,7 +244,7 @@ const isAcademyManagerRole = (roleRaw: unknown): boolean =>
   ["manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
 
 const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
-  ["teacher", "assistant", "member"].includes(normalizeAcademyRole(roleRaw));
+  ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
 
 const academyAccessScope = (access: MembershipRow): AcademyScope => {
   const role = normalizeAcademyRole(access.role);
@@ -6377,7 +6377,7 @@ serve(async (req) => {
         const staffEmail = normalizeEmail(body?.staff_email ?? body?.email);
         if (!staffEmail) return json(400, { error: "staff_email is required" });
         const role = normalizeText(body?.staff_role ?? body?.role, 20).toLowerCase() || "teacher";
-        if (!["teacher", "manager", "assistant"].includes(role)) return json(400, { error: "Invalid role" });
+        if (!["teacher", "manager", "counselor", "assistant"].includes(role)) return json(400, { error: "Invalid role" });
         const classroomIds = Array.isArray(body?.classroom_ids)
           ? (body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)
           : [];
