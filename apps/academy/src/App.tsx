@@ -688,6 +688,17 @@ const App = () => {
   const canResolveActionItems = hasAccessPermission(selectedAcademyAccess, 'resolveActionItems');
   const canManageFinance = hasAccessPermission(selectedAcademyAccess, 'manageFinance');
   const canManageOffers = hasAccessPermission(selectedAcademyAccess, 'manageOffers');
+  const canViewReports = hasAccessPermission(selectedAcademyAccess, 'viewReports');
+  const academyHomeLabel = canManageAcademy
+    ? 'Academy control'
+    : canManageClassrooms || canManageContacts
+      ? 'Academy operations'
+      : 'Workspace home';
+  const osCenterLabel = canManageFinance
+    ? 'Command Center'
+    : canViewReports || canManageClassrooms || canManageContacts
+      ? 'Operations Center'
+      : 'LMS Center';
   const allowedOfficeViews = useMemo(
     () => OFFICE_VIEWS.filter((view) => hasAccessPermission(selectedAcademyAccess, OFFICE_VIEW_PERMISSIONS[view])),
     [selectedAcademyAccess],
@@ -695,16 +706,16 @@ const App = () => {
   const academyQuickTargets = useMemo(() => {
     const targetCopy: Partial<Record<OfficeView, { title: string; caption: string }>> = {
       classrooms: { title: 'Classroom LMS', caption: 'Gradebook, attendance, student actions, schedule' },
-      contacts: { title: 'Contacts', caption: 'Manage students and assistants' },
+      contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student records and lifecycle context' },
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
       payments: { title: 'Payments', caption: 'Track payments and convert to access' },
-      os: { title: canManageAcademy ? 'Command Center' : 'LMS Center', caption: 'Automations, actions, reports, and learning signals' },
+      os: { title: osCenterLabel, caption: 'Automations, actions, reports, and learning signals' },
     };
     return allowedOfficeViews
       .filter((view) => view !== 'academy')
       .map((view) => targetCopy[view] ? { ...targetCopy[view], path: academyOfficePath(view) } : null)
       .filter((target): target is { title: string; caption: string; path: string } => Boolean(target));
-  }, [allowedOfficeViews, canManageAcademy]);
+  }, [allowedOfficeViews, canManageContacts, osCenterLabel]);
   const defaultOfficeView = allowedOfficeViews.includes('academy')
     ? 'academy'
     : allowedOfficeViews.includes('classrooms')
@@ -1970,7 +1981,11 @@ const App = () => {
     : (officeClassroomId
       ? 'Classroom'
       : officeView
-        ? OFFICE_LABELS[officeView]
+        ? officeView === 'academy'
+          ? academyHomeLabel
+          : officeView === 'os'
+            ? osCenterLabel
+            : OFFICE_LABELS[officeView]
         : 'Academy');
   const teacherShell = officeShellLabel(selectedAcademyAccess);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
@@ -3958,7 +3973,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(academyOfficePath()))}
           >
             <span className="nav-icon" aria-hidden="true"><LayoutDashboard size={17} /></span>
-            Academy control
+            {academyHomeLabel}
           </button>
         ) : null}
         {officeCanOpen('classrooms') ? (
@@ -4048,7 +4063,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(academyOfficePath('os')))}
           >
             <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
-            {canManageAcademy ? 'Command Center' : 'LMS Center'}
+            {osCenterLabel}
           </button>
         ) : null}
 
@@ -4139,7 +4154,9 @@ const App = () => {
         {officeView === 'academy' && officeCanOpen('academy') ? (
           <AcademyView
             academyId={academyId}
-            role={activeMembership?.role || 'member'}
+            role={accessRoleLabel(selectedAcademyAccess)}
+            scope={selectedAcademyAccess?.scope ?? 'academy'}
+            assignedClassroomsCount={selectedAcademyAccess?.classroom_ids.length ?? 0}
             summary={summary}
             contactsCount={contacts.length}
             classroomsCount={classrooms.length}
