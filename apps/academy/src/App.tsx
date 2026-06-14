@@ -298,6 +298,42 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
   return 'office';
 };
 
+const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
+  office: OFFICE_VIEWS,
+  admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
+  teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
+  center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
+};
+
+const officeIntentCanEnter = (
+  access: TeacherStudioAccessProfile | null | undefined,
+  intent: OfficeRouteIntent,
+): boolean => {
+  if (!access) return false;
+  if (intent === 'office') return canEnterAcademyOffice(access);
+  if (intent === 'teacher') {
+    return hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS');
+  }
+  if (intent === 'admin') {
+    return (
+      hasAccessPermission(access, 'manageAcademy') ||
+      hasAccessPermission(access, 'manageStaff') ||
+      hasAccessPermission(access, 'manageFinance') ||
+      hasAccessPermission(access, 'manageOffers')
+    );
+  }
+  return access.source === 'center' || String(access.role ?? '').toLowerCase() === 'center_admin';
+};
+
+const officeViewsForIntent = (
+  access: TeacherStudioAccessProfile | null | undefined,
+  intent: OfficeRouteIntent,
+): OfficeView[] => {
+  if (!officeIntentCanEnter(access, intent)) return [];
+  const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
+  return caps.filter((view) => hasAccessPermission(access, OFFICE_VIEW_PERMISSIONS[view]));
+};
+
 const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
   academy: 'Academy',
   classrooms: 'Classrooms',
@@ -752,9 +788,20 @@ const App = () => {
   const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
   const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
   const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
+  const officeRouteAcademies = useMemo(
+    () =>
+      teacherDirectoryAcademies.filter((academy) =>
+        officeIntentCanEnter(academy.access ?? buildFallbackAccess(academy.role), officeRouteIntent),
+      ),
+    [officeRouteIntent, teacherDirectoryAcademies],
+  );
+  const officeRouteAcademyIds = useMemo(
+    () => new Set(officeRouteAcademies.map((academy) => academy.id)),
+    [officeRouteAcademies],
+  );
   const allowedOfficeViews = useMemo(
-    () => OFFICE_VIEWS.filter((view) => hasAccessPermission(selectedAcademyAccess, OFFICE_VIEW_PERMISSIONS[view])),
-    [selectedAcademyAccess],
+    () => officeViewsForIntent(selectedAcademyAccess, officeRouteIntent),
+    [officeRouteIntent, selectedAcademyAccess],
   );
   const academyQuickTargets = useMemo(() => {
     const targetCopy: Partial<Record<OfficeView, { title: string; caption: string }>> = {
@@ -796,11 +843,11 @@ const App = () => {
   }, [allowedOfficeViews, defaultOfficeView, officeRouteIntent]);
   const academyOptions = useMemo(
     () =>
-      teacherDirectoryAcademies.map((academy) => ({
+      (officeRouteAcademies.length > 0 ? officeRouteAcademies : teacherDirectoryAcademies).map((academy) => ({
         id: academy.id,
         label: `${academy.name || academy.id} (${accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role))})`,
       })),
-    [teacherDirectoryAcademies],
+    [officeRouteAcademies, teacherDirectoryAcademies],
   );
 
   const requestedAcademyId = useMemo(
@@ -1626,8 +1673,33 @@ const App = () => {
     if (state !== 'ready' || isStudentWorkspaceRoute || !hasTeacherAccess) return;
     if (!requestedAcademyId || requestedAcademyId === academyId) return;
     if (!teacherAcademyIds.has(requestedAcademyId)) return;
+    if (isTeacherWorkspaceRoute && !officeRouteAcademyIds.has(requestedAcademyId)) return;
     void onSelectAcademy(requestedAcademyId);
-  }, [academyId, hasTeacherAccess, isStudentWorkspaceRoute, onSelectAcademy, requestedAcademyId, state, teacherAcademyIds]);
+  }, [
+    academyId,
+    hasTeacherAccess,
+    isStudentWorkspaceRoute,
+    isTeacherWorkspaceRoute,
+    officeRouteAcademyIds,
+    onSelectAcademy,
+    requestedAcademyId,
+    state,
+    teacherAcademyIds,
+  ]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || requestedAcademyId) return;
+    if (officeRouteAcademies.length === 0 || !academyId || officeRouteAcademyIds.has(academyId)) return;
+    void onSelectAcademy(officeRouteAcademies[0].id);
+  }, [
+    academyId,
+    isTeacherWorkspaceRoute,
+    officeRouteAcademies,
+    officeRouteAcademyIds,
+    onSelectAcademy,
+    requestedAcademyId,
+    state,
+  ]);
 
   const submitAcademy = async (event: FormEvent) => {
     event.preventDefault();
@@ -2092,7 +2164,7 @@ const App = () => {
   const teacherShell = officeShellLabel(selectedAcademyAccess, officeRouteIntent);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
   const requestedOfficeAcademyDenied = Boolean(
-    isTeacherWorkspaceRoute && requestedAcademyId && !teacherAcademyIds.has(requestedAcademyId),
+    isTeacherWorkspaceRoute && requestedAcademyId && !officeRouteAcademyIds.has(requestedAcademyId),
   );
 
   const studentAnnouncements = useMemo(
@@ -2370,7 +2442,7 @@ const App = () => {
   }
 
   if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasTeacherAccess || allowedOfficeViews.length === 0)) {
-    const fallbackOfficeAcademyId = teacherDirectoryAcademies[0]?.id ?? '';
+    const fallbackOfficeAcademyId = officeRouteAcademies[0]?.id ?? '';
     return (
       <>
         <div className="ts-loading">
@@ -2379,8 +2451,12 @@ const App = () => {
             <p>
               {requestedOfficeAcademyDenied
                 ? 'Your account does not have Academy Office permissions for the requested academy.'
+                : officeRouteIntent === 'center'
+                ? 'This route is for education-center delegated control. Your account does not have center control for this academy.'
+                : officeRouteIntent === 'admin'
+                ? 'This route is for academy administrators. Your account does not have administrator controls for this academy.'
                 : hasTeacherAccess
-                ? 'Your account does not have Academy Office permissions for this academy.'
+                ? 'Your account does not have this role workspace for the selected academy.'
                 : 'This route is for academy staff. Your account is linked as a student.'}
             </p>
             {fallbackOfficeAcademyId ? (
@@ -2431,7 +2507,7 @@ const App = () => {
 
   if (state === 'ready' && isAcademyDirectory) {
     const directoryDefaultAcademyId =
-      requestedAcademyId || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
+      requestedAcademyId || officeRouteAcademies[0]?.id || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
 
     return (
       <>
@@ -2498,7 +2574,7 @@ const App = () => {
                   <button
                     className="small-btn"
                     type="button"
-                    onClick={() => navigate(academyScopedPath(currentOfficePath(), teacherDirectoryAcademies[0]?.id))}
+                    onClick={() => navigate(academyScopedPath(currentOfficePath(), officeRouteAcademies[0]?.id ?? teacherDirectoryAcademies[0]?.id))}
                   >
                     Open Academy Office
                   </button>
@@ -4302,6 +4378,7 @@ const App = () => {
             contacts={contacts}
             classroomMemberships={classroomMemberships}
             access={selectedAcademyAccess}
+            mode={officeRouteIntent}
             formatDate={formatDate}
             statusClass={statusClass}
           />

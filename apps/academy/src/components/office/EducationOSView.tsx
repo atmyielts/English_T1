@@ -62,12 +62,15 @@ type EducationOSTab =
   | 'engagement'
   | 'brand';
 
+type EducationOSMode = 'office' | 'admin' | 'teacher' | 'center';
+
 type EducationOSViewProps = {
   academyId: string;
   classrooms: TeacherStudioClassroom[];
   contacts: TeacherStudioContact[];
   classroomMemberships: TeacherStudioClassroomMembership[];
   access: TeacherStudioAccessProfile | null;
+  mode?: EducationOSMode;
   formatDate: (iso: string | null | undefined) => string;
   statusClass: (status: string) => string;
 };
@@ -75,6 +78,13 @@ type EducationOSViewProps = {
 type BulkInviteRow = Awaited<ReturnType<typeof teacherStudioBulkInvites>>[number];
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
+  office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
+  admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
+  teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
+  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'growth', 'engagement', 'brand'],
+};
 
 const lifecycleStages = [
   { id: 'lead', label: 'Lead' },
@@ -147,6 +157,7 @@ export const EducationOSView = ({
   contacts,
   classroomMemberships,
   access,
+  mode = 'office',
   formatDate,
   statusClass,
 }: EducationOSViewProps) => {
@@ -418,10 +429,12 @@ export const EducationOSView = ({
 
   const openActionTarget = (item: TeacherStudioActionItem) => {
     if (item.classroom_id) setSelectedClassroomId(item.classroom_id);
-    if (['grading_backlog', 'missing_assignment'].includes(item.source_type)) setActiveTab('learning');
-    else if (['attendance_roll_call', 'schedule_gap'].includes(item.source_type)) setActiveTab('attendance');
-    else if (['placement_needed', 'trial_follow_up', 'renewal'].includes(item.source_type)) setActiveTab('growth');
-    else if (['certificate_ready', 'alert', 'parent_follow_up'].includes(item.source_type)) setActiveTab('engagement');
+    const modeTabs = OS_MODE_TAB_CAPS[mode] ?? OS_MODE_TAB_CAPS.office;
+    const setModeTab = (tab: EducationOSTab) => setActiveTab(modeTabs.includes(tab) ? tab : 'today');
+    if (['grading_backlog', 'missing_assignment'].includes(item.source_type)) setModeTab('learning');
+    else if (['attendance_roll_call', 'schedule_gap'].includes(item.source_type)) setModeTab('attendance');
+    else if (['placement_needed', 'trial_follow_up', 'renewal'].includes(item.source_type)) setModeTab('growth');
+    else if (['certificate_ready', 'alert', 'parent_follow_up'].includes(item.source_type)) setModeTab('engagement');
     else setActiveTab('today');
   };
 
@@ -665,19 +678,21 @@ export const EducationOSView = ({
   const canManageFinance = canUse('manageFinance');
   const canViewReports = canUse('viewReports');
   const canDispatchNotifications = canUse('dispatchNotifications');
+  const tabCaps = OS_MODE_TAB_CAPS[mode] ?? OS_MODE_TAB_CAPS.office;
+  const tabAllowedByMode = (tab: EducationOSTab): boolean => tabCaps.includes(tab);
 
   const allTabs: Array<{ id: EducationOSTab; label: string; visible: boolean }> = [
-    { id: 'today', label: 'Today', visible: canUse('viewEducationOS') },
-    { id: 'pipeline', label: 'Pipeline', visible: canUse('viewContacts') },
-    { id: 'automation', label: 'Automations', visible: canUse('manageAutomation') },
-    { id: 'calendar', label: 'Calendar', visible: canUse('viewEducationOS') },
-    { id: 'intelligence', label: 'Insights', visible: canUse('viewEducationOS') },
-    { id: 'command', label: 'Command', visible: canManageFinance || canViewReports || canDispatchNotifications },
-    { id: 'learning', label: 'Learning', visible: canUse('manageAssignments') || canUse('gradeSubmissions') },
-    { id: 'attendance', label: 'Attendance', visible: canUse('markAttendance') || canUse('manageSchedule') },
-    { id: 'growth', label: 'Growth', visible: canUse('viewReports') || canUse('manageStaff') },
-    { id: 'engagement', label: 'Engagement', visible: canUse('issueCertificates') || canUse('viewNotifications') || canUse('viewReferrals') },
-    { id: 'brand', label: 'Brand', visible: canUse('manageBranding') },
+    { id: 'today', label: 'Today', visible: tabAllowedByMode('today') && canUse('viewEducationOS') },
+    { id: 'pipeline', label: 'Pipeline', visible: tabAllowedByMode('pipeline') && canUse('viewContacts') },
+    { id: 'automation', label: 'Automations', visible: tabAllowedByMode('automation') && canUse('manageAutomation') },
+    { id: 'calendar', label: 'Calendar', visible: tabAllowedByMode('calendar') && canUse('viewEducationOS') },
+    { id: 'intelligence', label: 'Insights', visible: tabAllowedByMode('intelligence') && canUse('viewEducationOS') },
+    { id: 'command', label: 'Command', visible: tabAllowedByMode('command') && (canManageFinance || canViewReports || canDispatchNotifications) },
+    { id: 'learning', label: 'Learning', visible: tabAllowedByMode('learning') && (canUse('manageAssignments') || canUse('gradeSubmissions')) },
+    { id: 'attendance', label: 'Attendance', visible: tabAllowedByMode('attendance') && (canUse('markAttendance') || canUse('manageSchedule')) },
+    { id: 'growth', label: 'Growth', visible: tabAllowedByMode('growth') && (canUse('viewReports') || canUse('manageStaff')) },
+    { id: 'engagement', label: 'Engagement', visible: tabAllowedByMode('engagement') && (canUse('viewEducationOS') || canUse('issueCertificates') || canUse('viewNotifications') || canUse('viewReferrals')) },
+    { id: 'brand', label: 'Brand', visible: tabAllowedByMode('brand') && canUse('manageBranding') },
   ];
   const tabs = allTabs.filter((tab) => tab.visible);
 
