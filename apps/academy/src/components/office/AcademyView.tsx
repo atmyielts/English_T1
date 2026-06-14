@@ -18,11 +18,15 @@ type AcademyViewProps = {
   offersCount: number;
   paymentsCount: number;
   openAlertsCount: number;
+  quickTargets: QuickTarget[];
   landingForm: AcademyLandingFormState;
   onLandingFieldChange: (field: keyof AcademyLandingFormState, value: string) => void;
   onSaveLanding: (event: FormEvent<HTMLFormElement>) => void;
   busy: boolean;
   canManageLanding: boolean;
+  canViewOffers: boolean;
+  canViewFinance: boolean;
+  canViewAlerts: boolean;
   onNavigate: (path: string) => void;
 };
 
@@ -31,34 +35,6 @@ type QuickTarget = {
   caption: string;
   path: string;
 };
-
-const QUICK_TARGETS: QuickTarget[] = [
-  {
-    title: 'Classroom LMS',
-    caption: 'Gradebook, attendance, student actions, schedule',
-    path: '/academy/teacher/classrooms',
-  },
-  {
-    title: 'Contacts',
-    caption: 'Manage students and assistants',
-    path: '/academy/teacher/contacts',
-  },
-  {
-    title: 'Offers',
-    caption: 'Define paid plans and packages',
-    path: '/academy/teacher/offers',
-  },
-  {
-    title: 'Payments',
-    caption: 'Track payments and convert to access',
-    path: '/academy/teacher/payments',
-  },
-  {
-    title: 'Command Center',
-    caption: 'Academy-wide automations and reports',
-    path: '/academy/teacher/os',
-  },
-];
 
 export const AcademyView = ({
   academyId,
@@ -69,11 +45,15 @@ export const AcademyView = ({
   offersCount,
   paymentsCount,
   openAlertsCount,
+  quickTargets,
   landingForm,
   onLandingFieldChange,
   onSaveLanding,
   busy,
   canManageLanding,
+  canViewOffers,
+  canViewFinance,
+  canViewAlerts,
   onNavigate,
 }: AcademyViewProps) => {
   return (
@@ -100,42 +80,50 @@ export const AcademyView = ({
               <span>Classrooms</span>
               <strong>{summary?.counts.classrooms ?? classroomsCount}</strong>
             </div>
-            <div className="metric-row">
-              <span>Offers</span>
-              <strong>{summary?.counts.offers ?? offersCount}</strong>
-            </div>
-            <div className="metric-row">
-              <span>Payments</span>
-              <strong>{paymentsCount}</strong>
-            </div>
-            <div className="metric-row">
-              <span>Open alerts</span>
-              <strong>{summary?.counts.open_alerts ?? openAlertsCount}</strong>
-            </div>
+            {canViewOffers ? (
+              <div className="metric-row">
+                <span>Offers</span>
+                <strong>{summary?.counts.offers ?? offersCount}</strong>
+              </div>
+            ) : null}
+            {canViewFinance ? (
+              <div className="metric-row">
+                <span>Payments</span>
+                <strong>{paymentsCount}</strong>
+              </div>
+            ) : null}
+            {canViewAlerts ? (
+              <div className="metric-row">
+                <span>Open alerts</span>
+                <strong>{summary?.counts.open_alerts ?? openAlertsCount}</strong>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="panel">
-          <h3>Quick actions</h3>
-          <div className="grid">
-            {QUICK_TARGETS.map((item) => (
-              <button
-                key={item.path}
-                className="ghost-btn"
-                type="button"
-                onClick={() => onNavigate(item.path)}
-              >
-                {item.title}: {item.caption}
-              </button>
-            ))}
+        {quickTargets.length > 0 ? (
+          <div className="panel">
+            <h3>Quick actions</h3>
+            <div className="grid">
+              {quickTargets.map((item) => (
+                <button
+                  key={item.path}
+                  className="ghost-btn"
+                  type="button"
+                  onClick={() => onNavigate(item.path)}
+                >
+                  {item.title}: {item.caption}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className="panel">
         <h3>Public academy landing</h3>
         <p className="muted">
-          These fields power the public-facing academy page before users enter Teacher Office or Student Workplace.
+          These fields power the public-facing academy page before users enter Academy Office or Student Workplace.
         </p>
         <ul className="list">
           <li>Headline and subheadline define the first impression.</li>
@@ -191,7 +179,7 @@ export const AcademyView = ({
                 className="input"
                 value={landingForm.secondary_cta_label}
                 onChange={(event) => onLandingFieldChange('secondary_cta_label', event.target.value)}
-                placeholder="Enter Teacher Office"
+                placeholder="Enter Academy Office"
                 disabled={!canManageLanding || busy}
               />
             </label>
