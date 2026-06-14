@@ -33,6 +33,7 @@ import {
   teacherStudioDeleteClassroomResource,
   teacherStudioContacts,
   teacherStudioCreateOffer,
+  teacherStudioCreateClickTuitionPayment,
   teacherStudioCreatePayment,
   teacherStudioEntitlements,
   teacherStudioEducationOS,
@@ -571,7 +572,7 @@ const defaultGrantForm = (): GrantFormState => ({
 const defaultPaymentForm = (): PaymentFormState => ({
   contact_id: '',
   offer_id: '',
-  provider: 'manual',
+  provider: 'click',
 });
 
 const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
@@ -1937,13 +1938,27 @@ const App = () => {
     setError('');
     setNotice('');
     try {
-      await teacherStudioCreatePayment(academyId, {
-        contact_id: paymentForm.contact_id,
-        offer_id: paymentForm.offer_id,
-        provider: paymentForm.provider.trim() || 'manual',
-      });
+      const provider = paymentForm.provider.trim().toLowerCase() || 'click';
+      if (provider === 'click') {
+        const result = await teacherStudioCreateClickTuitionPayment(academyId, {
+          contact_id: paymentForm.contact_id,
+          offer_id: paymentForm.offer_id,
+          redirect_url: typeof window !== 'undefined' ? window.location.href : null,
+        });
+        if (result.payment_url) {
+          const popup = window.open(result.payment_url, '_blank', 'noopener,noreferrer');
+          if (!popup) window.location.assign(result.payment_url);
+        }
+        setNotice('Click checkout created.');
+      } else {
+        await teacherStudioCreatePayment(academyId, {
+          contact_id: paymentForm.contact_id,
+          offer_id: paymentForm.offer_id,
+          provider: 'manual',
+        });
+        setNotice('Manual payment record created.');
+      }
       await loadAcademyData(academyId, selectedConversationId);
-      setNotice('Payment created.');
     } catch (err) {
       setError(normalizeError(err));
     } finally {

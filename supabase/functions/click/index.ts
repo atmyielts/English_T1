@@ -185,6 +185,15 @@ const normalizePaymentStatus = (raw: unknown): string => {
   return s || "unknown";
 };
 
+const normalizeAcademyFinanceRole = (raw: unknown): string => {
+  const role = String(raw ?? "").trim().toLowerCase().replace(/-/g, "_").replace(/\s+/g, "_");
+  if (role === "center_admin") return "center_admin";
+  return role;
+};
+
+const isAcademyFinanceRole = (raw: unknown): boolean =>
+  ["owner", "admin", "center_admin"].includes(normalizeAcademyFinanceRole(raw));
+
 const isTerminalFailureStatus = (status: string): boolean =>
   ["failed", "failure", "canceled", "cancelled", "expired", "rejected"]
     .includes(status.trim().toLowerCase());
@@ -2132,9 +2141,10 @@ serve(async (req) => {
         if (contactErr) return jsonResponse(500, { error: "Failed to load contact", details: contactErr });
         if (!contact?.id) return jsonResponse(404, { error: "Contact not found" });
 
-        // Authorization: payer is the contact's linked user, OR an academy admin.
-        const isOwner = String(contact.user_id ?? "") === authedUserId;
-        if (!isOwner) {
+        // Authorization: payer is the contact's linked user, OR an academy finance operator.
+        const isContactOwner = String(contact.user_id ?? "") === authedUserId;
+        let hasAcademyFinanceAccess = false;
+        if (!isContactOwner) {
           const { data: adminMembership } = await supabase
             .from("tenant_memberships")
             .select("role")
@@ -2142,10 +2152,34 @@ serve(async (req) => {
             .eq("user_id", authedUserId)
             .eq("status", "active")
             .maybeSingle();
-          if (!adminMembership || !["owner", "admin"].includes(String(adminMembership.role ?? ""))) {
+          hasAcademyFinanceAccess = isAcademyFinanceRole(adminMembership?.role);
+
+          if (!hasAcademyFinanceAccess) {
+            const { data: academyTenant, error: academyTenantErr } = await supabase
+              .from("tenants")
+              .select("metadata")
+              .eq("id", academyId)
+              .maybeSingle();
+            if (academyTenantErr) return jsonResponse(500, { error: "Failed to load academy tenant", details: academyTenantErr });
+
+            const parentCenterId = String((academyTenant?.metadata as any)?.parent_center_id ?? "").trim();
+            if (parentCenterId) {
+              const { data: centerMembership } = await supabase
+                .from("tenant_memberships")
+                .select("role")
+                .eq("tenant_id", parentCenterId)
+                .eq("user_id", authedUserId)
+                .eq("status", "active")
+                .maybeSingle();
+              hasAcademyFinanceAccess = isAcademyFinanceRole(centerMembership?.role);
+            }
+          }
+
+          if (!hasAcademyFinanceAccess) {
             return jsonResponse(403, { error: "Forbidden" });
           }
         }
+        const paymentSource = isContactOwner ? "student_portal" : "academy_office";
 
         const tuitionAmount = Math.floor(Number(offer.price_amount));
         const tuitionCurrency = String(offer.currency ?? "UZS").toUpperCase();
@@ -2168,7 +2202,7 @@ serve(async (req) => {
             amount: tuitionAmount,
             currency: tuitionCurrency,
             status: "pending",
-            metadata: { source: "student_portal", initiated_by: authedUserId },
+            metadata: { source: paymentSource, initiated_by: authedUserId },
             created_by: authedUserId,
           })
           .select("id")
@@ -2179,6 +2213,7 @@ serve(async (req) => {
 
         const tuitionMetadata: Record<string, unknown> = {
           ...(meta as Record<string, unknown>),
+          source: paymentSource,
           purchase_type: "academy_tuition",
           academy_id: academyId,
           academy_payment_id: academyPayment.id,
@@ -2215,7 +2250,7 @@ serve(async (req) => {
           .eq("id", tuitionUuid);
         await supabase
           .from("academy_payments")
-          .update({ metadata: { source: "student_portal", initiated_by: authedUserId, platform_payment_id: tuitionUuid } })
+          .update({ metadata: { source: paymentSource, initiated_by: authedUserId, platform_payment_id: tuitionUuid } })
           .eq("id", academyPayment.id);
 
         const tuitionUrl = buildClickPaymentUrl(
