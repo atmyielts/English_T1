@@ -835,8 +835,18 @@ const App = () => {
   }, [studentDashboard]);
 
   const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string) => {
+    const summaryData = await teacherStudioSummary(academy);
+    const access = summaryData.access ?? null;
+    const canLoadContacts = hasAccessPermission(access, 'viewContacts');
+    const canLoadClassrooms = hasAccessPermission(access, 'viewClassrooms');
+    const canLoadMessages = hasAccessPermission(access, 'manageMessages');
+    const canLoadAnnouncements = hasAccessPermission(access, 'manageAnnouncements');
+    const canLoadAlerts = hasAccessPermission(access, 'manageAlerts');
+    const canLoadOffers = hasAccessPermission(access, 'manageOffers');
+    const canLoadFinance = hasAccessPermission(access, 'manageFinance');
+    const canLoadEducationOS = hasAccessPermission(access, 'viewEducationOS');
+
     const [
-      summaryData,
       contactsData,
       classroomsData,
       classroomMembershipsData,
@@ -849,24 +859,30 @@ const App = () => {
       entitlementsData,
       educationOSData,
     ] = await Promise.all([
-      teacherStudioSummary(academy),
-      teacherStudioContacts(academy),
-      teacherStudioClassrooms(academy),
-      teacherStudioClassroomMemberships(academy),
-      teacherStudioConversations(academy),
-      teacherStudioAnnouncements(academy),
-      teacherStudioAlerts(academy),
-      teacherStudioOffers(academy),
-      teacherStudioOfferGrants(academy),
-      teacherStudioPayments(academy),
-      teacherStudioEntitlements(academy),
-      teacherStudioEducationOS(academy).catch((err) => {
+      canLoadContacts ? teacherStudioContacts(academy) : Promise.resolve([]),
+      canLoadClassrooms ? teacherStudioClassrooms(academy) : Promise.resolve([]),
+      canLoadClassrooms ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
+      canLoadMessages ? teacherStudioConversations(academy) : Promise.resolve([]),
+      canLoadAnnouncements ? teacherStudioAnnouncements(academy) : Promise.resolve([]),
+      canLoadAlerts ? teacherStudioAlerts(academy) : Promise.resolve([]),
+      canLoadOffers ? teacherStudioOffers(academy) : Promise.resolve([]),
+      canLoadOffers ? teacherStudioOfferGrants(academy) : Promise.resolve([]),
+      canLoadFinance ? teacherStudioPayments(academy) : Promise.resolve([]),
+      canLoadFinance ? teacherStudioEntitlements(academy) : Promise.resolve([]),
+      canLoadEducationOS ? teacherStudioEducationOS(academy).catch((err) => {
         console.warn('Failed to load Academy LMS operations engine', err);
         return null;
-      }),
+      }) : Promise.resolve(null),
     ]);
 
     setSummary(summaryData);
+    if (summaryData.access) {
+      setAcademies((previous) =>
+        previous.map((item) =>
+          item.id === academy ? { ...item, role: summaryData.access?.role ?? item.role, access: summaryData.access } : item,
+        ),
+      );
+    }
     setContacts(contactsData);
     setClassrooms(classroomsData);
     setClassroomMemberships(classroomMembershipsData);

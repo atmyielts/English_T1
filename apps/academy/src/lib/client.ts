@@ -66,6 +66,7 @@ export type TeacherStudioAcademy = {
 
 export type TeacherStudioSummary = {
   academy_id: string;
+  access?: TeacherStudioAccessProfile;
   counts: {
     contacts: number;
     classrooms: number;
