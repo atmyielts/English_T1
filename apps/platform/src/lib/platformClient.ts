@@ -2665,6 +2665,7 @@ export type PartnerCenterAcademy = {
   };
   classrooms?: Array<{ id: string; academy_id: string; name: string; is_active: boolean }>;
   academy_url?: string;
+  academy_office_url?: string;
   teacher_office_url?: string;
   student_workspace_url?: string;
   classroom_directory_url?: string;

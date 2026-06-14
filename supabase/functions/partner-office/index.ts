@@ -548,13 +548,14 @@ const getAcademyAppUrl = async (sb: any): Promise<string> => {
     .maybeSingle();
   const metadata = isObject(data?.metadata) ? data.metadata as Json : {};
   const configured = String(metadata.app_url ?? Deno.env.get("ACADEMY_APP_URL") ?? "").trim().replace(/\/+$/, "");
-  if (!configured || /^https:\/\/academy\.schood\.online$/i.test(configured)) return platformBaseUrl();
+  if (!configured || configured.toLowerCase() === "https://schood.online") return "https://academy.schood.online";
   return configured;
 };
 
 const academyLinks = (appUrl: string, academyId: string) => ({
   academy_url: `${appUrl}/academy?academy_id=${encodeURIComponent(academyId)}`,
-  teacher_office_url: `${appUrl}/academy/teacher?academy_id=${encodeURIComponent(academyId)}`,
+  academy_office_url: `${appUrl}/academy/office?academy_id=${encodeURIComponent(academyId)}`,
+  teacher_office_url: `${appUrl}/academy/office?academy_id=${encodeURIComponent(academyId)}`,
   student_workspace_url: `${appUrl}/academy/student?academy_id=${encodeURIComponent(academyId)}`,
   classroom_directory_url: `${appUrl}/academy/classrooms?academy_id=${encodeURIComponent(academyId)}`,
 });
@@ -677,7 +678,7 @@ const createCenterAcademy = async (sb: any, centerTenantId: string, body: Json, 
     landing: {
       headline: academyName,
       subheadline: `${center.display_name ?? "Education center"} academy`,
-      teacher_cta_label: "Open Teacher Office",
+      teacher_cta_label: "Open Academy Office",
       student_cta_label: "Open Student Workplace",
     },
   };
