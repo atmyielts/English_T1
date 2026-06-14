@@ -309,6 +309,7 @@ export type TeacherStudioClassroomRoom = {
     role: string;
     contact_id: string | null;
     display_name: string;
+    can_manage_resources: boolean;
   };
   members: TeacherStudioClassroomChatMember[];
   resources: TeacherStudioClassroomResource[];

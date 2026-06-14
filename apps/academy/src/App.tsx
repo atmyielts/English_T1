@@ -3151,8 +3151,9 @@ const App = () => {
       role: fallbackRoomMode === 'teacher' ? 'member' : 'student',
       contact_id: null,
       display_name: fallbackRoomMode === 'teacher' ? 'Teacher' : 'Student',
+      can_manage_resources: false,
     };
-    const canManageResources = roomViewer.type === 'teacher';
+    const canManageResources = roomViewer.type === 'teacher' && roomViewer.can_manage_resources === true;
     const roomResources = classroomRoom?.resources ?? [];
     const roomMessages = classroomRoom?.messages ?? [];
     const visibleRoomMessages = roomMessages.slice(-120);
