@@ -165,10 +165,17 @@ function App() {
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
             <Route path="/academy" element={<AcademyControlPage />} />
+            <Route path="/academy/office" element={<AcademyControlPage />} />
+            <Route path="/academy/office/*" element={<AcademyControlPage />} />
             <Route path="/academy/teacher" element={<AcademyControlPage />} />
             <Route path="/academy/teacher/os" element={<AcademyControlPage />} />
+            <Route path="/academy/teacher/*" element={<AcademyControlPage />} />
             <Route path="/academy/admin" element={<AcademyControlPage />} />
+            <Route path="/academy/admin/*" element={<AcademyControlPage />} />
+            <Route path="/academy/center" element={<AcademyControlPage />} />
+            <Route path="/academy/center/*" element={<AcademyControlPage />} />
             <Route path="/academy/classrooms" element={<AcademyControlPage />} />
+            <Route path="/academy/classrooms/*" element={<AcademyControlPage />} />
             <Route path="/academy/student" element={<AcademyStudentRedirectPage />} />
             <Route path="/academy/student/*" element={<AcademyStudentRedirectPage />} />
             <Route path="/academy-control" element={<AcademyControlPage />} />
