@@ -1941,7 +1941,7 @@ const handleReadAction = async (
   }
 
   if (action === "offers") {
-    if (!academyAccessHas(access, "manageOffers")) return json(200, { offers: [] });
+    if (!academyAccessHas(access, "manageOffers")) return json(403, { error: "Forbidden" });
     const { data, error } = await sb
       .from("academy_offers")
       .select("id, academy_id, name, type, price_amount, currency, duration_days, description, is_active, metadata, created_at, updated_at")
@@ -1953,7 +1953,7 @@ const handleReadAction = async (
   }
 
   if (action === "offer-grants") {
-    if (!academyAccessHas(access, "manageOffers")) return json(200, { offer_grants: [] });
+    if (!academyAccessHas(access, "manageOffers")) return json(403, { error: "Forbidden" });
     const offerId = normalizeText(offerIdRaw, 64) || null;
 
     let query = sb
@@ -1970,7 +1970,7 @@ const handleReadAction = async (
   }
 
   if (action === "payments") {
-    if (!academyAccessHas(access, "manageFinance")) return json(200, { payments: [] });
+    if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
     const { data, error } = await sb
       .from("academy_payments")
       .select("id, academy_id, contact_id, offer_id, provider, provider_transaction_id, amount, currency, status, metadata, created_by, created_at, updated_at")
@@ -2207,7 +2207,7 @@ const handleReadAction = async (
   }
 
   if (action === "referral_leaderboard") {
-    if (!academyAccessHas(access, "viewReferrals")) return json(200, { leaderboard: [] });
+    if (!academyAccessHas(access, "viewReferrals")) return json(403, { error: "Forbidden" });
     const { data: refs, error } = await sb.from("academy_referrals")
       .select("referrer_contact_id, status").eq("academy_id", academyId).not("referred_contact_id", "is", null).limit(20000);
     if (error) return json(500, { error: "Failed to load referrals", detail: error.message });
@@ -2242,7 +2242,7 @@ const handleReadAction = async (
   }
 
   if (action === "staff") {
-    if (!academyAccessHas(access, "manageStaff")) return json(200, { staff: [] });
+    if (!academyAccessHas(access, "manageStaff")) return json(403, { error: "Forbidden" });
     const { data, error } = await sb.from("academy_staff")
       .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500);
@@ -2251,18 +2251,7 @@ const handleReadAction = async (
   }
 
   if (action === "owner_dashboard") {
-    if (!academyAccessHas(access, "manageFinance")) {
-      return json(200, {
-        revenue: { currency: "UZS", collected_total: 0, collected_this_month: 0, outstanding: 0, paid_count: 0 },
-        funnel: {},
-        total_students: 0,
-        total_classrooms: 0,
-        classroom_stats: [],
-        attendance_trend: [],
-        center_voucher_source: { center_tenant_id: null },
-        center_voucher_heatmaps: [],
-      });
-    }
+    if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
     const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
@@ -2349,13 +2338,13 @@ const handleReadAction = async (
   }
 
   if (action === "automation_rules") {
-    if (!academyAccessHas(access, "manageAutomation")) return json(200, { automation_rules: [] });
+    if (!academyAccessHas(access, "manageAutomation")) return json(403, { error: "Forbidden" });
     const automationRules = await loadEducationAutomationRules(sb, academyId, null);
     return json(200, { automation_rules: automationRules });
   }
 
   if (action === "branding") {
-    if (!academyAccessHas(access, "manageBranding")) return json(200, { branding: null });
+    if (!academyAccessHas(access, "manageBranding")) return json(403, { error: "Forbidden" });
     const { data, error } = await sb.from("academy_branding")
       .select("id, academy_id, display_name, tagline, logo_url, favicon_url, primary_color, accent_color, hide_schood_logo, custom_domain, custom_domain_verified, footer_text, metadata, updated_at")
       .eq("academy_id", academyId).maybeSingle();
@@ -2364,7 +2353,7 @@ const handleReadAction = async (
   }
 
   if (action === "notifications") {
-    if (!academyAccessHas(access, "viewNotifications")) return json(200, { notifications: [] });
+    if (!academyAccessHas(access, "viewNotifications")) return json(403, { error: "Forbidden" });
     const { data, error } = await sb.from("academy_notifications")
       .select("id, contact_id, channel, type, title, body, status, error, sent_at, scheduled_at, created_at")
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200);
@@ -2373,9 +2362,7 @@ const handleReadAction = async (
   }
 
   if (action === "classroom_billing") {
-    if (!academyAccessHas(access, "manageFinance")) {
-      return json(200, { classroom_id: normalizeText(classroomIdRaw, 64) || null, has_tuition: false, offers: [], students: [], paid_count: 0, unpaid_count: 0 });
-    }
+    if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
     const classroomId = normalizeText(classroomIdRaw, 64) || null;
     if (!classroomId) return json(400, { error: "classroom_id is required" });
     if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
@@ -2449,7 +2436,7 @@ const handleReadAction = async (
     return json(200, { schedule: data ?? [] });
   }
 
-  if (!academyAccessHas(access, "manageFinance")) return json(200, { entitlements: [] });
+  if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
 
   const { data, error } = await sb
     .from("academy_entitlements")
