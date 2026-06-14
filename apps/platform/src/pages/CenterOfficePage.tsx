@@ -1763,9 +1763,9 @@ export const CenterOfficePage: React.FC = () => {
               <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{capabilities.tier_label} tier</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/75">
-                  <span>Staff {staffMembers.filter((member) => member.status === 'active').length}/{capabilities.staff_limit}</span>
-                  <span>Batch max {capabilities.max_voucher_batch_quantity}</span>
-                  <span>Academy classes {academyClassroomCount}</span>
+                  {access.can_manage_staff ? <span>Staff {staffMembers.filter((member) => member.status === 'active').length}/{capabilities.staff_limit}</span> : <span>Role {roleLabel}</span>}
+                  {access.can_manage_inventory ? <span>Batch max {capabilities.max_voucher_batch_quantity}</span> : <span>Students {dashboard?.counts?.students ?? students.length}</span>}
+                  {access.can_manage_academies ? <span>Academy classes {academyClassroomCount}</span> : <span>Groups {reports?.active_groups ?? dashboard?.counts?.active_groups ?? 0}</span>}
                   <span>PDF {capabilities.pdf_reports_enabled ? 'on' : 'premium'}</span>
                 </div>
               </div>
@@ -2230,7 +2230,7 @@ export const CenterOfficePage: React.FC = () => {
                 <StatCard label="Completed" value={reports?.completed_exams ?? 0} icon={ClipboardList} />
                 <StatCard label="Average score" value={reports?.average_score ?? '-'} icon={BarChart3} />
                 <StatCard label="Active students" value={reports?.active_students ?? 0} icon={UsersRound} />
-                <StatCard label="Academy classes" value={academyClassroomCount} icon={School} />
+                {access.can_manage_academies ? <StatCard label="Academy classes" value={academyClassroomCount} icon={School} /> : <StatCard label="Active groups" value={reports?.active_groups ?? 0} icon={School} />}
                 <StatCard label="Events" value={reports?.upcoming_events ?? events.length} icon={CalendarDays} />
                 <StatCard label="Pending review" value={reports?.pending_reviews ?? reviewItems.filter((item) => item.status !== 'released').length} icon={FileText} />
               </div>
@@ -2283,8 +2283,8 @@ export const CenterOfficePage: React.FC = () => {
                   <SectionTitle icon={BarChart3} label="Analytics" title="Center performance" />
                   {capabilities.analytics_enabled ? <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Redemption rate</p>
-                      <p className="mt-2 text-2xl font-bold">{Math.round(Number(analytics?.redemption_rate ?? 0) * 100)}%</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{access.can_manage_inventory ? 'Redemption rate' : 'Average score'}</p>
+                      <p className="mt-2 text-2xl font-bold">{access.can_manage_inventory ? `${Math.round(Number(analytics?.redemption_rate ?? 0) * 100)}%` : (analytics?.average_score ?? '-')}</p>
                     </div>
                     <div className="rounded-2xl border border-gray-900/10 bg-white/70 p-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inactive students</p>

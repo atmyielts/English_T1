@@ -1828,12 +1828,21 @@ const buildClassroomHeatmaps = (results: any[], vouchers: any[]) => {
   }).sort((a, b) => b.attempts - a.attempts);
 };
 
-const analyticsFrom = (students: any[], groups: any[], events: any[], reviews: any[], results: any[], vouchers: any[]) => {
+const analyticsFrom = (
+  students: any[],
+  groups: any[],
+  events: any[],
+  reviews: any[],
+  results: any[],
+  vouchers: any[],
+  options: { includeInventorySignals?: boolean } = {},
+) => {
+  const includeInventorySignals = options.includeInventorySignals !== false;
   const redeemed = vouchers.filter((row) => row.status === "redeemed").length;
   const total = vouchers.length;
   const scores = results.map((row) => Number(row.overall_band ?? row.overall_score ?? NaN)).filter((n) => Number.isFinite(n));
   return {
-    redemption_rate: total > 0 ? redeemed / total : 0,
+    redemption_rate: includeInventorySignals && total > 0 ? redeemed / total : null,
     active_students: students.filter((row) => row.status === "active").length,
     inactive_students: students.filter((row) => row.status === "inactive" || row.status === "invited").length,
     groups: groups.length,
@@ -1897,7 +1906,7 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && action === "academies") {
-      if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Tenant admin access is required" });
       const gate = await requireActiveCenterOffice(sb, tenantId, { center_office: true });
       if (gate) return gate;
       return json(200, { academies: await loadCenterAcademies(sb, tenantId) });
@@ -2149,10 +2158,15 @@ serve(async (req) => {
 
     if (req.method === "GET" && action === "reports") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const access = centerAccessFor(memberships, tenantId);
       const [results, vouchersRes, seatsRes, students, groups, events, reviews] = await Promise.all([
         loadResults(sb, tenantId),
-        sb.from("partner_vouchers").select("id, status, redeemed_by, expires_at").eq("tenant_id", tenantId).limit(1000),
-        sb.from("seat_licenses").select("id, status").eq("tenant_id", tenantId).limit(1000),
+        access.can_manage_inventory
+          ? sb.from("partner_vouchers").select("id, status, redeemed_by, expires_at").eq("tenant_id", tenantId).limit(1000)
+          : Promise.resolve({ data: [], error: null }),
+        access.can_manage_inventory
+          ? sb.from("seat_licenses").select("id, status").eq("tenant_id", tenantId).limit(1000)
+          : Promise.resolve({ data: [], error: null }),
         loadCenterStudents(sb, tenantId).catch(() => []),
         loadCenterGroups(sb, tenantId).catch(() => []),
         loadMockEvents(sb, tenantId).catch(() => []),
@@ -2163,6 +2177,7 @@ serve(async (req) => {
       return json(200, {
         reports: {
           ...computeReports(results, vouchersRes.data ?? [], seatsRes.data ?? []),
+          active_students: students.filter((row: any) => row.status === "active").length,
           active_groups: groups.filter((row: any) => row.status === "active").length,
           upcoming_events: events.filter((row: any) => ["draft", "scheduled"].includes(row.status) && Date.parse(row.starts_at) >= Date.now()).length,
           pending_reviews: reviews.filter((row: any) => ["pending", "in_review"].includes(row.status)).length,
@@ -2177,6 +2192,7 @@ serve(async (req) => {
       const profile = await getCenterProfile(sb, tenantId);
       const gate = requireTierCapability(profile, "analytics_enabled", "Analytics");
       if (gate) return gate;
+      const access = centerAccessFor(memberships, tenantId);
       const [students, groups, events, reviews, results, vouchersRes] = await Promise.all([
         loadCenterStudents(sb, tenantId),
         loadCenterGroups(sb, tenantId),
@@ -2190,25 +2206,40 @@ serve(async (req) => {
           .limit(5000),
       ]);
       if (vouchersRes.error) return json(500, { error: "Failed to load voucher analytics", detail: vouchersRes.error.message });
-      return json(200, { analytics: analyticsFrom(students, groups, events, reviews, results, vouchersRes.data ?? []) });
+      return json(200, { analytics: analyticsFrom(students, groups, events, reviews, results, vouchersRes.data ?? [], { includeInventorySignals: access.can_manage_inventory }) });
     }
 
     if (req.method === "GET" && action === "dashboard") {
       if (!requireCenterOperator(memberships, tenantId)) return json(403, { error: "Center staff access is required" });
+      const access = centerAccessFor(memberships, tenantId);
       const [center, tickets, seats, payments, results, vouchers, batches, wallet, students, groups, events, reviews, academies] = await Promise.all([
         getCenterProfile(sb, tenantId),
-        sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        sb.from("payments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
+        access.can_manage_finance
+          ? sb.from("exam_tokens").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId)
+          : Promise.resolve({ count: 0, data: null, error: null }),
+        access.can_manage_finance
+          ? sb.from("seat_licenses").select("id, status", { count: "exact", head: true }).eq("tenant_id", tenantId)
+          : Promise.resolve({ count: 0, data: null, error: null }),
+        access.can_manage_finance
+          ? sb.from("payments").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId)
+          : Promise.resolve({ count: 0, data: null, error: null }),
         sb.from("exam_registrations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        sb.from("partner_vouchers").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
-        sb.from("partner_voucher_batches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId),
-        sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" }),
+        access.can_manage_inventory
+          ? sb.from("partner_vouchers").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000)
+          : Promise.resolve({ count: 0, data: [], error: null }),
+        access.can_manage_inventory
+          ? sb.from("partner_voucher_batches").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId)
+          : Promise.resolve({ count: 0, data: null, error: null }),
+        access.can_manage_finance
+          ? sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: "UZS" })
+          : Promise.resolve({ data: 0, error: null }),
         sb.from("partner_center_students").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_center_groups").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_center_mock_events").select("id, status, starts_at", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
         sb.from("partner_center_review_items").select("id, status", { count: "exact" }).eq("tenant_id", tenantId).limit(1000),
-        sb.from("tenants").select("id", { count: "exact", head: true }).eq("type", "team").contains("metadata", { parent_center_id: tenantId, service_family: "academy" }),
+        access.can_manage_academies
+          ? sb.from("tenants").select("id", { count: "exact", head: true }).eq("type", "team").contains("metadata", { parent_center_id: tenantId, service_family: "academy" })
+          : Promise.resolve({ count: 0, data: null, error: null }),
       ]);
       const voucherRows = vouchers.data ?? [];
       const eventRows = events.data ?? [];
@@ -2216,7 +2247,7 @@ serve(async (req) => {
       return json(200, {
         tenant_id: tenantId,
         center: withCenterCapabilities(center),
-        access: centerAccessFor(memberships, tenantId),
+        access,
         capabilities: getCenterCapabilities(center),
         counts: {
           tickets: tickets.count ?? 0,
