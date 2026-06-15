@@ -373,7 +373,7 @@ const filterEducationOSForOfficeRoute = (
   intent: OfficeRouteIntent,
 ): TeacherStudioEducationOS | null => {
   if (!os) return null;
-  if (intent === 'office' || intent === 'admin') return os;
+  if (intent === 'admin') return os;
 
   const canSeeFinance = hasOfficeRoutePermission(access, intent, 'manageFinance');
   const canIssueCertificates = hasOfficeRoutePermission(access, intent, 'issueCertificates');
