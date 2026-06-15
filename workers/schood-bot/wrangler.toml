@@ -10,7 +10,7 @@ routes = [
 
 [vars]
 SITE_URL = "https://schood.online"
-TELEGRAM_BOT_NAME = "schoodonlinebot"
+TELEGRAM_BOT_NAME = "schoodstudentbot"
 
 # Secrets (set via `wrangler secret put`):
 # TELEGRAM_BOT_TOKEN
