@@ -1712,7 +1712,7 @@ const handleReadAction = async (
         contacts: contacts ?? 0,
         classrooms: classrooms ?? 0,
         offers: academyAccessHas(access, "manageOffers") ? offers ?? 0 : 0,
-        active_entitlements: academyAccessHas(access, "manageFinance") ? entitlements ?? 0 : 0,
+        active_entitlements: academyAccessHas(access, "manageFinance") || academyAccessHas(access, "manageOffers") ? entitlements ?? 0 : 0,
         open_alerts: alertsOpen ?? 0,
       },
     });
@@ -2483,7 +2483,7 @@ const handleReadAction = async (
     return json(200, { schedule: data ?? [] });
   }
 
-  if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
+  if (!academyAccessHas(access, "manageFinance") && !academyAccessHas(access, "manageOffers")) return json(403, { error: "Forbidden" });
 
   const { data, error } = await sb
     .from("academy_entitlements")
@@ -4986,7 +4986,7 @@ serve(async (req) => {
         upsert_offer_grant: "manageOffers",
         create_payment: "manageFinance",
         mark_payment_paid: "manageFinance",
-        grant_contact: "manageFinance",
+        grant_contact: "manageOffers",
         create_assignment: "manageAssignments",
         update_assignment: "manageAssignments",
         grade_submission: "gradeSubmissions",
