@@ -447,7 +447,7 @@ export const EducationOSView = ({
         referralData,
       ] = await Promise.all([
         teacherStudioEducationOS(academyId),
-        modeCanUse('manageFinance') ? teacherStudioOwnerDashboard(academyId) : Promise.resolve(null),
+        modeCanUse('manageFinance') || modeCanUse('viewReports') ? teacherStudioOwnerDashboard(academyId) : Promise.resolve(null),
         modeCanUse('manageStaff') ? teacherStudioStaff(academyId) : Promise.resolve([]),
         modeCanUse('viewNotifications') ? teacherStudioNotifications(academyId) : Promise.resolve([]),
         modeCanUse('manageBranding') ? teacherStudioBranding(academyId) : Promise.resolve(null),
@@ -828,6 +828,7 @@ export const EducationOSView = ({
   const canViewReports = modeCanUse('viewReports');
   const canDispatchNotifications = modeCanUse('dispatchNotifications');
   const canResolveActionItems = modeCanUse('resolveActionItems');
+  const financeDashboard = canManageFinance ? dashboard?.revenue ?? null : null;
 
   const allTabs: Array<{ id: EducationOSTab; label: string; visible: boolean }> = [
     { id: 'today', label: 'Today', visible: tabAvailable('today') },
@@ -1135,15 +1136,15 @@ export const EducationOSView = ({
             <section className="stats-grid">
               <article className="stat-card">
                 <span>Collected total</span>
-                <strong>{dashboard ? `${dashboard.revenue.collected_total.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+                <strong>{financeDashboard ? `${financeDashboard.collected_total.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
                 <span>This month</span>
-                <strong>{dashboard ? `${dashboard.revenue.collected_this_month.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+                <strong>{financeDashboard ? `${financeDashboard.collected_this_month.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
                 <span>Outstanding</span>
-                <strong>{dashboard ? `${dashboard.revenue.outstanding.toLocaleString()} ${dashboard.revenue.currency}` : '-'}</strong>
+                <strong>{financeDashboard ? `${financeDashboard.outstanding.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
                 <span>Students</span>
@@ -1218,11 +1219,11 @@ export const EducationOSView = ({
             <section className="stats-grid">
               <article className="stat-card">
                 <span>Students</span>
-                <strong>{contacts.length}</strong>
+                <strong>{dashboard?.total_students ?? contacts.length}</strong>
               </article>
               <article className="stat-card">
                 <span>Classrooms</span>
-                <strong>{classrooms.length}</strong>
+                <strong>{dashboard?.total_classrooms ?? classrooms.length}</strong>
               </article>
               <article className="stat-card">
                 <span>Open actions</span>
@@ -1241,10 +1242,7 @@ export const EducationOSView = ({
             <section className="grid two">
               <div className="panel">
                 <div className="row between wrap">
-                  <div>
-                    <h3>Role action queue</h3>
-                    <p className="small muted">Only actions available in your Academy role scope are shown here.</p>
-                  </div>
+                  <h3>Role action queue</h3>
                   {canDispatchNotifications ? (
                     <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>
                       Dispatch queued
@@ -1275,6 +1273,36 @@ export const EducationOSView = ({
                     </div>
                   ))}
                 </div>
+                {canViewReports && dashboard ? (
+                  <>
+                    <h3>Classroom reporting</h3>
+                    <div className="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Classroom</th>
+                            <th>Students</th>
+                            <th>Avg score</th>
+                            <th>Attendance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dashboard.classroom_stats.slice(0, 6).map((item) => (
+                            <tr key={item.classroom_id}>
+                              <td>{item.name}</td>
+                              <td>{item.students}</td>
+                              <td>{item.avg_score ?? '-'}</td>
+                              <td>{item.attendance_rate !== null ? `${item.attendance_rate}%` : '-'}</td>
+                            </tr>
+                          ))}
+                          {dashboard.classroom_stats.length === 0 ? (
+                            <tr><td colSpan={4}>No classroom metrics yet.</td></tr>
+                          ) : null}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                ) : null}
                 {modeCanUse('viewReferrals') ? (
                   <>
                     <h3>Referral leaders</h3>

@@ -511,7 +511,7 @@ export type TeacherStudioOwnerDashboard = {
     collected_this_month: number;
     outstanding: number;
     paid_count: number;
-  };
+  } | null;
   funnel: Record<string, number>;
   total_students: number;
   total_classrooms: number;
