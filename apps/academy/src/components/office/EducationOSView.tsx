@@ -1520,24 +1520,25 @@ export const EducationOSView = ({
             </div>
           ) : null}
 
-          {modeCanUse('manageContacts') || modeCanUse('manageStaff') ? (
+          {modeCanUse('manageContacts') ? (
             <div className="panel">
-              <h3>{modeCanUse('manageContacts') && modeCanUse('manageStaff') ? 'Placement and staff' : modeCanUse('manageContacts') ? 'Placement' : 'Staff'}</h3>
-              {modeCanUse('manageContacts') ? (
-                <form className="grid" onSubmit={submitPlacement}>
-                  <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
-                    {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
-                  </select>
-                  <div className="grid two">
-                    <input className="input" type="number" min="0" max="100" placeholder="Diagnostic score" value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
-                    <input className="input" placeholder="Manual CEFR level" value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
-                  </div>
-                  <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>Record placement</button>
-                </form>
-              ) : null}
+              <h3>Placement</h3>
+              <form className="grid" onSubmit={submitPlacement}>
+                <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
+                  {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
+                </select>
+                <div className="grid two">
+                  <input className="input" type="number" min="0" max="100" placeholder="Diagnostic score" value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
+                  <input className="input" placeholder="Manual CEFR level" value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
+                </div>
+                <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>Record placement</button>
+              </form>
+            </div>
+          ) : null}
 
-              {modeCanUse('manageStaff') ? (
-                <>
+          {modeCanUse('manageStaff') ? (
+            <div className="panel">
+              <h3>Staff administration</h3>
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
@@ -1579,8 +1580,6 @@ export const EducationOSView = ({
                   ))}
                   {staff.length === 0 ? <li>No staff records yet.</li> : null}
                 </ul>
-                </>
-              ) : null}
             </div>
           ) : null}
 
