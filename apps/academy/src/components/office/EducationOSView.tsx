@@ -84,6 +84,7 @@ type EducationOSViewProps = {
 type BulkInviteRow = Awaited<ReturnType<typeof teacherStudioBulkInvites>>[number];
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const SCOPED_STAFF_ROLES = new Set(['teacher', 'assistant']);
 
 const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
@@ -142,6 +143,8 @@ const staffClassroomIds = (staff: TeacherStudioStaff): string[] => {
   if (Array.isArray(staff.classroom_ids)) return staff.classroom_ids.map(String);
   return [];
 };
+
+const staffRoleUsesClassroomScope = (role: string): boolean => SCOPED_STAFF_ROLES.has(role);
 
 const parseInviteLines = (raw: string): Array<{ first_name?: string; last_name?: string; email: string }> =>
   raw
@@ -248,6 +251,7 @@ export const EducationOSView = ({
   const contactById = useMemo(() => new Map(contacts.map((contact) => [contact.id, contact])), [contacts]);
   const classroomById = useMemo(() => new Map(classrooms.map((classroom) => [classroom.id, classroom])), [classrooms]);
   const permissions = access?.permissions ?? EMPTY_PERMISSIONS;
+  const staffFormUsesClassroomScope = staffRoleUsesClassroomScope(staffForm.staff_role);
   const canUse = useCallback((permission: EducationOSPermission): boolean => permissions[permission] === true, [permissions]);
   const modeCanUse = useCallback(
     (permission: EducationOSPermission): boolean => permissionAllowedByMode(mode, permission) && canUse(permission),
@@ -727,12 +731,16 @@ export const EducationOSView = ({
   const submitStaff = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !staffForm.staff_email.trim() || !requireRoutePermission('manageStaff', 'Staff controls')) return;
+    if (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0) {
+      setLocalError('Teacher and assistant roles require at least one assigned classroom.');
+      return;
+    }
     await runAction('Staff member saved.', async () => {
       await teacherStudioUpsertStaff(academyId, {
         staff_email: staffForm.staff_email.trim(),
         name: staffForm.name.trim() || undefined,
         staff_role: staffForm.staff_role,
-        classroom_ids: staffForm.classroom_ids,
+        classroom_ids: staffFormUsesClassroomScope ? staffForm.classroom_ids : [],
       });
       setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', classroom_ids: [] });
     });
@@ -1500,30 +1508,36 @@ export const EducationOSView = ({
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
-                  <select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_role: event.target.value }))}>
+                  <select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({
+                    ...prev,
+                    staff_role: event.target.value,
+                    classroom_ids: staffRoleUsesClassroomScope(event.target.value) ? prev.classroom_ids : [],
+                  }))}>
                     {['teacher', 'manager', 'counselor', 'assistant'].map((role) => <option key={role} value={role}>{role}</option>)}
                   </select>
-                  <div className="chip-grid">
-                    {classrooms.map((classroom) => {
-                      const checked = staffForm.classroom_ids.includes(classroom.id);
-                      return (
-                        <label key={classroom.id} className="classroom-publish-toggle">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={(event) => setStaffForm((prev) => ({
-                              ...prev,
-                              classroom_ids: event.target.checked
-                                ? [...prev.classroom_ids, classroom.id]
-                                : prev.classroom_ids.filter((id) => id !== classroom.id),
-                            }))}
-                          />
-                          {classroom.name}
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <button className="primary-btn" type="submit" disabled={localBusy}>Save staff</button>
+                  {staffFormUsesClassroomScope ? (
+                    <div className="chip-grid">
+                      {classrooms.map((classroom) => {
+                        const checked = staffForm.classroom_ids.includes(classroom.id);
+                        return (
+                          <label key={classroom.id} className="classroom-publish-toggle">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(event) => setStaffForm((prev) => ({
+                                ...prev,
+                                classroom_ids: event.target.checked
+                                  ? [...prev.classroom_ids, classroom.id]
+                                  : prev.classroom_ids.filter((id) => id !== classroom.id),
+                              }))}
+                            />
+                            {classroom.name}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                  <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>Save staff</button>
                 </form>
 
                 <ul className="list">
@@ -1533,7 +1547,9 @@ export const EducationOSView = ({
                         <strong>{person.display_name || person.email}</strong>
                         <button className="small-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Remove</button>
                       </div>
-                      <div className="small muted">{person.role} | {staffClassroomIds(person).length} classroom(s)</div>
+                      <div className="small muted">
+                        {person.role} | {staffRoleUsesClassroomScope(person.role) ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                      </div>
                     </li>
                   ))}
                   {staff.length === 0 ? <li>No staff records yet.</li> : null}
