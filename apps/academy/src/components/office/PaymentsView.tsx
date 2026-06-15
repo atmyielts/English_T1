@@ -87,7 +87,7 @@ export const PaymentsView = ({
     <>
       <section className="grid two">
         <form className="panel" onSubmit={onCreatePayment}>
-          <h3>Create payment</h3>
+          <h3>Create Click checkout</h3>
           <select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
             <option value="">Select contact</option>
             {contacts.map((c) => (
@@ -144,8 +144,10 @@ export const PaymentsView = ({
                   <td>{offers.find((o) => o.id === p.offer_id)?.name ?? p.offer_id}</td>
                   <td>{contacts.find((c) => c.id === p.contact_id)?.email ?? p.contact_id}</td>
                   <td>
-                    {p.status.toLowerCase() !== 'paid' ? (
-                      <button className="small-btn" disabled={busy} onClick={() => onMarkPaid(p.id)}>Mark paid</button>
+                    {p.status.toLowerCase() !== 'paid' && p.provider.toLowerCase() !== 'click' ? (
+                      <button className="small-btn" disabled={busy} onClick={() => onMarkPaid(p.id)}>Apply settlement</button>
+                    ) : p.status.toLowerCase() !== 'paid' ? (
+                      <span className="status">awaiting Click</span>
                     ) : (
                       <span className="status status--ok">applied</span>
                     )}
