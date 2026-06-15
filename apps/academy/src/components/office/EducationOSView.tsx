@@ -48,6 +48,11 @@ import {
   type TeacherStudioScheduleSlot,
   type TeacherStudioStaff,
 } from '../../lib/client';
+import {
+  routeIntentAllowsPermission,
+  type AccessPermissionKey,
+  type OfficeRouteIntent,
+} from '../../lib/academyAccess';
 
 type EducationOSTab =
   | 'today'
@@ -62,8 +67,8 @@ type EducationOSTab =
   | 'engagement'
   | 'brand';
 
-type EducationOSMode = 'office' | 'admin' | 'teacher' | 'center';
-type EducationOSPermission = keyof TeacherStudioAccessProfile['permissions'];
+type EducationOSMode = OfficeRouteIntent;
+type EducationOSPermission = AccessPermissionKey;
 
 type EducationOSViewProps = {
   academyId: string;
@@ -85,52 +90,6 @@ const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
   teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
   center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'growth', 'engagement', 'brand'],
-};
-
-const OS_MODE_PERMISSION_CAPS: Record<EducationOSMode, ReadonlySet<EducationOSPermission> | null> = {
-  office: null,
-  admin: null,
-  teacher: new Set<EducationOSPermission>([
-    'viewContacts',
-    'viewClassrooms',
-    'manageMessages',
-    'manageAnnouncements',
-    'manageAlerts',
-    'resolveAlerts',
-    'viewEducationOS',
-    'resolveActionItems',
-    'manageAssignments',
-    'gradeSubmissions',
-    'markAttendance',
-    'manageSchedule',
-    'manageResources',
-  ]),
-  center: new Set<EducationOSPermission>([
-    'viewAcademy',
-    'manageAcademy',
-    'manageStaff',
-    'manageFinance',
-    'manageOffers',
-    'manageBranding',
-    'manageAutomation',
-    'viewContacts',
-    'manageContacts',
-    'viewClassrooms',
-    'manageClassrooms',
-    'manageRoster',
-    'manageMessages',
-    'manageAnnouncements',
-    'sendGlobalAnnouncements',
-    'manageAlerts',
-    'resolveAlerts',
-    'viewEducationOS',
-    'resolveActionItems',
-    'viewReports',
-    'issueCertificates',
-    'dispatchNotifications',
-    'viewNotifications',
-    'viewReferrals',
-  ]),
 };
 
 const EMPTY_PERMISSIONS: TeacherStudioAccessProfile['permissions'] = {};
@@ -160,8 +119,7 @@ const severityClass = (severity: string): string => {
 const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
 
 const permissionAllowedByMode = (mode: EducationOSMode, permission: EducationOSPermission): boolean => {
-  const permissionCaps = OS_MODE_PERMISSION_CAPS[mode] ?? OS_MODE_PERMISSION_CAPS.office;
-  return permissionCaps === null || permissionCaps.has(permission);
+  return routeIntentAllowsPermission(mode, permission);
 };
 
 const actionTargetTab = (sourceType: string): EducationOSTab => {
