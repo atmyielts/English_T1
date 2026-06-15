@@ -317,7 +317,7 @@ const officeIntentCanEnter = (
   intent: OfficeRouteIntent,
 ): boolean => {
   if (!access) return false;
-  if (intent === 'office') return canEnterAcademyOffice(access);
+  if (intent === 'office') return isAcademyOperationsAccess(access) && canEnterAcademyOffice(access);
   if (intent === 'teacher') {
     return (
       isTeacherWorkspaceAccess(access) &&
@@ -343,6 +343,29 @@ const officeViewsForIntent = (
   if (!officeIntentCanEnter(access, intent)) return [];
   const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
   return caps.filter((view) => hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
+};
+
+const defaultOfficeViewForIntent = (
+  views: OfficeView[],
+  intent: OfficeRouteIntent,
+): OfficeView => {
+  if (intent === 'teacher') {
+    if (views.includes('classrooms')) return 'classrooms';
+    if (views.includes('os')) return 'os';
+    if (views.includes('inbox')) return 'inbox';
+  }
+  if (intent === 'center') {
+    if (views.includes('os')) return 'os';
+    if (views.includes('academy')) return 'academy';
+  }
+  if (intent === 'admin') {
+    if (views.includes('academy')) return 'academy';
+    if (views.includes('payments')) return 'payments';
+    if (views.includes('offers')) return 'offers';
+  }
+  if (views.includes('academy')) return 'academy';
+  if (views.includes('classrooms')) return 'classrooms';
+  return views[0] ?? 'classrooms';
 };
 
 const actionAllowedForOfficeRoute = (
@@ -954,31 +977,11 @@ const App = () => {
       .map((view) => targetCopy[view] ? { ...targetCopy[view], path: academyOfficePath(view, undefined, officeRouteIntent) } : null)
       .filter((target): target is { title: string; caption: string; path: string } => Boolean(target));
   }, [allowedOfficeViews, canManageContacts, officeRouteIntent, osCenterLabel]);
-  const defaultOfficeView = allowedOfficeViews.includes('academy')
-    ? 'academy'
-    : allowedOfficeViews.includes('classrooms')
-      ? 'classrooms'
-      : allowedOfficeViews[0] ?? 'classrooms';
-  const routeDefaultOfficeView = useMemo<OfficeView>(() => {
-    if (officeRouteIntent === 'teacher') {
-      if (allowedOfficeViews.includes('classrooms')) return 'classrooms';
-      if (allowedOfficeViews.includes('os')) return 'os';
-      if (allowedOfficeViews.includes('inbox')) return 'inbox';
-      return defaultOfficeView;
-    }
-    if (officeRouteIntent === 'center') {
-      if (allowedOfficeViews.includes('os')) return 'os';
-      if (allowedOfficeViews.includes('academy')) return 'academy';
-      return defaultOfficeView;
-    }
-    if (officeRouteIntent === 'admin') {
-      if (allowedOfficeViews.includes('academy')) return 'academy';
-      if (allowedOfficeViews.includes('payments')) return 'payments';
-      if (allowedOfficeViews.includes('offers')) return 'offers';
-      return defaultOfficeView;
-    }
-    return defaultOfficeView;
-  }, [allowedOfficeViews, defaultOfficeView, officeRouteIntent]);
+  const defaultOfficeView = defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent);
+  const routeDefaultOfficeView = useMemo<OfficeView>(
+    () => defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent),
+    [allowedOfficeViews, officeRouteIntent],
+  );
   const academyOptions = useMemo(
     () =>
       (officeRouteAcademies.length > 0 ? officeRouteAcademies : teacherDirectoryAcademies).map((academy) => ({
@@ -1465,6 +1468,37 @@ const App = () => {
       academyOfficePath(view, itemId, officeIntentForAcademyId(targetAcademyId)),
     [officeIntentForAcademyId],
   );
+
+  useEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || officeRouteIntent !== 'office' || !selectedAcademyAccess) return;
+    const canonicalIntent = officeIntentForAccess(selectedAcademyAccess);
+    if (canonicalIntent === 'office') return;
+    const canonicalViews = officeViewsForIntent(selectedAcademyAccess, canonicalIntent);
+    if (canonicalViews.length === 0) return;
+
+    const requestedView = officeClassroomId ? 'classrooms' : officeView ?? 'academy';
+    const targetView = canonicalViews.includes(requestedView)
+      ? requestedView
+      : defaultOfficeViewForIntent(canonicalViews, canonicalIntent);
+    const targetItemId = targetView === 'classrooms' && requestedView === 'classrooms'
+      ? officeClassroomId ?? undefined
+      : undefined;
+
+    navigate(
+      academyScopedPath(academyOfficePath(targetView, targetItemId, canonicalIntent), academyId || undefined),
+      { replace: true },
+    );
+  }, [
+    academyId,
+    academyScopedPath,
+    isTeacherWorkspaceRoute,
+    navigate,
+    officeClassroomId,
+    officeRouteIntent,
+    officeView,
+    selectedAcademyAccess,
+    state,
+  ]);
 
   useEffect(() => {
     if (state !== 'ready' || !isTeacherWorkspaceRoute || allowedOfficeViews.length === 0) return;
