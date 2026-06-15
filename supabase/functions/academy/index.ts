@@ -2361,7 +2361,19 @@ const handleReadAction = async (
 
   if (action === "education_os") {
     requireAcademyPermission(access, "viewEducationOS");
-    const os = await buildEducationOS(sb, academyId, null);
+    const scopedContactIdsForSync = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
+    const constrainActionSync =
+      scopedClassroomIds !== null ||
+      !academyAccessHas(access, "manageFinance") ||
+      !academyAccessHas(access, "issueCertificates");
+    const syncOptions: EducationActionSyncOptions = constrainActionSync
+      ? {
+        candidateFilter: (candidate) =>
+          educationActionCandidateAllowedForAccess(candidate, access, scopedClassroomIds, scopedContactIdsForSync),
+        resolveStale: false,
+      }
+      : {};
+    const os = await buildEducationOS(sb, academyId, null, syncOptions);
     return json(200, await filterEducationOSForAccess(sb, academyId, access, os));
   }
 
@@ -2490,6 +2502,11 @@ type EducationActionCandidate = {
   metadata?: Json;
 };
 
+type EducationActionSyncOptions = {
+  candidateFilter?: (candidate: EducationActionCandidate) => boolean;
+  resolveStale?: boolean;
+};
+
 type EducationPipelineRow = {
   contact_id: string;
   name: string;
@@ -2548,6 +2565,35 @@ const generatedEducationActionSources = [
   "certificate_ready",
   "parent_follow_up",
 ];
+
+const teacherScopedEducationActionSources = new Set([
+  "alert",
+  "grading_backlog",
+  "missing_assignment",
+  "schedule_gap",
+  "attendance_roll_call",
+]);
+
+const educationActionCandidateAllowedForAccess = (
+  candidate: EducationActionCandidate,
+  access: MembershipRow,
+  scopedClassroomIds: string[] | null,
+  scopedContactIds: Set<string> | null,
+): boolean => {
+  const sourceType = normalizeText(candidate.source_type, 80);
+  if (!academyAccessHas(access, "manageFinance") && ["renewal", "payment", "payment_due"].includes(sourceType)) return false;
+  if (!academyAccessHas(access, "issueCertificates") && sourceType === "certificate_ready") return false;
+  if (scopedClassroomIds !== null && !teacherScopedEducationActionSources.has(sourceType)) return false;
+
+  const classroomId = normalizeText(candidate.classroom_id, 64);
+  if (classroomId && scopedClassroomIds !== null && !scopedClassroomIds.includes(classroomId)) return false;
+
+  const contactId = normalizeText(candidate.contact_id, 64);
+  if (contactId && scopedContactIds !== null && !scopedContactIds.has(contactId)) return false;
+  if (!classroomId && !contactId && scopedClassroomIds !== null) return false;
+
+  return true;
+};
 
 const defaultAutomationRules = [
   {
@@ -2665,7 +2711,9 @@ const syncEducationActionItems = async (
   sb: SupabaseClientLike,
   academyId: string,
   candidates: EducationActionCandidate[],
+  options: { resolveStale?: boolean } = {},
 ): Promise<Array<Record<string, unknown>>> => {
+  const resolveStale = options.resolveStale !== false;
   const activeKeys = new Set(candidates.map((item) => item.dedupe_key));
   const existingByKey = new Map<string, Record<string, unknown>>();
 
@@ -2704,20 +2752,22 @@ const syncEducationActionItems = async (
     }
   }
 
-  const { data: stale } = await sb.from("academy_action_items")
-    .select("id, dedupe_key")
-    .eq("academy_id", academyId)
-    .eq("status", "open")
-    .in("source_type", generatedEducationActionSources)
-    .limit(1000);
-  const staleIds = ((stale ?? []) as Array<Record<string, unknown>>)
-    .filter((item) => !activeKeys.has(String(item.dedupe_key)))
-    .map((item) => String(item.id));
-  if (staleIds.length > 0) {
-    await sb.from("academy_action_items")
-      .update({ status: "resolved", resolved_at: new Date().toISOString(), resolution_note: "Auto-resolved because the underlying condition cleared." })
+  if (resolveStale) {
+    const { data: stale } = await sb.from("academy_action_items")
+      .select("id, dedupe_key")
       .eq("academy_id", academyId)
-      .in("id", staleIds);
+      .eq("status", "open")
+      .in("source_type", generatedEducationActionSources)
+      .limit(1000);
+    const staleIds = ((stale ?? []) as Array<Record<string, unknown>>)
+      .filter((item) => !activeKeys.has(String(item.dedupe_key)))
+      .map((item) => String(item.id));
+    if (staleIds.length > 0) {
+      await sb.from("academy_action_items")
+        .update({ status: "resolved", resolved_at: new Date().toISOString(), resolution_note: "Auto-resolved because the underlying condition cleared." })
+        .eq("academy_id", academyId)
+        .in("id", staleIds);
+    }
   }
 
   const { data, error } = await sb.from("academy_action_items")
@@ -3385,6 +3435,7 @@ const buildEducationOS = async (
   sb: SupabaseClientLike,
   academyId: string,
   userId: string | null = null,
+  syncOptions: EducationActionSyncOptions = {},
 ): Promise<Record<string, unknown>> => {
   const now = new Date();
   const today = dateOnly(now);
@@ -3739,7 +3790,10 @@ const buildEducationOS = async (
     }
   }
 
-  const actionQueue = await syncEducationActionItems(sb, academyId, actionCandidates);
+  const syncCandidates = syncOptions.candidateFilter ? actionCandidates.filter(syncOptions.candidateFilter) : actionCandidates;
+  const actionQueue = await syncEducationActionItems(sb, academyId, syncCandidates, {
+    resolveStale: syncOptions.resolveStale,
+  });
 
   const calendarEvents: EducationCalendarEvent[] = [];
   for (let offset = 0; offset <= 13; offset++) {
@@ -3930,14 +3984,6 @@ const filterEducationOSForAccess = async (
   const canManageAutomation = academyAccessHas(access, "manageAutomation");
   const canIssueCertificates = academyAccessHas(access, "issueCertificates");
   const canUseGrowthOps = academyAccessHas(access, "viewReports");
-  const allowedTeacherActionSources = new Set([
-    "alert",
-    "grading_backlog",
-    "missing_assignment",
-    "schedule_gap",
-    "attendance_roll_call",
-  ]);
-
   const classroomAllowed = (value: unknown): boolean => {
     const classroomId = normalizeText(value, 64);
     if (!classroomId) return scopedClassroomIds === null;
@@ -4002,7 +4048,7 @@ const filterEducationOSForAccess = async (
       const sourceType = normalizeText(item.source_type, 80);
       if (!canSeeFinance && ["renewal", "payment", "payment_due"].includes(sourceType)) return false;
       if (!canIssueCertificates && sourceType === "certificate_ready") return false;
-      if (scopedClassroomIds !== null && !allowedTeacherActionSources.has(sourceType)) return false;
+      if (scopedClassroomIds !== null && !teacherScopedEducationActionSources.has(sourceType)) return false;
       return true;
     });
 
