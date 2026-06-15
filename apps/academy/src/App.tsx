@@ -2621,7 +2621,14 @@ const App = () => {
             <h2>Student Workplace access required</h2>
             <p>This route is only for linked student contacts. Your account does not have a student profile here.</p>
             {hasTeacherAccess ? (
-              <button className="primary-btn" type="button" onClick={() => navigate(academyScopedPath(currentOfficePath()))}>
+              <button
+                className="primary-btn"
+                type="button"
+                onClick={() => {
+                  const targetAcademyId = selectedOfficeAcademy?.id ?? teacherDirectoryAcademies[0]?.id;
+                  navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, targetAcademyId), targetAcademyId));
+                }}
+              >
                 Open Academy Office
               </button>
             ) : null}
@@ -2704,7 +2711,10 @@ const App = () => {
                   <button
                     className="small-btn"
                     type="button"
-                    onClick={() => navigate(academyScopedPath(currentOfficePath(), officeRouteAcademies[0]?.id ?? teacherDirectoryAcademies[0]?.id))}
+                    onClick={() => {
+                      const targetAcademyId = officeRouteAcademies[0]?.id ?? teacherDirectoryAcademies[0]?.id;
+                      navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, targetAcademyId), targetAcademyId));
+                    }}
                   >
                     Open Academy Office
                   </button>
