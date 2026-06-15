@@ -27,7 +27,7 @@ const officePathForLegacyRoute = (pathname: string, search: string): string => {
   if (tab === 'students') return '/academy/admin/contacts';
   if (tab === 'announcements') return '/academy/teacher/announcements';
   if (tab === 'director') return '/academy/admin/os';
-  return '/academy/office';
+  return '/academies';
 };
 
 const academyOfficeUrl = (pathname: string, search: string): string => {
@@ -54,16 +54,16 @@ export const AcademyControlPage = () => {
     <main className="min-h-screen bg-gray-50 px-6 py-16">
       <section className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
         <p className="text-xs font-semibold uppercase text-emerald-700">Academy LMS</p>
-        <h1 className="mt-3 text-2xl font-bold text-gray-950">Opening Academy Office</h1>
+        <h1 className="mt-3 text-2xl font-bold text-gray-950">Opening Academy workspace</h1>
         <p className="mt-3 text-sm leading-6 text-gray-600">
-          Academy control now lives in the role-based Academy LMS. This keeps center owners, administrators, counselors,
-          teachers, and assistants on one production surface.
+          Academy control now opens through the role-based Academy LMS directory. Center control, administrator control,
+          operations, teacher workspaces, and student workspaces stay in their own route families.
         </p>
         <a
           href={targetUrl}
           className="mt-6 inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white"
         >
-          Continue to Academy Office
+          Continue to Academy LMS
         </a>
       </section>
     </main>

@@ -2507,7 +2507,7 @@ const AcademiesPanel: React.FC<{
       <div className="border-b border-gray-900/10 p-5 md:p-6">
         <SectionTitle icon={School} label="Delivery layer" title="Academies under this center" />
         <p className="mt-3 max-w-2xl text-sm text-gray-600">
-          Center Office owns business controls. Each linked academy keeps its own Academy Office and Student Workplace for learning delivery.
+          Center Office owns business controls. Each linked academy keeps separate Center Control, Teacher Workspace, and Student Workplace routes for learning delivery.
         </p>
       </div>
       <div className="divide-y divide-gray-900/10">
@@ -2535,13 +2535,13 @@ const AcademiesPanel: React.FC<{
               </button>
               <button type="button" className={primaryButton} onClick={() => academyOfficeUrl && window.open(academyOfficeUrl, '_blank', 'noopener,noreferrer')} disabled={!academyOfficeUrl}>
                 <ArrowUpRight className="h-4 w-4" />
-                Academy Office
+                Center Control
               </button>
               <button type="button" className={secondaryButton} onClick={() => academy.academy_url && window.open(academy.academy_url, '_blank', 'noopener,noreferrer')} disabled={!academy.academy_url}>
                 <School className="h-4 w-4" />
                 Public academy
               </button>
-              <button type="button" className={secondaryButton} onClick={() => onCopy(academyOfficeUrl, 'Academy Office link copied.')} disabled={!academyOfficeUrl}>
+              <button type="button" className={secondaryButton} onClick={() => onCopy(academyOfficeUrl, 'Center Control link copied.')} disabled={!academyOfficeUrl}>
                 <Copy className="h-4 w-4" />
                 Copy
               </button>
