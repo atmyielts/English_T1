@@ -90,6 +90,13 @@ import { OffersView } from './components/office/OffersView';
 import { PaymentsView } from './components/office/PaymentsView';
 import { StudentClassroomView } from './components/students/StudentClassroomView';
 import { UpdatesButton } from './components/UpdatesButton';
+import {
+  hasAccessPermission,
+  hasRoutePermission,
+  routeIntentAllowsPermission,
+  type AccessPermissionKey,
+  type OfficeRouteIntent,
+} from './lib/academyAccess';
 import type {
   AlertFormState,
   AnnouncementFormState,
@@ -105,7 +112,6 @@ type LoadState = 'loading' | 'ready' | 'unauthenticated' | 'error';
 type WorkspaceMode = 'teacher' | 'student';
 type OfficeView = 'academy' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
-type OfficeRouteIntent = 'office' | 'admin' | 'teacher' | 'center';
 type AcademyLandingFormState = {
   name: string;
   headline: string;
@@ -174,8 +180,6 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   payments: 'Payments',
   entitlements: 'Entitlements',
 };
-
-type AccessPermissionKey = keyof TeacherStudioAccessProfile['permissions'];
 
 const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   academy: 'viewAcademy',
@@ -248,11 +252,6 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
   };
 };
 
-const hasAccessPermission = (
-  access: TeacherStudioAccessProfile | null | undefined,
-  permission: AccessPermissionKey,
-): boolean => access?.permissions?.[permission] === true;
-
 const canEnterAcademyOffice = (access: TeacherStudioAccessProfile | null | undefined): boolean =>
   OFFICE_VIEWS.some((view) => hasAccessPermission(access, OFFICE_VIEW_PERMISSIONS[view]));
 
@@ -304,62 +303,15 @@ const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
   center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
 };
 
-const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet<AccessPermissionKey> | null> = {
-  office: null,
-  admin: null,
-  teacher: new Set<AccessPermissionKey>([
-    'viewContacts',
-    'viewClassrooms',
-    'manageMessages',
-    'manageAnnouncements',
-    'manageAlerts',
-    'resolveAlerts',
-    'viewEducationOS',
-    'resolveActionItems',
-    'manageAssignments',
-    'gradeSubmissions',
-    'markAttendance',
-    'manageSchedule',
-    'manageResources',
-  ]),
-  center: new Set<AccessPermissionKey>([
-    'viewAcademy',
-    'manageAcademy',
-    'manageStaff',
-    'manageFinance',
-    'manageOffers',
-    'manageBranding',
-    'manageAutomation',
-    'viewContacts',
-    'manageContacts',
-    'viewClassrooms',
-    'manageClassrooms',
-    'manageRoster',
-    'manageMessages',
-    'manageAnnouncements',
-    'sendGlobalAnnouncements',
-    'manageAlerts',
-    'resolveAlerts',
-    'viewEducationOS',
-    'resolveActionItems',
-    'viewReports',
-    'issueCertificates',
-    'dispatchNotifications',
-    'viewNotifications',
-    'viewReferrals',
-  ]),
-};
-
 const officeIntentAllowsPermission = (intent: OfficeRouteIntent, permission: AccessPermissionKey): boolean => {
-  const permissionCaps = OFFICE_ROUTE_PERMISSION_CAPS[intent] ?? OFFICE_ROUTE_PERMISSION_CAPS.office;
-  return permissionCaps === null || permissionCaps.has(permission);
+  return routeIntentAllowsPermission(intent, permission);
 };
 
 const hasOfficeRoutePermission = (
   access: TeacherStudioAccessProfile | null | undefined,
   intent: OfficeRouteIntent,
   permission: AccessPermissionKey,
-): boolean => officeIntentAllowsPermission(intent, permission) && hasAccessPermission(access, permission);
+): boolean => hasRoutePermission(access, intent, permission);
 
 const officeIntentCanEnter = (
   access: TeacherStudioAccessProfile | null | undefined,
