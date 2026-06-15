@@ -1469,6 +1469,16 @@ const App = () => {
     [officeIntentForAcademyId],
   );
 
+  const defaultOfficePathForAcademy = useCallback((targetAcademyId?: string | null): string => {
+    const matchedAcademy = targetAcademyId
+      ? teacherDirectoryAcademies.find((academy) => academy.id === targetAcademyId)
+      : selectedOfficeAcademy;
+    const access = matchedAcademy?.access ?? (matchedAcademy ? buildFallbackAccess(matchedAcademy.role) : selectedAcademyAccess);
+    const intent = officeIntentForAccess(access);
+    const views = officeViewsForIntent(access, intent);
+    return academyOfficePath(defaultOfficeViewForIntent(views, intent), undefined, intent);
+  }, [selectedAcademyAccess, selectedOfficeAcademy, teacherDirectoryAcademies]);
+
   useEffect(() => {
     if (state !== 'ready' || !isTeacherWorkspaceRoute || officeRouteIntent !== 'office' || !selectedAcademyAccess) return;
     const canonicalIntent = officeIntentForAccess(selectedAcademyAccess);
@@ -2679,6 +2689,51 @@ const App = () => {
   if (state === 'ready' && isAcademyDirectory) {
     const directoryDefaultAcademyId =
       requestedAcademyId || officeRouteAcademies[0]?.id || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
+    const defaultStaffAcademyId = teacherDirectoryAcademies[0]?.id ?? '';
+    const staffWorkspaceLaneDefinitions: Array<{
+      intent: OfficeRouteIntent;
+      badge: string;
+      title: string;
+      description: string;
+      empty: string;
+    }> = [
+      {
+        intent: 'admin',
+        badge: 'Administrator control',
+        title: 'Academy Administration',
+        description: 'Owner and administrator controls for academy setup, access, finance, offers, and governance.',
+        empty: 'No academy administrator role is linked to this account.',
+      },
+      {
+        intent: 'center',
+        badge: 'Education center control',
+        title: 'Education Center Control',
+        description: 'Delegated center operations for academies connected to an education-center tenant.',
+        empty: 'No education-center delegated control is linked to this account.',
+      },
+      {
+        intent: 'office',
+        badge: 'Operations control',
+        title: 'Academy LMS Operations',
+        description: 'Manager and counselor controls for classrooms, contacts, announcements, alerts, and reports.',
+        empty: 'No academy operations role is linked to this account.',
+      },
+      {
+        intent: 'teacher',
+        badge: 'Teacher control',
+        title: 'Teacher Workspace',
+        description: 'Assigned classroom LMS, student communication, attendance, grading, and learning actions.',
+        empty: 'No teacher or assistant workspace is linked to this account.',
+      },
+    ];
+    const staffWorkspaceLanes: Array<(typeof staffWorkspaceLaneDefinitions)[number] & { academies: TeacherStudioAcademy[] }> =
+      staffWorkspaceLaneDefinitions.map((lane) => ({
+        ...lane,
+        academies: teacherDirectoryAcademies.filter((academy) => {
+          const access = academy.access ?? buildFallbackAccess(academy.role);
+          return officeIntentForAccess(access) === lane.intent && officeIntentCanEnter(access, lane.intent);
+        }),
+      }));
 
     return (
       <>
@@ -2746,11 +2801,10 @@ const App = () => {
                     className="small-btn"
                     type="button"
                     onClick={() => {
-                      const targetAcademyId = officeRouteAcademies[0]?.id ?? teacherDirectoryAcademies[0]?.id;
-                      navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, targetAcademyId), targetAcademyId));
+                      navigate(academyScopedPath(defaultOfficePathForAcademy(defaultStaffAcademyId), defaultStaffAcademyId));
                     }}
                   >
-                    Open Academy Office
+                    Open my role workspace
                   </button>
                 ) : (
                   <div className="small muted">No active academy staff role was found for this account.</div>
@@ -2779,24 +2833,20 @@ const App = () => {
 
             <section className="market-section-head">
               <span className="market-badge">Staff flow</span>
-              <h2>Role-based academies</h2>
-              <p>These entries open staff controls. Student pages and student navigation stay outside this office shell.</p>
+              <h2>Role-based staff workspaces</h2>
+              <p>Each entry opens one role family. Administration, center control, operations, and teacher LMS stay separated.</p>
             </section>
 
-            <section className="market-grid">
-              {teacherDirectoryAcademies.map((academy) => {
-                const access = academy.access ?? buildFallbackAccess(academy.role);
-                const intent = officeIntentForAccess(access);
-                const entryLabel =
-                  intent === 'center'
-                    ? 'Center Control'
-                    : intent === 'admin'
-                      ? 'Academy Administration'
-                      : intent === 'teacher'
-                        ? 'Teacher Workspace'
-                        : 'Academy Office';
-                return (
-                  <article className="market-card" key={academy.id}>
+            {staffWorkspaceLanes.map((lane) => (
+              <section className="market-grid" key={lane.intent}>
+                <article className="market-card market-card--accent">
+                  <div className="market-badge">{lane.badge}</div>
+                  <h3>{lane.title}</h3>
+                  <p>{lane.description}</p>
+                  <div className="small muted">{lane.academies.length} linked workspace{lane.academies.length === 1 ? '' : 's'}</div>
+                </article>
+                {lane.academies.map((academy) => (
+                  <article className="market-card" key={`${lane.intent}-${academy.id}`}>
                     <div className="row between">
                       <h3>{academy.name || academy.id}</h3>
                       <span className={statusClass(academy.status)}>{academy.role}</span>
@@ -2806,9 +2856,9 @@ const App = () => {
                       <button
                         className="small-btn"
                         type="button"
-                        onClick={() => navigate(`${academyOfficePath('academy', undefined, intent)}?academy_id=${encodeURIComponent(academy.id)}`)}
+                        onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(academy.id), academy.id))}
                       >
-                        {entryLabel}
+                        Open workspace
                       </button>
                       <button
                         className="small-btn"
@@ -2826,39 +2876,43 @@ const App = () => {
                       </button>
                     </div>
                   </article>
-                );
-              })}
-              {teacherDirectoryAcademies.length === 0 ? (
-                <article className="market-card">
-                  <h3>No Academy Office access</h3>
-                  <p>This account can use Student Workplace only unless an academy owner adds it as staff.</p>
-                </article>
-              ) : null}
+                ))}
+                {lane.academies.length === 0 ? (
+                  <article className="market-card">
+                    <h3>No access</h3>
+                    <p>{lane.empty}</p>
+                  </article>
+                ) : null}
+              </section>
+            ))}
+
+            <section className="market-section-head">
+              <span className="market-badge">Platform action</span>
+              <h2>Start a separate academy</h2>
+              <p>This creates a new academy where your account becomes owner. It does not change your role inside existing academies.</p>
             </section>
 
-            {hasTeacherAccess ? (
-              <section className="market-card">
-                <h3>Create academy</h3>
-                <form className="grid" onSubmit={submitAcademy}>
-                  <input
-                    className="input"
-                    placeholder="Academy name"
-                    value={academyNameDraft}
-                    onChange={(event) => setAcademyNameDraft(event.target.value)}
-                    required
-                  />
-                  <input
-                    className="input"
-                    placeholder="Slug (optional)"
-                    value={academySlugDraft}
-                    onChange={(event) => setAcademySlugDraft(event.target.value)}
-                  />
-                  <button className="primary-btn" type="submit" disabled={busy}>
-                    Create academy
-                  </button>
-                </form>
-              </section>
-            ) : null}
+            <section className="market-card">
+              <h3>Create academy</h3>
+              <form className="grid" onSubmit={submitAcademy}>
+                <input
+                  className="input"
+                  placeholder="Academy name"
+                  value={academyNameDraft}
+                  onChange={(event) => setAcademyNameDraft(event.target.value)}
+                  required
+                />
+                <input
+                  className="input"
+                  placeholder="Slug (optional)"
+                  value={academySlugDraft}
+                  onChange={(event) => setAcademySlugDraft(event.target.value)}
+                />
+                <button className="primary-btn" type="submit" disabled={busy}>
+                  Create academy
+                </button>
+              </form>
+            </section>
 
             <section className="market-section-head">
               <span className="market-badge">Student flow</span>
