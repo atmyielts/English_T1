@@ -1301,19 +1301,6 @@ export const teacherStudioUpsertOfferGrant = async (
   return data.offer_grant;
 };
 
-export const teacherStudioCreatePayment = async (
-  academyId: string,
-  body: { contact_id: string; offer_id: string; provider?: string; provider_transaction_id?: string },
-): Promise<TeacherStudioPayment> => {
-  const data = await callTeacherStudio<{ payment: TeacherStudioPayment }>({
-    method: 'POST',
-    action: 'create_payment',
-    academyId,
-    body,
-  });
-  return data.payment;
-};
-
 export const teacherStudioCreateClickTuitionPayment = async (
   academyId: string,
   body: { contact_id: string; offer_id: string; redirect_url?: string | null },

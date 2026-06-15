@@ -6000,71 +6000,10 @@ serve(async (req) => {
       }
 
       if (actionBody === "create_payment") {
-        const offerId = normalizeText(body?.offer_id, 64);
-        const contactId = normalizeText(body?.contact_id, 64);
-        if (!offerId) return json(400, { error: "offer_id is required" });
-        if (!contactId) return json(400, { error: "contact_id is required" });
-
-        const { data: offerRow, error: offerErr } = await sb
-          .from("academy_offers")
-          .select("id, academy_id, price_amount, currency, is_active")
-          .eq("academy_id", academyId)
-          .eq("id", offerId)
-          .maybeSingle();
-        if (offerErr) return json(500, { error: "Failed to load offer", detail: offerErr.message });
-        if (!offerRow?.id) return json(404, { error: "Offer not found" });
-        if (!offerRow.is_active) return json(400, { error: "Offer is inactive" });
-
-        const { data: contactRow, error: contactErr } = await sb
-          .from("academy_contacts")
-          .select("id, academy_id")
-          .eq("academy_id", academyId)
-          .eq("id", contactId)
-          .maybeSingle();
-        if (contactErr) return json(500, { error: "Failed to load contact", detail: contactErr.message });
-        if (!contactRow?.id) return json(404, { error: "Contact not found" });
-        await ensureContactInAccessScope(sb, academyId, access, contactId);
-
-        const provider = normalizeText(body?.provider, 60).toLowerCase() || "manual";
-        if (provider === "click") {
-          return json(400, { error: "Use Click checkout to create Click payments" });
-        }
-        const providerTxn = normalizeText(body?.provider_transaction_id, 120) || `${provider}-${crypto.randomUUID()}`;
-
-        const payload = {
-          academy_id: academyId,
-          offer_id: offerId,
-          contact_id: contactId,
-          provider,
-          provider_transaction_id: providerTxn,
-          amount: Number(offerRow.price_amount),
-          currency: String(offerRow.currency ?? "UZS").toUpperCase(),
-          status: "pending",
-          metadata: body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata)
-            ? body.metadata
-            : {},
-          created_by: userId,
-        };
-
-        const { data, error } = await sb
-          .from("academy_payments")
-          .insert(payload)
-          .select("id, academy_id, contact_id, offer_id, provider, provider_transaction_id, amount, currency, status, metadata, created_by, created_at, updated_at")
-          .maybeSingle();
-        if (error) {
-          if (String(error.message).toLowerCase().includes("duplicate")) {
-            const { data: existing } = await sb
-              .from("academy_payments")
-              .select("id, academy_id, contact_id, offer_id, provider, provider_transaction_id, amount, currency, status, metadata, created_by, created_at, updated_at")
-              .eq("provider", provider)
-              .eq("provider_transaction_id", providerTxn)
-              .maybeSingle();
-            return json(200, { payment: existing ?? null, deduped: true });
-          }
-          return json(500, { error: "Failed to create payment", detail: error.message });
-        }
-
-        return json(200, { payment: data });
+        return json(410, {
+          error: "Manual Academy payment creation has been retired. Use Click checkout for new academy payments.",
+          error_code: "academy_manual_payment_retired",
+        });
       }
 
       if (actionBody === "mark_payment_paid") {
@@ -6073,12 +6012,15 @@ serve(async (req) => {
 
         const { data: paymentRow, error: paymentLoadErr } = await sb
           .from("academy_payments")
-          .select("id, academy_id, contact_id, status")
+          .select("id, academy_id, contact_id, provider, status")
           .eq("id", paymentId)
           .eq("academy_id", academyId)
           .maybeSingle();
         if (paymentLoadErr) return json(500, { error: "Failed to load payment", detail: paymentLoadErr.message });
         if (!paymentRow?.id) return json(404, { error: "Payment not found" });
+        if (normalizeText(paymentRow.provider, 60).toLowerCase() === "click") {
+          return json(400, { error: "Click payments settle through Click checkout and webhook confirmation." });
+        }
         await ensureContactInAccessScope(sb, academyId, access, paymentRow.contact_id);
 
         const { data: applyResult, error: applyErr } = await sb.rpc("apply_academy_payment", {

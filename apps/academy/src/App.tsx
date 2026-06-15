@@ -2386,7 +2386,7 @@ const App = () => {
                   <article>
                     <CreditCard size={18} />
                     <strong>Revenue</strong>
-                    <span>Manual payments, offers, grants, and access windows.</span>
+                    <span>Click checkout, offers, grants, and access windows.</span>
                   </article>
                   <article>
                     <MessageSquare size={18} />
@@ -2484,7 +2484,7 @@ const App = () => {
               <div className="capability-list">
                 <div><span>01</span> Academy and classroom public presentation</div>
                 <div><span>02</span> Contacts, membership roles, cohorts, and classroom access</div>
-                <div><span>03</span> Offers, manual payment tracking, grants, and entitlements</div>
+                <div><span>03</span> Offers, Click payment tracking, grants, and entitlements</div>
                 <div><span>04</span> Announcements, direct inbox, alerts, and student feed</div>
                 <div><span>05</span> Classroom resources, progress, live refresh, and discussion</div>
               </div>
