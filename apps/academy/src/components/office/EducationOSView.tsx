@@ -947,10 +947,12 @@ export const EducationOSView = ({
               <span>Placement gap</span>
               <strong>{modeCanUse('manageContacts') ? pipelineCounts.placement ?? 0 : 0}</strong>
             </article>
-            <article className="stat-card">
-              <span>Certificate ready</span>
-              <strong>{modeCanUse('issueCertificates') ? lifecycleRows.filter((row) => row.certificate_ready).length : 0}</strong>
-            </article>
+            {modeCanUse('issueCertificates') ? (
+              <article className="stat-card">
+                <span>Certificate ready</span>
+                <strong>{lifecycleRows.filter((row) => row.certificate_ready).length}</strong>
+              </article>
+            ) : null}
           </section>
 
           <section className="grid two">

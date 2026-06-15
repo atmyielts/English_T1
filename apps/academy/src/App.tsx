@@ -960,6 +960,7 @@ const App = () => {
   const canResolveActionItems = canUseOfficePermission('resolveActionItems');
   const canManageFinance = canUseOfficePermission('manageFinance');
   const canManageOffers = canUseOfficePermission('manageOffers');
+  const canIssueCertificates = canUseOfficePermission('issueCertificates');
   const canViewReports = canUseOfficePermission('viewReports');
   const academyHomeLabel = canManageAcademy
     ? 'Academy control'
@@ -4661,6 +4662,7 @@ const App = () => {
             canManageClassrooms={canManageClassrooms}
             canManageRoster={canManageRoster}
             canResolveActionItems={canResolveActionItems}
+            canIssueCertificates={canIssueCertificates}
           />
         ) : null}
 
@@ -4685,6 +4687,7 @@ const App = () => {
             onResolveActionItem={resolveLmsActionItem}
             onOpenActionItem={openLmsActionItem}
             canResolveActionItems={canResolveActionItems}
+            canIssueCertificates={canIssueCertificates}
             formatDate={formatDate}
             statusClass={statusClass}
             onBack={() => navigate(academyScopedPath(currentOfficePath('classrooms')))}

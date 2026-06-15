@@ -32,6 +32,7 @@ type ClassroomsViewProps = {
   canManageClassrooms: boolean;
   canManageRoster: boolean;
   canResolveActionItems: boolean;
+  canIssueCertificates: boolean;
 };
 
 const priorityClass = (priority: string): string => {
@@ -98,6 +99,7 @@ export const ClassroomsView = ({
   canManageClassrooms,
   canManageRoster,
   canResolveActionItems,
+  canIssueCertificates,
 }: ClassroomsViewProps) => {
   const classroomNameById = new Map(classrooms.map((item) => [item.id, item.name]));
   const contactById = new Map(contacts.map((item) => [item.id, item]));
@@ -133,7 +135,9 @@ export const ClassroomsView = ({
     educationOS?.stats.grading_backlog ?? actionQueue.filter((item) => item.source_type === 'grading_backlog').length;
   const missingWorkCount = pipeline.reduce((total, row) => total + row.missing_assignments, 0);
   const attendanceRiskCount = pipeline.filter((row) => row.attendance_rate !== null && row.attendance_rate < 70).length;
-  const certificateReadyCount = educationOS?.stats.certificate_ready ?? pipeline.filter((row) => row.certificate_ready).length;
+  const certificateReadyCount = canIssueCertificates
+    ? educationOS?.stats.certificate_ready ?? pipeline.filter((row) => row.certificate_ready).length
+    : 0;
   const topActions = actionQueue.slice(0, 5);
 
   const classroomOperationRows = classrooms.map((classroom) => {
@@ -148,7 +152,7 @@ export const ClassroomsView = ({
       grading: classActions.filter((item) => item.source_type === 'grading_backlog').length,
       missing: lifecycleRows.reduce((total, row) => total + row.missing_assignments, 0),
       attendanceRisk: lifecycleRows.filter((row) => row.attendance_rate !== null && row.attendance_rate < 70).length,
-      certificates: lifecycleRows.filter((row) => row.certificate_ready).length,
+      certificates: canIssueCertificates ? lifecycleRows.filter((row) => row.certificate_ready).length : 0,
       nextEvent,
       firstAction: classActions[0] ?? null,
     };
@@ -183,10 +187,12 @@ export const ClassroomsView = ({
             <span>Attendance risk</span>
             <strong>{attendanceRiskCount}</strong>
           </article>
-          <article>
-            <span>Certificates</span>
-            <strong>{certificateReadyCount}</strong>
-          </article>
+          {canIssueCertificates ? (
+            <article>
+              <span>Certificates</span>
+              <strong>{certificateReadyCount}</strong>
+            </article>
+          ) : null}
         </div>
 
         <div className="grid two">
