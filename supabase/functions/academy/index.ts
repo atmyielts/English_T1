@@ -6594,11 +6594,15 @@ serve(async (req) => {
         if (!staffEmail) return json(400, { error: "staff_email is required" });
         const role = normalizeText(body?.staff_role ?? body?.role, 20).toLowerCase() || "teacher";
         if (!["teacher", "manager", "counselor", "assistant"].includes(role)) return json(400, { error: "Invalid role" });
-        const classroomIds = Array.isArray(body?.classroom_ids)
-          ? (body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)
+        const requestedClassroomIds = Array.isArray(body?.classroom_ids)
+          ? Array.from(new Set((body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)))
           : [];
+        const classroomIds = ["teacher", "assistant"].includes(role) ? requestedClassroomIds : [];
+        if (["teacher", "assistant"].includes(role) && classroomIds.length === 0) {
+          return json(400, { error: "teacher and assistant roles require at least one classroom_id" });
+        }
         const validClassroomIds = await loadValidAcademyClassroomIds(sb, academyId, classroomIds);
-        const invalidClassroomIds = Array.from(new Set(classroomIds)).filter((id) => !validClassroomIds.has(id));
+        const invalidClassroomIds = classroomIds.filter((id) => !validClassroomIds.has(id));
         if (invalidClassroomIds.length > 0) {
           return json(400, { error: "Invalid classroom_ids", classroom_ids: invalidClassroomIds });
         }
