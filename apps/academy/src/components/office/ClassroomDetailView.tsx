@@ -413,7 +413,7 @@ export const ClassroomDetailView = ({
           <button className="primary-btn" type="submit" disabled={!canManageLanding || busy}>
             Save classroom landing
           </button>
-          {!canManageLanding ? <p className="small muted">Owner/admin role required to update landing settings.</p> : null}
+          {!canManageLanding ? <p className="small muted">Classroom management access required to update landing settings.</p> : null}
         </form>
       </div>
 

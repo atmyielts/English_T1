@@ -1978,7 +1978,7 @@ const App = () => {
 
   const submitClassroomLanding = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedOfficeClassroom || !requireOfficePermission('manageAcademy', 'Classroom landing')) return;
+    if (!academyId || !selectedOfficeClassroom || !requireOfficePermission('manageClassrooms', 'Classroom landing')) return;
 
     setBusy(true);
     setError('');
@@ -4624,7 +4624,7 @@ const App = () => {
             }
             onSaveLanding={submitClassroomLanding}
             busy={busy}
-            canManageLanding={canManageLanding}
+            canManageLanding={canManageClassrooms}
             educationOS={educationOS}
             onResolveActionItem={resolveLmsActionItem}
             onOpenActionItem={openLmsActionItem}
