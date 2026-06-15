@@ -2279,14 +2279,17 @@ const handleReadAction = async (
   }
 
   if (action === "owner_dashboard") {
-    if (!academyAccessHas(access, "manageFinance")) return json(403, { error: "Forbidden" });
+    const canSeeFinance = academyAccessHas(access, "manageFinance");
+    if (!canSeeFinance && !academyAccessHas(access, "viewReports")) return json(403, { error: "Forbidden" });
     const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
     const [contactsRes, classroomsRes, paymentsRes, membersRes, subsRes, attRes, asgnRes] = await Promise.all([
       sb.from("academy_contacts").select("id, status").eq("academy_id", academyId).limit(10000),
       sb.from("academy_classrooms").select("id, name, is_active").eq("academy_id", academyId).limit(1000),
-      sb.from("academy_payments").select("amount, currency, status, created_at").eq("academy_id", academyId).limit(20000),
+      canSeeFinance
+        ? sb.from("academy_payments").select("amount, currency, status, created_at").eq("academy_id", academyId).limit(20000)
+        : Promise.resolve({ data: [], error: null }),
       sb.from("academy_classroom_memberships").select("classroom_id, contact_id, role").eq("academy_id", academyId).in("role", ["student", "observer"]).limit(20000),
       sb.from("academy_submissions").select("classroom_id, contact_id, score, max_score, status").eq("academy_id", academyId).limit(50000),
       sb.from("academy_attendance").select("classroom_id, status, session_date").eq("academy_id", academyId).gte("session_date", since30).limit(50000),
@@ -2301,12 +2304,16 @@ const handleReadAction = async (
     const attendance = (attRes.data ?? []) as Array<Record<string, unknown>>;
     const assignments = (asgnRes.data ?? []) as Array<Record<string, unknown>>;
 
-    // Revenue
-    const paid = payments.filter((p) => String(p.status) === "paid");
-    const collectedTotal = paid.reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-    const collectedThisMonth = paid.filter((p) => String(p.created_at ?? "") >= monthStart).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-    const outstanding = payments.filter((p) => String(p.status) === "pending").reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-    const currency = String(paid[0]?.currency ?? payments[0]?.currency ?? "UZS");
+    const revenue = canSeeFinance
+      ? (() => {
+        const paid = payments.filter((p) => String(p.status) === "paid");
+        const collectedTotal = paid.reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+        const collectedThisMonth = paid.filter((p) => String(p.created_at ?? "") >= monthStart).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+        const outstanding = payments.filter((p) => String(p.status) === "pending").reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
+        const currency = String(paid[0]?.currency ?? payments[0]?.currency ?? "UZS");
+        return { currency, collected_total: collectedTotal, collected_this_month: collectedThisMonth, outstanding, paid_count: paid.length };
+      })()
+      : null;
 
     // Enrollment funnel
     const funnel = { trial: 0, active: 0, paused: 0, inactive: 0 } as Record<string, number>;
@@ -2348,7 +2355,7 @@ const handleReadAction = async (
     const centerVoucherHeatmaps = await loadAcademyCenterVoucherHeatmaps(sb, academyId, centerTenantId, classroomIds);
 
     return json(200, {
-      revenue: { currency, collected_total: collectedTotal, collected_this_month: collectedThisMonth, outstanding, paid_count: paid.length },
+      revenue,
       funnel,
       total_students: contacts.length,
       total_classrooms: classrooms.length,
