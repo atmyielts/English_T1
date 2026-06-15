@@ -36,6 +36,7 @@ type ClassroomDetailViewProps = {
   onResolveActionItem: (item: TeacherStudioActionItem, status?: ActionStatus) => Promise<void>;
   onOpenActionItem: (item: TeacherStudioActionItem) => void;
   canResolveActionItems: boolean;
+  canIssueCertificates: boolean;
   formatDate: (iso: string | null | undefined) => string;
   statusClass: (status: string) => string;
   onBack: () => void;
@@ -87,6 +88,7 @@ export const ClassroomDetailView = ({
   onResolveActionItem,
   onOpenActionItem,
   canResolveActionItems,
+  canIssueCertificates,
   formatDate,
   statusClass,
   onBack,
@@ -142,7 +144,7 @@ export const ClassroomDetailView = ({
       score: lifecycle?.composite_score ?? null,
       attendance: lifecycle?.attendance_rate ?? null,
       missing: lifecycle?.missing_assignments ?? 0,
-      certificateReady: lifecycle?.certificate_ready ?? false,
+      certificateReady: canIssueCertificates ? lifecycle?.certificate_ready ?? false : false,
     };
   });
 
@@ -150,7 +152,9 @@ export const ClassroomDetailView = ({
   const gradeBacklogCount = classroomActionItems.filter((item) => item.source_type === 'grading_backlog').length;
   const missingWorkCount = classroomLifecycleRows.reduce((total, row) => total + row.missing_assignments, 0);
   const attendanceRiskCount = classroomLifecycleRows.filter((row) => row.attendance_rate !== null && row.attendance_rate < 70).length;
-  const certificateReadyCount = classroomLifecycleRows.filter((row) => row.certificate_ready).length;
+  const certificateReadyCount = canIssueCertificates
+    ? classroomLifecycleRows.filter((row) => row.certificate_ready).length
+    : 0;
 
   return (
     <section className="grid">
@@ -204,10 +208,12 @@ export const ClassroomDetailView = ({
             <span>Attendance risk</span>
             <strong>{attendanceRiskCount}</strong>
           </article>
-          <article>
-            <span>Certificates</span>
-            <strong>{certificateReadyCount}</strong>
-          </article>
+          {canIssueCertificates ? (
+            <article>
+              <span>Certificates</span>
+              <strong>{certificateReadyCount}</strong>
+            </article>
+          ) : null}
         </div>
 
         <div className="table-wrap lms-tight-table">
