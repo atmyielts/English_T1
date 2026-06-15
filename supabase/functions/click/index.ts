@@ -194,6 +194,69 @@ const normalizeAcademyFinanceRole = (raw: unknown): string => {
 const isAcademyFinanceRole = (raw: unknown): boolean =>
   ["owner", "admin", "center_admin"].includes(normalizeAcademyFinanceRole(raw));
 
+const isAcademyTuitionPayment = (payment: PaymentGrantRow): boolean => {
+  const meta = payment.metadata ?? {};
+  return normalizePurchaseType(
+    payment.purchase_type ?? (meta as any)?.purchase_type,
+  ) === "academy_tuition";
+};
+
+const userHasAcademyFinanceAccess = async (
+  sb: any,
+  academyId: string | null | undefined,
+  userId: string,
+): Promise<{ allowed: boolean; error?: any; stage?: string }> => {
+  const id = String(academyId ?? "").trim();
+  if (!id || !userId) return { allowed: false };
+
+  const { data: adminMembership, error: adminMembershipErr } = await sb
+    .from("tenant_memberships")
+    .select("role")
+    .eq("tenant_id", id)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (adminMembershipErr) {
+    return {
+      allowed: false,
+      error: adminMembershipErr,
+      stage: "academy_membership",
+    };
+  }
+  if (isAcademyFinanceRole(adminMembership?.role)) return { allowed: true };
+
+  const { data: academyTenant, error: academyTenantErr } = await sb
+    .from("tenants")
+    .select("metadata")
+    .eq("id", id)
+    .maybeSingle();
+  if (academyTenantErr) {
+    return { allowed: false, error: academyTenantErr, stage: "academy_tenant" };
+  }
+
+  const parentCenterId = String(
+    (academyTenant?.metadata as any)?.parent_center_id ?? "",
+  ).trim();
+  if (!parentCenterId) return { allowed: false };
+
+  const { data: centerMembership, error: centerMembershipErr } = await sb
+    .from("tenant_memberships")
+    .select("role")
+    .eq("tenant_id", parentCenterId)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (centerMembershipErr) {
+    return {
+      allowed: false,
+      error: centerMembershipErr,
+      stage: "center_membership",
+    };
+  }
+
+  return { allowed: isAcademyFinanceRole(centerMembership?.role) };
+};
+
 const isTerminalFailureStatus = (status: string): boolean =>
   ["failed", "failure", "canceled", "cancelled", "expired", "rejected"]
     .includes(status.trim().toLowerCase());
@@ -2864,11 +2927,38 @@ serve(async (req) => {
 
       const payment = paymentRow as PaymentGrantRow;
 
-      // Authorization: payer OR tenant member OR admin
+      // Authorization: payer OR authorized operator OR platform admin.
       if (payment.user_id !== authedUserId) {
         let allowed = false;
 
-        if (payment.tenant_id) {
+        const { data: userRow } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", authedUserId)
+          .maybeSingle();
+        if (userRow?.role === "admin") allowed = true;
+
+        if (!allowed && isAcademyTuitionPayment(payment)) {
+          const meta = payment.metadata ?? {};
+          const academyId = String(
+            payment.tenant_id ?? (meta as any)?.academy_id ?? "",
+          ).trim();
+          const financeAccess = await userHasAcademyFinanceAccess(
+            supabase,
+            academyId,
+            authedUserId,
+          );
+          if (financeAccess.error) {
+            return jsonResponse(500, {
+              error: "Failed to verify academy finance access",
+              details: financeAccess.error,
+              stage: financeAccess.stage,
+            });
+          }
+          allowed = financeAccess.allowed;
+        }
+
+        if (!allowed && !isAcademyTuitionPayment(payment) && payment.tenant_id) {
           const { data: membership } = await supabase
             .from("tenant_memberships")
             .select("id")
@@ -2877,15 +2967,6 @@ serve(async (req) => {
             .eq("status", "active")
             .maybeSingle();
           if (membership) allowed = true;
-        }
-
-        if (!allowed) {
-          const { data: userRow } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", authedUserId)
-            .maybeSingle();
-          if (userRow?.role === "admin") allowed = true;
         }
 
         if (!allowed) {
