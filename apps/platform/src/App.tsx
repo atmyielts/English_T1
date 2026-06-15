@@ -52,6 +52,7 @@ const AcademyStudentRedirectPage = lazyWithChunkRetry(() => import('./pages/Acad
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
 const TelegramAppPage = lazyWithChunkRetry(() => import('./pages/TelegramAppPage').then((m) => ({ default: m.TelegramAppPage })));
+const TelegramDiscoverPage = lazyWithChunkRetry(() => import('./pages/TelegramDiscoverPage').then((m) => ({ default: m.TelegramDiscoverPage })));
 const WritingTutorPage = lazyWithChunkRetry(() => import('./pages/WritingTutorPage').then((m) => ({ default: m.WritingTutorPage })));
 const SpeakingCoachPage = lazyWithChunkRetry(() => import('./pages/SpeakingCoachPage').then((m) => ({ default: m.SpeakingCoachPage })));
 const LearningPathPage = lazyWithChunkRetry(() => import('./pages/LearningPathPage').then((m) => ({ default: m.LearningPathPage })));
@@ -154,6 +155,7 @@ function App() {
           <Route path="/certificate" element={<CertificatePage />} />
           <Route path="/parent-report" element={<ParentReportPage />} />
           <Route path="/telegram" element={<TelegramAppPage />} />
+          <Route path="/telegram/discover" element={<TelegramDiscoverPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />

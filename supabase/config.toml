@@ -231,6 +231,9 @@ verify_jwt = false
 [functions.telegram-app]
 verify_jwt = false
 
+[functions.telegram-public]
+verify_jwt = false
+
 [functions.access-effective]
 verify_jwt = false
 

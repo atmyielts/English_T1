@@ -1,0 +1,18 @@
+name = "schood-online-bot"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "onlinebot.schood.online", custom_domain = true },
+]
+
+[vars]
+SITE_URL = "https://schood.online"
+DISCOVER_APP_URL = "https://schood.online/telegram/discover"
+STUDENT_BOT_URL = "https://t.me/schoodstudentbot?startapp"
+TELEGRAM_BOT_NAME = "schoodonlinebot"
+
+# Secrets (set via `wrangler secret put`):
+# TELEGRAM_BOT_TOKEN
+# WEBHOOK_SECRET
