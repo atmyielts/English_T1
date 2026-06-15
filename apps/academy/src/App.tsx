@@ -93,7 +93,10 @@ import { UpdatesButton } from './components/UpdatesButton';
 import {
   hasAccessPermission,
   hasRoutePermission,
-  routeIntentAllowsPermission,
+  isAcademyAdminAccess,
+  isAcademyOperationsAccess,
+  isCenterAccess,
+  isTeacherWorkspaceAccess,
   type AccessPermissionKey,
   type OfficeRouteIntent,
 } from './lib/academyAccess';
@@ -289,10 +292,10 @@ const officeShellLabel = (
 };
 
 const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undefined): OfficeRouteIntent => {
-  const role = String(access?.role ?? '').toLowerCase();
-  if (access?.source === 'center' || role === 'center_admin') return 'center';
-  if (hasAccessPermission(access, 'manageAcademy') || hasAccessPermission(access, 'manageFinance')) return 'admin';
-  if (hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS')) return 'teacher';
+  if (isCenterAccess(access)) return 'center';
+  if (isAcademyAdminAccess(access) && hasAccessPermission(access, 'manageAcademy')) return 'admin';
+  if (isAcademyOperationsAccess(access)) return 'office';
+  if (isTeacherWorkspaceAccess(access) && (hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS'))) return 'teacher';
   return 'office';
 };
 
@@ -301,10 +304,6 @@ const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
   admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
   center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
-};
-
-const officeIntentAllowsPermission = (intent: OfficeRouteIntent, permission: AccessPermissionKey): boolean => {
-  return routeIntentAllowsPermission(intent, permission);
 };
 
 const hasOfficeRoutePermission = (
@@ -320,17 +319,21 @@ const officeIntentCanEnter = (
   if (!access) return false;
   if (intent === 'office') return canEnterAcademyOffice(access);
   if (intent === 'teacher') {
-    return hasOfficeRoutePermission(access, intent, 'viewClassrooms') || hasOfficeRoutePermission(access, intent, 'viewEducationOS');
+    return (
+      isTeacherWorkspaceAccess(access) &&
+      (hasOfficeRoutePermission(access, intent, 'viewClassrooms') || hasOfficeRoutePermission(access, intent, 'viewEducationOS'))
+    );
   }
   if (intent === 'admin') {
     return (
-      hasOfficeRoutePermission(access, intent, 'manageAcademy') ||
-      hasOfficeRoutePermission(access, intent, 'manageStaff') ||
-      hasOfficeRoutePermission(access, intent, 'manageFinance') ||
-      hasOfficeRoutePermission(access, intent, 'manageOffers')
+      isAcademyAdminAccess(access) &&
+      (hasOfficeRoutePermission(access, intent, 'manageAcademy') ||
+        hasOfficeRoutePermission(access, intent, 'manageStaff') ||
+        hasOfficeRoutePermission(access, intent, 'manageFinance') ||
+        hasOfficeRoutePermission(access, intent, 'manageOffers'))
     );
   }
-  return access.source === 'center' || String(access.role ?? '').toLowerCase() === 'center_admin';
+  return isCenterAccess(access) && canEnterAcademyOffice(access);
 };
 
 const officeViewsForIntent = (
