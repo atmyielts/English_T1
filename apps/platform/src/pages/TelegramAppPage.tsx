@@ -381,7 +381,7 @@ export const TelegramAppPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => openTelegram('https://t.me/schoodonlinebot?startapp')}
+                onClick={() => openTelegram('https://t.me/schoodstudentbot?startapp')}
                 className="rounded-xl border border-gray-900 bg-white px-4 py-3 text-sm font-bold"
               >
                 Back to bot
