@@ -191,7 +191,7 @@ const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   classrooms: 'viewClassrooms',
   offers: 'manageOffers',
   payments: 'manageFinance',
-  entitlements: 'manageFinance',
+  entitlements: 'manageOffers',
 };
 
 const officeBasePath = (intent: OfficeRouteIntent = 'office'): string => {
@@ -942,7 +942,8 @@ const App = () => {
       classrooms: { title: 'Classroom LMS', caption: 'Gradebook, attendance, student actions, schedule' },
       contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student records and lifecycle context' },
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
-      payments: { title: 'Payments', caption: 'Track payments and convert to access' },
+      entitlements: { title: 'Access grants', caption: 'Review active LMS and classroom access' },
+      payments: { title: 'Payments', caption: 'Track Click payments and settlement' },
       os: { title: osCenterLabel, caption: 'Automations, actions, reports, and learning signals' },
     };
     return allowedOfficeViews
@@ -1108,6 +1109,7 @@ const App = () => {
     const canLoadAlerts = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
     const canLoadOffers = hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
     const canLoadFinance = hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
+    const canLoadEntitlements = canLoadFinance || canLoadOffers;
     const canLoadEducationOS = hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
 
     const [
@@ -1132,7 +1134,7 @@ const App = () => {
       canLoadOffers ? teacherStudioOffers(academy) : Promise.resolve([]),
       canLoadOffers ? teacherStudioOfferGrants(academy) : Promise.resolve([]),
       canLoadFinance ? teacherStudioPayments(academy) : Promise.resolve([]),
-      canLoadFinance ? teacherStudioEntitlements(academy) : Promise.resolve([]),
+      canLoadEntitlements ? teacherStudioEntitlements(academy) : Promise.resolve([]),
       canLoadEducationOS ? teacherStudioEducationOS(academy).catch((err) => {
         console.warn('Failed to load Academy LMS operations engine', err);
         return null;
@@ -2258,7 +2260,7 @@ const App = () => {
     try {
       await teacherStudioMarkPaymentPaid(academyId, paymentId);
       await loadAcademyData(academyId, selectedConversationId);
-      setNotice('Payment marked as paid and entitlements applied.');
+      setNotice('Settlement applied and entitlements updated.');
     } catch (err) {
       setError(normalizeError(err));
     } finally {
@@ -4450,7 +4452,7 @@ const App = () => {
               <strong>{summary?.counts.offers ?? offers.length}</strong>
             </article>
           ) : null}
-          {canManageFinance ? (
+          {canManageFinance || canManageOffers ? (
             <article className="stat-card">
               <span className="stat-icon" aria-hidden="true"><KeyRound size={18} /></span>
               <span>Active entitlements</span>
@@ -4491,7 +4493,7 @@ const App = () => {
             busy={busy}
             canManageLanding={canManageLanding}
             canViewOffers={officeCanOpen('offers')}
-            canViewFinance={officeCanOpen('payments') || officeCanOpen('entitlements')}
+            canViewFinance={officeCanOpen('payments')}
             canViewAlerts={officeCanOpen('alerts')}
             onNavigate={(path) => navigate(academyScopedPath(path))}
           />
