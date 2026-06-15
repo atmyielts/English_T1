@@ -63,5 +63,4 @@ export type GrantFormState = {
 export type PaymentFormState = {
   contact_id: string;
   offer_id: string;
-  provider: string;
 };

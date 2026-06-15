@@ -34,7 +34,6 @@ import {
   teacherStudioContacts,
   teacherStudioCreateOffer,
   teacherStudioCreateClickTuitionPayment,
-  teacherStudioCreatePayment,
   teacherStudioEntitlements,
   teacherStudioEducationOS,
   teacherStudioMarkPaymentPaid,
@@ -831,7 +830,6 @@ const defaultGrantForm = (): GrantFormState => ({
 const defaultPaymentForm = (): PaymentFormState => ({
   contact_id: '',
   offer_id: '',
-  provider: 'click',
 });
 
 const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
@@ -2282,26 +2280,16 @@ const App = () => {
     setError('');
     setNotice('');
     try {
-      const provider = paymentForm.provider.trim().toLowerCase() || 'click';
-      if (provider === 'click') {
-        const result = await teacherStudioCreateClickTuitionPayment(academyId, {
-          contact_id: paymentForm.contact_id,
-          offer_id: paymentForm.offer_id,
-          redirect_url: typeof window !== 'undefined' ? window.location.href : null,
-        });
-        if (result.payment_url) {
-          const popup = window.open(result.payment_url, '_blank', 'noopener,noreferrer');
-          if (!popup) window.location.assign(result.payment_url);
-        }
-        setNotice('Click checkout created.');
-      } else {
-        await teacherStudioCreatePayment(academyId, {
-          contact_id: paymentForm.contact_id,
-          offer_id: paymentForm.offer_id,
-          provider: 'manual',
-        });
-        setNotice('Manual payment record created.');
+      const result = await teacherStudioCreateClickTuitionPayment(academyId, {
+        contact_id: paymentForm.contact_id,
+        offer_id: paymentForm.offer_id,
+        redirect_url: typeof window !== 'undefined' ? window.location.href : null,
+      });
+      if (result.payment_url) {
+        const popup = window.open(result.payment_url, '_blank', 'noopener,noreferrer');
+        if (!popup) window.location.assign(result.payment_url);
       }
+      setNotice('Click checkout created.');
       await loadAcademyData(academyId, selectedConversationId);
     } catch (err) {
       setError(normalizeError(err));

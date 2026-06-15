@@ -100,12 +100,8 @@ export const PaymentsView = ({
               <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
             ))}
           </select>
-          <select className="input" value={paymentForm.provider} onChange={(e) => setPaymentForm((p) => ({ ...p, provider: e.target.value }))}>
-            <option value="click">Click checkout</option>
-            <option value="manual">Manual settlement</option>
-          </select>
           <button className="primary-btn" type="submit" disabled={busy}>
-            {paymentForm.provider === 'manual' ? 'Record manual payment' : 'Create Click checkout'}
+            Create Click checkout
           </button>
         </form>
 
@@ -143,7 +139,7 @@ export const PaymentsView = ({
                 <tr key={p.id}>
                   <td>{formatDate(p.created_at)}</td>
                   <td><span className={statusClass(p.status)}>{p.status}</span></td>
-                  <td>{p.provider || 'manual'}</td>
+                  <td>{p.provider || 'legacy'}</td>
                   <td>{p.amount} {p.currency}</td>
                   <td>{offers.find((o) => o.id === p.offer_id)?.name ?? p.offer_id}</td>
                   <td>{contacts.find((c) => c.id === p.contact_id)?.email ?? p.contact_id}</td>
