@@ -360,26 +360,46 @@ export const EducationOSView = ({
 
   const lifecycleRows = useMemo(() => {
     const canSeeFinance = modeCanUse('manageFinance');
+    const canIssueCertificates = modeCanUse('issueCertificates');
     return (osEngine?.pipeline ?? []).map((row) => {
       const hasRenewalSignal =
         row.stage === 'renewal' ||
         row.derived_stage === 'renewal' ||
         row.pending_amount > 0 ||
         Boolean(row.entitlement_expires_at);
-      if (canSeeFinance || !hasRenewalSignal) return row;
+      const hasCertificateSignal =
+        row.stage === 'completion' ||
+        row.derived_stage === 'completion' ||
+        row.certificate_ready === true;
+      const hideRenewalSignal = !canSeeFinance && hasRenewalSignal;
+      const hideCertificateSignal = !canIssueCertificates && hasCertificateSignal;
+      if (!hideRenewalSignal && !hideCertificateSignal) return row;
+      const visibleStage = hideRenewalSignal || (hideCertificateSignal && row.stage === 'completion') ? 'learning' : row.stage;
+      const visibleDerivedStage =
+        (hideRenewalSignal && row.derived_stage === 'renewal') || (hideCertificateSignal && row.derived_stage === 'completion')
+          ? visibleStage
+          : row.derived_stage;
       return {
         ...row,
-        stage: 'learning',
-        derived_stage: row.derived_stage === 'renewal' ? 'learning' : row.derived_stage,
-        next_action: 'Monitor attendance, grade submissions, and keep learning momentum.',
-        pending_amount: 0,
-        entitlement_expires_at: null,
+        stage: visibleStage,
+        derived_stage: visibleDerivedStage,
+        next_action: hideRenewalSignal
+          ? 'Monitor attendance, grade submissions, and keep learning momentum.'
+          : 'Review progress, feedback, and the next learning milestone.',
+        pending_amount: hideRenewalSignal ? 0 : row.pending_amount,
+        entitlement_expires_at: hideRenewalSignal ? null : row.entitlement_expires_at,
+        certificate_ready: false,
       };
     });
   }, [modeCanUse, osEngine?.pipeline]);
 
   const visibleLifecycleStages = useMemo(
-    () => lifecycleStages.filter((stage) => stage.id !== 'renewal' || modeCanUse('manageFinance') || modeCanUse('manageContacts')),
+    () =>
+      lifecycleStages.filter((stage) => {
+        if (stage.id === 'renewal') return modeCanUse('manageFinance') || modeCanUse('manageContacts');
+        if (stage.id === 'completion') return modeCanUse('issueCertificates');
+        return true;
+      }),
     [modeCanUse],
   );
 
