@@ -545,20 +545,6 @@ const loadMemberships = async (
     MembershipRow & { tenants?: Record<string, unknown> | Record<string, unknown>[] | null }
   >;
 
-  const accessRows: MembershipRow[] = [];
-
-  for (const row of membershipRows) {
-    const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
-    if (!isAcademyTenantRow(tenant)) continue;
-    accessRows.push({
-      tenant_id: String(row.tenant_id ?? ""),
-      role: normalizeAcademyRole(row.role),
-      status: String(row.status ?? "active"),
-      source: "tenant",
-      classroom_ids: [],
-    });
-  }
-
   const centerCandidateIds = Array.from(
     new Set(
       membershipRows
@@ -567,6 +553,7 @@ const loadMemberships = async (
         .filter((id) => id.length > 0),
     ),
   );
+  const centerTenantIds = new Set<string>();
 
   if (centerCandidateIds.length > 0) {
     const { data: centerProfiles, error: centerError } = await sb
@@ -576,8 +563,30 @@ const loadMemberships = async (
     if (centerError) throw new Error(`Failed to load education center profiles: ${centerError.message}`);
 
     for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null }>) {
-      const centerTenantId = center.tenant_id ? String(center.tenant_id) : "";
-      if (!centerTenantId) continue;
+      const centerTenantId = normalizeText(center.tenant_id, 64);
+      if (centerTenantId) centerTenantIds.add(centerTenantId);
+    }
+  }
+
+  const accessRows: MembershipRow[] = [];
+
+  for (const row of membershipRows) {
+    const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
+    if (!isAcademyTenantRow(tenant)) continue;
+    const metadata = toJsonObject(tenant?.metadata);
+    const parentCenterId = normalizeText(metadata.parent_center_id, 64);
+    if (parentCenterId && centerTenantIds.has(parentCenterId)) continue;
+    accessRows.push({
+      tenant_id: String(row.tenant_id ?? ""),
+      role: normalizeAcademyRole(row.role),
+      status: String(row.status ?? "active"),
+      source: "tenant",
+      classroom_ids: [],
+    });
+  }
+
+  if (centerTenantIds.size > 0) {
+    for (const centerTenantId of centerTenantIds) {
       const { data: childAcademies, error: childError } = await sb
         .from("tenants")
         .select("id")
