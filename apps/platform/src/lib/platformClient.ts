@@ -1024,8 +1024,17 @@ export type ClickCreateInput = {
   referral_attribution_id?: string | null;
 };
 
+export type ClickCardWidgetConfig = {
+  service_id: string;
+  merchant_id: string;
+  merchant_user_id: string | null;
+  amount: string;
+  transaction_param: string;
+};
+
 export type ClickCreateResponse = {
   payment_url: string | null;
+  card_widget?: ClickCardWidgetConfig | null;
   transaction_id: string;
   status?: string;
   amount: number;
