@@ -224,6 +224,66 @@ Deno.test("Academy workspace scopes match production role lanes", () => {
   }).scope, "assigned_classrooms");
 });
 
+Deno.test("Academy role grants resolve active classroom scope and deny inactive states", () => {
+  const now = new Date("2026-06-18T08:00:00.000Z");
+  const teacherGrant = academyAccess.academyRoleGrantToMembership({
+    id: "00000000-0000-0000-0000-000000000020",
+    academy_id: "00000000-0000-0000-0000-000000000001",
+    role: "teacher",
+    status: "active",
+    scope_type: "classrooms",
+    scope_ids: [
+      "00000000-0000-0000-0000-000000000010",
+      "00000000-0000-0000-0000-000000000011",
+    ],
+    starts_at: "2026-06-01T00:00:00.000Z",
+    expires_at: "2026-07-01T00:00:00.000Z",
+  }, now);
+
+  assertEquals(teacherGrant?.source, "grant");
+  assertEquals(teacherGrant?.status, "active");
+  assertEquals(teacherGrant?.classroom_ids, [
+    "00000000-0000-0000-0000-000000000010",
+    "00000000-0000-0000-0000-000000000011",
+  ]);
+  assertEquals(academyAccess.academyAccessProfile(teacherGrant!).scope, "assigned_classrooms");
+
+  for (const status of ["suspended", "revoked", "expired"]) {
+    assertEquals(academyAccess.academyRoleGrantToMembership({
+      academy_id: "00000000-0000-0000-0000-000000000001",
+      role: "manager",
+      status,
+      scope_type: "academy",
+      scope_ids: [],
+    }, now), null, status);
+  }
+
+  assertEquals(academyAccess.academyRoleGrantToMembership({
+    academy_id: "00000000-0000-0000-0000-000000000001",
+    role: "teacher",
+    status: "active",
+    scope_type: "classrooms",
+    scope_ids: ["00000000-0000-0000-0000-000000000010"],
+    expires_at: "2026-06-18T07:59:59.000Z",
+  }, now), null, "expired timestamp");
+});
+
+Deno.test("Academy invited email grants are access-ready until accepted by login", () => {
+  const invitedGrant = academyAccess.academyRoleGrantToMembership({
+    id: "00000000-0000-0000-0000-000000000021",
+    academy_id: "00000000-0000-0000-0000-000000000001",
+    role: "manager",
+    status: "invited",
+    scope_type: "academy",
+    scope_ids: [],
+  }, new Date("2026-06-18T08:00:00.000Z"));
+
+  assertEquals(invitedGrant?.source, "grant");
+  assertEquals(invitedGrant?.role, "manager");
+  assertEquals(invitedGrant?.status, "active");
+  assertEquals(academyAccess.academyAccessProfile(invitedGrant!).scope, "academy");
+});
+
 Deno.test("Academy center route exposes schedule but not teacher grading controls", async () => {
   const routeCapsSource = await Deno.readTextFile(
     new URL("../../../apps/academy/src/lib/academyAccess.ts", import.meta.url),
