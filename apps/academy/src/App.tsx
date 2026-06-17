@@ -909,6 +909,7 @@ const App = () => {
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
   const academyDataLoadKeyRef = useRef('');
+  const hasCompletedInitialBootstrapRef = useRef(false);
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
@@ -1278,14 +1279,20 @@ const App = () => {
   }, []);
 
   const bootstrap = useCallback(async () => {
+    const shouldShowBlockingLoad = !hasCompletedInitialBootstrapRef.current;
     try {
       setError('');
       setNotice('');
-      setState('loading');
+      if (shouldShowBlockingLoad) {
+        setState('loading');
+      } else {
+        setBusy(true);
+      }
 
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         setMe(null);
+        hasCompletedInitialBootstrapRef.current = false;
         setState('unauthenticated');
         return;
       }
@@ -1324,8 +1331,10 @@ const App = () => {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(studentData ?? emptyStudentDashboard());
-        setState('error');
         setError('No active academy membership or student contact found for this account.');
+        if (shouldShowBlockingLoad) {
+          setState('error');
+        }
         return;
       }
 
@@ -1351,17 +1360,25 @@ const App = () => {
         setAcademyId(requestedAcademyId || studentData?.academies[0]?.id || '');
       }
 
+      hasCompletedInitialBootstrapRef.current = true;
       setState('ready');
     } catch (err) {
       const message = normalizeError(err);
       if (message === 'Your session expired. Please sign in again.') {
         setMe(null);
+        hasCompletedInitialBootstrapRef.current = false;
         setState('unauthenticated');
         setError('');
         return;
       }
-      setState('error');
       setError(message);
+      if (shouldShowBlockingLoad) {
+        setState('error');
+      }
+    } finally {
+      if (!shouldShowBlockingLoad) {
+        setBusy(false);
+      }
     }
   }, [
     academyId,
