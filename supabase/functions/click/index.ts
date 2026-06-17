@@ -377,6 +377,32 @@ const sha1Hex = async (message: string): Promise<string> => {
 const getClickServiceId = (): string => getEnv("CLICK_SERVICE_ID");
 const getClickMerchantId = (): string => getEnv("CLICK_MERCHANT_ID");
 const getClickSecretKey = (): string => getEnv("CLICK_SECRET_KEY");
+// Optional: used by the embedded "pay by card" widget (checkout.js). Not secret.
+const getClickMerchantUserId = (): string | null =>
+  Deno.env.get("CLICK_MERCHANT_USER_ID") ?? null;
+
+// Config the frontend needs to render the embedded card-payment widget
+// (https://my.click.uz/pay/checkout.js) as an alternative to the hosted
+// services/pay redirect. service_id / merchant_id / merchant_user_id are
+// public identifiers — safe to return to the browser.
+const buildCardWidgetConfig = (
+  serviceId: string,
+  merchantId: string,
+  amount: number,
+  merchantTransId: string,
+): {
+  service_id: string;
+  merchant_id: string;
+  merchant_user_id: string | null;
+  amount: string;
+  transaction_param: string;
+} => ({
+  service_id: serviceId,
+  merchant_id: merchantId,
+  merchant_user_id: getClickMerchantUserId(),
+  amount: amount.toFixed(2),
+  transaction_param: merchantTransId,
+});
 
 const buildClickPaymentUrl = (
   serviceId: string,
@@ -2887,6 +2913,12 @@ serve(async (req) => {
 
       return jsonResponse(200, {
         payment_url: paymentUrl,
+        card_widget: buildCardWidgetConfig(
+          serviceId,
+          merchantId,
+          amount,
+          paymentUuid,
+        ),
         transaction_id: paymentUuid,
         amount,
         currency,

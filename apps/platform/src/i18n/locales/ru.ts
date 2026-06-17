@@ -310,6 +310,8 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'checkout.payment.notCreated': 'Ещё не создано',
   'checkout.payment.open': 'Открыть страницу оплаты',
   'checkout.button.checkStatus': 'Проверить статус',
+  'checkout.button.payOnClick': 'Оплатить через Click',
+  'checkout.button.payByCard': 'Оплатить картой',
   'checkout.coupon.label': 'Промокод (необязательно)',
   'checkout.coupon.placeholder': 'EXAMPLE10',
   'checkout.coupon.applied': 'Применено: {code}',
@@ -320,6 +322,8 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'checkout.error.load': 'Не удалось загрузить страницу оплаты.',
   'checkout.error.redirectMissing':
     'Ссылка оплаты создана, но отсутствует URL перенаправления.',
+  'checkout.error.cardWidgetUnavailable':
+    'Оплата картой временно недоступна. Воспользуйтесь кнопкой Click.',
   'checkout.error.unknown': 'Неизвестная ошибка',
 
   'updates.title': 'Новости',
