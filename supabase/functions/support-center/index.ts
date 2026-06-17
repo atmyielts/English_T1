@@ -25,6 +25,12 @@ type SupportMessageInput = {
   metadata?: Json;
 };
 
+type SupportReplyInput = {
+  message_id?: string;
+  body?: string;
+  channel?: string;
+};
+
 type PlatformAnnouncementInput = {
   id?: string;
   title?: string;
@@ -67,6 +73,15 @@ const normalizeEmail = (value: unknown): string => normalizeText(value, 320).toL
 
 const emailLooksValid = (email: string): boolean => /.+@.+\..+/.test(email);
 
+const placeholderEmails = new Set(["telegram-lead@schood.online", "telegram@schood.online"]);
+
+const usableReplyEmail = (email: string): string | null => {
+  const normalized = normalizeEmail(email);
+  if (!emailLooksValid(normalized)) return null;
+  if (placeholderEmails.has(normalized)) return null;
+  return normalized;
+};
+
 const toNumberOrDefault = (value: unknown, fallback: number): number => {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
@@ -89,6 +104,12 @@ const normalizeIsoOrNull = (value: unknown): string | null => {
 
 const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
 
+const supportMessageSelect =
+  "id,user_id,name,email,telegram,subject,message,source,service_slug,status,admin_note,metadata,handled_by,handled_at,created_at,updated_at";
+
+const supportReplySelect =
+  "id,support_message_id,author_user_id,author_type,body,delivery_channel,delivery_status,delivery_target,delivery_error,provider_message_id,metadata,created_at";
+
 const getBearerToken = (req: Request): string | null => {
   const auth = req.headers.get("Authorization") ?? "";
   if (auth.startsWith("Bearer ")) return auth.slice(7).trim();
@@ -103,6 +124,92 @@ const getAuthUser = async (sb: any, req: Request): Promise<{ id: string; email: 
   const { data, error } = await sb.auth.getUser(token);
   if (error || !data?.user) return null;
   return { id: data.user.id, email: data.user.email ?? null };
+};
+
+const extractTelegramTarget = (message: Record<string, unknown>): string | null => {
+  const metadata = isObject(message.metadata) ? message.metadata : {};
+  const candidates = [
+    metadata.telegram_chat_id,
+    metadata.telegram_user_id,
+    isObject(metadata.telegram_context) ? metadata.telegram_context.telegram_user_id : null,
+    isObject(metadata.telegram_context) ? metadata.telegram_context.id : null,
+    message.telegram,
+  ];
+
+  for (const candidate of candidates) {
+    const value = normalizeText(candidate, 120);
+    if (/^-?\d{5,}$/.test(value)) return value;
+  }
+  return null;
+};
+
+const chooseTelegramBotToken = (message: Record<string, unknown>): string => {
+  const source = normalizeText(message.source, 80);
+  const serviceSlug = normalizeText(message.service_slug, 80);
+  if (source === "telegram_public_bot" || serviceSlug === "telegram-public") {
+    return Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN") || Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
+  }
+  return Deno.env.get("TELEGRAM_BOT_TOKEN") || Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN") || "";
+};
+
+const sendTelegramReply = async (
+  message: Record<string, unknown>,
+  replyBody: string,
+): Promise<{ ok: boolean; target: string | null; providerMessageId: string | null; error: string | null }> => {
+  const target = extractTelegramTarget(message);
+  if (!target) return { ok: false, target: null, providerMessageId: null, error: "No numeric Telegram chat id captured for this message" };
+
+  const botToken = chooseTelegramBotToken(message);
+  if (!botToken) return { ok: false, target, providerMessageId: null, error: "Telegram bot token is not configured" };
+
+  const subject = normalizeText(message.subject, 120);
+  const text = `Schood support replied${subject ? ` about "${subject}"` : ""}:\n\n${replyBody}`;
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: target, text }),
+  });
+  const payload = await res.json().catch(() => ({})) as Record<string, unknown>;
+  if (!res.ok || payload.ok === false) {
+    const description = normalizeText(payload.description, 500) || `Telegram send failed (${res.status})`;
+    return { ok: false, target, providerMessageId: null, error: description };
+  }
+  const result = isObject(payload.result) ? payload.result : {};
+  return {
+    ok: true,
+    target,
+    providerMessageId: result.message_id ? String(result.message_id) : null,
+    error: null,
+  };
+};
+
+const buildMailtoUrl = (message: Record<string, unknown>, replyBody: string): string | null => {
+  const email = usableReplyEmail(String(message.email ?? ""));
+  if (!email) return null;
+  const subject = normalizeText(message.subject, 160);
+  const mailSubject = subject ? `Re: ${subject}` : "Re: Schood support";
+  return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(replyBody)}`;
+};
+
+const attachReplies = async (sb: any, messages: Array<Record<string, unknown>>): Promise<Array<Record<string, unknown>>> => {
+  const ids = messages.map((message) => String(message.id ?? "")).filter(Boolean);
+  if (ids.length === 0) return messages.map((message) => ({ ...message, replies: [] }));
+
+  const { data, error } = await sb
+    .from("support_message_replies")
+    .select(supportReplySelect)
+    .in("support_message_id", ids)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+
+  const byMessage = new Map<string, Array<Record<string, unknown>>>();
+  for (const reply of (data ?? []) as Array<Record<string, unknown>>) {
+    const key = String(reply.support_message_id ?? "");
+    const list = byMessage.get(key) ?? [];
+    list.push(reply);
+    byMessage.set(key, list);
+  }
+  return messages.map((message) => ({ ...message, replies: byMessage.get(String(message.id)) ?? [] }));
 };
 
 serve(async (req) => {
@@ -247,9 +354,10 @@ serve(async (req) => {
       const message = normalizeText(body?.message, 4000);
       const source = normalizeText(body?.source || "platform", 64) || "platform";
       const serviceSlug = normalizeText(body?.service_slug, 120) || null;
-      const metadata = isObject(body?.metadata)
-        ? body.metadata
-        : {};
+      const metadata = {
+        ...(isObject(body?.metadata) ? body.metadata : {}),
+        contact_channel: telegram ? "telegram" : "email",
+      };
 
       if (!name || !email || !message) {
         return jsonResponse(400, { error: "name, email, and message are required" });
@@ -497,7 +605,7 @@ serve(async (req) => {
 
       let q = sb
         .from("support_messages")
-        .select("id,user_id,name,email,telegram,subject,message,source,service_slug,status,admin_note,metadata,handled_by,handled_at,created_at,updated_at")
+        .select(supportMessageSelect)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -505,13 +613,115 @@ serve(async (req) => {
         q = q.eq("status", status);
       }
       if (query) {
-        q = q.or(`name.ilike.%${query}%,email.ilike.%${query}%,subject.ilike.%${query}%,message.ilike.%${query}%`);
+        q = q.or(`name.ilike.%${query}%,email.ilike.%${query}%,telegram.ilike.%${query}%,subject.ilike.%${query}%,message.ilike.%${query}%,source.ilike.%${query}%,service_slug.ilike.%${query}%`);
       }
 
       const { data, error } = await q;
       if (error) throw error;
 
-      return jsonResponse(200, { messages: data ?? [] });
+      const messages = await attachReplies(sb, (data ?? []) as Array<Record<string, unknown>>);
+      return jsonResponse(200, { messages });
+    }
+
+    if (req.method === "POST" && action === "admin-message-reply") {
+      const authz = await authorizeAdminRequest(sb, req, corsHeaders, {
+        requiredPermission: "admin.support.manage",
+        action: "admin.support.messages.reply",
+      });
+      if (!authz.ok) return authz.response;
+      const body = (await req.json()) as SupportReplyInput;
+
+      const messageId = normalizeText(body?.message_id, 64);
+      const replyBody = normalizeText(body?.body, 4000);
+      const requestedChannel = normalizeText(body?.channel, 32).toLowerCase() || "auto";
+      if (!messageId) return jsonResponse(400, { error: "message_id is required" });
+      if (!replyBody) return jsonResponse(400, { error: "body is required" });
+      if (!["auto", "telegram", "email", "internal"].includes(requestedChannel)) {
+        return jsonResponse(400, { error: "channel must be one of: auto, telegram, email, internal" });
+      }
+
+      const { data: message, error: messageError } = await sb
+        .from("support_messages")
+        .select(supportMessageSelect)
+        .eq("id", messageId)
+        .maybeSingle();
+      if (messageError) throw messageError;
+      if (!message) return jsonResponse(404, { error: "Support message not found" });
+
+      const telegramTarget = extractTelegramTarget(message as Record<string, unknown>);
+      const mailtoUrl = buildMailtoUrl(message as Record<string, unknown>, replyBody);
+      const channel = requestedChannel === "auto"
+        ? telegramTarget
+          ? "telegram"
+          : mailtoUrl
+          ? "email"
+          : "internal"
+        : requestedChannel;
+
+      let deliveryTarget: string | null = null;
+      let deliveryStatus: "sent" | "prepared" | "failed" | "skipped" = "sent";
+      let deliveryError: string | null = null;
+      let providerMessageId: string | null = null;
+      let metadata: Json = {};
+
+      if (channel === "telegram") {
+        const result = await sendTelegramReply(message as Record<string, unknown>, replyBody);
+        deliveryTarget = result.target;
+        providerMessageId = result.providerMessageId;
+        deliveryError = result.error;
+        deliveryStatus = result.ok ? "sent" : "failed";
+      } else if (channel === "email") {
+        deliveryTarget = usableReplyEmail(String((message as Record<string, unknown>).email ?? ""));
+        if (mailtoUrl && deliveryTarget) {
+          deliveryStatus = "prepared";
+          metadata = { mailto_url: mailtoUrl };
+        } else {
+          deliveryStatus = "failed";
+          deliveryError = "No usable email address is available for this support message";
+        }
+      } else {
+        deliveryStatus = "sent";
+        deliveryTarget = null;
+      }
+
+      const { data: reply, error: replyError } = await sb
+        .from("support_message_replies")
+        .insert({
+          support_message_id: messageId,
+          author_user_id: authz.context.userId,
+          author_type: "admin",
+          body: replyBody,
+          delivery_channel: channel,
+          delivery_status: deliveryStatus,
+          delivery_target: deliveryTarget,
+          delivery_error: deliveryError,
+          provider_message_id: providerMessageId,
+          metadata,
+        })
+        .select(supportReplySelect)
+        .maybeSingle();
+      if (replyError) throw replyError;
+
+      const currentStatus = normalizeText((message as Record<string, unknown>).status, 32) || "new";
+      const nextStatus = currentStatus === "new" ? "in_progress" : currentStatus;
+      const { data: updated, error: updateError } = await sb
+        .from("support_messages")
+        .update({
+          status: nextStatus,
+          handled_by: authz.context.userId,
+          handled_at: new Date().toISOString(),
+        })
+        .eq("id", messageId)
+        .select(supportMessageSelect)
+        .maybeSingle();
+      if (updateError) throw updateError;
+
+      return jsonResponse(200, {
+        ok: deliveryStatus === "sent" || deliveryStatus === "prepared",
+        reply,
+        message: updated ? { ...updated, replies: [reply] } : null,
+        mailto_url: isObject(reply?.metadata) ? reply.metadata.mailto_url ?? null : null,
+      });
     }
 
     if (req.method === "PATCH" && action === "admin-message") {
@@ -552,11 +762,12 @@ serve(async (req) => {
         .from("support_messages")
         .update(patch)
         .eq("id", id)
-        .select("id,user_id,name,email,telegram,subject,message,source,service_slug,status,admin_note,metadata,handled_by,handled_at,created_at,updated_at")
+        .select(supportMessageSelect)
         .maybeSingle();
 
       if (error) throw error;
-      return jsonResponse(200, { message: data });
+      const messages = data ? await attachReplies(sb, [data as Record<string, unknown>]) : [];
+      return jsonResponse(200, { message: messages[0] ?? null });
     }
 
     return jsonResponse(404, { error: "Not found" });
