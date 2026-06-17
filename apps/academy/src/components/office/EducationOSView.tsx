@@ -90,7 +90,7 @@ const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
   admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
   teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
-  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'growth', 'engagement', 'brand'],
+  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
 };
 
 const EMPTY_PERMISSIONS: TeacherStudioAccessProfile['permissions'] = {};
