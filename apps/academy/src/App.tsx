@@ -278,10 +278,10 @@ const officeShellLabel = (
   intent: OfficeRouteIntent = 'office',
 ): { title: string; subtitle: string } => {
   if (intent === 'center') {
-    return { title: 'Education Center Control', subtitle: 'Delegated academy operations' };
+    return { title: 'Center Admin Workspace', subtitle: 'Academy management and delivery' };
   }
   if (intent === 'admin') {
-    return { title: 'Academy Administration', subtitle: 'Control, finance, and access' };
+    return { title: 'Academy Admin', subtitle: 'Settings, finance, and access' };
   }
   if (intent === 'teacher') {
     return { title: 'Teacher Workspace', subtitle: 'Classrooms, LMS, and student actions' };
@@ -307,7 +307,7 @@ const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
   office: ['academy', 'os', 'contacts', 'classrooms', 'inbox', 'announcements', 'alerts'],
   admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['os', 'academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
+  center: ['academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements', 'os'],
 };
 
 const hasOfficeRoutePermission = (
@@ -359,8 +359,9 @@ const defaultOfficeViewForIntent = (
     if (views.includes('inbox')) return 'inbox';
   }
   if (intent === 'center') {
-    if (views.includes('os')) return 'os';
     if (views.includes('academy')) return 'academy';
+    if (views.includes('classrooms')) return 'classrooms';
+    if (views.includes('os')) return 'os';
   }
   if (intent === 'admin') {
     if (views.includes('academy')) return 'academy';
@@ -907,6 +908,7 @@ const App = () => {
   const [classroomThreadPinned, setClassroomThreadPinned] = useState(true);
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
+  const academyDataLoadKeyRef = useRef('');
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
@@ -968,12 +970,12 @@ const App = () => {
   const canIssueCertificates = canUseOfficePermission('issueCertificates');
   const canViewReports = canUseOfficePermission('viewReports');
   const academyHomeLabel = canManageAcademy
-    ? 'Academy control'
+    ? (officeRouteIntent === 'center' ? 'Academy management' : 'Academy settings')
     : canManageClassrooms || canManageContacts
       ? 'Academy operations'
       : 'Workspace home';
   const osCenterLabel = canManageFinance
-    ? 'Command Center'
+    ? (officeRouteIntent === 'center' ? 'Operations Center' : 'Command Center')
     : canViewReports || canManageClassrooms || canManageContacts
       ? 'Operations Center'
       : 'LMS Center';
@@ -1137,18 +1139,42 @@ const App = () => {
     });
   }, [studentDashboard]);
 
+  const academyDataLoadKey = useCallback((academy: string): string => (
+    [
+      academy,
+      officeRouteIntent,
+      officeClassroomId ? 'classroom-detail' : officeView ?? 'workspace-root',
+      officeClassroomId ?? '',
+    ].join(':')
+  ), [officeClassroomId, officeRouteIntent, officeView]);
+
   const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string) => {
     const summaryData = await teacherStudioSummary(academy);
     const access = summaryData.access ?? null;
-    const canLoadContacts = hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
-    const canLoadClassrooms = hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
-    const canLoadMessages = hasOfficeRoutePermission(access, officeRouteIntent, 'manageMessages');
-    const canLoadAnnouncements = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAnnouncements');
-    const canLoadAlerts = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
-    const canLoadOffers = hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
-    const canLoadFinance = hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
-    const canLoadEntitlements = canLoadFinance || canLoadOffers;
-    const canLoadEducationOS = hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
+    const allowedViews = officeViewsForIntent(access, officeRouteIntent);
+    const loadView = officeClassroomId
+      ? 'classrooms'
+      : officeView ?? defaultOfficeViewForIntent(allowedViews, officeRouteIntent);
+    const needsContacts = ['contacts', 'classrooms', 'alerts', 'payments', 'entitlements', 'os'].includes(loadView);
+    const needsClassrooms = ['classrooms', 'announcements', 'os'].includes(loadView);
+    const needsMemberships = ['classrooms', 'os'].includes(loadView);
+    const needsMessages = loadView === 'inbox';
+    const needsAnnouncements = loadView === 'announcements' || Boolean(officeClassroomId);
+    const needsAlerts = loadView === 'alerts' || Boolean(officeClassroomId);
+    const needsOffers = loadView === 'offers' || loadView === 'payments';
+    const needsFinance = loadView === 'payments';
+    const needsEntitlements = loadView === 'entitlements';
+    const needsEducationOS = loadView === 'os';
+    const canLoadContacts = needsContacts && hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
+    const canLoadClassrooms = needsClassrooms && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
+    const canLoadMemberships = needsMemberships && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
+    const canLoadMessages = needsMessages && hasOfficeRoutePermission(access, officeRouteIntent, 'manageMessages');
+    const canLoadAnnouncements = needsAnnouncements && hasOfficeRoutePermission(access, officeRouteIntent, 'manageAnnouncements');
+    const canLoadAlerts = needsAlerts && hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
+    const canLoadOffers = needsOffers && hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
+    const canLoadFinance = needsFinance && hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
+    const canLoadEntitlements = needsEntitlements && (canLoadFinance || hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers'));
+    const canLoadEducationOS = needsEducationOS && hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
 
     const [
       contactsData,
@@ -1165,7 +1191,7 @@ const App = () => {
     ] = await Promise.all([
       canLoadContacts ? teacherStudioContacts(academy) : Promise.resolve([]),
       canLoadClassrooms ? teacherStudioClassrooms(academy) : Promise.resolve([]),
-      canLoadClassrooms ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
+      canLoadMemberships ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
       canLoadMessages ? teacherStudioConversations(academy) : Promise.resolve([]),
       canLoadAnnouncements ? teacherStudioAnnouncements(academy) : Promise.resolve([]),
       canLoadAlerts ? teacherStudioAlerts(academy) : Promise.resolve([]),
@@ -1226,21 +1252,24 @@ const App = () => {
       classroom_id: previous.classroom_id || '',
     }));
 
-    const nextConversationId =
-      preferredConversationId && conversationsData.some((item) => item.id === preferredConversationId)
+    const nextConversationId = canLoadMessages
+      ? preferredConversationId && conversationsData.some((item) => item.id === preferredConversationId)
         ? preferredConversationId
-        : conversationsData[0]?.id || '';
+        : conversationsData[0]?.id || ''
+      : '';
 
     setSelectedConversationId(nextConversationId);
 
     if (!nextConversationId) {
       setMessages([]);
+      academyDataLoadKeyRef.current = academyDataLoadKey(academy);
       return;
     }
 
     const messagesData = await teacherStudioConversationMessages(academy, { conversation_id: nextConversationId });
     setMessages(messagesData.messages ?? []);
-  }, [officeRouteIntent]);
+    academyDataLoadKeyRef.current = academyDataLoadKey(academy);
+  }, [academyDataLoadKey, officeClassroomId, officeRouteIntent, officeView]);
 
   const loadStudentData = useCallback(async (): Promise<TeacherStudioStudentDashboard> => {
     const data = await teacherStudioStudentDashboard();
@@ -1286,7 +1315,7 @@ const App = () => {
 
       const shouldLoadStudentData =
         isStudentWorkspaceRoute ||
-        (isSharedAcademyRoute && !isServiceLanding) ||
+        !!academyClassroomLandingId ||
         !hasTeacherRouteAccess;
       const studentData = shouldLoadStudentData ? await loadStudentDataOnce() : null;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
@@ -1349,6 +1378,13 @@ const App = () => {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
+    void loadStudentData().catch((err) => {
+      console.warn('Failed to hydrate student access in Academy directory', err);
+    });
+  }, [hasTeacherAccess, isAcademyDirectory, loadStudentData, state, studentDashboard]);
 
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange((_event, session) => {
@@ -1563,6 +1599,25 @@ const App = () => {
     officeRouteRoot,
     officeView,
     routeDefaultOfficeView,
+    state,
+  ]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || !academyId || allowedOfficeViews.length === 0) return;
+    const key = academyDataLoadKey(academyId);
+    if (academyDataLoadKeyRef.current === key) return;
+    academyDataLoadKeyRef.current = key;
+    void loadAcademyData(academyId, selectedConversationId).catch((err) => {
+      academyDataLoadKeyRef.current = '';
+      setError(normalizeError(err));
+    });
+  }, [
+    academyDataLoadKey,
+    academyId,
+    allowedOfficeViews.length,
+    isTeacherWorkspaceRoute,
+    loadAcademyData,
+    selectedConversationId,
     state,
   ]);
 
