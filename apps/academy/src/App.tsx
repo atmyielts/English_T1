@@ -212,45 +212,49 @@ const academyOfficePath = (view: OfficeView = 'academy', itemId?: string, intent
 
 const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile['source'] = 'tenant'): TeacherStudioAccessProfile => {
   const role = String(roleRaw || 'member').toLowerCase();
-  const admin = role === 'owner' || role === 'admin' || role === 'center_admin';
+  const ownerAdmin = role === 'owner' || role === 'admin';
+  const centerAdmin = role === 'center_admin';
   const manager = role === 'manager' || role === 'counselor';
-  const teaching = admin || manager || role === 'teacher' || role === 'assistant';
+  const teaching = role === 'teacher' || role === 'assistant';
+  const ops = ownerAdmin || centerAdmin || manager;
+  const staff = ops || teaching;
+  const classroomLms = ownerAdmin || teaching;
   return {
     role,
     source,
-    scope: admin || manager ? 'academy' : 'assigned_classrooms',
+    scope: ops ? 'academy' : 'assigned_classrooms',
     classroom_ids: [],
     center_tenant_id: null,
     permissions: {
-      viewAcademy: admin || manager,
-      manageAcademy: admin,
-      manageStaff: admin,
-      manageFinance: admin,
-      manageOffers: admin,
-      manageBranding: admin,
-      manageAutomation: admin,
-      viewContacts: teaching,
-      manageContacts: admin || manager,
-      viewClassrooms: teaching,
-      manageClassrooms: admin || manager,
-      manageRoster: admin || manager,
-      manageMessages: teaching,
-      manageAnnouncements: teaching,
-      sendGlobalAnnouncements: admin || manager,
-      manageAlerts: teaching,
-      resolveAlerts: teaching,
-      viewEducationOS: teaching,
-      resolveActionItems: teaching,
-      manageAssignments: teaching,
-      gradeSubmissions: teaching,
-      markAttendance: teaching,
-      manageSchedule: teaching,
-      manageResources: teaching,
-      viewReports: admin || manager,
-      issueCertificates: admin || manager,
-      dispatchNotifications: admin || manager,
-      viewNotifications: admin || manager,
-      viewReferrals: admin || manager,
+      viewAcademy: ops,
+      manageAcademy: ownerAdmin || centerAdmin,
+      manageStaff: ownerAdmin || centerAdmin,
+      manageFinance: ownerAdmin || centerAdmin,
+      manageOffers: ownerAdmin || centerAdmin,
+      manageBranding: ownerAdmin || centerAdmin,
+      manageAutomation: ownerAdmin || centerAdmin,
+      viewContacts: staff,
+      manageContacts: ops,
+      viewClassrooms: staff,
+      manageClassrooms: ops,
+      manageRoster: ops,
+      manageMessages: staff,
+      manageAnnouncements: staff,
+      sendGlobalAnnouncements: ops,
+      manageAlerts: staff,
+      resolveAlerts: staff,
+      viewEducationOS: staff,
+      resolveActionItems: staff,
+      manageAssignments: classroomLms,
+      gradeSubmissions: classroomLms,
+      markAttendance: classroomLms,
+      manageSchedule: ownerAdmin || centerAdmin || manager || teaching,
+      manageResources: classroomLms,
+      viewReports: ops,
+      issueCertificates: ownerAdmin,
+      dispatchNotifications: ops,
+      viewNotifications: ops,
+      viewReferrals: ops,
     },
   };
 };

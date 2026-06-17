@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
+import * as academyAccessPolicy from "./access.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -218,104 +219,15 @@ const relatedClassroom = (row: Record<string, unknown>): Record<string, unknown>
   return isJsonObject(raw) ? raw : null;
 };
 
-const normalizeAcademyRole = (roleRaw: unknown): string => {
-  const role = normalizeText(roleRaw, 40).toLowerCase();
-  if (role === "center-admin" || role === "center admin") return "center_admin";
-  if (role === "administrator") return "admin";
-  return role || "member";
-};
-
-const academyRoleRank = (roleRaw: unknown): number => {
-  const role = normalizeAcademyRole(roleRaw);
-  if (role === "owner") return 100;
-  if (role === "admin") return 90;
-  if (role === "center_admin") return 85;
-  if (role === "manager") return 70;
-  if (role === "counselor") return 60;
-  if (role === "teacher") return 50;
-  if (role === "assistant") return 40;
-  return 20;
-};
-
-const isAcademyAdminRole = (roleRaw: unknown): boolean =>
-  ["owner", "admin", "center_admin"].includes(normalizeAcademyRole(roleRaw));
-
-const isAcademyManagerRole = (roleRaw: unknown): boolean =>
-  ["manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
-
-const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
-  ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
-
-const academyAccessScope = (access: MembershipRow): AcademyScope => {
-  const role = normalizeAcademyRole(access.role);
-  if (isAcademyAdminRole(role) || isAcademyManagerRole(role)) return "academy";
-  return "assigned_classrooms";
-};
-
-const academyAccessClassroomIds = (access: MembershipRow): string[] | null => {
-  if (academyAccessScope(access) === "academy") return null;
-  return toStringArray(access.classroom_ids);
-};
-
-const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermissions => {
-  const role = normalizeAcademyRole(access.role);
-  const admin = isAcademyAdminRole(role);
-  const manager = isAcademyManagerRole(role);
-  const teacher = isAcademyTeachingRole(role);
-  const ops = admin || manager;
-  const teaching = ops || teacher;
-
-  return {
-    viewAcademy: ops,
-    manageAcademy: admin,
-    manageStaff: admin,
-    manageFinance: admin,
-    manageOffers: admin,
-    manageBranding: admin,
-    manageAutomation: admin,
-    viewContacts: ops || teaching,
-    manageContacts: ops,
-    viewClassrooms: teaching,
-    manageClassrooms: ops,
-    manageRoster: ops,
-    manageMessages: teaching,
-    manageAnnouncements: teaching,
-    sendGlobalAnnouncements: ops,
-    manageAlerts: teaching,
-    resolveAlerts: teaching,
-    viewEducationOS: teaching,
-    resolveActionItems: teaching,
-    manageAssignments: teaching,
-    gradeSubmissions: teaching,
-    markAttendance: teaching,
-    manageSchedule: teaching,
-    manageResources: teaching,
-    viewReports: ops,
-    issueCertificates: ops,
-    dispatchNotifications: ops,
-    viewNotifications: ops,
-    viewReferrals: ops,
-  };
-};
-
-const academyAccessProfile = (access: MembershipRow): Record<string, unknown> => {
-  const scope = academyAccessScope(access);
-  return {
-    role: normalizeAcademyRole(access.role),
-    source: access.source ?? "tenant",
-    scope,
-    classroom_ids: scope === "academy" ? [] : toStringArray(access.classroom_ids),
-    center_tenant_id: access.center_tenant_id ?? null,
-    permissions: buildAcademyPermissions(access),
-  };
-};
-
-const academyAccessHas = (access: MembershipRow, permission: keyof AcademyAccessPermissions): boolean =>
-  buildAcademyPermissions(access)[permission] === true;
-
-const requireAcademyPermission = (access: MembershipRow, permission: keyof AcademyAccessPermissions): void => {
-  if (!academyAccessHas(access, permission)) throw new Error("Forbidden");
-};
+const normalizeAcademyRole = academyAccessPolicy.normalizeAcademyRole;
+const academyRoleRank = academyAccessPolicy.academyRoleRank;
+const isAcademyManagerRole = academyAccessPolicy.isAcademyManagerRole;
+const academyAccessScope = academyAccessPolicy.academyAccessScope;
+const academyAccessClassroomIds = academyAccessPolicy.academyAccessClassroomIds;
+const buildAcademyPermissions = academyAccessPolicy.buildAcademyPermissions;
+const academyAccessProfile = academyAccessPolicy.academyAccessProfile;
+const academyAccessHas = academyAccessPolicy.academyAccessHas;
+const requireAcademyPermission = academyAccessPolicy.requireAcademyPermission;
 
 const resolveAcademyAccess = (memberships: MembershipRow[], academyId: string): MembershipRow | null =>
   memberships.find((m) => m.tenant_id === academyId && String(m.status ?? "active") === "active") ?? null;
@@ -4525,7 +4437,14 @@ const runAcademyMaintenance = async (
   return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch };
 };
 
-serve(async (req) => {
+export const __academyAccessTest = {
+  normalizeAcademyRole,
+  buildAcademyPermissions,
+  academyAccessProfile,
+  academyAccessHas,
+};
+
+export const academyHandler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -6774,4 +6693,8 @@ serve(async (req) => {
     const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
     return json(status, { error: message });
   }
-});
+};
+
+if (import.meta.main) {
+  serve(academyHandler);
+}
