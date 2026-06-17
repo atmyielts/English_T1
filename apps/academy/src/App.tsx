@@ -300,7 +300,7 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: OFFICE_VIEWS,
+  office: ['academy', 'os', 'contacts', 'classrooms', 'inbox', 'announcements', 'alerts'],
   admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
   center: ['os', 'academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
