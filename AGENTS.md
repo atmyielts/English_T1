@@ -52,6 +52,8 @@ Source of truth for what's live (full list also in `.github/workflows/deploy-pag
 | `apps/toefl-ibt-simulator` | https://toefl.schood.online | `schood-toefl` |
 | `apps/toefl-playbook` | https://playbook.toefl.schood.online | `schood-toefl-playbook` |
 | `apps/itep-simulator` | https://itep.schood.online | `schood-itep` |
+| `apps/academy` | https://academy.schood.online | `schood-academy` |
+| `apps/academy-docs` | https://docs.academy.schood.online | `schood-academy-docs` |
 | `apps/english-hub` | https://english.schood.online | `schood-english` |
 | `apps/english-reading` | https://reading.english.schood.online | `schood-reading` |
 | `apps/english-writing` | https://writing.english.schood.online | `schood-writing` |

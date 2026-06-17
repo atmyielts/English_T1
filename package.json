@@ -13,6 +13,7 @@
     "apps/toefl-playbook",
     "apps/itep-simulator",
     "apps/academy",
+    "apps/academy-docs",
     "apps/english-hub",
     "workers/*",
     "packages/*"
