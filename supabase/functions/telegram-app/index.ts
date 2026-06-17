@@ -412,7 +412,12 @@ const supportCreate = async (sb: SupabaseClientLike, ctx: UserContext, body: Jso
     message,
     source: "telegram_app",
     service_slug: normalizeText(body.service_slug, 120) || "telegram",
-    metadata: { telegram_user_id: ctx.telegram.telegram_user_id },
+    metadata: {
+      telegram_chat_id: ctx.telegram.telegram_user_id,
+      telegram_user_id: ctx.telegram.telegram_user_id,
+      telegram_username: ctx.telegram.username,
+      telegram_context: ctx.telegram,
+    },
     status: "new",
   }).select("id,status,created_at").maybeSingle();
   if (error) return { status: 500, body: { error: "Failed to create support request", detail: error.message } };
