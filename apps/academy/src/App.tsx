@@ -303,7 +303,7 @@ const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
   office: OFFICE_VIEWS,
   admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
+  center: ['os', 'academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
 };
 
 const hasOfficeRoutePermission = (
@@ -967,6 +967,9 @@ const App = () => {
     const targetCopy: Partial<Record<OfficeView, { title: string; caption: string }>> = {
       classrooms: { title: 'Classroom LMS', caption: 'Gradebook, attendance, student actions, schedule' },
       contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student records and lifecycle context' },
+      inbox: { title: 'Inbox', caption: 'Message students and families inside the academy scope' },
+      announcements: { title: 'Announcements', caption: canSendGlobalAnnouncements ? 'Send academy-wide and classroom updates' : 'Send classroom updates' },
+      alerts: { title: 'Alerts', caption: 'Create and resolve student attention signals' },
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
       entitlements: { title: 'Access grants', caption: 'Review active LMS and classroom access' },
       payments: { title: 'Payments', caption: 'Track Click payments and settlement' },
@@ -976,7 +979,7 @@ const App = () => {
       .filter((view) => view !== 'academy')
       .map((view) => targetCopy[view] ? { ...targetCopy[view], path: academyOfficePath(view, undefined, officeRouteIntent) } : null)
       .filter((target): target is { title: string; caption: string; path: string } => Boolean(target));
-  }, [allowedOfficeViews, canManageContacts, officeRouteIntent, osCenterLabel]);
+  }, [allowedOfficeViews, canManageContacts, canSendGlobalAnnouncements, officeRouteIntent, osCenterLabel]);
   const defaultOfficeView = defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent);
   const routeDefaultOfficeView = useMemo<OfficeView>(
     () => defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent),
