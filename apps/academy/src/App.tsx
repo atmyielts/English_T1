@@ -2670,10 +2670,10 @@ const App = () => {
                 type="button"
                 onClick={() => {
                   const targetAcademyId = selectedOfficeAcademy?.id ?? teacherDirectoryAcademies[0]?.id;
-                  navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, targetAcademyId), targetAcademyId));
+                  navigate(academyScopedPath(defaultOfficePathForAcademy(targetAcademyId), targetAcademyId));
                 }}
               >
-                Open Academy Office
+                Open staff workspace
               </button>
             ) : null}
             <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
@@ -3136,7 +3136,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, currentAcademyId), currentAcademyId))}
                     >
-                      Open Academy Office classrooms
+                      Open classroom workspace
                     </button>
                   ) : null}
                 </article>
@@ -3145,15 +3145,15 @@ const App = () => {
 
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
-                <h3>Academy Office flow</h3>
-                <p>Manage contacts, publish announcements, track alerts, and operate payments from one command center.</p>
+                <h3>Staff workspace flow</h3>
+                <p>Open the route family that matches your staff role: administrator control, center control, operations, or teacher LMS.</p>
                 {canEnterTeacher ? (
                   <button
                     className="small-btn"
                     type="button"
-                    onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, currentAcademyId), currentAcademyId))}
+                    onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(currentAcademyId), currentAcademyId))}
                   >
-                    Open Academy Office
+                    Open staff workspace
                   </button>
                 ) : (
                   <div className="small muted">An academy staff role is required for this academy.</div>
