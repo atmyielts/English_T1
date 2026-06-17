@@ -20,6 +20,8 @@ type Copy = {
   secondaryCta: string;
   updated: string;
   routesTitle: string;
+  operatingTitle: string;
+  operatingSubtitle: string;
   rolesTitle: string;
   checklistTitle: string;
   navTitle: string;
@@ -28,6 +30,7 @@ type Copy = {
   canLabel: string;
   cannotLabel: string;
   routeRows: Array<{ route: string; label: string; text: string }>;
+  flowRows: Array<{ layer: string; path: string; label: string; text: string }>;
   roleRows: Array<{ role: string; scope: string; can: string; cannot: string }>;
   sections: Section[];
   checklist: string[];
@@ -48,6 +51,9 @@ const docs: Record<Lang, Copy> = {
     secondaryCta: 'Start with launch checklist',
     updated: 'Production guide for the current role-based Academy LMS',
     routesTitle: 'Workspace routes',
+    operatingTitle: 'Operating model',
+    operatingSubtitle:
+      'Order the product from ownership to learning: Center Office is the business parent, Academy is the LMS tenant, and classrooms are where daily teaching happens.',
     rolesTitle: 'Role and access matrix',
     checklistTitle: 'Launch checklist',
     navTitle: 'On this page',
@@ -62,6 +68,13 @@ const docs: Record<Lang, Copy> = {
       { route: '/academy/teacher', label: 'Teacher or assistant', text: 'Assigned classroom LMS: assignments, gradebook, attendance, resources, schedule, and student messages.' },
       { route: '/academy/student', label: 'Student', text: 'Classroom feed, announcements, assignments, submissions, progress, alerts, and tuition items.' },
     ],
+    flowRows: [
+      { layer: '1', path: '/center-office', label: 'Center Office', text: 'Business parent for centers: center profile, staff, linked academies, partner controls, vouchers, wallet, and high-level reporting.' },
+      { layer: '2', path: '/academy/admin or /academy/center', label: 'Academy control', text: 'One academy tenant: branding, roles, offers, Click tuition, staff grants, schedule, classrooms, and reports.' },
+      { layer: '3', path: '/academy/office', label: 'Academy office', text: 'Daily operations for managers and counselors: contacts, roster, messages, alerts, schedule gaps, and student follow-up.' },
+      { layer: '4', path: '/academy/teacher', label: 'Teacher workspace', text: 'Classroom delivery: assignments, resources, gradebook, attendance sessions, classroom messages, and progress feedback.' },
+      { layer: '5', path: '/academy/student', label: 'Student workspace', text: 'Focused learning space: enrolled classrooms, announcements, assignments, submissions, progress, attendance, and tuition items.' },
+    ],
     roleRows: [
       { role: 'Owner / admin', scope: 'Academy-wide', can: 'Manage staff, branding, finance, offers, schedule, LMS, reports, certificates, and automations.', cannot: 'Should not be used as a daily teacher account unless the same person truly teaches.' },
       { role: 'Center admin', scope: 'Center-owned academies', can: 'Operate linked academies, staff, finance, offers, contacts, schedule, and messages.', cannot: 'Does not enter teacher-only grading lanes unless also granted a teaching role.' },
@@ -70,6 +83,23 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'Own enrolled classrooms', can: 'View lessons, messages, announcements, assignments, progress, attendance, alerts, and payments.', cannot: 'Cannot access office, staff, roster, finance, or other students records.' },
     ],
     sections: [
+      {
+        id: 'model',
+        title: '0. Organize the service model',
+        intro:
+          'Do not organize Academy as a collection of dashboards. Organize it as a chain of responsibility: center business ownership, academy operations, classroom delivery, and student learning.',
+        steps: [
+          'Use Center Office only for the center-level business container: profile, staff, linked academies, partner controls, wallet, vouchers, and cross-academy visibility.',
+          'Use /academy/admin for a standalone academy owner and /academy/center when a center admin operates a linked academy.',
+          'Use /academy/office for managers and counselors who run daily operations without finance or staff-grant power.',
+          'Use /academy/teacher for assigned classroom work. Teachers should not need admin access to teach, grade, mark attendance, or publish class resources.',
+          'Use /academy/student as the narrow learner workspace. Students should never see office, staff, roster administration, or finance controls.',
+        ],
+        tips: [
+          'After sign-in, route people to the first workspace their grant actually supports instead of showing every possible product surface.',
+          'If one person has multiple jobs, grant multiple roles deliberately and keep each job in its own route lane.',
+        ],
+      },
       {
         id: 'create',
         title: '1. Create the academy',
@@ -267,6 +297,9 @@ const docs: Record<Lang, Copy> = {
     secondaryCta: 'Ishga tushirish ro‘yxati',
     updated: 'Hozirgi role-based Academy LMS uchun production qo‘llanma',
     routesTitle: 'Ish joylari yo‘nalishlari',
+    operatingTitle: 'Ish modeli',
+    operatingSubtitle:
+      'Mahsulotni egalikdan o‘qishgacha tartiblang: Center Office biznes qatlami, Academy LMS tenant, classroom esa kundalik dars joyi.',
     rolesTitle: 'Rollar va ruxsatlar jadvali',
     checklistTitle: 'Ishga tushirish ro‘yxati',
     navTitle: 'Sahifa bo‘limlari',
@@ -281,6 +314,13 @@ const docs: Record<Lang, Copy> = {
       { route: '/academy/teacher', label: 'O‘qituvchi yoki assistent', text: 'Biriktirilgan sinflar uchun LMS: topshiriqlar, baholar, davomat, resurslar, jadval va xabarlar.' },
       { route: '/academy/student', label: 'Talaba', text: 'Sinf lentasi, e’lonlar, topshiriqlar, topshirish, progress, alertlar va to‘lov elementlari.' },
     ],
+    flowRows: [
+      { layer: '1', path: '/center-office', label: 'Center Office', text: 'Markaz uchun biznes qatlami: profil, xodimlar, bog‘langan academylar, hamkorlik sozlamalari, voucher, wallet va umumiy hisobotlar.' },
+      { layer: '2', path: '/academy/admin yoki /academy/center', label: 'Academy boshqaruvi', text: 'Bitta academy tenant: branding, rollar, offerlar, Click to‘lovlari, staff grantlar, jadval, sinflar va hisobotlar.' },
+      { layer: '3', path: '/academy/office', label: 'Academy office', text: 'Menejer va counselor uchun kundalik operatsiya: kontaktlar, roster, xabarlar, alertlar, jadval bo‘shliqlari va student follow-up.' },
+      { layer: '4', path: '/academy/teacher', label: 'Teacher workspace', text: 'Sinfdagi dars jarayoni: topshiriqlar, resurslar, gradebook, davomat sessiyalari, classroom xabarlari va feedback.' },
+      { layer: '5', path: '/academy/student', label: 'Student workspace', text: 'Talaba uchun tor va aniq o‘quv joyi: sinflar, e’lonlar, topshiriqlar, topshirish, progress, davomat va to‘lovlar.' },
+    ],
     roleRows: [
       { role: 'Owner / admin', scope: 'Butun academy', can: 'Xodimlar, branding, moliya, offerlar, jadval, LMS, hisobotlar, sertifikatlar va avtomatizatsiyalarni boshqaradi.', cannot: 'Agar o‘zi dars bermasa, kundalik o‘qituvchi akkaunti sifatida ishlatilmasligi kerak.' },
       { role: 'Center admin', scope: 'Markazga tegishli academies', can: 'Bog‘langan academylar, xodimlar, moliya, offerlar, kontaktlar, jadval va xabarlarni boshqaradi.', cannot: 'Alohida teaching role berilmasa, o‘qituvchiga xos baholash yo‘liga kirmaydi.' },
@@ -289,6 +329,23 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'O‘z sinflari', can: 'Darslar, xabarlar, e’lonlar, topshiriqlar, progress, davomat, alertlar va to‘lovlarini ko‘radi.', cannot: 'Office, staff, roster, moliya yoki boshqa talabalarning ma’lumotlariga kira olmaydi.' },
     ],
     sections: [
+      {
+        id: 'model',
+        title: '0. Xizmat modelini tartibga solish',
+        intro:
+          'Academy ni bir nechta dashboard sifatida emas, mas’uliyat zanjiri sifatida tuzing: markaz biznes egaligi, academy operatsiyasi, classroom delivery va student learning.',
+        steps: [
+          'Center Office faqat markaz-level biznes konteyner uchun ishlatiladi: profil, xodimlar, bog‘langan academylar, hamkorlik sozlamalari, wallet, voucher va academylar bo‘yicha umumiy ko‘rinish.',
+          'Mustaqil academy egasi uchun /academy/admin ishlating; markaz admini bog‘langan academyni yuritsa /academy/center ishlating.',
+          'Kundalik operatsiyani yuritadigan, lekin finance yoki staff-grant huquqi bo‘lmagan menejer va counselorlar uchun /academy/office ishlating.',
+          'Biriktirilgan sinf ishi uchun /academy/teacher ishlating. O‘qituvchi dars berish, baholash, davomat belgilash yoki resurs chiqarish uchun admin access olmasligi kerak.',
+          'Talaba uchun /academy/student tor va xavfsiz workspace bo‘lib qoladi. Talaba office, staff, roster admin yoki finance control ko‘rmasligi kerak.',
+        ],
+        tips: [
+          'Sign-in dan keyin foydalanuvchini uning granti qo‘llaydigan birinchi workspacega olib boring; barcha product surfacelarni birdan ko‘rsatmang.',
+          'Bir odamda bir nechta vazifa bo‘lsa, rollarni aniq grant qiling va har bir ishni o‘z route lane ichida saqlang.',
+        ],
+      },
       {
         id: 'create',
         title: '1. Academy yaratish',
@@ -486,6 +543,9 @@ const docs: Record<Lang, Copy> = {
     secondaryCta: 'Перейти к чек-листу',
     updated: 'Production-документация для текущей role-based Academy LMS',
     routesTitle: 'Рабочие маршруты',
+    operatingTitle: 'Операционная модель',
+    operatingSubtitle:
+      'Выстраивайте продукт от владения к обучению: Center Office - бизнес-уровень, Academy - LMS tenant, classroom - место ежедневного обучения.',
     rolesTitle: 'Матрица ролей и доступа',
     checklistTitle: 'Чек-лист запуска',
     navTitle: 'На этой странице',
@@ -500,6 +560,13 @@ const docs: Record<Lang, Copy> = {
       { route: '/academy/teacher', label: 'Преподаватель или ассистент', text: 'LMS по назначенным классам: задания, журнал оценок, посещаемость, ресурсы, расписание и сообщения.' },
       { route: '/academy/student', label: 'Студент', text: 'Лента класса, объявления, задания, отправка работ, прогресс, alerts и элементы оплаты.' },
     ],
+    flowRows: [
+      { layer: '1', path: '/center-office', label: 'Center Office', text: 'Бизнес-уровень центра: профиль, сотрудники, связанные academies, партнерские настройки, vouchers, wallet и общая отчетность.' },
+      { layer: '2', path: '/academy/admin или /academy/center', label: 'Управление Academy', text: 'Один academy tenant: branding, роли, offers, платежи Click, staff grants, расписание, классы и отчеты.' },
+      { layer: '3', path: '/academy/office', label: 'Academy office', text: 'Ежедневные операции для менеджеров и counselors: контакты, roster, сообщения, alerts, пробелы в расписании и follow-up студентов.' },
+      { layer: '4', path: '/academy/teacher', label: 'Teacher workspace', text: 'Проведение занятий: assignments, ресурсы, gradebook, attendance sessions, classroom messages и feedback.' },
+      { layer: '5', path: '/academy/student', label: 'Student workspace', text: 'Узкое учебное пространство: свои классы, объявления, задания, отправка работ, прогресс, посещаемость и платежи.' },
+    ],
     roleRows: [
       { role: 'Owner / admin', scope: 'Вся academy', can: 'Управляет сотрудниками, branding, финансами, offers, расписанием, LMS, отчетами, сертификатами и automation.', cannot: 'Не должен использоваться как ежедневный аккаунт преподавателя, если человек реально не ведет занятия.' },
       { role: 'Center admin', scope: 'Academies центра', can: 'Управляет связанными academies, сотрудниками, финансами, offers, контактами, расписанием и сообщениями.', cannot: 'Не входит в преподавательские зоны оценивания без отдельной teaching role.' },
@@ -508,6 +575,23 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'Свои классы', can: 'Видит уроки, сообщения, объявления, задания, прогресс, посещаемость, alerts и платежи.', cannot: 'Не имеет доступа к office, staff, roster, финансам и данным других студентов.' },
     ],
     sections: [
+      {
+        id: 'model',
+        title: '0. Организация модели сервиса',
+        intro:
+          'Не организуйте Academy как набор dashboards. Организуйте ее как цепочку ответственности: бизнес-владение центра, операции academy, проведение занятий и обучение студента.',
+        steps: [
+          'Используйте Center Office только как бизнес-контейнер центра: профиль, сотрудники, связанные academies, партнерские настройки, wallet, vouchers и обзор по academies.',
+          'Для владельца отдельной academy используйте /academy/admin; для администратора центра, который управляет связанной academy, используйте /academy/center.',
+          'Для менеджеров и counselors, которые ведут ежедневные операции без доступа к finance и staff grants, используйте /academy/office.',
+          'Для работы по назначенным классам используйте /academy/teacher. Преподавателю не нужен admin access, чтобы вести занятия, оценивать, отмечать посещаемость или публиковать ресурсы.',
+          'Для студента оставляйте /academy/student как узкий и безопасный workspace. Студент не должен видеть office, staff, roster admin или finance controls.',
+        ],
+        tips: [
+          'После sign-in ведите пользователя в первый workspace, который поддерживается его grant, а не показывайте все product surfaces сразу.',
+          'Если один человек выполняет несколько задач, выдавайте несколько ролей осознанно и держите каждую работу в своем route lane.',
+        ],
+      },
       {
         id: 'create',
         title: '1. Создание academy',
@@ -784,6 +868,7 @@ const App = () => {
         <aside className="toc">
           <p>{copy.navTitle}</p>
           <a href="#routes">{copy.routesTitle}</a>
+          <a href="#operating-model">{copy.operatingTitle}</a>
           <a href="#roles">{copy.rolesTitle}</a>
           {sectionLinks.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
           <a href="#checklist">{copy.checklistTitle}</a>
@@ -800,6 +885,26 @@ const App = () => {
                 <article key={row.route} className="route-row">
                   <code>{row.route}</code>
                   <div>
+                    <h3>{row.label}</h3>
+                    <p>{row.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section id="operating-model" className="doc-section">
+            <div className="section-heading">
+              <p className="eyebrow">Center Office &rarr; Academy &rarr; Classroom</p>
+              <h2>{copy.operatingTitle}</h2>
+            </div>
+            <p className="lead">{copy.operatingSubtitle}</p>
+            <div className="flow-list">
+              {copy.flowRows.map((row) => (
+                <article key={`${row.layer}-${row.path}`} className="flow-row">
+                  <span>{row.layer}</span>
+                  <div>
+                    <code>{row.path}</code>
                     <h3>{row.label}</h3>
                     <p>{row.text}</p>
                   </div>
