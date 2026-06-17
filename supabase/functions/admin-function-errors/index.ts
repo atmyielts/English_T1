@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authorizeAdminRequest } from "../_shared/admin-access.ts";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -29,25 +30,15 @@ serve(async (req) => {
   if (req.method !== "GET") return json(405, { error: "Method not allowed" });
 
   try {
-    const authToken = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")?.trim();
-    if (!authToken) return json(401, { error: "Unauthorized" });
-
     const supabaseUrl = getEnv("SUPABASE_URL");
-    const anonKey = getEnv("SUPABASE_ANON_KEY");
     const serviceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    // Authenticate the caller and confirm admin.
-    const userClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } });
-    const { data: userInfo, error: userErr } = await userClient.auth.getUser(authToken);
-    if (userErr || !userInfo?.user) return json(401, { error: "Unauthorized" });
-
     const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-    const { data: adminRow } = await sb
-      .from("admin_users")
-      .select("user_id")
-      .eq("user_id", userInfo.user.id)
-      .maybeSingle();
-    if (!adminRow) return json(403, { error: "Forbidden" });
+    const authz = await authorizeAdminRequest(sb, req, corsHeaders, {
+      requiredPermission: "admin.analytics.view",
+      action: "admin.function_errors",
+    });
+    if (!authz.ok) return authz.response;
 
     const url = new URL(req.url);
     const limit = Math.max(1, Math.min(200, Number(url.searchParams.get("limit") ?? 50)));
