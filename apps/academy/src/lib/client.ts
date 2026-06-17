@@ -480,13 +480,24 @@ export type TeacherStudioScheduleSlot = {
 
 export type TeacherStudioStaff = {
   id: string;
+  grant_id?: string | null;
   academy_id: string;
   user_id: string | null;
   email: string;
   display_name: string | null;
   role: string;
   classroom_ids: string[] | Json;
+  scope_type?: string | null;
+  scope_ids?: string[] | Json;
+  status?: string | null;
+  source?: string | null;
   is_active: boolean;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  accepted_at?: string | null;
+  revoked_at?: string | null;
+  last_used_at?: string | null;
+  updated_at?: string | null;
   created_at: string;
 };
 
@@ -1661,6 +1672,9 @@ export const teacherStudioUpsertStaff = async (
     staff_role?: string;
     classroom_ids?: string[];
     is_active?: boolean;
+    status?: string;
+    starts_at?: string | null;
+    expires_at?: string | null;
   },
 ): Promise<TeacherStudioStaff> => {
   const data = await callTeacherStudio<{ staff: TeacherStudioStaff }>({

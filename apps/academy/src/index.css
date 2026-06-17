@@ -955,6 +955,27 @@ p {
   border-top: 1px solid var(--line);
 }
 
+.access-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.access-preview span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-subtle);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+  padding: 5px 8px;
+}
+
+.access-preview.compact {
+  margin-top: 8px;
+}
+
 .academy-select {
   min-width: 270px;
 }

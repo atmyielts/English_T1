@@ -86,6 +86,16 @@ type BulkInviteRow = Awaited<ReturnType<typeof teacherStudioBulkInvites>>[number
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SCOPED_STAFF_ROLES = new Set(['teacher', 'assistant']);
+const STAFF_GRANT_ROLES = ['admin', 'center_admin', 'manager', 'counselor', 'teacher', 'assistant'];
+const STAFF_GRANT_STATUSES = ['invited', 'active', 'suspended'];
+const STAFF_ACCESS_LANES: Record<string, string[]> = {
+  admin: ['Academy settings', 'staff grants', 'finance/offers/payments', 'schedule', 'global messages'],
+  center_admin: ['Center academies', 'staff grants', 'finance/offers/payments', 'schedule', 'global messages'],
+  manager: ['Contacts', 'classrooms', 'roster', 'schedule', 'messages', 'Education OS actions'],
+  counselor: ['Contacts', 'classrooms', 'roster', 'schedule', 'messages', 'Education OS actions'],
+  teacher: ['Assigned classrooms', 'assignments', 'gradebook', 'attendance', 'schedule', 'messages'],
+  assistant: ['Assigned classrooms', 'assignments', 'gradebook', 'attendance', 'schedule', 'messages'],
+};
 
 const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
@@ -154,6 +164,13 @@ const staffClassroomIds = (staff: TeacherStudioStaff): string[] => {
 };
 
 const staffRoleUsesClassroomScope = (role: string): boolean => SCOPED_STAFF_ROLES.has(role);
+
+const staffStatus = (staff: TeacherStudioStaff): string => staff.status || (staff.is_active === false ? 'suspended' : 'active');
+
+const grantExpiryValue = (value: string | null | undefined): string => {
+  if (!value) return '';
+  return value.slice(0, 10);
+};
 
 const parseInviteLines = (raw: string): Array<{ first_name?: string; last_name?: string; email: string }> =>
   raw
@@ -246,8 +263,11 @@ export const EducationOSView = ({
     staff_email: '',
     name: '',
     staff_role: 'teacher',
+    status: 'invited',
+    expires_at: '',
     classroom_ids: [] as string[],
   });
+  const [editingStaffId, setEditingStaffId] = useState('');
   const [reportForm, setReportForm] = useState({ contact_id: '', label: 'Monthly progress report', expires_in_days: '180' });
   const [certificateForm, setCertificateForm] = useState({
     contact_id: '',
@@ -795,15 +815,46 @@ export const EducationOSView = ({
         staff_email: staffForm.staff_email.trim(),
         name: staffForm.name.trim() || undefined,
         staff_role: staffForm.staff_role,
+        status: staffForm.status,
+        expires_at: staffForm.expires_at ? new Date(`${staffForm.expires_at}T23:59:59`).toISOString() : null,
         classroom_ids: staffFormUsesClassroomScope ? staffForm.classroom_ids : [],
       });
-      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', classroom_ids: [] });
+      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+      setEditingStaffId('');
+    });
+  };
+
+  const editStaff = (person: TeacherStudioStaff) => {
+    const role = person.role || 'teacher';
+    setStaffForm({
+      staff_email: person.email,
+      name: person.display_name ?? '',
+      staff_role: role,
+      status: staffStatus(person) === 'revoked' ? 'invited' : staffStatus(person),
+      expires_at: grantExpiryValue(person.expires_at),
+      classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
+    });
+    setEditingStaffId(person.id);
+  };
+
+  const updateStaffStatus = async (person: TeacherStudioStaff, nextStatus: string) => {
+    if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
+    const role = person.role || 'teacher';
+    await runAction(nextStatus === 'active' ? 'Staff access reactivated.' : 'Staff access suspended.', async () => {
+      await teacherStudioUpsertStaff(academyId, {
+        staff_email: person.email,
+        name: person.display_name ?? undefined,
+        staff_role: role,
+        status: nextStatus,
+        expires_at: person.expires_at ?? null,
+        classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
+      });
     });
   };
 
   const removeStaff = async (id: string) => {
     if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
-    await runAction('Staff member removed.', async () => {
+    await runAction('Staff access revoked.', async () => {
       await teacherStudioRemoveStaff(academyId, id);
     });
   };
@@ -1636,7 +1687,7 @@ export const EducationOSView = ({
 
           {modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>Staff administration</h3>
+              <h3>Role grants</h3>
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
@@ -1645,8 +1696,12 @@ export const EducationOSView = ({
                     staff_role: event.target.value,
                     classroom_ids: staffRoleUsesClassroomScope(event.target.value) ? prev.classroom_ids : [],
                   }))}>
-                    {['teacher', 'manager', 'counselor', 'assistant'].map((role) => <option key={role} value={role}>{role}</option>)}
+                    {STAFF_GRANT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                   </select>
+                  <select className="input" value={staffForm.status} onChange={(event) => setStaffForm((prev) => ({ ...prev, status: event.target.value }))}>
+                    {STAFF_GRANT_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                  </select>
+                  <input className="input" type="date" value={staffForm.expires_at} onChange={(event) => setStaffForm((prev) => ({ ...prev, expires_at: event.target.value }))} />
                   {staffFormUsesClassroomScope ? (
                     <div className="chip-grid">
                       {classrooms.map((classroom) => {
@@ -1669,21 +1724,60 @@ export const EducationOSView = ({
                       })}
                     </div>
                   ) : null}
-                  <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>Save staff</button>
+                  <div className="access-preview">
+                    {(STAFF_ACCESS_LANES[staffForm.staff_role] ?? []).map((lane) => <span key={lane}>{lane}</span>)}
+                  </div>
+                  <div className="row gap">
+                    <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>
+                      {editingStaffId ? 'Update grant' : 'Create grant'}
+                    </button>
+                    {editingStaffId ? (
+                      <button className="small-btn" type="button" onClick={() => {
+                        setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+                        setEditingStaffId('');
+                      }}>
+                        Clear
+                      </button>
+                    ) : null}
+                  </div>
                 </form>
 
                 <ul className="list">
-                  {staff.map((person) => (
-                    <li key={person.id}>
+                  {staff.map((person) => {
+                    const status = staffStatus(person);
+                    const classroomScope = staffRoleUsesClassroomScope(person.role);
+                    const lanes = STAFF_ACCESS_LANES[person.role] ?? [];
+                    return (
+                    <li key={person.id} className={status === 'revoked' ? 'muted' : ''}>
                       <div className="row between">
-                        <strong>{person.display_name || person.email}</strong>
-                        <button className="small-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Remove</button>
+                        <div>
+                          <strong>{person.display_name || person.email}</strong>
+                          <div className="small muted">{person.email}</div>
+                        </div>
+                        <span className={statusClass(status)}>{status}</span>
                       </div>
                       <div className="small muted">
-                        {person.role} | {staffRoleUsesClassroomScope(person.role) ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                        {person.role} | {classroomScope ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                        {person.expires_at ? ` | expires ${formatDate(person.expires_at)}` : ''}
+                        {person.last_used_at ? ` | last used ${formatDate(person.last_used_at)}` : ''}
+                      </div>
+                      <div className="access-preview compact">
+                        {lanes.map((lane) => <span key={lane}>{lane}</span>)}
+                      </div>
+                      <div className="row gap">
+                        <button className="small-btn" type="button" onClick={() => editStaff(person)} disabled={localBusy}>Edit</button>
+                        {status === 'suspended' ? (
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'active')} disabled={localBusy}>Reactivate</button>
+                        ) : status !== 'revoked' ? (
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'suspended')} disabled={localBusy}>Suspend</button>
+                        ) : null}
+                        {status !== 'revoked' ? (
+                          <button className="small-btn danger-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Revoke</button>
+                        ) : null}
                       </div>
                     </li>
-                  ))}
+                  );
+                  })}
                   {staff.length === 0 ? <li>No staff records yet.</li> : null}
                 </ul>
             </div>

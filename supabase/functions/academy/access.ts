@@ -1,5 +1,7 @@
-export type AcademyAccessSource = "tenant" | "staff" | "center";
+export type AcademyAccessSource = "tenant" | "staff" | "center" | "grant";
 export type AcademyScope = "academy" | "assigned_classrooms";
+export type AcademyRoleGrantStatus = "invited" | "active" | "suspended" | "expired" | "revoked";
+export type AcademyRoleGrantScopeType = "academy" | "classrooms" | "students";
 
 export type AcademyAccessPermissions = {
   viewAcademy: boolean;
@@ -39,8 +41,20 @@ export type MembershipRow = {
   status: string;
   source?: AcademyAccessSource;
   staff_id?: string | null;
+  grant_id?: string | null;
   classroom_ids?: string[];
   center_tenant_id?: string | null;
+};
+
+export type AcademyRoleGrantRow = {
+  id?: string | null;
+  academy_id?: string | null;
+  role?: string | null;
+  status?: string | null;
+  scope_type?: string | null;
+  scope_ids?: unknown;
+  starts_at?: string | null;
+  expires_at?: string | null;
 };
 
 const normalizeText = (value: unknown, maxLen = 300): string => String(value ?? "").trim().slice(0, maxLen);
@@ -77,6 +91,56 @@ export const isAcademyManagerRole = (roleRaw: unknown): boolean =>
 
 export const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
   ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
+
+export const normalizeAcademyRoleGrantStatus = (statusRaw: unknown): AcademyRoleGrantStatus => {
+  const status = normalizeText(statusRaw, 40).toLowerCase();
+  if (["active", "suspended", "expired", "revoked"].includes(status)) return status as AcademyRoleGrantStatus;
+  return "invited";
+};
+
+export const normalizeAcademyRoleGrantScopeType = (scopeRaw: unknown): AcademyRoleGrantScopeType => {
+  const scope = normalizeText(scopeRaw, 40).toLowerCase();
+  if (scope === "classroom") return "classrooms";
+  if (scope === "student") return "students";
+  if (scope === "classrooms" || scope === "students") return scope;
+  return "academy";
+};
+
+export const academyRoleGrantCanAccess = (
+  grant: AcademyRoleGrantRow,
+  now: Date = new Date(),
+): boolean => {
+  const status = normalizeAcademyRoleGrantStatus(grant.status);
+  if (status !== "active" && status !== "invited") return false;
+  const startsAt = grant.starts_at ? new Date(grant.starts_at) : null;
+  if (startsAt && Number.isFinite(startsAt.getTime()) && startsAt.getTime() > now.getTime()) return false;
+  const expiresAt = grant.expires_at ? new Date(grant.expires_at) : null;
+  if (expiresAt && Number.isFinite(expiresAt.getTime()) && expiresAt.getTime() <= now.getTime()) return false;
+  return true;
+};
+
+export const academyRoleGrantToMembership = (
+  grant: AcademyRoleGrantRow,
+  now: Date = new Date(),
+): MembershipRow | null => {
+  if (!academyRoleGrantCanAccess(grant, now)) return null;
+  const academyId = normalizeText(grant.academy_id, 64);
+  if (!academyId) return null;
+  const role = normalizeAcademyRole(grant.role);
+  const scopeType = normalizeAcademyRoleGrantScopeType(grant.scope_type);
+  const classroomIds = scopeType === "classrooms" || isAcademyTeachingRole(role)
+    ? toStringArray(grant.scope_ids)
+    : [];
+
+  return {
+    tenant_id: academyId,
+    role,
+    status: "active",
+    source: "grant",
+    grant_id: grant.id ? normalizeText(grant.id, 64) : null,
+    classroom_ids: classroomIds,
+  };
+};
 
 export const academyAccessScope = (access: MembershipRow): AcademyScope => {
   const role = normalizeAcademyRole(access.role);
