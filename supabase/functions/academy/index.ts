@@ -6524,9 +6524,20 @@ serve(async (req) => {
           created_by: userId,
         };
         if (scheduleId) {
+          const { data: existingSchedule, error: existingScheduleError } = await sb
+            .from("academy_classroom_schedules")
+            .select("id, classroom_id")
+            .eq("id", scheduleId)
+            .eq("academy_id", academyId)
+            .maybeSingle();
+          if (existingScheduleError) return json(500, { error: "Failed to load schedule slot", detail: existingScheduleError.message });
+          if (!existingSchedule?.id) return json(404, { error: "Schedule slot not found" });
+          if (!accessCanUseClassroom(access, existingSchedule.classroom_id)) return json(403, { error: "Forbidden" });
+
           const { data, error } = await sb.from("academy_classroom_schedules").update(payload).eq("id", scheduleId).eq("academy_id", academyId)
             .select("id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active").maybeSingle();
           if (error) return json(500, { error: "Failed to update schedule", detail: error.message });
+          if (!data?.id) return json(404, { error: "Schedule slot not found" });
           return json(200, { schedule: data });
         }
         const { data, error } = await sb.from("academy_classroom_schedules").insert(payload)
