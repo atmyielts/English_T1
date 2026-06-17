@@ -1962,7 +1962,47 @@ const handleReadAction = async (
     const contactId = normalizeText(contactIdRaw, 64) || null;
     const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
     if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
-    if (!contactId && scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { alerts: [] });
+    if (!contactId && scopedContactIds !== null) {
+      const contactIdList = Array.from(scopedContactIds);
+      const classroomIdList = scopedClassroomIds ?? [];
+      if (contactIdList.length === 0 && classroomIdList.length === 0) return json(200, { alerts: [] });
+
+      const [contactAlertsResult, classroomAlertsResult] = await Promise.all([
+        contactIdList.length > 0
+          ? sb
+            .from("academy_alerts")
+            .select("id, academy_id, contact_id, type, severity, message, resolved, resolved_at, metadata, created_at")
+            .eq("academy_id", academyId)
+            .in("contact_id", contactIdList)
+            .order("created_at", { ascending: false })
+            .limit(500)
+          : Promise.resolve({ data: [], error: null }),
+        classroomIdList.length > 0
+          ? sb
+            .from("academy_alerts")
+            .select("id, academy_id, contact_id, type, severity, message, resolved, resolved_at, metadata, created_at")
+            .eq("academy_id", academyId)
+            .is("contact_id", null)
+            .in("metadata->>classroom_id", classroomIdList)
+            .order("created_at", { ascending: false })
+            .limit(500)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (contactAlertsResult.error) return json(500, { error: "Failed to load alerts", detail: contactAlertsResult.error.message });
+      if (classroomAlertsResult.error) return json(500, { error: "Failed to load alerts", detail: classroomAlertsResult.error.message });
+
+      const alertById = new Map<string, Record<string, unknown>>();
+      for (const row of [...(contactAlertsResult.data ?? []), ...(classroomAlertsResult.data ?? [])] as Array<Record<string, unknown>>) {
+        const id = String(row.id ?? "");
+        if (!id || alertById.has(id)) continue;
+        alertById.set(id, row);
+      }
+      return json(200, {
+        alerts: Array.from(alertById.values()).sort((a, b) =>
+          Date.parse(String(b.created_at ?? "")) - Date.parse(String(a.created_at ?? "")),
+        ),
+      });
+    }
 
     let query = sb
       .from("academy_alerts")
