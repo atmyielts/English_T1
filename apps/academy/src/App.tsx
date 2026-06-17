@@ -368,6 +368,31 @@ const defaultOfficeViewForIntent = (
   return views[0] ?? 'classrooms';
 };
 
+const officeLaneViewLabel = (
+  view: OfficeView,
+  intent: OfficeRouteIntent,
+  academyLabel: string,
+  osLabel: string,
+): string => {
+  if (view === 'academy') return academyLabel;
+  if (view === 'os') return osLabel;
+  if (intent === 'teacher') {
+    if (view === 'classrooms') return 'My LMS classes';
+    if (view === 'contacts') return 'My students';
+    if (view === 'inbox') return 'Student inbox';
+    if (view === 'announcements') return 'Class updates';
+    if (view === 'alerts') return 'Student alerts';
+  }
+  if (intent === 'center') {
+    if (view === 'classrooms') return 'Center LMS';
+    if (view === 'contacts') return 'Academy contacts';
+    if (view === 'inbox') return 'Center inbox';
+    if (view === 'announcements') return 'Center announcements';
+    if (view === 'alerts') return 'Center alerts';
+  }
+  return OFFICE_LABELS[view];
+};
+
 const actionAllowedForOfficeRoute = (
   item: TeacherStudioActionItem,
   access: TeacherStudioAccessProfile | null | undefined,
@@ -2332,11 +2357,7 @@ const App = () => {
     : (officeClassroomId
       ? 'Classroom'
       : officeView
-        ? officeView === 'academy'
-          ? academyHomeLabel
-          : officeView === 'os'
-            ? osCenterLabel
-            : OFFICE_LABELS[officeView]
+        ? officeLaneViewLabel(officeView, officeRouteIntent, academyHomeLabel, osCenterLabel)
         : 'Academy');
   const teacherShell = officeShellLabel(selectedAcademyAccess, officeRouteIntent);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
@@ -4405,7 +4426,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('classrooms')))}
           >
             <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
-            Classrooms
+            {officeLaneViewLabel('classrooms', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('contacts') ? (
@@ -4415,7 +4436,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('contacts')))}
           >
             <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
-            Contacts
+            {officeLaneViewLabel('contacts', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('inbox') ? (
@@ -4425,7 +4446,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('inbox')))}
           >
             <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
-            Inbox
+            {officeLaneViewLabel('inbox', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('announcements') ? (
@@ -4435,7 +4456,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('announcements')))}
           >
             <span className="nav-icon" aria-hidden="true"><Megaphone size={17} /></span>
-            Announcements
+            {officeLaneViewLabel('announcements', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('alerts') ? (
@@ -4445,7 +4466,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('alerts')))}
           >
             <span className="nav-icon" aria-hidden="true"><ShieldAlert size={17} /></span>
-            Alerts
+            {officeLaneViewLabel('alerts', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('offers') ? (
