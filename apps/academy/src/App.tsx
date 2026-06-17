@@ -2471,8 +2471,8 @@ const App = () => {
               </article>
               <article className="market-card surface-card surface-card--sky">
                 <div className="surface-icon"><Store size={22} /></div>
-                <h3>Academy Office</h3>
-                <p>Operate contacts, cohorts, offers, payments, entitlements, alerts, and messaging without leaving the service.</p>
+                <h3>Staff workspaces</h3>
+                <p>Route administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.</p>
                 <div className="surface-meta">Operations · billing · access control</div>
               </article>
               <article className="market-card surface-card surface-card--violet">
@@ -2542,7 +2542,7 @@ const App = () => {
             <section className="academy-final-cta">
               <div>
                 <span className="market-badge">Next step</span>
-                <h2>Open the office when you need control. Open the classroom when you need focus.</h2>
+                <h2>Open the role workspace when you need control. Open the classroom when you need focus.</h2>
               </div>
               {state === 'ready' ? (
                 <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
@@ -2621,10 +2621,10 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy Office access required</h2>
+            <h2>Role workspace access required</h2>
             <p>
               {requestedOfficeAcademyDenied
-                ? 'Your account does not have Academy Office permissions for the requested academy.'
+                ? 'Your account does not have staff workspace permissions for the requested academy.'
                 : officeRouteIntent === 'center'
                 ? 'This route is for education-center delegated control. Your account does not have center control for this academy.'
                 : officeRouteIntent === 'admin'
@@ -2639,7 +2639,7 @@ const App = () => {
                 type="button"
                 onClick={() => navigate(academyScopedPath(currentOfficePath(), fallbackOfficeAcademyId))}
               >
-                Open my Academy Office
+                Open my role workspace
               </button>
             ) : null}
             {hasStudentAccess ? (
@@ -2763,7 +2763,7 @@ const App = () => {
                 <div className="market-eyebrow">Academy directory</div>
                 <h1>Choose the right workspace</h1>
                 <p>
-                  Academy Office and Student Workplace are separate entry points. Shared academy pages stay public-facing,
+                  Staff workspaces and Student Workplace are separate entry points. Shared academy pages stay public-facing,
                   while role-specific routes only show the tools that belong to that role.
                 </p>
               </div>
@@ -2771,7 +2771,7 @@ const App = () => {
                 <div className="market-badge">Access summary</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Staff offices</span>
+                    <span>Staff workspaces</span>
                     <strong>{teacherDirectoryAcademies.length}</strong>
                   </article>
                   <article className="market-kpi">
@@ -2792,7 +2792,7 @@ const App = () => {
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
                 <div className="row between">
-                  <h3>Academy Office</h3>
+                  <h3>Staff workspaces</h3>
                   <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{hasTeacherAccess ? 'available' : 'locked'}</span>
                 </div>
                 <p>Role-based staff operations: academy control, LMS, contacts, announcements, alerts, offers, payments, and entitlements.</p>
@@ -2956,7 +2956,7 @@ const App = () => {
               {studentDirectoryAcademies.length === 0 ? (
                 <article className="market-card">
                   <h3>No Student Workplace access</h3>
-                  <p>This account can use Academy Office only unless it is linked to a student contact.</p>
+                  <p>This account can use staff workspaces only unless it is linked to a student contact.</p>
                 </article>
               ) : null}
             </section>
@@ -2987,7 +2987,7 @@ const App = () => {
     const academyLandingSettings = readAcademyLandingSettings(currentAcademyMetadata);
     const academyHeroTitle = academyLandingSettings.headline || currentAcademyName || 'Academy';
     const academyHeroSubtitle = academyLandingSettings.subheadline ||
-      'Public academy front door with separate entry points for Academy Office and Student Workplace.';
+      'Public academy front door with separate entry points for staff workspaces and Student Workplace.';
     const academyPrimaryCtaLabel = academyLandingSettings.primary_cta_label || 'Open classroom landing pages';
     const academySecondaryCtaLabel = academyLandingSettings.secondary_cta_label || 'Enter workspace';
     const currentAcademyClassrooms = Array.from(
@@ -3058,9 +3058,9 @@ const App = () => {
                     <button
                       className="ghost-btn"
                       type="button"
-                      onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, currentAcademyId), currentAcademyId))}
+                      onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(currentAcademyId), currentAcademyId))}
                     >
-                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter Academy Office' : academySecondaryCtaLabel}
+                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter staff workspace' : academySecondaryCtaLabel}
                     </button>
                   ) : null}
                   {canEnterStudent ? (
@@ -3087,7 +3087,7 @@ const App = () => {
                     <strong>{currentAcademyClassrooms.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Academy Office</span>
+                    <span>Staff workspace</span>
                     <strong>{canEnterTeacher ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
@@ -3127,7 +3127,7 @@ const App = () => {
                   <h3>No classrooms yet</h3>
                   <p>
                     {canEnterTeacher
-                      ? 'Create your first classroom in Academy Office to publish a classroom landing page.'
+                      ? 'Create your first classroom in your staff workspace to publish a classroom landing page.'
                       : 'No student classrooms are linked to this account for this academy yet.'}
                   </p>
                   {canEnterTeacher ? (
@@ -3361,7 +3361,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, roomAcademyId), roomAcademyId))}
                     >
-                      Academy Office
+                      Staff workspace
                     </button>
                   ) : null}
                   {canOpenStudentRoom ? (
@@ -3878,7 +3878,7 @@ const App = () => {
                     <strong>{classroomScope.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Academy Office</span>
+                    <span>Staff workspace</span>
                     <strong>{canManageClassroomDirectory ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
@@ -3937,7 +3937,7 @@ const App = () => {
                   <h3>No classrooms available</h3>
                   <p>
                     {canManageClassroomDirectory
-                      ? 'Create a classroom first in Academy Office, then publish its landing page.'
+                      ? 'Create a classroom first in your staff workspace, then publish its landing page.'
                       : 'No student classrooms are linked to this account for the selected academy.'}
                   </p>
                   {canManageClassroomDirectory ? (
@@ -4355,8 +4355,8 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy Office</h2>
-            <p>Redirecting to office...</p>
+            <h2>Academy workspace</h2>
+            <p>Redirecting to the right role workspace...</p>
           </div>
         </div>
         <UpdatesButton />
