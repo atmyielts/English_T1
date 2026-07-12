@@ -374,7 +374,11 @@ addCheck(
 
 addCheck(
   'Academy Edge contract test script is registered',
-  packageJson.scripts?.['test:academy:edge'] === 'deno test --allow-env supabase/functions/academy/academy-contract.test.ts' &&
+  String(packageJson.scripts?.['test:academy:edge'] ?? '').includes('deno test') &&
+    String(packageJson.scripts?.['test:academy:edge'] ?? '').includes('--allow-env') &&
+    String(packageJson.scripts?.['test:academy:edge'] ?? '').includes('--allow-read') &&
+    String(packageJson.scripts?.['test:academy:edge'] ?? '').includes('supabase/functions/academy/academy-contract.test.ts') &&
+    String(packageJson.scripts?.['test:academy:edge'] ?? '').includes('supabase/functions/academy/access-matrix.test.ts') &&
     academyContractTest.includes('ACADEMY_ACTION_PERMISSIONS') &&
     academyContractTest.includes('buildAcademyPermissions') &&
     academyContractTest.includes('validateAcademyUploadFile'),

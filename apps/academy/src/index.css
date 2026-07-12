@@ -40,6 +40,7 @@
 
 html {
   min-width: 320px;
+  scrollbar-gutter: stable;
   background: var(--bg);
 }
 
@@ -674,24 +675,32 @@ p {
 }
 
 .ts-shell {
-  width: min(100%, 1500px);
+  width: 100%;
   min-height: 100vh;
-  margin: 0 auto;
-  padding: 16px;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 14px;
-  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 0;
+  grid-template-columns: 292px minmax(0, 1fr);
 }
 
 .ts-sidebar {
-  padding: 14px;
+  padding: 18px 14px;
   display: grid;
-  gap: 7px;
+  gap: 6px;
   align-content: start;
   position: sticky;
-  top: 14px;
-  max-height: calc(100vh - 28px);
-  overflow: auto;
+  top: 0;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border-top: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
   box-shadow: var(--shadow-card);
 }
 
@@ -774,6 +783,7 @@ p {
   justify-content: flex-start;
   color: var(--muted-strong);
   background: transparent;
+  text-align: left;
 }
 
 .nav-icon {
@@ -865,13 +875,15 @@ p {
 
 .ts-main {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   align-content: start;
   min-width: 0;
+  min-height: 100vh;
+  padding: 18px;
 }
 
 .ts-topbar {
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   justify-content: space-between;
   gap: 14px;
@@ -880,8 +892,8 @@ p {
 }
 
 .ts-topbar h1 {
-  font-size: clamp(28px, 3.6vw, 44px);
-  line-height: 1;
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1.02;
 }
 
 .ts-topbar .muted {
@@ -955,6 +967,27 @@ p {
   border-top: 1px solid var(--line);
 }
 
+.access-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.access-preview span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-subtle);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.2;
+  padding: 5px 8px;
+}
+
+.access-preview.compact {
+  margin-top: 8px;
+}
+
 .academy-select {
   min-width: 270px;
 }
@@ -980,7 +1013,7 @@ p {
 .stats-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
 .stat-card {
@@ -1887,10 +1920,14 @@ tbody tr:hover {
 
   .ts-sidebar {
     position: static;
+    height: auto;
     max-height: none;
     display: flex;
     align-items: stretch;
+    overflow-y: hidden;
     overflow-x: auto;
+    border: 1px solid rgba(20, 22, 18, 0.08);
+    border-radius: 8px;
   }
 
   .brand {

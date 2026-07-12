@@ -299,6 +299,8 @@ export const en = {
   'checkout.payment.notCreated': 'Not created yet',
   'checkout.payment.open': 'Open payment page',
   'checkout.button.checkStatus': 'Check status',
+  'checkout.button.payOnClick': 'Pay with Click',
+  'checkout.button.payByCard': 'Pay by card',
   'checkout.coupon.label': 'Coupon code (optional)',
   'checkout.coupon.placeholder': 'EXAMPLE10',
   'checkout.coupon.applied': 'Applied: {code}',
@@ -308,6 +310,7 @@ export const en = {
   'checkout.daysAccess': '{days} days access',
   'checkout.error.load': 'Failed to load checkout.',
   'checkout.error.redirectMissing': 'Payment link was created but redirect URL is missing.',
+  'checkout.error.cardWidgetUnavailable': 'Card payment is temporarily unavailable. Please use the Click button.',
   'checkout.error.unknown': 'Unknown error',
 
   'updates.title': 'Updates',

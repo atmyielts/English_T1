@@ -9,6 +9,7 @@ import {
   getMe,
   type BillingPlan,
   type BillingQuoteResponse,
+  type ClickCardWidgetConfig,
 } from '../lib/platformClient';
 import {
   buildReferralContext,
@@ -42,6 +43,39 @@ const productSlug = (p: ProductRow): string => {
 // Server returns provider payment status (e.g. "paid", "pending"), not API-level "success".
 const isSuccessStatus = (status: string): boolean => ['paid', 'success', 'completed'].includes(status.trim().toLowerCase());
 
+// Embedded "pay by card" widget. The script exposes a global createPaymentRequest()
+// that opens Click's card form in an overlay without leaving the page.
+// Docs: https://docs.click.uz/click-pay-by-card/
+const CLICK_CHECKOUT_JS = 'https://my.click.uz/pay/checkout.js';
+
+declare global {
+  interface Window {
+    createPaymentRequest?: (
+      params: Record<string, string | number>,
+      callback: (data: { status?: number }) => void,
+    ) => void;
+  }
+}
+
+let clickScriptPromise: Promise<void> | null = null;
+const loadClickCheckoutScript = (): Promise<void> => {
+  if (typeof window === 'undefined') return Promise.reject(new Error('no window'));
+  if (window.createPaymentRequest) return Promise.resolve();
+  if (clickScriptPromise) return clickScriptPromise;
+  clickScriptPromise = new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = CLICK_CHECKOUT_JS;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      clickScriptPromise = null;
+      reject(new Error('Failed to load Click checkout script'));
+    };
+    document.body.appendChild(script);
+  });
+  return clickScriptPromise;
+};
+
 const formatMoney = (amount: number, currency: string): string => {
   if (currency.toUpperCase() === 'UZS') return `${amount.toLocaleString()} UZS`;
   return `${amount.toLocaleString()} ${currency}`;
@@ -65,6 +99,7 @@ export const CheckoutPage: React.FC = () => {
   const [status, setStatus] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [cardWidget, setCardWidget] = useState<ClickCardWidgetConfig | null>(null);
   const [entitled, setEntitled] = useState<boolean | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
@@ -227,6 +262,7 @@ export const CheckoutPage: React.FC = () => {
 
       setTransactionId(res.transaction_id);
       setPaymentUrl(res.payment_url);
+      setCardWidget(res.card_widget ?? null);
       setCheckoutPricing({
         amount: res.amount,
         currency: res.currency,
@@ -238,11 +274,7 @@ export const CheckoutPage: React.FC = () => {
         coupon_code: res.coupon_code,
       });
 
-      if (res.payment_url) {
-        window.location.assign(res.payment_url);
-        return;
-      }
-
+      // Credit/coupons may fully cover the price → no payment needed.
       if (isSuccessStatus(res.status ?? '')) {
         setStatus(res.status ?? 'paid');
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
@@ -252,7 +284,11 @@ export const CheckoutPage: React.FC = () => {
         return;
       }
 
-      setError(t('checkout.error.redirectMissing'));
+      // Otherwise leave the user on step 2 to pick a payment method
+      // (redirect to Click's hosted page, or pay by card inline).
+      if (!res.payment_url && !res.card_widget) {
+        setError(t('checkout.error.redirectMissing'));
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('checkout.error.unknown');
       setError(msg);
@@ -289,6 +325,41 @@ export const CheckoutPage: React.FC = () => {
       const msg = err instanceof Error ? err.message : t('checkout.error.unknown');
       setError(msg);
     } finally {
+      setBusy(false);
+    }
+  };
+
+  // Inline card payment via Click's checkout.js overlay. We never grant access
+  // from the client callback alone — on success we re-verify through
+  // clickStatus (which trusts the server-side webhook/grant).
+  const payByCard = async () => {
+    if (!cardWidget) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await loadClickCheckoutScript();
+      if (typeof window.createPaymentRequest !== 'function') {
+        throw new Error(t('checkout.error.cardWidgetUnavailable'));
+      }
+      const params: Record<string, string | number> = {
+        service_id: cardWidget.service_id,
+        merchant_id: cardWidget.merchant_id,
+        amount: cardWidget.amount,
+        transaction_param: cardWidget.transaction_param,
+      };
+      if (cardWidget.merchant_user_id) params.merchant_user_id = cardWidget.merchant_user_id;
+
+      window.createPaymentRequest(params, (result) => {
+        // status: <0 error, 0 created, 1 processing, 2 success
+        if (Number(result?.status) === 2) {
+          void checkStatus();
+        } else {
+          setBusy(false);
+        }
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('checkout.error.unknown');
+      setError(msg);
       setBusy(false);
     }
   };
@@ -531,6 +602,29 @@ export const CheckoutPage: React.FC = () => {
                 <div className="text-gray-900">{status ?? t('checkout.status.unknown')}</div>
               </div>
             </div>
+
+            {(paymentUrl || cardWidget) && !(status && isSuccessStatus(status)) ? (
+              <div className="mt-4 grid grid-cols-1 gap-2">
+                {paymentUrl ? (
+                  <button
+                    onClick={() => window.location.assign(paymentUrl)}
+                    disabled={busy}
+                    className="w-full bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition-colors"
+                  >
+                    {t('checkout.button.payOnClick')}
+                  </button>
+                ) : null}
+                {cardWidget ? (
+                  <button
+                    onClick={payByCard}
+                    disabled={busy}
+                    className="w-full border border-gray-900 hover:bg-gray-50 disabled:opacity-50 text-gray-900 font-semibold py-2.5 rounded-xl transition-colors"
+                  >
+                    {busy ? t('checkout.working') : t('checkout.button.payByCard')}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
 
             <button
               onClick={checkStatus}

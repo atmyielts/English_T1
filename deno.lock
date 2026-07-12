@@ -5,6 +5,7 @@
     "npm:@aws-sdk/s3-request-presigner@3.922.0": "3.922.0",
     "npm:@cloudflare/workers-types@^4.20240925.0": "4.20260613.1",
     "npm:@eslint/js@^9.39.1": "9.39.4",
+    "npm:@playwright/test@^1.61.1": "1.61.1",
     "npm:@supabase/supabase-js@^2.89.0": "2.99.0",
     "npm:@tailwindcss/postcss@^4.1.18": "4.2.1",
     "npm:@types/node@^24.10.1": "24.12.0",
@@ -1280,6 +1281,13 @@
         "fastq"
       ]
     },
+    "@playwright/test@1.61.1": {
+      "integrity": "sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==",
+      "dependencies": [
+        "playwright"
+      ],
+      "bin": true
+    },
     "@rolldown/pluginutils@1.0.0-rc.3": {
       "integrity": "sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q=="
     },
@@ -2371,7 +2379,7 @@
         "readdirp"
       ],
       "optionalDependencies": [
-        "fsevents"
+        "fsevents@2.3.3"
       ]
     },
     "color-convert@2.0.1": {
@@ -2736,6 +2744,11 @@
     },
     "fraction.js@5.3.4": {
       "integrity": "sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ=="
+    },
+    "fsevents@2.3.2": {
+      "integrity": "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==",
+      "os": ["darwin"],
+      "scripts": true
     },
     "fsevents@2.3.3": {
       "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
@@ -3621,6 +3634,20 @@
     "pirates@4.0.7": {
       "integrity": "sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA=="
     },
+    "playwright-core@1.61.1": {
+      "integrity": "sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==",
+      "bin": true
+    },
+    "playwright@1.61.1": {
+      "integrity": "sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==",
+      "dependencies": [
+        "playwright-core"
+      ],
+      "optionalDependencies": [
+        "fsevents@2.3.2"
+      ],
+      "bin": true
+    },
     "postcss-import@15.1.0_postcss@8.5.8": {
       "integrity": "sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==",
       "dependencies": [
@@ -3857,7 +3884,7 @@
         "@rollup/rollup-win32-ia32-msvc",
         "@rollup/rollup-win32-x64-gnu",
         "@rollup/rollup-win32-x64-msvc",
-        "fsevents"
+        "fsevents@2.3.3"
       ],
       "bin": true
     },
@@ -4208,7 +4235,7 @@
         "tinyglobby"
       ],
       "optionalDependencies": [
-        "fsevents"
+        "fsevents@2.3.3"
       ],
       "optionalPeers": [
         "@types/node@24.12.0"
@@ -4253,7 +4280,7 @@
         "workerd"
       ],
       "optionalDependencies": [
-        "fsevents",
+        "fsevents@2.3.3",
         "sharp"
       ],
       "optionalPeers": [
@@ -4386,6 +4413,20 @@
             "npm:react-router-dom@^7.13.1",
             "npm:react@^19.2.0",
             "npm:typescript-eslint@^8.46.4",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "apps/academy-docs": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@types/node@^24.10.1",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:@vitejs/plugin-react@^5.1.1",
+            "npm:react-dom@^19.2.0",
+            "npm:react@^19.2.0",
             "npm:typescript@~5.9.3",
             "npm:vite@^7.2.4"
           ]

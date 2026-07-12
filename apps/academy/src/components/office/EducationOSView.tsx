@@ -28,6 +28,7 @@ import {
   teacherStudioSubmitAssignmentForContact,
   teacherStudioUpsertAutomationRule,
   teacherStudioUpsertBranding,
+  teacherStudioUpdateAssignment,
   teacherStudioUpsertSchedule,
   teacherStudioUpsertStaff,
   type TeacherStudioActionItem,
@@ -88,12 +89,22 @@ type BulkInviteRow = Awaited<ReturnType<typeof teacherStudioBulkInvites>>[number
 
 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SCOPED_STAFF_ROLES = new Set(['teacher', 'assistant']);
+const STAFF_GRANT_ROLES = ['admin', 'center_admin', 'manager', 'counselor', 'teacher', 'assistant'];
+const STAFF_GRANT_STATUSES = ['invited', 'active', 'suspended'];
+const STAFF_ACCESS_LANES: Record<string, string[]> = {
+  admin: ['Academy settings', 'staff grants', 'finance/offers/payments', 'schedule', 'global messages'],
+  center_admin: ['Center academies', 'staff grants', 'finance/offers/payments', 'schedule', 'global messages'],
+  manager: ['Contacts', 'classrooms', 'roster', 'schedule', 'messages', 'Education OS actions'],
+  counselor: ['Contacts', 'classrooms', 'roster', 'schedule', 'messages', 'Education OS actions'],
+  teacher: ['Assigned classrooms', 'assignments', 'gradebook', 'attendance', 'schedule', 'messages'],
+  assistant: ['Assigned classrooms', 'assignments', 'gradebook', 'attendance', 'schedule', 'messages'],
+};
 
 const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
   office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
   admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
   teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
-  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'growth', 'engagement', 'audit', 'brand'],
+  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
 };
 
 const EMPTY_PERMISSIONS: TeacherStudioAccessProfile['permissions'] = {};
@@ -136,6 +147,14 @@ const actionTargetTab = (sourceType: string): EducationOSTab => {
 
 const todayDate = (): string => new Date().toISOString().slice(0, 10);
 
+const toDatetimeLocalValue = (iso: string | null | undefined): string => {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
+
 const contactName = (contact: Pick<TeacherStudioContact, 'first_name' | 'last_name' | 'email'> | null | undefined): string => {
   if (!contact) return 'Unknown student';
   const fullName = `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim();
@@ -163,6 +182,13 @@ const auditMetadataSummary = (metadata: TeacherStudioAuditEvent['metadata']): st
     .slice(0, 4)
     .map(([key, value]) => `${key}: ${String(value)}`);
   return entries.join(' | ');
+};
+
+const staffStatus = (staff: TeacherStudioStaff): string => staff.status || (staff.is_active === false ? 'suspended' : 'active');
+
+const grantExpiryValue = (value: string | null | undefined): string => {
+  if (!value) return '';
+  return value.slice(0, 10);
 };
 
 const parseInviteLines = (raw: string): Array<{ first_name?: string; last_name?: string; email: string }> =>
@@ -231,9 +257,11 @@ export const EducationOSView = ({
     due_at: '',
     max_score: '100',
     score_weight: '1',
+    status: 'active',
     description: '',
   });
   const [selectedAssignmentId, setSelectedAssignmentId] = useState('');
+  const [editingAssignmentId, setEditingAssignmentId] = useState('');
   const [gradeForm, setGradeForm] = useState({
     assignment_id: '',
     contact_id: '',
@@ -256,8 +284,11 @@ export const EducationOSView = ({
     staff_email: '',
     name: '',
     staff_role: 'teacher',
+    status: 'invited',
+    expires_at: '',
     classroom_ids: [] as string[],
   });
+  const [editingStaffId, setEditingStaffId] = useState('');
   const [reportForm, setReportForm] = useState({ contact_id: '', label: 'Monthly progress report', expires_in_days: '180' });
   const [certificateForm, setCertificateForm] = useState({
     contact_id: '',
@@ -682,17 +713,61 @@ export const EducationOSView = ({
   const submitAssignment = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !selectedClassroomId || !requireRoutePermission('manageAssignments', 'Assignment controls')) return;
-    await runAction('Assignment created.', async () => {
-      await teacherStudioCreateAssignment(academyId, {
-        classroom_id: selectedClassroomId,
-        title: assignmentForm.title.trim(),
-        assignment_type: assignmentForm.assignment_type,
-        description: assignmentForm.description.trim() || null,
-        due_at: assignmentForm.due_at ? new Date(assignmentForm.due_at).toISOString() : null,
-        max_score: Number(assignmentForm.max_score) > 0 ? Number(assignmentForm.max_score) : null,
-        score_weight: Number(assignmentForm.score_weight) > 0 ? Number(assignmentForm.score_weight) : 1,
+    const assignmentPayload = {
+      title: assignmentForm.title.trim(),
+      assignment_type: assignmentForm.assignment_type,
+      description: assignmentForm.description.trim() || null,
+      due_at: assignmentForm.due_at ? new Date(assignmentForm.due_at).toISOString() : null,
+      max_score: Number(assignmentForm.max_score) > 0 ? Number(assignmentForm.max_score) : null,
+      score_weight: Number(assignmentForm.score_weight) > 0 ? Number(assignmentForm.score_weight) : 1,
+      status: assignmentForm.status,
+    };
+    await runAction(editingAssignmentId ? 'Assignment updated.' : 'Assignment created.', async () => {
+      if (editingAssignmentId) {
+        await teacherStudioUpdateAssignment(academyId, {
+          id: editingAssignmentId,
+          ...assignmentPayload,
+        });
+      } else {
+        await teacherStudioCreateAssignment(academyId, {
+          classroom_id: selectedClassroomId,
+          ...assignmentPayload,
+        });
+      }
+      setEditingAssignmentId('');
+      setAssignmentForm({
+        title: '',
+        assignment_type: 'task',
+        due_at: '',
+        max_score: '100',
+        score_weight: '1',
+        status: 'active',
+        description: '',
       });
-      setAssignmentForm((previous) => ({ ...previous, title: '', description: '' }));
+    });
+  };
+
+  const editAssignment = (assignment: TeacherStudioAssignment) => {
+    setEditingAssignmentId(assignment.id);
+    setAssignmentForm({
+      title: assignment.title,
+      assignment_type: assignment.assignment_type || 'task',
+      due_at: toDatetimeLocalValue(assignment.due_at),
+      max_score: assignment.max_score !== null && assignment.max_score !== undefined ? String(assignment.max_score) : '',
+      score_weight: assignment.score_weight !== null && assignment.score_weight !== undefined ? String(assignment.score_weight) : '1',
+      status: assignment.status || 'active',
+      description: assignment.description ?? '',
+    });
+  };
+
+  const updateAssignmentStatus = async (assignment: TeacherStudioAssignment, status: string) => {
+    if (!academyId || !requireRoutePermission('manageAssignments', 'Assignment controls')) return;
+    await runAction(status === 'archived' ? 'Assignment archived.' : 'Assignment updated.', async () => {
+      await teacherStudioUpdateAssignment(academyId, {
+        id: assignment.id,
+        status,
+      });
+      if (editingAssignmentId === assignment.id) setEditingAssignmentId('');
     });
   };
 
@@ -792,15 +867,46 @@ export const EducationOSView = ({
         staff_email: staffForm.staff_email.trim(),
         name: staffForm.name.trim() || undefined,
         staff_role: staffForm.staff_role,
+        status: staffForm.status,
+        expires_at: staffForm.expires_at ? new Date(`${staffForm.expires_at}T23:59:59`).toISOString() : null,
         classroom_ids: staffFormUsesClassroomScope ? staffForm.classroom_ids : [],
       });
-      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', classroom_ids: [] });
+      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+      setEditingStaffId('');
+    });
+  };
+
+  const editStaff = (person: TeacherStudioStaff) => {
+    const role = person.role || 'teacher';
+    setStaffForm({
+      staff_email: person.email,
+      name: person.display_name ?? '',
+      staff_role: role,
+      status: staffStatus(person) === 'revoked' ? 'invited' : staffStatus(person),
+      expires_at: grantExpiryValue(person.expires_at),
+      classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
+    });
+    setEditingStaffId(person.id);
+  };
+
+  const updateStaffStatus = async (person: TeacherStudioStaff, nextStatus: string) => {
+    if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
+    const role = person.role || 'teacher';
+    await runAction(nextStatus === 'active' ? 'Staff access reactivated.' : 'Staff access suspended.', async () => {
+      await teacherStudioUpsertStaff(academyId, {
+        staff_email: person.email,
+        name: person.display_name ?? undefined,
+        staff_role: role,
+        status: nextStatus,
+        expires_at: person.expires_at ?? null,
+        classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
+      });
     });
   };
 
   const removeStaff = async (id: string) => {
     if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
-    await runAction('Staff member removed.', async () => {
+    await runAction('Staff access revoked.', async () => {
       await teacherStudioRemoveStaff(academyId, id);
     });
   };
@@ -1383,7 +1489,7 @@ export const EducationOSView = ({
           <div className="grid two">
             {modeCanUse('manageAssignments') ? (
               <div className="panel">
-                <h3>Create assignment</h3>
+                <h3>{editingAssignmentId ? 'Edit assignment' : 'Create assignment'}</h3>
                 <form className="grid" onSubmit={submitAssignment}>
                   <input className="input" placeholder="Assignment title" value={assignmentForm.title} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, title: event.target.value }))} required />
                   <textarea className="input" placeholder="Instructions" value={assignmentForm.description} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, description: event.target.value }))} />
@@ -1394,9 +1500,58 @@ export const EducationOSView = ({
                     <input className="input" type="number" min="0" placeholder="Max score" value={assignmentForm.max_score} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, max_score: event.target.value }))} />
                     <input className="input" type="number" min="0" step="0.1" placeholder="Weight" value={assignmentForm.score_weight} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, score_weight: event.target.value }))} />
                   </div>
-                  <input className="input" type="datetime-local" value={assignmentForm.due_at} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, due_at: event.target.value }))} />
-                  <button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId}>Create assignment</button>
+                  <div className="grid two">
+                    <input className="input" type="datetime-local" value={assignmentForm.due_at} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, due_at: event.target.value }))} />
+                    <select className="input" value={assignmentForm.status} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, status: event.target.value }))}>
+                      {['draft', 'active', 'archived'].map((status) => <option key={status} value={status}>{status}</option>)}
+                    </select>
+                  </div>
+                  <div className="row wrap">
+                    <button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId}>
+                      {editingAssignmentId ? 'Update assignment' : 'Create assignment'}
+                    </button>
+                    {editingAssignmentId ? (
+                      <button
+                        className="ghost-btn"
+                        type="button"
+                        onClick={() => {
+                          setEditingAssignmentId('');
+                          setAssignmentForm({ title: '', assignment_type: 'task', due_at: '', max_score: '100', score_weight: '1', status: 'active', description: '' });
+                        }}
+                        disabled={localBusy}
+                      >
+                        Cancel edit
+                      </button>
+                    ) : null}
+                  </div>
                 </form>
+                <ul className="list">
+                  {assignments.map((assignment) => (
+                    <li key={assignment.id}>
+                      <div className="row between">
+                        <strong>{assignment.title}</strong>
+                        <span className={statusClass(assignment.status)}>{assignment.status}</span>
+                      </div>
+                      <div className="small muted">
+                        {assignment.assignment_type}
+                        {assignment.due_at ? ` | due ${formatDate(assignment.due_at)}` : ''}
+                        {assignment.max_score ? ` | ${assignment.max_score} pts` : ''}
+                      </div>
+                      <div className="row wrap">
+                        <button className="small-btn" type="button" onClick={() => editAssignment(assignment)} disabled={localBusy}>Edit</button>
+                        <button
+                          className="small-btn"
+                          type="button"
+                          onClick={() => void updateAssignmentStatus(assignment, assignment.status === 'archived' ? 'active' : 'archived')}
+                          disabled={localBusy}
+                        >
+                          {assignment.status === 'archived' ? 'Reactivate' : 'Archive'}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                  {assignments.length === 0 ? <li>No assignments in this classroom yet.</li> : null}
+                </ul>
               </div>
             ) : null}
 
@@ -1663,7 +1818,7 @@ export const EducationOSView = ({
 
           {modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>Staff administration</h3>
+              <h3>Role grants</h3>
                 <form className="grid staff-form" onSubmit={submitStaff}>
                   <input className="input" type="email" placeholder="Staff email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required />
                   <input className="input" placeholder="Display name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} />
@@ -1672,8 +1827,12 @@ export const EducationOSView = ({
                     staff_role: event.target.value,
                     classroom_ids: staffRoleUsesClassroomScope(event.target.value) ? prev.classroom_ids : [],
                   }))}>
-                    {['teacher', 'manager', 'counselor', 'assistant'].map((role) => <option key={role} value={role}>{role}</option>)}
+                    {STAFF_GRANT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                   </select>
+                  <select className="input" value={staffForm.status} onChange={(event) => setStaffForm((prev) => ({ ...prev, status: event.target.value }))}>
+                    {STAFF_GRANT_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                  </select>
+                  <input className="input" type="date" value={staffForm.expires_at} onChange={(event) => setStaffForm((prev) => ({ ...prev, expires_at: event.target.value }))} />
                   {staffFormUsesClassroomScope ? (
                     <div className="chip-grid">
                       {classrooms.map((classroom) => {
@@ -1696,21 +1855,60 @@ export const EducationOSView = ({
                       })}
                     </div>
                   ) : null}
-                  <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>Save staff</button>
+                  <div className="access-preview">
+                    {(STAFF_ACCESS_LANES[staffForm.staff_role] ?? []).map((lane) => <span key={lane}>{lane}</span>)}
+                  </div>
+                  <div className="row gap">
+                    <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>
+                      {editingStaffId ? 'Update grant' : 'Create grant'}
+                    </button>
+                    {editingStaffId ? (
+                      <button className="small-btn" type="button" onClick={() => {
+                        setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+                        setEditingStaffId('');
+                      }}>
+                        Clear
+                      </button>
+                    ) : null}
+                  </div>
                 </form>
 
                 <ul className="list">
-                  {staff.map((person) => (
-                    <li key={person.id}>
+                  {staff.map((person) => {
+                    const status = staffStatus(person);
+                    const classroomScope = staffRoleUsesClassroomScope(person.role);
+                    const lanes = STAFF_ACCESS_LANES[person.role] ?? [];
+                    return (
+                    <li key={person.id} className={status === 'revoked' ? 'muted' : ''}>
                       <div className="row between">
-                        <strong>{person.display_name || person.email}</strong>
-                        <button className="small-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Remove</button>
+                        <div>
+                          <strong>{person.display_name || person.email}</strong>
+                          <div className="small muted">{person.email}</div>
+                        </div>
+                        <span className={statusClass(status)}>{status}</span>
                       </div>
                       <div className="small muted">
-                        {person.role} | {staffRoleUsesClassroomScope(person.role) ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                        {person.role} | {classroomScope ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                        {person.expires_at ? ` | expires ${formatDate(person.expires_at)}` : ''}
+                        {person.last_used_at ? ` | last used ${formatDate(person.last_used_at)}` : ''}
+                      </div>
+                      <div className="access-preview compact">
+                        {lanes.map((lane) => <span key={lane}>{lane}</span>)}
+                      </div>
+                      <div className="row gap">
+                        <button className="small-btn" type="button" onClick={() => editStaff(person)} disabled={localBusy}>Edit</button>
+                        {status === 'suspended' ? (
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'active')} disabled={localBusy}>Reactivate</button>
+                        ) : status !== 'revoked' ? (
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'suspended')} disabled={localBusy}>Suspend</button>
+                        ) : null}
+                        {status !== 'revoked' ? (
+                          <button className="small-btn danger-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Revoke</button>
+                        ) : null}
                       </div>
                     </li>
-                  ))}
+                  );
+                  })}
                   {staff.length === 0 ? <li>No staff records yet.</li> : null}
                 </ul>
             </div>

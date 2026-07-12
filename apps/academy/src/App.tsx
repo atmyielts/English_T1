@@ -214,45 +214,49 @@ const academyOfficePath = (view: OfficeView = 'academy', itemId?: string, intent
 
 const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile['source'] = 'tenant'): TeacherStudioAccessProfile => {
   const role = String(roleRaw || 'member').toLowerCase();
-  const admin = role === 'owner' || role === 'admin' || role === 'center_admin';
+  const ownerAdmin = role === 'owner' || role === 'admin';
+  const centerAdmin = role === 'center_admin';
   const manager = role === 'manager' || role === 'counselor';
-  const teaching = admin || manager || role === 'teacher' || role === 'assistant';
+  const teaching = role === 'teacher' || role === 'assistant';
+  const ops = ownerAdmin || centerAdmin || manager;
+  const staff = ops || teaching;
+  const classroomLms = ownerAdmin || teaching;
   return {
     role,
     source,
-    scope: admin || manager ? 'academy' : 'assigned_classrooms',
+    scope: ops ? 'academy' : 'assigned_classrooms',
     classroom_ids: [],
     center_tenant_id: null,
     permissions: {
-      viewAcademy: admin || manager,
-      manageAcademy: admin,
-      manageStaff: admin,
-      manageFinance: admin,
-      manageOffers: admin,
-      manageBranding: admin,
-      manageAutomation: admin,
-      viewContacts: teaching,
-      manageContacts: admin || manager,
-      viewClassrooms: teaching,
-      manageClassrooms: admin || manager,
-      manageRoster: admin || manager,
-      manageMessages: teaching,
-      manageAnnouncements: teaching,
-      sendGlobalAnnouncements: admin || manager,
-      manageAlerts: teaching,
-      resolveAlerts: teaching,
-      viewEducationOS: teaching,
-      resolveActionItems: teaching,
-      manageAssignments: teaching,
-      gradeSubmissions: teaching,
-      markAttendance: teaching,
-      manageSchedule: teaching,
-      manageResources: teaching,
-      viewReports: admin || manager,
-      issueCertificates: admin || manager,
-      dispatchNotifications: admin || manager,
-      viewNotifications: admin || manager,
-      viewReferrals: admin || manager,
+      viewAcademy: ops,
+      manageAcademy: ownerAdmin || centerAdmin,
+      manageStaff: ownerAdmin || centerAdmin,
+      manageFinance: ownerAdmin || centerAdmin,
+      manageOffers: ownerAdmin || centerAdmin,
+      manageBranding: ownerAdmin || centerAdmin,
+      manageAutomation: ownerAdmin || centerAdmin,
+      viewContacts: staff,
+      manageContacts: ops,
+      viewClassrooms: staff,
+      manageClassrooms: ops,
+      manageRoster: ops,
+      manageMessages: staff,
+      manageAnnouncements: staff,
+      sendGlobalAnnouncements: ops,
+      manageAlerts: staff,
+      resolveAlerts: staff,
+      viewEducationOS: staff,
+      resolveActionItems: staff,
+      manageAssignments: classroomLms,
+      gradeSubmissions: classroomLms,
+      markAttendance: classroomLms,
+      manageSchedule: ownerAdmin || centerAdmin || manager || teaching,
+      manageResources: classroomLms,
+      viewReports: ops,
+      issueCertificates: ownerAdmin,
+      dispatchNotifications: ops,
+      viewNotifications: ops,
+      viewReferrals: ops,
     },
   };
 };
@@ -276,10 +280,10 @@ const officeShellLabel = (
   intent: OfficeRouteIntent = 'office',
 ): { title: string; subtitle: string } => {
   if (intent === 'center') {
-    return { title: 'Education Center Control', subtitle: 'Delegated academy operations' };
+    return { title: 'Center Admin Workspace', subtitle: 'Academy management and delivery' };
   }
   if (intent === 'admin') {
-    return { title: 'Academy Administration', subtitle: 'Control, finance, and access' };
+    return { title: 'Academy Admin', subtitle: 'Settings, finance, and access' };
   }
   if (intent === 'teacher') {
     return { title: 'Teacher Workspace', subtitle: 'Classrooms, LMS, and student actions' };
@@ -302,10 +306,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: OFFICE_VIEWS,
+  office: ['academy', 'os', 'contacts', 'classrooms', 'inbox', 'announcements', 'alerts'],
   admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['os', 'academy', 'classrooms', 'contacts', 'alerts', 'offers', 'payments', 'entitlements', 'announcements'],
+  center: ['academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements', 'os'],
 };
 
 const hasOfficeRoutePermission = (
@@ -328,7 +332,7 @@ const officeIntentCanEnter = (
   }
   if (intent === 'admin') {
     return (
-      isAcademyAdminAccess(access) &&
+      !isCenterAccess(access) &&
       (hasOfficeRoutePermission(access, intent, 'manageAcademy') ||
         hasOfficeRoutePermission(access, intent, 'manageStaff') ||
         hasOfficeRoutePermission(access, intent, 'manageFinance') ||
@@ -357,8 +361,9 @@ const defaultOfficeViewForIntent = (
     if (views.includes('inbox')) return 'inbox';
   }
   if (intent === 'center') {
-    if (views.includes('os')) return 'os';
     if (views.includes('academy')) return 'academy';
+    if (views.includes('classrooms')) return 'classrooms';
+    if (views.includes('os')) return 'os';
   }
   if (intent === 'admin') {
     if (views.includes('academy')) return 'academy';
@@ -368,6 +373,31 @@ const defaultOfficeViewForIntent = (
   if (views.includes('academy')) return 'academy';
   if (views.includes('classrooms')) return 'classrooms';
   return views[0] ?? 'classrooms';
+};
+
+const officeLaneViewLabel = (
+  view: OfficeView,
+  intent: OfficeRouteIntent,
+  academyLabel: string,
+  osLabel: string,
+): string => {
+  if (view === 'academy') return academyLabel;
+  if (view === 'os') return osLabel;
+  if (intent === 'teacher') {
+    if (view === 'classrooms') return 'My LMS classes';
+    if (view === 'contacts') return 'My students';
+    if (view === 'inbox') return 'Student inbox';
+    if (view === 'announcements') return 'Class updates';
+    if (view === 'alerts') return 'Student alerts';
+  }
+  if (intent === 'center') {
+    if (view === 'classrooms') return 'Center LMS';
+    if (view === 'contacts') return 'Academy contacts';
+    if (view === 'inbox') return 'Center inbox';
+    if (view === 'announcements') return 'Center announcements';
+    if (view === 'alerts') return 'Center alerts';
+  }
+  return OFFICE_LABELS[view];
 };
 
 const actionAllowedForOfficeRoute = (
@@ -881,6 +911,7 @@ const App = () => {
   const [classroomThreadPinned, setClassroomThreadPinned] = useState(true);
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
+  const academyDataLoadKeyRef = useRef('');
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
@@ -913,8 +944,9 @@ const App = () => {
   const selectedAcademyAccess = useMemo<TeacherStudioAccessProfile | null>(() => {
     if (selectedOfficeAcademy?.access) return selectedOfficeAcademy.access;
     if (activeMembership) return buildFallbackAccess(activeMembership.role);
+    if (summary?.access) return summary.access;
     return null;
-  }, [activeMembership, selectedOfficeAcademy]);
+  }, [activeMembership, selectedOfficeAcademy, summary]);
   const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
   const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
   const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
@@ -942,12 +974,12 @@ const App = () => {
   const canIssueCertificates = canUseOfficePermission('issueCertificates');
   const canViewReports = canUseOfficePermission('viewReports');
   const academyHomeLabel = canManageAcademy
-    ? 'Academy control'
+    ? (officeRouteIntent === 'center' ? 'Academy management' : 'Academy settings')
     : canManageClassrooms || canManageContacts
       ? 'Academy operations'
       : 'Workspace home';
   const osCenterLabel = canManageFinance
-    ? 'Command Center'
+    ? (officeRouteIntent === 'center' ? 'Operations Center' : 'Command Center')
     : canViewReports || canManageClassrooms || canManageContacts
       ? 'Operations Center'
       : 'LMS Center';
@@ -970,6 +1002,9 @@ const App = () => {
     const targetCopy: Partial<Record<OfficeView, { title: string; caption: string }>> = {
       classrooms: { title: 'Classroom LMS', caption: 'Gradebook, attendance, student actions, schedule' },
       contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student records and lifecycle context' },
+      inbox: { title: 'Inbox', caption: 'Message students and families inside the academy scope' },
+      announcements: { title: 'Announcements', caption: canSendGlobalAnnouncements ? 'Send academy-wide and classroom updates' : 'Send classroom updates' },
+      alerts: { title: 'Alerts', caption: 'Create and resolve student attention signals' },
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
       entitlements: { title: 'Access grants', caption: 'Review active LMS and classroom access' },
       payments: { title: 'Payments', caption: 'Track Click payments and settlement' },
@@ -979,7 +1014,7 @@ const App = () => {
       .filter((view) => view !== 'academy')
       .map((view) => targetCopy[view] ? { ...targetCopy[view], path: academyOfficePath(view, undefined, officeRouteIntent) } : null)
       .filter((target): target is { title: string; caption: string; path: string } => Boolean(target));
-  }, [allowedOfficeViews, canManageContacts, officeRouteIntent, osCenterLabel]);
+  }, [allowedOfficeViews, canManageContacts, canSendGlobalAnnouncements, officeRouteIntent, osCenterLabel]);
   const defaultOfficeView = defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent);
   const routeDefaultOfficeView = useMemo<OfficeView>(
     () => defaultOfficeViewForIntent(allowedOfficeViews, officeRouteIntent),
@@ -1009,13 +1044,8 @@ const App = () => {
   const studentClassroomId = useMemo(() => studentClassroomIdFromPath(location.pathname), [location.pathname]);
   const isTeacherWorkspaceRoute = !!officeView || !!officeClassroomId;
   const isStudentWorkspaceRoute = !!studentPortalView || !!studentClassroomId;
-  const isSharedAcademyRoute =
-    isServiceLanding ||
-    isAcademyDirectory ||
-    isAcademyLanding ||
-    isAcademyClassroomsLanding ||
-    !!academyClassroomLandingId;
   const hasTeacherAccess = teacherDirectoryAcademies.length > 0;
+  const hasOfficeWorkspaceAccess = hasTeacherAccess || Boolean(selectedAcademyAccess);
   const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
   const teacherAcademyIds = useMemo(
     () => new Set(teacherDirectoryAcademies.map((academy) => academy.id)),
@@ -1108,18 +1138,42 @@ const App = () => {
     });
   }, [studentDashboard]);
 
+  const academyDataLoadKey = useCallback((academy: string): string => (
+    [
+      academy,
+      officeRouteIntent,
+      officeClassroomId ? 'classroom-detail' : officeView ?? 'workspace-root',
+      officeClassroomId ?? '',
+    ].join(':')
+  ), [officeClassroomId, officeRouteIntent, officeView]);
+
   const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string) => {
     const summaryData = await teacherStudioSummary(academy);
     const access = summaryData.access ?? null;
-    const canLoadContacts = hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
-    const canLoadClassrooms = hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
-    const canLoadMessages = hasOfficeRoutePermission(access, officeRouteIntent, 'manageMessages');
-    const canLoadAnnouncements = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAnnouncements');
-    const canLoadAlerts = hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
-    const canLoadOffers = hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
-    const canLoadFinance = hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
-    const canLoadEntitlements = canLoadFinance || canLoadOffers;
-    const canLoadEducationOS = hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
+    const allowedViews = officeViewsForIntent(access, officeRouteIntent);
+    const loadView = officeClassroomId
+      ? 'classrooms'
+      : officeView ?? defaultOfficeViewForIntent(allowedViews, officeRouteIntent);
+    const needsContacts = ['contacts', 'classrooms', 'alerts', 'payments', 'entitlements', 'os'].includes(loadView);
+    const needsClassrooms = ['classrooms', 'announcements', 'os'].includes(loadView);
+    const needsMemberships = ['classrooms', 'os'].includes(loadView);
+    const needsMessages = loadView === 'inbox';
+    const needsAnnouncements = loadView === 'announcements' || Boolean(officeClassroomId);
+    const needsAlerts = loadView === 'alerts' || Boolean(officeClassroomId);
+    const needsOffers = loadView === 'offers' || loadView === 'payments';
+    const needsFinance = loadView === 'payments';
+    const needsEntitlements = loadView === 'entitlements';
+    const needsEducationOS = loadView === 'os';
+    const canLoadContacts = needsContacts && hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
+    const canLoadClassrooms = needsClassrooms && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
+    const canLoadMemberships = needsMemberships && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
+    const canLoadMessages = needsMessages && hasOfficeRoutePermission(access, officeRouteIntent, 'manageMessages');
+    const canLoadAnnouncements = needsAnnouncements && hasOfficeRoutePermission(access, officeRouteIntent, 'manageAnnouncements');
+    const canLoadAlerts = needsAlerts && hasOfficeRoutePermission(access, officeRouteIntent, 'manageAlerts');
+    const canLoadOffers = needsOffers && hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers');
+    const canLoadFinance = needsFinance && hasOfficeRoutePermission(access, officeRouteIntent, 'manageFinance');
+    const canLoadEntitlements = needsEntitlements && (canLoadFinance || hasOfficeRoutePermission(access, officeRouteIntent, 'manageOffers'));
+    const canLoadEducationOS = needsEducationOS && hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
 
     const [
       contactsData,
@@ -1136,7 +1190,7 @@ const App = () => {
     ] = await Promise.all([
       canLoadContacts ? teacherStudioContacts(academy) : Promise.resolve([]),
       canLoadClassrooms ? teacherStudioClassrooms(academy) : Promise.resolve([]),
-      canLoadClassrooms ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
+      canLoadMemberships ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
       canLoadMessages ? teacherStudioConversations(academy) : Promise.resolve([]),
       canLoadAnnouncements ? teacherStudioAnnouncements(academy) : Promise.resolve([]),
       canLoadAlerts ? teacherStudioAlerts(academy) : Promise.resolve([]),
@@ -1197,21 +1251,24 @@ const App = () => {
       classroom_id: previous.classroom_id || '',
     }));
 
-    const nextConversationId =
-      preferredConversationId && conversationsData.some((item) => item.id === preferredConversationId)
+    const nextConversationId = canLoadMessages
+      ? preferredConversationId && conversationsData.some((item) => item.id === preferredConversationId)
         ? preferredConversationId
-        : conversationsData[0]?.id || '';
+        : conversationsData[0]?.id || ''
+      : '';
 
     setSelectedConversationId(nextConversationId);
 
     if (!nextConversationId) {
       setMessages([]);
+      academyDataLoadKeyRef.current = academyDataLoadKey(academy);
       return;
     }
 
     const messagesData = await teacherStudioConversationMessages(academy, { conversation_id: nextConversationId });
     setMessages(messagesData.messages ?? []);
-  }, [officeRouteIntent]);
+    academyDataLoadKeyRef.current = academyDataLoadKey(academy);
+  }, [academyDataLoadKey, officeClassroomId, officeRouteIntent, officeView]);
 
   const loadStudentData = useCallback(async (): Promise<TeacherStudioStudentDashboard> => {
     const data = await teacherStudioStudentDashboard();
@@ -1257,7 +1314,7 @@ const App = () => {
 
       const shouldLoadStudentData =
         isStudentWorkspaceRoute ||
-        (isSharedAcademyRoute && !isServiceLanding) ||
+        !!academyClassroomLandingId ||
         !hasTeacherRouteAccess;
       const studentData = shouldLoadStudentData ? await loadStudentDataOnce() : null;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
@@ -1306,10 +1363,10 @@ const App = () => {
       setError(message);
     }
   }, [
+    academyClassroomLandingId,
     academyId,
     isAcademyDirectory,
     isServiceLanding,
-    isSharedAcademyRoute,
     isStudentWorkspaceRoute,
     isTeacherWorkspaceRoute,
     loadAcademyData,
@@ -1320,6 +1377,13 @@ const App = () => {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
+    void loadStudentData().catch((err) => {
+      console.warn('Failed to hydrate student access in Academy directory', err);
+    });
+  }, [hasTeacherAccess, isAcademyDirectory, loadStudentData, state, studentDashboard]);
 
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange((_event, session) => {
@@ -1534,6 +1598,25 @@ const App = () => {
     officeRouteRoot,
     officeView,
     routeDefaultOfficeView,
+    state,
+  ]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || !academyId || allowedOfficeViews.length === 0) return;
+    const key = academyDataLoadKey(academyId);
+    if (academyDataLoadKeyRef.current === key) return;
+    academyDataLoadKeyRef.current = key;
+    void loadAcademyData(academyId, selectedConversationId).catch((err) => {
+      academyDataLoadKeyRef.current = '';
+      setError(normalizeError(err));
+    });
+  }, [
+    academyDataLoadKey,
+    academyId,
+    allowedOfficeViews.length,
+    isTeacherWorkspaceRoute,
+    loadAcademyData,
+    selectedConversationId,
     state,
   ]);
 
@@ -2341,16 +2424,12 @@ const App = () => {
     : (officeClassroomId
       ? 'Classroom'
       : officeView
-        ? officeView === 'academy'
-          ? academyHomeLabel
-          : officeView === 'os'
-            ? osCenterLabel
-            : OFFICE_LABELS[officeView]
+        ? officeLaneViewLabel(officeView, officeRouteIntent, academyHomeLabel, osCenterLabel)
         : 'Academy');
   const teacherShell = officeShellLabel(selectedAcademyAccess, officeRouteIntent);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
   const requestedOfficeAcademyDenied = Boolean(
-    isTeacherWorkspaceRoute && requestedAcademyId && !officeRouteAcademyIds.has(requestedAcademyId),
+    isTeacherWorkspaceRoute && requestedAcademyId && !teacherAcademyIds.has(requestedAcademyId),
   );
 
   const studentAnnouncements = useMemo(
@@ -2483,8 +2562,8 @@ const App = () => {
               </article>
               <article className="market-card surface-card surface-card--sky">
                 <div className="surface-icon"><Store size={22} /></div>
-                <h3>Academy Office</h3>
-                <p>Operate contacts, cohorts, offers, payments, entitlements, alerts, and messaging without leaving the service.</p>
+                <h3>Staff workspaces</h3>
+                <p>Route administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.</p>
                 <div className="surface-meta">Operations · billing · access control</div>
               </article>
               <article className="market-card surface-card surface-card--violet">
@@ -2554,7 +2633,7 @@ const App = () => {
             <section className="academy-final-cta">
               <div>
                 <span className="market-badge">Next step</span>
-                <h2>Open the office when you need control. Open the classroom when you need focus.</h2>
+                <h2>Open the role workspace when you need control. Open the classroom when you need focus.</h2>
               </div>
               {state === 'ready' ? (
                 <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
@@ -2627,16 +2706,16 @@ const App = () => {
     );
   }
 
-  if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasTeacherAccess || allowedOfficeViews.length === 0)) {
+  if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasOfficeWorkspaceAccess || allowedOfficeViews.length === 0)) {
     const fallbackOfficeAcademyId = officeRouteAcademies[0]?.id ?? '';
     return (
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy Office access required</h2>
+            <h2>Role workspace access required</h2>
             <p>
               {requestedOfficeAcademyDenied
-                ? 'Your account does not have Academy Office permissions for the requested academy.'
+                ? 'Your account does not have staff workspace permissions for the requested academy.'
                 : officeRouteIntent === 'center'
                 ? 'This route is for education-center delegated control. Your account does not have center control for this academy.'
                 : officeRouteIntent === 'admin'
@@ -2651,7 +2730,7 @@ const App = () => {
                 type="button"
                 onClick={() => navigate(academyScopedPath(currentOfficePath(), fallbackOfficeAcademyId))}
               >
-                Open my Academy Office
+                Open my role workspace
               </button>
             ) : null}
             {hasStudentAccess ? (
@@ -2775,7 +2854,7 @@ const App = () => {
                 <div className="market-eyebrow">Academy directory</div>
                 <h1>Choose the right workspace</h1>
                 <p>
-                  Academy Office and Student Workplace are separate entry points. Shared academy pages stay public-facing,
+                  Staff workspaces and Student Workplace are separate entry points. Shared academy pages stay public-facing,
                   while role-specific routes only show the tools that belong to that role.
                 </p>
               </div>
@@ -2783,7 +2862,7 @@ const App = () => {
                 <div className="market-badge">Access summary</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Staff offices</span>
+                    <span>Staff workspaces</span>
                     <strong>{teacherDirectoryAcademies.length}</strong>
                   </article>
                   <article className="market-kpi">
@@ -2804,7 +2883,7 @@ const App = () => {
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
                 <div className="row between">
-                  <h3>Academy Office</h3>
+                  <h3>Staff workspaces</h3>
                   <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{hasTeacherAccess ? 'available' : 'locked'}</span>
                 </div>
                 <p>Role-based staff operations: academy control, LMS, contacts, announcements, alerts, offers, payments, and entitlements.</p>
@@ -2968,7 +3047,7 @@ const App = () => {
               {studentDirectoryAcademies.length === 0 ? (
                 <article className="market-card">
                   <h3>No Student Workplace access</h3>
-                  <p>This account can use Academy Office only unless it is linked to a student contact.</p>
+                  <p>This account can use staff workspaces only unless it is linked to a student contact.</p>
                 </article>
               ) : null}
             </section>
@@ -2999,7 +3078,7 @@ const App = () => {
     const academyLandingSettings = readAcademyLandingSettings(currentAcademyMetadata);
     const academyHeroTitle = academyLandingSettings.headline || currentAcademyName || 'Academy';
     const academyHeroSubtitle = academyLandingSettings.subheadline ||
-      'Public academy front door with separate entry points for Academy Office and Student Workplace.';
+      'Public academy front door with separate entry points for staff workspaces and Student Workplace.';
     const academyPrimaryCtaLabel = academyLandingSettings.primary_cta_label || 'Open classroom landing pages';
     const academySecondaryCtaLabel = academyLandingSettings.secondary_cta_label || 'Enter workspace';
     const currentAcademyClassrooms = Array.from(
@@ -3070,9 +3149,9 @@ const App = () => {
                     <button
                       className="ghost-btn"
                       type="button"
-                      onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('academy', undefined, currentAcademyId), currentAcademyId))}
+                      onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(currentAcademyId), currentAcademyId))}
                     >
-                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter Academy Office' : academySecondaryCtaLabel}
+                      {academySecondaryCtaLabel === 'Enter workspace' ? 'Enter staff workspace' : academySecondaryCtaLabel}
                     </button>
                   ) : null}
                   {canEnterStudent ? (
@@ -3099,7 +3178,7 @@ const App = () => {
                     <strong>{currentAcademyClassrooms.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Academy Office</span>
+                    <span>Staff workspace</span>
                     <strong>{canEnterTeacher ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
@@ -3139,7 +3218,7 @@ const App = () => {
                   <h3>No classrooms yet</h3>
                   <p>
                     {canEnterTeacher
-                      ? 'Create your first classroom in Academy Office to publish a classroom landing page.'
+                      ? 'Create your first classroom in your staff workspace to publish a classroom landing page.'
                       : 'No student classrooms are linked to this account for this academy yet.'}
                   </p>
                   {canEnterTeacher ? (
@@ -3373,7 +3452,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, roomAcademyId), roomAcademyId))}
                     >
-                      Academy Office
+                      Staff workspace
                     </button>
                   ) : null}
                   {canOpenStudentRoom ? (
@@ -3902,7 +3981,7 @@ const App = () => {
                     <strong>{classroomScope.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Academy Office</span>
+                    <span>Staff workspace</span>
                     <strong>{canManageClassroomDirectory ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
@@ -3961,7 +4040,7 @@ const App = () => {
                   <h3>No classrooms available</h3>
                   <p>
                     {canManageClassroomDirectory
-                      ? 'Create a classroom first in Academy Office, then publish its landing page.'
+                      ? 'Create a classroom first in your staff workspace, then publish its landing page.'
                       : 'No student classrooms are linked to this account for the selected academy.'}
                   </p>
                   {canManageClassroomDirectory ? (
@@ -4379,8 +4458,8 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy Office</h2>
-            <p>Redirecting to office...</p>
+            <h2>Academy workspace</h2>
+            <p>Redirecting to the right role workspace...</p>
           </div>
         </div>
         <UpdatesButton />
@@ -4426,7 +4505,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('classrooms')))}
           >
             <span className="nav-icon" aria-hidden="true"><BookOpenCheck size={17} /></span>
-            Classrooms
+            {officeLaneViewLabel('classrooms', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('contacts') ? (
@@ -4436,7 +4515,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('contacts')))}
           >
             <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
-            Contacts
+            {officeLaneViewLabel('contacts', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('inbox') ? (
@@ -4446,7 +4525,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('inbox')))}
           >
             <span className="nav-icon" aria-hidden="true"><MessageSquare size={17} /></span>
-            Inbox
+            {officeLaneViewLabel('inbox', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('announcements') ? (
@@ -4456,7 +4535,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('announcements')))}
           >
             <span className="nav-icon" aria-hidden="true"><Megaphone size={17} /></span>
-            Announcements
+            {officeLaneViewLabel('announcements', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('alerts') ? (
@@ -4466,7 +4545,7 @@ const App = () => {
             onClick={() => navigate(academyScopedPath(currentOfficePath('alerts')))}
           >
             <span className="nav-icon" aria-hidden="true"><ShieldAlert size={17} /></span>
-            Alerts
+            {officeLaneViewLabel('alerts', officeRouteIntent, academyHomeLabel, osCenterLabel)}
           </button>
         ) : null}
         {officeCanOpen('offers') ? (

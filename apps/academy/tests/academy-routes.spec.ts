@@ -71,8 +71,8 @@ const academy = (persona: Persona) => ({
   id: academyId,
   name: 'Route Smoke Academy',
   slug: 'route-smoke',
-  type: 'academy',
-  metadata: {},
+  type: 'team',
+  metadata: { service_family: 'academy' },
   role: persona === 'owner' ? 'owner' : 'teacher',
   status: 'active',
   created_at: '2026-01-01T00:00:00.000Z',
@@ -262,10 +262,10 @@ const mockAcademyEdge = async (page: Page, persona: Persona) => {
       const role = persona === 'owner' ? 'owner' : persona === 'teacher' ? 'teacher' : 'student';
       return route.fulfill(json({
         user: { id: `${persona}-user`, email: `${persona}@example.test`, role },
-        current_tenant: { id: academyId, name: 'Route Smoke Academy', slug: 'route-smoke', type: 'academy' },
+        current_tenant: { id: academyId, name: 'Route Smoke Academy', slug: 'route-smoke', type: 'team', metadata: { service_family: 'academy' } },
         memberships: persona === 'student'
           ? []
-          : [{ tenant_id: academyId, role, status: 'active', tenants: { id: academyId, type: 'academy', metadata: {} } }],
+          : [{ tenant_id: academyId, role, status: 'active', tenants: [{ id: academyId, type: 'team', metadata: { service_family: 'academy' } }] }],
       }));
     }
 
@@ -307,7 +307,7 @@ test.describe('Academy routed workspaces with mocked Edge responses', () => {
 
     await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
 
-    await expect(page.getByText('Academy Administration')).toBeVisible();
+    await expect(page.getByText('Academy Admin')).toBeVisible();
     await expect(page.getByRole('heading', { name: /^Payments$/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Create Click checkout/i })).toBeVisible();
     await expect(page.getByRole('table').getByText('Awaiting Click')).toBeVisible();
@@ -321,7 +321,7 @@ test.describe('Academy routed workspaces with mocked Edge responses', () => {
 
     await expect(page).toHaveURL(/\/academy\/teacher\/classrooms/);
     await expect(page.getByText('Teacher Workspace')).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1, name: /^Classrooms$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /^My LMS classes$/i })).toBeVisible();
     await expect(page.getByRole('button', { name: 'IELTS Evening A' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Payments$/i })).toHaveCount(0);
   });
@@ -343,7 +343,7 @@ test.describe('Academy routed workspaces with mocked Edge responses', () => {
 
     await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
 
-    await expect(page.getByRole('heading', { name: /Academy Office access required/i })).toBeVisible();
-    await expect(page.getByText(/does not have Academy Office permissions/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Role workspace access required/i })).toBeVisible();
+    await expect(page.getByText(/does not have administrator controls/i)).toBeVisible();
   });
 });

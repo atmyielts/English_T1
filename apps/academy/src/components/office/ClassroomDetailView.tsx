@@ -385,7 +385,7 @@ export const ClassroomDetailView = ({
                 className="input"
                 value={landingForm.teacher_cta_label}
                 onChange={(event) => onLandingFieldChange('teacher_cta_label', event.target.value)}
-                placeholder="Enter Academy Office"
+                placeholder="Enter staff workspace"
                 disabled={!canManageLanding || busy}
               />
             </label>

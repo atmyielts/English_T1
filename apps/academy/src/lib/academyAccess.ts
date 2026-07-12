@@ -19,7 +19,31 @@ export const isTeacherWorkspaceAccess = (access: TeacherStudioAccessProfile | nu
   !isCenterAccess(access) && ['teacher', 'assistant'].includes(normalizeAccessRole(access));
 
 export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet<AccessPermissionKey> | null> = {
-  office: null,
+  office: new Set<AccessPermissionKey>([
+    'viewAcademy',
+    'viewContacts',
+    'manageContacts',
+    'viewClassrooms',
+    'manageClassrooms',
+    'manageRoster',
+    'manageMessages',
+    'manageAnnouncements',
+    'sendGlobalAnnouncements',
+    'manageAlerts',
+    'resolveAlerts',
+    'viewEducationOS',
+    'resolveActionItems',
+    'manageAssignments',
+    'gradeSubmissions',
+    'markAttendance',
+    'manageSchedule',
+    'manageResources',
+    'viewReports',
+    'issueCertificates',
+    'dispatchNotifications',
+    'viewNotifications',
+    'viewReferrals',
+  ]),
   admin: null,
   teacher: new Set<AccessPermissionKey>([
     'viewContacts',
@@ -56,6 +80,7 @@ export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet
     'resolveAlerts',
     'viewEducationOS',
     'resolveActionItems',
+    'manageSchedule',
     'viewReports',
     'issueCertificates',
     'dispatchNotifications',
@@ -69,7 +94,9 @@ export const routeIntentAllowsPermission = (
   intent: OfficeRouteIntent,
   permission: AccessPermissionKey,
 ): boolean => {
-  const permissionCaps = OFFICE_ROUTE_PERMISSION_CAPS[intent] ?? OFFICE_ROUTE_PERMISSION_CAPS.office;
+  const permissionCaps = Object.prototype.hasOwnProperty.call(OFFICE_ROUTE_PERMISSION_CAPS, intent)
+    ? OFFICE_ROUTE_PERMISSION_CAPS[intent]
+    : OFFICE_ROUTE_PERMISSION_CAPS.office;
   return permissionCaps === null || permissionCaps.has(permission);
 };
 

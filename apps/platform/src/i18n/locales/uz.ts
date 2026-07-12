@@ -296,6 +296,8 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'checkout.payment.notCreated': 'Hali yaratilmagan',
   'checkout.payment.open': "To‘lov sahifasini ochish",
   'checkout.button.checkStatus': "Statusni tekshirish",
+  'checkout.button.payOnClick': "Click orqali to‘lash",
+  'checkout.button.payByCard': "Karta bilan to‘lash",
   'checkout.coupon.label': "Kupon kodi (ixtiyoriy)",
   'checkout.coupon.placeholder': 'EXAMPLE10',
   'checkout.coupon.applied': "Qo‘llandi: {code}",
@@ -305,6 +307,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'checkout.daysAccess': '{days} kun kirish',
   'checkout.error.load': 'Checkout yuklanmadi.',
   'checkout.error.redirectMissing': "To‘lov havolasi yaratildi, lekin yo‘naltirish URL topilmadi.",
+  'checkout.error.cardWidgetUnavailable': "Karta bilan to‘lov vaqtincha mavjud emas. Click tugmasidan foydalaning.",
   'checkout.error.unknown': "Noma’lum xato",
 
   'updates.title': 'Yangiliklar',

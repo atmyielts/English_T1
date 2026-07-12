@@ -14,7 +14,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 4177',
     url: 'http://127.0.0.1:4177',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
     timeout: 60_000,
     env: {
       VITE_SUPABASE_URL: 'http://127.0.0.1:54321',

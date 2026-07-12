@@ -3,11 +3,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
 import { signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
+import * as academyAccessPolicy from "./access.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
 
-type AcademyAccessSource = "tenant" | "staff" | "center";
+type AcademyAccessSource = "tenant" | "staff" | "center" | "grant";
 type AcademyScope = "academy" | "assigned_classrooms";
 
 type AcademyAccessPermissions = {
@@ -49,6 +50,7 @@ type MembershipRow = {
   status: string;
   source?: AcademyAccessSource;
   staff_id?: string | null;
+  grant_id?: string | null;
   classroom_ids?: string[];
   center_tenant_id?: string | null;
 };
@@ -80,6 +82,8 @@ type StudioBody = {
   is_published?: boolean;
   completed?: boolean;
   is_active?: boolean;
+  expires_at?: string | null;
+  starts_at?: string | null;
   price_amount?: number;
   currency?: string;
   duration_days?: number | null;
@@ -376,105 +380,17 @@ const relatedClassroom = (row: Record<string, unknown>): Record<string, unknown>
   return isJsonObject(raw) ? raw : null;
 };
 
-const normalizeAcademyRole = (roleRaw: unknown): string => {
-  const role = normalizeText(roleRaw, 40).toLowerCase();
-  if (role === "center-admin" || role === "center admin") return "center_admin";
-  if (role === "administrator") return "admin";
-  return role || "member";
-};
-
-const academyRoleRank = (roleRaw: unknown): number => {
-  const role = normalizeAcademyRole(roleRaw);
-  if (role === "owner") return 100;
-  if (role === "admin") return 90;
-  if (role === "center_admin") return 85;
-  if (role === "manager") return 70;
-  if (role === "counselor") return 60;
-  if (role === "teacher") return 50;
-  if (role === "assistant") return 40;
-  return 20;
-};
-
-const isAcademyAdminRole = (roleRaw: unknown): boolean =>
-  ["owner", "admin", "center_admin"].includes(normalizeAcademyRole(roleRaw));
-
-const isAcademyManagerRole = (roleRaw: unknown): boolean =>
-  ["manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
-
-const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
-  ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
-
-const academyAccessScope = (access: MembershipRow): AcademyScope => {
-  const role = normalizeAcademyRole(access.role);
-  if (isAcademyAdminRole(role) || isAcademyManagerRole(role)) return "academy";
-  return "assigned_classrooms";
-};
-
-const academyAccessClassroomIds = (access: MembershipRow): string[] | null => {
-  if (academyAccessScope(access) === "academy") return null;
-  return toStringArray(access.classroom_ids);
-};
-
-export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermissions => {
-  const role = normalizeAcademyRole(access.role);
-  const admin = isAcademyAdminRole(role);
-  const manager = isAcademyManagerRole(role);
-  const teacher = isAcademyTeachingRole(role);
-  const ops = admin || manager;
-  const teaching = ops || teacher;
-
-  return {
-    viewAcademy: ops,
-    manageAcademy: admin,
-    manageStaff: admin,
-    manageFinance: admin,
-    manageOffers: admin,
-    manageBranding: admin,
-    manageAutomation: admin,
-    viewContacts: ops || teaching,
-    manageContacts: ops,
-    viewClassrooms: teaching,
-    manageClassrooms: ops,
-    manageRoster: ops,
-    manageMessages: teaching,
-    manageAnnouncements: teaching,
-    sendGlobalAnnouncements: ops,
-    manageAlerts: teaching,
-    resolveAlerts: teaching,
-    viewEducationOS: teaching,
-    resolveActionItems: teaching,
-    manageAssignments: teaching,
-    gradeSubmissions: teaching,
-    markAttendance: teaching,
-    manageSchedule: teaching,
-    manageResources: teaching,
-    viewReports: ops,
-    issueCertificates: ops,
-    dispatchNotifications: ops,
-    viewNotifications: ops,
-    viewReferrals: ops,
-    viewAudit: ops,
-  };
-};
-
-const academyAccessProfile = (access: MembershipRow): Record<string, unknown> => {
-  const scope = academyAccessScope(access);
-  return {
-    role: normalizeAcademyRole(access.role),
-    source: access.source ?? "tenant",
-    scope,
-    classroom_ids: scope === "academy" ? [] : toStringArray(access.classroom_ids),
-    center_tenant_id: access.center_tenant_id ?? null,
-    permissions: buildAcademyPermissions(access),
-  };
-};
-
-const academyAccessHas = (access: MembershipRow, permission: keyof AcademyAccessPermissions): boolean =>
-  buildAcademyPermissions(access)[permission] === true;
-
-const requireAcademyPermission = (access: MembershipRow, permission: keyof AcademyAccessPermissions): void => {
-  if (!academyAccessHas(access, permission)) throw new Error("Forbidden");
-};
+const normalizeAcademyRole = academyAccessPolicy.normalizeAcademyRole;
+const academyRoleRank = academyAccessPolicy.academyRoleRank;
+const isAcademyManagerRole = academyAccessPolicy.isAcademyManagerRole;
+const academyAccessScope = academyAccessPolicy.academyAccessScope;
+const academyAccessClassroomIds = academyAccessPolicy.academyAccessClassroomIds;
+export const buildAcademyPermissions = academyAccessPolicy.buildAcademyPermissions;
+const academyAccessProfile = academyAccessPolicy.academyAccessProfile;
+const academyAccessHas = academyAccessPolicy.academyAccessHas;
+const academyRoleGrantToMembership = academyAccessPolicy.academyRoleGrantToMembership;
+const normalizeAcademyRoleGrantStatus = academyAccessPolicy.normalizeAcademyRoleGrantStatus;
+const requireAcademyPermission = academyAccessPolicy.requireAcademyPermission;
 
 const resolveAcademyAccess = (memberships: MembershipRow[], academyId: string): MembershipRow | null =>
   memberships.find((m) => m.tenant_id === academyId && String(m.status ?? "active") === "active") ?? null;
@@ -536,6 +452,55 @@ const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
     });
   }
   return Array.from(byAcademy.values()).sort((a, b) => academyRoleRank(b.role) - academyRoleRank(a.role));
+};
+
+const relationMissing = (error: unknown): boolean => {
+  const err = error as { code?: string; message?: string; details?: string } | null;
+  const text = `${err?.code ?? ""} ${err?.message ?? ""} ${err?.details ?? ""}`.toLowerCase();
+  return text.includes("42p01") || text.includes("does not exist") || text.includes("schema cache");
+};
+
+const STAFF_GRANT_ROLES = ["admin", "center_admin", "manager", "counselor", "teacher", "assistant"];
+const GRANT_STATUSES = ["invited", "active", "suspended", "revoked", "expired"];
+
+const staffGrantScopeForRole = (role: string): "academy" | "classrooms" => (
+  ["teacher", "assistant"].includes(normalizeAcademyRole(role)) ? "classrooms" : "academy"
+);
+
+const formatRoleGrantAsStaff = (grant: Record<string, unknown>): Record<string, unknown> => {
+  const role = normalizeAcademyRole(grant.role);
+  const scopeType = String(grant.scope_type ?? staffGrantScopeForRole(role));
+  const scopeIds = toStringArray(grant.scope_ids);
+  return {
+    id: String(grant.id ?? ""),
+    grant_id: grant.id ? String(grant.id) : null,
+    academy_id: String(grant.academy_id ?? ""),
+    user_id: grant.user_id ? String(grant.user_id) : null,
+    email: String(grant.email ?? ""),
+    display_name: grant.display_name ? String(grant.display_name) : null,
+    role,
+    classroom_ids: scopeType === "classrooms" ? scopeIds : [],
+    scope_type: scopeType,
+    scope_ids: scopeIds,
+    status: String(grant.status ?? "invited"),
+    is_active: String(grant.status ?? "invited") === "active",
+    source: "grant",
+    starts_at: grant.starts_at ? String(grant.starts_at) : null,
+    expires_at: grant.expires_at ? String(grant.expires_at) : null,
+    accepted_at: grant.accepted_at ? String(grant.accepted_at) : null,
+    revoked_at: grant.revoked_at ? String(grant.revoked_at) : null,
+    last_used_at: grant.last_used_at ? String(grant.last_used_at) : null,
+    created_at: String(grant.created_at ?? ""),
+    updated_at: grant.updated_at ? String(grant.updated_at) : null,
+  };
+};
+
+const insertRoleGrantAudit = async (
+  sb: SupabaseClientLike,
+  payload: Record<string, unknown>,
+): Promise<void> => {
+  const { error } = await sb.from("academy_access_audit_logs").insert(payload);
+  if (error && !relationMissing(error)) console.warn("academy access audit failed", error.message);
 };
 
 const loadScopedContactIds = async (
@@ -704,20 +669,6 @@ const loadMemberships = async (
     MembershipRow & { tenants?: Record<string, unknown> | Record<string, unknown>[] | null }
   >;
 
-  const accessRows: MembershipRow[] = [];
-
-  for (const row of membershipRows) {
-    const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
-    if (!isAcademyTenantRow(tenant)) continue;
-    accessRows.push({
-      tenant_id: String(row.tenant_id ?? ""),
-      role: normalizeAcademyRole(row.role),
-      status: String(row.status ?? "active"),
-      source: "tenant",
-      classroom_ids: [],
-    });
-  }
-
   const centerCandidateIds = Array.from(
     new Set(
       membershipRows
@@ -726,6 +677,7 @@ const loadMemberships = async (
         .filter((id) => id.length > 0),
     ),
   );
+  const centerTenantIds = new Set<string>();
 
   if (centerCandidateIds.length > 0) {
     const { data: centerProfiles, error: centerError } = await sb
@@ -735,8 +687,30 @@ const loadMemberships = async (
     if (centerError) throw new Error(`Failed to load education center profiles: ${centerError.message}`);
 
     for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null }>) {
-      const centerTenantId = center.tenant_id ? String(center.tenant_id) : "";
-      if (!centerTenantId) continue;
+      const centerTenantId = normalizeText(center.tenant_id, 64);
+      if (centerTenantId) centerTenantIds.add(centerTenantId);
+    }
+  }
+
+  const accessRows: MembershipRow[] = [];
+
+  for (const row of membershipRows) {
+    const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
+    if (!isAcademyTenantRow(tenant)) continue;
+    const metadata = toJsonObject(tenant?.metadata);
+    const parentCenterId = normalizeText(metadata.parent_center_id, 64);
+    if (parentCenterId && centerTenantIds.has(parentCenterId)) continue;
+    accessRows.push({
+      tenant_id: String(row.tenant_id ?? ""),
+      role: normalizeAcademyRole(row.role),
+      status: String(row.status ?? "active"),
+      source: "tenant",
+      classroom_ids: [],
+    });
+  }
+
+  if (centerTenantIds.size > 0) {
+    for (const centerTenantId of centerTenantIds) {
       const { data: childAcademies, error: childError } = await sb
         .from("tenants")
         .select("id")
@@ -758,6 +732,73 @@ const loadMemberships = async (
     }
   }
 
+  const normalizedEmail = normalizeEmail(userEmail);
+  const nowIso = new Date().toISOString();
+  const grantRowsById = new Map<string, Record<string, unknown>>();
+  const invitedGrantIds: string[] = [];
+  const usedGrantIds: string[] = [];
+
+  const collectGrantRows = (rows: Array<Record<string, unknown>>): void => {
+    for (const row of rows) {
+      const id = String(row.id ?? crypto.randomUUID());
+      grantRowsById.set(id, row);
+    }
+  };
+
+  const grantSelect =
+    "id, academy_id, user_id, email, display_name, role, scope_type, scope_ids, status, starts_at, expires_at, accepted_at, revoked_at, last_used_at, created_at, updated_at";
+  let grantsAvailable = true;
+  const { data: grantsByUser, error: grantsUserError } = await sb
+    .from("academy_role_grants")
+    .select(grantSelect)
+    .eq("user_id", userId)
+    .in("status", ["invited", "active"])
+    .limit(1000);
+  if (grantsUserError) {
+    if (relationMissing(grantsUserError)) grantsAvailable = false;
+    else throw new Error(`Failed to load academy role grants: ${grantsUserError.message}`);
+  } else {
+    collectGrantRows((grantsByUser ?? []) as Array<Record<string, unknown>>);
+  }
+
+  if (grantsAvailable && normalizedEmail) {
+    const { data: grantsByEmail, error: grantsEmailError } = await sb
+      .from("academy_role_grants")
+      .select(grantSelect)
+      .eq("email", normalizedEmail)
+      .in("status", ["invited", "active"])
+      .limit(1000);
+    if (grantsEmailError) {
+      if (relationMissing(grantsEmailError)) grantsAvailable = false;
+      else throw new Error(`Failed to load academy role grant email access: ${grantsEmailError.message}`);
+    } else {
+      collectGrantRows((grantsByEmail ?? []) as Array<Record<string, unknown>>);
+    }
+  }
+
+  for (const grant of grantRowsById.values()) {
+    const membership = academyRoleGrantToMembership(grant, new Date(nowIso));
+    if (!membership) continue;
+    accessRows.push(membership as MembershipRow);
+    if (membership.grant_id) usedGrantIds.push(membership.grant_id);
+    if (membership.grant_id && String(grant.status ?? "invited") === "invited") invitedGrantIds.push(membership.grant_id);
+  }
+
+  const uniqueInvitedGrantIds = Array.from(new Set(invitedGrantIds.filter((id) => grantRowsById.has(id))));
+  if (grantsAvailable && uniqueInvitedGrantIds.length > 0) {
+    await sb
+      .from("academy_role_grants")
+      .update({ status: "active", user_id: userId, accepted_at: nowIso, updated_at: nowIso })
+      .in("id", uniqueInvitedGrantIds);
+  }
+  const uniqueUsedGrantIds = Array.from(new Set(usedGrantIds));
+  if (grantsAvailable && uniqueUsedGrantIds.length > 0) {
+    await sb
+      .from("academy_role_grants")
+      .update({ last_used_at: nowIso, updated_at: nowIso })
+      .in("id", uniqueUsedGrantIds);
+  }
+
   const staffRowsById = new Map<string, Record<string, unknown>>();
   const { data: staffByUser, error: staffUserError } = await sb
     .from("academy_staff")
@@ -770,7 +811,6 @@ const loadMemberships = async (
     staffRowsById.set(String(row.id ?? crypto.randomUUID()), row);
   }
 
-  const normalizedEmail = normalizeEmail(userEmail);
   if (normalizedEmail) {
     const { data: staffByEmail, error: staffEmailError } = await sb
       .from("academy_staff")
@@ -2171,7 +2211,47 @@ const handleReadAction = async (
     const contactId = normalizeText(contactIdRaw, 64) || null;
     const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
     if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
-    if (!contactId && scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { alerts: [] });
+    if (!contactId && scopedContactIds !== null) {
+      const contactIdList = Array.from(scopedContactIds);
+      const classroomIdList = scopedClassroomIds ?? [];
+      if (contactIdList.length === 0 && classroomIdList.length === 0) return json(200, { alerts: [] });
+
+      const [contactAlertsResult, classroomAlertsResult] = await Promise.all([
+        contactIdList.length > 0
+          ? sb
+            .from("academy_alerts")
+            .select("id, academy_id, contact_id, type, severity, message, resolved, resolved_at, metadata, created_at")
+            .eq("academy_id", academyId)
+            .in("contact_id", contactIdList)
+            .order("created_at", { ascending: false })
+            .limit(500)
+          : Promise.resolve({ data: [], error: null }),
+        classroomIdList.length > 0
+          ? sb
+            .from("academy_alerts")
+            .select("id, academy_id, contact_id, type, severity, message, resolved, resolved_at, metadata, created_at")
+            .eq("academy_id", academyId)
+            .is("contact_id", null)
+            .in("metadata->>classroom_id", classroomIdList)
+            .order("created_at", { ascending: false })
+            .limit(500)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (contactAlertsResult.error) return json(500, { error: "Failed to load alerts", detail: contactAlertsResult.error.message });
+      if (classroomAlertsResult.error) return json(500, { error: "Failed to load alerts", detail: classroomAlertsResult.error.message });
+
+      const alertById = new Map<string, Record<string, unknown>>();
+      for (const row of [...(contactAlertsResult.data ?? []), ...(classroomAlertsResult.data ?? [])] as Array<Record<string, unknown>>) {
+        const id = String(row.id ?? "");
+        if (!id || alertById.has(id)) continue;
+        alertById.set(id, row);
+      }
+      return json(200, {
+        alerts: Array.from(alertById.values()).sort((a, b) =>
+          Date.parse(String(b.created_at ?? "")) - Date.parse(String(a.created_at ?? "")),
+        ),
+      });
+    }
 
     let query = sb
       .from("academy_alerts")
@@ -2496,11 +2576,32 @@ const handleReadAction = async (
 
   if (action === "staff") {
     if (!academyAccessHas(access, "manageStaff")) return json(403, { error: "Forbidden" });
+
+    const grantSelect =
+      "id, academy_id, user_id, email, display_name, role, scope_type, scope_ids, status, starts_at, expires_at, accepted_at, revoked_at, last_used_at, created_at, updated_at";
+    const { data: grants, error: grantError } = await sb.from("academy_role_grants")
+      .select(grantSelect)
+      .eq("academy_id", academyId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (!grantError) {
+      return json(200, { staff: ((grants ?? []) as Array<Record<string, unknown>>).map(formatRoleGrantAsStaff) });
+    }
+    if (!relationMissing(grantError)) return json(500, { error: "Failed to load role grants", detail: grantError.message });
+
     const { data, error } = await sb.from("academy_staff")
       .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500);
     if (error) return json(500, { error: "Failed to load staff", detail: error.message });
-    return json(200, { staff: data ?? [] });
+    return json(200, {
+      staff: ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        ...row,
+        status: row.is_active === false ? "suspended" : "active",
+        source: "staff",
+        scope_type: staffGrantScopeForRole(String(row.role ?? "teacher")),
+        scope_ids: staffGrantScopeForRole(String(row.role ?? "teacher")) === "classrooms" ? toStringArray(row.classroom_ids) : [],
+      })),
+    });
   }
 
   if (action === "owner_dashboard") {
@@ -4710,6 +4811,13 @@ const runAcademyMaintenance = async (
   return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch };
 };
 
+export const __academyAccessTest = {
+  normalizeAcademyRole,
+  buildAcademyPermissions,
+  academyAccessProfile,
+  academyAccessHas,
+};
+
 export const handleAcademyRequest = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -6756,9 +6864,20 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           created_by: userId,
         };
         if (scheduleId) {
+          const { data: existingSchedule, error: existingScheduleError } = await sb
+            .from("academy_classroom_schedules")
+            .select("id, classroom_id")
+            .eq("id", scheduleId)
+            .eq("academy_id", academyId)
+            .maybeSingle();
+          if (existingScheduleError) return json(500, { error: "Failed to load schedule slot", detail: existingScheduleError.message });
+          if (!existingSchedule?.id) return json(404, { error: "Schedule slot not found" });
+          if (!accessCanUseClassroom(access, existingSchedule.classroom_id)) return json(403, { error: "Forbidden" });
+
           const { data, error } = await sb.from("academy_classroom_schedules").update(payload).eq("id", scheduleId).eq("academy_id", academyId)
             .select("id, classroom_id, day_of_week, start_time, end_time, timezone, label, is_active").maybeSingle();
           if (error) return json(500, { error: "Failed to update schedule", detail: error.message });
+          if (!data?.id) return json(404, { error: "Schedule slot not found" });
           return json(200, { schedule: data });
         }
         const { data, error } = await sb.from("academy_classroom_schedules").insert(payload)
@@ -6822,12 +6941,15 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (actionBody === "upsert_staff") {
         const staffEmail = normalizeEmail(body?.staff_email ?? body?.email);
         if (!staffEmail) return json(400, { error: "staff_email is required" });
-        const role = normalizeText(body?.staff_role ?? body?.role, 20).toLowerCase() || "teacher";
-        if (!["teacher", "manager", "counselor", "assistant"].includes(role)) return json(400, { error: "Invalid role" });
+        const role = normalizeAcademyRole(body?.staff_role ?? body?.role ?? "teacher");
+        if (!STAFF_GRANT_ROLES.includes(role)) return json(400, { error: "Invalid role" });
+        const requestedStatus = normalizeAcademyRoleGrantStatus(body?.status);
+        const status = GRANT_STATUSES.includes(requestedStatus) ? requestedStatus : "invited";
         const requestedClassroomIds = Array.isArray(body?.classroom_ids)
           ? Array.from(new Set((body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)))
           : [];
-        const classroomIds = ["teacher", "assistant"].includes(role) ? requestedClassroomIds : [];
+        const scopeType = staffGrantScopeForRole(role);
+        const classroomIds = scopeType === "classrooms" ? requestedClassroomIds : [];
         if (["teacher", "assistant"].includes(role) && classroomIds.length === 0) {
           return json(400, { error: "teacher and assistant roles require at least one classroom_id" });
         }
@@ -6838,15 +6960,75 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         }
 
         const { data: userRow } = await sb.from("users").select("id").eq("email", staffEmail).maybeSingle();
+        const startsAt = normalizeText(body?.starts_at, 80) || null;
+        const expiresAt = normalizeText(body?.expires_at, 80) || null;
+        const nowIso = new Date().toISOString();
+        const displayName = normalizeText(body?.name ?? body?.title, 160) || null;
+        const userIdForGrant = userRow?.id ? String(userRow.id) : null;
+
+        let previousGrant: Record<string, unknown> | null = null;
+        const { data: previousGrantRow, error: previousGrantError } = await sb
+          .from("academy_role_grants")
+          .select("id, status, role, scope_type, scope_ids, accepted_at")
+          .eq("academy_id", academyId)
+          .eq("email", staffEmail)
+          .maybeSingle();
+        if (previousGrantError && !relationMissing(previousGrantError)) {
+          return json(500, { error: "Failed to inspect existing role grant", detail: previousGrantError.message });
+        }
+        if (!previousGrantError) previousGrant = (previousGrantRow ?? null) as Record<string, unknown> | null;
+
+        const grantPayload = {
+          academy_id: academyId,
+          user_id: userIdForGrant,
+          email: staffEmail,
+          display_name: displayName,
+          role,
+          scope_type: scopeType,
+          scope_ids: classroomIds,
+          status,
+          granted_by: userId,
+          starts_at: startsAt ?? nowIso,
+          expires_at: expiresAt,
+          revoked_by: null,
+          revoked_at: null,
+          accepted_at: status === "active" && userIdForGrant ? (previousGrant?.accepted_at ?? nowIso) : previousGrant?.accepted_at ?? null,
+          metadata: { managed_from: "academy_staff_admin" },
+        };
+
+        let grantData: Record<string, unknown> | null = null;
+        const { data: savedGrant, error: grantError } = await sb.from("academy_role_grants")
+          .upsert(grantPayload, { onConflict: "academy_id,email" })
+          .select("id, academy_id, user_id, email, display_name, role, scope_type, scope_ids, status, starts_at, expires_at, accepted_at, revoked_at, last_used_at, created_at, updated_at")
+          .maybeSingle();
+        if (grantError && !relationMissing(grantError)) return json(500, { error: "Failed to save role grant", detail: grantError.message });
+        if (!grantError) {
+          grantData = (savedGrant ?? null) as Record<string, unknown> | null;
+          await insertRoleGrantAudit(sb, {
+            academy_id: academyId,
+            actor_user_id: userId,
+            target_user_id: userIdForGrant,
+            target_email: staffEmail,
+            action: previousGrant ? "role_grant_updated" : "role_grant_created",
+            role,
+            previous_status: previousGrant?.status ? String(previousGrant.status) : null,
+            next_status: status,
+            scope_type: scopeType,
+            scope_ids: classroomIds,
+            metadata: { previous_role: previousGrant?.role ?? null },
+          });
+        } else if (["admin", "center_admin"].includes(role)) {
+          return json(500, { error: "Role grants schema is required before admin grants can be saved" });
+        }
 
         const payload = {
           academy_id: academyId,
-          user_id: userRow?.id ? String(userRow.id) : null,
+          user_id: userIdForGrant,
           email: staffEmail,
-          display_name: normalizeText(body?.name ?? body?.title, 160) || null,
+          display_name: displayName,
           role,
           classroom_ids: classroomIds,
-          is_active: body?.is_active !== false,
+          is_active: status === "active" || status === "invited",
           created_by: userId,
         };
 
@@ -6854,30 +7036,95 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           .upsert(payload, { onConflict: "academy_id,email" })
           .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
           .maybeSingle();
-        if (error) return json(500, { error: "Failed to save staff", detail: error.message });
+        if (error && !relationMissing(error)) return json(500, { error: "Failed to save staff", detail: error.message });
         await logAcademyAuditEvent(sb, {
           academyId,
           actorUserId: userId,
           actorRole: access.role,
           action: "staff.upserted",
-          targetType: "academy_staff",
-          targetId: data?.id ? String(data.id) : staffEmail,
+          targetType: grantData ? "academy_role_grants" : "academy_staff",
+          targetId: grantData?.id ? String(grantData.id) : data?.id ? String(data.id) : staffEmail,
           status: "ok",
-          metadata: { email: staffEmail, role, classroom_ids: classroomIds, linked_user_id: userRow?.id ?? null },
+          metadata: {
+            email: staffEmail,
+            role,
+            status,
+            scope_type: scopeType,
+            classroom_ids: classroomIds,
+            linked_user_id: userRow?.id ?? null,
+          },
         });
-        return json(200, { staff: data });
+        return json(200, { staff: grantData ? formatRoleGrantAsStaff(grantData) : data });
       }
 
       if (actionBody === "remove_staff") {
         const staffId = normalizeText(body?.id, 64);
         if (!staffId) return json(400, { error: "id is required" });
-        const { data: staffRow } = await sb.from("academy_staff")
-          .select("id, email, role, classroom_ids")
+        const nowIso = new Date().toISOString();
+        const { data: grantRow, error: grantLoadError } = await sb.from("academy_role_grants")
+          .select("id, user_id, email, role, status, scope_type, scope_ids")
           .eq("id", staffId)
           .eq("academy_id", academyId)
           .maybeSingle();
-        const { error } = await sb.from("academy_staff").delete().eq("id", staffId).eq("academy_id", academyId);
+        if (grantLoadError && !relationMissing(grantLoadError)) {
+          return json(500, { error: "Failed to inspect role grant", detail: grantLoadError.message });
+        }
+        if (!grantLoadError && grantRow?.id) {
+          const grant = grantRow as Record<string, unknown>;
+          const { error: revokeError } = await sb.from("academy_role_grants")
+            .update({ status: "revoked", revoked_by: userId, revoked_at: nowIso, updated_at: nowIso })
+            .eq("id", staffId)
+            .eq("academy_id", academyId);
+          if (revokeError) return json(500, { error: "Failed to revoke role grant", detail: revokeError.message });
+          await sb.from("academy_staff")
+            .update({ is_active: false })
+            .eq("academy_id", academyId)
+            .eq("email", String(grant.email ?? ""));
+          await insertRoleGrantAudit(sb, {
+            academy_id: academyId,
+            actor_user_id: userId,
+            target_user_id: grant.user_id ? String(grant.user_id) : null,
+            target_email: String(grant.email ?? ""),
+            action: "role_grant_revoked",
+            role: normalizeAcademyRole(grant.role),
+            previous_status: String(grant.status ?? "active"),
+            next_status: "revoked",
+            scope_type: String(grant.scope_type ?? "academy"),
+            scope_ids: toStringArray(grant.scope_ids),
+            metadata: {},
+          });
+          await logAcademyAuditEvent(sb, {
+            academyId,
+            actorUserId: userId,
+            actorRole: access.role,
+            action: "staff.removed",
+            targetType: "academy_role_grants",
+            targetId: staffId,
+            status: "ok",
+            metadata: {
+              email: grant.email ?? "",
+              role: grant.role ?? "",
+              previous_status: grant.status ?? "",
+              scope_type: grant.scope_type ?? "academy",
+              scope_ids: toStringArray(grant.scope_ids),
+            },
+          });
+          return json(200, { ok: true });
+        }
+
+        const { data: staffRow } = await sb.from("academy_staff")
+          .select("email, role, classroom_ids")
+          .eq("id", staffId)
+          .eq("academy_id", academyId)
+          .maybeSingle();
+        const { error } = await sb.from("academy_staff").update({ is_active: false }).eq("id", staffId).eq("academy_id", academyId);
         if (error) return json(500, { error: "Failed to remove staff", detail: error.message });
+        if (staffRow?.email) {
+          await sb.from("academy_role_grants")
+            .update({ status: "revoked", revoked_by: userId, revoked_at: nowIso, updated_at: nowIso })
+            .eq("academy_id", academyId)
+            .eq("email", normalizeEmail(staffRow.email));
+        }
         await logAcademyAuditEvent(sb, {
           academyId,
           actorUserId: userId,
@@ -7044,6 +7291,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     return json(status, { error: message });
   }
 };
+
+export const academyHandler = handleAcademyRequest;
 
 if (import.meta.main) {
   serve(handleAcademyRequest);

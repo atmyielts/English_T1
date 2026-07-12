@@ -1024,8 +1024,17 @@ export type ClickCreateInput = {
   referral_attribution_id?: string | null;
 };
 
+export type ClickCardWidgetConfig = {
+  service_id: string;
+  merchant_id: string;
+  merchant_user_id: string | null;
+  amount: string;
+  transaction_param: string;
+};
+
 export type ClickCreateResponse = {
   payment_url: string | null;
+  card_widget?: ClickCardWidgetConfig | null;
   transaction_id: string;
   status?: string;
   amount: number;
@@ -1690,6 +1699,22 @@ export type SupportMessage = {
   handled_at: string | null;
   created_at: string;
   updated_at: string;
+  replies?: SupportMessageReply[];
+};
+
+export type SupportMessageReply = {
+  id: string;
+  support_message_id: string;
+  author_user_id: string | null;
+  author_type: 'admin' | 'system';
+  body: string;
+  delivery_channel: 'internal' | 'telegram' | 'email';
+  delivery_status: 'sent' | 'prepared' | 'failed' | 'skipped';
+  delivery_target: string | null;
+  delivery_error: string | null;
+  provider_message_id: string | null;
+  metadata: Json | null;
+  created_at: string;
 };
 
 export type SupportMessageCreateInput = {
@@ -1905,6 +1930,22 @@ export const adminSupportMessageUpdate = async (
     throw new Error(`PATCH /support-center?action=admin-message failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as { message: SupportMessage | null };
+};
+
+export const adminSupportMessageReply = async (
+  accessToken: string,
+  body: { message_id: string; body: string; channel?: 'auto' | 'telegram' | 'email' | 'internal' },
+): Promise<{ ok: boolean; reply: SupportMessageReply | null; message: SupportMessage | null; mailto_url?: string | null }> => {
+  const res = await fetch(`${edgeBase}/support-center?action=admin-message-reply`, {
+    method: 'POST',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`POST /support-center?action=admin-message-reply failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { ok: boolean; reply: SupportMessageReply | null; message: SupportMessage | null; mailto_url?: string | null };
 };
 
 export type TeacherStudioStudentFeed = {

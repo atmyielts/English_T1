@@ -188,7 +188,7 @@ export const AcademyView = ({
                   className="input"
                   value={landingForm.secondary_cta_label}
                   onChange={(event) => onLandingFieldChange('secondary_cta_label', event.target.value)}
-                  placeholder="Enter Academy Office"
+                  placeholder="Enter staff workspace"
                   disabled={busy}
                 />
               </label>
