@@ -85,23 +85,23 @@ After production deploy:
    - Classrooms.
    - Payments.
    - Education OS.
-5. If you have a smoke user token, run:
+5. If you have smoke account credentials or a smoke user token, run:
 
 ```bash
-ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_TOKEN=<user-jwt> npm run smoke:academy
+ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_EMAIL=<owner-email> ACADEMY_SMOKE_PASSWORD=<owner-password> npm run smoke:academy
 ```
 
-For a release-proof smoke, use the strict live command. It checks the public app shell and the live Academy Edge API. `ACADEMY_APP_URL` defaults to `https://academy.schood.online`. `ACADEMY_SMOKE_TOKEN` must belong to an owner/admin who can read finance, Education OS, notifications, and audit. `ACADEMY_STUDENT_SMOKE_TOKEN` should belong to an enrolled learner; if one account is both owner and enrolled learner, set both tokens to the same JWT. `ACADEMY_SMOKE_ACADEMY_ID` is optional and overrides the first academy discovered from the owner token.
+For a release-proof smoke, use the strict live command. It checks the public app shell and the live Academy Edge API. `ACADEMY_APP_URL` defaults to `https://academy.schood.online`. Prefer `ACADEMY_SMOKE_EMAIL` + `ACADEMY_SMOKE_PASSWORD` for an owner/admin who can read finance, Education OS, notifications, and audit; the script signs in and mints a fresh JWT. Prefer `ACADEMY_STUDENT_SMOKE_EMAIL` + `ACADEMY_STUDENT_SMOKE_PASSWORD` for an enrolled learner. `ACADEMY_SMOKE_TOKEN` and `ACADEMY_STUDENT_SMOKE_TOKEN` are still supported for one-off checks, but static Supabase access JWTs expire. `ACADEMY_SMOKE_ACADEMY_ID` is optional and overrides the first academy discovered from the owner account.
 
 ```bash
-ACADEMY_APP_URL=https://academy.schood.online ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_TOKEN=<owner-jwt> ACADEMY_STUDENT_SMOKE_TOKEN=<student-jwt> npm run smoke:academy:live
+ACADEMY_APP_URL=https://academy.schood.online ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_EMAIL=<owner-email> ACADEMY_SMOKE_PASSWORD=<owner-password> ACADEMY_STUDENT_SMOKE_EMAIL=<student-email> ACADEMY_STUDENT_SMOKE_PASSWORD=<student-password> npm run smoke:academy:live
 ```
 
 GitHub also has a dedicated `Academy Live Smoke` workflow. It can be run manually and automatically runs after a successful `Deploy Pages` workflow on `main`. Configure these repository secrets before treating the workflow as production proof:
 
 - `ACADEMY_EDGE_URL`
-- `ACADEMY_SMOKE_TOKEN`
-- `ACADEMY_STUDENT_SMOKE_TOKEN`
+- Owner auth: either `ACADEMY_SMOKE_TOKEN` or `ACADEMY_SMOKE_EMAIL` + `ACADEMY_SMOKE_PASSWORD`
+- Student auth: either `ACADEMY_STUDENT_SMOKE_TOKEN` or `ACADEMY_STUDENT_SMOKE_EMAIL` + `ACADEMY_STUDENT_SMOKE_PASSWORD`
 - `ACADEMY_APP_URL` optional, defaults locally to `https://academy.schood.online`
 - `ACADEMY_SMOKE_ACADEMY_ID` optional, pins the academy used by the owner smoke
 

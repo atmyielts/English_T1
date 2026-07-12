@@ -20,6 +20,12 @@ jobs:
       ACADEMY_EDGE_URL: ${{ secrets.ACADEMY_EDGE_URL }}
       ACADEMY_SMOKE_TOKEN: ${{ secrets.ACADEMY_SMOKE_TOKEN }}
       ACADEMY_STUDENT_SMOKE_TOKEN: ${{ secrets.ACADEMY_STUDENT_SMOKE_TOKEN }}
+      ACADEMY_SMOKE_EMAIL: ${{ secrets.ACADEMY_SMOKE_EMAIL }}
+      ACADEMY_SMOKE_PASSWORD: ${{ secrets.ACADEMY_SMOKE_PASSWORD }}
+      ACADEMY_STUDENT_SMOKE_EMAIL: ${{ secrets.ACADEMY_STUDENT_SMOKE_EMAIL }}
+      ACADEMY_STUDENT_SMOKE_PASSWORD: ${{ secrets.ACADEMY_STUDENT_SMOKE_PASSWORD }}
+      ACADEMY_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      ACADEMY_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       ACADEMY_SMOKE_ACADEMY_ID: ${{ secrets.ACADEMY_SMOKE_ACADEMY_ID }}
 
     steps:
@@ -31,12 +37,18 @@ jobs:
       - name: Validate live smoke secrets
         run: |
           missing=0
-          for key in ACADEMY_EDGE_URL ACADEMY_SMOKE_TOKEN ACADEMY_STUDENT_SMOKE_TOKEN; do
-            if [ -z "${!key}" ]; then
-              echo "Missing required Academy live smoke secret: $key"
-              missing=1
-            fi
-          done
+          if [ -z "$ACADEMY_EDGE_URL" ]; then
+            echo "Missing required Academy live smoke secret: ACADEMY_EDGE_URL"
+            missing=1
+          fi
+          if [ -z "$ACADEMY_SMOKE_TOKEN" ] && { [ -z "$ACADEMY_SMOKE_EMAIL" ] || [ -z "$ACADEMY_SMOKE_PASSWORD" ]; }; then
+            echo "Missing owner smoke auth: set ACADEMY_SMOKE_TOKEN or ACADEMY_SMOKE_EMAIL + ACADEMY_SMOKE_PASSWORD"
+            missing=1
+          fi
+          if [ -z "$ACADEMY_STUDENT_SMOKE_TOKEN" ] && { [ -z "$ACADEMY_STUDENT_SMOKE_EMAIL" ] || [ -z "$ACADEMY_STUDENT_SMOKE_PASSWORD" ]; }; then
+            echo "Missing student smoke auth: set ACADEMY_STUDENT_SMOKE_TOKEN or ACADEMY_STUDENT_SMOKE_EMAIL + ACADEMY_STUDENT_SMOKE_PASSWORD"
+            missing=1
+          fi
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi

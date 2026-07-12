@@ -41,6 +41,47 @@ const livePost = async (edgeUrl, token, payload) => {
   return { response, body, raw };
 };
 
+const authBaseUrlFromEdgeUrl = (edgeUrl) => {
+  const configured = process.env.ACADEMY_SUPABASE_URL?.trim() || process.env.SUPABASE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, '');
+  try {
+    const parsed = new URL(edgeUrl);
+    const match = parsed.hostname.match(/^([^.]+)\.supabase\.co$/);
+    if (match) return `https://${match[1]}.supabase.co`;
+  } catch {
+    return '';
+  }
+  return '';
+};
+
+const signInSmokeUser = async (edgeUrl, email, password, label) => {
+  const authBaseUrl = authBaseUrlFromEdgeUrl(edgeUrl);
+  const anonKey = process.env.ACADEMY_SUPABASE_ANON_KEY?.trim() || process.env.SUPABASE_ANON_KEY?.trim();
+  if (!authBaseUrl || !anonKey || !email || !password) return '';
+
+  const response = await fetch(`${authBaseUrl}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: {
+      apikey: anonKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  const raw = await response.text();
+  let body = null;
+  try {
+    body = raw ? JSON.parse(raw) : null;
+  } catch {
+    body = null;
+  }
+  if (!response.ok || !isRecord(body) || typeof body.access_token !== 'string') {
+    addCheck(`Live Academy Edge smoke: ${label} credential sign-in`, false, `status ${response.status}${raw ? ` body ${raw.slice(0, 300)}` : ''}`);
+    return '';
+  }
+  addCheck(`Live Academy Edge smoke: ${label} credential sign-in`, true);
+  return body.access_token;
+};
+
 const liveGetText = async (url) => {
   const response = await fetch(url, { method: 'GET' });
   const raw = await response.text();
@@ -151,7 +192,11 @@ const workflowContracts = [
     tokens: [
       'smoke:academy:live',
       'ACADEMY_EDGE_URL',
+      'ACADEMY_SMOKE_EMAIL',
+      'ACADEMY_SMOKE_PASSWORD',
       'ACADEMY_SMOKE_TOKEN',
+      'ACADEMY_STUDENT_SMOKE_EMAIL',
+      'ACADEMY_STUDENT_SMOKE_PASSWORD',
       'ACADEMY_STUDENT_SMOKE_TOKEN',
       'ACADEMY_APP_URL',
       'student token has an academy enrollment',
@@ -191,8 +236,8 @@ for (const action of requiredEdgeActions) {
 }
 
 const liveEdgeUrl = process.env.ACADEMY_EDGE_URL?.trim();
-const smokeToken = process.env.ACADEMY_SMOKE_TOKEN?.trim();
-const studentSmokeToken = process.env.ACADEMY_STUDENT_SMOKE_TOKEN?.trim() || smokeToken;
+let smokeToken = process.env.ACADEMY_SMOKE_TOKEN?.trim() || '';
+let studentSmokeToken = process.env.ACADEMY_STUDENT_SMOKE_TOKEN?.trim() || '';
 const liveAppUrl = process.env.ACADEMY_APP_URL?.trim() || 'https://academy.schood.online';
 if (liveRequired) {
   try {
@@ -206,6 +251,23 @@ if (liveRequired) {
     addCheck('Live Academy app smoke: production app shell', false, error instanceof Error ? error.message : String(error));
   }
 }
+if (liveEdgeUrl && !smokeToken) {
+  smokeToken = await signInSmokeUser(
+    liveEdgeUrl,
+    process.env.ACADEMY_SMOKE_EMAIL?.trim(),
+    process.env.ACADEMY_SMOKE_PASSWORD?.trim(),
+    'owner',
+  );
+}
+if (liveEdgeUrl && !studentSmokeToken) {
+  studentSmokeToken = await signInSmokeUser(
+    liveEdgeUrl,
+    process.env.ACADEMY_STUDENT_SMOKE_EMAIL?.trim() || process.env.ACADEMY_SMOKE_EMAIL?.trim(),
+    process.env.ACADEMY_STUDENT_SMOKE_PASSWORD?.trim() || process.env.ACADEMY_SMOKE_PASSWORD?.trim(),
+    'student',
+  );
+}
+if (!studentSmokeToken) studentSmokeToken = smokeToken;
 if (liveEdgeUrl && smokeToken) {
   try {
     const academiesResult = await livePost(liveEdgeUrl, smokeToken, { action: 'academies' });
@@ -289,9 +351,13 @@ if (liveEdgeUrl && smokeToken) {
     addCheck('Live Academy Edge smoke failed before completing requests', false, error instanceof Error ? error.message : String(error));
   }
 } else if (liveRequired) {
-  addCheck('Live Academy Edge smoke env configured', false, 'ACADEMY_EDGE_URL and ACADEMY_SMOKE_TOKEN are required');
+  addCheck(
+    'Live Academy Edge smoke env configured',
+    false,
+    'ACADEMY_EDGE_URL plus ACADEMY_SMOKE_TOKEN or ACADEMY_SMOKE_EMAIL/ACADEMY_SMOKE_PASSWORD are required',
+  );
 } else {
-  addCheck('Live Academy Edge smoke skipped without ACADEMY_EDGE_URL and ACADEMY_SMOKE_TOKEN', true);
+  addCheck('Live Academy Edge smoke skipped without ACADEMY_EDGE_URL and owner token or credentials', true);
 }
 
 for (const check of checks) {

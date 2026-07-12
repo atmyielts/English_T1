@@ -337,8 +337,11 @@ for (const section of cutoverSections) {
 
 addCheck(
   'Academy cutover lists live proof blockers',
-  productionCutover.includes('ACADEMY_EDGE_URL') &&
+  productionCutover.includes('ACADEMY_SMOKE_EMAIL') &&
+    productionCutover.includes('ACADEMY_SMOKE_PASSWORD') &&
     productionCutover.includes('ACADEMY_SMOKE_TOKEN') &&
+    productionCutover.includes('ACADEMY_STUDENT_SMOKE_EMAIL') &&
+    productionCutover.includes('ACADEMY_STUDENT_SMOKE_PASSWORD') &&
     productionCutover.includes('ACADEMY_STUDENT_SMOKE_TOKEN') &&
     productionCutover.includes('Academy Live Smoke') &&
     productionCutover.includes('Latest `Deploy Pages` run on `main` failed') &&
@@ -433,8 +436,13 @@ addCheck(
     academySmoke.includes('ACADEMY_APP_URL') &&
     academySmoke.includes('production app shell') &&
     academySmoke.includes('ACADEMY_EDGE_URL') &&
+    academySmoke.includes('ACADEMY_SMOKE_EMAIL') &&
+    academySmoke.includes('ACADEMY_SMOKE_PASSWORD') &&
     academySmoke.includes('ACADEMY_SMOKE_TOKEN') &&
+    academySmoke.includes('ACADEMY_STUDENT_SMOKE_EMAIL') &&
+    academySmoke.includes('ACADEMY_STUDENT_SMOKE_PASSWORD') &&
     academySmoke.includes('ACADEMY_STUDENT_SMOKE_TOKEN') &&
+    academySmoke.includes('credential sign-in') &&
     academySmoke.includes('academy id discovered') &&
     academySmoke.includes("action: 'summary'") &&
     academySmoke.includes("action: 'classrooms'") &&
@@ -456,8 +464,14 @@ addCheck(
     academyLiveSmokeWorkflow.includes('Academy deploy job succeeded') &&
     academyLiveSmokeWorkflow.includes('Validate live smoke secrets') &&
     academyLiveSmokeWorkflow.includes('Missing required Academy live smoke secret') &&
+    academyLiveSmokeWorkflow.includes('Missing owner smoke auth') &&
+    academyLiveSmokeWorkflow.includes('Missing student smoke auth') &&
     academyLiveSmokeWorkflow.includes('ACADEMY_EDGE_URL') &&
+    academyLiveSmokeWorkflow.includes('ACADEMY_SMOKE_EMAIL') &&
+    academyLiveSmokeWorkflow.includes('ACADEMY_SMOKE_PASSWORD') &&
     academyLiveSmokeWorkflow.includes('ACADEMY_SMOKE_TOKEN') &&
+    academyLiveSmokeWorkflow.includes('ACADEMY_STUDENT_SMOKE_EMAIL') &&
+    academyLiveSmokeWorkflow.includes('ACADEMY_STUDENT_SMOKE_PASSWORD') &&
     academyLiveSmokeWorkflow.includes('ACADEMY_STUDENT_SMOKE_TOKEN') &&
     academyLiveSmokeWorkflow.includes('npm run smoke:academy:live'),
 );
@@ -467,6 +481,10 @@ addCheck(
   envExample.includes('ACADEMY_EDGE_URL=') &&
     envExample.includes('ACADEMY_SMOKE_TOKEN=') &&
     envExample.includes('ACADEMY_STUDENT_SMOKE_TOKEN=') &&
+    envExample.includes('ACADEMY_SMOKE_EMAIL=') &&
+    envExample.includes('ACADEMY_SMOKE_PASSWORD=') &&
+    envExample.includes('ACADEMY_STUDENT_SMOKE_EMAIL=') &&
+    envExample.includes('ACADEMY_STUDENT_SMOKE_PASSWORD=') &&
     envExample.includes('ACADEMY_SMOKE_ACADEMY_ID='),
 );
 
@@ -474,8 +492,14 @@ addCheck(
   'Academy GitHub readiness checker verifies smoke secrets and deploy status',
   academyGithubReadiness.includes('ACADEMY_EDGE_URL') &&
     academyGithubReadiness.includes('ACADEMY_SMOKE_TOKEN') &&
+    academyGithubReadiness.includes('ACADEMY_SMOKE_EMAIL') &&
+    academyGithubReadiness.includes('ACADEMY_SMOKE_PASSWORD') &&
     academyGithubReadiness.includes('ACADEMY_STUDENT_SMOKE_TOKEN') &&
-  academyGithubReadiness.includes('Academy Live Smoke') &&
+    academyGithubReadiness.includes('ACADEMY_STUDENT_SMOKE_EMAIL') &&
+    academyGithubReadiness.includes('ACADEMY_STUDENT_SMOKE_PASSWORD') &&
+    academyGithubReadiness.includes('GitHub owner smoke auth configured') &&
+    academyGithubReadiness.includes('GitHub student smoke auth configured') &&
+    academyGithubReadiness.includes('Academy Live Smoke') &&
     academyGithubReadiness.includes('deploy-pages.yml') &&
     academyGithubReadiness.includes('Latest Deploy Pages run succeeded') &&
     academyGithubReadiness.includes('Latest Deploy Pages academy job succeeded') &&

@@ -10,9 +10,8 @@ Production proof is not complete until GitHub, Cloudflare Pages, Supabase migrat
 
 As of the latest GitHub readiness check, production proof is blocked by:
 
-- Missing GitHub secret `ACADEMY_EDGE_URL`.
-- Missing GitHub secret `ACADEMY_SMOKE_TOKEN`.
-- Missing GitHub secret `ACADEMY_STUDENT_SMOKE_TOKEN`.
+- Missing GitHub owner smoke auth: set `ACADEMY_SMOKE_TOKEN` or `ACADEMY_SMOKE_EMAIL` + `ACADEMY_SMOKE_PASSWORD`.
+- Missing GitHub student smoke auth: set `ACADEMY_STUDENT_SMOKE_TOKEN` or `ACADEMY_STUDENT_SMOKE_EMAIL` + `ACADEMY_STUDENT_SMOKE_PASSWORD`.
 - `Academy Live Smoke` workflow is not on GitHub until this branch is merged.
 - Latest `Deploy Pages` run on `main` failed at commit `a79fd23e330498a3d529210432d5ffb69614d5dc`.
 - Latest `Deploy Pages` Academy matrix job for `schood-academy` also failed for that run.
@@ -53,8 +52,8 @@ Expected evidence:
 Configure these repository secrets before treating live smoke as production proof:
 
 - `ACADEMY_EDGE_URL`: Supabase Academy Edge Function URL, for example `https://<project>.supabase.co/functions/v1/academy`.
-- `ACADEMY_SMOKE_TOKEN`: owner/admin JWT that can read finance, Education OS, notifications, and audit.
-- `ACADEMY_STUDENT_SMOKE_TOKEN`: enrolled learner JWT with at least one academy contact.
+- Owner smoke auth: either `ACADEMY_SMOKE_TOKEN` or `ACADEMY_SMOKE_EMAIL` + `ACADEMY_SMOKE_PASSWORD`. Prefer email/password so CI can mint fresh JWTs instead of relying on an expiring access token.
+- Student smoke auth: either `ACADEMY_STUDENT_SMOKE_TOKEN` or `ACADEMY_STUDENT_SMOKE_EMAIL` + `ACADEMY_STUDENT_SMOKE_PASSWORD`. The account must be an enrolled learner with at least one academy contact.
 - `ACADEMY_APP_URL`: optional override; default is `https://academy.schood.online`.
 - `ACADEMY_SMOKE_ACADEMY_ID`: optional pin for the academy used by owner smoke checks.
 
@@ -113,7 +112,7 @@ The `Academy Live Smoke` workflow runs after every completed `Deploy Pages` work
 Run strict live smoke locally or through GitHub Actions:
 
 ```bash
-ACADEMY_APP_URL=https://academy.schood.online ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_TOKEN=<owner-jwt> ACADEMY_STUDENT_SMOKE_TOKEN=<student-jwt> npm run smoke:academy:live
+ACADEMY_APP_URL=https://academy.schood.online ACADEMY_EDGE_URL=https://<project>.supabase.co/functions/v1/academy ACADEMY_SMOKE_EMAIL=<owner-email> ACADEMY_SMOKE_PASSWORD=<owner-password> ACADEMY_STUDENT_SMOKE_EMAIL=<student-email> ACADEMY_STUDENT_SMOKE_PASSWORD=<student-password> npm run smoke:academy:live
 ```
 
 Expected evidence:

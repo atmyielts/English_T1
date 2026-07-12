@@ -3,8 +3,6 @@ import { execFileSync } from 'node:child_process';
 const repo = process.env.GITHUB_REPOSITORY || 'atmyielts/English_T1';
 const requiredSecrets = [
   'ACADEMY_EDGE_URL',
-  'ACADEMY_SMOKE_TOKEN',
-  'ACADEMY_STUDENT_SMOKE_TOKEN',
   'CLOUDFLARE_ACCOUNT_ID',
   'CLOUDFLARE_API_TOKEN',
   'VITE_SUPABASE_ANON_KEY',
@@ -38,6 +36,22 @@ try {
 for (const secret of requiredSecrets) {
   addCheck(`GitHub secret configured: ${secret}`, secretNames.has(secret));
 }
+
+const ownerTokenConfigured = secretNames.has('ACADEMY_SMOKE_TOKEN');
+const ownerCredentialsConfigured = secretNames.has('ACADEMY_SMOKE_EMAIL') && secretNames.has('ACADEMY_SMOKE_PASSWORD');
+addCheck(
+  'GitHub owner smoke auth configured',
+  ownerTokenConfigured || ownerCredentialsConfigured,
+  'set ACADEMY_SMOKE_TOKEN or ACADEMY_SMOKE_EMAIL + ACADEMY_SMOKE_PASSWORD',
+);
+
+const studentTokenConfigured = secretNames.has('ACADEMY_STUDENT_SMOKE_TOKEN');
+const studentCredentialsConfigured = secretNames.has('ACADEMY_STUDENT_SMOKE_EMAIL') && secretNames.has('ACADEMY_STUDENT_SMOKE_PASSWORD');
+addCheck(
+  'GitHub student smoke auth configured',
+  studentTokenConfigured || studentCredentialsConfigured,
+  'set ACADEMY_STUDENT_SMOKE_TOKEN or ACADEMY_STUDENT_SMOKE_EMAIL + ACADEMY_STUDENT_SMOKE_PASSWORD',
+);
 
 let workflowList = '';
 try {
