@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
+import { signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -39,6 +40,7 @@ type AcademyAccessPermissions = {
   dispatchNotifications: boolean;
   viewNotifications: boolean;
   viewReferrals: boolean;
+  viewAudit: boolean;
 };
 
 type MembershipRow = {
@@ -104,6 +106,7 @@ type StudioBody = {
   experience_url?: string | null;
   submission_content?: string | null;
   submission_url?: string | null;
+  file?: File | null;
   records?: Array<Record<string, unknown>>;
   contacts?: Array<Record<string, unknown>>;
   session_date?: string;
@@ -201,6 +204,161 @@ const toStringArray = (value: unknown): string[] => {
   return Array.from(new Set(value.map((item) => normalizeText(item, 64)).filter((item) => item.length > 0)));
 };
 
+const ACADEMY_FILE_MAX_BYTES = 50 * 1024 * 1024;
+const ACADEMY_SIGNED_URL_TTL_SECONDS = 60 * 60 * 6;
+const ACADEMY_ALLOWED_FILE_PREFIXES = ["application/", "audio/", "image/", "text/", "video/"];
+
+const sanitizeFilename = (nameRaw: unknown): string =>
+  normalizeText(nameRaw, 180)
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 140) || "file";
+
+const formDataToStudioBody = (form: FormData): StudioBody => {
+  const body: StudioBody = {};
+  for (const [key, value] of form.entries()) {
+    if (value instanceof File) {
+      body[key] = value;
+      continue;
+    }
+    const text = String(value);
+    if (["metadata", "records", "contacts"].includes(key)) {
+      try {
+        body[key] = JSON.parse(text);
+      } catch {
+        body[key] = text;
+      }
+      continue;
+    }
+    if (["is_published", "completed", "is_active"].includes(key)) {
+      body[key] = text === "true";
+      continue;
+    }
+    if (["price_amount", "duration_days", "score", "max_score", "score_weight", "day_of_week", "threshold", "sort_order"].includes(key)) {
+      const num = Number(text);
+      body[key] = Number.isFinite(num) ? num : text;
+      continue;
+    }
+    body[key] = text;
+  }
+  return body;
+};
+
+export const validateAcademyUploadFile = (file: File): string | null => {
+  if (file.size <= 0) return "Uploaded file is empty";
+  if (file.size > ACADEMY_FILE_MAX_BYTES) return "File exceeds 50 MiB limit";
+  const contentType = file.type || "application/octet-stream";
+  if (!ACADEMY_ALLOWED_FILE_PREFIXES.some((prefix) => contentType.startsWith(prefix))) {
+    return "File type is not allowed";
+  }
+  return null;
+};
+
+const uploadAcademyFile = async (
+  purpose: "resource" | "submission",
+  academyId: string,
+  classroomId: string,
+  actorUserId: string,
+  file: File,
+): Promise<Json> => {
+  const validationError = validateAcademyUploadFile(file);
+  if (validationError) throw new Error(validationError);
+
+  const safeName = sanitizeFilename(file.name || "file");
+  const extension = safeName.includes(".") ? safeName.split(".").pop() : "";
+  const path = `academy/${academyId}/classrooms/${classroomId}/${purpose}/${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
+  const contentType = file.type || "application/octet-stream";
+  const stored = await uploadFileToS3(path, file, contentType, {
+    route: `academy.${purpose}.upload`,
+    userId: actorUserId,
+  });
+
+  return {
+    provider: "s3",
+    bucket: stored.bucket,
+    path: stored.path,
+    filename: safeName,
+    mime_type: contentType,
+    size_bytes: file.size,
+    uploaded_at: new Date().toISOString(),
+  };
+};
+
+const storagePlaceholderUrl = (storage: Json): string => {
+  const bucket = normalizeText(storage.bucket, 180);
+  const path = normalizeText(storage.path, 1200);
+  return bucket && path ? `storage://${bucket}/${path}` : "storage://academy-file";
+};
+
+const attachSignedStorageUrl = async (
+  sb: SupabaseClientLike,
+  row: Record<string, unknown>,
+  actorUserId: string | null,
+): Promise<Record<string, unknown>> => {
+  const metadata = toJsonObject(row.metadata);
+  const storage = isJsonObject(metadata.storage) ? metadata.storage : null;
+  if (!storage) return row;
+  const signedUrl = await signStorageRef(sb, storage, ACADEMY_SIGNED_URL_TTL_SECONDS, {
+    route: "academy.storage.sign",
+    userId: actorUserId,
+  });
+  if (!signedUrl) return row;
+  return {
+    ...row,
+    url: signedUrl,
+    signed_url: signedUrl,
+    metadata: {
+      ...metadata,
+      storage_signed_url_expires_in: ACADEMY_SIGNED_URL_TTL_SECONDS,
+    },
+  };
+};
+
+const logAcademyAuditEvent = async (
+  sb: SupabaseClientLike,
+  args: {
+    academyId: string;
+    actorUserId?: string | null;
+    actorRole?: string | null;
+    action: string;
+    targetType: string;
+    targetId?: string | null;
+    contactId?: string | null;
+    classroomId?: string | null;
+    status?: "ok" | "warning" | "error";
+    metadata?: Json;
+  },
+): Promise<void> => {
+  try {
+    const { error } = await sb.from("academy_audit_events").insert({
+      academy_id: args.academyId,
+      actor_user_id: args.actorUserId ?? null,
+      actor_role: args.actorRole ?? null,
+      action: args.action,
+      target_type: args.targetType,
+      target_id: args.targetId ?? null,
+      contact_id: args.contactId ?? null,
+      classroom_id: args.classroomId ?? null,
+      status: args.status ?? "ok",
+      metadata: args.metadata ?? {},
+    });
+    if (error) {
+      console.warn("[academy] audit insert failed", {
+        action: args.action,
+        academy_id: args.academyId,
+        detail: error.message,
+      });
+    }
+  } catch (err) {
+    console.warn("[academy] audit insert exception", {
+      action: args.action,
+      academy_id: args.academyId,
+      detail: err instanceof Error ? err.message : String(err),
+    });
+  }
+};
+
 const weakAreaLabel = (value: unknown): string => {
   if (typeof value === "string") return value.trim();
   if (isJsonObject(value)) {
@@ -257,7 +415,7 @@ const academyAccessClassroomIds = (access: MembershipRow): string[] | null => {
   return toStringArray(access.classroom_ids);
 };
 
-const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermissions => {
+export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermissions => {
   const role = normalizeAcademyRole(access.role);
   const admin = isAcademyAdminRole(role);
   const manager = isAcademyManagerRole(role);
@@ -295,6 +453,7 @@ const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPermission
     dispatchNotifications: ops,
     viewNotifications: ops,
     viewReferrals: ops,
+    viewAudit: ops,
   };
 };
 
@@ -647,6 +806,46 @@ const resolveAcademyId = (memberships: MembershipRow[], requested: string | null
   if (!found) throw new Error("Forbidden");
   return requested;
 };
+
+export const ACADEMY_ACTION_PERMISSIONS = {
+  resolve_action_item: "resolveActionItems",
+  set_lifecycle_stage: "manageContacts",
+  upsert_automation_rule: "manageAutomation",
+  run_automation_rules: "manageAutomation",
+  update_academy_landing: "manageAcademy",
+  update_classroom_landing: "manageClassrooms",
+  upsert_contact: "manageContacts",
+  create_classroom: "manageClassrooms",
+  upsert_classroom_membership: "manageRoster",
+  remove_classroom_membership: "manageRoster",
+  send_message: "manageMessages",
+  send_announcement: "manageAnnouncements",
+  create_alert: "manageAlerts",
+  resolve_alert: "resolveAlerts",
+  create_offer: "manageOffers",
+  upsert_offer_grant: "manageOffers",
+  create_payment: "manageFinance",
+  mark_payment_paid: "manageFinance",
+  grant_contact: "manageOffers",
+  create_assignment: "manageAssignments",
+  update_assignment: "manageAssignments",
+  grade_submission: "gradeSubmissions",
+  mark_attendance: "markAttendance",
+  bulk_invite: "manageRoster",
+  update_classroom_settings: "manageClassrooms",
+  export_gradebook: "gradeSubmissions",
+  upsert_schedule: "manageSchedule",
+  delete_schedule: "manageSchedule",
+  record_placement: "manageContacts",
+  upsert_staff: "manageStaff",
+  remove_staff: "manageStaff",
+  issue_academy_certificate: "issueCertificates",
+  compute_at_risk: "viewEducationOS",
+  generate_classroom_lesson_plan: "viewEducationOS",
+  dispatch_notifications: "dispatchNotifications",
+  generate_parent_report: "viewReports",
+  upsert_branding: "manageBranding",
+} as const satisfies Record<string, keyof AcademyAccessPermissions>;
 
 const ensureConversationId = async (
   sb: SupabaseClientLike,
@@ -1237,20 +1436,24 @@ const loadClassroomChat = async (
       created_at: String(row.created_at ?? ""),
     }));
 
-  const resources = ((resourceRows ?? []) as Array<Record<string, unknown>>).map((row) => ({
-    id: String(row.id ?? ""),
-    academy_id: String(row.academy_id ?? context.academy_id),
-    classroom_id: String(row.classroom_id ?? context.classroom_id),
-    title: String(row.title ?? ""),
-    kind: String(row.kind ?? "asset"),
-    url: String(row.url ?? ""),
-    description: row.description ? String(row.description) : null,
-    metadata: toJsonObject(row.metadata),
-    sort_order: Number(row.sort_order ?? 0),
-    is_published: Boolean(row.is_published ?? true),
-    created_by: row.created_by ? String(row.created_by) : null,
-    created_at: String(row.created_at ?? ""),
-    updated_at: String(row.updated_at ?? ""),
+  const resources = await Promise.all(((resourceRows ?? []) as Array<Record<string, unknown>>).map(async (row) => {
+    const signedRow = await attachSignedStorageUrl(sb, row, userId);
+    return {
+      id: String(signedRow.id ?? ""),
+      academy_id: String(signedRow.academy_id ?? context.academy_id),
+      classroom_id: String(signedRow.classroom_id ?? context.classroom_id),
+      title: String(signedRow.title ?? ""),
+      kind: String(signedRow.kind ?? "asset"),
+      url: String(signedRow.url ?? ""),
+      signed_url: signedRow.signed_url ? String(signedRow.signed_url) : null,
+      description: signedRow.description ? String(signedRow.description) : null,
+      metadata: toJsonObject(signedRow.metadata),
+      sort_order: Number(signedRow.sort_order ?? 0),
+      is_published: Boolean(signedRow.is_published ?? true),
+      created_by: signedRow.created_by ? String(signedRow.created_by) : null,
+      created_at: String(signedRow.created_at ?? ""),
+      updated_at: String(signedRow.updated_at ?? ""),
+    };
   }));
 
   const resourceIds = resources.map((row) => String(row.id)).filter((id) => id.length > 0);
@@ -1424,6 +1627,7 @@ const upsertClassroomResource = async (
   sortOrderRaw: unknown,
   isPublishedRaw: unknown,
   metadataRaw: unknown,
+  fileRaw: File | null,
 ): Promise<Response> => {
   const contextResult = await resolveClassroomChatContext(sb, memberships, userId, userEmail, academyIdRaw, classroomIdRaw);
   if (contextResult instanceof Response) return contextResult;
@@ -1433,16 +1637,27 @@ const upsertClassroomResource = async (
   const resourceId = normalizeText(resourceIdRaw, 64);
   const title = normalizeText(titleRaw, 220);
   const kind = normalizeText(kindRaw, 20).toLowerCase() as ClassroomResourceKind;
-  const resourceUrl = normalizeText(urlRaw, 2000);
+  let resourceUrl = normalizeText(urlRaw, 2000);
   const description = normalizeText(descriptionRaw, 4000) || null;
   const sortOrder = toIntOrNull(sortOrderRaw) ?? 0;
   const isPublished = typeof isPublishedRaw === "boolean" ? isPublishedRaw : true;
   const metadata = toJsonObject(metadataRaw);
 
   if (!title) return json(400, { error: "title is required" });
-  if (!resourceUrl) return json(400, { error: "url is required" });
+  if (!resourceUrl && !fileRaw) return json(400, { error: "url or file is required" });
   if (!CLASSROOM_RESOURCE_KINDS.includes(kind)) {
     return json(400, { error: `kind must be one of ${CLASSROOM_RESOURCE_KINDS.join(", ")}` });
+  }
+
+  if (fileRaw) {
+    try {
+      const storage = await uploadAcademyFile("resource", context.academy_id, context.classroom_id, userId, fileRaw);
+      metadata.storage = storage;
+      metadata.storage_kind = "classroom_resource";
+      resourceUrl = storagePlaceholderUrl(storage);
+    } catch (err) {
+      return json(400, { error: err instanceof Error ? err.message : "Failed to upload resource file" });
+    }
   }
 
   const payload = {
@@ -1471,7 +1686,8 @@ const upsertClassroomResource = async (
       .maybeSingle();
     if (error) return json(500, { error: "Failed to update classroom resource", detail: error.message });
     if (!data?.id) return json(404, { error: "Resource not found" });
-    return json(200, { resource: data });
+    const signedResource = await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId);
+    return json(200, { resource: signedResource });
   }
 
   const { data, error } = await sb
@@ -1482,7 +1698,8 @@ const upsertClassroomResource = async (
     )
     .maybeSingle();
   if (error) return json(500, { error: "Failed to create classroom resource", detail: error.message });
-  return json(200, { resource: data });
+  const signedResource = data ? await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId) : data;
+  return json(200, { resource: signedResource });
 };
 
 const deleteClassroomResource = async (
@@ -1622,6 +1839,7 @@ const handleReadAction = async (
       "classroom_billing",
       "branding",
       "notifications",
+      "audit_events",
       "owner_dashboard",
       "education_os",
       "automation_rules",
@@ -2047,7 +2265,10 @@ const handleReadAction = async (
     if (assignmentId) query = query.eq("assignment_id", assignmentId);
     const { data, error } = await query.limit(2000);
     if (error) return json(500, { error: "Failed to load submissions", detail: error.message });
-    return json(200, { submissions: data ?? [] });
+    const submissions = await Promise.all(((data ?? []) as Array<Record<string, unknown>>).map((row) =>
+      attachSignedStorageUrl(sb, row, null)
+    ));
+    return json(200, { submissions });
   }
 
   if (action === "gradebook") {
@@ -2062,7 +2283,7 @@ const handleReadAction = async (
         .eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived")
         .order("position", { ascending: true }).limit(200),
       sb.from("academy_submissions")
-        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, notes")
+        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, notes, submission_content, submission_url, metadata")
         .eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
       sb.from("academy_classroom_memberships")
         .select("contact_id, role, academy_contacts(id, first_name, last_name, email, status)")
@@ -2075,7 +2296,7 @@ const handleReadAction = async (
 
     const submissionMap = new Map<string, Record<string, unknown>>();
     for (const s of (submissionsResult.data ?? []) as Array<Record<string, unknown>>) {
-      submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, s);
+      submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, await attachSignedStorageUrl(sb, s, null));
     }
 
     const students = ((membersResult.data ?? []) as Array<Record<string, unknown>>).map((m) => {
@@ -2108,6 +2329,10 @@ const handleReadAction = async (
           submitted_at: sub.submitted_at ?? null,
           graded_at: sub.graded_at ?? null,
           notes: sub.notes ?? null,
+          submission_content: sub.submission_content ?? null,
+          submission_url: sub.submission_url ?? null,
+          signed_url: sub.signed_url ?? null,
+          metadata: sub.metadata ?? {},
         } : { status: "missing", score: null };
 
         if (sub && typeof sub.score === "number" && typeof (sub.max_score ?? asgn.max_score) === "number") {
@@ -2406,6 +2631,15 @@ const handleReadAction = async (
       .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200);
     if (error) return json(500, { error: "Failed to load notifications", detail: error.message });
     return json(200, { notifications: data ?? [] });
+  }
+
+  if (action === "audit_events") {
+    if (!academyAccessHas(access, "viewAudit")) return json(403, { error: "Forbidden" });
+    const { data, error } = await sb.from("academy_audit_events")
+      .select("id, academy_id, actor_user_id, actor_role, action, target_type, target_id, contact_id, classroom_id, status, metadata, created_at")
+      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200);
+    if (error) return json(500, { error: "Failed to load audit events", detail: error.message });
+    return json(200, { audit_events: data ?? [] });
   }
 
   if (action === "classroom_billing") {
@@ -4476,7 +4710,7 @@ const runAcademyMaintenance = async (
   return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch };
 };
 
-serve(async (req) => {
+export const handleAcademyRequest = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -4515,7 +4749,12 @@ serve(async (req) => {
     const userEmail = authData.user.email ?? null;
     const url = new URL(req.url);
     const actionQuery = normalizeText(url.searchParams.get("action"), 64).toLowerCase();
-    const body = req.method === "POST" ? (await req.json()) as StudioBody : null;
+    const contentType = req.headers.get("content-type") ?? "";
+    const body = req.method === "POST"
+      ? contentType.includes("multipart/form-data")
+        ? formDataToStudioBody(await req.formData())
+        : (await req.json()) as StudioBody
+      : null;
     const actionBody = normalizeText(body?.action, 64).toLowerCase();
     const requestedAction = actionBody || actionQuery;
 
@@ -4570,6 +4809,7 @@ serve(async (req) => {
         body?.sort_order,
         body?.is_published,
         body?.metadata,
+        body?.file instanceof File ? body.file : null,
       );
     }
 
@@ -4621,7 +4861,7 @@ serve(async (req) => {
       const [assignmentsRes, submissionsRes, membershipsRes] = await Promise.all([
         assignmentsQuery,
         sb.from("academy_submissions")
-          .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, submission_content, submission_url")
+          .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, submission_content, submission_url, metadata")
           .eq("academy_id", contactAcademyId).eq("contact_id", contactId).limit(1000),
         sb.from("academy_classroom_memberships").select("classroom_id").eq("academy_id", contactAcademyId).eq("contact_id", contactId).limit(100),
       ]);
@@ -4630,7 +4870,7 @@ serve(async (req) => {
       const enrolledClassrooms = new Set((membershipsRes.data ?? []).map((m: any) => String(m.classroom_id)));
       const subMap = new Map<string, Record<string, unknown>>();
       for (const s of (submissionsRes.data ?? []) as Array<Record<string, unknown>>) {
-        subMap.set(String(s.assignment_id), s);
+        subMap.set(String(s.assignment_id), await attachSignedStorageUrl(sb, s, userId));
       }
 
       const assignments = ((assignmentsRes.data ?? []) as Array<Record<string, unknown>>)
@@ -4705,6 +4945,16 @@ serve(async (req) => {
 
       const submissionContent = normalizeText(body?.content ?? body?.submission_content, 10000) || null;
       const submissionUrl = normalizeText(body?.url ?? body?.submission_url, 2000) || null;
+      const submissionMetadata: Json = {};
+      if (body?.file instanceof File) {
+        try {
+          const storage = await uploadAcademyFile("submission", String(asgn.academy_id), String(asgn.classroom_id), userId, body.file);
+          submissionMetadata.storage = storage;
+          submissionMetadata.storage_kind = "student_submission";
+        } catch (err) {
+          return json(400, { error: err instanceof Error ? err.message : "Failed to upload submission file" });
+        }
+      }
 
       const payload = {
         academy_id: String(asgn.academy_id),
@@ -4717,15 +4967,16 @@ serve(async (req) => {
         status: "submitted",
         submitted_at: new Date().toISOString(),
         notes: normalizeText(body?.notes, 500) || null,
-        metadata: {},
+        ...(Object.keys(submissionMetadata).length > 0 ? { metadata: submissionMetadata } : {}),
       };
 
       const { data, error } = await sb.from("academy_submissions")
         .upsert(payload, { onConflict: "assignment_id,contact_id" })
-        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, notes, submission_content, submission_url, updated_at")
+        .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, notes, submission_content, submission_url, metadata, updated_at")
         .maybeSingle();
       if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
-      return json(200, { submission: data });
+      const signedSubmission = data ? await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId) : data;
+      return json(200, { submission: signedSubmission });
     }
 
     // ── Student: tuition / billing status ────────────────────────────────────
@@ -4967,46 +5218,7 @@ serve(async (req) => {
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
       const access = requireAcademyAccess(memberships, academyId);
-      const actionPermissions: Record<string, keyof AcademyAccessPermissions> = {
-        resolve_action_item: "resolveActionItems",
-        set_lifecycle_stage: "manageContacts",
-        upsert_automation_rule: "manageAutomation",
-        run_automation_rules: "manageAutomation",
-        update_academy_landing: "manageAcademy",
-        update_classroom_landing: "manageClassrooms",
-        upsert_contact: "manageContacts",
-        create_classroom: "manageClassrooms",
-        upsert_classroom_membership: "manageRoster",
-        remove_classroom_membership: "manageRoster",
-        send_message: "manageMessages",
-        send_announcement: "manageAnnouncements",
-        create_alert: "manageAlerts",
-        resolve_alert: "resolveAlerts",
-        create_offer: "manageOffers",
-        upsert_offer_grant: "manageOffers",
-        create_payment: "manageFinance",
-        mark_payment_paid: "manageFinance",
-        grant_contact: "manageOffers",
-        create_assignment: "manageAssignments",
-        update_assignment: "manageAssignments",
-        grade_submission: "gradeSubmissions",
-        mark_attendance: "markAttendance",
-        bulk_invite: "manageRoster",
-        update_classroom_settings: "manageClassrooms",
-        export_gradebook: "gradeSubmissions",
-        upsert_schedule: "manageSchedule",
-        delete_schedule: "manageSchedule",
-        record_placement: "manageContacts",
-        upsert_staff: "manageStaff",
-        remove_staff: "manageStaff",
-        issue_academy_certificate: "issueCertificates",
-        compute_at_risk: "viewEducationOS",
-        generate_classroom_lesson_plan: "viewEducationOS",
-        dispatch_notifications: "dispatchNotifications",
-        generate_parent_report: "viewReports",
-        upsert_branding: "manageBranding",
-      };
-      const requiredPermission = actionPermissions[actionBody];
+      const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
 
       if (actionBody === "resolve_action_item") {
@@ -6036,6 +6248,22 @@ serve(async (req) => {
           .eq("id", paymentId)
           .maybeSingle();
 
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "payment.manual_settlement_applied",
+          targetType: "academy_payment",
+          targetId: paymentId,
+          contactId: String(paymentRow.contact_id ?? ""),
+          status: "ok",
+          metadata: {
+            provider: paymentRow.provider,
+            previous_status: paymentRow.status,
+            apply_result: applyResult ?? null,
+          },
+        });
+
         return json(200, { payment: updatedPayment ?? null, result: applyResult ?? null });
       }
 
@@ -6095,6 +6323,18 @@ serve(async (req) => {
           .maybeSingle();
 
         if (error) return json(500, { error: "Failed to create entitlement", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "entitlement.manual_grant_created",
+          targetType: "academy_entitlement",
+          targetId: data?.id ? String(data.id) : null,
+          contactId,
+          classroomId: resourceType?.toLowerCase() === "classroom" ? resourceId : null,
+          status: "ok",
+          metadata: { grant_type: grantType, resource_type: resourceType, resource_id: resourceId, quantity },
+        });
         return json(200, { entitlement: data });
       }
 
@@ -6160,6 +6400,17 @@ serve(async (req) => {
           .select("id, academy_id, classroom_id, title, description, assignment_type, experience_id, due_at, released_at, prerequisite_id, position, max_score, score_weight, status, metadata, created_by, created_at, updated_at")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to create assignment", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "assignment.created",
+          targetType: "academy_assignment",
+          targetId: data?.id ? String(data.id) : null,
+          classroomId,
+          status: "ok",
+          metadata: { title, assignment_type: payload.assignment_type, due_at: payload.due_at },
+        });
         return json(200, { assignment: data });
       }
 
@@ -6273,6 +6524,18 @@ serve(async (req) => {
           .select("id, assignment_id, contact_id, score, max_score, status, submitted_at, graded_at, graded_by, notes, updated_at")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to grade submission", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "submission.graded",
+          targetType: "academy_submission",
+          targetId,
+          contactId: String(existingSubmission.contact_id ?? ""),
+          classroomId: String(existingSubmission.classroom_id ?? ""),
+          status: "ok",
+          metadata: { score, max_score: patch.max_score ?? null, assignment_id: data?.assignment_id ?? assignmentId ?? null },
+        });
         return json(200, { submission: data });
       }
 
@@ -6312,6 +6575,24 @@ serve(async (req) => {
           .upsert(rows, { onConflict: "classroom_id,contact_id,session_date" })
           .select("id, classroom_id, contact_id, session_date, status, notes");
         if (error) return json(500, { error: "Failed to mark attendance", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "attendance.marked",
+          targetType: "academy_attendance",
+          targetId: `${classroomId}:${sessionDate}`,
+          classroomId,
+          status: "ok",
+          metadata: {
+            session_date: sessionDate,
+            count: (data ?? []).length,
+            status_counts: rows.reduce<Record<string, number>>((acc, row) => {
+              acc[row.status] = (acc[row.status] ?? 0) + 1;
+              return acc;
+            }, {}),
+          },
+        });
         return json(200, { attendance: data ?? [], count: (data ?? []).length });
       }
 
@@ -6574,14 +6855,39 @@ serve(async (req) => {
           .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
           .maybeSingle();
         if (error) return json(500, { error: "Failed to save staff", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "staff.upserted",
+          targetType: "academy_staff",
+          targetId: data?.id ? String(data.id) : staffEmail,
+          status: "ok",
+          metadata: { email: staffEmail, role, classroom_ids: classroomIds, linked_user_id: userRow?.id ?? null },
+        });
         return json(200, { staff: data });
       }
 
       if (actionBody === "remove_staff") {
         const staffId = normalizeText(body?.id, 64);
         if (!staffId) return json(400, { error: "id is required" });
+        const { data: staffRow } = await sb.from("academy_staff")
+          .select("id, email, role, classroom_ids")
+          .eq("id", staffId)
+          .eq("academy_id", academyId)
+          .maybeSingle();
         const { error } = await sb.from("academy_staff").delete().eq("id", staffId).eq("academy_id", academyId);
         if (error) return json(500, { error: "Failed to remove staff", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "staff.removed",
+          targetType: "academy_staff",
+          targetId: staffId,
+          status: "ok",
+          metadata: staffRow ? { email: staffRow.email, role: staffRow.role, classroom_ids: staffRow.classroom_ids } : {},
+        });
         return json(200, { ok: true });
       }
 
@@ -6644,6 +6950,18 @@ serve(async (req) => {
         if (certErr) return json(500, { error: "Failed to issue certificate", detail: certErr.message });
 
         const siteUrl = Deno.env.get("SITE_URL") ?? "https://schood.online";
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "certificate.issued",
+          targetType: "issued_certificate",
+          targetId: cert?.id ? String(cert.id) : null,
+          contactId,
+          classroomId: classroomId || null,
+          status: "ok",
+          metadata: { exam_type: examType, candidate_name: candidateName, overall_score: compositeScore },
+        });
         return json(200, { certificate: cert, share_url: `${siteUrl}/certificate?token=${cert?.public_token}` });
       }
 
@@ -6682,6 +7000,17 @@ serve(async (req) => {
         if (tokenErr) return json(500, { error: "Failed to generate report link", detail: tokenErr.message });
 
         const siteUrl = Deno.env.get("SITE_URL") ?? "https://schood.online";
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "parent_report.generated",
+          targetType: "parent_report_token",
+          targetId: tokenRow?.id ? String(tokenRow.id) : null,
+          contactId,
+          status: "ok",
+          metadata: { label, expires_at: tokenRow?.expires_at ?? expiresAt },
+        });
         return json(200, {
           token: tokenRow,
           share_url: `${siteUrl}/parent-report?token=${tokenRow?.token}`,
@@ -6714,4 +7043,8 @@ serve(async (req) => {
     const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
     return json(status, { error: message });
   }
-});
+};
+
+if (import.meta.main) {
+  serve(handleAcademyRequest);
+}

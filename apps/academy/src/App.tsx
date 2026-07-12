@@ -49,6 +49,7 @@ import {
   teacherStudioSendMessage,
   teacherStudioSetClassroomResourceProgress,
   teacherStudioUpsertClassroomResource,
+  teacherStudioUploadClassroomResource,
   teacherStudioRemoveClassroomMembership,
   teacherStudioUpdateAcademyLanding,
   teacherStudioUpdateClassroomLanding,
@@ -134,6 +135,7 @@ type ClassroomResourceFormState = {
   title: string;
   type: TeacherStudioClassroomResource['kind'];
   url: string;
+  file: File | null;
   description: string;
   week: string;
   module: string;
@@ -814,6 +816,7 @@ const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
   title: '',
   type: 'asset',
   url: '',
+  file: null,
   description: '',
   week: '',
   module: '',
@@ -1799,10 +1802,11 @@ const App = () => {
     if (!academyClassroomLandingId || !sharedClassroomAcademyId) return;
     const title = classroomResourceForm.title.trim();
     const url = classroomResourceForm.url.trim();
+    const file = classroomResourceForm.file;
     const week = classroomResourceForm.week.trim();
     const moduleLabel = classroomResourceForm.module.trim();
     const lesson = classroomResourceForm.lesson.trim();
-    if (!title || !url) return;
+    if (!title || (!url && !file)) return;
 
     const metadata: Record<string, string> = {};
     if (week) metadata.week = week;
@@ -1813,7 +1817,7 @@ const App = () => {
     setError('');
     setNotice('');
     try {
-      await teacherStudioUpsertClassroomResource(sharedClassroomAcademyId, {
+      const resourcePayload = {
         classroom_id: academyClassroomLandingId,
         title,
         type: classroomResourceForm.type,
@@ -1822,7 +1826,15 @@ const App = () => {
         sort_order: Number(classroomResourceForm.sort_order || '0'),
         is_published: classroomResourceForm.is_published,
         metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-      });
+      };
+      if (file) {
+        await teacherStudioUploadClassroomResource(sharedClassroomAcademyId, {
+          ...resourcePayload,
+          file,
+        });
+      } else {
+        await teacherStudioUpsertClassroomResource(sharedClassroomAcademyId, resourcePayload);
+      }
       setClassroomResourceForm(defaultClassroomResourceForm());
       await loadClassroomRoom(sharedClassroomAcademyId, academyClassroomLandingId);
       setNotice('Classroom resource saved.');
@@ -3766,10 +3778,22 @@ const App = () => {
                         className="input"
                         value={classroomResourceForm.url}
                         onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, url: event.target.value }))}
-                        placeholder="https://..."
-                        required
+                        placeholder="https://... or upload a file below"
                         disabled={classroomRoomBusy}
                       />
+                      <input
+                        className="input"
+                        type="file"
+                        onChange={(event) =>
+                          setClassroomResourceForm((prev) => ({ ...prev, file: event.target.files?.[0] ?? null }))
+                        }
+                        disabled={classroomRoomBusy}
+                      />
+                      {classroomResourceForm.file ? (
+                        <div className="small muted">
+                          File ready: {classroomResourceForm.file.name} ({Math.round(classroomResourceForm.file.size / 1024)} KB)
+                        </div>
+                      ) : null}
                       <textarea
                         className="input"
                         value={classroomResourceForm.description}
@@ -3801,7 +3825,7 @@ const App = () => {
                       <button
                         className="primary-btn"
                         type="submit"
-                        disabled={classroomRoomBusy || !classroomResourceForm.title.trim() || !classroomResourceForm.url.trim()}
+                        disabled={classroomRoomBusy || !classroomResourceForm.title.trim() || (!classroomResourceForm.url.trim() && !classroomResourceForm.file)}
                       >
                         Add resource
                       </button>

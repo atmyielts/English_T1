@@ -61,6 +61,7 @@ export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet
     'dispatchNotifications',
     'viewNotifications',
     'viewReferrals',
+    'viewAudit',
   ]),
 };
 

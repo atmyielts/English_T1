@@ -1426,6 +1426,95 @@ tbody tr:hover {
   min-width: 820px;
 }
 
+.assignment-detail-strip,
+.assignment-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.assignment-detail-strip article,
+.assignment-status-grid article {
+  min-width: 0;
+  border: 1px solid rgba(20, 22, 18, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--panel-subtle);
+}
+
+.assignment-detail-strip span,
+.assignment-status-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.assignment-detail-strip strong,
+.assignment-status-grid strong {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.15;
+}
+
+.student-focus-panel {
+  align-content: start;
+}
+
+.student-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.student-focus-card {
+  min-width: 0;
+  border: 1px solid rgba(20, 22, 18, 0.1);
+  border-radius: 8px;
+  padding: 13px;
+  display: grid;
+  gap: 7px;
+  text-align: left;
+  color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+}
+
+.student-focus-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.student-focus-card span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.student-focus-card strong {
+  line-height: 1.2;
+}
+
+.student-focus-card small {
+  color: var(--muted-strong);
+  line-height: 1.4;
+}
+
+.student-focus-card--urgent {
+  border-color: rgba(180, 35, 24, 0.22);
+  background: var(--danger-soft);
+}
+
+.student-focus-card--normal {
+  border-color: rgba(189, 107, 18, 0.22);
+  background: var(--warning-soft);
+}
+
+.student-focus-card--good {
+  border-color: rgba(32, 135, 84, 0.22);
+  background: var(--success-soft);
+}
+
 .empty-state {
   border: 1px dashed rgba(20, 22, 18, 0.18);
   border-radius: 8px;
@@ -1774,7 +1863,10 @@ tbody tr:hover {
 
   .stats-grid,
   .filters-grid,
-  .lms-kpi-grid {
+  .lms-kpi-grid,
+  .assignment-detail-strip,
+  .assignment-status-grid,
+  .student-focus-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1874,6 +1966,9 @@ tbody tr:hover {
   .stats-grid,
   .filters-grid,
   .lms-kpi-grid,
+  .assignment-detail-strip,
+  .assignment-status-grid,
+  .student-focus-grid,
   .grid.three,
   .market-grid,
   .market-steps,

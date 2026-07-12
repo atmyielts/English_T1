@@ -22,7 +22,13 @@
     "test:shared": "deno test supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/english-learning.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
+    "test:academy:routes": "npm --workspace apps/academy run test:routes",
+    "test:academy:edge": "deno test --allow-env supabase/functions/academy/academy-contract.test.ts",
     "verify:english": "node scripts/run-english-verifications.mjs",
+    "verify:academy": "node scripts/verify-academy-product-readiness.mjs",
+    "smoke:academy": "node scripts/smoke-academy-product.mjs",
+    "smoke:academy:live": "node scripts/smoke-academy-product.mjs --live",
+    "check:academy:github": "node scripts/check-academy-github-readiness.mjs",
     "verify:prod": "node scripts/verify-production-readiness.mjs"
   },
   "devDependencies": {

@@ -18,6 +18,19 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'
+          if (id.includes('@supabase')) return 'supabase-vendor'
+          if (id.includes('lucide-react')) return 'icons-vendor'
+          return 'vendor'
+        },
+      },
+    },
+  },
   server: {
     port: 5175,
     strictPort: true,

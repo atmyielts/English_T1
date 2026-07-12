@@ -1,0 +1,118 @@
+name: Academy Live Smoke
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Pages"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  live-smoke:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    env:
+      ACADEMY_APP_URL: ${{ secrets.ACADEMY_APP_URL || 'https://academy.schood.online' }}
+      ACADEMY_EDGE_URL: ${{ secrets.ACADEMY_EDGE_URL }}
+      ACADEMY_SMOKE_TOKEN: ${{ secrets.ACADEMY_SMOKE_TOKEN }}
+      ACADEMY_STUDENT_SMOKE_TOKEN: ${{ secrets.ACADEMY_STUDENT_SMOKE_TOKEN }}
+      ACADEMY_SMOKE_ACADEMY_ID: ${{ secrets.ACADEMY_SMOKE_ACADEMY_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Validate live smoke secrets
+        run: |
+          missing=0
+          for key in ACADEMY_EDGE_URL ACADEMY_SMOKE_TOKEN ACADEMY_STUDENT_SMOKE_TOKEN; do
+            if [ -z "${!key}" ]; then
+              echo "Missing required Academy live smoke secret: $key"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Verify Academy deploy job succeeded
+        if: ${{ github.event_name == 'workflow_run' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          node <<'NODE'
+          const repo = process.env.GH_REPO;
+          const runId = process.env.DEPLOY_RUN_ID;
+          const token = process.env.GH_TOKEN;
+          const headers = {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          };
+
+          const api = async (path) => {
+            const response = await fetch(`https://api.github.com${path}`, { headers });
+            const body = await response.text();
+            if (!response.ok) {
+              throw new Error(`${path} failed with ${response.status}: ${body}`);
+            }
+            return JSON.parse(body);
+          };
+
+          let page = 1;
+          const jobs = [];
+          while (page <= 10) {
+            const payload = await api(`/repos/${repo}/actions/runs/${runId}/jobs?per_page=100&page=${page}`);
+            jobs.push(...(payload.jobs ?? []));
+            if (!payload.jobs || payload.jobs.length < 100) break;
+            page += 1;
+          }
+
+          const academyJob = jobs.find((job) =>
+            String(job.name ?? "").includes("deploy (academy, apps/academy, apps/academy/dist, schood-academy)")
+          );
+          if (!academyJob) {
+            throw new Error("Could not find the schood-academy deploy job in the triggering Deploy Pages run.");
+          }
+          if (academyJob.conclusion !== "success") {
+            throw new Error(`Academy deploy job was ${academyJob.conclusion ?? "unknown"}: ${academyJob.html_url}`);
+          }
+          console.log(`Academy deploy job succeeded: ${academyJob.html_url}`);
+          NODE
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Academy before smoke
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ALLOWED_RETURN_HOSTS: schood.online,academy.schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,playbook.ielts.schood.online,sat.schood.online,practice.sat.schood.online,playbook.sat.schood.online,toefl.schood.online,playbook.toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
+          VITE_ADMIN_URL: https://schood.online/admin
+          VITE_IELTS_URL: https://ielts.schood.online
+          VITE_ACADEMY_URL: https://academy.schood.online
+          VITE_PLATFORM_URL: https://schood.online
+          VITE_AUTH_COOKIE_DOMAIN: .schood.online
+          VITE_AUTH_SHARED_COOKIE: "true"
+          VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}
+          VITE_DISABLE_PAYWALL: "false"
+          VITE_USE_MOCK_PERSISTENCE: "false"
+          VITE_DEBUG_AUTH: "false"
+        run: npm --workspace apps/academy run build
+
+      - name: Run Academy live smoke
+        run: npm run smoke:academy:live
