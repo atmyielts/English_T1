@@ -33,6 +33,7 @@ export type AcademyAccessPermissions = {
   dispatchNotifications: boolean;
   viewNotifications: boolean;
   viewReferrals: boolean;
+  viewAudit: boolean;
 };
 
 export type MembershipRow = {
@@ -193,6 +194,7 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     dispatchNotifications: ops,
     viewNotifications: ops,
     viewReferrals: ops,
+    viewAudit: ops,
   };
 };
 

@@ -23,7 +23,13 @@
     "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/academy/access-matrix.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
+    "test:academy:routes": "npm --workspace apps/academy run test:routes",
+    "test:academy:edge": "deno test --allow-env --allow-read supabase/functions/academy/academy-contract.test.ts supabase/functions/academy/access-matrix.test.ts",
     "verify:english": "node scripts/run-english-verifications.mjs",
+    "verify:academy": "node scripts/verify-academy-product-readiness.mjs",
+    "smoke:academy": "node scripts/smoke-academy-product.mjs",
+    "smoke:academy:live": "node scripts/smoke-academy-product.mjs --live",
+    "check:academy:github": "node scripts/check-academy-github-readiness.mjs",
     "verify:prod": "node scripts/verify-production-readiness.mjs"
   },
   "devDependencies": {
@@ -33,6 +39,8 @@
     "tailwindcss": "^4.1.18"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1085.0",
+    "@aws-sdk/s3-request-presigner": "3.1085.0",
     "@supabase/supabase-js": "^2.89.0"
   }
 }

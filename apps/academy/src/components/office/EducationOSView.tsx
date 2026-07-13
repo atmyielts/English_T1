@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   teacherStudioAssignments,
   teacherStudioAttendance,
+  teacherStudioAuditEvents,
   teacherStudioBranding,
   teacherStudioBulkInvite,
   teacherStudioBulkInvites,
@@ -34,6 +35,7 @@ import {
   type TeacherStudioAccessProfile,
   type TeacherStudioAssignment,
   type TeacherStudioAtRiskStudent,
+  type TeacherStudioAuditEvent,
   type TeacherStudioAutomationRule,
   type TeacherStudioAttendance,
   type TeacherStudioBranding,
@@ -66,6 +68,7 @@ type EducationOSTab =
   | 'attendance'
   | 'growth'
   | 'engagement'
+  | 'audit'
   | 'brand';
 
 type EducationOSMode = OfficeRouteIntent;
@@ -98,10 +101,10 @@ const STAFF_ACCESS_LANES: Record<string, string[]> = {
 };
 
 const OS_MODE_TAB_CAPS: Record<EducationOSMode, EducationOSTab[]> = {
-  office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
-  admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'brand'],
+  office: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
+  admin: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'learning', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
   teacher: ['today', 'pipeline', 'calendar', 'intelligence', 'learning', 'attendance', 'engagement'],
-  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'attendance', 'growth', 'engagement', 'brand'],
+  center: ['today', 'pipeline', 'automation', 'calendar', 'intelligence', 'command', 'attendance', 'growth', 'engagement', 'audit', 'brand'],
 };
 
 const EMPTY_PERMISSIONS: TeacherStudioAccessProfile['permissions'] = {};
@@ -165,6 +168,22 @@ const staffClassroomIds = (staff: TeacherStudioStaff): string[] => {
 
 const staffRoleUsesClassroomScope = (role: string): boolean => SCOPED_STAFF_ROLES.has(role);
 
+const auditTargetLabel = (event: TeacherStudioAuditEvent): string => {
+  const parts = [event.target_type, event.target_id].filter(Boolean);
+  if (event.contact_id) parts.push(`student ${event.contact_id}`);
+  if (event.classroom_id) parts.push(`classroom ${event.classroom_id}`);
+  return parts.join(' | ') || 'academy';
+};
+
+const auditMetadataSummary = (metadata: TeacherStudioAuditEvent['metadata']): string => {
+  if (!metadata || Array.isArray(metadata) || typeof metadata !== 'object') return '';
+  const entries = Object.entries(metadata)
+    .filter(([, value]) => value !== null && value !== undefined && typeof value !== 'object')
+    .slice(0, 4)
+    .map(([key, value]) => `${key}: ${String(value)}`);
+  return entries.join(' | ');
+};
+
 const staffStatus = (staff: TeacherStudioStaff): string => staff.status || (staff.is_active === false ? 'suspended' : 'active');
 
 const grantExpiryValue = (value: string | null | undefined): string => {
@@ -225,6 +244,7 @@ export const EducationOSView = ({
   const [bulkInvites, setBulkInvites] = useState<BulkInviteRow[]>([]);
   const [staff, setStaff] = useState<TeacherStudioStaff[]>([]);
   const [notifications, setNotifications] = useState<TeacherStudioNotification[]>([]);
+  const [auditEvents, setAuditEvents] = useState<TeacherStudioAuditEvent[]>([]);
   const [branding, setBranding] = useState<TeacherStudioBranding | null>(null);
   const [referralLeaderboard, setReferralLeaderboard] = useState<TeacherStudioReferralLeader[]>([]);
   const [atRisk, setAtRisk] = useState<TeacherStudioAtRiskStudent[]>([]);
@@ -240,6 +260,7 @@ export const EducationOSView = ({
     status: 'active',
     description: '',
   });
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState('');
   const [editingAssignmentId, setEditingAssignmentId] = useState('');
   const [gradeForm, setGradeForm] = useState({
     assignment_id: '',
@@ -306,6 +327,7 @@ export const EducationOSView = ({
     if (tab === 'attendance') return modeCanUse('markAttendance') || modeCanUse('manageSchedule');
     if (tab === 'growth') return modeCanUse('viewReports') || modeCanUse('manageStaff') || modeCanUse('manageContacts') || modeCanUse('manageRoster');
     if (tab === 'engagement') return modeCanUse('viewEducationOS') || modeCanUse('issueCertificates') || modeCanUse('viewNotifications') || modeCanUse('viewReferrals');
+    if (tab === 'audit') return modeCanUse('viewAudit');
     if (tab === 'brand') return modeCanUse('manageBranding');
     return false;
   }, [modeCanUse, tabAllowedByMode]);
@@ -464,6 +486,33 @@ export const EducationOSView = ({
     [intelligence],
   );
 
+  const selectedAssignment = useMemo(() => {
+    if (assignments.length === 0) return null;
+    return assignments.find((assignment) => assignment.id === selectedAssignmentId) ?? assignments[0] ?? null;
+  }, [assignments, selectedAssignmentId]);
+
+  const assignmentDetailRows = useMemo(() => {
+    if (!selectedAssignment || !gradebook) return [];
+    return gradebook.rows.map((row) => ({
+      row,
+      submission: row.submissions[selectedAssignment.id] ?? null,
+    }));
+  }, [gradebook, selectedAssignment]);
+
+  const assignmentStatusCounts = useMemo(() => {
+    return assignmentDetailRows.reduce(
+      (acc, item) => {
+        const status = item.submission?.status ?? 'missing';
+        if (status === 'graded') acc.graded += 1;
+        else if (status === 'submitted') acc.submitted += 1;
+        else if (status === 'late') acc.late += 1;
+        else acc.missing += 1;
+        return acc;
+      },
+      { graded: 0, submitted: 0, late: 0, missing: 0 },
+    );
+  }, [assignmentDetailRows]);
+
   const loadOsData = useCallback(async () => {
     if (!academyId) return;
     setLocalBusy(true);
@@ -474,6 +523,7 @@ export const EducationOSView = ({
         dashboardData,
         staffData,
         notificationsData,
+        auditData,
         brandingData,
         referralData,
       ] = await Promise.all([
@@ -481,6 +531,7 @@ export const EducationOSView = ({
         modeCanUse('manageFinance') || modeCanUse('viewReports') ? teacherStudioOwnerDashboard(academyId) : Promise.resolve(null),
         modeCanUse('manageStaff') ? teacherStudioStaff(academyId) : Promise.resolve([]),
         modeCanUse('viewNotifications') ? teacherStudioNotifications(academyId) : Promise.resolve([]),
+        modeCanUse('viewAudit') ? teacherStudioAuditEvents(academyId) : Promise.resolve([]),
         modeCanUse('manageBranding') ? teacherStudioBranding(academyId) : Promise.resolve(null),
         modeCanUse('viewReferrals') ? teacherStudioReferralLeaderboard(academyId) : Promise.resolve([]),
       ]);
@@ -489,6 +540,7 @@ export const EducationOSView = ({
       setDashboard(dashboardData);
       setStaff(staffData);
       setNotifications(notificationsData);
+      setAuditEvents(auditData);
       setBranding(brandingData);
       setReferralLeaderboard(referralData);
 
@@ -947,6 +999,7 @@ export const EducationOSView = ({
     { id: 'attendance', label: 'Attendance', visible: tabAvailable('attendance') },
     { id: 'growth', label: 'Growth', visible: tabAvailable('growth') },
     { id: 'engagement', label: 'Engagement', visible: tabAvailable('engagement') },
+    { id: 'audit', label: 'Audit', visible: tabAvailable('audit') },
     { id: 'brand', label: 'Brand', visible: tabAvailable('brand') },
   ];
   const tabs = allTabs.filter((tab) => tab.visible);
@@ -1526,6 +1579,84 @@ export const EducationOSView = ({
           </div>
 
           <div className="panel">
+            <div className="row between wrap">
+              <div>
+                <h3>Assignment detail</h3>
+                <p className="small muted">Inspect instructions, due date, linked task, submissions, grades, and missing students for the selected assignment.</p>
+              </div>
+              <select className="input academy-select" value={selectedAssignment?.id ?? ''} onChange={(event) => setSelectedAssignmentId(event.target.value)}>
+                {assignments.map((assignment) => <option key={assignment.id} value={assignment.id}>{assignment.title}</option>)}
+                {assignments.length === 0 ? <option value="">No assignments</option> : null}
+              </select>
+            </div>
+
+            {selectedAssignment ? (
+              <div className="grid">
+                <div className="assignment-detail-strip">
+                  <article>
+                    <span>Due</span>
+                    <strong>{selectedAssignment.due_at ? formatDate(selectedAssignment.due_at) : 'No due date'}</strong>
+                  </article>
+                  <article>
+                    <span>Type</span>
+                    <strong>{selectedAssignment.assignment_type}</strong>
+                  </article>
+                  <article>
+                    <span>Max score</span>
+                    <strong>{selectedAssignment.max_score ?? '-'}</strong>
+                  </article>
+                  <article>
+                    <span>Weight</span>
+                    <strong>{selectedAssignment.score_weight ?? 1}</strong>
+                  </article>
+                </div>
+                {selectedAssignment.description ? <p>{selectedAssignment.description}</p> : <p className="muted">No instructions added yet.</p>}
+                {selectedAssignment.experience_url ? (
+                  <a className="small-btn" href={selectedAssignment.experience_url} target="_blank" rel="noreferrer">Open linked task</a>
+                ) : null}
+                <div className="assignment-status-grid">
+                  <article><span>Missing</span><strong>{assignmentStatusCounts.missing}</strong></article>
+                  <article><span>Submitted</span><strong>{assignmentStatusCounts.submitted}</strong></article>
+                  <article><span>Late</span><strong>{assignmentStatusCounts.late}</strong></article>
+                  <article><span>Graded</span><strong>{assignmentStatusCounts.graded}</strong></article>
+                </div>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Submitted</th>
+                        <th>File</th>
+                        <th>Feedback</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {assignmentDetailRows.map(({ row, submission }) => (
+                        <tr key={`${selectedAssignment.id}-${row.contact_id}`}>
+                          <td>
+                            <strong>{`${row.first_name} ${row.last_name}`.trim() || row.email || row.contact_id}</strong>
+                            <div className="small muted">{row.email || row.role}</div>
+                          </td>
+                          <td><span className={statusClass(submission?.status ?? 'missing')}>{submission?.status ?? 'missing'}</span></td>
+                          <td>{typeof submission?.score === 'number' ? `${submission.score}/${submission.max_score ?? selectedAssignment.max_score ?? '-'}` : '-'}</td>
+                          <td>{submission?.submitted_at ? formatDate(submission.submitted_at) : '-'}</td>
+                          <td>{submission?.signed_url ? <a href={submission.signed_url} target="_blank" rel="noreferrer">Open file</a> : '-'}</td>
+                          <td>{submission?.notes || '-'}</td>
+                        </tr>
+                      ))}
+                      {assignmentDetailRows.length === 0 ? <tr><td colSpan={6}>No student rows for this assignment yet.</td></tr> : null}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="empty-state">Create an assignment to see student-level submission detail.</div>
+            )}
+          </div>
+
+          <div className="panel">
             <h3>Gradebook: {selectedClassroom?.name ?? 'No classroom selected'}</h3>
             <div className="table-wrap os-wide-table">
               <table>
@@ -1880,6 +2011,38 @@ export const EducationOSView = ({
               ) : null}
             </div>
           ) : null}
+        </section>
+      ) : null}
+
+      {visibleActiveTab === 'audit' ? (
+        <section className="grid">
+          <div className="panel">
+            <div className="row between wrap">
+              <div>
+                <h3>Audit trail</h3>
+                <p className="small muted">Recent owner, staff, finance, learning, and reporting actions recorded by the Academy Edge function.</p>
+              </div>
+              <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>Refresh audit</button>
+            </div>
+            <ul className="list audit-event-list">
+              {auditEvents.map((event) => (
+                <li key={event.id}>
+                  <div className="row between wrap">
+                    <div>
+                      <strong>{event.action.replace(/\./g, ' ')}</strong>
+                      <div className="small muted">{auditTargetLabel(event)}</div>
+                    </div>
+                    <span className={statusClass(event.status)}>{event.status}</span>
+                  </div>
+                  <div className="small muted">
+                    {event.actor_role || 'operator'}{event.actor_user_id ? ` | ${event.actor_user_id}` : ''} | {formatDate(event.created_at)}
+                  </div>
+                  {auditMetadataSummary(event.metadata) ? <div className="small">{auditMetadataSummary(event.metadata)}</div> : null}
+                </li>
+              ))}
+              {auditEvents.length === 0 ? <li>No audit events recorded yet.</li> : null}
+            </ul>
+          </div>
         </section>
       ) : null}
 

@@ -1223,6 +1223,77 @@ type ResolvedGrantTerms = {
   sourcePlanId: string | null;
 };
 
+const syncAcademyPaymentFromPlatformPayment = async (
+  sb: any,
+  payment: PaymentGrantRow,
+  status: string,
+  metadataPatch: Record<string, unknown> = {},
+): Promise<void> => {
+  if (!isAcademyTuitionPayment(payment)) return;
+
+  const platformMeta = payment.metadata ?? {};
+  const academyPaymentId = String((platformMeta as any)?.academy_payment_id ?? "").trim();
+  if (!academyPaymentId) return;
+
+  const { data: academyPayment, error: loadError } = await sb
+    .from("academy_payments")
+    .select("id, metadata")
+    .eq("id", academyPaymentId)
+    .maybeSingle();
+  if (loadError || !academyPayment?.id) {
+    console.error("academy_payment_sync_lookup_failed", {
+      academy_payment_id: academyPaymentId,
+      platform_payment_id: payment.id,
+      error: loadError?.message ?? "not_found",
+    });
+    return;
+  }
+
+  const currentMetadata = isPlainObject((academyPayment as any).metadata)
+    ? (academyPayment as any).metadata
+    : {};
+  const clickTransId = String(
+    (platformMeta as any)?.click_trans_id ?? payment.provider_transaction_id ?? "",
+  ).trim();
+  const clickPaydocId = String((platformMeta as any)?.click_paydoc_id ?? "").trim();
+  const normalizedStatus = String(status ?? "").trim().toLowerCase();
+  const academyStatus = isSuccessStatus(normalizedStatus)
+    ? "paid"
+    : ["canceled", "cancelled", "expired"].includes(normalizedStatus)
+    ? "canceled"
+    : ["failed", "failure", "rejected"].includes(normalizedStatus)
+    ? "failed"
+    : "pending";
+
+  const { error } = await sb
+    .from("academy_payments")
+    .update({
+      status: academyStatus,
+      provider: "click",
+      provider_transaction_id: clickTransId || payment.provider_transaction_id || academyPaymentId,
+      metadata: {
+        ...currentMetadata,
+        platform_payment_id: payment.id,
+        platform_payment_status: normalizedStatus || status,
+        academy_payment_status: academyStatus,
+        platform_provider_transaction_id: payment.provider_transaction_id ?? null,
+        click_trans_id: clickTransId || null,
+        click_paydoc_id: clickPaydocId || null,
+        provider_reconciled_at: new Date().toISOString(),
+        ...metadataPatch,
+      },
+    })
+    .eq("id", academyPaymentId);
+  if (error) {
+    console.error("academy_payment_sync_failed", {
+      academy_payment_id: academyPaymentId,
+      platform_payment_id: payment.id,
+      status: academyStatus,
+      error: error.message ?? String(error),
+    });
+  }
+};
+
 const resolveGrantTerms = async (
   sb: any,
   paymentRow: PaymentGrantRow,
@@ -2016,6 +2087,22 @@ const handleClickWebhook = async (
       })
       .eq("id", payment.id);
 
+    await syncAcademyPaymentFromPlatformPayment(
+      supabase,
+      {
+        ...payment,
+        provider_transaction_id: clickTransId,
+        status: payment.status === "created" ? "pending" : payment.status,
+        metadata: {
+          ...(payment.metadata ?? {}),
+          click_trans_id: clickTransId,
+          click_paydoc_id: String(params.click_paydoc_id ?? ""),
+        },
+      },
+      "pending",
+      { provider_stage: "prepared" },
+    );
+
     return jsonResponse(200, {
       click_trans_id: Number(clickTransId) || 0,
       merchant_trans_id: merchantTransId,
@@ -2061,6 +2148,25 @@ const handleClickWebhook = async (
           p_reason: "click_payment_cancelled",
         });
       }
+
+      await syncAcademyPaymentFromPlatformPayment(
+        supabase,
+        {
+          ...payment,
+          provider_transaction_id: clickTransId,
+          status: "canceled",
+          metadata: {
+            ...(payment.metadata ?? {}),
+            click_trans_id: clickTransId,
+            click_error: clickError,
+          },
+        },
+        "canceled",
+        {
+          provider_stage: "complete",
+          provider_error: clickError,
+        },
+      );
 
       return jsonResponse(200, {
         click_trans_id: Number(clickTransId) || 0,
@@ -2117,6 +2223,16 @@ const handleClickWebhook = async (
     }
 
     // Notify user on Telegram — fire and forget
+    await syncAcademyPaymentFromPlatformPayment(
+      supabase,
+      updatedPayment as PaymentGrantRow,
+      "paid",
+      {
+        provider_stage: "complete",
+        platform_grant_error: grantResponse ? "Failed to apply academy tuition" : null,
+      },
+    );
+
     if (updatedPayment?.user_id) {
       const amt = updatedPayment.amount ?? 0;
       const currency = String(updatedPayment.currency ?? "UZS");
@@ -3045,6 +3161,8 @@ serve(async (req) => {
         })
         .eq("id", payment.id);
 
+      let statusGrantError: string | null = null;
+
       if (
         isSuccessStatus(normalized) && payment.tenant_id && payment.user_id
       ) {
@@ -3068,6 +3186,7 @@ serve(async (req) => {
             console.error("click_status_grant_failed", {
               payment_id: payment.id,
             });
+            statusGrantError = "Failed to apply academy tuition";
           }
         }
 
@@ -3085,6 +3204,23 @@ serve(async (req) => {
           p_reason: normalized,
         });
       }
+
+      await syncAcademyPaymentFromPlatformPayment(
+        supabase,
+        {
+          ...payment,
+          status: normalized,
+          metadata: {
+            ...(payment.metadata ?? {}),
+            click_status_query_id: usedStatusId,
+          },
+        },
+        normalized,
+        {
+          provider_stage: "status",
+          platform_grant_error: statusGrantError,
+        },
+      );
 
       return jsonResponse(200, {
         status: normalized,

@@ -37,7 +37,10 @@ export const UpdatesButton = () => {
   }, []);
 
   useEffect(() => {
-    void refreshUnreadCount();
+    const timer = window.setTimeout(() => {
+      void refreshUnreadCount();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [refreshUnreadCount]);
 
   useEffect(() => {

@@ -49,6 +49,7 @@ import {
   teacherStudioSendMessage,
   teacherStudioSetClassroomResourceProgress,
   teacherStudioUpsertClassroomResource,
+  teacherStudioUploadClassroomResource,
   teacherStudioRemoveClassroomMembership,
   teacherStudioUpdateAcademyLanding,
   teacherStudioUpdateClassroomLanding,
@@ -134,6 +135,7 @@ type ClassroomResourceFormState = {
   title: string;
   type: TeacherStudioClassroomResource['kind'];
   url: string;
+  file: File | null;
   description: string;
   week: string;
   module: string;
@@ -330,7 +332,7 @@ const officeIntentCanEnter = (
   }
   if (intent === 'admin') {
     return (
-      isAcademyAdminAccess(access) &&
+      !isCenterAccess(access) &&
       (hasOfficeRoutePermission(access, intent, 'manageAcademy') ||
         hasOfficeRoutePermission(access, intent, 'manageStaff') ||
         hasOfficeRoutePermission(access, intent, 'manageFinance') ||
@@ -844,6 +846,7 @@ const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
   title: '',
   type: 'asset',
   url: '',
+  file: null,
   description: '',
   week: '',
   module: '',
@@ -941,8 +944,9 @@ const App = () => {
   const selectedAcademyAccess = useMemo<TeacherStudioAccessProfile | null>(() => {
     if (selectedOfficeAcademy?.access) return selectedOfficeAcademy.access;
     if (activeMembership) return buildFallbackAccess(activeMembership.role);
+    if (summary?.access) return summary.access;
     return null;
-  }, [activeMembership, selectedOfficeAcademy]);
+  }, [activeMembership, selectedOfficeAcademy, summary]);
   const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
   const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
   const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
@@ -1040,13 +1044,8 @@ const App = () => {
   const studentClassroomId = useMemo(() => studentClassroomIdFromPath(location.pathname), [location.pathname]);
   const isTeacherWorkspaceRoute = !!officeView || !!officeClassroomId;
   const isStudentWorkspaceRoute = !!studentPortalView || !!studentClassroomId;
-  const isSharedAcademyRoute =
-    isServiceLanding ||
-    isAcademyDirectory ||
-    isAcademyLanding ||
-    isAcademyClassroomsLanding ||
-    !!academyClassroomLandingId;
   const hasTeacherAccess = teacherDirectoryAcademies.length > 0;
+  const hasOfficeWorkspaceAccess = hasTeacherAccess || Boolean(selectedAcademyAccess);
   const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
   const teacherAcademyIds = useMemo(
     () => new Set(teacherDirectoryAcademies.map((academy) => academy.id)),
@@ -1364,10 +1363,10 @@ const App = () => {
       setError(message);
     }
   }, [
+    academyClassroomLandingId,
     academyId,
     isAcademyDirectory,
     isServiceLanding,
-    isSharedAcademyRoute,
     isStudentWorkspaceRoute,
     isTeacherWorkspaceRoute,
     loadAcademyData,
@@ -1886,10 +1885,11 @@ const App = () => {
     if (!academyClassroomLandingId || !sharedClassroomAcademyId) return;
     const title = classroomResourceForm.title.trim();
     const url = classroomResourceForm.url.trim();
+    const file = classroomResourceForm.file;
     const week = classroomResourceForm.week.trim();
     const moduleLabel = classroomResourceForm.module.trim();
     const lesson = classroomResourceForm.lesson.trim();
-    if (!title || !url) return;
+    if (!title || (!url && !file)) return;
 
     const metadata: Record<string, string> = {};
     if (week) metadata.week = week;
@@ -1900,7 +1900,7 @@ const App = () => {
     setError('');
     setNotice('');
     try {
-      await teacherStudioUpsertClassroomResource(sharedClassroomAcademyId, {
+      const resourcePayload = {
         classroom_id: academyClassroomLandingId,
         title,
         type: classroomResourceForm.type,
@@ -1909,7 +1909,15 @@ const App = () => {
         sort_order: Number(classroomResourceForm.sort_order || '0'),
         is_published: classroomResourceForm.is_published,
         metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-      });
+      };
+      if (file) {
+        await teacherStudioUploadClassroomResource(sharedClassroomAcademyId, {
+          ...resourcePayload,
+          file,
+        });
+      } else {
+        await teacherStudioUpsertClassroomResource(sharedClassroomAcademyId, resourcePayload);
+      }
       setClassroomResourceForm(defaultClassroomResourceForm());
       await loadClassroomRoom(sharedClassroomAcademyId, academyClassroomLandingId);
       setNotice('Classroom resource saved.');
@@ -2421,7 +2429,7 @@ const App = () => {
   const teacherShell = officeShellLabel(selectedAcademyAccess, officeRouteIntent);
   const officeCanOpen = (view: OfficeView): boolean => allowedOfficeViews.includes(view);
   const requestedOfficeAcademyDenied = Boolean(
-    isTeacherWorkspaceRoute && requestedAcademyId && !officeRouteAcademyIds.has(requestedAcademyId),
+    isTeacherWorkspaceRoute && requestedAcademyId && !teacherAcademyIds.has(requestedAcademyId),
   );
 
   const studentAnnouncements = useMemo(
@@ -2698,7 +2706,7 @@ const App = () => {
     );
   }
 
-  if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasTeacherAccess || allowedOfficeViews.length === 0)) {
+  if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasOfficeWorkspaceAccess || allowedOfficeViews.length === 0)) {
     const fallbackOfficeAcademyId = officeRouteAcademies[0]?.id ?? '';
     return (
       <>
@@ -3849,10 +3857,22 @@ const App = () => {
                         className="input"
                         value={classroomResourceForm.url}
                         onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, url: event.target.value }))}
-                        placeholder="https://..."
-                        required
+                        placeholder="https://... or upload a file below"
                         disabled={classroomRoomBusy}
                       />
+                      <input
+                        className="input"
+                        type="file"
+                        onChange={(event) =>
+                          setClassroomResourceForm((prev) => ({ ...prev, file: event.target.files?.[0] ?? null }))
+                        }
+                        disabled={classroomRoomBusy}
+                      />
+                      {classroomResourceForm.file ? (
+                        <div className="small muted">
+                          File ready: {classroomResourceForm.file.name} ({Math.round(classroomResourceForm.file.size / 1024)} KB)
+                        </div>
+                      ) : null}
                       <textarea
                         className="input"
                         value={classroomResourceForm.description}
@@ -3884,7 +3904,7 @@ const App = () => {
                       <button
                         className="primary-btn"
                         type="submit"
-                        disabled={classroomRoomBusy || !classroomResourceForm.title.trim() || !classroomResourceForm.url.trim()}
+                        disabled={classroomRoomBusy || !classroomResourceForm.title.trim() || (!classroomResourceForm.url.trim() && !classroomResourceForm.file)}
                       >
                         Add resource
                       </button>

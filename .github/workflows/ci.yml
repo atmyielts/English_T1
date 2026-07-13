@@ -49,8 +49,26 @@ jobs:
       - name: Production readiness checks
         run: npm run verify:prod
 
+      - name: Academy product readiness checks
+        run: npm run verify:academy
+
+      - name: Academy lint
+        run: npm --workspace apps/academy run lint
+
+      - name: Install Academy route browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Academy mocked route smoke
+        run: npm run test:academy:routes
+
       - name: Run unit tests
         run: npm test
+
+      - name: Academy Edge typecheck
+        run: deno check supabase/functions/academy/index.ts
+
+      - name: Academy Edge contract tests
+        run: npm run test:academy:edge
 
       - name: Audit runtime dependencies
         # Only fail on high/critical. Moderate-and-below noise (e.g. transitive
@@ -75,6 +93,9 @@ jobs:
 
       - name: Build academy
         run: npm --workspace apps/academy run build
+
+      - name: Academy product smoke
+        run: npm run smoke:academy
 
       - name: Build academy docs
         run: npm --workspace apps/academy-docs run build

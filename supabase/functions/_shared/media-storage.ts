@@ -1,5 +1,5 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3@3.922.0";
-import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner@3.922.0";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3@3.1085.0";
+import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner@3.1085.0";
 
 type S3Config = {
   bucket: string;

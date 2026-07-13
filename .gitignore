@@ -16,3 +16,8 @@ coverage
 # Tooling caches
 .vercel
 .cache
+
+# Playwright artifacts
+test-results/
+playwright-report/
+.playwright-cli/

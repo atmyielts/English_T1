@@ -86,6 +86,7 @@ export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet
     'dispatchNotifications',
     'viewNotifications',
     'viewReferrals',
+    'viewAudit',
   ]),
 };
 
@@ -93,7 +94,9 @@ export const routeIntentAllowsPermission = (
   intent: OfficeRouteIntent,
   permission: AccessPermissionKey,
 ): boolean => {
-  const permissionCaps = OFFICE_ROUTE_PERMISSION_CAPS[intent] ?? OFFICE_ROUTE_PERMISSION_CAPS.office;
+  const permissionCaps = Object.prototype.hasOwnProperty.call(OFFICE_ROUTE_PERMISSION_CAPS, intent)
+    ? OFFICE_ROUTE_PERMISSION_CAPS[intent]
+    : OFFICE_ROUTE_PERMISSION_CAPS.office;
   return permissionCaps === null || permissionCaps.has(permission);
 };
 

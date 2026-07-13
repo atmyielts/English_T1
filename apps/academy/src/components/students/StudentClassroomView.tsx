@@ -8,6 +8,7 @@ import {
   teacherStudioStudentAttendance,
   teacherStudioStudentBilling,
   teacherStudioSubmitStudentAssignment,
+  teacherStudioSubmitStudentAssignmentFile,
   type TeacherStudioAnnouncement,
   type TeacherStudioAttendance,
   type TeacherStudioClassroom,
@@ -30,6 +31,14 @@ type StudentClassroomViewProps = {
 };
 
 type StudentLmsTab = 'overview' | 'resources' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
+type StudentFocusItem = {
+  key: string;
+  label: string;
+  title: string;
+  detail: string;
+  tab: StudentLmsTab;
+  tone: 'urgent' | 'normal' | 'good';
+};
 
 const metadataClassroomId = (metadata: unknown): string | null => {
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null;
@@ -75,6 +84,7 @@ export const StudentClassroomView = ({
   const [submissionContent, setSubmissionContent] = useState('');
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submissionNotes, setSubmissionNotes] = useState('');
+  const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [payingOfferId, setPayingOfferId] = useState('');
 
   const loadClassroomLms = useCallback(async () => {
@@ -150,11 +160,105 @@ export const StudentClassroomView = ({
     return Math.round((present / attendance.length) * 100);
   }, [attendance]);
 
+  const focusItems = useMemo<StudentFocusItem[]>(() => {
+    const now = Date.now();
+    const openAssignments = assignments
+      .filter((assignment) => {
+        const status = assignment.submission?.status?.toLowerCase() ?? 'missing';
+        return !['graded'].includes(status);
+      })
+      .sort((a, b) => {
+        const aDue = a.due_at ? Date.parse(a.due_at) : Number.POSITIVE_INFINITY;
+        const bDue = b.due_at ? Date.parse(b.due_at) : Number.POSITIVE_INFINITY;
+        return aDue - bDue;
+      });
+    const nextAssignment = openAssignments[0] ?? null;
+    const unpaidBilling = billingItems.find((item) => !item.paid) ?? null;
+    const nextResource = publishedResources.find((resource) => !completedResourceIds.has(resource.id)) ?? null;
+    const gradedFeedback = assignments.find((assignment) => assignment.submission?.status === 'graded' && assignment.submission.notes) ?? null;
+    const recentAttendanceRisk = attendanceRate !== null && attendanceRate < 75;
+
+    const items: StudentFocusItem[] = [];
+
+    if (nextAssignment) {
+      const dueTs = nextAssignment.due_at ? Date.parse(nextAssignment.due_at) : null;
+      const overdue = typeof dueTs === 'number' && Number.isFinite(dueTs) && dueTs < now;
+      items.push({
+        key: `assignment:${nextAssignment.id}`,
+        label: overdue ? 'Overdue assignment' : 'Next assignment',
+        title: nextAssignment.title,
+        detail: nextAssignment.due_at ? `Due ${formatDate(nextAssignment.due_at)}` : nextAssignment.assignment_type,
+        tab: 'assignments',
+        tone: overdue ? 'urgent' : 'normal',
+      });
+    }
+
+    if (unpaidBilling) {
+      items.push({
+        key: `billing:${unpaidBilling.offer.id}`,
+        label: 'Tuition action',
+        title: unpaidBilling.offer.name,
+        detail: unpaidBilling.last_payment?.status === 'pending'
+          ? 'Payment is pending confirmation.'
+          : `${money(unpaidBilling.offer.price_amount, unpaidBilling.offer.currency)} due`,
+        tab: 'billing',
+        tone: unpaidBilling.last_payment?.status === 'pending' ? 'normal' : 'urgent',
+      });
+    }
+
+    if (nextResource) {
+      items.push({
+        key: `resource:${nextResource.id}`,
+        label: 'Continue learning',
+        title: nextResource.title,
+        detail: `${resourceLabel(nextResource)} is still open.`,
+        tab: 'resources',
+        tone: 'normal',
+      });
+    }
+
+    if (gradedFeedback) {
+      items.push({
+        key: `feedback:${gradedFeedback.id}`,
+        label: 'Teacher feedback',
+        title: gradedFeedback.title,
+        detail: gradedFeedback.submission?.notes ?? 'Feedback is ready.',
+        tab: 'grades',
+        tone: 'good',
+      });
+    }
+
+    if (recentAttendanceRisk) {
+      items.push({
+        key: 'attendance-risk',
+        label: 'Attendance',
+        title: 'Attendance needs attention',
+        detail: `${attendanceRate}% attendance in this classroom.`,
+        tab: 'attendance',
+        tone: 'urgent',
+      });
+    }
+
+    if (items.length === 0) {
+      items.push({
+        key: 'all-clear',
+        label: 'Today',
+        title: 'You are caught up',
+        detail: 'No open assignments, billing actions, or attendance alerts right now.',
+        tab: 'overview',
+        tone: 'good',
+      });
+    }
+
+    return items.slice(0, 4);
+  }, [assignments, attendanceRate, billingItems, completedResourceIds, formatDate, publishedResources]);
+
   const openSubmission = (assignment: TeacherStudioStudentAssignment) => {
     setSubmitTarget(assignment);
     setSubmissionContent(assignment.submission?.submission_content ?? '');
     setSubmissionUrl(assignment.submission?.submission_url ?? '');
     setSubmissionNotes(assignment.submission?.notes ?? '');
+    setSubmissionFile(null);
     setNotice('');
     setError('');
   };
@@ -166,13 +270,22 @@ export const StudentClassroomView = ({
     setError('');
     setNotice('');
     try {
-      await teacherStudioSubmitStudentAssignment(classroom.academy_id, {
+      const payload = {
         assignment_id: submitTarget.id,
         submission_content: submissionContent.trim() || null,
         submission_url: submissionUrl.trim() || null,
         notes: submissionNotes.trim() || null,
-      });
+      };
+      if (submissionFile) {
+        await teacherStudioSubmitStudentAssignmentFile(classroom.academy_id, {
+          ...payload,
+          file: submissionFile,
+        });
+      } else {
+        await teacherStudioSubmitStudentAssignment(classroom.academy_id, payload);
+      }
       setSubmitTarget(null);
+      setSubmissionFile(null);
       setNotice('Assignment submitted.');
       await loadClassroomLms();
     } catch (err) {
@@ -313,7 +426,32 @@ export const StudentClassroomView = ({
       {notice ? <div className="info-banner">{notice}</div> : null}
 
       {activeTab === 'overview' ? (
-        <section className="grid two">
+        <section className="grid">
+          <div className="panel student-focus-panel">
+            <div className="row between wrap">
+              <div>
+                <h3>Next best actions</h3>
+                <p className="muted">Your current classroom priorities, ordered by what helps you move forward.</p>
+              </div>
+              <span className="status">{focusItems.length} focus item{focusItems.length === 1 ? '' : 's'}</span>
+            </div>
+            <div className="student-focus-grid">
+              {focusItems.map((item) => (
+                <button
+                  className={`student-focus-card student-focus-card--${item.tone}`}
+                  key={item.key}
+                  type="button"
+                  onClick={() => setActiveTab(item.tab)}
+                >
+                  <span>{item.label}</span>
+                  <strong>{item.title}</strong>
+                  <small>{item.detail}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <section className="grid two">
           <div className="panel">
             <h3>Announcements</h3>
             <ul className="list">
@@ -346,6 +484,7 @@ export const StudentClassroomView = ({
               {assignments.length === 0 ? <li>No assignments yet.</li> : null}
             </ul>
           </div>
+          </section>
         </section>
       ) : null}
 
@@ -396,6 +535,7 @@ export const StudentClassroomView = ({
                   </div>
                   <div className="row wrap">
                     {assignment.experience_url ? <a className="small-btn" href={assignment.experience_url} target="_blank" rel="noreferrer">Open task</a> : null}
+                    {assignment.submission?.signed_url ? <a className="small-btn" href={assignment.submission.signed_url} target="_blank" rel="noreferrer">Open file</a> : null}
                     <button className="small-btn" type="button" onClick={() => openSubmission(assignment)}>
                       {assignment.submission ? 'Update submission' : 'Submit'}
                     </button>
@@ -422,6 +562,16 @@ export const StudentClassroomView = ({
                   value={submissionUrl}
                   onChange={(event) => setSubmissionUrl(event.target.value)}
                 />
+                <input
+                  className="input"
+                  type="file"
+                  onChange={(event) => setSubmissionFile(event.target.files?.[0] ?? null)}
+                />
+                {submissionFile ? (
+                  <div className="small muted">
+                    File ready: {submissionFile.name} ({Math.round(submissionFile.size / 1024)} KB)
+                  </div>
+                ) : null}
                 <textarea
                   className="input"
                   placeholder="Notes"
@@ -467,7 +617,12 @@ export const StudentClassroomView = ({
                       <td><span className={statusClass(submission?.status ?? 'missing')}>{submission?.status ?? 'missing'}</span></td>
                       <td>{typeof submission?.score === 'number' ? `${submission.score}/${submission.max_score ?? assignment.max_score ?? '-'}` : '-'}</td>
                       <td>{formatDate(submission?.submitted_at)}</td>
-                      <td>{submission?.notes ?? '-'}</td>
+                      <td>
+                        {submission?.notes ?? '-'}
+                        {submission?.signed_url ? (
+                          <div><a href={submission.signed_url} target="_blank" rel="noreferrer">Open submitted file</a></div>
+                        ) : null}
+                      </td>
                     </tr>
                   );
                 })}

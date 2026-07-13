@@ -49,6 +49,7 @@ export type TeacherStudioAccessProfile = {
     dispatchNotifications?: boolean;
     viewNotifications?: boolean;
     viewReferrals?: boolean;
+    viewAudit?: boolean;
   };
 };
 
@@ -221,6 +222,21 @@ export type TeacherStudioPayment = {
   updated_at: string;
 };
 
+export type TeacherStudioAuditEvent = {
+  id: string;
+  academy_id: string;
+  actor_user_id: string | null;
+  actor_role: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  contact_id: string | null;
+  classroom_id: string | null;
+  status: string;
+  metadata: Json;
+  created_at: string;
+};
+
 export type TeacherStudioClickTuitionTransaction = {
   payment_url: string;
   transaction_id: string;
@@ -292,6 +308,7 @@ export type TeacherStudioClassroomResource = {
   title: string;
   kind: 'video' | 'book' | 'asset' | 'link' | 'assignment' | 'mock' | 'practice' | 'playbook';
   url: string;
+  signed_url?: string | null;
   description: string | null;
   metadata: Json;
   sort_order: number;
@@ -433,6 +450,7 @@ export type TeacherStudioSubmission = {
   notes: string | null;
   submission_content?: string | null;
   submission_url?: string | null;
+  signed_url?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -447,7 +465,7 @@ export type TeacherStudioGradebook = {
     email: string | null;
     status: string;
     role: string;
-    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null }>;
+    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
     composite_score: number | null;
     submitted_count: number;
     total_assignments: number;
@@ -671,14 +689,6 @@ export type TeacherStudioEducationOS = {
   };
 };
 
-type InvokeErrorLike = {
-  message?: string;
-  context?: {
-    status?: number;
-    response?: string;
-  };
-};
-
 const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
 const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '');
 const edgeBase = `${supabaseUrl}/functions/v1`;
@@ -758,6 +768,39 @@ const invokeEdge = async <T>(
   if (!response.ok) {
     const detail = await readBody(response);
     throw new Error(`${method} /${fnName} failed (${response.status}): ${JSON.stringify(detail)}`);
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return null as T;
+  return (await response.json()) as T;
+};
+
+const invokeEdgeForm = async <T>(fnName: string, form: FormData): Promise<T> => {
+  const run = async (token: string): Promise<Response> => {
+    return fetch(`${edgeBase}/${fnName}`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${token}`,
+      },
+      body: form,
+    });
+  };
+
+  let token = await getAccessToken();
+  let response = await run(token);
+
+  if (response.status === 401) {
+    const refreshed = await refreshOnce();
+    if (refreshed) {
+      token = await getAccessToken();
+      response = await run(token);
+    }
+  }
+
+  if (!response.ok) {
+    const detail = await readBody(response);
+    throw new Error(`POST /${fnName} failed (${response.status}): ${JSON.stringify(detail)}`);
   }
 
   const contentType = response.headers.get('content-type') ?? '';
@@ -984,6 +1027,29 @@ export const teacherStudioSubmitStudentAssignment = async (
   return data.submission;
 };
 
+export const teacherStudioSubmitStudentAssignmentFile = async (
+  academyId: string,
+  body: {
+    assignment_id: string;
+    file: File;
+    submission_content?: string | null;
+    submission_url?: string | null;
+    notes?: string | null;
+  },
+): Promise<TeacherStudioSubmission> => {
+  const form = new FormData();
+  form.append('action', 'submit_assignment');
+  form.append('academy_id', academyId);
+  form.append('assignment_id', body.assignment_id);
+  if (body.submission_content) form.append('submission_content', body.submission_content);
+  if (body.submission_url) form.append('submission_url', body.submission_url);
+  if (body.notes) form.append('notes', body.notes);
+  form.append('file', body.file);
+
+  const data = await invokeEdgeForm<{ submission: TeacherStudioSubmission }>('academy', form);
+  return data.submission;
+};
+
 export const teacherStudioClassroomChat = async (
   academyId: string,
   classroomId: string,
@@ -1032,6 +1098,37 @@ export const teacherStudioUpsertClassroomResource = async (
     academyId,
     body,
   });
+  return data.resource;
+};
+
+export const teacherStudioUploadClassroomResource = async (
+  academyId: string,
+  body: {
+    classroom_id: string;
+    title: string;
+    type: TeacherStudioClassroomResource['kind'];
+    file: File;
+    url?: string;
+    description?: string;
+    sort_order?: number;
+    is_published?: boolean;
+    metadata?: Json;
+  },
+): Promise<TeacherStudioClassroomResource> => {
+  const form = new FormData();
+  form.append('action', 'classroom-resource-upsert');
+  form.append('academy_id', academyId);
+  form.append('classroom_id', body.classroom_id);
+  form.append('title', body.title);
+  form.append('type', body.type);
+  if (body.url) form.append('url', body.url);
+  if (body.description) form.append('description', body.description);
+  if (typeof body.sort_order === 'number') form.append('sort_order', String(body.sort_order));
+  if (typeof body.is_published === 'boolean') form.append('is_published', String(body.is_published));
+  if (body.metadata) form.append('metadata', JSON.stringify(body.metadata));
+  form.append('file', body.file);
+
+  const data = await invokeEdgeForm<{ resource: TeacherStudioClassroomResource }>('academy', form);
   return data.resource;
 };
 
@@ -1491,6 +1588,11 @@ export const teacherStudioStaff = async (academyId: string): Promise<TeacherStud
 export const teacherStudioNotifications = async (academyId: string): Promise<TeacherStudioNotification[]> => {
   const data = await callTeacherStudio<{ notifications: TeacherStudioNotification[] }>({ action: 'notifications', academyId });
   return data.notifications ?? [];
+};
+
+export const teacherStudioAuditEvents = async (academyId: string): Promise<TeacherStudioAuditEvent[]> => {
+  const data = await callTeacherStudio<{ audit_events: TeacherStudioAuditEvent[] }>({ action: 'audit_events', academyId });
+  return data.audit_events ?? [];
 };
 
 export const teacherStudioBranding = async (academyId: string): Promise<TeacherStudioBranding | null> => {
