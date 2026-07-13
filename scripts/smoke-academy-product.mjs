@@ -305,6 +305,7 @@ if (liveEdgeUrl && smokeToken) {
           validate: (body) =>
             isRecord(body.today) ||
             Array.isArray(body.action_items) ||
+            Array.isArray(body.action_queue) ||
             Array.isArray(body.classrooms) ||
             Array.isArray(body.assignments) ||
             Array.isArray(body.audit_events),
