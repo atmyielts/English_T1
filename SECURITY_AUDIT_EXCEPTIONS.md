@@ -8,6 +8,6 @@ Exceptions in this file are narrow, temporary release decisions. They do not sup
 - **Dependency:** `react-router-dom` / `react-router` 7.18.1.
 - **Reason:** The advisory affects only applications using React Router's unstable RSC APIs. Schood's deployed frontends are Vite client-side applications using `BrowserRouter`; the repository contains no unstable RSC API usage.
 - **Compensating control:** All frontend workspaces pin the exact 7.18.1 release, which clears the other known React Router advisories. Production verification, repository tests, Academy route tests, and every deployed frontend build must remain green.
-- **Audit behavior:** `npm audit --omit=dev --audit-level=high` is expected to report only `GHSA-qwww-vcr4-c8h2` until the patched release is published to npm. Any additional runtime finding invalidates this exception and blocks release.
+- **Audit behavior:** `npm audit --omit=dev --audit-level=high` is expected to report only `GHSA-qwww-vcr4-c8h2` until the patched release is published to npm. CI runs `scripts/audit-runtime-dependencies.mjs`, which fails on any additional runtime finding, version drift, or unstable RSC API usage.
 - **Expiry:** Remove this exception and upgrade promptly when React Router 8.3.0 or another stable patched version is available from npm and passes the full build and route-test matrix.
 - **Reference:** https://github.com/advisories/GHSA-qwww-vcr4-c8h2
