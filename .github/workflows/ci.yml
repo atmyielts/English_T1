@@ -71,10 +71,9 @@ jobs:
         run: npm run test:academy:edge
 
       - name: Audit runtime dependencies
-        # Only fail on high/critical. Moderate-and-below noise (e.g. transitive
-        # ws used by @supabase/realtime-js, not exposed to user input) doesn't
-        # warrant blocking every PR.
-        run: npm audit --omit=dev --audit-level=high
+        # Fail closed on high/critical findings. The wrapper permits only the
+        # owner-approved, RSC-only exception documented in the repository.
+        run: node scripts/audit-runtime-dependencies.mjs
 
       - name: Build platform
         run: npm --workspace apps/platform run build

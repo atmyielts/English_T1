@@ -30,7 +30,7 @@ This project is prepared for production deployment with mock/demo runtime fallba
 These builds pass:
 
 - `npm run verify:prod`
-- `npm audit --omit=dev`
+- `npm audit --omit=dev` (subject to the narrow, temporary exception recorded in `SECURITY_AUDIT_EXCEPTIONS.md`)
 - `npm --workspace apps/platform run build`
 - `npm --workspace apps/ielts-simulator run build`
 - `npm --workspace apps/sat-simulator run build`
