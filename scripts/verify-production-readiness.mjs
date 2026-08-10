@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { extname } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { extname, join } from 'node:path';
 
 const trackedFiles = execSync('git ls-files', { encoding: 'utf8' })
   .split(/\r?\n/)
@@ -8,6 +8,27 @@ const trackedFiles = execSync('git ls-files', { encoding: 'utf8' })
   .filter(Boolean);
 
 const errors = [];
+
+const migrationsDirectory = join('supabase', 'migrations');
+const migrationFiles = readdirSync(migrationsDirectory)
+  .filter((file) => file.endsWith('.sql'))
+  .sort();
+const migrationSql = migrationFiles
+  .map((file) => readFileSync(join(migrationsDirectory, file), 'utf8'))
+  .join('\n');
+const collectSqlNames = (pattern) =>
+  new Set([...migrationSql.matchAll(pattern)].map((match) => match[1].toLowerCase()));
+const declaredPublicTables = collectSqlNames(
+  /create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-zA-Z0-9_]+)/gi,
+);
+const rlsEnabledPublicTables = collectSqlNames(
+  /alter\s+table\s+(?:if\s+exists\s+)?public\.([a-zA-Z0-9_]+)\s+enable\s+row\s+level\s+security/gi,
+);
+for (const table of [...declaredPublicTables].sort()) {
+  if (!rlsEnabledPublicTables.has(table)) {
+    errors.push(`Public table is declared without enabling RLS: public.${table}`);
+  }
+}
 
 const blockedEnvFiles = trackedFiles.filter((file) => {
   const normalized = file.replace(/\\/g, '/');
