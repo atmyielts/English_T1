@@ -832,7 +832,9 @@ addCheck(
     academySmoke.includes("action: 'payments'") &&
     academySmoke.includes("action: 'education_os'") &&
     academySmoke.includes("action: 'student-dashboard'") &&
-    academySmoke.includes('student token has an academy enrollment'),
+    academySmoke.includes('student token has an academy enrollment') &&
+    /action: 'grade_categories',\s+academy_id: academyId,\s+classroom_id: ownerClassroomId,/m.test(academySmoke) &&
+    /action: 'student_curriculum',\s+academy_id: studentAcademyId,\s+classroom_id: studentClassroomId,/m.test(academySmoke),
 );
 
 addCheck(
