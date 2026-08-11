@@ -109,7 +109,7 @@ Deno.test("CLICK signature comparison is case-insensitive and exact", () => {
 });
 
 Deno.test("CLICK is the only callback slug and disables gateway JWT in config", () => {
-  assert(supabaseConfig.includes("[functions.click]\nverify_jwt = false"));
+  assert(/\[functions\.click\]\r?\nverify_jwt = false/.test(supabaseConfig));
   assert(clickSource.includes('url.pathname.endsWith("/webhook")'));
   assert(clickSource.includes('error_note: "CLICK webhook requires POST"'));
 });

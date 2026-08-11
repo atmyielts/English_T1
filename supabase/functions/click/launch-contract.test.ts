@@ -1,0 +1,75 @@
+import { assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
+
+const source = await Deno.readTextFile(new URL("./index.ts", import.meta.url));
+const migration = await Deno.readTextFile(
+  new URL(
+    "../../migrations/20260812120000_click_payment_launch_guardrails.sql",
+    import.meta.url,
+  ),
+);
+const platformCheckout = await Deno.readTextFile(
+  new URL("../../../apps/platform/src/pages/CheckoutPage.tsx", import.meta.url),
+);
+const platformClient = await Deno.readTextFile(
+  new URL("../../../apps/platform/src/lib/platformClient.ts", import.meta.url),
+);
+const adminPayments = await Deno.readTextFile(
+  new URL("../admin-payments/index.ts", import.meta.url),
+);
+
+Deno.test("CLICK launch contract keeps only the callback public and fails closed before credentials", () => {
+  assert(
+    source.includes(
+      'const isWebhookRoute = req.method === "POST" && isWebhookPath',
+    ),
+  );
+  assert(source.includes('url.pathname.endsWith("/readiness")'));
+  assert(source.includes('error_code: "click_not_configured"'));
+  assert(source.includes("!readiness.hostedPaymentReady"));
+});
+
+Deno.test("CLICK launch contract removes placeholder transaction races and status double-claim", () => {
+  assert(!source.includes('provider_transaction_id: "pending"'));
+  const statusSection = source.slice(source.indexOf("GET /click/status"));
+  const grantCall = statusSection.indexOf("grantPaidPaymentOnce(");
+  const priorClaim = statusSection.slice(0, grantCall).lastIndexOf(
+    '.is("granted_at", null)',
+  );
+  assert(grantCall > 0 && priorClaim < 0);
+  assert(migration.includes("payments_click_checkout_idempotency_unique"));
+  assert(migration.includes("payments_click_immutability"));
+});
+
+Deno.test("CLICK launch contract does not persist signatures and locks Academy grant RPC", () => {
+  assert(source.includes("sanitizeClickCallbackPayload(params)"));
+  assert(!source.includes("webhook_prepare: params"));
+  assert(!source.includes("webhook_complete: params"));
+  assert(migration.includes("#- '{webhook_prepare,sign_string}'"));
+  assert(
+    migration.includes(
+      "revoke all on function public.apply_academy_payment(uuid, uuid) from authenticated",
+    ),
+  );
+  assert(
+    migration.includes(
+      "grant execute on function public.apply_academy_payment(uuid, uuid) to service_role",
+    ),
+  );
+});
+
+Deno.test("grant claims require completion evidence and unsafe automatic replay is blocked", () => {
+  assert(source.includes("grant_completed_at"));
+  assert(migration.includes("add column if not exists grant_completed_at"));
+  assert(adminPayments.includes('is("grant_completed_at", null)'));
+  assert(
+    adminPayments.includes(
+      "Automatic replay is disabled for this purchase type to prevent duplicate access or credit.",
+    ),
+  );
+});
+
+Deno.test("frontend gates missing configuration, reuses an attempt key and validates CLICK origin", () => {
+  assert(platformCheckout.includes("clickReady !== true"));
+  assert(platformCheckout.includes("checkoutAttemptKey.current"));
+  assert(platformClient.includes("CLICK returned an untrusted payment URL"));
+});
