@@ -2,8 +2,11 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
+  Banknote,
+  BarChart3,
   BookOpenCheck,
   Building2,
+  CalendarDays,
   CreditCard,
   GraduationCap,
   KeyRound,
@@ -12,6 +15,7 @@ import {
   Megaphone,
   MessageSquare,
   RefreshCw,
+  ReceiptText,
   ShieldAlert,
   Sparkles,
   Store,
@@ -48,6 +52,7 @@ import {
   teacherStudioSendClassroomChatMessage,
   teacherStudioSendMessage,
   teacherStudioSetClassroomResourceProgress,
+  teacherStudioSetEnrollmentStatus,
   teacherStudioUpsertClassroomResource,
   teacherStudioUploadClassroomResource,
   teacherStudioRemoveClassroomMembership,
@@ -81,6 +86,14 @@ import { platformUrl, supabase } from './lib/supabase';
 import { AlertsView } from './components/office/AlertsView';
 import { AcademyView } from './components/office/AcademyView';
 import { AnnouncementsView } from './components/office/AnnouncementsView';
+import { BusinessFoundationView } from './components/office/BusinessFoundationView';
+import { CommercialCoreView } from './components/office/CommercialCoreView';
+import { OperationsFinanceView } from './components/office/OperationsFinanceView';
+import { AcademicOperationsView } from './components/office/AcademicOperationsView';
+import { GuardianRelationshipsView } from './components/office/GuardianRelationshipsView';
+import { IntelligenceOperationsView } from './components/office/IntelligenceOperationsView';
+import { BusinessPlatformView } from './components/office/BusinessPlatformView';
+import { GuardianPortalView } from './components/guardians/GuardianPortalView';
 import { ClassroomDetailView } from './components/office/ClassroomDetailView';
 import { ClassroomsView } from './components/office/ClassroomsView';
 import { ContactsView } from './components/office/ContactsView';
@@ -114,7 +127,7 @@ import type {
 
 type LoadState = 'loading' | 'ready' | 'unauthenticated' | 'error';
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'academy' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type OfficeView = 'academy' | 'platform' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
 type AcademyLandingFormState = {
   name: string;
@@ -146,8 +159,8 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['academy', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
-const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'manager', 'counselor', 'teacher', 'assistant']);
+const OFFICE_VIEWS: OfficeView[] = ['academy', 'platform', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
+const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
@@ -175,6 +188,13 @@ const CLASSROOM_RESOURCE_FILTERS: Array<{ kind: 'all' | TeacherStudioClassroomRe
 
 const OFFICE_LABELS: Record<OfficeView, string> = {
   academy: 'Academy',
+  platform: 'Business Platform',
+  business: 'Admissions',
+  commercial: 'Commercial Core',
+  academic: 'Academic Operations',
+  relationships: 'Guardians & Parents',
+  intelligence: 'Intelligence',
+  operations: 'Operations Finance',
   os: 'Command Center',
   contacts: 'Contacts',
   inbox: 'Inbox',
@@ -188,6 +208,13 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
 
 const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   academy: 'viewAcademy',
+  platform: 'viewBusinessIntelligence',
+  business: 'viewAdmissions',
+  commercial: 'viewFinance',
+  academic: 'manageAcademicOperations',
+  relationships: 'manageGuardians',
+  intelligence: 'viewBusinessIntelligence',
+  operations: 'viewEconomics',
   os: 'viewEducationOS',
   contacts: 'viewContacts',
   inbox: 'manageMessages',
@@ -195,7 +222,7 @@ const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   alerts: 'manageAlerts',
   classrooms: 'viewClassrooms',
   offers: 'manageOffers',
-  payments: 'manageFinance',
+  payments: 'viewFinance',
   entitlements: 'manageOffers',
 };
 
@@ -216,32 +243,61 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
   const role = String(roleRaw || 'member').toLowerCase();
   const ownerAdmin = role === 'owner' || role === 'admin';
   const centerAdmin = role === 'center_admin';
+  const branchManager = role === 'branch_manager';
   const manager = role === 'manager' || role === 'counselor';
+  const salesperson = role === 'salesperson';
+  const cashier = role === 'cashier';
+  const accountant = role === 'accountant';
+  const payrollOfficer = role === 'payroll_officer';
+  const parentLiaison = role === 'parent_liaison';
   const teaching = role === 'teacher' || role === 'assistant';
-  const ops = ownerAdmin || centerAdmin || manager;
-  const staff = ops || teaching;
+  const ops = ownerAdmin || centerAdmin || manager || branchManager;
+  const staff = ops || teaching || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
   const classroomLms = ownerAdmin || teaching;
+  const financeViewer = ownerAdmin || centerAdmin || branchManager || cashier || accountant;
+  const reportingViewer = ownerAdmin || centerAdmin || manager || branchManager || accountant;
   return {
     role,
     source,
-    scope: ops ? 'academy' : 'assigned_classrooms',
+    scope: branchManager || salesperson || cashier || parentLiaison ? 'assigned_branches' : (ops || accountant || payrollOfficer ? 'academy' : 'assigned_classrooms'),
     classroom_ids: [],
+    branch_ids: [],
     center_tenant_id: null,
     permissions: {
       viewAcademy: ops,
       manageAcademy: ownerAdmin || centerAdmin,
       manageStaff: ownerAdmin || centerAdmin,
       manageFinance: ownerAdmin || centerAdmin,
+      viewFinance: financeViewer,
+      collectFinance: ownerAdmin || centerAdmin || branchManager || cashier || accountant,
+      adjustFinance: ownerAdmin || centerAdmin || accountant,
+      refundFinance: ownerAdmin || accountant,
+      discountFinance: ownerAdmin || centerAdmin,
+      reconcileFinance: ownerAdmin || centerAdmin || accountant,
+      manageCashier: ownerAdmin || centerAdmin || branchManager || cashier,
+      viewEconomics: ownerAdmin || centerAdmin || accountant,
+      viewPayroll: ownerAdmin || centerAdmin || payrollOfficer,
+      calculatePayroll: ownerAdmin || centerAdmin || payrollOfficer,
+      approvePayroll: ownerAdmin,
+      payPayroll: ownerAdmin,
       manageOffers: ownerAdmin || centerAdmin,
       manageBranding: ownerAdmin || centerAdmin,
       manageAutomation: ownerAdmin || centerAdmin,
+      viewAutomation: ownerAdmin || centerAdmin || manager || branchManager,
+      viewBranches: staff,
+      manageBranches: ownerAdmin || centerAdmin,
+      viewAdmissions: ops || salesperson,
+      manageAdmissions: ops || salesperson,
+      assignAdmissions: ownerAdmin || centerAdmin || manager || branchManager,
+      exportAdmissions: ownerAdmin || centerAdmin || manager,
+      manageTrialFeedback: staff,
       viewContacts: staff,
-      manageContacts: ops,
+      manageContacts: ops || salesperson || parentLiaison,
       viewClassrooms: staff,
       manageClassrooms: ops,
       manageRoster: ops,
       manageMessages: staff,
-      manageAnnouncements: staff,
+      manageAnnouncements: ops || teaching || parentLiaison,
       sendGlobalAnnouncements: ops,
       manageAlerts: staff,
       resolveAlerts: staff,
@@ -251,12 +307,26 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
       gradeSubmissions: classroomLms,
       markAttendance: classroomLms,
       manageSchedule: ownerAdmin || centerAdmin || manager || teaching,
+      manageAcademicOperations: ops,
+      manageGuardians: ops || parentLiaison,
+      communicateGuardians: ops || teaching || parentLiaison,
+      manageRetention: ops,
+      viewBusinessIntelligence: reportingViewer,
+      viewAcademicReports: reportingViewer || teaching,
+      viewOperationalReports: reportingViewer,
+      viewFinancialReports: ownerAdmin || centerAdmin || accountant,
+      viewStaffPerformance: ownerAdmin || centerAdmin || manager || branchManager,
+      viewRisk: ops || parentLiaison,
+      manageImports: ownerAdmin || centerAdmin || manager,
+      manageLocalization: ownerAdmin || centerAdmin,
+      useAcademyAI: ownerAdmin || centerAdmin || manager || branchManager,
       manageResources: classroomLms,
-      viewReports: ops,
+      viewReports: reportingViewer,
       issueCertificates: ownerAdmin,
-      dispatchNotifications: ops,
-      viewNotifications: ops,
-      viewReferrals: ops,
+      dispatchNotifications: ops || parentLiaison,
+      viewNotifications: ops || parentLiaison,
+      viewReferrals: ops || salesperson,
+      viewAudit: ownerAdmin || centerAdmin || manager || accountant,
     },
   };
 };
@@ -306,10 +376,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: ['academy', 'os', 'contacts', 'classrooms', 'inbox', 'announcements', 'alerts'],
-  admin: ['academy', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
+  office: ['academy', 'platform', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'os', 'contacts', 'classrooms', 'payments', 'inbox', 'announcements', 'alerts'],
+  admin: ['academy', 'platform', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'os', 'contacts', 'classrooms', 'offers', 'payments', 'entitlements', 'announcements', 'alerts', 'inbox'],
   teacher: ['classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['academy', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements', 'os'],
+  center: ['academy', 'platform', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'alerts', 'offers', 'payments', 'entitlements', 'announcements', 'os'],
 };
 
 const hasOfficeRoutePermission = (
@@ -348,7 +418,9 @@ const officeViewsForIntent = (
 ): OfficeView[] => {
   if (!officeIntentCanEnter(access, intent)) return [];
   const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
-  return caps.filter((view) => hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
+  return caps.filter((view) => view === 'operations'
+    ? ['viewEconomics', 'manageCashier', 'viewPayroll'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
+    : hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
 };
 
 const defaultOfficeViewForIntent = (
@@ -1008,6 +1080,12 @@ const App = () => {
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
       entitlements: { title: 'Access grants', caption: 'Review active LMS and classroom access' },
       payments: { title: 'Payments', caption: 'Track Click payments and settlement' },
+      commercial: { title: 'Commercial Core', caption: 'Plans, agreements, invoices, allocations, balances, and debt' },
+      academic: { title: 'Academic Operations', caption: 'Actual sessions, conflicts, attendance exceptions, capacity, and quality' },
+      relationships: { title: 'Guardians & Parents', caption: 'Consent, secure Telegram linking, visibility, messages, and notification delivery' },
+      intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
+      platform: { title: 'Education Business Platform', caption: 'Student lifecycle, branch performance, unit economics, governed automation, and reviewable AI assistance' },
+      operations: { title: 'Operations Finance', caption: 'Cashier, expenses, contribution economics, compensation, and payroll' },
       os: { title: osCenterLabel, caption: 'Automations, actions, reports, and learning signals' },
     };
     return allowedOfficeViews
@@ -1044,6 +1122,7 @@ const App = () => {
   const studentClassroomId = useMemo(() => studentClassroomIdFromPath(location.pathname), [location.pathname]);
   const isTeacherWorkspaceRoute = !!officeView || !!officeClassroomId;
   const isStudentWorkspaceRoute = !!studentPortalView || !!studentClassroomId;
+  const isGuardianWorkspaceRoute = normalizedPath === '/academy/parent' || normalizedPath.startsWith('/academy/parent/');
   const hasTeacherAccess = teacherDirectoryAcademies.length > 0;
   const hasOfficeWorkspaceAccess = hasTeacherAccess || Boolean(selectedAcademyAccess);
   const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
@@ -1292,8 +1371,16 @@ const App = () => {
       const meResponse = await getMe();
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
       const teacherMembershipRows = memberships.filter(isAcademyStaffMembership);
+      if (isGuardianWorkspaceRoute) {
+        setMe(meResponse);
+        setAcademies([]);
+        setStudentDashboard(emptyStudentDashboard());
+        setAcademyId('');
+        setState('ready');
+        return;
+      }
       let academyList: TeacherStudioAcademy[] = [];
-      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isServiceLanding;
+      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isServiceLanding;
       if (shouldAttemptTeacherData) {
         try {
           academyList = await teacherStudioAcademies();
@@ -1368,6 +1455,7 @@ const App = () => {
     isAcademyDirectory,
     isServiceLanding,
     isStudentWorkspaceRoute,
+    isGuardianWorkspaceRoute,
     isTeacherWorkspaceRoute,
     loadAcademyData,
     loadStudentData,
@@ -1443,10 +1531,10 @@ const App = () => {
     ) {
       return;
     }
-    if (isTeacherWorkspaceRoute || isStudentWorkspaceRoute) return;
+    if (isTeacherWorkspaceRoute || isStudentWorkspaceRoute || isGuardianWorkspaceRoute) return;
     const nextPath = '/academies';
     navigate(location.search ? `${nextPath}${location.search}` : nextPath, { replace: true });
-  }, [academyClassroomLandingId, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, location.pathname, location.search, navigate, state]);
+  }, [academyClassroomLandingId, isGuardianWorkspaceRoute, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, location.pathname, location.search, navigate, state]);
 
   const refresh = useCallback(async () => {
     if (isStudentWorkspaceRoute) {
@@ -2190,6 +2278,25 @@ const App = () => {
     }
   };
 
+  const setClassroomEnrollmentStatus = async (
+    membershipId: string,
+    membershipStatus: TeacherStudioClassroomMembership['status'],
+  ) => {
+    if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await teacherStudioSetEnrollmentStatus(academyId, { id: membershipId, membership_status: membershipStatus });
+      await loadAcademyData(academyId, selectedConversationId);
+      setNotice(`Enrollment moved to ${membershipStatus}.`);
+    } catch (err) {
+      setError(normalizeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const selectConversation = async (conversationId: string) => {
     setSelectedConversationId(conversationId);
     if (!academyId || !conversationId) {
@@ -2704,6 +2811,10 @@ const App = () => {
         <UpdatesButton />
       </>
     );
+  }
+
+  if (state === 'ready' && isGuardianWorkspaceRoute) {
+    return <><GuardianPortalView onSignOut={signOut} /><UpdatesButton /></>;
   }
 
   if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasOfficeWorkspaceAccess || allowedOfficeViews.length === 0)) {
@@ -4498,6 +4609,16 @@ const App = () => {
             {academyHomeLabel}
           </button>
         ) : null}
+        {officeCanOpen('business') ? (
+          <button
+            className={`nav-btn ${officeView === 'business' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('business')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
+            Admissions
+          </button>
+        ) : null}
         {officeCanOpen('classrooms') ? (
           <button
             className={`nav-btn ${officeView === 'classrooms' || !!officeClassroomId ? 'is-active' : ''}`}
@@ -4715,6 +4836,94 @@ const App = () => {
             statusClass={statusClass}
           />
         ) : null}
+        {officeCanOpen('commercial') ? (
+          <button
+            className={`nav-btn ${officeView === 'commercial' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('commercial')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><ReceiptText size={17} /></span>
+            Commercial Core
+          </button>
+        ) : null}
+        {officeCanOpen('academic') ? (
+          <button
+            className={`nav-btn ${officeView === 'academic' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('academic')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><CalendarDays size={17} /></span>
+            Academic Operations
+          </button>
+        ) : null}
+        {officeCanOpen('relationships') ? (
+          <button
+            className={`nav-btn ${officeView === 'relationships' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('relationships')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><UsersRound size={17} /></span>
+            Guardians & Parents
+          </button>
+        ) : null}
+        {officeCanOpen('operations') ? (
+          <button
+            className={`nav-btn ${officeView === 'operations' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('operations')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><Banknote size={17} /></span>
+            Operations Finance
+          </button>
+        ) : null}
+        {officeCanOpen('intelligence') ? (
+          <button
+            className={`nav-btn ${officeView === 'intelligence' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('intelligence')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><BarChart3 size={17} /></span>
+            Retention & Intelligence
+          </button>
+        ) : null}
+        {officeCanOpen('platform') ? (
+          <button
+            className={`nav-btn ${officeView === 'platform' ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => navigate(academyScopedPath(currentOfficePath('platform')))}
+          >
+            <span className="nav-icon" aria-hidden="true"><Sparkles size={17} /></span>
+            Business Platform
+          </button>
+        ) : null}
+
+        {officeView === 'business' && officeCanOpen('business') ? (
+          <BusinessFoundationView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'commercial' && officeCanOpen('commercial') ? (
+          <CommercialCoreView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'academic' && officeCanOpen('academic') ? (
+          <AcademicOperationsView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'relationships' && officeCanOpen('relationships') ? (
+          <GuardianRelationshipsView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'intelligence' && officeCanOpen('intelligence') ? (
+          <IntelligenceOperationsView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'platform' && officeCanOpen('platform') ? (
+          <BusinessPlatformView academyId={academyId} formatDate={formatDate} />
+        ) : null}
+
+        {officeView === 'operations' && officeCanOpen('operations') ? (
+          <OperationsFinanceView academyId={academyId} formatDate={formatDate} />
+        ) : null}
 
         {officeView === 'contacts' && officeCanOpen('contacts') ? (
           <ContactsView
@@ -4829,6 +5038,7 @@ const App = () => {
             onSaveLanding={submitClassroomLanding}
             busy={busy}
             canManageLanding={canManageClassrooms}
+            canManageRoster={canManageRoster}
             educationOS={educationOS}
             onResolveActionItem={resolveLmsActionItem}
             onOpenActionItem={openLmsActionItem}
@@ -4836,6 +5046,7 @@ const App = () => {
             canIssueCertificates={canIssueCertificates}
             formatDate={formatDate}
             statusClass={statusClass}
+            onSetEnrollmentStatus={setClassroomEnrollmentStatus}
             onBack={() => navigate(academyScopedPath(currentOfficePath('classrooms')))}
           />
         ) : null}

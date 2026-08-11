@@ -18,7 +18,9 @@ import {
   type TeacherStudioMessage,
   type TeacherStudioStudentAssignment,
   type TeacherStudioStudentBillingItem,
+  type TeacherStudioStudentCommercialAccount,
 } from '../../lib/client';
+import { StudentCurriculumView } from './StudentCurriculumView';
 
 type StudentClassroomViewProps = {
   classroom: TeacherStudioClassroom | null;
@@ -30,7 +32,7 @@ type StudentClassroomViewProps = {
   onBack: () => void;
 };
 
-type StudentLmsTab = 'overview' | 'resources' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
+type StudentLmsTab = 'overview' | 'curriculum' | 'resources' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
 type StudentFocusItem = {
   key: string;
   label: string;
@@ -76,6 +78,7 @@ export const StudentClassroomView = ({
   const [assignments, setAssignments] = useState<TeacherStudioStudentAssignment[]>([]);
   const [attendance, setAttendance] = useState<TeacherStudioAttendance[]>([]);
   const [billingItems, setBillingItems] = useState<TeacherStudioStudentBillingItem[]>([]);
+  const [billingAccounts, setBillingAccounts] = useState<TeacherStudioStudentCommercialAccount[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -101,7 +104,8 @@ export const StudentClassroomView = ({
       setRoom(roomData);
       setAssignments(assignmentData.assignments);
       setAttendance(attendanceData.attendance);
-      setBillingItems(billingData.filter((item) => item.classroom_id === classroom.id));
+      setBillingItems(billingData.items.filter((item) => item.classroom_id === classroom.id));
+      setBillingAccounts(billingData.accounts);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -160,6 +164,33 @@ export const StudentClassroomView = ({
     return Math.round((present / attendance.length) * 100);
   }, [attendance]);
 
+  const commercialAccount = useMemo(
+    () => billingAccounts.find((account) => account.academy_id === classroom?.academy_id) ?? null,
+    [billingAccounts, classroom?.academy_id],
+  );
+
+  const classroomSubscriptions = useMemo(
+    () => commercialAccount?.subscriptions ?? [],
+    [commercialAccount],
+  );
+
+  const classroomCharges = useMemo(
+    () => commercialAccount?.charges ?? [],
+    [commercialAccount],
+  );
+
+  const classroomLedger = useMemo(
+    () => commercialAccount?.ledger_entries ?? [],
+    [commercialAccount],
+  );
+
+  const commercialCurrency = classroomCharges[0]?.currency
+    ?? classroomSubscriptions[0]?.currency
+    ?? commercialAccount?.balances[0]?.currency
+    ?? 'UZS';
+  const classroomOutstanding = classroomCharges.reduce((sum, charge) => sum + charge.outstanding_amount, 0);
+  const classroomPaid = classroomCharges.reduce((sum, charge) => sum + charge.allocated_amount, 0);
+
   const focusItems = useMemo<StudentFocusItem[]>(() => {
     const now = Date.now();
     const openAssignments = assignments
@@ -174,6 +205,7 @@ export const StudentClassroomView = ({
       });
     const nextAssignment = openAssignments[0] ?? null;
     const unpaidBilling = billingItems.find((item) => !item.paid) ?? null;
+    const overdueCharge = classroomCharges.find((charge) => charge.outstanding_amount > 0 && charge.days_overdue > 0) ?? null;
     const nextResource = publishedResources.find((resource) => !completedResourceIds.has(resource.id)) ?? null;
     const gradedFeedback = assignments.find((assignment) => assignment.submission?.status === 'graded' && assignment.submission.notes) ?? null;
     const recentAttendanceRisk = attendanceRate !== null && attendanceRate < 75;
@@ -203,6 +235,17 @@ export const StudentClassroomView = ({
           : `${money(unpaidBilling.offer.price_amount, unpaidBilling.offer.currency)} due`,
         tab: 'billing',
         tone: unpaidBilling.last_payment?.status === 'pending' ? 'normal' : 'urgent',
+      });
+    }
+
+    if (overdueCharge && !unpaidBilling) {
+      items.push({
+        key: `charge:${overdueCharge.id}`,
+        label: 'Overdue balance',
+        title: overdueCharge.description ?? overdueCharge.charge_number,
+        detail: `${money(overdueCharge.outstanding_amount, overdueCharge.currency)} outstanding`,
+        tab: 'billing',
+        tone: 'urgent',
       });
     }
 
@@ -251,7 +294,7 @@ export const StudentClassroomView = ({
     }
 
     return items.slice(0, 4);
-  }, [assignments, attendanceRate, billingItems, completedResourceIds, formatDate, publishedResources]);
+  }, [assignments, attendanceRate, billingItems, classroomCharges, completedResourceIds, formatDate, publishedResources]);
 
   const openSubmission = (assignment: TeacherStudioStudentAssignment) => {
     setSubmitTarget(assignment);
@@ -365,6 +408,7 @@ export const StudentClassroomView = ({
 
   const tabs: Array<{ id: StudentLmsTab; label: string }> = [
     { id: 'overview', label: 'Overview' },
+    { id: 'curriculum', label: 'Courses' },
     { id: 'resources', label: 'Resources' },
     { id: 'assignments', label: 'Assignments' },
     { id: 'grades', label: 'Grades' },
@@ -515,6 +559,10 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
+      {activeTab === 'curriculum' ? (
+        <StudentCurriculumView academyId={classroom.academy_id} classroomId={classroom.id} />
+      ) : null}
+
       {activeTab === 'assignments' ? (
         <section className="grid two">
           <div className="panel">
@@ -532,6 +580,7 @@ export const StudentClassroomView = ({
                   <div className="small muted">
                     {assignment.due_at ? `Due ${formatDate(assignment.due_at)} | ` : ''}
                     {assignment.max_score ? `${assignment.max_score} points` : assignment.assignment_type}
+                    {assignment.attempts_allowed ? ` | Attempt ${assignment.submission?.attempt_number ?? 0}/${assignment.attempts_allowed}` : ''}
                   </div>
                   <div className="row wrap">
                     {assignment.experience_url ? <a className="small-btn" href={assignment.experience_url} target="_blank" rel="noreferrer">Open task</a> : null}
@@ -655,32 +704,115 @@ export const StudentClassroomView = ({
       ) : null}
 
       {activeTab === 'billing' ? (
-        <section className="grid two">
-          {billingItems.map((item) => (
-            <article className="panel" key={`${item.classroom_id}-${item.offer.id}`}>
-              <div className="row between wrap">
-                <div>
-                  <h3>{item.offer.name}</h3>
-                  <p className="small muted">{money(item.offer.price_amount, item.offer.currency)}</p>
-                </div>
-                <span className={item.paid ? 'status status--ok' : 'status status--pending'}>
-                  {item.paid ? 'paid' : item.last_payment?.status ?? 'due'}
-                </span>
+        <section className="grid">
+          <div className="panel">
+            <div className="row between wrap">
+              <div>
+                <span className="eyebrow">Student account</span>
+                <h3>Billing statement</h3>
+                <p className="muted">Your agreements, charges, payments, credits, and outstanding balance at {academyName}.</p>
               </div>
-              {item.offer.description ? <p>{item.offer.description}</p> : null}
-              {!item.paid ? (
-                <button
-                  className="primary-btn"
-                  type="button"
-                  disabled={payingOfferId === item.offer.id}
-                  onClick={() => void payTuition(item)}
-                >
-                  {payingOfferId === item.offer.id ? 'Redirecting...' : 'Pay with Click'}
-                </button>
-              ) : null}
-            </article>
-          ))}
-          {billingItems.length === 0 ? <div className="panel">No tuition due for this classroom.</div> : null}
+              <span className={classroomOutstanding > 0 ? 'status status--pending' : 'status status--ok'}>
+                {classroomOutstanding > 0 ? 'payment due' : 'account current'}
+              </span>
+            </div>
+            <div className="commercial-core__stats">
+              <article><strong>{money(classroomOutstanding, commercialCurrency)}</strong><span>Outstanding balance</span></article>
+              <article><strong>{money(classroomPaid, commercialCurrency)}</strong><span>Payments allocated</span></article>
+              <article><strong>{classroomCharges.length}</strong><span>Charges</span></article>
+              <article><strong>{classroomSubscriptions.length}</strong><span>Agreements</span></article>
+            </div>
+          </div>
+
+          {classroomSubscriptions.length > 0 ? (
+            <div className="panel">
+              <h3>Tuition agreements</h3>
+              <div className="subscription-cards">
+                {classroomSubscriptions.map((subscription) => (
+                  <article key={subscription.id}>
+                    <header>
+                      <strong>{money(subscription.agreed_amount, subscription.currency)}</strong>
+                      <span className={statusClass(subscription.status)}>{subscription.status}</span>
+                    </header>
+                    <p>{subscription.billing_cycle.replace(/_/g, ' ')} · starts {formatDate(subscription.starts_on)}</p>
+                    <small>
+                      List {money(subscription.list_amount, subscription.currency)}
+                      {subscription.discount_amount > 0 ? ` · discount ${money(subscription.discount_amount, subscription.currency)}` : ''}
+                    </small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="panel">
+            <h3>Charges</h3>
+            <div className="finance-table-wrap">
+              <table className="finance-table">
+                <thead><tr><th>Charge</th><th>Issued / due</th><th>Net</th><th>Paid</th><th>Outstanding</th><th>Status</th></tr></thead>
+                <tbody>
+                  {classroomCharges.map((charge) => (
+                    <tr key={charge.id}>
+                      <td><strong>{charge.charge_number}</strong><div className="small muted">{charge.description ?? charge.charge_type}</div></td>
+                      <td>{formatDate(charge.issued_on)} / {formatDate(charge.due_on)}</td>
+                      <td>{money(charge.effective_amount, charge.currency)}</td>
+                      <td className="amount-credit">{money(charge.allocated_amount, charge.currency)}</td>
+                      <td className={charge.outstanding_amount > 0 ? 'amount-due' : ''}>{money(charge.outstanding_amount, charge.currency)}</td>
+                      <td><span className={statusClass(charge.calculated_status)}>{charge.calculated_status.replace(/_/g, ' ')}</span></td>
+                    </tr>
+                  ))}
+                  {classroomCharges.length === 0 ? <tr><td colSpan={6}>No account charges yet.</td></tr> : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="panel">
+            <h3>Payments and credits</h3>
+            <div className="finance-table-wrap">
+              <table className="finance-table">
+                <thead><tr><th>Date</th><th>Entry</th><th>Reason</th><th>Amount</th></tr></thead>
+                <tbody>
+                  {classroomLedger.map((entry) => (
+                    <tr key={entry.id}>
+                      <td>{formatDate(entry.effective_at)}</td>
+                      <td>{entry.entry_type.replace(/_/g, ' ')}</td>
+                      <td>{entry.reason ?? '-'}</td>
+                      <td className={entry.amount < 0 ? 'amount-credit' : 'amount-due'}>{money(Math.abs(entry.amount), entry.currency)}</td>
+                    </tr>
+                  ))}
+                  {classroomLedger.length === 0 ? <tr><td colSpan={4}>No payments or credits recorded yet.</td></tr> : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="grid two">
+            {billingItems.map((item) => (
+              <article className="panel" key={`${item.classroom_id}-${item.offer.id}`}>
+                <div className="row between wrap">
+                  <div>
+                    <h3>{item.offer.name}</h3>
+                    <p className="small muted">{money(item.offer.price_amount, item.offer.currency)}</p>
+                  </div>
+                  <span className={item.paid ? 'status status--ok' : 'status status--pending'}>
+                    {item.paid ? 'paid' : item.last_payment?.status ?? 'due'}
+                  </span>
+                </div>
+                {item.offer.description ? <p>{item.offer.description}</p> : null}
+                {!item.paid ? (
+                  <button
+                    className="primary-btn"
+                    type="button"
+                    disabled={payingOfferId === item.offer.id}
+                    onClick={() => void payTuition(item)}
+                  >
+                    {payingOfferId === item.offer.id ? 'Redirecting...' : 'Pay with Click'}
+                  </button>
+                ) : null}
+              </article>
+            ))}
+          </div>
         </section>
       ) : null}
 

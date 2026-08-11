@@ -16,17 +16,38 @@ export type MeResponse = {
 export type TeacherStudioAccessProfile = {
   role: string;
   source: 'tenant' | 'staff' | 'center' | string;
-  scope: 'academy' | 'assigned_classrooms' | string;
+  scope: 'academy' | 'assigned_branches' | 'assigned_classrooms' | string;
   classroom_ids: string[];
+  branch_ids: string[];
   center_tenant_id?: string | null;
   permissions: {
     viewAcademy?: boolean;
     manageAcademy?: boolean;
     manageStaff?: boolean;
     manageFinance?: boolean;
+    viewFinance?: boolean;
+    collectFinance?: boolean;
+    adjustFinance?: boolean;
+    refundFinance?: boolean;
+    discountFinance?: boolean;
+    reconcileFinance?: boolean;
+    manageCashier?: boolean;
+    viewEconomics?: boolean;
+    viewPayroll?: boolean;
+    calculatePayroll?: boolean;
+    approvePayroll?: boolean;
+    payPayroll?: boolean;
     manageOffers?: boolean;
     manageBranding?: boolean;
     manageAutomation?: boolean;
+    viewAutomation?: boolean;
+    viewBranches?: boolean;
+    manageBranches?: boolean;
+    viewAdmissions?: boolean;
+    manageAdmissions?: boolean;
+    assignAdmissions?: boolean;
+    exportAdmissions?: boolean;
+    manageTrialFeedback?: boolean;
     viewContacts?: boolean;
     manageContacts?: boolean;
     viewClassrooms?: boolean;
@@ -43,6 +64,19 @@ export type TeacherStudioAccessProfile = {
     gradeSubmissions?: boolean;
     markAttendance?: boolean;
     manageSchedule?: boolean;
+    manageAcademicOperations?: boolean;
+    manageGuardians?: boolean;
+    communicateGuardians?: boolean;
+    manageRetention?: boolean;
+    viewBusinessIntelligence?: boolean;
+    viewAcademicReports?: boolean;
+    viewOperationalReports?: boolean;
+    viewFinancialReports?: boolean;
+    viewStaffPerformance?: boolean;
+    viewRisk?: boolean;
+    manageImports?: boolean;
+    manageLocalization?: boolean;
+    useAcademyAI?: boolean;
     manageResources?: boolean;
     viewReports?: boolean;
     issueCertificates?: boolean;
@@ -115,7 +149,13 @@ export type TeacherStudioClassroomMembership = {
   classroom_id: string;
   contact_id: string;
   role: string;
+  status: 'invited' | 'active' | 'paused' | 'completed' | 'withdrawn' | 'expired' | 'transferred' | string;
   joined_at: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  paused_at?: string | null;
+  withdrawn_at?: string | null;
+  expires_at?: string | null;
   metadata: Json;
 };
 
@@ -415,6 +455,11 @@ export type TeacherStudioAssignment = {
   id: string;
   academy_id: string;
   classroom_id: string;
+  course_id?: string | null;
+  module_id?: string | null;
+  lesson_id?: string | null;
+  grade_category_id?: string | null;
+  rubric_id?: string | null;
   title: string;
   description: string | null;
   assignment_type: string;
@@ -426,11 +471,179 @@ export type TeacherStudioAssignment = {
   position: number;
   max_score: number | null;
   score_weight: number;
+  attempts_allowed?: number;
+  allow_late_submission?: boolean;
   status: string;
   metadata: Json;
   created_by: string | null;
   created_at: string;
   updated_at?: string;
+};
+
+export type TeacherStudioStudentCommercialAccount = {
+  academy_id: string;
+  contact_id: string;
+  subscriptions: AcademySubscription[];
+  charges: AcademyCharge[];
+  ledger_entries: AcademyLedgerEntry[];
+  balances: AcademyAccountBalance[];
+};
+
+export type TeacherStudioStudentBilling = {
+  items: TeacherStudioStudentBillingItem[];
+  accounts: TeacherStudioStudentCommercialAccount[];
+};
+
+export type TeacherStudioCourse = {
+  id: string;
+  academy_id: string;
+  code: string | null;
+  title: string;
+  description: string | null;
+  level: string | null;
+  estimated_minutes: number;
+  status: 'draft' | 'published' | 'archived' | string;
+  published_at: string | null;
+  metadata: Json;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type TeacherStudioCourseModule = {
+  id: string;
+  academy_id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  position: number;
+  status: string;
+  unlock_rule: Json;
+  metadata: Json;
+};
+
+export type TeacherStudioLesson = {
+  id: string;
+  academy_id: string;
+  course_id: string;
+  module_id: string;
+  prerequisite_lesson_id: string | null;
+  title: string;
+  summary: string | null;
+  content: Json;
+  position: number;
+  estimated_minutes: number;
+  status: string;
+  available_from: string | null;
+  completion_rule: Json;
+  metadata: Json;
+  locked?: boolean;
+};
+
+export type TeacherStudioClassroomCourse = {
+  id: string;
+  academy_id: string;
+  classroom_id: string;
+  course_id: string;
+  status: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  assigned_at: string;
+  metadata?: Json;
+};
+
+export type TeacherStudioCurriculum = {
+  courses: TeacherStudioCourse[];
+  modules: TeacherStudioCourseModule[];
+  lessons: TeacherStudioLesson[];
+  classroom_courses: TeacherStudioClassroomCourse[];
+};
+
+export type TeacherStudioQuiz = {
+  id: string;
+  academy_id: string;
+  course_id: string;
+  lesson_id: string | null;
+  title: string;
+  instructions: string | null;
+  status: string;
+  passing_score: number;
+  attempts_allowed: number;
+  time_limit_seconds: number | null;
+  shuffle_questions: boolean;
+  show_answers_after: boolean;
+  locked?: boolean;
+  metadata: Json;
+};
+
+export type TeacherStudioQuizQuestion = {
+  id: string;
+  academy_id?: string;
+  quiz_id: string;
+  question_type: 'single_choice' | 'multiple_choice' | 'true_false' | 'short_text' | 'essay' | string;
+  prompt: string;
+  options: unknown[];
+  correct_answer?: unknown;
+  points: number;
+  position: number;
+  explanation?: string | null;
+  metadata: Json;
+};
+
+export type TeacherStudioQuizAttempt = {
+  id: string;
+  classroom_id: string;
+  course_id: string;
+  quiz_id: string;
+  contact_id: string;
+  attempt_number: number;
+  status: string;
+  result?: Json;
+  score: number | null;
+  max_score: number | null;
+  percentage: number | null;
+  passed: boolean | null;
+  feedback: string | null;
+  started_at: string;
+  submitted_at: string | null;
+  graded_at: string | null;
+};
+
+export type TeacherStudioGradeCategory = {
+  id: string;
+  academy_id: string;
+  classroom_id: string;
+  name: string;
+  weight: number;
+  position: number;
+  drop_lowest: number;
+  metadata: Json;
+};
+
+export type TeacherStudioRubric = {
+  id: string;
+  academy_id: string;
+  title: string;
+  description: string | null;
+  criteria: unknown[];
+  status: string;
+  metadata: Json;
+};
+
+export type TeacherStudioStudentCurriculum = TeacherStudioCurriculum & {
+  academy_id: string;
+  classroom_id: string;
+  contact_id: string;
+  progress: Array<{
+    id: string;
+    lesson_id: string;
+    status: string;
+    started_at: string | null;
+    completed_at: string | null;
+    time_spent_seconds: number;
+  }>;
+  quizzes: TeacherStudioQuiz[];
+  questions: TeacherStudioQuizQuestion[];
+  attempts: TeacherStudioQuizAttempt[];
 };
 
 export type TeacherStudioSubmission = {
@@ -444,10 +657,12 @@ export type TeacherStudioSubmission = {
   score: number | null;
   max_score: number | null;
   status: string;
+  attempt_number?: number;
   submitted_at: string | null;
   graded_at: string | null;
   graded_by?: string | null;
   notes: string | null;
+  feedback?: Json;
   submission_content?: string | null;
   submission_url?: string | null;
   signed_url?: string | null;
@@ -458,6 +673,7 @@ export type TeacherStudioSubmission = {
 export type TeacherStudioGradebook = {
   classroom_id: string;
   assignments: TeacherStudioAssignment[];
+  grade_categories?: TeacherStudioGradeCategory[];
   rows: Array<{
     contact_id: string;
     first_name: string;
@@ -465,8 +681,9 @@ export type TeacherStudioGradebook = {
     email: string | null;
     status: string;
     role: string;
-    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
+    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; feedback?: Json; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
     composite_score: number | null;
+    category_scores?: Record<string, number>;
     submitted_count: number;
     total_assignments: number;
   }>;
@@ -967,6 +1184,353 @@ export const teacherStudioStudentDashboard = async (): Promise<TeacherStudioStud
   return callTeacherStudio<TeacherStudioStudentDashboard>({ action: 'student-dashboard' });
 };
 
+export type AcademyBranch = {
+  id: string;
+  academy_id: string;
+  branch_key: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  timezone: string;
+  currency: string;
+  capacity: number | null;
+  is_default: boolean;
+  is_active: boolean;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AcademyRoom = {
+  id: string;
+  academy_id: string;
+  branch_id: string;
+  room_key: string;
+  name: string;
+  capacity: number;
+  room_type: 'classroom' | 'lab' | 'meeting' | 'office' | 'online' | 'other';
+  is_active: boolean;
+  features: Json;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AcademyLeadSource = {
+  id: string;
+  academy_id: string;
+  source_key: string;
+  label_i18n: Record<string, string>;
+  category: string;
+  is_system: boolean;
+  is_active: boolean;
+  position: number;
+};
+
+export type AcademyPipelineStage = {
+  id: string;
+  academy_id: string;
+  pipeline_id: string;
+  stage_key: string;
+  label_i18n: Record<string, string>;
+  position: number;
+  probability_percent: number;
+  terminal_kind: 'won' | 'lost' | null;
+  is_active: boolean;
+};
+
+export type AcademyPipelineTransition = {
+  id: string;
+  academy_id: string;
+  pipeline_id: string;
+  from_stage_id: string;
+  to_stage_id: string;
+  is_active: boolean;
+  requires_reason: boolean;
+};
+
+export type AcademyLead = {
+  id: string;
+  academy_id: string;
+  branch_id: string | null;
+  preferred_branch_id: string | null;
+  pipeline_id: string;
+  current_stage_id: string;
+  source_id: string | null;
+  assigned_user_id: string | null;
+  responsible_user_id: string | null;
+  full_name: string;
+  phone: string | null;
+  telegram: string | null;
+  email: string | null;
+  parent_name: string | null;
+  parent_phone: string | null;
+  age: number | null;
+  interested_course: string | null;
+  preferred_schedule: string | null;
+  expected_price: number | null;
+  currency: string;
+  campaign: string | null;
+  referral_source: string | null;
+  notes: string | null;
+  tags: Json;
+  estimated_probability: number | null;
+  status: 'open' | 'lost' | 'converted';
+  lost_reason: string | null;
+  last_contacted_at: string | null;
+  next_follow_up_at: string | null;
+  converted_at: string | null;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AcademyLeadActivity = {
+  id: string;
+  academy_id: string;
+  lead_id: string;
+  activity_type: string;
+  method: string | null;
+  status: 'planned' | 'completed' | 'cancelled' | 'missed';
+  assigned_user_id: string | null;
+  due_at: string | null;
+  completed_at: string | null;
+  outcome: string | null;
+  notes: string | null;
+  next_follow_up_at: string | null;
+  created_at: string;
+};
+
+export type AcademyTrialLesson = {
+  id: string;
+  academy_id: string;
+  lead_id: string;
+  branch_id: string;
+  room_id: string | null;
+  classroom_id: string | null;
+  teacher_user_id: string | null;
+  starts_at: string;
+  ends_at: string;
+  status: 'scheduled' | 'confirmed' | 'attended' | 'missed' | 'cancelled' | 'rescheduled' | 'converted';
+  feedback: string | null;
+  recommended_course: string | null;
+  recommended_level: string | null;
+  next_step: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AcademyLeadConversion = {
+  id: string;
+  academy_id: string;
+  lead_id: string;
+  contact_id: string;
+  classroom_id: string | null;
+  trial_id: string | null;
+  source_id: string | null;
+  salesperson_user_id: string | null;
+  expected_value: number | null;
+  currency: string;
+  converted_at: string;
+};
+
+export type AcademyBusinessFoundation = {
+  generated_at: string;
+  access?: TeacherStudioAccessProfile;
+  branches: AcademyBranch[];
+  rooms: AcademyRoom[];
+  sources: AcademyLeadSource[];
+  stages: AcademyPipelineStage[];
+  transitions: AcademyPipelineTransition[];
+  leads: AcademyLead[];
+  activities: AcademyLeadActivity[];
+  trials: AcademyTrialLesson[];
+  conversions: AcademyLeadConversion[];
+  classrooms: Array<Pick<TeacherStudioClassroom, 'id' | 'name' | 'is_active'>>;
+  staff: Array<Pick<TeacherStudioStaff, 'id' | 'user_id' | 'display_name' | 'role' | 'is_active'>>;
+};
+
+export type AcademyPricingPlan = {
+  id: string; academy_id: string; branch_id: string | null; classroom_id: string | null;
+  legacy_offer_id: string | null; plan_key: string; name: string; pricing_model: string;
+  billing_cycle: string; base_amount: number; currency: string; lessons_included: number | null;
+  teaching_hours_included: number | null; duration_days: number | null; installment_count: number | null;
+  is_active: boolean; metadata: Json; created_at: string; updated_at: string;
+};
+
+export type AcademySubscription = {
+  id: string; academy_id: string; contact_id: string; branch_id: string | null; classroom_id: string | null;
+  pricing_plan_id: string; entitlement_id: string | null; status: 'draft' | 'active' | 'paused' | 'overdue' | 'cancelled' | 'expired' | 'completed';
+  starts_on: string; ends_on: string | null; billing_cycle: string; billing_anchor_day: number | null;
+  list_amount: number; discount_amount: number; agreed_amount: number; currency: string; auto_renew: boolean;
+  renewal_notice_days: number; cancelled_at: string | null; cancellation_reason: string | null;
+  completed_at: string | null; metadata: Json; created_at: string; updated_at: string;
+};
+
+export type AcademySubscriptionFreeze = {
+  id: string; academy_id: string; subscription_id: string; starts_on: string; ends_on: string;
+  reason: string; status: 'scheduled' | 'active' | 'completed' | 'cancelled';
+  created_by: string | null; created_at: string;
+};
+
+export type AcademyPricingAdjustment = {
+  id: string; academy_id: string; subscription_id: string; adjustment_type: string;
+  percentage_basis_points: number | null; amount: number; original_amount: number; final_amount: number;
+  reason: string; promo_code: string | null; starts_on: string | null; ends_on: string | null;
+  applied_by: string; approved_by: string | null; metadata: Json; created_at: string;
+};
+
+export type AcademyCharge = {
+  id: string; academy_id: string; contact_id: string; subscription_id: string | null; branch_id: string | null;
+  classroom_id: string | null; charge_number: string; cycle_key: string | null; charge_type: string;
+  service_period_start: string | null; service_period_end: string | null; issued_on: string; due_on: string;
+  original_amount: number; discount_amount: number; net_amount: number; currency: string; status: string;
+  description: string | null; metadata: Json; created_at: string; updated_at: string;
+  allocated_amount: number; adjustment_amount: number; effective_amount: number; outstanding_amount: number; calculated_status: string; days_overdue: number; aging_bucket: string;
+};
+
+export type AcademyPaymentAllocation = {
+  id: string; academy_id: string; payment_id: string; charge_id: string; amount: number; currency: string;
+  allocation_kind: 'application' | 'reversal'; reverses_allocation_id: string | null;
+  allocated_by: string; allocated_at: string; metadata: Json;
+};
+
+export type AcademyLedgerEntry = {
+  id: string; academy_id: string; contact_id: string; subscription_id: string | null; charge_id: string | null;
+  payment_id: string | null; entry_type: string; amount: number; currency: string; effective_at: string;
+  reason: string | null; created_by: string | null; metadata: Json; created_at: string;
+};
+
+export type AcademyAccountBalance = {
+  academy_id: string; contact_id: string; currency: string; balance: number; debits: number; credits: number; last_entry_at: string;
+};
+
+export type AcademyDebtCase = {
+  id: string; academy_id: string; contact_id: string; subscription_id: string | null; branch_id: string | null;
+  status: string; responsible_user_id: string | null; restriction_state: string; collection_notes: string | null;
+  opened_at: string; resolved_at: string | null; metadata: Json; created_at: string; updated_at: string;
+};
+
+export type AcademyPaymentPromise = {
+  id: string; academy_id: string; debt_case_id: string; amount: number; currency: string; promised_for: string;
+  status: string; notes: string | null; created_by: string | null; created_at: string;
+};
+
+export type AcademyPaymentReconciliation = {
+  id: string; academy_id: string; academy_payment_id: string | null; provider: string; provider_transaction_id: string;
+  provider_event_id: string; event_type: string; amount: number | null; currency: string | null; status: string;
+  payload_hash: string; received_at: string; metadata: Json;
+};
+
+export type AcademyCommercialCore = {
+  generated_at: string; access?: TeacherStudioAccessProfile; pricing_plans: AcademyPricingPlan[];
+  subscriptions: AcademySubscription[]; subscription_freezes: AcademySubscriptionFreeze[]; pricing_adjustments: AcademyPricingAdjustment[]; charges: AcademyCharge[];
+  payments: TeacherStudioPayment[]; allocations: AcademyPaymentAllocation[]; ledger_entries: AcademyLedgerEntry[];
+  account_balances: AcademyAccountBalance[]; debt_cases: AcademyDebtCase[]; payment_promises: AcademyPaymentPromise[];
+  collection_events: Array<Record<string, unknown>>; reconciliations: AcademyPaymentReconciliation[];
+  contacts: Array<Pick<TeacherStudioContact, 'id' | 'first_name' | 'last_name' | 'email' | 'phone' | 'status' | 'lifecycle_stage'>>;
+  branches: Array<Pick<AcademyBranch, 'id' | 'name' | 'is_active' | 'currency'>>;
+  classrooms: Array<Pick<TeacherStudioClassroom, 'id' | 'name' | 'is_active'>>;
+};
+
+export type AcademyCashbox = { id:string; academy_id:string; branch_id:string; name:string; currency:string; is_active:boolean };
+export type AcademyCashierShift = { id:string; academy_id:string; cashbox_id:string; cashier_user_id:string; opened_at:string; closed_at:string|null; opening_balance:number; expected_closing_balance:number|null; counted_closing_balance:number|null; discrepancy:number|null; status:string };
+export type AcademyCashMovement = { id:string; academy_id:string; shift_id:string; direction:string; movement_type:string; payment_method:string; amount:number; currency:string; occurred_at:string; counterparty:string|null; reason:string };
+export type AcademyExpenseCategory = { id:string; academy_id:string; category_key:string; name:string; kind:string; is_active:boolean };
+export type AcademyExpense = { id:string; academy_id:string; branch_id:string|null; classroom_id:string|null; category_id:string; expense_date:string; amount:number; currency:string; vendor:string|null; description:string; payment_method:string; status:string; receipt_ref:string|null };
+export type AcademyCompensationRule = { id:string; academy_id:string; staff_id:string; branch_id:string|null; rule_type:string; name:string; currency:string; fixed_amount:number; unit_rate:number; percentage_basis_points:number; performance_bonus:number; effective_from:string; effective_to:string|null; is_active:boolean; version:number };
+export type AcademyPayrollPeriod = { id:string; academy_id:string; branch_id:string|null; period_start:string; period_end:string; currency:string; status:string; calculated_at:string|null; reviewed_at:string|null; approved_at:string|null; paid_at:string|null; cancellation_reason:string|null };
+export type AcademyPayrollRow = { id:string; academy_id:string; payroll_period_id:string; staff_id:string; branch_id:string|null; compensation_rule_id:string; lessons_delivered:number; minutes_delivered:number; relevant_students:number; generated_revenue:number; generated_amount:number; adjustment_amount:number; final_payable_amount:number; currency:string; rule_snapshot:Json; inputs_snapshot:Json };
+export type AcademyContribution = { academy_id:string; currency:string; generated_revenue:number; operating_expenses:number; contribution:number; branch_id?:string; branch_name?:string; classroom_id?:string; classroom_name?:string; teacher_cost?:number; attributed_teacher_cost?:number };
+export type AcademyOperationsFinance = {
+  generated_at:string; access:TeacherStudioAccessProfile; cashboxes:AcademyCashbox[]; cashier_shifts:AcademyCashierShift[];
+  cash_movements:AcademyCashMovement[]; cash_reconciliations:Array<Record<string,unknown>>; expense_categories:AcademyExpenseCategory[];
+  expenses:AcademyExpense[]; budgets:Array<Record<string,unknown>>; lesson_deliveries:Array<Record<string,unknown>>;
+  compensation_rules:AcademyCompensationRule[]; payroll_periods:AcademyPayrollPeriod[]; payroll_rows:AcademyPayrollRow[];
+  payroll_adjustments:Array<Record<string,unknown>>; payroll_payouts:Array<Record<string,unknown>>;
+  branch_economics:AcademyContribution[]; classroom_economics:AcademyContribution[];
+  staff:Array<{id:string;email:string;display_name:string|null;role:string;classroom_ids:Json;is_active:boolean}>;
+  branches:Array<{id:string;name:string;currency:string;is_active:boolean}>; classrooms:Array<{id:string;name:string;is_active:boolean}>;
+};
+
+export type AcademyLessonSession = { id:string; academy_id:string; branch_id:string; classroom_id:string; room_id:string|null; primary_staff_id:string; calendar_id:string|null; title:string; session_type:string; delivery_mode:string; starts_at:string; ends_at:string; timezone:string; status:string; cancellation_reason:string|null; rescheduled_to_session_id:string|null; metadata:Json; created_at:string; updated_at:string };
+export type AcademyAttendanceRecord = { id:string; academy_id:string; classroom_id:string; contact_id:string; session_id:string|null; session_date:string; status:'present'|'absent'|'late'|'excused'; notes:string|null; marked_at:string };
+export type AcademyAcademicOperations = {
+  generated_at:string; access:TeacherStudioAccessProfile;
+  calendars:Array<Record<string,unknown>>; calendar_events:Array<Record<string,unknown>>; staff_availability:Array<Record<string,unknown>>; room_availability:Array<Record<string,unknown>>;
+  sessions:AcademyLessonSession[]; session_staff_assignments:Array<Record<string,unknown>>; attendance:AcademyAttendanceRecord[]; attendance_exceptions:Array<Record<string,unknown>>;
+  make_up_lessons:Array<Record<string,unknown>>; quality_reviews:Array<Record<string,unknown>>; room_capacity:Array<Record<string,unknown>>; room_peak_periods:Array<Record<string,unknown>>; classroom_capacity:Array<Record<string,unknown>>;
+  branches:Array<{id:string;name:string;is_active:boolean;currency:string}>; rooms:Array<{id:string;branch_id:string;name:string;capacity:number;is_active:boolean}>; classrooms:Array<{id:string;name:string;is_active:boolean;student_capacity:number|null}>;
+  staff:Array<{id:string;email:string;display_name:string|null;role:string;classroom_ids:Json;is_active:boolean}>; classroom_memberships:Array<{classroom_id:string;contact_id:string;role:string;status:string}>; contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;status:string}>;
+};
+export type AcademyGuardian = {id:string;academy_id:string;user_id:string|null;full_name:string;phone:string|null;email:string|null;telegram_user_id:string|null;telegram_username:string|null;telegram_verified_at:string|null;status:string;locale:string;notes:string|null;created_at:string;updated_at:string};
+export type AcademyGuardianRelationship = {id:string;academy_id:string;contact_id:string;guardian_id:string;relationship_type:string;status:string;is_primary_contact:boolean;is_financially_responsible:boolean;is_emergency_contact:boolean;can_view_status:boolean;can_view_attendance:boolean;can_view_grades:boolean;can_view_homework:boolean;can_view_schedule:boolean;can_view_payments:boolean;can_view_debt:boolean;can_view_messages:boolean;can_view_progress_reports:boolean;can_view_resources:boolean;can_view_announcements:boolean;can_message_academy:boolean;consent_status:string;consented_at:string|null;revoked_at:string|null;revocation_reason:string|null;created_at:string;updated_at:string};
+export type AcademyGuardianRelationships = {generated_at:string;access:TeacherStudioAccessProfile;guardians:AcademyGuardian[];relationships:AcademyGuardianRelationship[];consents:Array<Record<string,unknown>>;link_tokens:Array<Record<string,unknown>>;preferences:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;delivery_attempts:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>;contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;phone:string|null;status:string}>};
+export type AcademyGuardianDashboard = {guardians:Array<Record<string,unknown>>;children:Array<{academy_id:string;relationship_id:string;relationship_type:string;is_primary_contact:boolean;is_financially_responsible:boolean;permissions:Record<string,boolean>;student:{id:string;name:string;status?:string;placement_level?:string|null;placement_score?:number|null};classrooms:Array<Record<string,unknown>>;attendance:Array<Record<string,unknown>>;grades:Array<Record<string,unknown>>;homework:Array<Record<string,unknown>>;schedule:Array<Record<string,unknown>>;charges:Array<Record<string,unknown>>;balances:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;announcements:Array<Record<string,unknown>>;resources:Array<Record<string,unknown>>;progress_reports:Array<Record<string,unknown>>}>;preferences:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>};
+export type AcademyBusinessIntelligence = {
+  generated_at:string;access:TeacherStudioAccessProfile;owner:Record<string,unknown>;dashboard:Record<string,unknown>;
+  branches:Array<Record<string,unknown>>;metric_definitions:Array<Record<string,unknown>>;marketing_attribution:Array<Record<string,unknown>>;
+  unit_economics:Array<Record<string,unknown>>;teacher_performance:Array<Record<string,unknown>>;staff_performance:Array<Record<string,unknown>>;
+  student_intelligence:Array<Record<string,unknown>>;lifecycle_events:Array<Record<string,unknown>>;
+  risk_definitions:Array<Record<string,unknown>>;risk_evaluations:Array<Record<string,unknown>>;risk_signals:Array<Record<string,unknown>>;
+  interventions:Array<Record<string,unknown>>;intervention_activities:Array<Record<string,unknown>>;renewals:Array<Record<string,unknown>>;
+  renewal_activities:Array<Record<string,unknown>>;actions:Array<Record<string,unknown>>;import_jobs:Array<Record<string,unknown>>;
+  import_rows:Array<Record<string,unknown>>;import_effects:Array<Record<string,unknown>>;contacts:Array<Record<string,unknown>>;
+  staff:Array<Record<string,unknown>>;subscriptions:Array<Record<string,unknown>>;campaigns:Array<Record<string,unknown>>;
+  localization:Record<string,unknown>;translations:Array<Record<string,unknown>>;automation_versions:Array<Record<string,unknown>>;
+  automation_executions:Array<Record<string,unknown>>;automation_effects:Array<Record<string,unknown>>;ai_requests:Array<Record<string,unknown>>;
+  ai_reviews:Array<Record<string,unknown>>;
+};
+
+export const teacherStudioStudentCurriculum = async (
+  academyId: string,
+  classroomId: string,
+): Promise<TeacherStudioStudentCurriculum> => {
+  return callTeacherStudio<TeacherStudioStudentCurriculum>({
+    action: 'student_curriculum',
+    academyId,
+    params: { classroom_id: classroomId },
+  });
+};
+
+export const teacherStudioSetLessonProgress = async (
+  academyId: string,
+  body: { classroom_id: string; lesson_id: string; status: 'in_progress' | 'completed'; time_spent_seconds?: number },
+): Promise<TeacherStudioStudentCurriculum['progress'][number]> => {
+  const data = await callTeacherStudio<{ progress: TeacherStudioStudentCurriculum['progress'][number] }>({
+    method: 'POST',
+    action: 'set_lesson_progress',
+    academyId,
+    body,
+  });
+  return data.progress;
+};
+
+export const teacherStudioStartQuiz = async (
+  academyId: string,
+  body: { classroom_id: string; quiz_id: string },
+): Promise<{ quiz: TeacherStudioQuiz; attempt: TeacherStudioQuizAttempt; resumed: boolean }> => {
+  return callTeacherStudio<{ quiz: TeacherStudioQuiz; attempt: TeacherStudioQuizAttempt; resumed: boolean }>({
+    method: 'POST',
+    action: 'start_quiz',
+    academyId,
+    body,
+  });
+};
+
+export const teacherStudioSubmitQuiz = async (
+  academyId: string,
+  body: { classroom_id: string; attempt_id: string; answers: Record<string, unknown> },
+): Promise<TeacherStudioQuizAttempt> => {
+  const data = await callTeacherStudio<{ attempt: TeacherStudioQuizAttempt }>({
+    method: 'POST',
+    action: 'submit_quiz',
+    academyId,
+    body,
+  });
+  return data.attempt;
+};
+
 export const teacherStudioStudentAssignments = async (
   academyId?: string | null,
   classroomId?: string | null,
@@ -1001,12 +1565,12 @@ export const teacherStudioStudentAttendance = async (
 
 export const teacherStudioStudentBilling = async (
   academyId?: string | null,
-): Promise<TeacherStudioStudentBillingItem[]> => {
-  const data = await callTeacherStudio<{ items: TeacherStudioStudentBillingItem[] }>({
+): Promise<TeacherStudioStudentBilling> => {
+  const data = await callTeacherStudio<TeacherStudioStudentBilling>({
     action: 'student_billing',
     academyId,
   });
-  return data.items ?? [];
+  return { items: data.items ?? [], accounts: data.accounts ?? [] };
 };
 
 export const teacherStudioSubmitStudentAssignment = async (
@@ -1298,6 +1862,7 @@ export const teacherStudioUpsertClassroomMembership = async (
     classroom_id: string;
     contact_id: string;
     role?: string;
+    membership_status?: TeacherStudioClassroomMembership['status'];
   },
 ): Promise<TeacherStudioClassroomMembership> => {
   const data = await callTeacherStudio<{ classroom_membership: TeacherStudioClassroomMembership }>({
@@ -1449,6 +2014,210 @@ export const teacherStudioEducationOS = async (academyId: string): Promise<Teach
   return callTeacherStudio<TeacherStudioEducationOS>({ action: 'education_os', academyId });
 };
 
+export const teacherStudioBusinessFoundation = async (academyId: string): Promise<AcademyBusinessFoundation> =>
+  callTeacherStudio<AcademyBusinessFoundation>({ action: 'business_foundation', academyId });
+
+export const teacherStudioUpsertBranch = async (
+  academyId: string,
+  body: { id?: string; branch_key: string; name: string; address?: string; phone?: string; timezone?: string; currency?: string; capacity?: number | null; is_active?: boolean },
+): Promise<AcademyBranch> => {
+  const data = await callTeacherStudio<{ branch: AcademyBranch }>({ action: 'upsert_branch', academyId, body });
+  return data.branch;
+};
+
+export const teacherStudioUpsertRoom = async (
+  academyId: string,
+  body: { id?: string; branch_id: string; room_key: string; name: string; capacity: number; room_type?: AcademyRoom['room_type']; is_active?: boolean },
+): Promise<AcademyRoom> => {
+  const data = await callTeacherStudio<{ room: AcademyRoom }>({ action: 'upsert_room', academyId, body });
+  return data.room;
+};
+
+export const teacherStudioCreateLead = async (
+  academyId: string,
+  body: Record<string, unknown> & { full_name: string; idempotency_key: string },
+): Promise<AcademyLead> => {
+  const data = await callTeacherStudio<{ lead: AcademyLead }>({ action: 'create_lead', academyId, body });
+  return data.lead;
+};
+
+export const teacherStudioTransitionLead = async (
+  academyId: string,
+  body: { lead_id: string; to_stage_id: string; reason?: string; notes?: string; idempotency_key: string },
+): Promise<AcademyLead> => {
+  const data = await callTeacherStudio<{ lead: AcademyLead }>({ action: 'transition_lead', academyId, body });
+  return data.lead;
+};
+
+export const teacherStudioRecordLeadActivity = async (
+  academyId: string,
+  body: Record<string, unknown> & { lead_id: string; idempotency_key: string },
+): Promise<AcademyLeadActivity> => {
+  const data = await callTeacherStudio<{ activity: AcademyLeadActivity }>({ action: 'record_lead_activity', academyId, body });
+  return data.activity;
+};
+
+export const teacherStudioScheduleTrial = async (
+  academyId: string,
+  body: Record<string, unknown> & { lead_id: string; starts_at: string; ends_at: string; idempotency_key: string },
+): Promise<AcademyTrialLesson> => {
+  const data = await callTeacherStudio<{ trial: AcademyTrialLesson }>({ action: 'schedule_trial', academyId, body });
+  return data.trial;
+};
+
+export const teacherStudioSetTrialStatus = async (
+  academyId: string,
+  body: { trial_id: string; status: AcademyTrialLesson['status']; feedback?: string; recommended_course?: string; recommended_level?: string; next_step?: string; idempotency_key: string },
+): Promise<AcademyTrialLesson> => {
+  const data = await callTeacherStudio<{ trial: AcademyTrialLesson }>({ action: 'set_trial_status', academyId, body });
+  return data.trial;
+};
+
+export const teacherStudioConvertLead = async (
+  academyId: string,
+  body: { lead_id: string; classroom_id?: string | null; existing_contact_id?: string | null; trial_id?: string | null; idempotency_key: string },
+): Promise<{ conversion: AcademyLeadConversion; contact?: TeacherStudioContact }> =>
+  callTeacherStudio<{ conversion: AcademyLeadConversion; contact?: TeacherStudioContact }>({ action: 'convert_lead', academyId, body });
+
+export const teacherStudioCommercialCore = async (academyId: string): Promise<AcademyCommercialCore> =>
+  callTeacherStudio<AcademyCommercialCore>({ action: 'commercial_core', academyId });
+
+export const teacherStudioOperationsFinance = async (academyId: string): Promise<AcademyOperationsFinance> =>
+  callTeacherStudio<AcademyOperationsFinance>({ action: 'operations_finance', academyId });
+
+export const teacherStudioAcademicOperations = async (academyId:string):Promise<AcademyAcademicOperations> => callTeacherStudio<AcademyAcademicOperations>({ action: 'academic_operations', academyId });
+export const teacherStudioGuardianRelationships = async (academyId:string):Promise<AcademyGuardianRelationships> => callTeacherStudio<AcademyGuardianRelationships>({ action: 'guardian_relationships', academyId });
+export const teacherStudioGuardianDashboard = async ():Promise<AcademyGuardianDashboard> => callTeacherStudio<AcademyGuardianDashboard>({ action: 'guardian_dashboard' });
+export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>) => callTeacherStudio<Record<string,unknown>>({method:'POST', action: 'guardian_claim_link',body});
+export const teacherStudioGuardianUpdatePreferences = (body:Record<string,unknown>) => callTeacherStudio<{preference:Record<string,unknown>}>({method:'POST', action: 'guardian_update_preferences',body});
+export const teacherStudioGuardianSendMessage = (body:Record<string,unknown>) => callTeacherStudio<{message:Record<string,unknown>}>({method:'POST', action: 'guardian_send_message',body});
+export const teacherStudioBusinessIntelligence = async (academyId:string):Promise<AcademyBusinessIntelligence> => callTeacherStudio<AcademyBusinessIntelligence>({ action: 'business_intelligence', academyId });
+export const teacherStudioGlobalSearch = async (academyId:string,query:string):Promise<{results:Array<Record<string,unknown>>}> => callTeacherStudio<{results:Array<Record<string,unknown>>}>({ action: 'global_search', academyId, body:{query,limit:50} });
+
+const academyOperationsCommand = <T>(academyId: string, action: string, body: Record<string, unknown>): Promise<T> =>
+  callTeacherStudio<T>({ method: 'POST', action, academyId, body });
+
+export const teacherStudioCreateCashbox = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashbox:AcademyCashbox}>(academyId,'create_cashbox',body);
+export const teacherStudioOpenCashierShift = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashier_shift:AcademyCashierShift}>(academyId,'open_cashier_shift',body);
+export const teacherStudioRecordCashMovement = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cash_movement:AcademyCashMovement}>(academyId,'record_cash_movement',body);
+export const teacherStudioCloseCashierShift = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashier_shift:AcademyCashierShift}>(academyId,'close_cashier_shift',body);
+export const teacherStudioUpsertExpenseCategory = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{expense_category:AcademyExpenseCategory}>(academyId,'upsert_expense_category',body);
+export const teacherStudioRecordExpense = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{expense:AcademyExpense}>(academyId,'record_expense',body);
+export const teacherStudioUpsertBudget = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{budget:Record<string,unknown>}>(academyId,'upsert_budget',body);
+export const teacherStudioUpsertCompensationRule = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{compensation_rule:AcademyCompensationRule}>(academyId,'upsert_compensation_rule',body);
+export const teacherStudioRecordLessonDelivery = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{lesson_delivery:Record<string,unknown>}>(academyId,'record_lesson_delivery',body);
+export const teacherStudioCreatePayrollPeriod = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_period:AcademyPayrollPeriod}>(academyId,'create_payroll_period',body);
+export const teacherStudioCalculatePayroll = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{period:AcademyPayrollPeriod;row_count:number}>(academyId,'calculate_payroll',body);
+export const teacherStudioPostPayrollAdjustment = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_adjustment:Record<string,unknown>}>(academyId,'post_payroll_adjustment',body);
+export const teacherStudioTransitionPayroll = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_period:AcademyPayrollPeriod}>(academyId,'transition_payroll',body);
+export const teacherStudioUpsertAcademicCalendar = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{calendar:Record<string,unknown>}>(academyId,'upsert_academic_calendar',body);
+export const teacherStudioUpsertCalendarEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{calendar_event:Record<string,unknown>}>(academyId,'upsert_calendar_event',body);
+export const teacherStudioUpsertStaffAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_staff_availability',body);
+export const teacherStudioUpsertRoomAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_room_availability',body);
+export const teacherStudioCreateLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession}>(academyId,'create_lesson_session',body);
+export const teacherStudioTransitionLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession;replacement?:AcademyLessonSession}>(academyId,'transition_lesson_session',body);
+export const teacherStudioAssignSessionSubstitute = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'assign_session_substitute',body);
+export const teacherStudioRecordSessionAttendance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{attendance:AcademyAttendanceRecord}>(academyId,'record_session_attendance',body);
+export const teacherStudioRecordAttendanceException = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{attendance_exception:Record<string,unknown>}>(academyId,'record_attendance_exception',body);
+export const teacherStudioUpsertMakeUpLesson = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{make_up_lesson:Record<string,unknown>}>(academyId,'upsert_make_up_lesson',body);
+export const teacherStudioRecordSessionQualityReview = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{quality_review:Record<string,unknown>}>(academyId,'record_session_quality_review',body);
+export const teacherStudioUpsertRiskDefinition = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{risk_definition:Record<string,unknown>}>(academyId,'upsert_risk_definition',body);
+export const teacherStudioEvaluateRetentionRisk = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{risk_evaluation:Record<string,unknown>}>(academyId,'evaluate_retention_risk',body);
+export const teacherStudioCreateIntervention = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{intervention:Record<string,unknown>}>(academyId,'create_intervention',body);
+export const teacherStudioUpdateIntervention = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{intervention:Record<string,unknown>}>(academyId,'update_intervention',body);
+export const teacherStudioRecordInterventionActivity = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{activity:Record<string,unknown>}>(academyId,'record_intervention_activity',body);
+export const teacherStudioUpsertRenewalOpportunity = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{renewal:Record<string,unknown>}>(academyId,'upsert_renewal_opportunity',body);
+export const teacherStudioRecordRenewalActivity = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{activity:Record<string,unknown>}>(academyId,'record_renewal_activity',body);
+export const teacherStudioUpdateOperationalAction = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{action_item:Record<string,unknown>}>(academyId,'update_operational_action',body);
+export const teacherStudioCreateImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_job:Record<string,unknown>}>(academyId,'create_import_job',body);
+export const teacherStudioAddImportRow = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_row:Record<string,unknown>}>(academyId,'add_import_row',body);
+export const teacherStudioCommitImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_job_id:string;committed_rows:number}>(academyId,'commit_import_job',body);
+export const teacherStudioRollbackImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'rollback_import_job',body);
+export const teacherStudioConvertLeadFull = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{result:Record<string,unknown>}>(academyId,'convert_lead_full',body);
+export const teacherStudioUpsertCampaign = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{campaign:Record<string,unknown>}>(academyId,'upsert_campaign',body);
+export const teacherStudioUpsertLocalization = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{localization:Record<string,unknown>;translations:Array<Record<string,unknown>>}>(academyId,'upsert_localization',body);
+export const teacherStudioUpsertStaffBranchAssignment = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{assignment:Record<string,unknown>}>(academyId,'upsert_staff_branch_assignment',body);
+export const teacherStudioCreateAutomationVersion = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{automation_version:Record<string,unknown>}>(academyId,'create_automation_version',body);
+export const teacherStudioExecuteAutomationEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'execute_automation_event',body);
+export const teacherStudioReviewAutomationExecution = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'review_automation_execution',body);
+export const teacherStudioRequestAiAssistance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{ai_request:Record<string,unknown>}>(academyId,'request_ai_assistance',body);
+export const teacherStudioReviewAiAssistance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{ai_request:Record<string,unknown>;review:Record<string,unknown>}>(academyId,'review_ai_assistance',body);
+export const teacherStudioCreateGuardianRelationship = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{guardian:AcademyGuardian;relationship:AcademyGuardianRelationship}>(academyId,'create_guardian_relationship',body);
+export const teacherStudioIssueGuardianLink = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{link:Record<string,unknown>;telegram_link:string|null}>(academyId,'issue_guardian_link',body);
+export const teacherStudioRevokeGuardianRelationship = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{relationship:AcademyGuardianRelationship}>(academyId,'revoke_guardian_relationship',body);
+export const teacherStudioUpsertGuardianPreferences = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{preference:Record<string,unknown>}>(academyId,'upsert_guardian_preferences',body);
+export const teacherStudioQueueGuardianNotification = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{notification:Record<string,unknown>;deduplicated:boolean}>(academyId,'queue_guardian_notification',body);
+export const teacherStudioSendGuardianMessage = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{message:Record<string,unknown>}>(academyId,'send_guardian_message',body);
+
+export const teacherStudioCreatePricingPlan = async (
+  academyId: string,
+  body: Record<string, unknown> & { plan_key: string; name: string; pricing_model: string; base_amount: number; idempotency_key: string },
+): Promise<AcademyPricingPlan> => {
+  const data = await callTeacherStudio<{ pricing_plan: AcademyPricingPlan }>({ action: 'create_pricing_plan', academyId, body });
+  return data.pricing_plan;
+};
+
+export const teacherStudioCreateSubscription = async (
+  academyId: string,
+  body: Record<string, unknown> & { contact_id: string; pricing_plan_id: string; idempotency_key: string },
+): Promise<AcademySubscription> => {
+  const data = await callTeacherStudio<{ subscription: AcademySubscription }>({ action: 'create_subscription', academyId, body });
+  return data.subscription;
+};
+
+export const teacherStudioManageSubscription = async (
+  academyId: string,
+  body: {
+    subscription_id: string;
+    operation: 'freeze' | 'resume' | 'cancel' | 'complete' | 'renew';
+    reason?: string | null;
+    starts_on?: string | null;
+    ends_on?: string | null;
+    idempotency_key: string;
+  },
+): Promise<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }> =>
+  callTeacherStudio<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }>({
+    action: 'manage_subscription', academyId, body,
+  });
+
+export const teacherStudioCreateCharge = async (
+  academyId: string,
+  body: Record<string, unknown> & { subscription_id: string; idempotency_key: string },
+): Promise<AcademyCharge> => {
+  const data = await callTeacherStudio<{ charge: AcademyCharge }>({ action: 'create_charge', academyId, body });
+  return data.charge;
+};
+
+export const teacherStudioAllocatePayment = async (
+  academyId: string,
+  body: { payment_id: string; charge_id: string; amount: number; idempotency_key: string },
+): Promise<AcademyPaymentAllocation> => {
+  const data = await callTeacherStudio<{ allocation: AcademyPaymentAllocation }>({ action: 'allocate_payment', academyId, body });
+  return data.allocation;
+};
+
+export const teacherStudioPostAccountAdjustment = async (
+  academyId: string,
+  body: Record<string, unknown> & { contact_id: string; entry_type: string; amount: number; reason: string; idempotency_key: string },
+): Promise<AcademyLedgerEntry> => {
+  const data = await callTeacherStudio<{ ledger_entry: AcademyLedgerEntry }>({ action: 'post_account_adjustment', academyId, body });
+  return data.ledger_entry;
+};
+
+export const teacherStudioRecordPaymentPromise = async (
+  academyId: string,
+  body: Record<string, unknown> & { contact_id: string; amount: number; promised_for: string; idempotency_key: string },
+): Promise<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }> =>
+  callTeacherStudio<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }>({ action: 'record_payment_promise', academyId, body });
+
+export const teacherStudioRecordPaymentReconciliation = async (
+  academyId: string,
+  body: Record<string, unknown> & { provider: string; provider_transaction_id: string; provider_event_id: string; status: string; payload_hash: string; idempotency_key: string },
+): Promise<AcademyPaymentReconciliation> => {
+  const data = await callTeacherStudio<{ reconciliation: AcademyPaymentReconciliation }>({ action: 'record_payment_reconciliation', academyId, body });
+  return data.reconciliation;
+};
+
 export const teacherStudioResolveActionItem = async (
   academyId: string,
   body: { id: string; status?: 'resolved' | 'dismissed' | 'snoozed' | 'open'; resolution_note?: string | null },
@@ -1504,6 +2273,60 @@ export const teacherStudioRunAutomationRules = async (
     action: 'run_automation_rules',
     academyId,
   });
+};
+
+export const teacherStudioCurriculum = async (
+  academyId: string,
+  classroomId?: string | null,
+): Promise<TeacherStudioCurriculum> => {
+  return callTeacherStudio<TeacherStudioCurriculum>({
+    action: 'curriculum',
+    academyId,
+    params: { classroom_id: classroomId ?? undefined },
+  });
+};
+
+export const teacherStudioQuizzes = async (
+  academyId: string,
+  params?: { classroom_id?: string | null; course_id?: string | null },
+): Promise<{ quizzes: TeacherStudioQuiz[]; questions: TeacherStudioQuizQuestion[] }> => {
+  return callTeacherStudio<{ quizzes: TeacherStudioQuiz[]; questions: TeacherStudioQuizQuestion[] }>({
+    action: 'quizzes',
+    academyId,
+    params: {
+      classroom_id: params?.classroom_id ?? undefined,
+      course_id: params?.course_id ?? undefined,
+    },
+  });
+};
+
+export const teacherStudioGradeCategories = async (
+  academyId: string,
+  classroomId: string,
+): Promise<TeacherStudioGradeCategory[]> => {
+  const data = await callTeacherStudio<{ grade_categories: TeacherStudioGradeCategory[] }>({
+    action: 'grade_categories',
+    academyId,
+    params: { classroom_id: classroomId },
+  });
+  return data.grade_categories ?? [];
+};
+
+export const teacherStudioRubrics = async (academyId: string): Promise<TeacherStudioRubric[]> => {
+  const data = await callTeacherStudio<{ rubrics: TeacherStudioRubric[] }>({ action: 'rubrics', academyId });
+  return data.rubrics ?? [];
+};
+
+export const teacherStudioQuizAttempts = async (
+  academyId: string,
+  params?: { classroom_id?: string | null; quiz_id?: string | null },
+): Promise<TeacherStudioQuizAttempt[]> => {
+  const data = await callTeacherStudio<{ quiz_attempts: TeacherStudioQuizAttempt[] }>({
+    action: 'quiz_attempts',
+    academyId,
+    params: { classroom_id: params?.classroom_id ?? undefined, quiz_id: params?.quiz_id ?? undefined },
+  });
+  return data.quiz_attempts ?? [];
 };
 
 export const teacherStudioAssignments = async (
@@ -1605,16 +2428,156 @@ export const teacherStudioReferralLeaderboard = async (academyId: string): Promi
   return data.leaderboard ?? [];
 };
 
+export const teacherStudioUpsertCourse = async (
+  academyId: string,
+  body: {
+    id?: string;
+    classroom_id?: string;
+    code?: string | null;
+    title?: string;
+    description?: string | null;
+    level?: string | null;
+    estimated_minutes?: number;
+    status?: string;
+  },
+): Promise<TeacherStudioCourse> => {
+  const data = await callTeacherStudio<{ course: TeacherStudioCourse }>({ method: 'POST', action: 'upsert_course', academyId, body });
+  return data.course;
+};
+
+export const teacherStudioPublishCourse = async (
+  academyId: string,
+  body: { course_id: string; classroom_id?: string },
+): Promise<TeacherStudioCourse> => {
+  const data = await callTeacherStudio<{ course: TeacherStudioCourse }>({ method: 'POST', action: 'publish_course', academyId, body });
+  return data.course;
+};
+
+export const teacherStudioAssignCourse = async (
+  academyId: string,
+  body: { course_id: string; classroom_id: string; status?: string; starts_at?: string | null; ends_at?: string | null },
+): Promise<TeacherStudioClassroomCourse> => {
+  const data = await callTeacherStudio<{ classroom_course: TeacherStudioClassroomCourse }>({ method: 'POST', action: 'assign_course', academyId, body });
+  return data.classroom_course;
+};
+
+export const teacherStudioUpsertModule = async (
+  academyId: string,
+  body: { id?: string; classroom_id?: string; course_id: string; title?: string; description?: string | null; status?: string; position?: number },
+): Promise<TeacherStudioCourseModule> => {
+  const data = await callTeacherStudio<{ module: TeacherStudioCourseModule }>({ method: 'POST', action: 'upsert_module', academyId, body });
+  return data.module;
+};
+
+export const teacherStudioUpsertLesson = async (
+  academyId: string,
+  body: {
+    id?: string;
+    classroom_id?: string;
+    course_id: string;
+    module_id: string;
+    title?: string;
+    summary?: string | null;
+    lesson_content?: Json;
+    estimated_minutes?: number;
+    prerequisite_lesson_id?: string | null;
+    available_from?: string | null;
+    status?: string;
+  },
+): Promise<TeacherStudioLesson> => {
+  const data = await callTeacherStudio<{ lesson: TeacherStudioLesson }>({ method: 'POST', action: 'upsert_lesson', academyId, body });
+  return data.lesson;
+};
+
+export const teacherStudioUpsertQuiz = async (
+  academyId: string,
+  body: {
+    id?: string;
+    classroom_id?: string;
+    course_id: string;
+    lesson_id?: string | null;
+    title?: string;
+    description?: string | null;
+    status?: string;
+    passing_score?: number;
+    attempts_allowed?: number;
+    time_limit_seconds?: number | null;
+    shuffle_questions?: boolean;
+    show_answers_after?: boolean;
+  },
+): Promise<TeacherStudioQuiz> => {
+  const data = await callTeacherStudio<{ quiz: TeacherStudioQuiz }>({ method: 'POST', action: 'upsert_quiz', academyId, body });
+  return data.quiz;
+};
+
+export const teacherStudioUpsertQuizQuestion = async (
+  academyId: string,
+  body: {
+    id?: string;
+    classroom_id?: string;
+    quiz_id: string;
+    question_type: TeacherStudioQuizQuestion['question_type'];
+    prompt: string;
+    options?: unknown[];
+    correct_answer?: unknown;
+    points?: number;
+    explanation?: string | null;
+    position?: number;
+  },
+): Promise<TeacherStudioQuizQuestion> => {
+  const data = await callTeacherStudio<{ question: TeacherStudioQuizQuestion }>({ method: 'POST', action: 'upsert_quiz_question', academyId, body });
+  return data.question;
+};
+
+export const teacherStudioUpsertGradeCategory = async (
+  academyId: string,
+  body: { id?: string; classroom_id: string; name: string; weight: number; position?: number; drop_lowest?: number },
+): Promise<TeacherStudioGradeCategory> => {
+  const data = await callTeacherStudio<{ grade_category: TeacherStudioGradeCategory }>({ method: 'POST', action: 'upsert_grade_category', academyId, body });
+  return data.grade_category;
+};
+
+export const teacherStudioUpsertRubric = async (
+  academyId: string,
+  body: { id?: string; title: string; description?: string | null; criteria: unknown[]; status?: string },
+): Promise<TeacherStudioRubric> => {
+  const data = await callTeacherStudio<{ rubric: TeacherStudioRubric }>({ method: 'POST', action: 'upsert_rubric', academyId, body });
+  return data.rubric;
+};
+
+export const teacherStudioGradeQuizAttempt = async (
+  academyId: string,
+  body: { attempt_id: string; score: number; max_score?: number; feedback?: string | null },
+): Promise<TeacherStudioQuizAttempt> => {
+  const data = await callTeacherStudio<{ attempt: TeacherStudioQuizAttempt }>({ method: 'POST', action: 'grade_quiz_attempt', academyId, body });
+  return data.attempt;
+};
+
+export const teacherStudioSetEnrollmentStatus = async (
+  academyId: string,
+  body: { id?: string; classroom_id?: string; contact_id?: string; membership_status: TeacherStudioClassroomMembership['status'] },
+): Promise<TeacherStudioClassroomMembership> => {
+  const data = await callTeacherStudio<{ classroom_membership: TeacherStudioClassroomMembership }>({ method: 'POST', action: 'set_enrollment_status', academyId, body });
+  return data.classroom_membership;
+};
+
 export const teacherStudioCreateAssignment = async (
   academyId: string,
   body: {
     classroom_id: string;
+    course_id?: string | null;
+    module_id?: string | null;
+    lesson_id?: string | null;
+    grade_category_id?: string | null;
+    rubric_id?: string | null;
     title: string;
     description?: string | null;
     assignment_type?: string;
     due_at?: string | null;
     max_score?: number | null;
     score_weight?: number;
+    attempts_allowed?: number;
+    allow_late_submission?: boolean;
     status?: string;
   },
 ): Promise<TeacherStudioAssignment> => {
@@ -1634,9 +2597,16 @@ export const teacherStudioUpdateAssignment = async (
     title?: string;
     description?: string | null;
     assignment_type?: string;
+    course_id?: string | null;
+    module_id?: string | null;
+    lesson_id?: string | null;
+    grade_category_id?: string | null;
+    rubric_id?: string | null;
     due_at?: string | null;
     max_score?: number | null;
     score_weight?: number;
+    attempts_allowed?: number;
+    allow_late_submission?: boolean;
     status?: string;
   },
 ): Promise<TeacherStudioAssignment> => {
@@ -1657,6 +2627,7 @@ export const teacherStudioSubmitAssignmentForContact = async (
     score?: number | null;
     max_score?: number | null;
     notes?: string | null;
+    feedback?: Json;
     session_id?: string | null;
   },
 ): Promise<TeacherStudioSubmission> => {

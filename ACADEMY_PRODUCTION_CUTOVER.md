@@ -6,15 +6,21 @@ Production app: `https://academy.schood.online`
 
 Production proof is not complete until GitHub, Cloudflare Pages, Supabase migrations/functions, and the live smoke account all agree.
 
-## Current External Blockers
+## Current External Gates
 
-As of the latest GitHub readiness check, production proof is blocked by:
+The backend production phase completed on 2026-08-11:
 
-- Missing GitHub owner smoke auth: set `ACADEMY_SMOKE_TOKEN` or `ACADEMY_SMOKE_EMAIL` + `ACADEMY_SMOKE_PASSWORD`.
-- Missing GitHub student smoke auth: set `ACADEMY_STUDENT_SMOKE_TOKEN` or `ACADEMY_STUDENT_SMOKE_EMAIL` + `ACADEMY_STUDENT_SMOKE_PASSWORD`.
-- `Academy Live Smoke` workflow is not on GitHub until this branch is merged.
-- Latest `Deploy Pages` run on `main` failed at commit `a79fd23e330498a3d529210432d5ffb69614d5dc`.
-- Latest `Deploy Pages` Academy matrix job for `schood-academy` also failed for that run.
+- PR `#159` merged as `917f9b9`, and Deploy Pages run `31470480517` completed successfully for every app, including Academy.
+- The production migration ledger contains all 13 Academy migrations from `20260810120000` through `20260810240000`.
+- A credential-safe production schema dump confirmed RLS on all 303 public tables and all 110 Academy tables.
+- The `academy` Edge Function is active at version 63 and `telegram-app` is active at version 9.
+- Authenticated owner/student Academy Live Smoke run `31471104282` passed after the migrations and function deployments.
+
+The remaining release gates are frontend-specific:
+
+- Merge the frontend only after its PR and full CI gate are green.
+- Verify the final Cloudflare Pages deployment for the merged frontend commit.
+- Require a fresh authenticated Academy Live Smoke run after that deployment.
 
 Verify the current status with:
 
@@ -34,7 +40,7 @@ npm run test:academy:edge
 npm --workspace apps/academy run build
 npm run smoke:academy
 deno check supabase/functions/academy/index.ts
-deno check supabase/functions/click/index.ts
+deno check supabase/functions/telegram-app/index.ts
 npm run verify:prod
 npm test
 ```
@@ -45,6 +51,7 @@ Expected evidence:
 - `smoke:academy` passes after the Academy build.
 - `test:academy:routes` proves owner, teacher, student, and restricted-route browser flows.
 - `test:academy:edge` proves permission contracts for finance, LMS, staff, reports, and uploads.
+- `test:academy:edge` also proves curriculum-table RLS, tenant-scoped relationships, safe optional-parent deletion, answer-key privacy, quiz grading, and rubric-total validation.
 - `verify:prod` passes with no committed env files or high-confidence secrets.
 
 ## GitHub Setup
@@ -80,15 +87,18 @@ supabase db push --linked
 supabase migration list --linked
 deno check supabase/functions/academy/index.ts
 supabase functions deploy academy --project-ref <prod>
-deno check supabase/functions/click/index.ts
-supabase functions deploy click --project-ref <prod>
+deno check supabase/functions/telegram-app/index.ts
+supabase functions deploy telegram-app --project-ref <prod>
 ```
 
 Expected evidence:
 
 - The production migration list includes `20260617120000_academy_audit_events.sql`.
+- The production migration list includes `20260810120000_academy_curriculum_assessments.sql`.
+- The production migration list includes `20260810130000_academy_business_os_phase_a.sql`.
+- The production migration list includes every Academy release migration from `20260810140000_academy_business_os_phase_b.sql` through `20260810240000_academy_direct_rls_scope_boundary.sql`.
 - `academy` Edge Function deploy succeeds.
-- `click` Edge Function deploy succeeds when payment reconciliation code changed.
+- `telegram-app` Edge Function deploy succeeds for guardian-scoped access.
 
 ## Production Deploy
 
@@ -120,16 +130,42 @@ Expected evidence:
 - Production app shell loads.
 - Owner token reads academies, summary, classrooms, payments, Education OS, notifications, and audit events.
 - Student token reads `student-dashboard`.
+- Owner token reads `curriculum`, `quizzes`, `grade_categories`, `rubrics`, and `quiz_attempts`.
+- Owner token reads `business_foundation` and receives branches, sources, stages, leads, activities, trials, and conversions.
+- Owner token reads `commercial_core` and receives plans, subscriptions, pricing adjustments, charges, payments, allocations, ledger entries, balances, debt cases, promises, and reconciliations.
+- Owner token reads `guardian_relationships` without receiving link-token hashes; a guardian token reads `guardian_dashboard` without requiring staff membership.
+- Owner/operator token reads `business_intelligence` and academy-scoped `global_search`; teacher access to retention, renewal, and import evidence is rejected.
+- Student token reads `student_curriculum` for an enrolled classroom.
 - Student token has at least one academy enrollment.
 - `Academy Live Smoke` workflow is green for the deployed commit.
 
 ## Operational Acceptance
 
+The same acceptance scope is normalized into a numbered 33-scenario matrix, with local and production evidence separated, in `ACADEMY_SERVICE_MAP_AND_33_STEP_PROOF.md`.
+
 Academy can be considered operational only after this evidence exists:
 
 - A real academy owner can open Academy Office.
 - A teacher can open Teacher Workspace, see daily LMS operations, create assignments, grade submissions, and mark attendance.
+- A teacher can create a draft course with a module, lesson, native quiz, grade category, and rubric; publish and assign the course to a classroom; and grade a rubric-linked assignment.
 - A student can open the Student Workplace, view resources, submit work, see grades, attendance, billing, and chat.
+- An enrolled student can open the assigned course, encounter prerequisite/date locks, complete a lesson, submit a quiz, and see the resulting attempt state without receiving answer keys.
+- Staff can pause and resume a test enrollment, and the audit trail records the lifecycle changes.
+- A first-time authenticated owner with no prior membership can create an academy and receive its default branch, 13 localized sources, and eight default pipeline stages.
+- Admissions staff can capture and retry one lead idempotently, record a follow-up, advance the lead, schedule and complete a trial, and convert it into one contact and one classroom enrollment.
+- A mismatched branch/room trial and a cross-academy reference are rejected by database constraints.
+- Finance staff can create a pricing plan and discounted agreement, issue a charge, reconcile a confirmed Academy payment, allocate it, and see the exact derived account/charge balance.
+- An over-allocation, cross-contact financial reference, and mutation of ledger/allocation/reconciliation history are rejected.
+- A teacher can still read assigned teaching context but receives no direct financial rows and a `403` from `commercial_core`.
+- An academic operator can create an actual lesson session, while overlapping teacher, room, and classroom bookings and calendar closures are rejected.
+- Staff can record session attendance only for an active classroom enrollee; exceptions, make-ups, substitutions, and quality observations retain actor/reason evidence.
+- Completing an actual session writes lesson-delivery evidence, and capacity reports show available, occupied, unused, peak, fill, and attendance metrics.
+- Staff can create a pending guardian relationship, issue a one-time link, and prove only a hash is stored; a verified guardian can claim it once and cannot reuse it.
+- A guardian sees only explicitly granted child sections; an unrelated guardian sees no rows. Revocation immediately removes access while retaining immutable consent evidence.
+- Preference-aware parent notifications respect channel selection and quiet hours, deduplicate retries, and retain immutable sent/failed/skipped delivery attempts.
+- A versioned risk evaluation stores four explained factor contributions, creates one deduplicated action at high/critical risk, and can be followed through an intervention to a recorded outcome.
+- Renewal work retains offer/contact history and outcome; unified actions retain assignee, SLA, source, recommendation, and outcome.
+- A staged import rejects invalid rows, commits valid contact/lead rows exactly once, and preserves job, row, target, count, actor, and audit evidence.
 - Click-backed tuition creates Academy payment metadata and paid tuition flows through `apply_academy_payment`.
 - Audit trail shows recent sensitive actions.
 - Storage-backed resource and submission upload paths work with signed URLs.

@@ -8,17 +8,20 @@ import {
   teacherStudioBulkInvites,
   teacherStudioComputeAtRisk,
   teacherStudioCreateAssignment,
+  teacherStudioCurriculum,
   teacherStudioDeleteSchedule,
   teacherStudioDispatchNotifications,
   teacherStudioEducationOS,
   teacherStudioGenerateParentReport,
   teacherStudioGradebook,
+  teacherStudioGradeCategories,
   teacherStudioIssueAcademyCertificate,
   teacherStudioMarkAttendance,
   teacherStudioNotifications,
   teacherStudioOwnerDashboard,
   teacherStudioRecordPlacement,
   teacherStudioReferralLeaderboard,
+  teacherStudioRubrics,
   teacherStudioRemoveStaff,
   teacherStudioResolveActionItem,
   teacherStudioRunAutomationRules,
@@ -42,12 +45,15 @@ import {
   type TeacherStudioClassroom,
   type TeacherStudioClassroomMembership,
   type TeacherStudioContact,
+  type TeacherStudioCurriculum,
   type TeacherStudioEducationOS,
   type TeacherStudioGradebook,
+  type TeacherStudioGradeCategory,
   type TeacherStudioLifecycleRow,
   type TeacherStudioNotification,
   type TeacherStudioOwnerDashboard,
   type TeacherStudioReferralLeader,
+  type TeacherStudioRubric,
   type TeacherStudioScheduleSlot,
   type TeacherStudioStaff,
 } from '../../lib/client';
@@ -56,6 +62,7 @@ import {
   type AccessPermissionKey,
   type OfficeRouteIntent,
 } from '../../lib/academyAccess';
+import { CurriculumView } from './CurriculumView';
 
 type EducationOSTab =
   | 'today'
@@ -146,6 +153,23 @@ const actionTargetTab = (sourceType: string): EducationOSTab => {
 };
 
 const todayDate = (): string => new Date().toISOString().slice(0, 10);
+
+const emptyAssignmentForm = {
+  title: '',
+  assignment_type: 'task',
+  course_id: '',
+  module_id: '',
+  lesson_id: '',
+  grade_category_id: '',
+  rubric_id: '',
+  due_at: '',
+  max_score: '100',
+  score_weight: '1',
+  attempts_allowed: '1',
+  allow_late_submission: true,
+  status: 'active',
+  description: '',
+};
 
 const toDatetimeLocalValue = (iso: string | null | undefined): string => {
   if (!iso) return '';
@@ -238,6 +262,9 @@ export const EducationOSView = ({
   const [osEngine, setOsEngine] = useState<TeacherStudioEducationOS | null>(null);
   const [dashboard, setDashboard] = useState<TeacherStudioOwnerDashboard | null>(null);
   const [assignments, setAssignments] = useState<TeacherStudioAssignment[]>([]);
+  const [assignmentCurriculum, setAssignmentCurriculum] = useState<TeacherStudioCurriculum>({ courses: [], modules: [], lessons: [], classroom_courses: [] });
+  const [gradeCategories, setGradeCategories] = useState<TeacherStudioGradeCategory[]>([]);
+  const [rubrics, setRubrics] = useState<TeacherStudioRubric[]>([]);
   const [gradebook, setGradebook] = useState<TeacherStudioGradebook | null>(null);
   const [attendance, setAttendance] = useState<TeacherStudioAttendance[]>([]);
   const [schedule, setSchedule] = useState<TeacherStudioScheduleSlot[]>([]);
@@ -251,15 +278,7 @@ export const EducationOSView = ({
   const [atRiskScanned, setAtRiskScanned] = useState(0);
   const [lastShareUrl, setLastShareUrl] = useState('');
 
-  const [assignmentForm, setAssignmentForm] = useState({
-    title: '',
-    assignment_type: 'task',
-    due_at: '',
-    max_score: '100',
-    score_weight: '1',
-    status: 'active',
-    description: '',
-  });
+  const [assignmentForm, setAssignmentForm] = useState({ ...emptyAssignmentForm });
   const [selectedAssignmentId, setSelectedAssignmentId] = useState('');
   const [editingAssignmentId, setEditingAssignmentId] = useState('');
   const [gradeForm, setGradeForm] = useState({
@@ -268,6 +287,7 @@ export const EducationOSView = ({
     score: '',
     max_score: '100',
     notes: '',
+    rubric_scores: {} as Record<string, string>,
   });
   const [attendanceDate, setAttendanceDate] = useState(todayDate);
   const [attendanceDraft, setAttendanceDraft] = useState<Record<string, { status: string; notes: string }>>({});
@@ -333,6 +353,14 @@ export const EducationOSView = ({
   }, [modeCanUse, tabAllowedByMode]);
 
   const selectedClassroom = selectedClassroomId ? classroomById.get(selectedClassroomId) ?? null : null;
+  const assignmentModules = useMemo(
+    () => assignmentCurriculum.modules.filter((module) => module.course_id === assignmentForm.course_id),
+    [assignmentCurriculum.modules, assignmentForm.course_id],
+  );
+  const assignmentLessons = useMemo(
+    () => assignmentCurriculum.lessons.filter((lesson) => lesson.module_id === assignmentForm.module_id),
+    [assignmentCurriculum.lessons, assignmentForm.module_id],
+  );
 
   const selectedMembers = useMemo(() => {
     if (!selectedClassroomId) return [];
@@ -491,6 +519,26 @@ export const EducationOSView = ({
     return assignments.find((assignment) => assignment.id === selectedAssignmentId) ?? assignments[0] ?? null;
   }, [assignments, selectedAssignmentId]);
 
+  const selectedGradeAssignment = useMemo(
+    () => assignments.find((assignment) => assignment.id === gradeForm.assignment_id) ?? null,
+    [assignments, gradeForm.assignment_id],
+  );
+  const selectedGradeRubric = useMemo(
+    () => rubrics.find((rubric) => rubric.id === selectedGradeAssignment?.rubric_id) ?? null,
+    [rubrics, selectedGradeAssignment?.rubric_id],
+  );
+  const selectedGradeRubricCriteria = useMemo(() => {
+    if (!selectedGradeRubric || !Array.isArray(selectedGradeRubric.criteria)) return [];
+    return selectedGradeRubric.criteria.flatMap((criterion, index) => {
+      if (!criterion || typeof criterion !== 'object' || Array.isArray(criterion)) return [];
+      const row = criterion as Record<string, unknown>;
+      const name = String(row.name ?? row.title ?? '').trim();
+      const maxPoints = Number(row.max_points ?? row.max_score ?? 0);
+      if (!name || !Number.isFinite(maxPoints) || maxPoints <= 0) return [];
+      return [{ id: String(row.id ?? `criterion-${index + 1}`), name, maxPoints }];
+    });
+  }, [selectedGradeRubric]);
+
   const assignmentDetailRows = useMemo(() => {
     if (!selectedAssignment || !gradebook) return [];
     return gradebook.rows.map((row) => ({
@@ -551,24 +599,36 @@ export const EducationOSView = ({
           attendanceData,
           scheduleData,
           inviteData,
+          curriculumData,
+          gradeCategoryData,
+          rubricData,
         ] = await Promise.all([
           modeCanUse('manageAssignments') ? teacherStudioAssignments(academyId, selectedClassroomId) : Promise.resolve([]),
           modeCanUse('gradeSubmissions') ? teacherStudioGradebook(academyId, selectedClassroomId) : Promise.resolve(null),
           modeCanUse('markAttendance') ? teacherStudioAttendance(academyId, selectedClassroomId) : Promise.resolve([]),
           modeCanUse('manageSchedule') ? teacherStudioSchedule(academyId, selectedClassroomId) : Promise.resolve([]),
           modeCanUse('manageRoster') ? teacherStudioBulkInvites(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('manageAssignments') ? teacherStudioCurriculum(academyId, selectedClassroomId) : Promise.resolve({ courses: [], modules: [], lessons: [], classroom_courses: [] }),
+          modeCanUse('gradeSubmissions') ? teacherStudioGradeCategories(academyId, selectedClassroomId) : Promise.resolve([]),
+          modeCanUse('gradeSubmissions') ? teacherStudioRubrics(academyId) : Promise.resolve([]),
         ]);
         setAssignments(assignmentData);
         setGradebook(gradebookData);
         setAttendance(attendanceData);
         setSchedule(scheduleData);
         setBulkInvites(inviteData);
+        setAssignmentCurriculum(curriculumData);
+        setGradeCategories(gradeCategoryData);
+        setRubrics(rubricData);
       } else {
         setAssignments([]);
         setGradebook(null);
         setAttendance([]);
         setSchedule([]);
         setBulkInvites([]);
+        setAssignmentCurriculum({ courses: [], modules: [], lessons: [], classroom_courses: [] });
+        setGradeCategories([]);
+        setRubrics([]);
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : String(err));
@@ -716,10 +776,17 @@ export const EducationOSView = ({
     const assignmentPayload = {
       title: assignmentForm.title.trim(),
       assignment_type: assignmentForm.assignment_type,
+      course_id: assignmentForm.course_id || null,
+      module_id: assignmentForm.module_id || null,
+      lesson_id: assignmentForm.lesson_id || null,
+      grade_category_id: assignmentForm.grade_category_id || null,
+      rubric_id: assignmentForm.rubric_id || null,
       description: assignmentForm.description.trim() || null,
       due_at: assignmentForm.due_at ? new Date(assignmentForm.due_at).toISOString() : null,
       max_score: Number(assignmentForm.max_score) > 0 ? Number(assignmentForm.max_score) : null,
       score_weight: Number(assignmentForm.score_weight) > 0 ? Number(assignmentForm.score_weight) : 1,
+      attempts_allowed: Math.max(1, Number(assignmentForm.attempts_allowed) || 1),
+      allow_late_submission: assignmentForm.allow_late_submission,
       status: assignmentForm.status,
     };
     await runAction(editingAssignmentId ? 'Assignment updated.' : 'Assignment created.', async () => {
@@ -735,15 +802,7 @@ export const EducationOSView = ({
         });
       }
       setEditingAssignmentId('');
-      setAssignmentForm({
-        title: '',
-        assignment_type: 'task',
-        due_at: '',
-        max_score: '100',
-        score_weight: '1',
-        status: 'active',
-        description: '',
-      });
+      setAssignmentForm({ ...emptyAssignmentForm });
     });
   };
 
@@ -752,9 +811,16 @@ export const EducationOSView = ({
     setAssignmentForm({
       title: assignment.title,
       assignment_type: assignment.assignment_type || 'task',
+      course_id: assignment.course_id ?? '',
+      module_id: assignment.module_id ?? '',
+      lesson_id: assignment.lesson_id ?? '',
+      grade_category_id: assignment.grade_category_id ?? '',
+      rubric_id: assignment.rubric_id ?? '',
       due_at: toDatetimeLocalValue(assignment.due_at),
       max_score: assignment.max_score !== null && assignment.max_score !== undefined ? String(assignment.max_score) : '',
       score_weight: assignment.score_weight !== null && assignment.score_weight !== undefined ? String(assignment.score_weight) : '1',
+      attempts_allowed: String(assignment.attempts_allowed ?? 1),
+      allow_late_submission: assignment.allow_late_submission ?? true,
       status: assignment.status || 'active',
       description: assignment.description ?? '',
     });
@@ -781,8 +847,16 @@ export const EducationOSView = ({
         score: Number(gradeForm.score),
         max_score: Number(gradeForm.max_score) > 0 ? Number(gradeForm.max_score) : null,
         notes: gradeForm.notes.trim() || null,
+        feedback: selectedGradeRubric
+          ? {
+              rubric_id: selectedGradeRubric.id,
+              rubric_scores: Object.fromEntries(
+                selectedGradeRubricCriteria.map((criterion) => [criterion.id, Number(gradeForm.rubric_scores[criterion.id] ?? 0)]),
+              ),
+            }
+          : undefined,
       });
-      setGradeForm((previous) => ({ ...previous, score: '', notes: '' }));
+      setGradeForm((previous) => ({ ...previous, score: '', notes: '', rubric_scores: {} }));
     });
   };
 
@@ -1486,6 +1560,12 @@ export const EducationOSView = ({
 
       {visibleActiveTab === 'learning' ? (
         <section className="grid">
+          <CurriculumView
+            academyId={academyId}
+            classroomId={selectedClassroomId}
+            canManage={modeCanUse('manageAssignments')}
+            canGrade={modeCanUse('gradeSubmissions')}
+          />
           <div className="grid two">
             {modeCanUse('manageAssignments') ? (
               <div className="panel">
@@ -1493,6 +1573,20 @@ export const EducationOSView = ({
                 <form className="grid" onSubmit={submitAssignment}>
                   <input className="input" placeholder="Assignment title" value={assignmentForm.title} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, title: event.target.value }))} required />
                   <textarea className="input" placeholder="Instructions" value={assignmentForm.description} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, description: event.target.value }))} />
+                  <div className="grid three">
+                    <select className="input" aria-label="Assignment course" value={assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, course_id: event.target.value, module_id: '', lesson_id: '' }))}>
+                      <option value="">No course link</option>
+                      {assignmentCurriculum.courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+                    </select>
+                    <select className="input" aria-label="Assignment module" value={assignmentForm.module_id} disabled={!assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, module_id: event.target.value, lesson_id: '' }))}>
+                      <option value="">No module link</option>
+                      {assignmentModules.map((module) => <option key={module.id} value={module.id}>{module.title}</option>)}
+                    </select>
+                    <select className="input" aria-label="Assignment lesson" value={assignmentForm.lesson_id} disabled={!assignmentForm.module_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, lesson_id: event.target.value }))}>
+                      <option value="">No lesson link</option>
+                      {assignmentLessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
+                    </select>
+                  </div>
                   <div className="grid three">
                     <select className="input" value={assignmentForm.assignment_type} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, assignment_type: event.target.value }))}>
                       {['task', 'test', 'lab', 'reading', 'writing', 'listening', 'speaking', 'custom'].map((kind) => <option key={kind} value={kind}>{kind}</option>)}
@@ -1506,6 +1600,21 @@ export const EducationOSView = ({
                       {['draft', 'active', 'archived'].map((status) => <option key={status} value={status}>{status}</option>)}
                     </select>
                   </div>
+                  <div className="grid three">
+                    <select className="input" aria-label="Grade category" value={assignmentForm.grade_category_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, grade_category_id: event.target.value }))}>
+                      <option value="">Uncategorized grade</option>
+                      {gradeCategories.map((category) => <option key={category.id} value={category.id}>{category.name} · weight {category.weight}</option>)}
+                    </select>
+                    <select className="input" aria-label="Assignment rubric" value={assignmentForm.rubric_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, rubric_id: event.target.value }))}>
+                      <option value="">No rubric</option>
+                      {rubrics.filter((rubric) => rubric.status !== 'archived').map((rubric) => <option key={rubric.id} value={rubric.id}>{rubric.title}</option>)}
+                    </select>
+                    <input className="input" type="number" min="1" max="100" aria-label="Assignment attempts" placeholder="Attempts" value={assignmentForm.attempts_allowed} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, attempts_allowed: event.target.value }))} />
+                  </div>
+                  <label className="row wrap small">
+                    <input type="checkbox" checked={assignmentForm.allow_late_submission} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, allow_late_submission: event.target.checked }))} />
+                    Allow late submissions after the due date
+                  </label>
                   <div className="row wrap">
                     <button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId}>
                       {editingAssignmentId ? 'Update assignment' : 'Create assignment'}
@@ -1516,7 +1625,7 @@ export const EducationOSView = ({
                         type="button"
                         onClick={() => {
                           setEditingAssignmentId('');
-                          setAssignmentForm({ title: '', assignment_type: 'task', due_at: '', max_score: '100', score_weight: '1', status: 'active', description: '' });
+                          setAssignmentForm({ ...emptyAssignmentForm });
                         }}
                         disabled={localBusy}
                       >
@@ -1559,7 +1668,11 @@ export const EducationOSView = ({
               <div className="panel">
                 <h3>Record grade</h3>
                 <form className="grid" onSubmit={submitGrade}>
-                  <select className="input" value={gradeForm.assignment_id} onChange={(event) => setGradeForm((prev) => ({ ...prev, assignment_id: event.target.value }))} required>
+                  <select className="input" value={gradeForm.assignment_id} onChange={(event) => {
+                    const assignmentId = event.target.value;
+                    const assignment = assignments.find((item) => item.id === assignmentId);
+                    setGradeForm((prev) => ({ ...prev, assignment_id: assignmentId, score: '', max_score: String(assignment?.max_score ?? 100), rubric_scores: {} }));
+                  }} required>
                     <option value="">Select assignment</option>
                     {assignments.map((assignment) => <option key={assignment.id} value={assignment.id}>{assignment.title}</option>)}
                   </select>
@@ -1571,6 +1684,30 @@ export const EducationOSView = ({
                     <input className="input" type="number" step="0.1" placeholder="Score" value={gradeForm.score} onChange={(event) => setGradeForm((prev) => ({ ...prev, score: event.target.value }))} required />
                     <input className="input" type="number" step="0.1" placeholder="Max score" value={gradeForm.max_score} onChange={(event) => setGradeForm((prev) => ({ ...prev, max_score: event.target.value }))} />
                   </div>
+                  {selectedGradeRubricCriteria.length > 0 ? (
+                    <fieldset className="grid rubric-score-grid">
+                      <legend>{selectedGradeRubric?.title} rubric</legend>
+                      {selectedGradeRubricCriteria.map((criterion) => (
+                        <label className="grid" key={criterion.id}>
+                          <span className="small">{criterion.name} · max {criterion.maxPoints}</span>
+                          <input
+                            className="input"
+                            type="number"
+                            min="0"
+                            max={criterion.maxPoints}
+                            step="0.1"
+                            value={gradeForm.rubric_scores[criterion.id] ?? ''}
+                            onChange={(event) => {
+                              const rubricScores = { ...gradeForm.rubric_scores, [criterion.id]: event.target.value };
+                              const total = selectedGradeRubricCriteria.reduce((sum, row) => sum + (Number(rubricScores[row.id]) || 0), 0);
+                              const rubricMax = selectedGradeRubricCriteria.reduce((sum, row) => sum + row.maxPoints, 0);
+                              setGradeForm((previous) => ({ ...previous, rubric_scores: rubricScores, score: String(total), max_score: String(rubricMax) }));
+                            }}
+                          />
+                        </label>
+                      ))}
+                    </fieldset>
+                  ) : null}
                   <textarea className="input" placeholder="Teacher notes" value={gradeForm.notes} onChange={(event) => setGradeForm((prev) => ({ ...prev, notes: event.target.value }))} />
                   <button className="primary-btn" type="submit" disabled={localBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>Save grade</button>
                 </form>
@@ -1608,6 +1745,14 @@ export const EducationOSView = ({
                   <article>
                     <span>Weight</span>
                     <strong>{selectedAssignment.score_weight ?? 1}</strong>
+                  </article>
+                  <article>
+                    <span>Grade category</span>
+                    <strong>{gradeCategories.find((category) => category.id === selectedAssignment.grade_category_id)?.name ?? 'Uncategorized'}</strong>
+                  </article>
+                  <article>
+                    <span>Attempts</span>
+                    <strong>{selectedAssignment.attempts_allowed ?? 1}{selectedAssignment.allow_late_submission ? ' · late allowed' : ''}</strong>
                   </article>
                 </div>
                 {selectedAssignment.description ? <p>{selectedAssignment.description}</p> : <p className="muted">No instructions added yet.</p>}

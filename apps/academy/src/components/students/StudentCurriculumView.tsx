@@ -1,0 +1,242 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  teacherStudioSetLessonProgress,
+  teacherStudioStartQuiz,
+  teacherStudioStudentCurriculum,
+  teacherStudioSubmitQuiz,
+  type TeacherStudioLesson,
+  type TeacherStudioQuiz,
+  type TeacherStudioQuizAttempt,
+  type TeacherStudioQuizQuestion,
+  type TeacherStudioStudentCurriculum,
+} from '../../lib/client';
+
+type StudentCurriculumViewProps = {
+  academyId: string;
+  classroomId: string;
+};
+
+const lessonText = (lesson: TeacherStudioLesson): string => {
+  const content = lesson.content;
+  if (Array.isArray(content)) {
+    return content.map((block) => {
+      if (block && typeof block === 'object' && !Array.isArray(block)) return String((block as Record<string, unknown>).text ?? '');
+      return String(block ?? '');
+    }).filter(Boolean).join('\n');
+  }
+  if (content && typeof content === 'object') return String((content as Record<string, unknown>).text ?? '');
+  return '';
+};
+
+export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurriculumViewProps) => {
+  const [curriculum, setCurriculum] = useState<TeacherStudioStudentCurriculum | null>(null);
+  const [expandedLessonId, setExpandedLessonId] = useState('');
+  const [activeQuiz, setActiveQuiz] = useState<TeacherStudioQuiz | null>(null);
+  const [activeAttempt, setActiveAttempt] = useState<TeacherStudioQuizAttempt | null>(null);
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  const load = useCallback(async () => {
+    setBusy(true);
+    setError('');
+    try {
+      setCurriculum(await teacherStudioStudentCurriculum(academyId, classroomId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }, [academyId, classroomId]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const progressByLesson = useMemo(
+    () => new Map((curriculum?.progress ?? []).map((progress) => [progress.lesson_id, progress])),
+    [curriculum?.progress],
+  );
+  const questionsForQuiz = useMemo(
+    () => (curriculum?.questions ?? []).filter((question) => question.quiz_id === activeQuiz?.id),
+    [activeQuiz?.id, curriculum?.questions],
+  );
+  const latestAttemptByQuiz = useMemo(() => {
+    const result = new Map<string, TeacherStudioQuizAttempt>();
+    for (const attempt of curriculum?.attempts ?? []) {
+      if (!result.has(attempt.quiz_id) || attempt.attempt_number > (result.get(attempt.quiz_id)?.attempt_number ?? 0)) result.set(attempt.quiz_id, attempt);
+    }
+    return result;
+  }, [curriculum?.attempts]);
+
+  const markLesson = async (lesson: TeacherStudioLesson, status: 'in_progress' | 'completed') => {
+    setBusy(true);
+    setError('');
+    try {
+      await teacherStudioSetLessonProgress(academyId, { classroom_id: classroomId, lesson_id: lesson.id, status });
+      setNotice(status === 'completed' ? 'Lesson completed.' : 'Lesson started.');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startQuiz = async (quiz: TeacherStudioQuiz) => {
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const result = await teacherStudioStartQuiz(academyId, { classroom_id: classroomId, quiz_id: quiz.id });
+      setActiveQuiz(quiz);
+      setActiveAttempt(result.attempt);
+      setAnswers({});
+      if (result.resumed) setNotice('Resumed your open quiz attempt.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitQuiz = async () => {
+    if (!activeAttempt) return;
+    setBusy(true);
+    setError('');
+    try {
+      const attempt = await teacherStudioSubmitQuiz(academyId, { classroom_id: classroomId, attempt_id: activeAttempt.id, answers });
+      setActiveAttempt(attempt);
+      setNotice(attempt.status === 'submitted' ? 'Quiz submitted for teacher grading.' : `Quiz graded: ${attempt.percentage ?? 0}%.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const setChoiceAnswer = (question: TeacherStudioQuizQuestion, value: string, checked: boolean) => {
+    if (question.question_type !== 'multiple_choice') {
+      setAnswers((previous) => ({ ...previous, [question.id]: value }));
+      return;
+    }
+    setAnswers((previous) => {
+      const current = Array.isArray(previous[question.id]) ? previous[question.id] as string[] : [];
+      return { ...previous, [question.id]: checked ? [...new Set([...current, value])] : current.filter((item) => item !== value) };
+    });
+  };
+
+  const renderQuestion = (question: TeacherStudioQuizQuestion) => {
+    if (['single_choice', 'multiple_choice'].includes(question.question_type)) {
+      const selected = answers[question.id];
+      return (
+        <div className="grid">
+          {(question.options ?? []).map((rawOption) => {
+            const option = String(rawOption);
+            const checked = question.question_type === 'multiple_choice'
+              ? Array.isArray(selected) && selected.map(String).includes(option)
+              : String(selected ?? '') === option;
+            return (
+              <label className="row" key={option}>
+                <input type={question.question_type === 'multiple_choice' ? 'checkbox' : 'radio'} name={question.id} checked={checked} onChange={(event) => setChoiceAnswer(question, option, event.target.checked)} />
+                <span>{option}</span>
+              </label>
+            );
+          })}
+        </div>
+      );
+    }
+    if (question.question_type === 'true_false') {
+      return (
+        <select className="input" value={String(answers[question.id] ?? '')} onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value === 'true' }))}>
+          <option value="">Choose an answer</option><option value="true">True</option><option value="false">False</option>
+        </select>
+      );
+    }
+    return (
+      <textarea className="input" placeholder={question.question_type === 'essay' ? 'Write your response' : 'Your answer'} value={String(answers[question.id] ?? '')} onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value }))} />
+    );
+  };
+
+  if (!curriculum && busy) return <div className="panel">Loading curriculum…</div>;
+
+  return (
+    <section className="grid student-curriculum">
+      {error ? <div className="error-banner">{error}</div> : null}
+      {notice ? <div className="info-banner">{notice}</div> : null}
+      {(curriculum?.courses ?? []).map((course) => {
+        const modules = curriculum?.modules.filter((module) => module.course_id === course.id) ?? [];
+        const courseLessons = curriculum?.lessons.filter((lesson) => lesson.course_id === course.id) ?? [];
+        const completed = courseLessons.filter((lesson) => progressByLesson.get(lesson.id)?.status === 'completed').length;
+        const courseQuizzes = curriculum?.quizzes.filter((quiz) => quiz.course_id === course.id) ?? [];
+        return (
+          <article className="panel" key={course.id}>
+            <div className="row between wrap">
+              <div><h3>{course.title}</h3><p className="muted">{course.description || course.level || 'Structured learning path'}</p></div>
+              <span className="status status--ok">{completed}/{courseLessons.length} lessons</span>
+            </div>
+            <progress className="course-progress" max={Math.max(1, courseLessons.length)} value={completed} />
+            <div className="grid two">
+              <div>
+                {modules.map((module) => (
+                  <section className="curriculum-module" key={module.id}>
+                    <h4>{module.title}</h4>
+                    {module.description ? <p className="small muted">{module.description}</p> : null}
+                    <ul className="list">
+                      {(curriculum?.lessons ?? []).filter((lesson) => lesson.module_id === module.id).map((lesson) => {
+                        const progress = progressByLesson.get(lesson.id);
+                        const expanded = expandedLessonId === lesson.id;
+                        return (
+                          <li key={lesson.id}>
+                            <div className="row between wrap">
+                              <div><strong>{lesson.title}</strong><div className="small muted">{lesson.estimated_minutes} min{lesson.locked ? ' · locked' : ''}</div></div>
+                              <span className={progress?.status === 'completed' ? 'status status--ok' : lesson.locked ? 'status status--pending' : 'status'}>{progress?.status ?? (lesson.locked ? 'locked' : 'not started')}</span>
+                            </div>
+                            {lesson.summary ? <p>{lesson.summary}</p> : null}
+                            <div className="row wrap">
+                              <button className="small-btn" type="button" disabled={lesson.locked} onClick={() => { setExpandedLessonId(expanded ? '' : lesson.id); if (!progress && !lesson.locked) void markLesson(lesson, 'in_progress'); }}>{expanded ? 'Close lesson' : 'Open lesson'}</button>
+                              {progress?.status !== 'completed' ? <button className="small-btn" type="button" disabled={busy || lesson.locked} onClick={() => void markLesson(lesson, 'completed')}>Mark complete</button> : null}
+                            </div>
+                            {expanded ? <div className="lesson-content">{lessonText(lesson) || 'No lesson content has been published.'}</div> : null}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+              <div>
+                <h4>Assessments</h4>
+                <ul className="list">
+                  {courseQuizzes.map((quiz) => {
+                    const latest = latestAttemptByQuiz.get(quiz.id);
+                    return (
+                      <li key={quiz.id}>
+                        <div className="row between wrap"><strong>{quiz.title}</strong><span className={latest?.passed ? 'status status--ok' : latest ? 'status status--pending' : 'status'}>{latest ? `${latest.percentage ?? '-'}%` : 'not attempted'}</span></div>
+                        <div className="small muted">Pass {quiz.passing_score}% · {quiz.attempts_allowed} attempt{quiz.attempts_allowed === 1 ? '' : 's'}{quiz.time_limit_seconds ? ` · ${Math.ceil(quiz.time_limit_seconds / 60)} min` : ''}{quiz.locked ? ' · locked by lesson prerequisite' : ''}</div>
+                        <button className="small-btn" type="button" disabled={busy || quiz.locked || latest?.status === 'submitted'} onClick={() => void startQuiz(quiz)}>{latest?.status === 'in_progress' ? 'Resume quiz' : 'Start quiz'}</button>
+                      </li>
+                    );
+                  })}
+                  {courseQuizzes.length === 0 ? <li>No assessments published yet.</li> : null}
+                </ul>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+      {(curriculum?.courses ?? []).length === 0 ? <div className="panel">No published curriculum is assigned to this classroom yet.</div> : null}
+
+      {activeQuiz && activeAttempt?.status === 'in_progress' ? (
+        <section className="panel quiz-attempt-panel">
+          <div className="row between wrap"><div><h3>{activeQuiz.title}</h3><p className="muted">Attempt {activeAttempt.attempt_number}</p></div><span className="status status--pending">in progress</span></div>
+          {activeQuiz.instructions ? <p>{activeQuiz.instructions}</p> : null}
+          <div className="grid">
+            {questionsForQuiz.map((question, index) => <article className="quiz-question" key={question.id}><div className="row between"><strong>{index + 1}. {question.prompt}</strong><span className="small muted">{question.points} pts</span></div>{renderQuestion(question)}</article>)}
+          </div>
+          <button className="primary-btn" type="button" disabled={busy || questionsForQuiz.length === 0} onClick={() => void submitQuiz()}>Submit quiz</button>
+        </section>
+      ) : null}
+    </section>
+  );
+};
