@@ -32,6 +32,7 @@ type ClassroomDetailViewProps = {
   onSaveLanding: (event: FormEvent<HTMLFormElement>) => void;
   busy: boolean;
   canManageLanding: boolean;
+  canManageRoster: boolean;
   educationOS: TeacherStudioEducationOS | null;
   onResolveActionItem: (item: TeacherStudioActionItem, status?: ActionStatus) => Promise<void>;
   onOpenActionItem: (item: TeacherStudioActionItem) => void;
@@ -39,6 +40,7 @@ type ClassroomDetailViewProps = {
   canIssueCertificates: boolean;
   formatDate: (iso: string | null | undefined) => string;
   statusClass: (status: string) => string;
+  onSetEnrollmentStatus: (membershipId: string, status: TeacherStudioClassroomMembership['status']) => Promise<void>;
   onBack: () => void;
 };
 
@@ -84,6 +86,7 @@ export const ClassroomDetailView = ({
   onSaveLanding,
   busy,
   canManageLanding,
+  canManageRoster,
   educationOS,
   onResolveActionItem,
   onOpenActionItem,
@@ -91,6 +94,7 @@ export const ClassroomDetailView = ({
   canIssueCertificates,
   formatDate,
   statusClass,
+  onSetEnrollmentStatus,
   onBack,
 }: ClassroomDetailViewProps) => {
   if (!classroom) {
@@ -427,7 +431,9 @@ export const ClassroomDetailView = ({
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Status</th>
                   <th>Joined</th>
+                  <th>Lifecycle</th>
                 </tr>
               </thead>
               <tbody>
@@ -438,13 +444,21 @@ export const ClassroomDetailView = ({
                       <td>{contactLabel(contact, membership.contact_id)}</td>
                       <td>{contact?.email || '-'}</td>
                       <td>{membership.role}</td>
+                      <td><span className={statusClass(membership.status ?? 'active')}>{membership.status ?? 'active'}</span></td>
                       <td>{formatDate(membership.joined_at)}</td>
+                      <td>
+                        {canManageRoster ? (
+                          <select className="input compact-input" value={membership.status ?? 'active'} disabled={busy} onChange={(event) => void onSetEnrollmentStatus(membership.id, event.target.value)}>
+                            {['invited', 'active', 'paused', 'completed', 'withdrawn', 'expired'].map((status) => <option key={status} value={status}>{status}</option>)}
+                          </select>
+                        ) : '-'}
+                      </td>
                     </tr>
                   );
                 })}
                 {memberships.length === 0 ? (
                   <tr>
-                    <td colSpan={4}>No members in this classroom.</td>
+                    <td colSpan={6}>No members in this classroom.</td>
                   </tr>
                 ) : null}
               </tbody>

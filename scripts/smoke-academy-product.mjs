@@ -105,7 +105,16 @@ const addLiveTextCheck = (label, result, validate) => {
 const academyClient = safeRead('apps/academy/src/lib/client.ts');
 const academyApp = safeRead('apps/academy/src/App.tsx');
 const educationOsView = safeRead('apps/academy/src/components/office/EducationOSView.tsx');
+const curriculumView = safeRead('apps/academy/src/components/office/CurriculumView.tsx');
+const businessFoundationView = safeRead('apps/academy/src/components/office/BusinessFoundationView.tsx');
+const commercialCoreView = safeRead('apps/academy/src/components/office/CommercialCoreView.tsx');
+const operationsFinanceView = safeRead('apps/academy/src/components/office/OperationsFinanceView.tsx');
+const academicOperationsView = safeRead('apps/academy/src/components/office/AcademicOperationsView.tsx');
+const guardianRelationshipsView = safeRead('apps/academy/src/components/office/GuardianRelationshipsView.tsx');
+const guardianPortalView = safeRead('apps/academy/src/components/guardians/GuardianPortalView.tsx');
+const intelligenceOperationsView = safeRead('apps/academy/src/components/office/IntelligenceOperationsView.tsx');
 const studentClassroomView = safeRead('apps/academy/src/components/students/StudentClassroomView.tsx');
+const studentCurriculumView = safeRead('apps/academy/src/components/students/StudentCurriculumView.tsx');
 const paymentsView = safeRead('apps/academy/src/components/office/PaymentsView.tsx');
 const academyEdge = safeRead('supabase/functions/academy/index.ts');
 const runbook = safeRead('ACADEMY_OPERATIONS_RUNBOOK.md');
@@ -143,9 +152,49 @@ const workflowContracts = [
     tokens: ['Assignment detail', 'Open linked task', 'Missing', 'Submitted', 'Late', 'Graded', 'Open file'],
   },
   {
+    label: 'Teacher curriculum and native assessment workflow',
+    content: `${curriculumView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Curriculum and assessments', 'Create course', 'Add module', 'Add lesson', 'Native quizzes', 'Grade categories', 'Rubrics', 'upsert_course', 'upsert_quiz_question'],
+  },
+  {
+    label: 'Student structured course and quiz workflow',
+    content: `${studentCurriculumView}\n${studentClassroomView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['course-progress', 'Mark complete', 'Start quiz', 'Submit quiz', 'student_curriculum', 'set_lesson_progress', 'submit_quiz'],
+  },
+  {
+    label: 'Admissions, trial, conversion, branch, and room workflow',
+    content: `${businessFoundationView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Capture lead', 'Record follow-up', 'Schedule trial', 'Complete trial', 'Convert to student', 'Add branch', 'Add physical room', 'business_foundation', 'convert_lead'],
+  },
+  {
+    label: 'Commercial agreements, ledger, allocation, debt, and reconciliation workflow',
+    content: `${commercialCoreView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Commercial core', 'Create pricing plan', 'Create subscription', 'Manage agreement', 'Issue charge', 'Apply payment to charge', 'Record payment promise', 'Account ledger', 'Record reconciliation', 'commercial_core', 'allocate_payment', 'manage_subscription'],
+  },
+  {
+    label: 'Cashier, expense, contribution, compensation, and payroll workflow',
+    content: `${operationsFinanceView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Open cashier shift','Record cash movement','Close and reconcile','Record expense','Create operating budget','Branch contribution — not profit','Compensation rule','Record delivered lesson','Calculate','Approve','Mark paid','operations_finance','calculate_payroll'],
+  },
+  {
+    label: 'Actual session, conflict, attendance exception, capacity, and quality workflow',
+    content: `${academicOperationsView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Create actual lesson session','Controlled session status','Assign substitute','Academic calendar','Teacher or room availability','Record session attendance','Approve attendance exception','Make-up, transfer, extension, or credit','Quality observation','Available, occupied, unused, and peak periods','academic_operations','create_lesson_session'],
+  },
+  {
+    label: 'Guardian consent, secure linking, parent privacy, and notification evidence workflow',
+    content: `${guardianRelationshipsView}\n${guardianPortalView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Guardians, consent, and parent communication','Issue secure link','A Telegram username alone never grants student access','Privacy boundary','Retry-safe notification outbox','Immutable delivery attempts','guardian_relationships','guardian_dashboard','guardian_claim_link','queue_guardian_notification'],
+  },
+  {
+    label: 'Explainable retention, renewal, owner KPI, unified action, search, and import workflow',
+    content: `${intelligenceOperationsView}\n${academyClient}\n${academyEdge}`,
+    tokens: ['Versioned risk definition','Evaluate and explain','Open intervention','Intervention outcomes','Create renewal opportunity','Unified SLA-aware action queue','Permission-filtered global search','Governed CSV/XLSX migration','Column mapping','Source preview','business_intelligence','evaluate_retention_risk','commit_import_job'],
+  },
+  {
     label: 'Student daily classroom workflow',
     content: studentClassroomView,
-    tokens: ['Next best actions', 'Resources', 'Assignments', 'Grades', 'Attendance', 'Billing', 'Chat'],
+    tokens: ['Next best actions', 'Resources', 'Assignments', 'Grades', 'Attendance', 'Billing', 'Billing statement', 'Outstanding balance', 'Payments and credits', 'Chat'],
   },
   {
     label: 'Storage-backed resource and submission workflow',
@@ -170,6 +219,9 @@ const workflowContracts = [
       'teacher route opens LMS surfaces',
       'student route opens linked classroom workspace',
       'teacher is blocked from administrator-only route',
+      'owner can manage explicit guardian consent',
+      'guardian sees only consented child information',
+      'owner can turn explainable risk into intervention',
     ],
   },
   {
@@ -184,6 +236,10 @@ const workflowContracts = [
       'upsert_staff',
       'dispatch_notifications',
       'generate_parent_report',
+      'create_guardian_relationship',
+      'queue_guardian_notification',
+      'evaluate_retention_risk',
+      'commit_import_job',
     ],
   },
   {
@@ -218,7 +274,27 @@ const requiredEdgeActions = [
   'gradebook',
   'attendance',
   'audit_events',
+  'business_foundation',
+  'commercial_core',
+  'operations_finance',
+  'academic_operations',
+  'guardian_relationships',
+  'guardian_dashboard',
+  'guardian_claim_link',
+  'guardian_update_preferences',
+  'guardian_send_message',
+  'business_intelligence',
+  'global_search',
+  'curriculum',
+  'quizzes',
+  'grade_categories',
+  'rubrics',
+  'quiz_attempts',
   'student-dashboard',
+  'student_curriculum',
+  'set_lesson_progress',
+  'start_quiz',
+  'submit_quiz',
   'student_assignments',
   'student_attendance',
   'student_billing',
@@ -229,6 +305,37 @@ const requiredEdgeActions = [
   'mark_payment_paid',
   'dispatch_notifications',
   'generate_parent_report',
+  'upsert_course',
+  'publish_course',
+  'assign_course',
+  'upsert_module',
+  'upsert_lesson',
+  'upsert_quiz',
+  'upsert_quiz_question',
+  'upsert_grade_category',
+  'upsert_rubric',
+  'grade_quiz_attempt',
+  'set_enrollment_status',
+  'create_pricing_plan',
+  'create_subscription',
+  'manage_subscription',
+  'create_charge',
+  'allocate_payment',
+  'post_account_adjustment',
+  'record_payment_reconciliation',
+  'record_payment_promise',
+  'create_cashbox','open_cashier_shift','record_cash_movement','close_cashier_shift',
+  'upsert_expense_category','record_expense','upsert_budget','upsert_compensation_rule',
+  'record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll',
+  'upsert_academic_calendar','upsert_calendar_event','upsert_staff_availability','upsert_room_availability',
+  'create_lesson_session','transition_lesson_session','assign_session_substitute','record_session_attendance',
+  'record_attendance_exception','upsert_make_up_lesson','record_session_quality_review',
+  'create_guardian_relationship','issue_guardian_link','revoke_guardian_relationship','upsert_guardian_preferences',
+  'send_guardian_message','queue_guardian_notification',
+  'upsert_risk_definition','evaluate_retention_risk','create_intervention','update_intervention','record_intervention_activity',
+  'upsert_renewal_opportunity','record_renewal_activity','update_operational_action','create_import_job','add_import_row','commit_import_job','rollback_import_job',
+  'convert_lead_full','upsert_campaign','upsert_localization','upsert_staff_branch_assignment',
+  'create_automation_version','execute_automation_event','review_automation_execution','request_ai_assistance','review_ai_assistance',
 ];
 
 for (const action of requiredEdgeActions) {
@@ -320,6 +427,46 @@ if (liveEdgeUrl && smokeToken) {
           payload: { action: 'audit_events', academy_id: academyId },
           validate: (body) => Array.isArray(body.audit_events),
         },
+        {
+          action: 'curriculum',
+          payload: { action: 'curriculum', academy_id: academyId },
+          validate: (body) =>
+            Array.isArray(body.courses) &&
+            Array.isArray(body.modules) &&
+            Array.isArray(body.lessons) &&
+            Array.isArray(body.classroom_courses),
+        },
+        {
+          action: 'grade_categories',
+          payload: { action: 'grade_categories', academy_id: academyId },
+          validate: (body) => Array.isArray(body.grade_categories),
+        },
+        {
+          action: 'business_foundation',
+          payload: { action: 'business_foundation', academy_id: academyId },
+          validate: (body) =>
+            Array.isArray(body.branches) &&
+            Array.isArray(body.sources) &&
+            Array.isArray(body.stages) &&
+            Array.isArray(body.leads) &&
+            Array.isArray(body.activities) &&
+            Array.isArray(body.trials) &&
+            Array.isArray(body.conversions),
+        },
+        {
+          action: 'commercial_core',
+          payload: { action: 'commercial_core', academy_id: academyId },
+          validate: (body) =>
+            Array.isArray(body.pricing_plans) &&
+            Array.isArray(body.subscriptions) &&
+            Array.isArray(body.charges) &&
+            Array.isArray(body.payments) &&
+            Array.isArray(body.allocations) &&
+            Array.isArray(body.ledger_entries) &&
+            Array.isArray(body.account_balances) &&
+            Array.isArray(body.debt_cases) &&
+            Array.isArray(body.reconciliations),
+        },
       ];
 
       for (const check of ownerChecks) {
@@ -345,6 +492,27 @@ if (liveEdgeUrl && smokeToken) {
         !requireStudentEnrollment || enrolledContacts > 0,
         `contacts ${enrolledContacts}`,
       );
+      const studentClassroomId = studentDashboardOk
+        ? String(studentResult.body.classroom_memberships[0]?.classroom_id ?? '')
+        : '';
+      if (studentClassroomId) {
+        const curriculumResult = await livePost(liveEdgeUrl, studentSmokeToken, {
+          action: 'student_curriculum',
+          classroom_id: studentClassroomId,
+        });
+        addLiveResponseCheck(
+          'Live Academy Edge smoke: student_curriculum',
+          curriculumResult,
+          (body) =>
+            Array.isArray(body.courses) &&
+            Array.isArray(body.modules) &&
+            Array.isArray(body.lessons) &&
+            Array.isArray(body.progress) &&
+            Array.isArray(body.quizzes),
+        );
+      } else {
+        addCheck('Live Academy Edge smoke: student curriculum classroom discovered', !requireStudentEnrollment);
+      }
     } else {
       addCheck('Live Academy Edge smoke: student token configured', !requireStudentEnrollment);
     }
