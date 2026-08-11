@@ -390,16 +390,25 @@ if (liveEdgeUrl && smokeToken) {
     addCheck('Live Academy Edge smoke: academy id discovered', academyId.length > 0);
 
     if (academyId) {
+      const classroomsResult = await livePost(liveEdgeUrl, smokeToken, {
+        action: 'classrooms',
+        academy_id: academyId,
+      });
+      const classroomsOk = addLiveResponseCheck(
+        'Live Academy Edge smoke: classrooms',
+        classroomsResult,
+        (body) => Array.isArray(body.classrooms),
+      );
+      const ownerClassroomId = classroomsOk
+        ? String(classroomsResult.body.classrooms[0]?.id ?? '')
+        : '';
+      addCheck('Live Academy Edge smoke: classroom id discovered', ownerClassroomId.length > 0);
+
       const ownerChecks = [
         {
           action: 'summary',
           payload: { action: 'summary', academy_id: academyId },
           validate: (body) => isRecord(body.counts),
-        },
-        {
-          action: 'classrooms',
-          payload: { action: 'classrooms', academy_id: academyId },
-          validate: (body) => Array.isArray(body.classrooms),
         },
         {
           action: 'payments',
@@ -437,11 +446,6 @@ if (liveEdgeUrl && smokeToken) {
             Array.isArray(body.classroom_courses),
         },
         {
-          action: 'grade_categories',
-          payload: { action: 'grade_categories', academy_id: academyId },
-          validate: (body) => Array.isArray(body.grade_categories),
-        },
-        {
           action: 'business_foundation',
           payload: { action: 'business_foundation', academy_id: academyId },
           validate: (body) =>
@@ -473,6 +477,19 @@ if (liveEdgeUrl && smokeToken) {
         const result = await livePost(liveEdgeUrl, smokeToken, check.payload);
         addLiveResponseCheck(`Live Academy Edge smoke: ${check.action}`, result, check.validate);
       }
+
+      if (ownerClassroomId) {
+        const gradeCategoriesResult = await livePost(liveEdgeUrl, smokeToken, {
+          action: 'grade_categories',
+          academy_id: academyId,
+          classroom_id: ownerClassroomId,
+        });
+        addLiveResponseCheck(
+          'Live Academy Edge smoke: grade_categories',
+          gradeCategoriesResult,
+          (body) => Array.isArray(body.grade_categories),
+        );
+      }
     }
 
     if (studentSmokeToken) {
@@ -492,12 +509,15 @@ if (liveEdgeUrl && smokeToken) {
         !requireStudentEnrollment || enrolledContacts > 0,
         `contacts ${enrolledContacts}`,
       );
-      const studentClassroomId = studentDashboardOk
-        ? String(studentResult.body.classroom_memberships[0]?.classroom_id ?? '')
-        : '';
-      if (studentClassroomId) {
+      const studentMembership = studentDashboardOk
+        ? studentResult.body.classroom_memberships[0]
+        : undefined;
+      const studentAcademyId = String(studentMembership?.academy_id ?? '');
+      const studentClassroomId = String(studentMembership?.classroom_id ?? '');
+      if (studentAcademyId && studentClassroomId) {
         const curriculumResult = await livePost(liveEdgeUrl, studentSmokeToken, {
           action: 'student_curriculum',
+          academy_id: studentAcademyId,
           classroom_id: studentClassroomId,
         });
         addLiveResponseCheck(
@@ -511,7 +531,7 @@ if (liveEdgeUrl && smokeToken) {
             Array.isArray(body.quizzes),
         );
       } else {
-        addCheck('Live Academy Edge smoke: student curriculum classroom discovered', !requireStudentEnrollment);
+        addCheck('Live Academy Edge smoke: student curriculum scope discovered', !requireStudentEnrollment);
       }
     } else {
       addCheck('Live Academy Edge smoke: student token configured', !requireStudentEnrollment);
