@@ -4,7 +4,97 @@ on:
   workflow_dispatch:
 
 jobs:
+  configure-click-dns:
+    if: github.ref_name == 'codex/configure-click-dns'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Cloudflare token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Missing required secret: CLOUDFLARE_API_TOKEN"
+            exit 1
+          fi
+
+      - name: Upsert DNS-only Click A record
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_ID: ce7920583a44835203a0a1afc9a96c87
+          RECORD_NAME: click.schood.online
+          RECORD_IP: 89.168.67.25
+        run: |
+          node <<'NODE'
+          const headers = {
+            Authorization: "Bearer " + process.env.CLOUDFLARE_API_TOKEN,
+            "Content-Type": "application/json",
+          };
+
+          const api = async (method, path, body) => {
+            const response = await fetch("https://api.cloudflare.com/client/v4" + path, {
+              method,
+              headers,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+            const raw = await response.text();
+            let payload;
+            try {
+              payload = JSON.parse(raw);
+            } catch {
+              throw new Error(method + " " + path + " returned a non-JSON response");
+            }
+            if (!response.ok || !payload.success) {
+              throw new Error(method + " " + path + " failed: " + JSON.stringify(payload.errors || payload));
+            }
+            return payload.result;
+          };
+
+          const zoneId = process.env.ZONE_ID;
+          const name = process.env.RECORD_NAME;
+          const content = process.env.RECORD_IP;
+          const records = await api(
+            "GET",
+            "/zones/" + zoneId + "/dns_records?name=" + encodeURIComponent(name),
+          );
+
+          if (!Array.isArray(records)) {
+            throw new Error("Cloudflare DNS lookup returned an unexpected result");
+          }
+          if (records.length > 1) {
+            throw new Error("Refusing to modify multiple existing DNS records for " + name);
+          }
+
+          const desired = {
+            type: "A",
+            name,
+            content,
+            ttl: 1,
+            proxied: false,
+          };
+
+          let record;
+          if (records.length === 1) {
+            record = await api("PUT", "/zones/" + zoneId + "/dns_records/" + records[0].id, desired);
+            console.log("Updated DNS-only A record " + name + " -> " + content);
+          } else {
+            record = await api("POST", "/zones/" + zoneId + "/dns_records", desired);
+            console.log("Created DNS-only A record " + name + " -> " + content);
+          }
+
+          if (
+            record.type !== "A" ||
+            record.name !== name ||
+            record.content !== content ||
+            record.proxied !== false ||
+            record.ttl !== 1
+          ) {
+            throw new Error("Cloudflare returned a DNS record that does not match the requested configuration");
+          }
+          console.log("Verified Cloudflare record: type=A, proxied=false, ttl=Auto");
+          NODE
+
   configure-domain:
+    if: github.ref_name != 'codex/configure-click-dns'
     runs-on: ubuntu-latest
     steps:
       - name: Validate required secrets
