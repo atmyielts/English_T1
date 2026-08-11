@@ -217,7 +217,8 @@ verify_jwt = false
 [functions.academy]
 verify_jwt = false
 
-# click is the Click.uz payment webhook (unauthenticated POST) — must not verify JWT
+# CLICK Shop API callbacks do not carry Supabase JWTs. The click function
+# validates CLICK's service, signature, order, amount, and transaction state.
 [functions.click]
 verify_jwt = false
 
