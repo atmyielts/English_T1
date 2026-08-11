@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "npm run test:sat && npm run test:shared",
-    "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts",
+    "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/click/webhook-security.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
     "test:academy:routes": "npm --workspace apps/academy run test:routes",

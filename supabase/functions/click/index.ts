@@ -19,6 +19,12 @@ import {
   computeEntitlementEndsAt,
   getEntitlementTargets,
 } from "../_shared/entitlements.ts";
+import {
+  buildClickWebhookSignaturePayload,
+  type ClickWebhookEnvelope,
+  constantTimeEqual,
+  validateClickWebhookEnvelope,
+} from "./webhook-security.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -439,29 +445,13 @@ const assertClickAmountAllowed = (amount: number): Response | null => {
 // action=0 (prepare): MD5(click_trans_id + service_id + secret_key + merchant_trans_id + amount + action + sign_time)
 // action=1 (complete): MD5(click_trans_id + service_id + secret_key + merchant_trans_id + merchant_prepare_id + amount + action + sign_time)
 const verifyClickWebhookSignature = async (
-  params: Record<string, string>,
+  envelope: ClickWebhookEnvelope,
   secretKey: string,
 ): Promise<boolean> => {
-  const action = String(params.action ?? "");
-  const clickTransId = String(params.click_trans_id ?? "");
-  const serviceId = String(params.service_id ?? "");
-  const merchantTransId = String(params.merchant_trans_id ?? "");
-  const amount = String(params.amount ?? "");
-  const signTime = String(params.sign_time ?? "");
-  const receivedSign = String(params.sign_string ?? "");
-
-  if (!receivedSign) return false;
-
-  let raw: string;
-  if (action === "1") {
-    const merchantPrepareId = String(params.merchant_prepare_id ?? "");
-    raw = `${clickTransId}${serviceId}${secretKey}${merchantTransId}${merchantPrepareId}${amount}${action}${signTime}`;
-  } else {
-    raw = `${clickTransId}${serviceId}${secretKey}${merchantTransId}${amount}${action}${signTime}`;
-  }
-
-  const expected = await md5Hex(raw);
-  return expected === receivedSign;
+  const expected = await md5Hex(
+    buildClickWebhookSignaturePayload(envelope, secretKey),
+  );
+  return constantTimeEqual(expected, envelope.signString);
 };
 
 // Auth header for Click.uz Merchant API v2:
@@ -1978,20 +1968,18 @@ const grantPaidPaymentOnce = async (
 // Parses the incoming Click.uz webhook body — Click sends JSON POST.
 const parseClickWebhookBody = async (
   req: Request,
-): Promise<Record<string, string> | null> => {
+): Promise<Record<string, unknown> | null> => {
   const contentType = req.headers.get("content-type") ?? "";
   try {
     if (contentType.includes("application/json")) {
       const json = await req.json();
-      return json as Record<string, string>;
+      if (!json || typeof json !== "object" || Array.isArray(json)) return null;
+      return json as Record<string, unknown>;
     }
     // Fallback: form-urlencoded
     const text = await req.text();
-    const params: Record<string, string> = {};
-    for (const pair of text.split("&")) {
-      const [k, v] = pair.split("=");
-      if (k) params[decodeURIComponent(k)] = decodeURIComponent(v ?? "");
-    }
+    const params: Record<string, unknown> = {};
+    for (const [key, value] of new URLSearchParams(text)) params[key] = value;
     return params;
   } catch {
     return null;
@@ -2010,24 +1998,37 @@ const handleClickWebhook = async (
     });
   }
 
-  const secretKey = getClickSecretKey();
-  const isValidSig = await verifyClickWebhookSignature(params, secretKey);
+  let secretKey: string;
+  let serviceId: string;
+  let merchantId: string;
+  try {
+    secretKey = getClickSecretKey();
+    serviceId = getClickServiceId();
+    merchantId = getClickMerchantId();
+  } catch (error) {
+    console.error("click_webhook_configuration_missing", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return jsonResponse(503, {
+      error: -9,
+      error_note: "Payment provider is not configured",
+    });
+  }
+
+  const validation = validateClickWebhookEnvelope(params, serviceId);
+  if (!validation.ok) {
+    return jsonResponse(400, {
+      error: validation.error,
+      error_note: validation.errorNote,
+    });
+  }
+  const envelope = validation.value;
+  const isValidSig = await verifyClickWebhookSignature(envelope, secretKey);
   if (!isValidSig) {
     return jsonResponse(401, { error: -1, error_note: "Sign check failed!" });
   }
 
-  const action = String(params.action ?? "").trim();
-  const clickTransId = String(params.click_trans_id ?? "").trim();
-  const merchantTransId = String(params.merchant_trans_id ?? "").trim();
-  const amountRaw = parseFloat(String(params.amount ?? "0"));
-  const merchantPrepareId = String(params.merchant_prepare_id ?? "").trim();
-
-  if (!merchantTransId) {
-    return jsonResponse(400, {
-      error: -8,
-      error_note: "merchant_trans_id is required",
-    });
-  }
+  const { action, clickTransId, merchantTransId, merchantPrepareId } = envelope;
 
   // merchant_trans_id is our internal payment UUID
   const { payment, error: loadError } = await loadPaymentById(
@@ -2049,8 +2050,28 @@ const handleClickWebhook = async (
     });
   }
 
+  const paymentMetadata = payment.metadata ?? {};
+  const storedServiceId = String(
+    (paymentMetadata as any).click_service_id ?? "",
+  ).trim();
+  const storedMerchantId = String(
+    (paymentMetadata as any).click_merchant_id ?? "",
+  ).trim();
+  if (
+    String(payment.provider ?? "").toLowerCase() !== "click" ||
+    (storedServiceId && storedServiceId !== serviceId) ||
+    (storedMerchantId && storedMerchantId !== merchantId)
+  ) {
+    return jsonResponse(200, {
+      error: -6,
+      error_note: "Transaction does not exist",
+      click_trans_id: Number(clickTransId),
+      merchant_trans_id: merchantTransId,
+    });
+  }
+
   const paymentAmount = normalizeMoney(payment.amount);
-  const receivedAmount = Math.round(amountRaw);
+  const receivedAmount = normalizeMoney(envelope.amount);
   if (paymentAmount !== receivedAmount) {
     return jsonResponse(200, {
       error: -2,
@@ -2062,18 +2083,39 @@ const handleClickWebhook = async (
 
   // ── PREPARE (action=0) ────────────────────────────────────────────────────
   if (action === "0") {
-    if (isTerminalFailureStatus(payment.status)) {
+    if (isSuccessStatus(payment.status)) {
       return jsonResponse(200, {
         error: -4,
-        error_note: "Already cancelled",
+        error_note: "Already paid",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
+        merchant_prepare_id: payment.id,
+      });
+    }
+    if (isTerminalFailureStatus(payment.status)) {
+      return jsonResponse(200, {
+        error: -9,
+        error_note: "Transaction cancelled",
         click_trans_id: Number(clickTransId) || 0,
         merchant_trans_id: merchantTransId,
         merchant_prepare_id: payment.id,
       });
     }
 
+    const preparedClickTransId = String(
+      (paymentMetadata as any).click_trans_id ?? "",
+    ).trim();
+    if (preparedClickTransId && preparedClickTransId !== clickTransId) {
+      return jsonResponse(200, {
+        error: -6,
+        error_note: "Transaction does not exist",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
+      });
+    }
+
     // Store click_trans_id in provider_transaction_id + metadata
-    await supabase
+    const { error: prepareUpdateError } = await supabase
       .from("payments")
       .update({
         provider_transaction_id: clickTransId,
@@ -2086,6 +2128,12 @@ const handleClickWebhook = async (
         provider_payload: { webhook_prepare: params },
       })
       .eq("id", payment.id);
+    if (prepareUpdateError) {
+      return jsonResponse(500, {
+        error: -9,
+        error_note: "Transaction update failed",
+      });
+    }
 
     await syncAcademyPaymentFromPlatformPayment(
       supabase,
@@ -2115,7 +2163,7 @@ const handleClickWebhook = async (
   // ── COMPLETE (action=1) ───────────────────────────────────────────────────
   if (action === "1") {
     // merchant_prepare_id must match our payment UUID
-    if (merchantPrepareId && merchantPrepareId !== payment.id) {
+    if (merchantPrepareId !== payment.id) {
       return jsonResponse(200, {
         error: -6,
         error_note: "Transaction does not exist",
@@ -2125,10 +2173,41 @@ const handleClickWebhook = async (
       });
     }
 
-    const clickError = Number(params.error ?? 0);
+    const preparedClickTransId = String(
+      (paymentMetadata as any).click_trans_id ?? "",
+    ).trim();
+    if (!preparedClickTransId || preparedClickTransId !== clickTransId) {
+      return jsonResponse(200, {
+        error: -6,
+        error_note: "Transaction does not exist",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
+        merchant_confirm_id: payment.id,
+      });
+    }
+
+    const clickError = envelope.error;
+    if (isSuccessStatus(payment.status) && clickError < 0) {
+      return jsonResponse(200, {
+        error: -4,
+        error_note: "Already paid",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
+        merchant_confirm_id: payment.id,
+      });
+    }
+    if (isTerminalFailureStatus(payment.status)) {
+      return jsonResponse(200, {
+        error: clickError < 0 ? 0 : -9,
+        error_note: clickError < 0 ? "Acknowledged" : "Transaction cancelled",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
+        merchant_confirm_id: payment.id,
+      });
+    }
     if (clickError < 0) {
       // Payment was cancelled/failed by Click.uz
-      await supabase
+      const { error: cancelUpdateError } = await supabase
         .from("payments")
         .update({
           status: "canceled",
@@ -2141,6 +2220,12 @@ const handleClickWebhook = async (
           provider_payload: { webhook_complete: params },
         })
         .eq("id", payment.id);
+      if (cancelUpdateError) {
+        return jsonResponse(500, {
+          error: -9,
+          error_note: "Transaction update failed",
+        });
+      }
 
       if (normalizeMoney(payment.credit_amount) > 0) {
         await supabase.rpc("release_platform_credit", {
@@ -2278,10 +2363,18 @@ serve(async (req) => {
 
     const url = new URL(req.url);
 
+    const isWebhookPath = url.pathname.endsWith("/webhook");
+    if (isWebhookPath && req.method !== "POST") {
+      return jsonResponse(405, {
+        error: -8,
+        error_note: "CLICK webhook requires POST",
+      });
+    }
+
     // Webhook: unauthenticated POST to /click/webhook or POST without Bearer
     const isWebhookRoute =
       req.method === "POST" &&
-      (url.pathname.endsWith("/webhook") || !getBearerToken(req));
+      (isWebhookPath || !getBearerToken(req));
 
     if (isWebhookRoute) {
       return await handleClickWebhook(req, supabase);
@@ -2393,6 +2486,13 @@ serve(async (req) => {
         }
         const tuitionGuard = assertClickAmountAllowed(tuitionAmount);
         if (tuitionGuard) return tuitionGuard;
+        if (tuitionCurrency !== "UZS") {
+          return jsonResponse(400, {
+            error: "Click payments require UZS currency",
+          });
+        }
+        const tuitionServiceId = getClickServiceId();
+        const tuitionMerchantId = getClickMerchantId();
 
         // Create the academy_payments row that apply_academy_payment will settle.
         const academyProviderTxn = `click-${crypto.randomUUID()}`;
@@ -2425,6 +2525,8 @@ serve(async (req) => {
           offer_id: offerId,
           contact_id: contact.id,
           classroom_id: offer.classroom_id ?? null,
+          click_service_id: tuitionServiceId,
+          click_merchant_id: tuitionMerchantId,
         };
 
         const { data: tuitionPaymentRow, error: tuitionInsertErr } = await supabase
@@ -2459,8 +2561,8 @@ serve(async (req) => {
           .eq("id", academyPayment.id);
 
         const tuitionUrl = buildClickPaymentUrl(
-          getClickServiceId(),
-          getClickMerchantId(),
+          tuitionServiceId,
+          tuitionMerchantId,
           tuitionAmount,
           tuitionUuid,
           withPaymentReturnParams(
@@ -2904,6 +3006,11 @@ serve(async (req) => {
       }
 
       // ── Click.uz payment path ─────────────────────────────────────────────
+      if (String(currency ?? "").toUpperCase() !== "UZS") {
+        return jsonResponse(400, {
+          error: "Click payments require UZS currency",
+        });
+      }
       const amountGuard = assertClickAmountAllowed(amount);
       if (amountGuard) return amountGuard;
 
@@ -2917,6 +3024,8 @@ serve(async (req) => {
       metadata.purchase_type = purchaseKind;
       metadata.referral_code = referralCheckout.referralCode ?? null;
       metadata.credit_applied = creditAmount;
+      metadata.click_service_id = serviceId;
+      metadata.click_merchant_id = merchantId;
 
       if (purchaseType === "token_pack") {
         metadata.purchase_type = "token_pack";
