@@ -1,16 +1,36 @@
 export type AcademyAccessSource = "tenant" | "staff" | "center" | "grant";
-export type AcademyScope = "academy" | "assigned_classrooms";
+export type AcademyScope = "academy" | "assigned_branches" | "assigned_classrooms";
 export type AcademyRoleGrantStatus = "invited" | "active" | "suspended" | "expired" | "revoked";
-export type AcademyRoleGrantScopeType = "academy" | "classrooms" | "students";
+export type AcademyRoleGrantScopeType = "academy" | "branches" | "classrooms" | "students";
 
 export type AcademyAccessPermissions = {
   viewAcademy: boolean;
   manageAcademy: boolean;
   manageStaff: boolean;
   manageFinance: boolean;
+  viewFinance: boolean;
+  collectFinance: boolean;
+  adjustFinance: boolean;
+  refundFinance: boolean;
+  discountFinance: boolean;
+  reconcileFinance: boolean;
+  manageCashier: boolean;
+  viewEconomics: boolean;
+  viewPayroll: boolean;
+  calculatePayroll: boolean;
+  approvePayroll: boolean;
+  payPayroll: boolean;
   manageOffers: boolean;
   manageBranding: boolean;
   manageAutomation: boolean;
+  viewAutomation: boolean;
+  viewBranches: boolean;
+  manageBranches: boolean;
+  viewAdmissions: boolean;
+  manageAdmissions: boolean;
+  assignAdmissions: boolean;
+  exportAdmissions: boolean;
+  manageTrialFeedback: boolean;
   viewContacts: boolean;
   manageContacts: boolean;
   viewClassrooms: boolean;
@@ -27,6 +47,19 @@ export type AcademyAccessPermissions = {
   gradeSubmissions: boolean;
   markAttendance: boolean;
   manageSchedule: boolean;
+  manageAcademicOperations: boolean;
+  manageGuardians: boolean;
+  communicateGuardians: boolean;
+  manageRetention: boolean;
+  viewBusinessIntelligence: boolean;
+  viewAcademicReports: boolean;
+  viewOperationalReports: boolean;
+  viewFinancialReports: boolean;
+  viewStaffPerformance: boolean;
+  viewRisk: boolean;
+  manageImports: boolean;
+  manageLocalization: boolean;
+  useAcademyAI: boolean;
   manageResources: boolean;
   viewReports: boolean;
   issueCertificates: boolean;
@@ -44,6 +77,7 @@ export type MembershipRow = {
   staff_id?: string | null;
   grant_id?: string | null;
   classroom_ids?: string[];
+  branch_ids?: string[];
   center_tenant_id?: string | null;
 };
 
@@ -77,8 +111,10 @@ export const academyRoleRank = (roleRaw: unknown): number => {
   if (role === "owner") return 100;
   if (role === "admin") return 90;
   if (role === "center_admin") return 85;
+  if (role === "branch_manager") return 75;
   if (role === "manager") return 70;
   if (role === "counselor") return 60;
+  if (["accountant", "payroll_officer", "salesperson", "cashier", "parent_liaison"].includes(role)) return 55;
   if (role === "teacher") return 50;
   if (role === "assistant") return 40;
   return 20;
@@ -88,7 +124,10 @@ export const isAcademyAdminRole = (roleRaw: unknown): boolean =>
   ["owner", "admin", "center_admin"].includes(normalizeAcademyRole(roleRaw));
 
 export const isAcademyManagerRole = (roleRaw: unknown): boolean =>
-  ["manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
+  ["branch_manager", "manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
+
+export const isAcademyBranchRole = (roleRaw: unknown): boolean =>
+  ["branch_manager", "salesperson", "cashier", "parent_liaison"].includes(normalizeAcademyRole(roleRaw));
 
 export const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
   ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
@@ -103,7 +142,8 @@ export const normalizeAcademyRoleGrantScopeType = (scopeRaw: unknown): AcademyRo
   const scope = normalizeText(scopeRaw, 40).toLowerCase();
   if (scope === "classroom") return "classrooms";
   if (scope === "student") return "students";
-  if (scope === "classrooms" || scope === "students") return scope;
+  if (scope === "branch") return "branches";
+  if (scope === "branches" || scope === "classrooms" || scope === "students") return scope;
   return "academy";
 };
 
@@ -132,6 +172,9 @@ export const academyRoleGrantToMembership = (
   const classroomIds = scopeType === "classrooms" || isAcademyTeachingRole(role)
     ? toStringArray(grant.scope_ids)
     : [];
+  const branchIds = scopeType === "branches" || isAcademyBranchRole(role)
+    ? toStringArray(grant.scope_ids)
+    : [];
 
   return {
     tenant_id: academyId,
@@ -140,13 +183,20 @@ export const academyRoleGrantToMembership = (
     source: "grant",
     grant_id: grant.id ? normalizeText(grant.id, 64) : null,
     classroom_ids: classroomIds,
+    branch_ids: branchIds,
   };
 };
 
 export const academyAccessScope = (access: MembershipRow): AcademyScope => {
   const role = normalizeAcademyRole(access.role);
-  if (isAcademyAdminRole(role) || isAcademyManagerRole(role)) return "academy";
+  if (isAcademyAdminRole(role) || ["manager", "counselor", "accountant", "payroll_officer"].includes(role)) return "academy";
+  if (isAcademyBranchRole(role)) return "assigned_branches";
   return "assigned_classrooms";
+};
+
+export const academyAccessBranchIds = (access: MembershipRow): string[] | null => {
+  if (academyAccessScope(access) !== "assigned_branches") return null;
+  return toStringArray(access.branch_ids);
 };
 
 export const academyAccessClassroomIds = (access: MembershipRow): string[] | null => {
@@ -158,27 +208,55 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
   const role = normalizeAcademyRole(access.role);
   const ownerAdmin = ["owner", "admin"].includes(role);
   const centerAdmin = role === "center_admin";
-  const manager = isAcademyManagerRole(role);
+  const branchManager = role === "branch_manager";
+  const manager = ["manager", "counselor"].includes(role);
+  const salesperson = role === "salesperson";
+  const cashier = role === "cashier";
+  const accountant = role === "accountant";
+  const payrollOfficer = role === "payroll_officer";
+  const parentLiaison = role === "parent_liaison";
   const teacher = isAcademyTeachingRole(role);
-  const ops = ownerAdmin || centerAdmin || manager;
-  const staff = ops || teacher;
+  const ops = ownerAdmin || centerAdmin || manager || branchManager;
+  const staff = ops || teacher || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
   const classroomLms = ownerAdmin || teacher;
+  const financeViewer = ownerAdmin || centerAdmin || branchManager || cashier || accountant;
+  const reportingViewer = ownerAdmin || centerAdmin || manager || branchManager || accountant;
 
   return {
     viewAcademy: ops,
     manageAcademy: ownerAdmin || centerAdmin,
     manageStaff: ownerAdmin || centerAdmin,
     manageFinance: ownerAdmin || centerAdmin,
+    viewFinance: financeViewer,
+    collectFinance: ownerAdmin || centerAdmin || branchManager || cashier || accountant,
+    adjustFinance: ownerAdmin || centerAdmin || accountant,
+    refundFinance: ownerAdmin || accountant,
+    discountFinance: ownerAdmin || centerAdmin,
+    reconcileFinance: ownerAdmin || centerAdmin || accountant,
+    manageCashier: ownerAdmin || centerAdmin || branchManager || cashier,
+    viewEconomics: ownerAdmin || centerAdmin || accountant,
+    viewPayroll: ownerAdmin || centerAdmin || payrollOfficer,
+    calculatePayroll: ownerAdmin || centerAdmin || payrollOfficer,
+    approvePayroll: ownerAdmin,
+    payPayroll: ownerAdmin,
     manageOffers: ownerAdmin || centerAdmin,
     manageBranding: ownerAdmin || centerAdmin,
     manageAutomation: ownerAdmin || centerAdmin,
+    viewAutomation: ownerAdmin || centerAdmin || manager || branchManager,
+    viewBranches: staff,
+    manageBranches: ownerAdmin || centerAdmin,
+    viewAdmissions: ops || salesperson,
+    manageAdmissions: ops || salesperson,
+    assignAdmissions: ownerAdmin || centerAdmin || manager || branchManager,
+    exportAdmissions: ownerAdmin || centerAdmin || manager,
+    manageTrialFeedback: staff,
     viewContacts: staff,
-    manageContacts: ops,
+    manageContacts: ops || salesperson || parentLiaison,
     viewClassrooms: staff,
     manageClassrooms: ops,
     manageRoster: ops,
     manageMessages: staff,
-    manageAnnouncements: staff,
+    manageAnnouncements: ops || teacher || parentLiaison,
     sendGlobalAnnouncements: ops,
     manageAlerts: staff,
     resolveAlerts: staff,
@@ -188,13 +266,26 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     gradeSubmissions: classroomLms,
     markAttendance: classroomLms,
     manageSchedule: ownerAdmin || centerAdmin || manager || teacher,
+    manageAcademicOperations: ops,
+    manageGuardians: ops || parentLiaison,
+    communicateGuardians: ops || teacher || parentLiaison,
+    manageRetention: ops,
+    viewBusinessIntelligence: reportingViewer,
+    viewAcademicReports: reportingViewer || teacher,
+    viewOperationalReports: reportingViewer,
+    viewFinancialReports: ownerAdmin || centerAdmin || accountant,
+    viewStaffPerformance: ownerAdmin || centerAdmin || manager || branchManager,
+    viewRisk: ops || parentLiaison,
+    manageImports: ownerAdmin || centerAdmin || manager,
+    manageLocalization: ownerAdmin || centerAdmin,
+    useAcademyAI: ownerAdmin || centerAdmin || manager || branchManager,
     manageResources: classroomLms,
-    viewReports: ops,
+    viewReports: reportingViewer,
     issueCertificates: ownerAdmin,
-    dispatchNotifications: ops,
-    viewNotifications: ops,
-    viewReferrals: ops,
-    viewAudit: ops,
+    dispatchNotifications: ops || parentLiaison,
+    viewNotifications: ops || parentLiaison,
+    viewReferrals: ops || salesperson,
+    viewAudit: ownerAdmin || centerAdmin || manager || accountant,
   };
 };
 
@@ -205,6 +296,7 @@ export const academyAccessProfile = (access: MembershipRow): Record<string, unkn
     source: access.source ?? "tenant",
     scope,
     classroom_ids: scope === "academy" ? [] : toStringArray(access.classroom_ids),
+    branch_ids: scope === "academy" ? [] : toStringArray(access.branch_ids),
     center_tenant_id: access.center_tenant_id ?? null,
     permissions: buildAcademyPermissions(access),
   };

@@ -1,0 +1,5 @@
+import { assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
+const migration=await Deno.readTextFile(new URL("../../migrations/20260810200000_academy_business_os_phase_h.sql",import.meta.url));
+Deno.test("Phase H preserves versioned automation executions and effect evidence",()=>{for(const token of ["academy_automation_rule_versions","academy_automation_executions","academy_automation_effects","branch_id uuid","human_review_required","idempotency_key","academy_begin_automation_execution"])assert(migration.includes(token),token);});
+Deno.test("Phase H keeps AI assistance proposal-only with immutable human review",()=>{for(const token of ["academy_ai_assistance_requests","academy_ai_assistance_reviews","proposed_output","evidence_snapshot","human_review_required","academy_ai_reviews_immutable"])assert(migration.includes(token),token);});
+Deno.test("Phase H imports retain row effects, rollback state, and audit immutability",()=>{for(const token of ["academy_import_effects","rollback_strategy","before_snapshot","after_snapshot","rollback_status","academy_audit_events_immutable"])assert(migration.includes(token),token);});

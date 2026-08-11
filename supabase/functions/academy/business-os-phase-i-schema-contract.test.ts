@@ -1,0 +1,5 @@
+import { assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
+const migration=await Deno.readTextFile(new URL("../../migrations/20260810210000_academy_business_os_phase_i.sql",import.meta.url));
+Deno.test("Phase I makes branch ownership explicit and search branch-aware",()=>{for(const token of ["academy_contacts_fill_branch","primary_branch_id set not null","academy_classrooms_branch_fk","academy_global_search_v2","branch_id uuid"])assert(migration.includes(token),token);});
+Deno.test("Phase I exposes governed business metrics and unified learner intelligence",()=>{for(const token of ["academy_metric_definitions","academy_business_dashboard_v2","academy_marketing_attribution_metrics","academy_unit_economics_metrics","academy_teacher_performance_metrics","academy_staff_performance_metrics","academy_unified_student_intelligence"])assert(migration.includes(token),token);});
+Deno.test("Campaign attribution and default multilingual metric labels are seeded",()=>{for(const token of ["academy_marketing_campaigns","name_i18n","description_i18n","source_id","uz","ru","en"])assert(migration.includes(token),token);});

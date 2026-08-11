@@ -25,7 +25,9 @@ type ResourceKey =
   | "offers"
   | "payments"
   | "alerts_messages_announcements"
-  | "education_os_actions";
+  | "education_os_actions"
+  | "admissions"
+  | "branches";
 
 const roles: RoleKey[] = [
   "owner",
@@ -52,6 +54,8 @@ const resourcePermission: Record<ResourceKey, PermissionKey[]> = {
   payments: ["manageFinance"],
   alerts_messages_announcements: ["manageMessages", "manageAnnouncements", "manageAlerts"],
   education_os_actions: ["viewEducationOS", "resolveActionItems"],
+  admissions: ["viewAdmissions", "manageAdmissions"],
+  branches: ["viewBranches", "manageBranches"],
 };
 
 const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
@@ -69,6 +73,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: true,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: true,
+    branches: true,
   },
   admin: {
     contacts: true,
@@ -84,6 +90,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: true,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: true,
+    branches: true,
   },
   center_admin: {
     contacts: true,
@@ -99,6 +107,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: true,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: true,
+    branches: true,
   },
   manager: {
     contacts: true,
@@ -114,6 +124,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: false,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: true,
+    branches: true,
   },
   counselor: {
     contacts: true,
@@ -129,6 +141,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: false,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: true,
+    branches: true,
   },
   teacher: {
     contacts: true,
@@ -144,6 +158,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: false,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: false,
+    branches: true,
   },
   assistant: {
     contacts: true,
@@ -159,6 +175,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: false,
     alerts_messages_announcements: true,
     education_os_actions: true,
+    admissions: false,
+    branches: true,
   },
   student: {
     contacts: false,
@@ -174,6 +192,8 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     payments: false,
     alerts_messages_announcements: false,
     education_os_actions: false,
+    admissions: false,
+    branches: false,
   },
 };
 
@@ -296,4 +316,24 @@ Deno.test("Academy center route exposes schedule but not teacher grading control
   assertEquals(centerCaps.includes("'manageAssignments'"), false);
   assertEquals(centerCaps.includes("'gradeSubmissions'"), false);
   assertEquals(centerCaps.includes("'markAttendance'"), false);
+});
+
+Deno.test("Academy specialist roles are least-privilege and branch-scoped", () => {
+  const branchId = "00000000-0000-0000-0000-000000000030";
+  const permissions = (role: string) => academyAccess.buildAcademyPermissions({
+    tenant_id: "00000000-0000-0000-0000-000000000001", role, status: "active", source: "staff", branch_ids: [branchId], classroom_ids: [],
+  });
+  const branchManager=permissions("branch_manager");
+  assertEquals(branchManager.manageAdmissions,true);assertEquals(branchManager.collectFinance,true);assertEquals(branchManager.adjustFinance,false);assertEquals(branchManager.manageStaff,false);assertEquals(branchManager.viewFinancialReports,false);
+  const salesperson=permissions("salesperson");
+  assertEquals(salesperson.manageAdmissions,true);assertEquals(salesperson.viewFinance,false);assertEquals(salesperson.manageClassrooms,false);assertEquals(salesperson.exportAdmissions,false);
+  const cashier=permissions("cashier");
+  assertEquals(cashier.collectFinance,true);assertEquals(cashier.manageCashier,true);assertEquals(cashier.adjustFinance,false);assertEquals(cashier.viewAdmissions,false);
+  const accountant=permissions("accountant");
+  assertEquals(accountant.viewFinance,true);assertEquals(accountant.adjustFinance,true);assertEquals(accountant.refundFinance,true);assertEquals(accountant.manageAdmissions,false);
+  const payroll=permissions("payroll_officer");
+  assertEquals(payroll.viewPayroll,true);assertEquals(payroll.calculatePayroll,true);assertEquals(payroll.approvePayroll,false);assertEquals(payroll.payPayroll,false);
+  const liaison=permissions("parent_liaison");
+  assertEquals(liaison.manageGuardians,true);assertEquals(liaison.communicateGuardians,true);assertEquals(liaison.viewRisk,true);assertEquals(liaison.viewFinance,false);
+  assertEquals(academyAccess.academyAccessProfile({tenant_id:"00000000-0000-0000-0000-000000000001",role:"branch_manager",status:"active",branch_ids:[branchId]}).scope,"assigned_branches");
 });
