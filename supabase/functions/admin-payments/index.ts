@@ -25,7 +25,12 @@ type PaymentRow = {
   plan_id: string | null;
   purchase_type?: string | null;
   granted_at: string | null;
+  grant_completed_at?: string | null;
   grant_error: string | null;
+  fiscalization_status?: string | null;
+  fiscal_receipt_id?: string | null;
+  fiscalized_at?: string | null;
+  fiscalization_error?: string | null;
   original_amount: number | null;
   discount_amount: number | null;
   coupon_code: string | null;
@@ -39,7 +44,8 @@ type PaymentRow = {
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -57,11 +63,14 @@ const normalizePaymentStatus = (raw: unknown): string => {
 };
 
 const parseSuccessStatuses = (raw: string | undefined): Set<string> => {
-  const list = (raw ?? "paid,success,completed").split(",").map((v) => v.trim().toLowerCase());
+  const list = (raw ?? "paid,success,completed").split(",").map((v) =>
+    v.trim().toLowerCase()
+  );
   return new Set(list.filter(Boolean));
 };
 
-const normalizePurchaseType = (raw: unknown): string => String(raw ?? "").trim().toLowerCase();
+const normalizePurchaseType = (raw: unknown): string =>
+  String(raw ?? "").trim().toLowerCase();
 
 const paymentSuccessStatuses = (): Set<string> =>
   parseSuccessStatuses(Deno.env.get("PAYMENT_SUCCESS_STATUSES"));
@@ -71,20 +80,28 @@ const normalizeMoney = (raw: unknown): number => {
   return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
 };
 
-const normalizeCenterTier = (raw: unknown): "starter" | "growth" | "premium" | "exclusive" | null => {
+const normalizeCenterTier = (
+  raw: unknown,
+): "starter" | "growth" | "premium" | "exclusive" | null => {
   const tier = String(raw ?? "").trim().toLowerCase();
-  if (tier === "starter" || tier === "growth" || tier === "premium" || tier === "exclusive") return tier;
+  if (
+    tier === "starter" || tier === "growth" || tier === "premium" ||
+    tier === "exclusive"
+  ) return tier;
   return null;
 };
 
-const normalizeBillingPeriod = (raw: unknown): "monthly" | "annual" | "manual" => {
+const normalizeBillingPeriod = (
+  raw: unknown,
+): "monthly" | "annual" | "manual" => {
   const period = String(raw ?? "").trim().toLowerCase();
   if (period === "annual") return "annual";
   if (period === "manual") return "manual";
   return "monthly";
 };
 
-const isSuccessStatus = (successes: Set<string>, status: string): boolean => successes.has(status.trim().toLowerCase());
+const isSuccessStatus = (successes: Set<string>, status: string): boolean =>
+  successes.has(status.trim().toLowerCase());
 
 const uniqIds = (ids: Array<string | null | undefined>): string[] => {
   const set = new Set<string>();
@@ -96,16 +113,23 @@ const uniqIds = (ids: Array<string | null | undefined>): string[] => {
   return Array.from(set);
 };
 
-const looksLikeUuid = (s: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+const looksLikeUuid = (s: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 
-const buildEntitlementValue = (planId: string | null | undefined, planLimits: Record<string, number>): Record<string, unknown> => {
+const buildEntitlementValue = (
+  planId: string | null | undefined,
+  planLimits: Record<string, number>,
+): Record<string, unknown> => {
   const value: Record<string, unknown> = {};
   if (planId) value.plan_id = planId;
   if (Object.keys(planLimits).length > 0) value.limits = planLimits;
   return value;
 };
 
-const getEntitlementTargets = (productId: string, included: string[]): string[] => {
+const getEntitlementTargets = (
+  productId: string,
+  included: string[],
+): string[] => {
   const set = new Set<string>([productId, ...included]);
   return Array.from(set);
 };
@@ -117,7 +141,10 @@ type ResolvedGrantTerms = {
   sourcePlanId: string | null;
 };
 
-const resolveGrantTerms = async (sb: any, payment: PaymentRow): Promise<ResolvedGrantTerms> => {
+const resolveGrantTerms = async (
+  sb: any,
+  payment: PaymentRow,
+): Promise<ResolvedGrantTerms> => {
   const directTerms = parseEntitlementTerms(payment.entitlement_terms ?? null);
   if (directTerms) {
     return {
@@ -128,16 +155,19 @@ const resolveGrantTerms = async (sb: any, payment: PaymentRow): Promise<Resolved
     };
   }
 
-  const planSnapshot = payment.plan_snapshot && typeof payment.plan_snapshot === "object" && !Array.isArray(payment.plan_snapshot)
-    ? payment.plan_snapshot
-    : null;
+  const planSnapshot =
+    payment.plan_snapshot && typeof payment.plan_snapshot === "object" &&
+      !Array.isArray(payment.plan_snapshot)
+      ? payment.plan_snapshot
+      : null;
   if (planSnapshot) {
     const durationRaw = (planSnapshot as any).duration_days;
-    const durationDays = durationRaw === null || typeof durationRaw === "undefined"
-      ? null
-      : Number.isFinite(Number(durationRaw))
-      ? Math.max(1, Math.floor(Number(durationRaw)))
-      : null;
+    const durationDays =
+      durationRaw === null || typeof durationRaw === "undefined"
+        ? null
+        : Number.isFinite(Number(durationRaw))
+        ? Math.max(1, Math.floor(Number(durationRaw)))
+        : null;
     const meta = (planSnapshot as any).metadata ?? null;
     return {
       durationDays,
@@ -148,20 +178,30 @@ const resolveGrantTerms = async (sb: any, payment: PaymentRow): Promise<Resolved
   }
 
   if (!payment.plan_id) {
-    return { durationDays: null, includedProductIds: [], limits: {}, sourcePlanId: null };
+    return {
+      durationDays: null,
+      includedProductIds: [],
+      limits: {},
+      sourcePlanId: null,
+    };
   }
 
-  const { data: planRow } = await sb.from("plans").select("id, duration_days, metadata").eq("id", payment.plan_id).maybeSingle();
+  const { data: planRow } = await sb.from("plans").select(
+    "id, duration_days, metadata",
+  ).eq("id", payment.plan_id).maybeSingle();
   if (!planRow) {
-    throw new Error(`Plan terms unavailable for payment ${payment.id} (plan ${payment.plan_id})`);
+    throw new Error(
+      `Plan terms unavailable for payment ${payment.id} (plan ${payment.plan_id})`,
+    );
   }
 
   const durationRaw = (planRow as any).duration_days;
-  const durationDays = durationRaw === null || typeof durationRaw === "undefined"
-    ? null
-    : Number.isFinite(Number(durationRaw))
-    ? Math.max(1, Math.floor(Number(durationRaw)))
-    : null;
+  const durationDays =
+    durationRaw === null || typeof durationRaw === "undefined"
+      ? null
+      : Number.isFinite(Number(durationRaw))
+      ? Math.max(1, Math.floor(Number(durationRaw)))
+      : null;
   const meta = (planRow as any).metadata ?? null;
   return {
     durationDays,
@@ -184,7 +224,9 @@ const readJsonPayload = async (res: Response): Promise<any> => {
 const sha1Hex = async (message: string): Promise<string> => {
   const data = new TextEncoder().encode(message);
   const hash = await crypto.subtle.digest("SHA-1", data);
-  return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(hash)).map((byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("");
 };
 
 const buildClickMerchantAuthHeader = async (
@@ -206,7 +248,15 @@ const normalizeClickPaymentStatus = (statusCode: unknown): string => {
 
 const fetchClickStatus = async (
   payment: PaymentRow,
-): Promise<{ ok: boolean; statusJson: any; statusQueryId: string; paymentStatus: string; apiStatus: string }> => {
+): Promise<
+  {
+    ok: boolean;
+    statusJson: any;
+    statusQueryId: string;
+    paymentStatus: string;
+    apiStatus: string;
+  }
+> => {
   const merchantUserId = Deno.env.get("CLICK_MERCHANT_USER_ID");
   const secretKey = Deno.env.get("CLICK_SECRET_KEY");
   const serviceId = Deno.env.get("CLICK_SERVICE_ID");
@@ -220,7 +270,8 @@ const fetchClickStatus = async (
     };
   }
 
-  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
+  const meta = payment.metadata && typeof payment.metadata === "object" &&
+      !Array.isArray(payment.metadata)
     ? payment.metadata
     : {};
   const candidates = uniqIds([
@@ -238,12 +289,20 @@ const fetchClickStatus = async (
     };
   }
 
-  const authHeader = await buildClickMerchantAuthHeader(merchantUserId, secretKey);
+  const authHeader = await buildClickMerchantAuthHeader(
+    merchantUserId,
+    secretKey,
+  );
   for (const candidate of candidates) {
-    const res = await fetch(`${CLICK_MERCHANT_API_BASE}/payment/status/${serviceId}/${encodeURIComponent(candidate)}`, {
-      method: "GET",
-      headers: { "Auth": authHeader, "Content-Type": "application/json" },
-    });
+    const res = await fetch(
+      `${CLICK_MERCHANT_API_BASE}/payment/status/${serviceId}/${
+        encodeURIComponent(candidate)
+      }`,
+      {
+        method: "GET",
+        headers: { "Auth": authHeader, "Content-Type": "application/json" },
+      },
+    );
     const statusJson = await readJsonPayload(res);
     if (!res.ok) {
       if (res.status !== 404) {
@@ -252,7 +311,9 @@ const fetchClickStatus = async (
           statusJson,
           statusQueryId: candidate,
           paymentStatus: "pending",
-          apiStatus: normalizePaymentStatus(statusJson?.status ?? statusJson?.error ?? "click_api_error"),
+          apiStatus: normalizePaymentStatus(
+            statusJson?.status ?? statusJson?.error ?? "click_api_error",
+          ),
         };
       }
       continue;
@@ -292,13 +353,19 @@ const selectPaymentView = () =>
     "plan_id",
     "purchase_type",
     "granted_at",
+    "grant_completed_at",
     "grant_error",
+    "fiscalization_status",
+    "fiscal_receipt_id",
+    "fiscalized_at",
+    "fiscalization_error",
     "original_amount",
     "discount_amount",
     "coupon_code",
     "coupon_id",
     "plan_snapshot",
     "entitlement_terms",
+    "metadata",
     "created_at",
     "updated_at",
     "users(email)",
@@ -307,19 +374,34 @@ const selectPaymentView = () =>
     "tenants(slug,name)",
   ].join(",");
 
-const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
+const applyCenterTierUpgradeOnce = async (
+  sb: any,
+  payment: PaymentRow,
+): Promise<boolean> => {
   if (!payment.tenant_id || !payment.user_id) return false;
-  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
-  const targetTier = normalizeCenterTier((meta as any).requested_tier ?? (meta as any).center_tier);
+  const meta = payment.metadata && typeof payment.metadata === "object" &&
+      !Array.isArray(payment.metadata)
+    ? payment.metadata
+    : {};
+  const targetTier = normalizeCenterTier(
+    (meta as any).requested_tier ?? (meta as any).center_tier,
+  );
   if (!targetTier || targetTier === "starter") {
-    await sb.from("payments").update({ granted_at: null, grant_error: "Invalid center tier upgrade metadata" }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: "Invalid center tier upgrade metadata",
+    }).eq("id", payment.id);
     throw new Error("Invalid center tier upgrade metadata");
   }
 
   const nowIso = new Date().toISOString();
   const { data: claim, error: claimErr } = await sb
     .from("payments")
-    .update({ granted_at: nowIso, grant_error: null })
+    .update({
+      granted_at: nowIso,
+      grant_completed_at: null,
+      grant_error: null,
+    })
     .eq("id", payment.id)
     .is("granted_at", null)
     .select("id")
@@ -329,12 +411,19 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
 
   let durationDays = 30;
   if (payment.plan_id) {
-    const { data: planRow } = await sb.from("plans").select("duration_days").eq("id", payment.plan_id).maybeSingle();
+    const { data: planRow } = await sb.from("plans").select("duration_days").eq(
+      "id",
+      payment.plan_id,
+    ).maybeSingle();
     const planDays = Number((planRow as any)?.duration_days ?? 0);
-    if (Number.isFinite(planDays) && planDays > 0) durationDays = Math.floor(planDays);
+    if (Number.isFinite(planDays) && planDays > 0) {
+      durationDays = Math.floor(planDays);
+    }
   }
   const metaDays = Number((meta as any).duration_days ?? 0);
-  if (Number.isFinite(metaDays) && metaDays > 0) durationDays = Math.floor(metaDays);
+  if (Number.isFinite(metaDays) && metaDays > 0) {
+    durationDays = Math.floor(metaDays);
+  }
 
   const { data: currentProfile, error: profileError } = await sb
     .from("partner_center_profiles")
@@ -342,13 +431,19 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
     .eq("tenant_id", payment.tenant_id)
     .maybeSingle();
   if (profileError || !currentProfile?.tenant_id) {
-    await sb.from("payments").update({ granted_at: null, grant_error: "Education center profile not found" }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: "Education center profile not found",
+    }).eq("id", payment.id);
     throw new Error("Education center profile not found");
   }
 
   const billingPeriod = normalizeBillingPeriod((meta as any).billing_period);
-  const periodEnd = new Date(Date.now() + durationDays * 86400000).toISOString();
-  const existingSettings = (currentProfile as any).wallet_settings && typeof (currentProfile as any).wallet_settings === "object" && !Array.isArray((currentProfile as any).wallet_settings)
+  const periodEnd = new Date(Date.now() + durationDays * 86400000)
+    .toISOString();
+  const existingSettings = (currentProfile as any).wallet_settings &&
+      typeof (currentProfile as any).wallet_settings === "object" &&
+      !Array.isArray((currentProfile as any).wallet_settings)
     ? (currentProfile as any).wallet_settings
     : {};
 
@@ -366,7 +461,10 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
     })
     .eq("tenant_id", payment.tenant_id);
   if (updateError) {
-    await sb.from("payments").update({ granted_at: null, grant_error: String(updateError.message ?? updateError) }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: String(updateError.message ?? updateError),
+    }).eq("id", payment.id);
     throw updateError;
   }
 
@@ -381,7 +479,11 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
       payment_id: payment.id,
       amount: payment.amount ?? null,
       currency: payment.currency ?? "UZS",
-      metadata: { source: "admin_retry", previous_tier: (currentProfile as any).package_tier ?? null, plan_id: payment.plan_id ?? null },
+      metadata: {
+        source: "admin_retry",
+        previous_tier: (currentProfile as any).package_tier ?? null,
+        plan_id: payment.plan_id ?? null,
+      },
     },
     { onConflict: "tenant_id" },
   );
@@ -390,28 +492,58 @@ const applyCenterTierUpgradeOnce = async (sb: any, payment: PaymentRow): Promise
   if (requestId) {
     await sb
       .from("partner_center_tier_change_requests")
-      .update({ status: "applied", payment_id: payment.id, applied_at: nowIso, metadata: { ...meta, applied_tier: targetTier, applied_period_end: periodEnd } })
+      .update({
+        status: "applied",
+        payment_id: payment.id,
+        applied_at: nowIso,
+        metadata: {
+          ...meta,
+          applied_tier: targetTier,
+          applied_period_end: periodEnd,
+        },
+      })
       .eq("id", requestId)
       .eq("tenant_id", payment.tenant_id);
   }
 
+  await sb.from("payments").update({
+    grant_completed_at: new Date().toISOString(),
+  }).eq("id", payment.id);
   return true;
 };
 
-const applyCenterWalletTopupOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
+const applyCenterWalletTopupOnce = async (
+  sb: any,
+  payment: PaymentRow,
+): Promise<boolean> => {
   if (!payment.tenant_id || !payment.user_id) return false;
-  const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
-  const amount = normalizeMoney((meta as any).wallet_topup_amount ?? (meta as any).topup_amount ?? payment.original_amount ?? payment.amount);
-  const currency = String((meta as any).wallet_topup_currency ?? payment.currency ?? "UZS").toUpperCase();
+  const meta = payment.metadata && typeof payment.metadata === "object" &&
+      !Array.isArray(payment.metadata)
+    ? payment.metadata
+    : {};
+  const amount = normalizeMoney(
+    (meta as any).wallet_topup_amount ?? (meta as any).topup_amount ??
+      payment.original_amount ?? payment.amount,
+  );
+  const currency = String(
+    (meta as any).wallet_topup_currency ?? payment.currency ?? "UZS",
+  ).toUpperCase();
   if (amount <= 0) {
-    await sb.from("payments").update({ granted_at: null, grant_error: "Invalid center wallet top-up metadata" }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: "Invalid center wallet top-up metadata",
+    }).eq("id", payment.id);
     throw new Error("Invalid center wallet top-up metadata");
   }
 
   const nowIso = new Date().toISOString();
   const { data: claim, error: claimErr } = await sb
     .from("payments")
-    .update({ granted_at: nowIso, grant_error: null })
+    .update({
+      granted_at: nowIso,
+      grant_completed_at: null,
+      grant_error: null,
+    })
     .eq("id", payment.id)
     .is("granted_at", null)
     .select("id")
@@ -426,10 +558,18 @@ const applyCenterWalletTopupOnce = async (sb: any, payment: PaymentRow): Promise
     .eq("entry_kind", "topup")
     .maybeSingle();
   if (existingError) {
-    await sb.from("payments").update({ granted_at: null, grant_error: existingError.message }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: existingError.message,
+    }).eq("id", payment.id);
     throw existingError;
   }
-  if (existing?.id) return true;
+  if (existing?.id) {
+    await sb.from("payments").update({
+      grant_completed_at: new Date().toISOString(),
+    }).eq("id", payment.id);
+    return true;
+  }
 
   const { error: ledgerError } = await sb.from("partner_wallet_ledger").insert({
     tenant_id: payment.tenant_id,
@@ -449,7 +589,10 @@ const applyCenterWalletTopupOnce = async (sb: any, payment: PaymentRow): Promise
     },
   });
   if (ledgerError) {
-    await sb.from("payments").update({ granted_at: null, grant_error: String(ledgerError.message ?? ledgerError) }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: String(ledgerError.message ?? ledgerError),
+    }).eq("id", payment.id);
     throw ledgerError;
   }
 
@@ -464,24 +607,81 @@ const applyCenterWalletTopupOnce = async (sb: any, payment: PaymentRow): Promise
     })
     .eq("id", payment.id);
 
+  await sb.from("payments").update({
+    grant_completed_at: new Date().toISOString(),
+  }).eq("id", payment.id);
   return true;
 };
 
-const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boolean> => {
-  const purchaseType = normalizePurchaseType(payment.purchase_type ?? (payment.metadata as any)?.purchase_type);
-  if (purchaseType === "center_tier_upgrade") return applyCenterTierUpgradeOnce(sb, payment);
-  if (purchaseType === "center_wallet_topup") return applyCenterWalletTopupOnce(sb, payment);
-  if (!payment.tenant_id || !payment.product_id || !payment.user_id) return false;
+const grantEntitlementOnce = async (
+  sb: any,
+  payment: PaymentRow,
+): Promise<boolean> => {
+  const purchaseType = normalizePurchaseType(
+    payment.purchase_type ?? (payment.metadata as any)?.purchase_type,
+  );
+  if (purchaseType === "academy_tuition") {
+    const academyPaymentId = String(
+      (payment.metadata as any)?.academy_payment_id ?? "",
+    ).trim();
+    if (!academyPaymentId) throw new Error("Missing academy_payment_id");
+    const claimTime = new Date().toISOString();
+    const { data: claim, error: claimError } = await sb
+      .from("payments")
+      .update({
+        granted_at: claimTime,
+        grant_completed_at: null,
+        grant_error: null,
+      })
+      .eq("id", payment.id)
+      .is("granted_at", null)
+      .select("id")
+      .maybeSingle();
+    if (claimError) throw claimError;
+    if (!claim) return false;
+    const { error: academyError } = await sb.rpc("apply_academy_payment", {
+      p_payment_id: academyPaymentId,
+      p_actor_id: payment.user_id,
+    });
+    if (academyError) {
+      await sb.from("payments").update({
+        granted_at: null,
+        grant_completed_at: null,
+        grant_error: String(academyError.message ?? academyError),
+      }).eq("id", payment.id);
+      throw academyError;
+    }
+    await sb.from("payments").update({
+      grant_completed_at: new Date().toISOString(),
+    }).eq("id", payment.id).eq("granted_at", claimTime);
+    return true;
+  }
+  if (purchaseType === "center_tier_upgrade") {
+    return applyCenterTierUpgradeOnce(sb, payment);
+  }
+  if (purchaseType === "center_wallet_topup") {
+    return applyCenterWalletTopupOnce(sb, payment);
+  }
+  if (!payment.tenant_id || !payment.product_id || !payment.user_id) {
+    return false;
+  }
 
   const terms = await resolveGrantTerms(sb, payment);
-  const entitlementValue = buildEntitlementValue(terms.sourcePlanId ?? payment.plan_id, terms.limits);
+  const entitlementValue = buildEntitlementValue(
+    terms.sourcePlanId ?? payment.plan_id,
+    terms.limits,
+  );
 
   const nowIso = new Date().toISOString();
 
   // Idempotency: claim this payment once.
   const { data: claim, error: claimErr } = await sb
     .from("payments")
-    .update({ granted_at: nowIso, grant_error: null })
+    .update({
+      granted_at: nowIso,
+      grant_completed_at: null,
+      grant_error: null,
+    })
     .eq("id", payment.id)
     .is("granted_at", null)
     .select("id")
@@ -490,7 +690,10 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
   if (claimErr) throw claimErr;
   if (!claim) return false;
 
-  const targetProductIds = getEntitlementTargets(payment.product_id, terms.includedProductIds);
+  const targetProductIds = getEntitlementTargets(
+    payment.product_id,
+    terms.includedProductIds,
+  );
   const { data: existingRows } = await sb
     .from("entitlements")
     .select("resource_id, ends_at")
@@ -500,7 +703,9 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
 
   const existingMap = new Map<string, string | null>();
   (existingRows ?? []).forEach((row: any) => {
-    if (row?.resource_id) existingMap.set(String(row.resource_id), row?.ends_at ?? null);
+    if (row?.resource_id) {
+      existingMap.set(String(row.resource_id), row?.ends_at ?? null);
+    }
   });
 
   const payload = targetProductIds.map((pid) => {
@@ -509,7 +714,8 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
       const nowMs = Date.now();
       const existing = existingMap.get(pid);
       const baseMs = existing ? Math.max(nowMs, Date.parse(existing)) : nowMs;
-      endsAt = new Date(baseMs + terms.durationDays * 24 * 60 * 60 * 1000).toISOString();
+      endsAt = new Date(baseMs + terms.durationDays * 24 * 60 * 60 * 1000)
+        .toISOString();
     }
 
     return {
@@ -525,10 +731,15 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
     };
   });
 
-  const { error: grantError } = await sb.from("entitlements").upsert(payload, { onConflict: "tenant_id,resource_type,resource_id" });
+  const { error: grantError } = await sb.from("entitlements").upsert(payload, {
+    onConflict: "tenant_id,resource_type,resource_id",
+  });
 
   if (grantError) {
-    await sb.from("payments").update({ granted_at: null, grant_error: String(grantError.message ?? grantError) }).eq("id", payment.id);
+    await sb.from("payments").update({
+      granted_at: null,
+      grant_error: String(grantError.message ?? grantError),
+    }).eq("id", payment.id);
     throw grantError;
   }
 
@@ -554,7 +765,10 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
         status: "applied",
         redeemed_at: nowIso,
         snapshot,
-        metadata: { provider: payment.provider, provider_transaction_id: payment.provider_transaction_id },
+        metadata: {
+          provider: payment.provider,
+          provider_transaction_id: payment.provider_transaction_id,
+        },
       },
       { onConflict: "coupon_id,user_id,context_id" },
     );
@@ -563,17 +777,24 @@ const grantEntitlementOnce = async (sb: any, payment: PaymentRow): Promise<boole
     }
   }
 
+  await sb.from("payments").update({
+    grant_completed_at: new Date().toISOString(),
+  }).eq("id", payment.id).eq("granted_at", nowIso);
   return true;
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
 
   try {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const sb = createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } });
+    const sb = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false },
+    });
     const authz = await authorizeAdminRequest(sb, req, corsHeaders, {
       requiredPermission: "admin.payments.manage",
       action: "admin.payments",
@@ -584,7 +805,9 @@ serve(async (req) => {
 
     if (req.method === "GET" && url.pathname.endsWith("/list")) {
       const limitRaw = Number(url.searchParams.get("limit") ?? 50);
-      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(200, Math.floor(limitRaw))) : 50;
+      const limit = Number.isFinite(limitRaw)
+        ? Math.max(1, Math.min(200, Math.floor(limitRaw)))
+        : 50;
 
       const { data: payments, error: pErr } = await sb
         .from("payments")
@@ -602,7 +825,9 @@ serve(async (req) => {
     if (req.method === "GET" && url.pathname.endsWith("/search")) {
       const query = String(url.searchParams.get("query") ?? "").trim();
       const limitRaw = Number(url.searchParams.get("limit") ?? 50);
-      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(200, Math.floor(limitRaw))) : 50;
+      const limit = Number.isFinite(limitRaw)
+        ? Math.max(1, Math.min(200, Math.floor(limitRaw)))
+        : 50;
 
       if (!query) {
         return new Response(JSON.stringify({ error: "query is required" }), {
@@ -611,7 +836,10 @@ serve(async (req) => {
         });
       }
 
-      let q = sb.from("payments").select(selectPaymentView()).order("created_at", { ascending: false }).limit(limit);
+      let q = sb.from("payments").select(selectPaymentView()).order(
+        "created_at",
+        { ascending: false },
+      ).limit(limit);
 
       if (query.includes("@")) {
         const { data: users, error: uErr } = await sb
@@ -630,7 +858,10 @@ serve(async (req) => {
         q = q.in("user_id", ids);
       } else {
         const like = `%${query}%`;
-        const ors = [`provider_transaction_id.ilike.${like}`, `coupon_code.ilike.${like}`];
+        const ors = [
+          `provider_transaction_id.ilike.${like}`,
+          `coupon_code.ilike.${like}`,
+        ];
         if (looksLikeUuid(query)) ors.push(`id.eq.${query}`);
         q = q.or(ors.join(","));
       }
@@ -647,9 +878,14 @@ serve(async (req) => {
     if (req.method === "GET" && url.pathname.endsWith("/anomalies")) {
       const minutesRaw = Number(url.searchParams.get("minutes") ?? 5);
       const limitRaw = Number(url.searchParams.get("limit") ?? 100);
-      const minutes = Number.isFinite(minutesRaw) ? Math.max(1, Math.min(180, Math.floor(minutesRaw))) : 5;
-      const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(500, Math.floor(limitRaw))) : 100;
-      const cutoffIso = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+      const minutes = Number.isFinite(minutesRaw)
+        ? Math.max(1, Math.min(180, Math.floor(minutesRaw)))
+        : 5;
+      const limit = Number.isFinite(limitRaw)
+        ? Math.max(1, Math.min(500, Math.floor(limitRaw)))
+        : 100;
+      const cutoffIso = new Date(Date.now() - minutes * 60 * 1000)
+        .toISOString();
       const successStatuses = paymentSuccessStatuses();
 
       const { data: pending, error: pendingErr } = await sb
@@ -665,11 +901,87 @@ serve(async (req) => {
         isSuccessStatus(successStatuses, normalizePaymentStatus(row?.status))
       );
 
+      const { data: incompleteGrantRows, error: incompleteGrantError } =
+        await sb
+          .from("payments")
+          .select(selectPaymentView())
+          .eq("provider", "click")
+          .not("granted_at", "is", null)
+          .is("grant_completed_at", null)
+          .lt("granted_at", cutoffIso)
+          .order("granted_at", { ascending: true })
+          .limit(limit);
+      if (incompleteGrantError) throw incompleteGrantError;
+      const incompleteGrants = (incompleteGrantRows ?? []).filter((row: any) =>
+        isSuccessStatus(successStatuses, normalizePaymentStatus(row?.status))
+      );
+      const grantAnomalies = [
+        ...anomalies,
+        ...incompleteGrants.filter((candidate: any) =>
+          !anomalies.some((row: any) => row.id === candidate.id)
+        ),
+      ].slice(0, limit);
+
+      const { data: stuckPending, error: stuckPendingError } = await sb
+        .from("payments")
+        .select(selectPaymentView())
+        .eq("provider", "click")
+        .eq("status", "pending")
+        .lt("updated_at", cutoffIso)
+        .order("updated_at", { ascending: true })
+        .limit(limit);
+      if (stuckPendingError) throw stuckPendingError;
+
+      const { data: grantedWithoutPaid, error: grantedWithoutPaidError } =
+        await sb
+          .from("payments")
+          .select(selectPaymentView())
+          .eq("provider", "click")
+          .not("granted_at", "is", null)
+          .not("status", "in", "(paid,success,completed)")
+          .limit(limit);
+      if (grantedWithoutPaidError) throw grantedWithoutPaidError;
+
+      const { data: fiscalFailures, error: fiscalFailuresError } = await sb
+        .from("payments")
+        .select(selectPaymentView())
+        .eq("provider", "click")
+        .eq("fiscalization_status", "failed")
+        .order("updated_at", { ascending: true })
+        .limit(limit);
+      if (fiscalFailuresError) throw fiscalFailuresError;
+
+      const callbackCutoff = new Date(Date.now() - 15 * 60 * 1000)
+        .toISOString();
+      const { data: callbackEvents, error: callbackEventsError } = await sb
+        .from("click_callback_events")
+        .select("protocol_error,http_status")
+        .gte("created_at", callbackCutoff)
+        .limit(1000);
+      if (callbackEventsError) throw callbackEventsError;
+      const callbackRows = callbackEvents ?? [];
+
       return new Response(
         JSON.stringify({
           cutoff_minutes: minutes,
-          count: anomalies.length,
-          anomalies,
+          count: grantAnomalies.length,
+          anomalies: grantAnomalies,
+          operational: {
+            stuck_pending_or_prepared: (stuckPending ?? []).length,
+            incomplete_grants: incompleteGrants.length,
+            granted_without_paid: (grantedWithoutPaid ?? []).length,
+            fiscalization_failures: (fiscalFailures ?? []).length,
+            callbacks_15m: callbackRows.length,
+            callback_rejections_15m: callbackRows.filter((row: any) =>
+              Number(row.protocol_error) !== 0
+            ).length,
+            signature_failures_15m: callbackRows.filter((row: any) =>
+              Number(row.protocol_error) === -1
+            ).length,
+            callback_5xx_15m: callbackRows.filter((row: any) =>
+              Number(row.http_status) >= 500
+            ).length,
+          },
         }),
         {
           status: 200,
@@ -682,15 +994,20 @@ serve(async (req) => {
       const body = (await req.json()) as any;
       const paymentId = String(body?.payment_id ?? "").trim();
       if (!paymentId) {
-        return new Response(JSON.stringify({ error: "payment_id is required" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        return new Response(
+          JSON.stringify({ error: "payment_id is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       }
 
       const { data: paymentRow, error: payErr } = await sb
         .from("payments")
-        .select("id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
+        .select(
+          "id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_completed_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at",
+        )
         .eq("id", paymentId)
         .maybeSingle();
       if (payErr) throw payErr;
@@ -705,7 +1022,8 @@ serve(async (req) => {
       const provider = String(payment.provider ?? "").toLowerCase();
       const successStatuses = paymentSuccessStatuses();
 
-      const meta = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata)
+      const meta = payment.metadata && typeof payment.metadata === "object" &&
+          !Array.isArray(payment.metadata)
         ? payment.metadata
         : {};
       let statusJson: any = {};
@@ -720,26 +1038,41 @@ serve(async (req) => {
         paymentStatus = checked.paymentStatus;
         apiStatus = checked.apiStatus;
         if (!checked.ok) {
-          return new Response(JSON.stringify({ error: "Click status failed", details: statusJson }), {
-            status: 502,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Click status failed",
+              details: statusJson,
+            }),
+            {
+              status: 502,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            },
+          );
         }
       } else if (provider === "tspay") {
-        return new Response(JSON.stringify({
-          error: "TsPay has been retired. Historical TsPay rows remain visible, but status refresh is disabled. Use Click for all new payments.",
-          error_code: "tspay_retired",
-          provider: "tspay",
-          replacement_provider: "click",
-        }), {
-          status: 410,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        return new Response(
+          JSON.stringify({
+            error:
+              "TsPay has been retired. Historical TsPay rows remain visible, but status refresh is disabled. Use Click for all new payments.",
+            error_code: "tspay_retired",
+            provider: "tspay",
+            replacement_provider: "click",
+          }),
+          {
+            status: 410,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       } else {
-        return new Response(JSON.stringify({ error: `Unsupported payment provider: ${payment.provider}` }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        return new Response(
+          JSON.stringify({
+            error: `Unsupported payment provider: ${payment.provider}`,
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       }
 
       const normalized = paymentStatus;
@@ -750,43 +1083,68 @@ serve(async (req) => {
 
       const { error: updateError } = await sb
         .from("payments")
-        .update({ status: normalized, metadata: nextMeta, provider_payload: { api_status: apiStatus, status_query_id: usedStatusId, ...statusJson } })
+        .update({
+          status: normalized,
+          metadata: nextMeta,
+          provider_payload: {
+            api_status: apiStatus,
+            status_query_id: usedStatusId,
+            ...statusJson,
+          },
+        })
         .eq("id", payment.id);
       if (updateError) throw updateError;
 
       if (isSuccessStatus(successStatuses, normalized)) {
         try {
-          await grantEntitlementOnce(sb, { ...payment, status: normalized, metadata: nextMeta });
+          await grantEntitlementOnce(sb, {
+            ...payment,
+            status: normalized,
+            metadata: nextMeta,
+          });
         } catch (e) {
           // Store error for support; do not fail the whole request.
           const msg = e instanceof Error ? e.message : String(e);
-          await sb.from("payments").update({ grant_error: msg }).eq("id", payment.id);
+          await sb.from("payments").update({ grant_error: msg }).eq(
+            "id",
+            payment.id,
+          );
         }
       }
 
-      const { data: view } = await sb.from("payments").select(selectPaymentView()).eq("id", payment.id).maybeSingle();
+      const { data: view } = await sb.from("payments").select(
+        selectPaymentView(),
+      ).eq("id", payment.id).maybeSingle();
 
-      return new Response(JSON.stringify({ payment: view ?? null, status: normalized }), {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      return new Response(
+        JSON.stringify({ payment: view ?? null, status: normalized }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        },
+      );
     }
 
     if (req.method === "POST" && url.pathname.endsWith("/retry-grant")) {
       const body = (await req.json()) as any;
       const paymentId = String(body?.payment_id ?? "").trim();
       if (!paymentId) {
-        return new Response(JSON.stringify({ error: "payment_id is required" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        return new Response(
+          JSON.stringify({ error: "payment_id is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       }
 
       const successStatuses = paymentSuccessStatuses();
 
       const { data: paymentRow, error: payErr } = await sb
         .from("payments")
-        .select("id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at")
+        .select(
+          "id, provider, provider_transaction_id, tspay_order_id, tspay_cheque_id, tspay_transaction_id, amount, currency, status, user_id, tenant_id, product_id, plan_id, purchase_type, granted_at, grant_error, original_amount, discount_amount, coupon_code, coupon_id, plan_snapshot, entitlement_terms, metadata, created_at, updated_at",
+        )
         .eq("id", paymentId)
         .maybeSingle();
       if (payErr) throw payErr;
@@ -799,35 +1157,88 @@ serve(async (req) => {
 
       const payment = paymentRow as PaymentRow;
 
-      if (!isSuccessStatus(successStatuses, normalizePaymentStatus(payment.status))) {
-        return new Response(JSON.stringify({ error: "Payment is not in a paid/success state" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+      if (
+        !isSuccessStatus(
+          successStatuses,
+          normalizePaymentStatus(payment.status),
+        )
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Payment is not in a paid/success state" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       }
 
       try {
         const { data: existing } = await sb
           .from("payments")
-          .select("granted_at")
+          .select("granted_at,grant_completed_at")
           .eq("id", payment.id)
           .maybeSingle();
 
-        if (existing?.granted_at) {
-          // Already processed; do not extend again.
+        if (existing?.grant_completed_at) {
+          // Fully applied already; do not extend or credit again.
+        } else if (existing?.granted_at) {
+          const purchaseType = normalizePurchaseType(
+            payment.purchase_type ?? (payment.metadata as any)?.purchase_type,
+          );
+          if (purchaseType !== "academy_tuition") {
+            return new Response(
+              JSON.stringify({
+                error: "Grant is incomplete and requires operator reconciliation",
+                details:
+                  "Automatic replay is disabled for this purchase type to prevent duplicate access or credit.",
+              }),
+              {
+                status: 409,
+                headers: { "Content-Type": "application/json", ...corsHeaders },
+              },
+            );
+          }
+
+          const { data: releasedClaim, error: releaseError } = await sb
+            .from("payments")
+            .update({ granted_at: null, grant_error: null })
+            .eq("id", payment.id)
+            .eq("granted_at", existing.granted_at)
+            .is("grant_completed_at", null)
+            .select("id")
+            .maybeSingle();
+          if (releaseError) throw releaseError;
+          if (!releasedClaim) {
+            return new Response(
+              JSON.stringify({ error: "Grant state changed; refresh before retrying" }),
+              {
+                status: 409,
+                headers: { "Content-Type": "application/json", ...corsHeaders },
+              },
+            );
+          }
+          await grantEntitlementOnce(sb, { ...payment, granted_at: null });
         } else {
           await grantEntitlementOnce(sb, payment);
         }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        await sb.from("payments").update({ grant_error: msg }).eq("id", payment.id);
-        return new Response(JSON.stringify({ error: "Grant failed", details: msg }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        await sb.from("payments").update({ grant_error: msg }).eq(
+          "id",
+          payment.id,
+        );
+        return new Response(
+          JSON.stringify({ error: "Grant failed", details: msg }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          },
+        );
       }
 
-      const { data: view } = await sb.from("payments").select(selectPaymentView()).eq("id", payment.id).maybeSingle();
+      const { data: view } = await sb.from("payments").select(
+        selectPaymentView(),
+      ).eq("id", payment.id).maybeSingle();
 
       return new Response(JSON.stringify({ payment: view ?? null }), {
         status: 200,
@@ -841,7 +1252,11 @@ serve(async (req) => {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    const status = message === "Unauthorized"
+      ? 401
+      : message === "Forbidden"
+      ? 403
+      : 500;
     return new Response(JSON.stringify({ error: message }), {
       status,
       headers: { "Content-Type": "application/json", ...corsHeaders },

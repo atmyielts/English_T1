@@ -903,7 +903,12 @@ export type AdminPayment = {
   product_id: string | null;
   plan_id: string | null;
   granted_at: string | null;
+  grant_completed_at?: string | null;
   grant_error: string | null;
+  fiscalization_status?: string | null;
+  fiscal_receipt_id?: string | null;
+  fiscalized_at?: string | null;
+  fiscalization_error?: string | null;
   original_amount: number | null;
   discount_amount: number | null;
   coupon_code: string | null;
@@ -952,6 +957,16 @@ export type AdminPaymentAnomaliesResponse = {
   cutoff_minutes: number;
   count: number;
   anomalies: AdminPayment[];
+  operational?: {
+    stuck_pending_or_prepared: number;
+    incomplete_grants: number;
+    granted_without_paid: number;
+    fiscalization_failures: number;
+    callbacks_15m: number;
+    callback_rejections_15m: number;
+    signature_failures_15m: number;
+    callback_5xx_15m: number;
+  };
 };
 
 export const adminPaymentsAnomalies = async (
@@ -1022,6 +1037,16 @@ export type ClickCreateInput = {
   credit_amount?: number | null;
   referral_code?: string | null;
   referral_attribution_id?: string | null;
+  idempotency_key?: string | null;
+};
+
+export type ClickReadinessResponse = {
+  configured: boolean;
+  service_id: string | null;
+  service_id_matches_production: boolean;
+  hosted_payment_ready: boolean;
+  card_payment_ready: boolean;
+  missing_configuration: string[];
 };
 
 export type ClickCardWidgetConfig = {
@@ -1063,7 +1088,15 @@ export const clickCreateTransaction = async (
     const details = await readJsonOrText(res);
     throw new Error(`POST /click/create-transaction failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as ClickCreateResponse;
+  const payload = (await res.json()) as ClickCreateResponse;
+  if (payload.payment_url) {
+    const paymentUrl = new URL(payload.payment_url);
+    if (
+      paymentUrl.protocol !== 'https:' || paymentUrl.hostname !== 'my.click.uz' ||
+      paymentUrl.pathname !== '/services/pay'
+    ) throw new Error('CLICK returned an untrusted payment URL');
+  }
+  return payload;
 };
 
 export type ClickStatusResponse = {
@@ -1083,6 +1116,18 @@ export const clickStatus = async (accessToken: string, transactionId: string): P
     throw new Error(`GET /click/status failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as ClickStatusResponse;
+};
+
+export const clickReadiness = async (accessToken: string): Promise<ClickReadinessResponse> => {
+  const res = await fetch(`${edgeBase}/click/readiness`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /click/readiness failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as ClickReadinessResponse;
 };
 
 export type ScoreSessionResponse = {

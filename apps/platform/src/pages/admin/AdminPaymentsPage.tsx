@@ -15,6 +15,7 @@ export const AdminPaymentsPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AdminPayment[]>([]);
   const [grantAnomalyCount, setGrantAnomalyCount] = useState<number>(0);
+  const [operational, setOperational] = useState<Awaited<ReturnType<typeof adminPaymentsAnomalies>>['operational']>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +36,7 @@ export const AdminPaymentsPage: React.FC = () => {
       ]);
       setResults(res.payments ?? []);
       setGrantAnomalyCount(anomalies.count ?? 0);
+      setOperational(anomalies.operational);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load payments');
     } finally {
@@ -68,6 +70,7 @@ export const AdminPaymentsPage: React.FC = () => {
     try {
       const res = await adminPaymentsAnomalies(accessToken, { minutes, limit: 100 });
       setGrantAnomalyCount(res.count ?? 0);
+      setOperational(res.operational);
       setResults(res.anomalies ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load anomalies');
@@ -111,6 +114,11 @@ export const AdminPaymentsPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
           <p className="text-sm text-gray-600">Latest payments are shown by default. Search by email, transaction id, or cheque id.</p>
           <p className="mt-1 text-xs text-gray-500">Grant anomalies (paid but not granted after 5 minutes): {grantAnomalyCount}</p>
+          {operational ? (
+            <p className="mt-1 text-xs text-gray-500">
+              CLICK operations: stuck {operational.stuck_pending_or_prepared}, incomplete grants {operational.incomplete_grants}, invalid signatures {operational.signature_failures_15m}, callback 5xx {operational.callback_5xx_15m}, granted-without-paid {operational.granted_without_paid}, fiscal failures {operational.fiscalization_failures}.
+            </p>
+          ) : null}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col md:flex-row gap-3">
@@ -138,16 +146,36 @@ export const AdminPaymentsPage: React.FC = () => {
           {loading ? <div className="p-4 text-sm text-gray-500">Loading...</div> : null}
           {!loading && results.length === 0 ? <div className="p-4 text-sm text-gray-500">No payments found.</div> : null}
           {results.map((p) => (
-            <div key={p.id} className="p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-center border-t border-gray-100">
+            <div key={p.id} className="p-4 grid grid-cols-1 md:grid-cols-7 gap-3 items-center border-t border-gray-100">
               <div className="text-sm text-gray-700">
                 <div className="font-semibold">{p.users?.email ?? p.user_id ?? 'n/a'}</div>
                 <div className="text-xs text-gray-500">{p.provider_transaction_id}</div>
+                <div className="text-xs text-gray-400">Order/prepare: {p.id}</div>
               </div>
-              <div className="text-sm">{p.status}</div>
+              <div className="text-sm">
+                <div>{p.status}</div>
+                <div className="text-xs text-gray-500">
+                  {p.grant_completed_at
+                    ? 'Access applied'
+                    : p.granted_at
+                      ? 'Grant incomplete — reconcile'
+                      : p.grant_error
+                        ? `Grant error: ${p.grant_error}`
+                        : 'Access not granted'}
+                </div>
+              </div>
               <div className="text-sm">
                 {p.amount} {p.currency}
               </div>
-              <div className="text-xs text-gray-500">{p.products?.name ?? p.product_id ?? ''}</div>
+              <div className="text-xs text-gray-500">
+                <div>{p.tenants?.name ?? p.tenant_id ?? 'No academy'}</div>
+                <div>{p.products?.name ?? p.product_id ?? ''}</div>
+              </div>
+              <div className="text-xs text-gray-500">
+                Fiscal: {p.fiscalization_status ?? 'not tracked'}
+                {p.fiscal_receipt_id ? <div>Receipt: {p.fiscal_receipt_id}</div> : null}
+                {p.fiscalization_error ? <div className="text-red-600">{p.fiscalization_error}</div> : null}
+              </div>
               <div className="text-xs text-gray-500">{new Date(p.created_at).toLocaleString()}</div>
               <div className="flex gap-2">
                 <button onClick={() => void refreshStatus(p.id)} className="px-3 py-2 rounded-xl border border-gray-200 text-sm">

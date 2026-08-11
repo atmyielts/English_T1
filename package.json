@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "test": "npm run test:sat && npm run test:shared",
-    "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/click/webhook-security.test.ts",
+    "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/click/webhook-security.test.ts supabase/functions/click/payment-safety.test.ts supabase/functions/click/payment-flow-simulation.test.ts supabase/functions/click/launch-contract.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
     "test:sat": "npm --workspace sat-simulator run test",
     "test:academy:routes": "npm --workspace apps/academy run test:routes",
@@ -33,7 +33,8 @@
     "verify:academy:invariants": "powershell -NoProfile -Command \"Get-Content -Raw -LiteralPath 'scripts/verify-academy-business-os-invariants.sql' | docker exec -i supabase_db_English_T1 psql -v ON_ERROR_STOP=1 -U postgres -d postgres\"",
     "verify:academy:automation": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-academy-automation-worker.ps1",
     "check:academy:github": "node scripts/check-academy-github-readiness.mjs",
-    "verify:prod": "node scripts/verify-production-readiness.mjs"
+    "verify:prod": "node scripts/verify-production-readiness.mjs",
+    "verify:click-prod": "node scripts/verify-click-production-readiness.mjs"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

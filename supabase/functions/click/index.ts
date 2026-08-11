@@ -25,6 +25,13 @@ import {
   constantTimeEqual,
   validateClickWebhookEnvelope,
 } from "./webhook-security.ts";
+import {
+  inspectClickConfiguration,
+  isTrustedClickPaymentUrl,
+  normalizeCheckoutIdempotencyKey,
+  normalizeSchoodReturnUrl,
+  sanitizeClickCallbackPayload,
+} from "./payment-safety.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,6 +56,7 @@ type CreateTransactionInput = {
   referral_code?: string | null;
   referral_attribution_id?: string | null;
   tenant_id?: string | null;
+  idempotency_key?: string | null;
 };
 
 type PlanRow = {
@@ -192,7 +200,8 @@ const normalizePaymentStatus = (raw: unknown): string => {
 };
 
 const normalizeAcademyFinanceRole = (raw: unknown): string => {
-  const role = String(raw ?? "").trim().toLowerCase().replace(/-/g, "_").replace(/\s+/g, "_");
+  const role = String(raw ?? "").trim().toLowerCase().replace(/-/g, "_")
+    .replace(/\s+/g, "_");
   if (role === "center_admin") return "center_admin";
   return role;
 };
@@ -291,20 +300,12 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 const purchaseKindForProgram = (purchaseType: string): string =>
   purchaseType || "plan";
 
-const normalizeRedirectUrl = (raw: unknown): string | null => {
-  const value = String(raw ?? "").trim();
-  if (!value) return null;
-  try {
-    const parsed = new URL(value);
-    if (
-      parsed.protocol !== "https:" && parsed.hostname !== "localhost" &&
-      parsed.hostname !== "127.0.0.1"
-    ) return null;
-    return parsed.toString();
-  } catch {
-    return null;
-  }
-};
+const normalizeRedirectUrl = (raw: unknown): string | null =>
+  normalizeSchoodReturnUrl(
+    raw,
+    (Deno.env.get("ENVIRONMENT") ?? Deno.env.get("DENO_ENV") ?? "") ===
+      "development",
+  );
 
 const withPaymentReturnParams = (
   returnUrl: string | null,
@@ -342,7 +343,10 @@ const randomTokenCode = (len = 10): string => {
   return out;
 };
 
-const ensureUniqueTokenCode = async (sb: any, attempts = 8): Promise<string> => {
+const ensureUniqueTokenCode = async (
+  sb: any,
+  attempts = 8,
+): Promise<string> => {
   for (let i = 0; i < attempts; i += 1) {
     const code = randomTokenCode(10);
     const { data } = await sb.from("exam_tokens").select("id").eq(
@@ -387,6 +391,9 @@ const getClickSecretKey = (): string => getEnv("CLICK_SECRET_KEY");
 const getClickMerchantUserId = (): string | null =>
   Deno.env.get("CLICK_MERCHANT_USER_ID") ?? null;
 
+const clickConfiguration = () =>
+  inspectClickConfiguration((key) => Deno.env.get(key));
+
 // Config the frontend needs to render the embedded card-payment widget
 // (https://my.click.uz/pay/checkout.js) as an alternative to the hosted
 // services/pay redirect. service_id / merchant_id / merchant_user_id are
@@ -402,13 +409,17 @@ const buildCardWidgetConfig = (
   merchant_user_id: string | null;
   amount: string;
   transaction_param: string;
-} => ({
-  service_id: serviceId,
-  merchant_id: merchantId,
-  merchant_user_id: getClickMerchantUserId(),
-  amount: amount.toFixed(2),
-  transaction_param: merchantTransId,
-});
+} | null => {
+  const merchantUserId = getClickMerchantUserId();
+  if (!merchantUserId || !clickConfiguration().cardPaymentReady) return null;
+  return {
+    service_id: serviceId,
+    merchant_id: merchantId,
+    merchant_user_id: merchantUserId,
+    amount: amount.toFixed(2),
+    transaction_param: merchantTransId,
+  };
+};
 
 const buildClickPaymentUrl = (
   serviceId: string,
@@ -424,18 +435,24 @@ const buildClickPaymentUrl = (
     transaction_param: merchantTransId,
   });
   if (returnUrl) params.set("return_url", returnUrl);
-  return `${CLICK_BASE_URL}?${params.toString()}`;
+  const paymentUrl = `${CLICK_BASE_URL}?${params.toString()}`;
+  if (!isTrustedClickPaymentUrl(paymentUrl)) {
+    throw new Error("CLICK payment URL failed trusted-origin validation");
+  }
+  return paymentUrl;
 };
 
 const assertClickAmountAllowed = (amount: number): Response | null => {
   if (amount < CLICK_MIN_AMOUNT_UZS) {
     return jsonResponse(400, {
-      error: `Click.uz minimum amount is ${CLICK_MIN_AMOUNT_UZS.toLocaleString()} UZS after discounts and credits`,
+      error:
+        `Click.uz minimum amount is ${CLICK_MIN_AMOUNT_UZS.toLocaleString()} UZS after discounts and credits`,
     });
   }
   if (amount > CLICK_MAX_AMOUNT_UZS) {
     return jsonResponse(400, {
-      error: `Click.uz maximum amount is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction`,
+      error:
+        `Click.uz maximum amount is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction`,
     });
   }
   return null;
@@ -489,8 +506,9 @@ const fetchClickStatusFromApi = async (
       merchantUserId,
       secretKey,
     );
-    const url =
-      `${CLICK_MERCHANT_API_BASE}/payment/status/${serviceId}/${encodeURIComponent(clickTransId)}`;
+    const url = `${CLICK_MERCHANT_API_BASE}/payment/status/${serviceId}/${
+      encodeURIComponent(clickTransId)
+    }`;
     const res = await fetch(url, {
       method: "GET",
       headers: { "Auth": authHeader, "Content-Type": "application/json" },
@@ -695,9 +713,18 @@ const sanitizeReferralMetadata = (
     ? value.referral_context
     : value;
   const allowed = [
-    "audience", "service", "source", "target", "channel",
-    "landing_path", "landing_search", "utm_source", "utm_medium",
-    "utm_campaign", "utm_content", "utm_term",
+    "audience",
+    "service",
+    "source",
+    "target",
+    "channel",
+    "landing_path",
+    "landing_search",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
   ];
   const out: Record<string, unknown> = {};
   for (const key of allowed) {
@@ -1191,6 +1218,7 @@ type PaymentGrantRow = {
   plan_id: string | null;
   status: string;
   granted_at: string | null;
+  grant_completed_at?: string | null;
   coupon_id: string | null;
   coupon_code?: string | null;
   original_amount?: number | null;
@@ -1222,7 +1250,9 @@ const syncAcademyPaymentFromPlatformPayment = async (
   if (!isAcademyTuitionPayment(payment)) return;
 
   const platformMeta = payment.metadata ?? {};
-  const academyPaymentId = String((platformMeta as any)?.academy_payment_id ?? "").trim();
+  const academyPaymentId = String(
+    (platformMeta as any)?.academy_payment_id ?? "",
+  ).trim();
   if (!academyPaymentId) return;
 
   const { data: academyPayment, error: loadError } = await sb
@@ -1243,9 +1273,11 @@ const syncAcademyPaymentFromPlatformPayment = async (
     ? (academyPayment as any).metadata
     : {};
   const clickTransId = String(
-    (platformMeta as any)?.click_trans_id ?? payment.provider_transaction_id ?? "",
+    (platformMeta as any)?.click_trans_id ?? payment.provider_transaction_id ??
+      "",
   ).trim();
-  const clickPaydocId = String((platformMeta as any)?.click_paydoc_id ?? "").trim();
+  const clickPaydocId = String((platformMeta as any)?.click_paydoc_id ?? "")
+    .trim();
   const normalizedStatus = String(status ?? "").trim().toLowerCase();
   const academyStatus = isSuccessStatus(normalizedStatus)
     ? "paid"
@@ -1260,13 +1292,15 @@ const syncAcademyPaymentFromPlatformPayment = async (
     .update({
       status: academyStatus,
       provider: "click",
-      provider_transaction_id: clickTransId || payment.provider_transaction_id || academyPaymentId,
+      provider_transaction_id: clickTransId ||
+        payment.provider_transaction_id || academyPaymentId,
       metadata: {
         ...currentMetadata,
         platform_payment_id: payment.id,
         platform_payment_status: normalizedStatus || status,
         academy_payment_status: academyStatus,
-        platform_provider_transaction_id: payment.provider_transaction_id ?? null,
+        platform_provider_transaction_id: payment.provider_transaction_id ??
+          null,
         click_trans_id: clickTransId || null,
         click_paydoc_id: clickPaydocId || null,
         provider_reconciled_at: new Date().toISOString(),
@@ -1300,12 +1334,11 @@ const resolveGrantTerms = async (
     };
   }
 
-  const planSnapshot =
-    paymentRow.plan_snapshot &&
+  const planSnapshot = paymentRow.plan_snapshot &&
       typeof paymentRow.plan_snapshot === "object" &&
       !Array.isArray(paymentRow.plan_snapshot)
-      ? paymentRow.plan_snapshot
-      : null;
+    ? paymentRow.plan_snapshot
+    : null;
   if (planSnapshot) {
     const durationRaw = (planSnapshot as any).duration_days;
     const durationDays =
@@ -1364,7 +1397,7 @@ const resolveGrantTerms = async (
 };
 
 const paymentGrantSelect =
-  "id, provider, provider_transaction_id, user_id, tenant_id, product_id, plan_id, status, granted_at, coupon_id, coupon_code, original_amount, discount_amount, amount, currency, credit_amount, referral_discount_amount, referral_attribution_id, purchase_type, plan_snapshot, entitlement_terms, metadata";
+  "id, provider, provider_transaction_id, user_id, tenant_id, product_id, plan_id, status, granted_at, grant_completed_at, coupon_id, coupon_code, original_amount, discount_amount, amount, currency, credit_amount, referral_discount_amount, referral_attribution_id, purchase_type, plan_snapshot, entitlement_terms, metadata";
 
 const loadPaymentById = async (
   sb: any,
@@ -1394,8 +1427,12 @@ const loadPaymentByReference = async (
   if (!value) return { payment: null, error: null };
 
   const queries = [
-    sb.from("payments").select(paymentGrantSelect).eq("provider_transaction_id", value).eq("provider", "click").maybeSingle(),
-    sb.from("payments").select(paymentGrantSelect).eq("id", value).maybeSingle(),
+    sb.from("payments").select(paymentGrantSelect).eq(
+      "provider_transaction_id",
+      value,
+    ).eq("provider", "click").maybeSingle(),
+    sb.from("payments").select(paymentGrantSelect).eq("id", value)
+      .maybeSingle(),
   ];
 
   for (const query of queries) {
@@ -1419,8 +1456,8 @@ const applyCenterTierUpgrade = async (
   const targetTier = normalizeCenterTier(
     (meta as any)?.requested_tier ?? (meta as any)?.center_tier,
   );
-  const previousTier =
-    normalizeCenterTier((meta as any)?.previous_tier) ?? "starter";
+  const previousTier = normalizeCenterTier((meta as any)?.previous_tier) ??
+    "starter";
   const billingPeriod = normalizeBillingPeriod(
     (meta as any)?.billing_period,
   );
@@ -1595,7 +1632,8 @@ const applyCenterWalletTopup = async (
 ): Promise<Response | null> => {
   const meta = payment.metadata ?? {};
   const amount = normalizeMoney(
-    (meta as any).wallet_topup_amount ?? payment.original_amount ?? payment.amount ?? 0,
+    (meta as any).wallet_topup_amount ?? payment.original_amount ??
+      payment.amount ?? 0,
   );
   const currency = String(
     (meta as any).wallet_topup_currency ?? payment.currency ?? "UZS",
@@ -1686,7 +1724,11 @@ const grantPaidPaymentOnce = async (
   const nowIso = new Date().toISOString();
   const { data: claim } = await supabase
     .from("payments")
-    .update({ granted_at: nowIso, grant_error: null })
+    .update({
+      granted_at: nowIso,
+      grant_completed_at: null,
+      grant_error: null,
+    })
     .eq("id", payment.id)
     .is("granted_at", null)
     .select("id")
@@ -1705,11 +1747,15 @@ const grantPaidPaymentOnce = async (
       const response = await applyCenterWalletTopup(supabase, payment);
       if (response) return response;
     } else if (purchaseType === "academy_tuition") {
-      const academyPaymentId = String((meta as any)?.academy_payment_id ?? "").trim();
+      const academyPaymentId = String((meta as any)?.academy_payment_id ?? "")
+        .trim();
       if (!academyPaymentId) {
         await supabase
           .from("payments")
-          .update({ granted_at: null, grant_error: "Missing academy_payment_id" })
+          .update({
+            granted_at: null,
+            grant_error: "Missing academy_payment_id",
+          })
           .eq("id", payment.id);
         return jsonResponse(500, { error: "Invalid academy tuition metadata" });
       }
@@ -1720,9 +1766,15 @@ const grantPaidPaymentOnce = async (
       if (applyErr) {
         await supabase
           .from("payments")
-          .update({ granted_at: null, grant_error: String(applyErr.message ?? applyErr) })
+          .update({
+            granted_at: null,
+            grant_error: String(applyErr.message ?? applyErr),
+          })
           .eq("id", payment.id);
-        return jsonResponse(500, { error: "Failed to apply academy tuition", details: applyErr });
+        return jsonResponse(500, {
+          error: "Failed to apply academy tuition",
+          details: applyErr,
+        });
       }
     } else if (purchaseType === "token_pack") {
       const experienceId = String((meta as any)?.experience_id ?? "");
@@ -1881,7 +1933,10 @@ const grantPaidPaymentOnce = async (
       });
 
       const payload = targetProductIds.map((pid) => {
-        const targetEndsAt = computeEntitlementEndsAt(terms.durationDays, existingMap.get(pid) ?? null);
+        const targetEndsAt = computeEntitlementEndsAt(
+          terms.durationDays,
+          existingMap.get(pid) ?? null,
+        );
 
         return {
           user_id: payment.user_id,
@@ -1958,6 +2013,13 @@ const grantPaidPaymentOnce = async (
   }
 
   await issueReferralReward(supabase, payment);
+  if (claim) {
+    await supabase
+      .from("payments")
+      .update({ grant_completed_at: new Date().toISOString() })
+      .eq("id", payment.id)
+      .eq("granted_at", nowIso);
+  }
   return null;
 };
 
@@ -1986,13 +2048,76 @@ const parseClickWebhookBody = async (
   }
 };
 
+const scheduleBackground = (work: PromiseLike<unknown>): void => {
+  const promise = Promise.resolve(work).catch((error) => {
+    console.error("click_background_task_failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  });
+  const edgeRuntime = (globalThis as any).EdgeRuntime;
+  if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(promise);
+};
+
+const recordClickCallbackEvent = (
+  supabase: any,
+  event: {
+    correlationId: string;
+    params: Record<string, unknown>;
+    payment?: PaymentGrantRow | null;
+    httpStatus: number;
+    body: Record<string, unknown>;
+    startedAt: number;
+  },
+): void => {
+  const safe = sanitizeClickCallbackPayload(event.params);
+  const durationMs = Math.max(
+    0,
+    Math.round(performance.now() - event.startedAt),
+  );
+  const row = {
+    correlation_id: event.correlationId,
+    action: String(safe.action ?? "unknown"),
+    click_transaction_id: String(safe.click_trans_id ?? "") || null,
+    payment_id: event.payment?.id ?? null,
+    service_id: String(safe.service_id ?? "") || null,
+    tenant_id: event.payment?.tenant_id ?? null,
+    payment_status: event.payment?.status ?? null,
+    outcome: Number(event.body.error ?? -9) === 0 ? "accepted" : "rejected",
+    protocol_error: Number(event.body.error ?? -9),
+    http_status: event.httpStatus,
+    duration_ms: durationMs,
+  };
+  console.info("click_callback", row);
+  scheduleBackground(supabase.from("click_callback_events").insert(row));
+};
+
 const handleClickWebhook = async (
   req: Request,
   supabase: any,
 ): Promise<Response> => {
+  const startedAt = performance.now();
+  const requestId = String(req.headers.get("x-request-id") ?? "").trim();
+  const correlationId = requestId && requestId.length <= 128
+    ? requestId
+    : crypto.randomUUID();
   const params = await parseClickWebhookBody(req);
+  let auditPayment: PaymentGrantRow | null = null;
+  const respond = (
+    status: number,
+    body: Record<string, unknown>,
+  ): Response => {
+    recordClickCallbackEvent(supabase, {
+      correlationId,
+      params: params ?? {},
+      payment: auditPayment,
+      httpStatus: status,
+      body,
+      startedAt,
+    });
+    return jsonResponse(status, body);
+  };
   if (!params) {
-    return jsonResponse(400, {
+    return respond(400, {
       error: -8,
       error_note: "Invalid request body",
     });
@@ -2002,14 +2127,18 @@ const handleClickWebhook = async (
   let serviceId: string;
   let merchantId: string;
   try {
+    const readiness = clickConfiguration();
+    if (!readiness.hostedPaymentReady) {
+      throw new Error("CLICK configuration incomplete");
+    }
     secretKey = getClickSecretKey();
     serviceId = getClickServiceId();
     merchantId = getClickMerchantId();
   } catch (error) {
     console.error("click_webhook_configuration_missing", {
-      error: error instanceof Error ? error.message : String(error),
+      configured: false,
     });
-    return jsonResponse(503, {
+    return respond(503, {
       error: -9,
       error_note: "Payment provider is not configured",
     });
@@ -2017,15 +2146,16 @@ const handleClickWebhook = async (
 
   const validation = validateClickWebhookEnvelope(params, serviceId);
   if (!validation.ok) {
-    return jsonResponse(400, {
+    return respond(400, {
       error: validation.error,
       error_note: validation.errorNote,
     });
   }
   const envelope = validation.value;
+  const safeCallbackPayload = sanitizeClickCallbackPayload(params);
   const isValidSig = await verifyClickWebhookSignature(envelope, secretKey);
   if (!isValidSig) {
-    return jsonResponse(401, { error: -1, error_note: "Sign check failed!" });
+    return respond(401, { error: -1, error_note: "Sign check failed!" });
   }
 
   const { action, clickTransId, merchantTransId, merchantPrepareId } = envelope;
@@ -2036,19 +2166,20 @@ const handleClickWebhook = async (
     merchantTransId,
   );
   if (loadError) {
-    return jsonResponse(500, {
+    return respond(500, {
       error: -9,
       error_note: "Internal lookup error",
     });
   }
   if (!payment) {
-    return jsonResponse(200, {
+    return respond(200, {
       error: -6,
       error_note: "Transaction does not exist",
       click_trans_id: Number(clickTransId) || 0,
       merchant_trans_id: merchantTransId,
     });
   }
+  auditPayment = payment;
 
   const paymentMetadata = payment.metadata ?? {};
   const storedServiceId = String(
@@ -2062,7 +2193,7 @@ const handleClickWebhook = async (
     (storedServiceId && storedServiceId !== serviceId) ||
     (storedMerchantId && storedMerchantId !== merchantId)
   ) {
-    return jsonResponse(200, {
+    return respond(200, {
       error: -6,
       error_note: "Transaction does not exist",
       click_trans_id: Number(clickTransId),
@@ -2073,7 +2204,7 @@ const handleClickWebhook = async (
   const paymentAmount = normalizeMoney(payment.amount);
   const receivedAmount = normalizeMoney(envelope.amount);
   if (paymentAmount !== receivedAmount) {
-    return jsonResponse(200, {
+    return respond(200, {
       error: -2,
       error_note: "Incorrect parameter amount",
       click_trans_id: Number(clickTransId) || 0,
@@ -2084,7 +2215,7 @@ const handleClickWebhook = async (
   // ── PREPARE (action=0) ────────────────────────────────────────────────────
   if (action === "0") {
     if (isSuccessStatus(payment.status)) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -4,
         error_note: "Already paid",
         click_trans_id: Number(clickTransId),
@@ -2093,7 +2224,7 @@ const handleClickWebhook = async (
       });
     }
     if (isTerminalFailureStatus(payment.status)) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -9,
         error_note: "Transaction cancelled",
         click_trans_id: Number(clickTransId) || 0,
@@ -2106,7 +2237,7 @@ const handleClickWebhook = async (
       (paymentMetadata as any).click_trans_id ?? "",
     ).trim();
     if (preparedClickTransId && preparedClickTransId !== clickTransId) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -6,
         error_note: "Transaction does not exist",
         click_trans_id: Number(clickTransId),
@@ -2115,7 +2246,7 @@ const handleClickWebhook = async (
     }
 
     // Store click_trans_id in provider_transaction_id + metadata
-    const { error: prepareUpdateError } = await supabase
+    const { data: preparedPayment, error: prepareUpdateError } = await supabase
       .from("payments")
       .update({
         provider_transaction_id: clickTransId,
@@ -2125,13 +2256,24 @@ const handleClickWebhook = async (
           click_trans_id: clickTransId,
           click_paydoc_id: String(params.click_paydoc_id ?? ""),
         },
-        provider_payload: { webhook_prepare: params },
+        provider_payload: { webhook_prepare: safeCallbackPayload },
       })
-      .eq("id", payment.id);
+      .eq("id", payment.id)
+      .in("provider_transaction_id", [payment.id, "pending", clickTransId])
+      .select("id")
+      .maybeSingle();
     if (prepareUpdateError) {
-      return jsonResponse(500, {
+      return respond(500, {
         error: -9,
         error_note: "Transaction update failed",
+      });
+    }
+    if (!preparedPayment?.id) {
+      return respond(200, {
+        error: -6,
+        error_note: "Transaction does not exist",
+        click_trans_id: Number(clickTransId),
+        merchant_trans_id: merchantTransId,
       });
     }
 
@@ -2151,7 +2293,7 @@ const handleClickWebhook = async (
       { provider_stage: "prepared" },
     );
 
-    return jsonResponse(200, {
+    return respond(200, {
       click_trans_id: Number(clickTransId) || 0,
       merchant_trans_id: merchantTransId,
       merchant_prepare_id: payment.id,
@@ -2164,7 +2306,7 @@ const handleClickWebhook = async (
   if (action === "1") {
     // merchant_prepare_id must match our payment UUID
     if (merchantPrepareId !== payment.id) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -6,
         error_note: "Transaction does not exist",
         click_trans_id: Number(clickTransId) || 0,
@@ -2177,7 +2319,7 @@ const handleClickWebhook = async (
       (paymentMetadata as any).click_trans_id ?? "",
     ).trim();
     if (!preparedClickTransId || preparedClickTransId !== clickTransId) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -6,
         error_note: "Transaction does not exist",
         click_trans_id: Number(clickTransId),
@@ -2188,7 +2330,7 @@ const handleClickWebhook = async (
 
     const clickError = envelope.error;
     if (isSuccessStatus(payment.status) && clickError < 0) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: -4,
         error_note: "Already paid",
         click_trans_id: Number(clickTransId),
@@ -2197,7 +2339,7 @@ const handleClickWebhook = async (
       });
     }
     if (isTerminalFailureStatus(payment.status)) {
-      return jsonResponse(200, {
+      return respond(200, {
         error: clickError < 0 ? 0 : -9,
         error_note: clickError < 0 ? "Acknowledged" : "Transaction cancelled",
         click_trans_id: Number(clickTransId),
@@ -2217,11 +2359,11 @@ const handleClickWebhook = async (
             click_trans_id: clickTransId,
             click_error: clickError,
           },
-          provider_payload: { webhook_complete: params },
+          provider_payload: { webhook_complete: safeCallbackPayload },
         })
         .eq("id", payment.id);
       if (cancelUpdateError) {
-        return jsonResponse(500, {
+        return respond(500, {
           error: -9,
           error_note: "Transaction update failed",
         });
@@ -2252,8 +2394,13 @@ const handleClickWebhook = async (
           provider_error: clickError,
         },
       );
+      auditPayment = {
+        ...payment,
+        provider_transaction_id: clickTransId,
+        status: "canceled",
+      };
 
-      return jsonResponse(200, {
+      return respond(200, {
         click_trans_id: Number(clickTransId) || 0,
         merchant_trans_id: merchantTransId,
         merchant_confirm_id: payment.id,
@@ -2264,7 +2411,7 @@ const handleClickWebhook = async (
 
     if (isSuccessStatus(payment.status) && payment.granted_at) {
       // Already processed — idempotent success
-      return jsonResponse(200, {
+      return respond(200, {
         click_trans_id: Number(clickTransId) || 0,
         merchant_trans_id: merchantTransId,
         merchant_confirm_id: payment.id,
@@ -2283,18 +2430,19 @@ const handleClickWebhook = async (
           click_trans_id: clickTransId,
           click_paydoc_id: String(params.click_paydoc_id ?? ""),
         },
-        provider_payload: { webhook_complete: params },
+        provider_payload: { webhook_complete: safeCallbackPayload },
       })
       .eq("id", payment.id)
       .select(paymentGrantSelect)
       .maybeSingle();
 
     if (updateError || !updatedPayment?.id) {
-      return jsonResponse(500, {
+      return respond(500, {
         error: -9,
         error_note: "Transaction update failed",
       });
     }
+    auditPayment = updatedPayment as PaymentGrantRow;
 
     const grantResponse = await grantPaidPaymentOnce(
       supabase,
@@ -2314,7 +2462,9 @@ const handleClickWebhook = async (
       "paid",
       {
         provider_stage: "complete",
-        platform_grant_error: grantResponse ? "Failed to apply academy tuition" : null,
+        platform_grant_error: grantResponse
+          ? "Failed to apply academy tuition"
+          : null,
       },
     );
 
@@ -2323,16 +2473,20 @@ const handleClickWebhook = async (
       const currency = String(updatedPayment.currency ?? "UZS");
       fetch(`${getEnv("SUPABASE_URL")}/functions/v1/send-telegram`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${getEnv("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+        headers: {
+          "Authorization": `Bearer ${getEnv("SUPABASE_SERVICE_ROLE_KEY")}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           user_id: updatedPayment.user_id,
           notification_type: "payment_confirmed",
-          text: `✅ <b>Payment confirmed!</b>\n\n${amt.toLocaleString()} ${currency} received.\nYour access has been activated.`,
+          text:
+            `✅ <b>Payment confirmed!</b>\n\n${amt.toLocaleString()} ${currency} received.\nYour access has been activated.`,
         }),
       }).catch(() => {});
     }
 
-    return jsonResponse(200, {
+    return respond(200, {
       click_trans_id: Number(clickTransId) || 0,
       merchant_trans_id: merchantTransId,
       merchant_confirm_id: payment.id,
@@ -2341,7 +2495,7 @@ const handleClickWebhook = async (
     });
   }
 
-  return jsonResponse(400, { error: -3, error_note: "Action not found" });
+  return respond(400, { error: -3, error_note: "Action not found" });
 };
 
 // ---------------------------------------------------------------------------
@@ -2371,10 +2525,8 @@ serve(async (req) => {
       });
     }
 
-    // Webhook: unauthenticated POST to /click/webhook or POST without Bearer
-    const isWebhookRoute =
-      req.method === "POST" &&
-      (isWebhookPath || !getBearerToken(req));
+    // The only unauthenticated route is the intentional CLICK callback path.
+    const isWebhookRoute = req.method === "POST" && isWebhookPath;
 
     if (isWebhookRoute) {
       return await handleClickWebhook(req, supabase);
@@ -2394,12 +2546,42 @@ serve(async (req) => {
 
     const authedUserId = authData.user.id;
 
+    // Safe, authenticated configuration readiness. Values and digests are never returned.
+    if (req.method === "GET" && url.pathname.endsWith("/readiness")) {
+      const readiness = clickConfiguration();
+      return jsonResponse(200, {
+        configured: readiness.configured,
+        service_id: readiness.serviceId,
+        service_id_matches_production: readiness.serviceIdMatchesProduction,
+        hosted_payment_ready: readiness.hostedPaymentReady,
+        card_payment_ready: readiness.cardPaymentReady,
+        missing_configuration: readiness.missing,
+      });
+    }
+
     // ── POST /click/create-transaction ────────────────────────────────────
     if (
       req.method === "POST" &&
       url.pathname.endsWith("/create-transaction")
     ) {
       const body = (await req.json()) as CreateTransactionInput;
+
+      const readiness = clickConfiguration();
+      if (!readiness.configured) {
+        return jsonResponse(503, {
+          error: "CLICK payments are not configured",
+          error_code: "click_not_configured",
+          missing_configuration: readiness.missing,
+          service_id_matches_production: readiness.serviceIdMatchesProduction,
+        });
+      }
+
+      const checkoutIdempotencyKey = normalizeCheckoutIdempotencyKey(
+        body.idempotency_key,
+      );
+      if (body.idempotency_key && !checkoutIdempotencyKey) {
+        return jsonResponse(400, { error: "Invalid checkout idempotency key" });
+      }
 
       if (!body.description || typeof body.description !== "string") {
         return jsonResponse(400, { error: "Description is required" });
@@ -2410,22 +2592,37 @@ serve(async (req) => {
       // resolves access via academy_contacts instead of tenant_memberships.
       if (normalizePurchaseType(body.purchase_type) === "academy_tuition") {
         const meta = isPlainObject(body.metadata) ? body.metadata : {};
-        const academyId = String((meta as any).academy_id ?? body.tenant_id ?? "").trim();
-        const offerId = String((meta as any).offer_id ?? body.plan_id ?? "").trim();
-        const requestedContactId = String((meta as any).contact_id ?? "").trim();
+        const academyId = String(
+          (meta as any).academy_id ?? body.tenant_id ?? "",
+        ).trim();
+        const offerId = String((meta as any).offer_id ?? body.plan_id ?? "")
+          .trim();
+        const requestedContactId = String((meta as any).contact_id ?? "")
+          .trim();
         if (!academyId || !offerId) {
-          return jsonResponse(400, { error: "academy_id and offer_id are required" });
+          return jsonResponse(400, {
+            error: "academy_id and offer_id are required",
+          });
         }
 
         const { data: offer, error: offerErr } = await supabase
           .from("academy_offers")
-          .select("id, academy_id, name, price_amount, currency, is_active, classroom_id")
+          .select(
+            "id, academy_id, name, price_amount, currency, is_active, classroom_id",
+          )
           .eq("id", offerId)
           .eq("academy_id", academyId)
           .maybeSingle();
-        if (offerErr) return jsonResponse(500, { error: "Failed to load offer", details: offerErr });
+        if (offerErr) {
+          return jsonResponse(500, {
+            error: "Failed to load offer",
+            details: offerErr,
+          });
+        }
         if (!offer?.id) return jsonResponse(404, { error: "Offer not found" });
-        if (!offer.is_active) return jsonResponse(400, { error: "Offer is inactive" });
+        if (!offer.is_active) {
+          return jsonResponse(400, { error: "Offer is inactive" });
+        }
 
         // Resolve the contact: explicit id, else the caller's linked contact.
         let contactQuery = supabase
@@ -2435,9 +2632,17 @@ serve(async (req) => {
         contactQuery = requestedContactId
           ? contactQuery.eq("id", requestedContactId)
           : contactQuery.eq("user_id", authedUserId);
-        const { data: contact, error: contactErr } = await contactQuery.maybeSingle();
-        if (contactErr) return jsonResponse(500, { error: "Failed to load contact", details: contactErr });
-        if (!contact?.id) return jsonResponse(404, { error: "Contact not found" });
+        const { data: contact, error: contactErr } = await contactQuery
+          .maybeSingle();
+        if (contactErr) {
+          return jsonResponse(500, {
+            error: "Failed to load contact",
+            details: contactErr,
+          });
+        }
+        if (!contact?.id) {
+          return jsonResponse(404, { error: "Contact not found" });
+        }
 
         // Authorization: payer is the contact's linked user, OR an academy finance operator.
         const isContactOwner = String(contact.user_id ?? "") === authedUserId;
@@ -2453,14 +2658,22 @@ serve(async (req) => {
           hasAcademyFinanceAccess = isAcademyFinanceRole(adminMembership?.role);
 
           if (!hasAcademyFinanceAccess) {
-            const { data: academyTenant, error: academyTenantErr } = await supabase
-              .from("tenants")
-              .select("metadata")
-              .eq("id", academyId)
-              .maybeSingle();
-            if (academyTenantErr) return jsonResponse(500, { error: "Failed to load academy tenant", details: academyTenantErr });
+            const { data: academyTenant, error: academyTenantErr } =
+              await supabase
+                .from("tenants")
+                .select("metadata")
+                .eq("id", academyId)
+                .maybeSingle();
+            if (academyTenantErr) {
+              return jsonResponse(500, {
+                error: "Failed to load academy tenant",
+                details: academyTenantErr,
+              });
+            }
 
-            const parentCenterId = String((academyTenant?.metadata as any)?.parent_center_id ?? "").trim();
+            const parentCenterId = String(
+              (academyTenant?.metadata as any)?.parent_center_id ?? "",
+            ).trim();
             if (parentCenterId) {
               const { data: centerMembership } = await supabase
                 .from("tenant_memberships")
@@ -2469,7 +2682,9 @@ serve(async (req) => {
                 .eq("user_id", authedUserId)
                 .eq("status", "active")
                 .maybeSingle();
-              hasAcademyFinanceAccess = isAcademyFinanceRole(centerMembership?.role);
+              hasAcademyFinanceAccess = isAcademyFinanceRole(
+                centerMembership?.role,
+              );
             }
           }
 
@@ -2477,7 +2692,9 @@ serve(async (req) => {
             return jsonResponse(403, { error: "Forbidden" });
           }
         }
-        const paymentSource = isContactOwner ? "student_portal" : "academy_office";
+        const paymentSource = isContactOwner
+          ? "student_portal"
+          : "academy_office";
 
         const tuitionAmount = Math.floor(Number(offer.price_amount));
         const tuitionCurrency = String(offer.currency ?? "UZS").toUpperCase();
@@ -2496,24 +2713,28 @@ serve(async (req) => {
 
         // Create the academy_payments row that apply_academy_payment will settle.
         const academyProviderTxn = `click-${crypto.randomUUID()}`;
-        const { data: academyPayment, error: academyPaymentErr } = await supabase
-          .from("academy_payments")
-          .insert({
-            academy_id: academyId,
-            offer_id: offerId,
-            contact_id: contact.id,
-            provider: "click",
-            provider_transaction_id: academyProviderTxn,
-            amount: tuitionAmount,
-            currency: tuitionCurrency,
-            status: "pending",
-            metadata: { source: paymentSource, initiated_by: authedUserId },
-            created_by: authedUserId,
-          })
-          .select("id")
-          .maybeSingle();
+        const { data: academyPayment, error: academyPaymentErr } =
+          await supabase
+            .from("academy_payments")
+            .insert({
+              academy_id: academyId,
+              offer_id: offerId,
+              contact_id: contact.id,
+              provider: "click",
+              provider_transaction_id: academyProviderTxn,
+              amount: tuitionAmount,
+              currency: tuitionCurrency,
+              status: "pending",
+              metadata: { source: paymentSource, initiated_by: authedUserId },
+              created_by: authedUserId,
+            })
+            .select("id")
+            .maybeSingle();
         if (academyPaymentErr || !academyPayment?.id) {
-          return jsonResponse(500, { error: "Failed to create academy payment", details: academyPaymentErr });
+          return jsonResponse(500, {
+            error: "Failed to create academy payment",
+            details: academyPaymentErr,
+          });
         }
 
         const tuitionMetadata: Record<string, unknown> = {
@@ -2527,37 +2748,47 @@ serve(async (req) => {
           classroom_id: offer.classroom_id ?? null,
           click_service_id: tuitionServiceId,
           click_merchant_id: tuitionMerchantId,
+          checkout_idempotency_key: checkoutIdempotencyKey,
         };
 
-        const { data: tuitionPaymentRow, error: tuitionInsertErr } = await supabase
-          .from("payments")
-          .insert({
-            provider: "click",
-            provider_transaction_id: "pending",
-            amount: tuitionAmount,
-            currency: tuitionCurrency,
-            status: "pending",
-            user_id: authedUserId,
-            tenant_id: academyId,
-            product_id: null,
-            purchase_type: "academy_tuition",
-            metadata: tuitionMetadata,
-            provider_payload: { stage: "local_order_created" },
-          })
-          .select("id")
-          .maybeSingle();
+        const tuitionUuid = crypto.randomUUID();
+        const { data: tuitionPaymentRow, error: tuitionInsertErr } =
+          await supabase
+            .from("payments")
+            .insert({
+              id: tuitionUuid,
+              provider: "click",
+              provider_transaction_id: tuitionUuid,
+              checkout_idempotency_key: checkoutIdempotencyKey,
+              amount: tuitionAmount,
+              currency: tuitionCurrency,
+              status: "pending",
+              fiscalization_status: "not_configured",
+              user_id: authedUserId,
+              tenant_id: academyId,
+              product_id: null,
+              purchase_type: "academy_tuition",
+              metadata: tuitionMetadata,
+              provider_payload: { stage: "local_order_created" },
+            })
+            .select("id")
+            .maybeSingle();
         if (tuitionInsertErr || !tuitionPaymentRow?.id) {
-          return jsonResponse(500, { error: "Failed to record payment", details: tuitionInsertErr });
+          return jsonResponse(500, {
+            error: "Failed to record payment",
+            details: tuitionInsertErr,
+          });
         }
 
-        const tuitionUuid = String(tuitionPaymentRow.id);
-        await supabase
-          .from("payments")
-          .update({ provider_transaction_id: tuitionUuid })
-          .eq("id", tuitionUuid);
         await supabase
           .from("academy_payments")
-          .update({ metadata: { source: paymentSource, initiated_by: authedUserId, platform_payment_id: tuitionUuid } })
+          .update({
+            metadata: {
+              source: paymentSource,
+              initiated_by: authedUserId,
+              platform_payment_id: tuitionUuid,
+            },
+          })
           .eq("id", academyPayment.id);
 
         const tuitionUrl = buildClickPaymentUrl(
@@ -2576,7 +2807,10 @@ serve(async (req) => {
           .from("payments")
           .update({
             metadata: { ...tuitionMetadata, click_payment_url: tuitionUrl },
-            provider_payload: { stage: "click_url_built", payment_url: tuitionUrl },
+            provider_payload: {
+              stage: "click_url_built",
+              payment_url: tuitionUrl,
+            },
           })
           .eq("id", tuitionUuid);
 
@@ -2644,7 +2878,8 @@ serve(async (req) => {
         }
         if (body.referral_code || body.referral_attribution_id) {
           return jsonResponse(400, {
-            error: "Referral discounts cannot be used to top up a center wallet",
+            error:
+              "Referral discounts cannot be used to top up a center wallet",
           });
         }
       } else if (purchaseType === "token_pack") {
@@ -2870,11 +3105,10 @@ serve(async (req) => {
         (body.credit_amount !== null &&
           typeof body.credit_amount !== "undefined")
       ) {
-        const requestedCredit =
-          body.credit_amount === null ||
+        const requestedCredit = body.credit_amount === null ||
             typeof body.credit_amount === "undefined"
-            ? amount
-            : normalizeMoney(body.credit_amount);
+          ? amount
+          : normalizeMoney(body.credit_amount);
         creditAmount = Math.min(amount, availableCredit, requestedCredit);
         amount = Math.max(0, amount - creditAmount);
       }
@@ -2898,8 +3132,7 @@ serve(async (req) => {
           metadata.quantity = quantity;
           metadata.expires_in_days = expiresInDays ?? null;
           metadata.unit_price_amount = experience?.price_amount ?? null;
-          metadata.unit_price_currency =
-            experience?.price_currency ?? currency;
+          metadata.unit_price_currency = experience?.price_currency ?? currency;
         } else if (purchaseType === "seat_pack") {
           metadata.purchase_type = "seat_pack";
           metadata.seat_count = quantity;
@@ -2924,8 +3157,7 @@ serve(async (req) => {
             discount_amount: discountAmount,
             credit_amount: creditAmount,
             referral_discount_amount: referralDiscountAmount,
-            referral_attribution_id:
-              referralCheckout.referralAttributionId,
+            referral_attribution_id: referralCheckout.referralAttributionId,
             purchase_type: purchaseKind,
             coupon_code: couponCode,
             coupon_id: couponId,
@@ -3026,6 +3258,7 @@ serve(async (req) => {
       metadata.credit_applied = creditAmount;
       metadata.click_service_id = serviceId;
       metadata.click_merchant_id = merchantId;
+      metadata.checkout_idempotency_key = checkoutIdempotencyKey;
 
       if (purchaseType === "token_pack") {
         metadata.purchase_type = "token_pack";
@@ -3033,8 +3266,7 @@ serve(async (req) => {
         metadata.quantity = quantity;
         metadata.expires_in_days = expiresInDays ?? null;
         metadata.unit_price_amount = experience?.price_amount ?? null;
-        metadata.unit_price_currency =
-          experience?.price_currency ?? currency;
+        metadata.unit_price_currency = experience?.price_currency ?? currency;
       } else if (purchaseType === "seat_pack") {
         metadata.purchase_type = "seat_pack";
         metadata.seat_count = quantity;
@@ -3049,12 +3281,85 @@ serve(async (req) => {
       const planSnapshot = plan ? buildPlanSnapshot(plan) : {};
       const entitlementTerms = plan ? buildEntitlementTerms(plan) : {};
 
+      const loadExistingCheckout = async (): Promise<any | null> => {
+        if (!checkoutIdempotencyKey) return null;
+        const { data: existing, error: existingError } = await supabase
+          .from("payments")
+          .select(
+            "id, amount, currency, status, tenant_id, product_id, plan_id, purchase_type, original_amount, discount_amount, credit_amount, referral_discount_amount, coupon_code, metadata",
+          )
+          .eq("provider", "click")
+          .eq("user_id", authedUserId)
+          .eq("checkout_idempotency_key", checkoutIdempotencyKey)
+          .maybeSingle();
+        if (existingError) throw existingError;
+        return existing ?? null;
+      };
+
+      const existingCheckoutResponse = (existing: any): Response => {
+        if (
+          existing.tenant_id !== tenantId ||
+          existing.product_id !== productId ||
+          existing.plan_id !== planId ||
+          normalizeMoney(existing.amount) !== amount ||
+          normalizePurchaseType(existing.purchase_type) !== purchaseKind
+        ) {
+          return jsonResponse(409, {
+            error:
+              "Checkout idempotency key was already used for another order",
+            error_code: "checkout_idempotency_conflict",
+          });
+        }
+        const existingUrl = buildClickPaymentUrl(
+          serviceId,
+          merchantId,
+          normalizeMoney(existing.amount),
+          String(existing.id),
+          withPaymentReturnParams(
+            redirectUrl,
+            String(existing.id),
+            purchaseKind,
+          ),
+        );
+        return jsonResponse(200, {
+          payment_url: existingUrl,
+          card_widget: buildCardWidgetConfig(
+            serviceId,
+            merchantId,
+            normalizeMoney(existing.amount),
+            String(existing.id),
+          ),
+          transaction_id: existing.id,
+          status: existing.status,
+          amount: normalizeMoney(existing.amount),
+          currency: existing.currency,
+          original_amount: normalizeMoney(existing.original_amount),
+          discount_amount: normalizeMoney(existing.discount_amount),
+          credit_amount: normalizeMoney(existing.credit_amount),
+          referral_discount_amount: normalizeMoney(
+            existing.referral_discount_amount,
+          ),
+          final_amount: normalizeMoney(existing.amount),
+          coupon_code: existing.coupon_code ?? null,
+          referral_code: (existing.metadata as any)?.referral_code ?? null,
+          plan_id: existing.plan_id,
+          product_id: existing.product_id,
+          idempotent_replay: true,
+        });
+      };
+
+      const existingCheckout = await loadExistingCheckout();
+      if (existingCheckout) return existingCheckoutResponse(existingCheckout);
+
       // Insert payment first — its UUID becomes merchant_trans_id for Click.
+      const paymentUuid = crypto.randomUUID();
       const { data: insertedPayment, error: insertError } = await supabase
         .from("payments")
         .insert({
+          id: paymentUuid,
           provider: "click",
-          provider_transaction_id: "pending",
+          provider_transaction_id: paymentUuid,
+          checkout_idempotency_key: checkoutIdempotencyKey,
           amount,
           original_amount: originalAmount,
           discount_amount: discountAmount,
@@ -3066,6 +3371,7 @@ serve(async (req) => {
           coupon_id: couponId,
           currency,
           status: "pending",
+          fiscalization_status: "not_configured",
           user_id: authedUserId,
           tenant_id: tenantId,
           product_id: productId,
@@ -3079,19 +3385,15 @@ serve(async (req) => {
         .maybeSingle();
 
       if (insertError || !insertedPayment?.id) {
+        if ((insertError as any)?.code === "23505" && checkoutIdempotencyKey) {
+          const racedCheckout = await loadExistingCheckout();
+          if (racedCheckout) return existingCheckoutResponse(racedCheckout);
+        }
         return jsonResponse(500, {
           error: "Failed to record payment",
           details: insertError,
         });
       }
-
-      const paymentUuid = insertedPayment.id as string;
-
-      // Update provider_transaction_id to payment UUID (merchant_trans_id we'll send to Click)
-      await supabase
-        .from("payments")
-        .update({ provider_transaction_id: paymentUuid })
-        .eq("id", paymentUuid);
 
       if (creditAmount > 0) {
         const reserve = await reserveCredit(supabase, {
@@ -3132,7 +3434,10 @@ serve(async (req) => {
             ...metadata,
             click_payment_url: paymentUrl,
           },
-          provider_payload: { stage: "click_url_built", payment_url: paymentUrl },
+          provider_payload: {
+            stage: "click_url_built",
+            payment_url: paymentUrl,
+          },
         })
         .eq("id", paymentUuid);
 
@@ -3215,7 +3520,9 @@ serve(async (req) => {
           allowed = financeAccess.allowed;
         }
 
-        if (!allowed && !isAcademyTuitionPayment(payment) && payment.tenant_id) {
+        if (
+          !allowed && !isAcademyTuitionPayment(payment) && payment.tenant_id
+        ) {
           const { data: membership } = await supabase
             .from("tenant_memberships")
             .select("id")
@@ -3242,7 +3549,8 @@ serve(async (req) => {
       ) {
         const meta = payment.metadata ?? {};
         const clickTransId = String(
-          (meta as any)?.click_trans_id ?? payment.provider_transaction_id ?? "",
+          (meta as any)?.click_trans_id ?? payment.provider_transaction_id ??
+            "",
         ).trim();
 
         if (clickTransId && !looksLikeUuid(clickTransId)) {
@@ -3275,28 +3583,19 @@ serve(async (req) => {
       if (
         isSuccessStatus(normalized) && payment.tenant_id && payment.user_id
       ) {
-        const nowIso = new Date().toISOString();
-        const { data: claim } = await supabase
-          .from("payments")
-          .update({ granted_at: nowIso, grant_error: null })
-          .eq("id", payment.id)
-          .is("granted_at", null)
-          .select("id")
-          .maybeSingle();
-
-        if (claim) {
-          const freshPayment = { ...payment, status: normalized };
-          const grantResponse = await grantPaidPaymentOnce(
-            supabase,
-            freshPayment,
-            usedStatusId,
-          );
-          if (grantResponse) {
-            console.error("click_status_grant_failed", {
-              payment_id: payment.id,
-            });
-            statusGrantError = "Failed to apply academy tuition";
-          }
+        // grantPaidPaymentOnce owns the atomic granted_at claim. Claiming here
+        // first would make the real grant a no-op and leave paid access missing.
+        const freshPayment = { ...payment, status: normalized };
+        const grantResponse = await grantPaidPaymentOnce(
+          supabase,
+          freshPayment,
+          usedStatusId,
+        );
+        if (grantResponse) {
+          console.error("click_status_grant_failed", {
+            payment_id: payment.id,
+          });
+          statusGrantError = "Failed to grant paid payment";
         }
 
         if (normalizeMoney(payment.credit_amount) > 0) {
@@ -3331,6 +3630,12 @@ serve(async (req) => {
         },
       );
 
+      const { data: grantState } = await supabase
+        .from("payments")
+        .select("granted_at,grant_completed_at,grant_error")
+        .eq("id", payment.id)
+        .maybeSingle();
+
       return jsonResponse(200, {
         status: normalized,
         api_status: apiStatus,
@@ -3338,6 +3643,9 @@ serve(async (req) => {
         credit_amount: payment.credit_amount ?? 0,
         referral_discount_amount: payment.referral_discount_amount ?? 0,
         final_amount: payment.amount ?? 0,
+        grant_claimed: Boolean(grantState?.granted_at),
+        grant_completed: Boolean(grantState?.grant_completed_at),
+        grant_error: grantState?.grant_error ?? statusGrantError,
       });
     }
 

@@ -1978,7 +1978,7 @@ export const teacherStudioCreateClickTuitionPayment = async (
   academyId: string,
   body: { contact_id: string; offer_id: string; redirect_url?: string | null },
 ): Promise<TeacherStudioClickTuitionTransaction> => {
-  return invokeEdge<TeacherStudioClickTuitionTransaction>('click/create-transaction', {
+  const result = await invokeEdge<TeacherStudioClickTuitionTransaction>('click/create-transaction', {
     method: 'POST',
     body: {
       description: 'Academy tuition',
@@ -1992,6 +1992,12 @@ export const teacherStudioCreateClickTuitionPayment = async (
       },
     },
   });
+  const paymentUrl = new URL(result.payment_url);
+  if (
+    paymentUrl.protocol !== 'https:' || paymentUrl.hostname !== 'my.click.uz' ||
+    paymentUrl.pathname !== '/services/pay'
+  ) throw new Error('CLICK returned an untrusted payment URL');
+  return result;
 };
 
 export const teacherStudioMarkPaymentPaid = async (

@@ -5,6 +5,7 @@ import {
   billingPlansList,
   billingQuote,
   clickCreateTransaction,
+  clickReadiness,
   clickStatus,
   getMe,
   type BillingPlan,
@@ -86,6 +87,7 @@ export const CheckoutPage: React.FC = () => {
   const location = useLocation();
   const { t } = useI18n();
   const quoteSeq = useRef(0);
+  const checkoutAttemptKey = useRef(crypto.randomUUID());
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const returnTo = useMemo(() => sanitizeReturnTo(searchParams.get('returnTo')), [searchParams]);
@@ -101,6 +103,8 @@ export const CheckoutPage: React.FC = () => {
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [cardWidget, setCardWidget] = useState<ClickCardWidgetConfig | null>(null);
   const [entitled, setEntitled] = useState<boolean | null>(null);
+  const [clickReady, setClickReady] = useState<boolean | null>(null);
+  const [clickReadinessReason, setClickReadinessReason] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
   const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
 
@@ -150,6 +154,16 @@ export const CheckoutPage: React.FC = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
+
+        const provider = await clickReadiness(data.session.access_token);
+        setClickReady(provider.configured);
+        setClickReadinessReason(
+          provider.configured
+            ? null
+            : provider.missing_configuration.length > 0
+              ? `CLICK checkout is awaiting production configuration: ${provider.missing_configuration.join(', ')}`
+              : 'CLICK checkout service configuration does not match production.',
+        );
 
         let pid = productIdParam ?? null;
         if (!pid && productParam) {
@@ -258,6 +272,7 @@ export const CheckoutPage: React.FC = () => {
         coupon_code: couponCode.trim() || null,
         apply_credit: applyCredit,
         referral_code: referralCode.trim() || null,
+        idempotency_key: checkoutAttemptKey.current,
       });
 
       setTransactionId(res.transaction_id);
@@ -529,6 +544,11 @@ export const CheckoutPage: React.FC = () => {
         ) : null}
 
         {error ? <div className="mb-6 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">{error}</div> : null}
+        {clickReady === false && clickReadinessReason ? (
+          <div className="mb-6 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+            {clickReadinessReason} No order will be created until configuration is complete.
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border border-gray-200 rounded-2xl p-6">
@@ -537,7 +557,7 @@ export const CheckoutPage: React.FC = () => {
 
             <button
               onClick={createCheckout}
-              disabled={busy || !selectedPlan}
+              disabled={busy || !selectedPlan || clickReady !== true}
               className="mt-6 w-full bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition-colors"
             >
               {busy ? t('checkout.working') : t('checkout.step1.button')}
