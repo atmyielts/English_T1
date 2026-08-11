@@ -250,6 +250,131 @@ const loadDashboard = async (sb: SupabaseClientLike, ctx: UserContext) => {
   };
 };
 
+const loadGuardianDashboard = async (sb: SupabaseClientLike, ctx: UserContext) => {
+  const { data: guardians, error: guardianError } = await sb
+    .from("academy_guardians")
+    .select("id,academy_id,full_name,locale,status")
+    .eq("user_id", ctx.user.id)
+    .eq("telegram_user_id", ctx.telegram.telegram_user_id)
+    .eq("status", "verified")
+    .limit(50);
+  if (guardianError) throw new Error(`Failed to load guardian identity: ${guardianError.message}`);
+  const guardianRows = (guardians ?? []) as Array<Record<string, unknown>>;
+  const guardianIds = guardianRows.map((row) => String(row.id ?? "")).filter(Boolean);
+  if (guardianIds.length === 0) return { guardians: [], children: [] };
+
+  const { data: relationships, error: relationshipError } = await sb
+    .from("academy_student_guardian_relationships")
+    .select("*")
+    .in("guardian_id", guardianIds)
+    .eq("status", "active")
+    .eq("consent_status", "granted")
+    .limit(100);
+  if (relationshipError) throw new Error(`Failed to load guardian relationships: ${relationshipError.message}`);
+
+  const children: Array<Record<string, unknown>> = [];
+  for (const relationship of (relationships ?? []) as Array<Record<string, unknown>>) {
+    const academyId = String(relationship.academy_id ?? "");
+    const contactId = String(relationship.contact_id ?? "");
+    const relationshipId = String(relationship.id ?? "");
+    if (!academyId || !contactId || !relationshipId) continue;
+
+    const [academyRes, contactRes, membershipsRes] = await Promise.all([
+      sb.from("tenants").select("id,name,slug").eq("id", academyId).maybeSingle(),
+      sb.from("academy_contacts").select("id,academy_id,first_name,last_name,status,primary_branch_id").eq("academy_id", academyId).eq("id", contactId).maybeSingle(),
+      sb.from("academy_classroom_memberships").select("id,classroom_id,status,joined_at,started_at,completed_at,expires_at").eq("academy_id", academyId).eq("contact_id", contactId).eq("role", "student").in("status", ["invited", "active", "paused", "completed"]).limit(100),
+    ]);
+    if (academyRes.error || contactRes.error || membershipsRes.error) throw new Error("Failed to load an authorized guardian child");
+    if (!contactRes.data?.id) continue;
+    const memberships = (membershipsRes.data ?? []) as Array<Record<string, unknown>>;
+    const classroomIds = memberships.map((row) => String(row.classroom_id ?? "")).filter(Boolean);
+    const classroomsRes = classroomIds.length
+      ? await sb.from("academy_classrooms").select("id,name,description,is_active").eq("academy_id", academyId).in("id", classroomIds).limit(100)
+      : { data: [], error: null };
+    if (classroomsRes.error) throw new Error(`Failed to load guardian classrooms: ${classroomsRes.error.message}`);
+
+    const canViewAttendance = relationship.can_view_attendance === true;
+    const canViewGrades = relationship.can_view_grades === true;
+    const canViewHomework = relationship.can_view_homework === true;
+    const canViewSchedule = relationship.can_view_schedule === true;
+    const canViewPayments = relationship.can_view_payments === true;
+    const canViewDebt = relationship.can_view_debt === true && canViewPayments;
+    const canViewMessages = relationship.can_view_messages === true;
+    const canViewProgress = relationship.can_view_progress_reports === true;
+    const canViewResources = relationship.can_view_resources === true;
+    const canViewAnnouncements = relationship.can_view_announcements === true;
+
+    const attendanceRes = canViewAttendance
+      ? await sb.from("academy_attendance").select("id,classroom_id,session_date,status,notes").eq("academy_id", academyId).eq("contact_id", contactId).order("session_date", { ascending: false }).limit(120)
+      : { data: [], error: null };
+    const assignmentsRes = (canViewGrades || canViewHomework) && classroomIds.length
+      ? await sb.from("academy_assignments").select("id,classroom_id,title,description,due_at,max_score,status").eq("academy_id", academyId).in("classroom_id", classroomIds).eq("status", "active").order("due_at", { ascending: true }).limit(300)
+      : { data: [], error: null };
+    const submissionsRes = (canViewGrades || canViewHomework)
+      ? await sb.from("academy_submissions").select("id,assignment_id,classroom_id,score,max_score,status,submitted_at,graded_at,feedback").eq("academy_id", academyId).eq("contact_id", contactId).limit(500)
+      : { data: [], error: null };
+    const scheduleRes = canViewSchedule && classroomIds.length
+      ? await sb.from("academy_classroom_schedules").select("id,classroom_id,day_of_week,start_time,end_time,timezone,label,is_active").eq("academy_id", academyId).in("classroom_id", classroomIds).eq("is_active", true).order("day_of_week").order("start_time").limit(200)
+      : { data: [], error: null };
+    const balancesRes = canViewPayments
+      ? await sb.from("academy_account_balances").select("currency,balance,debits,credits,last_entry_at").eq("academy_id", academyId).eq("contact_id", contactId)
+      : { data: [], error: null };
+    const chargesRes = canViewPayments
+      ? await sb.from("academy_charge_balances").select("id,charge_number,due_on,effective_amount,outstanding_amount,currency,calculated_status,days_overdue,aging_bucket").eq("academy_id", academyId).eq("contact_id", contactId).order("due_on", { ascending: false }).limit(100)
+      : { data: [], error: null };
+    const messagesRes = canViewMessages
+      ? await sb.from("academy_guardian_messages").select("id,direction,body,status,channel,created_at,delivered_at,read_at").eq("academy_id", academyId).eq("relationship_id", relationshipId).order("created_at", { ascending: false }).limit(100)
+      : { data: [], error: null };
+    const notificationsRes = canViewMessages
+      ? await sb.from("academy_notifications").select("id,event_key,title,body,channel,status,scheduled_at,sent_at,created_at").eq("academy_id", academyId).eq("relationship_id", relationshipId).order("created_at", { ascending: false }).limit(100)
+      : { data: [], error: null };
+    const resourcesRes = canViewResources && classroomIds.length
+      ? await sb.from("academy_classroom_resources").select("id,classroom_id,title,kind,url,description,sort_order,updated_at").eq("academy_id", academyId).in("classroom_id", classroomIds).eq("is_published", true).order("sort_order").limit(300)
+      : { data: [], error: null };
+    const announcementsRes = canViewAnnouncements && classroomIds.length
+      ? await sb.from("academy_announcements").select("id,classroom_id,title,body,created_at").eq("academy_id", academyId).in("classroom_id", classroomIds).order("created_at", { ascending: false }).limit(100)
+      : { data: [], error: null };
+    const progressRes = canViewProgress
+      ? await sb.from("academy_lesson_progress").select("id,classroom_id,course_id,lesson_id,status,started_at,completed_at,time_spent_seconds").eq("academy_id", academyId).eq("contact_id", contactId).order("updated_at", { ascending: false }).limit(300)
+      : { data: [], error: null };
+
+    for (const result of [attendanceRes, assignmentsRes, submissionsRes, scheduleRes, balancesRes, chargesRes, messagesRes, notificationsRes, resourcesRes, announcementsRes, progressRes]) {
+      if (result.error) throw new Error(`Failed to load an authorized guardian section: ${result.error.message}`);
+    }
+    const submissions = (submissionsRes.data ?? []) as Array<Record<string, unknown>>;
+    const submissionByAssignment = new Map(submissions.map((row) => [String(row.assignment_id ?? ""), row]));
+    const homework = ((assignmentsRes.data ?? []) as Array<Record<string, unknown>>).map((assignment) => ({
+      ...assignment,
+      submission: submissionByAssignment.get(String(assignment.id ?? "")) ?? null,
+    }));
+
+    children.push({
+      academy: academyRes.data,
+      relationship: {
+        id: relationshipId,
+        relationship_type: relationship.relationship_type,
+        is_primary_contact: relationship.is_primary_contact,
+        is_financially_responsible: relationship.is_financially_responsible,
+        can_message_academy: relationship.can_message_academy,
+      },
+      student: contactRes.data,
+      memberships,
+      classrooms: classroomsRes.data ?? [],
+      attendance: canViewAttendance ? attendanceRes.data ?? [] : null,
+      homework: canViewHomework ? homework : null,
+      grades: canViewGrades ? submissions.filter((row) => row.graded_at || row.status === "graded") : null,
+      schedule: canViewSchedule ? scheduleRes.data ?? [] : null,
+      payments: canViewPayments ? { balances: balancesRes.data ?? [], charges: chargesRes.data ?? [] } : null,
+      debt: canViewDebt ? (chargesRes.data ?? []).filter((row: Record<string, unknown>) => Number(row.outstanding_amount ?? 0) > 0) : null,
+      messages: canViewMessages ? { conversations: messagesRes.data ?? [], updates: notificationsRes.data ?? [] } : null,
+      progress: canViewProgress ? progressRes.data ?? [] : null,
+      resources: canViewResources ? resourcesRes.data ?? [] : null,
+      announcements: canViewAnnouncements ? announcementsRes.data ?? [] : null,
+    });
+  }
+  return { guardians: guardianRows, children };
+};
+
 const getOrCreateVocabDeck = async (sb: SupabaseClientLike, userId: string): Promise<string | null> => {
   const { data: existing } = await sb.from("vocab_drill_decks").select("id").eq("user_id", userId).eq("source", "ielts_awl").maybeSingle();
   if (existing?.id) return String(existing.id);
@@ -468,8 +593,11 @@ serve(async (req) => {
     }
 
     if (action === "bootstrap") {
-      const dashboard = await loadDashboard(sb, ctx);
-      const preferences = await loadPreferences(sb, ctx.user.id);
+      const [dashboard, guardianDashboard, preferences] = await Promise.all([
+        loadDashboard(sb, ctx),
+        loadGuardianDashboard(sb, ctx),
+        loadPreferences(sb, ctx.user.id),
+      ]);
       await logEvent(sb, { userId: ctx.user.id, telegramUserId: telegramId, action, status: "ok" });
       return json(200, {
         linked: true,
@@ -478,7 +606,18 @@ serve(async (req) => {
         telegram: ctx.telegram,
         preferences,
         dashboard,
+        guardian_dashboard: guardianDashboard,
       });
+    }
+
+    if ([
+      "guardian_children", "guardian_attendance", "guardian_grades", "guardian_homework",
+      "guardian_schedule", "guardian_billing", "guardian_messages", "guardian_resources",
+      "guardian_announcements", "guardian_progress",
+    ].includes(action)) {
+      const guardianDashboard = await loadGuardianDashboard(sb, ctx);
+      await logEvent(sb, { userId: ctx.user.id, telegramUserId: telegramId, action, status: "ok", metadata: { child_count: guardianDashboard.children.length } });
+      return json(200, { linked: true, guardian_dashboard: guardianDashboard });
     }
 
     if (action === "assignments" || action === "grades" || action === "attendance" || action === "billing" || action === "certificates") {
