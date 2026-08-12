@@ -161,8 +161,8 @@ export const ClassroomDetailView = ({
     : 0;
 
   return (
-    <section className="grid">
-      <div className="panel">
+    <section className="grid classroom-detail">
+      <div className="panel classroom-detail__summary">
         <div className="row between">
           <h3>{classroom.name}</h3>
           <button className="ghost-btn" type="button" onClick={onBack}>
@@ -170,7 +170,7 @@ export const ClassroomDetailView = ({
           </button>
         </div>
         <p className="muted">{classroom.description || 'No description yet.'}</p>
-        <div className="metric-list">
+        <div className="metric-list classroom-detail__metrics">
           <div className="metric-row">
             <span>Status</span>
             <strong>{classroom.is_active ? 'active' : 'inactive'}</strong>

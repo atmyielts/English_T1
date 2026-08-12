@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react';
+import { ArrowRight } from 'lucide-react';
 import type { TeacherStudioSummary } from '../../lib/client';
 
 type AcademyLandingFormState = {
@@ -65,27 +66,30 @@ export const AcademyView = ({
     : 'academy scope';
 
   return (
-    <section className="grid">
-      <div className="panel">
-        <h3>Academy workspace</h3>
-        <div className="metric-list">
-          <div className="metric-row">
-            <span>Academy ID</span>
-            <strong>{academyId || '-'}</strong>
-          </div>
-          <div className="metric-row">
-            <span>Role</span>
-            <strong>{role || 'Member'}</strong>
-          </div>
-          <div className="metric-row">
-            <span>Access</span>
-            <strong>{scopeLabel}</strong>
-          </div>
+    <section className="grid academy-overview">
+      <div className="panel academy-overview__context">
+        <div>
+          <span className="eyebrow">Current workspace</span>
+          <h3>Academy workspace</h3>
         </div>
+        <dl className="academy-overview__identity">
+          <div>
+            <dt>Academy ID</dt>
+            <dd>{academyId || '-'}</dd>
+          </div>
+          <div>
+            <dt>Role</dt>
+            <dd>{role || 'Member'}</dd>
+          </div>
+          <div>
+            <dt>Access</dt>
+            <dd>{scopeLabel}</dd>
+          </div>
+        </dl>
       </div>
 
-      <div className="grid two">
-        <div className="panel">
+      <div className="academy-overview__grid">
+        <div className="panel academy-overview__health">
           <h3>Health snapshot</h3>
           <div className="metric-list">
             <div className="metric-row">
@@ -118,17 +122,24 @@ export const AcademyView = ({
         </div>
 
         {quickTargets.length > 0 ? (
-          <div className="panel">
-            <h3>Quick actions</h3>
-            <div className="grid">
+          <div className="panel academy-overview__actions">
+            <div>
+              <span className="eyebrow">Shortcuts</span>
+              <h3>Quick actions</h3>
+            </div>
+            <div className="academy-overview__action-list">
               {quickTargets.map((item) => (
                 <button
                   key={item.path}
-                  className="ghost-btn"
+                  className="academy-overview__action"
                   type="button"
                   onClick={() => onNavigate(item.path)}
                 >
-                  {item.title}: {item.caption}
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.caption}</small>
+                  </span>
+                  <ArrowRight aria-hidden="true" size={17} />
                 </button>
               ))}
             </div>
@@ -137,7 +148,7 @@ export const AcademyView = ({
       </div>
 
       {canManageLanding ? (
-        <div className="panel">
+        <div className="panel academy-overview__landing">
           <h3>Public academy landing</h3>
           <form className="grid" onSubmit={onSaveLanding}>
             <label className="grid">

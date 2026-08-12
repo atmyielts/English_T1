@@ -160,13 +160,13 @@ export const ClassroomsView = ({
 
   return (
     <>
-      <section className="panel lms-ops-panel">
+      <section className="panel lms-ops-panel classroom-operations">
         <div className="row between">
           <h3>Classroom operations</h3>
           <span className="status">{educationOS ? `Generated ${formatDate(educationOS.generated_at)}` : 'Loading'}</span>
         </div>
 
-        <dl className="workspace-pulse classroom-pulse">
+        <dl className="workspace-pulse classroom-pulse classroom-operations__pulse">
           <div><dt>Open actions</dt><dd>{openActionsCount}</dd></div>
           <div><dt>Urgent</dt><dd>{urgentActionsCount}</dd></div>
           <div><dt>Grade backlog</dt><dd>{gradeBacklogCount}</dd></div>
