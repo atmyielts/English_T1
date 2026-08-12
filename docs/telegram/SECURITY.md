@@ -25,11 +25,11 @@ Structured logs include event name, bounded reason, update ID, or a short chat-I
 
 | Runtime | Required secrets |
 |---|---|
-| Public bot Worker | `TELEGRAM_PUBLIC_BOT_TOKEN`, `TELEGRAM_INTERNAL_SECRET`, `WEBHOOK_SECRET`, `SUPABASE_URL` |
-| Student bot Worker | `TELEGRAM_STUDENT_BOT_TOKEN`, `TELEGRAM_INTERNAL_SECRET`, `WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` |
-| Telegram Edge Functions | `TELEGRAM_PUBLIC_BOT_TOKEN`, `TELEGRAM_STUDENT_BOT_TOKEN`, `TELEGRAM_INTERNAL_SECRET`, `TELEGRAM_RATE_LIMIT_SECRET` plus ordinary Supabase secrets |
+| Public bot Worker | Worker-local `TELEGRAM_BOT_TOKEN`, `TELEGRAM_INTERNAL_SECRET`, `WEBHOOK_SECRET`, `SUPABASE_URL` |
+| Student bot Worker | Worker-local `TELEGRAM_BOT_TOKEN`, `TELEGRAM_INTERNAL_SECRET`, `WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` |
+| Telegram Edge Functions | `TELEGRAM_PUBLIC_BOT_TOKEN` for public-bot signatures, `TELEGRAM_BOT_TOKEN` for student delivery/signatures, `TELEGRAM_BOT_NAME`, `TELEGRAM_INTERNAL_SECRET`, `TELEGRAM_RATE_LIMIT_SECRET` plus ordinary Supabase secrets |
 
-`TELEGRAM_INTERNAL_SECRET` must be identical in both Workers and the receiving Edge Functions. The public and student bot tokens are intentionally distinct and never fall back to a generic token. Before deploy, run `npm run verify:telegram:identities` with both token variables in the local process; it calls `getMe`, verifies the exact bot usernames, verifies that they are different bot IDs, and never prints tokens.
+`TELEGRAM_INTERNAL_SECRET` must be identical in both Workers and the receiving Edge Functions. Each Worker has an isolated secret namespace, so its existing `TELEGRAM_BOT_TOKEN` binding remains unambiguous; Supabase keeps separate public (`TELEGRAM_PUBLIC_BOT_TOKEN`) and student (`TELEGRAM_BOT_TOKEN`) bindings. Before deploy, run `npm run verify:telegram:identities` with those two Supabase-style token variables in the local process; it calls `getMe`, verifies the exact bot usernames, verifies that they are different bot IDs, and never prints tokens.
 
 Webhook-secret rotation uses an overlap: deploy the Worker with the new `WEBHOOK_SECRET` and old value in `WEBHOOK_SECRET_PREVIOUS`, call Telegram `setWebhook` with the new secret, verify delivery, then remove the previous secret. Never change Telegram first without Worker overlap.
 

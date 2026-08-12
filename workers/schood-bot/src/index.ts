@@ -6,7 +6,7 @@
  */
 
 export interface Env {
-  TELEGRAM_STUDENT_BOT_TOKEN: string;
+  TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_BOT_NAME: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
@@ -57,7 +57,7 @@ const webAppMarkup = (env: Env, label = "Open Schood", route = "") => ({
 });
 
 const send = (env: Env, chatId: number | string, text: string, extra?: Record<string, unknown>) =>
-  tg(env.TELEGRAM_STUDENT_BOT_TOKEN, "sendMessage", {
+  tg(env.TELEGRAM_BOT_TOKEN, "sendMessage", {
     chat_id: chatId,
     text,
     parse_mode: "HTML",
@@ -66,7 +66,7 @@ const send = (env: Env, chatId: number | string, text: string, extra?: Record<st
   });
 
 const answerCallback = (env: Env, callbackQueryId: string, text?: string) =>
-  tg(env.TELEGRAM_STUDENT_BOT_TOKEN, "answerCallbackQuery", { callback_query_id: callbackQueryId, text });
+  tg(env.TELEGRAM_BOT_TOKEN, "answerCallbackQuery", { callback_query_id: callbackQueryId, text });
 
 const sbGet = async (env: Env, table: string, params: Record<string, string>) => {
   const qs = new URLSearchParams(params);

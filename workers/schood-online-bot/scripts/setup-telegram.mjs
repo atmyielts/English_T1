@@ -1,10 +1,10 @@
-const token = process.env.TELEGRAM_PUBLIC_BOT_TOKEN;
+const token = process.env.TELEGRAM_BOT_TOKEN;
 const workerUrl = (process.env.WORKER_URL || 'https://onlinebot.schood.online').replace(/\/$/, '');
 const appUrl = process.env.TELEGRAM_APP_URL || 'https://schood.online/telegram/discover';
 const webhookSecret = process.env.WEBHOOK_SECRET;
 const mode = process.argv[2] || 'all';
 
-if (!token) throw new Error('TELEGRAM_PUBLIC_BOT_TOKEN is required');
+if (!token) throw new Error('TELEGRAM_BOT_TOKEN is required');
 
 const call = async (method, body) => {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {

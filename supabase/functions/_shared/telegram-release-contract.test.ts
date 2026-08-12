@@ -41,18 +41,21 @@ Deno.test("Telegram growth tables enable RLS and service-only RPCs revoke public
   assertEquals(pinnedSearchPaths.length, securityDefinerCount, "every SECURITY DEFINER function must pin pg_catalog before public");
 });
 
-Deno.test("runtime bot-token contract has no generic fallback", async () => {
-  const paths = [
-    "supabase/functions/send-telegram/index.ts",
-    "supabase/functions/support-center/index.ts",
-    "supabase/functions/telegram-app/index.ts",
-    "supabase/functions/telegram-public/index.ts",
-    "workers/schood-bot/src/index.ts",
-    "workers/schood-online-bot/src/index.ts",
-  ];
-  for (const path of paths) {
+Deno.test("runtime bot-token contract matches the isolated production bindings without cross-bot fallback", async () => {
+  const publicEdge = await read("supabase/functions/telegram-public/index.ts");
+  assert(publicEdge.includes('Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN")'));
+  assertEquals(publicEdge.includes('Deno.env.get("TELEGRAM_BOT_TOKEN")'), false);
+
+  for (const path of ["supabase/functions/send-telegram/index.ts", "supabase/functions/telegram-app/index.ts"]) {
     const source = await read(path);
-    assertEquals(source.includes("TELEGRAM_BOT_TOKEN"), false, `${path} uses ambiguous TELEGRAM_BOT_TOKEN`);
+    assert(source.includes('TELEGRAM_BOT_TOKEN'), `${path} must use the existing student token binding`);
+    assertEquals(source.includes('TELEGRAM_PUBLIC_BOT_TOKEN'), false, `${path} must not fall back to the public bot`);
+  }
+
+  for (const path of ["workers/schood-bot/src/index.ts", "workers/schood-online-bot/src/index.ts"]) {
+    const source = await read(path);
+    assert(source.includes('TELEGRAM_BOT_TOKEN'), `${path} must use its Worker-local token binding`);
+    assertEquals(source.includes('TELEGRAM_PUBLIC_BOT_TOKEN') || source.includes('TELEGRAM_STUDENT_BOT_TOKEN'), false);
   }
 });
 

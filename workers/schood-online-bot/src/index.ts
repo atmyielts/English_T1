@@ -1,6 +1,6 @@
 /** @schoodonlinebot: focused student and academy acquisition journeys. */
 export interface Env {
-  TELEGRAM_PUBLIC_BOT_TOKEN: string;
+  TELEGRAM_BOT_TOKEN: string;
   WEBHOOK_SECRET: string;
   WEBHOOK_SECRET_PREVIOUS?: string;
   SUPABASE_URL: string;
@@ -19,7 +19,7 @@ type ApiResult = Record<string, any>;
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const markup = (rows: Button[][]) => ({ inline_keyboard: rows });
 const tg = async (env: Env, method: string, body: unknown) => {
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_PUBLIC_BOT_TOKEN}/${method}`, {
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
   const payload = await response.json().catch(() => ({}));

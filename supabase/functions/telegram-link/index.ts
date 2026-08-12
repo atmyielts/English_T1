@@ -128,7 +128,7 @@ serve(async (req) => {
       });
       if (eventError && eventError.code !== "23505") throw new Error(eventError.message);
     }
-    const botName = env("TELEGRAM_STUDENT_BOT_NAME").replace(/^@/, "");
+    const botName = env("TELEGRAM_BOT_NAME").replace(/^@/, "");
     return json(200, {
       link_url: `https://t.me/${botName}?start=${issuedToken.token}`,
       token: issuedToken.token,

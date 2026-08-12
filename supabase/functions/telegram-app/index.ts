@@ -565,7 +565,7 @@ serve(async (req) => {
       return json(401, { error: "Telegram initData is required" });
     }
 
-    const telegram = await validateTelegramInitData(initData, getEnv("TELEGRAM_STUDENT_BOT_TOKEN"));
+    const telegram = await validateTelegramInitData(initData, getEnv("TELEGRAM_BOT_TOKEN"));
     telegramId = telegram.telegram_user_id;
     ctx = await loadUserContext(sb, telegram);
     if (!ctx) {

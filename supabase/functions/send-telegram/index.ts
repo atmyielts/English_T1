@@ -264,7 +264,7 @@ serve(async (req) => {
       return json(401, { error: "Unauthorized" });
     }
     const sb = createClient(env("SUPABASE_URL"), serviceRole, { auth: { persistSession: false } });
-    const botToken = env("TELEGRAM_STUDENT_BOT_TOKEN");
+    const botToken = env("TELEGRAM_BOT_TOKEN");
     const body = await req.json().catch(() => ({}));
     if (body?.action === "process_queue") return json(200, await processQueue(sb, botToken, Number(body.limit ?? 50)));
 

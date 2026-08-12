@@ -6,7 +6,7 @@ const contracts = [
   },
   {
     label: "student",
-    token: process.env.TELEGRAM_STUDENT_BOT_TOKEN,
+    token: process.env.TELEGRAM_BOT_TOKEN,
     expectedUsername: "schoodstudentbot",
   },
 ];

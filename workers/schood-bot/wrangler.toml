@@ -13,7 +13,7 @@ SITE_URL = "https://schood.online"
 TELEGRAM_BOT_NAME = "schoodstudentbot"
 
 # Secrets (set via `wrangler secret put`):
-# TELEGRAM_STUDENT_BOT_TOKEN
+# TELEGRAM_BOT_TOKEN (this Worker's existing student-bot token binding)
 # SUPABASE_URL
 # SUPABASE_SERVICE_KEY    (service role key — Worker is server-side only)
 # TELEGRAM_INTERNAL_SECRET (must match the Edge Function secret)
