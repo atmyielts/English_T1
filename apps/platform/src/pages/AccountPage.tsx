@@ -1,29 +1,57 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircleAlert, CreditCard, LogOut, Trash2, User2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-// ─── Telegram Link Card ───────────────────────────────────────────────────────
+// Telegram account-link card
 
 const edgeBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
-const TelegramLinkCard: React.FC = () => {
+const TelegramLinkCard: React.FC<{ acquisitionSessionId?: string | null }> = ({ acquisitionSessionId }) => {
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [linkToken, setLinkToken] = useState<string | null>(null);
   const [alreadyLinked, setAlreadyLinked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   const generate = async () => {
     setLoading(true);
+    setLinkError(null);
     const { data } = await supabase.auth.getSession();
     if (!data.session) return;
     try {
       const res = await fetch(`${edgeBase}/telegram-link`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate' }),
+        body: JSON.stringify({ action: 'generate', acquisition_session_id: acquisitionSessionId || undefined }),
       }).then((r) => r.json());
-      if (res.link_url) { setLinkUrl(res.link_url); setAlreadyLinked(res.already_linked ?? false); }
+      if (res.link_url) {
+        setLinkUrl(res.link_url);
+        setLinkToken(res.token ?? null);
+        setAlreadyLinked(res.already_linked ?? false);
+      } else {
+        setLinkError(String(res.error ?? 'Could not generate a Telegram link.'));
+      }
+    } finally { setLoading(false); }
+  };
+
+  const confirm = async () => {
+    if (!linkToken) return;
+    setLoading(true);
+    setLinkError(null);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { setLoading(false); return; }
+    try {
+      const response = await fetch(`${edgeBase}/telegram-link`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm', token: linkToken }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok !== true) setLinkError(String(result.error ?? 'Telegram link is not ready to confirm.'));
+      else setConfirmed(true);
     } finally { setLoading(false); }
   };
 
@@ -32,9 +60,11 @@ const TelegramLinkCard: React.FC = () => {
   return (
     <div className="rounded-3xl border border-blue-200 bg-blue-50/70 p-6">
       <div className="text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2">Telegram</div>
-      <div className="text-lg font-bold text-gray-900 mb-1">Link your Telegram</div>
+      <div className="text-lg font-bold text-gray-900 mb-1">{acquisitionSessionId ? 'Save your Telegram study journey' : 'Link your Telegram'}</div>
       <p className="text-sm text-gray-600 mb-4">
-        Get score results, assignment reminders, certificates, and class schedules directly in Telegram. Also run vocab drills from the chat.
+        {acquisitionSessionId
+          ? 'Link once to preserve your plan and continue from the same point tomorrow.'
+          : 'Get score results, assignment reminders, certificates, and class schedules directly in Telegram. Also run vocab drills from the chat.'}
       </p>
       {!linkUrl ? (
         <button onClick={generate} disabled={loading} className="px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
@@ -42,12 +72,19 @@ const TelegramLinkCard: React.FC = () => {
         </button>
       ) : (
         <div className="space-y-3">
-          {alreadyLinked && <div className="text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2">A Telegram is already linked — this new link will replace it.</div>}
+          {alreadyLinked ? <div className="text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2">A Telegram account is already linked. Unlink it first if you intend to change accounts.</div> : null}
+          {confirmed ? <div className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-3 py-2">Telegram account linked safely.</div> : null}
+          {linkError ? <div className="text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2">{linkError}</div> : null}
           <a href={linkUrl} target="_blank" rel="noreferrer" className="block w-full text-center px-4 py-2.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">
-            🔗 Open in Telegram
+            Open in Telegram
           </a>
+          {!acquisitionSessionId && !confirmed ? (
+            <button onClick={confirm} disabled={loading} className="w-full px-4 py-2.5 rounded-full bg-gray-950 text-white text-sm font-semibold disabled:opacity-50">
+              {loading ? 'Checking…' : 'Confirm after opening Telegram'}
+            </button>
+          ) : null}
           <button onClick={copy} className="w-full px-4 py-2 rounded-full border border-blue-300 text-sm text-blue-700 hover:bg-blue-100">
-            {copied ? '✓ Copied' : 'Copy link'}
+            {copied ? 'Copied' : 'Copy link'}
           </button>
           <p className="text-xs text-gray-400">Link expires in 15 minutes. Generate a new one if it expires.</p>
         </div>
@@ -89,6 +126,8 @@ export const AccountPage: React.FC = () => {
   const location = useLocation();
   const { t } = useI18n();
   const returnTo = useMemo(() => sanitizeReturnTo(new URLSearchParams(location.search).get('returnTo')), [location.search]);
+  const acquisitionSessionId = useMemo(() => new URLSearchParams(location.search).get('acquisition_session_id'), [location.search]);
+  const authReturnTo = useMemo(() => `${location.pathname}${location.search}`, [location.pathname, location.search]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,6 +145,16 @@ export const AccountPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState('');
+
+  const toFriendlyError = useCallback((err: unknown, fallback: string): string => {
+    const status = (err as { status?: number } | null)?.status;
+    const message = err instanceof Error ? err.message : '';
+    if (status === 401 || status === 403) return t('account.error.sessionExpired');
+    if (message.toLowerCase().includes('invalid jwt') || message.toLowerCase().includes('unauthorized')) {
+      return t('account.error.sessionExpired');
+    }
+    return fallback;
+  }, [t]);
 
   const productMap = useMemo(() => {
     const map = new Map<string, ProductRow>();
@@ -134,7 +183,7 @@ export const AccountPage: React.FC = () => {
 
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
-        navigate(`/auth?returnTo=${encodeURIComponent(`/account?returnTo=${encodeURIComponent(returnTo)}`)}`, { replace: true });
+        navigate(`/auth?returnTo=${encodeURIComponent(authReturnTo)}`, { replace: true });
         return;
       }
 
@@ -159,7 +208,7 @@ export const AccountPage: React.FC = () => {
         setProducts(filterVisibleProducts((productsRes.data ?? []) as ProductRow[]));
 
         const profile = (profileRes.data ?? null) as ProfileRow | null;
-        const um: any = data.session?.user?.user_metadata ?? {};
+        const um = (data.session?.user?.user_metadata ?? {}) as Record<string, unknown>;
         const metaFirst = typeof um.first_name === 'string' ? um.first_name.trim() : '';
         const metaLast = typeof um.last_name === 'string' ? um.last_name.trim() : '';
         const metaPhone = typeof um.phone === 'string' ? um.phone.trim() : '';
@@ -176,7 +225,7 @@ export const AccountPage: React.FC = () => {
           } catch {
             // ignore sign-out failures
           }
-          navigate(`/auth?returnTo=${encodeURIComponent(`/account?returnTo=${encodeURIComponent(returnTo)}`)}`, { replace: true });
+          navigate(`/auth?returnTo=${encodeURIComponent(authReturnTo)}`, { replace: true });
           return;
         }
       } finally {
@@ -185,7 +234,7 @@ export const AccountPage: React.FC = () => {
     };
 
     void run();
-  }, [navigate, returnTo]);
+  }, [authReturnTo, navigate, returnTo, t, toFriendlyError]);
 
   const isAdmin = String(role ?? '').toLowerCase() === 'admin';
 
@@ -231,17 +280,6 @@ export const AccountPage: React.FC = () => {
     }
     navigate('/', { replace: true });
   };
-
-  const toFriendlyError = (err: unknown, fallback: string): string => {
-    const status = (err as { status?: number } | null)?.status;
-    const message = err instanceof Error ? err.message : '';
-    if (status === 401 || status === 403) return t('account.error.sessionExpired');
-    if (message.toLowerCase().includes('invalid jwt') || message.toLowerCase().includes('unauthorized')) {
-      return t('account.error.sessionExpired');
-    }
-    return fallback;
-  };
-
 
   const navItems: SiteHeaderNavItem[] = [
     { id: 'home', label: t('nav.home'), onClick: () => navigate('/') },
@@ -296,7 +334,7 @@ export const AccountPage: React.FC = () => {
         } catch {
           // ignore sign-out failures
         }
-        navigate(`/auth?returnTo=${encodeURIComponent(`/account?returnTo=${encodeURIComponent(returnTo)}`)}`, { replace: true });
+        navigate(`/auth?returnTo=${encodeURIComponent(authReturnTo)}`, { replace: true });
       }
     } finally {
       setSaving(false);
@@ -486,7 +524,7 @@ export const AccountPage: React.FC = () => {
                 </button>
               </div>
 
-              <TelegramLinkCard />
+              <TelegramLinkCard acquisitionSessionId={acquisitionSessionId} />
 
 
               <div className="rounded-3xl border border-red-300 bg-red-50/70 p-6">

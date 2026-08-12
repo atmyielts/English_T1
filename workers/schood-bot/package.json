@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "setup-webhook": "node -e \"const t=process.env.TELEGRAM_BOT_TOKEN,u=process.env.WORKER_URL,s=process.env.WEBHOOK_SECRET;fetch('https://api.telegram.org/bot'+t+'/setWebhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u+'/webhook',secret_token:s,allowed_updates:['message','callback_query']})}).then(r=>r.json()).then(console.log)\"",
-    "setup-menu": "node -e \"const t=process.env.TELEGRAM_BOT_TOKEN,u=process.env.TELEGRAM_APP_URL||'https://schood.online/telegram';if(!t)throw new Error('TELEGRAM_BOT_TOKEN is required');fetch('https://api.telegram.org/bot'+t+'/setChatMenuButton',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({menu_button:{type:'web_app',text:'Open Schood',web_app:{url:u}}})}).then(r=>r.json()).then(console.log)\""
+    "setup-webhook": "node -e \"const t=process.env.TELEGRAM_STUDENT_BOT_TOKEN,u=process.env.WORKER_URL,s=process.env.WEBHOOK_SECRET;if(!t)throw new Error('TELEGRAM_STUDENT_BOT_TOKEN is required');fetch('https://api.telegram.org/bot'+t+'/setWebhook',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u+'/webhook',secret_token:s,allowed_updates:['message','callback_query']})}).then(r=>r.json()).then(console.log)\"",
+    "setup-menu": "node -e \"const t=process.env.TELEGRAM_STUDENT_BOT_TOKEN,u=process.env.TELEGRAM_APP_URL||'https://schood.online/telegram';if(!t)throw new Error('TELEGRAM_STUDENT_BOT_TOKEN is required');fetch('https://api.telegram.org/bot'+t+'/setChatMenuButton',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({menu_button:{type:'web_app',text:'Open Schood',web_app:{url:u}}})}).then(r=>r.json()).then(console.log)\""
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240925.0",
