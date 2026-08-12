@@ -216,8 +216,8 @@ const workflowContracts = [
     content: routeSpec,
     tokens: [
       'owner can open the administrator route',
-      'teacher route opens LMS surfaces',
-      'student route opens linked classroom workspace',
+      'teacher route opens an action-first teaching day',
+      'student route opens a focused learning day',
       'teacher is blocked from administrator-only route',
       'owner can manage explicit guardian consent',
       'guardian sees only consented child information',

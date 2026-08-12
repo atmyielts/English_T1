@@ -17,6 +17,10 @@ export type ContactFormState = {
   phone: string;
 };
 
+export type ContactEnrichmentKey = 'classrooms' | 'memberships' | 'alerts' | 'payments' | 'educationOS';
+export type ContactEnrichmentStatus = 'idle' | 'loading' | 'success' | 'error';
+export type ContactEnrichmentState = Record<ContactEnrichmentKey, ContactEnrichmentStatus>;
+
 export type ClassroomFormState = {
   name: string;
   description: string;

@@ -162,38 +162,20 @@ export const ClassroomsView = ({
     <>
       <section className="panel lms-ops-panel">
         <div className="row between">
-          <h3>LMS operations</h3>
+          <h3>Classroom operations</h3>
           <span className="status">{educationOS ? `Generated ${formatDate(educationOS.generated_at)}` : 'Loading'}</span>
         </div>
 
-        <div className="lms-kpi-grid">
-          <article>
-            <span>Open actions</span>
-            <strong>{openActionsCount}</strong>
-          </article>
-          <article>
-            <span>Urgent</span>
-            <strong>{urgentActionsCount}</strong>
-          </article>
-          <article>
-            <span>Grade backlog</span>
-            <strong>{gradeBacklogCount}</strong>
-          </article>
-          <article>
-            <span>Missing work</span>
-            <strong>{missingWorkCount}</strong>
-          </article>
-          <article>
-            <span>Attendance risk</span>
-            <strong>{attendanceRiskCount}</strong>
-          </article>
+        <dl className="workspace-pulse classroom-pulse">
+          <div><dt>Open actions</dt><dd>{openActionsCount}</dd></div>
+          <div><dt>Urgent</dt><dd>{urgentActionsCount}</dd></div>
+          <div><dt>Grade backlog</dt><dd>{gradeBacklogCount}</dd></div>
+          <div><dt>Missing work</dt><dd>{missingWorkCount}</dd></div>
+          <div><dt>Attendance risk</dt><dd>{attendanceRiskCount}</dd></div>
           {canIssueCertificates ? (
-            <article>
-              <span>Certificates</span>
-              <strong>{certificateReadyCount}</strong>
-            </article>
+            <div><dt>Certificates</dt><dd>{certificateReadyCount}</dd></div>
           ) : null}
-        </div>
+        </dl>
 
         <div className="grid two">
           <div className="lms-action-stack">
@@ -278,7 +260,7 @@ export const ClassroomsView = ({
                 ))}
                 {classroomOperationRows.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>No classrooms yet.</td>
+                    <td colSpan={7}><div className="table-empty-state"><strong>No classrooms yet</strong><span>Create the first classroom before assigning students or teachers.</span></div></td>
                   </tr>
                 ) : null}
               </tbody>
@@ -290,68 +272,26 @@ export const ClassroomsView = ({
       {canManageClassrooms || canManageRoster ? (
         <section className="grid two">
           {canManageClassrooms ? (
-            <form className="panel" onSubmit={onCreateClassroom}>
-              <h3>Create classroom</h3>
-              <input
-                className="input"
-                placeholder="Classroom name"
-                value={classroomForm.name}
-                onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))}
-                required
-              />
-              <textarea
-                className="input"
-                placeholder="Description (optional)"
-                value={classroomForm.description}
-                onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))}
-              />
-              <button className="primary-btn" type="submit" disabled={busy}>
-                Save classroom
-              </button>
-            </form>
+            <details className="panel workspace-create-disclosure">
+              <summary>Create classroom</summary>
+              <form className="workspace-form" onSubmit={onCreateClassroom}>
+                <label>Classroom name<input className="input" value={classroomForm.name} onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))} required /></label>
+                <label>Description <span className="optional-label">Optional</span><textarea className="input" value={classroomForm.description} onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))} /></label>
+                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Save classroom</button></div>
+              </form>
+            </details>
           ) : null}
 
           {canManageRoster ? (
-            <form className="panel" onSubmit={onSaveMembership}>
-              <h3>Assign student</h3>
-              <select
-                className="input"
-                value={membershipForm.classroom_id}
-                onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))}
-                required
-              >
-                <option value="">Select classroom</option>
-                {classrooms.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="input"
-                value={membershipForm.contact_id}
-                onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))}
-                required
-              >
-                <option value="">Select contact</option>
-                {contacts.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {contactLabel(item, item.id)}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="input"
-                value={membershipForm.role}
-                onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}
-              >
-                <option value="student">student</option>
-                <option value="assistant">assistant</option>
-              </select>
-              <button className="primary-btn" type="submit" disabled={busy}>
-                Save membership
-              </button>
-            </form>
+            <details className="panel workspace-create-disclosure">
+              <summary>Assign student or assistant</summary>
+              <form className="workspace-form" onSubmit={onSaveMembership}>
+                <label>Classroom<select className="input" value={membershipForm.classroom_id} onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))} required><option value="">Select classroom</option>{classrooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+                <label>Contact<select className="input" value={membershipForm.contact_id} onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))} required><option value="">Select contact</option>{contacts.map((item) => <option key={item.id} value={item.id}>{contactLabel(item, item.id)}</option>)}</select></label>
+                <label>Classroom role<select className="input" value={membershipForm.role} onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}><option value="student">Student</option><option value="assistant">Assistant</option></select></label>
+                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Save membership</button></div>
+              </form>
+            </details>
           ) : null}
         </section>
       ) : null}
@@ -380,7 +320,7 @@ export const ClassroomsView = ({
                       {item.description ? <div className="small muted">{item.description}</div> : null}
                     </td>
                     <td>{operationRow?.members ?? item.member_count ?? 0}</td>
-                    <td>{item.is_active ? 'Active' : 'Inactive'}</td>
+                    <td><span className={`status ${item.is_active ? 'status--ok' : ''}`}>{item.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>
                       <strong>{operationRow?.actions.length ?? 0}</strong>
                       {operationRow?.firstAction ? (
@@ -398,7 +338,7 @@ export const ClassroomsView = ({
               })}
               {classrooms.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>No classrooms yet.</td>
+                  <td colSpan={6}><div className="table-empty-state"><strong>No classrooms yet</strong><span>Create the first classroom to begin roster and teaching work.</span></div></td>
                 </tr>
               ) : null}
             </tbody>
@@ -445,7 +385,7 @@ export const ClassroomsView = ({
               })}
               {classroomMemberships.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>No memberships yet.</td>
+                  <td colSpan={5}><div className="table-empty-state"><strong>No classroom members yet</strong><span>Assign a contact after the classroom is ready.</span></div></td>
                 </tr>
               ) : null}
             </tbody>

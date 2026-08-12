@@ -13,7 +13,11 @@ import {
   teacherMessageUpdateKey,
 } from '../lib/updates';
 
-export const UpdatesButton = () => {
+type UpdatesButtonProps = {
+  variant?: 'floating' | 'inline';
+};
+
+export const UpdatesButton = ({ variant = 'floating' }: UpdatesButtonProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentItemIds, setCurrentItemIds] = useState<string[]>([]);
   const productSlug = String(import.meta.env.VITE_PLATFORM_PRODUCT_SLUG ?? 'academy').trim() || 'academy';
@@ -63,7 +67,7 @@ export const UpdatesButton = () => {
   return (
     <button
       type="button"
-      className="updates-fab"
+      className={variant === 'inline' ? 'updates-inline' : 'updates-fab'}
       onClick={() => {
         markUpdateIdsSeen(currentItemIds);
         setUnreadCount(0);
