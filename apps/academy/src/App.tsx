@@ -1,4 +1,4 @@
-import { FormEvent, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { FormEvent, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -115,46 +115,67 @@ import type {
   PaymentFormState,
 } from './components/office/types';
 
-const BusinessFoundationView = lazy(() => import('./components/office/BusinessFoundationView')
-  .then((module) => ({ default: module.BusinessFoundationView })));
-const CommercialCoreView = lazy(() => import('./components/office/CommercialCoreView')
-  .then((module) => ({ default: module.CommercialCoreView })));
-const OperationsFinanceView = lazy(() => import('./components/office/OperationsFinanceView')
-  .then((module) => ({ default: module.OperationsFinanceView })));
-const AcademicOperationsView = lazy(() => import('./components/office/AcademicOperationsView')
-  .then((module) => ({ default: module.AcademicOperationsView })));
-const GuardianRelationshipsView = lazy(() => import('./components/office/GuardianRelationshipsView')
-  .then((module) => ({ default: module.GuardianRelationshipsView })));
-const IntelligenceOperationsView = lazy(() => import('./components/office/IntelligenceOperationsView')
-  .then((module) => ({ default: module.IntelligenceOperationsView })));
-const BusinessPlatformView = lazy(() => import('./components/office/BusinessPlatformView')
-  .then((module) => ({ default: module.BusinessPlatformView })));
-const GuardianPortalView = lazy(() => import('./components/guardians/GuardianPortalView')
-  .then((module) => ({ default: module.GuardianPortalView })));
-const EducationOSView = lazy(() => import('./components/office/EducationOSView')
-  .then((module) => ({ default: module.EducationOSView })));
-const ClassroomDetailView = lazy(() => import('./components/office/ClassroomDetailView')
-  .then((module) => ({ default: module.ClassroomDetailView })));
-const StudentClassroomView = lazy(() => import('./components/students/StudentClassroomView')
-  .then((module) => ({ default: module.StudentClassroomView })));
-const AcademyView = lazy(() => import('./components/office/AcademyView')
-  .then((module) => ({ default: module.AcademyView })));
-const ContactsView = lazy(() => import('./components/office/ContactsView')
-  .then((module) => ({ default: module.ContactsView })));
-const InboxView = lazy(() => import('./components/office/InboxView')
-  .then((module) => ({ default: module.InboxView })));
-const AnnouncementsView = lazy(() => import('./components/office/AnnouncementsView')
-  .then((module) => ({ default: module.AnnouncementsView })));
-const AlertsView = lazy(() => import('./components/office/AlertsView')
-  .then((module) => ({ default: module.AlertsView })));
-const OffersView = lazy(() => import('./components/office/OffersView')
-  .then((module) => ({ default: module.OffersView })));
-const ClassroomsView = lazy(() => import('./components/office/ClassroomsView')
-  .then((module) => ({ default: module.ClassroomsView })));
-const PaymentsView = lazy(() => import('./components/office/PaymentsView')
-  .then((module) => ({ default: module.PaymentsView })));
-const EntitlementsView = lazy(() => import('./components/office/EntitlementsView')
-  .then((module) => ({ default: module.EntitlementsView })));
+const loadBusinessFoundationView = () => import('./components/office/BusinessFoundationView')
+  .then((module) => ({ default: module.BusinessFoundationView }));
+const loadCommercialCoreView = () => import('./components/office/CommercialCoreView')
+  .then((module) => ({ default: module.CommercialCoreView }));
+const loadOperationsFinanceView = () => import('./components/office/OperationsFinanceView')
+  .then((module) => ({ default: module.OperationsFinanceView }));
+const loadAcademicOperationsView = () => import('./components/office/AcademicOperationsView')
+  .then((module) => ({ default: module.AcademicOperationsView }));
+const loadGuardianRelationshipsView = () => import('./components/office/GuardianRelationshipsView')
+  .then((module) => ({ default: module.GuardianRelationshipsView }));
+const loadIntelligenceOperationsView = () => import('./components/office/IntelligenceOperationsView')
+  .then((module) => ({ default: module.IntelligenceOperationsView }));
+const loadBusinessPlatformView = () => import('./components/office/BusinessPlatformView')
+  .then((module) => ({ default: module.BusinessPlatformView }));
+const loadGuardianPortalView = () => import('./components/guardians/GuardianPortalView')
+  .then((module) => ({ default: module.GuardianPortalView }));
+const loadEducationOSView = () => import('./components/office/EducationOSView')
+  .then((module) => ({ default: module.EducationOSView }));
+const loadClassroomDetailView = () => import('./components/office/ClassroomDetailView')
+  .then((module) => ({ default: module.ClassroomDetailView }));
+const loadStudentClassroomView = () => import('./components/students/StudentClassroomView')
+  .then((module) => ({ default: module.StudentClassroomView }));
+const loadAcademyView = () => import('./components/office/AcademyView')
+  .then((module) => ({ default: module.AcademyView }));
+const loadContactsView = () => import('./components/office/ContactsView')
+  .then((module) => ({ default: module.ContactsView }));
+const loadInboxView = () => import('./components/office/InboxView')
+  .then((module) => ({ default: module.InboxView }));
+const loadAnnouncementsView = () => import('./components/office/AnnouncementsView')
+  .then((module) => ({ default: module.AnnouncementsView }));
+const loadAlertsView = () => import('./components/office/AlertsView')
+  .then((module) => ({ default: module.AlertsView }));
+const loadOffersView = () => import('./components/office/OffersView')
+  .then((module) => ({ default: module.OffersView }));
+const loadClassroomsView = () => import('./components/office/ClassroomsView')
+  .then((module) => ({ default: module.ClassroomsView }));
+const loadPaymentsView = () => import('./components/office/PaymentsView')
+  .then((module) => ({ default: module.PaymentsView }));
+const loadEntitlementsView = () => import('./components/office/EntitlementsView')
+  .then((module) => ({ default: module.EntitlementsView }));
+
+const BusinessFoundationView = lazy(loadBusinessFoundationView);
+const CommercialCoreView = lazy(loadCommercialCoreView);
+const OperationsFinanceView = lazy(loadOperationsFinanceView);
+const AcademicOperationsView = lazy(loadAcademicOperationsView);
+const GuardianRelationshipsView = lazy(loadGuardianRelationshipsView);
+const IntelligenceOperationsView = lazy(loadIntelligenceOperationsView);
+const BusinessPlatformView = lazy(loadBusinessPlatformView);
+const GuardianPortalView = lazy(loadGuardianPortalView);
+const EducationOSView = lazy(loadEducationOSView);
+const ClassroomDetailView = lazy(loadClassroomDetailView);
+const StudentClassroomView = lazy(loadStudentClassroomView);
+const AcademyView = lazy(loadAcademyView);
+const ContactsView = lazy(loadContactsView);
+const InboxView = lazy(loadInboxView);
+const AnnouncementsView = lazy(loadAnnouncementsView);
+const AlertsView = lazy(loadAlertsView);
+const OffersView = lazy(loadOffersView);
+const ClassroomsView = lazy(loadClassroomsView);
+const PaymentsView = lazy(loadPaymentsView);
+const EntitlementsView = lazy(loadEntitlementsView);
 
 const WorkspaceSectionSkeleton = () => (
   <section className="workspace-section-skeleton" aria-label="Loading workspace" aria-busy="true">
@@ -176,6 +197,30 @@ type LoadState = 'loading' | 'ready' | 'unauthenticated' | 'error';
 type WorkspaceMode = 'teacher' | 'student';
 type OfficeView = 'today' | 'academy' | 'platform' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
+
+const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
+  academy: loadAcademyView,
+  platform: loadBusinessPlatformView,
+  business: loadBusinessFoundationView,
+  commercial: loadCommercialCoreView,
+  academic: loadAcademicOperationsView,
+  relationships: loadGuardianRelationshipsView,
+  intelligence: loadIntelligenceOperationsView,
+  operations: loadOperationsFinanceView,
+  os: loadEducationOSView,
+  contacts: loadContactsView,
+  inbox: loadInboxView,
+  announcements: loadAnnouncementsView,
+  alerts: loadAlertsView,
+  classrooms: loadClassroomsView,
+  offers: loadOffersView,
+  payments: loadPaymentsView,
+  entitlements: loadEntitlementsView,
+};
+
+const preloadOfficeView = (view: OfficeView): void => {
+  void OFFICE_VIEW_PRELOADERS[view]?.().catch(() => undefined);
+};
 type AcademyLandingFormState = {
   name: string;
   headline: string;
@@ -984,6 +1029,7 @@ const App = () => {
 
   const [state, setState] = useState<LoadState>('loading');
   const [busy, setBusy] = useState(false);
+  const [routeLoading, setRouteLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -1036,6 +1082,7 @@ const App = () => {
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
   const academyDataLoadKeyRef = useRef('');
+  const bootstrapScopeRef = useRef('');
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
@@ -1165,6 +1212,7 @@ const App = () => {
   );
   const isServiceLanding = normalizedPath === '/';
   const isAcademyDirectory = normalizedPath === '/academies';
+  const isWorkspaceEntry = normalizedPath === '/academy/workspace';
   const isAcademyLanding = normalizedPath === '/academy';
   const isAcademyClassroomsLanding = normalizedPath === '/academy/classrooms';
   const academyClassroomLandingId = useMemo(() => academyClassroomIdFromPath(location.pathname), [location.pathname]);
@@ -1175,6 +1223,13 @@ const App = () => {
   const isTeacherWorkspaceRoute = !!officeView || !!officeClassroomId;
   const isStudentWorkspaceRoute = !!studentPortalView || !!studentClassroomId;
   const isGuardianWorkspaceRoute = normalizedPath === '/academy/parent' || normalizedPath.startsWith('/academy/parent/');
+  const bootstrapScope = isServiceLanding
+    ? 'service'
+    : isGuardianWorkspaceRoute
+      ? 'guardian'
+      : isStudentWorkspaceRoute
+        ? 'student'
+        : 'academy';
   const hasTeacherAccess = teacherDirectoryAcademies.length > 0;
   const hasOfficeWorkspaceAccess = hasTeacherAccess || Boolean(selectedAcademyAccess);
   const hasStudentAccess = hasStudentWorkspaceAccess(studentDashboard);
@@ -1522,7 +1577,7 @@ const App = () => {
           academyList = await teacherStudioAcademies();
           academyList = academyList.filter(academyCanEnterOffice);
         } catch (teacherErr) {
-          if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory) {
+          if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory || isWorkspaceEntry) {
             throw teacherErr;
           }
         }
@@ -1593,14 +1648,17 @@ const App = () => {
     isStudentWorkspaceRoute,
     isGuardianWorkspaceRoute,
     isTeacherWorkspaceRoute,
+    isWorkspaceEntry,
     loadAcademyData,
     loadStudentData,
     requestedAcademyId,
   ]);
 
   useEffect(() => {
+    if (bootstrapScopeRef.current === bootstrapScope) return;
+    bootstrapScopeRef.current = bootstrapScope;
     void bootstrap();
-  }, [bootstrap]);
+  }, [bootstrap, bootstrapScope]);
 
   useEffect(() => {
     if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
@@ -1661,6 +1719,7 @@ const App = () => {
     if (
       normalized === '/' ||
       normalized === '/academies' ||
+      normalized === '/academy/workspace' ||
       normalized === '/academy' ||
       normalized === '/academy/classrooms' ||
       !!academyClassroomLandingId
@@ -1771,6 +1830,33 @@ const App = () => {
   }, [selectedAcademyAccess, selectedOfficeAcademy, teacherDirectoryAcademies]);
 
   useEffect(() => {
+    if (state !== 'ready' || !isWorkspaceEntry) return;
+    const requestedStaffAcademy = requestedAcademyId
+      ? teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
+      : null;
+    const staffAcademy = requestedStaffAcademy ?? teacherDirectoryAcademies[0] ?? null;
+    if (staffAcademy) {
+      navigate(academyScopedPath(defaultOfficePathForAcademy(staffAcademy.id), staffAcademy.id), { replace: true });
+      return;
+    }
+    if (hasStudentAccess) {
+      navigate(academyScopedPath('/academy/student', studentDirectoryAcademies[0]?.id), { replace: true });
+      return;
+    }
+    navigate('/academies', { replace: true });
+  }, [
+    academyScopedPath,
+    defaultOfficePathForAcademy,
+    hasStudentAccess,
+    isWorkspaceEntry,
+    navigate,
+    requestedAcademyId,
+    state,
+    studentDirectoryAcademies,
+    teacherDirectoryAcademies,
+  ]);
+
+  useEffect(() => {
     if (state !== 'ready' || !isTeacherWorkspaceRoute || officeRouteIntent !== 'office' || !selectedAcademyAccess) return;
     const canonicalIntent = officeIntentForAccess(selectedAcademyAccess);
     if (canonicalIntent === 'office') return;
@@ -1825,15 +1911,25 @@ const App = () => {
     state,
   ]);
 
+  useLayoutEffect(() => {
+    if (state !== 'ready' || !isTeacherWorkspaceRoute || !academyId || allowedOfficeViews.length === 0) return;
+    const key = academyDataLoadKey(academyId);
+    if (academyDataLoadKeyRef.current !== key) setRouteLoading(true);
+  }, [academyDataLoadKey, academyId, allowedOfficeViews.length, isTeacherWorkspaceRoute, state]);
+
   useEffect(() => {
     if (state !== 'ready' || !isTeacherWorkspaceRoute || !academyId || allowedOfficeViews.length === 0) return;
     const key = academyDataLoadKey(academyId);
     if (academyDataLoadKeyRef.current === key) return;
     academyDataLoadKeyRef.current = key;
-    void loadAcademyData(academyId, selectedConversationId).catch((err) => {
-      academyDataLoadKeyRef.current = '';
-      setError(normalizeError(err));
-    });
+    void loadAcademyData(academyId, selectedConversationId)
+      .catch((err) => {
+        academyDataLoadKeyRef.current = '';
+        setError(normalizeError(err));
+      })
+      .finally(() => {
+        if (academyDataLoadKeyRef.current === key || academyDataLoadKeyRef.current === '') setRouteLoading(false);
+      });
   }, [
     academyDataLoadKey,
     academyId,
@@ -2655,6 +2751,7 @@ const App = () => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    bootstrapScopeRef.current = '';
     setState('unauthenticated');
     setMe(null);
     setAcademies([]);
@@ -2879,7 +2976,7 @@ const App = () => {
                 <h2>Open the role workspace when you need control. Open the classroom when you need focus.</h2>
               </div>
               {state === 'ready' ? (
-                <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
+                <button className="primary-btn" type="button" onClick={() => navigate('/academy/workspace')}>
                   Open Academy
                 </button>
               ) : (
@@ -2901,7 +2998,7 @@ const App = () => {
         <div className="ts-loading">
           <div className="auth-card">
             <h2>Academy</h2>
-            <p>Loading workspace...</p>
+            <p>{isWorkspaceEntry ? 'Finding your role and opening the right workspace...' : 'Preparing Academy...'}</p>
           </div>
         </div>
         <UpdatesButton />
@@ -3028,6 +3125,15 @@ const App = () => {
     const directoryDefaultAcademyId =
       requestedAcademyId || officeRouteAcademies[0]?.id || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
     const defaultStaffAcademyId = teacherDirectoryAcademies[0]?.id ?? '';
+    const primaryStaffAcademy = teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
+      ?? teacherDirectoryAcademies[0]
+      ?? null;
+    const primaryStaffAccess = primaryStaffAcademy?.access
+      ?? (primaryStaffAcademy ? buildFallbackAccess(primaryStaffAcademy.role) : null);
+    const primaryStaffRole = primaryStaffAcademy ? accessRoleLabel(primaryStaffAccess) : '';
+    const primaryStaffShell = primaryStaffAcademy
+      ? officeShellLabel(primaryStaffAccess, officeIntentForAccess(primaryStaffAccess))
+      : null;
     const staffWorkspaceLaneDefinitions: Array<{
       intent: OfficeRouteIntent;
       badge: string;
@@ -3098,11 +3204,12 @@ const App = () => {
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Academy directory</div>
-                <h1>Choose the right workspace</h1>
+                <div className="market-eyebrow">Your Academy access</div>
+                <h1>{primaryStaffRole ? `${primaryStaffRole} workspace` : 'Your learning workspace'}</h1>
                 <p>
-                  Staff workspaces and Student Workplace are separate entry points. Shared academy pages stay public-facing,
-                  while role-specific routes only show the tools that belong to that role.
+                  {primaryStaffRole && primaryStaffShell
+                    ? `You’re signed in as ${primaryStaffRole}. Continue to ${primaryStaffShell.title}; use this directory only when you need to switch academies or profiles.`
+                    : 'Continue to your Student Workspace. Use this directory only when you need to switch academies or profiles.'}
                 </p>
               </div>
               <div className="market-highlight">
@@ -3130,19 +3237,23 @@ const App = () => {
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
                 <div className="row between">
-                  <h3>Staff workspaces</h3>
+                  <h3>{primaryStaffShell?.title ?? 'Staff workspaces'}</h3>
                   <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{hasTeacherAccess ? 'available' : 'locked'}</span>
                 </div>
-                <p>Role-based staff operations: academy control, LMS, contacts, announcements, alerts, offers, payments, and entitlements.</p>
+                <p>
+                  {primaryStaffRole && primaryStaffAcademy
+                    ? `${primaryStaffRole} access for ${primaryStaffAcademy.name || primaryStaffAcademy.id}. ${primaryStaffShell?.subtitle ?? 'Role-scoped Academy operations.'}`
+                    : 'Role-based staff operations are available only when an active staff membership is linked.'}
+                </p>
                 {hasTeacherAccess ? (
                   <button
                     className="small-btn"
                     type="button"
                     onClick={() => {
-                      navigate(academyScopedPath(defaultOfficePathForAcademy(defaultStaffAcademyId), defaultStaffAcademyId));
+                      navigate(academyScopedPath(defaultOfficePathForAcademy(primaryStaffAcademy?.id ?? defaultStaffAcademyId), primaryStaffAcademy?.id ?? defaultStaffAcademyId));
                     }}
                   >
-                    Open my role workspace
+                    Continue as {primaryStaffRole}
                   </button>
                 ) : (
                   <div className="small muted">No active academy staff role was found for this account.</div>
@@ -4389,6 +4500,7 @@ const App = () => {
             id: 'student-classrooms', label: 'My classrooms', icon: <BookOpenCheck size={17} />,
             active: studentPortalView === 'classrooms' || Boolean(studentClassroomId),
             onSelect: () => navigate(academyScopedPath('/academy/student/classrooms', studentAcademyId)),
+            onPrepare: () => { void loadStudentClassroomView().catch(() => undefined); },
           },
         ],
       },
@@ -4422,6 +4534,8 @@ const App = () => {
           <WorkspaceNavigation
             title="Student Workspace"
             subtitle={studentAcademyName}
+            roleLabel="Student"
+            contextLabel="Learning, messages, and account"
             mark={<GraduationCap size={22} />}
             groups={studentNavigationGroups}
             platformUrl={platformUrl}
@@ -4629,12 +4743,21 @@ const App = () => {
   }
 
   if (!isTeacherWorkspaceRoute) {
+    const entryStaffAcademy = teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
+      ?? teacherDirectoryAcademies[0]
+      ?? null;
+    const entryAccess = entryStaffAcademy?.access ?? (entryStaffAcademy ? buildFallbackAccess(entryStaffAcademy.role) : null);
+    const entryRole = entryStaffAcademy ? accessRoleLabel(entryAccess) : hasStudentAccess ? 'Student' : 'Academy member';
+    const entryShell = entryStaffAcademy
+      ? officeShellLabel(entryAccess, officeIntentForAccess(entryAccess)).title
+      : hasStudentAccess ? 'Student Workspace' : 'Academy directory';
     return (
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy workspace</h2>
-            <p>Redirecting to the right role workspace...</p>
+            <div className="market-eyebrow">Signed in as {entryRole}</div>
+            <h2>Opening {entryShell}</h2>
+            <p>We found your Academy access and are taking you to the workspace for your role.</p>
           </div>
         </div>
         <UpdatesButton />
@@ -4653,6 +4776,7 @@ const App = () => {
     icon,
     active: officeView === view || (view === 'classrooms' && Boolean(officeClassroomId)),
     onSelect: () => navigate(academyScopedPath(currentOfficePath(view))),
+    onPrepare: () => preloadOfficeView(view),
     badge,
   } : null;
   const visibleNavItems = (items: Array<WorkspaceNavigationItem | null>): WorkspaceNavigationItem[] =>
@@ -4729,7 +4853,9 @@ const App = () => {
       <div className="ts-shell">
         <WorkspaceNavigation
           title={teacherShell.title}
-          subtitle={teacherShell.subtitle}
+          subtitle={selectedOfficeAcademy?.name || academyId || 'Academy'}
+          roleLabel={accessRoleLabel(selectedAcademyAccess)}
+          contextLabel={teacherShell.subtitle}
           mark={<Store size={22} />}
           groups={staffNavigationGroups}
           platformUrl={platformUrl}
@@ -4775,6 +4901,17 @@ const App = () => {
         {error ? <div className="error-banner">{error}</div> : null}
         {notice ? <div className="info-banner">{notice}</div> : null}
 
+        <div className="workspace-route-stage" aria-busy={routeLoading}>
+        {routeLoading ? (
+          <div className="workspace-route-loading" role="status" aria-live="polite">
+            <div>
+              <span className="market-eyebrow">Opening section</span>
+              <strong>{selectedViewLabel}</strong>
+            </div>
+            <WorkspaceSectionSkeleton />
+          </div>
+        ) : (
+        <>
         {officeView === 'today' && officeCanOpen('today') ? (
           <WorkspaceHomeView
             intent={officeRouteIntent}
@@ -5034,6 +5171,9 @@ const App = () => {
           />
         ) : null}
         </LazyRouteBoundary>
+        </>
+        )}
+        </div>
 
         </main>
       </div>

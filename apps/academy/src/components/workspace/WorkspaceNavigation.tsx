@@ -7,6 +7,7 @@ export type WorkspaceNavigationItem = {
   icon: ReactNode;
   active: boolean;
   onSelect: () => void;
+  onPrepare?: () => void;
   badge?: number;
 };
 
@@ -21,6 +22,8 @@ type WorkspaceNavigationProps = {
   mark: ReactNode;
   groups: WorkspaceNavigationGroup[];
   platformUrl: string;
+  roleLabel?: string;
+  contextLabel?: string;
 };
 
 export const WorkspaceNavigation = ({
@@ -29,6 +32,8 @@ export const WorkspaceNavigation = ({
   mark,
   groups,
   platformUrl,
+  roleLabel,
+  contextLabel,
 }: WorkspaceNavigationProps) => {
   const navRef = useRef<HTMLElement>(null);
   const [canScrollBack, setCanScrollBack] = useState(false);
@@ -68,11 +73,19 @@ export const WorkspaceNavigation = ({
     <aside className="ts-sidebar">
       <div className="brand">
         <span className="brand-mark" aria-hidden="true">{mark}</span>
-        <div>
+        <div className="brand-copy">
+          <span className="brand-kicker">Workspace</span>
           <strong>{title}</strong>
           <p>{subtitle}</p>
         </div>
       </div>
+
+      {roleLabel ? (
+        <div className="workspace-identity" aria-label={`Signed in as ${roleLabel}`}>
+          <span>{roleLabel}</span>
+          {contextLabel ? <small>{contextLabel}</small> : null}
+        </div>
+      ) : null}
 
       <div className="workspace-nav__mobile-toolbar">
         <span>Workspace sections</span>
@@ -91,11 +104,14 @@ export const WorkspaceNavigation = ({
                 className={`nav-btn ${item.active ? 'is-active' : ''}`}
                 type="button"
                 onClick={item.onSelect}
+                onPointerEnter={item.onPrepare}
+                onPointerDown={item.onPrepare}
+                onFocus={item.onPrepare}
                 aria-current={item.active ? 'page' : undefined}
                 key={item.id}
               >
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="nav-label">{item.label}</span>
                 {item.badge && item.badge > 0 ? <span className="nav-badge">{item.badge}</span> : null}
               </button>
             ))}
