@@ -1082,6 +1082,8 @@ const App = () => {
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
   const academyDataLoadKeyRef = useRef('');
+  const summaryCacheRef = useRef(new Map<string, TeacherStudioSummary>());
+  const contactsCacheRef = useRef(new Map<string, TeacherStudioContact[]>());
   const bootstrapScopeRef = useRef('');
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
@@ -1371,9 +1373,17 @@ const App = () => {
     }
   }, [officeRouteIntent]);
 
-  const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string) => {
-    const summaryData = await teacherStudioSummary(academy);
-    const access = summaryData.access ?? null;
+  const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string, reuseSummary = false) => {
+    const cachedSummary = reuseSummary ? summaryCacheRef.current.get(academy) : undefined;
+    let summaryData = cachedSummary ?? await teacherStudioSummary(academy);
+    summaryCacheRef.current.set(academy, summaryData);
+    const summaryRefresh = cachedSummary
+      ? teacherStudioSummary(academy).catch((err) => {
+          console.warn('Failed to refresh Academy access summary', err);
+          return cachedSummary;
+        })
+      : Promise.resolve(summaryData);
+    let access = summaryData.access ?? null;
     const allowedViews = officeViewsForIntent(access, officeRouteIntent);
     const loadView = officeClassroomId
       ? 'classrooms'
@@ -1402,15 +1412,8 @@ const App = () => {
     if (loadView === 'contacts') {
       const contactsData = canLoadContacts ? await teacherStudioContacts(academy) : [];
       const loadKey = academyDataLoadKey(academy);
+      contactsCacheRef.current.set(academy, contactsData);
 
-      setSummary(summaryData);
-      if (summaryData.access) {
-        setAcademies((previous) =>
-          previous.map((item) =>
-            item.id === academy ? { ...item, role: summaryData.access?.role ?? item.role, access: summaryData.access } : item,
-          ),
-        );
-      }
       setContacts(contactsData);
       setClassrooms([]);
       setClassroomMemberships([]);
@@ -1430,6 +1433,18 @@ const App = () => {
       setClassroomMembershipForm((previous) => ({ ...previous, contact_id: previous.contact_id || contactsData[0]?.id || '' }));
       setAlertForm((previous) => ({ ...previous, contact_id: previous.contact_id || contactsData[0]?.id || '' }));
 
+      summaryData = await summaryRefresh;
+      access = summaryData.access ?? null;
+      summaryCacheRef.current.set(academy, summaryData);
+      setSummary(summaryData);
+      if (summaryData.access) {
+        setAcademies((previous) =>
+          previous.map((item) =>
+            item.id === academy ? { ...item, role: summaryData.access?.role ?? item.role, access: summaryData.access } : item,
+          ),
+        );
+      }
+
       academyDataLoadKeyRef.current = loadKey;
       for (const key of ['classrooms', 'memberships', 'alerts', 'payments', 'educationOS'] as ContactEnrichmentKey[]) {
         void loadContactEnrichment(academy, access, loadKey, key);
@@ -1440,6 +1455,7 @@ const App = () => {
     setContactEnrichmentState(emptyContactEnrichmentState());
 
     const [
+      refreshedSummary,
       contactsData,
       classroomsData,
       classroomMembershipsData,
@@ -1452,6 +1468,7 @@ const App = () => {
       entitlementsData,
       educationOSData,
     ] = await Promise.all([
+      summaryRefresh,
       canLoadContacts ? teacherStudioContacts(academy) : Promise.resolve([]),
       canLoadClassrooms ? teacherStudioClassrooms(academy) : Promise.resolve([]),
       canLoadMemberships ? teacherStudioClassroomMemberships(academy) : Promise.resolve([]),
@@ -1467,6 +1484,9 @@ const App = () => {
         return null;
       }) : Promise.resolve(null),
     ]);
+    summaryData = refreshedSummary;
+    access = summaryData.access ?? null;
+    summaryCacheRef.current.set(academy, summaryData);
 
     setSummary(summaryData);
     if (summaryData.access) {
@@ -1554,6 +1574,9 @@ const App = () => {
 
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
+        summaryCacheRef.current.clear();
+        contactsCacheRef.current.clear();
+        academyDataLoadKeyRef.current = '';
         setMe(null);
         setState('unauthenticated');
         return;
@@ -1632,6 +1655,9 @@ const App = () => {
     } catch (err) {
       const message = normalizeError(err);
       if (message === 'Your session expired. Please sign in again.') {
+        summaryCacheRef.current.clear();
+        contactsCacheRef.current.clear();
+        academyDataLoadKeyRef.current = '';
         setMe(null);
         setState('unauthenticated');
         setError('');
@@ -1670,6 +1696,9 @@ const App = () => {
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
+        summaryCacheRef.current.clear();
+        contactsCacheRef.current.clear();
+        academyDataLoadKeyRef.current = '';
         setMe(null);
         setState('unauthenticated');
       }
@@ -1922,7 +1951,7 @@ const App = () => {
     const key = academyDataLoadKey(academyId);
     if (academyDataLoadKeyRef.current === key) return;
     academyDataLoadKeyRef.current = key;
-    void loadAcademyData(academyId, selectedConversationId)
+    void loadAcademyData(academyId, selectedConversationId, true)
       .catch((err) => {
         academyDataLoadKeyRef.current = '';
         setError(normalizeError(err));
@@ -2752,6 +2781,9 @@ const App = () => {
   const signOut = async () => {
     await supabase.auth.signOut();
     bootstrapScopeRef.current = '';
+    summaryCacheRef.current.clear();
+    contactsCacheRef.current.clear();
+    academyDataLoadKeyRef.current = '';
     setState('unauthenticated');
     setMe(null);
     setAcademies([]);
@@ -4903,15 +4935,10 @@ const App = () => {
 
         <div className="workspace-route-stage" aria-busy={routeLoading}>
         {routeLoading ? (
-          <div className="workspace-route-loading" role="status" aria-live="polite">
-            <div>
-              <span className="market-eyebrow">Opening section</span>
-              <strong>{selectedViewLabel}</strong>
-            </div>
-            <WorkspaceSectionSkeleton />
+          <div className="workspace-route-progress" role="status" aria-live="polite">
+            <span className="sr-only">Updating {selectedViewLabel}</span>
           </div>
-        ) : (
-        <>
+        ) : null}
         {officeView === 'today' && officeCanOpen('today') ? (
           <WorkspaceHomeView
             intent={officeRouteIntent}
@@ -5012,7 +5039,8 @@ const App = () => {
             busy={busy}
             form={contactForm}
             setForm={setContactForm}
-            contacts={contacts}
+            contacts={contactsCacheRef.current.get(academyId) ?? contacts}
+            loading={routeLoading && !contactsCacheRef.current.has(academyId)}
             classrooms={classrooms}
             classroomMemberships={classroomMemberships}
             alerts={alerts}
@@ -5171,8 +5199,6 @@ const App = () => {
           />
         ) : null}
         </LazyRouteBoundary>
-        </>
-        )}
         </div>
 
         </main>
