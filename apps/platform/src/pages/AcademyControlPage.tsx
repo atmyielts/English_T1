@@ -20,14 +20,14 @@ const officePathForLegacyRoute = (pathname: string, search: string): string => {
   if (roleBase) return roleBase;
   if (normalized.startsWith('/academy/classrooms/')) return normalized;
   if (normalized === '/academy/classrooms') return '/academy/teacher/classrooms';
-  if (normalized === '/academy-control') return '/academy/admin';
+  if (normalized === '/academy-control') return '/academy/workspace';
 
   const tab = new URLSearchParams(search).get('tab');
   if (tab === 'classrooms') return '/academy/teacher/classrooms';
   if (tab === 'students') return '/academy/admin/contacts';
   if (tab === 'announcements') return '/academy/teacher/announcements';
   if (tab === 'director') return '/academy/admin/os';
-  return '/academies';
+  return '/academy/workspace';
 };
 
 const academyOfficeUrl = (pathname: string, search: string): string => {
@@ -54,16 +54,15 @@ export const AcademyControlPage = () => {
     <main className="min-h-screen bg-gray-50 px-6 py-16">
       <section className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
         <p className="text-xs font-semibold uppercase text-emerald-700">Academy LMS</p>
-        <h1 className="mt-3 text-2xl font-bold text-gray-950">Opening Academy workspace</h1>
+        <h1 className="mt-3 text-2xl font-bold text-gray-950">Opening your role workspace</h1>
         <p className="mt-3 text-sm leading-6 text-gray-600">
-          Academy control now opens through the role-based Academy LMS directory. Center control, administrator control,
-          operations, teacher workspaces, and student workspaces stay in their own route families.
+          We’ll use your Academy membership to open the correct administrator, operations, teacher, or student workspace.
         </p>
         <a
           href={targetUrl}
           className="mt-6 inline-flex items-center justify-center rounded-md bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white"
         >
-          Continue to Academy LMS
+          Continue to my workspace
         </a>
       </section>
     </main>

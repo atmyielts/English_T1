@@ -2534,11 +2534,11 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         education_os: 2000,
       },
       failActionAttempts: {
-        classrooms: 2,
-        "classroom-memberships": 2,
-        alerts: 2,
-        payments: 2,
-        education_os: 2,
+        classrooms: 1,
+        "classroom-memberships": 1,
+        alerts: 1,
+        payments: 1,
+        education_os: 1,
       },
     });
 
@@ -2768,6 +2768,60 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Classroom unit economics" })).toBeVisible();
     await page.getByRole("button", { name: /AI assistant/ }).click();
     await expect(page.getByRole("heading", { name: "Human review queue" })).toBeVisible();
+  });
+
+  test("generic Academy entry resolves representative roles to their canonical workspace", async ({ browser }) => {
+    const routes: Array<{ persona: StaffPersona; expectedPath: RegExp; roleLabel: string }> = [
+      { persona: "owner", expectedPath: /\/academy\/admin(?:\?|$)/, roleLabel: "Owner" },
+      { persona: "center_admin", expectedPath: /\/academy\/center(?:\?|$)/, roleLabel: "Center admin" },
+      { persona: "cashier", expectedPath: /\/academy\/office(?:\?|$)/, roleLabel: "Cashier" },
+      { persona: "teacher", expectedPath: /\/academy\/teacher(?:\?|$)/, roleLabel: "Teacher" },
+    ];
+
+    for (const route of routes) {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await seedSessionCookie(page, `${route.persona}-resolver-user`);
+      await mockAcademyEdge(page, route.persona);
+      await page.goto(`/academy/workspace?academy_id=${academyId}`);
+      await expect(page).toHaveURL(route.expectedPath);
+      await expect(page.locator(".workspace-identity")).toContainText(route.roleLabel);
+      await expect(page.locator(".workspace-nav")).toBeVisible();
+      await context.close();
+    }
+  });
+
+  test("workspace navigation preserves the shell while delayed route data loads", async ({ page }) => {
+    const actionLog: string[] = [];
+    await seedSessionCookie(page, "owner-navigation-user");
+    await mockAcademyEdge(page, "owner", {
+      actionLog,
+      delayActions: { summary: 900 },
+    });
+
+    await page.goto(`/academy/admin?academy_id=${academyId}`);
+    await expect(page.locator(".workspace-identity")).toContainText("Owner");
+    expect(actionLog.filter((action) => action === "academies")).toHaveLength(1);
+
+    await page.getByRole("button", { name: "Contacts", exact: true }).click();
+    await expect(page.locator(".ts-sidebar")).toBeVisible();
+    await expect(page.locator(".workspace-identity")).toContainText("Owner");
+    await expect(page.locator(".ts-loading")).toHaveCount(0);
+    await expect(page.getByText("Preparing Academy...")).toHaveCount(0);
+    await expect(page.locator(".workspace-route-loading")).toContainText("Contacts");
+    await expect(page.getByRole("heading", { name: "Contacts" })).toBeVisible();
+    expect(actionLog.filter((action) => action === "academies")).toHaveLength(1);
+  });
+
+  test("Academy directory names the active role and its primary destination", async ({ page }) => {
+    await seedSessionCookie(page, "cashier-directory-user");
+    await mockAcademyEdge(page, "cashier");
+    await page.goto(`/academies?academy_id=${academyId}`);
+
+    await expect(page.getByRole("heading", { name: "Cashier workspace" })).toBeVisible();
+    await expect(page.getByText(/signed in as Cashier/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue as Cashier" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Academy Operations" })).toBeVisible();
   });
 
   test("teacher is blocked from administrator-only route", async ({ page }) => {
