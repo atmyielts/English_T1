@@ -440,13 +440,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
       {tab === "pipeline" ? (
         <>
           <div className="business-os__split">
-            <form className="panel compact-form" onSubmit={submitLead}>
-              <div className="section-heading">
+            <form className="panel compact-form business-os__lead-form" onSubmit={submitLead}>
+              <div className="section-heading business-os__form-heading">
                 <div>
                   <span className="eyebrow">New inquiry</span>
                   <h3>Capture lead</h3>
                 </div>
-                <Plus size={18} />
+                <span className="business-os__form-icon" aria-hidden="true">
+                  <Plus size={18} />
+                </span>
               </div>
               <label>
                 Full name

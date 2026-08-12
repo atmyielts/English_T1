@@ -1254,16 +1254,16 @@ export const EducationOSView = ({
       ) : null}
 
       {visibleActiveTab === 'pipeline' ? (
-        <section className="grid">
-          <section className="stats-grid">
+        <section className="grid education-os__pipeline">
+          <section className="stats-grid education-os__pipeline-stats" aria-label="Student lifecycle totals">
             {visibleLifecycleStages.map((stage) => (
-              <article className="stat-card" key={stage.id}>
+              <article className="stat-card education-os__stage-total" key={stage.id}>
                 <span>{stage.label}</span>
-                  <strong>{pipelineCounts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
+                <strong>{pipelineCounts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
               </article>
             ))}
           </section>
-          <div className="os-pipeline-board">
+          <div className="os-pipeline-board" aria-label="Student lifecycle pipeline">
             {visibleLifecycleStages.map((stage) => (
               <section className="panel os-pipeline-column" key={stage.id}>
                 <div className="row between">
