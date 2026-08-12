@@ -2,8 +2,7 @@
 // Click.uz fiscalization (OFD) helper
 // ---------------------------------------------------------------------------
 //
-// Click requires fiscal receipt data to be submitted for every payment once a
-// merchant sells more than one ИКПУ (IKPU/SPIC). See:
+// CLICK exposes Merchant API endpoints for submitting fiscal receipt data. See:
 //   https://docs.click.uz/merchant-api/fiscalization
 //
 // Lifecycle (per Click docs):
@@ -64,6 +63,46 @@ export type ProductTaxInfo = {
 };
 
 const TIYIN = 100;
+const TIN_PATTERN = /^\d{9}$/;
+const PINFL_PATTERN = /^\d{14}$/;
+
+export const validateFiscalConfig = (
+  config: ClickFiscalConfig,
+): { ok: true } | { ok: false; error: string } => {
+  const tin = String(config.tin ?? "").trim();
+  const pinfl = String(config.pinfl ?? "").trim();
+  if (Boolean(tin) === Boolean(pinfl)) {
+    return { ok: false, error: "Exactly one of TIN or PINFL is required" };
+  }
+  if (tin && !TIN_PATTERN.test(tin)) {
+    return { ok: false, error: "TIN must contain exactly 9 digits" };
+  }
+  if (pinfl && !PINFL_PATTERN.test(pinfl)) {
+    return { ok: false, error: "PINFL must contain exactly 14 digits" };
+  }
+  return { ok: true };
+};
+
+export const validateProductTaxInfo = (
+  product: ProductTaxInfo,
+): { ok: true } | { ok: false; error: string } => {
+  if (!product.name || product.name.length > 63) {
+    return { ok: false, error: "Fiscal item name must be 1-63 characters" };
+  }
+  if (!product.spic || product.spic.length > 17) {
+    return { ok: false, error: "SPIC must be 1-17 characters" };
+  }
+  if (!product.packageCode || product.packageCode.length > 20) {
+    return { ok: false, error: "PackageCode must be 1-20 characters" };
+  }
+  if (
+    !Number.isInteger(product.vatPercent) || product.vatPercent < 0 ||
+    product.vatPercent > 100
+  ) {
+    return { ok: false, error: "VATPercent must be an integer from 0 to 100" };
+  }
+  return { ok: true };
+};
 
 /** Reads merchant-level fiscal config from edge-function secrets. */
 export const readFiscalConfigFromEnv = (): ClickFiscalConfig => ({
@@ -83,15 +122,19 @@ export const extractProductTaxInfo = (
   meta: Record<string, unknown> | null | undefined,
   fallbackName: string,
 ): ProductTaxInfo | null => {
-  const tax = (meta && typeof meta === "object" ? (meta as any).tax : null) ?? null;
+  const tax = (meta && typeof meta === "object" ? (meta as any).tax : null) ??
+    null;
   const spic = String(tax?.spic ?? tax?.ikpu ?? "").trim();
-  const packageCode = String(tax?.package_code ?? tax?.packageCode ?? "").trim();
+  const packageCode = String(tax?.package_code ?? tax?.packageCode ?? "")
+    .trim();
   const vatRaw = tax?.vat_percent ?? tax?.vatPercent;
-  const vatPercent = Number.isFinite(Number(vatRaw)) ? Math.floor(Number(vatRaw)) : NaN;
+  const vatPercent = Number.isFinite(Number(vatRaw))
+    ? Math.floor(Number(vatRaw))
+    : NaN;
   const name = String(tax?.name ?? fallbackName ?? "").trim();
 
-  if (!spic || !packageCode || !name || !Number.isFinite(vatPercent)) return null;
-  return { name, spic, packageCode, vatPercent };
+  const product = { name, spic, packageCode, vatPercent };
+  return validateProductTaxInfo(product).ok ? product : null;
 };
 
 /**
@@ -103,6 +146,13 @@ export const buildFiscalItem = (
   grossAmountUzs: number,
   config: ClickFiscalConfig,
 ): ClickFiscalItem => {
+  const productValidation = validateProductTaxInfo(product);
+  if (!productValidation.ok) throw new Error(productValidation.error);
+  const configValidation = validateFiscalConfig(config);
+  if (!configValidation.ok) throw new Error(configValidation.error);
+  if (!Number.isFinite(grossAmountUzs) || grossAmountUzs <= 0) {
+    throw new Error("Fiscal gross amount must be positive");
+  }
   const priceTiyin = Math.round(grossAmountUzs * TIYIN);
   const vatTiyin = product.vatPercent > 0
     ? Math.round((priceTiyin * product.vatPercent) / (100 + product.vatPercent))
@@ -138,6 +188,54 @@ export const submitFiscalItems = async (input: {
   items: ClickFiscalItem[];
   receivedCard?: number;
 }): Promise<{ ok: boolean; raw: unknown }> => {
+  if (!input.items.length) {
+    return {
+      ok: false,
+      raw: {
+        error_code: -1,
+        error_note: "At least one fiscal item is required",
+      },
+    };
+  }
+  if (
+    !Number.isSafeInteger(Number(input.serviceId)) ||
+    Number(input.serviceId) <= 0
+  ) {
+    return {
+      ok: false,
+      raw: { error_code: -1, error_note: "Invalid service_id" },
+    };
+  }
+  if (
+    !Number.isSafeInteger(Number(input.clickTransId)) ||
+    Number(input.clickTransId) <= 0
+  ) {
+    return {
+      ok: false,
+      raw: { error_code: -1, error_note: "Invalid payment_id" },
+    };
+  }
+  if (
+    input.items.some((item) => {
+      const config = item.CommissionInfo.TIN
+        ? { tin: item.CommissionInfo.TIN }
+        : { pinfl: item.CommissionInfo.PINFL };
+      return !validateProductTaxInfo({
+        name: item.Name,
+        spic: item.SPIC,
+        packageCode: item.PackageCode,
+        vatPercent: item.VATPercent,
+      }).ok || !validateFiscalConfig(config).ok ||
+        !Number.isSafeInteger(item.Price) || item.Price <= 0 ||
+        !Number.isSafeInteger(item.Amount) || item.Amount <= 0 ||
+        !Number.isSafeInteger(item.VAT) || item.VAT < 0;
+    })
+  ) {
+    return {
+      ok: false,
+      raw: { error_code: -1, error_note: "Invalid fiscal item" },
+    };
+  }
   const body = {
     service_id: Number(input.serviceId),
     payment_id: Number(input.clickTransId),
