@@ -15,5 +15,8 @@ STUDENT_BOT_URL = "https://t.me/schoodstudentbot?startapp"
 TELEGRAM_BOT_NAME = "schoodonlinebot"
 
 # Secrets (set via `wrangler secret put`):
-# TELEGRAM_BOT_TOKEN
+# TELEGRAM_BOT_TOKEN (this Worker's existing public-bot token binding)
 # WEBHOOK_SECRET
+# WEBHOOK_SECRET_PREVIOUS (optional rotation overlap; remove after Telegram confirms the new secret)
+# SUPABASE_URL
+# TELEGRAM_INTERNAL_SECRET (must match the Edge Function secret)

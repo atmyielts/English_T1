@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateTelegramInitData, type TelegramIdentity } from "../_shared/telegram-init-data.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -25,65 +26,6 @@ const getEnv = (key: string): string => {
 const normalizeText = (value: unknown, maxLen = 500): string => String(value ?? "").trim().slice(0, maxLen);
 const normalizeEmail = (value: unknown): string => normalizeText(value, 320).toLowerCase();
 const isObject = (value: unknown): value is Json => Boolean(value && typeof value === "object" && !Array.isArray(value));
-
-const hex = (buffer: ArrayBuffer): string =>
-  Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
-
-const hmac = async (key: string | Uint8Array, message: string): Promise<ArrayBuffer> => {
-  const encoder = new TextEncoder();
-  const rawKey = typeof key === "string" ? encoder.encode(key) : key;
-  const keyData = rawKey.buffer.slice(rawKey.byteOffset, rawKey.byteOffset + rawKey.byteLength) as ArrayBuffer;
-  const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  return crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(message));
-};
-
-const timingSafeEqual = (a: string, b: string): boolean => {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-};
-
-type TelegramIdentity = {
-  telegram_user_id: string;
-  first_name: string | null;
-  username: string | null;
-  auth_date: number;
-};
-
-const validateTelegramInitData = async (initData: string, botToken: string): Promise<TelegramIdentity> => {
-  const params = new URLSearchParams(initData);
-  const receivedHash = params.get("hash") ?? "";
-  if (!receivedHash) throw new Error("Missing Telegram hash");
-
-  const pairs: string[] = [];
-  params.forEach((value, key) => {
-    if (key !== "hash") pairs.push(`${key}=${value}`);
-  });
-  pairs.sort();
-
-  const secret = new Uint8Array(await hmac("WebAppData", botToken));
-  const expectedHash = hex(await hmac(secret, pairs.join("\n")));
-  if (!timingSafeEqual(expectedHash, receivedHash)) throw new Error("Invalid Telegram signature");
-
-  const authDate = Number(params.get("auth_date") ?? 0);
-  if (!Number.isFinite(authDate) || authDate <= 0) throw new Error("Missing Telegram auth date");
-  const maxAgeSeconds = 60 * 60 * 24;
-  if (Math.floor(Date.now() / 1000) - authDate > maxAgeSeconds) throw new Error("Telegram session expired");
-
-  const userRaw = params.get("user");
-  if (!userRaw) throw new Error("Missing Telegram user");
-  const parsed = JSON.parse(userRaw) as Record<string, unknown>;
-  const id = String(parsed.id ?? "").trim();
-  if (!id) throw new Error("Missing Telegram user id");
-
-  return {
-    telegram_user_id: id,
-    first_name: normalizeText(parsed.first_name, 120) || null,
-    username: normalizeText(parsed.username, 120) || null,
-    auth_date: authDate,
-  };
-};
 
 type UserContext = {
   user: { id: string; email: string | null; full_name: string | null; telegram_chat_id: string | null };
@@ -496,7 +438,7 @@ const loadPreferences = async (sb: SupabaseClientLike, userId: string) => {
   const { data, error } = await sb
     .from("telegram_user_preferences")
     .upsert(defaults, { onConflict: "user_id" })
-    .select("user_id,notifications_enabled,assignment_reminders,class_reminders,score_notifications,certificate_notifications,digest_frequency,quiet_hours_start,quiet_hours_end,timezone,updated_at")
+    .select("user_id,notifications_enabled,telegram_enabled,email_enabled,academic_required_enabled,study_habit_enabled,commercial_enabled,assignment_reminders,class_reminders,score_notifications,grade_notifications,payment_notifications,vocabulary_reminders,certificate_notifications,digest_frequency,quiet_hours_start,quiet_hours_end,timezone,updated_at")
     .maybeSingle();
   if (error) throw new Error(`Failed to load preferences: ${error.message}`);
   return data;
@@ -504,19 +446,30 @@ const loadPreferences = async (sb: SupabaseClientLike, userId: string) => {
 
 const updatePreferences = async (sb: SupabaseClientLike, userId: string, input: Json) => {
   const patch: Record<string, unknown> = {};
-  for (const key of ["notifications_enabled", "assignment_reminders", "class_reminders", "score_notifications", "certificate_notifications"]) {
+  for (const key of [
+    "notifications_enabled", "telegram_enabled", "email_enabled", "academic_required_enabled", "study_habit_enabled",
+    "commercial_enabled", "assignment_reminders", "class_reminders", "score_notifications", "grade_notifications",
+    "payment_notifications", "vocabulary_reminders", "certificate_notifications",
+  ]) {
     if (typeof input[key] === "boolean") patch[key] = input[key];
   }
   const digest = normalizeText(input.digest_frequency, 20).toLowerCase();
   if (["off", "daily", "weekly"].includes(digest)) patch.digest_frequency = digest;
   const timezone = normalizeText(input.timezone, 80);
-  if (timezone) patch.timezone = timezone;
+  if (timezone) {
+    try { new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date()); patch.timezone = timezone; } catch { /* ignore invalid timezone */ }
+  }
+  for (const key of ["quiet_hours_start", "quiet_hours_end"]) {
+    const value = normalizeText(input[key], 8);
+    if (/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) patch[key] = value;
+    else if (input[key] === null || input[key] === "") patch[key] = null;
+  }
   if (Object.keys(patch).length === 0) return await loadPreferences(sb, userId);
   patch.updated_at = new Date().toISOString();
   const { data, error } = await sb
     .from("telegram_user_preferences")
     .upsert({ user_id: userId, ...patch }, { onConflict: "user_id" })
-    .select("user_id,notifications_enabled,assignment_reminders,class_reminders,score_notifications,certificate_notifications,digest_frequency,quiet_hours_start,quiet_hours_end,timezone,updated_at")
+    .select("user_id,notifications_enabled,telegram_enabled,email_enabled,academic_required_enabled,study_habit_enabled,commercial_enabled,assignment_reminders,class_reminders,score_notifications,grade_notifications,payment_notifications,vocabulary_reminders,certificate_notifications,digest_frequency,quiet_hours_start,quiet_hours_end,timezone,updated_at")
     .maybeSingle();
   if (error) throw new Error(`Failed to update preferences: ${error.message}`);
   return data;
@@ -560,6 +513,39 @@ const logEvent = async (sb: SupabaseClientLike, args: { userId?: string | null; 
 };
 
 const getSiteUrl = (): string => Deno.env.get("SITE_URL") ?? "https://schood.online";
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+
+const recordAcquisitionOpen = async (
+  sb: SupabaseClientLike,
+  ctx: UserContext,
+  body: Json,
+  dashboard: Awaited<ReturnType<typeof loadDashboard>>,
+) => {
+  const sessionId = normalizeText(body.acquisition_session_id, 80);
+  if (!uuidPattern.test(sessionId)) return;
+  const { data: session } = await sb.from("telegram_acquisition_sessions").select("id,telegram_user_id")
+    .eq("id", sessionId).eq("telegram_user_id", ctx.telegram.telegram_user_id).maybeSingle();
+  if (!session) return;
+  const launch = isObject(body.launch_context) ? body.launch_context : {};
+  const requestedAssignment = normalizeText(launch.assignment_id, 80);
+  const requestedResult = normalizeText(launch.result_id, 80);
+  const allowedAssignment = requestedAssignment && dashboard.assignments.some((assignment: Json) => assignment.id === requestedAssignment) ? requestedAssignment : null;
+  const allowedResult = requestedResult && dashboard.outcomes.some((result: Json) => result.id === requestedResult) ? requestedResult : null;
+  const metadata = { view: normalizeText(launch.view, 40) || null, assignment_id: allowedAssignment, result_id: allowedResult };
+  await sb.from("telegram_acquisition_sessions").update({
+    schood_user_id: ctx.user.id,
+    mini_app_opened_at: new Date().toISOString(),
+    last_step: "mini_app_opened",
+  }).eq("id", session.id);
+  await sb.from("telegram_journey_events").insert({
+    session_id: session.id,
+    telegram_user_id: ctx.telegram.telegram_user_id,
+    event_name: "mini_app_opened_from_telegram",
+    step: "mini_app_opened",
+    idempotency_key: `mini_app_opened:${session.id}`,
+    metadata,
+  }).then(() => undefined, () => undefined);
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -598,6 +584,7 @@ serve(async (req) => {
         loadGuardianDashboard(sb, ctx),
         loadPreferences(sb, ctx.user.id),
       ]);
+      await recordAcquisitionOpen(sb, ctx, body, dashboard);
       await logEvent(sb, { userId: ctx.user.id, telegramUserId: telegramId, action, status: "ok" });
       return json(200, {
         linked: true,

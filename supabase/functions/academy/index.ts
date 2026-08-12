@@ -1349,6 +1349,7 @@ export const ACADEMY_ACTION_PERMISSIONS = {
   compute_at_risk: "viewEducationOS",
   generate_classroom_lesson_plan: "viewEducationOS",
   dispatch_notifications: "dispatchNotifications",
+  generate_morning_brief: "dispatchNotifications",
   generate_parent_report: "viewReports",
   upsert_branding: "manageBranding",
 } as const satisfies Record<string, keyof AcademyAccessPermissions>;
@@ -5701,9 +5702,17 @@ const dispatchQueuedNotifications = async (
   sb: SupabaseClientLike,
   academyId: string | null = null,
 ): Promise<{ sent: number; failed: number; skipped: number; processed: number }> => {
-  const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (supabaseUrl && serviceRole) {
+    await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${serviceRole}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "process_queue", limit: 100 }),
+    }).catch(() => undefined);
+  }
   let q = sb.from("academy_notifications")
-    .select("id, academy_id, channel, type, title, body, target, attempts")
+    .select("id, academy_id, channel, type, title, body, target, attempts, contact_id, user_id, category, dedupe_key, cta_url, academy_contacts(user_id)")
     .eq("status", "queued").lte("scheduled_at", new Date().toISOString())
     .order("scheduled_at", { ascending: true }).limit(200);
   if (academyId) q = q.eq("academy_id", academyId);
@@ -5717,20 +5726,39 @@ const dispatchQueuedNotifications = async (
     const id = String(n.id);
     const target = normalizeText(n.target, 120);
     if (n.channel === "telegram") {
-      if (!botToken) { await sb.from("academy_notifications").update({ status: "skipped", error: "TELEGRAM_BOT_TOKEN not set" }).eq("id", id);await recordAttempt(n,'skipped','TELEGRAM_BOT_TOKEN not set'); skipped++; continue; }
+      if (!supabaseUrl || !serviceRole) { await sb.from("academy_notifications").update({ status: "skipped", error: "Notification gateway not configured" }).eq("id", id);await recordAttempt(n,'skipped','Notification gateway not configured'); skipped++; continue; }
       if (!target) { await sb.from("academy_notifications").update({ status: "skipped", error: "No telegram target" }).eq("id", id);await recordAttempt(n,'skipped','No telegram target'); skipped++; continue; }
       try {
-        const text = `${n.title ? `*${String(n.title)}*\n` : ""}${String(n.body ?? "")}`;
-        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: target, text, parse_mode: "Markdown" }),
+        const message = `${n.title ? `${String(n.title)}\n` : ""}${String(n.body ?? "")}`;
+        const contactUserId = normalizeText((n.academy_contacts as Record<string, unknown> | null)?.user_id, 80);
+        const mappedUserId = normalizeText(n.user_id, 80) || contactUserId || null;
+        const res = await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
+          method: "POST", headers: { Authorization: `Bearer ${serviceRole}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: mappedUserId ?? undefined,
+            chat_id: mappedUserId ? undefined : target,
+            text: message,
+            parse_mode: null,
+            notification_type: String(n.type ?? "academy_notification"),
+            category: String(n.category ?? "academic_required"),
+            dedupe_key: String(n.dedupe_key ?? `academy_notification:${id}`),
+            cta_url: n.cta_url ?? undefined,
+            metadata: { academy_id: n.academy_id, contact_id: n.contact_id, academy_notification_id: id },
+          }),
         });
-        if (res.ok) {
-          await sb.from("academy_notifications").update({ status: "sent", sent_at: new Date().toISOString(), attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
-          const providerBody=await res.json().catch(()=>null) as {result?:{message_id?:number|string}}|null;await recordAttempt(n,'sent',null,providerBody?.result?.message_id?String(providerBody.result.message_id):null);
+        const result = await res.json().catch(() => ({})) as Record<string, unknown>;
+        if (res.ok && result.outcome === "sent") {
+          await sb.from("academy_notifications").update({ status: "sent", sent_at: new Date().toISOString(), attempts: Number(n.attempts ?? 0) + 1, policy_decision: result }).eq("id", id);
+          await recordAttempt(n,'sent',null,result.message_id ? String(result.message_id) : null);
           sent++;
+        } else if (res.ok && (result.outcome === "suppressed" || result.outcome === "suppress")) {
+          await sb.from("academy_notifications").update({ status: "suppressed", suppression_reason: String(result.reason ?? "policy"), policy_decision: result, attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+          await recordAttempt(n,'skipped',String(result.reason ?? "policy"));
+          skipped++;
+        } else if (res.ok && (result.outcome === "defer" || result.outcome === "deferred")) {
+          await sb.from("academy_notifications").update({ status: "queued", scheduled_at: result.deliver_at ?? result.retry_at ?? new Date(Date.now() + 3600000).toISOString(), policy_decision: result, attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
         } else {
-          const detail = await res.text();
+          const detail = String(result.error ?? result.reason ?? `Gateway HTTP ${res.status}`);
           await sb.from("academy_notifications").update({ status: Number(n.attempts ?? 0) >= 2 ? "failed" : "queued", error: detail.slice(0, 400), attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
           await recordAttempt(n,'failed',detail);
           failed++;
@@ -5932,10 +5960,90 @@ const isAcademyTenant = (tenant: Record<string, unknown>): boolean => {
     meta.academy_service === true || meta.center_owned === true;
 };
 
+const queueAcademyMorningBrief = async (
+  sb: SupabaseClientLike,
+  academyId: string,
+): Promise<{ queued: number; metrics: Record<string, number>; body: string }> => {
+  const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const [tenantResult, enrollmentsResult, alertsResult, submissionsResult, attendanceResult, leadsResult, ownersResult] = await Promise.all([
+    sb.from("tenants").select("name").eq("id", academyId).maybeSingle(),
+    sb.from("academy_classroom_memberships").select("contact_id").eq("academy_id", academyId).in("role", ["student", "observer"]).limit(20000),
+    sb.from("academy_alerts").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("resolved", false),
+    sb.from("academy_submissions").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("status", "submitted").is("score", null),
+    sb.from("academy_attendance").select("contact_id").eq("academy_id", academyId).eq("status", "absent").gte("session_date", since).limit(20000),
+    sb.from("sales_leads").select("id", { count: "exact", head: true }).eq("tenant_id", academyId).in("status", ["new", "contacted", "qualified", "demo_scheduled"]),
+    sb.from("tenant_memberships").select("user_id,users(telegram_chat_id)").eq("tenant_id", academyId).eq("status", "active").in("role", ["owner", "admin"]),
+  ]);
+  const queryFailure = [tenantResult, enrollmentsResult, alertsResult, submissionsResult, attendanceResult, leadsResult, ownersResult]
+    .map((result) => result.error)
+    .find(Boolean);
+  if (queryFailure) throw new Error(`Failed to build academy morning brief: ${queryFailure.message}`);
+  const absenceCounts = new Map<string, number>();
+  for (const row of (attendanceResult.data ?? []) as Array<Record<string, unknown>>) {
+    const contactId = String(row.contact_id ?? "");
+    if (contactId) absenceCounts.set(contactId, (absenceCounts.get(contactId) ?? 0) + 1);
+  }
+  const metrics = {
+    active_students: new Set(((enrollmentsResult.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.contact_id ?? "")).filter(Boolean)).size,
+    repeat_absences_7d: [...absenceCounts.values()].filter((count) => count >= 2).length,
+    grading_backlog: submissionsResult.count ?? 0,
+    unresolved_alerts: alertsResult.count ?? 0,
+    open_sales_leads: leadsResult.count ?? 0,
+  };
+  const academyName = normalizeText((tenantResult.data as Record<string, unknown> | null)?.name, 160) || "Your academy";
+  const body = [
+    `Morning brief — ${academyName}`,
+    "",
+    `${metrics.active_students} active students`,
+    `${metrics.repeat_absences_7d} students absent twice this week`,
+    `${metrics.grading_backlog} submissions awaiting grading`,
+    `${metrics.unresolved_alerts} unresolved operational alerts`,
+    `${metrics.open_sales_leads} sales leads awaiting resolution`,
+  ].join("\n");
+  const day = new Date().toISOString().slice(0, 10);
+  let queued = 0;
+  for (const membership of (ownersResult.data ?? []) as Array<Record<string, unknown>>) {
+    const chatId = normalizeText((membership.users as Record<string, unknown> | null)?.telegram_chat_id, 80);
+    const ownerUserId = normalizeText(membership.user_id, 80);
+    if (!chatId || !ownerUserId) continue;
+    const { error } = await sb.from("academy_notifications").insert({
+      academy_id: academyId,
+      user_id: ownerUserId,
+      channel: "telegram",
+      type: "academy_morning_brief",
+      category: "academic_required",
+      title: `Morning brief — ${academyName}`,
+      body: body.split("\n").slice(2).join("\n"),
+      target: chatId,
+      status: "queued",
+      dedupe_key: `academy_morning_brief:${academyId}:${ownerUserId}:${day}`,
+      cta_url: `${Deno.env.get("SITE_URL") ?? "https://schood.online"}/academy?academy_id=${encodeURIComponent(academyId)}&source=telegram_brief`,
+      metadata: { metrics, generated_at: new Date().toISOString(), schedule_timezone: "UTC" },
+    });
+    if (!error) queued += 1;
+    else if (error.code !== "23505") throw new Error(error.message);
+  }
+  return { queued, metrics, body };
+};
+
 const runAcademyMaintenance = async (
   sb: SupabaseClientLike,
   cycle: string,
 ): Promise<Record<string, unknown>> => {
+  if (cycle === "morning_brief") {
+    const { data: tenants, error } = await sb.from("tenants").select("id, type, metadata").limit(10000);
+    if (error) throw new Error(`Failed to load academy tenants: ${error.message}`);
+    let academies = 0;
+    let queued = 0;
+    for (const tenant of (tenants ?? []) as Array<Record<string, unknown>>) {
+      if (!isAcademyTenant(tenant)) continue;
+      academies += 1;
+      const result = await queueAcademyMorningBrief(sb, String(tenant.id));
+      queued += result.queued;
+    }
+    const dispatch = await dispatchQueuedNotifications(sb, null);
+    return { cycle: "morning_brief", timezone: "UTC", academies, queued, ...dispatch };
+  }
   if (cycle === "automation_events") return await runAcademyAutomationEvents(sb);
   if (cycle === "at_risk") {
     const { data: tenants } = await sb.from("tenants").select("id, type, metadata").limit(10000);
@@ -10142,6 +10250,12 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (actionBody === "dispatch_notifications") {
         const result = await dispatchQueuedNotifications(sb, academyId);
         return json(200, result);
+      }
+
+      if (actionBody === "generate_morning_brief") {
+        const brief = await queueAcademyMorningBrief(sb, academyId);
+        const dispatch = await dispatchQueuedNotifications(sb, academyId);
+        return json(200, { ...brief, ...dispatch, timezone: "UTC" });
       }
 
       if (actionBody === "generate_parent_report") {

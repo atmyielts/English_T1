@@ -1,254 +1,205 @@
-/**
- * Public Schood ecosystem Telegram bot.
- *
- * This Worker backs @schoodonlinebot as the public map of Schood. Private
- * student data stays in @schoodstudentbot and the /telegram Mini App.
- */
-
+/** @schoodonlinebot: focused student and academy acquisition journeys. */
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   WEBHOOK_SECRET: string;
+  WEBHOOK_SECRET_PREVIOUS?: string;
+  SUPABASE_URL: string;
+  TELEGRAM_INTERNAL_SECRET: string;
   SITE_URL: string;
   DISCOVER_APP_URL: string;
   STUDENT_BOT_URL: string;
   TELEGRAM_BOT_NAME?: string;
 }
 
-type InlineButton = {
-  text: string;
-  url?: string;
-  callback_data?: string;
-  web_app?: { url: string };
-};
+type Button = { text: string; url?: string; callback_data?: string; web_app?: { url: string } };
+type Message = { chat?: { id?: number | string }; from?: { id?: number; first_name?: string; username?: string }; text?: string };
+type Callback = { id: string; from: { id: number; first_name?: string; username?: string }; data?: string; message?: { chat?: { id?: number | string } } };
+type ApiResult = Record<string, any>;
 
-type TelegramMessage = {
-  chat?: { id?: number | string; type?: string };
-  from?: { id?: number; first_name?: string; username?: string };
-  text?: string;
-};
-
-type CallbackQuery = {
-  id: string;
-  from: { id: number; first_name?: string; username?: string };
-  data?: string;
-  message?: { chat?: { id?: number | string } };
-};
-
-const escapeHtml = (value: unknown): string =>
-  String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-
-const tg = async (env: Env, method: string, body?: unknown) => {
-  const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+const escapeHtml = (value: unknown) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const markup = (rows: Button[][]) => ({ inline_keyboard: rows });
+const tg = async (env: Env, method: string, body: unknown) => {
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${method}`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
-  const payload = await res.json().catch(() => ({}));
-  if (!res.ok) console.error("Telegram API error", method, payload);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    console.error(JSON.stringify({ event: "telegram_api_failed", method, status: response.status }));
+    if (response.status === 429 || response.status >= 500) {
+      throw new Error(`Telegram ${method} retryable failure (${response.status})`);
+    }
+  }
   return payload;
 };
-
-const markup = (rows: InlineButton[][]) => ({ inline_keyboard: rows });
-
-const send = (env: Env, chatId: number | string, text: string, rows?: InlineButton[][]) =>
-  tg(env, "sendMessage", {
-    chat_id: chatId,
-    text,
-    parse_mode: "HTML",
-    disable_web_page_preview: true,
-    reply_markup: rows ? markup(rows) : undefined,
+const send = (env: Env, chatId: number | string, text: string, rows?: Button[][]) => tg(env, "sendMessage", {
+  chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true, reply_markup: rows ? markup(rows) : undefined,
+});
+const answer = (env: Env, id: string, text?: string) => tg(env, "answerCallbackQuery", { callback_query_id: id, text });
+const edge = async (env: Env, body: Record<string, unknown>): Promise<ApiResult> => {
+  const response = await fetch(`${env.SUPABASE_URL.replace(/\/$/, "")}/functions/v1/telegram-public`, {
+    method: "POST",
+    headers: { "x-worker-secret": env.TELEGRAM_INTERNAL_SECRET, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 409) throw new Error(String(payload.error ?? `Edge HTTP ${response.status}`));
+  return { ...payload, http_status: response.status };
+};
 
-const answerCallback = (env: Env, callbackQueryId: string, text?: string) =>
-  tg(env, "answerCallbackQuery", { callback_query_id: callbackQueryId, text });
+const validWebhookSecret = (env: Env, supplied: string | null): boolean =>
+  Boolean(supplied && (supplied === env.WEBHOOK_SECRET || supplied === env.WEBHOOK_SECRET_PREVIOUS));
 
-const appButton = (env: Env, text = "Open Schood map"): InlineButton => ({ text, web_app: { url: env.DISCOVER_APP_URL } });
-
-const homeRows = (env: Env): InlineButton[][] => [
-  [appButton(env, "Open Schood ecosystem")],
-  [
-    { text: "Exam prep", callback_data: "exams" },
-    { text: "English", callback_data: "english" },
-  ],
-  [
-    { text: "Academy OS", callback_data: "academy" },
-    { text: "Support", callback_data: "support" },
-  ],
-  [{ text: "Student login", url: env.STUDENT_BOT_URL }],
+const choiceRows = (): Button[][] => [
+  [{ text: "Estimate my IELTS level", callback_data: "student_begin" }],
+  [{ text: "I run an academy", callback_data: "academy_begin" }],
 ];
+const focusedStart = (name?: string) => `<b>${name ? `${escapeHtml(name)}, choose your first result.` : "Choose your first result."}</b>\n\nStudents get a short, real vocabulary check and a personalized 7-day starter plan.\n\nAcademies get a focused operations consultation.`;
 
-const startText = (name?: string) =>
-  `<b>Welcome${name ? `, ${escapeHtml(name)}` : ""}.</b>\n\n`
-  + `This is Schood's public Telegram gateway: IELTS, SAT, TOEFL, English learning, Academy OS, center operations, payments, certificates, and support.\n\n`
-  + `Use the Mini App to choose your path. If you already study with Schood, use the student bot for private assignments, grades, attendance, billing, and vocab.`;
-
-const helpText =
-  `<b>Schood public bot commands</b>\n\n`
-  + `/start - Open the Schood ecosystem gateway\n`
-  + `/explore - Launch the Mini App map\n`
-  + `/exams - IELTS, SAT, TOEFL, iTEP\n`
-  + `/english - English Hub and skill practice\n`
-  + `/academy - Academy OS and classroom tools\n`
-  + `/centers - Center and partner operations\n`
-  + `/pricing - Plans and checkout\n`
-  + `/student - Open the linked student bot\n`
-  + `/support - Ask Schood for help\n`
-  + `/help - This message`;
-
-const routeText: Record<string, string> = {
-  exams:
-    `<b>Exam prep on Schood</b>\n\n`
-    + `Pick the surface you need: full IELTS mocks, IELTS Practice OS, SAT, TOEFL, or iTEP readiness.`,
-  english:
-    `<b>English learning ecosystem</b>\n\n`
-    + `Reading, listening, writing, speaking, grammar, vocabulary, immersion, writing tutor, and spaced review.`,
-  academy:
-    `<b>Academy OS</b>\n\n`
-    + `For teachers and centers: classrooms, gradebook, attendance, assignments, student billing, parent reports, certificates, and Telegram workflows.`,
-  centers:
-    `<b>For centers and partners</b>\n\n`
-    + `Run your academy, dispatch vouchers, manage contacts, sell access, and keep student operations inside Schood.`,
-  pricing:
-    `<b>Pricing and checkout</b>\n\n`
-    + `Open Schood pricing for plans, coupons, Click payment, trials, and checkout.`,
-  support:
-    `<b>Schood support</b>\n\n`
-    + `Open the Mini App support panel and tell us what you need. We will route it to student support, academy setup, billing, or partnership follow-up.`,
-  student:
-    `<b>Student command center</b>\n\n`
-    + `Private student data lives in @schoodstudentbot: assignments, grades, attendance, payments, certificates, vocab, and linked-account support.`,
-};
-
-const routeRows = (env: Env, route: string): InlineButton[][] => {
-  if (route === "exams") {
-    return [
-      [
-        { text: "IELTS", url: "https://ielts.schood.online" },
-        { text: "IELTS Practice", url: "https://practice.ielts.schood.online" },
-      ],
-      [
-        { text: "SAT", url: "https://sat.schood.online" },
-        { text: "TOEFL", url: "https://toefl.schood.online" },
-      ],
-      [{ text: "iTEP", url: "https://itep.schood.online" }],
-      [appButton(env)],
-    ];
+const renderStep = async (env: Env, chatId: number | string, result: ApiResult) => {
+  const step = String(result.step ?? result.last_step ?? "started");
+  const state = result.state ?? {};
+  if (step === "student_goal") return send(env, chatId, "<b>What IELTS score are you targeting?</b>", [[
+    { text: "6.5", callback_data: "goal_6_5" }, { text: "7.0", callback_data: "goal_7_0" }, { text: "7.5+", callback_data: "goal_7_5" },
+  ]]);
+  if (step === "student_exam_date") return send(env, chatId, "<b>When is your exam?</b>\n\nThis keeps the plan practical.", [[
+    { text: "Within 30 days", callback_data: "exam_30" }, { text: "1-3 months", callback_data: "exam_90" },
+  ], [{ text: "Later / not booked", callback_data: "exam_later" }]]);
+  const questions: Record<string, { prompt: string; answers: string[] }> = {
+    diagnostic_q1: { prompt: "1/3 · What does <b>assess</b> mean?", answers: ["to evaluate", "to avoid", "to repeat"] },
+    diagnostic_q2: { prompt: "2/3 · What does <b>relevant</b> mean?", answers: ["connected to the topic", "very expensive", "difficult to hear"] },
+    diagnostic_q3: { prompt: "3/3 · What does <b>interpret</b> mean?", answers: ["to explain meaning", "to memorize spelling", "to shorten a text"] },
+  };
+  if (questions[step]) {
+    const number = step.slice(-1);
+    return send(env, chatId, `<b>Quick vocabulary check</b>\n\n${questions[step].prompt}`, questions[step].answers.map((label, index) => [{ text: label, callback_data: `answer_q${number}_${index}` }]));
   }
-  if (route === "english") {
-    return [
-      [{ text: "English Hub", url: "https://english.schood.online" }],
-      [
-        { text: "Writing Tutor", url: `${env.SITE_URL}/writing-tutor` },
-        { text: "Vocab Drill", url: `${env.SITE_URL}/vocab-drill` },
-      ],
-      [appButton(env)],
-    ];
+  if (step === "diagnostic_result") {
+    const resultData = state.result ?? {};
+    const missed = Array.isArray(resultData.missedWords) && resultData.missedWords.length ? `\nReview first: <b>${resultData.missedWords.map(escapeHtml).join(", ")}</b>.` : "\nYou got every item right.";
+    const session = encodeURIComponent(String(result.session_id ?? ""));
+    return send(env, chatId,
+      `<b>Your starter result: ${Number(resultData.correct ?? 0)}/3</b>\n\nTarget: IELTS ${escapeHtml(state.target_score ?? "not set")}. ${missed}\n\n<b>Your 7-day plan</b>\nAlternate vocabulary review and reading-in-context for ${Number(resultData.plan?.[0]?.minutes ?? 15)} minutes a day.\n\nThis is a vocabulary readiness check, not an IELTS band prediction. Link an account to save the plan and continue tomorrow.`,
+      [[{ text: "Save my plan", url: `${env.SITE_URL}/account?telegram=link&acquisition_session_id=${session}` }], [{ text: "Start vocabulary practice", url: `${env.SITE_URL}/vocab-drill?source=telegram&session=${session}` }]],
+    );
   }
-  if (route === "academy") {
-    return [
-      [
-        { text: "Academy OS", url: `${env.SITE_URL}/academy` },
-        { text: "My Academy", url: `${env.SITE_URL}/my-academy` },
-      ],
-      [
-        { text: "Student bot", url: env.STUDENT_BOT_URL },
-        { text: "Pricing", url: `${env.SITE_URL}/pricing` },
-      ],
-      [appButton(env)],
-    ];
-  }
-  if (route === "centers") {
-    return [
-      [
-        { text: "Center Office", url: `${env.SITE_URL}/center-office` },
-        { text: "Partner Office", url: `${env.SITE_URL}/partner` },
-      ],
-      [{ text: "Education centers", url: `${env.SITE_URL}/education-centers` }],
-      [appButton(env, "Open center guide")],
-    ];
-  }
-  if (route === "pricing") return [[{ text: "Open pricing", url: `${env.SITE_URL}/pricing` }], [appButton(env)]];
-  if (route === "support") return [[appButton(env, "Open support panel")], [{ text: "Contact page", url: `${env.SITE_URL}/contact` }]];
-  if (route === "student") return [[{ text: "Open @schoodstudentbot", url: env.STUDENT_BOT_URL }], [appButton(env)]];
-  return homeRows(env);
-};
-
-const sendRoute = (env: Env, chatId: number | string, route: string) =>
-  send(env, chatId, routeText[route] ?? startText(), routeRows(env, route));
-
-const handleMessage = async (env: Env, msg: TelegramMessage) => {
-  const chatId = msg.chat?.id;
-  if (!chatId) return;
-
-  const text = String(msg.text ?? "").trim();
-  const [rawCommand] = text.split(/\s+/);
-  const command = rawCommand.replace(/@\w+$/, "").toLowerCase();
-
-  if (!text || command === "/start") {
-    await send(env, chatId, startText(msg.from?.first_name), homeRows(env));
-    return;
-  }
-
-  if (command === "/help") { await send(env, chatId, helpText, homeRows(env)); return; }
-  if (command === "/explore" || command === "/app") { await send(env, chatId, startText(msg.from?.first_name), homeRows(env)); return; }
-  if (command === "/exams" || command === "/ielts" || command === "/sat" || command === "/toefl") { await sendRoute(env, chatId, "exams"); return; }
-  if (command === "/english") { await sendRoute(env, chatId, "english"); return; }
-  if (command === "/academy") { await sendRoute(env, chatId, "academy"); return; }
-  if (command === "/centers" || command === "/partners") { await sendRoute(env, chatId, "centers"); return; }
-  if (command === "/pricing") { await sendRoute(env, chatId, "pricing"); return; }
-  if (command === "/support") { await sendRoute(env, chatId, "support"); return; }
-  if (command === "/student" || command === "/dashboard") { await sendRoute(env, chatId, "student"); return; }
-
-  await send(
-    env,
-    chatId,
-    `I can route you around Schood. Type /help or open the ecosystem map below.`,
-    homeRows(env),
+  if (step === "academy_name") return send(env, chatId, "<b>What is your academy or education center called?</b>\n\nReply with the name. Send /cancel to stop.");
+  if (step === "academy_contact") return send(env, chatId, "<b>Where should our academy specialist contact you?</b>\n\nReply with a phone number, email, or @Telegram username.");
+  if (step === "academy_students") return send(env, chatId, "<b>How many students do you manage?</b>", [
+    [{ text: "Under 50", callback_data: "students_under50" }, { text: "50-199", callback_data: "students_50_199" }],
+    [{ text: "200-499", callback_data: "students_200_499" }, { text: "500+", callback_data: "students_500plus" }],
+  ]);
+  if (step === "academy_capability") return send(env, chatId, "<b>What needs fixing first?</b>", [
+    [{ text: "Attendance", callback_data: "cap_attendance" }, { text: "Homework", callback_data: "cap_homework" }],
+    [{ text: "Payments", callback_data: "cap_payments" }, { text: "All operations", callback_data: "cap_all" }],
+  ]);
+  if (step === "academy_preference") return send(env, chatId, "<b>How do you prefer us to follow up?</b>", [[
+    { text: "Telegram", callback_data: "contact_telegram" }, { text: "Phone", callback_data: "contact_phone" }, { text: "Email", callback_data: "contact_email" },
+  ]]);
+  if (step === "academy_lead_ready") return send(env, chatId,
+    `<b>Your academy request is in.</b>\n\nWe recorded ${escapeHtml(state.academy_name)} and your priority: <b>${escapeHtml(state.capability)}</b>. Our response target is within 4 business hours.`,
+    [[{ text: "See Academy OS", url: `${env.SITE_URL}/academy?source=telegram` }], [{ text: "Book a demo", url: `${env.SITE_URL}/contact?topic=academy-demo` }]],
   );
+  if (step === "canceled") return send(env, chatId, "Journey canceled. Send /start whenever you want to continue.");
+  return send(env, chatId, focusedStart(), choiceRows());
 };
 
-const handleCallback = async (env: Env, query: CallbackQuery) => {
-  await answerCallback(env, query.id);
-  const chatId = query.message?.chat?.id ?? query.from.id;
-  const route = String(query.data ?? "").trim().toLowerCase();
-  await sendRoute(env, chatId, route);
-};
-
-const handleUpdate = async (env: Env, update: Record<string, unknown>) => {
-  if (update.callback_query) {
-    await handleCallback(env, update.callback_query as CallbackQuery);
+const start = async (env: Env, updateId: number, message: Message, payload: string) => {
+  const telegramUserId = message.from?.id ?? message.chat?.id;
+  const chatId = message.chat?.id;
+  if (!telegramUserId || !chatId) return;
+  const session = await edge(env, { action: "session_start", bot_name: "schoodonlinebot", telegram_user_id: telegramUserId, payload, update_id: updateId });
+  if (session.linked_user && session.funnel !== "academy") {
+    await send(env, chatId, `<b>Welcome back, ${escapeHtml(session.linked_user.full_name ?? "student")}.</b>\n\nYour private assignments, learning queue, results, and payments are in the student bot.`, [[{ text: "Open today's work", url: env.STUDENT_BOT_URL }]]);
     return;
   }
-  if (update.message) await handleMessage(env, update.message as TelegramMessage);
+  if (session.last_step !== "started") { await renderStep(env, chatId, session); return; }
+  if (session.funnel === "academy") {
+    await send(env, chatId, "<b>Run your academy with Schood + Telegram.</b>\n\nAttendance, homework, teachers, payments, reminders, and reports — with the urgent work surfaced in Telegram.", [[{ text: "Start academy consultation", callback_data: "academy_begin" }], [{ text: "Book demo directly", url: `${env.SITE_URL}/contact?topic=academy-demo` }]]);
+  } else if (session.funnel === "student_ielts" || session.funnel === "course" || session.funnel === "referral") {
+    await send(env, chatId, "<b>Let's find your strongest next study step.</b>\n\nStart with a 3-question vocabulary check. You get a grounded 7-day starter plan — no fake band score.", [[{ text: "Start 3-minute check", callback_data: "student_begin" }]]);
+  } else {
+    await send(env, chatId, focusedStart(message.from?.first_name), choiceRows());
+  }
+};
+
+const handleMessage = async (env: Env, updateId: number, message: Message) => {
+  const chatId = message.chat?.id;
+  const telegramUserId = message.from?.id ?? chatId;
+  if (!chatId || !telegramUserId) return;
+  const raw = String(message.text ?? "").trim();
+  const [rawCommand, ...args] = raw.split(/\s+/);
+  const command = rawCommand.replace(/@\w+$/, "").toLowerCase();
+  if (command === "/start") return start(env, updateId, message, args[0] ?? "");
+  if (command === "/ielts") return start(env, updateId, message, "ielts_organic_telegram");
+  if (command === "/academy") return start(env, updateId, message, "academy_organic_telegram");
+  if (command === "/cancel") {
+    const result = await edge(env, { action: "journey_step", bot_name: "schoodonlinebot", telegram_user_id: telegramUserId, step_action: "cancel", update_id: updateId });
+    return renderStep(env, chatId, result);
+  }
+  if (command === "/help") return send(env, chatId, "<b>Schood Telegram</b>\n\n/ielts — get a starter study plan\n/academy — academy operations consultation\n/student — open private student work\n/cancel — stop the current journey", [[{ text: "Private student bot", url: env.STUDENT_BOT_URL }]]);
+  if (command === "/student") return send(env, chatId, "Open your private student command center.", [[{ text: "Open student bot", url: env.STUDENT_BOT_URL }]]);
+  if (!raw) return;
+  try {
+    const result = await edge(env, {
+      action: "journey_step", bot_name: "schoodonlinebot", telegram_user_id: telegramUserId,
+      step_action: "input", input: raw, update_id: updateId,
+      first_name: message.from?.first_name, username: message.from?.username,
+    });
+    return renderStep(env, chatId, result);
+  } catch {
+    return send(env, chatId, "Send /start to choose a focused student or academy journey.", choiceRows());
+  }
+};
+
+const handleCallback = async (env: Env, updateId: number, query: Callback) => {
+  await answer(env, query.id);
+  const chatId = query.message?.chat?.id ?? query.from.id;
+  const result = await edge(env, {
+    action: "journey_step", bot_name: "schoodonlinebot", telegram_user_id: query.from.id,
+    step_action: String(query.data ?? ""), update_id: updateId,
+    first_name: query.from.first_name, username: query.from.username,
+  });
+  await renderStep(env, chatId, result);
+};
+
+const processUpdate = async (env: Env, update: Record<string, any>): Promise<"completed" | "duplicate" | "busy"> => {
+  const updateId = Number(update.update_id);
+  const from = update.callback_query?.from ?? update.message?.from;
+  const claim = await edge(env, {
+    action: "claim_update", bot_name: "schoodonlinebot", update_id: updateId,
+    telegram_user_id: from?.id, update_kind: update.callback_query ? "callback_query" : update.message ? "message" : "other",
+  });
+  if (claim.outcome === "completed") return "duplicate";
+  if (claim.outcome === "busy") return "busy";
+  const claimToken = String(claim.claim_token ?? "");
+  if (!claimToken) throw new Error("Telegram update claim token missing");
+  try {
+    if (update.callback_query) await handleCallback(env, updateId, update.callback_query as Callback);
+    else if (update.message) await handleMessage(env, updateId, update.message as Message);
+    const completed = await edge(env, { action: "complete_update", bot_name: "schoodonlinebot", update_id: updateId, claim_token: claimToken });
+    if (!completed.ok) throw new Error("Telegram update completion was rejected");
+    return "completed";
+  } catch (error) {
+    await edge(env, { action: "complete_update", bot_name: "schoodonlinebot", update_id: updateId, claim_token: claimToken, failed: true, error: error instanceof Error ? error.message : "unknown" }).catch(() => {});
+    throw error;
+  }
 };
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-
-    if (url.pathname === "/" || url.pathname === "/health") {
-      return new Response("Schood public bot is running", { status: 200 });
+    if (url.pathname === "/" || url.pathname === "/health") return new Response("Schood public acquisition bot is running");
+    if (url.pathname !== "/webhook" || request.method !== "POST") return new Response("Not found", { status: 404 });
+    if (!env.WEBHOOK_SECRET || !validWebhookSecret(env, request.headers.get("X-Telegram-Bot-Api-Secret-Token"))) return new Response("Unauthorized", { status: 401 });
+    let update: Record<string, any>;
+    try { update = await request.json(); } catch { return new Response("Bad request", { status: 400 }); }
+    if (!Number.isSafeInteger(Number(update.update_id))) return new Response("Bad update", { status: 400 });
+    try {
+      const outcome = await processUpdate(env, update);
+      return new Response(outcome === "busy" ? "Retry later" : "OK", { status: outcome === "busy" ? 503 : 200 });
+    } catch (error) {
+      console.error(JSON.stringify({ event: "telegram_update_failed", update_id: update.update_id, reason: error instanceof Error ? error.message : "unknown" }));
+      return new Response("Retry later", { status: 500 });
     }
-
-    if (url.pathname === "/webhook" && request.method === "POST") {
-      const receivedSecret = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
-      if (env.WEBHOOK_SECRET && receivedSecret !== env.WEBHOOK_SECRET) return new Response("Unauthorized", { status: 401 });
-
-      let update: Record<string, unknown>;
-      try {
-        update = await request.json();
-      } catch {
-        return new Response("Bad request", { status: 400 });
-      }
-
-      ctx.waitUntil(handleUpdate(env, update).catch((error) => console.error("handleUpdate error", error)));
-      return new Response("OK", { status: 200 });
-    }
-
-    return new Response("Not found", { status: 404 });
   },
 } satisfies ExportedHandler<Env>;

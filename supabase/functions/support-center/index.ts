@@ -147,9 +147,9 @@ const chooseTelegramBotToken = (message: Record<string, unknown>): string => {
   const source = normalizeText(message.source, 80);
   const serviceSlug = normalizeText(message.service_slug, 80);
   if (source === "telegram_public_bot" || serviceSlug === "telegram-public") {
-    return Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN") || Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
+    return Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN") || "";
   }
-  return Deno.env.get("TELEGRAM_BOT_TOKEN") || Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN") || "";
+  return Deno.env.get("TELEGRAM_BOT_TOKEN") || "";
 };
 
 const sendTelegramReply = async (

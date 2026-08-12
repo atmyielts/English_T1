@@ -81,11 +81,21 @@ type Dashboard = {
 
 type Preferences = {
   notifications_enabled: boolean;
+  telegram_enabled: boolean;
+  email_enabled: boolean;
+  academic_required_enabled: boolean;
+  study_habit_enabled: boolean;
+  commercial_enabled: boolean;
   assignment_reminders: boolean;
   class_reminders: boolean;
   score_notifications: boolean;
+  grade_notifications: boolean;
+  payment_notifications: boolean;
+  vocabulary_reminders: boolean;
   certificate_notifications: boolean;
   digest_frequency: 'off' | 'daily' | 'weekly';
+  quiet_hours_start: string | null;
+  quiet_hours_end: string | null;
   timezone: string;
 };
 
@@ -201,6 +211,14 @@ const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: bo
 );
 
 export const TelegramAppPage: React.FC = () => {
+  const launchParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const acquisitionSessionId = launchParams.get('session') || launchParams.get('acquisition_session_id');
+  const launchContext = useMemo(() => ({
+    view: launchParams.get('view'),
+    assignment_id: launchParams.get('assignment'),
+    result_id: launchParams.get('result'),
+    section: launchParams.get('section'),
+  }), [launchParams]);
   const [tab, setTab] = useState<Tab>('today');
   const [initData, setInitData] = useState('');
   const [data, setData] = useState<BootstrapResponse | null>(null);
@@ -220,13 +238,13 @@ export const TelegramAppPage: React.FC = () => {
       const res = await fetch(`${edgeBase}/telegram-app`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: activeInitData, action, ...body }),
+        body: JSON.stringify({ initData: activeInitData, action, acquisition_session_id: acquisitionSessionId, launch_context: launchContext, ...body }),
       });
       const payload = (await res.json().catch(() => ({}))) as Json;
       if (!res.ok) throw new Error(String(payload.error ?? `Telegram app request failed (${res.status})`));
       return payload;
     },
-    [initData],
+    [acquisitionSessionId, initData, launchContext],
   );
 
   const load = useCallback(async () => {
@@ -250,7 +268,7 @@ export const TelegramAppPage: React.FC = () => {
       const payload = (await fetch(`${edgeBase}/telegram-app`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: activeInitData, action: 'bootstrap' }),
+        body: JSON.stringify({ initData: activeInitData, action: 'bootstrap', acquisition_session_id: acquisitionSessionId, launch_context: launchContext }),
       }).then((r) => r.json())) as BootstrapResponse;
       setData(payload);
       if (payload.linked) {
@@ -266,7 +284,14 @@ export const TelegramAppPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [acquisitionSessionId, launchContext]);
+
+  useEffect(() => {
+    const view = launchParams.get('view');
+    if (view === 'academy') setTab('academy');
+    else if (view === 'practice') setTab('practice');
+    else if (view === 'payments') setTab('payments');
+  }, [launchParams]);
 
   useEffect(() => {
     void load();
@@ -323,7 +348,11 @@ export const TelegramAppPage: React.FC = () => {
 
   const updatePreference = async (key: keyof Preferences, value: boolean | string) => {
     if (!data?.preferences) return;
-    const preferences = { ...data.preferences, [key]: value };
+    const preferences = {
+      ...data.preferences,
+      [key]: value,
+      ...(key === 'notifications_enabled' ? { telegram_enabled: Boolean(value) } : {}),
+    };
     setData({ ...data, preferences });
     await callTelegramApp('notification_preferences', { preferences });
   };
@@ -664,10 +693,15 @@ export const TelegramAppPage: React.FC = () => {
               <Card>
                 <div className="flex items-center gap-2 text-sm font-black"><Settings size={17} /> Notifications</div>
                 <div className="mt-3 space-y-2">
-                  <Toggle label="All Telegram notifications" checked={data.preferences.notifications_enabled} onChange={(v) => void updatePreference('notifications_enabled', v)} />
+                  <Toggle label="All Telegram notifications" checked={data.preferences.notifications_enabled && data.preferences.telegram_enabled} onChange={(v) => void updatePreference('notifications_enabled', v)} />
+                  <Toggle label="Required academic updates" checked={data.preferences.academic_required_enabled} onChange={(v) => void updatePreference('academic_required_enabled', v)} />
+                  <Toggle label="Study habit reminders" checked={data.preferences.study_habit_enabled} onChange={(v) => void updatePreference('study_habit_enabled', v)} />
+                  <Toggle label="Offers and promotions" checked={data.preferences.commercial_enabled} onChange={(v) => void updatePreference('commercial_enabled', v)} />
                   <Toggle label="Assignment reminders" checked={data.preferences.assignment_reminders} onChange={(v) => void updatePreference('assignment_reminders', v)} />
                   <Toggle label="Class reminders" checked={data.preferences.class_reminders} onChange={(v) => void updatePreference('class_reminders', v)} />
                   <Toggle label="Score notifications" checked={data.preferences.score_notifications} onChange={(v) => void updatePreference('score_notifications', v)} />
+                  <Toggle label="Payment notifications" checked={data.preferences.payment_notifications} onChange={(v) => void updatePreference('payment_notifications', v)} />
+                  <Toggle label="Vocabulary reminders" checked={data.preferences.vocabulary_reminders} onChange={(v) => void updatePreference('vocabulary_reminders', v)} />
                 </div>
               </Card>
             ) : null}

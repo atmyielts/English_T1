@@ -1705,17 +1705,36 @@ const sendDispatchMessage = async (
   channel: DispatchChannel,
   recipient: DispatchRecipient,
   message: string,
+  dedupeKey?: string,
 ): Promise<DispatchResult> => {
   if (channel === "telegram") {
     if (!recipient.telegram_chat_id) return { status: "prepared", provider: "telegram", detail: "recipient telegram_chat_id is missing" };
-    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-    if (!botToken) return { status: "prepared", provider: "telegram", detail: "TELEGRAM_BOT_TOKEN is not configured" };
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRole) return { status: "prepared", provider: "telegram", detail: "Telegram notification gateway is not configured" };
+    const res = await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: recipient.telegram_chat_id, text: message }),
+      headers: { Authorization: `Bearer ${serviceRole}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: recipient.telegram_chat_id,
+        text: message,
+        parse_mode: null,
+        notification_type: "partner_voucher_issued",
+        category: "transactional",
+        dedupe_key: dedupeKey,
+      }),
     });
-    return { status: res.ok ? "sent" : "failed", provider: "telegram", detail: await readProviderResponse(res) };
+    const detail = await readProviderResponse(res);
+    const outcome = isObject(detail) ? String(detail.outcome ?? "") : "";
+    return {
+      status: res.ok && outcome === "sent"
+        ? "sent"
+        : res.ok && (outcome === "defer" || outcome === "suppressed")
+          ? "prepared"
+          : "failed",
+      provider: "telegram-policy-gateway",
+      detail,
+    };
   }
 
   const provider = smsProvider();
@@ -3324,7 +3343,12 @@ serve(async (req) => {
             .replace(/\{center\}/g, centerName)
             .replace(/\{code\}/g, String(voucher.code))
             .replace(/\{url\}/g, link);
-          const result = await sendDispatchMessage(channel, recipient, message);
+          const result = await sendDispatchMessage(
+            channel,
+            recipient,
+            message,
+            `partner_voucher:${voucher.id}:${recipient.telegram_chat_id ?? recipient.phone ?? i}`,
+          );
           const attemptedAt = new Date().toISOString();
           const providerResponse = dispatchProviderResponse(result.detail);
           const { data: dispatchLog, error: dispatchLogError } = await sb
