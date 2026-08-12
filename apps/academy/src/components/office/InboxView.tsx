@@ -39,6 +39,7 @@ export const InboxView = ({
                 key={item.id}
                 type="button"
                 className={`chat-list-item ${selectedConversationId === item.id ? 'is-active' : ''}`}
+                aria-pressed={selectedConversationId === item.id}
                 onClick={() => void onSelectConversation(item.id)}
               >
                 <strong>{contactName}</strong>
@@ -47,7 +48,7 @@ export const InboxView = ({
               </button>
             );
           })}
-          {conversations.length === 0 ? <div className="small muted">No conversations yet.</div> : null}
+          {conversations.length === 0 ? <div className="table-empty-state"><strong>No conversations yet</strong><span>Student and contact replies will appear here.</span></div> : null}
         </div>
       </div>
 
@@ -61,18 +62,18 @@ export const InboxView = ({
               <div className="small muted">{formatDate(message.created_at)}</div>
             </div>
           ))}
-          {messages.length === 0 ? <div className="small muted">Select a conversation to read messages.</div> : null}
+          {messages.length === 0 ? <div className="table-empty-state"><strong>{selectedConversationId ? 'No messages in this conversation' : 'Select a conversation'}</strong><span>{selectedConversationId ? 'Send the first message below.' : 'Choose a contact from the list to read or reply.'}</span></div> : null}
         </div>
 
         <form className="chat-compose" onSubmit={onSendMessage}>
-          <textarea
-            className="input"
-            placeholder="Write a message..."
-            value={messageDraft}
-            onChange={(e) => setMessageDraft(e.target.value)}
-            disabled={!selectedConversationId || busy}
-            required
-          />
+          <label><span className="sr-only">Message</span><textarea
+              className="input"
+              placeholder="Write a message…"
+              value={messageDraft}
+              onChange={(e) => setMessageDraft(e.target.value)}
+              disabled={!selectedConversationId || busy}
+              required
+            /></label>
           <button className="primary-btn" type="submit" disabled={!selectedConversationId || busy || !messageDraft.trim()}>
             Send message
           </button>

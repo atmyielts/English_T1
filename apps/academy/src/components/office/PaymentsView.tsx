@@ -234,23 +234,28 @@ export const PaymentsView = ({
   return (
     <>
       <section className="grid two">
-        <form className="panel" onSubmit={onCreatePayment}>
+        <form className="panel workspace-form" onSubmit={onCreatePayment}>
           <h3>Create Click checkout</h3>
-          <select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
-            <option value="">Select contact</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>{`${c.first_name} ${c.last_name}`.trim()} ({c.email ?? 'no email'})</option>
-            ))}
-          </select>
-          <select className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
-            <option value="">Select offer</option>
-            {offers.map((o) => (
-              <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
-            ))}
-          </select>
-          <button className="primary-btn" type="submit" disabled={busy}>
-            Create Click checkout
-          </button>
+          <p className="small muted">Choose a contact and an offer. Access is applied only after Click confirms the payment.</p>
+          <label>Contact
+            <select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
+              <option value="">Select contact</option>
+              {contacts.map((c) => (
+                <option key={c.id} value={c.id}>{`${c.first_name} ${c.last_name}`.trim()} ({c.email ?? 'no email'})</option>
+              ))}
+            </select>
+          </label>
+          <label>Offer
+            <select className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
+              <option value="">Select offer</option>
+              {offers.map((o) => (
+                <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
+              ))}
+            </select>
+          </label>
+          <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>
+              Create Click checkout
+          </button></div>
         </form>
 
         <div className="panel">
@@ -273,9 +278,9 @@ export const PaymentsView = ({
       </section>
 
       <section className="panel">
-        <div className="filters-grid">
-          <input className="input" placeholder="Search by contact, offer, id..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as PaymentFilter)}>
+        <div className="filters-grid" aria-label="Payment filters">
+          <label><span className="sr-only">Search payments</span><input className="input" placeholder="Search by contact, offer, or ID" value={search} onChange={(e) => setSearch(e.target.value)} /></label>
+          <label><span className="sr-only">Filter payments by status</span><select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as PaymentFilter)}>
             <option value="all">All statuses</option>
             <option value="paid">Paid</option>
             <option value="pending">Pending</option>
@@ -286,9 +291,9 @@ export const PaymentsView = ({
             <option value="duplicate">Duplicate callback</option>
             <option value="grant_mismatch">Grant mismatch</option>
             <option value="needs_attention">Needs attention</option>
-          </select>
-          <input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-          <input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          </select></label>
+          <label><span className="sr-only">Payments from date</span><input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></label>
+          <label><span className="sr-only">Payments to date</span><input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></label>
         </div>
 
         <div className="table-wrap">
@@ -336,7 +341,7 @@ export const PaymentsView = ({
                   </tr>
                 );
               })}
-              {filteredPayments.length === 0 ? <tr><td colSpan={8}>No payments match these filters.</td></tr> : null}
+              {filteredPayments.length === 0 ? <tr><td colSpan={8}><div className="table-empty-state"><strong>No payments match these filters</strong><span>Clear a filter or create a checkout for a contact.</span></div></td></tr> : null}
             </tbody>
           </table>
         </div>

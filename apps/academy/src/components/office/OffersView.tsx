@@ -28,49 +28,50 @@ export const OffersView = ({
   return (
     <>
       <section className="grid two">
-        <form className="panel" onSubmit={onCreateOffer}>
+        <form className="panel workspace-form" onSubmit={onCreateOffer}>
           <h3>Create offer</h3>
-          <input className="input" placeholder="Offer name" value={offerForm.name} onChange={(e) => setOfferForm((p) => ({ ...p, name: e.target.value }))} required />
+          <p className="small muted">Define what a student buys. Access remains a separate grant attached below.</p>
+          <label>Offer name<input className="input" value={offerForm.name} onChange={(e) => setOfferForm((p) => ({ ...p, name: e.target.value }))} required /></label>
           <div className="grid two">
-            <select className="input" value={offerForm.type} onChange={(e) => setOfferForm((p) => ({ ...p, type: e.target.value }))}>
+            <label>Offer type<select className="input" value={offerForm.type} onChange={(e) => setOfferForm((p) => ({ ...p, type: e.target.value }))}>
               <option value="subscription">subscription</option>
               <option value="cohort">cohort</option>
               <option value="product">product</option>
               <option value="credits">credits</option>
-            </select>
-            <input className="input" placeholder="Currency" value={offerForm.currency} onChange={(e) => setOfferForm((p) => ({ ...p, currency: e.target.value }))} />
+            </select></label>
+            <label>Currency<input className="input" value={offerForm.currency} onChange={(e) => setOfferForm((p) => ({ ...p, currency: e.target.value }))} /></label>
           </div>
           <div className="grid two">
-            <input className="input" type="number" min={0} placeholder="Price" value={offerForm.price_amount} onChange={(e) => setOfferForm((p) => ({ ...p, price_amount: e.target.value }))} required />
-            <input className="input" type="number" min={1} placeholder="Duration days" value={offerForm.duration_days} onChange={(e) => setOfferForm((p) => ({ ...p, duration_days: e.target.value }))} />
+            <label>Price<input className="input" type="number" min={0} value={offerForm.price_amount} onChange={(e) => setOfferForm((p) => ({ ...p, price_amount: e.target.value }))} required /></label>
+            <label>Duration <span className="optional-label">Days, optional</span><input className="input" type="number" min={1} value={offerForm.duration_days} onChange={(e) => setOfferForm((p) => ({ ...p, duration_days: e.target.value }))} /></label>
           </div>
-          <textarea className="input" placeholder="Description" value={offerForm.description} onChange={(e) => setOfferForm((p) => ({ ...p, description: e.target.value }))} />
-          <button className="primary-btn" type="submit" disabled={busy}>
-            Create offer
-          </button>
+          <label>Description <span className="optional-label">Optional</span><textarea className="input" value={offerForm.description} onChange={(e) => setOfferForm((p) => ({ ...p, description: e.target.value }))} /></label>
+          <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Create offer</button></div>
         </form>
 
-        <form className="panel" onSubmit={onAttachGrant}>
+        <form className="panel workspace-form" onSubmit={onAttachGrant}>
           <h3>Attach grant</h3>
-          <select className="input" value={grantForm.offer_id} onChange={(e) => setGrantForm((p) => ({ ...p, offer_id: e.target.value }))} required>
+          <p className="small muted">Specify the product, classroom, or capability unlocked after settlement.</p>
+          <label>Offer<select className="input" value={grantForm.offer_id} onChange={(e) => setGrantForm((p) => ({ ...p, offer_id: e.target.value }))} required>
             <option value="">Select offer</option>
             {offers.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.name}
               </option>
             ))}
-          </select>
+          </select></label>
           <div className="grid two">
-            <input className="input" placeholder="Grant type" value={grantForm.grant_type} onChange={(e) => setGrantForm((p) => ({ ...p, grant_type: e.target.value }))} required />
-            <input className="input" placeholder="Resource type" value={grantForm.resource_type} onChange={(e) => setGrantForm((p) => ({ ...p, resource_type: e.target.value }))} />
+            <label>Grant type<input className="input" value={grantForm.grant_type} onChange={(e) => setGrantForm((p) => ({ ...p, grant_type: e.target.value }))} required /></label>
+            <label>Resource type <span className="optional-label">Optional</span><input className="input" value={grantForm.resource_type} onChange={(e) => setGrantForm((p) => ({ ...p, resource_type: e.target.value }))} /></label>
           </div>
-          <div className="grid two">
-            <input className="input" placeholder="Resource ID" value={grantForm.resource_id} onChange={(e) => setGrantForm((p) => ({ ...p, resource_id: e.target.value }))} />
-            <input className="input" placeholder="Capability key" value={grantForm.capability_key} onChange={(e) => setGrantForm((p) => ({ ...p, capability_key: e.target.value }))} />
-          </div>
-          <button className="primary-btn" type="submit" disabled={busy}>
-            Save grant
-          </button>
+          <details className="advanced-fields">
+            <summary>Advanced targeting</summary>
+            <div className="grid two">
+              <label>Resource ID<input className="input" value={grantForm.resource_id} onChange={(e) => setGrantForm((p) => ({ ...p, resource_id: e.target.value }))} /></label>
+              <label>Capability key<input className="input" value={grantForm.capability_key} onChange={(e) => setGrantForm((p) => ({ ...p, capability_key: e.target.value }))} /></label>
+            </div>
+          </details>
+          <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Save grant</button></div>
         </form>
       </section>
 
@@ -91,7 +92,7 @@ export const OffersView = ({
                   </tr>
                 );
               })}
-              {offers.length === 0 ? <tr><td colSpan={4}>No offers yet.</td></tr> : null}
+              {offers.length === 0 ? <tr><td colSpan={4}><div className="table-empty-state"><strong>No offers yet</strong><span>Create an offer before accepting a Click checkout.</span></div></td></tr> : null}
             </tbody>
           </table>
         </div>

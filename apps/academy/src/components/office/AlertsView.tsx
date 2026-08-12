@@ -41,30 +41,33 @@ export const AlertsView = ({
   return (
     <>
       {canCreateAlerts ? (
-        <form className="panel" onSubmit={onCreate}>
+        <form className="panel workspace-form" onSubmit={onCreate}>
           <h3>Create alert</h3>
-          <select
-            className="input"
-            value={form.contact_id}
-            onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
-          >
-            {canCreateGlobalAlerts ? <option value="">Academy-wide alert</option> : null}
-            {!canCreateGlobalAlerts ? <option value="">Select contact</option> : null}
-            {contacts.map((item) => (
-              <option key={item.id} value={item.id}>
-                {(item.first_name || item.last_name) ? `${item.first_name} ${item.last_name}`.trim() : item.email || item.id}
-              </option>
-            ))}
-          </select>
-          <div className="grid two">
-            <input
+          <p className="small muted">Record an operational issue for the academy or a specific contact.</p>
+          <label>Scope
+            <select
               className="input"
-              placeholder="Type (attendance, progress...)"
+              value={form.contact_id}
+              onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
+            >
+              {canCreateGlobalAlerts ? <option value="">Academy-wide alert</option> : null}
+              {!canCreateGlobalAlerts ? <option value="">Select contact</option> : null}
+              {contacts.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {(item.first_name || item.last_name) ? `${item.first_name} ${item.last_name}`.trim() : item.email || item.id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid two">
+            <label>Alert type<input
+              className="input"
+              placeholder="Attendance, progress, payment…"
               value={form.type}
               onChange={(e) => setForm((previous) => ({ ...previous, type: e.target.value }))}
               required
-            />
-            <select
+            /></label>
+            <label>Severity<select
               className="input"
               value={form.severity}
               onChange={(e) => setForm((previous) => ({ ...previous, severity: e.target.value }))}
@@ -73,22 +76,21 @@ export const AlertsView = ({
               <option value="medium">medium</option>
               <option value="high">high</option>
               <option value="critical">critical</option>
-            </select>
+            </select></label>
           </div>
-          <textarea
+          <label>Message<textarea
             className="input"
-            placeholder="Alert message"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
             required
-          />
-          <button
+          /></label>
+          <div className="form-actions"><button
             className="primary-btn"
             type="submit"
             disabled={busy || !form.type.trim() || !form.content.trim() || (!canCreateGlobalAlerts && !form.contact_id)}
           >
             Create alert
-          </button>
+          </button></div>
         </form>
       ) : null}
 
@@ -133,7 +135,7 @@ export const AlertsView = ({
               })}
               {alerts.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>No alerts yet.</td>
+                  <td colSpan={7}><div className="table-empty-state"><strong>No alerts yet</strong><span>Operational issues will appear here when they need follow-up.</span></div></td>
                 </tr>
               ) : null}
             </tbody>

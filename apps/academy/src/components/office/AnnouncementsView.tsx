@@ -30,9 +30,9 @@ export const AnnouncementsView = ({
   return (
     <>
       {canSendAnnouncements ? (
-        <form className="panel" onSubmit={onSubmit}>
+        <form className="panel workspace-form" onSubmit={onSubmit}>
           <h3>Send announcement</h3>
-          <select
+          <label>Audience<select
             className="input"
             value={form.classroom_id}
             onChange={(e) => setForm((previous) => ({ ...previous, classroom_id: e.target.value }))}
@@ -44,28 +44,26 @@ export const AnnouncementsView = ({
                 {item.name}
               </option>
             ))}
-          </select>
-          <input
+          </select></label>
+          <label>Title<input
             className="input"
-            placeholder="Title"
             value={form.title}
             onChange={(e) => setForm((previous) => ({ ...previous, title: e.target.value }))}
             required
-          />
-          <textarea
+          /></label>
+          <label>Message<textarea
             className="input"
-            placeholder="Announcement message"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
             required
-          />
-          <button
+          /></label>
+          <div className="form-actions"><button
             className="primary-btn"
             type="submit"
             disabled={busy || !form.title.trim() || !form.content.trim() || (!canSendGlobalAnnouncements && !form.classroom_id)}
           >
             Send announcement
-          </button>
+          </button></div>
         </form>
       ) : null}
 
@@ -93,7 +91,7 @@ export const AnnouncementsView = ({
               ))}
               {announcements.length === 0 ? (
                 <tr>
-                  <td colSpan={3}>No announcements yet.</td>
+                  <td colSpan={3}><div className="table-empty-state"><strong>No announcements yet</strong><span>Send a concise update to a classroom or all active contacts.</span></div></td>
                 </tr>
               ) : null}
             </tbody>
