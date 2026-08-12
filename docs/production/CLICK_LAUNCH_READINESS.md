@@ -97,7 +97,11 @@ The GET is expected to return the handler's `405` CLICK JSON, not Supabase's gen
 
 ## Fiscalization gate
 
-The repository contains a disabled helper only. It does not establish Schood's IKPU count, product/package codes, VAT, TIN/PINFL scope, or CLICK activation requirements, and it is not called after Complete. Obtain written CLICK/tax configuration, decide the receipt item model, implement idempotent submission/retry/auditing, and verify failure recovery. This is a launch blocker; do not enable `CLICK_FISCALIZATION_ENABLED` until those values and the official test are complete.
+The repository contains a disabled, fail-closed helper only. It validates CLICK's documented field lengths, requires exactly one valid TIN/PINFL, rejects invalid/empty items before any provider request, and is still not called after Complete. It does not establish Schood's IKPU count, product/package codes, VAT, TIN/PINFL scope, or CLICK activation requirements. Written clarification and the required values were requested from CLICK for service `104316` on 12 August 2026. Decide the receipt item model, implement idempotent submission/retry/auditing, and verify failure recovery only after that reply. This is a launch blocker; do not enable `CLICK_FISCALIZATION_ENABLED` until those values and the official test are complete.
+
+## Operational alerts
+
+The CLICK function sends hourly-deduplicated security and payment-integrity alerts through the existing private `send-telegram` gateway to linked platform-admin Telegram accounts. Alerts cover callback 5xx failures, rejected signatures, signed amount/order/action mismatches, and entitlement grant failures. Alert payloads are allowlisted and exclude signatures, credentials, raw callback bodies, and customer contact data. Delivery still requires at least one platform admin with a linked Telegram chat; verify a controlled rejected-signature alert before launch.
 
 ## Production launch checklist
 

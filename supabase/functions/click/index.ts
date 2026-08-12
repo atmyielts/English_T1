@@ -32,6 +32,11 @@ import {
   normalizeSchoodReturnUrl,
   sanitizeClickCallbackPayload,
 } from "./payment-safety.ts";
+import {
+  classifyClickOpsAlert,
+  type ClickOpsAlertSeverity,
+  notifyClickOperators,
+} from "./ops-alerts.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -2058,6 +2063,26 @@ const scheduleBackground = (work: PromiseLike<unknown>): void => {
   if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(promise);
 };
 
+const scheduleClickOpsAlert = (
+  supabase: any,
+  event: string,
+  severity: ClickOpsAlertSeverity,
+  detail: Record<string, unknown>,
+): void => {
+  scheduleBackground(
+    notifyClickOperators({
+      supabase,
+      supabaseUrl: getEnv("SUPABASE_URL"),
+      serviceRoleKey: getEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      event,
+      severity,
+      detail,
+    }).then((result) => {
+      console.info("click_ops_alert", { event, severity, ...result });
+    }),
+  );
+};
+
 const recordClickCallbackEvent = (
   supabase: any,
   event: {
@@ -2102,6 +2127,7 @@ const handleClickWebhook = async (
     : crypto.randomUUID();
   const params = await parseClickWebhookBody(req);
   let auditPayment: PaymentGrantRow | null = null;
+  let signatureVerified = false;
   const respond = (
     status: number,
     body: Record<string, unknown>,
@@ -2114,6 +2140,21 @@ const handleClickWebhook = async (
       body,
       startedAt,
     });
+    const protocolError = Number(body.error ?? -9);
+    const alert = classifyClickOpsAlert({
+      httpStatus: status,
+      protocolError,
+      signatureVerified,
+    });
+    if (alert) {
+      scheduleClickOpsAlert(supabase, alert.event, alert.severity, {
+        correlation_id: correlationId,
+        action: String(params?.action ?? "unknown"),
+        payment_id: auditPayment?.id ?? null,
+        protocol_error: protocolError,
+        http_status: status,
+      });
+    }
     return jsonResponse(status, body);
   };
   if (!params) {
@@ -2157,6 +2198,7 @@ const handleClickWebhook = async (
   if (!isValidSig) {
     return respond(401, { error: -1, error_note: "Sign check failed!" });
   }
+  signatureVerified = true;
 
   const { action, clickTransId, merchantTransId, merchantPrepareId } = envelope;
 
@@ -2452,6 +2494,13 @@ const handleClickWebhook = async (
     if (grantResponse) {
       console.error("click_webhook_grant_failed", {
         payment_id: payment.id,
+      });
+      scheduleClickOpsAlert(supabase, "payment_grant_failed", "critical", {
+        correlation_id: correlationId,
+        action,
+        payment_id: payment.id,
+        protocol_error: 0,
+        http_status: 200,
       });
     }
 
@@ -3594,6 +3643,12 @@ serve(async (req) => {
         if (grantResponse) {
           console.error("click_status_grant_failed", {
             payment_id: payment.id,
+          });
+          scheduleClickOpsAlert(supabase, "status_grant_failed", "critical", {
+            action: "status",
+            payment_id: payment.id,
+            protocol_error: 0,
+            http_status: 200,
           });
           statusGrantError = "Failed to grant paid payment";
         }

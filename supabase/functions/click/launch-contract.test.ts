@@ -16,6 +16,9 @@ const platformClient = await Deno.readTextFile(
 const adminPayments = await Deno.readTextFile(
   new URL("../admin-payments/index.ts", import.meta.url),
 );
+const opsAlerts = await Deno.readTextFile(
+  new URL("./ops-alerts.ts", import.meta.url),
+);
 
 Deno.test("CLICK launch contract keeps only the callback public and fails closed before credentials", () => {
   assert(
@@ -66,6 +69,17 @@ Deno.test("grant claims require completion evidence and unsafe automatic replay 
       "Automatic replay is disabled for this purchase type to prevent duplicate access or credit.",
     ),
   );
+});
+
+Deno.test("CLICK launch alerts are private, deduplicated, and never include signatures", () => {
+  assert(source.includes("scheduleClickOpsAlert"));
+  assert(
+    source.includes('event: "callback_signature_rejected"') ||
+      opsAlerts.includes('event: "callback_signature_rejected"'),
+  );
+  assert(opsAlerts.includes("click-ops:${event}:${bucket}"));
+  assert(opsAlerts.includes("parse_mode: null"));
+  assert(!opsAlerts.includes('SAFE_DETAIL_KEYS = new Set([\n  "sign_string"'));
 });
 
 Deno.test("frontend gates missing configuration, reuses an attempt key and validates CLICK origin", () => {
