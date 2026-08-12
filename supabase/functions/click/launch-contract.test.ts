@@ -77,8 +77,10 @@ Deno.test("CLICK launch alerts are private, deduplicated, and never include sign
     source.includes('event: "callback_signature_rejected"') ||
       opsAlerts.includes('event: "callback_signature_rejected"'),
   );
-  assert(opsAlerts.includes("click-ops:${event}:${bucket}"));
-  assert(opsAlerts.includes("parse_mode: null"));
+  assert(opsAlerts.includes("click-public-ops:${event}:${bucket}"));
+  assert(opsAlerts.includes('bot_scope: "public_ops"'));
+  assert(source.includes('getEnv("TELEGRAM_PUBLIC_BOT_TOKEN")'));
+  assert(!opsAlerts.includes("/functions/v1/send-telegram"));
   assert(!opsAlerts.includes('SAFE_DETAIL_KEYS = new Set([\n  "sign_string"'));
 });
 

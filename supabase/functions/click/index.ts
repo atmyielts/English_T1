@@ -2072,8 +2072,7 @@ const scheduleClickOpsAlert = (
   scheduleBackground(
     notifyClickOperators({
       supabase,
-      supabaseUrl: getEnv("SUPABASE_URL"),
-      serviceRoleKey: getEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      publicBotToken: getEnv("TELEGRAM_PUBLIC_BOT_TOKEN"),
       event,
       severity,
       detail,
