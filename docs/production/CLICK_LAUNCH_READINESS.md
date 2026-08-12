@@ -101,7 +101,7 @@ The repository contains a disabled, fail-closed helper only. It validates CLICK'
 
 ## Operational alerts
 
-The CLICK function sends hourly-deduplicated security and payment-integrity alerts through the existing private `send-telegram` gateway to linked platform-admin Telegram accounts. Alerts cover callback 5xx failures, rejected signatures, signed amount/order/action mismatches, and entitlement grant failures. Alert payloads are allowlisted and exclude signatures, credentials, raw callback bodies, and customer contact data. Delivery still requires at least one platform admin with a linked Telegram chat; verify a controlled rejected-signature alert before launch.
+The CLICK function sends hourly-deduplicated security and payment-integrity alerts from the general Schood bot directly to verified platform-admin Telegram accounts. Recipients are resolved only from `users.role = 'admin'` rows whose Telegram chat was linked through Schood's authenticated one-time-token flow; the public bot's unauthenticated acquisition state never selects recipients. Alerts cover callback 5xx failures, rejected signatures, signed amount/order/action mismatches, and entitlement grant failures. Alert payloads are allowlisted and exclude signatures, credentials, raw callback bodies, and customer contact data. Delivery requires at least one linked platform admin who has started the general Schood bot; verify a controlled rejected-signature alert before launch.
 
 ## Production launch checklist
 

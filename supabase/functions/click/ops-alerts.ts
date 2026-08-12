@@ -46,7 +46,7 @@ export const clickOpsAlertDedupeKey = (
   nowMs = Date.now(),
 ): string => {
   const bucket = Math.floor(nowMs / ALERT_WINDOW_MS);
-  return `click-ops:${event}:${bucket}`;
+  return `click-public-ops:${event}:${bucket}`;
 };
 
 export const sanitizeClickOpsAlertDetail = (
@@ -63,8 +63,7 @@ export const sanitizeClickOpsAlertDetail = (
 
 export const notifyClickOperators = async (input: {
   supabase: any;
-  supabaseUrl: string;
-  serviceRoleKey: string;
+  publicBotToken: string;
   event: string;
   severity: ClickOpsAlertSeverity;
   detail: Record<string, unknown>;
@@ -72,7 +71,7 @@ export const notifyClickOperators = async (input: {
 }): Promise<{ delivered: number; recipients: number }> => {
   const { data: admins, error } = await input.supabase
     .from("users")
-    .select("id")
+    .select("id,telegram_chat_id")
     .eq("role", "admin")
     .not("telegram_chat_id", "is", null)
     .limit(20);
@@ -80,14 +79,17 @@ export const notifyClickOperators = async (input: {
     throw new Error(`CLICK alert recipient lookup failed: ${error.message}`);
   }
 
-  const userIds = [
-    ...new Set(
-      (admins ?? []).map((row: any) => String(row.id ?? "").trim()).filter(
-        Boolean,
-      ),
-    ),
-  ];
-  if (userIds.length === 0) return { delivered: 0, recipients: 0 };
+  const recipientMap = new Map<string, string>();
+  for (const row of admins ?? []) {
+    const userId = String(row.id ?? "").trim();
+    const chatId = String(row.telegram_chat_id ?? "").trim();
+    if (userId && chatId) recipientMap.set(userId, chatId);
+  }
+  const recipients = [...recipientMap.entries()].map(([userId, chatId]) => ({
+    userId,
+    chatId,
+  }));
+  if (recipients.length === 0) return { delivered: 0, recipients: 0 };
 
   const safeDetail = sanitizeClickOpsAlertDetail(input.detail);
   const detailLines = Object.entries(safeDetail)
@@ -100,38 +102,84 @@ export const notifyClickOperators = async (input: {
   ].filter(Boolean).join("\n");
 
   const fetchImpl = input.fetchImpl ?? fetch;
-  const response = await fetchImpl(
-    `${input.supabaseUrl}/functions/v1/send-telegram`,
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${input.serviceRoleKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_ids: userIds,
-        notification_type: `click_ops_${input.event}`.slice(0, 100),
+  let delivered = 0;
+  for (const recipient of recipients) {
+    const claimToken = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const dedupeKey = `${
+      clickOpsAlertDedupeKey(input.event)
+    }:${recipient.userId}`;
+    const { data: reservation, error: reservationError } = await input.supabase
+      .from("platform_notifications")
+      .insert({
+        user_id: recipient.userId,
+        chat_id: recipient.chatId,
+        channel: "telegram",
+        type: `click_ops_${input.event}`.slice(0, 100),
         category: "system",
-        mandatory: true,
-        parse_mode: null,
-        dedupe_key: clickOpsAlertDedupeKey(input.event),
-        text,
+        body: text,
         metadata: {
           source: "click_edge",
+          bot_scope: "public_ops",
           severity: input.severity,
+          mandatory: true,
+          parse_mode: null,
           ...safeDetail,
         },
-      }),
-    },
-  );
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(`CLICK alert delivery failed with HTTP ${response.status}`);
-  }
+        dedupe_key: dedupeKey,
+        status: "processing",
+        scheduled_at: now,
+        attempts: 1,
+        claimed_at: now,
+        last_attempt_at: now,
+        claim_token: claimToken,
+      })
+      .select("id")
+      .maybeSingle();
 
-  const results = Array.isArray((payload as any)?.results)
-    ? (payload as any).results
-    : [payload];
-  const delivered = results.filter((result: any) => result?.ok === true).length;
-  return { delivered, recipients: userIds.length };
+    if (reservationError?.code === "23505") continue;
+    if (reservationError || !reservation) {
+      throw new Error(
+        `CLICK alert reservation failed: ${
+          reservationError?.message ?? "unknown"
+        }`,
+      );
+    }
+
+    const response = await fetchImpl(
+      `https://api.telegram.org/bot${input.publicBotToken}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: recipient.chatId,
+          text,
+          disable_web_page_preview: true,
+        }),
+      },
+    );
+    const payload = await response.json().catch(() => ({}));
+    const telegramOk = response.ok && (payload as any)?.ok === true;
+    const messageId = Number((payload as any)?.result?.message_id);
+    await input.supabase.from("platform_notifications").update({
+      status: telegramOk ? "sent" : "failed",
+      sent_at: telegramOk ? new Date().toISOString() : null,
+      telegram_message_id: telegramOk && Number.isSafeInteger(messageId)
+        ? messageId
+        : null,
+      error: telegramOk ? null : String(
+        (payload as any)?.description ??
+          `Telegram HTTP ${response.status}`,
+      ).slice(0, 1000),
+      claimed_at: null,
+      claim_token: null,
+    }).eq("id", reservation.id).eq("status", "processing").eq(
+      "claim_token",
+      claimToken,
+    );
+    if (telegramOk) delivered += 1;
+  }
+  return { delivered, recipients: recipients.length };
 };
