@@ -8,6 +8,7 @@ type ContactDestination = "classrooms" | "inbox" | "alerts" | "payments";
 
 type ContactsViewProps = {
   busy: boolean;
+  loading: boolean;
   form: ContactFormState;
   setForm: Dispatch<SetStateAction<ContactFormState>>;
   contacts: TeacherStudioContact[];
@@ -40,7 +41,7 @@ const filterContacts = (contacts: TeacherStudioContact[], query: string, statusF
   });
 };
 
-export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classroomMemberships, alerts, payments, educationOS, enrichmentState, onRetryEnrichment, onSubmit, onOpenClassroom, onNavigate, statusClass, formatDate, canManageContacts, canViewAlerts, canViewMessages, canViewPayments }: ContactsViewProps) => {
+export const ContactsView = ({ busy, loading, form, setForm, contacts, classrooms, classroomMemberships, alerts, payments, educationOS, enrichmentState, onRetryEnrichment, onSubmit, onOpenClassroom, onNavigate, statusClass, formatDate, canManageContacts, canViewAlerts, canViewMessages, canViewPayments }: ContactsViewProps) => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedContactId, setSelectedContactId] = useState("");
@@ -118,7 +119,7 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
       ) : null}
 
       <div className="contact-workspace-layout">
-        <section className="panel workspace-directory">
+        <section className="panel workspace-directory" aria-busy={loading}>
           <div className="directory-toolbar">
             <label className="search-field">
               <Search size={16} aria-hidden="true" />
@@ -151,7 +152,7 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
               ))}
             </select>
             <span className="directory-count">
-              {visibleContacts.length} of {contacts.length}
+              {loading ? "Loading…" : `${visibleContacts.length} of ${contacts.length}`}
             </span>
           </div>
 
@@ -166,6 +167,15 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
                 </tr>
               </thead>
               <tbody>
+                {loading && contacts.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>
+                      <div className="table-loading-state" role="status">
+                        Loading contacts…
+                      </div>
+                    </td>
+                  </tr>
+                ) : null}
                 {visibleContacts.map((contact) => {
                   const selected = selectedContact?.id === contact.id;
                   return (
@@ -187,7 +197,7 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
                     </tr>
                   );
                 })}
-                {visibleContacts.length === 0 ? (
+                {!loading && visibleContacts.length === 0 ? (
                   <tr>
                     <td colSpan={4}>
                       <div className="table-empty-state">
@@ -202,7 +212,7 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
           </div>
         </section>
 
-        <aside className="panel contact-context" aria-live="polite" aria-busy={Object.values(enrichmentState).some((status) => status === "loading")}>
+        <aside className="panel contact-context" aria-live="polite" aria-busy={loading || Object.values(enrichmentState).some((status) => status === "loading")}>
           {selectedContact ? (
             <>
               <header className="contact-context__header">
@@ -458,6 +468,10 @@ export const ContactsView = ({ busy, form, setForm, contacts, classrooms, classr
                 </div>
               ) : null}
             </>
+          ) : loading ? (
+            <div className="table-loading-state" role="status">
+              Loading contact details…
+            </div>
           ) : (
             <div className="table-empty-state">
               <strong>Select a contact</strong>

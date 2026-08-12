@@ -2791,26 +2791,35 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     }
   });
 
-  test("workspace navigation preserves the shell while delayed route data loads", async ({ page }) => {
+  test("workspace navigation renders Contacts immediately while summary and core data refresh in parallel", async ({ page }) => {
     const actionLog: string[] = [];
+    const delayActions = { summary: 900, contacts: 1_200 };
     await seedSessionCookie(page, "owner-navigation-user");
     await mockAcademyEdge(page, "owner", {
       actionLog,
-      delayActions: { summary: 900 },
+      delayActions,
     });
 
     await page.goto(`/academy/admin?academy_id=${academyId}`);
     await expect(page.locator(".workspace-identity")).toContainText("Owner");
     expect(actionLog.filter((action) => action === "academies")).toHaveLength(1);
+    actionLog.splice(0, actionLog.length);
+    delayActions.summary = 5_000;
 
     await page.getByRole("button", { name: "Contacts", exact: true }).click();
     await expect(page.locator(".ts-sidebar")).toBeVisible();
     await expect(page.locator(".workspace-identity")).toContainText("Owner");
     await expect(page.locator(".ts-loading")).toHaveCount(0);
     await expect(page.getByText("Preparing Academy...")).toHaveCount(0);
-    await expect(page.locator(".workspace-route-loading")).toContainText("Contacts");
-    await expect(page.getByRole("heading", { name: "Contacts" })).toBeVisible();
-    expect(actionLog.filter((action) => action === "academies")).toHaveLength(1);
+    await expect(page.getByRole("heading", { name: "Contacts", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Students and contacts" })).toBeVisible();
+    await expect(page.locator(".table-loading-state").filter({ hasText: "Loading contacts" })).toBeVisible();
+    await expect(page.locator(".workspace-route-loading")).toHaveCount(0);
+    expect(actionLog.filter((action) => action === "summary")).toHaveLength(1);
+    expect(actionLog.filter((action) => action === "contacts")).toHaveLength(1);
+    await expect(page.getByRole("button", { name: /Ali Karimov/ })).toBeVisible();
+    await expect(page.locator(".workspace-route-progress")).toBeVisible();
+    await expect(page.locator(".workspace-route-progress")).toHaveCount(0, { timeout: 7_000 });
   });
 
   test("Academy directory names the active role and its primary destination", async ({ page }) => {
