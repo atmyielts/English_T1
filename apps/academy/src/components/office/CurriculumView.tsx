@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   teacherStudioCurriculum,
@@ -281,101 +282,101 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
       <div className="panel">
         <div className="row between wrap">
           <div>
-            <h3>Curriculum and assessments</h3>
-            <p className="muted">Build structured courses, publish sequenced lessons, run native quizzes, and configure grade policy.</p>
+            <h3>{translate("Curriculum and assessments")}</h3>
+            <p className="muted">{translate("Build structured courses, publish sequenced lessons, run native quizzes, and configure grade policy.")}</p>
           </div>
-          <button className="ghost-btn" type="button" onClick={() => void load()} disabled={busy}>Refresh curriculum</button>
+          <button className="ghost-btn" type="button" onClick={() => void load()} disabled={busy}>{translate("Refresh curriculum")}</button>
         </div>
         <section className="stats-grid">
-          <article className="stat-card"><span>Courses</span><strong>{curriculum.courses.length}</strong></article>
-          <article className="stat-card"><span>Modules</span><strong>{curriculum.modules.length}</strong></article>
-          <article className="stat-card"><span>Lessons</span><strong>{curriculum.lessons.length}</strong></article>
-          <article className="stat-card"><span>Quizzes</span><strong>{quizzes.length}</strong></article>
-          <article className="stat-card"><span>Needs grading</span><strong>{pendingAttempts.length}</strong></article>
+          <article className="stat-card"><span>{translate("Courses")}</span><strong>{curriculum.courses.length}</strong></article>
+          <article className="stat-card"><span>{translate("Modules")}</span><strong>{curriculum.modules.length}</strong></article>
+          <article className="stat-card"><span>{translate("Lessons")}</span><strong>{curriculum.lessons.length}</strong></article>
+          <article className="stat-card"><span>{translate("Quizzes")}</span><strong>{quizzes.length}</strong></article>
+          <article className="stat-card"><span>{translate("Needs grading")}</span><strong>{pendingAttempts.length}</strong></article>
         </section>
       </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
-      {notice ? <div className="info-banner">{notice}</div> : null}
+      {error ? <div className="error-banner">{translate(error)}</div> : null}
+      {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
       <div className="grid two">
         <div className="panel">
-          <h3>Create course</h3>
+          <h3>{translate("Create course")}</h3>
           <form className="grid" onSubmit={createCourse}>
-            <input className="input" placeholder="Course title" value={courseForm.title} onChange={(event) => setCourseForm((previous) => ({ ...previous, title: event.target.value }))} required />
+            <input className="input" placeholder={translate("Course title")} value={courseForm.title} onChange={(event) => setCourseForm((previous) => ({ ...previous, title: event.target.value }))} required />
             <div className="grid three">
-              <input className="input" placeholder="Code" value={courseForm.code} onChange={(event) => setCourseForm((previous) => ({ ...previous, code: event.target.value }))} />
-              <input className="input" placeholder="Level" value={courseForm.level} onChange={(event) => setCourseForm((previous) => ({ ...previous, level: event.target.value }))} />
-              <input className="input" type="number" min="0" placeholder="Minutes" value={courseForm.estimated_minutes} onChange={(event) => setCourseForm((previous) => ({ ...previous, estimated_minutes: event.target.value }))} />
+              <input className="input" placeholder={translate("Code")} value={courseForm.code} onChange={(event) => setCourseForm((previous) => ({ ...previous, code: event.target.value }))} />
+              <input className="input" placeholder={translate("Level")} value={courseForm.level} onChange={(event) => setCourseForm((previous) => ({ ...previous, level: event.target.value }))} />
+              <input className="input" type="number" min="0" placeholder={translate("Minutes")} value={courseForm.estimated_minutes} onChange={(event) => setCourseForm((previous) => ({ ...previous, estimated_minutes: event.target.value }))} />
             </div>
-            <textarea className="input" placeholder="Course description" value={courseForm.description} onChange={(event) => setCourseForm((previous) => ({ ...previous, description: event.target.value }))} />
-            <button className="primary-btn" type="submit" disabled={busy}>Create and assign</button>
+            <textarea className="input" placeholder={translate("Course description")} value={courseForm.description} onChange={(event) => setCourseForm((previous) => ({ ...previous, description: event.target.value }))} />
+            <button className="primary-btn" type="submit" disabled={busy}>{translate("Create and assign")}</button>
           </form>
         </div>
 
         <div className="panel">
           <div className="row between wrap">
-            <div><h3>Course workspace</h3><p className="small muted">Choose the curriculum attached to this classroom.</p></div>
+            <div><h3>{translate("Course workspace")}</h3><p className="small muted">{translate("Choose the curriculum attached to this classroom.")}</p></div>
             {selectedCourse ? <span className={`status ${selectedCourse.status === 'published' ? 'status--ok' : 'status--pending'}`}>{selectedCourse.status}</span> : null}
           </div>
-          <select className="input" aria-label="Course workspace" value={selectedCourseId} onChange={(event) => setSelectedCourseId(event.target.value)}>
+          <select className="input" aria-label={translate("Course workspace")} value={selectedCourseId} onChange={(event) => setSelectedCourseId(event.target.value)}>
             {curriculum.courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
-            {curriculum.courses.length === 0 ? <option value="">No courses yet</option> : null}
+            {curriculum.courses.length === 0 ? <option value="">{translate("No courses yet")}</option> : null}
           </select>
           {selectedCourse ? (
             <div className="grid">
               <p>{selectedCourse.description || 'No course description yet.'}</p>
               <div className="row wrap">
                 <span className="status">{selectedCourse.level || 'Open level'}</span>
-                <span className="status">{selectedCourse.estimated_minutes} min</span>
-                <button className="small-btn" type="button" disabled={busy || selectedCourse.status === 'published'} onClick={() => void run(() => teacherStudioPublishCourse(academyId, { course_id: selectedCourse.id, classroom_id: classroomId }), 'Course and lessons published.')}>Publish course</button>
+                <span className="status">{selectedCourse.estimated_minutes} {translate("min")}</span>
+                <button className="small-btn" type="button" disabled={busy || selectedCourse.status === 'published'} onClick={() => void run(() => teacherStudioPublishCourse(academyId, { course_id: selectedCourse.id, classroom_id: classroomId }), 'Course and lessons published.')}>{translate("Publish course")}</button>
               </div>
             </div>
-          ) : <div className="empty-state">Create the first course to start authoring.</div>}
+          ) : <div className="empty-state">{translate("Create the first course to start authoring.")}</div>}
         </div>
       </div>
 
       {selectedCourse ? (
         <div className="grid two">
           <div className="panel">
-            <h3>Modules</h3>
+            <h3>{translate("Modules")}</h3>
             <form className="grid" onSubmit={createModule}>
-              <input className="input" placeholder="Module title" value={moduleForm.title} onChange={(event) => setModuleForm((previous) => ({ ...previous, title: event.target.value }))} required />
-              <textarea className="input" placeholder="Module description" value={moduleForm.description} onChange={(event) => setModuleForm((previous) => ({ ...previous, description: event.target.value }))} />
-              <button className="primary-btn" type="submit" disabled={busy}>Add module</button>
+              <input className="input" placeholder={translate("Module title")} value={moduleForm.title} onChange={(event) => setModuleForm((previous) => ({ ...previous, title: event.target.value }))} required />
+              <textarea className="input" placeholder={translate("Module description")} value={moduleForm.description} onChange={(event) => setModuleForm((previous) => ({ ...previous, description: event.target.value }))} />
+              <button className="primary-btn" type="submit" disabled={busy}>{translate("Add module")}</button>
             </form>
             <ul className="list">
               {courseModules.map((module) => (
                 <li key={module.id}>
                   <button className="small-btn" type="button" onClick={() => setSelectedModuleId(module.id)}>{module.title}</button>
-                  <span className="small muted"> {curriculum.lessons.filter((lesson) => lesson.module_id === module.id).length} lessons</span>
+                  <span className="small muted"> {curriculum.lessons.filter((lesson) => lesson.module_id === module.id).length} {translate("lessons")}</span>
                 </li>
               ))}
-              {courseModules.length === 0 ? <li>No modules yet.</li> : null}
+              {courseModules.length === 0 ? <li>{translate("No modules yet.")}</li> : null}
             </ul>
           </div>
 
           <div className="panel">
-            <h3>Lessons {selectedModule ? `— ${selectedModule.title}` : ''}</h3>
+            <h3>{translate("Lessons")}{' '}{selectedModule ? `— ${selectedModule.title}` : ''}</h3>
             {selectedModule ? (
               <form className="grid" onSubmit={createLesson}>
-                <input className="input" placeholder="Lesson title" value={lessonForm.title} onChange={(event) => setLessonForm((previous) => ({ ...previous, title: event.target.value }))} required />
-                <input className="input" placeholder="Lesson summary" value={lessonForm.summary} onChange={(event) => setLessonForm((previous) => ({ ...previous, summary: event.target.value }))} />
-                <textarea className="input" placeholder="Lesson content" value={lessonForm.content} onChange={(event) => setLessonForm((previous) => ({ ...previous, content: event.target.value }))} />
+                <input className="input" placeholder={translate("Lesson title")} value={lessonForm.title} onChange={(event) => setLessonForm((previous) => ({ ...previous, title: event.target.value }))} required />
+                <input className="input" placeholder={translate("Lesson summary")} value={lessonForm.summary} onChange={(event) => setLessonForm((previous) => ({ ...previous, summary: event.target.value }))} />
+                <textarea className="input" placeholder={translate("Lesson content")} value={lessonForm.content} onChange={(event) => setLessonForm((previous) => ({ ...previous, content: event.target.value }))} />
                 <div className="grid three">
                   <input className="input" type="number" min="0" value={lessonForm.estimated_minutes} onChange={(event) => setLessonForm((previous) => ({ ...previous, estimated_minutes: event.target.value }))} />
                   <select className="input" value={lessonForm.prerequisite_lesson_id} onChange={(event) => setLessonForm((previous) => ({ ...previous, prerequisite_lesson_id: event.target.value }))}>
-                    <option value="">No prerequisite</option>
+                    <option value="">{translate("No prerequisite")}</option>
                     {courseLessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
                   </select>
                   <input className="input" type="datetime-local" value={lessonForm.available_from} onChange={(event) => setLessonForm((previous) => ({ ...previous, available_from: event.target.value }))} />
                 </div>
-                <button className="primary-btn" type="submit" disabled={busy}>Add lesson</button>
+                <button className="primary-btn" type="submit" disabled={busy}>{translate("Add lesson")}</button>
               </form>
-            ) : <p className="muted">Add a module first.</p>}
+            ) : <p className="muted">{translate("Add a module first.")}</p>}
             <ul className="list">
-              {moduleLessons.map((lesson) => <li key={lesson.id}><strong>{lesson.title}</strong><div className="small muted">{lesson.estimated_minutes} min · {lesson.status}{lesson.prerequisite_lesson_id ? ' · prerequisite gated' : ''}</div></li>)}
-              {selectedModule && moduleLessons.length === 0 ? <li>No lessons in this module yet.</li> : null}
+              {moduleLessons.map((lesson) => <li key={lesson.id}><strong>{lesson.title}</strong><div className="small muted">{lesson.estimated_minutes} {translate("min ·")}{' '}{lesson.status}{lesson.prerequisite_lesson_id ? ' · prerequisite gated' : ''}</div></li>)}
+              {selectedModule && moduleLessons.length === 0 ? <li>{translate("No lessons in this module yet.")}</li> : null}
             </ul>
           </div>
         </div>
@@ -384,49 +385,49 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
       {selectedCourse ? (
         <div className="grid two">
           <div className="panel">
-            <h3>Native quizzes</h3>
+            <h3>{translate("Native quizzes")}</h3>
             <form className="grid" onSubmit={createQuiz}>
-              <input className="input" placeholder="Quiz title" value={quizForm.title} onChange={(event) => setQuizForm((previous) => ({ ...previous, title: event.target.value }))} required />
-              <textarea className="input" placeholder="Instructions" value={quizForm.instructions} onChange={(event) => setQuizForm((previous) => ({ ...previous, instructions: event.target.value }))} />
+              <input className="input" placeholder={translate("Quiz title")} value={quizForm.title} onChange={(event) => setQuizForm((previous) => ({ ...previous, title: event.target.value }))} required />
+              <textarea className="input" placeholder={translate("Instructions")} value={quizForm.instructions} onChange={(event) => setQuizForm((previous) => ({ ...previous, instructions: event.target.value }))} />
               <select className="input" value={quizForm.lesson_id} onChange={(event) => setQuizForm((previous) => ({ ...previous, lesson_id: event.target.value }))}>
-                <option value="">Course-level quiz</option>
+                <option value="">{translate("Course-level quiz")}</option>
                 {courseLessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
               </select>
               <div className="grid three">
-                <input className="input" type="number" min="0" max="100" placeholder="Pass %" value={quizForm.passing_score} onChange={(event) => setQuizForm((previous) => ({ ...previous, passing_score: event.target.value }))} />
-                <input className="input" type="number" min="1" placeholder="Attempts" value={quizForm.attempts_allowed} onChange={(event) => setQuizForm((previous) => ({ ...previous, attempts_allowed: event.target.value }))} />
-                <input className="input" type="number" min="1" placeholder="Minutes" value={quizForm.time_limit_minutes} onChange={(event) => setQuizForm((previous) => ({ ...previous, time_limit_minutes: event.target.value }))} />
+                <input className="input" type="number" min="0" max="100" placeholder={translate("Pass %")} value={quizForm.passing_score} onChange={(event) => setQuizForm((previous) => ({ ...previous, passing_score: event.target.value }))} />
+                <input className="input" type="number" min="1" placeholder={translate("Attempts")} value={quizForm.attempts_allowed} onChange={(event) => setQuizForm((previous) => ({ ...previous, attempts_allowed: event.target.value }))} />
+                <input className="input" type="number" min="1" placeholder={translate("Minutes")} value={quizForm.time_limit_minutes} onChange={(event) => setQuizForm((previous) => ({ ...previous, time_limit_minutes: event.target.value }))} />
               </div>
-              <button className="primary-btn" type="submit" disabled={busy}>Create quiz</button>
+              <button className="primary-btn" type="submit" disabled={busy}>{translate("Create quiz")}</button>
             </form>
             <select className="input" value={selectedQuiz?.id ?? ''} onChange={(event) => setSelectedQuizId(event.target.value)}>
               {courseQuizzes.map((quiz) => <option key={quiz.id} value={quiz.id}>{quiz.title} · {quiz.status}</option>)}
-              {courseQuizzes.length === 0 ? <option value="">No quizzes yet</option> : null}
+              {courseQuizzes.length === 0 ? <option value="">{translate("No quizzes yet")}</option> : null}
             </select>
             {selectedQuiz ? (
-              <button className="small-btn" type="button" disabled={busy || selectedQuiz.status === 'published' || quizQuestions.length === 0} onClick={() => void run(() => teacherStudioUpsertQuiz(academyId, { id: selectedQuiz.id, classroom_id: classroomId, course_id: selectedQuiz.course_id, status: 'published' }), 'Quiz published.')}>Publish quiz</button>
+              <button className="small-btn" type="button" disabled={busy || selectedQuiz.status === 'published' || quizQuestions.length === 0} onClick={() => void run(() => teacherStudioUpsertQuiz(academyId, { id: selectedQuiz.id, classroom_id: classroomId, course_id: selectedQuiz.course_id, status: 'published' }), 'Quiz published.')}>{translate("Publish quiz")}</button>
             ) : null}
           </div>
 
           <div className="panel">
-            <h3>Question builder</h3>
+            <h3>{translate("Question builder")}</h3>
             {selectedQuiz ? (
               <form className="grid" onSubmit={createQuestion}>
                 <select className="input" value={questionForm.question_type} onChange={(event) => setQuestionForm((previous) => ({ ...previous, question_type: event.target.value, correct_answer: '' }))}>
-                  {['single_choice', 'multiple_choice', 'true_false', 'short_text', 'essay'].map((type) => <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>)}
+                  {['single_choice', 'multiple_choice', 'true_false', 'short_text', 'essay'].map((type) => <option key={type} value={type}>{translate(type.replace(/_/g, ' '))}</option>)}
                 </select>
-                <textarea className="input" placeholder="Question prompt" value={questionForm.prompt} onChange={(event) => setQuestionForm((previous) => ({ ...previous, prompt: event.target.value }))} required />
-                {['single_choice', 'multiple_choice'].includes(questionForm.question_type) ? <textarea className="input" placeholder="One option per line" value={questionForm.options} onChange={(event) => setQuestionForm((previous) => ({ ...previous, options: event.target.value }))} /> : null}
+                <textarea className="input" placeholder={translate("Question prompt")} value={questionForm.prompt} onChange={(event) => setQuestionForm((previous) => ({ ...previous, prompt: event.target.value }))} required />
+                {['single_choice', 'multiple_choice'].includes(questionForm.question_type) ? <textarea className="input" placeholder={translate("One option per line")} value={questionForm.options} onChange={(event) => setQuestionForm((previous) => ({ ...previous, options: event.target.value }))} /> : null}
                 {questionForm.question_type === 'true_false' ? (
-                  <select className="input" value={questionForm.correct_answer} onChange={(event) => setQuestionForm((previous) => ({ ...previous, correct_answer: event.target.value }))}><option value="">Correct answer</option><option value="true">True</option><option value="false">False</option></select>
+                  <select className="input" value={questionForm.correct_answer} onChange={(event) => setQuestionForm((previous) => ({ ...previous, correct_answer: event.target.value }))}><option value="">{translate("Correct answer")}</option><option value="true">{translate("True")}</option><option value="false">{translate("False")}</option></select>
                 ) : questionForm.question_type !== 'essay' ? (
                   <input className="input" placeholder={questionForm.question_type === 'multiple_choice' ? 'Correct options, comma separated' : 'Correct answer'} value={questionForm.correct_answer} onChange={(event) => setQuestionForm((previous) => ({ ...previous, correct_answer: event.target.value }))} />
                 ) : null}
-                <div className="grid two"><input className="input" type="number" min="0.1" step="0.1" value={questionForm.points} onChange={(event) => setQuestionForm((previous) => ({ ...previous, points: event.target.value }))} /><input className="input" placeholder="Answer explanation" value={questionForm.explanation} onChange={(event) => setQuestionForm((previous) => ({ ...previous, explanation: event.target.value }))} /></div>
-                <button className="primary-btn" type="submit" disabled={busy}>Add question</button>
+                <div className="grid two"><input className="input" type="number" min="0.1" step="0.1" value={questionForm.points} onChange={(event) => setQuestionForm((previous) => ({ ...previous, points: event.target.value }))} /><input className="input" placeholder={translate("Answer explanation")} value={questionForm.explanation} onChange={(event) => setQuestionForm((previous) => ({ ...previous, explanation: event.target.value }))} /></div>
+                <button className="primary-btn" type="submit" disabled={busy}>{translate("Add question")}</button>
               </form>
-            ) : <p className="muted">Create or select a quiz first.</p>}
-            <ul className="list">{quizQuestions.map((question) => <li key={question.id}><strong>{question.prompt}</strong><div className="small muted">{question.question_type.replace(/_/g, ' ')} · {question.points} points</div></li>)}{selectedQuiz && quizQuestions.length === 0 ? <li>No questions yet.</li> : null}</ul>
+            ) : <p className="muted">{translate("Create or select a quiz first.")}</p>}
+            <ul className="list">{quizQuestions.map((question) => <li key={question.id}><strong>{question.prompt}</strong><div className="small muted">{translate(question.question_type.replace(/_/g, ' '))} · {question.points} {translate("points")}</div></li>)}{selectedQuiz && quizQuestions.length === 0 ? <li>{translate("No questions yet.")}</li> : null}</ul>
           </div>
         </div>
       ) : null}
@@ -434,34 +435,34 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
       {canGrade ? (
         <div className="grid two">
           <div className="panel">
-            <h3>Grade categories</h3>
+            <h3>{translate("Grade categories")}</h3>
             <form className="grid" onSubmit={createCategory}>
-              <input className="input" placeholder="Category name" value={categoryForm.name} onChange={(event) => setCategoryForm((previous) => ({ ...previous, name: event.target.value }))} required />
-              <div className="grid two"><input className="input" type="number" min="0.01" step="0.01" placeholder="Weight" value={categoryForm.weight} onChange={(event) => setCategoryForm((previous) => ({ ...previous, weight: event.target.value }))} /><input className="input" type="number" min="0" placeholder="Drop lowest" value={categoryForm.drop_lowest} onChange={(event) => setCategoryForm((previous) => ({ ...previous, drop_lowest: event.target.value }))} /></div>
-              <button className="primary-btn" type="submit" disabled={busy}>Add category</button>
+              <input className="input" placeholder={translate("Category name")} value={categoryForm.name} onChange={(event) => setCategoryForm((previous) => ({ ...previous, name: event.target.value }))} required />
+              <div className="grid two"><input className="input" type="number" min="0.01" step="0.01" placeholder={translate("Weight")} value={categoryForm.weight} onChange={(event) => setCategoryForm((previous) => ({ ...previous, weight: event.target.value }))} /><input className="input" type="number" min="0" placeholder={translate("Drop lowest")} value={categoryForm.drop_lowest} onChange={(event) => setCategoryForm((previous) => ({ ...previous, drop_lowest: event.target.value }))} /></div>
+              <button className="primary-btn" type="submit" disabled={busy}>{translate("Add category")}</button>
             </form>
-            <ul className="list">{categories.map((category) => <li key={category.id}><strong>{category.name}</strong><div className="small muted">Weight {category.weight} · drop {category.drop_lowest}</div></li>)}{categories.length === 0 ? <li>No weighted categories yet.</li> : null}</ul>
+            <ul className="list">{categories.map((category) => <li key={category.id}><strong>{category.name}</strong><div className="small muted">{translate("Weight")}{' '}{category.weight} {translate("· drop")}{' '}{category.drop_lowest}</div></li>)}{categories.length === 0 ? <li>{translate("No weighted categories yet.")}</li> : null}</ul>
           </div>
 
           <div className="panel">
-            <h3>Reusable rubrics</h3>
+            <h3>{translate("Reusable rubrics")}</h3>
             <form className="grid" onSubmit={createRubric}>
-              <input className="input" placeholder="Rubric title" value={rubricForm.title} onChange={(event) => setRubricForm((previous) => ({ ...previous, title: event.target.value }))} required />
-              <input className="input" placeholder="Description" value={rubricForm.description} onChange={(event) => setRubricForm((previous) => ({ ...previous, description: event.target.value }))} />
-              <textarea className="input" placeholder="One criterion per line: Name | Description | Max points" value={rubricForm.criteria} onChange={(event) => setRubricForm((previous) => ({ ...previous, criteria: event.target.value }))} required />
-              <button className="primary-btn" type="submit" disabled={busy}>Add rubric</button>
+              <input className="input" placeholder={translate("Rubric title")} value={rubricForm.title} onChange={(event) => setRubricForm((previous) => ({ ...previous, title: event.target.value }))} required />
+              <input className="input" placeholder={translate("Description")} value={rubricForm.description} onChange={(event) => setRubricForm((previous) => ({ ...previous, description: event.target.value }))} />
+              <textarea className="input" placeholder={translate("One criterion per line: Name | Description | Max points")} value={rubricForm.criteria} onChange={(event) => setRubricForm((previous) => ({ ...previous, criteria: event.target.value }))} required />
+              <button className="primary-btn" type="submit" disabled={busy}>{translate("Add rubric")}</button>
             </form>
-            <ul className="list">{rubrics.map((rubric) => <li key={rubric.id}><strong>{rubric.title}</strong><div className="small muted">{rubric.criteria.length} criteria</div></li>)}{rubrics.length === 0 ? <li>No rubrics yet.</li> : null}</ul>
+            <ul className="list">{rubrics.map((rubric) => <li key={rubric.id}><strong>{rubric.title}</strong><div className="small muted">{rubric.criteria.length} {translate("criteria")}</div></li>)}{rubrics.length === 0 ? <li>{translate("No rubrics yet.")}</li> : null}</ul>
           </div>
         </div>
       ) : null}
 
       {canGrade && pendingAttempts.length > 0 ? (
         <div className="panel">
-          <h3>Quiz grading queue</h3>
-          <div className="table-wrap"><table><thead><tr><th>Attempt</th><th>Auto score</th><th>Final score</th><th>Feedback</th><th /></tr></thead><tbody>{pendingAttempts.map((attempt) => {
+          <h3>{translate("Quiz grading queue")}</h3>
+          <div className="table-wrap"><table><thead><tr><th>{translate("Attempt")}</th><th>{translate("Auto score")}</th><th>{translate("Final score")}</th><th>{translate("Feedback")}</th><th /></tr></thead><tbody>{pendingAttempts.map((attempt) => {
             const draft = attemptDrafts[attempt.id] ?? { score: String(attempt.score ?? ''), feedback: '' };
-            return <tr key={attempt.id}><td>Student {attempt.contact_id.slice(0, 8)} · #{attempt.attempt_number}</td><td>{attempt.score ?? '-'}/{attempt.max_score ?? '-'}</td><td><input className="input compact-input" type="number" min="0" max={attempt.max_score ?? undefined} value={draft.score} onChange={(event) => setAttemptDrafts((previous) => ({ ...previous, [attempt.id]: { ...draft, score: event.target.value } }))} /></td><td><input className="input compact-input" value={draft.feedback} onChange={(event) => setAttemptDrafts((previous) => ({ ...previous, [attempt.id]: { ...draft, feedback: event.target.value } }))} /></td><td><button className="small-btn" type="button" disabled={busy} onClick={() => gradeAttempt(attempt)}>Save</button></td></tr>;
+            return <tr key={attempt.id}><td>{translate("Student")}{' '}{attempt.contact_id.slice(0, 8)} · #{attempt.attempt_number}</td><td>{attempt.score ?? '-'}/{attempt.max_score ?? '-'}</td><td><input className="input compact-input" type="number" min="0" max={attempt.max_score ?? undefined} value={draft.score} onChange={(event) => setAttemptDrafts((previous) => ({ ...previous, [attempt.id]: { ...draft, score: event.target.value } }))} /></td><td><input className="input compact-input" value={draft.feedback} onChange={(event) => setAttemptDrafts((previous) => ({ ...previous, [attempt.id]: { ...draft, feedback: event.target.value } }))} /></td><td><button className="small-btn" type="button" disabled={busy} onClick={() => gradeAttempt(attempt)}>{translate("Save")}</button></td></tr>;
           })}</tbody></table></div>
         </div>
       ) : null}

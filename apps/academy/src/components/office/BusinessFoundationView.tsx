@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, CalendarClock, CheckCircle2, GitBranch, PhoneCall, Plus, RefreshCw, UsersRound } from "lucide-react";
 import { teacherStudioBusinessFoundation, teacherStudioConvertLead, teacherStudioCreateLead, teacherStudioRecordLeadActivity, teacherStudioScheduleTrial, teacherStudioSetTrialStatus, teacherStudioTransitionLead, teacherStudioUpsertBranch, teacherStudioUpsertRoom, type AcademyBusinessFoundation, type AcademyLead, type AcademyPipelineStage, type AcademyTrialLesson } from "../../lib/client";
@@ -64,7 +65,7 @@ const localDateTimeToIso = (value: string): string => {
   return date.toISOString();
 };
 
-const money = (amount: number | null | undefined, currency = "UZS"): string => (amount == null ? "—" : `${new Intl.NumberFormat("uz-UZ").format(amount)} ${currency}`);
+const money = (amount: number | null | undefined, currency = "UZS"): string => (amount == null ? "—" : `${new Intl.NumberFormat(getLocaleTag()).format(amount)} ${currency}`);
 
 export function BusinessFoundationView({ academyId, formatDate }: Props) {
   const [data, setData] = useState<AcademyBusinessFoundation | null>(null);
@@ -379,7 +380,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
   if (loading && !data)
     return (
       <section className="panel">
-        <p>Loading admissions and branches…</p>
+        <p>{translate("Loading admissions and branches…")}</p>
       </section>
     );
 
@@ -387,42 +388,41 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
     <section className="business-os">
       <div className="section-heading business-os__heading">
         <div>
-          <span className="eyebrow">Growth + operations foundation</span>
-          <h2>Admissions and branches</h2>
-          <p>Run the real path from first inquiry through trial, conversion, and group enrollment.</p>
+          <span className="eyebrow">{translate("Growth + operations foundation")}</span>
+          <h2>{translate("Admissions and branches")}</h2>
+          <p>{translate("Run the real path from first inquiry through trial, conversion, and group enrollment.")}</p>
         </div>
         <button className="ghost-btn" type="button" onClick={() => void load()} disabled={loading || busy}>
-          <RefreshCw size={16} /> Refresh
-        </button>
+          <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
       </div>
 
-      <div className="business-os__stats" aria-label="Admissions summary">
+      <div className="business-os__stats" aria-label={translate("Admissions summary")}>
         <article>
           <UsersRound size={18} />
-          <span>Open leads</span>
+          <span>{translate("Open leads")}</span>
           <strong>{openLeads.length}</strong>
         </article>
         <article>
           <CalendarClock size={18} />
-          <span>Trials today</span>
+          <span>{translate("Trials today")}</span>
           <strong>{todayTrials.length}</strong>
         </article>
         <article>
           <PhoneCall size={18} />
-          <span>Overdue follow-ups</span>
+          <span>{translate("Overdue follow-ups")}</span>
           <strong>{overdue.length}</strong>
         </article>
         <article>
           <Building2 size={18} />
-          <span>Active branches</span>
+          <span>{translate("Active branches")}</span>
           <strong>{data?.branches.filter((branch) => branch.is_active).length ?? 0}</strong>
         </article>
       </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
-      {notice ? <div className="info-banner">{notice}</div> : null}
+      {error ? <div className="error-banner">{translate(error)}</div> : null}
+      {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
-      <div className="business-os__tabs" role="group" aria-label="Business foundation views">
+      <div className="business-os__tabs" role="group" aria-label={translate("Business foundation views")}>
         {(
           [
             ["pipeline", "Pipeline"],
@@ -432,7 +432,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
           ] as Array<[BusinessTab, string]>
         ).map(([id, label]) => (
           <button key={id} type="button" className={tab === id ? "is-active" : ""} aria-pressed={tab === id} onClick={() => setTab(id)}>
-            {label}
+            {translate(label)}
           </button>
         ))}
       </div>
@@ -443,16 +443,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
             <form className="panel compact-form business-os__lead-form" onSubmit={submitLead}>
               <div className="section-heading business-os__form-heading">
                 <div>
-                  <span className="eyebrow">New inquiry</span>
-                  <h3>Capture lead</h3>
+                  <span className="eyebrow">{translate("New inquiry")}</span>
+                  <h3>{translate("Capture lead")}</h3>
                 </div>
                 <span className="business-os__form-icon" aria-hidden="true">
                   <Plus size={18} />
                 </span>
               </div>
               <label>
-                Full name
-                <input
+                {translate("Full name")}{' '}<input
                   className="input"
                   value={leadForm.full_name}
                   onChange={(event) =>
@@ -466,8 +465,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Phone
-                  <input
+                  {translate("Phone")}{' '}<input
                     className="input"
                     value={leadForm.phone}
                     onChange={(event) =>
@@ -480,8 +478,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Telegram
-                  <input
+                  {translate("Telegram")}{' '}<input
                     className="input"
                     value={leadForm.telegram}
                     onChange={(event) =>
@@ -494,8 +491,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Email
-                <input
+                {translate("Email")}{' '}<input
                   className="input"
                   type="email"
                   value={leadForm.email}
@@ -509,8 +505,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Source
-                  <select
+                  {translate("Source")}{' '}<select
                     className="input"
                     value={leadForm.source_id}
                     onChange={(event) =>
@@ -520,7 +515,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                       }))
                     }
                   >
-                    <option value="">Unspecified</option>
+                    <option value="">{translate("Unspecified")}</option>
                     {data?.sources.map((source) => (
                       <option key={source.id} value={source.id}>
                         {labelFromI18n(source.label_i18n, source.source_key)}
@@ -529,8 +524,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   </select>
                 </label>
                 <label>
-                  Branch
-                  <select
+                  {translate("Branch")}{' '}<select
                     className="input"
                     value={leadForm.branch_id}
                     onChange={(event) =>
@@ -551,8 +545,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Interested course
-                <input
+                {translate("Interested course")}{' '}<input
                   className="input"
                   value={leadForm.interested_course}
                   onChange={(event) =>
@@ -565,8 +558,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Expected price
-                  <input
+                  {translate("Expected price")}{' '}<input
                     className="input"
                     type="number"
                     min="0"
@@ -580,8 +572,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Campaign
-                  <input
+                  {translate("Campaign")}{' '}<input
                     className="input"
                     value={leadForm.campaign}
                     onChange={(event) =>
@@ -594,8 +585,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Next follow-up
-                <input
+                {translate("Next follow-up")}{' '}<input
                   className="input"
                   type="datetime-local"
                   value={leadForm.next_follow_up_at}
@@ -608,8 +598,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Notes
-                <textarea
+                {translate("Notes")}{' '}<textarea
                   className="input"
                   value={leadForm.notes}
                   onChange={(event) =>
@@ -621,21 +610,19 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 />
               </label>
               <button className="primary-btn" disabled={busy}>
-                Add lead
-              </button>
+                {translate("Add lead")}{' '}</button>
             </form>
 
             <form className="panel compact-form" onSubmit={submitConversion}>
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Won</span>
-                  <h3>Convert to student</h3>
+                  <span className="eyebrow">{translate("Won")}</span>
+                  <h3>{translate("Convert to student")}</h3>
                 </div>
                 <CheckCircle2 size={18} />
               </div>
               <label>
-                Lead
-                <select
+                {translate("Lead")}{' '}<select
                   className="input"
                   value={conversionForm.lead_id}
                   onChange={(event) =>
@@ -647,7 +634,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   }
                   required
                 >
-                  <option value="">Choose lead</option>
+                  <option value="">{translate("Choose lead")}</option>
                   {openLeads.map((lead) => (
                     <option key={lead.id} value={lead.id}>
                       {lead.full_name}
@@ -656,8 +643,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Group / classroom
-                <select
+                {translate("Group / classroom")}{' '}<select
                   className="input"
                   value={conversionForm.classroom_id}
                   onChange={(event) =>
@@ -667,7 +653,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">Create contact only</option>
+                  <option value="">{translate("Create contact only")}</option>
                   {data?.classrooms.map((classroom) => (
                     <option key={classroom.id} value={classroom.id}>
                       {classroom.name}
@@ -676,8 +662,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Attended trial
-                <select
+                {translate("Attended trial")}{' '}<select
                   className="input"
                   value={conversionForm.trial_id}
                   onChange={(event) =>
@@ -687,7 +672,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">No linked trial</option>
+                  <option value="">{translate("No linked trial")}</option>
                   {data?.trials
                     .filter((trial) => trial.lead_id === conversionForm.lead_id && trial.status === "attended")
                     .map((trial) => (
@@ -697,25 +682,23 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     ))}
                 </select>
               </label>
-              <p className="muted">Conversion reuses a matching contact when possible and creates an active classroom enrollment when a group is chosen.</p>
+              <p className="muted">{translate("Conversion reuses a matching contact when possible and creates an active classroom enrollment when a group is chosen.")}</p>
               <button className="primary-btn" disabled={busy || !conversionForm.lead_id}>
-                Convert lead
-              </button>
+                {translate("Convert lead")}{' '}</button>
             </form>
           </div>
 
-          <section className="panel pipeline-filters" aria-label="Pipeline filters">
+          <section className="panel pipeline-filters" aria-label={translate("Pipeline filters")}>
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Focus the queue</span>
-                <h3>Find leads that need action</h3>
+                <span className="eyebrow">{translate("Focus the queue")}</span>
+                <h3>{translate("Find leads that need action")}</h3>
               </div>
-              <strong>{filteredLeads.length} shown</strong>
+              <strong>{filteredLeads.length} {translate("shown")}</strong>
             </div>
             <div className="pipeline-filters__grid">
               <label>
-                Search
-                <input
+                {translate("Search")}{' '}<input
                   className="input"
                   type="search"
                   value={leadFilters.query}
@@ -725,12 +708,11 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                       query: event.target.value,
                     }))
                   }
-                  placeholder="Name, phone, course, parent…"
+                  placeholder={translate("Name, phone, course, parent…")}
                 />
               </label>
               <label>
-                Employee
-                <select
+                {translate("Employee")}{' '}<select
                   className="input"
                   value={leadFilters.assigned_user_id}
                   onChange={(event) =>
@@ -740,7 +722,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">All employees</option>
+                  <option value="">{translate("All employees")}</option>
                   {data?.staff
                     .filter((staff) => staff.user_id)
                     .map((staff) => (
@@ -751,8 +733,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Source
-                <select
+                {translate("Source")}{' '}<select
                   className="input"
                   value={leadFilters.source_id}
                   onChange={(event) =>
@@ -762,7 +743,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">All sources</option>
+                  <option value="">{translate("All sources")}</option>
                   {data?.sources.map((source) => (
                     <option key={source.id} value={source.id}>
                       {labelFromI18n(source.label_i18n, source.source_key)}
@@ -771,8 +752,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Branch
-                <select
+                {translate("Branch")}{' '}<select
                   className="input"
                   value={leadFilters.branch_id}
                   onChange={(event) =>
@@ -782,7 +762,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">All branches</option>
+                  <option value="">{translate("All branches")}</option>
                   {data?.branches.map((branch) => (
                     <option key={branch.id} value={branch.id}>
                       {branch.name}
@@ -791,8 +771,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Course
-                <select
+                {translate("Course")}{' '}<select
                   className="input"
                   value={leadFilters.course}
                   onChange={(event) =>
@@ -802,7 +781,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">All courses</option>
+                  <option value="">{translate("All courses")}</option>
                   {courses.map((course) => (
                     <option key={course} value={course}>
                       {course}
@@ -811,8 +790,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Attention
-                <select
+                {translate("Attention")}{' '}<select
                   className="input"
                   value={leadFilters.attention}
                   onChange={(event) =>
@@ -822,17 +800,16 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="all">All leads</option>
-                  <option value="overdue">Overdue follow-up</option>
-                  <option value="stale">Stale 72+ hours</option>
-                  <option value="untouched">Untouched</option>
-                  <option value="no_next_action">No next action</option>
-                  <option value="recent">Recent inbound 24h</option>
+                  <option value="all">{translate("All leads")}</option>
+                  <option value="overdue">{translate("Overdue follow-up")}</option>
+                  <option value="stale">{translate("Stale 72+ hours")}</option>
+                  <option value="untouched">{translate("Untouched")}</option>
+                  <option value="no_next_action">{translate("No next action")}</option>
+                  <option value="recent">{translate("Recent inbound 24h")}</option>
                 </select>
               </label>
               <label>
-                Created from
-                <input
+                {translate("Created from")}{' '}<input
                   className="input"
                   type="date"
                   value={leadFilters.created_from}
@@ -845,8 +822,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Created to
-                <input
+                {translate("Created to")}{' '}<input
                   className="input"
                   type="date"
                   value={leadFilters.created_to}
@@ -875,11 +851,10 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 })
               }
             >
-              Clear filters
-            </button>
+              {translate("Clear filters")}{' '}</button>
           </section>
 
-          <div className="pipeline-board" aria-label="Admissions pipeline">
+          <div className="pipeline-board" aria-label={translate("Admissions pipeline")}>
             {stages.map((stage) => {
               const stageLeads = filteredLeads.filter((lead) => lead.current_stage_id === stage.id);
               return (
@@ -904,7 +879,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   </header>
                   <div className="pipeline-column__cards">
                     {stageLeads.length === 0 ? (
-                      <p className="empty-state">No leads</p>
+                      <p className="empty-state">{translate("No leads")}</p>
                     ) : (
                       stageLeads.map((lead) => {
                         const targets = validTargets(lead);
@@ -926,15 +901,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                             <p>{lead.interested_course || "Course not chosen"}</p>
                             <dl>
                               <div>
-                                <dt>Source</dt>
+                                <dt>{translate("Source")}</dt>
                                 <dd>{lead.source_id ? labelFromI18n(sourceById.get(lead.source_id)?.label_i18n, "Other") : "Unspecified"}</dd>
                               </div>
                               <div>
-                                <dt>Value</dt>
+                                <dt>{translate("Value")}</dt>
                                 <dd>{money(lead.expected_price, lead.currency)}</dd>
                               </div>
                             </dl>
-                            {lead.next_follow_up_at ? <small>Follow-up {formatDate(lead.next_follow_up_at)}</small> : <small className="warning-text">No next follow-up</small>}
+                            {lead.next_follow_up_at ? <small>{translate("Follow-up")}{' '}{formatDate(lead.next_follow_up_at)}</small> : <small className="warning-text">{translate("No next follow-up")}</small>}
                             {targets.length > 0 ? (
                               <div className="lead-card__transition">
                                 <select
@@ -948,7 +923,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                                     }))
                                   }
                                 >
-                                  <option value="">Move to…</option>
+                                  <option value="">{translate("Move to…")}</option>
                                   {targets.map((target) => (
                                     <option key={target.id} value={target.id}>
                                       {labelFromI18n(target.label_i18n, target.stage_key)}
@@ -958,7 +933,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                                 {selectedTarget?.terminal_kind === "lost" ? (
                                   <input
                                     className="input"
-                                    placeholder="Lost reason"
+                                    placeholder={translate("Lost reason")}
                                     value={transitionReasons[lead.id] ?? ""}
                                     onChange={(event) =>
                                       setTransitionReasons((previous) => ({
@@ -969,8 +944,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                                   />
                                 ) : null}
                                 <button className="ghost-btn" type="button" onClick={() => void moveLead(lead)} disabled={busy}>
-                                  Move
-                                </button>
+                                  {translate("Move")}{' '}</button>
                               </div>
                             ) : null}
                           </article>
@@ -990,14 +964,13 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
           <form className="panel compact-form" onSubmit={submitActivity}>
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Activity</span>
-                <h3>Record follow-up</h3>
+                <span className="eyebrow">{translate("Activity")}</span>
+                <h3>{translate("Record follow-up")}</h3>
               </div>
               <PhoneCall size={18} />
             </div>
             <label>
-              Lead
-              <select
+              {translate("Lead")}{' '}<select
                 className="input"
                 value={activityForm.lead_id}
                 onChange={(event) =>
@@ -1017,8 +990,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
             </label>
             <div className="form-grid two-col">
               <label>
-                Method
-                <select
+                {translate("Method")}{' '}<select
                   className="input"
                   value={activityForm.method}
                   onChange={(event) =>
@@ -1028,16 +1000,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="call">Call</option>
-                  <option value="telegram">Telegram</option>
-                  <option value="sms">SMS</option>
-                  <option value="email">Email</option>
-                  <option value="in_person">In person</option>
+                  <option value="call">{translate("Call")}</option>
+                  <option value="telegram">{translate("Telegram")}</option>
+                  <option value="sms">{translate("SMS")}</option>
+                  <option value="email">{translate("Email")}</option>
+                  <option value="in_person">{translate("In person")}</option>
                 </select>
               </label>
               <label>
-                Status
-                <select
+                {translate("Status")}{' '}<select
                   className="input"
                   value={activityForm.status}
                   onChange={(event) =>
@@ -1047,16 +1018,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="planned">Planned</option>
-                  <option value="completed">Completed</option>
-                  <option value="missed">Missed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="planned">{translate("Planned")}</option>
+                  <option value="completed">{translate("Completed")}</option>
+                  <option value="missed">{translate("Missed")}</option>
+                  <option value="cancelled">{translate("Cancelled")}</option>
                 </select>
               </label>
             </div>
             <label>
-              Due / occurred at
-              <input
+              {translate("Due / occurred at")}{' '}<input
                 className="input"
                 type="datetime-local"
                 value={activityForm.due_at}
@@ -1069,8 +1039,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Outcome
-              <input
+              {translate("Outcome")}{' '}<input
                 className="input"
                 value={activityForm.outcome}
                 onChange={(event) =>
@@ -1082,8 +1051,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Next follow-up
-              <input
+              {translate("Next follow-up")}{' '}<input
                 className="input"
                 type="datetime-local"
                 value={activityForm.next_follow_up_at}
@@ -1096,8 +1064,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Notes
-              <textarea
+              {translate("Notes")}{' '}<textarea
                 className="input"
                 value={activityForm.notes}
                 onChange={(event) =>
@@ -1109,15 +1076,14 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy || !activityForm.lead_id}>
-              Save activity
-            </button>
+              {translate("Save activity")}{' '}</button>
           </form>
           <div className="business-os__stack">
             <section className="panel">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Daily queue</span>
-                  <h3>Due and recent</h3>
+                  <span className="eyebrow">{translate("Daily queue")}</span>
+                  <h3>{translate("Due and recent")}</h3>
                 </div>
               </div>
               <div className="record-list">
@@ -1132,14 +1098,14 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     <span>{formatDate(activity.due_at || activity.completed_at || activity.created_at)}</span>
                   </article>
                 ))}
-                {(data?.activities.length ?? 0) === 0 ? <p className="empty-state">No activities yet.</p> : null}
+                {(data?.activities.length ?? 0) === 0 ? <p className="empty-state">{translate("No activities yet.")}</p> : null}
               </div>
             </section>
             <section className="panel">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Manager workload</span>
-                  <h3>Ownership and follow-through</h3>
+                  <span className="eyebrow">{translate("Manager workload")}</span>
+                  <h3>{translate("Ownership and follow-through")}</h3>
                 </div>
               </div>
               <div className="record-list">
@@ -1148,13 +1114,12 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     <div>
                       <strong>{row.name}</strong>
                       <p>
-                        {row.assigned} open leads · {row.dueToday} due today
-                      </p>
+                        {row.assigned} {translate("open leads ·")}{' '}{row.dueToday} {translate("due today")}{' '}</p>
                     </div>
-                    <span className={row.overdue ? "warning-text" : ""}>{row.overdue} overdue</span>
+                    <span className={row.overdue ? "warning-text" : ""}>{row.overdue} {translate("overdue")}</span>
                   </article>
                 ))}
-                {staffWorkload.length === 0 ? <p className="empty-state">Assign leads to see workload.</p> : null}
+                {staffWorkload.length === 0 ? <p className="empty-state">{translate("Assign leads to see workload.")}</p> : null}
               </div>
             </section>
           </div>
@@ -1167,14 +1132,13 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
             <form className="panel compact-form" onSubmit={submitTrial}>
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Booking</span>
-                  <h3>Schedule trial</h3>
+                  <span className="eyebrow">{translate("Booking")}</span>
+                  <h3>{translate("Schedule trial")}</h3>
                 </div>
                 <CalendarClock size={18} />
               </div>
               <label>
-                Lead
-                <select
+                {translate("Lead")}{' '}<select
                   className="input"
                   value={trialForm.lead_id}
                   onChange={(event) =>
@@ -1194,8 +1158,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Branch
-                  <select
+                  {translate("Branch")}{' '}<select
                     className="input"
                     value={trialForm.branch_id}
                     onChange={(event) =>
@@ -1217,8 +1180,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   </select>
                 </label>
                 <label>
-                  Room
-                  <select
+                  {translate("Room")}{' '}<select
                     className="input"
                     value={trialForm.room_id}
                     onChange={(event) =>
@@ -1228,7 +1190,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                       }))
                     }
                   >
-                    <option value="">Not assigned</option>
+                    <option value="">{translate("Not assigned")}</option>
                     {data?.rooms
                       .filter((room) => room.branch_id === trialForm.branch_id && room.is_active)
                       .map((room) => (
@@ -1240,8 +1202,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Group / classroom
-                <select
+                {translate("Group / classroom")}{' '}<select
                   className="input"
                   value={trialForm.classroom_id}
                   onChange={(event) =>
@@ -1251,7 +1212,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">Not assigned</option>
+                  <option value="">{translate("Not assigned")}</option>
                   {data?.classrooms.map((classroom) => (
                     <option key={classroom.id} value={classroom.id}>
                       {classroom.name}
@@ -1260,8 +1221,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Teacher
-                <select
+                {translate("Teacher")}{' '}<select
                   className="input"
                   value={trialForm.teacher_user_id}
                   onChange={(event) =>
@@ -1271,7 +1231,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="">Not assigned</option>
+                  <option value="">{translate("Not assigned")}</option>
                   {data?.staff
                     .filter((staff) => staff.user_id && ["teacher", "assistant"].includes(staff.role))
                     .map((staff) => (
@@ -1283,8 +1243,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Starts
-                  <input
+                  {translate("Starts")}{' '}<input
                     className="input"
                     type="datetime-local"
                     value={trialForm.starts_at}
@@ -1298,8 +1257,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Ends
-                  <input
+                  {translate("Ends")}{' '}<input
                     className="input"
                     type="datetime-local"
                     value={trialForm.ends_at}
@@ -1314,19 +1272,17 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <button className="primary-btn" disabled={busy}>
-                Schedule trial
-              </button>
+                {translate("Schedule trial")}{' '}</button>
             </form>
             <form className="panel compact-form" onSubmit={submitTrialOutcome}>
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Teacher feedback</span>
-                  <h3>Complete trial</h3>
+                  <span className="eyebrow">{translate("Teacher feedback")}</span>
+                  <h3>{translate("Complete trial")}</h3>
                 </div>
               </div>
               <label>
-                Trial
-                <select
+                {translate("Trial")}{' '}<select
                   className="input"
                   value={trialOutcome.trial_id}
                   onChange={(event) =>
@@ -1347,8 +1303,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Outcome
-                <select
+                {translate("Outcome")}{' '}<select
                   className="input"
                   value={trialOutcome.status}
                   onChange={(event) =>
@@ -1358,16 +1313,15 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     }))
                   }
                 >
-                  <option value="confirmed">Confirmed</option>
-                  <option value="attended">Attended</option>
-                  <option value="missed">Missed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="rescheduled">Rescheduled</option>
+                  <option value="confirmed">{translate("Confirmed")}</option>
+                  <option value="attended">{translate("Attended")}</option>
+                  <option value="missed">{translate("Missed")}</option>
+                  <option value="cancelled">{translate("Cancelled")}</option>
+                  <option value="rescheduled">{translate("Rescheduled")}</option>
                 </select>
               </label>
               <label>
-                Feedback
-                <textarea
+                {translate("Feedback")}{' '}<textarea
                   className="input"
                   value={trialOutcome.feedback}
                   onChange={(event) =>
@@ -1380,8 +1334,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Recommended course
-                  <input
+                  {translate("Recommended course")}{' '}<input
                     className="input"
                     value={trialOutcome.recommended_course}
                     onChange={(event) =>
@@ -1393,8 +1346,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Level
-                  <input
+                  {translate("Level")}{' '}<input
                     className="input"
                     value={trialOutcome.recommended_level}
                     onChange={(event) =>
@@ -1407,8 +1359,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Next step
-                <input
+                {translate("Next step")}{' '}<input
                   className="input"
                   value={trialOutcome.next_step}
                   onChange={(event) =>
@@ -1420,15 +1371,14 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 />
               </label>
               <button className="primary-btn" disabled={busy || !trialOutcome.trial_id}>
-                Save outcome
-              </button>
+                {translate("Save outcome")}{' '}</button>
             </form>
           </div>
           <section className="panel">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Trial calendar</span>
-                <h3>Bookings and outcomes</h3>
+                <span className="eyebrow">{translate("Trial calendar")}</span>
+                <h3>{translate("Bookings and outcomes")}</h3>
               </div>
             </div>
             <div className="trial-list">
@@ -1442,12 +1392,12 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     <small>{trial.feedback || trial.next_step || "Awaiting feedback"}</small>
                   </div>
                   <div>
-                    <span className={`status-pill ${trial.status}`}>{trial.status.replace("_", " ")}</span>
+                    <span className={`status-pill ${trial.status}`}>{translate(trial.status.replace("_", " "))}</span>
                     <time>{formatDate(trial.starts_at)}</time>
                   </div>
                 </article>
               ))}
-              {(data?.trials.length ?? 0) === 0 ? <p className="empty-state">No trials scheduled.</p> : null}
+              {(data?.trials.length ?? 0) === 0 ? <p className="empty-state">{translate("No trials scheduled.")}</p> : null}
             </div>
           </section>
         </div>
@@ -1460,15 +1410,14 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
               <form className="panel compact-form" onSubmit={submitBranch}>
                 <div className="section-heading">
                   <div>
-                    <span className="eyebrow">Organization</span>
-                    <h3>Add branch</h3>
+                    <span className="eyebrow">{translate("Organization")}</span>
+                    <h3>{translate("Add branch")}</h3>
                   </div>
                   <Building2 size={18} />
                 </div>
                 <div className="form-grid two-col">
                   <label>
-                    Key
-                    <input
+                    {translate("Key")}{' '}<input
                       className="input"
                       value={branchForm.branch_key}
                       onChange={(event) =>
@@ -1477,13 +1426,12 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                           branch_key: event.target.value,
                         }))
                       }
-                      placeholder="chilanzar"
+                      placeholder={translate("chilanzar")}
                       required
                     />
                   </label>
                   <label>
-                    Name
-                    <input
+                    {translate("Name")}{' '}<input
                       className="input"
                       value={branchForm.name}
                       onChange={(event) =>
@@ -1497,8 +1445,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   </label>
                 </div>
                 <label>
-                  Address
-                  <input
+                  {translate("Address")}{' '}<input
                     className="input"
                     value={branchForm.address}
                     onChange={(event) =>
@@ -1511,8 +1458,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
                 <div className="form-grid two-col">
                   <label>
-                    Phone
-                    <input
+                    {translate("Phone")}{' '}<input
                       className="input"
                       value={branchForm.phone}
                       onChange={(event) =>
@@ -1524,8 +1470,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     />
                   </label>
                   <label>
-                    Total capacity
-                    <input
+                    {translate("Total capacity")}{' '}<input
                       className="input"
                       type="number"
                       min="0"
@@ -1540,20 +1485,18 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                   </label>
                 </div>
                 <button className="primary-btn" disabled={busy}>
-                  Add branch
-                </button>
+                  {translate("Add branch")}{' '}</button>
               </form>
               <form className="panel compact-form" onSubmit={submitRoom}>
                 <div className="section-heading">
                   <div>
-                    <span className="eyebrow">Capacity</span>
-                    <h3>Add physical room</h3>
+                    <span className="eyebrow">{translate("Capacity")}</span>
+                    <h3>{translate("Add physical room")}</h3>
                   </div>
                   <GitBranch size={18} />
                 </div>
                 <label>
-                  Branch
-                  <select
+                  {translate("Branch")}{' '}<select
                     className="input"
                     value={roomForm.branch_id}
                     onChange={(event) =>
@@ -1575,8 +1518,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </label>
                 <div className="form-grid two-col">
                   <label>
-                    Key
-                    <input
+                    {translate("Key")}{' '}<input
                       className="input"
                       value={roomForm.room_key}
                       onChange={(event) =>
@@ -1585,13 +1527,12 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                           room_key: event.target.value,
                         }))
                       }
-                      placeholder="room-101"
+                      placeholder={translate("room-101")}
                       required
                     />
                   </label>
                   <label>
-                    Name
-                    <input
+                    {translate("Name")}{' '}<input
                       className="input"
                       value={roomForm.name}
                       onChange={(event) =>
@@ -1606,8 +1547,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                 </div>
                 <div className="form-grid two-col">
                   <label>
-                    Capacity
-                    <input
+                    {translate("Capacity")}{' '}<input
                       className="input"
                       type="number"
                       min="1"
@@ -1622,8 +1562,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                     />
                   </label>
                   <label>
-                    Type
-                    <select
+                    {translate("Type")}{' '}<select
                       className="input"
                       value={roomForm.room_type}
                       onChange={(event) =>
@@ -1633,18 +1572,17 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                         }))
                       }
                     >
-                      <option value="classroom">Classroom</option>
-                      <option value="lab">Lab</option>
-                      <option value="meeting">Meeting</option>
-                      <option value="office">Office</option>
-                      <option value="online">Online</option>
-                      <option value="other">Other</option>
+                      <option value="classroom">{translate("Classroom")}</option>
+                      <option value="lab">{translate("Lab")}</option>
+                      <option value="meeting">{translate("Meeting")}</option>
+                      <option value="office">{translate("Office")}</option>
+                      <option value="online">{translate("Online")}</option>
+                      <option value="other">{translate("Other")}</option>
                     </select>
                   </label>
                 </div>
                 <button className="primary-btn" disabled={busy}>
-                  Add room
-                </button>
+                  {translate("Add room")}{' '}</button>
               </form>
             </div>
           ) : null}
@@ -1659,20 +1597,20 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                       <strong>{branch.name}</strong>
                       <span>{branch.branch_key}</span>
                     </div>
-                    {branch.is_default ? <span className="status-pill active">Main</span> : null}
+                    {branch.is_default ? <span className="status-pill active">{translate("Main")}</span> : null}
                   </header>
-                  <p>{branch.address || "Address not set"}</p>
+                  <p>{branch.address || translate("Address not set")}</p>
                   <dl>
                     <div>
-                      <dt>Rooms</dt>
+                      <dt>{translate("Rooms")}</dt>
                       <dd>{rooms.length}</dd>
                     </div>
                     <div>
-                      <dt>Room seats</dt>
+                      <dt>{translate("Room seats")}</dt>
                       <dd>{roomCapacity}</dd>
                     </div>
                     <div>
-                      <dt>Branch capacity</dt>
+                      <dt>{translate("Branch capacity")}</dt>
                       <dd>{branch.capacity ?? "—"}</dd>
                     </div>
                   </dl>
@@ -1682,7 +1620,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
                         {room.name} · {room.capacity}
                       </span>
                     ))}
-                    {rooms.length === 0 ? <small>No rooms yet</small> : null}
+                    {rooms.length === 0 ? <small>{translate("No rooms yet")}</small> : null}
                   </div>
                 </article>
               );

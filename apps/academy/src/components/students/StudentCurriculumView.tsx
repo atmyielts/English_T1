@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   teacherStudioSetLessonProgress,
@@ -149,7 +150,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
     if (question.question_type === 'true_false') {
       return (
         <select className="input" value={String(answers[question.id] ?? '')} onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value === 'true' }))}>
-          <option value="">Choose an answer</option><option value="true">True</option><option value="false">False</option>
+          <option value="">{translate("Choose an answer")}</option><option value="true">{translate("True")}</option><option value="false">{translate("False")}</option>
         </select>
       );
     }
@@ -158,12 +159,12 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
     );
   };
 
-  if (!curriculum && busy) return <div className="panel">Loading curriculum…</div>;
+  if (!curriculum && busy) return <div className="panel">{translate("Loading curriculum…")}</div>;
 
   return (
     <section className="grid student-curriculum">
-      {error ? <div className="error-banner">{error}</div> : null}
-      {notice ? <div className="info-banner">{notice}</div> : null}
+      {error ? <div className="error-banner">{translate(error)}</div> : null}
+      {notice ? <div className="info-banner">{translate(notice)}</div> : null}
       {(curriculum?.courses ?? []).map((course) => {
         const modules = curriculum?.modules.filter((module) => module.course_id === course.id) ?? [];
         const courseLessons = curriculum?.lessons.filter((lesson) => lesson.course_id === course.id) ?? [];
@@ -173,7 +174,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
           <article className="panel" key={course.id}>
             <div className="row between wrap">
               <div><h3>{course.title}</h3><p className="muted">{course.description || course.level || 'Structured learning path'}</p></div>
-              <span className="status status--ok">{completed}/{courseLessons.length} lessons</span>
+              <span className="status status--ok">{completed}/{courseLessons.length} {translate("lessons")}</span>
             </div>
             <progress className="course-progress" max={Math.max(1, courseLessons.length)} value={completed} />
             <div className="grid two">
@@ -189,13 +190,13 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
                         return (
                           <li key={lesson.id}>
                             <div className="row between wrap">
-                              <div><strong>{lesson.title}</strong><div className="small muted">{lesson.estimated_minutes} min{lesson.locked ? ' · locked' : ''}</div></div>
+                              <div><strong>{lesson.title}</strong><div className="small muted">{lesson.estimated_minutes} {translate("min")}{lesson.locked ? ' · locked' : ''}</div></div>
                               <span className={progress?.status === 'completed' ? 'status status--ok' : lesson.locked ? 'status status--pending' : 'status'}>{progress?.status ?? (lesson.locked ? 'locked' : 'not started')}</span>
                             </div>
                             {lesson.summary ? <p>{lesson.summary}</p> : null}
                             <div className="row wrap">
                               <button className="small-btn" type="button" disabled={lesson.locked} onClick={() => { setExpandedLessonId(expanded ? '' : lesson.id); if (!progress && !lesson.locked) void markLesson(lesson, 'in_progress'); }}>{expanded ? 'Close lesson' : 'Open lesson'}</button>
-                              {progress?.status !== 'completed' ? <button className="small-btn" type="button" disabled={busy || lesson.locked} onClick={() => void markLesson(lesson, 'completed')}>Mark complete</button> : null}
+                              {progress?.status !== 'completed' ? <button className="small-btn" type="button" disabled={busy || lesson.locked} onClick={() => void markLesson(lesson, 'completed')}>{translate("Mark complete")}</button> : null}
                             </div>
                             {expanded ? <div className="lesson-content">{lessonText(lesson) || 'No lesson content has been published.'}</div> : null}
                           </li>
@@ -206,35 +207,35 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
                 ))}
               </div>
               <div>
-                <h4>Assessments</h4>
+                <h4>{translate("Assessments")}</h4>
                 <ul className="list">
                   {courseQuizzes.map((quiz) => {
                     const latest = latestAttemptByQuiz.get(quiz.id);
                     return (
                       <li key={quiz.id}>
                         <div className="row between wrap"><strong>{quiz.title}</strong><span className={latest?.passed ? 'status status--ok' : latest ? 'status status--pending' : 'status'}>{latest ? `${latest.percentage ?? '-'}%` : 'not attempted'}</span></div>
-                        <div className="small muted">Pass {quiz.passing_score}% · {quiz.attempts_allowed} attempt{quiz.attempts_allowed === 1 ? '' : 's'}{quiz.time_limit_seconds ? ` · ${Math.ceil(quiz.time_limit_seconds / 60)} min` : ''}{quiz.locked ? ' · locked by lesson prerequisite' : ''}</div>
+                        <div className="small muted">{translate("Pass")}{' '}{quiz.passing_score}% · {quiz.attempts_allowed} {translate("attempt")}{quiz.attempts_allowed === 1 ? '' : 's'}{quiz.time_limit_seconds ? ` · ${Math.ceil(quiz.time_limit_seconds / 60)} min` : ''}{quiz.locked ? ' · locked by lesson prerequisite' : ''}</div>
                         <button className="small-btn" type="button" disabled={busy || quiz.locked || latest?.status === 'submitted'} onClick={() => void startQuiz(quiz)}>{latest?.status === 'in_progress' ? 'Resume quiz' : 'Start quiz'}</button>
                       </li>
                     );
                   })}
-                  {courseQuizzes.length === 0 ? <li>No assessments published yet.</li> : null}
+                  {courseQuizzes.length === 0 ? <li>{translate("No assessments published yet.")}</li> : null}
                 </ul>
               </div>
             </div>
           </article>
         );
       })}
-      {(curriculum?.courses ?? []).length === 0 ? <div className="panel">No published curriculum is assigned to this classroom yet.</div> : null}
+      {(curriculum?.courses ?? []).length === 0 ? <div className="panel">{translate("No published curriculum is assigned to this classroom yet.")}</div> : null}
 
       {activeQuiz && activeAttempt?.status === 'in_progress' ? (
         <section className="panel quiz-attempt-panel">
-          <div className="row between wrap"><div><h3>{activeQuiz.title}</h3><p className="muted">Attempt {activeAttempt.attempt_number}</p></div><span className="status status--pending">in progress</span></div>
+          <div className="row between wrap"><div><h3>{activeQuiz.title}</h3><p className="muted">{translate("Attempt")}{' '}{activeAttempt.attempt_number}</p></div><span className="status status--pending">{translate("in progress")}</span></div>
           {activeQuiz.instructions ? <p>{activeQuiz.instructions}</p> : null}
           <div className="grid">
-            {questionsForQuiz.map((question, index) => <article className="quiz-question" key={question.id}><div className="row between"><strong>{index + 1}. {question.prompt}</strong><span className="small muted">{question.points} pts</span></div>{renderQuestion(question)}</article>)}
+            {questionsForQuiz.map((question, index) => <article className="quiz-question" key={question.id}><div className="row between"><strong>{index + 1}. {question.prompt}</strong><span className="small muted">{question.points} {translate("pts")}</span></div>{renderQuestion(question)}</article>)}
           </div>
-          <button className="primary-btn" type="button" disabled={busy || questionsForQuiz.length === 0} onClick={() => void submitQuiz()}>Submit quiz</button>
+          <button className="primary-btn" type="button" disabled={busy || questionsForQuiz.length === 0} onClick={() => void submitQuiz()}>{translate("Submit quiz")}</button>
         </section>
       ) : null}
     </section>

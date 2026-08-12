@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import type { TeacherStudioConversation, TeacherStudioMessage } from '../../lib/client';
 
@@ -27,7 +28,7 @@ export const InboxView = ({
   return (
     <section className="grid two">
       <div className="panel">
-        <h3>Conversations</h3>
+        <h3>{translate("Conversations")}</h3>
         <div className="chat-list">
           {conversations.map((item) => {
             const contactName = item.contact
@@ -48,12 +49,12 @@ export const InboxView = ({
               </button>
             );
           })}
-          {conversations.length === 0 ? <div className="table-empty-state"><strong>No conversations yet</strong><span>Student and contact replies will appear here.</span></div> : null}
+          {conversations.length === 0 ? <div className="table-empty-state"><strong>{translate("No conversations yet")}</strong><span>{translate("Student and contact replies will appear here.")}</span></div> : null}
         </div>
       </div>
 
       <div className="panel">
-        <h3>Messages</h3>
+        <h3>{translate("Messages")}</h3>
         <div className="chat-thread">
           {messages.map((message) => (
             <div key={message.id} className={`chat-row chat-row--${message.sender_type}`}>
@@ -66,17 +67,16 @@ export const InboxView = ({
         </div>
 
         <form className="chat-compose" onSubmit={onSendMessage}>
-          <label><span className="sr-only">Message</span><textarea
+          <label><span className="sr-only">{translate("Message")}</span><textarea
               className="input"
-              placeholder="Write a message…"
+              placeholder={translate("Write a message…")}
               value={messageDraft}
               onChange={(e) => setMessageDraft(e.target.value)}
               disabled={!selectedConversationId || busy}
               required
             /></label>
           <button className="primary-btn" type="submit" disabled={!selectedConversationId || busy || !messageDraft.trim()}>
-            Send message
-          </button>
+            {translate("Send message")}{' '}</button>
         </form>
       </div>
     </section>

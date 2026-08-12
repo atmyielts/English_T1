@@ -1,3 +1,4 @@
+import { formatLocaleDateTime, translate } from './i18n';
 import { FormEvent, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -114,6 +115,7 @@ import type {
   OfferFormState,
   PaymentFormState,
 } from './components/office/types';
+import { useI18n } from './i18n';
 
 const loadBusinessFoundationView = () => import('./components/office/BusinessFoundationView')
   .then((module) => ({ default: module.BusinessFoundationView }));
@@ -178,7 +180,7 @@ const PaymentsView = lazy(loadPaymentsView);
 const EntitlementsView = lazy(loadEntitlementsView);
 
 const WorkspaceSectionSkeleton = () => (
-  <section className="workspace-section-skeleton" aria-label="Loading workspace" aria-busy="true">
+  <section className="workspace-section-skeleton" aria-label={translate("Loading workspace")} aria-busy="true">
     <span />
     <span />
     <span />
@@ -823,7 +825,7 @@ const formatDate = (iso: string | null | undefined): string => {
   if (!iso) return '-';
   const parsed = Date.parse(iso);
   if (!Number.isFinite(parsed)) return '-';
-  return new Date(parsed).toLocaleString();
+  return formatLocaleDateTime(parsed);
 };
 
 const formatRelativeTime = (iso: string | null | undefined): string => {
@@ -1024,6 +1026,7 @@ const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
 });
 
 const App = () => {
+  useI18n();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -1203,7 +1206,8 @@ const App = () => {
     () =>
       (officeRouteAcademies.length > 0 ? officeRouteAcademies : teacherDirectoryAcademies).map((academy) => ({
         id: academy.id,
-        label: `${academy.name || academy.id} (${accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role))})`,
+        name: academy.name || academy.id,
+        role: accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role)),
       })),
     [officeRouteAcademies, teacherDirectoryAcademies],
   );
@@ -2828,58 +2832,51 @@ const App = () => {
           <div className="market-wrap">
             <div className="market-nav">
               <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
-                Back to platform
-              </a>
+                {translate("Back to platform")}{' '}</a>
               {state === 'ready' ? (
                 <button className="ghost-btn" type="button" onClick={() => void signOut()}>
-                  Sign out
-                </button>
+                  {translate("Sign out")}{' '}</button>
               ) : null}
             </div>
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow"><Sparkles size={14} /> Schood service</div>
-                <h1>Academy</h1>
+                <div className="market-eyebrow"><Sparkles size={14} /> {translate("Schood service")}</div>
+                <h1>{translate("Academy")}</h1>
                 <p>
-                  A living operating layer for education businesses: public academy pages, classroom hubs,
-                  teacher operations, student access, payments, alerts, and messaging in one connected flow.
-                </p>
+                  {translate("A living operating layer for education businesses: public academy pages, classroom hubs, teacher operations, student access, payments, alerts, and messaging in one connected flow.")}{' '}</p>
                 <div className="market-actions">
                   {state === 'ready' ? (
                     <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
-                      Open academy service
-                    </button>
+                      {translate("Open academy service")}{' '}</button>
                   ) : null}
                   {state === 'unauthenticated' ? (
                     <a className="primary-btn" href={toAuthUrl()}>
-                      Sign in
-                    </a>
+                      {translate("Sign in")}{' '}</a>
                   ) : null}
-                  {state === 'loading' ? <span className="market-note">Checking your session...</span> : null}
+                  {state === 'loading' ? <span className="market-note">{translate("Checking your session...")}</span> : null}
                   {state === 'error' ? (
                     <button className="ghost-btn" type="button" onClick={() => void bootstrap()}>
-                      Retry
-                    </button>
+                      {translate("Retry")}{' '}</button>
                   ) : null}
                 </div>
-                <div className="market-proof-strip" aria-label="Academy service highlights">
-                  <span>Public pages</span>
-                  <span>Teacher office</span>
-                  <span>Student workplace</span>
+                <div className="market-proof-strip" aria-label={translate("Academy service highlights")}>
+                  <span>{translate("Public pages")}</span>
+                  <span>{translate("Teacher office")}</span>
+                  <span>{translate("Student workplace")}</span>
                 </div>
               </div>
 
               <div className="academy-command-card">
                 <div className="academy-command-head">
                   <div>
-                    <span className="market-badge">Live command center</span>
-                    <h2>Run the academy week from one surface</h2>
+                    <span className="market-badge">{translate("Live command center")}</span>
+                    <h2>{translate("Run the academy week from one surface")}</h2>
                   </div>
                   <span className="pulse-dot" aria-hidden="true" />
                 </div>
 
-                <div className="academy-mini-chart" aria-label="Weekly academy activity chart">
+                <div className="academy-mini-chart" aria-label={translate("Weekly academy activity chart")}>
                   <span style={{ height: '42%' }} />
                   <span style={{ height: '58%' }} />
                   <span style={{ height: '49%' }} />
@@ -2892,129 +2889,122 @@ const App = () => {
                 <div className="academy-command-grid">
                   <article>
                     <UsersRound size={18} />
-                    <strong>Contacts</strong>
-                    <span>Student records, family contacts, and academy roles.</span>
+                    <strong>{translate("Contacts")}</strong>
+                    <span>{translate("Student records, family contacts, and academy roles.")}</span>
                   </article>
                   <article>
                     <CreditCard size={18} />
-                    <strong>Revenue</strong>
-                    <span>Click checkout, offers, grants, and access windows.</span>
+                    <strong>{translate("Revenue")}</strong>
+                    <span>{translate("Click checkout, offers, grants, and access windows.")}</span>
                   </article>
                   <article>
                     <MessageSquare size={18} />
-                    <strong>Comms</strong>
-                    <span>Inbox, announcements, classroom discussion, and alerts.</span>
+                    <strong>{translate("Comms")}</strong>
+                    <span>{translate("Inbox, announcements, classroom discussion, and alerts.")}</span>
                   </article>
                   <article>
                     <BookOpenCheck size={18} />
-                    <strong>Learning</strong>
-                    <span>Classroom landings, resources, progress, and mock links.</span>
+                    <strong>{translate("Learning")}</strong>
+                    <span>{translate("Classroom landings, resources, progress, and mock links.")}</span>
                   </article>
                 </div>
               </div>
             </section>
 
-            {state === 'error' && error ? <div className="error-banner">{error}</div> : null}
+            {state === 'error' && error ? <div className="error-banner">{translate(error)}</div> : null}
 
             <section className="market-section-head">
-              <span className="market-badge">Structure</span>
-              <h2>Four surfaces, one academy identity</h2>
+              <span className="market-badge">{translate("Structure")}</span>
+              <h2>{translate("Four surfaces, one academy identity")}</h2>
               <p>
-                The service is not just a dashboard. It gives every academy a public face, a staff workspace,
-                a classroom layer, and a student portal that all understand the same access model.
-              </p>
+                {translate("The service is not just a dashboard. It gives every academy a public face, a staff workspace, a classroom layer, and a student portal that all understand the same access model.")}{' '}</p>
             </section>
 
             <section className="market-grid academy-surface-grid">
               <article className="market-card surface-card surface-card--lime">
                 <div className="surface-icon"><Building2 size={22} /></div>
-                <h3>Academy landing</h3>
-                <p>Tell the academy story, show the offer, and send families to the right classroom or office entry.</p>
-                <div className="surface-meta">Brand narrative · CTAs · directory cards</div>
+                <h3>{translate("Academy landing")}</h3>
+                <p>{translate("Tell the academy story, show the offer, and send families to the right classroom or office entry.")}</p>
+                <div className="surface-meta">{translate("Brand narrative · CTAs · directory cards")}</div>
               </article>
               <article className="market-card surface-card surface-card--sky">
                 <div className="surface-icon"><Store size={22} /></div>
-                <h3>Staff workspaces</h3>
-                <p>Route administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.</p>
-                <div className="surface-meta">Operations · billing · access control</div>
+                <h3>{translate("Staff workspaces")}</h3>
+                <p>{translate("Route administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.")}</p>
+                <div className="surface-meta">{translate("Operations · billing · access control")}</div>
               </article>
               <article className="market-card surface-card surface-card--violet">
                 <div className="surface-icon"><BookOpenCheck size={22} /></div>
-                <h3>Classroom landing</h3>
-                <p>Give each classroom a living home with resources, modules, lessons, progress, and discussion.</p>
-                <div className="surface-meta">Syllabus · resources · classroom chat</div>
+                <h3>{translate("Classroom landing")}</h3>
+                <p>{translate("Give each classroom a living home with resources, modules, lessons, progress, and discussion.")}</p>
+                <div className="surface-meta">{translate("Syllabus · resources · classroom chat")}</div>
               </article>
               <article className="market-card surface-card surface-card--coral">
                 <div className="surface-icon"><GraduationCap size={22} /></div>
-                <h3>Student Workplace</h3>
-                <p>Students see their classrooms, announcements, messages, alerts, access grants, and payments in one focused space.</p>
-                <div className="surface-meta">Learning view · alerts · access history</div>
+                <h3>{translate("Student Workplace")}</h3>
+                <p>{translate("Students see their classrooms, announcements, messages, alerts, access grants, and payments in one focused space.")}</p>
+                <div className="surface-meta">{translate("Learning view · alerts · access history")}</div>
               </article>
             </section>
 
             <section className="academy-rhythm">
               <div className="market-section-head">
-                <span className="market-badge">Daily rhythm</span>
-                <h2>Built around the real week of an academy</h2>
+                <span className="market-badge">{translate("Daily rhythm")}</span>
+                <h2>{translate("Built around the real week of an academy")}</h2>
                 <p>
-                  The flow follows how teams actually work: attract a student, enroll them, place them in a cohort,
-                  keep the family informed, collect payment, and keep access clean.
-                </p>
+                  {translate("The flow follows how teams actually work: attract a student, enroll them, place them in a cohort, keep the family informed, collect payment, and keep access clean.")}{' '}</p>
               </div>
               <div className="rhythm-track">
                 <article className="market-step">
                 <div className="market-step-index">01</div>
-                  <h3>Publish the offer</h3>
-                  <p>Create a clear academy page and classroom pages that families can understand before they sign in.</p>
+                  <h3>{translate("Publish the offer")}</h3>
+                  <p>{translate("Create a clear academy page and classroom pages that families can understand before they sign in.")}</p>
                 </article>
                 <article className="market-step">
                 <div className="market-step-index">02</div>
-                  <h3>Enroll and place</h3>
-                  <p>Add contacts, create cohorts, assign students, and give each learner the right workspace.</p>
+                  <h3>{translate("Enroll and place")}</h3>
+                  <p>{translate("Add contacts, create cohorts, assign students, and give each learner the right workspace.")}</p>
                 </article>
                 <article className="market-step">
                 <div className="market-step-index">03</div>
-                  <h3>Teach and track</h3>
-                  <p>Attach resources, publish assignments, send announcements, and keep classroom discussion visible.</p>
+                  <h3>{translate("Teach and track")}</h3>
+                  <p>{translate("Attach resources, publish assignments, send announcements, and keep classroom discussion visible.")}</p>
                 </article>
                 <article className="market-step">
                   <div className="market-step-index">04</div>
-                  <h3>Collect and retain</h3>
-                  <p>Connect offers to access grants, track payments, resolve alerts, and keep students active.</p>
+                  <h3>{translate("Collect and retain")}</h3>
+                  <p>{translate("Connect offers to access grants, track payments, resolve alerts, and keep students active.")}</p>
                 </article>
               </div>
             </section>
 
             <section className="academy-capability-panel">
               <div>
-                <span className="market-badge">Substance</span>
-                <h2>What the service controls</h2>
+                <span className="market-badge">{translate("Substance")}</span>
+                <h2>{translate("What the service controls")}</h2>
                 <p>
-                  Academy is designed as the operational service behind Schood learning products, not a loose admin page.
-                </p>
+                  {translate("Academy is designed as the operational service behind Schood learning products, not a loose admin page.")}{' '}</p>
               </div>
               <div className="capability-list">
-                <div><span>01</span> Academy and classroom public presentation</div>
-                <div><span>02</span> Contacts, membership roles, cohorts, and classroom access</div>
-                <div><span>03</span> Offers, Click payment tracking, grants, and entitlements</div>
-                <div><span>04</span> Announcements, direct inbox, alerts, and student feed</div>
-                <div><span>05</span> Classroom resources, progress, live refresh, and discussion</div>
+                <div><span>01</span> {translate("Academy and classroom public presentation")}</div>
+                <div><span>02</span> {translate("Contacts, membership roles, cohorts, and classroom access")}</div>
+                <div><span>03</span> {translate("Offers, Click payment tracking, grants, and entitlements")}</div>
+                <div><span>04</span> {translate("Announcements, direct inbox, alerts, and student feed")}</div>
+                <div><span>05</span> {translate("Classroom resources, progress, live refresh, and discussion")}</div>
               </div>
             </section>
 
             <section className="academy-final-cta">
               <div>
-                <span className="market-badge">Next step</span>
-                <h2>Open the role workspace when you need control. Open the classroom when you need focus.</h2>
+                <span className="market-badge">{translate("Next step")}</span>
+                <h2>{translate("Open the role workspace when you need control. Open the classroom when you need focus.")}</h2>
               </div>
               {state === 'ready' ? (
                 <button className="primary-btn" type="button" onClick={() => navigate('/academy/workspace')}>
-                  Open Academy
-                </button>
+                  {translate("Open Academy")}{' '}</button>
               ) : (
                 <a className="primary-btn" href={toAuthUrl()}>
-                  Sign in to Academy
-                </a>
+                  {translate("Sign in to Academy")}{' '}</a>
               )}
             </section>
           </div>
@@ -3029,7 +3019,7 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy</h2>
+            <h2>{translate("Academy")}</h2>
             <p>{isWorkspaceEntry ? 'Finding your role and opening the right workspace...' : 'Preparing Academy...'}</p>
           </div>
         </div>
@@ -3043,14 +3033,12 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy</h2>
-            <p>Sign in with your platform account to continue.</p>
+            <h2>{translate("Academy")}</h2>
+            <p>{translate("Sign in with your platform account to continue.")}</p>
             <a className="primary-btn" href={toAuthUrl()}>
-              Sign in
-            </a>
+              {translate("Sign in")}{' '}</a>
             <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
-              Back to platform
-            </a>
+              {translate("Back to platform")}{' '}</a>
           </div>
         </div>
         <UpdatesButton />
@@ -3063,14 +3051,12 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Academy</h2>
+            <h2>{translate("Academy")}</h2>
             <p>{error || 'Could not load Academy.'}</p>
             <button className="primary-btn" onClick={() => void bootstrap()} type="button">
-              Retry
-            </button>
+              {translate("Retry")}{' '}</button>
             <a className="ghost-btn" href={toAuthUrl()}>
-              Sign in again
-            </a>
+              {translate("Sign in again")}{' '}</a>
           </div>
         </div>
         <UpdatesButton />
@@ -3088,7 +3074,7 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Role workspace access required</h2>
+            <h2>{translate("Role workspace access required")}</h2>
             <p>
               {requestedOfficeAcademyDenied
                 ? 'Your account does not have staff workspace permissions for the requested academy.'
@@ -3106,17 +3092,14 @@ const App = () => {
                 type="button"
                 onClick={() => navigate(academyScopedPath(currentOfficePath(), fallbackOfficeAcademyId))}
               >
-                Open my role workspace
-              </button>
+                {translate("Open my role workspace")}{' '}</button>
             ) : null}
             {hasStudentAccess ? (
               <button className={fallbackOfficeAcademyId ? 'ghost-btn' : 'primary-btn'} type="button" onClick={() => navigate(academyScopedPath('/academy/student'))}>
-                Open Student Workplace
-              </button>
+                {translate("Open Student Workplace")}{' '}</button>
             ) : null}
             <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-              Academy directory
-            </button>
+              {translate("Academy directory")}{' '}</button>
           </div>
         </div>
         <UpdatesButton />
@@ -3129,8 +3112,8 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <h2>Student Workplace access required</h2>
-            <p>This route is only for linked student contacts. Your account does not have a student profile here.</p>
+            <h2>{translate("Student Workplace access required")}</h2>
+            <p>{translate("This route is only for linked student contacts. Your account does not have a student profile here.")}</p>
             {hasTeacherAccess ? (
               <button
                 className="primary-btn"
@@ -3140,12 +3123,10 @@ const App = () => {
                   navigate(academyScopedPath(defaultOfficePathForAcademy(targetAcademyId), targetAcademyId));
                 }}
               >
-                Open staff workspace
-              </button>
+                {translate("Open staff workspace")}{' '}</button>
             ) : null}
             <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-              Academy directory
-            </button>
+              {translate("Academy directory")}{' '}</button>
           </div>
         </div>
         <UpdatesButton />
@@ -3221,61 +3202,57 @@ const App = () => {
                 type="button"
                 onClick={() => navigate(academyScopedPath('/academy', directoryDefaultAcademyId))}
               >
-                Academy landing
-              </button>
+                {translate("Academy landing")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
-                Refresh
-              </button>
+                {translate("Refresh")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void signOut()}>
-                Sign out
-              </button>
+                {translate("Sign out")}{' '}</button>
               <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
-                Back to platform
-              </a>
+                {translate("Back to platform")}{' '}</a>
             </div>
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Your Academy access</div>
-                <h1>{primaryStaffRole ? `${primaryStaffRole} workspace` : 'Your learning workspace'}</h1>
+                <div className="market-eyebrow">{translate("Your Academy access")}</div>
+                <h1>{primaryStaffRole ? translate('{role} workspace', { role: translate(primaryStaffRole) }) : translate('Your learning workspace')}</h1>
                 <p>
                   {primaryStaffRole && primaryStaffShell
-                    ? `You’re signed in as ${primaryStaffRole}. Continue to ${primaryStaffShell.title}; use this directory only when you need to switch academies or profiles.`
-                    : 'Continue to your Student Workspace. Use this directory only when you need to switch academies or profiles.'}
+                    ? translate('You’re signed in as {role}. Continue to {workspace}; use this directory only when you need to switch academies or profiles.', { role: translate(primaryStaffRole), workspace: translate(primaryStaffShell.title) })
+                    : translate('Continue to your Student Workspace. Use this directory only when you need to switch academies or profiles.')}
                 </p>
               </div>
               <div className="market-highlight">
-                <div className="market-badge">Access summary</div>
+                <div className="market-badge">{translate("Access summary")}</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Staff workspaces</span>
+                    <span>{translate("Staff workspaces")}</span>
                     <strong>{teacherDirectoryAcademies.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Student academies</span>
+                    <span>{translate("Student academies")}</span>
                     <strong>{studentDirectoryAcademies.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Student classrooms</span>
+                    <span>{translate("Student classrooms")}</span>
                     <strong>{studentDashboard?.classrooms.length ?? 0}</strong>
                   </article>
                 </div>
               </div>
             </section>
 
-            {error ? <div className="error-banner">{error}</div> : null}
-            {notice ? <div className="info-banner">{notice}</div> : null}
+            {error ? <div className="error-banner">{translate(error)}</div> : null}
+            {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
                 <div className="row between">
-                  <h3>{primaryStaffShell?.title ?? 'Staff workspaces'}</h3>
-                  <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{hasTeacherAccess ? 'available' : 'locked'}</span>
+                  <h3>{translate(primaryStaffShell?.title ?? 'Staff workspaces')}</h3>
+                  <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{translate(hasTeacherAccess ? 'available' : 'locked')}</span>
                 </div>
                 <p>
                   {primaryStaffRole && primaryStaffAcademy
-                    ? `${primaryStaffRole} access for ${primaryStaffAcademy.name || primaryStaffAcademy.id}. ${primaryStaffShell?.subtitle ?? 'Role-scoped Academy operations.'}`
-                    : 'Role-based staff operations are available only when an active staff membership is linked.'}
+                    ? translate('{role} access for {academy}. {scope}', { role: translate(primaryStaffRole), academy: primaryStaffAcademy.name || primaryStaffAcademy.id, scope: translate(primaryStaffShell?.subtitle ?? 'Role-scoped Academy operations.') })
+                    : translate('Role-based staff operations are available only when an active staff membership is linked.')}
                 </p>
                 {hasTeacherAccess ? (
                   <button
@@ -3285,52 +3262,51 @@ const App = () => {
                       navigate(academyScopedPath(defaultOfficePathForAcademy(primaryStaffAcademy?.id ?? defaultStaffAcademyId), primaryStaffAcademy?.id ?? defaultStaffAcademyId));
                     }}
                   >
-                    Continue as {primaryStaffRole}
+                    {translate('Continue as {role}', { role: translate(primaryStaffRole) })}
                   </button>
                 ) : (
-                  <div className="small muted">No active academy staff role was found for this account.</div>
+                  <div className="small muted">{translate("No active academy staff role was found for this account.")}</div>
                 )}
               </article>
 
               <article className="market-card">
                 <div className="row between">
-                  <h3>Student Workplace</h3>
-                  <span className={hasStudentAccess ? 'status status--ok' : 'status'}>{hasStudentAccess ? 'available' : 'locked'}</span>
+                  <h3>{translate("Student Workplace")}</h3>
+                  <span className={hasStudentAccess ? 'status status--ok' : 'status'}>{translate(hasStudentAccess ? 'available' : 'locked')}</span>
                 </div>
-                <p>Student-only learning: classrooms, announcements, direct messages, alerts, access grants, and payments.</p>
+                <p>{translate("Student-only learning: classrooms, announcements, direct messages, alerts, access grants, and payments.")}</p>
                 {hasStudentAccess ? (
                   <button
                     className="small-btn"
                     type="button"
                     onClick={() => navigate(academyScopedPath('/academy/student', studentDirectoryAcademies[0]?.id))}
                   >
-                    Open Student Workplace
-                  </button>
+                    {translate("Open Student Workplace")}{' '}</button>
                 ) : (
-                  <div className="small muted">No linked student contact was found for this account.</div>
+                  <div className="small muted">{translate("No linked student contact was found for this account.")}</div>
                 )}
               </article>
             </section>
 
             <section className="market-section-head">
-              <span className="market-badge">Staff flow</span>
-              <h2>Role-based staff workspaces</h2>
-              <p>Each entry opens one role family. Administration, center control, operations, and teacher LMS stay separated.</p>
+              <span className="market-badge">{translate("Staff flow")}</span>
+              <h2>{translate("Role-based staff workspaces")}</h2>
+              <p>{translate("Each entry opens one role family. Administration, center control, operations, and teacher LMS stay separated.")}</p>
             </section>
 
             {staffWorkspaceLanes.map((lane) => (
               <section className="market-grid" key={lane.intent}>
                 <article className="market-card market-card--accent">
-                  <div className="market-badge">{lane.badge}</div>
-                  <h3>{lane.title}</h3>
-                  <p>{lane.description}</p>
-                  <div className="small muted">{lane.academies.length} linked workspace{lane.academies.length === 1 ? '' : 's'}</div>
+                  <div className="market-badge">{translate(lane.badge)}</div>
+                  <h3>{translate(lane.title)}</h3>
+                  <p>{translate(lane.description)}</p>
+                  <div className="small muted">{translate('Linked workspaces: {count}', { count: lane.academies.length })}</div>
                 </article>
                 {lane.academies.map((academy) => (
                   <article className="market-card" key={`${lane.intent}-${academy.id}`}>
                     <div className="row between">
                       <h3>{academy.name || academy.id}</h3>
-                      <span className={statusClass(academy.status)}>{academy.role}</span>
+                      <span className={statusClass(academy.status)}>{translate(accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role)))}</span>
                     </div>
                     <p className="small muted">{academy.slug || academy.id}</p>
                     <div className="market-actions">
@@ -3339,66 +3315,62 @@ const App = () => {
                         type="button"
                         onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(academy.id), academy.id))}
                       >
-                        Open workspace
-                      </button>
+                        {translate("Open workspace")}{' '}</button>
                       <button
                         className="small-btn"
                         type="button"
                         onClick={() => navigate(`/academy/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
                       >
-                        Classroom landings
-                      </button>
+                        {translate("Classroom landings")}{' '}</button>
                       <button
                         className="small-btn"
                         type="button"
                         onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
                       >
-                        Public landing
-                      </button>
+                        {translate("Public landing")}{' '}</button>
                     </div>
                   </article>
                 ))}
                 {lane.academies.length === 0 ? (
                   <article className="market-card">
-                    <h3>No access</h3>
-                    <p>{lane.empty}</p>
+                    <h3>{translate("No access")}</h3>
+                    <p>{translate(lane.empty)}</p>
                   </article>
                 ) : null}
               </section>
             ))}
 
             <section className="market-section-head">
-              <span className="market-badge">Platform action</span>
-              <h2>Start a separate academy</h2>
-              <p>This creates a new academy where your account becomes owner. It does not change your role inside existing academies.</p>
+              <span className="market-badge">{translate("Platform action")}</span>
+              <h2>{translate("Start a separate academy")}</h2>
+              <p>{translate("This creates a new academy where your account becomes owner. It does not change your role inside existing academies.")}</p>
             </section>
 
             <section className="market-card">
-              <h3>Create academy</h3>
+              <h3>{translate("Create academy")}</h3>
               <form className="grid" onSubmit={submitAcademy}>
                 <input
                   className="input"
-                  placeholder="Academy name"
+                  placeholder={translate("Academy name")}
                   value={academyNameDraft}
                   onChange={(event) => setAcademyNameDraft(event.target.value)}
                   required
                 />
                 <input
                   className="input"
-                  placeholder="Slug (optional)"
+                  placeholder={translate("Slug (optional)")}
                   value={academySlugDraft}
                   onChange={(event) => setAcademySlugDraft(event.target.value)}
                 />
                 <button className="primary-btn" type="submit" disabled={busy}>
-                  Create academy
-                </button>
+                  {translate("Create academy")}{' '}</button>
               </form>
             </section>
 
             <section className="market-section-head">
-              <span className="market-badge">Student flow</span>
-              <h2>Linked student academies</h2>
-              <p>These entries open student learning spaces. Teacher operations never appear inside this route family.</p>
+              <span className="market-badge">{translate("Student flow")}</span>
+              <h2>{translate("Linked student academies")}</h2>
+              <p>{translate("These entries open student learning spaces. Teacher operations never appear inside this route family.")}</p>
             </section>
 
             <section className="market-grid">
@@ -3406,7 +3378,7 @@ const App = () => {
                 <article className="market-card" key={academy.id}>
                   <div className="row between">
                     <h3>{academy.name}</h3>
-                    <span className="status status--ok">student</span>
+                    <span className="status status--ok">{translate("student")}</span>
                   </div>
                   <p className="small muted">{academy.slug || academy.id}</p>
                   <div className="market-actions">
@@ -3415,29 +3387,26 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(`/academy/student?academy_id=${encodeURIComponent(academy.id)}`)}
                     >
-                      Student Workplace
-                    </button>
+                      {translate("Student Workplace")}{' '}</button>
                     <button
                       className="small-btn"
                       type="button"
                       onClick={() => navigate(`/academy/student/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
                     >
-                      My classrooms
-                    </button>
+                      {translate("My classrooms")}{' '}</button>
                     <button
                       className="small-btn"
                       type="button"
                       onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
                     >
-                      Public landing
-                    </button>
+                      {translate("Public landing")}{' '}</button>
                   </div>
                 </article>
               ))}
               {studentDirectoryAcademies.length === 0 ? (
                 <article className="market-card">
-                  <h3>No Student Workplace access</h3>
-                  <p>This account can use staff workspaces only unless it is linked to a student contact.</p>
+                  <h3>{translate("No Student Workplace access")}</h3>
+                  <p>{translate("This account can use staff workspaces only unless it is linked to a student contact.")}</p>
                 </article>
               ) : null}
             </section>
@@ -3505,26 +3474,22 @@ const App = () => {
           <div className="market-wrap">
             <div className="market-nav">
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-                Academy directory
-              </button>
+                {translate("Academy directory")}{' '}</button>
               <button
                 className="ghost-btn"
                 type="button"
                 onClick={() => navigate(academyScopedPath('/academy/classrooms', currentAcademyId))}
               >
-                Classroom landings
-              </button>
+                {translate("Classroom landings")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
-                Refresh
-              </button>
+                {translate("Refresh")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void signOut()}>
-                Sign out
-              </button>
+                {translate("Sign out")}{' '}</button>
             </div>
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Academy landing</div>
+                <div className="market-eyebrow">{translate("Academy landing")}</div>
                 <h1>{academyHeroTitle}</h1>
                 <p>{academyHeroSubtitle}</p>
                 <div className="market-actions">
@@ -3557,30 +3522,30 @@ const App = () => {
               </div>
 
               <div className="market-highlight">
-                <div className="market-badge">Current academy</div>
+                <div className="market-badge">{translate("Current academy")}</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Academy ID</span>
+                    <span>{translate("Academy ID")}</span>
                     <strong>{currentAcademyId || '-'}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Classrooms</span>
+                    <span>{translate("Classrooms")}</span>
                     <strong>{currentAcademyClassrooms.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Staff workspace</span>
+                    <span>{translate("Staff workspace")}</span>
                     <strong>{canEnterTeacher ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Student Workplace</span>
+                    <span>{translate("Student Workplace")}</span>
                     <strong>{canEnterStudent ? 'yes' : 'no'}</strong>
                   </article>
                 </div>
               </div>
             </section>
 
-            {error ? <div className="error-banner">{error}</div> : null}
-            {notice ? <div className="info-banner">{notice}</div> : null}
+            {error ? <div className="error-banner">{translate(error)}</div> : null}
+            {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
             <section className="market-grid">
               {currentAcademyClassrooms.slice(0, 6).map((classroom) => {
@@ -3591,21 +3556,20 @@ const App = () => {
                     <h3>{classroom.name}</h3>
                     <p>{cardSummary}</p>
                     <div className="row between">
-                      <span className="small muted">{classroom.member_count} members</span>
+                      <span className="small muted">{translate('Members: {count}', { count: classroom.member_count })}</span>
                       <button
                         className="small-btn"
                         type="button"
                         onClick={() => navigate(academyScopedPath(`/academy/classrooms/${classroom.id}`, classroom.academy_id))}
                       >
-                        Open landing
-                      </button>
+                        {translate("Open landing")}{' '}</button>
                     </div>
                   </article>
                 );
               })}
               {currentAcademyClassrooms.length === 0 ? (
                 <article className="market-card">
-                  <h3>No classrooms yet</h3>
+                  <h3>{translate("No classrooms yet")}</h3>
                   <p>
                     {canEnterTeacher
                       ? 'Create your first classroom in your staff workspace to publish a classroom landing page.'
@@ -3617,8 +3581,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, currentAcademyId), currentAcademyId))}
                     >
-                      Open classroom workspace
-                    </button>
+                      {translate("Open classroom workspace")}{' '}</button>
                   ) : null}
                 </article>
               ) : null}
@@ -3626,45 +3589,45 @@ const App = () => {
 
             <section className="market-grid market-grid--wide">
               <article className="market-card market-card--accent">
-                <h3>Staff workspace flow</h3>
-                <p>Open the route family that matches your staff role: administrator control, center control, operations, or teacher LMS.</p>
+                <h3>{translate("Staff workspace flow")}</h3>
+                <p>{translate("Open the route family that matches your staff role: administrator control, center control, operations, or teacher LMS.")}</p>
                 {canEnterTeacher ? (
                   <button
                     className="small-btn"
                     type="button"
                     onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(currentAcademyId), currentAcademyId))}
                   >
-                    Open staff workspace
-                  </button>
+                    {translate("Open staff workspace")}{' '}</button>
                 ) : (
-                  <div className="small muted">An academy staff role is required for this academy.</div>
+                  <div className="small muted">{translate("An academy staff role is required for this academy.")}</div>
                 )}
               </article>
               <article className="market-card">
-                <h3>Student Workplace flow</h3>
-                <p>Students see their classrooms, messages, alerts, and access status without teacher-only controls.</p>
+                <h3>{translate("Student Workplace flow")}</h3>
+                <p>{translate("Students see their classrooms, messages, alerts, and access status without teacher-only controls.")}</p>
                 {canEnterStudent ? (
                   <button
                     className="small-btn"
                     type="button"
                     onClick={() => navigate(academyScopedPath('/academy/student', currentAcademyId))}
                   >
-                    Open Student Workplace
-                  </button>
+                    {translate("Open Student Workplace")}{' '}</button>
                 ) : (
-                  <div className="small muted">A linked student contact is required for this academy.</div>
+                  <div className="small muted">{translate("A linked student contact is required for this academy.")}</div>
                 )}
               </article>
               <article className="market-card">
-                <h3>Visible activity</h3>
-                <p>{currentAcademyContacts.length} contacts and {currentAcademyAnnouncements.length} announcements are linked to this academy across accessible roles.</p>
+                <h3>{translate("Visible activity")}</h3>
+                <p>{translate('Contacts: {contacts}. Announcements: {announcements}.', {
+                  contacts: currentAcademyContacts.length,
+                  announcements: currentAcademyAnnouncements.length,
+                })}</p>
                 <button
                   className="small-btn"
                   type="button"
                   onClick={() => navigate(academyScopedPath('/academy/classrooms', currentAcademyId))}
                 >
-                  Review classroom landings
-                </button>
+                  {translate("Review classroom landings")}{' '}</button>
               </article>
             </section>
           </div>
@@ -3810,31 +3773,28 @@ const App = () => {
           <div className="market-wrap">
             <div className="market-nav">
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/classrooms', roomAcademyId))}>
-                Classroom directory
-              </button>
+                {translate("Classroom directory")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy', roomAcademyId))}>
-                Academy landing
-              </button>
+                {translate("Academy landing")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refreshClassroomRoom()} disabled={classroomRoomBusy}>
-                Refresh classroom
-              </button>
+                {translate("Refresh classroom")}{' '}</button>
               <button
                 className="ghost-btn"
                 type="button"
                 onClick={() => setClassroomAutoRefreshEnabled((enabled) => !enabled)}
               >
-                Auto refresh: {classroomAutoRefreshEnabled ? 'On' : 'Off'}
+                {translate('Auto refresh: {status}', {
+                  status: translate(classroomAutoRefreshEnabled ? 'On' : 'Off'),
+                })}
               </button>
             </div>
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Classroom workspace</div>
+                <div className="market-eyebrow">{translate("Classroom workspace")}</div>
                 <h1>{activeClassroom?.name ?? 'Classroom'}</h1>
                 <p>
-                  Classroom hub with role-aware controls. Teachers can manage resources, while students get learning,
-                  discussion, and progress actions only.
-                </p>
+                  {translate("Classroom hub with role-aware controls. Teachers can manage resources, while students get learning, discussion, and progress actions only.")}{' '}</p>
                 <div className="market-actions">
                   {canOpenTeacherRoom ? (
                     <button
@@ -3842,8 +3802,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, roomAcademyId), roomAcademyId))}
                     >
-                      Staff workspace
-                    </button>
+                      {translate("Staff workspace")}{' '}</button>
                   ) : null}
                   {canOpenStudentRoom ? (
                     <button
@@ -3851,37 +3810,36 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath('/academy/student/classrooms', roomAcademyId))}
                     >
-                      Student Workplace
-                    </button>
+                      {translate("Student Workplace")}{' '}</button>
                   ) : null}
                 </div>
               </div>
 
               <div className="market-highlight">
-                <div className="market-badge">Room status</div>
+                <div className="market-badge">{translate("Room status")}</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Academy</span>
+                    <span>{translate("Academy")}</span>
                     <strong>{roomAcademyName}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Viewer</span>
+                    <span>{translate("Viewer")}</span>
                     <strong>{roomViewer.display_name}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Role</span>
+                    <span>{translate("Role")}</span>
                     <strong>{roomViewer.role}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Participants</span>
+                    <span>{translate("Participants")}</span>
                     <strong>{roomMembers.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Resources</span>
+                    <span>{translate("Resources")}</span>
                     <strong>{roomResources.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Your progress</span>
+                    <span>{translate("Your progress")}</span>
                     <strong>{completedLessonsCount}/{totalLessonsCount} ({progressPercent}%)</strong>
                   </article>
                 </div>
@@ -3890,11 +3848,10 @@ const App = () => {
 
             <section className="classroom-studio">
               <aside className="classroom-studio-syllabus panel">
-                <div className="classroom-studio-hello">Hello, {roomViewer.display_name}</div>
-                <h3>Your custom classroom path</h3>
+                <div className="classroom-studio-hello">{translate('Hello, {name}', { name: roomViewer.display_name })}</div>
+                <h3>{translate("Your custom classroom path")}</h3>
                 <p className="muted">
-                  Explore resources, follow announcements, and keep discussion in one shared place.
-                </p>
+                  {translate("Explore resources, follow announcements, and keep discussion in one shared place.")}{' '}</p>
 
                 <div className="classroom-chip-row">
                   {CLASSROOM_RESOURCE_FILTERS.map((item) => (
@@ -3904,7 +3861,7 @@ const App = () => {
                       type="button"
                       onClick={() => setClassroomResourceFilter(item.kind)}
                     >
-                      {item.kind === 'all' ? `${item.label} (${roomResources.length})` : item.label}
+                      {item.kind === 'all' ? `${translate(item.label)} (${roomResources.length})` : translate(item.label)}
                     </button>
                   ))}
                 </div>
@@ -3944,7 +3901,10 @@ const App = () => {
                                         <span className={`classroom-progress-chip ${done ? 'is-done' : ''}`}>
                                           {done ? 'Done' : 'To do'}
                                         </span>
-                                        <span className="small muted">{completedCount}/{roomProgress.total_members || roomMembers.length} complete</span>
+                          <span className="small muted">{translate('Completed: {completed}/{total}', {
+                            completed: completedCount,
+                            total: roomProgress.total_members || roomMembers.length,
+                          })}</span>
                                       </div>
                                       {resource.description ? <div className="small muted">{resource.description}</div> : null}
                                     </button>
@@ -3958,7 +3918,7 @@ const App = () => {
                     </section>
                   ))}
                   {filteredRoomResources.length === 0 ? (
-                    <div className="small muted">No resources match this filter.</div>
+                    <div className="small muted">{translate("No resources match this filter.")}</div>
                   ) : null}
                 </div>
               </aside>
@@ -3977,8 +3937,7 @@ const App = () => {
                     <div className="row" style={{ gap: 8 }}>
                       {spotlightResource ? (
                         <a className="small-btn" href={spotlightResource.url} target="_blank" rel="noreferrer">
-                          Open source
-                        </a>
+                          {translate("Open source")}{' '}</a>
                       ) : null}
                       {spotlightResource && roomViewer.type === 'student' ? (
                         <button
@@ -3995,7 +3954,10 @@ const App = () => {
                   <div className="classroom-progress-bar">
                     <div className="classroom-progress-fill" style={{ width: `${progressPercent}%` }} />
                   </div>
-                  <div className="small muted">Progress: {completedLessonsCount}/{totalLessonsCount} lessons completed</div>
+                  <div className="small muted">{translate('Lesson progress: {completed}/{total}', {
+                    completed: completedLessonsCount,
+                    total: totalLessonsCount,
+                  })}</div>
 
                   <div className="classroom-stage-media">
                     {spotlightEmbedUrl ? (
@@ -4021,8 +3983,11 @@ const App = () => {
 
                 <article className="classroom-discussion panel">
                   <div className="row between">
-                    <h3>Course discussion</h3>
-                    <span className="small muted">{roomMembers.length} members, {activeNowCount} active now</span>
+                    <h3>{translate("Course discussion")}</h3>
+                    <span className="small muted">{translate('Members: {members}. Active now: {active}.', {
+                      members: roomMembers.length,
+                      active: activeNowCount,
+                    })}</span>
                   </div>
 
                   <div className="classroom-discussion-meta">
@@ -4030,11 +3995,13 @@ const App = () => {
                       {classroomAutoRefreshEnabled ? `Auto-sync on (every ${Math.round(CLASSROOM_AUTO_REFRESH_MS / 1000)}s)` : 'Auto-sync off'}
                     </span>
                     <span className="small muted">
-                      Last sync: {classroomLastSyncAt ? formatRelativeTime(classroomLastSyncAt) : 'pending'}
+                      {translate('Last sync: {time}', {
+                        time: classroomLastSyncAt ? formatRelativeTime(classroomLastSyncAt) : translate('Pending'),
+                      })}
                     </span>
                     {latestRoomMessageAt ? (
                       <span className="small muted" title={formatDate(latestRoomMessageAt)}>
-                        Latest message: {formatRelativeTime(latestRoomMessageAt)}
+                        {translate('Latest message: {time}', { time: formatRelativeTime(latestRoomMessageAt) })}
                       </span>
                     ) : null}
                     {classroomSyncError ? <span className="classroom-sync-error">{classroomSyncError}</span> : null}
@@ -4059,7 +4026,7 @@ const App = () => {
                         </article>
                       );
                     })}
-                    {roomMessages.length === 0 ? <div className="small muted">No discussion yet. Start the first message.</div> : null}
+                    {roomMessages.length === 0 ? <div className="small muted">{translate("No discussion yet. Start the first message.")}</div> : null}
                   </div>
 
                   {classroomNewMessages > 0 && !classroomThreadPinned ? (
@@ -4072,7 +4039,7 @@ const App = () => {
                         scrollClassroomThreadToBottom();
                       }}
                     >
-                      Jump to latest ({classroomNewMessages} new)
+                      {translate('Jump to latest · New: {count}', { count: classroomNewMessages })}
                     </button>
                   ) : null}
 
@@ -4088,24 +4055,23 @@ const App = () => {
                         if (classroomRoomBusy || !classroomDiscussionDraft.trim()) return;
                         void sendClassroomDiscussion();
                       }}
-                      placeholder="Write your question, insight, or answer..."
+                      placeholder={translate("Write your question, insight, or answer...")}
                       disabled={classroomRoomBusy}
                     />
-                    <div className="small muted classroom-compose-hint">Press Ctrl+Enter to send</div>
+                    <div className="small muted classroom-compose-hint">{translate("Press Ctrl+Enter to send")}</div>
                     <button
                       className="primary-btn"
                       type="submit"
                       disabled={classroomRoomBusy || !classroomDiscussionDraft.trim()}
                     >
-                      Send
-                    </button>
+                      {translate("Send")}{' '}</button>
                   </form>
                 </article>
               </div>
 
               <aside className="classroom-studio-side">
                 <article className="panel">
-                  <h3>Resource rack</h3>
+                  <h3>{translate("Resource rack")}</h3>
                   <ul className="list">
                     {filteredRoomResources.map((resource) => {
                       const labels = curriculumLabels(resource);
@@ -4131,8 +4097,7 @@ const App = () => {
                             {spotlightResource?.id === resource.id ? 'Watching' : 'View'}
                           </button>
                           <a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">
-                            Open
-                          </a>
+                            {translate("Open")}{' '}</a>
                         </div>
                         {roomViewer.type === 'student' ? (
                           <button
@@ -4151,17 +4116,16 @@ const App = () => {
                             onClick={() => void removeClassroomResource(resource.id)}
                             disabled={classroomRoomBusy}
                           >
-                            Remove
-                          </button>
+                            {translate("Remove")}{' '}</button>
                         ) : null}
                       </li>
                     )})}
-                    {filteredRoomResources.length === 0 ? <li>No resources yet.</li> : null}
+                    {filteredRoomResources.length === 0 ? <li>{translate("No resources yet.")}</li> : null}
                   </ul>
                 </article>
 
                 <article className="panel">
-                  <h3>Announcements</h3>
+                  <h3>{translate("Announcements")}</h3>
                   <ul className="list">
                     {roomAnnouncements.map((announcement) => (
                       <li key={announcement.id}>
@@ -4172,12 +4136,12 @@ const App = () => {
                         <div>{announcement.body}</div>
                       </li>
                     ))}
-                    {roomAnnouncements.length === 0 ? <li>No announcements.</li> : null}
+                    {roomAnnouncements.length === 0 ? <li>{translate("No announcements.")}</li> : null}
                   </ul>
                 </article>
 
                 <article className="panel">
-                  <h3>Participants</h3>
+                  <h3>{translate("Participants")}</h3>
                   <ul className="list">
                     {roomMembers.map((member) => (
                       <li key={member.id}>
@@ -4187,19 +4151,19 @@ const App = () => {
                         </div>
                       </li>
                     ))}
-                    {roomMembers.length === 0 ? <li>No participants yet.</li> : null}
+                    {roomMembers.length === 0 ? <li>{translate("No participants yet.")}</li> : null}
                   </ul>
                 </article>
 
                 {canManageResources ? (
                   <article className="panel">
-                    <h3>Teacher tools: add resource</h3>
+                    <h3>{translate("Teacher tools: add resource")}</h3>
                     <form className="chat-compose" onSubmit={submitClassroomResource}>
                       <input
                         className="input"
                         value={classroomResourceForm.title}
                         onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, title: event.target.value }))}
-                        placeholder="Resource title"
+                        placeholder={translate("Resource title")}
                         required
                         disabled={classroomRoomBusy}
                       />
@@ -4216,7 +4180,7 @@ const App = () => {
                       >
                         {CLASSROOM_RESOURCE_FILTERS.filter((item) => item.kind !== 'all').map((item) => (
                           <option key={item.kind} value={item.kind}>
-                            {item.label}
+                            {translate(item.label)}
                           </option>
                         ))}
                       </select>
@@ -4225,21 +4189,21 @@ const App = () => {
                           className="input"
                           value={classroomResourceForm.week}
                           onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, week: event.target.value }))}
-                          placeholder="Week (e.g. Week 1)"
+                          placeholder={translate("Week (e.g. Week 1)")}
                           disabled={classroomRoomBusy}
                         />
                         <input
                           className="input"
                           value={classroomResourceForm.module}
                           onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, module: event.target.value }))}
-                          placeholder="Module (e.g. Geometry)"
+                          placeholder={translate("Module (e.g. Geometry)")}
                           disabled={classroomRoomBusy}
                         />
                         <input
                           className="input"
                           value={classroomResourceForm.lesson}
                           onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, lesson: event.target.value }))}
-                          placeholder="Lesson (e.g. Vanishing Points)"
+                          placeholder={translate("Lesson (e.g. Vanishing Points)")}
                           disabled={classroomRoomBusy}
                         />
                       </div>
@@ -4247,7 +4211,7 @@ const App = () => {
                         className="input"
                         value={classroomResourceForm.url}
                         onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, url: event.target.value }))}
-                        placeholder="https://... or upload a file below"
+                        placeholder={translate("https://... or upload a file below")}
                         disabled={classroomRoomBusy}
                       />
                       <input
@@ -4260,14 +4224,17 @@ const App = () => {
                       />
                       {classroomResourceForm.file ? (
                         <div className="small muted">
-                          File ready: {classroomResourceForm.file.name} ({Math.round(classroomResourceForm.file.size / 1024)} KB)
+                          {translate('File ready: {name} ({size} KB)', {
+                            name: classroomResourceForm.file.name,
+                            size: Math.round(classroomResourceForm.file.size / 1024),
+                          })}
                         </div>
                       ) : null}
                       <textarea
                         className="input"
                         value={classroomResourceForm.description}
                         onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, description: event.target.value }))}
-                        placeholder="Description (optional)"
+                        placeholder={translate("Description (optional)")}
                         disabled={classroomRoomBusy}
                       />
                       <div className="grid two">
@@ -4275,7 +4242,7 @@ const App = () => {
                           className="input"
                           value={classroomResourceForm.sort_order}
                           onChange={(event) => setClassroomResourceForm((prev) => ({ ...prev, sort_order: event.target.value }))}
-                          placeholder="Sort order"
+                          placeholder={translate("Sort order")}
                           type="number"
                           disabled={classroomRoomBusy}
                         />
@@ -4288,16 +4255,14 @@ const App = () => {
                             }
                             disabled={classroomRoomBusy}
                           />
-                          Published for students
-                        </label>
+                          {translate("Published for students")}{' '}</label>
                       </div>
                       <button
                         className="primary-btn"
                         type="submit"
                         disabled={classroomRoomBusy || !classroomResourceForm.title.trim() || (!classroomResourceForm.url.trim() && !classroomResourceForm.file)}
                       >
-                        Add resource
-                      </button>
+                        {translate("Add resource")}{' '}</button>
                     </form>
                   </article>
                 ) : null}
@@ -4343,39 +4308,37 @@ const App = () => {
           <div className="market-wrap">
             <div className="market-nav">
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy'))}>
-                Academy landing
-              </button>
+                {translate("Academy landing")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-                Academy directory
-              </button>
+                {translate("Academy directory")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
-                Refresh
-              </button>
+                {translate("Refresh")}{' '}</button>
             </div>
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow">Classroom landing</div>
-                <h1>Classroom landing pages</h1>
+                <div className="market-eyebrow">{translate("Classroom landing")}</div>
+                <h1>{translate("Classroom landing pages")}</h1>
                 <p>
-                  {classroomDirectoryAcademyName}: choose a classroom, then enter the teacher management view or
-                  the student learning view through separate routes.
+                  {translate('{academy}: choose a classroom, then enter the teacher management view or the student learning view through separate routes.', {
+                    academy: classroomDirectoryAcademyName,
+                  })}
                 </p>
               </div>
 
               <div className="market-highlight">
-                <div className="market-badge">Classroom overview</div>
+                <div className="market-badge">{translate("Classroom overview")}</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>Available classrooms</span>
+                    <span>{translate("Available classrooms")}</span>
                     <strong>{classroomScope.length}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Staff workspace</span>
+                    <span>{translate("Staff workspace")}</span>
                     <strong>{canManageClassroomDirectory ? 'yes' : 'no'}</strong>
                   </article>
                   <article className="market-kpi">
-                    <span>Student Workplace</span>
+                    <span>{translate("Student Workplace")}</span>
                     <strong>{canStudyClassroomDirectory ? 'yes' : 'no'}</strong>
                   </article>
                 </div>
@@ -4393,14 +4356,13 @@ const App = () => {
                     <h3>{classroom.name}</h3>
                     <p>{cardSummary}</p>
                     <div className="row between">
-                      <span className="small muted">{classroom.member_count} members</span>
+                      <span className="small muted">{translate('Members: {count}', { count: classroom.member_count })}</span>
                       <button
                         className="small-btn"
                         type="button"
                         onClick={() => navigate(academyScopedPath(`/academy/classrooms/${classroom.id}`, classroom.academy_id))}
                       >
-                        Open landing
-                      </button>
+                        {translate("Open landing")}{' '}</button>
                     </div>
                     <div className="market-actions">
                       {teacherCanOpen ? (
@@ -4409,8 +4371,7 @@ const App = () => {
                           type="button"
                           onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', classroom.id, classroom.academy_id), classroom.academy_id))}
                         >
-                          Staff view
-                        </button>
+                          {translate("Staff view")}{' '}</button>
                       ) : null}
                       {studentCanOpen ? (
                         <button
@@ -4418,8 +4379,7 @@ const App = () => {
                           type="button"
                           onClick={() => navigate(academyScopedPath(`/academy/student/classrooms/${classroom.id}`, classroom.academy_id))}
                         >
-                          Student view
-                        </button>
+                          {translate("Student view")}{' '}</button>
                       ) : null}
                     </div>
                   </article>
@@ -4427,7 +4387,7 @@ const App = () => {
               })}
               {classroomScope.length === 0 ? (
                 <article className="market-card">
-                  <h3>No classrooms available</h3>
+                  <h3>{translate("No classrooms available")}</h3>
                   <p>
                     {canManageClassroomDirectory
                       ? 'Create a classroom first in your staff workspace, then publish its landing page.'
@@ -4439,8 +4399,7 @@ const App = () => {
                       type="button"
                       onClick={() => navigate(academyScopedPath(academyOfficePathForAcademy('classrooms', undefined, classroomDirectoryAcademyId), classroomDirectoryAcademyId))}
                     >
-                      Create classroom
-                    </button>
+                      {translate("Create classroom")}{' '}</button>
                   ) : null}
                 </article>
               ) : null}
@@ -4448,19 +4407,19 @@ const App = () => {
 
             <section className="market-steps">
               <article className="market-step">
-                <div className="market-step-index">A</div>
-                <h3>Discover</h3>
-                <p>Learners arrive on this classroom landing page and understand format, goals, and expectations.</p>
+                <div className="market-step-index">{translate("A")}</div>
+                <h3>{translate("Discover")}</h3>
+                <p>{translate("Learners arrive on this classroom landing page and understand format, goals, and expectations.")}</p>
               </article>
               <article className="market-step">
-                <div className="market-step-index">B</div>
-                <h3>Choose role</h3>
-                <p>Teachers enter operational controls, while students enter the focused study workspace.</p>
+                <div className="market-step-index">{translate("B")}</div>
+                <h3>{translate("Choose role")}</h3>
+                <p>{translate("Teachers enter operational controls, while students enter the focused study workspace.")}</p>
               </article>
               <article className="market-step">
-                <div className="market-step-index">C</div>
-                <h3>Stay aligned</h3>
-                <p>Announcements, inbox messages, and alerts keep everyone synchronized across class cycles.</p>
+                <div className="market-step-index">{translate("C")}</div>
+                <h3>{translate("Stay aligned")}</h3>
+                <p>{translate("Announcements, inbox messages, and alerts keep everyone synchronized across class cycles.")}</p>
               </article>
             </section>
           </div>
@@ -4564,10 +4523,10 @@ const App = () => {
       <>
         <div className="ts-shell">
           <WorkspaceNavigation
-            title="Student Workspace"
+            title={translate("Student Workspace")}
             subtitle={studentAcademyName}
-            roleLabel="Student"
-            contextLabel="Learning, messages, and account"
+            roleLabel={translate("Student")}
+            contextLabel={translate("Learning, messages, and account")}
             mark={<GraduationCap size={22} />}
             groups={studentNavigationGroups}
             platformUrl={platformUrl}
@@ -4575,7 +4534,7 @@ const App = () => {
           <main className="ts-main">
             <header className="ts-topbar">
               <div>
-                <h1>{selectedViewLabel}</h1>
+                <h1>{translate(selectedViewLabel)}</h1>
                 <p className="muted">
                   {studentAcademyId
                     ? (studentAcademyById.get(studentAcademyId)?.name ?? studentAcademyId)
@@ -4586,17 +4545,15 @@ const App = () => {
                 <UpdatesButton variant="inline" />
                 <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                   <RefreshCw size={16} />
-                  Refresh
-                </button>
+                  {translate("Refresh")}{' '}</button>
                 <button className="ghost-btn" type="button" onClick={() => void signOut()}>
                   <LogOut size={16} />
-                  Sign out
-                </button>
+                  {translate("Sign out")}{' '}</button>
               </div>
             </header>
 
-            {error ? <div className="error-banner">{error}</div> : null}
-            {notice ? <div className="info-banner">{notice}</div> : null}
+            {error ? <div className="error-banner">{translate(error)}</div> : null}
+            {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
             {studentPortalView === 'academy' ? (
               <StudentHomeView
@@ -4628,15 +4585,15 @@ const App = () => {
 
             {studentPortalView === 'classrooms' ? (
               <section className="panel">
-                <h3>Your classrooms</h3>
+                <h3>{translate("Your classrooms")}</h3>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Academy</th>
-                        <th>Role</th>
-                        <th>Members</th>
+                        <th>{translate("Name")}</th>
+                        <th>{translate("Academy")}</th>
+                        <th>{translate("Role")}</th>
+                        <th>{translate("Members")}</th>
                         <th />
                       </tr>
                     </thead>
@@ -4659,15 +4616,14 @@ const App = () => {
                                 type="button"
                                 onClick={() => navigate(academyScopedPath(`/academy/student/classrooms/${classroom.id}`, classroom.academy_id))}
                               >
-                                Open student view
-                              </button>
+                                {translate("Open student view")}{' '}</button>
                             </td>
                           </tr>
                         );
                       })}
                       {studentClassrooms.length === 0 ? (
                         <tr>
-                          <td colSpan={5}>No classroom access yet.</td>
+                          <td colSpan={5}>{translate("No classroom access yet.")}</td>
                         </tr>
                       ) : null}
                     </tbody>
@@ -4678,7 +4634,7 @@ const App = () => {
 
             {studentPortalView === 'messages' ? (
               <section className="panel">
-                <h3>Message timeline</h3>
+                <h3>{translate("Message timeline")}</h3>
                 <ul className="list">
                   {studentMessagesFiltered.map((message) => {
                     const academyName = studentAcademyById.get(message.academy_id)?.name ?? message.academy_id;
@@ -4693,14 +4649,14 @@ const App = () => {
                       </li>
                     );
                   })}
-                  {studentMessagesFiltered.length === 0 ? <li>No messages yet.</li> : null}
+                  {studentMessagesFiltered.length === 0 ? <li>{translate("No messages yet.")}</li> : null}
                 </ul>
               </section>
             ) : null}
 
             {studentPortalView === 'alerts' ? (
               <section className="panel">
-                <h3>Alerts</h3>
+                <h3>{translate("Alerts")}</h3>
                 <ul className="list">
                   {studentAlertsFiltered.map((alert) => {
                     const academyName = studentAcademyById.get(alert.academy_id)?.name ?? alert.academy_id;
@@ -4717,7 +4673,7 @@ const App = () => {
                       </li>
                     );
                   })}
-                  {studentAlertsFiltered.length === 0 ? <li>No alerts.</li> : null}
+                  {studentAlertsFiltered.length === 0 ? <li>{translate("No alerts.")}</li> : null}
                 </ul>
               </section>
             ) : null}
@@ -4725,7 +4681,7 @@ const App = () => {
             {studentPortalView === 'access' ? (
               <section className="grid two">
                 <div className="panel">
-                  <h3>Your entitlements</h3>
+                  <h3>{translate("Your entitlements")}</h3>
                   <ul className="list">
                     {studentDashboard.entitlements.map((entitlement) => {
                       const offer = entitlement.offer_id ? offerById.get(entitlement.offer_id) : null;
@@ -4738,16 +4694,18 @@ const App = () => {
                           <div className="small muted">
                             {entitlement.resource_type ?? 'resource'} | {entitlement.resource_id ?? '-'}
                           </div>
-                          <div className="small muted">Active until: {formatDate(entitlement.expires_at)}</div>
+                          <div className="small muted">{translate('Access active until: {date}', {
+                            date: formatDate(entitlement.expires_at),
+                          })}</div>
                         </li>
                       );
                     })}
-                    {studentDashboard.entitlements.length === 0 ? <li>No access grants yet.</li> : null}
+                    {studentDashboard.entitlements.length === 0 ? <li>{translate("No access grants yet.")}</li> : null}
                   </ul>
                 </div>
 
                 <div className="panel">
-                  <h3>Payments</h3>
+                  <h3>{translate("Payments")}</h3>
                   <ul className="list">
                     {studentPaymentsFiltered.map((payment) => {
                       const offer = payment.offer_id ? offerById.get(payment.offer_id) : null;
@@ -4763,7 +4721,7 @@ const App = () => {
                         </li>
                       );
                     })}
-                    {studentPaymentsFiltered.length === 0 ? <li>No payments found.</li> : null}
+                    {studentPaymentsFiltered.length === 0 ? <li>{translate("No payments found.")}</li> : null}
                   </ul>
                 </div>
               </section>
@@ -4787,9 +4745,9 @@ const App = () => {
       <>
         <div className="ts-loading">
           <div className="auth-card">
-            <div className="market-eyebrow">Signed in as {entryRole}</div>
-            <h2>Opening {entryShell}</h2>
-            <p>We found your Academy access and are taking you to the workspace for your role.</p>
+            <div className="market-eyebrow">{translate('Signed in as {role}', { role: translate(entryRole) })}</div>
+            <h2>{translate('Opening {workspace}', { workspace: translate(entryShell) })}</h2>
+            <p>{translate("We found your Academy access and are taking you to the workspace for your role.")}</p>
           </div>
         </div>
         <UpdatesButton />
@@ -4884,10 +4842,10 @@ const App = () => {
     <>
       <div className="ts-shell">
         <WorkspaceNavigation
-          title={teacherShell.title}
+          title={translate(teacherShell.title)}
           subtitle={selectedOfficeAcademy?.name || academyId || 'Academy'}
-          roleLabel={accessRoleLabel(selectedAcademyAccess)}
-          contextLabel={teacherShell.subtitle}
+          roleLabel={translate(accessRoleLabel(selectedAcademyAccess))}
+          contextLabel={translate(teacherShell.subtitle)}
           mark={<Store size={22} />}
           groups={staffNavigationGroups}
           platformUrl={platformUrl}
@@ -4895,12 +4853,12 @@ const App = () => {
         <main className="ts-main">
         <header className="ts-topbar">
           <div>
-            <h1>{selectedViewLabel}</h1>
+            <h1>{translate(selectedViewLabel)}</h1>
             <p className="muted">
-              {selectedOfficeAcademy?.name || academyId || '-'} | {accessRoleLabel(selectedAcademyAccess)}
+              {selectedOfficeAcademy?.name || academyId || '-'} | {translate(accessRoleLabel(selectedAcademyAccess))}
               {selectedAcademyAccess?.scope === 'assigned_classrooms'
-                ? ` | ${selectedAcademyAccess.classroom_ids.length} assigned classroom${selectedAcademyAccess.classroom_ids.length === 1 ? '' : 's'}`
-                : ' | academy scope'}
+                ? ` | ${translate(selectedAcademyAccess.classroom_ids.length === 1 ? '{count} assigned classroom' : '{count} assigned classrooms', { count: selectedAcademyAccess.classroom_ids.length })}`
+                : ` | ${translate('Academy-wide')}`}
             </p>
           </div>
           <div className="topbar-actions">
@@ -4914,39 +4872,37 @@ const App = () => {
             >
               {academyOptions.map((academy) => (
                 <option key={academy.id} value={academy.id}>
-                  {academy.label}
+                  {translate('{academy} ({role})', { academy: academy.name, role: translate(academy.role) })}
                 </option>
               ))}
             </select>
             <UpdatesButton variant="inline" />
             <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
               <RefreshCw size={16} />
-              Refresh
-            </button>
+              {translate("Refresh")}{' '}</button>
             <button className="ghost-btn" type="button" onClick={() => void signOut()}>
               <LogOut size={16} />
-              Sign out
-            </button>
+              {translate("Sign out")}{' '}</button>
           </div>
         </header>
 
-        {error ? <div className="error-banner">{error}</div> : null}
-        {notice ? <div className="info-banner">{notice}</div> : null}
+        {error ? <div className="error-banner">{translate(error)}</div> : null}
+        {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
         <div className="workspace-route-stage" aria-busy={routeLoading}>
         {routeLoading ? (
           <div className="workspace-route-progress" role="status" aria-live="polite">
-            <span className="sr-only">Updating {selectedViewLabel}</span>
+            <span className="sr-only">{translate('Updating {section}', { section: translate(selectedViewLabel) })}</span>
           </div>
         ) : null}
         {officeView === 'today' && officeCanOpen('today') ? (
           <WorkspaceHomeView
             intent={officeRouteIntent}
             academyName={selectedOfficeAcademy?.name || academyId}
-            role={accessRoleLabel(selectedAcademyAccess)}
+            role={translate(accessRoleLabel(selectedAcademyAccess))}
             scopeLabel={selectedAcademyAccess?.scope === 'assigned_classrooms'
-              ? `${selectedAcademyAccess.classroom_ids.length} assigned classroom${selectedAcademyAccess.classroom_ids.length === 1 ? '' : 's'}`
-              : 'Academy-wide'}
+              ? translate(selectedAcademyAccess.classroom_ids.length === 1 ? '{count} assigned classroom' : '{count} assigned classrooms', { count: selectedAcademyAccess.classroom_ids.length })
+              : translate('Academy-wide')}
             summary={summary}
             educationOS={educationOS}
             quickTargets={academyQuickTargets}
@@ -4963,7 +4919,7 @@ const App = () => {
         {officeView === 'academy' && officeCanOpen('academy') ? (
           <AcademyView
             academyId={academyId}
-            role={accessRoleLabel(selectedAcademyAccess)}
+            role={translate(accessRoleLabel(selectedAcademyAccess))}
             scope={selectedAcademyAccess?.scope ?? 'academy'}
             assignedClassroomsCount={selectedAcademyAccess?.classroom_ids.length ?? 0}
             summary={summary}

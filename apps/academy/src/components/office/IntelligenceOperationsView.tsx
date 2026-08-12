@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -36,9 +37,9 @@ type Tab =
   "dashboard" | "retention" | "renewals" | "actions" | "search" | "imports";
 const s = (value: unknown) => String(value ?? "");
 const n = (value: unknown) => Number(value ?? 0);
-const label = (value: unknown) => s(value).replaceAll("_", " ");
+const label = (value: unknown) => translate(s(value).replaceAll("_", " "));
 const money = (value: unknown, currency = "UZS") =>
-  `${new Intl.NumberFormat("uz-UZ").format(n(value))} ${currency}`;
+  `${new Intl.NumberFormat(getLocaleTag()).format(n(value))} ${currency}`;
 type ImportCell = string | number | boolean | Date | null;
 const normalizeImportCell = (value: unknown): ImportCell => {
   if (value == null) return null;
@@ -396,56 +397,53 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
     <section className="commercial-core">
       <div className="section-heading commercial-core__heading">
         <div>
-          <span className="eyebrow">Observe → explain → act → measure</span>
-          <h2>Retention, renewal, and owner intelligence</h2>
+          <span className="eyebrow">{translate("Observe → explain → act → measure")}</span>
+          <h2>{translate("Retention, renewal, and owner intelligence")}</h2>
           <p>
-            Versioned risk evidence feeds assigned interventions, renewal work,
-            and one SLA-aware action queue.
-          </p>
+            {translate("Versioned risk evidence feeds assigned interventions, renewal work, and one SLA-aware action queue.")}{' '}</p>
         </div>
         <button
           className="ghost-btn"
           onClick={() => void load()}
           disabled={busy}
         >
-          <RefreshCw size={16} /> Refresh
-        </button>
+          <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
       </div>
       {error ? (
         <p className="form-error" role="alert">
-          {error}
+          {translate(error)}
         </p>
       ) : null}
       {notice ? (
         <p className="form-success" role="status">
-          {notice}
+          {translate(notice)}
         </p>
       ) : null}
       <div className="commercial-core__stats">
         <article>
           <BarChart3 size={18} />
-          <span>Active students</span>
+          <span>{translate("Active students")}</span>
           <strong>{n(owner.active_students)}</strong>
         </article>
         <article>
           <AlertTriangle size={18} />
-          <span>High-risk evaluations</span>
+          <span>{translate("High-risk evaluations")}</span>
           <strong>{n(owner.high_risk_evaluations)}</strong>
         </article>
         <article>
           <Target size={18} />
-          <span>Open interventions</span>
+          <span>{translate("Open interventions")}</span>
           <strong>{n(owner.open_interventions)}</strong>
         </article>
         <article>
           <UserRoundCheck size={18} />
-          <span>Open renewals</span>
+          <span>{translate("Open renewals")}</span>
           <strong>{n(owner.open_renewals)}</strong>
         </article>
       </div>
       <nav
         className="business-tabs"
-        aria-label="Intelligence operations sections"
+        aria-label={translate("Intelligence operations sections")}
       >
         {(
           [
@@ -462,51 +460,49 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             className={tab === id ? "is-active" : ""}
             onClick={() => setTab(id)}
           >
-            {text}
+            {translate(text)}
           </button>
         ))}
       </nav>
       {tab === "dashboard" ? (
         <div className="commercial-grid">
           <section className="panel">
-            <h3>Commercial and service health</h3>
+            <h3>{translate("Commercial and service health")}</h3>
             <div className="record-list">
               <article>
-                <strong>Collections</strong>
+                <strong>{translate("Collections")}</strong>
                 <span>{money(owner.collected_amount)}</span>
               </article>
               <article>
-                <strong>Outstanding debt</strong>
+                <strong>{translate("Outstanding debt")}</strong>
                 <span>{money(owner.outstanding_debt)}</span>
               </article>
               <article>
-                <strong>Admissions</strong>
+                <strong>{translate("Admissions")}</strong>
                 <span>
-                  {n(owner.open_leads)} open leads · {n(owner.conversions)}{" "}
-                  conversions
-                </span>
+                  {n(owner.open_leads)} {translate("open leads ·")}{' '}{n(owner.conversions)}{" "}
+                  {translate("conversions")}{' '}</span>
               </article>
               <article>
-                <strong>Action SLA</strong>
+                <strong>{translate("Action SLA")}</strong>
                 <span>
-                  {n(owner.open_actions)} open · {n(owner.overdue_actions)}{" "}
-                  overdue
-                </span>
+                  {n(owner.open_actions)} {translate("open ·")}{' '}{n(owner.overdue_actions)}{" "}
+                  {translate("overdue")}{' '}</span>
               </article>
             </div>
           </section>
           <section className="panel commercial-span">
-            <h3>Branch comparison</h3>
+            <h3>{translate("Branch comparison")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Branch</th>
-                    <th>Students</th>
-                    <th>Subscriptions</th>
-                    <th>Collected</th>
-                    <th>Interventions</th>
-                    <th>Actions</th>
+                    <th>{translate("Branch")}</th>
+                    <th>{translate("Students")}</th>
+                    <th>{translate("Subscriptions")}</th>
+                    <th>{translate("Collected")}</th>
+                    <th>{translate("Interventions")}</th>
+                    <th>{translate("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -548,10 +544,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Versioned risk definition</h3>
+            <h3>{translate("Versioned risk definition")}</h3>
             <label>
-              Definition key
-              <input
+              {translate("Definition key")}{' '}<input
                 className="input"
                 value={definition.definition_key}
                 onChange={(e) =>
@@ -563,8 +558,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Name
-              <input
+              {translate("Name")}{' '}<input
                 className="input"
                 value={definition.name}
                 onChange={(e) =>
@@ -573,8 +567,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Version
-              <input
+              {translate("Version")}{' '}<input
                 className="input"
                 type="number"
                 min="1"
@@ -588,8 +581,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Explanation
-              <textarea
+              {translate("Explanation")}{' '}<textarea
                 className="input"
                 value={definition.explanation}
                 onChange={(e) =>
@@ -598,8 +590,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Activate risk model
-            </button>
+              {translate("Activate risk model")}{' '}</button>
           </form>
           <form
             className="panel compact-form"
@@ -615,10 +606,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Evaluate learner</h3>
+            <h3>{translate("Evaluate learner")}</h3>
             <label>
-              Learner
-              <select
+              {translate("Learner")}{' '}<select
                 className="input"
                 value={evaluation.contact_id}
                 onChange={(e) =>
@@ -633,8 +623,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Active definition
-              <select
+              {translate("Active definition")}{' '}<select
                 className="input"
                 value={evaluation.definition_id}
                 onChange={(e) =>
@@ -648,17 +637,16 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   .filter((item) => item.status === "active")
                   .map((item) => (
                     <option key={s(item.id)} value={s(item.id)}>
-                      {s(item.name)} v{s(item.version)}
+                      {s(item.name)} {translate("v")}{s(item.version)}
                     </option>
                   ))}
               </select>
             </label>
             <button className="primary-btn" disabled={busy}>
-              Evaluate and explain
-            </button>
+              {translate("Evaluate and explain")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Risk evidence</h3>
+            <h3>{translate("Risk evidence")}</h3>
             <div className="record-list">
               {data.risk_evaluations.map((item) => (
                 <article key={s(item.id)}>
@@ -679,8 +667,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                       })
                     }
                   >
-                    Use in intervention
-                  </button>
+                    {translate("Use in intervention")}{' '}</button>
                 </article>
               ))}
             </div>
@@ -695,10 +682,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Open intervention</h3>
+            <h3>{translate("Open intervention")}</h3>
             <label>
-              Learner
-              <select
+              {translate("Learner")}{' '}<select
                 className="input"
                 value={intervention.contact_id}
                 onChange={(e) =>
@@ -716,8 +702,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Risk evaluation
-              <select
+              {translate("Risk evaluation")}{' '}<select
                 className="input"
                 value={intervention.risk_evaluation_id}
                 onChange={(e) =>
@@ -735,8 +720,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Next follow-up
-              <input
+              {translate("Next follow-up")}{' '}<input
                 className="input"
                 type="datetime-local"
                 value={intervention.next_follow_up_at}
@@ -749,8 +733,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Open case
-            </button>
+              {translate("Open case")}{' '}</button>
           </form>
           <form
             className="panel compact-form"
@@ -763,10 +746,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Record intervention activity</h3>
+            <h3>{translate("Record intervention activity")}</h3>
             <label>
-              Case
-              <select
+              {translate("Case")}{' '}<select
                 className="input"
                 value={activity.case_id}
                 onChange={(e) =>
@@ -781,8 +763,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Channel
-              <select
+              {translate("Channel")}{' '}<select
                 className="input"
                 value={activity.activity_type}
                 onChange={(e) =>
@@ -805,8 +786,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Observation and agreed action
-              <textarea
+              {translate("Observation and agreed action")}{' '}<textarea
                 className="input"
                 value={activity.note}
                 onChange={(e) =>
@@ -816,8 +796,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Next follow-up
-              <input
+              {translate("Next follow-up")}{' '}<input
                 className="input"
                 type="datetime-local"
                 value={activity.next_follow_up_at}
@@ -830,11 +809,10 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Record activity
-            </button>
+              {translate("Record activity")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Intervention outcomes</h3>
+            <h3>{translate("Intervention outcomes")}</h3>
             <div className="record-list">
               {data.interventions.map((item) => (
                 <article key={s(item.id)}>
@@ -844,7 +822,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                       {label(item.status)}
                     </strong>
                     <p>
-                      Follow-up{" "}
+                      {translate("Follow-up")}{" "}
                       {item.next_follow_up_at
                         ? formatDate(s(item.next_follow_up_at))
                         : "not assigned"}{" "}
@@ -869,8 +847,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                         )
                       }
                     >
-                      Resolve retained
-                    </button>
+                      {translate("Resolve retained")}{' '}</button>
                   ) : null}
                 </article>
               ))}
@@ -890,10 +867,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Create renewal opportunity</h3>
+            <h3>{translate("Create renewal opportunity")}</h3>
             <label>
-              Learner
-              <select
+              {translate("Learner")}{' '}<select
                 className="input"
                 value={renewal.contact_id}
                 onChange={(e) =>
@@ -908,15 +884,14 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Subscription
-              <select
+              {translate("Subscription")}{' '}<select
                 className="input"
                 value={renewal.subscription_id}
                 onChange={(e) =>
                   setRenewal({ ...renewal, subscription_id: e.target.value })
                 }
               >
-                <option value="">No linked subscription</option>
+                <option value="">{translate("No linked subscription")}</option>
                 {data.subscriptions.map((item) => (
                   <option key={s(item.id)} value={s(item.id)}>
                     {s(item.id).slice(0, 8)} · {label(item.status)}
@@ -925,8 +900,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Renewal due
-              <input
+              {translate("Renewal due")}{' '}<input
                 className="input"
                 type="date"
                 value={renewal.renewal_due_on}
@@ -938,8 +912,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             </label>
             <div className="form-grid two-col">
               <label>
-                Expected amount
-                <input
+                {translate("Expected amount")}{' '}<input
                   className="input"
                   type="number"
                   min="0"
@@ -953,8 +926,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Likelihood %
-                <input
+                {translate("Likelihood %")}{' '}<input
                   className="input"
                   type="number"
                   min="0"
@@ -970,8 +942,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </label>
             </div>
             <label>
-              Offer notes
-              <textarea
+              {translate("Offer notes")}{' '}<textarea
                 className="input"
                 value={renewal.offer_notes}
                 onChange={(e) =>
@@ -980,8 +951,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Save renewal work
-            </button>
+              {translate("Save renewal work")}{' '}</button>
           </form>
           <form
             className="panel compact-form"
@@ -997,10 +967,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Record renewal contact</h3>
+            <h3>{translate("Record renewal contact")}</h3>
             <label>
-              Opportunity
-              <select
+              {translate("Opportunity")}{' '}<select
                 className="input"
                 value={renewalActivity.opportunity_id}
                 onChange={(e) =>
@@ -1019,8 +988,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Activity
-              <select
+              {translate("Activity")}{' '}<select
                 className="input"
                 value={renewalActivity.activity_type}
                 onChange={(e) =>
@@ -1044,8 +1012,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Note
-              <textarea
+              {translate("Note")}{' '}<textarea
                 className="input"
                 value={renewalActivity.note}
                 onChange={(e) =>
@@ -1058,21 +1025,20 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Record renewal contact
-            </button>
+              {translate("Record renewal contact")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Renewal pipeline and outcome history</h3>
+            <h3>{translate("Renewal pipeline and outcome history")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Learner</th>
-                    <th>Due</th>
-                    <th>Status</th>
-                    <th>Likelihood</th>
-                    <th>Expected</th>
-                    <th>Next action</th>
+                    <th>{translate("Learner")}</th>
+                    <th>{translate("Due")}</th>
+                    <th>{translate("Status")}</th>
+                    <th>{translate("Likelihood")}</th>
+                    <th>{translate("Expected")}</th>
+                    <th>{translate("Next action")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1098,19 +1064,19 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
       ) : null}
       {tab === "actions" ? (
         <section className="panel">
-          <h3>Unified SLA-aware action queue</h3>
+          <h3>{translate("Unified SLA-aware action queue")}</h3>
           <div className="finance-table-wrap">
             <table className="finance-table">
               <thead>
                 <tr>
-                  <th>Priority</th>
-                  <th>Category</th>
-                  <th>Action</th>
-                  <th>Learner</th>
-                  <th>Assignee</th>
-                  <th>SLA</th>
-                  <th>Status</th>
-                  <th>Outcome</th>
+                  <th>{translate("Priority")}</th>
+                  <th>{translate("Category")}</th>
+                  <th>{translate("Action")}</th>
+                  <th>{translate("Learner")}</th>
+                  <th>{translate("Assignee")}</th>
+                  <th>{translate("SLA")}</th>
+                  <th>{translate("Status")}</th>
+                  <th>{translate("Outcome")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1150,8 +1116,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                             )
                           }
                         >
-                          <CheckCircle2 size={14} /> Complete
-                        </button>
+                          <CheckCircle2 size={14} /> {translate("Complete")}{' '}</button>
                       ) : (
                         s(item.outcome || "—")
                       )}
@@ -1180,10 +1145,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 .finally(() => setBusy(false));
             }}
           >
-            <h3>Permission-filtered global search</h3>
+            <h3>{translate("Permission-filtered global search")}</h3>
             <label>
-              Search contacts, classrooms, leads, and guardians
-              <input
+              {translate("Search contacts, classrooms, leads, and guardians")}{' '}<input
                 className="input"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -1192,11 +1156,10 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              <Search size={16} /> Search
-            </button>
+              <Search size={16} /> {translate("Search")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Search results</h3>
+            <h3>{translate("Search results")}</h3>
             <div className="record-list">
               {searchResults.map((item) => (
                 <article key={`${s(item.result_type)}:${s(item.result_id)}`}>
@@ -1226,17 +1189,14 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
           >
             <div className="section-heading">
               <div>
-                <h3>Governed CSV/XLSX migration</h3>
+                <h3>{translate("Governed CSV/XLSX migration")}</h3>
                 <p>
-                  Load a file, map its source columns, inspect the preview, then
-                  run server-side validation before any commit.
-                </p>
+                  {translate("Load a file, map its source columns, inspect the preview, then run server-side validation before any commit.")}{' '}</p>
               </div>
             </div>
             <div className="form-grid two-col">
               <label>
-                Import type
-                <select
+                {translate("Import type")}{' '}<select
                   className="input"
                   value={importForm.import_type}
                   onChange={(event) => {
@@ -1253,8 +1213,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Duplicate handling
-                <select
+                {translate("Duplicate handling")}{' '}<select
                   className="input"
                   value={importForm.duplicate_strategy}
                   onChange={(event) =>
@@ -1264,14 +1223,13 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     })
                   }
                 >
-                  <option value="reject">Reject duplicates</option>
-                  <option value="skip">Skip duplicates</option>
-                  <option value="update_safe_fields">Update safe fields</option>
+                  <option value="reject">{translate("Reject duplicates")}</option>
+                  <option value="skip">{translate("Skip duplicates")}</option>
+                  <option value="update_safe_fields">{translate("Update safe fields")}</option>
                 </select>
               </label>
               <label>
-                CSV or XLSX file
-                <input
+                {translate("CSV or XLSX file")}{' '}<input
                   className="input"
                   type="file"
                   accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -1289,8 +1247,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Source filename
-                <input
+                {translate("Source filename")}{' '}<input
                   className="input"
                   value={importForm.source_filename}
                   onChange={(event) =>
@@ -1303,10 +1260,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               </label>
             </div>
             <details>
-              <summary>Or paste CSV data</summary>
+              <summary>{translate("Or paste CSV data")}</summary>
               <label>
-                CSV data
-                <textarea
+                {translate("CSV data")}{' '}<textarea
                   className="input"
                   rows={6}
                   value={importForm.csv}
@@ -1331,12 +1287,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   }
                 }}
               >
-                Load pasted CSV
-              </button>
+                {translate("Load pasted CSV")}{' '}</button>
             </details>
             {importHeaders.length ? (
               <>
-                <h4>Column mapping</h4>
+                <h4>{translate("Column mapping")}</h4>
                 <div className="import-mapping-grid">
                   {(importFields[importForm.import_type] ?? []).map((field) => (
                     <label key={field.key}>
@@ -1352,7 +1307,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                           })
                         }
                       >
-                        <option value="">Ignore / not provided</option>
+                        <option value="">{translate("Ignore / not provided")}</option>
                         {importHeaders.map((header) => (
                           <option key={header} value={header}>
                             {header}
@@ -1363,15 +1318,13 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   ))}
                 </div>
                 <p className="muted-copy">
-                  {importRows.length} rows loaded. Required mappings are marked
-                  with *.
-                </p>
+                  {importRows.length} {translate("rows loaded. Required mappings are marked with *.")}{' '}</p>
               </>
             ) : null}
             {importRows.length ? (
               <div className="finance-table-wrap">
                 <table className="finance-table">
-                  <caption>Source preview — first five rows</caption>
+                  <caption>{translate("Source preview — first five rows")}</caption>
                   <thead>
                     <tr>
                       {importHeaders.map((header) => (
@@ -1395,23 +1348,22 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               className="primary-btn"
               disabled={busy || !importRows.length}
             >
-              <FileSpreadsheet size={16} /> Stage dry run and validate
-            </button>
+              <FileSpreadsheet size={16} /> {translate("Stage dry run and validate")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Audited import jobs</h3>
+            <h3>{translate("Audited import jobs")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>File</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Total</th>
-                    <th>Valid</th>
-                    <th>Invalid</th>
-                    <th>Committed</th>
-                    <th>Action</th>
+                    <th>{translate("File")}</th>
+                    <th>{translate("Type")}</th>
+                    <th>{translate("Status")}</th>
+                    <th>{translate("Total")}</th>
+                    <th>{translate("Valid")}</th>
+                    <th>{translate("Invalid")}</th>
+                    <th>{translate("Committed")}</th>
+                    <th>{translate("Action")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1441,8 +1393,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                 )
                               }
                             >
-                              Commit valid rows
-                            </button>
+                              {translate("Commit valid rows")}{' '}</button>
                           ) : null}
                           {["available", "partial", "manual_required"].includes(
                             s(item.rollback_status),
@@ -1462,8 +1413,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                 )
                               }
                             >
-                              Rollback
-                            </button>
+                              {translate("Rollback")}{' '}</button>
                           ) : null}
                         </div>
                       </td>
@@ -1474,7 +1424,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel commercial-span">
-            <h3>Row validation evidence</h3>
+            <h3>{translate("Row validation evidence")}</h3>
             <div className="record-list">
               {data.import_rows
                 .filter(
@@ -1485,7 +1435,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   <article key={s(item.id)}>
                     <div>
                       <strong>
-                        Row {s(item.row_number)} ·{" "}
+                        {translate("Row")}{' '}{s(item.row_number)} ·{" "}
                         {label(item.validation_status)}
                       </strong>
                       <p>{JSON.stringify(item.validation_errors)}</p>

@@ -3090,4 +3090,134 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       });
     await businessContext.close();
   });
+
+  test("Uzbek and Russian remain usable across representative role lanes and viewports", async ({ browser }) => {
+    const localeCases = [
+      {
+        code: "uz",
+        language: "Til",
+        refresh: "Yangilash",
+        ownerRole: "Egasi",
+        ownerShortcut: "O‘quvchilar va yordamchilarni boshqarish",
+        teacherScope: "1 biriktirilgan o‘quv guruhi",
+        navigation: {
+          owner: "Qabul",
+          accountant: "Moliya",
+          teacher: "Mening LMS guruhlarim",
+          student: "Mening o‘quv guruhlarim",
+          guardian: "Baholar va uy vazifalari",
+        },
+      },
+      {
+        code: "ru",
+        language: "Язык",
+        refresh: "Обновить",
+        ownerRole: "Владелец",
+        ownerShortcut: "Управление учащимися и ассистентами",
+        teacherScope: "1 назначенная учебная группа",
+        navigation: {
+          owner: "Приём",
+          accountant: "Финансы",
+          teacher: "Мои группы LMS",
+          student: "Мои учебные группы",
+          guardian: "Оценки и домашнее задание",
+        },
+      },
+    ] as const;
+    const roleCases = [
+      { persona: "owner" as const, path: "/academy/admin", navigation: ".workspace-nav" },
+      { persona: "accountant" as const, path: "/academy/office", navigation: ".workspace-nav" },
+      { persona: "teacher" as const, path: "/academy/teacher", navigation: ".workspace-nav" },
+      { persona: "student" as const, path: "/academy/student", navigation: ".workspace-nav" },
+      { persona: "guardian" as const, path: "/academy/parent", navigation: ".business-tabs" },
+    ];
+    const viewports = [
+      { width: 1280, height: 900 },
+      { width: 390, height: 844 },
+    ];
+    const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
+    const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-localization");
+    if (captureScreenshots) await mkdir(outputDir, { recursive: true });
+
+    for (const localeCase of localeCases) {
+      for (const roleCase of roleCases) {
+        for (const viewport of viewports) {
+          const context = await browser.newContext({ viewport });
+          const page = await context.newPage();
+          await seedSessionCookie(page, `${roleCase.persona}-${localeCase.code}-${viewport.width}`);
+          await mockAcademyEdge(page, roleCase.persona);
+          await page.goto(`${roleCase.path}?academy_id=${academyId}&lang=${localeCase.code}`);
+          await expect(page.locator("html")).toHaveAttribute("lang", localeCase.code);
+          await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+          await expect(page.getByRole("combobox", { name: localeCase.language })).toHaveValue(localeCase.code);
+          await expect(page.getByRole("button", { name: localeCase.refresh, exact: true }).first()).toBeVisible();
+          await expect(page.getByRole("button", { name: "Refresh", exact: true })).toHaveCount(0);
+          const navigation = page.locator(roleCase.navigation);
+          await expect(navigation.getByRole("button", { name: localeCase.navigation[roleCase.persona], exact: true })).toBeVisible();
+          if (roleCase.persona === "owner") {
+            await expect(page.getByText(localeCase.ownerShortcut, { exact: true })).toBeVisible();
+            await expect(page.getByText("Manage students and assistants", { exact: true })).toHaveCount(0);
+            await expect(page.locator(".workspace-context").getByText(localeCase.ownerRole, { exact: true })).toBeVisible();
+          }
+          if (roleCase.persona === "teacher") {
+            await expect(page.getByText(localeCase.teacherScope, { exact: true }).first()).toBeVisible();
+          }
+          const switcher = page.locator(".academy-language-switcher");
+          const switcherBox = await switcher.boundingBox();
+          expect(switcherBox?.height ?? 0, `${roleCase.persona} ${localeCase.code} language target`).toBeGreaterThanOrEqual(44);
+          expect(switcherBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+          expect((switcherBox?.x ?? 0) + (switcherBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width + 1);
+          const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+          expect(overflow, `${roleCase.persona} ${localeCase.code} overflow at ${viewport.width}px`).toBeLessThanOrEqual(1);
+          if (captureScreenshots) {
+            await page.screenshot({
+              path: resolve(outputDir, `${roleCase.persona}-${localeCase.code}-${viewport.width}.png`),
+              fullPage: true,
+            });
+          }
+          await context.close();
+        }
+      }
+    }
+  });
+
+  test("service landing and Academy directory localize without changing routes", async ({ browser }) => {
+    const cases = [
+      { code: "uz", language: "Til", serviceHeading: "Akademiya haftasini bir joydan boshqaring", directoryHeading: "Akademiya boshqaruvi" },
+      { code: "ru", language: "Язык", serviceHeading: "Управляйте неделей академии на одном экране", directoryHeading: "Администрирование академии" },
+    ] as const;
+    const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
+    const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-localization");
+    if (captureScreenshots) await mkdir(outputDir, { recursive: true });
+
+    for (const localeCase of cases) {
+      for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+        const publicContext = await browser.newContext({ viewport });
+        const publicPage = await publicContext.newPage();
+        await publicPage.goto(`/?lang=${localeCase.code}`);
+        await expect(publicPage.locator("html")).toHaveAttribute("lang", localeCase.code);
+        await expect(publicPage.getByRole("heading", { name: localeCase.serviceHeading })).toBeVisible();
+        await expect(publicPage.getByRole("combobox", { name: localeCase.language })).toHaveValue(localeCase.code);
+        const overflow = await publicPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, `service ${localeCase.code} overflow at ${viewport.width}px`).toBeLessThanOrEqual(1);
+        if (captureScreenshots) {
+          await publicPage.screenshot({ path: resolve(outputDir, `service-${localeCase.code}-${viewport.width}.png`), fullPage: true });
+        }
+        await publicContext.close();
+      }
+
+      const directoryContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const directoryPage = await directoryContext.newPage();
+      await seedSessionCookie(directoryPage, `directory-${localeCase.code}-owner`);
+      await mockAcademyEdge(directoryPage, "owner");
+      await directoryPage.goto(`/academies?academy_id=${academyId}&lang=${localeCase.code}`);
+      await expect(directoryPage.locator("html")).toHaveAttribute("lang", localeCase.code);
+      await expect(directoryPage.getByRole("heading", { name: localeCase.directoryHeading }).first()).toBeVisible();
+      await expect(directoryPage.getByText("Academy Administration", { exact: true })).toHaveCount(0);
+      if (captureScreenshots) {
+        await directoryPage.screenshot({ path: resolve(outputDir, `directory-${localeCase.code}-1280.png`), fullPage: true });
+      }
+      await directoryContext.close();
+    }
+  });
 });

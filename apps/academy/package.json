@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:i18n": "node scripts/check-i18n.mjs",
     "test:routes": "playwright test -c playwright.config.ts"
   },
   "dependencies": {

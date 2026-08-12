@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { TeacherStudioEntitlement } from '../../lib/client';
 
 type StudentsPreviewViewProps = {
@@ -26,7 +27,7 @@ export const StudentsPreviewView = ({
   return (
     <section className="grid two">
       <div className="panel">
-        <h3>Student progress (preview)</h3>
+        <h3>{translate("Student progress (preview)")}</h3>
         <ul className="list">
           {entitlements.slice(0, 8).map((e) => (
             <li key={e.id}>
@@ -34,22 +35,22 @@ export const StudentsPreviewView = ({
                 <strong>{e.grant_type}</strong>
                 <span className={statusClass(e.status)}>{e.status}</span>
               </div>
-              <div className="muted small">Capability: {e.capability_key ?? '-'} | Expires: {formatDate(e.expires_at)}</div>
+              <div className="muted small">{translate("Capability:")}{' '}{e.capability_key ?? '-'} {translate("| Expires:")}{' '}{formatDate(e.expires_at)}</div>
             </li>
           ))}
-          {entitlements.length === 0 ? <li>No active access items.</li> : null}
+          {entitlements.length === 0 ? <li>{translate("No active access items.")}</li> : null}
         </ul>
       </div>
 
       <div className="panel">
-        <h3>Office snapshot</h3>
+        <h3>{translate("Office snapshot")}</h3>
         <ul className="list">
-          <li>Contacts: {contactsCount}</li>
-          <li>Classrooms: {classroomsCount}</li>
-          <li>Offers: {offersCount}</li>
-          <li>Offer grants: {offersGrantsCount}</li>
-          <li>Paid transactions: {paidPaymentsCount}</li>
-          <li>Active sponsored students: {activeStudentsCount}</li>
+          <li>{translate("Contacts:")}{' '}{contactsCount}</li>
+          <li>{translate("Classrooms:")}{' '}{classroomsCount}</li>
+          <li>{translate("Offers:")}{' '}{offersCount}</li>
+          <li>{translate("Offer grants:")}{' '}{offersGrantsCount}</li>
+          <li>{translate("Paid transactions:")}{' '}{paidPaymentsCount}</li>
+          <li>{translate("Active sponsored students:")}{' '}{activeStudentsCount}</li>
         </ul>
       </div>
     </section>

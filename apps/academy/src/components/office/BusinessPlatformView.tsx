@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -38,9 +39,9 @@ type Tab =
 
 const text = (value: unknown) => String(value ?? "");
 const number = (value: unknown) => Number(value ?? 0);
-const label = (value: unknown) => text(value).replaceAll("_", " ");
+const label = (value: unknown) => translate(text(value).replaceAll("_", " "));
 const money = (value: unknown, currency = "UZS") =>
-  `${new Intl.NumberFormat("uz-UZ").format(number(value))} ${currency}`;
+  `${new Intl.NumberFormat(getLocaleTag()).format(number(value))} ${currency}`;
 const jsonObject = (value: string, field: string): Record<string, unknown> => {
   const parsed = JSON.parse(value) as unknown;
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
@@ -233,37 +234,32 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
       <header className="business-platform__hero">
         <div>
           <span className="eyebrow">
-            One student record · one operating truth
-          </span>
-          <h2>Education business platform</h2>
+            {translate("One student record · one operating truth")}{' '}</span>
+          <h2>{translate("Education business platform")}</h2>
           <p>
-            Follow the student journey from first enquiry through learning,
-            collection, retention, and renewal—with every automated or
-            AI-assisted decision reviewable.
-          </p>
+            {translate("Follow the student journey from first enquiry through learning, collection, retention, and renewal—with every automated or AI-assisted decision reviewable.")}{' '}</p>
         </div>
         <button
           className="ghost-btn"
           onClick={() => void load()}
           disabled={busy}
         >
-          <RefreshCw size={16} /> Refresh evidence
-        </button>
+          <RefreshCw size={16} /> {translate("Refresh evidence")}{' '}</button>
       </header>
       {error ? (
         <p className="form-error" role="alert">
-          {error}
+          {translate(error)}
         </p>
       ) : null}
       {notice ? (
         <p className="form-success" role="status">
-          {notice}
+          {translate(notice)}
         </p>
       ) : null}
 
       <nav
         className="business-platform__tabs"
-        aria-label="Education business platform sections"
+        aria-label={translate("Education business platform sections")}
       >
         {(
           [
@@ -284,7 +280,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               onClick={() => setTab(id)}
             >
               <Icon size={15} />
-              {name}
+              {translate(name)}
             </button>
           ))}
       </nav>
@@ -293,23 +289,23 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
         <div className="business-platform__grid">
           <section
             className="business-platform__scoreboard"
-            aria-label="Current operating pulse"
+            aria-label={translate("Current operating pulse")}
           >
             <article>
-              <span>Students learning</span>
+              <span>{translate("Students learning")}</span>
               <strong>{number(dashboard.active_students)}</strong>
-              <small>{number(dashboard.new_students)} new this month</small>
+              <small>{number(dashboard.new_students)} {translate("new this month")}</small>
             </article>
             <article>
-              <span>Admissions</span>
+              <span>{translate("Admissions")}</span>
               <strong>
                 {number(dashboard.active_leads ?? dashboard.open_leads)}
               </strong>
-              <small>{number(dashboard.conversions)} converted</small>
+              <small>{number(dashboard.conversions)} {translate("converted")}</small>
             </article>
             {canSeeEconomics ? (
               <article>
-                <span>Collected</span>
+                <span>{translate("Collected")}</span>
                 <strong>
                   {money(
                     dashboard.collected_revenue ?? dashboard.collected_amount,
@@ -319,18 +315,17 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   {money(
                     dashboard.outstanding_amount ?? dashboard.outstanding_debt,
                   )}{" "}
-                  outstanding
-                </small>
+                  {translate("outstanding")}{' '}</small>
               </article>
             ) : (
               <article>
-                <span>Attendance health</span>
+                <span>{translate("Attendance health")}</span>
                 <strong>{number(data.branches[0]?.attendance_percent)}%</strong>
-                <small>Financial detail is role-restricted</small>
+                <small>{translate("Financial detail is role-restricted")}</small>
               </article>
             )}
             <article>
-              <span>Needs a decision</span>
+              <span>{translate("Needs a decision")}</span>
               <strong>
                 {number(dashboard.pending_actions ?? dashboard.open_actions)}
               </strong>
@@ -339,18 +334,15 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   dashboard.high_risk_students ??
                     dashboard.high_risk_evaluations,
                 )}{" "}
-                high-risk learners
-              </small>
+                {translate("high-risk learners")}{' '}</small>
             </article>
           </section>
           <section className="panel business-platform__wide">
             <div className="business-platform__section-title">
               <div>
-                <h3>Branch operating picture</h3>
+                <h3>{translate("Branch operating picture")}</h3>
                 <p>
-                  Comparable operational evidence; contribution is not statutory
-                  profit.
-                </p>
+                  {translate("Comparable operational evidence; contribution is not statutory profit.")}{' '}</p>
               </div>
               <Building2 size={20} />
             </div>
@@ -358,13 +350,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Branch</th>
-                    <th>Students</th>
-                    <th>Collected</th>
-                    <th>Outstanding</th>
-                    <th>Attendance</th>
-                    <th>Contribution</th>
-                    <th>Actions</th>
+                    <th>{translate("Branch")}</th>
+                    <th>{translate("Students")}</th>
+                    <th>{translate("Collected")}</th>
+                    <th>{translate("Outstanding")}</th>
+                    <th>{translate("Attendance")}</th>
+                    <th>{translate("Contribution")}</th>
+                    <th>{translate("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -391,7 +383,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel">
-            <h3>Open action queue</h3>
+            <h3>{translate("Open action queue")}</h3>
             <div className="record-list">
               {data.actions.slice(0, 8).map((item) => (
                 <article key={text(item.id)}>
@@ -412,13 +404,12 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               ))}
               {!data.actions.length ? (
                 <p>
-                  No open actions. New evidence-driven work will appear here.
-                </p>
+                  {translate("No open actions. New evidence-driven work will appear here.")}{' '}</p>
               ) : null}
             </div>
           </section>
           <section className="panel">
-            <h3>Governed metric definitions</h3>
+            <h3>{translate("Governed metric definitions")}</h3>
             <div className="record-list">
               {data.metric_definitions.map((item) => (
                 <article key={`${text(item.metric_key)}:${text(item.version)}`}>
@@ -444,11 +435,9 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
           <section className="panel business-platform__wide">
             <div className="business-platform__section-title">
               <div>
-                <h3>Student intelligence</h3>
+                <h3>{translate("Student intelligence")}</h3>
                 <p>
-                  Academic, attendance, financial, guardian, and retention
-                  signals remain evidence—not an automated verdict.
-                </p>
+                  {translate("Academic, attendance, financial, guardian, and retention signals remain evidence—not an automated verdict.")}{' '}</p>
               </div>
               <ShieldCheck size={20} />
             </div>
@@ -456,13 +445,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Student</th>
-                    <th>Stage</th>
-                    <th>Attendance 30d</th>
-                    <th>Academic 90d</th>
-                    <th>Balance</th>
-                    <th>Risk</th>
-                    <th>Open work</th>
+                    <th>{translate("Student")}</th>
+                    <th>{translate("Stage")}</th>
+                    <th>{translate("Attendance 30d")}</th>
+                    <th>{translate("Academic 90d")}</th>
+                    <th>{translate("Balance")}</th>
+                    <th>{translate("Risk")}</th>
+                    <th>{translate("Open work")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -495,7 +484,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel business-platform__wide">
-            <h3>Immutable lifecycle trail</h3>
+            <h3>{translate("Immutable lifecycle trail")}</h3>
             <div className="journey-rail">
               {data.lifecycle_events.slice(0, 40).map((item) => (
                 <article key={text(item.id)}>
@@ -513,9 +502,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               ))}
               {!data.lifecycle_events.length ? (
                 <p>
-                  The lifecycle trail begins when a lead, enrollment, lesson,
-                  payment, or renewal event is recorded.
-                </p>
+                  {translate("The lifecycle trail begins when a lead, enrollment, lesson, payment, or renewal event is recorded.")}{' '}</p>
               ) : null}
             </div>
           </section>
@@ -525,17 +512,17 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
       {tab === "economics" && canSeeEconomics ? (
         <div className="business-platform__grid">
           <section className="panel business-platform__wide">
-            <h3>Marketing attribution</h3>
+            <h3>{translate("Marketing attribution")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Source / campaign</th>
-                    <th>Leads</th>
-                    <th>Trials</th>
-                    <th>Students</th>
-                    <th>Lead → student</th>
-                    <th>Attributed revenue</th>
+                    <th>{translate("Source / campaign")}</th>
+                    <th>{translate("Leads")}</th>
+                    <th>{translate("Trials")}</th>
+                    <th>{translate("Students")}</th>
+                    <th>{translate("Lead → student")}</th>
+                    <th>{translate("Attributed revenue")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -558,18 +545,18 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel business-platform__wide">
-            <h3>Classroom unit economics</h3>
+            <h3>{translate("Classroom unit economics")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Classroom</th>
-                    <th>Students</th>
-                    <th>Fill</th>
-                    <th>Revenue</th>
-                    <th>Teacher cost</th>
-                    <th>Contribution</th>
-                    <th>Revenue / student</th>
+                    <th>{translate("Classroom")}</th>
+                    <th>{translate("Students")}</th>
+                    <th>{translate("Fill")}</th>
+                    <th>{translate("Revenue")}</th>
+                    <th>{translate("Teacher cost")}</th>
+                    <th>{translate("Contribution")}</th>
+                    <th>{translate("Revenue / student")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -599,22 +586,20 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
       {tab === "people" ? (
         <div className="business-platform__grid">
           <section className="panel business-platform__wide">
-            <h3>Teacher evidence</h3>
+            <h3>{translate("Teacher evidence")}</h3>
             <p className="business-platform__guardrail">
-              No automated ranking. Use sufficient sample size and read the
-              operational context.
-            </p>
+              {translate("No automated ranking. Use sufficient sample size and read the operational context.")}{' '}</p>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Teacher</th>
-                    <th>Groups</th>
-                    <th>Students</th>
-                    <th>Lessons</th>
-                    <th>Attendance</th>
-                    <th>Academic outcome</th>
-                    <th>Observed quality</th>
+                    <th>{translate("Teacher")}</th>
+                    <th>{translate("Groups")}</th>
+                    <th>{translate("Students")}</th>
+                    <th>{translate("Lessons")}</th>
+                    <th>{translate("Attendance")}</th>
+                    <th>{translate("Academic outcome")}</th>
+                    <th>{translate("Observed quality")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -644,18 +629,18 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel business-platform__wide">
-            <h3>Staff operating evidence</h3>
+            <h3>{translate("Staff operating evidence")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Staff member</th>
-                    <th>Role</th>
-                    <th>Leads</th>
-                    <th>Activities</th>
-                    <th>Conversions</th>
-                    <th>Actions resolved</th>
-                    <th>Open actions</th>
+                    <th>{translate("Staff member")}</th>
+                    <th>{translate("Role")}</th>
+                    <th>{translate("Leads")}</th>
+                    <th>{translate("Activities")}</th>
+                    <th>{translate("Conversions")}</th>
+                    <th>{translate("Actions resolved")}</th>
+                    <th>{translate("Open actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -693,10 +678,9 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Create a versioned automation</h3>
+            <h3>{translate("Create a versioned automation")}</h3>
             <label>
-              Rule name
-              <input
+              {translate("Rule name")}{' '}<input
                 className="input"
                 value={automation.name}
                 onChange={(event) =>
@@ -706,8 +690,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Rule key
-              <input
+              {translate("Rule key")}{' '}<input
                 className="input"
                 value={automation.rule_key}
                 onChange={(event) =>
@@ -717,8 +700,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Branch
-              <select
+              {translate("Branch")}{' '}<select
                 className="input"
                 value={automation.branch_id}
                 onChange={(event) =>
@@ -728,7 +710,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="">Academy-wide</option>
+                <option value="">{translate("Academy-wide")}</option>
                 {data.branches.map((item) => (
                   <option
                     key={text(item.branch_id)}
@@ -740,8 +722,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Trigger
-              <select
+              {translate("Trigger")}{' '}<select
                 className="input"
                 value={automation.trigger_key}
                 onChange={(event) =>
@@ -775,8 +756,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Conditions JSON
-              <textarea
+              {translate("Conditions JSON")}{' '}<textarea
                 className="input code-input"
                 rows={5}
                 value={automation.condition_tree}
@@ -789,8 +769,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Actions JSON
-              <textarea
+              {translate("Actions JSON")}{' '}<textarea
                 className="input code-input"
                 rows={6}
                 value={automation.actions}
@@ -800,8 +779,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Safeguard
-              <select
+              {translate("Safeguard")}{' '}<select
                 className="input"
                 value={automation.safeguard_mode}
                 onChange={(event) =>
@@ -811,23 +789,19 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="standard">Standard</option>
+                <option value="standard">{translate("Standard")}</option>
                 <option value="human_review_required">
-                  Human review required
-                </option>
+                  {translate("Human review required")}{' '}</option>
               </select>
             </label>
             <button
               className="primary-btn"
               disabled={busy || !canManageAutomation}
             >
-              Save active version
-            </button>
+              {translate("Save active version")}{' '}</button>
             {!canManageAutomation ? (
               <small>
-                Your role can inspect automation evidence but cannot change
-                rules.
-              </small>
+                {translate("Your role can inspect automation evidence but cannot change rules.")}{' '}</small>
             ) : null}
           </form>
           <form
@@ -840,10 +814,9 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Test an event</h3>
+            <h3>{translate("Test an event")}</h3>
             <label>
-              Active version
-              <select
+              {translate("Active version")}{' '}<select
                 className="input"
                 value={execution.rule_version_id}
                 onChange={(event) => {
@@ -861,14 +834,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   .filter((item) => item.status === "active")
                   .map((item) => (
                     <option key={text(item.id)} value={text(item.id)}>
-                      {text(item.trigger_key)} · v{text(item.version)}
+                      {text(item.trigger_key)} {translate("· v")}{text(item.version)}
                     </option>
                   ))}
               </select>
             </label>
             <label>
-              Subject type
-              <select
+              {translate("Subject type")}{' '}<select
                 className="input"
                 value={execution.subject_type}
                 onChange={(event) =>
@@ -878,14 +850,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="lead">Lead</option>
-                <option value="contact">Student</option>
-                <option value="classroom">Classroom</option>
+                <option value="lead">{translate("Lead")}</option>
+                <option value="contact">{translate("Student")}</option>
+                <option value="classroom">{translate("Classroom")}</option>
               </select>
             </label>
             <label>
-              Subject ID
-              <input
+              {translate("Subject ID")}{' '}<input
                 className="input"
                 value={execution.subject_id}
                 onChange={(event) =>
@@ -894,8 +865,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <label>
-              Input evidence JSON
-              <textarea
+              {translate("Input evidence JSON")}{' '}<textarea
                 className="input code-input"
                 rows={6}
                 value={execution.input_snapshot}
@@ -913,11 +883,10 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                 busy || !canManageAutomation || !execution.rule_version_id
               }
             >
-              Evaluate event
-            </button>
+              {translate("Evaluate event")}{' '}</button>
           </form>
           <section className="panel business-platform__wide">
-            <h3>Execution and effect evidence</h3>
+            <h3>{translate("Execution and effect evidence")}</h3>
             <div className="record-list">
               {data.automation_executions.map((item) => (
                 <article key={text(item.id)}>
@@ -931,13 +900,12 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                         (item.output_summary as Record<string, unknown>)
                           ?.succeeded || 0,
                       )}{" "}
-                      succeeded ·{" "}
+                      {translate("succeeded ·")}{" "}
                       {text(
                         (item.output_summary as Record<string, unknown>)
                           ?.failed || 0,
                       )}{" "}
-                      failed
-                    </p>
+                      {translate("failed")}{' '}</p>
                   </div>
                   {item.status === "awaiting_review" ? (
                     <div className="inline-actions">
@@ -959,8 +927,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                           )
                         }
                       >
-                        Approve
-                      </button>
+                        {translate("Approve")}{' '}</button>
                       <button
                         className="small-btn danger"
                         disabled={busy}
@@ -979,8 +946,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                           )
                         }
                       >
-                        Reject
-                      </button>
+                        {translate("Reject")}{' '}</button>
                     </div>
                   ) : (
                     <CheckCircle2 size={18} />
@@ -1004,10 +970,9 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Ask with evidence</h3>
+            <h3>{translate("Ask with evidence")}</h3>
             <label>
-              Request type
-              <select
+              {translate("Request type")}{' '}<select
                 className="input"
                 value={assistant.request_kind}
                 onChange={(event) =>
@@ -1036,15 +1001,14 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Branch
-              <select
+              {translate("Branch")}{' '}<select
                 className="input"
                 value={assistant.branch_id}
                 onChange={(event) =>
                   setAssistant({ ...assistant, branch_id: event.target.value })
                 }
               >
-                <option value="">Academy-wide</option>
+                <option value="">{translate("Academy-wide")}</option>
                 {data.branches.map((item) => (
                   <option
                     key={text(item.branch_id)}
@@ -1056,8 +1020,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Subject type
-              <select
+              {translate("Subject type")}{' '}<select
                 className="input"
                 value={assistant.subject_type}
                 onChange={(event) =>
@@ -1067,26 +1030,24 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="">Operating scope</option>
-                <option value="contact">Student</option>
-                <option value="lead">Lead</option>
-                <option value="classroom">Classroom</option>
+                <option value="">{translate("Operating scope")}</option>
+                <option value="contact">{translate("Student")}</option>
+                <option value="lead">{translate("Lead")}</option>
+                <option value="classroom">{translate("Classroom")}</option>
               </select>
             </label>
             <label>
-              Subject ID
-              <input
+              {translate("Subject ID")}{' '}<input
                 className="input"
                 value={assistant.subject_id}
                 onChange={(event) =>
                   setAssistant({ ...assistant, subject_id: event.target.value })
                 }
-                placeholder="Required when a subject type is selected"
+                placeholder={translate("Required when a subject type is selected")}
               />
             </label>
             <label>
-              Your question
-              <textarea
+              {translate("Your question")}{' '}<textarea
                 className="input"
                 rows={5}
                 value={assistant.question}
@@ -1096,11 +1057,10 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy || !canUseAi}>
-              Generate reviewable proposal
-            </button>
+              {translate("Generate reviewable proposal")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Human review queue</h3>
+            <h3>{translate("Human review queue")}</h3>
             <div className="record-list">
               {data.ai_requests.map((item) => {
                 const output = (item.proposed_output ?? {}) as Record<
@@ -1121,7 +1081,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                         )}
                       </p>
                       <small>
-                        {label(item.status)} · AI status {label(item.ai_status)}{" "}
+                        {label(item.status)} {translate("· AI status")}{' '}{label(item.ai_status)}{" "}
                         · {formatDate(text(item.requested_at))}
                       </small>
                     </div>
@@ -1142,8 +1102,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                             )
                           }
                         >
-                          Approve draft
-                        </button>
+                          {translate("Approve draft")}{' '}</button>
                         <button
                           className="small-btn danger"
                           disabled={busy}
@@ -1159,8 +1118,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                             )
                           }
                         >
-                          Reject
-                        </button>
+                          {translate("Reject")}{' '}</button>
                       </div>
                     ) : null}
                   </article>
@@ -1168,9 +1126,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               })}
               {!data.ai_requests.length ? (
                 <p>
-                  Generate a proposal to start the review queue. AI never
-                  enrolls, charges, grades, or sends on its own.
-                </p>
+                  {translate("Generate a proposal to start the review queue. AI never enrolls, charges, grades, or sends on its own.")}{' '}</p>
               ) : null}
             </div>
           </section>
@@ -1203,10 +1159,9 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               );
             }}
           >
-            <h3>Uzbek-first operating defaults</h3>
+            <h3>{translate("Uzbek-first operating defaults")}</h3>
             <label>
-              Default language
-              <select
+              {translate("Default language")}{' '}<select
                 className="input"
                 value={localization.default_locale}
                 onChange={(event) =>
@@ -1216,13 +1171,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="uz">O‘zbekcha</option>
+                <option value="uz">{translate("O‘zbekcha")}</option>
                 <option value="ru">Русский</option>
-                <option value="en">English</option>
+                <option value="en">{translate("English")}</option>
               </select>
             </label>
             <fieldset className="locale-options">
-              <legend>Enabled languages</legend>
+              <legend>{translate("Enabled languages")}</legend>
               {[
                 ["uz", "O‘zbekcha"],
                 ["ru", "Русский"],
@@ -1255,8 +1210,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             </fieldset>
             <div className="form-grid two-col">
               <label>
-                Timezone
-                <input
+                {translate("Timezone")}{' '}<input
                   className="input"
                   value={localization.timezone}
                   onChange={(event) =>
@@ -1268,8 +1222,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Currency
-                <input
+                {translate("Currency")}{' '}<input
                   className="input"
                   value={localization.currency}
                   onChange={(event) =>
@@ -1281,8 +1234,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Phone country code
-                <input
+                {translate("Phone country code")}{' '}<input
                   className="input"
                   value={localization.phone_country_code}
                   onChange={(event) =>
@@ -1294,8 +1246,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Date format
-                <input
+                {translate("Date format")}{' '}<input
                   className="input"
                   value={localization.date_format}
                   onChange={(event) =>
@@ -1307,8 +1258,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Time format
-                <select
+                {translate("Time format")}{' '}<select
                   className="input"
                   value={localization.time_format}
                   onChange={(event) =>
@@ -1318,15 +1268,14 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                     })
                   }
                 >
-                  <option value="24h">24-hour</option>
-                  <option value="12h">12-hour</option>
+                  <option value="24h">{translate("24-hour")}</option>
+                  <option value="12h">{translate("12-hour")}</option>
                 </select>
               </label>
             </div>
-            <h4>Translation override</h4>
+            <h4>{translate("Translation override")}</h4>
             <label>
-              Translation key
-              <input
+              {translate("Translation key")}{' '}<input
                 className="input"
                 value={localization.translation_key}
                 onChange={(event) =>
@@ -1335,12 +1284,11 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                     translation_key: event.target.value,
                   })
                 }
-                placeholder="navigation.business_platform"
+                placeholder={translate("Navigation label, for example: Business platform")}
               />
             </label>
             <label>
-              Language
-              <select
+              {translate("Language")}{' '}<select
                 className="input"
                 value={localization.translation_locale}
                 onChange={(event) =>
@@ -1350,14 +1298,13 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                   })
                 }
               >
-                <option value="uz">O‘zbekcha</option>
+                <option value="uz">{translate("O‘zbekcha")}</option>
                 <option value="ru">Русский</option>
-                <option value="en">English</option>
+                <option value="en">{translate("English")}</option>
               </select>
             </label>
             <label>
-              Translated text
-              <input
+              {translate("Translated text")}{' '}<input
                 className="input"
                 value={localization.translated_value}
                 onChange={(event) =>
@@ -1372,18 +1319,17 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
               className="primary-btn"
               disabled={busy || !canManageLocalization}
             >
-              Save localization
-            </button>
+              {translate("Save localization")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>Active translation overrides</h3>
+            <h3>{translate("Active translation overrides")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Key</th>
-                    <th>Language</th>
-                    <th>Text</th>
+                    <th>{translate("Key")}</th>
+                    <th>{translate("Language")}</th>
+                    <th>{translate("Text")}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import type { TeacherStudioAlert, TeacherStudioContact } from '../../lib/client';
 import type { AlertFormState } from './types';
@@ -42,16 +43,15 @@ export const AlertsView = ({
     <>
       {canCreateAlerts ? (
         <form className="panel workspace-form" onSubmit={onCreate}>
-          <h3>Create alert</h3>
-          <p className="small muted">Record an operational issue for the academy or a specific contact.</p>
-          <label>Scope
-            <select
+          <h3>{translate("Create alert")}</h3>
+          <p className="small muted">{translate("Record an operational issue for the academy or a specific contact.")}</p>
+          <label>{translate("Scope")}{' '}<select
               className="input"
               value={form.contact_id}
               onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
             >
-              {canCreateGlobalAlerts ? <option value="">Academy-wide alert</option> : null}
-              {!canCreateGlobalAlerts ? <option value="">Select contact</option> : null}
+              {canCreateGlobalAlerts ? <option value="">{translate("Academy-wide alert")}</option> : null}
+              {!canCreateGlobalAlerts ? <option value="">{translate("Select contact")}</option> : null}
               {contacts.map((item) => (
                 <option key={item.id} value={item.id}>
                   {(item.first_name || item.last_name) ? `${item.first_name} ${item.last_name}`.trim() : item.email || item.id}
@@ -60,25 +60,25 @@ export const AlertsView = ({
             </select>
           </label>
           <div className="grid two">
-            <label>Alert type<input
+            <label>{translate("Alert type")}<input
               className="input"
-              placeholder="Attendance, progress, payment…"
+              placeholder={translate("Attendance, progress, payment…")}
               value={form.type}
               onChange={(e) => setForm((previous) => ({ ...previous, type: e.target.value }))}
               required
             /></label>
-            <label>Severity<select
+            <label>{translate("Severity")}<select
               className="input"
               value={form.severity}
               onChange={(e) => setForm((previous) => ({ ...previous, severity: e.target.value }))}
             >
-              <option value="low">low</option>
-              <option value="medium">medium</option>
-              <option value="high">high</option>
-              <option value="critical">critical</option>
+              <option value="low">{translate("low")}</option>
+              <option value="medium">{translate("medium")}</option>
+              <option value="high">{translate("high")}</option>
+              <option value="critical">{translate("critical")}</option>
             </select></label>
           </div>
-          <label>Message<textarea
+          <label>{translate("Message")}<textarea
             className="input"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
@@ -89,23 +89,22 @@ export const AlertsView = ({
             type="submit"
             disabled={busy || !form.type.trim() || !form.content.trim() || (!canCreateGlobalAlerts && !form.contact_id)}
           >
-            Create alert
-          </button></div>
+            {translate("Create alert")}{' '}</button></div>
         </form>
       ) : null}
 
       <section className="panel">
-        <h3>Alert history</h3>
+        <h3>{translate("Alert history")}</h3>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Type</th>
-                <th>Contact</th>
-                <th>Message</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Created</th>
+                <th>{translate("Type")}</th>
+                <th>{translate("Contact")}</th>
+                <th>{translate("Message")}</th>
+                <th>{translate("Severity")}</th>
+                <th>{translate("Status")}</th>
+                <th>{translate("Created")}</th>
                 <th />
               </tr>
             </thead>
@@ -126,8 +125,7 @@ export const AlertsView = ({
                     <td>
                       {!item.resolved && canResolveAlerts ? (
                         <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolve(item.id)}>
-                          Resolve
-                        </button>
+                          {translate("Resolve")}{' '}</button>
                       ) : null}
                     </td>
                   </tr>
@@ -135,7 +133,7 @@ export const AlertsView = ({
               })}
               {alerts.length === 0 ? (
                 <tr>
-                  <td colSpan={7}><div className="table-empty-state"><strong>No alerts yet</strong><span>Operational issues will appear here when they need follow-up.</span></div></td>
+                  <td colSpan={7}><div className="table-empty-state"><strong>{translate("No alerts yet")}</strong><span>{translate("Operational issues will appear here when they need follow-up.")}</span></div></td>
                 </tr>
               ) : null}
             </tbody>

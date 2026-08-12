@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { ArrowRight, Bell, BookOpenCheck, CheckCircle2, MessageSquare } from 'lucide-react';
 import type {
   TeacherStudioAlert,
@@ -38,32 +39,32 @@ export const StudentHomeView = ({
     <section className="student-home" aria-labelledby="student-home-title">
       <header className="student-home__hero">
         <div>
-          <span className="eyebrow">Learning workspace</span>
-          <h2 id="student-home-title">What will you continue today?</h2>
-          <p>{academyName || 'Your academy'} keeps classrooms, updates, and account items together without staff controls.</p>
+          <span className="eyebrow">{translate("Learning workspace")}</span>
+          <h2 id="student-home-title">{translate("What will you continue today?")}</h2>
+          <p>{academyName || 'Your academy'} {translate("keeps classrooms, updates, and account items together without staff controls.")}</p>
         </div>
         {nextClassroom ? (
           <button className="student-continue" type="button" onClick={() => onOpenClassroom(nextClassroom)}>
-            <span>Continue learning</span>
+            <span>{translate("Continue learning")}</span>
             <strong>{nextClassroom.name}</strong>
             <ArrowRight size={18} aria-hidden="true" />
           </button>
         ) : null}
       </header>
 
-      <dl className="workspace-pulse workspace-pulse--student" aria-label="Learning status">
-        <div><dt>My classrooms</dt><dd>{classrooms.length}</dd></div>
-        <div><dt>Academy updates</dt><dd>{announcements.length}</dd></div>
-        <div><dt>Messages</dt><dd>{messages.length}</dd></div>
-        <div><dt>Needs attention</dt><dd>{openAlerts.length + pendingPayments.length}</dd></div>
+      <dl className="workspace-pulse workspace-pulse--student" aria-label={translate("Learning status")}>
+        <div><dt>{translate("My classrooms")}</dt><dd>{classrooms.length}</dd></div>
+        <div><dt>{translate("Academy updates")}</dt><dd>{announcements.length}</dd></div>
+        <div><dt>{translate("Messages")}</dt><dd>{messages.length}</dd></div>
+        <div><dt>{translate("Needs attention")}</dt><dd>{openAlerts.length + pendingPayments.length}</dd></div>
       </dl>
 
       <div className="student-home__grid">
         <section className="student-next-list" aria-labelledby="student-next-title">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Next steps</span>
-              <h3 id="student-next-title">Your learning queue</h3>
+              <span className="eyebrow">{translate("Next steps")}</span>
+              <h3 id="student-next-title">{translate("Your learning queue")}</h3>
             </div>
           </div>
 
@@ -93,8 +94,8 @@ export const StudentHomeView = ({
             <div className="workspace-empty-state">
               <CheckCircle2 size={22} aria-hidden="true" />
               <div>
-                <strong>No learning tasks are waiting</strong>
-                <p>Your next classroom or academy action will appear here.</p>
+                <strong>{translate("No learning tasks are waiting")}</strong>
+                <p>{translate("Your next classroom or academy action will appear here.")}</p>
               </div>
             </div>
           ) : null}
@@ -104,8 +105,8 @@ export const StudentHomeView = ({
           <section>
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Latest</span>
-                <h3>Academy updates</h3>
+                <span className="eyebrow">{translate("Latest")}</span>
+                <h3>{translate("Academy updates")}</h3>
               </div>
             </div>
             <div className="student-update-list">
@@ -116,18 +117,18 @@ export const StudentHomeView = ({
                   <time>{formatDate(announcement.created_at)}</time>
                 </article>
               ))}
-              {announcements.length === 0 ? <p className="muted small">No new announcements.</p> : null}
+              {announcements.length === 0 ? <p className="muted small">{translate("No new announcements.")}</p> : null}
             </div>
           </section>
 
           <button className="student-message-link" type="button" onClick={() => onNavigate('messages')}>
             <MessageSquare size={18} aria-hidden="true" />
-            <span><strong>Messages</strong><small>{messages.length} in your academy timeline</small></span>
+            <span><strong>{translate("Messages")}</strong><small>{messages.length} {translate("in your academy timeline")}</small></span>
             <ArrowRight size={16} aria-hidden="true" />
           </button>
           {pendingPayments.length > 0 ? (
             <button className="student-account-link" type="button" onClick={() => onNavigate('access')}>
-              <span><strong>Tuition needs attention</strong><small>{pendingPayments.length} open item{pendingPayments.length === 1 ? '' : 's'}</small></span>
+              <span><strong>{translate("Tuition needs attention")}</strong><small>{pendingPayments.length} {translate("open item")}{pendingPayments.length === 1 ? '' : 's'}</small></span>
               <ArrowRight size={16} aria-hidden="true" />
             </button>
           ) : null}

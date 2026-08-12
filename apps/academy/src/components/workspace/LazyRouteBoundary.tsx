@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { Component, Suspense, type ErrorInfo, type ReactNode } from 'react';
 
 type LazyRouteBoundaryProps = {
@@ -28,9 +29,9 @@ class LazyRouteErrorBoundary extends Component<LazyRouteBoundaryProps, LazyRoute
     if (this.state.error) {
       return (
         <section className="panel lazy-route-error" role="alert">
-          <h2>This workspace section could not load</h2>
-          <p>The section download failed. Reload the workspace to try again.</p>
-          <button className="primary-btn" type="button" onClick={this.retry}>Reload workspace</button>
+          <h2>{translate("This workspace section could not load")}</h2>
+          <p>{translate("The section download failed. Reload the workspace to try again.")}</p>
+          <button className="primary-btn" type="button" onClick={this.retry}>{translate("Reload workspace")}</button>
         </section>
       );
     }
