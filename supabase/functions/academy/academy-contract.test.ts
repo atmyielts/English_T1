@@ -9,6 +9,22 @@ import {
   validateAcademyUploadFile,
 } from "./index.ts";
 
+const academyFunctionSource = await Deno.readTextFile(
+  new URL("./index.ts", import.meta.url),
+);
+
+Deno.test("Academy membership contact embeds name the tenant-safe relationship", () => {
+  const ambiguousEmbeds = academyFunctionSource.match(
+    /from\("academy_classroom_memberships"\)[\s\S]{0,240}\.select\("[^"]*academy_contacts\s*\(/g,
+  ) ?? [];
+  const tenantSafeEmbeds = academyFunctionSource.match(
+    /academy_contacts!academy_memberships_contact_tenant_fk\s*\(/g,
+  ) ?? [];
+
+  assertEquals(ambiguousEmbeds.length, 0);
+  assertEquals(tenantSafeEmbeds.length, 7);
+});
+
 const accessForRole = (role: string) => ({
   tenant_id: "academy-1",
   role,

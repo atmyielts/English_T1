@@ -3131,7 +3131,7 @@ const handleReadAction = async (
         .select("id, assignment_id, contact_id, score, max_score, status, attempt_number, submitted_at, graded_at, notes, feedback, submission_content, submission_url, metadata")
         .eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
       sb.from("academy_classroom_memberships")
-        .select("contact_id, role, academy_contacts(id, first_name, last_name, email, status)")
+        .select("contact_id, role, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, email, status)")
         .eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"])
         .in("status", ["active", "completed"]).limit(500),
       sb.from("academy_grade_categories")
@@ -3899,7 +3899,7 @@ const handleReadAction = async (
         .select("id, name, price_amount, currency, duration_days, is_active")
         .eq("academy_id", academyId).eq("classroom_id", classroomId).eq("is_active", true),
       sb.from("academy_classroom_memberships")
-        .select("contact_id, academy_contacts(id, first_name, last_name, email, status)")
+        .select("contact_id, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, email, status)")
         .eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(500),
       sb.from("academy_entitlements")
         .select("contact_id, resource_id, status, expires_at")
@@ -4693,7 +4693,7 @@ const loadAcademyClassroomLessonContext = async (
       .eq("id", classroomId)
       .maybeSingle(),
     sb.from("academy_classroom_memberships")
-      .select("contact_id, role, academy_contacts(id, first_name, last_name, status, placement_level, placement_score, lifecycle_stage)")
+      .select("contact_id, role, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, status, placement_level, placement_score, lifecycle_stage)")
       .eq("academy_id", academyId)
       .eq("classroom_id", classroomId)
       .in("role", ["student", "observer"])
@@ -5628,7 +5628,7 @@ const computeAtRiskForAcademy = async (
   const nowIso = new Date().toISOString();
 
   let memQuery = sb.from("academy_classroom_memberships")
-    .select("contact_id, classroom_id, academy_contacts(id, first_name, last_name, email, telegram_id, status, notify_enabled)")
+    .select("contact_id, classroom_id, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, email, telegram_id, status, notify_enabled)")
     .eq("academy_id", academyId).in("role", ["student", "observer"]).limit(5000);
   if (classroomId) memQuery = memQuery.eq("classroom_id", classroomId);
   const { data: memberRows } = await memQuery;
@@ -5805,7 +5805,7 @@ const queueDueReminders = async (sb: SupabaseClientLike, academyIdFilter: string
     const assignmentId = String(a.id);
 
     const [{ data: members }, { data: subs }, { data: existing }] = await Promise.all([
-      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
       sb.from("academy_submissions").select("contact_id, status").eq("assignment_id", assignmentId).limit(2000),
       sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "assignment_due").eq("metadata->>assignment_id", assignmentId).limit(5000),
     ]);
@@ -5853,7 +5853,7 @@ const queueClassReminders = async (sb: SupabaseClientLike, academyIdFilter: stri
     const slotId = String(slot.id);
 
     const [{ data: members }, { data: existing }, { data: cl }] = await Promise.all([
-      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
+      sb.from("academy_classroom_memberships").select("contact_id, academy_contacts!academy_memberships_contact_tenant_fk(id, email, telegram_id, notify_enabled)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"]).limit(1000),
       sb.from("academy_notifications").select("contact_id").eq("academy_id", academyId).eq("type", "class_reminder").eq("metadata->>slot_id", slotId).eq("metadata->>date", today).limit(5000),
       sb.from("academy_classrooms").select("name").eq("id", classroomId).maybeSingle(),
     ]);
@@ -9839,7 +9839,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         const [assignmentsResult, submissionsResult, membersResult] = await Promise.all([
           sb.from("academy_assignments").select("id, title, assignment_type, due_at, max_score, position").eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived").order("position").limit(200),
           sb.from("academy_submissions").select("assignment_id, contact_id, score, max_score, status, submitted_at").eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
-          sb.from("academy_classroom_memberships").select("contact_id, academy_contacts(id, first_name, last_name, email)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student"]).limit(500),
+          sb.from("academy_classroom_memberships").select("contact_id, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, email)").eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student"]).limit(500),
         ]);
 
         const assignments = (assignmentsResult.data ?? []) as Array<Record<string, unknown>>;
