@@ -4542,6 +4542,7 @@
         "packageJson": {
           "dependencies": [
             "npm:@eslint/js@^9.39.1",
+            "npm:@playwright/test@^1.61.1",
             "npm:@types/node@^24.10.1",
             "npm:@types/react-dom@^19.2.3",
             "npm:@types/react@^19.2.5",

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminLayout } from '../../components/admin/AdminLayout';
+import { AcademyVideoSettingsPanel } from '../../components/admin/AcademyVideoSettingsPanel';
 import { supabase } from '../../lib/supabase';
 import {
   adminSecurityPolicyGet,
@@ -50,6 +51,10 @@ export const AdminSettingsPage: React.FC = () => {
       const res = await platformSettingsPatch(accessToken, {
         writing_ai_enabled: settings.writing_ai_enabled,
         writing_ai_daily_limit: settings.writing_ai_daily_limit,
+        student_center_enabled: settings.student_center_enabled,
+        classroom_v2_enabled: settings.classroom_v2_enabled,
+        academy_video_provider: settings.academy_video_provider,
+        academy_video_uploads_enabled: settings.academy_video_uploads_enabled,
       });
       setSettings(res);
     } catch (e) {
@@ -96,7 +101,7 @@ export const AdminSettingsPage: React.FC = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
-          <p className="text-sm text-gray-600">AI controls and system-level configuration.</p>
+          <p className="text-sm text-gray-600">Release controls, AI limits, managed media, and system-level configuration.</p>
         </div>
 
         {error ? <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">{error}</div> : null}
@@ -107,6 +112,20 @@ export const AdminSettingsPage: React.FC = () => {
             Admin / Trials
           </Link>
           .
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
+          <div className="text-sm font-semibold text-gray-900">Learning workspace release controls</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="rounded-xl border border-gray-200 p-3 inline-flex items-start gap-3 text-sm text-gray-700">
+              <input type="checkbox" className="mt-1" checked={settings.student_center_enabled} onChange={(event) => setSettings((previous) => previous && { ...previous, student_center_enabled: event.target.checked })} />
+              <span><strong className="block text-gray-900">Student Center</strong><span className="text-xs text-gray-600">Canonical cross-service learner command centre at /student-center.</span></span>
+            </label>
+            <label className="rounded-xl border border-gray-200 p-3 inline-flex items-start gap-3 text-sm text-gray-700">
+              <input type="checkbox" className="mt-1" checked={settings.classroom_v2_enabled} onChange={(event) => setSettings((previous) => previous && { ...previous, classroom_v2_enabled: event.target.checked })} />
+              <span><strong className="block text-gray-900">Classroom 2.0</strong><span className="text-xs text-gray-600">Role-safe course, live-session, work, progress, and people navigation.</span></span>
+            </label>
+          </div>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
@@ -137,6 +156,12 @@ export const AdminSettingsPage: React.FC = () => {
         <button onClick={save} disabled={saving} className="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold">
           {saving ? 'Saving...' : 'Save platform settings'}
         </button>
+
+        {accessToken ? <AcademyVideoSettingsPanel
+          accessToken={accessToken}
+          globalEnabled={settings.academy_video_uploads_enabled}
+          onGlobalEnabledChange={(enabled) => setSettings((previous) => previous && { ...previous, academy_video_uploads_enabled: enabled })}
+        /> : null}
 
         <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
           <div className="text-sm font-semibold text-gray-900">Admin security policy</div>

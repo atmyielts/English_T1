@@ -13,6 +13,10 @@ type SettingsUpdate = Partial<{
   trial_product_overrides: Record<string, unknown>;
   writing_ai_enabled: boolean;
   writing_ai_daily_limit: number;
+  student_center_enabled: boolean;
+  classroom_v2_enabled: boolean;
+  academy_video_provider: "cloudflare_stream";
+  academy_video_uploads_enabled: boolean;
   anti_sharing_enabled: boolean;
   anti_sharing_max_concurrent_sessions_per_product: number;
   anti_sharing_device_window_days: number;
@@ -204,6 +208,27 @@ serve(async (req) => {
       if (typeof body.writing_ai_enabled === "boolean") patch.writing_ai_enabled = body.writing_ai_enabled;
       const writingDailyLimit = normalizeNonNegativeInt(body.writing_ai_daily_limit);
       if (writingDailyLimit != null) patch.writing_ai_daily_limit = writingDailyLimit;
+      if (typeof body.student_center_enabled === "boolean") patch.student_center_enabled = body.student_center_enabled;
+      if (typeof body.classroom_v2_enabled === "boolean") patch.classroom_v2_enabled = body.classroom_v2_enabled;
+      if (body.academy_video_provider === "cloudflare_stream") patch.academy_video_provider = "cloudflare_stream";
+      if (typeof body.academy_video_uploads_enabled === "boolean") {
+        if (body.academy_video_uploads_enabled) {
+          const requiredStreamConfig = [
+            "CLOUDFLARE_STREAM_ACCOUNT_ID",
+            "CLOUDFLARE_STREAM_API_TOKEN",
+            "CLOUDFLARE_STREAM_CUSTOMER_CODE",
+            "CLOUDFLARE_STREAM_SIGNING_KEY_ID",
+            "CLOUDFLARE_STREAM_SIGNING_PRIVATE_JWK",
+          ];
+          if (requiredStreamConfig.some((key) => !String(Deno.env.get(key) ?? "").trim())) {
+            return new Response(JSON.stringify({ error: "Video hosting must be fully configured before uploads can be enabled" }), {
+              status: 409,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            });
+          }
+        }
+        patch.academy_video_uploads_enabled = body.academy_video_uploads_enabled;
+      }
       if (typeof body.anti_sharing_enabled === "boolean") patch.anti_sharing_enabled = body.anti_sharing_enabled;
 
       if ("anti_sharing_max_concurrent_sessions_per_product" in body) {

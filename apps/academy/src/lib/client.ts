@@ -129,6 +129,7 @@ export type TeacherStudioContact = {
   metadata: Json;
   created_at: string;
   updated_at: string;
+  legacy_video_read_only?: boolean;
 };
 
 export type TeacherStudioClassroom = {
@@ -418,6 +419,38 @@ export type TeacherStudioStudentDashboard = {
   entitlements: TeacherStudioEntitlement[];
   payments: TeacherStudioPayment[];
   offers: TeacherStudioOffer[];
+  assignments?: TeacherStudioAssignment[];
+  submissions?: TeacherStudioSubmission[];
+  sessions?: TeacherStudioStudentSession[];
+  lesson_progress?: Array<{
+    id: string;
+    academy_id: string;
+    classroom_id: string;
+    course_id: string;
+    lesson_id: string;
+    contact_id: string;
+    status: string;
+    started_at: string | null;
+    completed_at: string | null;
+    time_spent_seconds: number;
+    updated_at: string;
+  }>;
+  partial_errors?: Array<{ source: string; message: string; retryable: boolean }>;
+};
+
+export type TeacherStudioStudentSession = {
+  id: string;
+  academy_id: string;
+  classroom_id: string;
+  title: string;
+  session_type: string;
+  delivery_mode: string;
+  starts_at: string;
+  ends_at: string;
+  timezone: string;
+  status: string;
+  meeting_provider: string | null;
+  join_available: boolean;
 };
 
 export type TeacherStudioStudentAssignment = TeacherStudioAssignment & {
@@ -644,6 +677,42 @@ export type TeacherStudioStudentCurriculum = TeacherStudioCurriculum & {
   quizzes: TeacherStudioQuiz[];
   questions: TeacherStudioQuizQuestion[];
   attempts: TeacherStudioQuizAttempt[];
+  media: AcademyLessonMedia[];
+};
+
+export type AcademyVideoCapability = {
+  provider: string;
+  provider_configured: boolean;
+  global_enabled: boolean;
+  academy_enabled: boolean;
+  can_upload: boolean;
+  reason: string | null;
+  quota: {
+    max_asset_duration_seconds: number;
+    max_total_stored_minutes: number;
+    max_monthly_upload_minutes: number;
+  };
+  usage: { stored_minutes: number; monthly_upload_minutes: number };
+};
+
+export type AcademyVideoAsset = {
+  id: string;
+  academy_id: string;
+  title: string;
+  status: 'reserved' | 'uploading' | 'processing' | 'ready' | 'failed' | 'blocked' | 'deleted' | string;
+  duration_seconds: number | null;
+  failure_code: string | null;
+  failure_message: string | null;
+  created_at: string;
+};
+
+export type AcademyLessonMedia = {
+  id: string;
+  lesson_id: string;
+  title: string;
+  duration_seconds: number | null;
+  video_asset_id: string;
+  status: string;
 };
 
 export type TeacherStudioSubmission = {
@@ -955,7 +1024,7 @@ const readBody = async (res: Response): Promise<unknown> => {
 
 const invokeEdge = async <T>(
   fnName: string,
-  opts?: { method?: 'GET' | 'POST'; body?: Record<string, unknown> },
+  opts?: { method?: 'GET' | 'POST' | 'DELETE'; body?: Record<string, unknown> },
 ): Promise<T> => {
   const method = opts?.method ?? 'POST';
 
@@ -1458,7 +1527,7 @@ export type AcademyAttendanceRecord = { id:string; academy_id:string; classroom_
 export type AcademyAcademicOperations = {
   generated_at:string; access:TeacherStudioAccessProfile;
   calendars:Array<Record<string,unknown>>; calendar_events:Array<Record<string,unknown>>; staff_availability:Array<Record<string,unknown>>; room_availability:Array<Record<string,unknown>>;
-  sessions:AcademyLessonSession[]; session_staff_assignments:Array<Record<string,unknown>>; attendance:AcademyAttendanceRecord[]; attendance_exceptions:Array<Record<string,unknown>>;
+  sessions:AcademyLessonSession[]; session_delivery?:Array<{id:string;session_id:string;provider:string;attendee_url:string;join_opens_at:string;join_closes_at:string;status:string;updated_at:string}>; session_staff_assignments:Array<Record<string,unknown>>; attendance:AcademyAttendanceRecord[]; attendance_exceptions:Array<Record<string,unknown>>;
   make_up_lessons:Array<Record<string,unknown>>; quality_reviews:Array<Record<string,unknown>>; room_capacity:Array<Record<string,unknown>>; room_peak_periods:Array<Record<string,unknown>>; classroom_capacity:Array<Record<string,unknown>>;
   branches:Array<{id:string;name:string;is_active:boolean;currency:string}>; rooms:Array<{id:string;branch_id:string;name:string;capacity:number;is_active:boolean}>; classrooms:Array<{id:string;name:string;is_active:boolean;student_capacity:number|null}>;
   staff:Array<{id:string;email:string;display_name:string|null;role:string;classroom_ids:Json;is_active:boolean}>; classroom_memberships:Array<{classroom_id:string;contact_id:string;role:string;status:string}>; contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;status:string}>;
@@ -1491,6 +1560,72 @@ export const teacherStudioStudentCurriculum = async (
     academyId,
     params: { classroom_id: classroomId },
   });
+};
+
+export const academyVideoCapability = (academyId: string): Promise<AcademyVideoCapability> =>
+  invokeEdge<AcademyVideoCapability>('academy-video', {
+    body: { action: 'capability', academy_id: academyId },
+  });
+
+export const academyVideoCreateUpload = (
+  academyId: string,
+  body: { lesson_id: string; title: string; max_duration_seconds: number },
+): Promise<{ asset: AcademyVideoAsset; upload_url: string; upload_protocol: 'basic' }> =>
+  invokeEdge('academy-video', {
+    body: { action: 'create-upload', academy_id: academyId, ...body },
+  });
+
+export const academyVideoUploadFile = async (
+  uploadUrl: string,
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<void> => {
+  if (file.size > 200 * 1024 * 1024) throw new Error('This upload path supports files up to 200 MB.');
+  await new Promise<void>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('POST', uploadUrl);
+    request.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) onProgress?.(Math.round(event.loaded / event.total * 100));
+    });
+    request.addEventListener('load', () => request.status >= 200 && request.status < 300
+      ? resolve()
+      : reject(new Error(`Video upload failed (${request.status}).`)));
+    request.addEventListener('error', () => reject(new Error('Video upload was interrupted.')));
+    request.addEventListener('abort', () => reject(new Error('Video upload was cancelled.')));
+    const form = new FormData();
+    form.append('file', file, file.name);
+    request.send(form);
+  });
+};
+
+export const academyVideoSyncStatus = (academyId: string, assetId: string): Promise<AcademyVideoAsset> =>
+  invokeEdge<{ asset: AcademyVideoAsset }>('academy-video', {
+    body: { action: 'sync-status', academy_id: academyId, asset_id: assetId },
+  }).then((result) => result.asset);
+
+export const academyVideoPlayback = (academyId: string, assetId: string): Promise<{ iframe_url: string; expires_in_seconds: number }> =>
+  invokeEdge('academy-video', {
+    body: { action: 'playback-token', academy_id: academyId, asset_id: assetId },
+  });
+
+export const academyVideoDelete = (academyId: string, assetId: string): Promise<AcademyVideoAsset> =>
+  invokeEdge<{ asset: AcademyVideoAsset }>('academy-video', {
+    method: 'DELETE',
+    body: { action: 'delete', academy_id: academyId, asset_id: assetId },
+  }).then((result) => result.asset);
+
+export const teacherStudioStudentSessionJoin = async (
+  academyId: string,
+  classroomId: string,
+  sessionId: string,
+): Promise<{ join_url: string; meeting_provider: string; join_opens_at: string; join_closes_at: string }> => {
+  const data = await callTeacherStudio<{ session: { join_url: string; meeting_provider: string; join_opens_at: string; join_closes_at: string } }>({
+    method: 'POST',
+    action: 'student_session_join',
+    academyId,
+    body: { classroom_id: classroomId, session_id: sessionId },
+  });
+  return data.session;
 };
 
 export const teacherStudioSetLessonProgress = async (
@@ -2121,6 +2256,7 @@ export const teacherStudioUpsertCalendarEvent = (academyId:string,body:Record<st
 export const teacherStudioUpsertStaffAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_staff_availability',body);
 export const teacherStudioUpsertRoomAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_room_availability',body);
 export const teacherStudioCreateLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession}>(academyId,'create_lesson_session',body);
+export const teacherStudioUpsertSessionDelivery = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{delivery:Record<string,unknown>}>(academyId,'upsert_session_delivery',body);
 export const teacherStudioTransitionLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession;replacement?:AcademyLessonSession}>(academyId,'transition_lesson_session',body);
 export const teacherStudioAssignSessionSubstitute = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'assign_session_substitute',body);
 export const teacherStudioRecordSessionAttendance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{attendance:AcademyAttendanceRecord}>(academyId,'record_session_attendance',body);
