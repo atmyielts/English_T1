@@ -447,6 +447,15 @@ const studentDashboard = {
   payments: [],
 };
 
+const emptyStudentDashboardFixture = {
+  ...studentDashboard,
+  academies: [],
+  contacts: [],
+  classrooms: [],
+  classroom_memberships: [],
+  entitlements: [],
+};
+
 const educationOS = {
   generated_at: "2026-07-12T00:00:00.000Z",
   access: ownerAccess,
@@ -1622,6 +1631,7 @@ type MockEdgeOptions = {
   failActionAttempts?: Partial<Record<string, number>>;
   actionOverrides?: Partial<Record<string, unknown>>;
   actionLog?: string[];
+  meResponse?: unknown;
 };
 
 const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOptions = {}) => {
@@ -1631,6 +1641,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
     const fn = url.pathname.split("/").pop();
 
     if (fn === "me") {
+      if (options.meResponse) return route.fulfill(json(options.meResponse));
       const role = persona === "student" ? "student" : persona === "guardian" ? "guardian" : accessForPersona(persona).role;
       return route.fulfill(
         json({
@@ -2782,13 +2793,107 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       const context = await browser.newContext();
       const page = await context.newPage();
       await seedSessionCookie(page, `${route.persona}-resolver-user`);
-      await mockAcademyEdge(page, route.persona);
+      await mockAcademyEdge(page, route.persona, {
+        actionOverrides: { "student-dashboard": emptyStudentDashboardFixture },
+      });
       await page.goto(`/academy/workspace?academy_id=${academyId}`);
       await expect(page).toHaveURL(route.expectedPath);
       await expect(page.locator(".workspace-identity")).toContainText(route.roleLabel);
       await expect(page.locator(".workspace-nav")).toBeVisible();
       await context.close();
     }
+  });
+
+  test("signed-in service landing opens the only staff workspace without waiting for workspace data", async ({ page }) => {
+    await seedSessionCookie(page, "owner-service-entry-user");
+    await mockAcademyEdge(page, "owner", {
+      delayActions: { summary: 8_000 },
+      actionOverrides: { "student-dashboard": emptyStudentDashboardFixture },
+    });
+
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/academy\/admin(?:\?|$)/, { timeout: 3_000 });
+    await expect(page.locator(".workspace-identity")).toContainText("Owner", { timeout: 3_000 });
+    await expect(page.locator(".ts-loading")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Open academy service" })).toHaveCount(0);
+  });
+
+  test("first-time cross-role entry shows one compact academy choice instead of role lanes", async ({ page }) => {
+    await seedSessionCookie(page, "owner-student-choice-user");
+    await mockAcademyEdge(page, "owner");
+
+    await page.goto("/academy/workspace");
+    await expect(page).toHaveURL(/\/academies(?:\?|$)/);
+    await expect(page.getByRole("heading", { name: "Choose a workspace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Route Smoke Academy" })).toHaveCount(1);
+    await expect(page.getByText("Owner", { exact: true })).toBeVisible();
+    await expect(page.getByText("Student", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Manage Route Smoke Academy" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Learn in Route Smoke Academy" })).toBeVisible();
+    await expect(page.getByText("No access", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Role-based staff workspaces" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Classroom landings" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Create academy" })).toHaveCount(0);
+  });
+
+  test("last valid workspace preference restores the student context", async ({ page }) => {
+    await seedSessionCookie(page, "owner-student-preference-user");
+    await mockAcademyEdge(page, "owner");
+
+    await page.goto("/academies");
+    await page.getByRole("button", { name: "Learn in Route Smoke Academy" }).click();
+    await expect(page).toHaveURL(/\/academy\/student(?:\?|$)/);
+
+    await page.goto("/academy/workspace");
+    await expect(page).toHaveURL(/\/academy\/student(?:\?|$)/);
+  });
+
+  test("multiple staff academies use the compact switcher without unavailable role families", async ({ page }) => {
+    const atlasAcademy = {
+      ...academy("owner"),
+      id: "academy-atlas",
+      name: "Atlas Academy",
+      slug: "atlas",
+    };
+    await seedSessionCookie(page, "multi-academy-owner-user");
+    await mockAcademyEdge(page, "owner", {
+      actionOverrides: {
+        academies: { academies: [academy("owner"), atlasAcademy] },
+        "student-dashboard": emptyStudentDashboardFixture,
+      },
+    });
+
+    await page.goto("/academy/workspace");
+    await expect(page).toHaveURL(/\/academies(?:\?|$)/);
+    await expect(page.getByRole("heading", { name: "Route Smoke Academy" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Atlas Academy" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Manage Route Smoke Academy" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Manage Atlas Academy" })).toBeVisible();
+    await expect(page.getByText("No access", { exact: true })).toHaveCount(0);
+  });
+
+  test("account without Academy access gets one setup path and no locked catalogue", async ({ page }) => {
+    await seedSessionCookie(page, "academy-no-access-user");
+    await mockAcademyEdge(page, "owner", {
+      meResponse: {
+        user: { id: "academy-no-access-user", email: "no-access@example.test", role: "user" },
+        current_tenant: null,
+        memberships: [],
+      },
+      actionOverrides: {
+        academies: { academies: [] },
+        "student-dashboard": emptyStudentDashboardFixture,
+      },
+    });
+
+    await page.goto("/academy/workspace");
+    await expect(page).toHaveURL(/\/academies(?:\?|$)/);
+    await expect(page.getByRole("heading", { name: "No Academy access yet" })).toBeVisible();
+    await expect(page.getByText("No access", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Set up an academy" }).click();
+    await expect(page).toHaveURL(/\/academy\/setup$/);
+    await expect(page.getByRole("heading", { name: "Set up a new academy" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Academy name" })).toBeVisible();
   });
 
   test("workspace navigation renders Contacts immediately while summary and core data refresh in parallel", async ({ page }) => {
@@ -2822,15 +2927,116 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.locator(".workspace-route-progress")).toHaveCount(0, { timeout: 7_000 });
   });
 
-  test("Academy directory names the active role and its primary destination", async ({ page }) => {
+  test("Academy directory shows only accessible workspaces and avoids loading workspace data", async ({ page }) => {
+    const actionLog: string[] = [];
     await seedSessionCookie(page, "cashier-directory-user");
-    await mockAcademyEdge(page, "cashier");
+    await mockAcademyEdge(page, "cashier", {
+      actionLog,
+      actionOverrides: { "student-dashboard": emptyStudentDashboardFixture },
+    });
     await page.goto(`/academies?academy_id=${academyId}`);
 
-    await expect(page.getByRole("heading", { name: "Cashier workspace" })).toBeVisible();
-    await expect(page.getByText(/signed in as Cashier/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue as Cashier" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Academy Operations" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose a workspace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Route Smoke Academy" })).toBeVisible();
+    await expect(page.getByText("Cashier", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Open Route Smoke Academy operations" })).toBeVisible();
+    await expect(page.getByText("No access", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Role-based staff workspaces" })).toHaveCount(0);
+    expect(actionLog).not.toContain("summary");
+    expect(actionLog).not.toContain("contacts");
+  });
+
+  test("workspace entry remains responsive and keyboard-operable across supported widths", async ({ browser }) => {
+    const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
+    const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-entry-streamline");
+    if (captureScreenshots) await mkdir(outputDir, { recursive: true });
+
+    for (const viewport of [
+      { width: 1440, height: 1000 },
+      { width: 1280, height: 900 },
+      { width: 1024, height: 900 },
+      { width: 768, height: 1024 },
+      { width: 390, height: 844 },
+    ]) {
+      const context = await browser.newContext({ viewport });
+      const page = await context.newPage();
+      await seedSessionCookie(page, `entry-responsive-${viewport.width}`);
+      await mockAcademyEdge(page, "owner");
+      await page.goto("/academies");
+
+      const pageHeading = page.getByRole("heading", { name: "Choose a workspace" });
+      await expect(pageHeading).toBeVisible();
+      const utilityMenu = page.getByRole("button", { name: "Menu", exact: true });
+      const refreshButton = page.getByRole("button", { name: "Refresh", exact: true });
+      if (viewport.width <= 620) {
+        await expect(utilityMenu).toBeVisible();
+        await expect(utilityMenu).toHaveAttribute("aria-expanded", "false");
+        await expect(refreshButton).toBeHidden();
+        const headingBeforeMenu = await pageHeading.boundingBox();
+        await utilityMenu.click();
+        await expect(utilityMenu).toHaveAttribute("aria-expanded", "true");
+        await expect(refreshButton).toBeVisible();
+        const headingAfterMenu = await pageHeading.boundingBox();
+        expect(headingAfterMenu?.y ?? 0, "expanded menu pushes page content down").toBeGreaterThan((headingBeforeMenu?.y ?? 0) + 44);
+        if (captureScreenshots) {
+          await page.screenshot({ path: resolve(outputDir, `directory-menu-open-${viewport.width}.png`), fullPage: true });
+        }
+        await page.keyboard.press("Escape");
+        await expect(utilityMenu).toHaveAttribute("aria-expanded", "false");
+        await expect(utilityMenu).toBeFocused();
+        await expect(refreshButton).toBeHidden();
+      } else {
+        await expect(utilityMenu).toBeHidden();
+        await expect(refreshButton).toBeVisible();
+      }
+      const manageButton = page.getByRole("button", { name: "Manage Route Smoke Academy" });
+      const learnButton = page.getByRole("button", { name: "Learn in Route Smoke Academy" });
+      for (const button of [manageButton, learnButton]) {
+        const box = await button.boundingBox();
+        expect(box?.height ?? 0, `entry action target at ${viewport.width}px`).toBeGreaterThanOrEqual(44);
+        expect(box?.x ?? -1, `entry action left edge at ${viewport.width}px`).toBeGreaterThanOrEqual(0);
+        expect((box?.x ?? 0) + (box?.width ?? 0), `entry action right edge at ${viewport.width}px`).toBeLessThanOrEqual(viewport.width + 1);
+      }
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, `entry page overflow at ${viewport.width}px`).toBeLessThanOrEqual(1);
+      await manageButton.focus();
+      await expect(manageButton).toBeFocused();
+      if (captureScreenshots) {
+        await page.screenshot({ path: resolve(outputDir, `directory-${viewport.width}.png`), fullPage: true });
+      }
+      await page.keyboard.press("Enter");
+      await expect(page).toHaveURL(/\/academy\/admin(?:\?|$)/);
+      await context.close();
+    }
+
+    const setupContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const setupPage = await setupContext.newPage();
+    await seedSessionCookie(setupPage, "entry-responsive-no-access");
+    await mockAcademyEdge(setupPage, "owner", {
+      meResponse: {
+        user: { id: "entry-responsive-no-access", email: "no-access@example.test", role: "user" },
+        current_tenant: null,
+        memberships: [],
+      },
+      actionOverrides: {
+        academies: { academies: [] },
+        "student-dashboard": emptyStudentDashboardFixture,
+      },
+    });
+    await setupPage.goto("/academies");
+    const setupButton = setupPage.getByRole("button", { name: "Set up an academy" });
+    await expect(setupButton).toBeVisible();
+    expect((await setupButton.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await setupButton.focus();
+    await setupPage.keyboard.press("Enter");
+    await expect(setupPage).toHaveURL(/\/academy\/setup$/);
+    await expect(setupPage.getByRole("textbox", { name: "Academy name" })).toBeVisible();
+    const setupOverflow = await setupPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(setupOverflow, "setup page overflow at 390px").toBeLessThanOrEqual(1);
+    if (captureScreenshots) {
+      await setupPage.screenshot({ path: resolve(outputDir, "setup-390.png"), fullPage: true });
+    }
+    await setupContext.close();
   });
 
   test("teacher is blocked from administrator-only route", async ({ page }) => {
@@ -3183,8 +3389,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
   test("service landing and Academy directory localize without changing routes", async ({ browser }) => {
     const cases = [
-      { code: "uz", language: "Til", serviceHeading: "Akademiya haftasini bir joydan boshqaring", directoryHeading: "Akademiya boshqaruvi" },
-      { code: "ru", language: "Язык", serviceHeading: "Управляйте неделей академии на одном экране", directoryHeading: "Администрирование академии" },
+      { code: "uz", language: "Til", serviceHeading: "Akademiya haftasini bir joydan boshqaring", directoryHeading: "Ish maydonini tanlang" },
+      { code: "ru", language: "Язык", serviceHeading: "Управляйте неделей академии на одном экране", directoryHeading: "Выберите рабочее пространство" },
     ] as const;
     const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
     const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-localization");
@@ -3213,7 +3419,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       await directoryPage.goto(`/academies?academy_id=${academyId}&lang=${localeCase.code}`);
       await expect(directoryPage.locator("html")).toHaveAttribute("lang", localeCase.code);
       await expect(directoryPage.getByRole("heading", { name: localeCase.directoryHeading }).first()).toBeVisible();
-      await expect(directoryPage.getByText("Academy Administration", { exact: true })).toHaveCount(0);
+      await expect(directoryPage.getByText("No access", { exact: true })).toHaveCount(0);
       if (captureScreenshots) {
         await directoryPage.screenshot({ path: resolve(outputDir, `directory-${localeCase.code}-1280.png`), fullPage: true });
       }

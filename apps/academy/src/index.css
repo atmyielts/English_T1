@@ -184,6 +184,18 @@ p {
   justify-content: flex-end;
 }
 
+.market-nav__toggle {
+  display: none;
+}
+
+.market-nav__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .market-hero {
   min-height: 420px;
   padding: 22px;
@@ -274,6 +286,11 @@ p {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.market-page .primary-btn,
+.market-page .ghost-btn {
+  min-height: 44px;
 }
 
 .market-proof-strip {
@@ -2082,6 +2099,50 @@ tbody tr:hover {
   .topbar-actions {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .market-nav--collapsible {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .market-nav__toggle {
+    width: 100%;
+    min-height: 54px;
+    padding: 14px 16px;
+    border: 1px solid rgba(20, 22, 18, 0.18);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #fff;
+    background: var(--ink);
+    box-shadow: var(--shadow-soft);
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .market-nav__toggle svg {
+    transition: transform 160ms ease;
+  }
+
+  .market-nav--collapsible.is-open .market-nav__toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .market-nav__items {
+    display: none;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .market-nav--collapsible.is-open .market-nav__items {
+    display: grid;
   }
 
   .nav-btn,
@@ -4349,6 +4410,10 @@ tbody tr:hover {
   .ghost-btn,
   .small-btn {
     scroll-behavior: auto;
+    transition: none;
+  }
+
+  .market-nav__toggle svg {
     transition: none;
   }
 }

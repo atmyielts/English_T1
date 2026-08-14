@@ -8,6 +8,7 @@ import {
   BookOpenCheck,
   Building2,
   CalendarDays,
+  ChevronDown,
   CreditCard,
   GraduationCap,
   KeyRound,
@@ -196,6 +197,14 @@ const emptyContactEnrichmentState = (): ContactEnrichmentState => ({
 });
 
 type LoadState = 'loading' | 'ready' | 'unauthenticated' | 'error';
+type WorkspacePreference = { kind: 'staff' | 'student'; academyId: string };
+type DirectoryWorkspaceAcademy = {
+  id: string;
+  name: string;
+  slug: string;
+  staff: TeacherStudioAcademy | null;
+  student: TeacherStudioStudentDashboard['academies'][number] | null;
+};
 type WorkspaceMode = 'teacher' | 'student';
 type OfficeView = 'today' | 'academy' | 'platform' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
@@ -705,6 +714,29 @@ const toAuthUrl = (): string => {
 
 const normalizePath = (pathname: string): string => pathname.replace(/\/+$/, '') || '/';
 
+const workspacePreferenceKey = 'schood.academy.workspace.v1';
+
+const readWorkspacePreference = (): WorkspacePreference | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const value = JSON.parse(window.localStorage.getItem(workspacePreferenceKey) ?? 'null') as Partial<WorkspacePreference> | null;
+    if (!value || (value.kind !== 'staff' && value.kind !== 'student') || typeof value.academyId !== 'string') return null;
+    const academyId = value.academyId.trim();
+    return academyId ? { kind: value.kind, academyId } : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeWorkspacePreference = (preference: WorkspacePreference): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(workspacePreferenceKey, JSON.stringify(preference));
+  } catch {
+    // Preference persistence must never block workspace navigation.
+  }
+};
+
 const officeRouteIntentFromPath = (pathname: string): OfficeRouteIntent | null => {
   const normalized = normalizePath(pathname);
   if (normalized === '/academy/admin' || normalized.startsWith('/academy/admin/')) return 'admin';
@@ -1025,6 +1057,44 @@ const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
   is_published: true,
 });
 
+const MarketUtilityNavigation = ({
+  id,
+  children,
+}: {
+  id: string;
+  children: ReactNode;
+}) => {
+  const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+
+  return (
+    <nav
+      className={`market-nav market-nav--collapsible${open ? ' is-open' : ''}`}
+      aria-label={translate('Menu')}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || !open) return;
+        setOpen(false);
+        toggleRef.current?.focus();
+      }}
+    >
+      <button
+        ref={toggleRef}
+        className="market-nav__toggle"
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{translate('Menu')}</span>
+        <ChevronDown size={20} aria-hidden="true" />
+      </button>
+      <div className="market-nav__items" id={id}>
+        {children}
+      </div>
+    </nav>
+  );
+};
+
 const App = () => {
   useI18n();
   const location = useLocation();
@@ -1040,6 +1110,7 @@ const App = () => {
   const [academyId, setAcademyId] = useState('');
   const [academies, setAcademies] = useState<TeacherStudioAcademy[]>([]);
   const [studentDashboard, setStudentDashboard] = useState<TeacherStudioStudentDashboard | null>(null);
+  const [workspacePreference, setWorkspacePreference] = useState<WorkspacePreference | null>(readWorkspacePreference);
 
   const [summary, setSummary] = useState<TeacherStudioSummary | null>(null);
   const [contacts, setContacts] = useState<TeacherStudioContact[]>([]);
@@ -1218,6 +1289,7 @@ const App = () => {
   );
   const isServiceLanding = normalizedPath === '/';
   const isAcademyDirectory = normalizedPath === '/academies';
+  const isAcademySetup = normalizedPath === '/academy/setup';
   const isWorkspaceEntry = normalizedPath === '/academy/workspace';
   const isAcademyLanding = normalizedPath === '/academy';
   const isAcademyClassroomsLanding = normalizedPath === '/academy/classrooms';
@@ -1231,6 +1303,8 @@ const App = () => {
   const isGuardianWorkspaceRoute = normalizedPath === '/academy/parent' || normalizedPath.startsWith('/academy/parent/');
   const bootstrapScope = isServiceLanding
     ? 'service'
+    : isAcademySetup
+      ? 'setup'
     : isGuardianWorkspaceRoute
       ? 'guardian'
       : isStudentWorkspaceRoute
@@ -1251,6 +1325,35 @@ const App = () => {
     () => studentDashboard?.academies ?? [],
     [studentDashboard],
   );
+  const directoryWorkspaceAcademies = useMemo<DirectoryWorkspaceAcademy[]>(() => {
+    const byAcademy = new Map<string, DirectoryWorkspaceAcademy>();
+    for (const academy of teacherDirectoryAcademies) {
+      byAcademy.set(academy.id, {
+        id: academy.id,
+        name: academy.name || academy.id,
+        slug: academy.slug || academy.id,
+        staff: academy,
+        student: null,
+      });
+    }
+    for (const academy of studentDirectoryAcademies) {
+      const existing = byAcademy.get(academy.id);
+      if (existing) {
+        existing.student = academy;
+        if (!existing.name) existing.name = academy.name || academy.id;
+        if (!existing.slug) existing.slug = academy.slug || academy.id;
+      } else {
+        byAcademy.set(academy.id, {
+          id: academy.id,
+          name: academy.name || academy.id,
+          slug: academy.slug || academy.id,
+          staff: null,
+          student: academy,
+        });
+      }
+    }
+    return Array.from(byAcademy.values());
+  }, [studentDirectoryAcademies, teacherDirectoryAcademies]);
 
   const selectedOfficeClassroom = useMemo(
     () => (officeClassroomId ? classrooms.find((classroom) => classroom.id === officeClassroomId) ?? null : null),
@@ -1597,6 +1700,34 @@ const App = () => {
         setState('ready');
         return;
       }
+      if (isAcademySetup) {
+        setMe(meResponse);
+        setAcademies([]);
+        setStudentDashboard(emptyStudentDashboard());
+        setAcademyId('');
+        setState('ready');
+        return;
+      }
+      if (isServiceLanding) {
+        setMe(meResponse);
+        setAcademies([]);
+        setStudentDashboard(null);
+        setAcademyId('');
+        setState('ready');
+        return;
+      }
+      let cachedStudentData: TeacherStudioStudentDashboard | null = null;
+      const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
+        if (cachedStudentData) return cachedStudentData;
+        cachedStudentData = await loadStudentData();
+        return cachedStudentData;
+      };
+      const shouldPreloadStudentData =
+        isWorkspaceEntry ||
+        isAcademyDirectory ||
+        isStudentWorkspaceRoute ||
+        !!academyClassroomLandingId;
+      const studentDataPromise = shouldPreloadStudentData ? loadStudentDataOnce() : null;
       let academyList: TeacherStudioAcademy[] = [];
       const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isServiceLanding;
       if (shouldAttemptTeacherData) {
@@ -1610,26 +1741,23 @@ const App = () => {
         }
       }
       const hasTeacherRouteAccess = academyList.length > 0 || teacherMembershipRows.length > 0;
-      let cachedStudentData: TeacherStudioStudentDashboard | null = null;
-      const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
-        if (cachedStudentData) return cachedStudentData;
-        cachedStudentData = await loadStudentData();
-        return cachedStudentData;
-      };
-
       const shouldLoadStudentData =
+        shouldPreloadStudentData ||
         isStudentWorkspaceRoute ||
         !!academyClassroomLandingId ||
         !hasTeacherRouteAccess;
-      const studentData = shouldLoadStudentData ? await loadStudentDataOnce() : null;
+      const studentData = shouldLoadStudentData
+        ? await (studentDataPromise ?? loadStudentDataOnce())
+        : null;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
 
       if (!hasTeacherRouteAccess && !hasStudentRouteAccess) {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(studentData ?? emptyStudentDashboard());
-        setState('error');
-        setError('No active academy membership or student contact found for this account.');
+        setAcademyId('');
+        setError('');
+        setState('ready');
         return;
       }
 
@@ -1649,7 +1777,7 @@ const App = () => {
           (requestedAcademyId && academyIds.has(requestedAcademyId) ? requestedAcademyId : '') || fallbackAcademyId;
         setAcademies(academyList);
         setAcademyId(selectedAcademy);
-        if (selectedAcademy) await loadAcademyData(selectedAcademy);
+        if (selectedAcademy && !isWorkspaceEntry && !isAcademyDirectory) await loadAcademyData(selectedAcademy);
       } else {
         setAcademies([]);
         setAcademyId(requestedAcademyId || studentData?.academies[0]?.id || '');
@@ -1674,6 +1802,7 @@ const App = () => {
     academyClassroomLandingId,
     academyId,
     isAcademyDirectory,
+    isAcademySetup,
     isServiceLanding,
     isStudentWorkspaceRoute,
     isGuardianWorkspaceRoute,
@@ -1689,6 +1818,11 @@ const App = () => {
     bootstrapScopeRef.current = bootstrapScope;
     void bootstrap();
   }, [bootstrap, bootstrapScope]);
+
+  useEffect(() => {
+    if (state !== 'ready' || !isServiceLanding || !me) return;
+    navigate(location.search ? `/academy/workspace${location.search}` : '/academy/workspace', { replace: true });
+  }, [isServiceLanding, location.search, me, navigate, state]);
 
   useEffect(() => {
     if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
@@ -1752,6 +1886,7 @@ const App = () => {
     if (
       normalized === '/' ||
       normalized === '/academies' ||
+      normalized === '/academy/setup' ||
       normalized === '/academy/workspace' ||
       normalized === '/academy' ||
       normalized === '/academy/classrooms' ||
@@ -1862,31 +1997,119 @@ const App = () => {
     return academyOfficePath(defaultOfficeViewForIntent(views, intent), undefined, intent);
   }, [selectedAcademyAccess, selectedOfficeAcademy, teacherDirectoryAcademies]);
 
+  const rememberWorkspace = useCallback((preference: WorkspacePreference) => {
+    setWorkspacePreference((current) => (
+      current?.kind === preference.kind && current.academyId === preference.academyId
+        ? current
+        : preference
+    ));
+    writeWorkspacePreference(preference);
+  }, []);
+
+  const openStaffWorkspace = useCallback((targetAcademyId: string, replace = false) => {
+    if (!targetAcademyId) return;
+    rememberWorkspace({ kind: 'staff', academyId: targetAcademyId });
+    navigate(academyScopedPath(defaultOfficePathForAcademy(targetAcademyId), targetAcademyId), { replace });
+  }, [academyScopedPath, defaultOfficePathForAcademy, navigate, rememberWorkspace]);
+
+  const openStudentWorkspace = useCallback((targetAcademyId: string, replace = false) => {
+    if (!targetAcademyId) return;
+    rememberWorkspace({ kind: 'student', academyId: targetAcademyId });
+    navigate(academyScopedPath('/academy/student', targetAcademyId), { replace });
+  }, [academyScopedPath, navigate, rememberWorkspace]);
+
   useEffect(() => {
     if (state !== 'ready' || !isWorkspaceEntry) return;
     const requestedStaffAcademy = requestedAcademyId
       ? teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
       : null;
-    const staffAcademy = requestedStaffAcademy ?? teacherDirectoryAcademies[0] ?? null;
-    if (staffAcademy) {
-      navigate(academyScopedPath(defaultOfficePathForAcademy(staffAcademy.id), staffAcademy.id), { replace: true });
+    const requestedStudentAcademy = requestedAcademyId
+      ? studentDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
+      : null;
+    const preferredStaffAcademy = workspacePreference?.kind === 'staff'
+      ? teacherDirectoryAcademies.find((academy) => academy.id === workspacePreference.academyId) ?? null
+      : null;
+    const preferredStudentAcademy = workspacePreference?.kind === 'student'
+      ? studentDirectoryAcademies.find((academy) => academy.id === workspacePreference.academyId) ?? null
+      : null;
+
+    if (requestedStaffAcademy && !requestedStudentAcademy) {
+      openStaffWorkspace(requestedStaffAcademy.id, true);
       return;
     }
-    if (hasStudentAccess) {
-      navigate(academyScopedPath('/academy/student', studentDirectoryAcademies[0]?.id), { replace: true });
+    if (requestedStudentAcademy && !requestedStaffAcademy) {
+      openStudentWorkspace(requestedStudentAcademy.id, true);
       return;
     }
-    navigate('/academies', { replace: true });
+    if (requestedStaffAcademy && requestedStudentAcademy) {
+      if (workspacePreference?.kind === 'staff') {
+        openStaffWorkspace(requestedStaffAcademy.id, true);
+        return;
+      }
+      if (workspacePreference?.kind === 'student') {
+        openStudentWorkspace(requestedStudentAcademy.id, true);
+        return;
+      }
+    }
+    if (preferredStaffAcademy) {
+      openStaffWorkspace(preferredStaffAcademy.id, true);
+      return;
+    }
+    if (preferredStudentAcademy) {
+      openStudentWorkspace(preferredStudentAcademy.id, true);
+      return;
+    }
+
+    const workspaceCount = teacherDirectoryAcademies.length + studentDirectoryAcademies.length;
+    if (workspaceCount === 1 && teacherDirectoryAcademies[0]) {
+      openStaffWorkspace(teacherDirectoryAcademies[0].id, true);
+      return;
+    }
+    if (workspaceCount === 1 && studentDirectoryAcademies[0]) {
+      openStudentWorkspace(studentDirectoryAcademies[0].id, true);
+      return;
+    }
+
+    navigate(location.search ? `/academies${location.search}` : '/academies', { replace: true });
   }, [
-    academyScopedPath,
-    defaultOfficePathForAcademy,
-    hasStudentAccess,
     isWorkspaceEntry,
+    location.search,
     navigate,
+    openStaffWorkspace,
+    openStudentWorkspace,
     requestedAcademyId,
     state,
     studentDirectoryAcademies,
     teacherDirectoryAcademies,
+    workspacePreference,
+  ]);
+
+  useEffect(() => {
+    if (state !== 'ready') return;
+    const activeAcademyId = requestedAcademyId || academyId;
+    if (isTeacherWorkspaceRoute && activeAcademyId && teacherAcademyIds.has(activeAcademyId)) {
+      const preference = { kind: 'staff', academyId: activeAcademyId } satisfies WorkspacePreference;
+      if (workspacePreference?.kind !== preference.kind || workspacePreference.academyId !== preference.academyId) {
+        rememberWorkspace(preference);
+      }
+      return;
+    }
+    if (isStudentWorkspaceRoute && activeAcademyId && studentAcademyIds.has(activeAcademyId)) {
+      const preference = { kind: 'student', academyId: activeAcademyId } satisfies WorkspacePreference;
+      if (workspacePreference?.kind !== preference.kind || workspacePreference.academyId !== preference.academyId) {
+        rememberWorkspace(preference);
+      }
+    }
+  }, [
+    academyId,
+    isStudentWorkspaceRoute,
+    isTeacherWorkspaceRoute,
+    rememberWorkspace,
+    requestedAcademyId,
+    state,
+    studentAcademyIds,
+    teacherAcademyIds,
+    workspacePreference,
   ]);
 
   useEffect(() => {
@@ -2826,6 +3049,19 @@ const App = () => {
   );
 
   if (isServiceLanding) {
+    if (state === 'ready') {
+      return (
+        <>
+          <div className="ts-loading">
+            <div className="auth-card">
+              <h2>{translate("Academy")}</h2>
+              <p>{translate("Opening your workspace...")}</p>
+            </div>
+          </div>
+          <UpdatesButton />
+        </>
+      );
+    }
     return (
       <>
         <div className="market-page">
@@ -2833,10 +3069,6 @@ const App = () => {
             <div className="market-nav">
               <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
                 {translate("Back to platform")}{' '}</a>
-              {state === 'ready' ? (
-                <button className="ghost-btn" type="button" onClick={() => void signOut()}>
-                  {translate("Sign out")}{' '}</button>
-              ) : null}
             </div>
 
             <section className="market-hero">
@@ -2846,10 +3078,6 @@ const App = () => {
                 <p>
                   {translate("A living operating layer for education businesses: public academy pages, classroom hubs, teacher operations, student access, payments, alerts, and messaging in one connected flow.")}{' '}</p>
                 <div className="market-actions">
-                  {state === 'ready' ? (
-                    <button className="primary-btn" type="button" onClick={() => navigate('/academies')}>
-                      {translate("Open academy service")}{' '}</button>
-                  ) : null}
                   {state === 'unauthenticated' ? (
                     <a className="primary-btn" href={toAuthUrl()}>
                       {translate("Sign in")}{' '}</a>
@@ -2999,13 +3227,8 @@ const App = () => {
                 <span className="market-badge">{translate("Next step")}</span>
                 <h2>{translate("Open the role workspace when you need control. Open the classroom when you need focus.")}</h2>
               </div>
-              {state === 'ready' ? (
-                <button className="primary-btn" type="button" onClick={() => navigate('/academy/workspace')}>
-                  {translate("Open Academy")}{' '}</button>
-              ) : (
-                <a className="primary-btn" href={toAuthUrl()}>
-                  {translate("Sign in to Academy")}{' '}</a>
-              )}
+              <a className="primary-btn" href={toAuthUrl()}>
+                {translate("Sign in to Academy")}{' '}</a>
             </section>
           </div>
         </div>
@@ -3099,7 +3322,7 @@ const App = () => {
                 {translate("Open Student Workplace")}{' '}</button>
             ) : null}
             <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-              {translate("Academy directory")}{' '}</button>
+              {translate("Switch workspace")}{' '}</button>
           </div>
         </div>
         <UpdatesButton />
@@ -3126,7 +3349,60 @@ const App = () => {
                 {translate("Open staff workspace")}{' '}</button>
             ) : null}
             <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-              {translate("Academy directory")}{' '}</button>
+              {translate("Switch workspace")}{' '}</button>
+          </div>
+        </div>
+        <UpdatesButton />
+      </>
+    );
+  }
+
+  if (state === 'ready' && isAcademySetup) {
+    return (
+      <>
+        <div className="market-page">
+          <div className="market-wrap">
+            <MarketUtilityNavigation id="academy-setup-menu">
+              <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
+                {translate("Back to workspaces")}{' '}</button>
+              <button className="ghost-btn" type="button" onClick={() => void signOut()}>
+                {translate("Sign out")}{' '}</button>
+              <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
+                {translate("Back to platform")}{' '}</a>
+            </MarketUtilityNavigation>
+
+            <section className="market-section-head">
+              <span className="market-badge">{translate("Academy setup")}</span>
+              <h1>{translate("Set up a new academy")}</h1>
+              <p>{translate("Create a separate academy without changing your access to existing workspaces.")}</p>
+            </section>
+
+            {error ? <div className="error-banner">{translate(error)}</div> : null}
+            {notice ? <div className="info-banner">{translate(notice)}</div> : null}
+
+            <section className="market-card market-card--accent">
+              <form className="grid" onSubmit={submitAcademy}>
+                <label className="grid">
+                  <span className="small muted">{translate("Academy name")}</span>
+                  <input
+                    className="input"
+                    value={academyNameDraft}
+                    onChange={(event) => setAcademyNameDraft(event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="grid">
+                  <span className="small muted">{translate("Slug (optional)")}</span>
+                  <input
+                    className="input"
+                    value={academySlugDraft}
+                    onChange={(event) => setAcademySlugDraft(event.target.value)}
+                  />
+                </label>
+                <button className="primary-btn" type="submit" disabled={busy}>
+                  {translate("Create academy")}{' '}</button>
+              </form>
+            </section>
           </div>
         </div>
         <UpdatesButton />
@@ -3135,281 +3411,104 @@ const App = () => {
   }
 
   if (state === 'ready' && isAcademyDirectory) {
-    const directoryDefaultAcademyId =
-      requestedAcademyId || officeRouteAcademies[0]?.id || teacherDirectoryAcademies[0]?.id || studentDirectoryAcademies[0]?.id || '';
-    const defaultStaffAcademyId = teacherDirectoryAcademies[0]?.id ?? '';
-    const primaryStaffAcademy = teacherDirectoryAcademies.find((academy) => academy.id === requestedAcademyId)
-      ?? teacherDirectoryAcademies[0]
-      ?? null;
-    const primaryStaffAccess = primaryStaffAcademy?.access
-      ?? (primaryStaffAcademy ? buildFallbackAccess(primaryStaffAcademy.role) : null);
-    const primaryStaffRole = primaryStaffAcademy ? accessRoleLabel(primaryStaffAccess) : '';
-    const primaryStaffShell = primaryStaffAcademy
-      ? officeShellLabel(primaryStaffAccess, officeIntentForAccess(primaryStaffAccess))
-      : null;
-    const staffWorkspaceLaneDefinitions: Array<{
-      intent: OfficeRouteIntent;
-      badge: string;
-      title: string;
-      description: string;
-      empty: string;
-    }> = [
-      {
-        intent: 'admin',
-        badge: 'Administrator control',
-        title: 'Academy Administration',
-        description: 'Owner and administrator controls for academy setup, access, finance, offers, and governance.',
-        empty: 'No academy administrator role is linked to this account.',
-      },
-      {
-        intent: 'center',
-        badge: 'Education center control',
-        title: 'Education Center Control',
-        description: 'Delegated center operations for academies connected to an education-center tenant.',
-        empty: 'No education-center delegated control is linked to this account.',
-      },
-      {
-        intent: 'office',
-        badge: 'Operations control',
-        title: 'Academy LMS Operations',
-        description: 'Manager and counselor controls for classrooms, contacts, announcements, alerts, and reports.',
-        empty: 'No academy operations role is linked to this account.',
-      },
-      {
-        intent: 'teacher',
-        badge: 'Teacher control',
-        title: 'Teacher Workspace',
-        description: 'Assigned classroom LMS, student communication, attendance, grading, and learning actions.',
-        empty: 'No teacher or assistant workspace is linked to this account.',
-      },
-    ];
-    const staffWorkspaceLanes: Array<(typeof staffWorkspaceLaneDefinitions)[number] & { academies: TeacherStudioAcademy[] }> =
-      staffWorkspaceLaneDefinitions.map((lane) => ({
-        ...lane,
-        academies: teacherDirectoryAcademies.filter((academy) => {
-          const access = academy.access ?? buildFallbackAccess(academy.role);
-          return officeIntentForAccess(access) === lane.intent && officeIntentCanEnter(access, lane.intent);
-        }),
-      }));
+    const staffActionLabel = (academy: TeacherStudioAcademy): string => {
+      const access = academy.access ?? buildFallbackAccess(academy.role);
+      const intent = officeIntentForAccess(access);
+      if (intent === 'admin') return translate('Manage {academy}', { academy: academy.name || academy.id });
+      if (intent === 'center') return translate('Open {academy} center', { academy: academy.name || academy.id });
+      if (intent === 'teacher') return translate('Teach in {academy}', { academy: academy.name || academy.id });
+      return translate('Open {academy} operations', { academy: academy.name || academy.id });
+    };
 
     return (
       <>
         <div className="market-page">
           <div className="market-wrap">
-            <div className="market-nav">
-              <button
-                className="ghost-btn"
-                type="button"
-                onClick={() => navigate(academyScopedPath('/academy', directoryDefaultAcademyId))}
-              >
-                {translate("Academy landing")}{' '}</button>
+            <MarketUtilityNavigation id="academy-workspace-menu">
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                 {translate("Refresh")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void signOut()}>
                 {translate("Sign out")}{' '}</button>
               <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
                 {translate("Back to platform")}{' '}</a>
-            </div>
+            </MarketUtilityNavigation>
 
-            <section className="market-hero">
-              <div className="market-copy">
-                <div className="market-eyebrow">{translate("Your Academy access")}</div>
-                <h1>{primaryStaffRole ? translate('{role} workspace', { role: translate(primaryStaffRole) }) : translate('Your learning workspace')}</h1>
-                <p>
-                  {primaryStaffRole && primaryStaffShell
-                    ? translate('You’re signed in as {role}. Continue to {workspace}; use this directory only when you need to switch academies or profiles.', { role: translate(primaryStaffRole), workspace: translate(primaryStaffShell.title) })
-                    : translate('Continue to your Student Workspace. Use this directory only when you need to switch academies or profiles.')}
-                </p>
-              </div>
-              <div className="market-highlight">
-                <div className="market-badge">{translate("Access summary")}</div>
-                <div className="market-kpis">
-                  <article className="market-kpi">
-                    <span>{translate("Staff workspaces")}</span>
-                    <strong>{teacherDirectoryAcademies.length}</strong>
-                  </article>
-                  <article className="market-kpi">
-                    <span>{translate("Student academies")}</span>
-                    <strong>{studentDirectoryAcademies.length}</strong>
-                  </article>
-                  <article className="market-kpi">
-                    <span>{translate("Student classrooms")}</span>
-                    <strong>{studentDashboard?.classrooms.length ?? 0}</strong>
-                  </article>
-                </div>
-              </div>
-            </section>
+            {directoryWorkspaceAcademies.length > 0 ? (
+              <>
+                <section className="market-section-head">
+                  <span className="market-badge">{translate("Workspace access")}</span>
+                  <h1>{translate("Choose a workspace")}</h1>
+                  <p>{translate("Only academies and roles linked to your account are shown.")}</p>
+                </section>
 
-            {error ? <div className="error-banner">{translate(error)}</div> : null}
-            {notice ? <div className="info-banner">{translate(notice)}</div> : null}
+                {error ? <div className="error-banner">{translate(error)}</div> : null}
+                {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
-            <section className="market-grid market-grid--wide">
-              <article className="market-card market-card--accent">
-                <div className="row between">
-                  <h3>{translate(primaryStaffShell?.title ?? 'Staff workspaces')}</h3>
-                  <span className={hasTeacherAccess ? 'status status--ok' : 'status'}>{translate(hasTeacherAccess ? 'available' : 'locked')}</span>
-                </div>
-                <p>
-                  {primaryStaffRole && primaryStaffAcademy
-                    ? translate('{role} access for {academy}. {scope}', { role: translate(primaryStaffRole), academy: primaryStaffAcademy.name || primaryStaffAcademy.id, scope: translate(primaryStaffShell?.subtitle ?? 'Role-scoped Academy operations.') })
-                    : translate('Role-based staff operations are available only when an active staff membership is linked.')}
-                </p>
-                {hasTeacherAccess ? (
-                  <button
-                    className="small-btn"
-                    type="button"
-                    onClick={() => {
-                      navigate(academyScopedPath(defaultOfficePathForAcademy(primaryStaffAcademy?.id ?? defaultStaffAcademyId), primaryStaffAcademy?.id ?? defaultStaffAcademyId));
-                    }}
-                  >
-                    {translate('Continue as {role}', { role: translate(primaryStaffRole) })}
-                  </button>
-                ) : (
-                  <div className="small muted">{translate("No active academy staff role was found for this account.")}</div>
-                )}
-              </article>
+                <section className="market-grid market-grid--wide">
+                  {directoryWorkspaceAcademies.map((entry) => {
+                    const staffAccess = entry.staff?.access ?? (entry.staff ? buildFallbackAccess(entry.staff.role) : null);
+                    const staffShell = entry.staff ? officeShellLabel(staffAccess, officeIntentForAccess(staffAccess)) : null;
+                    const hasBothRoles = Boolean(entry.staff && entry.student);
+                    return (
+                      <article className="market-card" key={entry.id}>
+                        <div className="row between">
+                          <div>
+                            <h2>{entry.name}</h2>
+                            <p className="small muted">{entry.slug}</p>
+                          </div>
+                          <div className="row">
+                            {entry.staff ? <span className="status status--ok">{translate(accessRoleLabel(staffAccess))}</span> : null}
+                            {entry.student ? <span className="status status--ok">{translate("Student")}</span> : null}
+                          </div>
+                        </div>
+                        <p>
+                          {hasBothRoles
+                            ? translate("Choose whether you want to manage this academy or continue learning.")
+                            : entry.staff
+                              ? translate(staffShell?.subtitle ?? 'Role-scoped Academy operations.')
+                              : translate("Classrooms, messages, tuition, and learning progress.")}
+                        </p>
+                        <div className="market-actions">
+                          {entry.staff ? (
+                            <button className="primary-btn" type="button" onClick={() => openStaffWorkspace(entry.id)}>
+                              {staffActionLabel(entry.staff)}
+                            </button>
+                          ) : null}
+                          {entry.student ? (
+                            <button className={entry.staff ? 'ghost-btn' : 'primary-btn'} type="button" onClick={() => openStudentWorkspace(entry.id)}>
+                              {translate('Learn in {academy}', { academy: entry.name })}
+                            </button>
+                          ) : null}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </section>
 
-              <article className="market-card">
-                <div className="row between">
-                  <h3>{translate("Student Workplace")}</h3>
-                  <span className={hasStudentAccess ? 'status status--ok' : 'status'}>{translate(hasStudentAccess ? 'available' : 'locked')}</span>
-                </div>
-                <p>{translate("Student-only learning: classrooms, announcements, direct messages, alerts, access grants, and payments.")}</p>
-                {hasStudentAccess ? (
-                  <button
-                    className="small-btn"
-                    type="button"
-                    onClick={() => navigate(academyScopedPath('/academy/student', studentDirectoryAcademies[0]?.id))}
-                  >
-                    {translate("Open Student Workplace")}{' '}</button>
-                ) : (
-                  <div className="small muted">{translate("No linked student contact was found for this account.")}</div>
-                )}
-              </article>
-            </section>
-
-            <section className="market-section-head">
-              <span className="market-badge">{translate("Staff flow")}</span>
-              <h2>{translate("Role-based staff workspaces")}</h2>
-              <p>{translate("Each entry opens one role family. Administration, center control, operations, and teacher LMS stay separated.")}</p>
-            </section>
-
-            {staffWorkspaceLanes.map((lane) => (
-              <section className="market-grid" key={lane.intent}>
-                <article className="market-card market-card--accent">
-                  <div className="market-badge">{translate(lane.badge)}</div>
-                  <h3>{translate(lane.title)}</h3>
-                  <p>{translate(lane.description)}</p>
-                  <div className="small muted">{translate('Linked workspaces: {count}', { count: lane.academies.length })}</div>
-                </article>
-                {lane.academies.map((academy) => (
-                  <article className="market-card" key={`${lane.intent}-${academy.id}`}>
-                    <div className="row between">
-                      <h3>{academy.name || academy.id}</h3>
-                      <span className={statusClass(academy.status)}>{translate(accessRoleLabel(academy.access ?? buildFallbackAccess(academy.role)))}</span>
-                    </div>
-                    <p className="small muted">{academy.slug || academy.id}</p>
-                    <div className="market-actions">
-                      <button
-                        className="small-btn"
-                        type="button"
-                        onClick={() => navigate(academyScopedPath(defaultOfficePathForAcademy(academy.id), academy.id))}
-                      >
-                        {translate("Open workspace")}{' '}</button>
-                      <button
-                        className="small-btn"
-                        type="button"
-                        onClick={() => navigate(`/academy/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
-                      >
-                        {translate("Classroom landings")}{' '}</button>
-                      <button
-                        className="small-btn"
-                        type="button"
-                        onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
-                      >
-                        {translate("Public landing")}{' '}</button>
-                    </div>
-                  </article>
-                ))}
-                {lane.academies.length === 0 ? (
-                  <article className="market-card">
-                    <h3>{translate("No access")}</h3>
-                    <p>{translate(lane.empty)}</p>
-                  </article>
-                ) : null}
-              </section>
-            ))}
-
-            <section className="market-section-head">
-              <span className="market-badge">{translate("Platform action")}</span>
-              <h2>{translate("Start a separate academy")}</h2>
-              <p>{translate("This creates a new academy where your account becomes owner. It does not change your role inside existing academies.")}</p>
-            </section>
-
-            <section className="market-card">
-              <h3>{translate("Create academy")}</h3>
-              <form className="grid" onSubmit={submitAcademy}>
-                <input
-                  className="input"
-                  placeholder={translate("Academy name")}
-                  value={academyNameDraft}
-                  onChange={(event) => setAcademyNameDraft(event.target.value)}
-                  required
-                />
-                <input
-                  className="input"
-                  placeholder={translate("Slug (optional)")}
-                  value={academySlugDraft}
-                  onChange={(event) => setAcademySlugDraft(event.target.value)}
-                />
-                <button className="primary-btn" type="submit" disabled={busy}>
-                  {translate("Create academy")}{' '}</button>
-              </form>
-            </section>
-
-            <section className="market-section-head">
-              <span className="market-badge">{translate("Student flow")}</span>
-              <h2>{translate("Linked student academies")}</h2>
-              <p>{translate("These entries open student learning spaces. Teacher operations never appear inside this route family.")}</p>
-            </section>
-
-            <section className="market-grid">
-              {studentDirectoryAcademies.map((academy) => (
-                <article className="market-card" key={academy.id}>
-                  <div className="row between">
-                    <h3>{academy.name}</h3>
-                    <span className="status status--ok">{translate("student")}</span>
+                <section className="academy-final-cta">
+                  <div>
+                    <span className="market-badge">{translate("Academy setup")}</span>
+                    <h2>{translate("Need to open a separate academy?")}</h2>
                   </div>
-                  <p className="small muted">{academy.slug || academy.id}</p>
+                  <button className="ghost-btn" type="button" onClick={() => navigate('/academy/setup')}>
+                    {translate("Set up an academy")}{' '}</button>
+                </section>
+              </>
+            ) : (
+              <section className="market-hero">
+                <div className="market-copy">
+                  <div className="market-eyebrow">{translate("Workspace access")}</div>
+                  <h1>{translate("No Academy access yet")}</h1>
+                  <p>{translate("This account is not linked to an academy workspace. You can set up a new academy or return to Schood.")}</p>
                   <div className="market-actions">
-                    <button
-                      className="small-btn"
-                      type="button"
-                      onClick={() => navigate(`/academy/student?academy_id=${encodeURIComponent(academy.id)}`)}
-                    >
-                      {translate("Student Workplace")}{' '}</button>
-                    <button
-                      className="small-btn"
-                      type="button"
-                      onClick={() => navigate(`/academy/student/classrooms?academy_id=${encodeURIComponent(academy.id)}`)}
-                    >
-                      {translate("My classrooms")}{' '}</button>
-                    <button
-                      className="small-btn"
-                      type="button"
-                      onClick={() => navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`)}
-                    >
-                      {translate("Public landing")}{' '}</button>
+                    <button className="primary-btn" type="button" onClick={() => navigate('/academy/setup')}>
+                      {translate("Set up an academy")}{' '}</button>
+                    <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
+                      {translate("Back to platform")}{' '}</a>
                   </div>
-                </article>
-              ))}
-              {studentDirectoryAcademies.length === 0 ? (
-                <article className="market-card">
-                  <h3>{translate("No Student Workplace access")}</h3>
-                  <p>{translate("This account can use staff workspaces only unless it is linked to a student contact.")}</p>
-                </article>
-              ) : null}
-            </section>
+                </div>
+              </section>
+            )}
           </div>
         </div>
         <UpdatesButton />
@@ -3474,7 +3573,7 @@ const App = () => {
           <div className="market-wrap">
             <div className="market-nav">
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-                {translate("Academy directory")}{' '}</button>
+                {translate("Switch workspace")}{' '}</button>
               <button
                 className="ghost-btn"
                 type="button"
@@ -4310,7 +4409,7 @@ const App = () => {
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy'))}>
                 {translate("Academy landing")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
-                {translate("Academy directory")}{' '}</button>
+                {translate("Switch workspace")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                 {translate("Refresh")}{' '}</button>
             </div>
@@ -4480,7 +4579,7 @@ const App = () => {
         label: 'Learning',
         items: [
           {
-            id: 'academies', label: 'Academies', icon: <Building2 size={17} />, active: isAcademyDirectory,
+            id: 'academies', label: 'Switch workspace', icon: <Building2 size={17} />, active: isAcademyDirectory,
             onSelect: () => navigate('/academies'),
           },
           {
@@ -4740,7 +4839,7 @@ const App = () => {
     const entryRole = entryStaffAcademy ? accessRoleLabel(entryAccess) : hasStudentAccess ? 'Student' : 'Academy member';
     const entryShell = entryStaffAcademy
       ? officeShellLabel(entryAccess, officeIntentForAccess(entryAccess)).title
-      : hasStudentAccess ? 'Student Workspace' : 'Academy directory';
+      : hasStudentAccess ? 'Student Workspace' : 'Switch workspace';
     return (
       <>
         <div className="ts-loading">
@@ -4800,7 +4899,7 @@ const App = () => {
       items: visibleNavItems([
         {
           id: 'academies',
-          label: officeRouteIntent === 'center' ? 'Linked academies' : 'Academies',
+          label: 'Switch workspace',
           icon: <Building2 size={17} />,
           active: isAcademyDirectory,
           onSelect: () => navigate('/academies'),
