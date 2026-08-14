@@ -541,6 +541,27 @@ p {
   line-height: 1.2;
 }
 
+.workspace-card__identity {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.workspace-card__title,
+.workspace-card__slug,
+.workspace-card__action {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.workspace-card__title {
+  margin: 0;
+}
+
+.workspace-card__action {
+  white-space: normal;
+}
+
 .surface-card {
   min-height: 245px;
   align-content: start;

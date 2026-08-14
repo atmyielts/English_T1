@@ -3450,11 +3450,11 @@ const App = () => {
                     const staffShell = entry.staff ? officeShellLabel(staffAccess, officeIntentForAccess(staffAccess)) : null;
                     const hasBothRoles = Boolean(entry.staff && entry.student);
                     return (
-                      <article className="market-card" key={entry.id}>
+                      <article className="market-card workspace-card" key={entry.id}>
                         <div className="row between">
-                          <div>
-                            <h2>{entry.name}</h2>
-                            <p className="small muted">{entry.slug}</p>
+                          <div className="workspace-card__identity">
+                            <h2 className="workspace-card__title">{entry.name}</h2>
+                            <p className="small muted workspace-card__slug">{entry.slug}</p>
                           </div>
                           <div className="row">
                             {entry.staff ? <span className="status status--ok">{translate(accessRoleLabel(staffAccess))}</span> : null}
@@ -3470,12 +3470,12 @@ const App = () => {
                         </p>
                         <div className="market-actions">
                           {entry.staff ? (
-                            <button className="primary-btn" type="button" onClick={() => openStaffWorkspace(entry.id)}>
+                            <button className="primary-btn workspace-card__action" type="button" onClick={() => openStaffWorkspace(entry.id)}>
                               {staffActionLabel(entry.staff)}
                             </button>
                           ) : null}
                           {entry.student ? (
-                            <button className={entry.staff ? 'ghost-btn' : 'primary-btn'} type="button" onClick={() => openStudentWorkspace(entry.id)}>
+                            <button className={`${entry.staff ? 'ghost-btn' : 'primary-btn'} workspace-card__action`} type="button" onClick={() => openStudentWorkspace(entry.id)}>
                               {translate('Learn in {academy}', { academy: entry.name })}
                             </button>
                           ) : null}

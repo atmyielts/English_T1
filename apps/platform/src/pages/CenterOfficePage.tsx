@@ -2515,17 +2515,17 @@ const AcademiesPanel: React.FC<{
           const academyOfficeUrl = academy.academy_office_url ?? academy.teacher_office_url ?? '';
           return (
           <div key={academy.id} className="grid gap-4 p-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-lg font-bold text-gray-900">{academy.name || academy.slug || academy.id}</p>
+                <p className="min-w-0 break-words text-lg font-bold text-gray-900">{academy.name || academy.slug || academy.id}</p>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">linked academy</span>
               </div>
               <p className="mt-1 break-all text-sm text-gray-600">{academy.slug || academy.id}</p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.staff ?? 0}</strong> staff</span>
-                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.contacts ?? 0}</strong> contacts</span>
-                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.classrooms ?? 0}</strong> classes</span>
-                <span className="rounded-2xl border border-gray-900/10 bg-white/70 p-3 text-sm"><strong>{academy.counts?.offers ?? 0}</strong> offers</span>
+              <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(104px,1fr))] gap-2">
+                <span className="min-w-0 rounded-2xl border border-gray-900/10 bg-white/70 px-3 py-2 text-sm leading-tight"><strong className="block text-lg tabular-nums">{academy.counts?.staff ?? 0}</strong><span className="mt-1 block text-xs text-gray-600">staff</span></span>
+                <span className="min-w-0 rounded-2xl border border-gray-900/10 bg-white/70 px-3 py-2 text-sm leading-tight"><strong className="block text-lg tabular-nums">{academy.counts?.contacts ?? 0}</strong><span className="mt-1 block text-xs text-gray-600">contacts</span></span>
+                <span className="min-w-0 rounded-2xl border border-gray-900/10 bg-white/70 px-3 py-2 text-sm leading-tight"><strong className="block text-lg tabular-nums">{academy.counts?.classrooms ?? 0}</strong><span className="mt-1 block text-xs text-gray-600">classes</span></span>
+                <span className="min-w-0 rounded-2xl border border-gray-900/10 bg-white/70 px-3 py-2 text-sm leading-tight"><strong className="block text-lg tabular-nums">{academy.counts?.offers ?? 0}</strong><span className="mt-1 block text-xs text-gray-600">offers</span></span>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 xl:justify-end">
