@@ -96,7 +96,7 @@ jobs:
           cache: npm
 
       - name: Setup Deno
-        if: ${{ matrix.label == 'academy' }}
+        if: ${{ matrix.label == 'academy' || matrix.label == 'english-hub' }}
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
@@ -128,6 +128,14 @@ jobs:
         if: ${{ matrix.label == 'academy' }}
         run: npm run test:academy:routes
 
+      - name: English Edge typecheck
+        if: ${{ matrix.label == 'english-hub' }}
+        run: deno check supabase/functions/hub/index.ts
+
+      - name: English mass-readiness contracts
+        if: ${{ matrix.label == 'english-hub' }}
+        run: npm run --if-present test:english:mass-readiness
+
       - name: Build ${{ matrix.label }}
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -143,6 +151,7 @@ jobs:
           VITE_DISABLE_PAYWALL: "false"
           VITE_USE_MOCK_PERSISTENCE: "false"
           VITE_DEBUG_AUTH: "false"
+          VITE_RELEASE_SHA: ${{ github.sha }}
         run: npm --workspace ${{ matrix.workspace }} run build
 
       - name: Academy product smoke

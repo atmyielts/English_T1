@@ -27,6 +27,7 @@ jobs:
       VITE_DISABLE_PAYWALL: "false"
       VITE_USE_MOCK_PERSISTENCE: "false"
       VITE_DEBUG_AUTH: "false"
+      VITE_RELEASE_SHA: ${{ github.sha }}
 
     steps:
       - name: Checkout
@@ -63,6 +64,12 @@ jobs:
 
       - name: Run unit tests
         run: npm test
+
+      - name: English Edge typecheck
+        run: deno check supabase/functions/hub/index.ts
+
+      - name: English mass-readiness contracts
+        run: npm run --if-present test:english:mass-readiness
 
       - name: Academy Edge typecheck
         run: deno check supabase/functions/academy/index.ts
