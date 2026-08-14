@@ -1,6 +1,7 @@
 import { translate } from '../../i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  academyVideoPlayback,
   teacherStudioSetLessonProgress,
   teacherStudioStartQuiz,
   teacherStudioStudentCurriculum,
@@ -38,6 +39,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [videoFrame, setVideoFrame] = useState<{ assetId: string; url: string } | null>(null);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -76,6 +78,19 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
       await teacherStudioSetLessonProgress(academyId, { classroom_id: classroomId, lesson_id: lesson.id, status });
       setNotice(status === 'completed' ? 'Lesson completed.' : 'Lesson started.');
       await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const watchVideo = async (assetId: string) => {
+    setBusy(true);
+    setError('');
+    try {
+      const playback = await academyVideoPlayback(academyId, assetId);
+      setVideoFrame({ assetId, url: playback.iframe_url });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -187,6 +202,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
                       {(curriculum?.lessons ?? []).filter((lesson) => lesson.module_id === module.id).map((lesson) => {
                         const progress = progressByLesson.get(lesson.id);
                         const expanded = expandedLessonId === lesson.id;
+                        const lessonMedia = (curriculum?.media ?? []).filter((media) => media.lesson_id === lesson.id);
                         return (
                           <li key={lesson.id}>
                             <div className="row between wrap">
@@ -195,10 +211,16 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
                             </div>
                             {lesson.summary ? <p>{lesson.summary}</p> : null}
                             <div className="row wrap">
-                              <button className="small-btn" type="button" disabled={lesson.locked} onClick={() => { setExpandedLessonId(expanded ? '' : lesson.id); if (!progress && !lesson.locked) void markLesson(lesson, 'in_progress'); }}>{expanded ? 'Close lesson' : 'Open lesson'}</button>
+                              <button className="small-btn" type="button" disabled={lesson.locked} onClick={() => { setExpandedLessonId(expanded ? '' : lesson.id); if (!progress && !lesson.locked) void markLesson(lesson, 'in_progress'); }}>{translate(expanded ? 'Close lesson' : 'Open lesson')}</button>
                               {progress?.status !== 'completed' ? <button className="small-btn" type="button" disabled={busy || lesson.locked} onClick={() => void markLesson(lesson, 'completed')}>{translate("Mark complete")}</button> : null}
                             </div>
-                            {expanded ? <div className="lesson-content">{lessonText(lesson) || 'No lesson content has been published.'}</div> : null}
+                            {expanded ? <div className="lesson-content">
+                              <p>{lessonText(lesson) || translate('No written lesson content has been published.')}</p>
+                              {lessonMedia.map((media) => <div className="managed-video" key={media.id}>
+                                <div className="row between wrap"><div><strong>{media.title}</strong><div className="small muted">{media.duration_seconds ? `${Math.ceil(media.duration_seconds / 60)} ${translate('min')}` : translate('Recorded lesson')}</div></div><button className="small-btn" type="button" disabled={busy} onClick={() => void watchVideo(media.video_asset_id)}>{translate('Watch lesson')}</button></div>
+                                {videoFrame?.assetId === media.video_asset_id ? <div className="managed-video__frame"><iframe src={videoFrame.url} title={media.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen /></div> : null}
+                              </div>)}
+                            </div> : null}
                           </li>
                         );
                       })}

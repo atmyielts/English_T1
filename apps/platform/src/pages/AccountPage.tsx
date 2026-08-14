@@ -283,6 +283,7 @@ export const AccountPage: React.FC = () => {
 
   const navItems: SiteHeaderNavItem[] = [
     { id: 'home', label: t('nav.home'), onClick: () => navigate('/') },
+    { id: 'learning', label: t('studentCenter.label'), onClick: () => navigate('/student-center') },
     { id: 'plans', label: t('nav.plans'), onClick: () => navigate('/plans') },
     { id: 'pricing', label: t('nav.pricing'), onClick: () => navigate('/pricing') },
     { id: 'contact', label: t('nav.contact'), onClick: () => navigate('/contact') },

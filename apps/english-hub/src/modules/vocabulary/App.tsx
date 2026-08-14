@@ -816,7 +816,7 @@ const App = () => {
     () => `${buildPlatformUrl(`/pricing?product=${VOCABULARY_PRODUCT_SLUG}`)}&returnTo=${encodeURIComponent(returnTo)}`,
     [returnTo],
   );
-  const platformWorkspaceHref = useMemo(() => buildPlatformUrl('/workspace/student'), []);
+  const platformWorkspaceHref = useMemo(() => buildPlatformUrl('/student-center'), []);
   const hasAccess = status === 'signed_in' && accessStatus === 'granted';
   const needsAccess = status === 'signed_in' && accessStatus === 'denied';
   const checkingAccess = status === 'signed_in' && accessStatus === 'checking';

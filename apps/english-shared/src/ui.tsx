@@ -195,7 +195,7 @@ export const EnglishSkillWorkspace = ({
 
           <div className="left-footer">
             <div className="support-zone">
-              <a className="menu-link muted-link" href={platformHref.replace('/workspace/student', '/contact')}>
+              <a className="menu-link muted-link" href={platformHref.replace('/student-center', '/contact').replace('/workspace/student', '/contact')}>
                 Support
               </a>
               <a className="menu-link muted-link" href={pricingHref}>

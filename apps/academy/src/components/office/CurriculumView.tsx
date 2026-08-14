@@ -22,6 +22,7 @@ import {
   type TeacherStudioGradeCategory,
   type TeacherStudioRubric,
 } from '../../lib/client';
+import { ManagedVideoPanel } from './ManagedVideoPanel';
 
 type CurriculumViewProps = {
   academyId: string;
@@ -381,6 +382,8 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
           </div>
         </div>
       ) : null}
+
+      {selectedCourse ? <ManagedVideoPanel academyId={academyId} lessons={courseLessons} /> : null}
 
       {selectedCourse ? (
         <div className="grid two">

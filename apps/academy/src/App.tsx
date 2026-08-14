@@ -4277,12 +4277,13 @@ const App = () => {
                         }
                         disabled={classroomRoomBusy}
                       >
-                        {CLASSROOM_RESOURCE_FILTERS.filter((item) => item.kind !== 'all').map((item) => (
+                        {CLASSROOM_RESOURCE_FILTERS.filter((item) => item.kind !== 'all' && item.kind !== 'video').map((item) => (
                           <option key={item.kind} value={item.kind}>
                             {translate(item.label)}
                           </option>
                         ))}
                       </select>
+                      <p className="small muted">{translate("Video is added to a published lesson only when managed hosting is enabled for this academy.")}</p>
                       <div className="grid three">
                         <input
                           className="input"
@@ -4676,6 +4677,7 @@ const App = () => {
                   memberships={selectedStudentMemberships}
                   announcements={selectedStudentAnnouncements}
                   messages={selectedStudentMessages}
+                  sessions={(studentDashboard.sessions ?? []).filter((session) => session.classroom_id === studentClassroomId)}
                   formatDate={formatDate}
                   onBack={() => navigate(academyScopedPath('/academy/student/classrooms', studentAcademyId))}
                 />

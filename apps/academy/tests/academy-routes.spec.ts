@@ -445,6 +445,22 @@ const studentDashboard = {
   announcements: [],
   messages: [],
   payments: [],
+  sessions: [
+    {
+      id: "student-session-route-smoke",
+      academy_id: academyId,
+      classroom_id: classroomId,
+      title: "Live speaking clinic",
+      session_type: "regular",
+      delivery_mode: "online",
+      starts_at: "2026-09-02T10:00:00.000Z",
+      ends_at: "2026-09-02T11:00:00.000Z",
+      timezone: "Asia/Tashkent",
+      status: "confirmed",
+      meeting_provider: "google_meet",
+      join_available: false,
+    },
+  ],
 };
 
 const emptyStudentDashboardFixture = {
@@ -454,6 +470,7 @@ const emptyStudentDashboardFixture = {
   classrooms: [],
   classroom_memberships: [],
   entitlements: [],
+  sessions: [],
 };
 
 const educationOS = {
@@ -1632,10 +1649,14 @@ type MockEdgeOptions = {
   actionOverrides?: Partial<Record<string, unknown>>;
   actionLog?: string[];
   meResponse?: unknown;
+  classroomV2?: boolean;
 };
 
 const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOptions = {}) => {
   const actionAttempts = new Map<string, number>();
+  if (options.classroomV2 !== undefined) {
+    await page.route("**/rest/v1/platform_settings*", (route) => route.fulfill(json({ student_center_enabled: false, classroom_v2_enabled: options.classroomV2 })));
+  }
   await page.route("**/functions/v1/**", async (route: Route) => {
     const url = new URL(route.request().url());
     const fn = url.pathname.split("/").pop();
@@ -1888,6 +1909,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
         quizzes: [quiz],
         questions: [quizQuestion],
         attempts: [],
+        media: [],
         classroom_courses: [
           {
             id: "classroom-course-route-smoke",
@@ -2705,6 +2727,36 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByText("INV-2026-07")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Payments and credits" })).toBeVisible();
     await expect(page.getByText("provider matched")).toHaveCount(0);
+  });
+
+  test("Classroom 2.0 keeps every learner capability reachable and uses a compact mobile disclosure", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedSessionCookie(page, "student-classroom-v2-user");
+    await mockAcademyEdge(page, "student", { classroomV2: true });
+
+    await page.goto(`/academy/student/classrooms/${classroomId}?academy_id=${academyId}`);
+    const menu = page.locator(".classroom-section-menu");
+    await expect(menu).toBeVisible();
+    const summary = menu.locator("summary");
+    await expect(summary).toHaveText(/Overview/);
+    const summaryBox = await summary.boundingBox();
+    expect(summaryBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await summary.click();
+    for (const section of ["Overview", "Course", "Live", "Assignments", "Progress", "People & discussion", "Account"]) {
+      await expect(menu.getByRole("button", { name: section, exact: true })).toBeVisible();
+    }
+    await menu.getByRole("button", { name: "Course", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "IELTS Foundation" })).toBeVisible();
+    await page.locator(".classroom-section-menu summary").click();
+    await menu.getByRole("button", { name: "Live", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Live speaking clinic" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Room opens 15 minutes before class" })).toBeDisabled();
+    await expect(page.locator('a[href*="meet.google.com"]')).toHaveCount(0);
+    await page.locator(".classroom-section-menu summary").click();
+    await menu.getByRole("button", { name: "Account", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Billing statement" })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
   });
 
   test("owner can manage explicit guardian consent and delivery evidence", async ({ page }) => {

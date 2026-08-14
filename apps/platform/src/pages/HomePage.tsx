@@ -214,6 +214,7 @@ export const HomePage: React.FC = () => {
 
   const actions: SiteHeaderAction[] = isAuthed
     ? [
+        { id: 'learning', label: t('studentCenter.label'), onClick: () => navigate('/student-center'), primary: !isAdmin },
         { id: 'account', label: t('common.account'), onClick: () => navigate('/account') },
         ...(isAdmin ? [{ id: 'admin', label: t('common.admin'), onClick: () => navigate('/admin'), primary: true }] : []),
       ]

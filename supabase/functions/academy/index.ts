@@ -1283,6 +1283,7 @@ export const ACADEMY_ACTION_PERMISSIONS = {
   upsert_staff_availability: "manageAcademicOperations",
   upsert_room_availability: "manageAcademicOperations",
   create_lesson_session: "manageAcademicOperations",
+  upsert_session_delivery: "manageAcademicOperations",
   transition_lesson_session: "manageAcademicOperations",
   assign_session_substitute: "manageAcademicOperations",
   record_session_attendance: "markAttendance",
@@ -1625,6 +1626,79 @@ const loadStudentDashboard = async (
     });
   }
 
+  const contextualEmpty = { data: [] as Array<Record<string, unknown>>, error: null };
+  const [assignmentsRes, submissionsRes, sessionsRes, lessonProgressRes] = classroomIds.length > 0
+    ? await Promise.all([
+      sb.from("academy_assignments")
+        .select("id, academy_id, classroom_id, title, description, assignment_type, due_at, status, max_score, created_at")
+        .in("academy_id", academyIds)
+        .in("classroom_id", classroomIds)
+        .in("status", ["active", "closed"])
+        .order("due_at", { ascending: true, nullsFirst: false })
+        .limit(1000),
+      sb.from("academy_submissions")
+        .select("id, academy_id, classroom_id, assignment_id, contact_id, status, score, max_score, submitted_at, graded_at")
+        .in("academy_id", academyIds)
+        .in("classroom_id", classroomIds)
+        .in("contact_id", contactIds)
+        .order("created_at", { ascending: false })
+        .limit(2000),
+      sb.from("academy_lesson_sessions")
+        .select("id, academy_id, classroom_id, title, session_type, delivery_mode, starts_at, ends_at, timezone, status")
+        .in("academy_id", academyIds)
+        .in("classroom_id", classroomIds)
+        .gte("ends_at", new Date(Date.now() - 7 * 86_400_000).toISOString())
+        .lte("starts_at", new Date(Date.now() + 180 * 86_400_000).toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(1000),
+      sb.from("academy_lesson_progress")
+        .select("id, academy_id, classroom_id, course_id, lesson_id, contact_id, status, started_at, completed_at, time_spent_seconds, updated_at")
+        .in("academy_id", academyIds)
+        .in("classroom_id", classroomIds)
+        .in("contact_id", contactIds)
+        .limit(5000),
+    ])
+    : [contextualEmpty, contextualEmpty, contextualEmpty, contextualEmpty];
+
+  const partialErrors: Array<{ source: string; message: string; retryable: boolean }> = [];
+  const captureContextError = (source: string, error: { message?: string } | null | undefined) => {
+    if (error) partialErrors.push({ source, message: error.message ?? `Failed to load ${source}`, retryable: true });
+  };
+  captureContextError("assignments", assignmentsRes.error);
+  captureContextError("submissions", submissionsRes.error);
+  captureContextError("sessions", sessionsRes.error);
+  captureContextError("lesson_progress", lessonProgressRes.error);
+
+  const sessionRows = sessionsRes.error ? [] : (sessionsRes.data ?? []) as Array<Record<string, unknown>>;
+  const sessionIds = sessionRows.map((row) => String(row.id ?? "")).filter(Boolean);
+  const deliveryRes = sessionIds.length > 0
+    ? await sb.from("academy_session_delivery")
+      .select("academy_id, session_id, provider, attendee_url, join_opens_at, join_closes_at, status")
+      .in("academy_id", academyIds)
+      .in("session_id", sessionIds)
+      .eq("status", "active")
+      .limit(1000)
+    : contextualEmpty;
+  captureContextError("session_delivery", deliveryRes.error);
+
+  const deliveryBySession = new Map(
+    ((deliveryRes.error ? [] : deliveryRes.data ?? []) as Array<Record<string, unknown>>)
+      .map((row) => [String(row.session_id ?? ""), row] as const),
+  );
+  const now = Date.now();
+  const sessions = sessionRows.map((session) => {
+    const delivery = deliveryBySession.get(String(session.id ?? ""));
+    const opensAt = delivery?.join_opens_at ? Date.parse(String(delivery.join_opens_at)) : Number.NaN;
+    const closesAt = delivery?.join_closes_at ? Date.parse(String(delivery.join_closes_at)) : Number.NaN;
+    const joinAvailable = Boolean(delivery && Number.isFinite(opensAt) && Number.isFinite(closesAt) && now >= opensAt && now <= closesAt);
+    return {
+      ...session,
+      meeting_provider: delivery?.provider ?? null,
+      join_available: joinAvailable,
+      ...(joinAvailable ? { join_url: delivery?.attendee_url ?? null } : {}),
+    };
+  });
+
   const memberCountByClassroom = new Map<string, number>();
   for (const row of classroomMemberships) {
     const classroomId = String(row.classroom_id ?? "");
@@ -1668,6 +1742,11 @@ const loadStudentDashboard = async (
     entitlements: entitlementsRes.data ?? [],
     payments: paymentsRes.data ?? [],
     offers: offersRes.data ?? [],
+    assignments: assignmentsRes.error ? [] : assignmentsRes.data ?? [],
+    submissions: submissionsRes.error ? [] : submissionsRes.data ?? [],
+    sessions,
+    lesson_progress: lessonProgressRes.error ? [] : lessonProgressRes.data ?? [],
+    partial_errors: partialErrors,
   });
 };
 
@@ -1820,7 +1899,7 @@ const loadClassroomChat = async (
   let resourcesQuery = sb
     .from("academy_classroom_resources")
     .select(
-      "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, created_by, created_at, updated_at",
+      "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, legacy_video_read_only, created_by, created_at, updated_at",
     )
     .eq("academy_id", context.academy_id)
     .eq("classroom_id", context.classroom_id)
@@ -2156,6 +2235,12 @@ const upsertClassroomResource = async (
   if (!CLASSROOM_RESOURCE_KINDS.includes(kind)) {
     return json(400, { error: `kind must be one of ${CLASSROOM_RESOURCE_KINDS.join(", ")}` });
   }
+  if (kind === "video") {
+    return json(409, {
+      error: "New video resources must use managed lesson media",
+      code: "VIDEO_MANAGED_HOSTING_REQUIRED",
+    });
+  }
 
   if (fileRaw) {
     try {
@@ -2189,7 +2274,7 @@ const upsertClassroomResource = async (
       .eq("classroom_id", context.classroom_id)
       .eq("id", resourceId)
       .select(
-        "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, created_by, created_at, updated_at",
+        "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, legacy_video_read_only, created_by, created_at, updated_at",
       )
       .maybeSingle();
     if (error) return json(500, { error: "Failed to update classroom resource", detail: error.message });
@@ -2202,7 +2287,7 @@ const upsertClassroomResource = async (
     .from("academy_classroom_resources")
     .insert(payload)
     .select(
-      "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, created_by, created_at, updated_at",
+      "id, academy_id, classroom_id, title, kind, url, description, metadata, sort_order, is_published, legacy_video_read_only, created_by, created_at, updated_at",
     )
     .maybeSingle();
   if (error) return json(500, { error: "Failed to create classroom resource", detail: error.message });
@@ -3680,6 +3765,7 @@ const handleReadAction = async (
       sb.from("academy_staff_availability").select("*").eq("academy_id", academyId).order("day_of_week").order("starts_at").limit(2000),
       sb.from("academy_room_availability").select("*").eq("academy_id", academyId).order("day_of_week").order("starts_at").limit(2000),
       sb.from("academy_lesson_sessions").select("*").eq("academy_id", academyId).order("starts_at", { ascending: false }).limit(3000),
+      sb.from("academy_session_delivery").select("id,session_id,provider,attendee_url,join_opens_at,join_closes_at,status,updated_at").eq("academy_id", academyId).limit(3000),
       sb.from("academy_session_staff_assignments").select("*").eq("academy_id", academyId).order("assigned_at", { ascending: false }).limit(3000),
       sb.from("academy_attendance").select("*").eq("academy_id", academyId).not("session_id", "is", null).order("marked_at", { ascending: false }).limit(5000),
       sb.from("academy_attendance_exceptions").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(2000),
@@ -3698,7 +3784,7 @@ const handleReadAction = async (
     ]);
     const failed = results.find((result) => result.error);
     if (failed?.error) return json(500, { error: "Failed to load academic operations", detail: failed.error.message });
-    const [calendars,calendarEvents,staffAvailability,roomAvailability,sessions,assignments,attendance,exceptions,makeups,qualityReviews,roomCapacity,roomPeaks,classroomCapacity,branches,rooms,classrooms,staff,memberships,contacts,branchAssignments] = results;
+    const [calendars,calendarEvents,staffAvailability,roomAvailability,sessions,sessionDelivery,assignments,attendance,exceptions,makeups,qualityReviews,roomCapacity,roomPeaks,classroomCapacity,branches,rooms,classrooms,staff,memberships,contacts,branchAssignments] = results;
     const scopedBranches=academyAccessBranchIds(access);const allowedBranches=new Set(scopedBranches??[]);const allowBranch=(value:unknown)=>scopedBranches===null||allowedBranches.has(String(value??""));
     const scopedRooms=((rooms.data??[]) as Array<Record<string,unknown>>).filter((row)=>allowBranch(row.branch_id));const roomIds=new Set(scopedRooms.map((row)=>String(row.id)));
     const scopedClassrooms=((classrooms.data??[]) as Array<Record<string,unknown>>).filter((row)=>allowBranch(row.branch_id));const classroomIds=new Set(scopedClassrooms.map((row)=>String(row.id)));
@@ -3709,7 +3795,7 @@ const handleReadAction = async (
     const scopedMemberships=((memberships.data??[]) as Array<Record<string,unknown>>).filter((row)=>classroomIds.has(String(row.classroom_id)));const contactIds=new Set(scopedMemberships.map((row)=>String(row.contact_id)));const scopedContacts=((contacts.data??[]) as Array<Record<string,unknown>>).filter((row)=>contactIds.has(String(row.id))||allowBranch(row.primary_branch_id));
     return json(200, { generated_at: new Date().toISOString(), access: academyAccessProfile(access),
       calendars: scopedCalendars, calendar_events: ((calendarEvents.data??[]) as Array<Record<string,unknown>>).filter((row)=>calendarIds.has(String(row.calendar_id))), staff_availability: ((staffAvailability.data??[]) as Array<Record<string,unknown>>).filter((row)=>scopedBranches===null||scopedStaffIds.has(String(row.staff_id))), room_availability: ((roomAvailability.data??[]) as Array<Record<string,unknown>>).filter((row)=>roomIds.has(String(row.room_id))),
-      sessions: scopedSessions, session_staff_assignments: scopedAssignments, attendance: scopedAttendance, attendance_exceptions: ((exceptions.data??[]) as Array<Record<string,unknown>>).filter((row)=>attendanceIds.has(String(row.attendance_id))),
+      sessions: scopedSessions, session_delivery: ((sessionDelivery.data??[]) as Array<Record<string,unknown>>).filter((row)=>sessionIds.has(String(row.session_id))), session_staff_assignments: scopedAssignments, attendance: scopedAttendance, attendance_exceptions: ((exceptions.data??[]) as Array<Record<string,unknown>>).filter((row)=>attendanceIds.has(String(row.attendance_id))),
       make_up_lessons: ((makeups.data??[]) as Array<Record<string,unknown>>).filter((row)=>sessionIds.has(String(row.original_session_id))||sessionIds.has(String(row.replacement_session_id))||contactIds.has(String(row.contact_id))), quality_reviews: ((qualityReviews.data??[]) as Array<Record<string,unknown>>).filter((row)=>sessionIds.has(String(row.session_id))), room_capacity: ((roomCapacity.data??[]) as Array<Record<string,unknown>>).filter((row)=>allowBranch(row.branch_id)), room_peak_periods: ((roomPeaks.data??[]) as Array<Record<string,unknown>>).filter((row)=>roomIds.has(String(row.room_id))),
       classroom_capacity: ((classroomCapacity.data??[]) as Array<Record<string,unknown>>).filter((row)=>classroomIds.has(String(row.classroom_id))), branches: ((branches.data??[]) as Array<Record<string,unknown>>).filter((row)=>allowBranch(row.id)), rooms: scopedRooms, classrooms: scopedClassrooms, staff: scopedBranches===null?(staff.data??[]):((staff.data??[]) as Array<Record<string,unknown>>).filter((row)=>scopedStaffIds.has(String(row.id))),
       classroom_memberships: scopedMemberships, contacts: scopedContacts,
@@ -6208,7 +6294,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           .map((row) => String(row.course_id)),
       );
       if (courseIds.length === 0) {
-        return json(200, { ...enrollment, courses: [], modules: [], lessons: [], progress: [], quizzes: [], questions: [], attempts: [] });
+        return json(200, { ...enrollment, courses: [], modules: [], lessons: [], progress: [], quizzes: [], questions: [], attempts: [], media: [] });
       }
 
       const [coursesResult, modulesResult, lessonsResult, progressResult, quizzesResult] = await Promise.all([
@@ -6266,6 +6352,27 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         ...quiz,
         locked: Boolean(quiz.lesson_id && lockedLessonIds.has(String(quiz.lesson_id))),
       }));
+      const lessonIds = lessons.map((lesson) => String(lesson.id));
+      let media: Array<Record<string, unknown>> = [];
+      if (lessonIds.length > 0) {
+        const { data: mediaRows, error: mediaError } = await sb.from("academy_lesson_media")
+          .select("id,lesson_id,video_asset_id,position")
+          .eq("academy_id", enrollment.academy_id).in("lesson_id", lessonIds)
+          .order("position", { ascending: true }).limit(5000);
+        if (mediaError) return json(500, { error: "Failed to load lesson media", detail: mediaError.message });
+        const assetIds = ((mediaRows ?? []) as Array<Record<string, unknown>>).map((row) => String(row.video_asset_id));
+        if (assetIds.length > 0) {
+          const { data: assets, error: assetsError } = await sb.from("academy_video_assets")
+            .select("id,title,status,duration_seconds")
+            .eq("academy_id", enrollment.academy_id).in("id", assetIds).eq("status", "ready").limit(5000);
+          if (assetsError) return json(500, { error: "Failed to load playable lesson media", detail: assetsError.message });
+          const assetById = new Map(((assets ?? []) as Array<Record<string, unknown>>).map((asset) => [String(asset.id), asset]));
+          media = ((mediaRows ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
+            const asset = assetById.get(String(row.video_asset_id));
+            return asset ? [{ ...row, title: asset.title, status: asset.status, duration_seconds: asset.duration_seconds }] : [];
+          });
+        }
+      }
       return json(200, {
         ...enrollment,
         courses: coursesResult.data ?? [],
@@ -6275,7 +6382,54 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         quizzes,
         questions: questionsResult.data ?? [],
         attempts: attemptsResult.data ?? [],
+        media,
         classroom_courses: classroomCourses ?? [],
+      });
+    }
+
+    if (requestedAction === "student_session_join") {
+      const enrollment = await loadStudentClassroomEnrollment(
+        sb,
+        userId,
+        userEmail,
+        body?.academy_id ?? url.searchParams.get("academy_id"),
+        body?.classroom_id ?? url.searchParams.get("classroom_id"),
+      );
+      const sessionId = normalizeText(body?.session_id ?? url.searchParams.get("session_id"), 64);
+      if (!sessionId) return json(400, { error: "session_id is required" });
+      const { data: session, error: sessionError } = await sb.from("academy_lesson_sessions")
+        .select("id, academy_id, classroom_id, title, starts_at, ends_at, status, delivery_mode")
+        .eq("academy_id", enrollment.academy_id)
+        .eq("classroom_id", enrollment.classroom_id)
+        .eq("id", sessionId)
+        .maybeSingle();
+      if (sessionError || !session?.id) return json(404, { error: "Session not found" });
+      const { data: delivery, error: deliveryError } = await sb.from("academy_session_delivery")
+        .select("provider, attendee_url, join_opens_at, join_closes_at, status")
+        .eq("academy_id", enrollment.academy_id)
+        .eq("session_id", sessionId)
+        .eq("status", "active")
+        .maybeSingle();
+      if (deliveryError) return json(500, { error: "Failed to load session delivery", detail: deliveryError.message });
+      if (!delivery) return json(404, { error: "This session does not have an online room" });
+      const now = Date.now();
+      const opensAt = Date.parse(String(delivery.join_opens_at));
+      const closesAt = Date.parse(String(delivery.join_closes_at));
+      if (!Number.isFinite(opensAt) || !Number.isFinite(closesAt) || now < opensAt || now > closesAt) {
+        return json(403, {
+          error: "The room is not open",
+          join_opens_at: delivery.join_opens_at,
+          join_closes_at: delivery.join_closes_at,
+        });
+      }
+      return json(200, {
+        session: {
+          ...session,
+          meeting_provider: delivery.provider,
+          join_url: delivery.attendee_url,
+          join_opens_at: delivery.join_opens_at,
+          join_closes_at: delivery.join_closes_at,
+        },
       });
     }
 
@@ -7479,6 +7633,63 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         if(!classroomId||!branchId||!staffId||!title||!startsAt||!endsAt||!key)return json(400,{error:"branch_id, classroom_id, primary_staff_id, title, dates, and idempotency_key are required"});if(!accessCanUseClassroom(access,classroomId))return json(403,{error:"Forbidden"});
         const payload={branch_id:branchId,classroom_id:classroomId,room_id:normalizeText(body?.room_id,64)||null,primary_staff_id:staffId,calendar_id:normalizeText(body?.calendar_id,64)||null,title,session_type:normalizeText(body?.session_type,30).toLowerCase()||'regular',delivery_mode:normalizeText(body?.delivery_mode,30).toLowerCase()||'physical',starts_at:startsAt,ends_at:endsAt,timezone:normalizeText(body?.timezone,80)||'Asia/Tashkent',status:normalizeText(body?.status,30).toLowerCase()||'scheduled',source_schedule_id:normalizeText(body?.source_schedule_id,64)||null,metadata:typeof body?.metadata==='object'&&body.metadata!==null?body.metadata:{}};
         const {data,error}=await sb.rpc('academy_create_lesson_session',{p_academy_id:academyId,p_actor_id:userId,p_payload:payload,p_idempotency_key:key});if(error)return json(400,{error:"Failed to create lesson session",detail:error.message});return json(200,{session:data});
+      }
+
+      if (actionBody === "upsert_session_delivery") {
+        const sessionId = normalizeText(body?.session_id, 64);
+        const provider = normalizeText(body?.provider, 40).toLowerCase() || "other";
+        const attendeeUrl = normalizeText(body?.attendee_url, 2000);
+        if (!sessionId || !["zoom", "google_meet", "microsoft_teams", "other"].includes(provider)) {
+          return json(400, { error: "session_id and a valid provider are required" });
+        }
+        let parsedUrl: URL;
+        try {
+          parsedUrl = new URL(attendeeUrl);
+        } catch {
+          return json(400, { error: "attendee_url must be a valid HTTPS URL" });
+        }
+        if (parsedUrl.protocol !== "https:" || ["localhost", "127.0.0.1", "::1"].includes(parsedUrl.hostname.toLowerCase())) {
+          return json(400, { error: "attendee_url must be a public HTTPS URL" });
+        }
+        const { data: session, error: sessionError } = await sb.from("academy_lesson_sessions")
+          .select("id, classroom_id, starts_at, ends_at")
+          .eq("academy_id", academyId)
+          .eq("id", sessionId)
+          .maybeSingle();
+        if (sessionError || !session?.id) return json(404, { error: "Session not found" });
+        if (!accessCanUseClassroom(access, String(session.classroom_id))) return json(403, { error: "Forbidden" });
+        const defaultOpen = new Date(Date.parse(String(session.starts_at)) - 15 * 60_000).toISOString();
+        const defaultClose = new Date(Date.parse(String(session.ends_at)) + 30 * 60_000).toISOString();
+        const joinOpensAt = normalizeText(body?.join_opens_at, 80) || defaultOpen;
+        const joinClosesAt = normalizeText(body?.join_closes_at, 80) || defaultClose;
+        const opens = Date.parse(joinOpensAt);
+        const closes = Date.parse(joinClosesAt);
+        if (!Number.isFinite(opens) || !Number.isFinite(closes) || closes <= opens) {
+          return json(400, { error: "The join window is invalid" });
+        }
+        const { data, error } = await sb.from("academy_session_delivery").upsert({
+          academy_id: academyId,
+          session_id: sessionId,
+          provider,
+          attendee_url: parsedUrl.toString(),
+          join_opens_at: joinOpensAt,
+          join_closes_at: joinClosesAt,
+          status: body?.status === "disabled" ? "disabled" : "active",
+          created_by: userId,
+          updated_by: userId,
+        }, { onConflict: "academy_id,session_id" }).select("*").single();
+        if (error) return json(400, { error: "Failed to save session delivery", detail: error.message });
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "session.delivery_saved",
+          targetType: "academy_session_delivery",
+          targetId: String(data.id),
+          classroomId: String(session.classroom_id),
+          metadata: { session_id: sessionId, provider, status: data.status },
+        });
+        return json(200, { delivery: data });
       }
 
       if (actionBody === "transition_lesson_session") {

@@ -48,6 +48,10 @@ export type PlatformSettings = {
   trial_product_overrides: Record<string, { trial_enabled?: boolean; trial_days?: number; trial_limits?: Record<string, number> }> | null;
   writing_ai_enabled: boolean;
   writing_ai_daily_limit: number;
+  student_center_enabled: boolean;
+  classroom_v2_enabled: boolean;
+  academy_video_provider: 'cloudflare_stream';
+  academy_video_uploads_enabled: boolean;
 };
 export type AdminSecurityPolicy = {
   id: number;
@@ -56,6 +60,110 @@ export type AdminSecurityPolicy = {
   rate_limit_per_minute: number;
   ip_allowlist: string[];
   updated_at?: string;
+};
+
+export type StudentCenterService = {
+  id: string;
+  source: 'academy' | 'platform' | string;
+  kind: string;
+  title: string;
+  subtitle: string;
+  status: string;
+  href: string;
+  metadata: Record<string, unknown>;
+};
+
+export type StudentCenterAction = {
+  id: string;
+  source: string;
+  kind: string;
+  title: string;
+  context: string;
+  due_at: string | null;
+  priority: 'urgent' | 'normal';
+  href: string;
+};
+
+export type StudentCenterCalendarItem = {
+  id: string;
+  source: string;
+  kind: string;
+  title: string;
+  context: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  delivery_mode: string;
+  join_available: boolean;
+  join_url: string | null;
+  href: string;
+};
+
+export type StudentCenterProgress = {
+  id: string;
+  source: string;
+  title: string;
+  completed: number;
+  total: number;
+  percent: number | null;
+  score?: number | null;
+  href: string;
+};
+
+export type StudentCenterCommunication = {
+  id: string;
+  source: string;
+  kind: string;
+  title: string;
+  body: string;
+  created_at: string;
+  context: string;
+};
+
+export type StudentCenterAccess = {
+  id: string;
+  source: string;
+  title: string;
+  status: string;
+  expires_at: string | null;
+  href: string;
+};
+
+export type StudentCenterDashboard = {
+  identity: { id: string; email: string | null };
+  services: StudentCenterService[];
+  next_actions: StudentCenterAction[];
+  calendar: StudentCenterCalendarItem[];
+  progress: StudentCenterProgress[];
+  communications: StudentCenterCommunication[];
+  access: StudentCenterAccess[];
+  partial_errors: Array<{ source: string; message: string; retryable: boolean }>;
+  generated_at: string;
+};
+
+export type AcademyVideoHealth = {
+  provider: 'cloudflare_stream';
+  configured: boolean;
+  fields: Record<string, boolean>;
+  reachable?: boolean;
+  latency_ms?: number;
+};
+
+export type AcademyVideoPolicy = {
+  academy_id: string;
+  upload_enabled: boolean;
+  max_asset_duration_seconds: number;
+  max_total_stored_minutes: number;
+  max_monthly_upload_minutes: number;
+  approved_by: string | null;
+  approved_at: string | null;
+  updated_at: string;
+};
+
+export type AcademyVideoPolicyRow = {
+  academy: { id: string; name: string; slug: string; type: string };
+  policy: AcademyVideoPolicy | null;
+  usage: { stored_minutes: number; monthly_upload_minutes: number };
 };
 
 export type BillingPlan = {
@@ -255,6 +363,64 @@ export const platformSettingsPatch = async (
     throw new Error(`PATCH /platform-settings failed (${res.status}): ${JSON.stringify(details)}`);
   }
   return (await res.json()) as PlatformSettings;
+};
+
+export const studentCenterDashboard = async (accessToken: string): Promise<StudentCenterDashboard> => {
+  const res = await fetch(`${edgeBase}/student-center?action=dashboard`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+    signal: AbortSignal.timeout(12_000),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /student-center failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as StudentCenterDashboard;
+};
+
+export const academyVideoProviderHealth = async (
+  accessToken: string,
+  test = false,
+): Promise<AcademyVideoHealth> => {
+  const res = await fetch(`${edgeBase}/academy-video?action=provider-health${test ? '&test=true' : ''}`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /academy-video provider health failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as AcademyVideoHealth;
+};
+
+export const academyVideoPolicyList = async (
+  accessToken: string,
+): Promise<{ health: AcademyVideoHealth; academies: AcademyVideoPolicyRow[] }> => {
+  const res = await fetch(`${edgeBase}/academy-video?action=policy-list`, {
+    method: 'GET',
+    headers: apiHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`GET /academy-video policies failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { health: AcademyVideoHealth; academies: AcademyVideoPolicyRow[] };
+};
+
+export const academyVideoPolicyUpdate = async (
+  accessToken: string,
+  patch: Pick<AcademyVideoPolicy, 'academy_id' | 'upload_enabled' | 'max_asset_duration_seconds' | 'max_total_stored_minutes' | 'max_monthly_upload_minutes'>,
+): Promise<{ policy: AcademyVideoPolicy }> => {
+  const res = await fetch(`${edgeBase}/academy-video?action=policy-update`, {
+    method: 'PATCH',
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    throw new Error(`PATCH /academy-video policy failed (${res.status}): ${JSON.stringify(details)}`);
+  }
+  return (await res.json()) as { policy: AcademyVideoPolicy };
 };
 
 export const adminSecurityPolicyGet = async (accessToken: string): Promise<AdminSecurityPolicy> => {

@@ -49,6 +49,7 @@ const PartnerOfficePage = lazyWithChunkRetry(() => import('./pages/PartnerOffice
 const CenterOfficePage = lazyWithChunkRetry(() => import('./pages/CenterOfficePage').then((m) => ({ default: m.CenterOfficePage })));
 const AcademyControlPage = lazyWithChunkRetry(() => import('./pages/AcademyControlPage').then((m) => ({ default: m.AcademyControlPage })));
 const AcademyStudentRedirectPage = lazyWithChunkRetry(() => import('./pages/AcademyStudentRedirectPage').then((m) => ({ default: m.AcademyStudentRedirectPage })));
+const StudentCenterPage = lazyWithChunkRetry(() => import('./pages/StudentCenterPage').then((m) => ({ default: m.StudentCenterPage })));
 const CertificatePage = lazyWithChunkRetry(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const ParentReportPage = lazyWithChunkRetry(() => import('./pages/ParentReportPage').then((m) => ({ default: m.ParentReportPage })));
 const TelegramAppPage = lazyWithChunkRetry(() => import('./pages/TelegramAppPage').then((m) => ({ default: m.TelegramAppPage })));
@@ -162,8 +163,9 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/admin-mfa" element={<AdminMfaPage />} />
-            <Route path="/workspace/student" element={<Navigate to="/" replace />} />
-            <Route path="/student-workspace" element={<Navigate to="/" replace />} />
+            <Route path="/student-center" element={<StudentCenterPage />} />
+            <Route path="/workspace/student" element={<Navigate to="/student-center" replace />} />
+            <Route path="/student-workspace" element={<Navigate to="/student-center" replace />} />
             <Route path="/partner" element={<PartnerOfficePage />} />
             <Route path="/center-office" element={<CenterOfficePage />} />
             <Route path="/academy" element={<AcademyControlPage />} />

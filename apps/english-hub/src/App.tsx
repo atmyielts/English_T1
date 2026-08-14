@@ -443,7 +443,7 @@ const App = () => {
     () => `${buildPlatformUrl('/auth?mode=signin')}&returnTo=${encodeURIComponent(returnTo)}`,
     [returnTo],
   );
-  const workspaceHref = useMemo(() => buildPlatformUrl('/workspace/student'), []);
+  const workspaceHref = useMemo(() => buildPlatformUrl('/student-center'), []);
   const pricingHref = useMemo(
     () => `${buildPlatformUrl('/pricing')}&returnTo=${encodeURIComponent(returnTo)}`,
     [returnTo],

@@ -1,5 +1,6 @@
 import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   teacherStudioClassroomChat,
   teacherStudioCreateClickTuitionPayment,
@@ -8,6 +9,7 @@ import {
   teacherStudioStudentAssignments,
   teacherStudioStudentAttendance,
   teacherStudioStudentBilling,
+  teacherStudioStudentSessionJoin,
   teacherStudioSubmitStudentAssignment,
   teacherStudioSubmitStudentAssignmentFile,
   type TeacherStudioAnnouncement,
@@ -20,7 +22,9 @@ import {
   type TeacherStudioStudentAssignment,
   type TeacherStudioStudentBillingItem,
   type TeacherStudioStudentCommercialAccount,
+  type TeacherStudioStudentSession,
 } from '../../lib/client';
+import { supabase } from '../../lib/supabase';
 import { StudentCurriculumView } from './StudentCurriculumView';
 
 type StudentClassroomViewProps = {
@@ -29,11 +33,13 @@ type StudentClassroomViewProps = {
   memberships: TeacherStudioClassroomMembership[];
   announcements: TeacherStudioAnnouncement[];
   messages: TeacherStudioMessage[];
+  sessions?: TeacherStudioStudentSession[];
   formatDate: (iso: string | null | undefined) => string;
   onBack: () => void;
 };
 
 type StudentLmsTab = 'overview' | 'curriculum' | 'resources' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
+type ClassroomSection = 'overview' | 'course' | 'live' | 'assignments' | 'progress' | 'people' | 'account';
 type StudentFocusItem = {
   key: string;
   label: string;
@@ -71,10 +77,13 @@ export const StudentClassroomView = ({
   memberships,
   announcements,
   messages,
+  sessions = [],
   formatDate,
   onBack,
 }: StudentClassroomViewProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<StudentLmsTab>('overview');
+  const [classroomV2Enabled, setClassroomV2Enabled] = useState(false);
   const [room, setRoom] = useState<TeacherStudioClassroomRoom | null>(null);
   const [assignments, setAssignments] = useState<TeacherStudioStudentAssignment[]>([]);
   const [attendance, setAttendance] = useState<TeacherStudioAttendance[]>([]);
@@ -90,6 +99,48 @@ export const StudentClassroomView = ({
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [payingOfferId, setPayingOfferId] = useState('');
+  const [joiningSessionId, setJoiningSessionId] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    void supabase.from('platform_settings').select('classroom_v2_enabled').eq('id', 1).maybeSingle().then(({ data }) => {
+      if (active) setClassroomV2Enabled(data?.classroom_v2_enabled === true);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const requestedSection = searchParams.get('section');
+  const activeSection: ClassroomSection = ['overview', 'course', 'live', 'assignments', 'progress', 'people', 'account'].includes(requestedSection ?? '')
+    ? requestedSection as ClassroomSection
+    : 'overview';
+  const sectionByLegacyTab: Record<StudentLmsTab, ClassroomSection> = {
+    overview: 'overview',
+    curriculum: 'course',
+    resources: 'course',
+    assignments: 'assignments',
+    grades: 'progress',
+    attendance: 'progress',
+    billing: 'account',
+    chat: 'people',
+  };
+  const showLegacyPanel = (tab: StudentLmsTab): boolean => classroomV2Enabled
+    ? activeSection === sectionByLegacyTab[tab]
+    : activeTab === tab;
+  const openLegacyTab = (tab: StudentLmsTab) => {
+    if (!classroomV2Enabled) {
+      setActiveTab(tab);
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    next.set('section', sectionByLegacyTab[tab]);
+    setSearchParams(next);
+  };
+
+  const openSection = (section: ClassroomSection) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('section', section);
+    setSearchParams(next);
+  };
 
   const loadClassroomLms = useCallback(async () => {
     if (!classroom) return;
@@ -395,6 +446,20 @@ export const StudentClassroomView = ({
     }
   };
 
+  const joinSession = async (session: TeacherStudioStudentSession) => {
+    if (!classroom) return;
+    setJoiningSessionId(session.id);
+    setError('');
+    try {
+      const delivery = await teacherStudioStudentSessionJoin(classroom.academy_id, classroom.id, session.id);
+      window.location.assign(delivery.join_url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setJoiningSessionId('');
+    }
+  };
+
   if (!classroom) {
     return (
       <section className="panel">
@@ -415,6 +480,15 @@ export const StudentClassroomView = ({
     { id: 'attendance', label: 'Attendance' },
     { id: 'billing', label: 'Billing' },
     { id: 'chat', label: 'Chat' },
+  ];
+  const sections: Array<{ id: ClassroomSection; label: string }> = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'course', label: 'Course' },
+    { id: 'live', label: 'Live' },
+    { id: 'assignments', label: 'Assignments' },
+    { id: 'progress', label: 'Progress' },
+    { id: 'people', label: 'People & discussion' },
+    { id: 'account', label: 'Account' },
   ];
 
   return (
@@ -451,24 +525,41 @@ export const StudentClassroomView = ({
             <strong>{attendanceRate === null ? '-' : `${attendanceRate}%`}</strong>
           </article>
         </section>
-        <div className="segmented-row" role="tablist" aria-label={translate("Student classroom sections")}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`small-btn ${activeTab === tab.id ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {translate(tab.label)}
-            </button>
-          ))}
-        </div>
+        {classroomV2Enabled ? (
+          <>
+            <nav className="classroom-section-nav" aria-label={translate("Student classroom sections")}>
+              {sections.map((section) => (
+                <button key={section.id} className={`small-btn ${activeSection === section.id ? 'is-active' : ''}`} type="button" onClick={() => openSection(section.id)} aria-current={activeSection === section.id ? 'page' : undefined}>
+                  {translate(section.label)}
+                </button>
+              ))}
+            </nav>
+            <details className="classroom-section-menu">
+              <summary>{translate("Classroom sections")} · {translate(sections.find((section) => section.id === activeSection)?.label ?? "Overview")}</summary>
+              <nav aria-label={translate("Student classroom sections")}>
+                {sections.map((section) => (
+                  <button key={section.id} className={`small-btn ${activeSection === section.id ? 'is-active' : ''}`} type="button" onClick={(event) => { openSection(section.id); event.currentTarget.closest('details')?.removeAttribute('open'); }} aria-current={activeSection === section.id ? 'page' : undefined}>
+                    {translate(section.label)}
+                  </button>
+                ))}
+              </nav>
+            </details>
+          </>
+        ) : (
+          <nav className="segmented-row" aria-label={translate("Student classroom sections")}>
+            {tabs.map((tab) => (
+              <button key={tab.id} className={`small-btn ${activeTab === tab.id ? 'is-active' : ''}`} type="button" onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? 'page' : undefined}>
+                {translate(tab.label)}
+              </button>
+            ))}
+          </nav>
+        )}
       </div>
 
       {error ? <div className="error-banner">{translate(error)}</div> : null}
       {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
-      {activeTab === 'overview' ? (
+      {showLegacyPanel('overview') ? (
         <section className="grid">
           <div className="panel student-focus-panel">
             <div className="row between wrap">
@@ -484,7 +575,7 @@ export const StudentClassroomView = ({
                   className={`student-focus-card student-focus-card--${item.tone}`}
                   key={item.key}
                   type="button"
-                  onClick={() => setActiveTab(item.tab)}
+                  onClick={() => openLegacyTab(item.tab)}
                 >
                   <span>{translate(item.label)}</span>
                   <strong>{translate(item.title)}</strong>
@@ -531,7 +622,48 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'resources' ? (
+      {classroomV2Enabled && activeSection === 'live' ? (
+        <section className="grid classroom-live-grid">
+          <div className="panel">
+            <div className="row between wrap">
+              <div>
+                <h3>{translate("Live sessions")}</h3>
+                <p className="muted">{translate("Online rooms open shortly before class. Your membership is checked again when you join.")}</p>
+              </div>
+              <span className="status">{sessions.length} {translate("sessions")}</span>
+            </div>
+          </div>
+          {sessions.map((session) => (
+            <article className="panel classroom-live-session" key={session.id}>
+              <div className="row between wrap">
+                <div>
+                  <p className="small muted">{formatDate(session.starts_at)} · {session.delivery_mode.replaceAll('_', ' ')}</p>
+                  <h3>{session.title}</h3>
+                  <p className="small muted">{formatDate(session.starts_at)} — {formatDate(session.ends_at)} · {session.timezone}</p>
+                </div>
+                <span className={statusClass(session.status)}>{translate(session.status.replaceAll('_', ' '))}</span>
+              </div>
+              {session.delivery_mode === 'online' || session.delivery_mode === 'hybrid' ? (
+                <button
+                  type="button"
+                  className={session.join_available ? 'primary-btn' : 'ghost-btn'}
+                  disabled={!session.join_available || joiningSessionId === session.id}
+                  onClick={() => void joinSession(session)}
+                >
+                  {joiningSessionId === session.id
+                    ? translate("Opening room...")
+                    : session.join_available
+                      ? translate("Join live room")
+                      : translate("Room opens 15 minutes before class")}
+                </button>
+              ) : <p className="muted">{translate("This session takes place in person.")}</p>}
+            </article>
+          ))}
+          {sessions.length === 0 ? <div className="panel">{translate("No upcoming live sessions.")}</div> : null}
+        </section>
+      ) : null}
+
+      {showLegacyPanel('resources') ? (
         <section className="grid two">
           {publishedResources.map((resource) => {
             const done = completedResourceIds.has(resource.id);
@@ -558,11 +690,11 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'curriculum' ? (
+      {showLegacyPanel('curriculum') ? (
         <StudentCurriculumView academyId={classroom.academy_id} classroomId={classroom.id} />
       ) : null}
 
-      {activeTab === 'assignments' ? (
+      {showLegacyPanel('assignments') ? (
         <section className="grid two">
           <div className="panel">
             <h3>{translate("Assignments")}</h3>
@@ -639,7 +771,7 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'grades' ? (
+      {showLegacyPanel('grades') ? (
         <section className="panel">
           <h3>{translate("Grades")}</h3>
           <div className="table-wrap">
@@ -678,7 +810,7 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'attendance' ? (
+      {showLegacyPanel('attendance') ? (
         <section className="panel">
           <h3>{translate("Attendance")}</h3>
           <div className="table-wrap">
@@ -699,7 +831,7 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'billing' ? (
+      {showLegacyPanel('billing') ? (
         <section className="grid">
           <div className="panel">
             <div className="row between wrap">
@@ -812,8 +944,21 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {activeTab === 'chat' ? (
+      {showLegacyPanel('chat') ? (
         <section className="grid two">
+          {classroomV2Enabled ? (
+            <div className="panel">
+              <h3>{translate("People in this classroom")}</h3>
+              <ul className="list">
+                {(room?.members ?? []).map((member) => (
+                  <li key={member.id}>
+                    <div className="row between wrap"><strong>{member.contact?.display_name || translate("Classroom member")}</strong><span className="status">{translate(member.role)}</span></div>
+                  </li>
+                ))}
+                {(room?.members.length ?? 0) === 0 ? <li>{translate("No classroom members are available.")}</li> : null}
+              </ul>
+            </div>
+          ) : null}
           <div className="panel">
             <h3>{translate("Classroom chat")}</h3>
             <ul className="list">
