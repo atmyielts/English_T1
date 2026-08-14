@@ -2946,6 +2946,56 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     expect(actionLog).not.toContain("contacts");
   });
 
+  test("workspace cards contain long unbroken academy and learner labels", async ({ page }) => {
+    const learnerLabel = "muhammadjafargofirov1@gmail.com";
+    const atlasAcademy = {
+      ...academy("owner"),
+      id: "academy-atlas",
+      name: "Atlas Academy",
+      slug: "atlas",
+    };
+    const learnerDashboard = {
+      ...studentDashboard,
+      academies: [{
+        ...studentDashboard.academies[0],
+        id: "academy-learner-label",
+        name: learnerLabel,
+        slug: "muhammadjafargofirov1-gmail-com",
+      }],
+    };
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await seedSessionCookie(page, "long-workspace-label-user");
+    await mockAcademyEdge(page, "owner", {
+      actionOverrides: {
+        academies: { academies: [academy("owner"), atlasAcademy] },
+        "student-dashboard": learnerDashboard,
+      },
+    });
+
+    await page.goto("/academies");
+    const title = page.getByRole("heading", { name: learnerLabel });
+    const learnerAction = page.getByRole("button", { name: `Learn in ${learnerLabel}` });
+    await expect(title).toBeVisible();
+    await expect(learnerAction).toBeVisible();
+    const titleGeometry = await title.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+    const actionGeometry = await learnerAction.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+    expect(titleGeometry.scrollWidth, "long workspace title stays within its card").toBeLessThanOrEqual(titleGeometry.clientWidth);
+    expect(actionGeometry.scrollWidth, "long workspace action stays within its card").toBeLessThanOrEqual(actionGeometry.clientWidth);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, "long workspace labels do not create page overflow").toBeLessThanOrEqual(1);
+    if (process.env.ACADEMY_VISUAL_QA === "1") {
+      const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-card-title-wrap");
+      await mkdir(outputDir, { recursive: true });
+      await page.screenshot({ path: resolve(outputDir, "long-workspace-label-1280.png"), fullPage: true });
+    }
+  });
+
   test("workspace entry remains responsive and keyboard-operable across supported widths", async ({ browser }) => {
     const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
     const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-entry-streamline");
