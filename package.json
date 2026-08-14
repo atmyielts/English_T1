@@ -22,6 +22,8 @@
     "test": "npm run test:sat && npm run test:shared && npm run test:telegram",
     "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/click/webhook-security.test.ts supabase/functions/click/payment-safety.test.ts supabase/functions/click/payment-flow-simulation.test.ts supabase/functions/click/launch-contract.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",
+    "test:english:mass-readiness": "deno test --allow-env --allow-read apps/english-hub/tests/navigation.test.ts apps/english-hub/tests/module-shell-contract.test.ts supabase/functions/_shared/english-access.test.ts supabase/functions/_shared/english-ai.test.ts supabase/functions/_shared/english-client-recovery.test.ts supabase/functions/hub/mass-usage-contract.test.ts supabase/functions/hub/load-verifier-contract.test.ts",
+    "verify:english:load": "node scripts/verify-english-load.mjs",
     "test:sat": "npm --workspace sat-simulator run test",
     "test:academy:routes": "npm --workspace apps/academy run test:routes",
     "test:platform:routes": "npm --workspace apps/platform run test:routes",

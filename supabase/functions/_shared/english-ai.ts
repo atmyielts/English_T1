@@ -16,7 +16,8 @@
 // All callers receive parsed JSON and a status flag so frontends can show
 // real diagnostics instead of silent fallback strings.
 
-export type EnglishAIProvider = "openai" | "anthropic" | "google";
+export type EnglishAIProvider = "openai" | "anthropic" | "google" | "openrouter";
+type EnglishAIPrimaryProvider = Exclude<EnglishAIProvider, "openrouter">;
 
 export type EnglishAIStatus = "ok" | "unconfigured" | "failed";
 
@@ -29,7 +30,7 @@ export interface EnglishAIRequest {
   modelOverride?: string | null;
 }
 
-const PROVIDER_DEFAULTS: Record<EnglishAIProvider, { model: string; endpoint: string }> = {
+const PROVIDER_DEFAULTS: Record<EnglishAIPrimaryProvider, { model: string; endpoint: string }> = {
   openai: {
     model: "gpt-4o-mini",
     endpoint: "https://api.openai.com/v1/chat/completions",
@@ -44,25 +45,28 @@ const PROVIDER_DEFAULTS: Record<EnglishAIProvider, { model: string; endpoint: st
   },
 };
 
-const PROVIDER_KEY_ENV: Record<EnglishAIProvider, string> = {
+const PROVIDER_KEY_ENV: Record<EnglishAIPrimaryProvider, string> = {
   openai: "OPENAI_API_KEY",
   anthropic: "ANTHROPIC_API_KEY",
   google: "GOOGLE_AI_API_KEY",
 };
 
-const resolveProvider = (): EnglishAIProvider => {
+const resolveProvider = (): EnglishAIPrimaryProvider => {
   const raw = (Deno.env.get("ENGLISH_AI_PROVIDER") ?? "openai").toLowerCase();
   if (raw === "anthropic" || raw === "google" || raw === "openai") return raw;
   return "openai";
 };
 
-const resolveProviderKey = (provider: EnglishAIProvider): string | null => {
+const resolveProviderKey = (provider: EnglishAIPrimaryProvider): string | null => {
   return Deno.env.get(PROVIDER_KEY_ENV[provider]) ?? null;
 };
 
 export const isEnglishAIConfigured = (): boolean => {
   const provider = resolveProvider();
-  return Boolean(resolveProviderKey(provider));
+  if (resolveProviderKey(provider)) return true;
+  const fallbackPolicy = (Deno.env.get("ENGLISH_AI_FALLBACK") ?? "openrouter").toLowerCase();
+  return fallbackPolicy === "openrouter"
+    && Boolean(Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPENAI_API_KEY"));
 };
 
 const callOpenAI = async (req: EnglishAIRequest, apiKey: string): Promise<unknown> => {
@@ -184,7 +188,7 @@ const callOpenRouterFallback = async (req: EnglishAIRequest): Promise<unknown> =
   return JSON.parse(content);
 };
 
-const callPrimaryProvider = (req: EnglishAIRequest, provider: EnglishAIProvider, apiKey: string): Promise<unknown> => {
+const callPrimaryProvider = (req: EnglishAIRequest, provider: EnglishAIPrimaryProvider, apiKey: string): Promise<unknown> => {
   if (provider === "openai") return callOpenAI(req, apiKey);
   if (provider === "anthropic") return callAnthropic(req, apiKey);
   return callGoogle(req, apiKey);
@@ -194,27 +198,33 @@ const callPrimaryProvider = (req: EnglishAIRequest, provider: EnglishAIProvider,
  * Call the configured AI provider with structured JSON output.
  * Returns parsed JSON on success, throws on any failure.
  */
-export const callEnglishAI = async (req: EnglishAIRequest): Promise<unknown> => {
+const callEnglishAIResolved = async (
+  req: EnglishAIRequest,
+): Promise<{ data: unknown; provider: EnglishAIProvider }> => {
   const provider = resolveProvider();
   const apiKey = resolveProviderKey(provider);
   const fallbackPolicy = (Deno.env.get("ENGLISH_AI_FALLBACK") ?? "openrouter").toLowerCase();
 
   if (apiKey) {
     try {
-      return await callPrimaryProvider(req, provider, apiKey);
+      return { data: await callPrimaryProvider(req, provider, apiKey), provider };
     } catch (err) {
       if (fallbackPolicy === "openrouter") {
-        return await callOpenRouterFallback(req);
+        return { data: await callOpenRouterFallback(req), provider: "openrouter" };
       }
       throw err;
     }
   }
 
   if (fallbackPolicy === "openrouter") {
-    return await callOpenRouterFallback(req);
+    return { data: await callOpenRouterFallback(req), provider: "openrouter" };
   }
 
   throw new Error(`english_ai_unconfigured: missing ${PROVIDER_KEY_ENV[provider]}`);
+};
+
+export const callEnglishAI = async (req: EnglishAIRequest): Promise<unknown> => {
+  return (await callEnglishAIResolved(req)).data;
 };
 
 /**
@@ -230,8 +240,8 @@ export const callEnglishAIWithStatus = async <T>(
     return { data: fallback, status: "unconfigured", provider };
   }
   try {
-    const result = await callEnglishAI(req);
-    return { data: result as T, status: "ok", provider };
+    const result = await callEnglishAIResolved(req);
+    return { data: result.data as T, status: "ok", provider: result.provider };
   } catch (err) {
     return {
       data: fallback,

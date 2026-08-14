@@ -10,6 +10,7 @@ import {
   useParams,
 } from 'react-router-dom';
 import '../../../../english-shared/src/english-routes.css';
+import './module.css';
 import {
   AccessBoundaryCard,
   EnglishSkillWorkspace,

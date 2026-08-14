@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import '../../../../english-shared/src/english-routes.css';
+import './module.css';
 import {
   AccessBoundaryCard,
   EnglishSkillWorkspace,

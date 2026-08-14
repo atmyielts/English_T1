@@ -5,6 +5,9 @@ type EntitledRouteProps = {
   productSlug: string;
   hasAccess: boolean;
   checkingAccess: boolean;
+  pricingHref: string;
+  title?: string;
+  message?: string;
   children: ReactNode;
 };
 
@@ -17,6 +20,9 @@ export const EntitledRoute = ({
   productSlug,
   hasAccess,
   checkingAccess,
+  pricingHref,
+  title,
+  message,
   children,
 }: EntitledRouteProps) => {
   if (checkingAccess) {
@@ -28,9 +34,9 @@ export const EntitledRoute = ({
       <div className="locked-view-container">
         <AccessBoundaryCard
           hasAccess={false}
-          title={titleFromSlug(productSlug)}
-          message={`Unlock full access to the ${productSlug.replace(/^english-/, '')} practice routes, diagnostics, and AI feedback loops.`}
-          ctaHref={`https://schood.online/pricing?product=${productSlug}`}
+          title={title ?? titleFromSlug(productSlug)}
+          message={message ?? `Unlock full access to the ${productSlug.replace(/^english-/, '')} practice routes, diagnostics, and AI feedback loops.`}
+          ctaHref={pricingHref}
         />
       </div>
     );

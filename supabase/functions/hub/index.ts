@@ -17,7 +17,13 @@ import {
   buildUnifiedMistakeNotebook,
 } from "../_shared/english-insights.ts";
 import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import {
+  consumeEnglishAiDailyQuota,
+  parseEnglishAiDailyLimit,
+  requireEnglishSuiteAccess,
+} from "../_shared/english-access.ts";
 import { parseBody } from "../_shared/english-learning.ts";
+import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recovery.ts";
 
 const routeMarker = "/hub";
 
@@ -34,6 +40,8 @@ const jsonCached = (status: number, body: unknown, maxAgeSeconds = 60): Response
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const requestId = crypto.randomUUID();
+  const startedAt = Date.now();
   try {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -43,8 +51,67 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
+
+    if (req.method === "POST" && route === "/client-events/recovery") {
+      const event = parseEnglishClientRecoveryEvent(await parseBody(req));
+      if (!event) {
+        return json(400, {
+          error: "Invalid recovery event",
+          code: "invalid_english_recovery_event",
+          request_id: requestId,
+        });
+      }
+
+      console.error(JSON.stringify({
+        event: "english_client_recovery",
+        request_id: requestId,
+        user_id: auth.userId,
+        kind: event.kind,
+        path: event.path,
+        release: event.release,
+        error_name: event.errorName,
+      }));
+      return new Response(JSON.stringify({ ok: true, request_id: requestId }), {
+        status: 202,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "X-Request-Id": requestId,
+          ...corsHeaders,
+        },
+      });
+    }
+
     const scope = await resolveLanguageScope(sb, toText(url.searchParams.get("language_code"), 16) || "en");
     const products = await resolveEnglishProducts(sb);
+
+    const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
+      || (req.method === "POST" && route.startsWith("/ai/"));
+    if (isEnglishAiRequest) {
+      const access = await requireEnglishSuiteAccess(sb, auth.userId, products);
+      if (!access.allowed) {
+        return json(403, {
+          error: "An active English service entitlement is required",
+          code: "english_entitlement_required",
+        });
+      }
+
+      if (isEnglishAIConfigured()) {
+        const quota = await consumeEnglishAiDailyQuota(
+          sb,
+          auth.userId,
+          parseEnglishAiDailyLimit(Deno.env.get("ENGLISH_AI_DAILY_LIMIT")),
+        );
+        if (!quota.allowed) {
+          return json(429, {
+            error: "Daily English AI limit reached. Try again tomorrow.",
+            code: "english_ai_daily_limit_reached",
+            remaining: quota.remaining,
+            total: quota.total,
+          });
+        }
+      }
+    }
 
     // Existing daily plan endpoint (unchanged).
     if (req.method === "GET" && route === "/plan") {
@@ -1492,6 +1559,25 @@ serve(async (req) => {
 
     return json(405, { error: "Method not allowed" });
   } catch (error) {
-    return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
+    console.error(JSON.stringify({
+      event: "english_hub_request_failed",
+      request_id: requestId,
+      error_name: error instanceof Error ? error.name : "UnknownError",
+      error: error instanceof Error ? error.message.slice(0, 500) : "Unknown error",
+      duration_ms: Date.now() - startedAt,
+    }));
+    return new Response(JSON.stringify({
+      error: "English service request failed",
+      code: "english_service_unavailable",
+      request_id: requestId,
+    }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "X-Request-Id": requestId,
+        ...corsHeaders,
+      },
+    });
   }
 });
