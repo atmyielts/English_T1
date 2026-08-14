@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
 import { ArrowRight, Bell, BookOpenCheck, CreditCard, MessageSquare, Search, UserPlus } from "lucide-react";
 import type { TeacherStudioAlert, TeacherStudioClassroom, TeacherStudioClassroomMembership, TeacherStudioContact, TeacherStudioEducationOS, TeacherStudioPayment } from "../../lib/client";
@@ -77,42 +78,37 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
     <section className="workspace-section-stack">
       <header className="page-section-heading">
         <div>
-          <span className="eyebrow">People</span>
+          <span className="eyebrow">{translate("People")}</span>
           <h2>{canManageContacts ? "Students and contacts" : "My students"}</h2>
-          <p>Select a person once to review their classroom, progress, attention, and permitted account context together.</p>
+          <p>{translate("Select a person once to review their classroom, progress, attention, and permitted account context together.")}</p>
         </div>
       </header>
 
       {canManageContacts ? (
         <details className="panel workspace-create-disclosure">
           <summary>
-            <UserPlus size={17} aria-hidden="true" /> Add contact
-          </summary>
+            <UserPlus size={17} aria-hidden="true" /> {translate("Add contact")}{' '}</summary>
           <form className="workspace-form" onSubmit={onSubmit}>
             <div className="form-grid two-col">
               <label>
-                First name
-                <input className="input" autoComplete="given-name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
+                {translate("First name")}{' '}<input className="input" autoComplete="given-name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
               </label>
               <label>
-                Last name
-                <input className="input" autoComplete="family-name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
+                {translate("Last name")}{' '}<input className="input" autoComplete="family-name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
               </label>
             </div>
             <div className="form-grid two-col">
               <label>
-                Email
-                <input className="input" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
+                {translate("Email")}{' '}<input className="input" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
               </label>
               <label>
-                Phone <span className="optional-label">Optional</span>
+                {translate("Phone")}{' '}<span className="optional-label">{translate("Optional")}</span>
                 <input className="input" autoComplete="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
               </label>
             </div>
             <div className="form-actions">
               <button className="primary-btn" type="submit" disabled={busy}>
-                Save contact
-              </button>
+                {translate("Save contact")}{' '}</button>
             </div>
           </form>
         </details>
@@ -123,7 +119,7 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
           <div className="directory-toolbar">
             <label className="search-field">
               <Search size={16} aria-hidden="true" />
-              <span className="sr-only">Search contacts</span>
+              <span className="sr-only">{translate("Search contacts")}</span>
               <input
                 value={query}
                 onChange={(event) => {
@@ -131,12 +127,12 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                   setQuery(nextQuery);
                   reconcileSelection(nextQuery, statusFilter);
                 }}
-                placeholder="Search name, email, phone, or level"
+                placeholder={translate("Search name, email, phone, or level")}
               />
             </label>
             <select
               className="input compact-input"
-              aria-label="Filter contacts by status"
+              aria-label={translate("Filter contacts by status")}
               value={statusFilter}
               onChange={(event) => {
                 const nextStatus = event.target.value;
@@ -144,7 +140,7 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                 reconcileSelection(query, nextStatus);
               }}
             >
-              <option value="all">All statuses</option>
+              <option value="all">{translate("All statuses")}</option>
               {statuses.map((status) => (
                 <option value={status} key={status}>
                   {status}
@@ -160,10 +156,10 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
             <table>
               <thead>
                 <tr>
-                  <th>Contact</th>
-                  <th>Status</th>
-                  <th>Level</th>
-                  <th>Last updated</th>
+                  <th>{translate("Contact")}</th>
+                  <th>{translate("Status")}</th>
+                  <th>{translate("Level")}</th>
+                  <th>{translate("Last updated")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,8 +167,7 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                   <tr>
                     <td colSpan={4}>
                       <div className="table-loading-state" role="status">
-                        Loading contacts…
-                      </div>
+                        {translate("Loading contacts…")}{' '}</div>
                     </td>
                   </tr>
                 ) : null}
@@ -192,7 +187,7 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                       <td>
                         <span className={statusClass(contact.status)}>{contact.status}</span>
                       </td>
-                      <td>{contact.placement_level || <span className="muted">Not set</span>}</td>
+                      <td>{contact.placement_level || <span className="muted">{translate("Not set")}</span>}</td>
                       <td>{formatDate(contact.updated_at)}</td>
                     </tr>
                   );
@@ -217,17 +212,17 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
             <>
               <header className="contact-context__header">
                 <div>
-                  <span className="eyebrow">Contact context</span>
+                  <span className="eyebrow">{translate("Contact context")}</span>
                   <h3>{contactName(selectedContact)}</h3>
                   <p>{selectedContact.email || selectedContact.phone || "No contact channel recorded"}</p>
                 </div>
                 <span className={statusClass(selectedContact.status)}>{selectedContact.status}</span>
               </header>
 
-              <div className="contact-context__tabs" aria-label="Contact details" role="group">
+              <div className="contact-context__tabs" aria-label={translate("Contact details")} role="group">
                 {([["overview", "Overview"], ["classrooms", "Classrooms"], ["attention", "Attention"], ...(canViewPayments ? [["payments", "Payments"]] : [])] as Array<[ContactTab, string]>).map(([id, label]) => (
                   <button type="button" aria-pressed={contactTab === id} className={contactTab === id ? "is-active" : ""} onClick={() => setContactTab(id)} key={id}>
-                    {label}
+                    {translate(label)}
                   </button>
                 ))}
               </div>
@@ -236,84 +231,77 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                 <div className="contact-context__body">
                   {enrichmentState.educationOS === "loading" ? (
                     <div className="contact-context-state" role="status">
-                      Loading learning and lifecycle context…
-                    </div>
+                      {translate("Loading learning and lifecycle context…")}{' '}</div>
                   ) : null}
                   {enrichmentState.educationOS === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Learning and lifecycle context could not be loaded.</strong>
+                      <strong>{translate("Learning and lifecycle context could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("educationOS")}>
-                        Retry learning context
-                      </button>
+                        {translate("Retry learning context")}{' '}</button>
                     </div>
                   ) : null}
                   {enrichmentState.memberships === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Classroom membership could not be loaded.</strong>
+                      <strong>{translate("Classroom membership could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("memberships")}>
-                        Retry classroom membership
-                      </button>
+                        {translate("Retry classroom membership")}{' '}</button>
                     </div>
                   ) : null}
                   <div className="contact-signal-grid">
                     <div>
-                      <span>Attendance</span>
+                      <span>{translate("Attendance")}</span>
                       <strong>{lifecycle?.attendance_rate == null ? "—" : `${lifecycle.attendance_rate}%`}</strong>
                     </div>
                     <div>
-                      <span>Progress</span>
+                      <span>{translate("Progress")}</span>
                       <strong>{lifecycle?.composite_score == null ? "—" : `${lifecycle.composite_score}%`}</strong>
                     </div>
                     <div>
-                      <span>Classrooms</span>
+                      <span>{translate("Classrooms")}</span>
                       <strong>{enrichmentState.memberships === "success" ? selectedMemberships.length : "—"}</strong>
                     </div>
                     <div>
-                      <span>Needs attention</span>
+                      <span>{translate("Needs attention")}</span>
                       <strong>{attentionContextReady ? selectedActions.length + selectedAlerts.length + (canViewPayments ? paymentAttention.length : 0) : "—"}</strong>
                     </div>
                   </div>
                   <dl className="contact-facts">
                     <div>
-                      <dt>Lifecycle</dt>
+                      <dt>{translate("Lifecycle")}</dt>
                       <dd>{lifecycle?.derived_stage || selectedContact.lifecycle_stage || "Not set"}</dd>
                     </div>
                     <div>
-                      <dt>Placement</dt>
+                      <dt>{translate("Placement")}</dt>
                       <dd>
                         {selectedContact.placement_level || "Not set"}
                         {selectedContact.placement_score != null ? ` · ${selectedContact.placement_score}` : ""}
                       </dd>
                     </div>
                     <div>
-                      <dt>Missing work</dt>
+                      <dt>{translate("Missing work")}</dt>
                       <dd>{lifecycle?.missing_assignments ?? "—"}</dd>
                     </div>
                     <div>
-                      <dt>Last activity</dt>
+                      <dt>{translate("Last activity")}</dt>
                       <dd>{formatDate(selectedContact.last_activity_at)}</dd>
                     </div>
                   </dl>
                   <div className="contact-quick-actions">
                     {selectedMemberships[0] ? (
                       <button className="small-btn" type="button" onClick={() => onOpenClassroom(selectedMemberships[0].classroom_id)}>
-                        <BookOpenCheck size={15} /> Open classroom
-                      </button>
+                        <BookOpenCheck size={15} /> {translate("Open classroom")}{' '}</button>
                     ) : null}
                     {canViewMessages ? (
                       <button className="small-btn" type="button" onClick={() => onNavigate("inbox")}>
-                        <MessageSquare size={15} /> Message
-                      </button>
+                        <MessageSquare size={15} /> {translate("Message")}{' '}</button>
                     ) : null}
                     {canViewAlerts ? (
                       <button className="small-btn" type="button" onClick={() => onNavigate("alerts")}>
-                        <Bell size={15} /> Alerts
-                      </button>
+                        <Bell size={15} /> {translate("Alerts")}{' '}</button>
                     ) : null}
                     {canViewPayments ? (
                       <button className="small-btn" type="button" onClick={() => onNavigate("payments")}>
-                        <CreditCard size={15} /> Finance
-                      </button>
+                        <CreditCard size={15} /> {translate("Finance")}{' '}</button>
                     ) : null}
                   </div>
                 </div>
@@ -323,23 +311,20 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                 <div className="contact-context__body contact-record-list">
                   {enrichmentState.classrooms === "loading" || enrichmentState.memberships === "loading" ? (
                     <div className="contact-context-state" role="status">
-                      Loading classroom information…
-                    </div>
+                      {translate("Loading classroom information…")}{' '}</div>
                   ) : null}
                   {enrichmentState.classrooms === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Classroom details could not be loaded.</strong>
+                      <strong>{translate("Classroom details could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("classrooms")}>
-                        Retry classroom details
-                      </button>
+                        {translate("Retry classroom details")}{' '}</button>
                     </div>
                   ) : null}
                   {enrichmentState.memberships === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Classroom membership could not be loaded.</strong>
+                      <strong>{translate("Classroom membership could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("memberships")}>
-                        Retry classroom membership
-                      </button>
+                        {translate("Retry classroom membership")}{' '}</button>
                     </div>
                   ) : null}
                   {classroomContextReady
@@ -361,8 +346,8 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                     : null}
                   {classroomContextReady && selectedMemberships.length === 0 ? (
                     <div className="table-empty-state">
-                      <strong>No classroom membership</strong>
-                      <span>Add this contact to a classroom before assigning learning work.</span>
+                      <strong>{translate("No classroom membership")}</strong>
+                      <span>{translate("Add this contact to a classroom before assigning learning work.")}</span>
                     </div>
                   ) : null}
                 </div>
@@ -372,28 +357,24 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                 <div className="contact-context__body contact-attention-list">
                   {enrichmentState.educationOS === "loading" ? (
                     <div className="contact-context-state" role="status">
-                      Loading action signals…
-                    </div>
+                      {translate("Loading action signals…")}{' '}</div>
                   ) : null}
                   {enrichmentState.educationOS === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Action signals could not be loaded.</strong>
+                      <strong>{translate("Action signals could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("educationOS")}>
-                        Retry action signals
-                      </button>
+                        {translate("Retry action signals")}{' '}</button>
                     </div>
                   ) : null}
                   {canViewAlerts && enrichmentState.alerts === "loading" ? (
                     <div className="contact-context-state" role="status">
-                      Loading alerts…
-                    </div>
+                      {translate("Loading alerts…")}{' '}</div>
                   ) : null}
                   {canViewAlerts && enrichmentState.alerts === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Alerts could not be loaded.</strong>
+                      <strong>{translate("Alerts could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("alerts")}>
-                        Retry alerts
-                      </button>
+                        {translate("Retry alerts")}{' '}</button>
                     </div>
                   ) : null}
                   {enrichmentState.educationOS === "success"
@@ -422,8 +403,8 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                     : null}
                   {enrichmentState.educationOS === "success" && (!canViewAlerts || enrichmentState.alerts === "success") && selectedActions.length === 0 && (!canViewAlerts || selectedAlerts.length === 0) ? (
                     <div className="table-empty-state">
-                      <strong>No open attention items</strong>
-                      <span>New risks, follow-ups, and permitted alerts will appear here.</span>
+                      <strong>{translate("No open attention items")}</strong>
+                      <span>{translate("New risks, follow-ups, and permitted alerts will appear here.")}</span>
                     </div>
                   ) : null}
                 </div>
@@ -433,15 +414,13 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                 <div className="contact-context__body contact-payment-list">
                   {enrichmentState.payments === "loading" ? (
                     <div className="contact-context-state" role="status">
-                      Loading payment information…
-                    </div>
+                      {translate("Loading payment information…")}{' '}</div>
                   ) : null}
                   {enrichmentState.payments === "error" ? (
                     <div className="contact-context-state is-error" role="alert">
-                      <strong>Payment information could not be loaded.</strong>
+                      <strong>{translate("Payment information could not be loaded.")}</strong>
                       <button className="small-btn" type="button" onClick={() => onRetryEnrichment("payments")}>
-                        Retry payment information
-                      </button>
+                        {translate("Retry payment information")}{' '}</button>
                     </div>
                   ) : null}
                   {enrichmentState.payments === "success"
@@ -449,7 +428,7 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                         <article key={payment.id}>
                           <div>
                             <strong>
-                              {payment.amount.toLocaleString()} {payment.currency}
+                              {payment.amount.toLocaleString(getLocaleTag())} {payment.currency}
                             </strong>
                             <span className={statusClass(payment.status)}>{payment.status}</span>
                           </div>
@@ -461,8 +440,8 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
                     : null}
                   {enrichmentState.payments === "success" && selectedPayments.length === 0 ? (
                     <div className="table-empty-state">
-                      <strong>No payments recorded</strong>
-                      <span>Create a Click checkout from Finance when this contact is ready to pay.</span>
+                      <strong>{translate("No payments recorded")}</strong>
+                      <span>{translate("Create a Click checkout from Finance when this contact is ready to pay.")}</span>
                     </div>
                   ) : null}
                 </div>
@@ -470,12 +449,11 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
             </>
           ) : loading ? (
             <div className="table-loading-state" role="status">
-              Loading contact details…
-            </div>
+              {translate("Loading contact details…")}{' '}</div>
           ) : (
             <div className="table-empty-state">
-              <strong>Select a contact</strong>
-              <span>Contact context will appear here without another route change.</span>
+              <strong>{translate("Select a contact")}</strong>
+              <span>{translate("Contact context will appear here without another route change.")}</span>
             </div>
           )}
         </aside>

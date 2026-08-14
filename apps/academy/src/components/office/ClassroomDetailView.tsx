@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { FormEvent } from 'react';
 import type {
   TeacherStudioActionItem,
@@ -59,9 +60,9 @@ const severityClass = (severity: string): string => {
 const isUrgentAction = (item: TeacherStudioActionItem): boolean =>
   item.priority === 'critical' || item.priority === 'high';
 
-const sourceLabel = (source: string): string => source.replace(/_/g, ' ');
+const sourceLabel = (source: string): string => translate(source.replace(/_/g, ' '));
 
-const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
+const eventTypeLabel = (type: string): string => translate(type.replace(/_/g, ' '));
 
 const contactLabel = (contact: TeacherStudioContact | null | undefined, fallback = 'Unknown student'): string => {
   if (!contact) return fallback;
@@ -100,11 +101,10 @@ export const ClassroomDetailView = ({
   if (!classroom) {
     return (
       <section className="panel">
-        <h3>Classroom not found</h3>
-        <p className="muted">This classroom does not exist in the selected academy.</p>
+        <h3>{translate("Classroom not found")}</h3>
+        <p className="muted">{translate("This classroom does not exist in the selected academy.")}</p>
         <button className="ghost-btn" type="button" onClick={onBack}>
-          Back to classrooms
-        </button>
+          {translate("Back to classrooms")}{' '}</button>
       </section>
     );
   }
@@ -166,25 +166,24 @@ export const ClassroomDetailView = ({
         <div className="row between">
           <h3>{classroom.name}</h3>
           <button className="ghost-btn" type="button" onClick={onBack}>
-            Back to classrooms
-          </button>
+            {translate("Back to classrooms")}{' '}</button>
         </div>
         <p className="muted">{classroom.description || 'No description yet.'}</p>
         <div className="metric-list classroom-detail__metrics">
           <div className="metric-row">
-            <span>Status</span>
+            <span>{translate("Status")}</span>
             <strong>{classroom.is_active ? 'active' : 'inactive'}</strong>
           </div>
           <div className="metric-row">
-            <span>Members</span>
+            <span>{translate("Members")}</span>
             <strong>{memberships.length}</strong>
           </div>
           <div className="metric-row">
-            <span>Announcements</span>
+            <span>{translate("Announcements")}</span>
             <strong>{classroomAnnouncements.length}</strong>
           </div>
           <div className="metric-row">
-            <span>Alerts</span>
+            <span>{translate("Alerts")}</span>
             <strong>{classroomAlerts.length}</strong>
           </div>
         </div>
@@ -192,29 +191,29 @@ export const ClassroomDetailView = ({
 
       <div className="panel lms-ops-panel">
         <div className="row between">
-          <h3>Learning operations</h3>
-          <span className="status">{classroomActionItems.length} open actions</span>
+          <h3>{translate("Learning operations")}</h3>
+          <span className="status">{classroomActionItems.length} {translate("open actions")}</span>
         </div>
         <div className="lms-kpi-grid">
           <article>
-            <span>Urgent</span>
+            <span>{translate("Urgent")}</span>
             <strong>{urgentActionsCount}</strong>
           </article>
           <article>
-            <span>Grade backlog</span>
+            <span>{translate("Grade backlog")}</span>
             <strong>{gradeBacklogCount}</strong>
           </article>
           <article>
-            <span>Missing work</span>
+            <span>{translate("Missing work")}</span>
             <strong>{missingWorkCount}</strong>
           </article>
           <article>
-            <span>Attendance risk</span>
+            <span>{translate("Attendance risk")}</span>
             <strong>{attendanceRiskCount}</strong>
           </article>
           {canIssueCertificates ? (
             <article>
-              <span>Certificates</span>
+              <span>{translate("Certificates")}</span>
               <strong>{certificateReadyCount}</strong>
             </article>
           ) : null}
@@ -224,12 +223,12 @@ export const ClassroomDetailView = ({
           <table>
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Stage</th>
-                <th>Score</th>
-                <th>Attendance</th>
-                <th>Missing</th>
-                <th>Next action</th>
+                <th>{translate("Student")}</th>
+                <th>{translate("Stage")}</th>
+                <th>{translate("Score")}</th>
+                <th>{translate("Attendance")}</th>
+                <th>{translate("Missing")}</th>
+                <th>{translate("Next action")}</th>
                 <th />
               </tr>
             </thead>
@@ -253,20 +252,19 @@ export const ClassroomDetailView = ({
                     ) : (
                       <span className="muted">{row.lifecycle?.next_action || '-'}</span>
                     )}
-                    {row.certificateReady ? <div className="small status status--ok">certificate ready</div> : null}
+                    {row.certificateReady ? <div className="small status status--ok">{translate("certificate ready")}</div> : null}
                   </td>
                   <td>
                     {row.nextAction && canResolveActionItems ? (
                       <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(row.nextAction!)}>
-                        Done
-                      </button>
+                        {translate("Done")}{' '}</button>
                     ) : null}
                   </td>
                 </tr>
               ))}
               {studentRows.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>No members in this classroom.</td>
+                  <td colSpan={7}>{translate("No members in this classroom.")}</td>
                 </tr>
               ) : null}
             </tbody>
@@ -276,7 +274,7 @@ export const ClassroomDetailView = ({
 
       <div className="grid two">
         <div className="panel">
-          <h3>Classroom action queue</h3>
+          <h3>{translate("Classroom action queue")}</h3>
           <div className="lms-action-stack">
             {classroomActionItems.slice(0, 8).map((item) => {
               const contact = item.contact_id ? contactById.get(item.contact_id) : null;
@@ -296,23 +294,21 @@ export const ClassroomDetailView = ({
                   </div>
                   <div className="lms-action-controls">
                     <button className="small-btn" type="button" onClick={() => onOpenActionItem(item)}>
-                      Open
-                    </button>
+                      {translate("Open")}{' '}</button>
                     {canResolveActionItems ? (
                       <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
-                        Done
-                      </button>
+                        {translate("Done")}{' '}</button>
                     ) : null}
                   </div>
                 </div>
               );
             })}
-            {classroomActionItems.length === 0 ? <div className="empty-state">No open actions for this classroom.</div> : null}
+            {classroomActionItems.length === 0 ? <div className="empty-state">{translate("No open actions for this classroom.")}</div> : null}
           </div>
         </div>
 
         <div className="panel">
-          <h3>Operating calendar</h3>
+          <h3>{translate("Operating calendar")}</h3>
           <ul className="list">
             {classroomEvents.map((event) => (
               <li key={event.id}>
@@ -323,14 +319,14 @@ export const ClassroomDetailView = ({
                 <div className="small muted">{formatDate(event.starts_at)}</div>
               </li>
             ))}
-            {classroomEvents.length === 0 ? <li>No scheduled operating events.</li> : null}
+            {classroomEvents.length === 0 ? <li>{translate("No scheduled operating events.")}</li> : null}
           </ul>
         </div>
       </div>
 
       {classroomInsights.length > 0 ? (
         <div className="panel">
-          <h3>Decision signals</h3>
+          <h3>{translate("Decision signals")}</h3>
           <div className="grid two">
             {classroomInsights.map((insight) => (
               <div className="lms-signal" key={insight.id}>
@@ -347,93 +343,91 @@ export const ClassroomDetailView = ({
       ) : null}
 
       <div className="panel">
-        <h3>Classroom landing copy</h3>
+        <h3>{translate("Classroom landing copy")}</h3>
         <p className="muted">
-          Configure the classroom landing headline, explanation text, and entry button labels shown before workspace screens.
-        </p>
+          {translate("Configure the classroom landing headline, explanation text, and entry button labels shown before workspace screens.")}{' '}</p>
         <form className="grid" onSubmit={onSaveLanding}>
           <label className="grid">
-            <span className="small muted">Description</span>
+            <span className="small muted">{translate("Description")}</span>
             <textarea
               className="input"
               value={landingForm.description}
               onChange={(event) => onLandingFieldChange('description', event.target.value)}
-              placeholder="Short context for this classroom's outcomes and teaching style."
+              placeholder={translate("Short context for this classroom's outcomes and teaching style.")}
               disabled={!canManageLanding || busy}
             />
           </label>
           <label className="grid">
-            <span className="small muted">Hero headline</span>
+            <span className="small muted">{translate("Hero headline")}</span>
             <input
               className="input"
               value={landingForm.headline}
               onChange={(event) => onLandingFieldChange('headline', event.target.value)}
-              placeholder="Intensive Writing Workshop"
+              placeholder={translate("Intensive Writing Workshop")}
               disabled={!canManageLanding || busy}
             />
           </label>
           <label className="grid">
-            <span className="small muted">Hero subheadline</span>
+            <span className="small muted">{translate("Hero subheadline")}</span>
             <textarea
               className="input"
               value={landingForm.subheadline}
               onChange={(event) => onLandingFieldChange('subheadline', event.target.value)}
-              placeholder="Explain schedule, goals, and expected learner profile."
+              placeholder={translate("Explain schedule, goals, and expected learner profile.")}
               disabled={!canManageLanding || busy}
             />
           </label>
           <div className="grid two">
             <label className="grid">
-              <span className="small muted">Teacher CTA label</span>
+              <span className="small muted">{translate("Teacher CTA label")}</span>
               <input
                 className="input"
                 value={landingForm.teacher_cta_label}
                 onChange={(event) => onLandingFieldChange('teacher_cta_label', event.target.value)}
-                placeholder="Enter staff workspace"
+                placeholder={translate("Enter staff workspace")}
                 disabled={!canManageLanding || busy}
               />
             </label>
             <label className="grid">
-              <span className="small muted">Student CTA label</span>
+              <span className="small muted">{translate("Student CTA label")}</span>
               <input
                 className="input"
                 value={landingForm.student_cta_label}
                 onChange={(event) => onLandingFieldChange('student_cta_label', event.target.value)}
-                placeholder="Enter Student Workplace"
+                placeholder={translate("Enter Student Workplace")}
                 disabled={!canManageLanding || busy}
               />
             </label>
           </div>
           <label className="grid">
-            <span className="small muted">Classroom card summary</span>
+            <span className="small muted">{translate("Classroom card summary")}</span>
             <textarea
               className="input"
               value={landingForm.card_summary}
               onChange={(event) => onLandingFieldChange('card_summary', event.target.value)}
-              placeholder="Short summary shown on academy landing classroom cards."
+              placeholder={translate("Short summary shown on academy landing classroom cards.")}
               disabled={!canManageLanding || busy}
             />
           </label>
           <button className="primary-btn" type="submit" disabled={!canManageLanding || busy}>
-            Save classroom landing
-          </button>
-          {!canManageLanding ? <p className="small muted">Classroom management access required to update landing settings.</p> : null}
+            {translate("Save classroom landing")}{' '}</button>
+          {!canManageLanding ? <p className="small muted">{translate("Classroom management access required to update landing settings.")}</p> : null}
         </form>
       </div>
 
       <div className="grid two">
         <div className="panel">
-          <h3>Members</h3>
+          <h3>{translate("Members")}</h3>
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                  <th>Lifecycle</th>
+                  <th>{translate("Name")}</th>
+                  <th>{translate("Email")}</th>
+                  <th>{translate("Role")}</th>
+                  <th>{translate("Status")}</th>
+                  <th>{translate("Joined")}</th>
+                  <th>{translate("Lifecycle")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -458,7 +452,7 @@ export const ClassroomDetailView = ({
                 })}
                 {memberships.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>No members in this classroom.</td>
+                    <td colSpan={6}>{translate("No members in this classroom.")}</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -467,7 +461,7 @@ export const ClassroomDetailView = ({
         </div>
 
         <div className="panel">
-          <h3>Classroom announcements</h3>
+          <h3>{translate("Classroom announcements")}</h3>
           <ul className="list">
             {classroomAnnouncements.map((announcement) => (
               <li key={announcement.id}>
@@ -478,13 +472,13 @@ export const ClassroomDetailView = ({
                 <div>{announcement.body}</div>
               </li>
             ))}
-            {classroomAnnouncements.length === 0 ? <li>No classroom announcements yet.</li> : null}
+            {classroomAnnouncements.length === 0 ? <li>{translate("No classroom announcements yet.")}</li> : null}
           </ul>
         </div>
       </div>
 
       <div className="panel">
-        <h3>Related alerts</h3>
+        <h3>{translate("Related alerts")}</h3>
         <ul className="list">
           {classroomAlerts.map((alert) => {
             const contact = alert.contact_id ? contactById.get(alert.contact_id) : null;
@@ -503,7 +497,7 @@ export const ClassroomDetailView = ({
               </li>
             );
           })}
-          {classroomAlerts.length === 0 ? <li>No alerts linked to this classroom.</li> : null}
+          {classroomAlerts.length === 0 ? <li>{translate("No alerts linked to this classroom.")}</li> : null}
         </ul>
       </div>
     </section>

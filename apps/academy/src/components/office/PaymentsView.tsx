@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { useMemo, useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import type { TeacherStudioContact, TeacherStudioOffer, TeacherStudioPayment } from '../../lib/client';
 import type { PaymentFormState } from './types';
@@ -235,70 +236,67 @@ export const PaymentsView = ({
     <>
       <section className="grid two">
         <form className="panel workspace-form" onSubmit={onCreatePayment}>
-          <h3>Create Click checkout</h3>
-          <p className="small muted">Choose a contact and an offer. Access is applied only after Click confirms the payment.</p>
-          <label>Contact
-            <select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
-              <option value="">Select contact</option>
+          <h3>{translate("Create Click checkout")}</h3>
+          <p className="small muted">{translate("Choose a contact and an offer. Access is applied only after Click confirms the payment.")}</p>
+          <label>{translate("Contact")}{' '}<select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
+              <option value="">{translate("Select contact")}</option>
               {contacts.map((c) => (
                 <option key={c.id} value={c.id}>{`${c.first_name} ${c.last_name}`.trim()} ({c.email ?? 'no email'})</option>
               ))}
             </select>
           </label>
-          <label>Offer
-            <select className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
-              <option value="">Select offer</option>
+          <label>{translate("Offer")}{' '}<select className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
+              <option value="">{translate("Select offer")}</option>
               {offers.map((o) => (
                 <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
               ))}
             </select>
           </label>
           <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>
-              Create Click checkout
-          </button></div>
+              {translate("Create Click checkout")}{' '}</button></div>
         </form>
 
         <div className="panel">
-          <h3>Filtered summary</h3>
+          <h3>{translate("Filtered summary")}</h3>
           <div className="metric-list">
-            <div className="metric-row"><span>Total</span><strong>{summary.total}</strong></div>
-            <div className="metric-row"><span>Paid</span><strong>{summary.paid}</strong></div>
-            <div className="metric-row"><span>Pending</span><strong>{summary.pending}</strong></div>
-            <div className="metric-row"><span>Failed</span><strong>{summary.failed}</strong></div>
-            <div className="metric-row"><span>Canceled</span><strong>{summary.canceled}</strong></div>
-            <div className="metric-row"><span>Awaiting Click</span><strong>{summary.awaitingProvider}</strong></div>
-            <div className="metric-row"><span>Manual settlement</span><strong>{summary.manual}</strong></div>
-            <div className="metric-row"><span>Duplicate callback</span><strong>{summary.duplicate}</strong></div>
-            <div className="metric-row"><span>Grant mismatch</span><strong>{summary.grantMismatch}</strong></div>
-            <div className="metric-row"><span>Needs attention</span><strong>{summary.needsAttention}</strong></div>
-            <div className="metric-row"><span>Paid amount</span><strong>{summary.paidAmount.toLocaleString()} UZS</strong></div>
-            <div className="metric-row"><span>Pending amount</span><strong>{summary.pendingAmount.toLocaleString()} UZS</strong></div>
+            <div className="metric-row"><span>{translate("Total")}</span><strong>{summary.total}</strong></div>
+            <div className="metric-row"><span>{translate("Paid")}</span><strong>{summary.paid}</strong></div>
+            <div className="metric-row"><span>{translate("Pending")}</span><strong>{summary.pending}</strong></div>
+            <div className="metric-row"><span>{translate("Failed")}</span><strong>{summary.failed}</strong></div>
+            <div className="metric-row"><span>{translate("Canceled")}</span><strong>{summary.canceled}</strong></div>
+            <div className="metric-row"><span>{translate("Awaiting Click")}</span><strong>{summary.awaitingProvider}</strong></div>
+            <div className="metric-row"><span>{translate("Manual settlement")}</span><strong>{summary.manual}</strong></div>
+            <div className="metric-row"><span>{translate("Duplicate callback")}</span><strong>{summary.duplicate}</strong></div>
+            <div className="metric-row"><span>{translate("Grant mismatch")}</span><strong>{summary.grantMismatch}</strong></div>
+            <div className="metric-row"><span>{translate("Needs attention")}</span><strong>{summary.needsAttention}</strong></div>
+            <div className="metric-row"><span>{translate("Paid amount")}</span><strong>{summary.paidAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
+            <div className="metric-row"><span>{translate("Pending amount")}</span><strong>{summary.pendingAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
           </div>
         </div>
       </section>
 
       <section className="panel">
-        <div className="filters-grid" aria-label="Payment filters">
-          <label><span className="sr-only">Search payments</span><input className="input" placeholder="Search by contact, offer, or ID" value={search} onChange={(e) => setSearch(e.target.value)} /></label>
-          <label><span className="sr-only">Filter payments by status</span><select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as PaymentFilter)}>
-            <option value="all">All statuses</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="canceled">Canceled</option>
-            <option value="awaiting_provider">Awaiting Click</option>
-            <option value="manual">Manual settlement</option>
-            <option value="duplicate">Duplicate callback</option>
-            <option value="grant_mismatch">Grant mismatch</option>
-            <option value="needs_attention">Needs attention</option>
+        <div className="filters-grid" aria-label={translate("Payment filters")}>
+          <label><span className="sr-only">{translate("Search payments")}</span><input className="input" placeholder={translate("Search by contact, offer, or ID")} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
+          <label><span className="sr-only">{translate("Filter payments by status")}</span><select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as PaymentFilter)}>
+            <option value="all">{translate("All statuses")}</option>
+            <option value="paid">{translate("Paid")}</option>
+            <option value="pending">{translate("Pending")}</option>
+            <option value="failed">{translate("Failed")}</option>
+            <option value="canceled">{translate("Canceled")}</option>
+            <option value="awaiting_provider">{translate("Awaiting Click")}</option>
+            <option value="manual">{translate("Manual settlement")}</option>
+            <option value="duplicate">{translate("Duplicate callback")}</option>
+            <option value="grant_mismatch">{translate("Grant mismatch")}</option>
+            <option value="needs_attention">{translate("Needs attention")}</option>
           </select></label>
-          <label><span className="sr-only">Payments from date</span><input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></label>
-          <label><span className="sr-only">Payments to date</span><input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></label>
+          <label><span className="sr-only">{translate("Payments from date")}</span><input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></label>
+          <label><span className="sr-only">{translate("Payments to date")}</span><input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} /></label>
         </div>
 
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Created</th><th>Status</th><th>Reconciliation</th><th>Provider</th><th>Amount</th><th>Offer</th><th>Contact</th><th>Action</th></tr></thead>
+            <thead><tr><th>{translate("Created")}</th><th>{translate("Status")}</th><th>{translate("Reconciliation")}</th><th>{translate("Provider")}</th><th>{translate("Amount")}</th><th>{translate("Offer")}</th><th>{translate("Contact")}</th><th>{translate("Action")}</th></tr></thead>
             <tbody>
               {filteredPayments.map((p) => {
                 const reconciliation = paymentReconciliation(p);
@@ -310,7 +308,7 @@ export const PaymentsView = ({
                     <td>
                       <span className={reconciliation.className}>{reconciliation.label}</span>
                       <div className="small muted">{reconciliation.detail}</div>
-                      {platformPaymentId ? <div className="small muted">Platform payment: {platformPaymentId}</div> : null}
+                      {platformPaymentId ? <div className="small muted">{translate("Platform payment:")}{' '}{platformPaymentId}</div> : null}
                     </td>
                     <td>
                       <div>{p.provider || 'legacy'}</div>
@@ -321,27 +319,27 @@ export const PaymentsView = ({
                     <td>{contacts.find((c) => c.id === p.contact_id)?.email ?? p.contact_id}</td>
                     <td>
                       {reconciliation.key === 'manual' ? (
-                        <button className="small-btn" disabled={busy} onClick={() => onMarkPaid(p.id)}>Apply settlement</button>
+                        <button className="small-btn" disabled={busy} onClick={() => onMarkPaid(p.id)}>{translate("Apply settlement")}</button>
                       ) : reconciliation.key === 'needs_attention' ? (
-                        <span className="status status--bad">investigate</span>
+                        <span className="status status--bad">{translate("investigate")}</span>
                       ) : reconciliation.key === 'awaiting_provider' ? (
-                        <span className="status status--pending">provider callback</span>
+                        <span className="status status--pending">{translate("provider callback")}</span>
                       ) : reconciliation.key === 'duplicate' ? (
-                        <span className="status status--pending">duplicate</span>
+                        <span className="status status--pending">{translate("duplicate")}</span>
                       ) : reconciliation.key === 'grant_mismatch' ? (
-                        <span className="status status--bad">grant review</span>
+                        <span className="status status--bad">{translate("grant review")}</span>
                       ) : reconciliation.key === 'failed' ? (
-                        <span className="status status--bad">retry checkout</span>
+                        <span className="status status--bad">{translate("retry checkout")}</span>
                       ) : reconciliation.key === 'canceled' ? (
-                        <span className="status status--bad">new checkout</span>
+                        <span className="status status--bad">{translate("new checkout")}</span>
                       ) : (
-                        <span className="status status--ok">applied</span>
+                        <span className="status status--ok">{translate("applied")}</span>
                       )}
                     </td>
                   </tr>
                 );
               })}
-              {filteredPayments.length === 0 ? <tr><td colSpan={8}><div className="table-empty-state"><strong>No payments match these filters</strong><span>Clear a filter or create a checkout for a contact.</span></div></td></tr> : null}
+              {filteredPayments.length === 0 ? <tr><td colSpan={8}><div className="table-empty-state"><strong>{translate("No payments match these filters")}</strong><span>{translate("Clear a filter or create a checkout for a contact.")}</span></div></td></tr> : null}
             </tbody>
           </table>
         </div>

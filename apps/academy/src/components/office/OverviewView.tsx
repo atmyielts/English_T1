@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import type { TeacherStudioContact, TeacherStudioEntitlement } from '../../lib/client';
 import type { StatusMetrics } from './types';
 
@@ -26,29 +27,29 @@ export const OverviewView = ({
     <>
       <section className="grid two">
         <div className="panel">
-          <h3>Operational health</h3>
+          <h3>{translate("Operational health")}</h3>
           <div className="metric-list">
-            <div className="metric-row"><span>Paid transactions</span><strong>{metrics.paidCount}</strong></div>
-            <div className="metric-row"><span>Pending transactions</span><strong>{metrics.pendingCount}</strong></div>
-            <div className="metric-row"><span>Failed transactions</span><strong>{metrics.failedCount}</strong></div>
-            <div className="metric-row"><span>Collected amount</span><strong>{metrics.paidAmount.toLocaleString()} UZS</strong></div>
-            <div className="metric-row"><span>Pending amount</span><strong>{metrics.pendingAmount.toLocaleString()} UZS</strong></div>
-            <div className="metric-row"><span>Active sponsored students</span><strong>{metrics.activeStudents}</strong></div>
+            <div className="metric-row"><span>{translate("Paid transactions")}</span><strong>{metrics.paidCount}</strong></div>
+            <div className="metric-row"><span>{translate("Pending transactions")}</span><strong>{metrics.pendingCount}</strong></div>
+            <div className="metric-row"><span>{translate("Failed transactions")}</span><strong>{metrics.failedCount}</strong></div>
+            <div className="metric-row"><span>{translate("Collected amount")}</span><strong>{metrics.paidAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
+            <div className="metric-row"><span>{translate("Pending amount")}</span><strong>{metrics.pendingAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
+            <div className="metric-row"><span>{translate("Active sponsored students")}</span><strong>{metrics.activeStudents}</strong></div>
           </div>
         </div>
 
         <div className="panel">
-          <h3>Payment mix</h3>
+          <h3>{translate("Payment mix")}</h3>
           <div className="progress-item">
-            <div className="row between"><span>Paid</span><strong>{metrics.paidShare}%</strong></div>
+            <div className="row between"><span>{translate("Paid")}</span><strong>{metrics.paidShare}%</strong></div>
             <div className="progress-track"><div className="progress-bar progress-bar--paid" style={{ width: `${metrics.paidShare}%` }} /></div>
           </div>
           <div className="progress-item">
-            <div className="row between"><span>Pending</span><strong>{metrics.pendingShare}%</strong></div>
+            <div className="row between"><span>{translate("Pending")}</span><strong>{metrics.pendingShare}%</strong></div>
             <div className="progress-track"><div className="progress-bar progress-bar--pending" style={{ width: `${metrics.pendingShare}%` }} /></div>
           </div>
           <div className="progress-item">
-            <div className="row between"><span>Failed</span><strong>{metrics.failedShare}%</strong></div>
+            <div className="row between"><span>{translate("Failed")}</span><strong>{metrics.failedShare}%</strong></div>
             <div className="progress-track"><div className="progress-bar progress-bar--failed" style={{ width: `${metrics.failedShare}%` }} /></div>
           </div>
         </div>
@@ -56,7 +57,7 @@ export const OverviewView = ({
 
       <section className="grid two">
         <div className="panel">
-          <h3>Recent contacts</h3>
+          <h3>{translate("Recent contacts")}</h3>
           <ul className="list">
             {recentContacts.map((c) => (
               <li key={c.id}>
@@ -65,15 +66,15 @@ export const OverviewView = ({
                   <span className={statusClass(c.status)}>{c.status}</span>
                 </div>
                 <div className="muted small">{c.email ?? 'No email'} {c.phone ? ` | ${c.phone}` : ''}</div>
-                <div className="muted small">Updated: {formatDate(c.updated_at)}</div>
+                <div className="muted small">{translate("Updated:")}{' '}{formatDate(c.updated_at)}</div>
               </li>
             ))}
-            {recentContacts.length === 0 ? <li>No contacts yet.</li> : null}
+            {recentContacts.length === 0 ? <li>{translate("No contacts yet.")}</li> : null}
           </ul>
         </div>
 
         <div className="panel">
-          <h3>Expiring soon</h3>
+          <h3>{translate("Expiring soon")}</h3>
           <ul className="list">
             {expiringEntitlements.map((e) => (
               <li key={e.id}>
@@ -81,11 +82,11 @@ export const OverviewView = ({
                   <strong>{e.grant_type}</strong>
                   <span className={statusClass(e.status)}>{e.status}</span>
                 </div>
-                <div className="muted small">Capability: {e.capability_key ?? '-'}</div>
-                <div className="muted small">Expires: {formatDate(e.expires_at)}</div>
+                <div className="muted small">{translate("Capability:")}{' '}{e.capability_key ?? '-'}</div>
+                <div className="muted small">{translate("Expires:")}{' '}{formatDate(e.expires_at)}</div>
               </li>
             ))}
-            {expiringEntitlements.length === 0 ? <li>No dated entitlements yet.</li> : null}
+            {expiringEntitlements.length === 0 ? <li>{translate("No dated entitlements yet.")}</li> : null}
           </ul>
         </div>
       </section>

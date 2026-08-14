@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   teacherStudioClassroomChat,
@@ -59,10 +60,10 @@ const statusClass = (status: string): string => {
 };
 
 const money = (amount: number, currency: string): string =>
-  `${amount.toLocaleString()} ${currency}`;
+  `${amount.toLocaleString(getLocaleTag())} ${currency}`;
 
 const resourceLabel = (resource: TeacherStudioClassroomResource): string =>
-  resource.kind.replace(/_/g, ' ');
+  translate(resource.kind.replace(/_/g, ' '));
 
 export const StudentClassroomView = ({
   classroom,
@@ -397,11 +398,10 @@ export const StudentClassroomView = ({
   if (!classroom) {
     return (
       <section className="panel">
-        <h3>Classroom not found</h3>
-        <p className="muted">You do not have access to this classroom.</p>
+        <h3>{translate("Classroom not found")}</h3>
+        <p className="muted">{translate("You do not have access to this classroom.")}</p>
         <button className="ghost-btn" type="button" onClick={onBack}>
-          Back to classrooms
-        </button>
+          {translate("Back to classrooms")}{' '}</button>
       </section>
     );
   }
@@ -426,33 +426,32 @@ export const StudentClassroomView = ({
             <p className="muted">{academyName}</p>
           </div>
           <button className="ghost-btn" type="button" onClick={onBack}>
-            Back to classrooms
-          </button>
+            {translate("Back to classrooms")}{' '}</button>
         </div>
         <p>{classroom.description || 'No classroom description yet.'}</p>
         <section className="stats-grid">
           <article className="stat-card">
-            <span>Your role</span>
+            <span>{translate("Your role")}</span>
             <strong>{room?.viewer.role ?? memberships[0]?.role ?? 'student'}</strong>
           </article>
           <article className="stat-card">
-            <span>Resources</span>
+            <span>{translate("Resources")}</span>
             <strong>{publishedResources.length}</strong>
           </article>
           <article className="stat-card">
-            <span>Assignments</span>
+            <span>{translate("Assignments")}</span>
             <strong>{gradeStats.submitted}/{assignments.length}</strong>
           </article>
           <article className="stat-card">
-            <span>Average</span>
+            <span>{translate("Average")}</span>
             <strong>{gradeStats.average === null ? '-' : `${gradeStats.average}%`}</strong>
           </article>
           <article className="stat-card">
-            <span>Attendance</span>
+            <span>{translate("Attendance")}</span>
             <strong>{attendanceRate === null ? '-' : `${attendanceRate}%`}</strong>
           </article>
         </section>
-        <div className="segmented-row" role="tablist" aria-label="Student classroom sections">
+        <div className="segmented-row" role="tablist" aria-label={translate("Student classroom sections")}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -460,24 +459,24 @@ export const StudentClassroomView = ({
               type="button"
               onClick={() => setActiveTab(tab.id)}
             >
-              {tab.label}
+              {translate(tab.label)}
             </button>
           ))}
         </div>
       </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
-      {notice ? <div className="info-banner">{notice}</div> : null}
+      {error ? <div className="error-banner">{translate(error)}</div> : null}
+      {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
       {activeTab === 'overview' ? (
         <section className="grid">
           <div className="panel student-focus-panel">
             <div className="row between wrap">
               <div>
-                <h3>Next best actions</h3>
-                <p className="muted">Your current classroom priorities, ordered by what helps you move forward.</p>
+                <h3>{translate("Next best actions")}</h3>
+                <p className="muted">{translate("Your current classroom priorities, ordered by what helps you move forward.")}</p>
               </div>
-              <span className="status">{focusItems.length} focus item{focusItems.length === 1 ? '' : 's'}</span>
+              <span className="status">{focusItems.length} {translate("focus item")}{focusItems.length === 1 ? '' : 's'}</span>
             </div>
             <div className="student-focus-grid">
               {focusItems.map((item) => (
@@ -487,8 +486,8 @@ export const StudentClassroomView = ({
                   type="button"
                   onClick={() => setActiveTab(item.tab)}
                 >
-                  <span>{item.label}</span>
-                  <strong>{item.title}</strong>
+                  <span>{translate(item.label)}</span>
+                  <strong>{translate(item.title)}</strong>
                   <small>{item.detail}</small>
                 </button>
               ))}
@@ -497,7 +496,7 @@ export const StudentClassroomView = ({
 
           <section className="grid two">
           <div className="panel">
-            <h3>Announcements</h3>
+            <h3>{translate("Announcements")}</h3>
             <ul className="list">
               {classroomAnnouncements.slice(0, 8).map((announcement) => (
                 <li key={announcement.id}>
@@ -508,11 +507,11 @@ export const StudentClassroomView = ({
                   <div>{announcement.body}</div>
                 </li>
               ))}
-              {classroomAnnouncements.length === 0 ? <li>No announcements yet.</li> : null}
+              {classroomAnnouncements.length === 0 ? <li>{translate("No announcements yet.")}</li> : null}
             </ul>
           </div>
           <div className="panel">
-            <h3>Current work</h3>
+            <h3>{translate("Current work")}</h3>
             <ul className="list">
               {assignments.slice(0, 8).map((assignment) => (
                 <li key={assignment.id}>
@@ -525,7 +524,7 @@ export const StudentClassroomView = ({
                   <div className="small muted">{assignment.due_at ? `Due ${formatDate(assignment.due_at)}` : assignment.assignment_type}</div>
                 </li>
               ))}
-              {assignments.length === 0 ? <li>No assignments yet.</li> : null}
+              {assignments.length === 0 ? <li>{translate("No assignments yet.")}</li> : null}
             </ul>
           </div>
           </section>
@@ -547,7 +546,7 @@ export const StudentClassroomView = ({
                 </div>
                 {resource.description ? <p>{resource.description}</p> : null}
                 <div className="row wrap">
-                  <a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">Open</a>
+                  <a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">{translate("Open")}</a>
                   <button className="small-btn" type="button" disabled={busy} onClick={() => void toggleResource(resource)}>
                     {done ? 'Mark open' : 'Mark done'}
                   </button>
@@ -555,7 +554,7 @@ export const StudentClassroomView = ({
               </article>
             );
           })}
-          {publishedResources.length === 0 ? <div className="panel">No resources published yet.</div> : null}
+          {publishedResources.length === 0 ? <div className="panel">{translate("No resources published yet.")}</div> : null}
         </section>
       ) : null}
 
@@ -566,7 +565,7 @@ export const StudentClassroomView = ({
       {activeTab === 'assignments' ? (
         <section className="grid two">
           <div className="panel">
-            <h3>Assignments</h3>
+            <h3>{translate("Assignments")}</h3>
             <ul className="list">
               {assignments.map((assignment) => (
                 <li key={assignment.id}>
@@ -579,19 +578,19 @@ export const StudentClassroomView = ({
                   {assignment.description ? <div>{assignment.description}</div> : null}
                   <div className="small muted">
                     {assignment.due_at ? `Due ${formatDate(assignment.due_at)} | ` : ''}
-                    {assignment.max_score ? `${assignment.max_score} points` : assignment.assignment_type}
+                    {assignment.max_score ? translate("{score} points", { score: assignment.max_score }) : translate(assignment.assignment_type.replaceAll("_", " "))}
                     {assignment.attempts_allowed ? ` | Attempt ${assignment.submission?.attempt_number ?? 0}/${assignment.attempts_allowed}` : ''}
                   </div>
                   <div className="row wrap">
-                    {assignment.experience_url ? <a className="small-btn" href={assignment.experience_url} target="_blank" rel="noreferrer">Open task</a> : null}
-                    {assignment.submission?.signed_url ? <a className="small-btn" href={assignment.submission.signed_url} target="_blank" rel="noreferrer">Open file</a> : null}
+                    {assignment.experience_url ? <a className="small-btn" href={assignment.experience_url} target="_blank" rel="noreferrer">{translate("Open task")}</a> : null}
+                    {assignment.submission?.signed_url ? <a className="small-btn" href={assignment.submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : null}
                     <button className="small-btn" type="button" onClick={() => openSubmission(assignment)}>
                       {assignment.submission ? 'Update submission' : 'Submit'}
                     </button>
                   </div>
                 </li>
               ))}
-              {assignments.length === 0 ? <li>No assignments yet.</li> : null}
+              {assignments.length === 0 ? <li>{translate("No assignments yet.")}</li> : null}
             </ul>
           </div>
 
@@ -601,13 +600,13 @@ export const StudentClassroomView = ({
               <form className="grid" onSubmit={submitAssignment}>
                 <textarea
                   className="input"
-                  placeholder="Response"
+                  placeholder={translate("Response")}
                   value={submissionContent}
                   onChange={(event) => setSubmissionContent(event.target.value)}
                 />
                 <input
                   className="input"
-                  placeholder="Link"
+                  placeholder={translate("Link")}
                   value={submissionUrl}
                   onChange={(event) => setSubmissionUrl(event.target.value)}
                 />
@@ -618,26 +617,23 @@ export const StudentClassroomView = ({
                 />
                 {submissionFile ? (
                   <div className="small muted">
-                    File ready: {submissionFile.name} ({Math.round(submissionFile.size / 1024)} KB)
-                  </div>
+                    {translate("File ready:")}{' '}{submissionFile.name} ({Math.round(submissionFile.size / 1024)} {translate("KB)")}{' '}</div>
                 ) : null}
                 <textarea
                   className="input"
-                  placeholder="Notes"
+                  placeholder={translate("Notes")}
                   value={submissionNotes}
                   onChange={(event) => setSubmissionNotes(event.target.value)}
                 />
                 <div className="row wrap">
                   <button className="primary-btn" type="submit" disabled={busy}>
-                    Save submission
-                  </button>
+                    {translate("Save submission")}{' '}</button>
                   <button className="ghost-btn" type="button" onClick={() => setSubmitTarget(null)}>
-                    Cancel
-                  </button>
+                    {translate("Cancel")}{' '}</button>
                 </div>
               </form>
             ) : (
-              <p className="muted">Select an assignment.</p>
+              <p className="muted">{translate("Select an assignment.")}</p>
             )}
           </div>
         </section>
@@ -645,16 +641,16 @@ export const StudentClassroomView = ({
 
       {activeTab === 'grades' ? (
         <section className="panel">
-          <h3>Grades</h3>
+          <h3>{translate("Grades")}</h3>
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Assignment</th>
-                  <th>Status</th>
-                  <th>Score</th>
-                  <th>Submitted</th>
-                  <th>Feedback</th>
+                  <th>{translate("Assignment")}</th>
+                  <th>{translate("Status")}</th>
+                  <th>{translate("Score")}</th>
+                  <th>{translate("Submitted")}</th>
+                  <th>{translate("Feedback")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -669,13 +665,13 @@ export const StudentClassroomView = ({
                       <td>
                         {submission?.notes ?? '-'}
                         {submission?.signed_url ? (
-                          <div><a href={submission.signed_url} target="_blank" rel="noreferrer">Open submitted file</a></div>
+                          <div><a href={submission.signed_url} target="_blank" rel="noreferrer">{translate("Open submitted file")}</a></div>
                         ) : null}
                       </td>
                     </tr>
                   );
                 })}
-                {assignments.length === 0 ? <tr><td colSpan={5}>No grade rows yet.</td></tr> : null}
+                {assignments.length === 0 ? <tr><td colSpan={5}>{translate("No grade rows yet.")}</td></tr> : null}
               </tbody>
             </table>
           </div>
@@ -684,10 +680,10 @@ export const StudentClassroomView = ({
 
       {activeTab === 'attendance' ? (
         <section className="panel">
-          <h3>Attendance</h3>
+          <h3>{translate("Attendance")}</h3>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Status</th><th>Notes</th></tr></thead>
+              <thead><tr><th>{translate("Date")}</th><th>{translate("Status")}</th><th>{translate("Notes")}</th></tr></thead>
               <tbody>
                 {attendance.map((record) => (
                   <tr key={record.id}>
@@ -696,7 +692,7 @@ export const StudentClassroomView = ({
                     <td>{record.notes ?? '-'}</td>
                   </tr>
                 ))}
-                {attendance.length === 0 ? <tr><td colSpan={3}>No attendance recorded yet.</td></tr> : null}
+                {attendance.length === 0 ? <tr><td colSpan={3}>{translate("No attendance recorded yet.")}</td></tr> : null}
               </tbody>
             </table>
           </div>
@@ -708,25 +704,25 @@ export const StudentClassroomView = ({
           <div className="panel">
             <div className="row between wrap">
               <div>
-                <span className="eyebrow">Student account</span>
-                <h3>Billing statement</h3>
-                <p className="muted">Your agreements, charges, payments, credits, and outstanding balance at {academyName}.</p>
+                <span className="eyebrow">{translate("Student account")}</span>
+                <h3>{translate("Billing statement")}</h3>
+                <p className="muted">{translate("Your agreements, charges, payments, credits, and outstanding balance at {academy}.", { academy: academyName })}</p>
               </div>
               <span className={classroomOutstanding > 0 ? 'status status--pending' : 'status status--ok'}>
                 {classroomOutstanding > 0 ? 'payment due' : 'account current'}
               </span>
             </div>
             <div className="commercial-core__stats">
-              <article><strong>{money(classroomOutstanding, commercialCurrency)}</strong><span>Outstanding balance</span></article>
-              <article><strong>{money(classroomPaid, commercialCurrency)}</strong><span>Payments allocated</span></article>
-              <article><strong>{classroomCharges.length}</strong><span>Charges</span></article>
-              <article><strong>{classroomSubscriptions.length}</strong><span>Agreements</span></article>
+              <article><strong>{money(classroomOutstanding, commercialCurrency)}</strong><span>{translate("Outstanding balance")}</span></article>
+              <article><strong>{money(classroomPaid, commercialCurrency)}</strong><span>{translate("Payments allocated")}</span></article>
+              <article><strong>{classroomCharges.length}</strong><span>{translate("Charges")}</span></article>
+              <article><strong>{classroomSubscriptions.length}</strong><span>{translate("Agreements")}</span></article>
             </div>
           </div>
 
           {classroomSubscriptions.length > 0 ? (
             <div className="panel">
-              <h3>Tuition agreements</h3>
+              <h3>{translate("Tuition agreements")}</h3>
               <div className="subscription-cards">
                 {classroomSubscriptions.map((subscription) => (
                   <article key={subscription.id}>
@@ -734,9 +730,9 @@ export const StudentClassroomView = ({
                       <strong>{money(subscription.agreed_amount, subscription.currency)}</strong>
                       <span className={statusClass(subscription.status)}>{subscription.status}</span>
                     </header>
-                    <p>{subscription.billing_cycle.replace(/_/g, ' ')} · starts {formatDate(subscription.starts_on)}</p>
+                    <p>{translate(subscription.billing_cycle.replace(/_/g, ' '))} {translate("· starts")}{' '}{formatDate(subscription.starts_on)}</p>
                     <small>
-                      List {money(subscription.list_amount, subscription.currency)}
+                      {translate("List")}{' '}{money(subscription.list_amount, subscription.currency)}
                       {subscription.discount_amount > 0 ? ` · discount ${money(subscription.discount_amount, subscription.currency)}` : ''}
                     </small>
                   </article>
@@ -746,10 +742,10 @@ export const StudentClassroomView = ({
           ) : null}
 
           <div className="panel">
-            <h3>Charges</h3>
+            <h3>{translate("Charges")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
-                <thead><tr><th>Charge</th><th>Issued / due</th><th>Net</th><th>Paid</th><th>Outstanding</th><th>Status</th></tr></thead>
+                <thead><tr><th>{translate("Charge")}</th><th>{translate("Issued / due")}</th><th>{translate("Net")}</th><th>{translate("Paid")}</th><th>{translate("Outstanding")}</th><th>{translate("Status")}</th></tr></thead>
                 <tbody>
                   {classroomCharges.map((charge) => (
                     <tr key={charge.id}>
@@ -758,30 +754,30 @@ export const StudentClassroomView = ({
                       <td>{money(charge.effective_amount, charge.currency)}</td>
                       <td className="amount-credit">{money(charge.allocated_amount, charge.currency)}</td>
                       <td className={charge.outstanding_amount > 0 ? 'amount-due' : ''}>{money(charge.outstanding_amount, charge.currency)}</td>
-                      <td><span className={statusClass(charge.calculated_status)}>{charge.calculated_status.replace(/_/g, ' ')}</span></td>
+                      <td><span className={statusClass(charge.calculated_status)}>{translate(charge.calculated_status.replace(/_/g, ' '))}</span></td>
                     </tr>
                   ))}
-                  {classroomCharges.length === 0 ? <tr><td colSpan={6}>No account charges yet.</td></tr> : null}
+                  {classroomCharges.length === 0 ? <tr><td colSpan={6}>{translate("No account charges yet.")}</td></tr> : null}
                 </tbody>
               </table>
             </div>
           </div>
 
           <div className="panel">
-            <h3>Payments and credits</h3>
+            <h3>{translate("Payments and credits")}</h3>
             <div className="finance-table-wrap">
               <table className="finance-table">
-                <thead><tr><th>Date</th><th>Entry</th><th>Reason</th><th>Amount</th></tr></thead>
+                <thead><tr><th>{translate("Date")}</th><th>{translate("Entry")}</th><th>{translate("Reason")}</th><th>{translate("Amount")}</th></tr></thead>
                 <tbody>
                   {classroomLedger.map((entry) => (
                     <tr key={entry.id}>
                       <td>{formatDate(entry.effective_at)}</td>
-                      <td>{entry.entry_type.replace(/_/g, ' ')}</td>
+                      <td>{translate(entry.entry_type.replace(/_/g, ' '))}</td>
                       <td>{entry.reason ?? '-'}</td>
                       <td className={entry.amount < 0 ? 'amount-credit' : 'amount-due'}>{money(Math.abs(entry.amount), entry.currency)}</td>
                     </tr>
                   ))}
-                  {classroomLedger.length === 0 ? <tr><td colSpan={4}>No payments or credits recorded yet.</td></tr> : null}
+                  {classroomLedger.length === 0 ? <tr><td colSpan={4}>{translate("No payments or credits recorded yet.")}</td></tr> : null}
                 </tbody>
               </table>
             </div>
@@ -819,7 +815,7 @@ export const StudentClassroomView = ({
       {activeTab === 'chat' ? (
         <section className="grid two">
           <div className="panel">
-            <h3>Classroom chat</h3>
+            <h3>{translate("Classroom chat")}</h3>
             <ul className="list">
               {classroomMessages.slice(0, 40).map((message) => (
                 <li key={message.id}>
@@ -830,20 +826,19 @@ export const StudentClassroomView = ({
                   <div>{message.content}</div>
                 </li>
               ))}
-              {classroomMessages.length === 0 ? <li>No messages yet.</li> : null}
+              {classroomMessages.length === 0 ? <li>{translate("No messages yet.")}</li> : null}
             </ul>
           </div>
           <form className="panel" onSubmit={sendChat}>
-            <h3>Send message</h3>
+            <h3>{translate("Send message")}</h3>
             <textarea
               className="input"
               value={chatDraft}
               onChange={(event) => setChatDraft(event.target.value)}
-              placeholder="Message"
+              placeholder={translate("Message")}
             />
             <button className="primary-btn" type="submit" disabled={busy || !chatDraft.trim()}>
-              Send
-            </button>
+              {translate("Send")}{' '}</button>
           </form>
         </section>
       ) : null}

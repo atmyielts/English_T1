@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import type { TeacherStudioAnnouncement, TeacherStudioClassroom } from '../../lib/client';
 import type { AnnouncementFormState } from './types';
@@ -31,27 +32,27 @@ export const AnnouncementsView = ({
     <>
       {canSendAnnouncements ? (
         <form className="panel workspace-form" onSubmit={onSubmit}>
-          <h3>Send announcement</h3>
-          <label>Audience<select
+          <h3>{translate("Send announcement")}</h3>
+          <label>{translate("Audience")}<select
             className="input"
             value={form.classroom_id}
             onChange={(e) => setForm((previous) => ({ ...previous, classroom_id: e.target.value }))}
           >
-            {canSendGlobalAnnouncements ? <option value="">All active contacts</option> : null}
-            {!canSendGlobalAnnouncements ? <option value="">Select classroom</option> : null}
+            {canSendGlobalAnnouncements ? <option value="">{translate("All active contacts")}</option> : null}
+            {!canSendGlobalAnnouncements ? <option value="">{translate("Select classroom")}</option> : null}
             {classrooms.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>
             ))}
           </select></label>
-          <label>Title<input
+          <label>{translate("Title")}<input
             className="input"
             value={form.title}
             onChange={(e) => setForm((previous) => ({ ...previous, title: e.target.value }))}
             required
           /></label>
-          <label>Message<textarea
+          <label>{translate("Message")}<textarea
             className="input"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}
@@ -62,20 +63,19 @@ export const AnnouncementsView = ({
             type="submit"
             disabled={busy || !form.title.trim() || !form.content.trim() || (!canSendGlobalAnnouncements && !form.classroom_id)}
           >
-            Send announcement
-          </button></div>
+            {translate("Send announcement")}{' '}</button></div>
         </form>
       ) : null}
 
       <section className="panel">
-        <h3>Announcement history</h3>
+        <h3>{translate("Announcement history")}</h3>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Audience</th>
-                <th>Created</th>
+                <th>{translate("Title")}</th>
+                <th>{translate("Audience")}</th>
+                <th>{translate("Created")}</th>
               </tr>
             </thead>
             <tbody>
@@ -91,7 +91,7 @@ export const AnnouncementsView = ({
               ))}
               {announcements.length === 0 ? (
                 <tr>
-                  <td colSpan={3}><div className="table-empty-state"><strong>No announcements yet</strong><span>Send a concise update to a classroom or all active contacts.</span></div></td>
+                  <td colSpan={3}><div className="table-empty-state"><strong>{translate("No announcements yet")}</strong><span>{translate("Send a concise update to a classroom or all active contacts.")}</span></div></td>
                 </tr>
               ) : null}
             </tbody>

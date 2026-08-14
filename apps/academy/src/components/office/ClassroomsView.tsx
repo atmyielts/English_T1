@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import type {
   TeacherStudioActionItem,
@@ -44,9 +45,9 @@ const priorityClass = (priority: string): string => {
 const isUrgentAction = (item: TeacherStudioActionItem): boolean =>
   item.priority === 'critical' || item.priority === 'high';
 
-const sourceLabel = (source: string): string => source.replace(/_/g, ' ');
+const sourceLabel = (source: string): string => translate(source.replace(/_/g, ' '));
 
-const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
+const eventTypeLabel = (type: string): string => translate(type.replace(/_/g, ' '));
 
 const contactLabel = (contact: TeacherStudioContact | null | undefined, fallback = 'Unknown student'): string => {
   if (!contact) return fallback;
@@ -162,26 +163,26 @@ export const ClassroomsView = ({
     <>
       <section className="panel lms-ops-panel classroom-operations">
         <div className="row between">
-          <h3>Classroom operations</h3>
+          <h3>{translate("Classroom operations")}</h3>
           <span className="status">{educationOS ? `Generated ${formatDate(educationOS.generated_at)}` : 'Loading'}</span>
         </div>
 
         <dl className="workspace-pulse classroom-pulse classroom-operations__pulse">
-          <div><dt>Open actions</dt><dd>{openActionsCount}</dd></div>
-          <div><dt>Urgent</dt><dd>{urgentActionsCount}</dd></div>
-          <div><dt>Grade backlog</dt><dd>{gradeBacklogCount}</dd></div>
-          <div><dt>Missing work</dt><dd>{missingWorkCount}</dd></div>
-          <div><dt>Attendance risk</dt><dd>{attendanceRiskCount}</dd></div>
+          <div><dt>{translate("Open actions")}</dt><dd>{openActionsCount}</dd></div>
+          <div><dt>{translate("Urgent")}</dt><dd>{urgentActionsCount}</dd></div>
+          <div><dt>{translate("Grade backlog")}</dt><dd>{gradeBacklogCount}</dd></div>
+          <div><dt>{translate("Missing work")}</dt><dd>{missingWorkCount}</dd></div>
+          <div><dt>{translate("Attendance risk")}</dt><dd>{attendanceRiskCount}</dd></div>
           {canIssueCertificates ? (
-            <div><dt>Certificates</dt><dd>{certificateReadyCount}</dd></div>
+            <div><dt>{translate("Certificates")}</dt><dd>{certificateReadyCount}</dd></div>
           ) : null}
         </dl>
 
         <div className="grid two">
           <div className="lms-action-stack">
             <div className="row between">
-              <strong>Teacher action queue</strong>
-              <span className="small muted">{topActions.length} shown</span>
+              <strong>{translate("Teacher action queue")}</strong>
+              <span className="small muted">{topActions.length} {translate("shown")}</span>
             </div>
             {topActions.map((item) => {
               const contact = item.contact_id ? contactById.get(item.contact_id) : null;
@@ -203,31 +204,29 @@ export const ClassroomsView = ({
                   </div>
                   <div className="lms-action-controls">
                     <button className="small-btn" type="button" onClick={() => onOpenActionItem(item)}>
-                      Open
-                    </button>
+                      {translate("Open")}{' '}</button>
                     {canResolveActionItems ? (
                       <button className="small-btn" type="button" disabled={busy} onClick={() => void onResolveActionItem(item)}>
-                        Done
-                      </button>
+                        {translate("Done")}{' '}</button>
                     ) : null}
                   </div>
                 </div>
               );
             })}
-            {topActions.length === 0 ? <div className="empty-state">No open LMS actions.</div> : null}
+            {topActions.length === 0 ? <div className="empty-state">{translate("No open LMS actions.")}</div> : null}
           </div>
 
           <div className="table-wrap lms-tight-table">
             <table>
               <thead>
                 <tr>
-                  <th>Classroom</th>
-                  <th>Open</th>
-                  <th>Urgent</th>
-                  <th>Grading</th>
-                  <th>Missing</th>
-                  <th>Attendance</th>
-                  <th>Next event</th>
+                  <th>{translate("Classroom")}</th>
+                  <th>{translate("Open")}</th>
+                  <th>{translate("Urgent")}</th>
+                  <th>{translate("Grading")}</th>
+                  <th>{translate("Missing")}</th>
+                  <th>{translate("Attendance")}</th>
+                  <th>{translate("Next event")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -237,7 +236,7 @@ export const ClassroomsView = ({
                       <button className="link-btn" type="button" onClick={() => onOpenClassroom(row.classroom.id)}>
                         {row.classroom.name}
                       </button>
-                      <div className="small muted">{row.members} members</div>
+                      <div className="small muted">{row.members} {translate("members")}</div>
                     </td>
                     <td>{row.actions.length}</td>
                     <td>{row.urgent}</td>
@@ -260,7 +259,7 @@ export const ClassroomsView = ({
                 ))}
                 {classroomOperationRows.length === 0 ? (
                   <tr>
-                    <td colSpan={7}><div className="table-empty-state"><strong>No classrooms yet</strong><span>Create the first classroom before assigning students or teachers.</span></div></td>
+                    <td colSpan={7}><div className="table-empty-state"><strong>{translate("No classrooms yet")}</strong><span>{translate("Create the first classroom before assigning students or teachers.")}</span></div></td>
                   </tr>
                 ) : null}
               </tbody>
@@ -273,23 +272,23 @@ export const ClassroomsView = ({
         <section className="grid two">
           {canManageClassrooms ? (
             <details className="panel workspace-create-disclosure">
-              <summary>Create classroom</summary>
+              <summary>{translate("Create classroom")}</summary>
               <form className="workspace-form" onSubmit={onCreateClassroom}>
-                <label>Classroom name<input className="input" value={classroomForm.name} onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))} required /></label>
-                <label>Description <span className="optional-label">Optional</span><textarea className="input" value={classroomForm.description} onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))} /></label>
-                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Save classroom</button></div>
+                <label>{translate("Classroom name")}<input className="input" value={classroomForm.name} onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))} required /></label>
+                <label>{translate("Description")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea className="input" value={classroomForm.description} onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))} /></label>
+                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Save classroom")}</button></div>
               </form>
             </details>
           ) : null}
 
           {canManageRoster ? (
             <details className="panel workspace-create-disclosure">
-              <summary>Assign student or assistant</summary>
+              <summary>{translate("Assign student or assistant")}</summary>
               <form className="workspace-form" onSubmit={onSaveMembership}>
-                <label>Classroom<select className="input" value={membershipForm.classroom_id} onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))} required><option value="">Select classroom</option>{classrooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-                <label>Contact<select className="input" value={membershipForm.contact_id} onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))} required><option value="">Select contact</option>{contacts.map((item) => <option key={item.id} value={item.id}>{contactLabel(item, item.id)}</option>)}</select></label>
-                <label>Classroom role<select className="input" value={membershipForm.role} onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}><option value="student">Student</option><option value="assistant">Assistant</option></select></label>
-                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>Save membership</button></div>
+                <label>{translate("Classroom")}<select className="input" value={membershipForm.classroom_id} onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))} required><option value="">{translate("Select classroom")}</option>{classrooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+                <label>{translate("Contact")}<select className="input" value={membershipForm.contact_id} onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))} required><option value="">{translate("Select contact")}</option>{contacts.map((item) => <option key={item.id} value={item.id}>{contactLabel(item, item.id)}</option>)}</select></label>
+                <label>{translate("Classroom role")}<select className="input" value={membershipForm.role} onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}><option value="student">{translate("Student")}</option><option value="assistant">{translate("Assistant")}</option></select></label>
+                <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Save membership")}</button></div>
               </form>
             </details>
           ) : null}
@@ -297,16 +296,16 @@ export const ClassroomsView = ({
       ) : null}
 
       <section className="panel">
-        <h3>Classrooms</h3>
+        <h3>{translate("Classrooms")}</h3>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Members</th>
-                <th>Status</th>
-                <th>Open actions</th>
-                <th>Created</th>
+                <th>{translate("Name")}</th>
+                <th>{translate("Members")}</th>
+                <th>{translate("Status")}</th>
+                <th>{translate("Open actions")}</th>
+                <th>{translate("Created")}</th>
                 <th />
               </tr>
             </thead>
@@ -330,15 +329,14 @@ export const ClassroomsView = ({
                     <td>{formatDate(item.created_at)}</td>
                     <td>
                       <button className="small-btn" type="button" onClick={() => onOpenClassroom(item.id)}>
-                        Open
-                      </button>
+                        {translate("Open")}{' '}</button>
                     </td>
                   </tr>
                 );
               })}
               {classrooms.length === 0 ? (
                 <tr>
-                  <td colSpan={6}><div className="table-empty-state"><strong>No classrooms yet</strong><span>Create the first classroom to begin roster and teaching work.</span></div></td>
+                  <td colSpan={6}><div className="table-empty-state"><strong>{translate("No classrooms yet")}</strong><span>{translate("Create the first classroom to begin roster and teaching work.")}</span></div></td>
                 </tr>
               ) : null}
             </tbody>
@@ -347,15 +345,15 @@ export const ClassroomsView = ({
       </section>
 
       <section className="panel">
-        <h3>Memberships</h3>
+        <h3>{translate("Memberships")}</h3>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Contact</th>
-                <th>Classroom</th>
-                <th>Role</th>
-                <th>Joined</th>
+                <th>{translate("Contact")}</th>
+                <th>{translate("Classroom")}</th>
+                <th>{translate("Role")}</th>
+                <th>{translate("Joined")}</th>
                 <th />
               </tr>
             </thead>
@@ -376,8 +374,7 @@ export const ClassroomsView = ({
                           disabled={busy}
                           onClick={() => void onRemoveMembership(item.id)}
                         >
-                          Remove
-                        </button>
+                          {translate("Remove")}{' '}</button>
                       ) : null}
                     </td>
                   </tr>
@@ -385,7 +382,7 @@ export const ClassroomsView = ({
               })}
               {classroomMemberships.length === 0 ? (
                 <tr>
-                  <td colSpan={5}><div className="table-empty-state"><strong>No classroom members yet</strong><span>Assign a contact after the classroom is ready.</span></div></td>
+                  <td colSpan={5}><div className="table-empty-state"><strong>{translate("No classroom members yet")}</strong><span>{translate("Assign a contact after the classroom is ready.")}</span></div></td>
                 </tr>
               ) : null}
             </tbody>

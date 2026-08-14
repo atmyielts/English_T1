@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { useMemo, useState } from 'react';
 import type { TeacherStudioContact, TeacherStudioEntitlement } from '../../lib/client';
 
@@ -45,20 +46,20 @@ export const EntitlementsView = ({
     <>
       <section className="grid two">
         <div className="panel">
-          <h3>Filters</h3>
+          <h3>{translate("Filters")}</h3>
           <div className="filters-grid">
-            <input className="input" placeholder="Search capability, grant, contact..." value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className="input" placeholder={translate("Search capability, grant, contact...")} value={query} onChange={(e) => setQuery(e.target.value)} />
             <select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'expired' | 'revoked')}>
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="expired">Expired</option>
-              <option value="revoked">Revoked</option>
+              <option value="all">{translate("All statuses")}</option>
+              <option value="active">{translate("Active")}</option>
+              <option value="expired">{translate("Expired")}</option>
+              <option value="revoked">{translate("Revoked")}</option>
             </select>
           </div>
         </div>
 
         <div className="panel">
-          <h3>Capability distribution</h3>
+          <h3>{translate("Capability distribution")}</h3>
           <div className="metric-list">
             {capabilityDist.map(([key, value]) => (
               <div key={key} className="metric-row">
@@ -66,16 +67,16 @@ export const EntitlementsView = ({
                 <strong>{value}</strong>
               </div>
             ))}
-            {capabilityDist.length === 0 ? <div className="muted">No capability data yet.</div> : null}
+            {capabilityDist.length === 0 ? <div className="muted">{translate("No capability data yet.")}</div> : null}
           </div>
         </div>
       </section>
 
       <section className="panel">
-        <h3>Entitlements</h3>
+        <h3>{translate("Entitlements")}</h3>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Contact</th><th>Grant</th><th>Capability</th><th>Remaining</th><th>Status</th><th>Expires</th></tr></thead>
+            <thead><tr><th>{translate("Contact")}</th><th>{translate("Grant")}</th><th>{translate("Capability")}</th><th>{translate("Remaining")}</th><th>{translate("Status")}</th><th>{translate("Expires")}</th></tr></thead>
             <tbody>
               {filtered.map((e) => (
                 <tr key={e.id}>
@@ -87,7 +88,7 @@ export const EntitlementsView = ({
                   <td>{formatDate(e.expires_at)}</td>
                 </tr>
               ))}
-              {filtered.length === 0 ? <tr><td colSpan={6}>No entitlements match these filters.</td></tr> : null}
+              {filtered.length === 0 ? <tr><td colSpan={6}>{translate("No entitlements match these filters.")}</td></tr> : null}
             </tbody>
           </table>
         </div>

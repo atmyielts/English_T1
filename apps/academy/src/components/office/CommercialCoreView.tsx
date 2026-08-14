@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BadgeDollarSign, CalendarClock, CreditCard, FileClock, Landmark, RefreshCw, ReceiptText, Scale, ShieldCheck } from "lucide-react";
 import { teacherStudioAllocatePayment, teacherStudioCommercialCore, teacherStudioCreateCharge, teacherStudioCreatePricingPlan, teacherStudioCreateSubscription, teacherStudioManageSubscription, teacherStudioPostAccountAdjustment, teacherStudioRecordPaymentPromise, teacherStudioRecordPaymentReconciliation, type AcademyCommercialCore } from "../../lib/client";
@@ -8,7 +9,8 @@ type Props = {
   formatDate: (value: string | null | undefined) => string;
 };
 
-const money = (value: number | string | null | undefined, currency = "UZS") => `${new Intl.NumberFormat("uz-UZ").format(Number(value ?? 0))} ${currency}`;
+const money = (value: number | string | null | undefined, currency = "UZS") => `${new Intl.NumberFormat(getLocaleTag()).format(Number(value ?? 0))} ${currency}`;
+const label = (value: unknown) => translate(String(value ?? "").replaceAll("_", " "));
 const today = () => new Date().toISOString().slice(0, 10);
 const nextMonth = () => {
   const value = new Date();
@@ -196,7 +198,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
   if (loading && !data)
     return (
       <section className="panel">
-        <p>Loading commercial accounts…</p>
+        <p>{translate("Loading commercial accounts…")}</p>
       </section>
     );
 
@@ -204,50 +206,49 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
     <section className="commercial-core">
       <div className="section-heading commercial-core__heading">
         <div>
-          <span className="eyebrow">Revenue engine</span>
-          <h2>Commercial core</h2>
-          <p>Separate agreements, charges, payments, allocations, balances, access, and debt.</p>
+          <span className="eyebrow">{translate("Revenue engine")}</span>
+          <h2>{translate("Commercial core")}</h2>
+          <p>{translate("Separate agreements, charges, payments, allocations, balances, access, and debt.")}</p>
         </div>
         <button className="ghost-btn" type="button" onClick={() => void load()} disabled={loading || busy}>
-          <RefreshCw size={16} /> Refresh
-        </button>
+          <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
       </div>
       {error ? (
         <p className="form-error" role="alert">
-          {error}
+          {translate(error)}
         </p>
       ) : null}
       {notice ? (
         <p className="form-success" role="status">
-          {notice}
+          {translate(notice)}
         </p>
       ) : null}
       <div className="commercial-core__stats">
         <article>
           <ReceiptText size={18} />
-          <span>Receivables</span>
+          <span>{translate("Receivables")}</span>
           <strong>{money(positiveBalance)}</strong>
         </article>
         <article>
           <FileClock size={18} />
-          <span>Overdue</span>
+          <span>{translate("Overdue")}</span>
           <strong>{money(overdueTotal)}</strong>
         </article>
         <article>
           <CreditCard size={18} />
-          <span>Payments received</span>
+          <span>{translate("Payments received")}</span>
           <strong>{money(paidTotal)}</strong>
         </article>
         <article>
           <Scale size={18} />
-          <span>Account credit</span>
+          <span>{translate("Account credit")}</span>
           <strong>{money(accountCredit)}</strong>
         </article>
       </div>
-      <nav className="business-tabs" aria-label="Commercial core sections">
+      <nav className="business-tabs" aria-label={translate("Commercial core sections")}>
         {availableTabs.map(([key, label]) => (
           <button key={key} type="button" className={activeTab === key ? "is-active" : ""} onClick={() => setTab(key)}>
-            {label}
+            {translate(label)}
           </button>
         ))}
       </nav>
@@ -257,8 +258,8 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Student accounts</span>
-                <h3>Balances and aging</h3>
+                <span className="eyebrow">{translate("Student accounts")}</span>
+                <h3>{translate("Balances and aging")}</h3>
               </div>
               <BadgeDollarSign size={18} />
             </div>
@@ -266,11 +267,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Student</th>
-                    <th>Balance</th>
-                    <th>Debits</th>
-                    <th>Credits</th>
-                    <th>Last movement</th>
+                    <th>{translate("Student")}</th>
+                    <th>{translate("Balance")}</th>
+                    <th>{translate("Debits")}</th>
+                    <th>{translate("Credits")}</th>
+                    <th>{translate("Last movement")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -288,7 +289,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   })}
                   {!data?.account_balances.length ? (
                     <tr>
-                      <td colSpan={5}>No financial history yet.</td>
+                      <td colSpan={5}>{translate("No financial history yet.")}</td>
                     </tr>
                   ) : null}
                 </tbody>
@@ -298,8 +299,8 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           <section className="panel">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Aging</span>
-                <h3>Overdue exposure</h3>
+                <span className="eyebrow">{translate("Aging")}</span>
+                <h3>{translate("Overdue exposure")}</h3>
               </div>
             </div>
             <div className="aging-list">
@@ -307,7 +308,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 const amount = overdueCharges.filter((item) => item.aging_bucket === bucket).reduce((sum, item) => sum + Number(item.outstanding_amount), 0);
                 return (
                   <div key={bucket}>
-                    <span>{bucket} days</span>
+                    <span>{bucket} {translate("days")}</span>
                     <strong>{money(amount)}</strong>
                   </div>
                 );
@@ -342,15 +343,14 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           >
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Catalog</span>
-                <h3>Create pricing plan</h3>
+                <span className="eyebrow">{translate("Catalog")}</span>
+                <h3>{translate("Create pricing plan")}</h3>
               </div>
               <Landmark size={18} />
             </div>
             <div className="form-grid two-col">
               <label>
-                Key
-                <input
+                {translate("Key")}{' '}<input
                   className="input"
                   value={plan.plan_key}
                   onChange={(event) =>
@@ -363,8 +363,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Name
-                <input
+                {translate("Name")}{' '}<input
                   className="input"
                   value={plan.name}
                   onChange={(event) =>
@@ -379,8 +378,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </div>
             <div className="form-grid two-col">
               <label>
-                Model
-                <select
+                {translate("Model")}{' '}<select
                   className="input"
                   value={plan.pricing_model}
                   onChange={(event) =>
@@ -392,14 +390,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 >
                   {["monthly_fixed", "calendar_month", "per_lesson", "per_teaching_hour", "lesson_package", "module_fee", "course_fee", "upfront_course", "installment_plan", "individual_lesson", "custom", "scholarship", "free"].map((value) => (
                     <option key={value} value={value}>
-                      {value.replaceAll("_", " ")}
+                      {label(value)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Cycle
-                <select
+                {translate("Cycle")}{' '}<select
                   className="input"
                   value={plan.billing_cycle}
                   onChange={(event) =>
@@ -416,8 +413,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </label>
             </div>
             <label>
-              Base amount
-              <input
+              {translate("Base amount")}{' '}<input
                 className="input"
                 type="number"
                 min="0"
@@ -432,8 +428,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Create plan
-            </button>
+              {translate("Create plan")}{' '}</button>
           </form>
           <form
             className="panel compact-form"
@@ -454,14 +449,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           >
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Agreement</span>
-                <h3>Create subscription</h3>
+                <span className="eyebrow">{translate("Agreement")}</span>
+                <h3>{translate("Create subscription")}</h3>
               </div>
               <ShieldCheck size={18} />
             </div>
             <label>
-              Student
-              <select
+              {translate("Student")}{' '}<select
                 className="input"
                 value={subscription.contact_id}
                 onChange={(event) =>
@@ -480,8 +474,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </select>
             </label>
             <label>
-              Pricing plan
-              <select
+              {translate("Pricing plan")}{' '}<select
                 className="input"
                 value={subscription.pricing_plan_id}
                 onChange={(event) =>
@@ -493,7 +486,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 }
                 required
               >
-                <option value="">Choose plan</option>
+                <option value="">{translate("Choose plan")}</option>
                 {data?.pricing_plans
                   .filter((item) => item.is_active)
                   .map((item) => (
@@ -505,8 +498,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </label>
             <div className="form-grid two-col">
               <label>
-                Starts
-                <input
+                {translate("Starts")}{' '}<input
                   className="input"
                   type="date"
                   value={subscription.starts_on}
@@ -520,8 +512,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Ends
-                <input
+                {translate("Ends")}{' '}<input
                   className="input"
                   type="date"
                   value={subscription.ends_on}
@@ -536,8 +527,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </div>
             <div className="form-grid two-col">
               <label>
-                List amount
-                <input
+                {translate("List amount")}{' '}<input
                   className="input"
                   type="number"
                   min="0"
@@ -548,12 +538,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                       list_amount: event.target.value,
                     }))
                   }
-                  placeholder="Use plan price"
+                  placeholder={translate("Use plan price")}
                 />
               </label>
               <label>
-                Discount
-                <input
+                {translate("Discount")}{' '}<input
                   className="input"
                   type="number"
                   min="0"
@@ -569,8 +558,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </div>
             {Number(subscription.discount_amount) > 0 ? (
               <label>
-                Discount reason
-                <textarea
+                {translate("Discount reason")}{' '}<textarea
                   className="input"
                   value={subscription.discount_reason}
                   onChange={(event) =>
@@ -594,11 +582,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   }))
                 }
               />{" "}
-              Auto-renew
-            </label>
+              {translate("Auto-renew")}{' '}</label>
             <button className="primary-btn" disabled={busy}>
-              Create agreement
-            </button>
+              {translate("Create agreement")}{' '}</button>
           </form>
           <form
             className="panel compact-form commercial-span"
@@ -619,15 +605,14 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           >
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Lifecycle control</span>
-                <h3>Manage agreement</h3>
+                <span className="eyebrow">{translate("Lifecycle control")}</span>
+                <h3>{translate("Manage agreement")}</h3>
               </div>
               <CalendarClock size={18} />
             </div>
             <div className="form-grid two-col">
               <label>
-                Agreement
-                <select
+                {translate("Agreement")}{' '}<select
                   className="input"
                   value={subscriptionAction.subscription_id}
                   onChange={(event) =>
@@ -638,7 +623,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   }
                   required
                 >
-                  <option value="">Choose agreement</option>
+                  <option value="">{translate("Choose agreement")}</option>
                   {data?.subscriptions.map((item) => {
                     const contact = contactById.get(item.contact_id);
                     return (
@@ -650,8 +635,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Operation
-                <select
+                {translate("Operation")}{' '}<select
                   className="input"
                   value={subscriptionAction.operation}
                   onChange={(event) =>
@@ -704,8 +688,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </div>
             ) : null}
             <label>
-              Reason / note
-              <textarea
+              {translate("Reason / note")}{' '}<textarea
                 className="input"
                 value={subscriptionAction.reason}
                 onChange={(event) =>
@@ -718,14 +701,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Apply agreement operation
-            </button>
+              {translate("Apply agreement operation")}{' '}</button>
           </form>
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Active book</span>
-                <h3>Plans and agreements</h3>
+                <span className="eyebrow">{translate("Active book")}</span>
+                <h3>{translate("Plans and agreements")}</h3>
               </div>
             </div>
             <div className="subscription-cards">
@@ -743,17 +725,17 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                       {itemPlan?.name ?? "Plan"} · {item.billing_cycle}
                     </p>
                     <strong>{money(item.agreed_amount, item.currency)}</strong>
-                    {item.discount_amount > 0 ? <small>Discount {money(item.discount_amount, item.currency)}</small> : null}
-                    {item.cancellation_reason ? <small>Cancelled: {item.cancellation_reason}</small> : null}
+                    {item.discount_amount > 0 ? <small>{translate("Discount")}{' '}{money(item.discount_amount, item.currency)}</small> : null}
+                    {item.cancellation_reason ? <small>{translate("Cancelled:")}{' '}{item.cancellation_reason}</small> : null}
                     {freezes.map((entry) => (
                       <small key={entry.id}>
-                        Freeze {entry.starts_on}–{entry.ends_on} · {entry.status}
+                        {translate("Freeze")}{' '}{entry.starts_on}–{entry.ends_on} · {entry.status}
                       </small>
                     ))}
                   </article>
                 );
               })}
-              {!data?.subscriptions.length ? <p className="empty-state">No commercial agreements yet.</p> : null}
+              {!data?.subscriptions.length ? <p className="empty-state">{translate("No commercial agreements yet.")}</p> : null}
             </div>
           </section>
         </div>
@@ -778,14 +760,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             >
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Invoice</span>
-                  <h3>Issue charge</h3>
+                  <span className="eyebrow">{translate("Invoice")}</span>
+                  <h3>{translate("Issue charge")}</h3>
                 </div>
                 <ReceiptText size={18} />
               </div>
               <label>
-                Agreement
-                <select
+                {translate("Agreement")}{' '}<select
                   className="input"
                   value={charge.subscription_id}
                   onChange={(event) =>
@@ -810,8 +791,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Cycle key
-                  <input
+                  {translate("Cycle key")}{' '}<input
                     className="input"
                     value={charge.cycle_key}
                     onChange={(event) =>
@@ -824,8 +804,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Due date
-                  <input
+                  {translate("Due date")}{' '}<input
                     className="input"
                     type="date"
                     value={charge.due_on}
@@ -840,8 +819,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Description
-                <input
+                {translate("Description")}{' '}<input
                   className="input"
                   value={charge.description}
                   onChange={(event) =>
@@ -853,8 +831,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <button className="primary-btn" disabled={busy}>
-                Issue charge
-              </button>
+                {translate("Issue charge")}{' '}</button>
             </form>
           ) : null}
           {canCollectFinance ? (
@@ -876,14 +853,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             >
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Allocation</span>
-                  <h3>Apply payment to charge</h3>
+                  <span className="eyebrow">{translate("Allocation")}</span>
+                  <h3>{translate("Apply payment to charge")}</h3>
                 </div>
                 <CreditCard size={18} />
               </div>
               <label>
-                Paid payment
-                <select
+                {translate("Paid payment")}{' '}<select
                   className="input"
                   value={allocation.payment_id}
                   onChange={(event) =>
@@ -898,14 +874,12 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     .filter((item) => item.status === "paid" && Number(item.amount) > (allocatedByPayment.get(item.id) ?? 0))
                     .map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.provider} · {money(Number(item.amount) - (allocatedByPayment.get(item.id) ?? 0), item.currency)} available
-                      </option>
+                        {item.provider} · {money(Number(item.amount) - (allocatedByPayment.get(item.id) ?? 0), item.currency)} {translate("available")}{' '}</option>
                     ))}
                 </select>
               </label>
               <label>
-                Open charge
-                <select
+                {translate("Open charge")}{' '}<select
                   className="input"
                   value={allocation.charge_id}
                   onChange={(event) =>
@@ -930,8 +904,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Amount
-                <input
+                {translate("Amount")}{' '}<input
                   className="input"
                   type="number"
                   min="1"
@@ -946,28 +919,27 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <button className="primary-btn" disabled={busy}>
-                Allocate payment
-              </button>
+                {translate("Allocate payment")}{' '}</button>
             </form>
           ) : null}
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Receivables</span>
-                <h3>Charges</h3>
+                <span className="eyebrow">{translate("Receivables")}</span>
+                <h3>{translate("Charges")}</h3>
               </div>
             </div>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>Invoice</th>
-                    <th>Student</th>
-                    <th>Due</th>
-                    <th>Net</th>
-                    <th>Allocated</th>
-                    <th>Outstanding</th>
-                    <th>Status</th>
+                    <th>{translate("Invoice")}</th>
+                    <th>{translate("Student")}</th>
+                    <th>{translate("Due")}</th>
+                    <th>{translate("Net")}</th>
+                    <th>{translate("Allocated")}</th>
+                    <th>{translate("Outstanding")}</th>
+                    <th>{translate("Status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -991,7 +963,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   })}
                   {!data?.charges.length ? (
                     <tr>
-                      <td colSpan={7}>No charges yet.</td>
+                      <td colSpan={7}>{translate("No charges yet.")}</td>
                     </tr>
                   ) : null}
                 </tbody>
@@ -1022,14 +994,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
           >
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Collections</span>
-                <h3>Record payment promise</h3>
+                <span className="eyebrow">{translate("Collections")}</span>
+                <h3>{translate("Record payment promise")}</h3>
               </div>
               <FileClock size={18} />
             </div>
             <label>
-              Student
-              <select
+              {translate("Student")}{' '}<select
                 className="input"
                 value={promise.contact_id}
                 onChange={(event) =>
@@ -1049,8 +1020,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </label>
             <div className="form-grid two-col">
               <label>
-                Amount
-                <input
+                {translate("Amount")}{' '}<input
                   className="input"
                   type="number"
                   min="1"
@@ -1065,8 +1035,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                Promised date
-                <input
+                {translate("Promised date")}{' '}<input
                   className="input"
                   type="date"
                   value={promise.promised_for}
@@ -1081,8 +1050,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </label>
             </div>
             <label>
-              Notes
-              <textarea
+              {translate("Notes")}{' '}<textarea
                 className="input"
                 value={promise.notes}
                 onChange={(event) =>
@@ -1094,14 +1062,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              Record promise
-            </button>
+              {translate("Record promise")}{' '}</button>
           </form>
           <section className="panel">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Aging queue</span>
-                <h3>Overdue students</h3>
+                <span className="eyebrow">{translate("Aging queue")}</span>
+                <h3>{translate("Overdue students")}</h3>
               </div>
             </div>
             <div className="record-list">
@@ -1114,21 +1081,20 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                         {contact?.first_name} {contact?.last_name}
                       </strong>
                       <p>
-                        {item.charge_number} · {item.aging_bucket} days
-                      </p>
+                        {item.charge_number} · {item.aging_bucket} {translate("days")}{' '}</p>
                     </div>
                     <strong>{money(item.outstanding_amount, item.currency)}</strong>
                   </article>
                 );
               })}
-              {!overdueCharges.length ? <p className="empty-state">No overdue charges.</p> : null}
+              {!overdueCharges.length ? <p className="empty-state">{translate("No overdue charges.")}</p> : null}
             </div>
           </section>
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Promises</span>
-                <h3>Collection commitments</h3>
+                <span className="eyebrow">{translate("Promises")}</span>
+                <h3>{translate("Collection commitments")}</h3>
               </div>
             </div>
             <div className="record-list">
@@ -1142,14 +1108,14 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                         {contact?.first_name} {contact?.last_name}
                       </strong>
                       <p>
-                        {item.status} · promised {item.promised_for}
+                        {item.status} {translate("· promised")}{' '}{item.promised_for}
                       </p>
                     </div>
                     <strong>{money(item.amount, item.currency)}</strong>
                   </article>
                 );
               })}
-              {!data?.payment_promises.length ? <p className="empty-state">No payment promises recorded.</p> : null}
+              {!data?.payment_promises.length ? <p className="empty-state">{translate("No payment promises recorded.")}</p> : null}
             </div>
           </section>
         </div>
@@ -1176,14 +1142,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             >
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Controlled journal</span>
-                  <h3>Post adjustment</h3>
+                  <span className="eyebrow">{translate("Controlled journal")}</span>
+                  <h3>{translate("Post adjustment")}</h3>
                 </div>
                 <Scale size={18} />
               </div>
               <label>
-                Student
-                <select
+                {translate("Student")}{' '}<select
                   className="input"
                   value={adjustment.contact_id}
                   onChange={(event) =>
@@ -1203,8 +1168,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </select>
               </label>
               <label>
-                Type
-                <select
+                {translate("Type")}{' '}<select
                   className="input"
                   value={adjustment.entry_type}
                   onChange={(event) =>
@@ -1216,14 +1180,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 >
                   {["account_credit", "discount", "write_off", "refund", "debit_adjustment", "credit_adjustment", "transferred_credit"].map((value) => (
                     <option key={value} value={value}>
-                      {value.replaceAll("_", " ")}
+                      {label(value)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Related charge (optional)
-                <select
+                {translate("Related charge (optional)")}{' '}<select
                   className="input"
                   value={adjustment.charge_id}
                   onChange={(event) => {
@@ -1236,20 +1199,18 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     }));
                   }}
                 >
-                  <option value="">Account-level adjustment</option>
+                  <option value="">{translate("Account-level adjustment")}</option>
                   {data?.charges
                     .filter((item) => item.contact_id === adjustment.contact_id)
                     .map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.charge_number} · {money(item.outstanding_amount, item.currency)} outstanding
-                      </option>
+                        {item.charge_number} · {money(item.outstanding_amount, item.currency)} {translate("outstanding")}{' '}</option>
                     ))}
                 </select>
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Amount
-                  <input
+                  {translate("Amount")}{' '}<input
                     className="input"
                     type="number"
                     min="1"
@@ -1264,8 +1225,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Currency
-                  <input
+                  {translate("Currency")}{' '}<input
                     className="input"
                     value={adjustment.currency}
                     onChange={(event) =>
@@ -1279,8 +1239,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Reason
-                <textarea
+                {translate("Reason")}{' '}<textarea
                   className="input"
                   value={adjustment.reason}
                   onChange={(event) =>
@@ -1293,8 +1252,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 />
               </label>
               <button className="primary-btn" disabled={busy}>
-                Post adjustment
-              </button>
+                {translate("Post adjustment")}{' '}</button>
             </form>
           ) : null}
           {canReconcileFinance ? (
@@ -1316,14 +1274,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             >
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow">Provider evidence</span>
-                  <h3>Record reconciliation</h3>
+                  <span className="eyebrow">{translate("Provider evidence")}</span>
+                  <h3>{translate("Record reconciliation")}</h3>
                 </div>
                 <ShieldCheck size={18} />
               </div>
               <label>
-                Payment
-                <select
+                {translate("Payment")}{' '}<select
                   className="input"
                   value={reconciliation.payment_id}
                   onChange={(event) => {
@@ -1338,7 +1295,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     }));
                   }}
                 >
-                  <option value="">Unmatched event</option>
+                  <option value="">{translate("Unmatched event")}</option>
                   {data?.payments.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.provider} · {item.provider_transaction_id}
@@ -1348,8 +1305,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               </label>
               <div className="form-grid two-col">
                 <label>
-                  Provider event ID
-                  <input
+                  {translate("Provider event ID")}{' '}<input
                     className="input"
                     value={reconciliation.provider_event_id}
                     onChange={(event) =>
@@ -1362,8 +1318,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   />
                 </label>
                 <label>
-                  Status
-                  <select
+                  {translate("Status")}{' '}<select
                     className="input"
                     value={reconciliation.status}
                     onChange={(event) =>
@@ -1380,8 +1335,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 </label>
               </div>
               <label>
-                Payload SHA-256
-                <input
+                {translate("Payload SHA-256")}{' '}<input
                   className="input"
                   value={reconciliation.payload_hash}
                   onChange={(event) =>
@@ -1390,31 +1344,30 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                       payload_hash: event.target.value,
                     }))
                   }
-                  placeholder="Store the hash, never provider secrets"
+                  placeholder={translate("Store the hash, never provider secrets")}
                   required
                 />
               </label>
               <button className="primary-btn" disabled={busy}>
-                Record reconciliation
-              </button>
+                {translate("Record reconciliation")}{' '}</button>
             </form>
           ) : null}
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Append-only history</span>
-                <h3>Account ledger</h3>
+                <span className="eyebrow">{translate("Append-only history")}</span>
+                <h3>{translate("Account ledger")}</h3>
               </div>
             </div>
             <div className="finance-table-wrap">
               <table className="finance-table">
                 <thead>
                   <tr>
-                    <th>When</th>
-                    <th>Student</th>
-                    <th>Type</th>
-                    <th>Reason</th>
-                    <th>Amount</th>
+                    <th>{translate("When")}</th>
+                    <th>{translate("Student")}</th>
+                    <th>{translate("Type")}</th>
+                    <th>{translate("Reason")}</th>
+                    <th>{translate("Amount")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1426,7 +1379,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                         <td>
                           {contact?.first_name} {contact?.last_name}
                         </td>
-                        <td>{item.entry_type.replaceAll("_", " ")}</td>
+                        <td>{label(item.entry_type)}</td>
                         <td>{item.reason ?? "—"}</td>
                         <td className={Number(item.amount) > 0 ? "amount-due" : "amount-credit"}>{money(item.amount, item.currency)}</td>
                       </tr>
@@ -1434,7 +1387,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   })}
                   {!data?.ledger_entries.length ? (
                     <tr>
-                      <td colSpan={5}>No ledger entries yet.</td>
+                      <td colSpan={5}>{translate("No ledger entries yet.")}</td>
                     </tr>
                   ) : null}
                 </tbody>

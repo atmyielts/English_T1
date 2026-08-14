@@ -4841,3 +4841,45 @@ tbody tr:hover {
     width: 100%;
   }
 }
+.academy-language-switcher {
+  align-items: center;
+  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--surface, #f6f0e4) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink, #472f26) 22%, transparent);
+  border-radius: 999px;
+  bottom: 18px;
+  box-shadow: 0 10px 30px rgba(71, 47, 38, 0.12);
+  color: var(--ink, #472f26);
+  display: inline-flex;
+  gap: 8px;
+  left: 18px;
+  min-height: 44px;
+  padding: 0 12px;
+  position: fixed;
+  z-index: 120;
+}
+
+.academy-language-switcher select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 750;
+  min-height: 44px;
+  outline: 0;
+  padding: 0 18px 0 0;
+}
+
+.academy-language-switcher:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #bbd3e0) 70%, transparent), 0 10px 30px rgba(71, 47, 38, 0.12);
+}
+
+@media (max-width: 720px) {
+  .academy-language-switcher {
+    bottom: 10px;
+    left: 10px;
+  }
+}

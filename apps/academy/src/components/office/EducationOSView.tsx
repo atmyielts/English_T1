@@ -1,3 +1,4 @@
+import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   teacherStudioAssignments,
@@ -138,7 +139,7 @@ const severityClass = (severity: string): string => {
   return 'status status--pending';
 };
 
-const eventTypeLabel = (type: string): string => type.replace(/_/g, ' ');
+const eventTypeLabel = (type: string): string => translate(type.replace(/_/g, ' '));
 
 const permissionAllowedByMode = (mode: EducationOSMode, permission: EducationOSPermission): boolean => {
   return routeIntentAllowsPermission(mode, permission);
@@ -1113,8 +1114,8 @@ export const EducationOSView = ({
       <div className="panel">
         <div className="row between wrap">
           <div>
-            <h3>Education OS</h3>
-            <p className="muted">Run the academy from action queue to lifecycle, automation, calendar, intelligence, and execution tools.</p>
+            <h3>{translate("Education OS")}</h3>
+            <p className="muted">{translate("Run the academy from action queue to lifecycle, automation, calendar, intelligence, and execution tools.")}</p>
           </div>
           <div className="topbar-actions">
             <select className="input academy-select" value={selectedClassroomId} onChange={(event) => setSelectedClassroomId(event.target.value)}>
@@ -1123,14 +1124,13 @@ export const EducationOSView = ({
                   {classroom.name}
                 </option>
               ))}
-              {classrooms.length === 0 ? <option value="">No classrooms</option> : null}
+              {classrooms.length === 0 ? <option value="">{translate("No classrooms")}</option> : null}
             </select>
             <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>
-              Refresh OS
-            </button>
+              {translate("Refresh OS")}{' '}</button>
           </div>
         </div>
-        <div className="segmented-row" role="tablist" aria-label="Education OS sections">
+        <div className="segmented-row" role="tablist" aria-label={translate("Education OS sections")}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -1138,17 +1138,17 @@ export const EducationOSView = ({
               type="button"
               onClick={() => setActiveTab(tab.id)}
             >
-              {tab.label}
+              {translate(tab.label)}
             </button>
           ))}
         </div>
       </div>
 
-      {localError ? <div className="error-banner">{localError}</div> : null}
-      {localNotice ? <div className="info-banner">{localNotice}</div> : null}
+      {localError ? <div className="error-banner">{translate(localError)}</div> : null}
+      {localNotice ? <div className="info-banner">{translate(localNotice)}</div> : null}
       {lastShareUrl ? (
         <div className="info-banner">
-          Share link: <a href={lastShareUrl} target="_blank" rel="noreferrer">{lastShareUrl}</a>
+          {translate("Share link:")}{' '}<a href={lastShareUrl} target="_blank" rel="noreferrer">{lastShareUrl}</a>
         </div>
       ) : null}
 
@@ -1156,24 +1156,24 @@ export const EducationOSView = ({
         <section className="grid">
           <section className="stats-grid">
             <article className="stat-card">
-              <span>Open actions</span>
+              <span>{translate("Open actions")}</span>
               <strong>{actionQueue.length}</strong>
             </article>
             <article className="stat-card">
-              <span>Urgent</span>
+              <span>{translate("Urgent")}</span>
               <strong>{highPriorityQueue.length}</strong>
             </article>
             <article className="stat-card">
-              <span>Grade backlog</span>
+              <span>{translate("Grade backlog")}</span>
               <strong>{modeCanUse('gradeSubmissions') ? actionQueue.filter((item) => item.source_type === 'grading_backlog').length : 0}</strong>
             </article>
             <article className="stat-card">
-              <span>Placement gap</span>
+              <span>{translate("Placement gap")}</span>
               <strong>{modeCanUse('manageContacts') ? pipelineCounts.placement ?? 0 : 0}</strong>
             </article>
             {modeCanUse('issueCertificates') ? (
               <article className="stat-card">
-                <span>Certificate ready</span>
+                <span>{translate("Certificate ready")}</span>
                 <strong>{lifecycleRows.filter((row) => row.certificate_ready).length}</strong>
               </article>
             ) : null}
@@ -1183,11 +1183,11 @@ export const EducationOSView = ({
             <div className="panel">
               <div className="row between wrap">
                 <div>
-                  <h3>Daily action queue</h3>
-                  <p className="small muted">Generated from the attendance, learning, lifecycle, and engagement signals available in this route.</p>
+                  <h3>{translate("Daily action queue")}</h3>
+                  <p className="small muted">{translate("Generated from the attendance, learning, lifecycle, and engagement signals available in this route.")}</p>
                 </div>
                 {modeCanUse('manageAutomation') ? (
-                  <button className="ghost-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>Run automations</button>
+                  <button className="ghost-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>{translate("Run automations")}</button>
                 ) : null}
               </div>
               <div className="os-action-list">
@@ -1199,11 +1199,11 @@ export const EducationOSView = ({
                         <strong>{item.title}</strong>
                       </div>
                       <div className="row wrap">
-                        <button className="small-btn" type="button" onClick={() => openActionTarget(item)}>Open</button>
+                        <button className="small-btn" type="button" onClick={() => openActionTarget(item)}>{translate("Open")}</button>
                         {canResolveActionItems ? (
                           <>
-                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'resolved')} disabled={localBusy}>Done</button>
-                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'dismissed')} disabled={localBusy}>Dismiss</button>
+                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'resolved')} disabled={localBusy}>{translate("Done")}</button>
+                            <button className="small-btn" type="button" onClick={() => void resolveActionItem(item, 'dismissed')} disabled={localBusy}>{translate("Dismiss")}</button>
                           </>
                         ) : null}
                       </div>
@@ -1216,12 +1216,12 @@ export const EducationOSView = ({
                     {item.recommended_action ? <div className="small">{item.recommended_action}</div> : null}
                   </article>
                 ))}
-                {actionQueue.length === 0 ? <div className="empty-state">No action items right now. The OS will populate this as students, classes, assignments, and alerts move.</div> : null}
+                {actionQueue.length === 0 ? <div className="empty-state">{translate("No action items right now. The OS will populate this as students, classes, assignments, and alerts move.")}</div> : null}
               </div>
             </div>
 
             <div className="panel">
-              <h3>Operating focus</h3>
+              <h3>{translate("Operating focus")}</h3>
               <ul className="list">
                 {topInsights.map((insight) => (
                   <li key={insight.id}>
@@ -1233,9 +1233,9 @@ export const EducationOSView = ({
                     <div className="small muted">{insight.recommended_action}</div>
                   </li>
                 ))}
-                {topInsights.length === 0 ? <li>No intelligence signals yet.</li> : null}
+                {topInsights.length === 0 ? <li>{translate("No intelligence signals yet.")}</li> : null}
               </ul>
-              <h3>Next calendar items</h3>
+              <h3>{translate("Next calendar items")}</h3>
               <ul className="list">
                 {nextEvents.slice(0, 8).map((event) => (
                   <li key={event.id}>
@@ -1246,7 +1246,7 @@ export const EducationOSView = ({
                     <div className="small muted">{formatDate(event.starts_at)}</div>
                   </li>
                 ))}
-                {nextEvents.length === 0 ? <li>No upcoming operating events.</li> : null}
+                {nextEvents.length === 0 ? <li>{translate("No upcoming operating events.")}</li> : null}
               </ul>
             </div>
           </section>
@@ -1255,19 +1255,19 @@ export const EducationOSView = ({
 
       {visibleActiveTab === 'pipeline' ? (
         <section className="grid education-os__pipeline">
-          <section className="stats-grid education-os__pipeline-stats" aria-label="Student lifecycle totals">
+          <section className="stats-grid education-os__pipeline-stats" aria-label={translate("Student lifecycle totals")}>
             {visibleLifecycleStages.map((stage) => (
               <article className="stat-card education-os__stage-total" key={stage.id}>
-                <span>{stage.label}</span>
+                <span>{translate(stage.label)}</span>
                 <strong>{pipelineCounts[stage.id] ?? rowsByStage.get(stage.id)?.length ?? 0}</strong>
               </article>
             ))}
           </section>
-          <div className="os-pipeline-board" aria-label="Student lifecycle pipeline">
+          <div className="os-pipeline-board" aria-label={translate("Student lifecycle pipeline")}>
             {visibleLifecycleStages.map((stage) => (
               <section className="panel os-pipeline-column" key={stage.id}>
                 <div className="row between">
-                  <h3>{stage.label}</h3>
+                  <h3>{translate(stage.label)}</h3>
                   <span className="status">{rowsByStage.get(stage.id)?.length ?? 0}</span>
                 </div>
                 <div className="os-pipeline-list">
@@ -1276,19 +1276,19 @@ export const EducationOSView = ({
                       <div className="row between wrap">
                         <strong>{row.name}</strong>
                         <select className="input compact-input" value={row.stage} onChange={(event) => void updateLifecycleStage(row, event.target.value)} disabled={localBusy || !modeCanUse('manageContacts')}>
-                          {visibleLifecycleStages.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                          {visibleLifecycleStages.map((item) => <option key={item.id} value={item.id}>{translate(item.label)}</option>)}
                         </select>
                       </div>
                       <div className="small muted">{row.classroom_names.join(', ') || row.email || 'No classroom yet'}</div>
                       <div className="os-metric-strip">
-                        <span>Score {row.composite_score !== null ? `${row.composite_score}%` : '-'}</span>
-                        <span>Attendance {row.attendance_rate !== null ? `${row.attendance_rate}%` : '-'}</span>
-                        <span>Missing {row.missing_assignments}</span>
+                        <span>{translate("Score")}{' '}{row.composite_score !== null ? `${row.composite_score}%` : '-'}</span>
+                        <span>{translate("Attendance")}{' '}{row.attendance_rate !== null ? `${row.attendance_rate}%` : '-'}</span>
+                        <span>{translate("Missing")}{' '}{row.missing_assignments}</span>
                       </div>
                       <p className="small">{row.next_action}</p>
                     </article>
                   ))}
-                  {(rowsByStage.get(stage.id) ?? []).length === 0 ? <div className="small muted">No students in this stage.</div> : null}
+                  {(rowsByStage.get(stage.id) ?? []).length === 0 ? <div className="small muted">{translate("No students in this stage.")}</div> : null}
                 </div>
               </section>
             ))}
@@ -1301,10 +1301,10 @@ export const EducationOSView = ({
           <div className="panel">
             <div className="row between wrap">
               <div>
-                <h3>Automation rules</h3>
-                <p className="small muted">Rules queue reminders, follow-ups, alerts, and completion actions. Dispatch still happens through the notification outbox.</p>
+                <h3>{translate("Automation rules")}</h3>
+                <p className="small muted">{translate("Rules queue reminders, follow-ups, alerts, and completion actions. Dispatch still happens through the notification outbox.")}</p>
               </div>
-              <button className="primary-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>Run now</button>
+              <button className="primary-btn" type="button" onClick={() => void runAutomations()} disabled={localBusy}>{translate("Run now")}</button>
             </div>
           </div>
           <section className="grid two">
@@ -1322,37 +1322,37 @@ export const EducationOSView = ({
                 </div>
                 <div className="grid two">
                   <label className="grid">
-                    <span className="small muted">Channel</span>
+                    <span className="small muted">{translate("Channel")}</span>
                     <select className="input" value={rule.channel} onChange={(event) => void updateAutomationRule(rule, { channel: event.target.value as TeacherStudioAutomationRule['channel'] })} disabled={localBusy}>
-                      <option value="telegram">Telegram</option>
-                      <option value="email">Email</option>
-                      <option value="inapp">In-app</option>
+                      <option value="telegram">{translate("Telegram")}</option>
+                      <option value="email">{translate("Email")}</option>
+                      <option value="inapp">{translate("In-app")}</option>
                     </select>
                   </label>
                   <label className="grid">
-                    <span className="small muted">Threshold</span>
+                    <span className="small muted">{translate("Threshold")}</span>
                     <input className="input" type="number" value={rule.threshold ?? ''} onChange={(event) => void updateAutomationRule(rule, { threshold: event.target.value ? Number(event.target.value) : null })} disabled={localBusy} />
                   </label>
                 </div>
                 <div className="small muted">
-                  Last run: {rule.last_run_at ? formatDate(rule.last_run_at) : 'not run yet'}
+                  {translate("Last run:")}{' '}{rule.last_run_at ? formatDate(rule.last_run_at) : 'not run yet'}
                 </div>
               </article>
             ))}
-            {automationRules.length === 0 ? <div className="panel">No automation rules loaded yet.</div> : null}
+            {automationRules.length === 0 ? <div className="panel">{translate("No automation rules loaded yet.")}</div> : null}
           </section>
         </section>
       ) : null}
 
       {visibleActiveTab === 'calendar' ? (
         <section className="panel">
-          <h3>Operating calendar</h3>
+          <h3>{translate("Operating calendar")}</h3>
           <div className="os-agenda">
             {calendarEvents.map((event) => (
               <article className="os-agenda-item" key={event.id}>
                 <div>
                   <strong>{formatDate(event.starts_at)}</strong>
-                  {event.ends_at ? <div className="small muted">Ends {formatDate(event.ends_at)}</div> : null}
+                  {event.ends_at ? <div className="small muted">{translate("Ends")}{' '}{formatDate(event.ends_at)}</div> : null}
                 </div>
                 <div>
                   <div className="row wrap">
@@ -1365,7 +1365,7 @@ export const EducationOSView = ({
                 </div>
               </article>
             ))}
-            {calendarEvents.length === 0 ? <div className="empty-state">No schedule slots, due dates, notifications, or action deadlines are in the OS calendar yet.</div> : null}
+            {calendarEvents.length === 0 ? <div className="empty-state">{translate("No schedule slots, due dates, notifications, or action deadlines are in the OS calendar yet.")}</div> : null}
           </div>
         </section>
       ) : null}
@@ -1383,7 +1383,7 @@ export const EducationOSView = ({
               {typeof insight.metric === 'number' ? <strong className="os-insight-metric">{insight.metric}</strong> : null}
             </article>
           ))}
-          {intelligence.length === 0 ? <div className="panel">No decision intelligence yet. As attendance, assignments, lifecycle, and alerts accumulate, this panel will start recommending action.</div> : null}
+          {intelligence.length === 0 ? <div className="panel">{translate("No decision intelligence yet. As attendance, assignments, lifecycle, and alerts accumulate, this panel will start recommending action.")}</div> : null}
         </section>
       ) : null}
 
@@ -1392,39 +1392,39 @@ export const EducationOSView = ({
           <>
             <section className="stats-grid">
               <article className="stat-card">
-                <span>Collected total</span>
-                <strong>{financeDashboard ? `${financeDashboard.collected_total.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
+                <span>{translate("Collected total")}</span>
+                <strong>{financeDashboard ? `${financeDashboard.collected_total.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
-                <span>This month</span>
-                <strong>{financeDashboard ? `${financeDashboard.collected_this_month.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
+                <span>{translate("This month")}</span>
+                <strong>{financeDashboard ? `${financeDashboard.collected_this_month.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
-                <span>Outstanding</span>
-                <strong>{financeDashboard ? `${financeDashboard.outstanding.toLocaleString()} ${financeDashboard.currency}` : '-'}</strong>
+                <span>{translate("Outstanding")}</span>
+                <strong>{financeDashboard ? `${financeDashboard.outstanding.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
               </article>
               <article className="stat-card">
-                <span>Students</span>
+                <span>{translate("Students")}</span>
                 <strong>{dashboard?.total_students ?? contacts.length}</strong>
               </article>
               <article className="stat-card">
-                <span>Classrooms</span>
+                <span>{translate("Classrooms")}</span>
                 <strong>{dashboard?.total_classrooms ?? classrooms.length}</strong>
               </article>
             </section>
 
             <section className="grid two">
               <div className="panel">
-                <h3>Classroom performance</h3>
+                <h3>{translate("Classroom performance")}</h3>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Classroom</th>
-                        <th>Students</th>
-                        <th>Assignments</th>
-                        <th>Avg score</th>
-                        <th>Attendance</th>
+                        <th>{translate("Classroom")}</th>
+                        <th>{translate("Students")}</th>
+                        <th>{translate("Assignments")}</th>
+                        <th>{translate("Avg score")}</th>
+                        <th>{translate("Attendance")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1438,7 +1438,7 @@ export const EducationOSView = ({
                         </tr>
                       ))}
                       {(dashboard?.classroom_stats ?? []).length === 0 ? (
-                        <tr><td colSpan={5}>No classroom metrics yet.</td></tr>
+                        <tr><td colSpan={5}>{translate("No classroom metrics yet.")}</td></tr>
                       ) : null}
                     </tbody>
                   </table>
@@ -1446,7 +1446,7 @@ export const EducationOSView = ({
               </div>
 
               <div className="panel">
-                <h3>Enrollment funnel</h3>
+                <h3>{translate("Enrollment funnel")}</h3>
                 <div className="metric-list">
                   {Object.entries(dashboard?.funnel ?? {}).map(([status, count]) => (
                     <div className="metric-row" key={status}>
@@ -1454,19 +1454,19 @@ export const EducationOSView = ({
                       <strong>{count}</strong>
                     </div>
                   ))}
-                  {!dashboard ? <div className="small muted">Loading OS dashboard...</div> : null}
+                  {!dashboard ? <div className="small muted">{translate("Loading OS dashboard...")}</div> : null}
                 </div>
-                <h3>Referral leaders</h3>
+                <h3>{translate("Referral leaders")}</h3>
                 <ul className="list">
                   {referralLeaderboard.map((leader) => (
                     <li key={leader.contact_id}>
                       <div className="row between">
                         <strong>{leader.name}</strong>
-                        <span className="small muted">{leader.referrals} joined / {leader.enrolled} enrolled</span>
+                        <span className="small muted">{leader.referrals} {translate("joined /")}{' '}{leader.enrolled} {translate("enrolled")}</span>
                       </div>
                     </li>
                   ))}
-                  {referralLeaderboard.length === 0 ? <li>No referral activity yet.</li> : null}
+                  {referralLeaderboard.length === 0 ? <li>{translate("No referral activity yet.")}</li> : null}
                 </ul>
               </div>
             </section>
@@ -1475,23 +1475,23 @@ export const EducationOSView = ({
           <>
             <section className="stats-grid">
               <article className="stat-card">
-                <span>Students</span>
+                <span>{translate("Students")}</span>
                 <strong>{dashboard?.total_students ?? contacts.length}</strong>
               </article>
               <article className="stat-card">
-                <span>Classrooms</span>
+                <span>{translate("Classrooms")}</span>
                 <strong>{dashboard?.total_classrooms ?? classrooms.length}</strong>
               </article>
               <article className="stat-card">
-                <span>Open actions</span>
+                <span>{translate("Open actions")}</span>
                 <strong>{actionQueue.length}</strong>
               </article>
               <article className="stat-card">
-                <span>Urgent</span>
+                <span>{translate("Urgent")}</span>
                 <strong>{highPriorityQueue.length}</strong>
               </article>
               <article className="stat-card">
-                <span>Attention</span>
+                <span>{translate("Attention")}</span>
                 <strong>{pipelineCounts.attention ?? lifecycleRows.filter((row) => row.stage === 'attention').length}</strong>
               </article>
             </section>
@@ -1499,11 +1499,10 @@ export const EducationOSView = ({
             <section className="grid two">
               <div className="panel">
                 <div className="row between wrap">
-                  <h3>Role action queue</h3>
+                  <h3>{translate("Role action queue")}</h3>
                   {canDispatchNotifications ? (
                     <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>
-                      Dispatch queued
-                    </button>
+                      {translate("Dispatch queued")}{' '}</button>
                   ) : null}
                 </div>
                 <ul className="list">
@@ -1516,31 +1515,31 @@ export const EducationOSView = ({
                       <div className="small muted">{eventTypeLabel(item.source_type)}{item.due_at ? ` | due ${formatDate(item.due_at)}` : ''}</div>
                     </li>
                   ))}
-                  {actionQueue.length === 0 ? <li>No command actions in your role scope.</li> : null}
+                  {actionQueue.length === 0 ? <li>{translate("No command actions in your role scope.")}</li> : null}
                 </ul>
               </div>
 
               <div className="panel">
-                <h3>Operations snapshot</h3>
+                <h3>{translate("Operations snapshot")}</h3>
                 <div className="metric-list">
                   {visibleLifecycleStages.map((stage) => (
                     <div className="metric-row" key={stage.id}>
-                      <span>{stage.label}</span>
+                      <span>{translate(stage.label)}</span>
                       <strong>{pipelineCounts[stage.id] ?? 0}</strong>
                     </div>
                   ))}
                 </div>
                 {canViewReports && dashboard ? (
                   <>
-                    <h3>Classroom reporting</h3>
+                    <h3>{translate("Classroom reporting")}</h3>
                     <div className="table-wrap">
                       <table>
                         <thead>
                           <tr>
-                            <th>Classroom</th>
-                            <th>Students</th>
-                            <th>Avg score</th>
-                            <th>Attendance</th>
+                            <th>{translate("Classroom")}</th>
+                            <th>{translate("Students")}</th>
+                            <th>{translate("Avg score")}</th>
+                            <th>{translate("Attendance")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1553,7 +1552,7 @@ export const EducationOSView = ({
                             </tr>
                           ))}
                           {dashboard.classroom_stats.length === 0 ? (
-                            <tr><td colSpan={4}>No classroom metrics yet.</td></tr>
+                            <tr><td colSpan={4}>{translate("No classroom metrics yet.")}</td></tr>
                           ) : null}
                         </tbody>
                       </table>
@@ -1562,17 +1561,17 @@ export const EducationOSView = ({
                 ) : null}
                 {modeCanUse('viewReferrals') ? (
                   <>
-                    <h3>Referral leaders</h3>
+                    <h3>{translate("Referral leaders")}</h3>
                     <ul className="list">
                       {referralLeaderboard.slice(0, 5).map((leader) => (
                         <li key={leader.contact_id}>
                           <div className="row between">
                             <strong>{leader.name}</strong>
-                            <span className="small muted">{leader.referrals} joined / {leader.enrolled} enrolled</span>
+                            <span className="small muted">{leader.referrals} {translate("joined /")}{' '}{leader.enrolled} {translate("enrolled")}</span>
                           </div>
                         </li>
                       ))}
-                      {referralLeaderboard.length === 0 ? <li>No referral activity yet.</li> : null}
+                      {referralLeaderboard.length === 0 ? <li>{translate("No referral activity yet.")}</li> : null}
                     </ul>
                   </>
                 ) : null}
@@ -1595,19 +1594,19 @@ export const EducationOSView = ({
               <div className="panel">
                 <h3>{editingAssignmentId ? 'Edit assignment' : 'Create assignment'}</h3>
                 <form className="grid" onSubmit={submitAssignment}>
-                  <input className="input" placeholder="Assignment title" value={assignmentForm.title} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, title: event.target.value }))} required />
-                  <textarea className="input" placeholder="Instructions" value={assignmentForm.description} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, description: event.target.value }))} />
+                  <input className="input" placeholder={translate("Assignment title")} value={assignmentForm.title} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, title: event.target.value }))} required />
+                  <textarea className="input" placeholder={translate("Instructions")} value={assignmentForm.description} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, description: event.target.value }))} />
                   <div className="grid three">
-                    <select className="input" aria-label="Assignment course" value={assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, course_id: event.target.value, module_id: '', lesson_id: '' }))}>
-                      <option value="">No course link</option>
+                    <select className="input" aria-label={translate("Assignment course")} value={assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, course_id: event.target.value, module_id: '', lesson_id: '' }))}>
+                      <option value="">{translate("No course link")}</option>
                       {assignmentCurriculum.courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                     </select>
-                    <select className="input" aria-label="Assignment module" value={assignmentForm.module_id} disabled={!assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, module_id: event.target.value, lesson_id: '' }))}>
-                      <option value="">No module link</option>
+                    <select className="input" aria-label={translate("Assignment module")} value={assignmentForm.module_id} disabled={!assignmentForm.course_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, module_id: event.target.value, lesson_id: '' }))}>
+                      <option value="">{translate("No module link")}</option>
                       {assignmentModules.map((module) => <option key={module.id} value={module.id}>{module.title}</option>)}
                     </select>
-                    <select className="input" aria-label="Assignment lesson" value={assignmentForm.lesson_id} disabled={!assignmentForm.module_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, lesson_id: event.target.value }))}>
-                      <option value="">No lesson link</option>
+                    <select className="input" aria-label={translate("Assignment lesson")} value={assignmentForm.lesson_id} disabled={!assignmentForm.module_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, lesson_id: event.target.value }))}>
+                      <option value="">{translate("No lesson link")}</option>
                       {assignmentLessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
                     </select>
                   </div>
@@ -1615,8 +1614,8 @@ export const EducationOSView = ({
                     <select className="input" value={assignmentForm.assignment_type} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, assignment_type: event.target.value }))}>
                       {['task', 'test', 'lab', 'reading', 'writing', 'listening', 'speaking', 'custom'].map((kind) => <option key={kind} value={kind}>{kind}</option>)}
                     </select>
-                    <input className="input" type="number" min="0" placeholder="Max score" value={assignmentForm.max_score} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, max_score: event.target.value }))} />
-                    <input className="input" type="number" min="0" step="0.1" placeholder="Weight" value={assignmentForm.score_weight} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, score_weight: event.target.value }))} />
+                    <input className="input" type="number" min="0" placeholder={translate("Max score")} value={assignmentForm.max_score} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, max_score: event.target.value }))} />
+                    <input className="input" type="number" min="0" step="0.1" placeholder={translate("Weight")} value={assignmentForm.score_weight} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, score_weight: event.target.value }))} />
                   </div>
                   <div className="grid two">
                     <input className="input" type="datetime-local" value={assignmentForm.due_at} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, due_at: event.target.value }))} />
@@ -1625,20 +1624,19 @@ export const EducationOSView = ({
                     </select>
                   </div>
                   <div className="grid three">
-                    <select className="input" aria-label="Grade category" value={assignmentForm.grade_category_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, grade_category_id: event.target.value }))}>
-                      <option value="">Uncategorized grade</option>
-                      {gradeCategories.map((category) => <option key={category.id} value={category.id}>{category.name} · weight {category.weight}</option>)}
+                    <select className="input" aria-label={translate("Grade category")} value={assignmentForm.grade_category_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, grade_category_id: event.target.value }))}>
+                      <option value="">{translate("Uncategorized grade")}</option>
+                      {gradeCategories.map((category) => <option key={category.id} value={category.id}>{category.name} {translate("· weight")}{' '}{category.weight}</option>)}
                     </select>
-                    <select className="input" aria-label="Assignment rubric" value={assignmentForm.rubric_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, rubric_id: event.target.value }))}>
-                      <option value="">No rubric</option>
+                    <select className="input" aria-label={translate("Assignment rubric")} value={assignmentForm.rubric_id} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, rubric_id: event.target.value }))}>
+                      <option value="">{translate("No rubric")}</option>
                       {rubrics.filter((rubric) => rubric.status !== 'archived').map((rubric) => <option key={rubric.id} value={rubric.id}>{rubric.title}</option>)}
                     </select>
-                    <input className="input" type="number" min="1" max="100" aria-label="Assignment attempts" placeholder="Attempts" value={assignmentForm.attempts_allowed} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, attempts_allowed: event.target.value }))} />
+                    <input className="input" type="number" min="1" max="100" aria-label={translate("Assignment attempts")} placeholder={translate("Attempts")} value={assignmentForm.attempts_allowed} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, attempts_allowed: event.target.value }))} />
                   </div>
                   <label className="row wrap small">
                     <input type="checkbox" checked={assignmentForm.allow_late_submission} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, allow_late_submission: event.target.checked }))} />
-                    Allow late submissions after the due date
-                  </label>
+                    {translate("Allow late submissions after the due date")}{' '}</label>
                   <div className="row wrap">
                     <button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId}>
                       {editingAssignmentId ? 'Update assignment' : 'Create assignment'}
@@ -1653,8 +1651,7 @@ export const EducationOSView = ({
                         }}
                         disabled={localBusy}
                       >
-                        Cancel edit
-                      </button>
+                        {translate("Cancel edit")}{' '}</button>
                     ) : null}
                   </div>
                 </form>
@@ -1671,7 +1668,7 @@ export const EducationOSView = ({
                         {assignment.max_score ? ` | ${assignment.max_score} pts` : ''}
                       </div>
                       <div className="row wrap">
-                        <button className="small-btn" type="button" onClick={() => editAssignment(assignment)} disabled={localBusy}>Edit</button>
+                        <button className="small-btn" type="button" onClick={() => editAssignment(assignment)} disabled={localBusy}>{translate("Edit")}</button>
                         <button
                           className="small-btn"
                           type="button"
@@ -1683,7 +1680,7 @@ export const EducationOSView = ({
                       </div>
                     </li>
                   ))}
-                  {assignments.length === 0 ? <li>No assignments in this classroom yet.</li> : null}
+                  {assignments.length === 0 ? <li>{translate("No assignments in this classroom yet.")}</li> : null}
                 </ul>
               </div>
             ) : null}
@@ -1691,32 +1688,32 @@ export const EducationOSView = ({
             {modeCanUse('gradeSubmissions') ? (
               <div className="panel grading-workbench">
                 <div className="section-heading">
-                  <div><span className="eyebrow">Consecutive work</span><h3>Record grade</h3></div>
-                  <span className="ledger-count">{selectedGradeStudentIndex >= 0 ? selectedGradeStudentIndex + 1 : 0} of {gradeableContacts.length}</span>
+                  <div><span className="eyebrow">{translate("Consecutive work")}</span><h3>{translate("Record grade")}</h3></div>
+                  <span className="ledger-count">{selectedGradeStudentIndex >= 0 ? selectedGradeStudentIndex + 1 : 0} {translate("of")}{' '}{gradeableContacts.length}</span>
                 </div>
                 <form className="workspace-form grading-form" onSubmit={submitGrade}>
-                  <label>Assignment<select className="input" value={gradeForm.assignment_id} onChange={(event) => {
+                  <label>{translate("Assignment")}<select className="input" value={gradeForm.assignment_id} onChange={(event) => {
                     const assignmentId = event.target.value;
                     const assignment = assignments.find((item) => item.id === assignmentId);
                     setGradeForm((prev) => ({ ...prev, assignment_id: assignmentId, score: '', max_score: String(assignment?.max_score ?? 100), rubric_scores: {} }));
                   }} required>
-                    <option value="">Select assignment</option>
+                    <option value="">{translate("Select assignment")}</option>
                     {assignments.map((assignment) => <option key={assignment.id} value={assignment.id}>{assignment.title}</option>)}
                   </select></label>
-                  <label>Student<select className="input" value={gradeForm.contact_id} onChange={(event) => setGradeForm((prev) => ({ ...prev, contact_id: event.target.value, score: '', notes: '', rubric_scores: {} }))} required>
-                    <option value="">Select student</option>
+                  <label>{translate("Student")}<select className="input" value={gradeForm.contact_id} onChange={(event) => setGradeForm((prev) => ({ ...prev, contact_id: event.target.value, score: '', notes: '', rubric_scores: {} }))} required>
+                    <option value="">{translate("Select student")}</option>
                     {selectedMembers.map((item) => item.contact ? <option key={item.contact.id} value={item.contact.id}>{contactName(item.contact)}</option> : null)}
                   </select></label>
                   <div className="form-grid two-col">
-                    <label>Score<input className="input" type="number" min="0" step="0.1" value={gradeForm.score} onChange={(event) => setGradeForm((prev) => ({ ...prev, score: event.target.value }))} required /></label>
-                    <label>Maximum score<input className="input" type="number" min="0" step="0.1" value={gradeForm.max_score} onChange={(event) => setGradeForm((prev) => ({ ...prev, max_score: event.target.value }))} /></label>
+                    <label>{translate("Score")}<input className="input" type="number" min="0" step="0.1" value={gradeForm.score} onChange={(event) => setGradeForm((prev) => ({ ...prev, score: event.target.value }))} required /></label>
+                    <label>{translate("Maximum score")}<input className="input" type="number" min="0" step="0.1" value={gradeForm.max_score} onChange={(event) => setGradeForm((prev) => ({ ...prev, max_score: event.target.value }))} /></label>
                   </div>
                   {selectedGradeRubricCriteria.length > 0 ? (
                     <fieldset className="grid rubric-score-grid">
-                      <legend>{selectedGradeRubric?.title} rubric</legend>
+                      <legend>{selectedGradeRubric?.title} {translate("rubric")}</legend>
                       {selectedGradeRubricCriteria.map((criterion) => (
                         <label className="grid" key={criterion.id}>
-                          <span className="small">{criterion.name} · max {criterion.maxPoints}</span>
+                          <span className="small">{criterion.name} {translate("· max")}{' '}{criterion.maxPoints}</span>
                           <input
                             className="input"
                             type="number"
@@ -1735,11 +1732,11 @@ export const EducationOSView = ({
                       ))}
                     </fieldset>
                   ) : null}
-                  <label>Feedback <span className="optional-label">Optional</span><textarea className="input" placeholder="Feedback the student can act on" value={gradeForm.notes} onChange={(event) => setGradeForm((prev) => ({ ...prev, notes: event.target.value }))} /></label>
+                  <label>{translate("Feedback")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea className="input" placeholder={translate("Feedback the student can act on")} value={gradeForm.notes} onChange={(event) => setGradeForm((prev) => ({ ...prev, notes: event.target.value }))} /></label>
                   <div className="grading-actions">
-                    <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(-1)} disabled={localBusy || selectedGradeStudentIndex <= 0}>Previous</button>
-                    <button className="primary-btn" type="submit" disabled={localBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>Save grade</button>
-                    <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(1)} disabled={localBusy || selectedGradeStudentIndex < 0 || selectedGradeStudentIndex >= gradeableContacts.length - 1}>Next student</button>
+                    <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(-1)} disabled={localBusy || selectedGradeStudentIndex <= 0}>{translate("Previous")}</button>
+                    <button className="primary-btn" type="submit" disabled={localBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>{translate("Save grade")}</button>
+                    <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(1)} disabled={localBusy || selectedGradeStudentIndex < 0 || selectedGradeStudentIndex >= gradeableContacts.length - 1}>{translate("Next student")}</button>
                   </div>
                 </form>
               </div>
@@ -1749,12 +1746,12 @@ export const EducationOSView = ({
           <div className="panel">
             <div className="row between wrap">
               <div>
-                <h3>Assignment detail</h3>
-                <p className="small muted">Inspect instructions, due date, linked task, submissions, grades, and missing students for the selected assignment.</p>
+                <h3>{translate("Assignment detail")}</h3>
+                <p className="small muted">{translate("Inspect instructions, due date, linked task, submissions, grades, and missing students for the selected assignment.")}</p>
               </div>
               <select className="input academy-select" value={selectedAssignment?.id ?? ''} onChange={(event) => setSelectedAssignmentId(event.target.value)}>
                 {assignments.map((assignment) => <option key={assignment.id} value={assignment.id}>{assignment.title}</option>)}
-                {assignments.length === 0 ? <option value="">No assignments</option> : null}
+                {assignments.length === 0 ? <option value="">{translate("No assignments")}</option> : null}
               </select>
             </div>
 
@@ -1762,50 +1759,50 @@ export const EducationOSView = ({
               <div className="grid">
                 <div className="assignment-detail-strip">
                   <article>
-                    <span>Due</span>
+                    <span>{translate("Due")}</span>
                     <strong>{selectedAssignment.due_at ? formatDate(selectedAssignment.due_at) : 'No due date'}</strong>
                   </article>
                   <article>
-                    <span>Type</span>
+                    <span>{translate("Type")}</span>
                     <strong>{selectedAssignment.assignment_type}</strong>
                   </article>
                   <article>
-                    <span>Max score</span>
+                    <span>{translate("Max score")}</span>
                     <strong>{selectedAssignment.max_score ?? '-'}</strong>
                   </article>
                   <article>
-                    <span>Weight</span>
+                    <span>{translate("Weight")}</span>
                     <strong>{selectedAssignment.score_weight ?? 1}</strong>
                   </article>
                   <article>
-                    <span>Grade category</span>
+                    <span>{translate("Grade category")}</span>
                     <strong>{gradeCategories.find((category) => category.id === selectedAssignment.grade_category_id)?.name ?? 'Uncategorized'}</strong>
                   </article>
                   <article>
-                    <span>Attempts</span>
+                    <span>{translate("Attempts")}</span>
                     <strong>{selectedAssignment.attempts_allowed ?? 1}{selectedAssignment.allow_late_submission ? ' · late allowed' : ''}</strong>
                   </article>
                 </div>
-                {selectedAssignment.description ? <p>{selectedAssignment.description}</p> : <p className="muted">No instructions added yet.</p>}
+                {selectedAssignment.description ? <p>{selectedAssignment.description}</p> : <p className="muted">{translate("No instructions added yet.")}</p>}
                 {selectedAssignment.experience_url ? (
-                  <a className="small-btn" href={selectedAssignment.experience_url} target="_blank" rel="noreferrer">Open linked task</a>
+                  <a className="small-btn" href={selectedAssignment.experience_url} target="_blank" rel="noreferrer">{translate("Open linked task")}</a>
                 ) : null}
                 <div className="assignment-status-grid">
-                  <article><span>Missing</span><strong>{assignmentStatusCounts.missing}</strong></article>
-                  <article><span>Submitted</span><strong>{assignmentStatusCounts.submitted}</strong></article>
-                  <article><span>Late</span><strong>{assignmentStatusCounts.late}</strong></article>
-                  <article><span>Graded</span><strong>{assignmentStatusCounts.graded}</strong></article>
+                  <article><span>{translate("Missing")}</span><strong>{assignmentStatusCounts.missing}</strong></article>
+                  <article><span>{translate("Submitted")}</span><strong>{assignmentStatusCounts.submitted}</strong></article>
+                  <article><span>{translate("Late")}</span><strong>{assignmentStatusCounts.late}</strong></article>
+                  <article><span>{translate("Graded")}</span><strong>{assignmentStatusCounts.graded}</strong></article>
                 </div>
                 <div className="table-wrap">
                   <table>
                     <thead>
                       <tr>
-                        <th>Student</th>
-                        <th>Status</th>
-                        <th>Score</th>
-                        <th>Submitted</th>
-                        <th>File</th>
-                        <th>Feedback</th>
+                        <th>{translate("Student")}</th>
+                        <th>{translate("Status")}</th>
+                        <th>{translate("Score")}</th>
+                        <th>{translate("Submitted")}</th>
+                        <th>{translate("File")}</th>
+                        <th>{translate("Feedback")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1818,28 +1815,28 @@ export const EducationOSView = ({
                           <td><span className={statusClass(submission?.status ?? 'missing')}>{submission?.status ?? 'missing'}</span></td>
                           <td>{typeof submission?.score === 'number' ? `${submission.score}/${submission.max_score ?? selectedAssignment.max_score ?? '-'}` : '-'}</td>
                           <td>{submission?.submitted_at ? formatDate(submission.submitted_at) : '-'}</td>
-                          <td>{submission?.signed_url ? <a href={submission.signed_url} target="_blank" rel="noreferrer">Open file</a> : '-'}</td>
+                          <td>{submission?.signed_url ? <a href={submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : '-'}</td>
                           <td>{submission?.notes || '-'}</td>
                         </tr>
                       ))}
-                      {assignmentDetailRows.length === 0 ? <tr><td colSpan={6}>No student rows for this assignment yet.</td></tr> : null}
+                      {assignmentDetailRows.length === 0 ? <tr><td colSpan={6}>{translate("No student rows for this assignment yet.")}</td></tr> : null}
                     </tbody>
                   </table>
                 </div>
               </div>
             ) : (
-              <div className="empty-state">Create an assignment to see student-level submission detail.</div>
+              <div className="empty-state">{translate("Create an assignment to see student-level submission detail.")}</div>
             )}
           </div>
 
           <div className="panel">
-            <h3>Gradebook: {selectedClassroom?.name ?? 'No classroom selected'}</h3>
+            <h3>{translate("Gradebook:")}{' '}{selectedClassroom?.name ?? 'No classroom selected'}</h3>
             <div className="table-wrap os-wide-table">
               <table>
                 <thead>
                   <tr>
-                    <th>Student</th>
-                    <th>Composite</th>
+                    <th>{translate("Student")}</th>
+                    <th>{translate("Composite")}</th>
                     {gradebook?.assignments.map((assignment) => <th key={assignment.id}>{assignment.title}</th>)}
                   </tr>
                 </thead>
@@ -1848,7 +1845,7 @@ export const EducationOSView = ({
                     <tr key={row.contact_id}>
                       <td>
                         <strong>{`${row.first_name} ${row.last_name}`.trim() || row.email || row.contact_id}</strong>
-                        <div className="small muted">{row.submitted_count}/{row.total_assignments} submitted</div>
+                        <div className="small muted">{row.submitted_count}/{row.total_assignments} {translate("submitted")}</div>
                       </td>
                       <td>{row.composite_score !== null ? `${row.composite_score}%` : '-'}</td>
                       {gradebook.assignments.map((assignment) => {
@@ -1864,7 +1861,7 @@ export const EducationOSView = ({
                       })}
                     </tr>
                   ))}
-                  {(!gradebook || gradebook.rows.length === 0) ? <tr><td colSpan={(gradebook?.assignments.length ?? 0) + 2}>No gradebook rows yet.</td></tr> : null}
+                  {(!gradebook || gradebook.rows.length === 0) ? <tr><td colSpan={(gradebook?.assignments.length ?? 0) + 2}>{translate("No gradebook rows yet.")}</td></tr> : null}
                 </tbody>
               </table>
             </div>
@@ -1877,12 +1874,12 @@ export const EducationOSView = ({
           <div className="grid two">
             {modeCanUse('markAttendance') ? (
               <div className="panel attendance-workbench">
-                <div><h3>Take attendance</h3><p className="small muted">The current classroom roster is ready below. Mark the common state once, then change exceptions.</p></div>
+                <div><h3>{translate("Take attendance")}</h3><p className="small muted">{translate("The current classroom roster is ready below. Mark the common state once, then change exceptions.")}</p></div>
                 <form className="workspace-form attendance-form" onSubmit={submitAttendance}>
                   <div className="attendance-toolbar">
-                    <label>Session date<input className="input" type="date" value={attendanceDate} onChange={(event) => setAttendanceDate(event.target.value)} /></label>
-                    <div className="attendance-bulk-actions" aria-label="Mark every student">
-                      <span>Mark all</span>
+                    <label>{translate("Session date")}<input className="input" type="date" value={attendanceDate} onChange={(event) => setAttendanceDate(event.target.value)} /></label>
+                    <div className="attendance-bulk-actions" aria-label={translate("Mark every student")}>
+                      <span>{translate("Mark all")}</span>
                       {['present', 'late', 'absent', 'excused'].map((status) => (
                         <button className="small-btn" type="button" key={status} onClick={() => markAllAttendance(status)}>{status}</button>
                       ))}
@@ -1892,9 +1889,9 @@ export const EducationOSView = ({
                     <table>
                       <thead>
                         <tr>
-                          <th>Student</th>
-                          <th>Status</th>
-                          <th>Notes</th>
+                          <th>{translate("Student")}</th>
+                          <th>{translate("Status")}</th>
+                          <th>{translate("Notes")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1911,48 +1908,48 @@ export const EducationOSView = ({
                                 </select>
                               </td>
                               <td>
-                                <input className="input compact-input" aria-label={`Attendance note for ${contactName(contact)}`} placeholder="Add exception note" value={draft.notes} onChange={(event) => setAttendanceDraft((prev) => ({ ...prev, [contact.id]: { ...draft, notes: event.target.value } }))} />
+                                <input className="input compact-input" aria-label={`Attendance note for ${contactName(contact)}`} placeholder={translate("Add exception note")} value={draft.notes} onChange={(event) => setAttendanceDraft((prev) => ({ ...prev, [contact.id]: { ...draft, notes: event.target.value } }))} />
                               </td>
                             </tr>
                           );
                         })}
-                        {selectedMembers.length === 0 ? <tr><td colSpan={3}><div className="table-empty-state"><strong>No students in this classroom</strong><span>Add students to the roster before taking attendance.</span></div></td></tr> : null}
+                        {selectedMembers.length === 0 ? <tr><td colSpan={3}><div className="table-empty-state"><strong>{translate("No students in this classroom")}</strong><span>{translate("Add students to the roster before taking attendance.")}</span></div></td></tr> : null}
                       </tbody>
                     </table>
                   </div>
-                  <div className="form-actions"><button className="primary-btn" type="submit" disabled={localBusy || selectedMembers.length === 0}>Save attendance</button></div>
+                  <div className="form-actions"><button className="primary-btn" type="submit" disabled={localBusy || selectedMembers.length === 0}>{translate("Save attendance")}</button></div>
                 </form>
               </div>
             ) : null}
 
             {modeCanUse('manageSchedule') ? (
               <div className="panel">
-                <h3>Weekly timetable</h3>
+                <h3>{translate("Weekly timetable")}</h3>
                 <form className="grid labeled-form" onSubmit={submitSchedule}>
                   <div className="grid two">
-                    <label>Day<select className="input" value={scheduleForm.day_of_week} onChange={(event) => setScheduleForm((prev) => ({ ...prev, day_of_week: event.target.value }))}>
+                    <label>{translate("Day")}<select className="input" value={scheduleForm.day_of_week} onChange={(event) => setScheduleForm((prev) => ({ ...prev, day_of_week: event.target.value }))}>
                       {dayLabels.map((label, index) => <option key={label} value={index}>{label}</option>)}
                     </select></label>
-                    <label>Time zone<input className="input" value={scheduleForm.timezone} onChange={(event) => setScheduleForm((prev) => ({ ...prev, timezone: event.target.value }))} /></label>
+                    <label>{translate("Time zone")}<input className="input" value={scheduleForm.timezone} onChange={(event) => setScheduleForm((prev) => ({ ...prev, timezone: event.target.value }))} /></label>
                   </div>
                   <div className="grid two">
-                    <label>Starts<input className="input" type="time" value={scheduleForm.start_time} onChange={(event) => setScheduleForm((prev) => ({ ...prev, start_time: event.target.value }))} required /></label>
-                    <label>Ends <span className="optional-label">Optional</span><input className="input" type="time" value={scheduleForm.end_time} onChange={(event) => setScheduleForm((prev) => ({ ...prev, end_time: event.target.value }))} /></label>
+                    <label>{translate("Starts")}<input className="input" type="time" value={scheduleForm.start_time} onChange={(event) => setScheduleForm((prev) => ({ ...prev, start_time: event.target.value }))} required /></label>
+                    <label>{translate("Ends")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" type="time" value={scheduleForm.end_time} onChange={(event) => setScheduleForm((prev) => ({ ...prev, end_time: event.target.value }))} /></label>
                   </div>
-                  <label>Class label <span className="optional-label">Optional</span><input className="input" placeholder="For example, IELTS B2" value={scheduleForm.label} onChange={(event) => setScheduleForm((prev) => ({ ...prev, label: event.target.value }))} /></label>
-                  <div className="form-actions"><button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId || !scheduleForm.start_time}>Add schedule slot</button></div>
+                  <label>{translate("Class label")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" placeholder={translate("For example, IELTS B2")} value={scheduleForm.label} onChange={(event) => setScheduleForm((prev) => ({ ...prev, label: event.target.value }))} /></label>
+                  <div className="form-actions"><button className="primary-btn" type="submit" disabled={localBusy || !selectedClassroomId || !scheduleForm.start_time}>{translate("Add schedule slot")}</button></div>
                 </form>
                 <ul className="list">
                   {schedule.map((slot) => (
                     <li key={slot.id}>
                       <div className="row between">
                         <strong>{dayLabels[slot.day_of_week] ?? slot.day_of_week} {slot.start_time}{slot.end_time ? `-${slot.end_time}` : ''}</strong>
-                        <button className="small-btn" type="button" onClick={() => void removeSchedule(slot.id)} disabled={localBusy}>Remove</button>
+                        <button className="small-btn" type="button" onClick={() => void removeSchedule(slot.id)} disabled={localBusy}>{translate("Remove")}</button>
                       </div>
                       <div className="small muted">{slot.label || 'Class'} | {slot.timezone}</div>
                     </li>
                   ))}
-                  {schedule.length === 0 ? <li><div className="table-empty-state"><strong>No timetable slots yet</strong><span>Add the regular classroom time above.</span></div></li> : null}
+                  {schedule.length === 0 ? <li><div className="table-empty-state"><strong>{translate("No timetable slots yet")}</strong><span>{translate("Add the regular classroom time above.")}</span></div></li> : null}
                 </ul>
               </div>
             ) : null}
@@ -1964,10 +1961,10 @@ export const EducationOSView = ({
         <section className="grid two">
           {modeCanUse('manageRoster') ? (
             <div className="panel">
-              <h3>Bulk enroll</h3>
+              <h3>{translate("Bulk enroll")}</h3>
               <form className="grid" onSubmit={submitInvites}>
                 <textarea className="input monospaced-area" value={inviteText} onChange={(event) => setInviteText(event.target.value)} />
-                <button className="primary-btn" type="submit" disabled={localBusy}>Invite and enroll</button>
+                <button className="primary-btn" type="submit" disabled={localBusy}>{translate("Invite and enroll")}</button>
               </form>
               <ul className="list">
                 {bulkInvites.slice(0, 8).map((invite) => (
@@ -1979,47 +1976,47 @@ export const EducationOSView = ({
                     <div className="small muted">{formatDate(invite.invited_at)} {invite.error ? `| ${invite.error}` : ''}</div>
                   </li>
                 ))}
-                {bulkInvites.length === 0 ? <li>No bulk invite history for this classroom.</li> : null}
+                {bulkInvites.length === 0 ? <li>{translate("No bulk invite history for this classroom.")}</li> : null}
               </ul>
             </div>
           ) : null}
 
           {modeCanUse('manageContacts') ? (
             <div className="panel">
-              <h3>Placement</h3>
+              <h3>{translate("Placement")}</h3>
               <form className="grid" onSubmit={submitPlacement}>
                 <select className="input" value={placementForm.contact_id} onChange={(event) => setPlacementForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
                   {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
                 </select>
                 <div className="grid two">
-                  <input className="input" type="number" min="0" max="100" placeholder="Diagnostic score" value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
-                  <input className="input" placeholder="Manual CEFR level" value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
+                  <input className="input" type="number" min="0" max="100" placeholder={translate("Diagnostic score")} value={placementForm.score} onChange={(event) => setPlacementForm((prev) => ({ ...prev, score: event.target.value }))} />
+                  <input className="input" placeholder={translate("Manual CEFR level")} value={placementForm.level} onChange={(event) => setPlacementForm((prev) => ({ ...prev, level: event.target.value.toUpperCase() }))} />
                 </div>
-                <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>Record placement</button>
+                <button className="primary-btn" type="submit" disabled={localBusy || !placementForm.contact_id}>{translate("Record placement")}</button>
               </form>
             </div>
           ) : null}
 
           {modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>Role grants</h3>
-                <p className="small muted">Grant only the role and classroom scope this staff member needs.</p>
+              <h3>{translate("Role grants")}</h3>
+                <p className="small muted">{translate("Grant only the role and classroom scope this staff member needs.")}</p>
                 <form className="grid staff-form labeled-form" onSubmit={submitStaff}>
-                  <label>Email<input className="input" type="email" autoComplete="email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required /></label>
-                  <label>Display name <span className="optional-label">Optional</span><input className="input" autoComplete="name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} /></label>
-                  <label>Role<select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({
+                  <label>{translate("Email")}<input className="input" type="email" autoComplete="email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required /></label>
+                  <label>{translate("Display name")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" autoComplete="name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} /></label>
+                  <label>{translate("Role")}<select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({
                     ...prev,
                     staff_role: event.target.value,
                     classroom_ids: staffRoleUsesClassroomScope(event.target.value) ? prev.classroom_ids : [],
                   }))}>
                     {STAFF_GRANT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                   </select></label>
-                  <label>Status<select className="input" value={staffForm.status} onChange={(event) => setStaffForm((prev) => ({ ...prev, status: event.target.value }))}>
+                  <label>{translate("Status")}<select className="input" value={staffForm.status} onChange={(event) => setStaffForm((prev) => ({ ...prev, status: event.target.value }))}>
                     {STAFF_GRANT_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
                   </select></label>
-                  <label>Expires <span className="optional-label">Optional</span><input className="input" type="date" value={staffForm.expires_at} onChange={(event) => setStaffForm((prev) => ({ ...prev, expires_at: event.target.value }))} /></label>
+                  <label>{translate("Expires")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" type="date" value={staffForm.expires_at} onChange={(event) => setStaffForm((prev) => ({ ...prev, expires_at: event.target.value }))} /></label>
                   {staffFormUsesClassroomScope ? (
-                    <fieldset className="workspace-fieldset"><legend>Classroom scope</legend><div className="chip-grid">
+                    <fieldset className="workspace-fieldset"><legend>{translate("Classroom scope")}</legend><div className="chip-grid">
                       {classrooms.map((classroom) => {
                         const checked = staffForm.classroom_ids.includes(classroom.id);
                         return (
@@ -2040,7 +2037,7 @@ export const EducationOSView = ({
                       })}
                     </div></fieldset>
                   ) : null}
-                  <div className="access-preview" aria-label="Workspace access preview">
+                  <div className="access-preview" aria-label={translate("Workspace access preview")}>
                     {(STAFF_ACCESS_LANES[staffForm.staff_role] ?? []).map((lane) => <span key={lane}>{lane}</span>)}
                   </div>
                   <div className="row gap">
@@ -2052,8 +2049,7 @@ export const EducationOSView = ({
                         setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
                         setEditingStaffId('');
                       }}>
-                        Clear
-                      </button>
+                        {translate("Clear")}{' '}</button>
                     ) : null}
                   </div>
                 </form>
@@ -2081,31 +2077,31 @@ export const EducationOSView = ({
                         {lanes.map((lane) => <span key={lane}>{lane}</span>)}
                       </div>
                       <div className="row gap">
-                        <button className="small-btn" type="button" onClick={() => editStaff(person)} disabled={localBusy}>Edit</button>
+                        <button className="small-btn" type="button" onClick={() => editStaff(person)} disabled={localBusy}>{translate("Edit")}</button>
                         {status === 'suspended' ? (
-                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'active')} disabled={localBusy}>Reactivate</button>
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'active')} disabled={localBusy}>{translate("Reactivate")}</button>
                         ) : status !== 'revoked' ? (
-                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'suspended')} disabled={localBusy}>Suspend</button>
+                          <button className="small-btn" type="button" onClick={() => void updateStaffStatus(person, 'suspended')} disabled={localBusy}>{translate("Suspend")}</button>
                         ) : null}
                         {status !== 'revoked' ? (
-                          <button className="small-btn danger-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>Revoke</button>
+                          <button className="small-btn danger-btn" type="button" onClick={() => void removeStaff(person.id)} disabled={localBusy}>{translate("Revoke")}</button>
                         ) : null}
                       </div>
                     </li>
                   );
                   })}
-                  {staff.length === 0 ? <li>No staff records yet.</li> : null}
+                  {staff.length === 0 ? <li>{translate("No staff records yet.")}</li> : null}
                 </ul>
             </div>
           ) : null}
 
           {!modeCanUse('manageRoster') && !modeCanUse('manageContacts') && !modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>Growth reporting</h3>
+              <h3>{translate("Growth reporting")}</h3>
               <div className="metric-list">
                 {visibleLifecycleStages.map((stage) => (
                   <div className="metric-row" key={stage.id}>
-                    <span>{stage.label}</span>
+                    <span>{translate(stage.label)}</span>
                     <strong>{pipelineCounts[stage.id] ?? 0}</strong>
                   </div>
                 ))}
@@ -2118,31 +2114,31 @@ export const EducationOSView = ({
       {visibleActiveTab === 'engagement' ? (
         <section className="grid two">
           <div className="panel">
-            <h3>Risk and notifications</h3>
+            <h3>{translate("Risk and notifications")}</h3>
             <div className="row wrap">
               {modeCanUse('viewEducationOS') ? (
-                <button className="primary-btn" type="button" onClick={() => void computeAtRisk()} disabled={localBusy}>Compute at risk</button>
+                <button className="primary-btn" type="button" onClick={() => void computeAtRisk()} disabled={localBusy}>{translate("Compute at risk")}</button>
               ) : null}
               {modeCanUse('dispatchNotifications') ? (
-                <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>Dispatch queued</button>
+                <button className="ghost-btn" type="button" onClick={() => void dispatchNotifications()} disabled={localBusy}>{translate("Dispatch queued")}</button>
               ) : null}
             </div>
-            <p className="small muted">Last scan: {atRisk.length} flagged from {atRiskScanned} scanned.</p>
+            <p className="small muted">{translate("Last scan:")}{' '}{atRisk.length} {translate("flagged from")}{' '}{atRiskScanned} {translate("scanned.")}</p>
             <ul className="list">
               {atRisk.map((student) => (
                 <li key={`${student.contact_id}-${student.classroom_id ?? 'academy'}`}>
                   <div className="row between">
                     <strong>{student.name}</strong>
-                    <span className="status status--bad">{student.reasons.length} signal(s)</span>
+                    <span className="status status--bad">{student.reasons.length} {translate("signal(s)")}</span>
                   </div>
                   <div className="small muted">{student.classroom_name || 'Academy'} | {student.reasons.join(', ')}</div>
                 </li>
               ))}
-              {atRisk.length === 0 ? <li>No at-risk results loaded.</li> : null}
+              {atRisk.length === 0 ? <li>{translate("No at-risk results loaded.")}</li> : null}
             </ul>
             {modeCanUse('viewNotifications') ? (
               <>
-                <h3>Notification outbox</h3>
+                <h3>{translate("Notification outbox")}</h3>
                 <ul className="list">
                   {notifications.slice(0, 10).map((notification) => (
                     <li key={notification.id}>
@@ -2154,7 +2150,7 @@ export const EducationOSView = ({
                       <div>{notification.body}</div>
                     </li>
                   ))}
-                  {notifications.length === 0 ? <li>No notifications queued.</li> : null}
+                  {notifications.length === 0 ? <li>{translate("No notifications queued.")}</li> : null}
                 </ul>
               </>
             ) : null}
@@ -2162,7 +2158,7 @@ export const EducationOSView = ({
 
           {modeCanUse('viewReports') || modeCanUse('issueCertificates') ? (
             <div className="panel">
-            <h3>Reports and certificates</h3>
+            <h3>{translate("Reports and certificates")}</h3>
               {modeCanUse('viewReports') ? (
                 <form className="grid" onSubmit={submitParentReport}>
                   <select className="input" value={reportForm.contact_id} onChange={(event) => setReportForm((prev) => ({ ...prev, contact_id: event.target.value }))}>
@@ -2172,7 +2168,7 @@ export const EducationOSView = ({
                     <input className="input" value={reportForm.label} onChange={(event) => setReportForm((prev) => ({ ...prev, label: event.target.value }))} />
                     <input className="input" type="number" min="1" max="365" value={reportForm.expires_in_days} onChange={(event) => setReportForm((prev) => ({ ...prev, expires_in_days: event.target.value }))} />
                   </div>
-                  <button className="primary-btn" type="submit" disabled={localBusy || !reportForm.contact_id}>Generate parent report</button>
+                  <button className="primary-btn" type="submit" disabled={localBusy || !reportForm.contact_id}>{translate("Generate parent report")}</button>
                 </form>
               ) : null}
 
@@ -2182,16 +2178,16 @@ export const EducationOSView = ({
                     {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contactName(contact)}</option>)}
                   </select>
                   <select className="input" value={certificateForm.classroom_id} onChange={(event) => setCertificateForm((prev) => ({ ...prev, classroom_id: event.target.value }))}>
-                    <option value="">Use selected classroom</option>
+                    <option value="">{translate("Use selected classroom")}</option>
                     {classrooms.map((classroom) => <option key={classroom.id} value={classroom.id}>{classroom.name}</option>)}
                   </select>
                   <div className="grid two">
-                    <input className="input" placeholder="Exam type" value={certificateForm.exam_type} onChange={(event) => setCertificateForm((prev) => ({ ...prev, exam_type: event.target.value }))} />
-                    <input className="input" type="number" step="0.1" placeholder="Overall score" value={certificateForm.overall_score} onChange={(event) => setCertificateForm((prev) => ({ ...prev, overall_score: event.target.value }))} />
+                    <input className="input" placeholder={translate("Exam type")} value={certificateForm.exam_type} onChange={(event) => setCertificateForm((prev) => ({ ...prev, exam_type: event.target.value }))} />
+                    <input className="input" type="number" step="0.1" placeholder={translate("Overall score")} value={certificateForm.overall_score} onChange={(event) => setCertificateForm((prev) => ({ ...prev, overall_score: event.target.value }))} />
                   </div>
-                  <input className="input" placeholder="Candidate name override" value={certificateForm.candidate_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, candidate_name: event.target.value }))} />
-                  <input className="input" placeholder="Center name override" value={certificateForm.center_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, center_name: event.target.value }))} />
-                  <button className="primary-btn" type="submit" disabled={localBusy || !certificateForm.contact_id}>Issue certificate</button>
+                  <input className="input" placeholder={translate("Candidate name override")} value={certificateForm.candidate_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, candidate_name: event.target.value }))} />
+                  <input className="input" placeholder={translate("Center name override")} value={certificateForm.center_name} onChange={(event) => setCertificateForm((prev) => ({ ...prev, center_name: event.target.value }))} />
+                  <button className="primary-btn" type="submit" disabled={localBusy || !certificateForm.contact_id}>{translate("Issue certificate")}</button>
                 </form>
               ) : null}
             </div>
@@ -2204,10 +2200,10 @@ export const EducationOSView = ({
           <div className="panel">
             <div className="row between wrap">
               <div>
-                <h3>Audit trail</h3>
-                <p className="small muted">Recent owner, staff, finance, learning, and reporting actions recorded by the Academy Edge function.</p>
+                <h3>{translate("Audit trail")}</h3>
+                <p className="small muted">{translate("Recent owner, staff, finance, learning, and reporting actions recorded by the Academy Edge function.")}</p>
               </div>
-              <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>Refresh audit</button>
+              <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>{translate("Refresh audit")}</button>
             </div>
             <ul className="list audit-event-list">
               {auditEvents.map((event) => (
@@ -2225,7 +2221,7 @@ export const EducationOSView = ({
                   {auditMetadataSummary(event.metadata) ? <div className="small">{auditMetadataSummary(event.metadata)}</div> : null}
                 </li>
               ))}
-              {auditEvents.length === 0 ? <li>No audit events recorded yet.</li> : null}
+              {auditEvents.length === 0 ? <li>{translate("No audit events recorded yet.")}</li> : null}
             </ul>
           </div>
         </section>
@@ -2233,36 +2229,35 @@ export const EducationOSView = ({
 
       {visibleActiveTab === 'brand' ? (
         <section className="panel">
-          <h3>White-label brand controls</h3>
+          <h3>{translate("White-label brand controls")}</h3>
           <form className="grid" onSubmit={submitBranding}>
             <div className="grid two">
-              <input className="input" placeholder="Display name" value={brandingForm.display_name} onChange={(event) => setBrandingForm((prev) => ({ ...prev, display_name: event.target.value }))} />
-              <input className="input" placeholder="Tagline" value={brandingForm.tagline} onChange={(event) => setBrandingForm((prev) => ({ ...prev, tagline: event.target.value }))} />
+              <input className="input" placeholder={translate("Display name")} value={brandingForm.display_name} onChange={(event) => setBrandingForm((prev) => ({ ...prev, display_name: event.target.value }))} />
+              <input className="input" placeholder={translate("Tagline")} value={brandingForm.tagline} onChange={(event) => setBrandingForm((prev) => ({ ...prev, tagline: event.target.value }))} />
             </div>
             <div className="grid two">
-              <input className="input" placeholder="Logo URL" value={brandingForm.logo_url} onChange={(event) => setBrandingForm((prev) => ({ ...prev, logo_url: event.target.value }))} />
-              <input className="input" placeholder="Favicon URL" value={brandingForm.favicon_url} onChange={(event) => setBrandingForm((prev) => ({ ...prev, favicon_url: event.target.value }))} />
+              <input className="input" placeholder={translate("Logo URL")} value={brandingForm.logo_url} onChange={(event) => setBrandingForm((prev) => ({ ...prev, logo_url: event.target.value }))} />
+              <input className="input" placeholder={translate("Favicon URL")} value={brandingForm.favicon_url} onChange={(event) => setBrandingForm((prev) => ({ ...prev, favicon_url: event.target.value }))} />
             </div>
             <div className="grid two">
               <label className="grid">
-                <span className="small muted">Primary color</span>
+                <span className="small muted">{translate("Primary color")}</span>
                 <input className="input" type="color" value={brandingForm.primary_color} onChange={(event) => setBrandingForm((prev) => ({ ...prev, primary_color: event.target.value }))} />
               </label>
               <label className="grid">
-                <span className="small muted">Accent color</span>
+                <span className="small muted">{translate("Accent color")}</span>
                 <input className="input" type="color" value={brandingForm.accent_color} onChange={(event) => setBrandingForm((prev) => ({ ...prev, accent_color: event.target.value }))} />
               </label>
             </div>
-            <input className="input" placeholder="Custom domain" value={brandingForm.custom_domain} onChange={(event) => setBrandingForm((prev) => ({ ...prev, custom_domain: event.target.value }))} />
-            <textarea className="input" placeholder="Footer text" value={brandingForm.footer_text} onChange={(event) => setBrandingForm((prev) => ({ ...prev, footer_text: event.target.value }))} />
+            <input className="input" placeholder={translate("Custom domain")} value={brandingForm.custom_domain} onChange={(event) => setBrandingForm((prev) => ({ ...prev, custom_domain: event.target.value }))} />
+            <textarea className="input" placeholder={translate("Footer text")} value={brandingForm.footer_text} onChange={(event) => setBrandingForm((prev) => ({ ...prev, footer_text: event.target.value }))} />
             <label className="classroom-publish-toggle">
               <input type="checkbox" checked={brandingForm.hide_schood_logo} onChange={(event) => setBrandingForm((prev) => ({ ...prev, hide_schood_logo: event.target.checked }))} />
-              Hide Schood logo on academy-facing pages
-            </label>
-            <button className="primary-btn" type="submit" disabled={localBusy}>Save branding</button>
+              {translate("Hide Schood logo on academy-facing pages")}{' '}</label>
+            <button className="primary-btn" type="submit" disabled={localBusy}>{translate("Save branding")}</button>
           </form>
           <div className="small muted">
-            Current brand record: {branding ? `updated ${formatDate(branding.updated_at)}` : 'not configured yet'}
+            {translate("Current brand record:")}{' '}{branding ? `updated ${formatDate(branding.updated_at)}` : 'not configured yet'}
           </div>
         </section>
       ) : null}

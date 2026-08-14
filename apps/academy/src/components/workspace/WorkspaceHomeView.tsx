@@ -1,3 +1,4 @@
+import { formatLocaleLongDate, translate } from '../../i18n';
 import { ArrowRight, CalendarDays, CheckCircle2, CircleAlert, Clock3 } from 'lucide-react';
 import type {
   TeacherStudioActionItem,
@@ -80,11 +81,7 @@ export const WorkspaceHomeView = ({
 }: WorkspaceHomeViewProps) => {
   const copy = HOME_COPY[intent];
   const actionQueue = (educationOS?.action_queue ?? []).filter((item) => item.status === 'open').slice(0, 7);
-  const todayLabel = new Intl.DateTimeFormat('en', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(new Date());
+  const todayLabel = formatLocaleLongDate(new Date());
   const pulse = [
     { label: intent === 'teacher' ? 'My students' : 'Contacts', value: summary?.counts.contacts ?? contactsCount },
     { label: intent === 'teacher' ? 'My classrooms' : 'Classrooms', value: summary?.counts.classrooms ?? classroomsCount },
@@ -97,21 +94,21 @@ export const WorkspaceHomeView = ({
     <section className="workspace-home" aria-labelledby="workspace-home-title">
       <header className={`workspace-home__hero workspace-home__hero--${intent}`}>
         <div>
-          <span className="eyebrow">{copy.eyebrow}</span>
-          <h2 id="workspace-home-title">{copy.title}</h2>
-          <p>{copy.description}</p>
+          <span className="eyebrow">{translate(copy.eyebrow)}</span>
+          <h2 id="workspace-home-title">{translate(copy.title)}</h2>
+          <p>{translate(copy.description)}</p>
         </div>
-        <div className="workspace-date" aria-label={`Today is ${todayLabel}`}>
+        <div className="workspace-date" aria-label={translate("Today is {date}", { date: todayLabel })}>
           <CalendarDays size={18} aria-hidden="true" />
-          <span>Today</span>
+          <span>{translate("Today")}</span>
           <strong>{todayLabel}</strong>
         </div>
       </header>
 
-      <dl className="workspace-pulse" aria-label="Workspace status">
+      <dl className="workspace-pulse" aria-label={translate("Workspace status")}>
         {pulse.map((item) => (
           <div key={item.label}>
-            <dt>{item.label}</dt>
+            <dt>{translate(item.label)}</dt>
             <dd>{item.value}</dd>
           </div>
         ))}
@@ -121,10 +118,10 @@ export const WorkspaceHomeView = ({
         <section className="attention-ledger" aria-labelledby="attention-ledger-title">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Action first</span>
-              <h3 id="attention-ledger-title">{copy.queue}</h3>
+              <span className="eyebrow">{translate("Action first")}</span>
+              <h3 id="attention-ledger-title">{translate(copy.queue)}</h3>
             </div>
-            <span className="ledger-count">{actionQueue.length} open</span>
+            <span className="ledger-count">{actionQueue.length} {translate("open")}</span>
           </div>
 
           <div className="attention-ledger__list">
@@ -132,17 +129,17 @@ export const WorkspaceHomeView = ({
               <article className="attention-item" key={item.id}>
                 <span className={`attention-priority attention-priority--${item.priority}`}>
                   <CircleAlert size={15} aria-hidden="true" />
-                  {priorityLabel(item.priority)}
+                  {translate(priorityLabel(item.priority))}
                 </span>
                 <div className="attention-item__copy">
                   <strong>{item.title}</strong>
                   <p>{item.description || item.recommended_action}</p>
                   {item.due_at ? (
-                    <span className="attention-due"><Clock3 size={14} aria-hidden="true" /> Due {formatDate(item.due_at)}</span>
+                    <span className="attention-due"><Clock3 size={14} aria-hidden="true" /> {translate("Due")}{' '}{formatDate(item.due_at)}</span>
                   ) : null}
                 </div>
                 <button className="small-btn" type="button" onClick={() => onOpenAction(item)}>
-                  Open <ArrowRight size={15} aria-hidden="true" />
+                  {translate("Open")}{' '}<ArrowRight size={15} aria-hidden="true" />
                 </button>
               </article>
             ))}
@@ -150,8 +147,8 @@ export const WorkspaceHomeView = ({
               <div className="workspace-empty-state">
                 <CheckCircle2 size={22} aria-hidden="true" />
                 <div>
-                  <strong>No open work in this queue</strong>
-                  <p>New role-relevant actions will appear here when they need attention.</p>
+                  <strong>{translate("No open work in this queue")}</strong>
+                  <p>{translate("New role-relevant actions will appear here when they need attention.")}</p>
                 </div>
               </div>
             ) : null}
@@ -162,16 +159,16 @@ export const WorkspaceHomeView = ({
           <section className="workspace-shortcuts">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">Direct routes</span>
-                <h3>Start here</h3>
+                <span className="eyebrow">{translate("Direct routes")}</span>
+                <h3>{translate("Start here")}</h3>
               </div>
             </div>
             <div className="workspace-shortcuts__list">
               {quickTargets.slice(0, 6).map((item) => (
                 <button type="button" key={item.path} onClick={() => onNavigate(item.path)}>
                   <span>
-                    <strong>{item.title}</strong>
-                    <small>{item.caption}</small>
+                    <strong>{translate(item.title)}</strong>
+                    <small>{translate(item.caption)}</small>
                   </span>
                   <ArrowRight size={16} aria-hidden="true" />
                 </button>
@@ -179,12 +176,12 @@ export const WorkspaceHomeView = ({
             </div>
           </section>
 
-          <section className="workspace-context" aria-label="Current workspace context">
-            <span className="eyebrow">Current context</span>
-            <strong>{academyName || 'Academy'}</strong>
+          <section className="workspace-context" aria-label={translate("Current workspace context")}>
+            <span className="eyebrow">{translate("Current context")}</span>
+            <strong>{academyName || translate('Academy')}</strong>
             <dl>
-              <div><dt>Role</dt><dd>{role}</dd></div>
-              <div><dt>Scope</dt><dd>{scopeLabel}</dd></div>
+              <div><dt>{translate("Role")}</dt><dd>{translate(role)}</dd></div>
+              <div><dt>{translate("Scope")}</dt><dd>{translate(scopeLabel)}</dd></div>
             </dl>
           </section>
         </aside>

@@ -1,3 +1,4 @@
+import { translate } from '../i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { platformUrl } from '../lib/supabase';
@@ -76,11 +77,10 @@ export const UpdatesButton = ({ variant = 'floating' }: UpdatesButtonProps) => {
         const href = `${target}/updates?returnTo=${encodeURIComponent(returnTo)}&product=${encodeURIComponent(productSlug)}`;
         window.location.assign(href);
       }}
-      aria-label="Open updates center"
+      aria-label={translate("Open updates center")}
     >
       <Bell size={17} aria-hidden="true" />
-      Updates
-      {unreadCount > 0 ? (
+      {translate("Updates")}{' '}{unreadCount > 0 ? (
         <span className="updates-count">{unreadCount > 99 ? '99+' : unreadCount}</span>
       ) : null}
     </button>

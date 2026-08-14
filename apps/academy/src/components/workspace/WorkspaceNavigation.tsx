@@ -1,3 +1,4 @@
+import { translate } from '../../i18n';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -74,31 +75,31 @@ export const WorkspaceNavigation = ({
       <div className="brand">
         <span className="brand-mark" aria-hidden="true">{mark}</span>
         <div className="brand-copy">
-          <span className="brand-kicker">Workspace</span>
-          <strong>{title}</strong>
+          <span className="brand-kicker">{translate("Workspace")}</span>
+          <strong>{translate(title)}</strong>
           <p>{subtitle}</p>
         </div>
       </div>
 
       {roleLabel ? (
-        <div className="workspace-identity" aria-label={`Signed in as ${roleLabel}`}>
-          <span>{roleLabel}</span>
-          {contextLabel ? <small>{contextLabel}</small> : null}
+        <div className="workspace-identity" aria-label={translate("Signed in as {role}", { role: translate(roleLabel) })}>
+          <span>{translate(roleLabel)}</span>
+          {contextLabel ? <small>{translate(contextLabel)}</small> : null}
         </div>
       ) : null}
 
       <div className="workspace-nav__mobile-toolbar">
-        <span>Workspace sections</span>
+        <span>{translate("Workspace sections")}</span>
         <div>
-          <button type="button" aria-label="Show previous workspace sections" disabled={!canScrollBack} onClick={() => scrollNavigation(-1)}><ChevronLeft size={17} /></button>
-          <button type="button" aria-label="Show more workspace sections" disabled={!canScrollForward} onClick={() => scrollNavigation(1)}><ChevronRight size={17} /></button>
+          <button type="button" aria-label={translate("Show previous workspace sections")} disabled={!canScrollBack} onClick={() => scrollNavigation(-1)}><ChevronLeft size={17} /></button>
+          <button type="button" aria-label={translate("Show more workspace sections")} disabled={!canScrollForward} onClick={() => scrollNavigation(1)}><ChevronRight size={17} /></button>
         </div>
       </div>
 
-      <nav ref={navRef} className="workspace-nav" aria-label={`${title} navigation`} onScroll={updateScrollState}>
+      <nav ref={navRef} className="workspace-nav" aria-label={translate("{workspace} navigation", { workspace: translate(title) })} onScroll={updateScrollState}>
         {visibleGroups.map((group) => (
-          <section className="workspace-nav__group" key={group.label} aria-label={group.label}>
-            <span className="workspace-nav__label">{group.label}</span>
+          <section className="workspace-nav__group" key={group.label} aria-label={translate(group.label)}>
+            <span className="workspace-nav__label">{translate(group.label)}</span>
             {group.items.map((item) => (
               <button
                 className={`nav-btn ${item.active ? 'is-active' : ''}`}
@@ -111,7 +112,7 @@ export const WorkspaceNavigation = ({
                 key={item.id}
               >
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+                <span className="nav-label">{translate(item.label)}</span>
                 {item.badge && item.badge > 0 ? <span className="nav-badge">{item.badge}</span> : null}
               </button>
             ))}
@@ -121,8 +122,7 @@ export const WorkspaceNavigation = ({
 
       <div className="sidebar-footer">
         <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
-          Back to platform
-        </a>
+          {translate("Back to platform")}{' '}</a>
       </div>
     </aside>
   );
