@@ -440,6 +440,7 @@ export const resolveEnglishProducts = async (sb: any): Promise<Record<EnglishSer
 
   const out = {} as Record<EnglishServiceKey, EnglishProductInfo>;
   for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+    if (toText(row.status, 40).toLowerCase() !== "active") continue;
     const meta = asRecord(row.metadata);
     const slug = toText(meta.slug, 120).toLowerCase();
     const serviceKey = mapProductSlugToService(slug);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { withEnglishRouteContext } from '../../english-shared/src/routeContext';
@@ -7,18 +7,20 @@ import { getLearningProfileSnapshot, type LearningProfileSnapshot } from './lib/
 import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getMe } from './lib/platformClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
+import { buildPlatformHref } from './lib/navigation';
 import { EntitledRoute } from './components/EntitledRoute';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { OfflineBanner } from './components/OfflineBanner';
 import { VoiceFirstFab } from './components/VoiceFirstFab';
-import { StudioPage } from './pages/StudioPage';
-import ReadingApp from './modules/reading/App';
-import WritingApp from './modules/writing/App';
-import ListeningApp from './modules/listening/App';
-import SpeakingApp from './modules/speaking/App';
-import GrammarApp from './modules/grammar/App';
-import VocabularyApp from './modules/vocabulary/App';
-import ImmersionApp from './modules/immersion/App';
+
+const StudioPage = lazy(() => import('./pages/StudioPage').then((module) => ({ default: module.StudioPage })));
+const ReadingApp = lazy(() => import('./modules/reading/App'));
+const WritingApp = lazy(() => import('./modules/writing/App'));
+const ListeningApp = lazy(() => import('./modules/listening/App'));
+const SpeakingApp = lazy(() => import('./modules/speaking/App'));
+const GrammarApp = lazy(() => import('./modules/grammar/App'));
+const VocabularyApp = lazy(() => import('./modules/vocabulary/App'));
+const ImmersionApp = lazy(() => import('./modules/immersion/App'));
 
 type Service = {
   key: string;
@@ -27,12 +29,12 @@ type Service = {
   summary: string;
   href: string;
   className: string;
-  fallbackProgress: number;
 };
 
 type ServiceScore = {
   service: Service;
   score: number;
+  measured: boolean;
 };
 
 type DailyPlanTask = {
@@ -54,6 +56,7 @@ type WeaknessBucket = {
   label: string;
   score: number;
   gap: number;
+  measured: boolean;
   hint: string;
 };
 
@@ -87,7 +90,6 @@ const SERVICES: Service[] = [
     summary: 'Interactive text, sentence structure work, and cloze-based comprehension.',
     href: '/reading',
     className: 'is-reading',
-    fallbackProgress: 82,
   },
   {
     key: 'listening',
@@ -96,7 +98,6 @@ const SERVICES: Service[] = [
     summary: 'Sentence-level listening, dictation loops, and missed-word recovery.',
     href: '/listening',
     className: 'is-listening',
-    fallbackProgress: 78,
   },
   {
     key: 'writing',
@@ -105,7 +106,6 @@ const SERVICES: Service[] = [
     summary: 'Task writing with active correction, rewrites, and grammar-aware feedback.',
     href: '/writing',
     className: 'is-writing',
-    fallbackProgress: 73,
   },
   {
     key: 'speaking',
@@ -114,7 +114,6 @@ const SERVICES: Service[] = [
     summary: 'Guided speaking prompts, conversation mode, and fluency-focused drills.',
     href: '/speaking',
     className: 'is-speaking',
-    fallbackProgress: 69,
   },
   {
     key: 'grammar',
@@ -123,7 +122,6 @@ const SERVICES: Service[] = [
     summary: 'Targeted error drills and short, repeated pattern training loops.',
     href: '/grammar',
     className: 'is-grammar',
-    fallbackProgress: 81,
   },
   {
     key: 'vocabulary',
@@ -132,7 +130,6 @@ const SERVICES: Service[] = [
     summary: 'Context-based review with adaptive recall fed from other English services.',
     href: '/vocabulary',
     className: 'is-vocabulary',
-    fallbackProgress: 76,
   },
   {
     key: 'immersion',
@@ -141,7 +138,6 @@ const SERVICES: Service[] = [
     summary: 'Scenario missions that combine reading, speaking, and writing in context.',
     href: '/immersion',
     className: 'is-immersion',
-    fallbackProgress: 71,
   },
 ];
 
@@ -167,14 +163,20 @@ const PRODUCT_IDS_BY_SLUG: Record<EnglishProductSlug, string> = {
   'english-immersion': '7ce43052-2f35-42ca-b305-0d9c358f73f0',
 };
 
+const lazyRoute = (element: ReactNode): ReactNode => (
+  <Suspense fallback={<div className="loading-container">Loading English workspace...</div>}>
+    {element}
+  </Suspense>
+);
+
 const MODULE_ROUTES: ModuleRoute[] = [
-  { path: '/reading/*', productSlug: 'english-reading', element: <ReadingApp /> },
-  { path: '/writing/*', productSlug: 'english-writing', element: <WritingApp /> },
-  { path: '/listening/*', productSlug: 'english-listening', element: <ListeningApp /> },
-  { path: '/speaking/*', productSlug: 'english-speaking', element: <SpeakingApp /> },
-  { path: '/grammar/*', productSlug: 'english-grammar', element: <GrammarApp /> },
-  { path: '/vocabulary/*', productSlug: 'english-vocabulary', element: <VocabularyApp /> },
-  { path: '/immersion/*', productSlug: 'english-immersion', element: <ImmersionApp /> },
+  { path: '/reading/*', productSlug: 'english-reading', element: lazyRoute(<ReadingApp />) },
+  { path: '/writing/*', productSlug: 'english-writing', element: lazyRoute(<WritingApp />) },
+  { path: '/listening/*', productSlug: 'english-listening', element: lazyRoute(<ListeningApp />) },
+  { path: '/speaking/*', productSlug: 'english-speaking', element: lazyRoute(<SpeakingApp />) },
+  { path: '/grammar/*', productSlug: 'english-grammar', element: lazyRoute(<GrammarApp />) },
+  { path: '/vocabulary/*', productSlug: 'english-vocabulary', element: lazyRoute(<VocabularyApp />) },
+  { path: '/immersion/*', productSlug: 'english-immersion', element: lazyRoute(<ImmersionApp />) },
 ];
 
 const SERVICE_TASK_LIBRARY: Record<Service['key'], Array<{ title: string; intent: string; skill: string }>> = {
@@ -216,8 +218,6 @@ const SERVICE_TASK_LIBRARY: Record<Service['key'], Array<{ title: string; intent
 };
 
 const platformUrl = ((import.meta.env.VITE_PLATFORM_URL as string | undefined) ?? '').trim() || 'https://schood.online';
-
-const buildPlatformUrl = (pathname: string): string => `${platformUrl.replace(/\/$/, '')}${pathname}`;
 
 const resolveReturnTo = (): string => {
   if (typeof window === 'undefined') return '/';
@@ -357,7 +357,7 @@ const buildTaskHref = (
 };
 
 const hasActiveEnglishProduct = (
-  entitlements: Array<{ resource_type: string; resource_id: string | null; ends_at: string | null }>,
+  entitlements: Array<{ resource_type: string; resource_id: string | null; starts_at: string | null; ends_at: string | null }>,
   productSlug: EnglishProductSlug,
 ): boolean => {
   const productId = PRODUCT_IDS_BY_SLUG[productSlug];
@@ -366,9 +366,13 @@ const hasActiveEnglishProduct = (
   return entitlements.some((entry) => {
     if (entry.resource_type !== 'product') return false;
     if (entry.resource_id !== productSlug && entry.resource_id !== productId) return false;
+    if (entry.starts_at) {
+      const startsAt = new Date(entry.starts_at).getTime();
+      if (Number.isNaN(startsAt) || startsAt > now) return false;
+    }
     if (!entry.ends_at) return true;
     const endsAt = new Date(entry.ends_at).getTime();
-    return Number.isNaN(endsAt) || endsAt > now;
+    return !Number.isNaN(endsAt) && endsAt > now;
   });
 };
 
@@ -420,6 +424,7 @@ const App = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const [notebookLoading, setNotebookLoading] = useState(false);
   const [notebookError, setNotebookError] = useState<string | null>(null);
   const [notebookDueCount, setNotebookDueCount] = useState(0);
@@ -440,12 +445,12 @@ const App = () => {
 
   const returnTo = resolveReturnTo();
   const signInHref = useMemo(
-    () => `${buildPlatformUrl('/auth?mode=signin')}&returnTo=${encodeURIComponent(returnTo)}`,
+    () => buildPlatformHref(platformUrl, '/auth', { mode: 'signin', returnTo }),
     [returnTo],
   );
-  const workspaceHref = useMemo(() => buildPlatformUrl('/student-center'), []);
+  const workspaceHref = useMemo(() => buildPlatformHref(platformUrl, '/student-center'), []);
   const pricingHref = useMemo(
-    () => `${buildPlatformUrl('/pricing')}&returnTo=${encodeURIComponent(returnTo)}`,
+    () => buildPlatformHref(platformUrl, '/pricing', { returnTo }),
     [returnTo],
   );
 
@@ -456,13 +461,22 @@ const App = () => {
   useEffect(() => {
     let mounted = true;
 
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setSession(data.session ?? null);
-    });
+    void supabase.auth.getSession()
+      .then(({ data }) => {
+        if (!mounted) return;
+        setSession(data.session ?? null);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSession(null);
+      })
+      .finally(() => {
+        if (mounted) setSessionResolved(true);
+      });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
+      setSessionResolved(true);
     });
 
     return () => {
@@ -657,50 +671,62 @@ const App = () => {
       const computed = avg([...fromBreakdown, ...fromLanguageProfile]);
       return {
         service,
-        score: computed == null ? service.fallbackProgress : Math.round(clampPercent(computed)),
+        score: computed == null ? 0 : Math.round(clampPercent(computed)),
+        measured: computed != null,
       };
     });
   }, [profileSnapshot?.language_profile, profileSnapshot?.service_breakdown]);
 
   const completedServices = useMemo(
-    () => serviceScores.filter((item) => item.score >= 75).length,
+    () => serviceScores.filter((item) => item.measured && item.score >= 75).length,
+    [serviceScores],
+  );
+
+  const measuredServices = useMemo(
+    () => serviceScores.filter((item) => item.measured).length,
     [serviceScores],
   );
 
   const rankedWeakServices = useMemo(
-    () => [...serviceScores].sort((a, b) => a.score - b.score),
+    () => serviceScores.filter((item) => item.measured).sort((a, b) => a.score - b.score),
     [serviceScores],
   );
 
   const weaknessBuckets = useMemo<WeaknessBucket[]>(() => {
-    const scoreOf = (serviceKey: Service['key']): number => (
-      serviceScores.find((entry) => entry.service.key === serviceKey)?.score ?? 0
+    const scoreOf = (serviceKey: Service['key']): ServiceScore | null => (
+      serviceScores.find((entry) => entry.service.key === serviceKey) ?? null
     );
 
     const grammar = scoreOf('grammar');
     const vocabulary = scoreOf('vocabulary');
-    const fluency = Math.round((scoreOf('speaking') + scoreOf('listening')) / 2);
+    const speaking = scoreOf('speaking');
+    const listening = scoreOf('listening');
+    const fluencyMeasured = Boolean(speaking?.measured && listening?.measured);
+    const fluency = fluencyMeasured ? Math.round(((speaking?.score ?? 0) + (listening?.score ?? 0)) / 2) : 0;
 
     return [
       {
         key: 'grammar',
         label: 'Grammar gaps',
-        score: grammar,
-        gap: Math.max(0, 100 - grammar),
+        score: grammar?.score ?? 0,
+        gap: grammar?.measured ? Math.max(0, 100 - grammar.score) : 0,
+        measured: grammar?.measured ?? false,
         hint: 'Route to grammar repair queues and writing correction loops.',
       },
       {
         key: 'vocabulary',
         label: 'Vocabulary pressure',
-        score: vocabulary,
-        gap: Math.max(0, 100 - vocabulary),
+        score: vocabulary?.score ?? 0,
+        gap: vocabulary?.measured ? Math.max(0, 100 - vocabulary.score) : 0,
+        measured: vocabulary?.measured ?? false,
         hint: 'Prioritize review and activation so reading/listening words become usable.',
       },
       {
         key: 'fluency',
         label: 'Fluency pressure',
         score: fluency,
-        gap: Math.max(0, 100 - fluency),
+        gap: fluencyMeasured ? Math.max(0, 100 - fluency) : 0,
+        measured: fluencyMeasured,
         hint: 'Mix listening recovery with speaking routes so decoding becomes production.',
       },
     ];
@@ -784,7 +810,7 @@ const App = () => {
     }
 
     if (tasks.length < 6) {
-      const strongest = [...serviceScores].sort((a, b) => b.score - a.score)[0];
+      const strongest = serviceScores.filter((item) => item.measured).sort((a, b) => b.score - a.score)[0];
       if (strongest) {
         const picked = pickTaskForService(strongest.service, now + 77);
         tasks.push({
@@ -869,7 +895,9 @@ const App = () => {
   const selectedPlanTask = dailyPlan.find((task) => task.id === selectedPlanTaskId) ?? dailyPlan[0] ?? null;
   const focusStory =
     hubPlanSnapshot?.focus_story ??
-    `Today leans toward ${topWeakService.label.toLowerCase()} because it has the widest gap in your shared English profile.`;
+    (rankedWeakServices.length > 0
+      ? `Today leans toward ${topWeakService.label.toLowerCase()} because it has the widest measured gap in your shared English profile.`
+      : 'Complete your first learning activity to generate a measured English focus plan.');
   const transferContext =
     hubPlanSnapshot?.transfer_context ??
     'The hub balances review, recovery, and one transfer task so today still moves usable English forward.';
@@ -891,7 +919,24 @@ const App = () => {
     return weakPracticeTask.href;
   }, [topWeakService, weakPracticeTask]);
 
-  if (location.pathname === '/' || !session) {
+  if (!sessionResolved) {
+    return <div className="loading-container">Restoring your Schood session...</div>;
+  }
+
+  if (!session && location.pathname !== '/') {
+    return (
+      <main className="locked-view-container">
+        <section className="frame access-redirect-card" aria-live="polite">
+          <p className="kicker">Sign-in required</p>
+          <h1>Continue to your English route</h1>
+          <p>Your requested lesson is preserved. Sign in once and Schood will return you here.</p>
+          <a className="btn btn-solid" href={signInHref}>Continue to sign in</a>
+        </section>
+      </main>
+    );
+  }
+
+  if (location.pathname === '/') {
     return (
       <>
       <OfflineBanner />
@@ -995,17 +1040,27 @@ const App = () => {
                       <p className="kicker">Today&apos;s route</p>
                       <h3>{focusStory}</h3>
                     </div>
-                    <span className={`route-tone route-tone-${priorityTone}`}>{priorityTone}</span>
+                    <span className={`route-tone route-tone-${session ? priorityTone : 'soft'}`}>
+                      {session ? priorityTone : 'preview'}
+                    </span>
                   </div>
                   <div className="route-preview-grid">
                     <article>
-                      <small>Strongest recommendation</small>
-                      <strong>{weakPracticeTask?.title ?? `Start with ${topWeakService.label}`}</strong>
+                      <small>{weakPracticeTask ? 'Top recommendation' : 'Personal route status'}</small>
+                      <strong>{weakPracticeTask?.title ?? 'Complete an activity to build your plan'}</strong>
                       <p>{weakPracticeTask?.reason ?? 'The first routed task appears here after sign-in.'}</p>
                     </article>
                     <article>
                       <small>Due reviews</small>
-                      <strong>{notebookDueCount} vocabulary cards waiting</strong>
+                      <strong>
+                        {!session
+                          ? 'Sign in to check due reviews'
+                          : notebookLoading
+                            ? 'Loading review count...'
+                            : notebookError
+                              ? 'Review count unavailable'
+                              : `${notebookDueCount} vocabulary cards waiting`}
+                      </strong>
                       <p>Daily notebook pressure feeds directly into the plan and review pages.</p>
                     </article>
                     <article>
@@ -1019,17 +1074,23 @@ const App = () => {
                 <section className="focus-map frame">
                   <div className="panel-head">
                     <h3>Weekly focus map</h3>
-                    <span className="route-tone route-tone-soft">{celebrationLevel}</span>
+                    <span className="route-tone route-tone-soft">{measuredServices > 0 ? celebrationLevel : 'not measured'}</span>
                   </div>
                   <div className="focus-map-grid">
-                    {weeklyFocusMap.map(({ service, score }) => (
+                    {weeklyFocusMap.map(({ service, score, measured }) => (
                       <article key={`${service.key}-focus`} className={`focus-map-card ${service.className}`}>
                         <small>{service.role}</small>
                         <strong>{service.label}</strong>
                         <div className="focus-map-track" aria-hidden>
-                          <span style={{ width: `${score}%` }} />
+                          <span style={{ width: `${measured ? score : 0}%` }} />
                         </div>
-                        <p>{score}% current readiness</p>
+                        <p>
+                          {measured
+                            ? `${score}% current readiness`
+                            : session
+                              ? 'Complete an activity to measure this skill'
+                              : 'Sign in to measure this skill'}
+                        </p>
                       </article>
                     ))}
                   </div>
@@ -1078,6 +1139,10 @@ const App = () => {
       </Routes>
       </>
     );
+  }
+
+  if (!session) {
+    return <div className="loading-container">Restoring your Schood session...</div>;
   }
 
   const navItems = [
@@ -1150,6 +1215,10 @@ const App = () => {
                   productSlug={moduleRoute.productSlug}
                   hasAccess={unlockedProductSlugs.has(moduleRoute.productSlug)}
                   checkingAccess={entitlementLoading || !entitlementResolved}
+                  pricingHref={buildPlatformHref(platformUrl, '/pricing', {
+                    product: moduleRoute.productSlug,
+                    returnTo,
+                  })}
                 >
                   {moduleRoute.element}
                 </EntitledRoute>
@@ -1165,7 +1234,9 @@ const App = () => {
                   <p className="kicker">Connected overview</p>
                   <h1>Use the hub to decide the next route, not to do the work itself.</h1>
                   <p>
-                    {completedServices}/{SERVICES.length} services are currently above the target readiness threshold.
+                    {measuredServices > 0
+                      ? `${completedServices}/${measuredServices} measured services are currently above the target readiness threshold.`
+                      : 'Complete your first learning activity to establish a measured readiness baseline.'}
                   </p>
                   <div className="hero-actions">
                     <a className="btn btn-ghost" href={doSpeakingHref}>
@@ -1211,14 +1282,14 @@ const App = () => {
                   <article className="progress-panel frame">
                     <h3>Weakness dashboard by service</h3>
                     <ul className="progress-list">
-                      {serviceScores.map(({ service, score }) => (
+                      {serviceScores.map(({ service, score, measured }) => (
                         <li key={`${service.key}-progress`}>
                           <div className="progress-row">
                             <span>{service.label}</span>
-                            <strong>{score}%</strong>
+                            <strong>{measured ? `${score}%` : 'Not measured'}</strong>
                           </div>
                           <div className={`progress-track ${service.className}`} aria-hidden>
-                            <span style={{ width: `${score}%` }} />
+                            <span style={{ width: `${measured ? score : 0}%` }} />
                           </div>
                         </li>
                       ))}
@@ -1505,10 +1576,10 @@ const App = () => {
                         <li key={bucket.key}>
                           <div className="progress-row">
                             <span>{bucket.label}</span>
-                            <strong>{bucket.gap}% gap</strong>
+                            <strong>{bucket.measured ? `${bucket.gap}% gap` : 'Not measured'}</strong>
                           </div>
                           <div className={`progress-track is-${bucket.key}`} aria-hidden>
-                            <span style={{ width: `${bucket.score}%` }} />
+                            <span style={{ width: `${bucket.measured ? bucket.score : 0}%` }} />
                           </div>
                           <p>{bucket.hint}</p>
                         </li>
@@ -1522,14 +1593,14 @@ const App = () => {
                       <span className="route-tone route-tone-soft">{celebrationLevel}</span>
                     </div>
                     <div className="focus-map-grid">
-                      {weeklyFocusMap.map(({ service, score }) => (
+                      {weeklyFocusMap.map(({ service, score, measured }) => (
                         <article key={`${service.key}-focus-weak`} className={`focus-map-card ${service.className}`}>
                           <small>{service.role}</small>
                           <strong>{service.label}</strong>
                           <div className="focus-map-track" aria-hidden>
-                            <span style={{ width: `${score}%` }} />
+                            <span style={{ width: `${measured ? score : 0}%` }} />
                           </div>
-                          <p>{score}% current readiness</p>
+                          <p>{measured ? `${score}% current readiness` : 'No measured activity yet'}</p>
                         </article>
                       ))}
                     </div>
@@ -1685,7 +1756,7 @@ const App = () => {
                 <section className="briefing-strip frame">
                   <article>
                     <small>Completed services</small>
-                    <strong>{completedServices}/{SERVICES.length}</strong>
+                    <strong>{measuredServices > 0 ? `${completedServices}/${measuredServices} measured` : 'No measured activity yet'}</strong>
                   </article>
                   <article>
                     <small>Priority tone</small>
@@ -1713,14 +1784,14 @@ const App = () => {
                     <span className="route-tone route-tone-soft">{celebrationLevel}</span>
                   </div>
                   <div className="focus-map-grid">
-                    {weeklyFocusMap.map(({ service, score }) => (
+                    {weeklyFocusMap.map(({ service, score, measured }) => (
                       <article key={`${service.key}-week`} className={`focus-map-card ${service.className}`}>
                         <small>{service.role}</small>
                         <strong>{service.label}</strong>
                         <div className="focus-map-track" aria-hidden>
-                          <span style={{ width: `${score}%` }} />
+                          <span style={{ width: `${measured ? score : 0}%` }} />
                         </div>
-                        <p>{score}% current readiness</p>
+                        <p>{measured ? `${score}% current readiness` : 'No measured activity yet'}</p>
                       </article>
                     ))}
                   </div>
@@ -1748,15 +1819,15 @@ const App = () => {
                     <div className="wrap-up-grid">
                       <div>
                         <small>Recovered</small>
-                        <strong>{Math.max(1, completedServices - 2)} service lanes stabilized</strong>
+                        <strong>{completedServices > 0 ? `${completedServices} service lanes stabilized` : 'No recovery measured yet'}</strong>
                       </div>
                       <div>
                         <small>Still open</small>
-                        <strong>{rankedWeakServices.slice(0, 2).map((entry) => entry.service.label).join(' · ')}</strong>
+                        <strong>{rankedWeakServices.length > 0 ? rankedWeakServices.slice(0, 2).map((entry) => entry.service.label).join(' · ') : 'Complete an activity to identify gaps'}</strong>
                       </div>
                       <div>
                         <small>Next launchpad</small>
-                        <strong>{weakPracticeTask?.serviceLabel ?? topWeakService.label}</strong>
+                        <strong>{weakPracticeTask?.serviceLabel ?? 'Waiting for measured activity'}</strong>
                       </div>
                     </div>
                   </article>
@@ -1787,7 +1858,23 @@ const App = () => {
             }
           />
 
-          <Route path="/studio" element={<StudioPage accessToken={session.access_token} />} />
+          <Route
+            path="/studio"
+            element={
+              <EntitledRoute
+                productSlug="english-vocabulary"
+                hasAccess={unlockedProductSlugs.size > 0}
+                checkingAccess={entitlementLoading || !entitlementResolved}
+                pricingHref={pricingHref}
+                title="English AI Studio"
+                message="Unlock at least one English learning service before using the AI Studio."
+              >
+                <Suspense fallback={<div className="loading-container">Loading English AI Studio...</div>}>
+                  <StudioPage accessToken={session.access_token} />
+                </Suspense>
+              </EntitledRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

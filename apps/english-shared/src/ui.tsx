@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   formatRouteContextReason,
   formatRouteContextSource,
@@ -155,11 +155,19 @@ export const EnglishSkillWorkspace = ({
   upgradeCopy: string;
   updatesHref: string;
   children: ReactNode;
-}) => (
+}) => {
+  const location = useLocation();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
+  return (
   <div className="reading-root">
     <div className="ambient-layer" />
     <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''}`.trim()}>
-      <aside id="service-side-nav" className="left-nav">
+      <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
         <Link className="brand-mark" to="/dashboard" style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left' }}>
           <span className="dot" />
           <div>
@@ -168,7 +176,17 @@ export const EnglishSkillWorkspace = ({
           </div>
         </Link>
 
-        <div className="left-nav-body">
+        <button
+          className="mobile-nav-inline-toggle"
+          type="button"
+          aria-controls="service-side-nav-body"
+          aria-expanded={mobileNavOpen}
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          Service menu
+        </button>
+
+        <div id="service-side-nav-body" className="left-nav-body">
           <nav className="menu-list">
             {menuItems.map((item) => (
               <Link key={item.href} className={'menu-link ' + (item.active ? 'active' : '')} to={item.href}>
@@ -299,4 +317,5 @@ export const EnglishSkillWorkspace = ({
       Updates
     </a>
   </div>
-);
+  );
+};

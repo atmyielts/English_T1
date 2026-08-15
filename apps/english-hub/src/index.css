@@ -66,6 +66,30 @@ a {
   box-shadow: 0 10px 26px rgba(31, 21, 14, 0.06);
 }
 
+.app-crash-container {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.app-crash-card {
+  width: min(680px, 100%);
+  padding: clamp(24px, 5vw, 48px);
+}
+
+.app-crash-card h1 {
+  margin: 8px 0 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(32px, 6vw, 54px);
+  line-height: 1;
+}
+
+.app-crash-card > p:not(.kicker) {
+  color: var(--ink-700);
+  line-height: 1.6;
+}
+
 .hub-nav {
   padding: 12px 16px;
   display: grid;

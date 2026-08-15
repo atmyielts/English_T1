@@ -12,10 +12,12 @@
 //   - Everything else (API to *.supabase.co, third-party): pass through to
 //     network. Never cached.
 //
-// Cache versioning: bump CACHE_NAME when you change SW logic so old caches
-// get cleared on activate.
+// Cache versioning: bump CACHE_NAME when you change SW logic. A new worker is
+// deliberately allowed to wait until existing tabs close, so it cannot delete
+// chunks that an active learner still needs.
 
-const CACHE_NAME = 'schood-english-hub-shell-v2';
+const CACHE_PREFIX = 'schood-english-hub-shell-';
+const CACHE_NAME = `${CACHE_PREFIX}v3`;
 const SHELL_ASSETS = ['/manifest.webmanifest', '/schood-logo.png'];
 
 const isApiOrigin = (url) => {
@@ -38,8 +40,7 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(SHELL_ASSETS))
-      .catch(() => undefined)
-      .then(() => self.skipWaiting()),
+      .catch(() => undefined),
   );
 });
 
@@ -47,8 +48,11 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim()),
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((key) => caches.delete(key)),
+      )),
   );
 });
 
