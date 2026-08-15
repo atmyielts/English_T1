@@ -58,6 +58,24 @@ a {
   z-index: 1;
 }
 
+/* Skill modules own a complete workspace shell. Hosting them inside the Hub
+   frame created two headers, two account menus, and an inset page scrollbar. */
+.hub-root.module-host {
+  min-height: 100dvh;
+  padding: 0;
+  overflow: visible;
+}
+
+.module-host .hub-ambient {
+  display: none;
+}
+
+.module-host .hub-shell {
+  width: 100%;
+  margin: 0;
+  display: block;
+}
+
 .frame {
   border: 1px solid var(--line);
   border-radius: 28px;

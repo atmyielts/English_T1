@@ -27,6 +27,11 @@ Deno.test("every consolidated English module keeps its production workspace styl
       "import './module.css';",
       `${service} must import its workspace styles`,
     );
+    assertStringIncludes(
+      app,
+      "import '../../../../english-shared/src/workspace-shell.css';",
+      `${service} must import the shared single-shell layout after module styles`,
+    );
     assert(
       css.length > 30_000,
       `${service} workspace CSS is unexpectedly incomplete`,
@@ -56,6 +61,30 @@ Deno.test("the shared English workspace exposes an accessible mobile service men
   assertStringIncludes(source, 'aria-controls="service-side-nav-body"');
   assertStringIncludes(source, "aria-expanded={mobileNavOpen}");
   assertStringIncludes(source, "Service menu");
+  assertStringIncludes(source, "topbar-context");
+  assert(
+    !source.includes("Welcome back, learner"),
+    "deep skill routes must not add a second generic page heading",
+  );
+});
+
+Deno.test("skill routes suppress the duplicate Hub shell", async () => {
+  const source = await Deno.readTextFile(
+    new URL("../src/App.tsx", import.meta.url),
+  );
+  const hubStyles = await Deno.readTextFile(
+    new URL("../src/index.css", import.meta.url),
+  );
+  const workspaceStyles = await Deno.readTextFile(
+    new URL("../../english-shared/src/workspace-shell.css", import.meta.url),
+  );
+
+  assertStringIncludes(source, "const isModuleWorkspace");
+  assertStringIncludes(source, "!isModuleWorkspace ? <header");
+  assertStringIncludes(source, "isModuleWorkspace ? 'module-host' : ''");
+  assertStringIncludes(hubStyles, ".hub-root.module-host");
+  assertStringIncludes(workspaceStyles, ".route-page-hero.without-aside");
+  assertStringIncludes(workspaceStyles, ".reading-root > .app-shell");
 });
 
 Deno.test("the English root contains a user-recoverable crash boundary", async () => {
