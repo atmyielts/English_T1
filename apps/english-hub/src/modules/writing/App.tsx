@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import '../../../../english-shared/src/english-routes.css';
 import './module.css';
+import '../../../../english-shared/src/workspace-shell.css';
 import {
   AccessBoundaryCard,
   EnglishSkillWorkspace,

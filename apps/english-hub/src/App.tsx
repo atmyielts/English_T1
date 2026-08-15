@@ -1153,14 +1153,17 @@ const App = () => {
     { label: 'Week', href: '/week', exact: true },
     { label: 'AI Studio', href: '/studio', exact: false },
   ];
+  const isModuleWorkspace = /^\/(reading|writing|listening|speaking|grammar|vocabulary|immersion)(?:\/|$)/.test(
+    location.pathname,
+  );
 
   return (
-    <div className="hub-root">
+    <div className={`hub-root ${isModuleWorkspace ? 'module-host' : ''}`.trim()}>
       <OfflineBanner />
       <VoiceFirstFab accessToken={session.access_token} />
       <div className="hub-ambient" aria-hidden />
       <main className="hub-shell">
-        <header className="hub-nav frame">
+        {!isModuleWorkspace ? <header className="hub-nav frame">
           <Link className="brand" to="/">
             <img className="brand-logo" src="/schood-logo.png" alt="Schood" />
             <span className="brand-copy">
@@ -1203,7 +1206,7 @@ const App = () => {
               Get access
             </a>
           </div>
-        </header>
+        </header> : null}
 
         <Routes>
           {MODULE_ROUTES.map((moduleRoute) => (

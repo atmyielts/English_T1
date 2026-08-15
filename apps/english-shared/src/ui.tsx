@@ -84,7 +84,7 @@ export const PageHero = ({
   actions?: ReactNode;
   aside?: ReactNode;
 }) => (
-  <section className="card route-page-hero">
+  <section className={`card route-page-hero ${aside ? 'with-aside' : 'without-aside'}`}>
     <div className="route-page-hero-copy">
       <small className="route-context-kicker">{eyebrow}</small>
       <h1>{title}</h1>
@@ -168,11 +168,11 @@ export const EnglishSkillWorkspace = ({
     <div className="ambient-layer" />
     <div className={`app-shell ${status === 'signed_out' ? 'signed-out' : ''}`.trim()}>
       <aside id="service-side-nav" className={`left-nav ${mobileNavOpen ? 'open' : ''}`.trim()}>
-        <Link className="brand-mark" to="/dashboard" style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left' }}>
+        <Link className="brand-mark" to={menuItems[0]?.href ?? hubHref}>
           <span className="dot" />
           <div>
             <strong>{serviceName.toUpperCase()}</strong>
-            <small>Unified auth + payment</small>
+            <small>English learning workspace</small>
           </div>
         </Link>
 
@@ -257,8 +257,8 @@ export const EnglishSkillWorkspace = ({
 
       <main className="main-column">
         <header className="topbar">
-          <div className="topbar-title">
-            <h1>Welcome back, learner</h1>
+          <div className="topbar-context">
+            <small>{serviceName}</small>
             <p>{serviceTagline}</p>
           </div>
 
