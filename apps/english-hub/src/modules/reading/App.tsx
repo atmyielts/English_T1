@@ -12,6 +12,7 @@ import {
 import '../../../../english-shared/src/english-routes.css';
 import './module.css';
 import '../../../../english-shared/src/workspace-shell.css';
+import { parseReadingMarkdown } from './markdown';
 import {
   AccessBoundaryCard,
   EnglishSkillWorkspace,
@@ -1014,15 +1015,7 @@ const ReadingArticlePage = ({
       ];
     }
 
-    return source
-      .split(/\n{2,}/)
-      .map((block) => block.trim())
-      .filter(Boolean)
-      .map((block) => {
-        if (block.startsWith('## ')) return { type: 'heading' as const, text: block.replace(/^##\s+/, '') };
-        if (block.startsWith('> ')) return { type: 'quote' as const, text: block.replace(/^>\s+/, '') };
-        return { type: 'paragraph' as const, text: block };
-      });
+    return parseReadingMarkdown(source);
   }, [article?.contentMarkdown, article?.summary]);
 
   const articlePresentation = asMetaRecord(article?.presentationMeta);
