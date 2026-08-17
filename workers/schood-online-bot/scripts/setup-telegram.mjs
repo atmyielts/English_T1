@@ -19,14 +19,12 @@ const call = async (method, body) => {
 
 const commands = [
   { command: 'start', description: 'Open the Schood ecosystem gateway' },
-  { command: 'explore', description: 'Launch the Schood Mini App map' },
-  { command: 'exams', description: 'IELTS, SAT, TOEFL, and iTEP routes' },
-  { command: 'english', description: 'English Hub and skill practice' },
+  { command: 'login', description: 'Sign in to Schood with Telegram' },
+  { command: 'signup', description: 'Create a recoverable Schood account' },
+  { command: 'ielts', description: 'Get an IELTS starter study plan' },
   { command: 'academy', description: 'Academy OS and classroom tools' },
-  { command: 'centers', description: 'Center and partner operations' },
-  { command: 'pricing', description: 'Plans, trials, and checkout' },
   { command: 'student', description: 'Open the linked student bot' },
-  { command: 'support', description: 'Ask Schood for help' },
+  { command: 'cancel', description: 'Stop the current journey' },
   { command: 'help', description: 'Show bot commands' },
 ];
 

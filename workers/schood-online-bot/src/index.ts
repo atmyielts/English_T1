@@ -49,6 +49,14 @@ const edge = async (env: Env, body: Record<string, unknown>): Promise<ApiResult>
 const validWebhookSecret = (env: Env, supplied: string | null): boolean =>
   Boolean(supplied && (supplied === env.WEBHOOK_SECRET || supplied === env.WEBHOOK_SECRET_PREVIOUS));
 
+const authUrl = (env: Env, mode: 'signin' | 'signup'): string => {
+  const url = new URL('/auth', env.SITE_URL);
+  url.searchParams.set('provider', 'telegram');
+  url.searchParams.set('mode', mode);
+  url.searchParams.set('returnTo', '/account');
+  return url.toString();
+};
+
 const choiceRows = (): Button[][] => [
   [{ text: "Estimate my IELTS level", callback_data: "student_begin" }],
   [{ text: "I run an academy", callback_data: "academy_begin" }],
@@ -130,13 +138,21 @@ const handleMessage = async (env: Env, updateId: number, message: Message) => {
   const [rawCommand, ...args] = raw.split(/\s+/);
   const command = rawCommand.replace(/@\w+$/, "").toLowerCase();
   if (command === "/start") return start(env, updateId, message, args[0] ?? "");
+  if (command === "/login") return send(env, chatId,
+    "<b>Sign in to Schood</b>\n\nOpen the secure Schood page and choose Telegram. If this is your first time, use /signup so your recovery email is verified first.",
+    [[{ text: "Sign in with Telegram", url: authUrl(env, 'signin') }], [{ text: "Create an account", url: authUrl(env, 'signup') }]],
+  );
+  if (command === "/signup") return send(env, chatId,
+    "<b>Create your Schood account</b>\n\nSchood verifies your email first, collects a phone number, and then securely links this Telegram identity. This prevents duplicate accounts.",
+    [[{ text: "Sign up with Telegram", url: authUrl(env, 'signup') }], [{ text: "I already have an account", url: authUrl(env, 'signin') }]],
+  );
   if (command === "/ielts") return start(env, updateId, message, "ielts_organic_telegram");
   if (command === "/academy") return start(env, updateId, message, "academy_organic_telegram");
   if (command === "/cancel") {
     const result = await edge(env, { action: "journey_step", bot_name: "schoodonlinebot", telegram_user_id: telegramUserId, step_action: "cancel", update_id: updateId });
     return renderStep(env, chatId, result);
   }
-  if (command === "/help") return send(env, chatId, "<b>Schood Telegram</b>\n\n/ielts — get a starter study plan\n/academy — academy operations consultation\n/student — open private student work\n/cancel — stop the current journey", [[{ text: "Private student bot", url: env.STUDENT_BOT_URL }]]);
+  if (command === "/help") return send(env, chatId, "<b>Schood Telegram</b>\n\n/login — sign in with Telegram\n/signup — create an email-recoverable account\n/ielts — get a starter study plan\n/academy — academy operations consultation\n/student — open private student work\n/cancel — stop the current journey", [[{ text: "Sign in to Schood", url: authUrl(env, 'signin') }], [{ text: "Private student bot", url: env.STUDENT_BOT_URL }]]);
   if (command === "/student") return send(env, chatId, "Open your private student command center.", [[{ text: "Open student bot", url: env.STUDENT_BOT_URL }]]);
   if (!raw) return;
   try {

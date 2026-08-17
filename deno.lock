@@ -1,6 +1,8 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/assert@1": "1.0.19",
+    "jsr:@std/internal@^1.0.12": "1.0.14",
     "npm:@aws-sdk/client-s3@3.922.0": "3.922.0",
     "npm:@aws-sdk/s3-request-presigner@3.922.0": "3.922.0",
     "npm:@cloudflare/workers-types@^4.20240925.0": "4.20260613.1",
@@ -29,6 +31,17 @@
     "npm:typescript@~5.9.3": "5.9.3",
     "npm:vite@^7.2.4": "7.3.1_@types+node@24.12.0_picomatch@4.0.3",
     "npm:wrangler@^3.80.0": "3.114.17_@cloudflare+workers-types@4.20260613.1_unenv@2.0.0-rc.14_workerd@1.20250718.0_esbuild@0.17.19"
+  },
+  "jsr": {
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    }
   },
   "npm": {
     "@alloc/quick-lru@5.2.0": {
