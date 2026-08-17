@@ -28,7 +28,7 @@
     "test:academy:routes": "npm --workspace apps/academy run test:routes",
     "test:platform:routes": "npm --workspace apps/platform run test:routes",
     "test:academy:edge": "deno test --allow-env --allow-read supabase/functions/academy/academy-contract.test.ts supabase/functions/academy/curriculum-schema-contract.test.ts supabase/functions/academy/student-center-video-contract.test.ts supabase/functions/academy/business-os-phase-a-schema-contract.test.ts supabase/functions/academy/business-os-phase-b-schema-contract.test.ts supabase/functions/academy/business-os-phase-c-schema-contract.test.ts supabase/functions/academy/business-os-phase-d-schema-contract.test.ts supabase/functions/academy/business-os-phase-e-schema-contract.test.ts supabase/functions/academy/business-os-phase-f-schema-contract.test.ts supabase/functions/academy/business-os-phase-g-schema-contract.test.ts supabase/functions/academy/business-os-phase-h-schema-contract.test.ts supabase/functions/academy/business-os-phase-i-schema-contract.test.ts supabase/functions/academy/business-os-phase-j-schema-contract.test.ts supabase/functions/academy/business-os-phase-k-schema-contract.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/telegram-app/guardian-contract.test.ts supabase/functions/_shared/academy-curriculum.test.ts",
-    "test:telegram": "deno test --allow-read supabase/functions/_shared/internal-auth.test.ts supabase/functions/_shared/telegram-init-data.test.ts supabase/functions/_shared/telegram-growth.test.ts supabase/functions/_shared/telegram-delivery.test.ts supabase/functions/_shared/telegram-release-contract.test.ts",
+    "test:telegram": "deno test --allow-read supabase/functions/_shared/internal-auth.test.ts supabase/functions/_shared/telegram-init-data.test.ts supabase/functions/_shared/telegram-growth.test.ts supabase/functions/_shared/telegram-delivery.test.ts supabase/functions/_shared/telegram-release-contract.test.ts supabase/functions/_shared/auth-identity-contract.test.ts",
     "verify:english": "node scripts/run-english-verifications.mjs",
     "verify:academy": "node scripts/verify-academy-product-readiness.mjs",
     "smoke:academy": "node scripts/smoke-academy-product.mjs",
@@ -38,6 +38,7 @@
     "verify:academy:automation": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-academy-automation-worker.ps1",
     "check:academy:github": "node scripts/check-academy-github-readiness.mjs",
     "verify:prod": "node scripts/verify-production-readiness.mjs",
+    "verify:auth-providers": "node scripts/verify-auth-providers.mjs",
     "verify:click-prod": "node scripts/verify-click-production-readiness.mjs",
     "verify:telegram:identities": "node scripts/verify-telegram-bot-identities.mjs",
     "verify:telegram:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-telegram-growth-local.ps1"

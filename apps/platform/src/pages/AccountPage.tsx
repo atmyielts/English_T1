@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircleAlert, CreditCard, LogOut, Trash2, User2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { edgeBase, supabase } from '../lib/supabase';
+import { fetchAuthProviderAvailability, hasProviderIdentity, TELEGRAM_AUTH_PROVIDER } from '../lib/authProviders';
 
 // Telegram account-link card
-
-const edgeBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
 const TelegramLinkCard: React.FC<{ acquisitionSessionId?: string | null }> = ({ acquisitionSessionId }) => {
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
@@ -15,6 +14,41 @@ const TelegramLinkCard: React.FC<{ acquisitionSessionId?: string | null }> = ({ 
   const [copied, setCopied] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [loginLinked, setLoginLinked] = useState(false);
+  const [loginReady, setLoginReady] = useState<boolean | null>(null);
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void Promise.all([
+      supabase.auth.getUser(),
+      fetchAuthProviderAvailability(controller.signal).catch(() => null),
+    ]).then(([userResult, availability]) => {
+      if (controller.signal.aborted) return;
+      setLoginLinked(hasProviderIdentity(userResult.data.user?.identities, TELEGRAM_AUTH_PROVIDER));
+      setLoginReady(availability?.telegram ?? null);
+    });
+    return () => controller.abort();
+  }, []);
+
+  const enableTelegramLogin = async () => {
+    setLoginBusy(true);
+    setLoginError(null);
+    try {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: TELEGRAM_AUTH_PROVIDER,
+        options: {
+          redirectTo: `${window.location.origin}/account?telegram=login-linked`,
+          scopes: 'openid profile phone telegram:bot_access',
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not enable Telegram sign-in.');
+      setLoginBusy(false);
+    }
+  };
 
   const generate = async () => {
     setLoading(true);
@@ -60,7 +94,27 @@ const TelegramLinkCard: React.FC<{ acquisitionSessionId?: string | null }> = ({ 
   return (
     <div className="rounded-3xl border border-blue-200 bg-blue-50/70 p-6">
       <div className="text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2">Telegram</div>
-      <div className="text-lg font-bold text-gray-900 mb-1">{acquisitionSessionId ? 'Save your Telegram study journey' : 'Link your Telegram'}</div>
+      <div className="text-lg font-bold text-gray-900 mb-1">Telegram sign-in</div>
+      <p className="text-sm text-gray-600 mb-3">
+        Link your verified Telegram identity so you can sign in without another password. Your email remains the recovery identity.
+      </p>
+      {loginLinked ? (
+        <div className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-3 py-2">Telegram sign-in is enabled.</div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => void enableTelegramLogin()}
+          disabled={loginBusy || loginReady === false}
+          className="px-4 py-2 rounded-full bg-gray-950 text-white text-sm font-semibold hover:bg-black disabled:opacity-50"
+        >
+          {loginBusy ? 'Connecting…' : 'Enable Telegram sign-in'}
+        </button>
+      )}
+      {loginReady === false ? <p className="mt-2 text-xs text-amber-700">Telegram OIDC credentials still need production configuration.</p> : null}
+      {loginError ? <div className="mt-2 text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2">{loginError}</div> : null}
+
+      <div className="my-5 h-px bg-blue-200" />
+      <div className="text-lg font-bold text-gray-900 mb-1">{acquisitionSessionId ? 'Save your Telegram study journey' : 'Telegram notifications'}</div>
       <p className="text-sm text-gray-600 mb-4">
         {acquisitionSessionId
           ? 'Link once to preserve your plan and continue from the same point tomorrow.'
