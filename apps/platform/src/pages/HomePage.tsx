@@ -7,6 +7,7 @@ import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { buildReferralContext, storeReferral } from '../lib/referralContext';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
+import { GoogleOneTap } from '../components/auth/GoogleOneTap';
 import {
   SeoHead,
   createBreadcrumbSchema,
@@ -79,6 +80,7 @@ export const HomePage: React.FC = () => {
   const [email, setEmail] = useState<string | null>(null);
   const [role, setRole] = useState<string>('user');
   const [hasCenterProfile, setHasCenterProfile] = useState(false);
+  const [googleSignInError, setGoogleSignInError] = useState<string | null>(null);
 
   const typeLabel = (value: string): string => {
     switch (value) {
@@ -189,6 +191,10 @@ export const HomePage: React.FC = () => {
     navigate(href);
   };
 
+  const showGoogleSignInError = React.useCallback(() => {
+    setGoogleSignInError(t('auth.error.googleUnavailable'));
+  }, [t]);
+
   const featuredProduct = products[0] ?? null;
   const productCount = products.length;
   const accessCount = products.reduce((count, product) => (entitlements.has(product.id) ? count + 1 : count), 0);
@@ -257,6 +263,11 @@ export const HomePage: React.FC = () => {
         </div>
 
         <SiteHeader className="relative z-10" navItems={navItems} actions={actions} />
+        <GoogleOneTap
+          enabled={!isAuthed}
+          returnTo={returnTo}
+          onError={showGoogleSignInError}
+        />
 
         <section className="relative z-10 px-6 md:px-10 pt-12 pb-20 lg:pt-16 lg:pb-24 lg:min-h-[75vh]">
           <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -286,6 +297,8 @@ export const HomePage: React.FC = () => {
                   {t('home.cta.viewServices')}
                 </button>
               </div>
+
+              {googleSignInError ? <p role="alert" className="max-w-xl text-sm text-red-700">{googleSignInError}</p> : null}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                 <div className="rounded-2xl bg-white/80 border border-gray-900 p-4">
