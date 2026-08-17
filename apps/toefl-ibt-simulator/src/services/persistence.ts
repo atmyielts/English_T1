@@ -4,6 +4,26 @@ import type { Response } from '../domain/models';
 
 export type CreateSessionResult = { sessionId: string | null; code?: string; capabilityKey?: string; error?: string };
 
+const expiredSessionResult = (): CreateSessionResult => ({
+  sessionId: null,
+  code: 'auth_session_expired',
+  error: 'Your sign-in session has expired. Please sign in again.',
+});
+
+const currentAccessToken = async (): Promise<string | null> => {
+  const { data, error } = await supabase.auth.getSession();
+  const session = data.session;
+  if (error || !session?.access_token) return null;
+
+  // Simulator clients deliberately avoid background refresh races across Schood subdomains.
+  // Refresh just before creating a protected session when the token is about to expire.
+  const expiresSoon = typeof session.expires_at === 'number' && session.expires_at * 1000 <= Date.now() + 60_000;
+  if (!expiresSoon) return session.access_token;
+
+  const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+  return refreshError ? null : (refreshed.session?.access_token ?? null);
+};
+
 const extractErrorCode = (message: string): string | undefined => {
   if (message.includes('usage_limit_reached')) return 'usage_limit_reached';
   if (message.includes('No entitlement')) return 'no_entitlement';
@@ -24,11 +44,14 @@ const extractJsonFromMessage = (message: string): Record<string, unknown> | null
 };
 
 export const createSession = async (
-  accessToken: string,
+  _accessToken: string,
   experienceId: string,
   metadata?: Record<string, unknown>,
 ): Promise<CreateSessionResult> => {
   try {
+    const accessToken = await currentAccessToken();
+    if (!accessToken) return expiredSessionResult();
+
     const body = {
       experience_id: experienceId,
       metadata: metadata ?? {},
@@ -50,8 +73,9 @@ export const createSession = async (
           return { sessionId: retried.session_id ?? null };
         }
       } catch {
-        // fall through to normalized error handling
+        // Return a clear sign-in recovery path below.
       }
+      return expiredSessionResult();
     }
 
     const message = err instanceof Error ? err.message : 'Failed to create session';
