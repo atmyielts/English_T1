@@ -5,7 +5,7 @@ const academy = await Deno.readTextFile(new URL("./index.ts", import.meta.url));
 const studentCenter = await Deno.readTextFile(new URL("../student-center/index.ts", import.meta.url));
 const academyVideo = await Deno.readTextFile(new URL("../academy-video/index.ts", import.meta.url));
 const platformSettings = await Deno.readTextFile(new URL("../platform-settings/index.ts", import.meta.url));
-const config = await Deno.readTextFile(new URL("../../config.toml", import.meta.url));
+const config = (await Deno.readTextFile(new URL("../../config.toml", import.meta.url))).replaceAll("\r\n", "\n");
 
 Deno.test("Student Center and Classroom 2.0 ship disabled by default", () => {
   assert(migration.includes("add column if not exists student_center_enabled boolean not null default false"));

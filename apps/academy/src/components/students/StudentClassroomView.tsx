@@ -36,6 +36,7 @@ type StudentClassroomViewProps = {
   sessions?: TeacherStudioStudentSession[];
   formatDate: (iso: string | null | undefined) => string;
   onBack: () => void;
+  onRequestHelp: () => void;
 };
 
 type StudentLmsTab = 'overview' | 'curriculum' | 'resources' | 'assignments' | 'grades' | 'attendance' | 'billing' | 'chat';
@@ -80,6 +81,7 @@ export const StudentClassroomView = ({
   sessions = [],
   formatDate,
   onBack,
+  onRequestHelp,
 }: StudentClassroomViewProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<StudentLmsTab>('overview');
@@ -462,11 +464,18 @@ export const StudentClassroomView = ({
 
   if (!classroom) {
     return (
-      <section className="panel">
-        <h3>{translate("Classroom not found")}</h3>
-        <p className="muted">{translate("You do not have access to this classroom.")}</p>
-        <button className="ghost-btn" type="button" onClick={onBack}>
-          {translate("Back to classrooms")}{' '}</button>
+      <section className="panel student-classroom-unavailable">
+        <span className="eyebrow">{translate('Classroom access')}</span>
+        <h3>{translate('This classroom is not linked to your student account')}</h3>
+        <p className="muted">{translate('The link may be old, the classroom may belong to another academy, or your enrollment may not be active yet. Your available classrooms are listed in My classrooms.')}</p>
+        <div className="record-actions">
+          <button className="primary-btn" type="button" onClick={onBack}>
+            {translate('See my classrooms')}
+          </button>
+          <button className="ghost-btn" type="button" onClick={onRequestHelp}>
+            {translate('Ask the academy for help')}
+          </button>
+        </div>
       </section>
     );
   }

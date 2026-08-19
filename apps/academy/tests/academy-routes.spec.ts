@@ -1796,6 +1796,109 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
         access: accessForPersona(persona),
       },
       guardian_dashboard: guardianDashboard,
+      access_invitations: {
+        access: accessForPersona(persona),
+        invitations: [],
+        contacts: [contact],
+        classrooms: [classroom],
+        guardian_relationships: [guardianRelationship],
+        guardians: [guardianProfile],
+      },
+      timetable_planning: {
+        terms: [],
+        series: [],
+        runs: [],
+        schedules: [],
+        rooms: [],
+        staff: [],
+        branches: [],
+        classrooms: [classroom],
+      },
+      service_requests: { requests: [], events: [] },
+      communication_journeys: { journeys: [], steps: [], enrollments: [] },
+      collection_cases: { cases: [], attempts: [] },
+      workforce_requests: { requests: [] },
+      sensitive_cases: { cases: [], events: [] },
+      competency_plans: { frameworks: [], competencies: [], plans: [], items: [], evidence: [] },
+      integration_endpoints: { endpoints: [], deliveries: [], exports: [] },
+      student_service_requests: {
+        requests: [
+          {
+            id: "request-route-smoke",
+            contact_id: studentContactId,
+            guardian_id: null,
+            request_type: "schedule",
+            subject: "Move lesson time",
+            description: "Request details",
+            priority: "normal",
+            status: "submitted",
+            created_at: "2026-08-19T08:00:00.000Z",
+            due_at: null,
+          },
+        ],
+        events: [],
+        contact,
+      },
+      student_learning_plans: {
+        plans: [
+          {
+            id: "plan-route-smoke",
+            title: "IELTS writing goal",
+            goal: "Reach band 7",
+            status: "active",
+            published_at: "2026-08-19T08:00:00.000Z",
+          },
+        ],
+        items: [],
+        competencies: [],
+        evidence: [],
+        contact,
+      },
+      guardian_service_requests: {
+        requests: [
+          {
+            id: "guardian-request-route-smoke",
+            contact_id: studentContactId,
+            guardian_id: guardianProfile.id,
+            request_type: "billing",
+            subject: "Payment receipt",
+            description: "Please send a receipt",
+            priority: "normal",
+            status: "submitted",
+            created_at: "2026-08-19T08:00:00.000Z",
+            due_at: null,
+          },
+        ],
+        events: [],
+        guardians: [guardianProfile],
+      },
+      invitation_status: {
+        invitation: {
+          id: "invitation-route-smoke",
+          academy_id: academyId,
+          invite_kind: "student",
+          email: "in***@example.test",
+          role: null,
+          contact_id: studentContactId,
+          classroom_id: classroomId,
+          guardian_relationship_id: null,
+          status: "pending",
+          delivery_status: "sent",
+          delivery_error: null,
+          token_expires_at: "2026-09-01T08:00:00.000Z",
+          resend_count: 0,
+          academy: { id: academyId, name: "Route Smoke Academy", slug: "route-smoke" },
+        },
+      },
+      accept_access_invitation: {
+        invitation: {
+          id: "invitation-route-smoke",
+          academy_id: academyId,
+          invite_kind: "student",
+          status: "accepted",
+          accepted_at: "2026-08-19T08:00:00.000Z",
+        },
+      },
       business_intelligence: {
         ...businessIntelligence,
         access: accessForPersona(persona),
@@ -2043,6 +2146,55 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("button", { name: "Finance" })).toHaveCount(0);
     expect(accessForPersona("parent_liaison").permissions.manageGuardians).toBe(true);
     expect(accessForPersona("parent_liaison").permissions.manageFinance).toBe(false);
+  });
+
+  test("service desk gives operational roles plain task lanes without exposing connection controls", async ({ page }) => {
+    await seedSessionCookie(page, "liaison-service-user");
+    await mockAcademyEdge(page, "parent_liaison");
+
+    await page.goto(`/academy/office/services?academy_id=${academyId}`);
+
+    await expect(page.getByRole("heading", { name: "Run the work that crosses teams" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Access.*Invitations/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Advanced connections" })).toHaveCount(0);
+    await expect(page.getByText("Internal key", { exact: true })).toHaveCount(0);
+  });
+
+  test("student can reach requests and a published learning plan from the learning workspace", async ({ page }) => {
+    await seedSessionCookie(page, "student-user");
+    await mockAcademyEdge(page, "student");
+
+    await page.goto(`/academy/student/requests?academy_id=${academyId}`);
+    await expect(page.getByRole("heading", { name: "Ask the academy for help" })).toBeVisible();
+    await expect(page.getByText("Move lesson time", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Learning plan" }).click();
+    await expect(page.getByRole("heading", { name: "What I am working toward" })).toBeVisible();
+    await expect(page.getByText("IELTS writing goal", { exact: true })).toBeVisible();
+  });
+
+  test("guardian can request help without entering staff operations", async ({ page }) => {
+    await seedSessionCookie(page, "guardian-user");
+    await mockAcademyEdge(page, "guardian");
+
+    await page.goto(`/academy/parent?academy_id=${academyId}`);
+    await page.getByRole("button", { name: "Ask for help" }).click();
+    await expect(page.getByRole("heading", { name: "Requests for the academy" })).toBeVisible();
+    await expect(page.getByText("Payment receipt", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Advanced connections" })).toHaveCount(0);
+  });
+
+  test("invitation link explains access before accepting and opens the correct workspace", async ({ page }) => {
+    await seedSessionCookie(page, "invited-student");
+    await mockAcademyEdge(page, "student");
+
+    await page.goto("/invitations/accept?token=valid-route-token");
+    await expect(page.getByRole("heading", { name: "Join your Academy workspace" })).toBeVisible();
+    await expect(page.getByText("Route Smoke Academy", { exact: true })).toBeVisible();
+    await expect(page.getByText("Student learning access", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Accept and open workspace" }).click();
+    await expect(page.getByRole("heading", { name: "Your access is ready" })).toBeVisible();
+    await page.getByRole("button", { name: "Open my workspace" }).click();
+    await expect(page).toHaveURL(/\/academy\/student\?academy_id=/);
   });
 
   test("assistant receives the production teaching lane and no finance controls", async ({ page }) => {
@@ -2346,10 +2498,12 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         const rect = element.getBoundingClientRect();
         return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
       });
-      const clipped = controls.filter((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.left < -1 || rect.right > viewportWidth + 1;
-      }).map((element) => element.getAttribute("aria-label") || element.textContent?.trim() || element.tagName);
+      const clipped = controls
+        .filter((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.left < -1 || rect.right > viewportWidth + 1;
+        })
+        .map((element) => element.getAttribute("aria-label") || element.textContent?.trim() || element.tagName);
       const overlaps: string[] = [];
       for (let left = 0; left < controls.length; left += 1) {
         const first = controls[left].getBoundingClientRect();
@@ -3008,12 +3162,14 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     };
     const learnerDashboard = {
       ...studentDashboard,
-      academies: [{
-        ...studentDashboard.academies[0],
-        id: "academy-learner-label",
-        name: learnerLabel,
-        slug: "muhammadjafargofirov1-gmail-com",
-      }],
+      academies: [
+        {
+          ...studentDashboard.academies[0],
+          id: "academy-learner-label",
+          name: learnerLabel,
+          slug: "muhammadjafargofirov1-gmail-com",
+        },
+      ],
     };
     await page.setViewportSize({ width: 1280, height: 900 });
     await seedSessionCookie(page, "long-workspace-label-user");
@@ -3081,7 +3237,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         const headingAfterMenu = await pageHeading.boundingBox();
         expect(headingAfterMenu?.y ?? 0, "expanded menu pushes page content down").toBeGreaterThan((headingBeforeMenu?.y ?? 0) + 44);
         if (captureScreenshots) {
-          await page.screenshot({ path: resolve(outputDir, `directory-menu-open-${viewport.width}.png`), fullPage: true });
+          await page.screenshot({
+            path: resolve(outputDir, `directory-menu-open-${viewport.width}.png`),
+            fullPage: true,
+          });
         }
         await page.keyboard.press("Escape");
         await expect(utilityMenu).toHaveAttribute("aria-expanded", "false");
@@ -3162,15 +3321,24 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         const normalized = value.trim();
         if (normalized.startsWith("#")) {
           const hex = normalized.slice(1);
-          const expanded = hex.length === 3 ? hex.split("").map((character) => character + character).join("") : hex;
+          const expanded =
+            hex.length === 3
+              ? hex
+                  .split("")
+                  .map((character) => character + character)
+                  .join("")
+              : hex;
           return [0, 2, 4].map((offset) => Number.parseInt(expanded.slice(offset, offset + 2), 16));
         }
         return (normalized.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
       };
-      const luminance = (rgb: number[]) => rgb.map((value) => {
-        const channel = value / 255;
-        return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-      }).reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0);
+      const luminance = (rgb: number[]) =>
+        rgb
+          .map((value) => {
+            const channel = value / 255;
+            return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+          })
+          .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0);
       const contrast = (first: number[], second: number[]) => {
         const light = Math.max(luminance(first), luminance(second));
         const dark = Math.min(luminance(first), luminance(second));
@@ -3333,11 +3501,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         expect(focusEvidence.contrast, `${lane.name} focus contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(3);
         await page.keyboard.press("Tab");
         await expect(page.locator(":focus")).not.toHaveCount(0);
-        const primaryAction = lane.persona === "student"
-          ? page.locator(".student-continue")
-          : lane.persona === "guardian"
-            ? page.locator(".business-tabs button").first()
-            : page.locator(".workspace-shortcuts__list button").first();
+        const primaryAction = lane.persona === "student" ? page.locator(".student-continue") : lane.persona === "guardian" ? page.locator(".business-tabs button").first() : page.locator(".workspace-shortcuts__list button").first();
         await expect(primaryAction, `${lane.name} reachable action at ${viewport.width}px`).toBeVisible();
         const primaryBox = await primaryAction.boundingBox();
         expect(primaryBox?.x ?? -1, `${lane.name} action left edge at ${viewport.width}px`).toBeGreaterThanOrEqual(0);
@@ -3491,15 +3655,28 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
   test("service landing and Academy directory localize without changing routes", async ({ browser }) => {
     const cases = [
-      { code: "uz", language: "Til", serviceHeading: "Akademiya haftasini bir joydan boshqaring", directoryHeading: "Ish maydonini tanlang" },
-      { code: "ru", language: "Язык", serviceHeading: "Управляйте неделей академии на одном экране", directoryHeading: "Выберите рабочее пространство" },
+      {
+        code: "uz",
+        language: "Til",
+        serviceHeading: "Akademiya haftasini bir joydan boshqaring",
+        directoryHeading: "Ish maydonini tanlang",
+      },
+      {
+        code: "ru",
+        language: "Язык",
+        serviceHeading: "Управляйте неделей академии на одном экране",
+        directoryHeading: "Выберите рабочее пространство",
+      },
     ] as const;
     const captureScreenshots = process.env.ACADEMY_VISUAL_QA === "1";
     const outputDir = resolve(process.cwd(), "..", "..", "output", "playwright", "academy-localization");
     if (captureScreenshots) await mkdir(outputDir, { recursive: true });
 
     for (const localeCase of cases) {
-      for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+      for (const viewport of [
+        { width: 1280, height: 900 },
+        { width: 390, height: 844 },
+      ]) {
         const publicContext = await browser.newContext({ viewport });
         const publicPage = await publicContext.newPage();
         await publicPage.goto(`/?lang=${localeCase.code}`);
@@ -3509,7 +3686,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         const overflow = await publicPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         expect(overflow, `service ${localeCase.code} overflow at ${viewport.width}px`).toBeLessThanOrEqual(1);
         if (captureScreenshots) {
-          await publicPage.screenshot({ path: resolve(outputDir, `service-${localeCase.code}-${viewport.width}.png`), fullPage: true });
+          await publicPage.screenshot({
+            path: resolve(outputDir, `service-${localeCase.code}-${viewport.width}.png`),
+            fullPage: true,
+          });
         }
         await publicContext.close();
       }
@@ -3523,7 +3703,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       await expect(directoryPage.getByRole("heading", { name: localeCase.directoryHeading }).first()).toBeVisible();
       await expect(directoryPage.getByText("No access", { exact: true })).toHaveCount(0);
       if (captureScreenshots) {
-        await directoryPage.screenshot({ path: resolve(outputDir, `directory-${localeCase.code}-1280.png`), fullPage: true });
+        await directoryPage.screenshot({
+          path: resolve(outputDir, `directory-${localeCase.code}-1280.png`),
+          fullPage: true,
+        });
       }
       await directoryContext.close();
     }

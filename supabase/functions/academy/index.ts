@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as nodemailer from "https://esm.sh/nodemailer@7.0.6?target=denonext";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
 import { signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
@@ -953,7 +954,7 @@ const fallbackDisplayName = (email: string | null, fallback: string): string => 
 
 const STUDENT_CONTACT_STATUSES = ["active", "trial", "paused"];
 const STUDENT_CONTACT_SELECT =
-  "id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at";
+  "id, academy_id, user_id, primary_branch_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at";
 
 const loadStudentContacts = async (
   sb: SupabaseClientLike,
@@ -1353,6 +1354,23 @@ export const ACADEMY_ACTION_PERMISSIONS = {
   generate_morning_brief: "dispatchNotifications",
   generate_parent_report: "viewReports",
   upsert_branding: "manageBranding",
+  upsert_timetable_term: "manageAcademicOperations",
+  upsert_timetable_series: "manageAcademicOperations",
+  generate_timetable: "manageAcademicOperations",
+  upsert_communication_journey: "manageAutomation",
+  enroll_communication_journey: "manageAutomation",
+  advance_communication_journeys: "dispatchNotifications",
+  upsert_collection_case: "collectFinance",
+  record_collection_attempt: "collectFinance",
+  create_sensitive_case: "manageRetention",
+  update_sensitive_case: "manageRetention",
+  upsert_competency_framework: "manageAssignments",
+  upsert_competency: "manageAssignments",
+  upsert_learning_plan: "manageAssignments",
+  record_competency_evidence: "gradeSubmissions",
+  upsert_integration_endpoint: "manageAutomation",
+  queue_integration_event: "manageAutomation",
+  dispatch_integration_events: "manageAutomation",
 } as const satisfies Record<string, keyof AcademyAccessPermissions>;
 
 const ensureConversationId = async (
@@ -2408,10 +2426,29 @@ const validateBranchScopedMutation = async (
   academyId: string,
   access: MembershipRow,
   body: StudioBody,
+  action: string,
 ): Promise<boolean> => {
-  if (academyAccessBranchIds(access) === null) return true;
+  const scopedBranches = academyAccessBranchIds(access);
+  if (scopedBranches === null) return true;
   const directBranchId = normalizeText(body.branch_id ?? body.primary_branch_id, 64);
   if (directBranchId) return accessCanUseBranch(access, directBranchId);
+  if (action === "create_workforce_request") return scopedBranches.length > 0;
+  const operationalLookup: Record<string, [string, unknown, string]> = {
+    upsert_timetable_term: ["academy_timetable_terms", body.id ?? body.term_id, "branch_id"],
+    generate_timetable: ["academy_timetable_terms", body.term_id, "branch_id"],
+    update_service_request: ["academy_service_requests", body.request_id ?? body.id, "branch_id"],
+    record_collection_attempt: ["academy_collection_cases", body.case_id, "branch_id"],
+    update_workforce_request: ["academy_staff_requests", body.request_id ?? body.id, "branch_id"],
+    update_sensitive_case: ["academy_sensitive_cases", body.case_id ?? body.id, "branch_id"],
+  };
+  const operationalTarget = operationalLookup[action];
+  if (operationalTarget) {
+    const [table, idRaw, branchColumn] = operationalTarget;
+    const id = normalizeText(idRaw, 64);
+    if (!id) return false;
+    const { data, error } = await sb.from(table).select(branchColumn).eq("academy_id", academyId).eq("id", id).maybeSingle();
+    return !error && !!data && accessCanUseBranch(access, (data as unknown as Record<string, unknown>)[branchColumn]);
+  }
   const lookups: Array<[string, unknown, string]> = [
     ["academy_contacts", body.contact_id, "primary_branch_id"],
     ["academy_leads", body.lead_id, "branch_id"],
@@ -2612,6 +2649,15 @@ const handleReadAction = async (
       "automation_rules",
       "staff",
       "referral_leaderboard",
+      "access_invitations",
+      "timetable_planning",
+      "service_requests",
+      "communication_journeys",
+      "collection_cases",
+      "workforce_requests",
+      "sensitive_cases",
+      "competency_plans",
+      "integration_endpoints",
     ].includes(action)
   ) {
     return null;
@@ -2657,6 +2703,7 @@ const handleReadAction = async (
   const academyId = resolveAcademyId(memberships, academyIdRaw);
   const access = requireAcademyAccess(memberships, academyId);
   const scopedClassroomIds = academyAccessClassroomIds(access);
+  const operationalBranchIds = academyAccessBranchIds(access);
 
   if (action === "summary") {
     if (scopedClassroomIds !== null) {
@@ -4047,6 +4094,243 @@ const handleReadAction = async (
     const { data, error } = await query.limit(200);
     if (error) return json(500, { error: "Failed to load schedule", detail: error.message });
     return json(200, { schedule: data ?? [] });
+  }
+
+  if (action === "access_invitations") {
+    if (!academyAccessHas(access, "manageRoster") && !academyAccessHas(access, "manageStaff") && !academyAccessHas(access, "manageGuardians")) {
+      return json(403, { error: "Forbidden" });
+    }
+    const allowedInviteKinds = [
+      academyAccessHas(access, "manageRoster") ? "student" : null,
+      academyAccessHas(access, "manageStaff") ? "staff" : null,
+      academyAccessHas(access, "manageGuardians") ? "guardian" : null,
+    ].filter((kind): kind is string => Boolean(kind));
+    const { data, error } = await sb.from("academy_access_invitations")
+      .select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,accepted_by,accepted_at,revoked_by,revoked_at,created_by,created_at,updated_at,metadata")
+      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds).order("created_at", { ascending: false }).limit(500);
+    if (error) return json(500, { error: "Failed to load access invitations", detail: error.message });
+    const empty = Promise.resolve({ data: [], error: null });
+    const [contacts, classrooms, guardianRelationships, guardians] = await Promise.all([
+      academyAccessHas(access, "manageRoster")
+        ? sb.from("academy_contacts").select("id,first_name,last_name,email,status,primary_branch_id").eq("academy_id", academyId).order("first_name").limit(2000)
+        : empty,
+      academyAccessHas(access, "manageRoster")
+        ? sb.from("academy_classrooms").select("id,name,is_active,branch_id").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500)
+        : empty,
+      academyAccessHas(access, "manageGuardians")
+        ? sb.from("academy_student_guardian_relationships").select("id,contact_id,guardian_id,relationship_type,status").eq("academy_id", academyId).eq("status", "active").limit(2000)
+        : empty,
+      academyAccessHas(access, "manageGuardians")
+        ? sb.from("academy_guardians").select("id,full_name,email,status").eq("academy_id", academyId).order("full_name").limit(2000)
+        : empty,
+    ]);
+    const referenceFailure = [contacts, classrooms, guardianRelationships, guardians].find((result) => result.error);
+    if (referenceFailure?.error) return json(500, { error: "Failed to load invitation reference data", detail: referenceFailure.error.message });
+    const allowedBranches = new Set(operationalBranchIds ?? []);
+    const allowedClassrooms = new Set(scopedClassroomIds ?? []);
+    const scopedContacts = ((contacts.data ?? []) as Array<Record<string, unknown>>).filter((row) =>
+      operationalBranchIds === null || allowedBranches.has(String(row.primary_branch_id ?? ""))
+    );
+    const scopedClassrooms = ((classrooms.data ?? []) as Array<Record<string, unknown>>).filter((row) =>
+      (operationalBranchIds === null || allowedBranches.has(String(row.branch_id ?? ""))) &&
+      (scopedClassroomIds === null || allowedClassrooms.has(String(row.id)))
+    );
+    const contactIds = new Set(scopedContacts.map((row) => String(row.id)));
+    const relationshipRows = ((guardianRelationships.data ?? []) as Array<Record<string, unknown>>)
+      .filter((row) => contactIds.has(String(row.contact_id)));
+    const guardianIds = new Set(relationshipRows.map((row) => String(row.guardian_id)));
+    const guardianRows = ((guardians.data ?? []) as Array<Record<string, unknown>>)
+      .filter((row) => guardianIds.has(String(row.id)));
+    const classroomIds = new Set(scopedClassrooms.map((row) => String(row.id)));
+    const invitationRows = ((data ?? []) as Array<Record<string, unknown>>).filter((row) => {
+      if (row.invite_kind === "student") return contactIds.has(String(row.contact_id)) && classroomIds.has(String(row.classroom_id));
+      if (row.invite_kind === "guardian") return relationshipRows.some((relationship) => String(relationship.id) === String(row.guardian_relationship_id));
+      return true;
+    });
+    return json(200, { invitations: invitationRows, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
+  }
+
+  if (action === "timetable_planning") {
+    requireAcademyPermission(access, "manageAcademicOperations");
+    if ((operationalBranchIds !== null && operationalBranchIds.length === 0) || (scopedClassroomIds !== null && scopedClassroomIds.length === 0)) {
+      return json(200, { terms: [], series: [], runs: [], schedules: [], rooms: [], staff: [], branches: [], classrooms: [] });
+    }
+    let classroomsQuery = sb.from("academy_classrooms").select("id,name,is_active,branch_id").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500);
+    if (operationalBranchIds !== null) classroomsQuery = classroomsQuery.in("branch_id", operationalBranchIds);
+    if (scopedClassroomIds !== null) classroomsQuery = classroomsQuery.in("id", scopedClassroomIds);
+    const classrooms = await classroomsQuery;
+    if (classrooms.error) return json(500, { error: "Failed to load timetable classrooms", detail: classrooms.error.message });
+    const classroomIds = ((classrooms.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    let termsQuery = sb.from("academy_timetable_terms").select("*").eq("academy_id", academyId).order("starts_on", { ascending: false }).limit(100);
+    let roomsQuery = sb.from("academy_rooms").select("id,branch_id,name,capacity,is_active").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500);
+    let branchesQuery = sb.from("academy_branches").select("id,name,is_active").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500);
+    let staffAssignmentsQuery = sb.from("academy_staff_branch_assignments").select("staff_id,branch_id,status").eq("academy_id", academyId).eq("status", "active").limit(5000);
+    if (operationalBranchIds !== null) {
+      const branchList = operationalBranchIds.join(",");
+      termsQuery = termsQuery.or(`branch_id.is.null,branch_id.in.(${branchList})`);
+      roomsQuery = roomsQuery.in("branch_id", operationalBranchIds);
+      branchesQuery = branchesQuery.in("id", operationalBranchIds);
+      staffAssignmentsQuery = staffAssignmentsQuery.in("branch_id", operationalBranchIds);
+    }
+    const none = Promise.resolve({ data: [], error: null });
+    const [terms, series, schedules, rooms, branches, staffAssignments] = await Promise.all([
+      termsQuery,
+      classroomIds.length
+        ? sb.from("academy_timetable_series").select("*").eq("academy_id", academyId).in("classroom_id", classroomIds).order("created_at", { ascending: false }).limit(500)
+        : none,
+      classroomIds.length
+        ? sb.from("academy_classroom_schedules").select("id,classroom_id,day_of_week,start_time,end_time,timezone,label,is_active").eq("academy_id", academyId).in("classroom_id", classroomIds).eq("is_active", true).order("day_of_week").limit(500)
+        : none,
+      roomsQuery,
+      branchesQuery,
+      staffAssignmentsQuery,
+    ]);
+    const termIds = ((terms.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const staffIds = Array.from(new Set(((staffAssignments.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.staff_id))));
+    const [runs, staff] = await Promise.all([
+      termIds.length
+        ? sb.from("academy_timetable_generation_runs").select("*").eq("academy_id", academyId).in("term_id", termIds).order("created_at", { ascending: false }).limit(50)
+        : none,
+      operationalBranchIds === null
+        ? sb.from("academy_staff").select("id,user_id,email,display_name,role,classroom_ids,is_active").eq("academy_id", academyId).eq("is_active", true).order("display_name").limit(500)
+        : staffIds.length
+          ? sb.from("academy_staff").select("id,user_id,email,display_name,role,classroom_ids,is_active").eq("academy_id", academyId).in("id", staffIds).eq("is_active", true).order("display_name").limit(500)
+          : none,
+    ]);
+    const failed = [terms, series, runs, schedules, rooms, staff, branches, staffAssignments].find((result) => result.error);
+    if (failed?.error) return json(500, { error: "Failed to load timetable planning", detail: failed.error.message });
+    return json(200, { terms: terms.data ?? [], series: series.data ?? [], runs: runs.data ?? [], schedules: schedules.data ?? [], rooms: rooms.data ?? [], staff: staff.data ?? [], branches: branches.data ?? [], classrooms: classrooms.data ?? [] });
+  }
+
+  if (action === "service_requests") {
+    if (!academyAccessHas(access, "manageRetention") && !academyAccessHas(access, "manageAcademicOperations") && !academyAccessHas(access, "refundFinance")) {
+      return json(403, { error: "Forbidden" });
+    }
+    if (operationalBranchIds !== null && operationalBranchIds.length === 0) return json(200, { requests: [], events: [] });
+    let requestQuery = sb.from("academy_service_requests").select("*")
+      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(1000);
+    if (operationalBranchIds !== null) {
+      requestQuery = requestQuery.in("branch_id", operationalBranchIds);
+    }
+    const { data: requests, error } = await requestQuery;
+    if (error) return json(500, { error: "Failed to load service requests", detail: error.message });
+    const ids = ((requests ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const events = ids.length
+      ? await sb.from("academy_service_request_events").select("*").eq("academy_id", academyId).in("request_id", ids).order("created_at").limit(5000)
+      : { data: [], error: null };
+    if (events.error) return json(500, { error: "Failed to load service request history", detail: events.error.message });
+    return json(200, { requests: requests ?? [], events: events.data ?? [] });
+  }
+
+  if (action === "communication_journeys") {
+    if (!academyAccessHas(access, "viewAutomation") && !academyAccessHas(access, "manageAutomation")) return json(403, { error: "Forbidden" });
+    const [journeys, steps, enrollments] = await Promise.all([
+      sb.from("academy_communication_journeys").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500),
+      sb.from("academy_communication_journey_steps").select("*").eq("academy_id", academyId).order("position").limit(5000),
+      sb.from("academy_communication_enrollments").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(5000),
+    ]);
+    const failed = [journeys, steps, enrollments].find((result) => result.error);
+    if (failed?.error) return json(500, { error: "Failed to load communication journeys", detail: failed.error.message });
+    return json(200, { journeys: journeys.data ?? [], steps: steps.data ?? [], enrollments: enrollments.data ?? [] });
+  }
+
+  if (action === "collection_cases") {
+    if (!academyAccessHas(access, "viewFinance") && !academyAccessHas(access, "collectFinance")) return json(403, { error: "Forbidden" });
+    if (operationalBranchIds !== null && operationalBranchIds.length === 0) return json(200, { cases: [], attempts: [] });
+    let casesQuery = sb.from("academy_collection_cases").select("*").eq("academy_id", academyId).order("opened_at", { ascending: false }).limit(1000);
+    if (operationalBranchIds !== null) casesQuery = casesQuery.in("branch_id", operationalBranchIds);
+    const cases = await casesQuery;
+    if (cases.error) return json(500, { error: "Failed to load collection cases", detail: cases.error.message });
+    const caseIds = ((cases.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const attempts = caseIds.length
+      ? await sb.from("academy_collection_attempts").select("*").eq("academy_id", academyId).in("case_id", caseIds).order("created_at", { ascending: false }).limit(5000)
+      : { data: [], error: null };
+    if (attempts.error) return json(500, { error: "Failed to load collection attempts", detail: attempts.error.message });
+    return json(200, { cases: cases.data ?? [], attempts: attempts.data ?? [] });
+  }
+
+  if (action === "workforce_requests") {
+    const canReviewAll = academyAccessHas(access, "manageStaff") || academyAccessHas(access, "manageAcademicOperations") || academyAccessHas(access, "viewPayroll");
+    if (canReviewAll && operationalBranchIds !== null && operationalBranchIds.length === 0) return json(200, { requests: [] });
+    let requestQuery = sb.from("academy_staff_requests").select("*")
+      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(1000);
+    if (!canReviewAll) {
+      const staffId = normalizeText(access.staff_id, 64);
+      if (!staffId) return json(403, { error: "Your account is not linked to an active Academy staff record" });
+      requestQuery = requestQuery.eq("staff_id", staffId);
+    } else if (operationalBranchIds !== null) {
+      requestQuery = requestQuery.in("branch_id", operationalBranchIds);
+    }
+    const { data, error } = await requestQuery;
+    if (error) return json(500, { error: "Failed to load workforce requests", detail: error.message });
+    let branchesQuery = sb.from("academy_branches").select("id,name,is_active").eq("academy_id", academyId).eq("is_active", true).order("name").limit(200);
+    if (operationalBranchIds !== null) branchesQuery = branchesQuery.in("id", operationalBranchIds);
+    const { data: branches, error: branchError } = await branchesQuery;
+    if (branchError) return json(500, { error: "Failed to load staff request branches", detail: branchError.message });
+    return json(200, { requests: data ?? [], branches: branches ?? [] });
+  }
+
+  if (action === "sensitive_cases") {
+    if (!academyAccessHas(access, "manageRetention") || !["owner", "admin", "center_admin", "manager", "counselor"].includes(access.role)) {
+      return json(403, { error: "Forbidden" });
+    }
+    if (operationalBranchIds !== null && operationalBranchIds.length === 0) return json(200, { cases: [], events: [] });
+    let caseQuery = sb.from("academy_sensitive_cases").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(1000);
+    if (!["owner", "admin"].includes(access.role)) caseQuery = caseQuery.eq("confidentiality", "restricted");
+    if (operationalBranchIds !== null) caseQuery = caseQuery.in("branch_id", operationalBranchIds);
+    const { data: cases, error } = await caseQuery;
+    if (error) return json(500, { error: "Failed to load restricted cases", detail: error.message });
+    const ids = ((cases ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const events = ids.length
+      ? await sb.from("academy_sensitive_case_events").select("*").eq("academy_id", academyId).in("case_id", ids).order("created_at").limit(5000)
+      : { data: [], error: null };
+    if (events.error) return json(500, { error: "Failed to load restricted case history", detail: events.error.message });
+    return json(200, { cases: cases ?? [], events: events.data ?? [] });
+  }
+
+  if (action === "competency_plans") {
+    if (!academyAccessHas(access, "manageAssignments") && !academyAccessHas(access, "viewAcademicReports")) return json(403, { error: "Forbidden" });
+    let scopedPlanContactIds: string[] | null = null;
+    if (operationalBranchIds !== null) {
+      const contacts = operationalBranchIds.length
+        ? await sb.from("academy_contacts").select("id").eq("academy_id", academyId).in("primary_branch_id", operationalBranchIds).limit(10000)
+        : { data: [], error: null };
+      if (contacts.error) return json(500, { error: "Failed to resolve branch learners", detail: contacts.error.message });
+      scopedPlanContactIds = ((contacts.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    } else if (scopedClassroomIds !== null) {
+      scopedPlanContactIds = Array.from((await loadScopedContactIds(sb, academyId, scopedClassroomIds)) ?? []);
+    }
+    let plansQuery = sb.from("academy_learning_plans").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(1000);
+    const noScopedPlans = scopedPlanContactIds !== null && scopedPlanContactIds.length === 0;
+    if (scopedPlanContactIds?.length) plansQuery = plansQuery.in("contact_id", scopedPlanContactIds);
+    const [frameworks, competencies, plans] = await Promise.all([
+      sb.from("academy_competency_frameworks").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500),
+      sb.from("academy_competencies").select("*").eq("academy_id", academyId).order("position").limit(5000),
+      noScopedPlans ? Promise.resolve({ data: [], error: null }) : plansQuery,
+    ]);
+    const planIds = ((plans.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const items = planIds.length
+      ? await sb.from("academy_learning_plan_items").select("*").eq("academy_id", academyId).in("plan_id", planIds).order("created_at").limit(10000)
+      : { data: [], error: null };
+    const itemIds = ((items.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+    const evidence = itemIds.length
+      ? await sb.from("academy_competency_evidence").select("*").eq("academy_id", academyId).in("plan_item_id", itemIds).order("observed_at", { ascending: false }).limit(10000)
+      : { data: [], error: null };
+    const failed = [frameworks, competencies, plans, items, evidence].find((result) => result.error);
+    if (failed?.error) return json(500, { error: "Failed to load competency plans", detail: failed.error.message });
+    return json(200, { frameworks: frameworks.data ?? [], competencies: competencies.data ?? [], plans: plans.data ?? [], items: items.data ?? [], evidence: evidence.data ?? [] });
+  }
+
+  if (action === "integration_endpoints") {
+    if (!academyAccessHas(access, "manageAcademy") && !academyAccessHas(access, "manageAutomation")) return json(403, { error: "Forbidden" });
+    const [endpoints, deliveries, exports] = await Promise.all([
+      sb.from("academy_integration_endpoints").select("id,academy_id,name,endpoint_url,signing_secret_last4,event_types,status,consecutive_failures,last_success_at,last_failure_at,created_by,created_at,updated_at,metadata").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200),
+      sb.from("academy_integration_deliveries").select("id,academy_id,endpoint_id,event_type,event_id,status,attempts,next_attempt_at,response_status,response_excerpt,error,idempotency_key,created_at,delivered_at").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(1000),
+      sb.from("academy_export_jobs").select("id,academy_id,export_type,format,status,filters,row_count,error,requested_by,requested_at,completed_at,expires_at").eq("academy_id", academyId).order("requested_at", { ascending: false }).limit(200),
+    ]);
+    const failed = [endpoints, deliveries, exports].find((result) => result.error);
+    if (failed?.error) return json(500, { error: "Failed to load integrations", detail: failed.error.message });
+    return json(200, { endpoints: endpoints.data ?? [], deliveries: deliveries.data ?? [], exports: exports.data ?? [] });
   }
 
   if (!academyAccessHas(access, "manageFinance") && !academyAccessHas(access, "manageOffers")) return json(403, { error: "Forbidden" });
@@ -5796,6 +6080,21 @@ const dispatchQueuedNotifications = async (
 ): Promise<{ sent: number; failed: number; skipped: number; processed: number }> => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const smtpEmail = normalizeEmail(Deno.env.get("GMAIL_SMTP_EMAIL"));
+  const smtpPassword = normalizeText(Deno.env.get("GMAIL_SMTP_APP_PASSWORD"), 400);
+  const mailer = smtpEmail && smtpPassword
+    ? nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 100,
+      auth: { user: smtpEmail, pass: smtpPassword },
+      disableFileAccess: true,
+      disableUrlAccess: true,
+    })
+    : null;
   if (supabaseUrl && serviceRole) {
     await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
       method: "POST",
@@ -5804,7 +6103,7 @@ const dispatchQueuedNotifications = async (
     }).catch(() => undefined);
   }
   let q = sb.from("academy_notifications")
-    .select("id, academy_id, channel, type, title, body, target, attempts, contact_id, user_id, category, dedupe_key, cta_url, academy_contacts(user_id)")
+    .select("id, academy_id, channel, type, title, body, target, attempts, scheduled_at, contact_id, user_id, category, dedupe_key, cta_url, academy_contacts(user_id)")
     .eq("status", "queued").lte("scheduled_at", new Date().toISOString())
     .order("scheduled_at", { ascending: true }).limit(200);
   if (academyId) q = q.eq("academy_id", academyId);
@@ -5816,7 +6115,7 @@ const dispatchQueuedNotifications = async (
   };
   for (const n of (queued ?? []) as Array<Record<string, unknown>>) {
     const id = String(n.id);
-    const target = normalizeText(n.target, 120);
+    const target = normalizeText(n.target, 320);
     if (n.channel === "telegram") {
       if (!supabaseUrl || !serviceRole) { await sb.from("academy_notifications").update({ status: "skipped", error: "Notification gateway not configured" }).eq("id", id);await recordAttempt(n,'skipped','Notification gateway not configured'); skipped++; continue; }
       if (!target) { await sb.from("academy_notifications").update({ status: "skipped", error: "No telegram target" }).eq("id", id);await recordAttempt(n,'skipped','No telegram target'); skipped++; continue; }
@@ -5860,12 +6159,51 @@ const dispatchQueuedNotifications = async (
         await recordAttempt(n,'failed',String(e instanceof Error ? e.message : e));
         failed++;
       }
+    } else if (n.channel === "inapp") {
+      await sb.from("academy_notifications").update({ status: "sent", sent_at: new Date().toISOString(), attempts: Number(n.attempts ?? 0) + 1, error: null }).eq("id", id);
+      await recordAttempt(n, "sent", null, `inapp:${id}`);
+      sent++;
+    } else if (n.channel === "email") {
+      if (!mailer || !smtpEmail) {
+        await sb.from("academy_notifications").update({ status: "skipped", error: "Academy email delivery is not configured", attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+        await recordAttempt(n, "skipped", "Academy email delivery is not configured");
+        skipped++;
+        continue;
+      }
+      if (!normalizeEmail(target)) {
+        await sb.from("academy_notifications").update({ status: "skipped", error: "No valid email target", attempts: Number(n.attempts ?? 0) + 1 }).eq("id", id);
+        await recordAttempt(n, "skipped", "No valid email target");
+        skipped++;
+        continue;
+      }
+      try {
+        const result = await mailer.sendMail({
+          from: `Schood Academy <${smtpEmail}>`,
+          to: target,
+          subject: normalizeText(n.title, 300) || "Academy update",
+          text: String(n.body ?? ""),
+          headers: {
+            "X-Schood-Notification": id,
+            "X-Schood-Category": String(n.category ?? "academic_required"),
+          },
+        });
+        await sb.from("academy_notifications").update({ status: "sent", sent_at: new Date().toISOString(), attempts: Number(n.attempts ?? 0) + 1, error: null }).eq("id", id);
+        await recordAttempt(n, "sent", null, normalizeText(result.messageId, 500) || null);
+        sent++;
+      } catch (emailError) {
+        const detail = String(emailError instanceof Error ? emailError.message : emailError).slice(0, 400);
+        const attempts = Number(n.attempts ?? 0) + 1;
+        await sb.from("academy_notifications").update({ status: attempts >= 3 ? "failed" : "queued", error: detail, attempts, scheduled_at: attempts >= 3 ? n.scheduled_at : new Date(Date.now() + Math.min(24, 2 ** attempts) * 60 * 60_000).toISOString() }).eq("id", id);
+        await recordAttempt(n, "failed", detail);
+        failed++;
+      }
     } else {
       await sb.from("academy_notifications").update({ status: "skipped", error: `Channel ${String(n.channel)} not enabled` }).eq("id", id);
       await recordAttempt(n,'skipped',`Channel ${String(n.channel)} not enabled`);
       skipped++;
     }
   }
+  mailer?.close();
   return { sent, failed, skipped, processed: (queued ?? []).length };
 };
 
@@ -6153,8 +6491,236 @@ const runAcademyMaintenance = async (
   // Default "dispatch" cycle: queue reminders, then send everything pending.
   const dueQueued = await queueDueReminders(sb);
   const classQueued = await queueClassReminders(sb);
+  const journeyDispatch = await advanceCommunicationJourneys(sb, null, null, 100).catch((error) => ({
+    processed: 0,
+    queued: 0,
+    paused: 0,
+    completed: 0,
+    failed: 0,
+    error: error instanceof Error ? error.message : String(error),
+  }));
   const dispatch = await dispatchQueuedNotifications(sb, null);
-  return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch };
+  const integrationDispatch = await dispatchIntegrationEvents(sb, null, 50).catch((error) => ({
+    processed: 0,
+    delivered: 0,
+    retrying: 0,
+    failed: 0,
+    error: error instanceof Error ? error.message : String(error),
+  }));
+  return { cycle: "dispatch", due_queued: dueQueued, class_queued: classQueued, ...dispatch, journeys: journeyDispatch, integrations: integrationDispatch };
+};
+
+const sha256Hex = async (value: string): Promise<string> => {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+const createOpaqueToken = (): string => {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+};
+
+const academyInvitationRedirect = (token: string): string =>
+  `https://academy.schood.online/invitations/accept?token=${encodeURIComponent(token)}`;
+
+const academyWebhookUrlIsPublic = (rawUrl: string): boolean => {
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol !== "https:") return false;
+    const host = url.hostname.toLowerCase();
+    if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local")) return false;
+    if (["0.0.0.0", "127.0.0.1", "::1"].includes(host)) return false;
+    if (/^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) return false;
+    const private172 = host.match(/^172\.(\d+)\./);
+    if (private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31) return false;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const academyWebhookAddressIsPublic = (address: string): boolean => {
+  const normalized = address.toLowerCase();
+  if (normalized === "::1" || normalized === "0:0:0:0:0:0:0:1") return false;
+  if (normalized.startsWith("fc") || normalized.startsWith("fd") || normalized.startsWith("fe8") || normalized.startsWith("fe9") || normalized.startsWith("fea") || normalized.startsWith("feb")) return false;
+  const ipv4 = normalized.startsWith("::ffff:") ? normalized.slice(7) : normalized;
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) return true;
+  const parts = ipv4.split(".").map(Number);
+  return !(parts[0] === 10 || parts[0] === 127 || parts[0] === 0 || (parts[0] === 169 && parts[1] === 254) || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || (parts[0] === 192 && parts[1] === 168));
+};
+
+const academyWebhookUrlResolvesPublicly = async (rawUrl: string): Promise<boolean> => {
+  if (!academyWebhookUrlIsPublic(rawUrl)) return false;
+  const host = new URL(rawUrl).hostname;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(":")) return academyWebhookAddressIsPublic(host);
+  try {
+    const [ipv4, ipv6] = await Promise.all([
+      Deno.resolveDns(host, "A").catch(() => [] as string[]),
+      Deno.resolveDns(host, "AAAA").catch(() => [] as string[]),
+    ]);
+    const addresses = [...ipv4, ...ipv6];
+    return addresses.length > 0 && addresses.every(academyWebhookAddressIsPublic);
+  } catch {
+    return false;
+  }
+};
+
+const renderJourneyTemplate = (template: string, values: Record<string, string>): string =>
+  template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key: string) => values[key] ?? "");
+
+async function advanceCommunicationJourneys(
+  sb: SupabaseClientLike,
+  academyId: string | null,
+  actorUserId: string | null,
+  limit = 50,
+  academyName = "Academy",
+): Promise<{ processed: number; queued: number; paused: number; completed: number; failed: number }> {
+  const nowIso = new Date().toISOString();
+  let query = sb.from("academy_communication_enrollments").select("*").eq("status", "active").lte("next_step_at", nowIso).order("next_step_at").limit(limit);
+  if (academyId) query = query.eq("academy_id", academyId);
+  const { data: dueRows, error } = await query;
+  if (error) throw new Error(`Failed to load due communication journeys: ${error.message}`);
+  let queued = 0, paused = 0, completed = 0, failed = 0;
+  for (const enrollment of (dueRows ?? []) as Array<Record<string, unknown>>) {
+    const rowAcademyId = String(enrollment.academy_id ?? academyId ?? "");
+    if (!rowAcademyId) { failed++; continue; }
+    const { data: journey } = await sb.from("academy_communication_journeys").select("id,name,audience,status").eq("academy_id", rowAcademyId).eq("id", enrollment.journey_id).maybeSingle();
+    const { data: step } = await sb.from("academy_communication_journey_steps").select("*").eq("academy_id", rowAcademyId).eq("journey_id", enrollment.journey_id).eq("position", enrollment.current_position).eq("is_active", true).maybeSingle();
+    if (!journey?.id || journey.status !== "active" || !step?.id) {
+      await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: "Journey or active step unavailable" } }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      failed++;
+      continue;
+    }
+    let recipient: Record<string, unknown> | null = null;
+    if (enrollment.contact_id) recipient = (await sb.from("academy_contacts").select("id,first_name,last_name,email,telegram_id").eq("academy_id", rowAcademyId).eq("id", enrollment.contact_id).maybeSingle()).data;
+    else if (enrollment.guardian_id) recipient = (await sb.from("academy_guardians").select("id,full_name,email,telegram_chat_id").eq("academy_id", rowAcademyId).eq("id", enrollment.guardian_id).maybeSingle()).data;
+    else if (enrollment.staff_id) recipient = (await sb.from("academy_staff").select("id,display_name,email").eq("academy_id", rowAcademyId).eq("id", enrollment.staff_id).maybeSingle()).data;
+    if (!recipient?.id) {
+      await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: "Recipient unavailable" } }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      failed++;
+      continue;
+    }
+    const displayName = normalizeText(recipient.full_name ?? recipient.display_name ?? `${String(recipient.first_name ?? "")} ${String(recipient.last_name ?? "")}`, 180) || "there";
+    const values = { name: displayName, academy_name: academyName };
+    const title = step.title_template ? renderJourneyTemplate(String(step.title_template), values) : String(journey.name);
+    const message = renderJourneyTemplate(String(step.body_template), values);
+    if (step.requires_review === true) {
+      await sb.from("academy_action_items").insert({ academy_id: rowAcademyId, dedupe_key: `journey-review:${String(enrollment.id)}:${String(step.position)}`, source_type: "communication_journey", category: "operations", priority: "medium", title: `Review message for ${displayName}`, description: message, recommended_action: "Review and send the communication, then resume the journey.", contact_id: enrollment.contact_id ?? null, due_at: nowIso, status: "open", created_by: actorUserId, metadata: { journey_id: journey.id, enrollment_id: enrollment.id, step_id: step.id, channel: step.channel, title } });
+      await sb.from("academy_communication_enrollments").update({ status: "paused", last_step_at: nowIso }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      paused++;
+      continue;
+    }
+    const channel = String(step.channel);
+    const target = channel === "email" ? normalizeEmail(recipient.email) : channel === "telegram" ? normalizeText(recipient.telegram_chat_id ?? recipient.telegram_id, 120) : null;
+    if (channel !== "inapp" && !target) {
+      await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: `No ${channel} destination` } }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      failed++;
+      continue;
+    }
+    const { error: notificationError } = await sb.from("academy_notifications").insert({ academy_id: rowAcademyId, contact_id: enrollment.contact_id ?? null, guardian_id: enrollment.guardian_id ?? null, channel, type: "communication_journey", event_key: "communication_journey", dedupe_key: `journey:${String(enrollment.id)}:${String(step.position)}`, title, body: message, target, status: "queued", scheduled_at: nowIso, metadata: { journey_id: journey.id, enrollment_id: enrollment.id, step_id: step.id, staff_id: enrollment.staff_id ?? null } });
+    if (notificationError) {
+      await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: notificationError.message } }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      failed++;
+      continue;
+    }
+    queued++;
+    const { data: nextStep } = await sb.from("academy_communication_journey_steps").select("position,delay_minutes").eq("academy_id", rowAcademyId).eq("journey_id", journey.id).eq("is_active", true).gt("position", step.position).order("position").limit(1).maybeSingle();
+    if (nextStep?.position) {
+      await sb.from("academy_communication_enrollments").update({ current_position: nextStep.position, next_step_at: new Date(Date.now() + Number(nextStep.delay_minutes ?? 0) * 60_000).toISOString(), last_step_at: nowIso }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+    } else {
+      await sb.from("academy_communication_enrollments").update({ status: "completed", last_step_at: nowIso }).eq("academy_id", rowAcademyId).eq("id", enrollment.id);
+      completed++;
+    }
+  }
+  return { processed: dueRows?.length ?? 0, queued, paused, completed, failed };
+}
+
+async function dispatchIntegrationEvents(
+  sb: SupabaseClientLike,
+  academyId: string | null,
+  limit = 20,
+): Promise<{ processed: number; delivered: number; retrying: number; failed: number }> {
+  let query = sb.from("academy_integration_deliveries").select("*").in("status", ["queued", "retrying"]).lte("next_attempt_at", new Date().toISOString()).order("next_attempt_at").limit(limit);
+  if (academyId) query = query.eq("academy_id", academyId);
+  const { data: dueRows, error } = await query;
+  if (error) throw new Error(`Failed to load integration queue: ${error.message}`);
+  let delivered = 0, retrying = 0, failed = 0;
+  for (const delivery of (dueRows ?? []) as Array<Record<string, unknown>>) {
+    const rowAcademyId = String(delivery.academy_id ?? academyId ?? "");
+    const { data: endpoint } = await sb.from("academy_integration_endpoints").select("*").eq("academy_id", rowAcademyId).eq("id", delivery.endpoint_id).eq("status", "active").maybeSingle();
+    if (!endpoint?.id || !(await academyWebhookUrlResolvesPublicly(String(endpoint.endpoint_url)))) {
+      await sb.from("academy_integration_deliveries").update({ status: "failed", error: "Endpoint unavailable or unsafe" }).eq("academy_id", rowAcademyId).eq("id", delivery.id);
+      failed++;
+      continue;
+    }
+    const payloadText = JSON.stringify(delivery.payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(endpoint.signing_secret)), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const signatureBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${payloadText}`));
+    const signature = Array.from(new Uint8Array(signatureBytes)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    await sb.from("academy_integration_deliveries").update({ status: "delivering", attempts: Number(delivery.attempts ?? 0) + 1 }).eq("academy_id", rowAcademyId).eq("id", delivery.id);
+    try {
+      const response = await fetch(String(endpoint.endpoint_url), { method: "POST", redirect: "error", signal: AbortSignal.timeout(10_000), headers: { "content-type": "application/json", "user-agent": "Schood-Academy-Webhook/1.0", "x-schood-event": String(delivery.event_type), "x-schood-delivery": String(delivery.id), "x-schood-timestamp": timestamp, "x-schood-signature": `sha256=${signature}` }, body: payloadText });
+      const excerpt = (await response.text()).slice(0, 500);
+      if (response.ok) {
+        await sb.from("academy_integration_deliveries").update({ status: "delivered", response_status: response.status, response_excerpt: excerpt, error: null, delivered_at: new Date().toISOString() }).eq("academy_id", rowAcademyId).eq("id", delivery.id);
+        await sb.from("academy_integration_endpoints").update({ consecutive_failures: 0, last_success_at: new Date().toISOString() }).eq("academy_id", rowAcademyId).eq("id", endpoint.id);
+        delivered++;
+      } else {
+        const attempts = Number(delivery.attempts ?? 0) + 1;
+        const terminal = attempts >= 5 || response.status === 410;
+        await sb.from("academy_integration_deliveries").update({ status: terminal ? "failed" : "retrying", response_status: response.status, response_excerpt: excerpt, error: `HTTP ${response.status}`, next_attempt_at: new Date(Date.now() + Math.min(24 * 60, 2 ** attempts * 5) * 60_000).toISOString() }).eq("academy_id", rowAcademyId).eq("id", delivery.id);
+        await sb.from("academy_integration_endpoints").update({ consecutive_failures: Number(endpoint.consecutive_failures ?? 0) + 1, last_failure_at: new Date().toISOString(), ...(response.status === 410 ? { status: "paused" } : {}) }).eq("academy_id", rowAcademyId).eq("id", endpoint.id);
+        terminal ? failed++ : retrying++;
+      }
+    } catch (dispatchError) {
+      const attempts = Number(delivery.attempts ?? 0) + 1;
+      const terminal = attempts >= 5;
+      await sb.from("academy_integration_deliveries").update({ status: terminal ? "failed" : "retrying", error: String(dispatchError instanceof Error ? dispatchError.message : dispatchError).slice(0, 500), next_attempt_at: new Date(Date.now() + Math.min(24 * 60, 2 ** attempts * 5) * 60_000).toISOString() }).eq("academy_id", rowAcademyId).eq("id", delivery.id);
+      await sb.from("academy_integration_endpoints").update({ consecutive_failures: Number(endpoint.consecutive_failures ?? 0) + 1, last_failure_at: new Date().toISOString() }).eq("academy_id", rowAcademyId).eq("id", endpoint.id);
+      terminal ? failed++ : retrying++;
+    }
+  }
+  return { processed: dueRows?.length ?? 0, delivered, retrying, failed };
+}
+
+const localDateTimeToIso = (date: string, time: string, timeZone: string): string => {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute, second] = time.split(":").map(Number);
+  if (![year, month, day, hour, minute].every(Number.isFinite)) throw new Error("Invalid local date or time");
+  const wanted = Date.UTC(year, month - 1, day, hour, minute, Number.isFinite(second) ? second : 0);
+  let utcGuess = wanted;
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(utcGuess)).map((part) => [part.type, part.value]));
+    const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
+    utcGuess += wanted - represented;
+  }
+  return new Date(utcGuess).toISOString();
+};
+
+const dateRange = (startsOn: string, endsOn: string): string[] => {
+  const start = new Date(`${startsOn}T00:00:00Z`);
+  const end = new Date(`${endsOn}T00:00:00Z`);
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start) throw new Error("Invalid timetable date range");
+  const dates: string[] = [];
+  for (let cursor = start.getTime(); cursor <= end.getTime(); cursor += 86_400_000) {
+    dates.push(new Date(cursor).toISOString().slice(0, 10));
+    if (dates.length > 370) throw new Error("A timetable generation window cannot exceed 370 days");
+  }
+  return dates;
 };
 
 export const __academyAccessTest = {
@@ -6212,6 +6778,188 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     const actionBody = normalizeText(body?.action, 64).toLowerCase();
     const requestedAction = actionBody || actionQuery;
 
+    if (requestedAction === "invitation_status") {
+      const invitationToken = normalizeText(req.method === "POST" ? body?.token : url.searchParams.get("token"), 240);
+      if (!invitationToken) return json(400, { error: "token is required" });
+      const tokenHash = await sha256Hex(invitationToken);
+      const { data: invitation, error } = await sb.from("academy_access_invitations")
+        .select("id,academy_id,invite_kind,email,role,token_expires_at,status,delivery_status,created_at")
+        .eq("token_hash", tokenHash).maybeSingle();
+      if (error) return json(500, { error: "Failed to inspect invitation", detail: error.message });
+      if (!invitation?.id) return json(404, { error: "Invitation not found" });
+      const { data: academy } = await sb.from("tenants").select("id,name,slug").eq("id", invitation.academy_id).maybeSingle();
+      const email = String(invitation.email ?? "");
+      const [localPart, domain] = email.split("@");
+      const maskedEmail = domain ? `${localPart.slice(0, 2)}***@${domain}` : "***";
+      return json(200, {
+        invitation: {
+          id: invitation.id,
+          academy,
+          invite_kind: invitation.invite_kind,
+          role: invitation.role,
+          email: maskedEmail,
+          token_expires_at: invitation.token_expires_at,
+          status: invitation.status,
+          delivery_status: invitation.delivery_status,
+          created_at: invitation.created_at,
+        },
+      });
+    }
+
+    if (requestedAction === "accept_access_invitation" && req.method === "POST") {
+      const invitationToken = normalizeText(body?.token, 240);
+      if (!invitationToken) return json(400, { error: "token is required" });
+      const tokenHash = await sha256Hex(invitationToken);
+      const { data: invitation, error } = await sb.from("academy_access_invitations").select("*")
+        .eq("token_hash", tokenHash).maybeSingle();
+      if (error) return json(500, { error: "Failed to load invitation", detail: error.message });
+      if (!invitation?.id) return json(404, { error: "Invitation not found" });
+      if (String(invitation.status) !== "pending") return json(409, { error: `Invitation is ${String(invitation.status)}` });
+      if (Date.parse(String(invitation.token_expires_at)) <= Date.now()) {
+        await sb.from("academy_access_invitations").update({ status: "expired" }).eq("id", invitation.id).eq("status", "pending");
+        return json(410, { error: "Invitation has expired" });
+      }
+      if (!userEmail || normalizeEmail(userEmail) !== normalizeEmail(invitation.email)) {
+        return json(403, { error: "Sign in with the email address that received this invitation" });
+      }
+      const academyId = String(invitation.academy_id);
+      const kind = String(invitation.invite_kind);
+      if (kind === "student") {
+        const contactId = String(invitation.contact_id ?? "");
+        const classroomId = String(invitation.classroom_id ?? "");
+        if (!contactId || !classroomId) return json(409, { error: "Student invitation target is incomplete" });
+        const { data: contact } = await sb.from("academy_contacts").select("id,user_id").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
+        if (!contact?.id) return json(404, { error: "Student record not found" });
+        if (contact.user_id && String(contact.user_id) !== userId) return json(409, { error: "Student record is already linked to another account" });
+        const { error: contactError } = await sb.from("academy_contacts").update({ user_id: userId }).eq("academy_id", academyId).eq("id", contactId);
+        if (contactError) return json(500, { error: "Failed to link student account", detail: contactError.message });
+        const { data: membership } = await sb.from("academy_classroom_memberships").select("id,status")
+          .eq("academy_id", academyId).eq("classroom_id", classroomId).eq("contact_id", contactId).maybeSingle();
+        const membershipResult = membership?.id
+          ? await sb.from("academy_classroom_memberships").update({ user_id: userId, status: "active", joined_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", membership.id)
+          : await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, user_id: userId, role: "student", status: "active", joined_at: new Date().toISOString(), metadata: { source: "access_invitation", invitation_id: invitation.id } });
+        if (membershipResult.error) return json(500, { error: "Failed to activate classroom membership", detail: membershipResult.error.message });
+      } else if (kind === "staff") {
+        const role = normalizeAcademyRole(invitation.role);
+        const nowIso = new Date().toISOString();
+        const { data: grant, error: grantError } = await sb.from("academy_role_grants").update({ user_id: userId, status: "active", accepted_at: nowIso })
+          .eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email)).in("status", ["invited", "active"])
+          .select("id").maybeSingle();
+        if (grantError || !grant?.id) return json(409, { error: "Staff access grant is unavailable", detail: grantError?.message });
+        const { error: staffError } = await sb.from("academy_staff").update({ user_id: userId, role, is_active: true }).eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email));
+        if (staffError) return json(500, { error: "Failed to activate the staff profile", detail: staffError.message });
+      } else if (kind === "guardian") {
+        const relationshipId = String(invitation.guardian_relationship_id ?? "");
+        const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id,status,consent_status")
+          .eq("academy_id", academyId).eq("id", relationshipId).maybeSingle();
+        if (!relationship?.id) return json(404, { error: "Guardian relationship not found" });
+        const { error: guardianError } = await sb.from("academy_guardians").update({ user_id: userId, status: "verified" })
+          .eq("academy_id", academyId).eq("id", relationship.guardian_id);
+        if (guardianError) return json(500, { error: "Failed to link guardian account", detail: guardianError.message });
+        const { error: relationshipError } = await sb.from("academy_student_guardian_relationships").update({ status: "active", consent_status: "granted", consent_granted_at: new Date().toISOString() })
+          .eq("academy_id", academyId).eq("id", relationshipId);
+        if (relationshipError) return json(500, { error: "Failed to activate guardian access", detail: relationshipError.message });
+      } else {
+        return json(409, { error: "Unsupported invitation type" });
+      }
+      const nowIso = new Date().toISOString();
+      const { data: accepted, error: acceptError } = await sb.from("academy_access_invitations")
+        .update({ status: "accepted", accepted_by: userId, accepted_at: nowIso })
+        .eq("id", invitation.id).eq("status", "pending").select("id,academy_id,invite_kind,status,accepted_at").maybeSingle();
+      if (acceptError || !accepted?.id) return json(409, { error: "Invitation was already used", detail: acceptError?.message });
+      await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: kind, action: "access.invitation_accepted", targetType: "academy_access_invitation", targetId: String(invitation.id), contactId: invitation.contact_id ? String(invitation.contact_id) : null, classroomId: invitation.classroom_id ? String(invitation.classroom_id) : null, metadata: { invite_kind: kind } });
+      return json(200, { invitation: accepted });
+    }
+
+    if (requestedAction === "student_service_requests" || requestedAction === "student_learning_plans") {
+      const contacts = await loadStudentContacts(sb, userId, userEmail);
+      const academyId = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
+      const contact = contacts.find((row) => !academyId || String(row.academy_id) === academyId);
+      if (!contact?.id) return json(403, { error: "No student record is linked to this academy" });
+      const contactAcademyId = String(contact.academy_id);
+      const contactId = String(contact.id);
+      if (requestedAction === "student_service_requests") {
+        const { data: requests, error } = await sb.from("academy_service_requests").select("*")
+          .eq("academy_id", contactAcademyId).eq("requester_user_id", userId).eq("contact_id", contactId)
+          .order("created_at", { ascending: false }).limit(200);
+        if (error) return json(500, { error: "Failed to load your requests", detail: error.message });
+        const ids = ((requests ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+        const events = ids.length
+          ? await sb.from("academy_service_request_events").select("*").eq("academy_id", contactAcademyId).in("request_id", ids).eq("visible_to_requester", true).order("created_at").limit(1000)
+          : { data: [], error: null };
+        return json(200, { requests: requests ?? [], events: events.data ?? [], contact_id: contactId, academy_id: contactAcademyId });
+      }
+      const { data: plans, error } = await sb.from("academy_learning_plans").select("*")
+        .eq("academy_id", contactAcademyId).eq("contact_id", contactId).not("published_at", "is", null).order("created_at", { ascending: false }).limit(100);
+      if (error) return json(500, { error: "Failed to load learning plans", detail: error.message });
+      const planIds = ((plans ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+      const frameworkIds = Array.from(new Set(((plans ?? []) as Array<Record<string, unknown>>).map((row) => String(row.framework_id))));
+      const [items, frameworks, competencies] = await Promise.all([
+        planIds.length ? sb.from("academy_learning_plan_items").select("*").eq("academy_id", contactAcademyId).in("plan_id", planIds).order("created_at") : Promise.resolve({ data: [], error: null }),
+        frameworkIds.length ? sb.from("academy_competency_frameworks").select("id,code,name,description,status").eq("academy_id", contactAcademyId).in("id", frameworkIds) : Promise.resolve({ data: [], error: null }),
+        frameworkIds.length ? sb.from("academy_competencies").select("id,framework_id,parent_id,code,title,description,level_scale,position,status").eq("academy_id", contactAcademyId).in("framework_id", frameworkIds).order("position") : Promise.resolve({ data: [], error: null }),
+      ]);
+      const itemIds = ((items.data ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+      const evidence = itemIds.length ? await sb.from("academy_competency_evidence").select("*").eq("academy_id", contactAcademyId).in("plan_item_id", itemIds).order("observed_at", { ascending: false }).limit(1000) : { data: [], error: null };
+      const failed = [items, frameworks, competencies, evidence].find((result) => result.error);
+      if (failed?.error) return json(500, { error: "Failed to load learning plan details", detail: failed.error.message });
+      return json(200, { plans: plans ?? [], items: items.data ?? [], frameworks: frameworks.data ?? [], competencies: competencies.data ?? [], evidence: evidence.data ?? [], contact_id: contactId, academy_id: contactAcademyId });
+    }
+
+    if (requestedAction === "student_service_request_create" && req.method === "POST") {
+      const contacts = await loadStudentContacts(sb, userId, userEmail);
+      const academyId = normalizeText(body?.academy_id, 64);
+      const contact = contacts.find((row) => String(row.academy_id) === academyId);
+      if (!contact?.id) return json(403, { error: "No student record is linked to this academy" });
+      const requestType = normalizeText(body?.request_type, 40).toLowerCase();
+      const allowedTypes = ["make_up", "freeze", "transfer", "refund", "schedule_change", "document", "support", "other"];
+      const subject = normalizeText(body?.subject, 200);
+      const details = normalizeText(body?.details, 5000);
+      if (!allowedTypes.includes(requestType) || !subject || !details) return json(400, { error: "request_type, subject, and details are required" });
+      const classroomId = normalizeText(body?.classroom_id, 64) || null;
+      if (classroomId) {
+        const { data: membership } = await sb.from("academy_classroom_memberships").select("id").eq("academy_id", academyId).eq("classroom_id", classroomId).eq("contact_id", contact.id).in("status", ["active", "paused", "completed"]).maybeSingle();
+        if (!membership?.id) return json(403, { error: "This classroom is not part of your student record" });
+      }
+      const { data: request, error } = await sb.from("academy_service_requests").insert({ academy_id: academyId, branch_id: contact.primary_branch_id ?? null, requester_kind: "student", requester_user_id: userId, contact_id: contact.id, classroom_id: classroomId, charge_id: normalizeText(body?.charge_id, 64) || null, request_type: requestType, subject, details, priority: "normal", desired_date: normalizeText(body?.desired_date, 20) || null, sla_due_at: new Date(Date.now() + 2 * 86_400_000).toISOString(), metadata: { source: "student_workspace" } }).select("*").single();
+      if (error) return json(400, { error: "Failed to submit request", detail: error.message });
+      await sb.from("academy_service_request_events").insert({ academy_id: academyId, request_id: request.id, event_type: "submitted", to_status: "submitted", actor_user_id: userId, note: "Submitted by student", visible_to_requester: true });
+      await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: "student", action: "service_request.submitted", targetType: "academy_service_request", targetId: String(request.id), contactId: String(contact.id), classroomId, metadata: { request_type: requestType } });
+      return json(200, { request });
+    }
+
+    if (requestedAction === "submit_sensitive_report" && req.method === "POST") {
+      const reporterKind = normalizeText(body?.reporter_kind, 20).toLowerCase();
+      const academyId = normalizeText(body?.academy_id, 64);
+      const caseType = normalizeText(body?.case_type, 40).toLowerCase();
+      const title = normalizeText(body?.title, 240);
+      const description = normalizeText(body?.description, 10000);
+      const severity = normalizeText(body?.severity, 20).toLowerCase() || "medium";
+      if (!academyId || !["student", "guardian"].includes(reporterKind) || !["complaint", "safeguarding", "harassment", "conduct", "privacy", "academic_integrity", "other"].includes(caseType) || !title || !description || !["low", "medium", "high", "critical"].includes(severity)) {
+        return json(400, { error: "academy_id, reporter_kind, case_type, title, description, and severity are required" });
+      }
+      let reporterContactId: string | null = null;
+      if (reporterKind === "student") {
+        const contacts = await loadStudentContacts(sb, userId, userEmail);
+        const contact = contacts.find((row) => String(row.academy_id) === academyId);
+        if (!contact?.id) return json(403, { error: "No student record is linked to this academy" });
+        reporterContactId = String(contact.id);
+      } else {
+        const relationshipId = normalizeText(body?.relationship_id, 64);
+        const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id,contact_id,status,consent_status").eq("academy_id", academyId).eq("id", relationshipId).eq("status", "active").eq("consent_status", "granted").maybeSingle();
+        if (!relationship?.id) return json(403, { error: "Guardian relationship is not active" });
+        const { data: guardian } = await sb.from("academy_guardians").select("id").eq("academy_id", academyId).eq("id", relationship.guardian_id).eq("user_id", userId).eq("status", "verified").maybeSingle();
+        if (!guardian?.id) return json(403, { error: "Forbidden" });
+        reporterContactId = String(relationship.contact_id);
+      }
+      const requestedSubjectContactId = normalizeText(body?.subject_contact_id, 64) || reporterContactId;
+      if (requestedSubjectContactId !== reporterContactId) return json(403, { error: "You can only submit a private report for the linked learner" });
+      const { data: sensitiveCase, error } = await sb.from("academy_sensitive_cases").insert({ academy_id: academyId, case_type: caseType, title, description, severity, confidentiality: "restricted", status: "open", reporter_user_id: userId, reporter_contact_id: reporterContactId, subject_contact_id: reporterContactId, created_by: userId, metadata: { source: `${reporterKind}_workspace`, reporter_kind: reporterKind } }).select("id,case_number,case_type,severity,status,created_at").single();
+      if (error) return json(400, { error: "Failed to submit restricted report", detail: error.message });
+      await sb.from("academy_sensitive_case_events").insert({ academy_id: academyId, case_id: sensitiveCase.id, event_type: "created", to_status: "open", note: `Submitted by ${reporterKind}`, actor_user_id: userId });
+      return json(200, { report: sensitiveCase });
+    }
+
     if (requestedAction === "student-feed") {
       return await loadStudentFeed(sb, userId, userEmail);
     }
@@ -6262,6 +7010,51 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     if (requestedAction === "guardian_send_message" && req.method === "POST") {
       const relationshipId=normalizeText(body?.relationship_id,64);const messageBody=normalizeText(body?.body,5000);if(!relationshipId||!messageBody)return json(400,{error:"relationship_id and body are required"});const {data:relationship}=await sb.from('academy_student_guardian_relationships').select('id,academy_id,guardian_id,contact_id,can_message_academy,status,consent_status').eq('id',relationshipId).maybeSingle();if(!relationship?.id||relationship.status!=='active'||relationship.consent_status!=='granted'||relationship.can_message_academy!==true)return json(403,{error:"Guardian messaging is not authorized"});const {data:guardian}=await sb.from('academy_guardians').select('id').eq('id',relationship.guardian_id).eq('user_id',userId).eq('status','verified').maybeSingle();if(!guardian?.id)return json(403,{error:"Forbidden"});const {data,error}=await sb.from('academy_guardian_messages').insert({academy_id:relationship.academy_id,relationship_id:relationshipId,direction:'guardian_to_academy',sender_user_id:userId,body:messageBody,status:'sent',channel:'inapp'}).select('*').single();if(error)return json(400,{error:"Failed to send guardian message",detail:error.message});await logAcademyAuditEvent(sb,{academyId:String(relationship.academy_id),actorUserId:userId,actorRole:'guardian',action:'guardian.message_sent',targetType:'academy_guardian_message',targetId:String(data.id),contactId:String(relationship.contact_id)});return json(200,{message:data});
+    }
+
+    if (requestedAction === "guardian_service_requests") {
+      const academyId = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
+      let guardianQuery = sb.from("academy_guardians").select("id,academy_id,full_name,status").eq("user_id", userId).eq("status", "verified");
+      if (academyId) guardianQuery = guardianQuery.eq("academy_id", academyId);
+      const { data: guardians, error: guardianError } = await guardianQuery.limit(50);
+      if (guardianError) return json(500, { error: "Failed to load guardian profile", detail: guardianError.message });
+      const guardianIds = ((guardians ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+      if (!guardianIds.length) return json(200, { requests: [], events: [], guardians: [] });
+      const { data: requests, error } = await sb.from("academy_service_requests").select("*")
+        .eq("requester_user_id", userId).in("guardian_id", guardianIds).order("created_at", { ascending: false }).limit(200);
+      if (error) return json(500, { error: "Failed to load guardian requests", detail: error.message });
+      const ids = ((requests ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
+      const events = ids.length
+        ? await sb.from("academy_service_request_events").select("*").in("request_id", ids).eq("visible_to_requester", true).order("created_at").limit(1000)
+        : { data: [], error: null };
+      return json(200, { requests: requests ?? [], events: events.data ?? [], guardians: guardians ?? [] });
+    }
+
+    if (requestedAction === "guardian_service_request_create" && req.method === "POST") {
+      const relationshipId = normalizeText(body?.relationship_id, 64);
+      const requestType = normalizeText(body?.request_type, 40).toLowerCase();
+      const allowedTypes = ["make_up", "freeze", "transfer", "refund", "schedule_change", "document", "support", "other"];
+      const subject = normalizeText(body?.subject, 200);
+      const details = normalizeText(body?.details, 5000);
+      if (!relationshipId || !allowedTypes.includes(requestType) || !subject || !details) return json(400, { error: "relationship_id, request_type, subject, and details are required" });
+      const { data: relationship } = await sb.from("academy_student_guardian_relationships")
+        .select("id,academy_id,guardian_id,contact_id,status,consent_status")
+        .eq("id", relationshipId).eq("status", "active").eq("consent_status", "granted").maybeSingle();
+      if (!relationship?.id) return json(403, { error: "Guardian relationship is not active" });
+      const { data: guardian } = await sb.from("academy_guardians").select("id").eq("academy_id", relationship.academy_id).eq("id", relationship.guardian_id).eq("user_id", userId).eq("status", "verified").maybeSingle();
+      if (!guardian?.id) return json(403, { error: "Forbidden" });
+      const { data: contact } = await sb.from("academy_contacts").select("id,primary_branch_id").eq("academy_id", relationship.academy_id).eq("id", relationship.contact_id).maybeSingle();
+      if (!contact?.id) return json(404, { error: "Student record not found" });
+      const classroomId = normalizeText(body?.classroom_id, 64) || null;
+      if (classroomId) {
+        const { data: membership } = await sb.from("academy_classroom_memberships").select("id").eq("academy_id", relationship.academy_id).eq("classroom_id", classroomId).eq("contact_id", relationship.contact_id).in("status", ["active", "paused", "completed"]).maybeSingle();
+        if (!membership?.id) return json(403, { error: "This classroom is not linked to the learner" });
+      }
+      const { data: request, error } = await sb.from("academy_service_requests").insert({ academy_id: relationship.academy_id, branch_id: contact.primary_branch_id ?? null, requester_kind: "guardian", requester_user_id: userId, contact_id: relationship.contact_id, guardian_id: relationship.guardian_id, classroom_id: classroomId, charge_id: normalizeText(body?.charge_id, 64) || null, request_type: requestType, subject, details, priority: "normal", desired_date: normalizeText(body?.desired_date, 20) || null, sla_due_at: new Date(Date.now() + 2 * 86_400_000).toISOString(), metadata: { source: "guardian_portal", relationship_id: relationshipId } }).select("*").single();
+      if (error) return json(400, { error: "Failed to submit guardian request", detail: error.message });
+      await sb.from("academy_service_request_events").insert({ academy_id: relationship.academy_id, request_id: request.id, event_type: "submitted", to_status: "submitted", actor_user_id: userId, note: "Submitted by guardian", visible_to_requester: true });
+      await logAcademyAuditEvent(sb, { academyId: String(relationship.academy_id), actorUserId: userId, actorRole: "guardian", action: "service_request.submitted", targetType: "academy_service_request", targetId: String(request.id), contactId: String(relationship.contact_id), metadata: { request_type: requestType } });
+      return json(200, { request });
     }
 
     const memberships = await loadMemberships(sb, userId, userEmail);
@@ -7121,8 +7914,774 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
       const explicitBranchId = normalizeText(body?.branch_id ?? body?.primary_branch_id, 64);
       if (explicitBranchId && !accessCanUseBranch(access, explicitBranchId)) return json(403, { error: "Forbidden" });
-      if (academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}))) {
+      if (academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
         return json(403, { error: "A branch-scoped role may only mutate records in an assigned branch" });
+      }
+
+      if (["create_access_invitation", "resend_access_invitation", "revoke_access_invitation"].includes(actionBody)) {
+        const invitationId = normalizeText(body?.invitation_id ?? body?.id, 64);
+        let invitationKind = normalizeText(body?.invite_kind, 30).toLowerCase();
+        let invitationEmail = normalizeEmail(body?.email);
+        let invitationRole = normalizeAcademyRole(body?.role);
+        let contactId = normalizeText(body?.contact_id, 64) || null;
+        let classroomId = normalizeText(body?.classroom_id, 64) || null;
+        let guardianRelationshipId = normalizeText(body?.guardian_relationship_id, 64) || null;
+        let existingResendCount = 0;
+        if (actionBody !== "create_access_invitation") {
+          if (!invitationId) return json(400, { error: "invitation_id is required" });
+          const { data: existing, error: existingError } = await sb.from("academy_access_invitations").select("*").eq("academy_id", academyId).eq("id", invitationId).maybeSingle();
+          if (existingError) return json(500, { error: "Failed to load invitation", detail: existingError.message });
+          if (!existing?.id) return json(404, { error: "Invitation not found" });
+          invitationKind = String(existing.invite_kind);
+          invitationEmail = normalizeEmail(existing.email);
+          invitationRole = normalizeAcademyRole(existing.role);
+          contactId = existing.contact_id ? String(existing.contact_id) : null;
+          classroomId = existing.classroom_id ? String(existing.classroom_id) : null;
+          guardianRelationshipId = existing.guardian_relationship_id ? String(existing.guardian_relationship_id) : null;
+          existingResendCount = Number(existing.resend_count ?? 0);
+          if (actionBody === "revoke_access_invitation") {
+            const allowed = invitationKind === "staff" ? academyAccessHas(access, "manageStaff") : invitationKind === "guardian" ? academyAccessHas(access, "manageGuardians") : academyAccessHas(access, "manageRoster");
+            if (!allowed) return json(403, { error: "Forbidden" });
+            const { data: revoked, error } = await sb.from("academy_access_invitations").update({ status: "revoked", revoked_by: userId, revoked_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", invitationId).eq("status", "pending").select("id,invite_kind,email,status,revoked_at").maybeSingle();
+            if (error) return json(500, { error: "Failed to revoke invitation", detail: error.message });
+            if (!revoked?.id) return json(409, { error: "Only pending invitations can be revoked" });
+            return json(200, { invitation: revoked });
+          }
+          if (String(existing.status) !== "pending") return json(409, { error: "Only pending invitations can be resent" });
+        }
+
+        if (!["student", "staff", "guardian"].includes(invitationKind) || !invitationEmail) {
+          return json(400, { error: "invite_kind and email are required" });
+        }
+        const permissionAllowed = invitationKind === "staff"
+          ? academyAccessHas(access, "manageStaff")
+          : invitationKind === "guardian"
+          ? academyAccessHas(access, "manageGuardians")
+          : academyAccessHas(access, "manageRoster");
+        if (!permissionAllowed) return json(403, { error: "Forbidden" });
+
+        if (invitationKind === "student") {
+          if (!contactId || !classroomId) return json(400, { error: "contact_id and classroom_id are required for a student invitation" });
+          await ensureContactInAccessScope(sb, academyId, access, contactId);
+          if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+          const { data: contact } = await sb.from("academy_contacts").select("id,email").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
+          const { data: classroom } = await sb.from("academy_classrooms").select("id").eq("academy_id", academyId).eq("id", classroomId).maybeSingle();
+          if (!contact?.id || !classroom?.id) return json(404, { error: "Student or classroom not found" });
+          if (contact.email && normalizeEmail(contact.email) !== invitationEmail) return json(409, { error: "Invitation email must match the student record" });
+          const { data: membership } = await sb.from("academy_classroom_memberships").select("id,status").eq("academy_id", academyId).eq("classroom_id", classroomId).eq("contact_id", contactId).maybeSingle();
+          if (membership?.id) {
+            await sb.from("academy_classroom_memberships").update({ status: membership.status === "active" ? "active" : "invited" }).eq("academy_id", academyId).eq("id", membership.id);
+          } else {
+            const { error } = await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, role: "student", status: "invited", metadata: { source: "access_invitation" } });
+            if (error) return json(400, { error: "Failed to prepare classroom invitation", detail: error.message });
+          }
+        }
+        if (invitationKind === "staff") {
+          if (!STAFF_GRANT_ROLES.includes(invitationRole)) return json(400, { error: "A valid staff role is required" });
+          const scopeType = staffGrantScopeForRole(invitationRole);
+          const requestedClassroomIds = Array.isArray(body?.classroom_ids) ? (body.classroom_ids as unknown[]).map((value) => normalizeText(value, 64)).filter(Boolean) : [];
+          if (scopeType === "classrooms" && requestedClassroomIds.length === 0) return json(400, { error: "Teacher and assistant invitations require at least one classroom" });
+          const { data: existingUser } = await sb.from("users").select("id").eq("email", invitationEmail).maybeSingle();
+          const { error: grantError } = await sb.from("academy_role_grants").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, scope_type: scopeType, scope_ids: scopeType === "classrooms" ? requestedClassroomIds : [], status: "invited", granted_by: userId, starts_at: new Date().toISOString(), accepted_at: null, revoked_at: null, metadata: { source: "access_invitation" } }, { onConflict: "academy_id,email" });
+          if (grantError) return json(400, { error: "Failed to prepare staff grant", detail: grantError.message });
+          await sb.from("academy_staff").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, classroom_ids: scopeType === "classrooms" ? requestedClassroomIds : [], is_active: true, created_by: userId }, { onConflict: "academy_id,email" });
+        }
+        if (invitationKind === "guardian") {
+          if (!guardianRelationshipId) return json(400, { error: "guardian_relationship_id is required" });
+          const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id").eq("academy_id", academyId).eq("id", guardianRelationshipId).maybeSingle();
+          if (!relationship?.id) return json(404, { error: "Guardian relationship not found" });
+          const { data: guardian } = await sb.from("academy_guardians").select("id,email").eq("academy_id", academyId).eq("id", relationship.guardian_id).maybeSingle();
+          if (!guardian?.id || normalizeEmail(guardian.email) !== invitationEmail) return json(409, { error: "Invitation email must match the guardian record" });
+        }
+
+        const rawToken = createOpaqueToken();
+        const tokenHash = await sha256Hex(rawToken);
+        const expiresAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+        const nowIso = new Date().toISOString();
+        const invitationPayload = {
+          academy_id: academyId,
+          invite_kind: invitationKind,
+          email: invitationEmail,
+          role: invitationKind === "staff" ? invitationRole : null,
+          contact_id: contactId,
+          classroom_id: classroomId,
+          guardian_relationship_id: guardianRelationshipId,
+          token_hash: tokenHash,
+          token_expires_at: expiresAt,
+          status: "pending",
+          delivery_status: "queued",
+          delivery_error: null,
+          created_by: userId,
+          updated_at: nowIso,
+          metadata: { source: "academy_workspace" },
+        };
+        let saved: Record<string, unknown> | null = null;
+        if (actionBody === "resend_access_invitation") {
+          const { data, error } = await sb.from("academy_access_invitations").update({ ...invitationPayload, resend_count: existingResendCount + 1, last_resent_at: nowIso }).eq("academy_id", academyId).eq("id", invitationId).select("*").single();
+          if (error) return json(400, { error: "Failed to rotate invitation", detail: error.message });
+          saved = data as Record<string, unknown>;
+        } else {
+          let pendingQuery = sb.from("academy_access_invitations").select("id,resend_count").eq("academy_id", academyId).eq("invite_kind", invitationKind).eq("email", invitationEmail).eq("status", "pending");
+          if (invitationKind === "student") pendingQuery = pendingQuery.eq("contact_id", contactId).eq("classroom_id", classroomId);
+          if (invitationKind === "staff") pendingQuery = pendingQuery.eq("role", invitationRole);
+          if (invitationKind === "guardian") pendingQuery = pendingQuery.eq("guardian_relationship_id", guardianRelationshipId);
+          const { data: pending, error: pendingError } = await pendingQuery.maybeSingle();
+          if (pendingError) return json(500, { error: "Failed to check pending invitations", detail: pendingError.message });
+          const result = pending?.id
+            ? await sb.from("academy_access_invitations").update({ ...invitationPayload, resend_count: Number(pending.resend_count ?? 0) + 1, last_resent_at: nowIso }).eq("academy_id", academyId).eq("id", pending.id).select("*").single()
+            : await sb.from("academy_access_invitations").insert(invitationPayload).select("*").single();
+          if (result.error) return json(400, { error: "Failed to save invitation", detail: result.error.message });
+          saved = result.data as Record<string, unknown>;
+        }
+        const redirectTo = academyInvitationRedirect(rawToken);
+        const { error: deliveryError } = await authSb.auth.signInWithOtp({ email: invitationEmail, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } });
+        const deliveryPatch = deliveryError
+          ? { delivery_status: "failed", delivery_error: deliveryError.message }
+          : { delivery_status: "sent", delivery_error: null, sent_at: nowIso };
+        const { data: delivered } = await sb.from("academy_access_invitations").update(deliveryPatch).eq("academy_id", academyId).eq("id", saved.id).select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,created_at").single();
+        await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: access.role, action: actionBody === "create_access_invitation" ? "access.invitation_created" : "access.invitation_resent", targetType: "academy_access_invitation", targetId: String(saved.id), contactId, classroomId, status: deliveryError ? "error" : "ok", metadata: { invite_kind: invitationKind, delivery_status: deliveryError ? "failed" : "sent" } });
+        return json(deliveryError ? 202 : 200, { invitation: delivered, acceptance_url: redirectTo });
+      }
+
+      if (actionBody === "student_preview") {
+        if (!["owner", "admin", "center_admin"].includes(access.role)) return json(403, { error: "Only academy administrators can preview a learner workspace" });
+        const contactId = normalizeText(body?.contact_id, 64);
+        if (!contactId) return json(400, { error: "contact_id is required" });
+        const { data: contact, error: contactError } = await sb.from("academy_contacts").select("id,academy_id,first_name,last_name,email,status,placement_level,placement_score,lifecycle_stage").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
+        if (contactError) return json(500, { error: "Failed to load student preview", detail: contactError.message });
+        if (!contact?.id) return json(404, { error: "Student not found" });
+        const { data: memberships } = await sb.from("academy_classroom_memberships").select("id,classroom_id,role,status,joined_at,academy_classrooms(id,name,description,is_active)").eq("academy_id", academyId).eq("contact_id", contactId).in("status", ["active", "paused", "completed"]).limit(200);
+        const classroomIds = ((memberships ?? []) as Array<Record<string, unknown>>).map((row) => String(row.classroom_id));
+        const none = Promise.resolve({ data: [], error: null });
+        const [announcements, assignments, submissions, attendance, sessions, plans, requests] = await Promise.all([
+          classroomIds.length ? sb.from("academy_announcements").select("id,classroom_id,title,body,created_at").eq("academy_id", academyId).in("classroom_id", classroomIds).order("created_at", { ascending: false }).limit(100) : none,
+          classroomIds.length ? sb.from("academy_assignments").select("id,classroom_id,title,description,due_at,status,max_score").eq("academy_id", academyId).in("classroom_id", classroomIds).eq("status", "active").order("due_at").limit(300) : none,
+          sb.from("academy_submissions").select("id,assignment_id,classroom_id,status,score,max_score,submitted_at,graded_at").eq("academy_id", academyId).eq("contact_id", contactId).order("submitted_at", { ascending: false }).limit(300),
+          sb.from("academy_attendance").select("id,classroom_id,session_date,status,notes").eq("academy_id", academyId).eq("contact_id", contactId).order("session_date", { ascending: false }).limit(300),
+          classroomIds.length ? sb.from("academy_lesson_sessions").select("id,classroom_id,title,session_type,delivery_mode,starts_at,ends_at,status").eq("academy_id", academyId).in("classroom_id", classroomIds).gte("ends_at", new Date(Date.now() - 7 * 86_400_000).toISOString()).order("starts_at").limit(300) : none,
+          sb.from("academy_learning_plans").select("id,framework_id,title,goal,starts_on,target_date,status,published_at").eq("academy_id", academyId).eq("contact_id", contactId).not("published_at", "is", null).order("created_at", { ascending: false }).limit(100),
+          sb.from("academy_service_requests").select("id,request_type,subject,priority,status,desired_date,resolution,created_at,updated_at").eq("academy_id", academyId).eq("contact_id", contactId).order("created_at", { ascending: false }).limit(100),
+        ]);
+        const failed = [announcements, assignments, submissions, attendance, sessions, plans, requests].find((result) => result.error);
+        if (failed?.error) return json(500, { error: "Failed to assemble student preview", detail: failed.error.message });
+        await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: access.role, action: "student.preview_opened", targetType: "academy_contact", targetId: contactId, contactId, metadata: { read_only: true } });
+        return json(200, { preview: true, read_only: true, contact, memberships: memberships ?? [], announcements: announcements.data ?? [], assignments: assignments.data ?? [], submissions: submissions.data ?? [], attendance: attendance.data ?? [], sessions: sessions.data ?? [], learning_plans: plans.data ?? [], service_requests: requests.data ?? [] });
+      }
+
+      if (actionBody === "upsert_timetable_term") {
+        const termId = normalizeText(body?.id ?? body?.term_id, 64);
+        const name = normalizeText(body?.name, 180);
+        const startsOn = normalizeText(body?.starts_on, 20);
+        const endsOn = normalizeText(body?.ends_on, 20);
+        const status = normalizeText(body?.status, 20).toLowerCase() || "draft";
+        if (!name || !startsOn || !endsOn) return json(400, { error: "name, starts_on, and ends_on are required" });
+        if (!["draft", "active", "completed", "archived"].includes(status)) return json(400, { error: "Invalid term status" });
+        if (dateRange(startsOn, endsOn).length > 370) return json(400, { error: "Term cannot exceed 370 days" });
+        const payload = { academy_id: academyId, branch_id: normalizeText(body?.branch_id, 64) || null, academic_calendar_id: normalizeText(body?.academic_calendar_id, 64) || null, name, starts_on: startsOn, ends_on: endsOn, timezone: normalizeText(body?.timezone, 80) || "Asia/Tashkent", status, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        const result = termId
+          ? await sb.from("academy_timetable_terms").update(payload).eq("academy_id", academyId).eq("id", termId).select("*").maybeSingle()
+          : await sb.from("academy_timetable_terms").insert(payload).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save timetable term", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Timetable term not found" });
+        return json(200, { term: result.data });
+      }
+
+      if (actionBody === "upsert_timetable_series") {
+        const seriesId = normalizeText(body?.id ?? body?.series_id, 64);
+        const termId = normalizeText(body?.term_id, 64);
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        const sourceScheduleId = normalizeText(body?.source_schedule_id, 64);
+        const branchId = normalizeText(body?.branch_id, 64);
+        const primaryStaffId = normalizeText(body?.primary_staff_id, 64);
+        const title = normalizeText(body?.title, 220);
+        const status = normalizeText(body?.status, 20).toLowerCase() || "draft";
+        const deliveryMode = normalizeText(body?.delivery_mode, 20).toLowerCase() || "physical";
+        if (!termId || !classroomId || !sourceScheduleId || !branchId || !primaryStaffId || !title) return json(400, { error: "term_id, classroom_id, source_schedule_id, branch_id, primary_staff_id, and title are required" });
+        if (!["draft", "active", "paused", "completed", "archived"].includes(status) || !["physical", "online", "hybrid"].includes(deliveryMode)) return json(400, { error: "Invalid timetable series status or delivery mode" });
+        if (!accessCanUseClassroom(access, classroomId) || !accessCanUseBranch(access, branchId)) return json(403, { error: "Forbidden" });
+        const [{ data: term }, { data: schedule }, { data: staffRow }, { data: room }] = await Promise.all([
+          sb.from("academy_timetable_terms").select("id,starts_on,ends_on,branch_id").eq("academy_id", academyId).eq("id", termId).maybeSingle(),
+          sb.from("academy_classroom_schedules").select("id,classroom_id").eq("academy_id", academyId).eq("id", sourceScheduleId).eq("is_active", true).maybeSingle(),
+          sb.from("academy_staff").select("id,is_active").eq("academy_id", academyId).eq("id", primaryStaffId).eq("is_active", true).maybeSingle(),
+          normalizeText(body?.room_id, 64) ? sb.from("academy_rooms").select("id,branch_id,is_active").eq("academy_id", academyId).eq("id", normalizeText(body?.room_id, 64)).eq("is_active", true).maybeSingle() : Promise.resolve({ data: null }),
+        ]);
+        if (!term?.id || !schedule?.id || String(schedule.classroom_id) !== classroomId || !staffRow?.id) return json(409, { error: "Term, schedule, classroom, or staff selection is invalid" });
+        const roomId = room?.id ? String(room.id) : null;
+        if (deliveryMode === "physical" && !roomId) return json(400, { error: "Physical timetable series require a room" });
+        if (room?.branch_id && String(room.branch_id) !== branchId) return json(409, { error: "Room belongs to a different branch" });
+        const startsOn = normalizeText(body?.starts_on, 20) || String(term.starts_on);
+        const endsOn = normalizeText(body?.ends_on, 20) || String(term.ends_on);
+        if (startsOn < String(term.starts_on) || endsOn > String(term.ends_on) || endsOn < startsOn) return json(400, { error: "Series dates must stay inside the term" });
+        const payload = { academy_id: academyId, term_id: termId, classroom_id: classroomId, source_schedule_id: sourceScheduleId, branch_id: branchId, room_id: roomId, primary_staff_id: primaryStaffId, title, session_type: normalizeText(body?.session_type, 30).toLowerCase() || "regular", delivery_mode: deliveryMode, starts_on: startsOn, ends_on: endsOn, status, skip_calendar_closures: body?.skip_calendar_closures !== false, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        const result = seriesId
+          ? await sb.from("academy_timetable_series").update(payload).eq("academy_id", academyId).eq("id", seriesId).select("*").maybeSingle()
+          : await sb.from("academy_timetable_series").insert(payload).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save timetable series", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Timetable series not found" });
+        return json(200, { series: result.data });
+      }
+
+      if (actionBody === "generate_timetable") {
+        const termId = normalizeText(body?.term_id, 64);
+        const dryRun = body?.dry_run !== false;
+        if (!termId) return json(400, { error: "term_id is required" });
+        const { data: term, error: termError } = await sb.from("academy_timetable_terms").select("*").eq("academy_id", academyId).eq("id", termId).maybeSingle();
+        if (termError) return json(500, { error: "Failed to load timetable term", detail: termError.message });
+        if (!term?.id) return json(404, { error: "Timetable term not found" });
+        const { data: seriesRows, error: seriesError } = await sb.from("academy_timetable_series").select("*").eq("academy_id", academyId).eq("term_id", termId).in("status", ["draft", "active"]).limit(500);
+        if (seriesError) return json(500, { error: "Failed to load timetable series", detail: seriesError.message });
+        if (!seriesRows?.length) return json(409, { error: "Add at least one active timetable series before generating" });
+        const scheduleIds = (seriesRows as Array<Record<string, unknown>>).map((row) => String(row.source_schedule_id));
+        const { data: scheduleRows, error: scheduleError } = await sb.from("academy_classroom_schedules").select("id,classroom_id,day_of_week,start_time,end_time,timezone,label,is_active").eq("academy_id", academyId).in("id", scheduleIds).eq("is_active", true).limit(500);
+        if (scheduleError) return json(500, { error: "Failed to load recurring schedule slots", detail: scheduleError.message });
+        const schedules = new Map(((scheduleRows ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.id), row]));
+        let closureRows: Array<Record<string, unknown>> = [];
+        if (term.academic_calendar_id) {
+          const { data, error } = await sb.from("academy_calendar_events").select("id,starts_at,ends_at,name,event_type,affects_schedule").eq("academy_id", academyId).eq("calendar_id", term.academic_calendar_id).eq("affects_schedule", true).lt("starts_at", `${String(term.ends_on)}T23:59:59Z`).gt("ends_at", `${String(term.starts_on)}T00:00:00Z`).limit(1000);
+          if (error) return json(500, { error: "Failed to load academic calendar closures", detail: error.message });
+          closureRows = (data ?? []) as Array<Record<string, unknown>>;
+        }
+        const { data: existingRows, error: existingError } = await sb.from("academy_lesson_sessions").select("id,classroom_id,room_id,primary_staff_id,starts_at,ends_at,status,timetable_series_id,timetable_occurrence_date").eq("academy_id", academyId).in("status", ["scheduled", "confirmed", "in_progress"]).lt("starts_at", `${String(term.ends_on)}T23:59:59Z`).gt("ends_at", `${String(term.starts_on)}T00:00:00Z`).limit(10000);
+        if (existingError) return json(500, { error: "Failed to load existing lesson sessions", detail: existingError.message });
+        const existing = (existingRows ?? []) as Array<Record<string, unknown>>;
+        const candidates: Array<Record<string, unknown>> = [];
+        const conflicts: Array<Record<string, unknown>> = [];
+        const skipped: Array<Record<string, unknown>> = [];
+        const overlaps = (aStart: string, aEnd: string, bStart: unknown, bEnd: unknown) => Date.parse(aStart) < Date.parse(String(bEnd)) && Date.parse(aEnd) > Date.parse(String(bStart));
+        for (const series of seriesRows as Array<Record<string, unknown>>) {
+          const schedule = schedules.get(String(series.source_schedule_id));
+          if (!schedule) {
+            conflicts.push({ series_id: series.id, reason: "schedule_unavailable" });
+            continue;
+          }
+          const startsOn = String(series.starts_on) > String(term.starts_on) ? String(series.starts_on) : String(term.starts_on);
+          const endsOn = String(series.ends_on) < String(term.ends_on) ? String(series.ends_on) : String(term.ends_on);
+          for (const date of dateRange(startsOn, endsOn)) {
+            if (new Date(`${date}T00:00:00Z`).getUTCDay() !== Number(schedule.day_of_week)) continue;
+            const startIso = localDateTimeToIso(date, String(schedule.start_time), String(schedule.timezone || term.timezone || "Asia/Tashkent"));
+            const endIso = schedule.end_time
+              ? localDateTimeToIso(date, String(schedule.end_time), String(schedule.timezone || term.timezone || "Asia/Tashkent"))
+              : new Date(Date.parse(startIso) + 60 * 60_000).toISOString();
+            if (Date.parse(endIso) <= Date.parse(startIso)) {
+              conflicts.push({ series_id: series.id, date, reason: "invalid_time_range" });
+              continue;
+            }
+            const duplicate = existing.find((row) => String(row.timetable_series_id ?? "") === String(series.id) && String(row.timetable_occurrence_date ?? "") === date);
+            if (duplicate) {
+              skipped.push({ series_id: series.id, date, reason: "already_generated", session_id: duplicate.id });
+              continue;
+            }
+            const closure = series.skip_calendar_closures !== false ? closureRows.find((row) => overlaps(startIso, endIso, row.starts_at, row.ends_at)) : null;
+            if (closure) {
+              skipped.push({ series_id: series.id, date, reason: "calendar_closure", event_id: closure.id, event_name: closure.name });
+              continue;
+            }
+            const conflictPool = [...existing, ...candidates];
+            const collision = conflictPool.find((row) => overlaps(startIso, endIso, row.starts_at, row.ends_at) && (String(row.classroom_id) === String(series.classroom_id) || Boolean(series.room_id && row.room_id && String(row.room_id) === String(series.room_id)) || String(row.primary_staff_id) === String(series.primary_staff_id)));
+            if (collision) {
+              conflicts.push({ series_id: series.id, date, reason: "resource_conflict", conflicting_session_id: collision.id ?? null, starts_at: startIso, ends_at: endIso });
+              continue;
+            }
+            candidates.push({ academy_id: academyId, branch_id: series.branch_id, classroom_id: series.classroom_id, room_id: series.room_id ?? null, primary_staff_id: series.primary_staff_id, calendar_id: term.academic_calendar_id ?? null, title: series.title, session_type: series.session_type || "regular", delivery_mode: series.delivery_mode || "physical", starts_at: startIso, ends_at: endIso, timezone: schedule.timezone || term.timezone || "Asia/Tashkent", status: "scheduled", source_schedule_id: series.source_schedule_id, idempotency_key: `timetable:${String(series.id)}:${date}`, metadata: { timetable_generated: true }, created_by: userId, updated_by: userId, timetable_term_id: termId, timetable_series_id: series.id, timetable_occurrence_date: date });
+          }
+        }
+        const { data: run, error: runError } = await sb.from("academy_timetable_generation_runs").insert({ academy_id: academyId, term_id: termId, dry_run: dryRun, status: "running", requested_by: userId }).select("*").single();
+        if (runError) return json(500, { error: "Failed to record timetable generation", detail: runError.message });
+        const evidence = { conflicts: conflicts.slice(0, 500), skipped: skipped.slice(0, 500), candidates: candidates.slice(0, 500).map((row) => ({ timetable_series_id: row.timetable_series_id, timetable_occurrence_date: row.timetable_occurrence_date, classroom_id: row.classroom_id, starts_at: row.starts_at, ends_at: row.ends_at })) };
+        if (!dryRun && conflicts.length > 0) {
+          const { data: failedRun } = await sb.from("academy_timetable_generation_runs").update({ status: "failed", candidate_count: candidates.length, conflict_count: conflicts.length, skipped_count: skipped.length, evidence, error: "Resolve timetable conflicts before committing", finished_at: new Date().toISOString() }).eq("id", run.id).select("*").single();
+          return json(409, { error: "Resolve timetable conflicts before committing", run: failedRun });
+        }
+        let generatedCount = 0;
+        if (!dryRun && candidates.length) {
+          const rows = candidates.map((row) => ({ ...row, timetable_generation_run_id: run.id }));
+          const { data: generated, error } = await sb.from("academy_lesson_sessions").insert(rows).select("id");
+          if (error) {
+            await sb.from("academy_timetable_generation_runs").update({ status: "failed", candidate_count: candidates.length, conflict_count: conflicts.length, skipped_count: skipped.length, evidence, error: error.message, finished_at: new Date().toISOString() }).eq("id", run.id);
+            return json(409, { error: "Timetable commit failed", detail: error.message });
+          }
+          generatedCount = generated?.length ?? 0;
+          await sb.from("academy_timetable_series").update({ status: "active" }).eq("academy_id", academyId).eq("term_id", termId).in("status", ["draft", "active"]);
+          await sb.from("academy_timetable_terms").update({ status: "active" }).eq("academy_id", academyId).eq("id", termId).in("status", ["draft", "active"]);
+        }
+        const { data: finishedRun } = await sb.from("academy_timetable_generation_runs").update({ status: dryRun ? "preview_ready" : "completed", candidate_count: candidates.length, conflict_count: conflicts.length, generated_count: generatedCount, skipped_count: skipped.length, evidence, finished_at: new Date().toISOString() }).eq("id", run.id).select("*").single();
+        return json(200, { run: finishedRun });
+      }
+
+      if (actionBody === "update_service_request") {
+        const requestId = normalizeText(body?.request_id ?? body?.id, 64);
+        if (!requestId) return json(400, { error: "request_id is required" });
+        const { data: request, error: loadError } = await sb.from("academy_service_requests").select("*").eq("academy_id", academyId).eq("id", requestId).maybeSingle();
+        if (loadError) return json(500, { error: "Failed to load service request", detail: loadError.message });
+        if (!request?.id) return json(404, { error: "Service request not found" });
+        const financeRequest = String(request.request_type) === "refund";
+        const allowed = financeRequest
+          ? academyAccessHas(access, "refundFinance")
+          : academyAccessHas(access, "manageRetention") || academyAccessHas(access, "manageAcademicOperations");
+        if (!allowed) return json(403, { error: "Forbidden" });
+        const nextStatus = normalizeText(body?.status, 40).toLowerCase() || String(request.status);
+        const allowedStatuses = ["submitted", "triaged", "in_review", "waiting_for_requester", "approved", "rejected", "completed", "cancelled"];
+        if (!allowedStatuses.includes(nextStatus)) return json(400, { error: "Invalid request status" });
+        const nowIso = new Date().toISOString();
+        const patch: Record<string, unknown> = { status: nextStatus, assigned_to: normalizeText(body?.assigned_to, 64) || (request.assigned_to ?? userId) };
+        if (typeof body?.resolution === "string") patch.resolution = normalizeText(body.resolution, 5000) || null;
+        if (["rejected", "completed", "cancelled"].includes(nextStatus)) {
+          patch.resolved_by = userId;
+          patch.resolved_at = nowIso;
+        }
+        const { data: updated, error } = await sb.from("academy_service_requests").update(patch).eq("academy_id", academyId).eq("id", requestId).select("*").single();
+        if (error) return json(400, { error: "Failed to update service request", detail: error.message });
+        const note = normalizeText(body?.note ?? body?.resolution, 5000) || null;
+        await sb.from("academy_service_request_events").insert({ academy_id: academyId, request_id: requestId, event_type: ["rejected", "completed", "cancelled"].includes(nextStatus) ? "resolved" : "status_changed", from_status: request.status, to_status: nextStatus, note, actor_user_id: userId, visible_to_requester: body?.visible_to_requester !== false });
+        if (nextStatus === "approved") {
+          await sb.from("academy_action_items").insert({ academy_id: academyId, dedupe_key: `service-request:${requestId}:fulfillment`, source_type: "service_request", category: financeRequest ? "finance" : "operations", priority: request.priority === "urgent" ? "critical" : request.priority === "high" ? "high" : "medium", title: `Fulfill approved ${String(request.request_type).replaceAll("_", " ")} request`, description: request.subject, recommended_action: financeRequest ? "Review the charge and use the governed refund workflow." : "Complete the approved operational change and record the resolution.", contact_id: request.contact_id, classroom_id: request.classroom_id, due_at: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), status: "open", created_by: userId, metadata: { service_request_id: requestId } }).then(() => undefined);
+        }
+        return json(200, { request: updated });
+      }
+
+      if (actionBody === "upsert_collection_case") {
+        const caseId = normalizeText(body?.id ?? body?.case_id, 64);
+        const contactId = normalizeText(body?.contact_id, 64);
+        if (!contactId) return json(400, { error: "contact_id is required" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
+        const chargeId = normalizeText(body?.charge_id, 64) || null;
+        let outstandingAmount = toIntOrNull(body?.outstanding_amount);
+        let currency = normalizeText(body?.currency, 10).toUpperCase() || "UZS";
+        if (chargeId) {
+          const { data: charge } = await sb.from("academy_charge_balances").select("id,outstanding_amount,currency").eq("academy_id", academyId).eq("id", chargeId).maybeSingle();
+          if (!charge?.id) return json(404, { error: "Charge not found" });
+          outstandingAmount = outstandingAmount ?? Number(charge.outstanding_amount ?? 0);
+          currency = String(charge.currency ?? currency);
+        }
+        const stage = normalizeText(body?.stage, 30).toLowerCase() || "reminder";
+        const status = normalizeText(body?.status, 20).toLowerCase() || "open";
+        if (!["reminder", "promise", "escalated", "disputed", "settled", "written_off", "closed"].includes(stage) || !["open", "waiting", "resolved", "cancelled"].includes(status)) return json(400, { error: "Invalid collection stage or status" });
+        const payload = { academy_id: academyId, branch_id: normalizeText(body?.branch_id, 64) || null, contact_id: contactId, charge_id: chargeId, owner_user_id: normalizeText(body?.owner_user_id, 64) || userId, stage, priority: normalizeText(body?.priority, 20).toLowerCase() || "normal", outstanding_amount: Math.max(0, outstandingAmount ?? 0), currency, next_action_at: normalizeText(body?.next_action_at, 80) || null, status, resolved_at: status === "resolved" ? new Date().toISOString() : null, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        const result = caseId
+          ? await sb.from("academy_collection_cases").update(payload).eq("academy_id", academyId).eq("id", caseId).select("*").maybeSingle()
+          : await sb.from("academy_collection_cases").insert(payload).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save collection case", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Collection case not found" });
+        return json(200, { case: result.data });
+      }
+
+      if (actionBody === "record_collection_attempt") {
+        const caseId = normalizeText(body?.case_id, 64);
+        const attemptType = normalizeText(body?.attempt_type, 30).toLowerCase();
+        const outcome = normalizeText(body?.outcome, 30).toLowerCase();
+        if (!caseId || !["call", "telegram", "email", "sms", "inapp", "meeting", "payment_link", "promise", "note"].includes(attemptType) || !["queued", "sent", "delivered", "contacted", "no_answer", "promised", "paid", "disputed", "failed", "not_applicable"].includes(outcome)) return json(400, { error: "case_id, attempt_type, and outcome are required" });
+        const { data: collectionCase } = await sb.from("academy_collection_cases").select("*").eq("academy_id", academyId).eq("id", caseId).maybeSingle();
+        if (!collectionCase?.id) return json(404, { error: "Collection case not found" });
+        let notificationId: string | null = null;
+        if (["telegram", "email", "inapp", "sms", "payment_link"].includes(attemptType)) {
+          const channel = attemptType === "payment_link" ? normalizeText(body?.channel, 20).toLowerCase() || "inapp" : attemptType;
+          if (!["telegram", "email", "inapp", "sms"].includes(channel)) return json(400, { error: "Invalid reminder channel" });
+          const { data: contact } = await sb.from("academy_contacts").select("id,first_name,email,telegram_id").eq("academy_id", academyId).eq("id", collectionCase.contact_id).maybeSingle();
+          if (!contact?.id) return json(404, { error: "Collection contact not found" });
+          const target = channel === "email" ? normalizeEmail(contact.email) : channel === "telegram" ? normalizeText(contact.telegram_id, 120) : null;
+          if (channel !== "inapp" && !target) return json(409, { error: `No ${channel} destination is available` });
+          const paymentLink = normalizeText(body?.payment_link, 2000);
+          const message = normalizeText(body?.message, 5000) || `Hello ${String(contact.first_name ?? "") || "there"}, your academy account has ${Number(collectionCase.outstanding_amount ?? 0)} ${String(collectionCase.currency ?? "UZS")} outstanding.${paymentLink ? ` Pay securely: ${paymentLink}` : ""}`;
+          const { data: notification, error } = await sb.from("academy_notifications").insert({ academy_id: academyId, contact_id: collectionCase.contact_id, channel, type: "collection_reminder", title: "Academy payment reminder", body: message, target, status: "queued", scheduled_at: normalizeText(body?.scheduled_at, 80) || new Date().toISOString(), metadata: { collection_case_id: caseId, payment_link: paymentLink || null } }).select("id").single();
+          if (error) return json(400, { error: "Failed to queue collection reminder", detail: error.message });
+          notificationId = String(notification.id);
+        }
+        const { data: attempt, error } = await sb.from("academy_collection_attempts").insert({ academy_id: academyId, case_id: caseId, attempt_type: attemptType, outcome, notification_id: notificationId, payment_promise_id: normalizeText(body?.payment_promise_id, 64) || null, note: normalizeText(body?.note, 3000) || null, next_action_at: normalizeText(body?.next_action_at, 80) || null, actor_user_id: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} }).select("*").single();
+        if (error) return json(400, { error: "Failed to record collection attempt", detail: error.message });
+        const casePatch: Record<string, unknown> = { next_action_at: attempt.next_action_at ?? collectionCase.next_action_at };
+        if (outcome === "promised") casePatch.stage = "promise";
+        if (outcome === "disputed") casePatch.stage = "disputed";
+        if (outcome === "paid") Object.assign(casePatch, { stage: "settled", status: "resolved", resolved_at: new Date().toISOString(), outstanding_amount: 0 });
+        await sb.from("academy_collection_cases").update(casePatch).eq("academy_id", academyId).eq("id", caseId);
+        return json(200, { attempt, notification_id: notificationId });
+      }
+
+      if (actionBody === "create_workforce_request") {
+        let { data: staffRow } = await sb.from("academy_staff").select("id,user_id,email,role,is_active").eq("academy_id", academyId).eq("user_id", userId).eq("is_active", true).limit(1).maybeSingle();
+        if (!staffRow?.id && userEmail) {
+          const fallback = await sb.from("academy_staff").select("id,user_id,email,role,is_active").eq("academy_id", academyId).eq("email", normalizeEmail(userEmail)).eq("is_active", true).limit(1).maybeSingle();
+          staffRow = fallback.data;
+        }
+        if (!staffRow?.id) return json(403, { error: "Your account is not linked to an active Academy staff record" });
+        const requestType = normalizeText(body?.request_type, 40).toLowerCase();
+        const reason = normalizeText(body?.reason, 5000);
+        if (!["leave", "availability", "schedule_change", "substitution", "payroll_question", "document", "other"].includes(requestType) || !reason) return json(400, { error: "request_type and reason are required" });
+        const scopedBranches = academyAccessBranchIds(access);
+        const requestBranchId = normalizeText(body?.branch_id, 64) || (scopedBranches?.length === 1 ? scopedBranches[0] : null);
+        if (scopedBranches !== null && !requestBranchId) return json(400, { error: "Choose a branch for this staff request" });
+        const { data: request, error } = await sb.from("academy_staff_requests").insert({ academy_id: academyId, branch_id: requestBranchId, staff_id: staffRow.id, request_type: requestType, starts_at: normalizeText(body?.starts_at, 80) || null, ends_at: normalizeText(body?.ends_at, 80) || null, reason, status: "submitted", replacement_staff_id: normalizeText(body?.replacement_staff_id, 64) || null, created_by: userId, metadata: { ...(isJsonObject(body?.metadata) ? body.metadata : {}), source: "staff_workspace", session_id: normalizeText(body?.session_id, 64) || null } }).select("*").single();
+        if (error) return json(400, { error: "Failed to submit workforce request", detail: error.message });
+        return json(200, { request });
+      }
+
+      if (actionBody === "update_workforce_request") {
+        const requestId = normalizeText(body?.request_id ?? body?.id, 64);
+        if (!requestId) return json(400, { error: "request_id is required" });
+        const { data: request } = await sb.from("academy_staff_requests").select("*").eq("academy_id", academyId).eq("id", requestId).maybeSingle();
+        if (!request?.id) return json(404, { error: "Workforce request not found" });
+        const canDecide = academyAccessHas(access, "manageStaff") || academyAccessHas(access, "manageAcademicOperations") || (String(request.request_type) === "payroll_question" && academyAccessHas(access, "viewPayroll"));
+        if (!canDecide) return json(403, { error: "Forbidden" });
+        const status = normalizeText(body?.status, 30).toLowerCase();
+        if (!["submitted", "in_review", "approved", "rejected", "fulfilled", "cancelled"].includes(status)) return json(400, { error: "Invalid workforce request status" });
+        const replacementStaffId = normalizeText(body?.replacement_staff_id, 64) || (request.replacement_staff_id ?? null);
+        const { data: updated, error } = await sb.from("academy_staff_requests").update({ status, replacement_staff_id: replacementStaffId, assigned_to: normalizeText(body?.assigned_to, 64) || userId, decision_note: normalizeText(body?.decision_note, 5000) || null, decided_by: ["approved", "rejected", "fulfilled"].includes(status) ? userId : null, decided_at: ["approved", "rejected", "fulfilled"].includes(status) ? new Date().toISOString() : null }).eq("academy_id", academyId).eq("id", requestId).select("*").single();
+        if (error) return json(400, { error: "Failed to update workforce request", detail: error.message });
+        if (status === "approved" && String(request.request_type) === "substitution") {
+          const sessionId = normalizeText(toJsonObject(request.metadata).session_id, 64);
+          if (!sessionId || !replacementStaffId) return json(409, { error: "Approved substitution requires a session and replacement staff member" });
+          const { error: substituteError } = await sb.rpc("academy_assign_session_substitute", { p_academy_id: academyId, p_session_id: sessionId, p_staff_id: replacementStaffId, p_actor_id: userId, p_reason: request.reason, p_idempotency_key: `workforce:${requestId}:substitution` });
+          if (substituteError) return json(409, { error: "Request approved but substitute assignment failed", detail: substituteError.message, request: updated });
+          await sb.from("academy_staff_requests").update({ status: "fulfilled" }).eq("academy_id", academyId).eq("id", requestId);
+        }
+        if (status === "approved" && String(request.request_type) === "leave" && request.starts_at && request.ends_at) {
+          const startDate = String(request.starts_at).slice(0, 10);
+          const endDate = String(request.ends_at).slice(0, 10);
+          const unavailableRows = dateRange(startDate, endDate).map((date) => ({ academy_id: academyId, staff_id: request.staff_id, day_of_week: new Date(`${date}T00:00:00Z`).getUTCDay(), starts_at: "00:00", ends_at: "23:59", timezone: "Asia/Tashkent", available: false, effective_from: date, effective_to: date, reason: `Approved leave request ${requestId}`, is_active: true, created_by: userId }));
+          const { error: availabilityError } = await sb.from("academy_staff_availability").insert(unavailableRows);
+          if (availabilityError) return json(409, { error: "Request approved but leave calendar update failed", detail: availabilityError.message, request: updated });
+          await sb.from("academy_staff_requests").update({ status: "fulfilled" }).eq("academy_id", academyId).eq("id", requestId);
+        }
+        return json(200, { request: updated });
+      }
+
+      if (actionBody === "upsert_communication_journey") {
+        const journeyId = normalizeText(body?.id ?? body?.journey_id, 64);
+        const journeyKey = normalizeText(body?.journey_key, 100).toLowerCase();
+        const name = normalizeText(body?.name, 180);
+        const audience = normalizeText(body?.audience, 30).toLowerCase();
+        const triggerKey = normalizeText(body?.trigger_key, 80).toLowerCase();
+        const status = normalizeText(body?.status, 20).toLowerCase() || "draft";
+        const steps = Array.isArray(body?.steps) ? body.steps as Array<Record<string, unknown>> : [];
+        if (!journeyKey || !name || !["student", "guardian", "staff"].includes(audience) || !["manual", "student.enrolled", "student.absent", "payment.due_soon", "payment.overdue", "schedule.changed", "assignment.missing", "course.completed"].includes(triggerKey) || !["draft", "active", "paused", "retired"].includes(status) || !steps.length) {
+          return json(400, { error: "journey_key, name, audience, trigger_key, status, and at least one step are required" });
+        }
+        const normalizedSteps = steps.map((step, index) => {
+          const channel = normalizeText(step.channel, 20).toLowerCase();
+          const bodyTemplate = normalizeText(step.body_template, 5000);
+          if (!["inapp", "telegram", "email", "sms"].includes(channel) || !bodyTemplate) throw new Error(`Step ${index + 1} requires a supported channel and message`);
+          return { academy_id: academyId, position: index + 1, delay_minutes: Math.max(0, toIntOrNull(step.delay_minutes) ?? 0), channel, title_template: normalizeText(step.title_template, 300) || null, body_template: bodyTemplate, requires_review: step.requires_review === true, is_active: step.is_active !== false, metadata: isJsonObject(step.metadata) ? step.metadata : {} };
+        });
+        const payload = { academy_id: academyId, branch_id: normalizeText(body?.branch_id, 64) || null, journey_key: journeyKey, name, audience, trigger_key: triggerKey, status, quiet_hours_policy: normalizeText(body?.quiet_hours_policy, 30).toLowerCase() || "recipient", created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        let journeyResult;
+        if (journeyId) journeyResult = await sb.from("academy_communication_journeys").update(payload).eq("academy_id", academyId).eq("id", journeyId).select("*").maybeSingle();
+        else journeyResult = await sb.from("academy_communication_journeys").upsert(payload, { onConflict: "academy_id,journey_key" }).select("*").single();
+        if (journeyResult.error) return json(400, { error: "Failed to save communication journey", detail: journeyResult.error.message });
+        if (!journeyResult.data?.id) return json(404, { error: "Communication journey not found" });
+        const savedJourneyId = String(journeyResult.data.id);
+        const { error: deleteError } = await sb.from("academy_communication_journey_steps").delete().eq("academy_id", academyId).eq("journey_id", savedJourneyId);
+        if (deleteError) return json(409, { error: "Journey saved but previous steps could not be replaced", detail: deleteError.message });
+        const { data: savedSteps, error: stepError } = await sb.from("academy_communication_journey_steps").insert(normalizedSteps.map((step) => ({ ...step, journey_id: savedJourneyId }))).select("*");
+        if (stepError) return json(409, { error: "Journey saved but steps could not be added", detail: stepError.message });
+        return json(200, { journey: journeyResult.data, steps: savedSteps ?? [] });
+      }
+
+      if (actionBody === "enroll_communication_journey") {
+        const journeyId = normalizeText(body?.journey_id, 64);
+        if (!journeyId) return json(400, { error: "journey_id is required" });
+        const { data: journey } = await sb.from("academy_communication_journeys").select("*").eq("academy_id", academyId).eq("id", journeyId).eq("status", "active").maybeSingle();
+        if (!journey?.id) return json(404, { error: "Active communication journey not found" });
+        const contactId = normalizeText(body?.contact_id, 64) || null;
+        const guardianId = normalizeText(body?.guardian_id, 64) || null;
+        const staffId = normalizeText(body?.staff_id, 64) || null;
+        const subjectCount = [contactId, guardianId, staffId].filter(Boolean).length;
+        if (subjectCount !== 1) return json(400, { error: "Exactly one contact_id, guardian_id, or staff_id is required" });
+        if ((journey.audience === "student" && !contactId) || (journey.audience === "guardian" && !guardianId) || (journey.audience === "staff" && !staffId)) return json(400, { error: "Recipient does not match journey audience" });
+        if (contactId) await ensureContactInAccessScope(sb, academyId, access, contactId);
+        const { data: firstStep } = await sb.from("academy_communication_journey_steps").select("position,delay_minutes").eq("academy_id", academyId).eq("journey_id", journeyId).eq("is_active", true).order("position").limit(1).maybeSingle();
+        if (!firstStep?.position) return json(409, { error: "Journey has no active steps" });
+        const idempotencyKey = normalizeText(body?.idempotency_key, 180) || `${journeyId}:${contactId ?? guardianId ?? staffId}:${crypto.randomUUID()}`;
+        const { data: enrollment, error } = await sb.from("academy_communication_enrollments").insert({ academy_id: academyId, journey_id: journeyId, contact_id: contactId, guardian_id: guardianId, staff_id: staffId, status: "active", current_position: firstStep.position, next_step_at: new Date(Date.now() + Number(firstStep.delay_minutes ?? 0) * 60_000).toISOString(), idempotency_key: idempotencyKey, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} }).select("*").single();
+        if (error) return json(400, { error: "Failed to enroll communication recipient", detail: error.message });
+        return json(200, { enrollment });
+      }
+
+      if (actionBody === "advance_communication_journeys") {
+        const limit = Math.min(100, Math.max(1, toIntOrNull(body?.limit) ?? 50));
+        const nowIso = new Date().toISOString();
+        const { data: dueRows, error } = await sb.from("academy_communication_enrollments").select("*").eq("academy_id", academyId).eq("status", "active").lte("next_step_at", nowIso).order("next_step_at").limit(limit);
+        if (error) return json(500, { error: "Failed to load due communication journeys", detail: error.message });
+        let queued = 0, paused = 0, completed = 0, failed = 0;
+        for (const enrollment of (dueRows ?? []) as Array<Record<string, unknown>>) {
+          const { data: journey } = await sb.from("academy_communication_journeys").select("id,name,audience,status").eq("academy_id", academyId).eq("id", enrollment.journey_id).maybeSingle();
+          const { data: step } = await sb.from("academy_communication_journey_steps").select("*").eq("academy_id", academyId).eq("journey_id", enrollment.journey_id).eq("position", enrollment.current_position).eq("is_active", true).maybeSingle();
+          if (!journey?.id || journey.status !== "active" || !step?.id) {
+            await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: "Journey or active step unavailable" } }).eq("academy_id", academyId).eq("id", enrollment.id);
+            failed++;
+            continue;
+          }
+          let recipient: Record<string, unknown> | null = null;
+          if (enrollment.contact_id) recipient = (await sb.from("academy_contacts").select("id,first_name,last_name,email,telegram_id").eq("academy_id", academyId).eq("id", enrollment.contact_id).maybeSingle()).data;
+          else if (enrollment.guardian_id) recipient = (await sb.from("academy_guardians").select("id,full_name,email,telegram_chat_id").eq("academy_id", academyId).eq("id", enrollment.guardian_id).maybeSingle()).data;
+          else if (enrollment.staff_id) recipient = (await sb.from("academy_staff").select("id,display_name,email").eq("academy_id", academyId).eq("id", enrollment.staff_id).maybeSingle()).data;
+          if (!recipient?.id) {
+            await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: "Recipient unavailable" } }).eq("academy_id", academyId).eq("id", enrollment.id);
+            failed++;
+            continue;
+          }
+          const displayName = normalizeText(recipient.full_name ?? recipient.display_name ?? `${String(recipient.first_name ?? "")} ${String(recipient.last_name ?? "")}`, 180) || "there";
+          const values = { name: displayName, academy_name: normalizeText(body?.academy_name, 180) || "Academy" };
+          const title = step.title_template ? renderJourneyTemplate(String(step.title_template), values) : String(journey.name);
+          const message = renderJourneyTemplate(String(step.body_template), values);
+          if (step.requires_review === true) {
+            await sb.from("academy_action_items").insert({ academy_id: academyId, dedupe_key: `journey-review:${String(enrollment.id)}:${String(step.position)}`, source_type: "communication_journey", category: "operations", priority: "medium", title: `Review message for ${displayName}`, description: message, recommended_action: "Review and send the communication, then resume the journey.", contact_id: enrollment.contact_id ?? null, due_at: nowIso, status: "open", created_by: userId, metadata: { journey_id: journey.id, enrollment_id: enrollment.id, step_id: step.id, channel: step.channel, title } });
+            await sb.from("academy_communication_enrollments").update({ status: "paused", last_step_at: nowIso }).eq("academy_id", academyId).eq("id", enrollment.id);
+            paused++;
+            continue;
+          }
+          const channel = String(step.channel);
+          const target = channel === "email" ? normalizeEmail(recipient.email) : channel === "telegram" ? normalizeText(recipient.telegram_chat_id ?? recipient.telegram_id, 120) : null;
+          if (channel !== "inapp" && !target) {
+            await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: `No ${channel} destination` } }).eq("academy_id", academyId).eq("id", enrollment.id);
+            failed++;
+            continue;
+          }
+          const { error: notificationError } = await sb.from("academy_notifications").insert({ academy_id: academyId, contact_id: enrollment.contact_id ?? null, guardian_id: enrollment.guardian_id ?? null, channel, type: "communication_journey", event_key: "communication_journey", dedupe_key: `journey:${String(enrollment.id)}:${String(step.position)}`, title, body: message, target, status: "queued", scheduled_at: nowIso, metadata: { journey_id: journey.id, enrollment_id: enrollment.id, step_id: step.id, staff_id: enrollment.staff_id ?? null } });
+          if (notificationError) {
+            await sb.from("academy_communication_enrollments").update({ status: "failed", metadata: { ...toJsonObject(enrollment.metadata), error: notificationError.message } }).eq("academy_id", academyId).eq("id", enrollment.id);
+            failed++;
+            continue;
+          }
+          queued++;
+          const { data: nextStep } = await sb.from("academy_communication_journey_steps").select("position,delay_minutes").eq("academy_id", academyId).eq("journey_id", journey.id).eq("is_active", true).gt("position", step.position).order("position").limit(1).maybeSingle();
+          if (nextStep?.position) {
+            await sb.from("academy_communication_enrollments").update({ current_position: nextStep.position, next_step_at: new Date(Date.now() + Number(nextStep.delay_minutes ?? 0) * 60_000).toISOString(), last_step_at: nowIso }).eq("academy_id", academyId).eq("id", enrollment.id);
+          } else {
+            await sb.from("academy_communication_enrollments").update({ status: "completed", last_step_at: nowIso }).eq("academy_id", academyId).eq("id", enrollment.id);
+            completed++;
+          }
+        }
+        return json(200, { processed: dueRows?.length ?? 0, queued, paused, completed, failed });
+      }
+
+      if (actionBody === "create_sensitive_case") {
+        if (!["owner", "admin", "center_admin", "manager", "counselor"].includes(access.role)) return json(403, { error: "Forbidden" });
+        const caseType = normalizeText(body?.case_type, 40).toLowerCase();
+        const title = normalizeText(body?.title, 240);
+        const description = normalizeText(body?.description, 10000);
+        const confidentiality = normalizeText(body?.confidentiality, 30).toLowerCase() || "restricted";
+        if (!["complaint", "safeguarding", "harassment", "conduct", "privacy", "academic_integrity", "other"].includes(caseType) || !title || !description || !["restricted", "owner_only"].includes(confidentiality)) return json(400, { error: "case_type, title, description, and confidentiality are required" });
+        if (confidentiality === "owner_only" && !["owner", "admin"].includes(access.role)) return json(403, { error: "Only owners and administrators can create owner-only cases" });
+        const { data: sensitiveCase, error } = await sb.from("academy_sensitive_cases").insert({ academy_id: academyId, branch_id: normalizeText(body?.branch_id, 64) || null, case_type: caseType, title, description, severity: normalizeText(body?.severity, 20).toLowerCase() || "medium", confidentiality, status: "open", reporter_user_id: normalizeText(body?.reporter_user_id, 64) || userId, reporter_contact_id: normalizeText(body?.reporter_contact_id, 64) || null, subject_contact_id: normalizeText(body?.subject_contact_id, 64) || null, subject_staff_id: normalizeText(body?.subject_staff_id, 64) || null, assigned_to: normalizeText(body?.assigned_to, 64) || userId, due_at: normalizeText(body?.due_at, 80) || null, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} }).select("*").single();
+        if (error) return json(400, { error: "Failed to create restricted case", detail: error.message });
+        await sb.from("academy_sensitive_case_events").insert({ academy_id: academyId, case_id: sensitiveCase.id, event_type: "created", to_status: "open", note: "Restricted case opened", actor_user_id: userId });
+        await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: access.role, action: "sensitive_case.created", targetType: "academy_sensitive_case", targetId: String(sensitiveCase.id), contactId: sensitiveCase.subject_contact_id ? String(sensitiveCase.subject_contact_id) : null, status: "ok", metadata: { case_type: caseType, severity: sensitiveCase.severity, confidentiality } });
+        return json(200, { case: sensitiveCase });
+      }
+
+      if (actionBody === "update_sensitive_case") {
+        const caseId = normalizeText(body?.case_id ?? body?.id, 64);
+        if (!caseId || !["owner", "admin", "center_admin", "manager", "counselor"].includes(access.role)) return json(403, { error: "Forbidden" });
+        const { data: current } = await sb.from("academy_sensitive_cases").select("*").eq("academy_id", academyId).eq("id", caseId).maybeSingle();
+        if (!current?.id) return json(404, { error: "Restricted case not found" });
+        if (current.confidentiality === "owner_only" && !["owner", "admin"].includes(access.role)) return json(403, { error: "Forbidden" });
+        const status = normalizeText(body?.status, 30).toLowerCase() || String(current.status);
+        if (!["open", "triage", "investigating", "action_required", "resolved", "closed"].includes(status)) return json(400, { error: "Invalid case status" });
+        const patch: Record<string, unknown> = { status, severity: normalizeText(body?.severity, 20).toLowerCase() || current.severity, assigned_to: normalizeText(body?.assigned_to, 64) || current.assigned_to };
+        if (typeof body?.resolution_summary === "string") patch.resolution_summary = normalizeText(body.resolution_summary, 10000) || null;
+        if (["resolved", "closed"].includes(status)) Object.assign(patch, { resolved_by: userId, resolved_at: new Date().toISOString() });
+        const { data: updated, error } = await sb.from("academy_sensitive_cases").update(patch).eq("academy_id", academyId).eq("id", caseId).select("*").single();
+        if (error) return json(400, { error: "Failed to update restricted case", detail: error.message });
+        await sb.from("academy_sensitive_case_events").insert({ academy_id: academyId, case_id: caseId, event_type: ["resolved", "closed"].includes(status) ? "resolution" : "status_changed", from_status: current.status, to_status: status, note: normalizeText(body?.note ?? body?.resolution_summary, 10000) || null, actor_user_id: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} });
+        return json(200, { case: updated });
+      }
+
+      if (actionBody === "upsert_competency_framework") {
+        const frameworkId = normalizeText(body?.id ?? body?.framework_id, 64);
+        const code = normalizeText(body?.code, 80).toUpperCase();
+        const name = normalizeText(body?.name, 200);
+        const status = normalizeText(body?.status, 20).toLowerCase() || "draft";
+        if (!code || !name || !["draft", "published", "archived"].includes(status)) return json(400, { error: "code, name, and a valid status are required" });
+        const payload = { academy_id: academyId, code, name, description: normalizeText(body?.description, 3000) || null, status, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        const result = frameworkId
+          ? await sb.from("academy_competency_frameworks").update(payload).eq("academy_id", academyId).eq("id", frameworkId).select("*").maybeSingle()
+          : await sb.from("academy_competency_frameworks").upsert(payload, { onConflict: "academy_id,code" }).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save competency framework", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Competency framework not found" });
+        return json(200, { framework: result.data });
+      }
+
+      if (actionBody === "upsert_competency") {
+        const competencyId = normalizeText(body?.id ?? body?.competency_id, 64);
+        const frameworkId = normalizeText(body?.framework_id, 64);
+        const code = normalizeText(body?.code, 80).toUpperCase();
+        const title = normalizeText(body?.title, 240);
+        if (!frameworkId || !code || !title) return json(400, { error: "framework_id, code, and title are required" });
+        const { data: framework } = await sb.from("academy_competency_frameworks").select("id").eq("academy_id", academyId).eq("id", frameworkId).neq("status", "archived").maybeSingle();
+        if (!framework?.id) return json(404, { error: "Competency framework not found" });
+        const payload = { academy_id: academyId, framework_id: frameworkId, parent_id: normalizeText(body?.parent_id, 64) || null, code, title, description: normalizeText(body?.description, 3000) || null, level_scale: Array.isArray(body?.level_scale) ? body.level_scale : undefined, position: Math.max(1, toIntOrNull(body?.position) ?? 1), status: normalizeText(body?.status, 20).toLowerCase() || "active" };
+        if (payload.level_scale === undefined) delete (payload as Record<string, unknown>).level_scale;
+        const result = competencyId
+          ? await sb.from("academy_competencies").update(payload).eq("academy_id", academyId).eq("id", competencyId).select("*").maybeSingle()
+          : await sb.from("academy_competencies").upsert(payload, { onConflict: "academy_id,framework_id,code" }).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save competency", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Competency not found" });
+        return json(200, { competency: result.data });
+      }
+
+      if (actionBody === "upsert_learning_plan") {
+        const planId = normalizeText(body?.id ?? body?.plan_id, 64);
+        const contactId = normalizeText(body?.contact_id, 64);
+        const frameworkId = normalizeText(body?.framework_id, 64);
+        const title = normalizeText(body?.title, 240);
+        const goal = normalizeText(body?.goal, 5000);
+        const status = normalizeText(body?.status, 20).toLowerCase() || "draft";
+        if (!contactId || !frameworkId || !title || !goal || !["draft", "active", "completed", "paused", "cancelled"].includes(status)) return json(400, { error: "contact_id, framework_id, title, goal, and a valid status are required" });
+        await ensureContactInAccessScope(sb, academyId, access, contactId);
+        const publish = body?.published === true || Boolean(body?.published_at);
+        const payload = { academy_id: academyId, contact_id: contactId, framework_id: frameworkId, title, goal, starts_on: normalizeText(body?.starts_on, 20) || new Date().toISOString().slice(0, 10), target_date: normalizeText(body?.target_date, 20) || null, status, coach_user_id: normalizeText(body?.coach_user_id, 64) || userId, published_at: publish ? new Date().toISOString() : null, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        const result = planId
+          ? await sb.from("academy_learning_plans").update(payload).eq("academy_id", academyId).eq("id", planId).select("*").maybeSingle()
+          : await sb.from("academy_learning_plans").insert(payload).select("*").single();
+        if (result.error) return json(400, { error: "Failed to save learning plan", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Learning plan not found" });
+        const savedPlanId = String(result.data.id);
+        const items = Array.isArray(body?.items) ? body.items as Array<Record<string, unknown>> : [];
+        const savedItems: Array<Record<string, unknown>> = [];
+        for (const item of items) {
+          const competencyId = normalizeText(item.competency_id, 64);
+          const targetLevel = Number(item.target_level);
+          if (!competencyId || !Number.isFinite(targetLevel)) return json(400, { error: "Each learning plan item requires competency_id and target_level" });
+          const { data: savedItem, error } = await sb.from("academy_learning_plan_items").upsert({ academy_id: academyId, plan_id: savedPlanId, competency_id: competencyId, baseline_level: typeof item.baseline_level === "number" ? item.baseline_level : null, target_level: targetLevel, current_level: typeof item.current_level === "number" ? item.current_level : null, status: normalizeText(item.status, 30).toLowerCase() || "not_started", target_date: normalizeText(item.target_date, 20) || null, notes: normalizeText(item.notes, 3000) || null, updated_by: userId }, { onConflict: "academy_id,plan_id,competency_id" }).select("*").single();
+          if (error) return json(409, { error: "Learning plan saved but an item failed", detail: error.message });
+          savedItems.push(savedItem as Record<string, unknown>);
+        }
+        return json(200, { plan: result.data, items: savedItems });
+      }
+
+      if (actionBody === "record_competency_evidence") {
+        const planItemId = normalizeText(body?.plan_item_id, 64);
+        const evidenceType = normalizeText(body?.evidence_type, 30).toLowerCase();
+        if (!planItemId || !["assignment", "quiz", "observation", "attendance", "external", "note"].includes(evidenceType)) return json(400, { error: "plan_item_id and evidence_type are required" });
+        const { data: item } = await sb.from("academy_learning_plan_items").select("*").eq("academy_id", academyId).eq("id", planItemId).maybeSingle();
+        if (!item?.id) return json(404, { error: "Learning plan item not found" });
+        const observedLevel = typeof body?.observed_level === "number" ? body.observed_level : null;
+        const { data: evidence, error } = await sb.from("academy_competency_evidence").insert({ academy_id: academyId, plan_item_id: planItemId, evidence_type: evidenceType, source_id: normalizeText(body?.source_id, 64) || null, observed_level: observedLevel, note: normalizeText(body?.note, 5000) || null, observed_by: userId, observed_at: normalizeText(body?.observed_at, 80) || new Date().toISOString(), metadata: isJsonObject(body?.metadata) ? body.metadata : {} }).select("*").single();
+        if (error) return json(400, { error: "Failed to record competency evidence", detail: error.message });
+        if (observedLevel !== null) {
+          const achieved = observedLevel >= Number(item.target_level);
+          await sb.from("academy_learning_plan_items").update({ current_level: observedLevel, status: achieved ? "achieved" : "in_progress", updated_by: userId }).eq("academy_id", academyId).eq("id", planItemId);
+        }
+        return json(200, { evidence });
+      }
+
+      if (actionBody === "upsert_integration_endpoint") {
+        if (!["owner", "admin", "center_admin"].includes(access.role)) return json(403, { error: "Only academy administrators can manage outbound integrations" });
+        const endpointId = normalizeText(body?.id ?? body?.endpoint_id, 64);
+        const name = normalizeText(body?.name, 180);
+        const endpointUrl = normalizeText(body?.endpoint_url, 2000);
+        const status = normalizeText(body?.status, 20).toLowerCase() || "active";
+        const eventTypes = Array.isArray(body?.event_types) ? Array.from(new Set((body.event_types as unknown[]).map((item) => normalizeText(item, 100)).filter(Boolean))) : [];
+        if (!name || !(await academyWebhookUrlResolvesPublicly(endpointUrl)) || !["active", "paused", "revoked"].includes(status) || !eventTypes.length) return json(400, { error: "name, a public HTTPS endpoint_url, event_types, and valid status are required" });
+        const rotateSecret = !endpointId || body?.rotate_secret === true;
+        const signingSecret = rotateSecret ? createOpaqueToken() : null;
+        const payload: Record<string, unknown> = { academy_id: academyId, name, endpoint_url: endpointUrl, event_types: eventTypes, status, created_by: userId, metadata: isJsonObject(body?.metadata) ? body.metadata : {} };
+        if (signingSecret) Object.assign(payload, { signing_secret: signingSecret, signing_secret_last4: signingSecret.slice(-4) });
+        const result = endpointId
+          ? await sb.from("academy_integration_endpoints").update(payload).eq("academy_id", academyId).eq("id", endpointId).select("id,academy_id,name,endpoint_url,signing_secret_last4,event_types,status,consecutive_failures,last_success_at,last_failure_at,created_at,updated_at,metadata").maybeSingle()
+          : await sb.from("academy_integration_endpoints").insert(payload).select("id,academy_id,name,endpoint_url,signing_secret_last4,event_types,status,consecutive_failures,last_success_at,last_failure_at,created_at,updated_at,metadata").single();
+        if (result.error) return json(400, { error: "Failed to save integration endpoint", detail: result.error.message });
+        if (!result.data?.id) return json(404, { error: "Integration endpoint not found" });
+        return json(200, { endpoint: result.data, signing_secret: signingSecret });
+      }
+
+      if (actionBody === "queue_integration_event") {
+        if (!["owner", "admin", "center_admin"].includes(access.role)) return json(403, { error: "Forbidden" });
+        const endpointId = normalizeText(body?.endpoint_id, 64);
+        const eventType = normalizeText(body?.event_type, 100);
+        const eventPayload = isJsonObject(body?.payload) ? body.payload : null;
+        if (!endpointId || !eventType || !eventPayload) return json(400, { error: "endpoint_id, event_type, and payload are required" });
+        const serialized = JSON.stringify(eventPayload);
+        if (serialized.length > 262_144) return json(413, { error: "Webhook payload exceeds 256 KiB" });
+        const { data: endpoint } = await sb.from("academy_integration_endpoints").select("id,event_types,status").eq("academy_id", academyId).eq("id", endpointId).eq("status", "active").maybeSingle();
+        if (!endpoint?.id || !Array.isArray(endpoint.event_types) || !endpoint.event_types.map(String).includes(eventType)) return json(409, { error: "Endpoint does not accept this event type" });
+        const idempotencyKey = normalizeText(body?.idempotency_key, 180) || `${endpointId}:${eventType}:${normalizeText(body?.event_id, 64) || crypto.randomUUID()}`;
+        const { data: delivery, error } = await sb.from("academy_integration_deliveries").insert({ academy_id: academyId, endpoint_id: endpointId, event_type: eventType, event_id: normalizeText(body?.event_id, 64) || null, payload: eventPayload, status: "queued", next_attempt_at: new Date().toISOString(), idempotency_key: idempotencyKey }).select("id,academy_id,endpoint_id,event_type,event_id,status,attempts,next_attempt_at,idempotency_key,created_at").single();
+        if (error) return json(error.code === "23505" ? 409 : 400, { error: "Failed to queue integration event", detail: error.message });
+        return json(200, { delivery });
+      }
+
+      if (actionBody === "dispatch_integration_events") {
+        if (!["owner", "admin", "center_admin"].includes(access.role)) return json(403, { error: "Forbidden" });
+        const limit = Math.min(50, Math.max(1, toIntOrNull(body?.limit) ?? 20));
+        const { data: dueRows, error } = await sb.from("academy_integration_deliveries").select("*").eq("academy_id", academyId).in("status", ["queued", "retrying"]).lte("next_attempt_at", new Date().toISOString()).order("next_attempt_at").limit(limit);
+        if (error) return json(500, { error: "Failed to load integration queue", detail: error.message });
+        let deliveredCount = 0, retrying = 0, failed = 0;
+        for (const delivery of (dueRows ?? []) as Array<Record<string, unknown>>) {
+          const { data: endpoint } = await sb.from("academy_integration_endpoints").select("*").eq("academy_id", academyId).eq("id", delivery.endpoint_id).eq("status", "active").maybeSingle();
+          if (!endpoint?.id || !(await academyWebhookUrlResolvesPublicly(String(endpoint.endpoint_url)))) {
+            await sb.from("academy_integration_deliveries").update({ status: "failed", error: "Endpoint unavailable or unsafe" }).eq("academy_id", academyId).eq("id", delivery.id);
+            failed++;
+            continue;
+          }
+          const payloadText = JSON.stringify(delivery.payload);
+          const timestamp = Math.floor(Date.now() / 1000).toString();
+          const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(String(endpoint.signing_secret)), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+          const signatureBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${payloadText}`));
+          const signature = Array.from(new Uint8Array(signatureBytes)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+          await sb.from("academy_integration_deliveries").update({ status: "delivering", attempts: Number(delivery.attempts ?? 0) + 1 }).eq("academy_id", academyId).eq("id", delivery.id);
+          try {
+            const response = await fetch(String(endpoint.endpoint_url), { method: "POST", redirect: "error", signal: AbortSignal.timeout(10_000), headers: { "content-type": "application/json", "user-agent": "Schood-Academy-Webhook/1.0", "x-schood-event": String(delivery.event_type), "x-schood-delivery": String(delivery.id), "x-schood-timestamp": timestamp, "x-schood-signature": `sha256=${signature}` }, body: payloadText });
+            const excerpt = (await response.text()).slice(0, 500);
+            if (response.ok) {
+              await sb.from("academy_integration_deliveries").update({ status: "delivered", response_status: response.status, response_excerpt: excerpt, error: null, delivered_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", delivery.id);
+              await sb.from("academy_integration_endpoints").update({ consecutive_failures: 0, last_success_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", endpoint.id);
+              deliveredCount++;
+            } else {
+              const attempts = Number(delivery.attempts ?? 0) + 1;
+              const terminal = attempts >= 5 || response.status === 410;
+              await sb.from("academy_integration_deliveries").update({ status: terminal ? "failed" : "retrying", response_status: response.status, response_excerpt: excerpt, error: `HTTP ${response.status}`, next_attempt_at: new Date(Date.now() + Math.min(24 * 60, 2 ** attempts * 5) * 60_000).toISOString() }).eq("academy_id", academyId).eq("id", delivery.id);
+              await sb.from("academy_integration_endpoints").update({ consecutive_failures: Number(endpoint.consecutive_failures ?? 0) + 1, last_failure_at: new Date().toISOString(), ...(response.status === 410 ? { status: "paused" } : {}) }).eq("academy_id", academyId).eq("id", endpoint.id);
+              terminal ? failed++ : retrying++;
+            }
+          } catch (dispatchError) {
+            const attempts = Number(delivery.attempts ?? 0) + 1;
+            const terminal = attempts >= 5;
+            await sb.from("academy_integration_deliveries").update({ status: terminal ? "failed" : "retrying", error: String(dispatchError instanceof Error ? dispatchError.message : dispatchError).slice(0, 500), next_attempt_at: new Date(Date.now() + Math.min(24 * 60, 2 ** attempts * 5) * 60_000).toISOString() }).eq("academy_id", academyId).eq("id", delivery.id);
+            await sb.from("academy_integration_endpoints").update({ consecutive_failures: Number(endpoint.consecutive_failures ?? 0) + 1, last_failure_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", endpoint.id);
+            terminal ? failed++ : retrying++;
+          }
+        }
+        return json(200, { processed: dueRows?.length ?? 0, delivered: deliveredCount, retrying, failed });
+      }
+
+      if (actionBody === "create_export") {
+        const exportType = normalizeText(body?.export_type, 40).toLowerCase();
+        const format = normalizeText(body?.format, 10).toLowerCase() || "csv";
+        const allowedTypes = ["contacts", "students", "attendance", "balances", "payments", "payroll", "service_requests", "learning_plans"];
+        if (!allowedTypes.includes(exportType) || !["csv", "json"].includes(format)) return json(400, { error: "A supported export_type and format are required" });
+        const financeExport = ["balances", "payments", "payroll"].includes(exportType);
+        const allowed = financeExport ? academyAccessHas(access, "viewFinancialReports") || academyAccessHas(access, "viewPayroll") : academyAccessHas(access, "viewReports") || academyAccessHas(access, "viewAcademicReports") || academyAccessHas(access, "manageContacts");
+        if (!allowed) return json(403, { error: "Forbidden" });
+        const { data: job, error: jobError } = await sb.from("academy_export_jobs").insert({ academy_id: academyId, export_type: exportType, format, status: "running", filters: isJsonObject(body?.filters) ? body.filters : {}, requested_by: userId }).select("*").single();
+        if (jobError) return json(400, { error: "Failed to create export", detail: jobError.message });
+        const exportQueries: Record<string, () => PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>> = {
+          contacts: () => sb.from("academy_contacts").select("id,first_name,last_name,email,phone,status,lifecycle_stage,placement_level,created_at").eq("academy_id", academyId).order("created_at").limit(10000),
+          students: () => sb.from("academy_classroom_memberships").select("id,classroom_id,contact_id,role,status,joined_at,started_at,completed_at,expires_at").eq("academy_id", academyId).order("joined_at").limit(10000),
+          attendance: () => sb.from("academy_attendance").select("id,classroom_id,contact_id,session_id,session_date,status,notes,marked_at").eq("academy_id", academyId).order("session_date", { ascending: false }).limit(10000),
+          balances: () => sb.from("academy_charge_balances").select("id,contact_id,charge_number,charge_type,due_on,currency,effective_amount,outstanding_amount,calculated_status,days_overdue,aging_bucket").eq("academy_id", academyId).order("due_on", { ascending: false }).limit(10000),
+          payments: () => sb.from("academy_payments").select("id,contact_id,provider,amount,currency,status,provider_transaction_id,paid_at,created_at").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(10000),
+          payroll: () => sb.from("academy_payroll_row_totals").select("*").eq("academy_id", academyId).limit(10000),
+          service_requests: () => sb.from("academy_service_requests").select("id,requester_kind,contact_id,guardian_id,staff_id,classroom_id,request_type,subject,priority,status,desired_date,assigned_to,resolution,resolved_at,created_at").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(10000),
+          learning_plans: () => sb.from("academy_learning_plans").select("id,contact_id,framework_id,title,goal,starts_on,target_date,status,coach_user_id,published_at,created_at").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(10000),
+        };
+        const result = await exportQueries[exportType]();
+        if (result.error) {
+          await sb.from("academy_export_jobs").update({ status: "failed", error: result.error.message, completed_at: new Date().toISOString() }).eq("id", job.id);
+          return json(500, { error: "Export failed", detail: result.error.message });
+        }
+        const rows = result.data ?? [];
+        const { data: completedJob } = await sb.from("academy_export_jobs").update({ status: "ready", row_count: rows.length, result_data: rows, completed_at: new Date().toISOString(), expires_at: new Date(Date.now() + 24 * 60 * 60_000).toISOString() }).eq("id", job.id).select("id,academy_id,export_type,format,status,row_count,requested_at,completed_at,expires_at").single();
+        return json(200, { export: completedJob });
+      }
+
+      if (actionBody === "download_export") {
+        const exportId = normalizeText(body?.export_id ?? body?.id, 64);
+        if (!exportId) return json(400, { error: "export_id is required" });
+        const { data: job, error } = await sb.from("academy_export_jobs").select("*").eq("academy_id", academyId).eq("id", exportId).maybeSingle();
+        if (error) return json(500, { error: "Failed to load export", detail: error.message });
+        if (!job?.id || (String(job.requested_by) !== userId && !["owner", "admin", "center_admin"].includes(access.role))) return json(404, { error: "Export not found" });
+        if (job.status !== "ready" || (job.expires_at && Date.parse(String(job.expires_at)) <= Date.now())) return json(410, { error: "Export is not available" });
+        return json(200, { export: { id: job.id, export_type: job.export_type, format: job.format, row_count: job.row_count, result_data: job.result_data, completed_at: job.completed_at, expires_at: job.expires_at } });
       }
 
       if (actionBody === "convert_lead_full") {
@@ -10537,7 +12096,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       ? 401
       : message === "Forbidden" || message.startsWith("No enrollment") || message.startsWith("No active enrollment")
       ? 403
-      : message.endsWith("is required")
+      : message.endsWith("is required") || message.startsWith("Invalid ") || message.startsWith("Step ") ||
+          message.startsWith("A timetable generation window")
       ? 400
       : 500;
     return json(status, { error: message });
