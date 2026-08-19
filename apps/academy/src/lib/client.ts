@@ -2988,3 +2988,94 @@ export const teacherStudioUpsertBranding = async (
   });
   return data.branding;
 };
+
+export type AcademyOperationalRecord = Record<string, unknown> & { id: string };
+export type AcademyAccessInvitation = AcademyOperationalRecord & {
+  invite_kind: 'student' | 'staff' | 'guardian';
+  email: string;
+  role: string | null;
+  contact_id: string | null;
+  classroom_id: string | null;
+  guardian_relationship_id: string | null;
+  status: string;
+  delivery_status: string;
+  delivery_error: string | null;
+  token_expires_at: string;
+  resend_count: number;
+  academy?: { id: string; name: string; slug: string } | null;
+};
+export type AcademyServiceRequest = AcademyOperationalRecord & {
+  contact_id: string | null;
+  guardian_id: string | null;
+  request_type: string;
+  subject: string;
+  details: string;
+  priority: string;
+  status: string;
+  created_at: string;
+  due_at: string | null;
+};
+export type AcademyOperationalData = {
+  accessInvitations?: {
+    invitations: AcademyAccessInvitation[];
+    access: TeacherStudioAccessProfile;
+    contacts: AcademyOperationalRecord[];
+    classrooms: AcademyOperationalRecord[];
+    guardian_relationships: AcademyOperationalRecord[];
+    guardians: AcademyOperationalRecord[];
+  };
+  timetable?: {
+    terms: AcademyOperationalRecord[];
+    series: AcademyOperationalRecord[];
+    runs: AcademyOperationalRecord[];
+    schedules: AcademyOperationalRecord[];
+    rooms: AcademyOperationalRecord[];
+    staff: AcademyOperationalRecord[];
+    branches: AcademyOperationalRecord[];
+    classrooms: AcademyOperationalRecord[];
+  };
+  serviceRequests?: { requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[] };
+  journeys?: {
+    journeys: AcademyOperationalRecord[];
+    steps: AcademyOperationalRecord[];
+    enrollments: AcademyOperationalRecord[];
+  };
+  collections?: { cases: AcademyOperationalRecord[]; attempts: AcademyOperationalRecord[] };
+  workforce?: { requests: AcademyOperationalRecord[]; branches: AcademyOperationalRecord[] };
+  sensitiveCases?: { cases: AcademyOperationalRecord[]; events: AcademyOperationalRecord[] };
+  competencyPlans?: {
+    frameworks: AcademyOperationalRecord[];
+    competencies: AcademyOperationalRecord[];
+    plans: AcademyOperationalRecord[];
+    items: AcademyOperationalRecord[];
+    evidence: AcademyOperationalRecord[];
+  };
+  integrations?: {
+    endpoints: AcademyOperationalRecord[];
+    deliveries: AcademyOperationalRecord[];
+    exports: AcademyOperationalRecord[];
+  };
+};
+
+const academyOperationalRead = <T>(academyId: string, action: string): Promise<T> => callTeacherStudio<T>({ action, academyId });
+
+export const teacherStudioAccessInvitations = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['accessInvitations']>>(academyId, 'access_invitations');
+export const teacherStudioTimetablePlanning = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['timetable']>>(academyId, 'timetable_planning');
+export const teacherStudioServiceRequests = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['serviceRequests']>>(academyId, 'service_requests');
+export const teacherStudioCommunicationJourneys = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['journeys']>>(academyId, 'communication_journeys');
+export const teacherStudioCollectionCases = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['collections']>>(academyId, 'collection_cases');
+export const teacherStudioWorkforceRequests = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['workforce']>>(academyId, 'workforce_requests');
+export const teacherStudioSensitiveCases = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['sensitiveCases']>>(academyId, 'sensitive_cases');
+export const teacherStudioCompetencyPlans = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['competencyPlans']>>(academyId, 'competency_plans');
+export const teacherStudioIntegrationEndpoints = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['integrations']>>(academyId, 'integration_endpoints');
+
+export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> => callTeacherStudio<T>({ method: 'POST', action, academyId, body });
+
+export const teacherStudioInvitationStatus = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ action: 'invitation_status', params: { token } });
+export const teacherStudioAcceptAccessInvitation = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ method: 'POST', action: 'accept_access_invitation', body: { token } });
+export const teacherStudioStudentServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_service_requests', academyId });
+export const teacherStudioCreateStudentServiceRequest = (academyId: string, body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'student_service_request_create', academyId, body });
+export const teacherStudioStudentLearningPlans = (academyId?: string | null) => callTeacherStudio<{ plans: AcademyOperationalRecord[]; items: AcademyOperationalRecord[]; evidence: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_learning_plans', academyId });
+export const teacherStudioGuardianServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; guardians: AcademyOperationalRecord[] }>({ action: 'guardian_service_requests', academyId });
+export const teacherStudioCreateGuardianServiceRequest = (body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'guardian_service_request_create', body });
+export const teacherStudioSubmitSensitiveReport = (body: Record<string, unknown>) => callTeacherStudio<{ case: { id: string; case_number: number; status: string } }>({ method: 'POST', action: 'submit_sensitive_report', body });

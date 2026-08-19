@@ -8,6 +8,7 @@ import {
   BookOpenCheck,
   Building2,
   CalendarDays,
+  ClipboardList,
   ChevronDown,
   CreditCard,
   GraduationCap,
@@ -86,6 +87,7 @@ import {
 } from './lib/client';
 import { platformUrl, supabase } from './lib/supabase';
 import { UpdatesButton } from './components/UpdatesButton';
+import { InvitationAcceptView } from './components/InvitationAcceptView';
 import { WorkspaceHomeView } from './components/workspace/WorkspaceHomeView';
 import { StudentHomeView } from './components/workspace/StudentHomeView';
 import { LazyRouteBoundary } from './components/workspace/LazyRouteBoundary';
@@ -132,6 +134,8 @@ const loadIntelligenceOperationsView = () => import('./components/office/Intelli
   .then((module) => ({ default: module.IntelligenceOperationsView }));
 const loadBusinessPlatformView = () => import('./components/office/BusinessPlatformView')
   .then((module) => ({ default: module.BusinessPlatformView }));
+const loadOperationalServicesView = () => import('./components/office/OperationalServicesView')
+  .then((module) => ({ default: module.OperationalServicesView }));
 const loadGuardianPortalView = () => import('./components/guardians/GuardianPortalView')
   .then((module) => ({ default: module.GuardianPortalView }));
 const loadEducationOSView = () => import('./components/office/EducationOSView')
@@ -140,6 +144,8 @@ const loadClassroomDetailView = () => import('./components/office/ClassroomDetai
   .then((module) => ({ default: module.ClassroomDetailView }));
 const loadStudentClassroomView = () => import('./components/students/StudentClassroomView')
   .then((module) => ({ default: module.StudentClassroomView }));
+const loadStudentServicesView = () => import('./components/students/StudentServicesView')
+  .then((module) => ({ default: module.StudentServicesView }));
 const loadAcademyView = () => import('./components/office/AcademyView')
   .then((module) => ({ default: module.AcademyView }));
 const loadContactsView = () => import('./components/office/ContactsView')
@@ -166,10 +172,12 @@ const AcademicOperationsView = lazy(loadAcademicOperationsView);
 const GuardianRelationshipsView = lazy(loadGuardianRelationshipsView);
 const IntelligenceOperationsView = lazy(loadIntelligenceOperationsView);
 const BusinessPlatformView = lazy(loadBusinessPlatformView);
+const OperationalServicesView = lazy(loadOperationalServicesView);
 const GuardianPortalView = lazy(loadGuardianPortalView);
 const EducationOSView = lazy(loadEducationOSView);
 const ClassroomDetailView = lazy(loadClassroomDetailView);
 const StudentClassroomView = lazy(loadStudentClassroomView);
+const StudentServicesView = lazy(loadStudentServicesView);
 const AcademyView = lazy(loadAcademyView);
 const ContactsView = lazy(loadContactsView);
 const InboxView = lazy(loadInboxView);
@@ -206,12 +214,13 @@ type DirectoryWorkspaceAcademy = {
   student: TeacherStudioStudentDashboard['academies'][number] | null;
 };
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'today' | 'academy' | 'platform' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
-type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access';
+type OfficeView = 'today' | 'academy' | 'platform' | 'services' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan';
 
 const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
   academy: loadAcademyView,
   platform: loadBusinessPlatformView,
+  services: loadOperationalServicesView,
   business: loadBusinessFoundationView,
   commercial: loadCommercialCoreView,
   academic: loadAcademicOperationsView,
@@ -262,9 +271,9 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['today', 'academy', 'platform', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
+const OFFICE_VIEWS: OfficeView[] = ['today', 'academy', 'platform', 'services', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
 const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
-const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access'];
+const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
 const CLASSROOM_RESOURCE_KIND_LABELS: Record<TeacherStudioClassroomResource['kind'], string> = {
@@ -293,6 +302,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   today: 'Today',
   academy: 'Academy',
   platform: 'Business Platform',
+  services: 'Service desk',
   business: 'Admissions',
   commercial: 'Commercial Core',
   academic: 'Academic Operations',
@@ -314,6 +324,7 @@ const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   today: 'viewEducationOS',
   academy: 'viewAcademy',
   platform: 'viewBusinessIntelligence',
+  services: 'viewEducationOS',
   business: 'viewAdmissions',
   commercial: 'viewFinance',
   academic: 'manageAcademicOperations',
@@ -481,10 +492,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: ['today', 'contacts', 'classrooms', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
-  admin: ['today', 'contacts', 'classrooms', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
-  teacher: ['today', 'classrooms', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['today', 'academy', 'contacts', 'classrooms', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
+  office: ['today', 'contacts', 'classrooms', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
+  admin: ['today', 'contacts', 'classrooms', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
+  teacher: ['today', 'classrooms', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
+  center: ['today', 'academy', 'contacts', 'classrooms', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
 };
 
 const hasOfficeRoutePermission = (
@@ -525,7 +536,9 @@ const officeViewsForIntent = (
   const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
   return caps.filter((view) => view === 'operations'
     ? ['viewEconomics', 'manageCashier', 'viewPayroll'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
-    : hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
+    : view === 'services'
+      ? ['manageRoster', 'manageStaff', 'manageGuardians', 'manageAcademicOperations', 'manageAutomation', 'collectFinance', 'manageRetention', 'manageAssignments', 'viewClassrooms'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
+      : hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
 };
 
 const defaultOfficeViewForIntent = (
@@ -702,6 +715,8 @@ const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
   messages: 'Messages',
   alerts: 'Alerts',
   access: 'Tuition & access',
+  requests: 'My requests',
+  plan: 'Learning plan',
 };
 
 const toAuthUrl = (): string => {
@@ -1260,6 +1275,7 @@ const App = () => {
       relationships: { title: 'Guardians & Parents', caption: 'Consent, secure Telegram linking, visibility, messages, and notification delivery' },
       intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
       platform: { title: 'Education Business Platform', caption: 'Student lifecycle, branch performance, unit economics, governed automation, and reviewable AI assistance' },
+      services: { title: 'Service desk', caption: 'Student requests, staff changes, schedules, learning plans, and follow-through' },
       operations: { title: 'Operations Finance', caption: 'Cashier, expenses, contribution economics, compensation, and payroll' },
       os: { title: osCenterLabel, caption: 'Automations, actions, reports, and learning signals' },
     };
@@ -1288,6 +1304,7 @@ const App = () => {
     [location.search],
   );
   const isServiceLanding = normalizedPath === '/';
+  const isInvitationAccept = normalizedPath === '/invitations/accept';
   const isAcademyDirectory = normalizedPath === '/academies';
   const isAcademySetup = normalizedPath === '/academy/setup';
   const isWorkspaceEntry = normalizedPath === '/academy/workspace';
@@ -1303,6 +1320,8 @@ const App = () => {
   const isGuardianWorkspaceRoute = normalizedPath === '/academy/parent' || normalizedPath.startsWith('/academy/parent/');
   const bootstrapScope = isServiceLanding
     ? 'service'
+    : isInvitationAccept
+      ? 'invitation'
     : isAcademySetup
       ? 'setup'
     : isGuardianWorkspaceRoute
@@ -1495,8 +1514,8 @@ const App = () => {
     const loadView = officeClassroomId
       ? 'classrooms'
       : officeView ?? defaultOfficeViewForIntent(allowedViews, officeRouteIntent);
-    const needsContacts = ['contacts', 'classrooms', 'alerts', 'payments', 'entitlements', 'os'].includes(loadView);
-    const needsClassrooms = ['contacts', 'classrooms', 'announcements', 'os'].includes(loadView);
+    const needsContacts = ['contacts', 'classrooms', 'alerts', 'payments', 'entitlements', 'os', 'services'].includes(loadView);
+    const needsClassrooms = ['contacts', 'classrooms', 'announcements', 'os', 'services'].includes(loadView);
     const needsMemberships = ['contacts', 'classrooms', 'os'].includes(loadView);
     const needsMessages = loadView === 'inbox';
     const needsAnnouncements = loadView === 'announcements' || Boolean(officeClassroomId);
@@ -1692,6 +1711,14 @@ const App = () => {
       const meResponse = await getMe();
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
       const teacherMembershipRows = memberships.filter(isAcademyStaffMembership);
+      if (isInvitationAccept) {
+        setMe(meResponse);
+        setAcademies([]);
+        setStudentDashboard(null);
+        setAcademyId('');
+        setState('ready');
+        return;
+      }
       if (isGuardianWorkspaceRoute) {
         setMe(meResponse);
         setAcademies([]);
@@ -1729,7 +1756,7 @@ const App = () => {
         !!academyClassroomLandingId;
       const studentDataPromise = shouldPreloadStudentData ? loadStudentDataOnce() : null;
       let academyList: TeacherStudioAcademy[] = [];
-      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isServiceLanding;
+      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isServiceLanding && !isInvitationAccept;
       if (shouldAttemptTeacherData) {
         try {
           academyList = await teacherStudioAcademies();
@@ -1803,6 +1830,7 @@ const App = () => {
     academyId,
     isAcademyDirectory,
     isAcademySetup,
+    isInvitationAccept,
     isServiceLanding,
     isStudentWorkspaceRoute,
     isGuardianWorkspaceRoute,
@@ -1888,6 +1916,7 @@ const App = () => {
       normalized === '/academies' ||
       normalized === '/academy/setup' ||
       normalized === '/academy/workspace' ||
+      normalized === '/invitations/accept' ||
       normalized === '/academy' ||
       normalized === '/academy/classrooms' ||
       !!academyClassroomLandingId
@@ -3047,6 +3076,15 @@ const App = () => {
     () => [...(studentDashboard?.payments ?? [])].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
     [studentDashboard],
   );
+
+  if (isInvitationAccept) {
+    return (
+      <>
+        <InvitationAcceptView signedIn={state !== 'unauthenticated' && Boolean(me)} sessionLoading={state === 'loading'} signInUrl={toAuthUrl()} search={location.search} onContinue={(path) => navigate(path, { replace: true })} />
+        <UpdatesButton />
+      </>
+    );
+  }
 
   if (isServiceLanding) {
     if (state === 'ready') {
@@ -4593,6 +4631,12 @@ const App = () => {
             onSelect: () => navigate(academyScopedPath('/academy/student/classrooms', studentAcademyId)),
             onPrepare: () => { void loadStudentClassroomView().catch(() => undefined); },
           },
+          {
+            id: 'student-plan', label: 'My learning plan', icon: <GraduationCap size={17} />,
+            active: studentPortalView === 'plan',
+            onSelect: () => navigate(academyScopedPath('/academy/student/plan', studentAcademyId)),
+            onPrepare: () => { void loadStudentServicesView().catch(() => undefined); },
+          },
         ],
       },
       {
@@ -4607,6 +4651,12 @@ const App = () => {
             id: 'student-alerts', label: 'Alerts', icon: <Bell size={17} />, active: studentPortalView === 'alerts',
             onSelect: () => navigate(academyScopedPath('/academy/student/alerts', studentAcademyId)),
             badge: openAlertsCount,
+          },
+          {
+            id: 'student-requests', label: 'My requests', icon: <ClipboardList size={17} />,
+            active: studentPortalView === 'requests',
+            onSelect: () => navigate(academyScopedPath('/academy/student/requests', studentAcademyId)),
+            onPrepare: () => { void loadStudentServicesView().catch(() => undefined); },
           },
         ],
       },
@@ -4680,6 +4730,7 @@ const App = () => {
                   sessions={(studentDashboard.sessions ?? []).filter((session) => session.classroom_id === studentClassroomId)}
                   formatDate={formatDate}
                   onBack={() => navigate(academyScopedPath('/academy/student/classrooms', studentAcademyId))}
+                  onRequestHelp={() => navigate(academyScopedPath('/academy/student/requests', studentAcademyId))}
                 />
               </LazyRouteBoundary>
             ) : null}
@@ -4731,6 +4782,12 @@ const App = () => {
                   </table>
                 </div>
               </section>
+            ) : null}
+
+            {studentPortalView === 'requests' || studentPortalView === 'plan' ? (
+              <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
+                <StudentServicesView academyId={studentAcademyId} mode={studentPortalView} classrooms={studentClassrooms} formatDate={formatDate} />
+              </LazyRouteBoundary>
             ) : null}
 
             {studentPortalView === 'messages' ? (
@@ -4918,6 +4975,7 @@ const App = () => {
       items: visibleNavItems([
         officeRouteIntent === 'teacher' ? inboxNav : osNav,
         officeNavItem('alerts', 'Alerts', <ShieldAlert size={17} />, alerts.filter((alert) => !alert.resolved).length),
+        officeNavItem('services', 'Service desk', <ClipboardList size={17} />),
         officeNavItem('announcements', 'Announcements', <Megaphone size={17} />),
         officeRouteIntent === 'office' ? financeNav : null,
       ]),
@@ -5084,6 +5142,10 @@ const App = () => {
 
           {officeView === 'platform' && officeCanOpen('platform') ? (
             <BusinessPlatformView academyId={academyId} formatDate={formatDate} />
+          ) : null}
+
+          {officeView === 'services' && officeCanOpen('services') ? (
+            <OperationalServicesView academyId={academyId} access={selectedAcademyAccess} contacts={contacts} classrooms={classrooms} formatDate={formatDate} />
           ) : null}
 
           {officeView === 'operations' && officeCanOpen('operations') ? (

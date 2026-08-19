@@ -8,13 +8,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import ru from './locales/ru.json';
-import uz from './locales/uz.json';
 import { SUPPORTED_LOCALES, type LocaleCode, type TranslationParams } from './types';
 
 const STORAGE_KEY = 'schood.locale';
 const supportedLocales = new Set<string>(SUPPORTED_LOCALES);
-const dictionaries: Record<Exclude<LocaleCode, 'en'>, Record<string, string>> = { uz, ru };
+type TranslatedLocale = Exclude<LocaleCode, 'en'>;
+const dictionaries: Partial<Record<TranslatedLocale, Record<string, string>>> = {};
 
 const normalizeLocale = (value: string | null | undefined): LocaleCode | null => {
   if (!value) return null;
@@ -45,6 +44,22 @@ const readInitialLocale = (): LocaleCode => {
 
 let activeLocale: LocaleCode = readInitialLocale();
 
+const loadDictionary = async (locale: LocaleCode): Promise<void> => {
+  if (locale === 'en' || dictionaries[locale]) return;
+  const dictionary = locale === 'uz'
+    ? (await import('./locales/uz.json')).default
+    : (await import('./locales/ru.json')).default;
+  dictionaries[locale] = dictionary;
+};
+
+if (activeLocale !== 'en') {
+  try {
+    await loadDictionary(activeLocale);
+  } catch {
+    activeLocale = 'en';
+  }
+}
+
 const formatTemplate = (template: string, params?: TranslationParams): string => {
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
@@ -55,7 +70,7 @@ const formatTemplate = (template: string, params?: TranslationParams): string =>
 };
 
 export const translate = (source: string, params?: TranslationParams): string => {
-  const template = activeLocale === 'en' ? source : dictionaries[activeLocale][source] ?? source;
+  const template = activeLocale === 'en' ? source : dictionaries[activeLocale]?.[source] ?? source;
   return formatTemplate(template, params);
 };
 
@@ -109,13 +124,17 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
 
   const setLocale = useCallback((nextLocale: LocaleCode) => {
     const normalized = normalizeLocale(nextLocale) ?? 'en';
-    activeLocale = normalized;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, normalized);
-    } catch {
-      // The selected locale remains active for this session.
-    }
-    setLocaleState(normalized);
+    void loadDictionary(normalized)
+      .then(() => {
+        activeLocale = normalized;
+        try {
+          window.localStorage.setItem(STORAGE_KEY, normalized);
+        } catch {
+          // The selected locale remains active for this session.
+        }
+        setLocaleState(normalized);
+      })
+      .catch(() => undefined);
   }, []);
 
   const value = useMemo<I18nContextValue>(
