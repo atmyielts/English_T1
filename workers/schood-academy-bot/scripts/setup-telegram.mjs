@@ -34,6 +34,9 @@ const identity = await call('getMe', {});
 if (String(identity.result?.username || '').toLowerCase() !== botName.toLowerCase()) {
   throw new Error('Academy Telegram token does not match the configured bot username');
 }
+if (identity.result?.can_read_all_group_messages === true) {
+  throw new Error('Academy Telegram group privacy mode must be enabled in BotFather');
+}
 
 if (mode === 'all' || mode === 'webhook') {
   if (!webhookSecret) throw new Error('ACADEMY_TELEGRAM_WEBHOOK_SECRET is required for webhook setup');
@@ -52,4 +55,15 @@ if (mode === 'all' || mode === 'commands') {
   await call('setMyName', { name: 'Schood Academy' });
   await call('setMyShortDescription', { short_description: 'Daily Academy work, messages, homework, and attendance.' });
   await call('setMyDescription', { description: 'A role-scoped assistant for Schood Academy staff. It posts approved updates and keeps personal student information private.' });
+}
+
+if (mode === 'all' || mode === 'verify') {
+  const webhook = await call('getWebhookInfo', {});
+  if (webhook.result?.url !== `${workerUrl}/webhook`) throw new Error('Academy Telegram webhook URL verification failed');
+  if (webhook.result?.last_error_message) throw new Error('Academy Telegram webhook reports a delivery error');
+  const menu = await call('getChatMenuButton', {});
+  if (menu.result?.type !== 'web_app' || menu.result?.web_app?.url !== appUrl) throw new Error('Academy Telegram Mini App menu verification failed');
+  const configuredCommands = await call('getMyCommands', {});
+  if (!Array.isArray(configuredCommands.result) || configuredCommands.result.length !== commands.length) throw new Error('Academy Telegram command verification failed');
+  console.log('Academy Telegram provider configuration verified.');
 }

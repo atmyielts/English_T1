@@ -45,3 +45,22 @@ Deno.test("Academy Telegram provider setup rejects a token for another bot befor
   );
   assertEquals(methods, ["getMe"]);
 });
+
+Deno.test("Academy Telegram provider setup rejects a bot that can read ordinary group conversation", async () => {
+  const methods: string[] = [];
+  await assertRejects(
+    () => configureAcademyTelegramProvider({
+      botName: "schoodacademybot",
+      siteUrl: "https://academy.schood.online",
+      workerUrl: "https://academy-bot.schood.online",
+      webhookSecret: "test-webhook-secret",
+      call: (method) => {
+        methods.push(method);
+        return Promise.resolve({ ok: true, result: { username: "schoodacademybot", can_read_all_group_messages: true } });
+      },
+    }),
+    Error,
+    "group privacy mode must be enabled",
+  );
+  assertEquals(methods, ["getMe"]);
+});

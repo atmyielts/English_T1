@@ -28,6 +28,9 @@ export const configureAcademyTelegramProvider = async ({
   if (String(identity.result?.username ?? "").trim().toLowerCase() !== botName.replace(/^@/, "").toLowerCase()) {
     throw new Error("Academy Telegram token does not match the configured bot username");
   }
+  if (identity.result?.can_read_all_group_messages === true) {
+    throw new Error("Academy Telegram group privacy mode must be enabled in BotFather");
+  }
   await call("setWebhook", {
     url: `${workerUrl.replace(/\/$/, "")}/webhook`,
     secret_token: webhookSecret,
