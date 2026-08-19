@@ -13,7 +13,7 @@ export const isAcademyAdminAccess = (access: TeacherStudioAccessProfile | null |
   !isCenterAccess(access) && ['owner', 'admin'].includes(normalizeAccessRole(access));
 
 export const isAcademyOperationsAccess = (access: TeacherStudioAccessProfile | null | undefined): boolean =>
-  !isCenterAccess(access) && ['branch_manager', 'manager', 'counselor', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison'].includes(normalizeAccessRole(access));
+  !isCenterAccess(access) && ['branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison'].includes(normalizeAccessRole(access));
 
 export const isTeacherWorkspaceAccess = (access: TeacherStudioAccessProfile | null | undefined): boolean =>
   !isCenterAccess(access) && ['teacher', 'assistant'].includes(normalizeAccessRole(access));

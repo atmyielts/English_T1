@@ -238,6 +238,12 @@ verify_jwt = false
 [functions.telegram-app]
 verify_jwt = false
 
+[functions.academy-telegram]
+verify_jwt = false
+
+[functions.send-academy-telegram]
+verify_jwt = false
+
 [functions.telegram-public]
 verify_jwt = false
 

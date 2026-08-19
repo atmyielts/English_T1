@@ -56,7 +56,7 @@ Deno.test("integration signing secrets are never granted through direct authenti
   const grantBlock = migration.slice(migration.indexOf("grant select on"), migration.indexOf("-- Endpoint signing secrets"));
   assertEquals(grantBlock.includes("academy_integration_endpoints"), false);
   assertEquals(grantBlock.includes("academy_integration_deliveries"), false);
-  assert(migration.includes("never receive authenticated\n-- table grants"));
+  assert(/never receive authenticated\r?\n-- table grants/.test(migration));
   assert(migration.includes("event_id text"));
 });
 

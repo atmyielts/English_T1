@@ -1,0 +1,13 @@
+name = "schood-academy-bot"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+routes = [
+  { pattern = "academy-bot.schood.online", custom_domain = true },
+]
+
+# Secrets (set with `wrangler secret put`, never commit values):
+# SUPABASE_URL
+# TELEGRAM_INTERNAL_SECRET
+# WEBHOOK_SECRET
+# WEBHOOK_SECRET_PREVIOUS (optional rotation overlap)

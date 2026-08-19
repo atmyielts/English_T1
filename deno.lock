@@ -4687,6 +4687,14 @@
           ]
         }
       },
+      "workers/schood-academy-bot": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@^4.20240925.0",
+            "npm:wrangler@^3.80.0"
+          ]
+        }
+      },
       "workers/schood-bot": {
         "packageJson": {
           "dependencies": [

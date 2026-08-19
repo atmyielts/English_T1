@@ -6,6 +6,7 @@ type RoleKey =
   | "owner"
   | "admin"
   | "center_admin"
+  | "receptionist"
   | "manager"
   | "counselor"
   | "teacher"
@@ -33,6 +34,7 @@ const roles: RoleKey[] = [
   "owner",
   "admin",
   "center_admin",
+  "receptionist",
   "manager",
   "counselor",
   "teacher",
@@ -105,6 +107,23 @@ const expectedAccess: Record<RoleKey, Record<ResourceKey, boolean>> = {
     finance: true,
     offers: true,
     payments: true,
+    alerts_messages_announcements: true,
+    education_os_actions: true,
+    admissions: true,
+    branches: true,
+  },
+  receptionist: {
+    contacts: true,
+    classrooms: true,
+    roster: true,
+    assignments: false,
+    gradebook: false,
+    attendance: true,
+    schedule: false,
+    staff: false,
+    finance: false,
+    offers: false,
+    payments: false,
     alerts_messages_announcements: true,
     education_os_actions: true,
     admissions: true,
@@ -335,5 +354,9 @@ Deno.test("Academy specialist roles are least-privilege and branch-scoped", () =
   assertEquals(payroll.viewPayroll,true);assertEquals(payroll.calculatePayroll,true);assertEquals(payroll.approvePayroll,false);assertEquals(payroll.payPayroll,false);
   const liaison=permissions("parent_liaison");
   assertEquals(liaison.manageGuardians,true);assertEquals(liaison.communicateGuardians,true);assertEquals(liaison.viewRisk,true);assertEquals(liaison.viewFinance,false);
+  const receptionist=permissions("receptionist");
+  assertEquals(receptionist.viewAdmissions,true);assertEquals(receptionist.manageAdmissions,true);assertEquals(receptionist.markAttendance,true);assertEquals(receptionist.manageAnnouncements,true);assertEquals(receptionist.resolveActionItems,true);assertEquals(receptionist.dispatchNotifications,true);
+  assertEquals(receptionist.manageRoster,false);assertEquals(receptionist.manageAutomation,false);assertEquals(receptionist.manageFinance,false);assertEquals(receptionist.manageStaff,false);assertEquals(receptionist.sendGlobalAnnouncements,false);
+  assertEquals(academyAccess.academyAccessProfile({tenant_id:"00000000-0000-0000-0000-000000000001",role:"receptionist",status:"active",branch_ids:[branchId]}).scope,"assigned_branches");
   assertEquals(academyAccess.academyAccessProfile({tenant_id:"00000000-0000-0000-0000-000000000001",role:"branch_manager",status:"active",branch_ids:[branchId]}).scope,"assigned_branches");
 });
