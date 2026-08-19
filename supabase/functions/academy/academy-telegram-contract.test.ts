@@ -99,3 +99,11 @@ Deno.test("Mini App is a dedicated lazy route with phone overflow protection", a
   assertMatch(css, /@media \(max-width: 380px\)/);
   assertMatch(css, /overflow-x:\s*(?:hidden|clip)/);
 });
+
+Deno.test("Academy Telegram CORS accepts Supabase browser client headers", async () => {
+  const edge = await read("supabase/functions/academy-telegram/index.ts");
+  assertMatch(
+    edge,
+    /"Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-worker-secret"/,
+  );
+});
