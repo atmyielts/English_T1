@@ -2,7 +2,7 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
-type StaffPersona = "owner" | "admin" | "center_admin" | "branch_manager" | "manager" | "counselor" | "salesperson" | "cashier" | "accountant" | "payroll_officer" | "parent_liaison" | "teacher" | "assistant";
+type StaffPersona = "owner" | "admin" | "center_admin" | "branch_manager" | "manager" | "counselor" | "receptionist" | "salesperson" | "cashier" | "accountant" | "payroll_officer" | "parent_liaison" | "teacher" | "assistant";
 type Persona = StaffPersona | "student" | "guardian";
 
 const academyId = "academy-route-smoke";
@@ -93,9 +93,10 @@ const productionAccess = (role: StaffPersona) => {
   const accountant = role === "accountant";
   const payrollOfficer = role === "payroll_officer";
   const parentLiaison = role === "parent_liaison";
+  const receptionist = role === "receptionist";
   const teacher = role === "teacher" || role === "assistant";
   const ops = ownerAdmin || centerAdmin || manager || branchManager;
-  const staff = ops || teacher || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
+  const staff = ops || teacher || receptionist || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
   const classroomLms = ownerAdmin || teacher;
   const financeViewer = ownerAdmin || centerAdmin || branchManager || cashier || accountant;
   const reportingViewer = ownerAdmin || centerAdmin || manager || branchManager || accountant;
@@ -122,18 +123,18 @@ const productionAccess = (role: StaffPersona) => {
     viewAutomation: ownerAdmin || centerAdmin || manager || branchManager,
     viewBranches: staff,
     manageBranches: ownerAdmin || centerAdmin,
-    viewAdmissions: ops || salesperson,
-    manageAdmissions: ops || salesperson,
+    viewAdmissions: ops || receptionist || salesperson,
+    manageAdmissions: ops || receptionist || salesperson,
     assignAdmissions: ownerAdmin || centerAdmin || manager || branchManager,
     exportAdmissions: ownerAdmin || centerAdmin || manager,
     manageTrialFeedback: staff,
     viewContacts: staff,
-    manageContacts: ops || salesperson || parentLiaison,
+    manageContacts: ops || receptionist || salesperson || parentLiaison,
     viewClassrooms: staff,
     manageClassrooms: ops,
     manageRoster: ops,
     manageMessages: staff,
-    manageAnnouncements: ops || teacher || parentLiaison,
+    manageAnnouncements: ops || receptionist || teacher || parentLiaison,
     sendGlobalAnnouncements: ops,
     manageAlerts: staff,
     resolveAlerts: staff,
@@ -141,11 +142,11 @@ const productionAccess = (role: StaffPersona) => {
     resolveActionItems: staff,
     manageAssignments: classroomLms,
     gradeSubmissions: classroomLms,
-    markAttendance: classroomLms,
+    markAttendance: classroomLms || receptionist,
     manageSchedule: ownerAdmin || centerAdmin || manager || teacher,
     manageAcademicOperations: ops,
     manageGuardians: ops || parentLiaison,
-    communicateGuardians: ops || teacher || parentLiaison,
+    communicateGuardians: ops || receptionist || teacher || parentLiaison,
     manageRetention: ops,
     viewBusinessIntelligence: reportingViewer,
     viewAcademicReports: reportingViewer || teacher,
@@ -159,12 +160,12 @@ const productionAccess = (role: StaffPersona) => {
     manageResources: classroomLms,
     viewReports: reportingViewer,
     issueCertificates: ownerAdmin,
-    dispatchNotifications: ops || parentLiaison,
-    viewNotifications: ops || parentLiaison,
+    dispatchNotifications: ops || receptionist || parentLiaison,
+    viewNotifications: ops || receptionist || parentLiaison,
     viewReferrals: ops || salesperson,
     viewAudit: ownerAdmin || centerAdmin || manager || accountant,
   };
-  const assignedBranches = ["branch_manager", "salesperson", "cashier", "parent_liaison"].includes(role);
+  const assignedBranches = ["branch_manager", "receptionist", "salesperson", "cashier", "parent_liaison"].includes(role);
   const assignedClassrooms = role === "teacher" || role === "assistant";
   return {
     role,
@@ -2026,6 +2027,12 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
           },
         ],
       },
+      create_staff_link: {
+        link: {
+          url: `http://127.0.0.1:4177/academy/office?academy_id=${academyId}#telegram-linked`,
+          expires_in_seconds: 600,
+        },
+      },
     };
 
     if (action in (options.actionOverrides ?? {})) return route.fulfill(json(options.actionOverrides?.[action]));
@@ -2292,6 +2299,17 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         forbiddenControl: "Create offer",
       },
       {
+        persona: "receptionist",
+        landing: "/academy/office",
+        landingHeading: /^Today$/,
+        allowedPath: "/academy/office/business",
+        allowedHeading: "Capture lead",
+        allowedAction: /^Add lead$/,
+        forbiddenNav: "Offers",
+        forbiddenPath: "/academy/admin/offers",
+        forbiddenControl: "Create offer",
+      },
+      {
         persona: "salesperson",
         landing: "/academy/office",
         landingHeading: /^Today$/,
@@ -2396,6 +2414,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       branch_manager: "Admissions",
       manager: "Admissions",
       counselor: "Admissions",
+      receptionist: "Admissions",
       salesperson: "Admissions",
       cashier: "Finance",
       accountant: "Finance",
@@ -2453,6 +2472,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     { persona: "branch_manager" as const, lane: "office", canReachBranches: true, canManage: false },
     { persona: "manager" as const, lane: "office", canReachBranches: true, canManage: false },
     { persona: "counselor" as const, lane: "office", canReachBranches: true, canManage: false },
+    { persona: "receptionist" as const, lane: "office", canReachBranches: true, canManage: false },
     { persona: "salesperson" as const, lane: "office", canReachBranches: true, canManage: false },
     { persona: "cashier" as const, lane: "office", canReachBranches: false, canManage: false },
     { persona: "teacher" as const, lane: "teacher", canReachBranches: false, canManage: false },
@@ -2579,7 +2599,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await mockAcademyEdge(page, "owner");
 
     await page.goto(`/academy/admin/commercial?academy_id=${academyId}`);
-    await expect(page.getByRole("heading", { name: "Commercial core" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Commercial core", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Balances and aging" })).toBeVisible();
     await expect(page.getByText("150,000 UZS").first()).toBeVisible();
     await page.getByRole("button", { name: "Plans & agreements" }).click();
@@ -2992,6 +3012,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       { persona: "owner", expectedPath: /\/academy\/admin(?:\?|$)/, roleLabel: "Owner" },
       { persona: "center_admin", expectedPath: /\/academy\/center(?:\?|$)/, roleLabel: "Center admin" },
       { persona: "cashier", expectedPath: /\/academy\/office(?:\?|$)/, roleLabel: "Cashier" },
+      { persona: "receptionist", expectedPath: /\/academy\/office(?:\?|$)/, roleLabel: "Receptionist" },
       { persona: "teacher", expectedPath: /\/academy\/teacher(?:\?|$)/, roleLabel: "Teacher" },
     ];
 
@@ -3400,6 +3421,12 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         navigation: ".workspace-nav",
       },
       {
+        persona: "receptionist",
+        name: "receptionist",
+        path: "/academy/office",
+        navigation: ".workspace-nav",
+      },
+      {
         persona: "cashier",
         name: "cashier",
         path: "/academy/office",
@@ -3710,5 +3737,108 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       }
       await directoryContext.close();
     }
+  });
+
+  test("receptionist can securely enter the Academy bot from the normal workspace", async ({ page }) => {
+    const actions: string[] = [];
+    await seedSessionCookie(page, "receptionist-telegram-user");
+    await mockAcademyEdge(page, "receptionist", { actionLog: actions });
+    await page.goto(`/academy/office?academy_id=${academyId}`);
+    const assistant = page.getByRole("button", { name: "Telegram assistant" });
+    await expect(assistant).toBeVisible();
+    await assistant.click();
+    await expect(page).toHaveURL(/#telegram-linked$/);
+    expect(actions).toContain("create_staff_link");
+  });
+
+  test("Academy Telegram Mini App keeps daily staff work clear and usable at 320px", async ({ page }) => {
+    const telegramActions: string[] = [];
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.addInitScript(() => {
+      window.Telegram = {
+        WebApp: {
+          initData: "query_id=route-smoke&user=%7B%22id%22%3A1001%7D&auth_date=1787155200&hash=route-smoke",
+          ready: () => undefined,
+          expand: () => undefined,
+          disableVerticalSwipes: () => undefined,
+          openLink: () => undefined,
+          openTelegramLink: () => undefined,
+        },
+      };
+    });
+    await page.route("**/functions/v1/academy-telegram", async (route) => {
+      const body = route.request().postDataJSON() as { action?: string };
+      if (body.action) telegramActions.push(body.action);
+      if (body.action !== "bootstrap") return route.fulfill(json({ ok: true }));
+      return route.fulfill(json({
+        linked: true,
+        user: { id: "receptionist-user", full_name: "Madina Reception", email: "madina@example.test" },
+        academies: [{
+          id: academyId,
+          name: "Route Smoke Academy",
+          access: {
+            role: "receptionist",
+            source: "staff",
+            scope: "assigned_branches",
+            branch_ids: ["branch-main"],
+            classroom_ids: [],
+            permissions: {
+              manageAutomation: false,
+              manageMessages: true,
+              manageAnnouncements: true,
+              manageAssignments: false,
+              markAttendance: true,
+              resolveActionItems: true,
+            },
+          },
+        }],
+        selected_academy_id: academyId,
+        dashboard: {
+          settings: { enabled: true, default_locale: "en", timezone: "Asia/Tashkent", digest_time: "08:00", emergency_override_enabled: true },
+          metrics: { sessions_today: 1, open_requests: 1, urgent_requests: 1, due_homework: 0, connected_groups: 1, failed_deliveries: 0 },
+          branches: [{ id: "branch-main", name: "Main branch", status: "active" }],
+          classrooms: [{ id: classroomId, name: "IELTS Evening A", branch_id: "branch-main", is_active: true }],
+          groups: [{ id: "telegram-group-route-smoke", branch_id: "branch-main", classroom_id: classroomId, purpose: "classroom_community", title: "IELTS Evening A", locale: "en", status: "active", last_verified_at: "2026-08-19T08:00:00.000Z", last_error: null }],
+          subscriptions: [{ chat_binding_id: "telegram-group-route-smoke", event_type: "announcement", delivery_mode: "immediate", enabled: true }],
+          sessions: [{ id: "session-route-smoke", branch_id: "branch-main", classroom_id: classroomId, title: "Speaking clinic", starts_at: "2026-08-19T10:00:00.000Z", ends_at: "2026-08-19T11:00:00.000Z", status: "confirmed", delivery_mode: "physical" }],
+          requests: [{ id: "request-route-smoke", branch_id: "branch-main", classroom_id: classroomId, request_type: "schedule_change", subject: "Move Friday lesson", priority: "urgent", status: "submitted", assigned_to: null, created_at: "2026-08-19T07:00:00.000Z", sla_due_at: null }],
+          assignments: [],
+          contacts: [
+            { id: "contact-linked", first_name: "Aziza", last_name: "Karimova", status: "active", primary_branch_id: "branch-main", telegram_linked: true },
+            { id: "contact-unlinked", first_name: "Bek", last_name: "Aliyev", status: "active", primary_branch_id: "branch-main", telegram_linked: false },
+          ],
+          deliveries: [{ id: "delivery-route-smoke", type: "announcement", title: "Room update", status: "sent", error: null, scheduled_at: "2026-08-19T07:30:00.000Z", sent_at: "2026-08-19T07:31:00.000Z", chat_binding_id: "telegram-group-route-smoke", created_at: "2026-08-19T07:30:00.000Z" }],
+        },
+      }));
+    });
+
+    await page.goto("/telegram?lang=en");
+    await expect(page.getByRole("heading", { name: "What needs attention now" })).toBeVisible();
+    await expect(page.getByText("Speaking clinic")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Attendance" })).toBeVisible();
+    const navigation = page.getByRole("navigation", { name: "Academy operations" });
+    await expect(navigation).toBeVisible();
+    await navigation.getByRole("button", { name: "Compose" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Write an update" })).toBeVisible();
+    await expect(page.getByText("Connect a group before publishing")).toHaveCount(0);
+    await page.getByLabel("Update type").selectOption("personal_warning");
+    await expect(page.getByLabel("Learner")).toHaveValue("contact-linked");
+    await page.getByLabel("Title").fill("Attendance follow-up");
+    await page.getByLabel("Message").fill("Please contact the reception team today.");
+    await page.getByRole("button", { name: "Review message" }).click();
+    await expect(page.getByText("This message stays private and is delivered by the student bot.")).toBeVisible();
+    await page.getByRole("button", { name: "Send privately" }).click();
+    expect(telegramActions).toContain("send_private_warning");
+    await navigation.getByRole("button", { name: "Inbox" }).click();
+    await expect(page.getByRole("heading", { name: "Open requests" })).toBeVisible();
+    await expect(page.getByText("Move Friday lesson")).toBeVisible();
+    const geometry = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      fixedNavBottom: Math.round(document.querySelector(".academy-tg-nav")?.getBoundingClientRect().bottom ?? 0),
+      viewportBottom: window.innerHeight,
+    }));
+    expect(geometry.overflow).toBeLessThanOrEqual(1);
+    expect(Math.abs(geometry.fixedNavBottom - geometry.viewportBottom)).toBeLessThanOrEqual(1);
   });
 });

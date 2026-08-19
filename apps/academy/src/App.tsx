@@ -19,6 +19,7 @@ import {
   MessageSquare,
   RefreshCw,
   ReceiptText,
+  Send,
   ShieldAlert,
   Sparkles,
   Store,
@@ -64,6 +65,7 @@ import {
   teacherStudioUpsertClassroomMembership,
   teacherStudioUpsertContact,
   teacherStudioUpsertOfferGrant,
+  academyTelegramCreateStaffLink,
   type TeacherStudioAcademy,
   type TeacherStudioAccessProfile,
   type TeacherStudioActionItem,
@@ -272,7 +274,7 @@ type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
 const OFFICE_VIEWS: OfficeView[] = ['today', 'academy', 'platform', 'services', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
-const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
+const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
@@ -366,16 +368,17 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
   const accountant = role === 'accountant';
   const payrollOfficer = role === 'payroll_officer';
   const parentLiaison = role === 'parent_liaison';
+  const receptionist = role === 'receptionist';
   const teaching = role === 'teacher' || role === 'assistant';
   const ops = ownerAdmin || centerAdmin || manager || branchManager;
-  const staff = ops || teaching || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
+  const staff = ops || teaching || receptionist || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
   const classroomLms = ownerAdmin || teaching;
   const financeViewer = ownerAdmin || centerAdmin || branchManager || cashier || accountant;
   const reportingViewer = ownerAdmin || centerAdmin || manager || branchManager || accountant;
   return {
     role,
     source,
-    scope: branchManager || salesperson || cashier || parentLiaison ? 'assigned_branches' : (ops || accountant || payrollOfficer ? 'academy' : 'assigned_classrooms'),
+    scope: branchManager || receptionist || salesperson || cashier || parentLiaison ? 'assigned_branches' : (ops || accountant || payrollOfficer ? 'academy' : 'assigned_classrooms'),
     classroom_ids: [],
     branch_ids: [],
     center_tenant_id: null,
@@ -402,18 +405,18 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
       viewAutomation: ownerAdmin || centerAdmin || manager || branchManager,
       viewBranches: staff,
       manageBranches: ownerAdmin || centerAdmin,
-      viewAdmissions: ops || salesperson,
-      manageAdmissions: ops || salesperson,
+      viewAdmissions: ops || receptionist || salesperson,
+      manageAdmissions: ops || receptionist || salesperson,
       assignAdmissions: ownerAdmin || centerAdmin || manager || branchManager,
       exportAdmissions: ownerAdmin || centerAdmin || manager,
       manageTrialFeedback: staff,
       viewContacts: staff,
-      manageContacts: ops || salesperson || parentLiaison,
+      manageContacts: ops || receptionist || salesperson || parentLiaison,
       viewClassrooms: staff,
       manageClassrooms: ops,
       manageRoster: ops,
       manageMessages: staff,
-      manageAnnouncements: ops || teaching || parentLiaison,
+      manageAnnouncements: ops || receptionist || teaching || parentLiaison,
       sendGlobalAnnouncements: ops,
       manageAlerts: staff,
       resolveAlerts: staff,
@@ -421,11 +424,11 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
       resolveActionItems: staff,
       manageAssignments: classroomLms,
       gradeSubmissions: classroomLms,
-      markAttendance: classroomLms,
+      markAttendance: classroomLms || receptionist,
       manageSchedule: ownerAdmin || centerAdmin || manager || teaching,
       manageAcademicOperations: ops,
       manageGuardians: ops || parentLiaison,
-      communicateGuardians: ops || teaching || parentLiaison,
+      communicateGuardians: ops || receptionist || teaching || parentLiaison,
       manageRetention: ops,
       viewBusinessIntelligence: reportingViewer,
       viewAcademicReports: reportingViewer || teaching,
@@ -439,8 +442,8 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
       manageResources: classroomLms,
       viewReports: reportingViewer,
       issueCertificates: ownerAdmin,
-      dispatchNotifications: ops || parentLiaison,
-      viewNotifications: ops || parentLiaison,
+      dispatchNotifications: ops || receptionist || parentLiaison,
+      viewNotifications: ops || receptionist || parentLiaison,
       viewReferrals: ops || salesperson,
       viewAudit: ownerAdmin || centerAdmin || manager || accountant,
     },
@@ -3047,6 +3050,21 @@ const App = () => {
     setEducationOS(null);
   };
 
+  const openTelegramAssistant = async () => {
+    if (!academyId) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const link = await academyTelegramCreateStaffLink(academyId);
+      window.location.assign(link.url);
+    } catch (err) {
+      setError(normalizeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const selectedViewLabel = isStudentWorkspaceRoute
     ? (studentClassroomId ? 'Classroom' : studentPortalView ? STUDENT_PORTAL_LABELS[studentPortalView] : 'Academy')
     : (officeClassroomId
@@ -4983,6 +5001,13 @@ const App = () => {
     {
       label: officeRouteIntent === 'teacher' ? 'More' : 'Manage',
       items: visibleNavItems([
+        {
+          id: 'telegram-assistant',
+          label: 'Telegram assistant',
+          icon: <Send size={17} />,
+          active: false,
+          onSelect: () => void openTelegramAssistant(),
+        },
         officeNavItem('academy', academyHomeLabel, <Store size={17} />),
         officeNavItem('business', 'Admissions', <UsersRound size={17} />),
         financeView === 'commercial' ? null : officeNavItem('commercial', 'Plans & billing', <ReceiptText size={17} />),

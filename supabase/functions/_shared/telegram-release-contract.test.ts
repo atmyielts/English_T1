@@ -52,6 +52,16 @@ Deno.test("runtime bot-token contract matches the isolated production bindings w
     assertEquals(source.includes('TELEGRAM_PUBLIC_BOT_TOKEN'), false, `${path} must not fall back to the public bot`);
   }
 
+  for (const path of ["supabase/functions/academy-telegram/index.ts", "supabase/functions/send-academy-telegram/index.ts"]) {
+    const source = await read(path);
+    assert(source.includes('ACADEMY_TELEGRAM_BOT_TOKEN'), `${path} must use the dedicated Academy token binding`);
+    assertEquals(source.includes('Deno.env.get("TELEGRAM_BOT_TOKEN")'), false);
+    assertEquals(source.includes('Deno.env.get("TELEGRAM_PUBLIC_BOT_TOKEN")'), false);
+  }
+
+  const academyWorker = await read("workers/schood-academy-bot/src/index.ts");
+  assertEquals(academyWorker.includes("TELEGRAM_BOT_TOKEN"), false, "Academy webhook Worker must not hold any bot token");
+
   for (const path of ["workers/schood-bot/src/index.ts", "workers/schood-online-bot/src/index.ts"]) {
     const source = await read(path);
     assert(source.includes('TELEGRAM_BOT_TOKEN'), `${path} must use its Worker-local token binding`);

@@ -9,6 +9,11 @@ const contracts = [
     token: process.env.TELEGRAM_BOT_TOKEN,
     expectedUsername: "schoodstudentbot",
   },
+  {
+    label: "academy",
+    token: process.env.ACADEMY_TELEGRAM_BOT_TOKEN,
+    expectedUsername: "schoodacademybot",
+  },
 ];
 
 const missing = contracts.filter((contract) => !contract.token).map((contract) => contract.label);
@@ -32,8 +37,8 @@ for (const contract of contracts) {
   identities.push({ label: contract.label, id: String(payload.result.id), username });
 }
 
-if (identities[0].id === identities[1].id) {
-  throw new Error("Public and student Telegram token variables resolve to the same bot");
+if (new Set(identities.map((identity) => identity.id)).size !== identities.length) {
+  throw new Error("Telegram token variables must resolve to three distinct bots");
 }
 
 for (const identity of identities) {

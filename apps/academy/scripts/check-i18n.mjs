@@ -55,6 +55,7 @@ const runtimeKeys = [
   'Accountant',
   'Payroll officer',
   'Parent liaison',
+  'Receptionist',
   'Teacher',
   'Assistant',
   'Student',
@@ -63,6 +64,7 @@ const runtimeKeys = [
   'Command Center',
   'Operations Center',
   'LMS Center',
+  'Telegram link could not be created',
 ];
 const files = [];
 

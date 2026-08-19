@@ -3079,3 +3079,12 @@ export const teacherStudioStudentLearningPlans = (academyId?: string | null) => 
 export const teacherStudioGuardianServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; guardians: AcademyOperationalRecord[] }>({ action: 'guardian_service_requests', academyId });
 export const teacherStudioCreateGuardianServiceRequest = (body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'guardian_service_request_create', body });
 export const teacherStudioSubmitSensitiveReport = (body: Record<string, unknown>) => callTeacherStudio<{ case: { id: string; case_number: number; status: string } }>({ method: 'POST', action: 'submit_sensitive_report', body });
+
+export const academyTelegramCreateStaffLink = async (academyId: string): Promise<{ url: string; expires_in_seconds: number }> => {
+  const { data, error } = await supabase.functions.invoke('academy-telegram', {
+    body: { action: 'create_staff_link', academy_id: academyId },
+  });
+  const link = data?.link;
+  if (error || !link?.url) throw new Error(error?.message || 'Telegram link could not be created');
+  return link as { url: string; expires_in_seconds: number };
+};

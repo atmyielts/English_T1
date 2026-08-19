@@ -114,7 +114,7 @@ export const academyRoleRank = (roleRaw: unknown): number => {
   if (role === "branch_manager") return 75;
   if (role === "manager") return 70;
   if (role === "counselor") return 60;
-  if (["accountant", "payroll_officer", "salesperson", "cashier", "parent_liaison"].includes(role)) return 55;
+  if (["accountant", "payroll_officer", "receptionist", "salesperson", "cashier", "parent_liaison"].includes(role)) return 55;
   if (role === "teacher") return 50;
   if (role === "assistant") return 40;
   return 20;
@@ -127,7 +127,7 @@ export const isAcademyManagerRole = (roleRaw: unknown): boolean =>
   ["branch_manager", "manager", "counselor"].includes(normalizeAcademyRole(roleRaw));
 
 export const isAcademyBranchRole = (roleRaw: unknown): boolean =>
-  ["branch_manager", "salesperson", "cashier", "parent_liaison"].includes(normalizeAcademyRole(roleRaw));
+  ["branch_manager", "receptionist", "salesperson", "cashier", "parent_liaison"].includes(normalizeAcademyRole(roleRaw));
 
 export const isAcademyTeachingRole = (roleRaw: unknown): boolean =>
   ["teacher", "assistant"].includes(normalizeAcademyRole(roleRaw));
@@ -215,9 +215,10 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
   const accountant = role === "accountant";
   const payrollOfficer = role === "payroll_officer";
   const parentLiaison = role === "parent_liaison";
+  const receptionist = role === "receptionist";
   const teacher = isAcademyTeachingRole(role);
   const ops = ownerAdmin || centerAdmin || manager || branchManager;
-  const staff = ops || teacher || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
+  const staff = ops || teacher || receptionist || salesperson || cashier || accountant || payrollOfficer || parentLiaison;
   const classroomLms = ownerAdmin || teacher;
   const financeViewer = ownerAdmin || centerAdmin || branchManager || cashier || accountant;
   const reportingViewer = ownerAdmin || centerAdmin || manager || branchManager || accountant;
@@ -245,18 +246,18 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     viewAutomation: ownerAdmin || centerAdmin || manager || branchManager,
     viewBranches: staff,
     manageBranches: ownerAdmin || centerAdmin,
-    viewAdmissions: ops || salesperson,
-    manageAdmissions: ops || salesperson,
+    viewAdmissions: ops || receptionist || salesperson,
+    manageAdmissions: ops || receptionist || salesperson,
     assignAdmissions: ownerAdmin || centerAdmin || manager || branchManager,
     exportAdmissions: ownerAdmin || centerAdmin || manager,
     manageTrialFeedback: staff,
     viewContacts: staff,
-    manageContacts: ops || salesperson || parentLiaison,
+    manageContacts: ops || receptionist || salesperson || parentLiaison,
     viewClassrooms: staff,
     manageClassrooms: ops,
     manageRoster: ops,
     manageMessages: staff,
-    manageAnnouncements: ops || teacher || parentLiaison,
+    manageAnnouncements: ops || receptionist || teacher || parentLiaison,
     sendGlobalAnnouncements: ops,
     manageAlerts: staff,
     resolveAlerts: staff,
@@ -264,11 +265,11 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     resolveActionItems: staff,
     manageAssignments: classroomLms,
     gradeSubmissions: classroomLms,
-    markAttendance: classroomLms,
+    markAttendance: classroomLms || receptionist,
     manageSchedule: ownerAdmin || centerAdmin || manager || teacher,
     manageAcademicOperations: ops,
     manageGuardians: ops || parentLiaison,
-    communicateGuardians: ops || teacher || parentLiaison,
+    communicateGuardians: ops || receptionist || teacher || parentLiaison,
     manageRetention: ops,
     viewBusinessIntelligence: reportingViewer,
     viewAcademicReports: reportingViewer || teacher,
@@ -282,8 +283,8 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     manageResources: classroomLms,
     viewReports: reportingViewer,
     issueCertificates: ownerAdmin,
-    dispatchNotifications: ops || parentLiaison,
-    viewNotifications: ops || parentLiaison,
+    dispatchNotifications: ops || receptionist || parentLiaison,
+    viewNotifications: ops || receptionist || parentLiaison,
     viewReferrals: ops || salesperson,
     viewAudit: ownerAdmin || centerAdmin || manager || accountant,
   };

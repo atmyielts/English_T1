@@ -600,13 +600,13 @@ const relationMissing = (error: unknown): boolean => {
   return text.includes("42p01") || text.includes("does not exist") || text.includes("schema cache");
 };
 
-const STAFF_GRANT_ROLES = ["admin", "center_admin", "branch_manager", "manager", "counselor", "salesperson", "cashier", "accountant", "payroll_officer", "parent_liaison", "teacher", "assistant"];
+const STAFF_GRANT_ROLES = ["admin", "center_admin", "branch_manager", "manager", "counselor", "receptionist", "salesperson", "cashier", "accountant", "payroll_officer", "parent_liaison", "teacher", "assistant"];
 const GRANT_STATUSES = ["invited", "active", "suspended", "revoked", "expired"];
 
 const staffGrantScopeForRole = (role: string): "academy" | "branches" | "classrooms" => {
   const normalized = normalizeAcademyRole(role);
   if (["teacher", "assistant"].includes(normalized)) return "classrooms";
-  if (["branch_manager", "salesperson", "cashier", "parent_liaison"].includes(normalized)) return "branches";
+  if (["branch_manager", "receptionist", "salesperson", "cashier", "parent_liaison"].includes(normalized)) return "branches";
   return "academy";
 };
 
