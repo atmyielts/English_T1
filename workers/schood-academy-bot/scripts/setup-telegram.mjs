@@ -1,7 +1,8 @@
 const token = process.env.ACADEMY_TELEGRAM_BOT_TOKEN;
 const workerUrl = (process.env.WORKER_URL || 'https://academy-bot.schood.online').replace(/\/$/, '');
 const appUrl = process.env.TELEGRAM_APP_URL || 'https://academy.schood.online/telegram';
-const webhookSecret = process.env.WEBHOOK_SECRET;
+const webhookSecret = process.env.ACADEMY_TELEGRAM_WEBHOOK_SECRET;
+const botName = (process.env.ACADEMY_TELEGRAM_BOT_NAME || 'schoodacademybot').replace(/^@/, '');
 const mode = process.argv[2] || 'all';
 
 if (!token) throw new Error('ACADEMY_TELEGRAM_BOT_TOKEN is required');
@@ -15,6 +16,7 @@ const call = async (method, body) => {
   const payload = await response.json().catch(() => ({}));
   console.log(method, { ok: payload.ok === true, description: payload.description || null });
   if (!response.ok || payload.ok === false) process.exitCode = 1;
+  return payload;
 };
 
 const commands = [
@@ -28,8 +30,13 @@ const commands = [
   { command: 'help', description: 'Show Academy bot commands' },
 ];
 
+const identity = await call('getMe', {});
+if (String(identity.result?.username || '').toLowerCase() !== botName.toLowerCase()) {
+  throw new Error('Academy Telegram token does not match the configured bot username');
+}
+
 if (mode === 'all' || mode === 'webhook') {
-  if (!webhookSecret) throw new Error('WEBHOOK_SECRET is required for webhook setup');
+  if (!webhookSecret) throw new Error('ACADEMY_TELEGRAM_WEBHOOK_SECRET is required for webhook setup');
   await call('setWebhook', {
     url: `${workerUrl}/webhook`,
     secret_token: webhookSecret,

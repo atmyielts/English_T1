@@ -59,6 +59,7 @@ Deno.test("group delivery has bounded retry and releases daily digests exactly o
 
 Deno.test("Academy bot remains isolated from public and student bot credentials", async () => {
   const edge = await read("supabase/functions/academy-telegram/index.ts");
+  const provider = await read("supabase/functions/academy-telegram/provider-config.ts");
   const delivery = await read("supabase/functions/send-academy-telegram/index.ts");
   const worker = await read("workers/schood-academy-bot/src/index.ts");
   for (const source of [edge, delivery]) {
@@ -68,7 +69,11 @@ Deno.test("Academy bot remains isolated from public and student bot credentials"
   }
   assertEquals(worker.includes("TELEGRAM_BOT_TOKEN"), false, "the webhook Worker must not hold the bot token");
   assertMatch(worker, /x-worker-secret/);
-  assertMatch(worker, /WEBHOOK_SECRET_PREVIOUS/);
+  assertMatch(worker, /ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS/);
+  assertMatch(edge, /ensureTelegramProviderConfiguration/);
+  assertMatch(provider, /Academy Telegram token does not match the configured bot username/);
+  assertMatch(edge, /ACADEMY_TELEGRAM_WEBHOOK_SECRET/);
+  assertMatch(edge, /ACADEMY_TELEGRAM_INTERNAL_SECRET/);
 });
 
 Deno.test("personal warnings are scope-checked and handed to the student notification gateway", async () => {

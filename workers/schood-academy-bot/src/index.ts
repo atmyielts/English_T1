@@ -1,9 +1,9 @@
 /** Thin, least-privilege Telegram webhook for Schood Academy operations. */
 export interface Env {
   SUPABASE_URL: string;
-  TELEGRAM_INTERNAL_SECRET: string;
-  WEBHOOK_SECRET: string;
-  WEBHOOK_SECRET_PREVIOUS?: string;
+  ACADEMY_TELEGRAM_INTERNAL_SECRET: string;
+  ACADEMY_TELEGRAM_WEBHOOK_SECRET: string;
+  ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS?: string;
 }
 
 const digest = async (value: string): Promise<Uint8Array> => new Uint8Array(
@@ -17,7 +17,8 @@ const equal = async (left: string, right: string): Promise<boolean> => {
   return mismatch === 0;
 };
 const validWebhookSecret = async (env: Env, supplied: string): Promise<boolean> =>
-  await equal(supplied, env.WEBHOOK_SECRET) || Boolean(env.WEBHOOK_SECRET_PREVIOUS && await equal(supplied, env.WEBHOOK_SECRET_PREVIOUS));
+  await equal(supplied, env.ACADEMY_TELEGRAM_WEBHOOK_SECRET)
+  || Boolean(env.ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS && await equal(supplied, env.ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS));
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -36,7 +37,7 @@ export default {
     if (!update || typeof update !== "object") return Response.json({ error: "Invalid update" }, { status: 400 });
     const response = await fetch(`${env.SUPABASE_URL.replace(/\/$/, "")}/functions/v1/academy-telegram`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-worker-secret": env.TELEGRAM_INTERNAL_SECRET },
+      headers: { "Content-Type": "application/json", "x-worker-secret": env.ACADEMY_TELEGRAM_INTERNAL_SECRET },
       body: JSON.stringify({ action: "process_webhook_update", update }),
     });
     if (!response.ok) {

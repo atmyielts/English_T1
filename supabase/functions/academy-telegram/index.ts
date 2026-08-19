@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isInternalRequest } from "../_shared/internal-auth.ts";
 import { validateTelegramInitData } from "../_shared/telegram-init-data.ts";
+import { configureAcademyTelegramProvider } from "./provider-config.ts";
 import {
   academyAccessHas,
   academyAccessProfile,
@@ -36,6 +37,9 @@ const env = (key: string): string => {
   if (!value) throw new Error(`Missing ${key}`);
   return value;
 };
+const academyBotName = (): string => (Deno.env.get("ACADEMY_TELEGRAM_BOT_NAME")?.trim() || "schoodacademybot").replace(/^@/, "");
+const academySiteUrl = (): string => (Deno.env.get("ACADEMY_SITE_URL")?.trim() || "https://academy.schood.online").replace(/\/$/, "");
+const academyWorkerUrl = (): string => (Deno.env.get("ACADEMY_TELEGRAM_WORKER_URL")?.trim() || "https://academy-bot.schood.online").replace(/\/$/, "");
 const sha256 = async (value: string): Promise<string> => Array.from(
   new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value))),
 ).map((byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -62,6 +66,24 @@ const telegramApi = async (method: string, body: Record<string, unknown>): Promi
   const payload = await response.json().catch(() => ({})) as Record<string, any>;
   if (!response.ok || payload.ok === false) throw new Error(`Telegram ${method} failed (${response.status})`);
   return payload;
+};
+
+let providerConfiguration: Promise<void> | null = null;
+let providerConfiguredAt = 0;
+const ensureTelegramProviderConfiguration = async (): Promise<void> => {
+  if (Date.now() - providerConfiguredAt < 5 * 60_000) return;
+  if (providerConfiguration) return await providerConfiguration;
+  providerConfiguration = (async () => {
+    await configureAcademyTelegramProvider({
+      call: telegramApi,
+      botName: academyBotName(),
+      siteUrl: academySiteUrl(),
+      workerUrl: academyWorkerUrl(),
+      webhookSecret: env("ACADEMY_TELEGRAM_WEBHOOK_SECRET"),
+    });
+    providerConfiguredAt = Date.now();
+  })().finally(() => { providerConfiguration = null; });
+  return await providerConfiguration;
 };
 
 const audit = async (
@@ -241,7 +263,7 @@ const issueLink = async (sb: Db, user: UserRow, access: Access, body: Record<str
     expires_at: new Date(Date.now() + 10 * 60_000).toISOString(),
   });
   if (error) throw new Error(`Failed to create Telegram link: ${error.message}`);
-  const bot = env("ACADEMY_TELEGRAM_BOT_NAME").replace(/^@/, "");
+  const bot = academyBotName();
   const parameter = `${intent === "group_link" ? "group" : "staff"}_${token}`;
   return { expires_in_seconds: 600, url: intent === "group_link" ? `https://t.me/${bot}?startgroup=${parameter}` : `https://t.me/${bot}?start=${parameter}` };
 };
@@ -549,14 +571,14 @@ const consumeGroupLink = async (sb: Db, token: string, update: Record<string, an
   return binding!;
 };
 
-const privateMarkup = (label: string) => ({ inline_keyboard: [[{ text: label, web_app: { url: `${env("ACADEMY_SITE_URL").replace(/\/$/, "")}/telegram` } }]] });
+const privateMarkup = (label: string) => ({ inline_keyboard: [[{ text: label, web_app: { url: `${academySiteUrl()}/telegram` } }]] });
 
 const handleWebhook = async (sb: Db, update: BotUpdate) => {
   const updateId = Number(update.update_id);
   if (!Number.isFinite(updateId)) return;
   const kind = update.message ? "message" : update.callback_query ? "callback_query" : update.my_chat_member ? "my_chat_member" : "other";
   const telegramUserId = clean(update.message?.from?.id ?? update.callback_query?.from?.id ?? update.my_chat_member?.from?.id, 30) || null;
-  const { error: reserveError } = await sb.from("telegram_update_receipts").insert({ bot_name: env("ACADEMY_TELEGRAM_BOT_NAME").replace(/^@/, ""), telegram_update_id: updateId, telegram_user_id: telegramUserId, update_kind: kind, status: "processing", attempts: 1, claim_token: crypto.randomUUID(), claimed_at: new Date().toISOString() });
+  const { error: reserveError } = await sb.from("telegram_update_receipts").insert({ bot_name: academyBotName(), telegram_update_id: updateId, telegram_user_id: telegramUserId, update_kind: kind, status: "processing", attempts: 1, claim_token: crypto.randomUUID(), claimed_at: new Date().toISOString() });
   if (reserveError?.code === "23505") return;
   if (reserveError) throw new Error(`Failed to reserve Telegram update: ${reserveError.message}`);
   try {
@@ -594,7 +616,7 @@ const handleWebhook = async (sb: Db, update: BotUpdate) => {
             const { data: binding } = await sb.from("academy_telegram_chats").select("academy_id,branch_id,classroom_id,status").eq("chat_id", chatId).eq("status", "active").maybeSingle();
             const profile = binding ? (await loadAccess(sb, linked)).find((row) => row.tenant_id === binding.academy_id) : null;
             if (profile && (!binding?.branch_id || canUseBranch(profile, String(binding.branch_id))) && (!binding?.classroom_id || await canUseClassroom(sb, profile, profile.tenant_id, String(binding.classroom_id)))) {
-              await telegramApi("sendMessage", { chat_id: chatId, text: "Open the Academy staff app to complete this action. Personal records are kept out of group chat.", reply_markup: { inline_keyboard: [[{ text: "Open Academy", url: `${env("ACADEMY_SITE_URL").replace(/\/$/, "")}/telegram` }]] } });
+              await telegramApi("sendMessage", { chat_id: chatId, text: "Open the Academy staff app to complete this action. Personal records are kept out of group chat.", reply_markup: { inline_keyboard: [[{ text: "Open Academy", url: `${academySiteUrl()}/telegram` }]] } });
             }
           }
         }
@@ -602,9 +624,9 @@ const handleWebhook = async (sb: Db, update: BotUpdate) => {
         await telegramApi("sendMessage", { chat_id: chatId, text: error instanceof Error ? error.message : "This Academy action could not be completed." }).catch(() => undefined);
       }
     }
-    await sb.from("telegram_update_receipts").update({ status: "completed", completed_at: new Date().toISOString(), error: null }).eq("bot_name", env("ACADEMY_TELEGRAM_BOT_NAME").replace(/^@/, "")).eq("telegram_update_id", updateId);
+    await sb.from("telegram_update_receipts").update({ status: "completed", completed_at: new Date().toISOString(), error: null }).eq("bot_name", academyBotName()).eq("telegram_update_id", updateId);
   } catch (error) {
-    await sb.from("telegram_update_receipts").update({ status: "failed", error: clean(error instanceof Error ? error.message : error, 800) }).eq("bot_name", env("ACADEMY_TELEGRAM_BOT_NAME").replace(/^@/, "")).eq("telegram_update_id", updateId);
+    await sb.from("telegram_update_receipts").update({ status: "failed", error: clean(error instanceof Error ? error.message : error, 800) }).eq("bot_name", academyBotName()).eq("telegram_update_id", updateId);
     throw error;
   }
 };
@@ -630,7 +652,7 @@ serve(async (req) => {
     const action = lower(body.action, 80);
 
     if (action === "process_webhook_update") {
-      if (!(await isInternalRequest(req, serviceRole, Deno.env.get("TELEGRAM_INTERNAL_SECRET")))) return json(401, { error: "Unauthorized" });
+      if (!(await isInternalRequest(req, serviceRole, Deno.env.get("ACADEMY_TELEGRAM_INTERNAL_SECRET")))) return json(401, { error: "Unauthorized" });
       await handleWebhook(sb, asRecord(body.update) as BotUpdate);
       return json(200, { ok: true });
     }
@@ -663,7 +685,10 @@ serve(async (req) => {
     if (!academyId) return json(400, { error: "academy_id is required" });
     const selected = accessFor(access, academyId);
 
-    if (action === "create_staff_link") return json(200, { link: await issueLink(sb, user, selected, body, "staff_link") });
+    if (action === "create_staff_link") {
+      await ensureTelegramProviderConfiguration();
+      return json(200, { link: await issueLink(sb, user, selected, body, "staff_link") });
+    }
     if (action === "issue_group_link") return json(200, { link: await issueLink(sb, user, selected, body, "group_link") });
 
     if (action === "update_settings") {

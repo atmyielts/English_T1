@@ -12,11 +12,13 @@ This Worker is the public webhook boundary for the Academy staff bot. It verifie
 
 ## Required provider configuration
 
-Worker secrets: `SUPABASE_URL`, `TELEGRAM_INTERNAL_SECRET`, `WEBHOOK_SECRET`, and optional rotation-overlap `WEBHOOK_SECRET_PREVIOUS`.
+Worker secrets: `SUPABASE_URL`, `ACADEMY_TELEGRAM_INTERNAL_SECRET`, `ACADEMY_TELEGRAM_WEBHOOK_SECRET`, and optional rotation-overlap `ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS`.
 
-Supabase Edge secrets: `ACADEMY_TELEGRAM_BOT_TOKEN`, `ACADEMY_TELEGRAM_BOT_NAME`, `ACADEMY_SITE_URL`, and the shared `TELEGRAM_INTERNAL_SECRET`.
+Supabase Edge secrets: `ACADEMY_TELEGRAM_BOT_TOKEN`, `ACADEMY_TELEGRAM_INTERNAL_SECRET`, and `ACADEMY_TELEGRAM_WEBHOOK_SECRET`. The public bot name, Academy URL, and Worker URL have safe production defaults and may be overridden with `ACADEMY_TELEGRAM_BOT_NAME`, `ACADEMY_SITE_URL`, and `ACADEMY_TELEGRAM_WORKER_URL`.
 
-Use BotFather group privacy mode. The setup script registers only explicit commands, the Mini App menu, and the webhook update types `message`, `callback_query`, and `my_chat_member`. Never place a token value in this repository or a command log.
+The first authenticated staff-link request verifies that the token belongs to `schoodacademybot`, then idempotently configures the webhook, Mini App menu, commands, name, and descriptions from inside the Edge runtime. This keeps the bot token inside Supabase. The local setup script is recovery tooling only and should not be used with a token copied into a command or log.
+
+Use BotFather group privacy mode. Provider setup registers only explicit commands, the Mini App menu, and the webhook update types `message`, `callback_query`, and `my_chat_member`. Never place a token value in this repository or a command log.
 
 ## Verification
 

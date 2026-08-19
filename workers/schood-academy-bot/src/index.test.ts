@@ -3,9 +3,9 @@ import worker, { type Env } from "./index.ts";
 
 const env: Env = {
   SUPABASE_URL: "https://example.supabase.co",
-  TELEGRAM_INTERNAL_SECRET: "internal-test-secret",
-  WEBHOOK_SECRET: "current-webhook-secret",
-  WEBHOOK_SECRET_PREVIOUS: "previous-webhook-secret",
+  ACADEMY_TELEGRAM_INTERNAL_SECRET: "internal-test-secret",
+  ACADEMY_TELEGRAM_WEBHOOK_SECRET: "current-webhook-secret",
+  ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS: "previous-webhook-secret",
 };
 
 Deno.test("Academy bot Worker exposes a non-secret health response", async () => {
@@ -45,12 +45,12 @@ Deno.test("Academy bot Worker accepts rotation overlap and forwards only to Acad
   try {
     const response = await worker.fetch(new Request("https://academy-bot.example/webhook", {
       method: "POST",
-      headers: { "X-Telegram-Bot-Api-Secret-Token": env.WEBHOOK_SECRET_PREVIOUS! },
+      headers: { "X-Telegram-Bot-Api-Secret-Token": env.ACADEMY_TELEGRAM_WEBHOOK_SECRET_PREVIOUS! },
       body: JSON.stringify({ update_id: 42, message: { text: "/today" } }),
     }), env);
     assertEquals(response.status, 200);
     assertEquals(forwardedUrl, "https://example.supabase.co/functions/v1/academy-telegram");
-    assertEquals(forwardedSecret, env.TELEGRAM_INTERNAL_SECRET);
+    assertEquals(forwardedSecret, env.ACADEMY_TELEGRAM_INTERNAL_SECRET);
     assertEquals(forwardedBody, { action: "process_webhook_update", update: { update_id: 42, message: { text: "/today" } } });
   } finally {
     globalThis.fetch = originalFetch;
