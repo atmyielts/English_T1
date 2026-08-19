@@ -4337,6 +4337,7 @@
   },
   "redirects": {
     "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.81.1",
+    "https://esm.sh/@types/nodemailer@~7.0.12/index.d.ts": "https://esm.sh/@types/nodemailer@7.0.12/index.d.ts",
     "https://esm.sh/@types/qrcode@~1.5.6/index.d.ts": "https://esm.sh/@types/qrcode@1.5.6/index.d.ts"
   },
   "remote": {
@@ -4391,6 +4392,8 @@
     "https://esm.sh/@supabase/storage-js@2.81.1/denonext/storage-js.mjs": "0cafa1baae143fe173fc2c25f12b664c6d2015076ede935b6043d78c2209078c",
     "https://esm.sh/@supabase/supabase-js@2.81.1": "bae1ab984623f88e3a3d7552b04f7c9c56978057d8db8cd90726f77c79161713",
     "https://esm.sh/@supabase/supabase-js@2.81.1/denonext/supabase-js.mjs": "7324705de80fc6b52cfe5a0eff219b000a984d6c2f76ca1babd8cc32f5d4a570",
+    "https://esm.sh/nodemailer@7.0.6/denonext/nodemailer.mjs": "d58fbe8ef01a604c096082939138e4e0c7af0e9a80e5299f7ccbc77d6c3cd7ec",
+    "https://esm.sh/nodemailer@7.0.6?target=denonext": "4fe9f196bd3ea3d6ffd2ac2439ac1a2aadaab7dfbb54f9bf0b54dd2e2a191161",
     "https://esm.sh/pdf-lib@1.17.1": "cf7c5527829cb9bbb3aa20d339c530067441c10eb98880360aea9e77c3c87ff8",
     "https://esm.sh/qrcode@1.5.4": "db5f81bc5a339015d2a6d91018b9c9e382b7d7659aff51a1dd6e0b2c5a9df124",
     "https://esm.sh/tslib@2.8.1/denonext/tslib.mjs": "c38da5dd6da6281964435002ce204cd586634fe3bdfb24a0ee116f48cf3292e9"
