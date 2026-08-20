@@ -3751,6 +3751,29 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     expect(actions).toContain("create_staff_link");
   });
 
+  test("Academy Telegram Mini App shows the Edge recovery message instead of an SDK error", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.Telegram = {
+        WebApp: {
+          initData: "query_id=expired-smoke&user=%7B%22id%22%3A1001%7D&auth_date=1787155200&hash=expired-smoke",
+          ready: () => undefined,
+          expand: () => undefined,
+          disableVerticalSwipes: () => undefined,
+        },
+      };
+    });
+    await page.route("**/functions/v1/academy-telegram", (route) => route.fulfill({
+      ...json({ error: "Telegram session expired" }),
+      status: 400,
+    }));
+
+    await page.goto("/telegram?lang=en");
+    await expect(page.getByRole("heading", { name: "Academy operations could not open" })).toBeVisible();
+    await expect(page.getByText("Telegram session expired", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open Academy bot" })).toHaveAttribute("href", "https://t.me/schoodacademybot");
+    await expect(page.getByText("Edge Function returned a non-2xx status code")).toHaveCount(0);
+  });
+
   test("Academy Telegram Mini App keeps daily staff work clear and usable at 320px", async ({ page }) => {
     const telegramActions: string[] = [];
     await page.setViewportSize({ width: 320, height: 700 });

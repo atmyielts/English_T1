@@ -107,3 +107,14 @@ Deno.test("Academy Telegram CORS accepts Supabase browser client headers", async
     /"Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-worker-secret"/,
   );
 });
+
+Deno.test("Academy Telegram keeps retained WebViews usable and surfaces recovery errors", async () => {
+  const edge = await read("supabase/functions/academy-telegram/index.ts");
+  const app = await read("apps/academy/src/components/telegram/AcademyTelegramApp.tsx");
+  assertMatch(edge, /maxAgeSeconds: 3600/);
+  assertMatch(app, /context instanceof Response/);
+  assertMatch(app, /context\.clone\(\)\.json\(\)/);
+  assertMatch(app, /telegram session expired/);
+  assertMatch(app, /link this telegram account/);
+  assertMatch(app, /https:\/\/t\.me\/schoodacademybot/);
+});
