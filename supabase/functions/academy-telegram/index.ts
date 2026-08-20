@@ -4,11 +4,15 @@ import { isInternalRequest } from "../_shared/internal-auth.ts";
 import { validateTelegramInitData } from "../_shared/telegram-init-data.ts";
 import { configureAcademyTelegramProvider } from "./provider-config.ts";
 import {
+  isAcademyManagementRole,
+  isExplicitAcademyTenant,
+  resolveAcademyManagementAccess,
+} from "./access-resolution.ts";
+import {
   academyAccessHas,
   academyAccessProfile,
   academyAccessScope,
   academyRoleGrantToMembership,
-  academyRoleRank,
   buildAcademyPermissions,
   isAcademyAdminRole,
   normalizeAcademyRole,
@@ -111,9 +115,7 @@ const audit = async (
 };
 
 const academyTenant = (tenant: Record<string, unknown> | null): boolean => {
-  const metadata = asRecord(tenant?.metadata);
-  return lower(tenant?.type, 40) === "team" || lower(metadata.service_family, 40) === "academy"
-    || metadata.academy_service === true || metadata.center_owned === true;
+  return isExplicitAcademyTenant(tenant);
 };
 
 const loadUserByTelegram = async (sb: Db, telegramUserId: string): Promise<UserRow | null> => {
@@ -139,7 +141,7 @@ const loadAccess = async (sb: Db, user: UserRow): Promise<Access[]> => {
     const tenant = tenantRaw as Record<string, unknown> | null;
     if (tenant?.id) names.set(String(tenant.id), clean(tenant.name, 160) || "Academy");
     if (["owner", "admin"].includes(normalizeAcademyRole(row.role))) centerCandidates.push(String(row.tenant_id));
-    if (!academyTenant(tenant)) continue;
+    if (!academyTenant(tenant) || !isAcademyManagementRole(row.role)) continue;
     candidates.push({
       tenant_id: String(row.tenant_id), role: normalizeAcademyRole(row.role), status: "active",
       source: "tenant", classroom_ids: [], branch_ids: [],
@@ -208,17 +210,18 @@ const loadAccess = async (sb: Db, user: UserRow): Promise<Access[]> => {
   }
 
   const ids = Array.from(new Set(candidates.map((row) => row.tenant_id).filter(Boolean)));
+  const academyIds = new Set<string>();
   if (ids.length) {
-    const { data } = await sb.from("tenants").select("id,name").in("id", ids);
-    for (const tenant of data ?? []) names.set(String(tenant.id), clean(tenant.name, 160) || "Academy");
+    const { data, error } = await sb.from("tenants").select("id,name,metadata").in("id", ids);
+    if (error) throw new Error(`Failed to validate Academy tenants: ${error.message}`);
+    for (const tenant of data ?? []) {
+      if (!academyTenant(tenant as Record<string, unknown>)) continue;
+      academyIds.add(String(tenant.id));
+      names.set(String(tenant.id), clean(tenant.name, 160) || "Academy");
+    }
   }
 
-  const best = new Map<string, MembershipRow>();
-  for (const access of candidates) {
-    const current = best.get(access.tenant_id);
-    if (!current || academyRoleRank(access.role) > academyRoleRank(current.role)) best.set(access.tenant_id, access);
-  }
-  return Array.from(best.values()).map((access) => ({
+  return resolveAcademyManagementAccess(candidates.filter((row) => academyIds.has(row.tenant_id))).map((access) => ({
     ...access,
     academy_name: names.get(access.tenant_id) ?? "Academy",
     permissions: buildAcademyPermissions(access),
