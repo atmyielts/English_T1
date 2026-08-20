@@ -118,3 +118,11 @@ Deno.test("Academy Telegram keeps retained WebViews usable and surfaces recovery
   assertMatch(app, /link this telegram account/);
   assertMatch(app, /https:\/\/t\.me\/schoodacademybot/);
 });
+
+Deno.test("Academy Telegram branch bootstrap matches the production branch schema", async () => {
+  const branchSchema = await read("supabase/migrations/20260810130000_academy_business_os_phase_a.sql");
+  const edge = await read("supabase/functions/academy-telegram/index.ts");
+  assertMatch(branchSchema, /create table if not exists public\.academy_branches[\s\S]*?is_active boolean not null default true/);
+  assertMatch(edge, /from\("academy_branches"\)\.select\("id,name,is_active"\)[\s\S]*?\.eq\("is_active", true\)/);
+  assertEquals(edge.includes('select("id,name,status")'), false, "academy_branches has is_active, not status");
+});

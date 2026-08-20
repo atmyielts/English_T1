@@ -3819,7 +3819,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         dashboard: {
           settings: { enabled: true, default_locale: "en", timezone: "Asia/Tashkent", digest_time: "08:00", emergency_override_enabled: true },
           metrics: { sessions_today: 1, open_requests: 1, urgent_requests: 1, due_homework: 0, connected_groups: 1, failed_deliveries: 0 },
-          branches: [{ id: "branch-main", name: "Main branch", status: "active" }],
+          branches: [{ id: "branch-main", name: "Main branch", is_active: true }],
           classrooms: [{ id: classroomId, name: "IELTS Evening A", branch_id: "branch-main", is_active: true }],
           groups: [{ id: "telegram-group-route-smoke", branch_id: "branch-main", classroom_id: classroomId, purpose: "classroom_community", title: "IELTS Evening A", locale: "en", status: "active", last_verified_at: "2026-08-19T08:00:00.000Z", last_error: null }],
           subscriptions: [{ chat_binding_id: "telegram-group-route-smoke", event_type: "announcement", delivery_mode: "immediate", enabled: true }],

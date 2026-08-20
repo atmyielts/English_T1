@@ -65,7 +65,7 @@ type Group = {
 type Dashboard = {
   settings: { enabled: boolean; default_locale: string; timezone: string; digest_time: string; emergency_override_enabled: boolean };
   metrics: { sessions_today: number; open_requests: number; urgent_requests: number; due_homework: number; connected_groups: number; failed_deliveries: number };
-  branches: Array<{ id: string; name: string; status: string }>;
+  branches: Array<{ id: string; name: string; is_active: boolean }>;
   classrooms: Array<{ id: string; name: string; branch_id: string | null; is_active: boolean }>;
   groups: Group[];
   subscriptions: Array<{ chat_binding_id: string; event_type: string; delivery_mode: string; enabled: boolean }>;
