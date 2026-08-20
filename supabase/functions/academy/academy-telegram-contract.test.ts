@@ -1,4 +1,9 @@
 import { assert, assertEquals, assertMatch } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import {
+  isAcademyManagementRole,
+  isExplicitAcademyTenant,
+  resolveAcademyManagementAccess,
+} from "../academy-telegram/access-resolution.ts";
 
 const root = new URL("../../../", import.meta.url);
 const read = (path: string) => Deno.readTextFile(new URL(path, root));
@@ -125,4 +130,40 @@ Deno.test("Academy Telegram branch bootstrap matches the production branch schem
   assertMatch(branchSchema, /create table if not exists public\.academy_branches[\s\S]*?is_active boolean not null default true/);
   assertMatch(edge, /from\("academy_branches"\)\.select\("id,name,is_active"\)[\s\S]*?\.eq\("is_active", true\)/);
   assertEquals(edge.includes('select("id,name,status")'), false, "academy_branches has is_active, not status");
+});
+
+Deno.test("Academy Telegram admits only explicit Academy tenants and management roles", () => {
+  const edgeSource = Deno.readTextFileSync(new URL("../academy-telegram/index.ts", import.meta.url));
+  assertEquals(isExplicitAcademyTenant({ type: "team", metadata: {} }), false);
+  assertEquals(isExplicitAcademyTenant({ type: "team", metadata: { service_family: "academy" } }), true);
+  assertEquals(isExplicitAcademyTenant({ type: "team", metadata: { academy_service: true } }), true);
+  assertEquals(isAcademyManagementRole("student"), false);
+  assertEquals(isAcademyManagementRole("member"), false);
+  assertEquals(isAcademyManagementRole("receptionist"), true);
+  assertMatch(edgeSource, /from\("tenants"\)\.select\("id,name,metadata"\)/);
+  assertMatch(edgeSource, /candidates\.filter\(\(row\) => academyIds\.has\(row\.tenant_id\)\)/);
+
+  const access = resolveAcademyManagementAccess([
+    { tenant_id: "academy-a", role: "student", status: "active", source: "tenant" },
+    { tenant_id: "academy-b", role: "teacher", status: "active", source: "staff", classroom_ids: ["class-b"] },
+  ]);
+  assertEquals(access.length, 1);
+  assertEquals(access[0].tenant_id, "academy-b");
+});
+
+Deno.test("Academy Telegram resolves conflicting roles from authoritative sources without leaking scope", () => {
+  const access = resolveAcademyManagementAccess([
+    { tenant_id: "academy-a", role: "manager", status: "active", source: "tenant", branch_ids: ["legacy-branch"] },
+    { tenant_id: "academy-a", role: "teacher", status: "active", source: "grant", classroom_ids: ["class-a"] },
+    { tenant_id: "academy-a", role: "teacher", status: "active", source: "staff", classroom_ids: ["class-b"] },
+    { tenant_id: "academy-b", role: "owner", status: "active", source: "tenant" },
+  ]);
+
+  assertEquals(access.length, 2);
+  const academyA = access.find((row) => row.tenant_id === "academy-a");
+  assertEquals(academyA?.role, "teacher");
+  assertEquals(academyA?.source, "grant");
+  assertEquals(academyA?.classroom_ids, ["class-a", "class-b"]);
+  assertEquals(academyA?.branch_ids, []);
+  assertEquals(access.find((row) => row.tenant_id === "academy-b")?.role, "owner");
 });
