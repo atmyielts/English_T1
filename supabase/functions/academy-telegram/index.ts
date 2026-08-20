@@ -330,7 +330,7 @@ const dashboard = async (sb: Db, access: Access) => {
   const weekEnd = new Date(dayStart); weekEnd.setDate(weekEnd.getDate() + 8);
   const [settings, branches, classrooms, chats, subscriptions, sessions, requests, assignments, deliveries, contacts] = await Promise.all([
     sb.from("academy_telegram_settings").select("enabled,default_locale,timezone,digest_time,emergency_override_enabled").eq("academy_id", academyId).maybeSingle(),
-    sb.from("academy_branches").select("id,name,status").eq("academy_id", academyId).order("name").limit(200),
+    sb.from("academy_branches").select("id,name,is_active").eq("academy_id", academyId).eq("is_active", true).order("name").limit(200),
     sb.from("academy_classrooms").select("id,name,branch_id,is_active").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500),
     sb.from("academy_telegram_chats").select("*").eq("academy_id", academyId).order("created_at", { ascending: false }).limit(200),
     sb.from("academy_telegram_chat_subscriptions").select("chat_binding_id,event_type,delivery_mode,enabled,quiet_hours_start,quiet_hours_end").eq("academy_id", academyId).limit(2000),
