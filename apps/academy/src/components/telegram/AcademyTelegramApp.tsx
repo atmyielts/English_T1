@@ -177,6 +177,24 @@ const BusyButton = ({ busy, children, ...props }: React.ButtonHTMLAttributes<HTM
   </button>
 );
 
+const readInvokeError = async (response: unknown, invokeError: unknown): Promise<string> => {
+  if (response && typeof response === 'object' && 'error' in response) {
+    return String((response as Json).error);
+  }
+  if (invokeError && typeof invokeError === 'object' && 'context' in invokeError) {
+    const context = (invokeError as { context?: unknown }).context;
+    if (context instanceof Response) {
+      try {
+        const payload = await context.clone().json() as Json;
+        if (payload.error) return String(payload.error);
+      } catch {
+        // Fall back to the SDK message when the response is not JSON.
+      }
+    }
+  }
+  return invokeError instanceof Error ? invokeError.message : '';
+};
+
 export const AcademyTelegramApp = () => {
   const { locale, setLocale } = useI18n();
   const [tab, setTab] = useState<Tab>('today');
@@ -198,7 +216,7 @@ export const AcademyTelegramApp = () => {
       body: { action, initData: activeInitData, ...payload },
     });
     if (invokeError) {
-      const detail = response && typeof response === 'object' && 'error' in response ? String((response as Json).error) : invokeError.message;
+      const detail = await readInvokeError(response, invokeError);
       throw new Error(detail || translate('Academy Telegram request failed'));
     }
     if (response?.error) throw new Error(String(response.error));
@@ -311,7 +329,24 @@ export const AcademyTelegramApp = () => {
   if (loading) return <main className="academy-tg-loading" aria-busy="true"><LoaderCircle className="academy-tg-spin" size={28} /><strong>{translate('Opening Academy operations')}</strong></main>;
 
   if (!data || error && !dashboard) {
-    return <main className="academy-tg-standalone"><Card className="academy-tg-entry"><h1>{translate('Academy operations could not open')}</h1><p>{error}</p><BusyButton className="academy-tg-primary" onClick={() => void load()}><RefreshCw size={17} />{translate('Try again')}</BusyButton></Card></main>;
+    const normalizedError = error.toLowerCase();
+    const shouldReopenTelegram = normalizedError.includes('telegram session expired') || normalizedError.includes('missing telegram');
+    const shouldLinkAccount = normalizedError.includes('link this telegram account') || normalizedError.includes('no active academy staff workspace');
+    return (
+      <main className="academy-tg-standalone">
+        <Card className="academy-tg-entry">
+          <h1>{translate('Academy operations could not open')}</h1>
+          <p>{error}</p>
+          {shouldReopenTelegram ? (
+            <a className="academy-tg-primary" href="https://t.me/schoodacademybot">{translate('Open Academy bot')} <ExternalLink size={17} /></a>
+          ) : shouldLinkAccount ? (
+            <a className="academy-tg-primary" href="/academies">{translate('Back to Academy')} <ChevronRight size={17} /></a>
+          ) : (
+            <BusyButton className="academy-tg-primary" onClick={() => void load()}><RefreshCw size={17} />{translate('Try again')}</BusyButton>
+          )}
+        </Card>
+      </main>
+    );
   }
 
   return (

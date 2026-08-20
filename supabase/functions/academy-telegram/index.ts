@@ -661,7 +661,7 @@ serve(async (req) => {
     if (action === "create_staff_link") {
       user = await authenticateWebUser(sb, req);
     } else {
-      const identity = await validateTelegramInitData(clean(body.initData ?? body.init_data, 10000), env("ACADEMY_TELEGRAM_BOT_TOKEN"), { maxAgeSeconds: 900 });
+      const identity = await validateTelegramInitData(clean(body.initData ?? body.init_data, 10000), env("ACADEMY_TELEGRAM_BOT_TOKEN"), { maxAgeSeconds: 3600 });
       const linked = await loadUserByTelegram(sb, identity.telegram_user_id);
       if (!linked) return json(403, { linked: false, error: "Link this Telegram account from your Academy workspace first." });
       user = linked;
