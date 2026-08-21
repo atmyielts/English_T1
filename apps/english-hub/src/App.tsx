@@ -8,6 +8,7 @@ import { getHubPlan, type HubPlanSnapshot } from './lib/hubPlanClient';
 import { getMe } from './lib/platformClient';
 import { getNotebookSnapshot, type NotebookCard } from './lib/vocabularyNotebookClient';
 import { buildPlatformHref } from './lib/navigation';
+import { englishJourney } from './lib/journeyAnalytics';
 import { EntitledRoute } from './components/EntitledRoute';
 import { EcosystemSnapshot } from './components/EcosystemSnapshot';
 import { OfflineBanner } from './components/OfflineBanner';
@@ -918,6 +919,26 @@ const App = () => {
     }
     return weakPracticeTask.href;
   }, [topWeakService, weakPracticeTask]);
+  const requestedService = SERVICES.find(
+    (service) => location.pathname === service.href || location.pathname.startsWith(`${service.href}/`),
+  ) ?? null;
+
+  useEffect(() => {
+    if (!sessionResolved) return;
+    if (location.pathname === '/') {
+      englishJourney.track('english_hub_viewed', {
+        accessToken: session?.access_token ?? null,
+        once: true,
+      });
+      return;
+    }
+    if (!session && requestedService) {
+      englishJourney.track('english_skill_selected', {
+        target: requestedService.key,
+        once: true,
+      });
+    }
+  }, [location.pathname, requestedService, session, sessionResolved]);
 
   if (!sessionResolved) {
     return <div className="loading-container">Restoring your Schood session...</div>;
@@ -925,14 +946,54 @@ const App = () => {
 
   if (!session && location.pathname !== '/') {
     return (
-      <main className="locked-view-container">
-        <section className="frame access-redirect-card" aria-live="polite">
-          <p className="kicker">Sign-in required</p>
-          <h1>Continue to your English route</h1>
-          <p>Your requested lesson is preserved. Sign in once and Schood will return you here.</p>
-          <a className="btn btn-solid" href={signInHref}>Continue to sign in</a>
-        </section>
-      </main>
+      <div className="hub-root access-gate-root">
+        <div className="hub-ambient" aria-hidden />
+        <main className="access-gate-shell">
+          <header className="hub-nav frame access-gate-nav">
+            <Link className="brand" to="/">
+              <img className="brand-logo" src="/schood-logo.png" alt="Schood" />
+              <span className="brand-copy">
+                <strong>Schood English</strong>
+                <small>One connected English plan</small>
+              </span>
+            </Link>
+            <Link className="btn btn-ghost" to="/">Back to English home</Link>
+          </header>
+
+          <section className="frame access-redirect-card" aria-live="polite">
+            <div className="access-gate-copy">
+              <p className="kicker">Your place is saved</p>
+              <h1>
+                {requestedService
+                  ? `Continue to English ${requestedService.label}`
+                  : 'Continue your English plan'}
+              </h1>
+              <p>
+                Sign in once and Schood will bring you back to this exact activity with your progress and access intact.
+              </p>
+              <div className="access-gate-actions">
+                <a
+                  className="btn btn-solid"
+                  href={signInHref}
+                  onClick={() => englishJourney.track('signin_started', { target: requestedService?.key ?? 'english' })}
+                >
+                  Sign in and continue
+                </a>
+                <Link className="btn btn-ghost" to="/">Choose a different skill</Link>
+              </div>
+            </div>
+
+            <aside className="access-gate-next" aria-label="What happens after sign in">
+              <p className="kicker">What happens next</p>
+              <ol>
+                <li><span>1</span><strong>Return to this activity</strong></li>
+                <li><span>2</span><strong>Load your shared English progress</strong></li>
+                <li><span>3</span><strong>Continue with a clear next step</strong></li>
+              </ol>
+            </aside>
+          </section>
+        </main>
+      </div>
     );
   }
 
@@ -1013,10 +1074,10 @@ const App = () => {
                 ) : null}
 
                 <section className="hero frame">
-                  <p className="kicker">Daily briefing room</p>
-                  <h1>One hub coordinating all English services with real routes.</h1>
+                  <p className="kicker">Your English starting point</p>
+                  <h1>Know what to practice today—and why.</h1>
                   <p className="hero-copy">
-                    The hub is no longer one generic dashboard. It now splits planning, weaknesses, review, and weekly recap into dedicated pages.
+                    Schood connects your results, due review, and strongest opportunities across seven English skills, so every session begins with a useful next step.
                   </p>
                   <div className="hero-actions">
                     {session ? (
@@ -1024,12 +1085,16 @@ const App = () => {
                         Open today&apos;s plan
                       </Link>
                     ) : (
-                      <a className="btn btn-solid" href={signInHref}>
-                        Sign in to continue
+                      <a
+                        className="btn btn-solid"
+                        href={signInHref}
+                        onClick={() => englishJourney.track('signin_started', { target: 'english_plan' })}
+                      >
+                        Sign in and build my plan
                       </a>
                     )}
-                    <a className="btn btn-ghost" href={workspaceHref}>
-                      Open platform account
+                    <a className="btn btn-ghost" href={session ? workspaceHref : pricingHref}>
+                      {session ? 'Open platform account' : 'See English plans'}
                     </a>
                   </div>
                 </section>
@@ -1048,7 +1113,7 @@ const App = () => {
                     <article>
                       <small>{weakPracticeTask ? 'Top recommendation' : 'Personal route status'}</small>
                       <strong>{weakPracticeTask?.title ?? 'Complete an activity to build your plan'}</strong>
-                      <p>{weakPracticeTask?.reason ?? 'The first routed task appears here after sign-in.'}</p>
+                      <p>{weakPracticeTask?.reason ?? 'Your first result becomes the starting point for a focused English plan.'}</p>
                     </article>
                     <article>
                       <small>Due reviews</small>
@@ -1061,19 +1126,19 @@ const App = () => {
                               ? 'Review count unavailable'
                               : `${notebookDueCount} vocabulary cards waiting`}
                       </strong>
-                      <p>Daily notebook pressure feeds directly into the plan and review pages.</p>
+                      <p>Words you save in any skill return when they are due.</p>
                     </article>
                     <article>
                       <small>Transfer challenge</small>
                       <strong>{transferContext}</strong>
-                      <p>Every plan now sends you to a precise downstream route instead of a generic service page.</p>
+                      <p>Use corrected language in another skill so it becomes usable English.</p>
                     </article>
                   </div>
                 </section>
 
                 <section className="focus-map frame">
                   <div className="panel-head">
-                    <h3>Weekly focus map</h3>
+                    <h3>{session ? 'Weekly focus map' : 'Skills Schood can connect'}</h3>
                     <span className="route-tone route-tone-soft">{measuredServices > 0 ? celebrationLevel : 'not measured'}</span>
                   </div>
                   <div className="focus-map-grid">
@@ -1104,18 +1169,27 @@ const App = () => {
                       <p className="service-role">{service.role}</p>
                       <p className="service-summary">{service.summary}</p>
                       <div className="service-actions">
-                        <a className="btn btn-ghost" href={service.href}>
-                          Open service
+                        <a
+                          className="btn btn-ghost"
+                          href={service.href}
+                          onClick={() => englishJourney.track('english_skill_selected', {
+                            target: service.key,
+                            accessToken: session?.access_token ?? null,
+                          })}
+                        >
+                          {session ? 'Open workspace' : `Start ${service.label}`}
                         </a>
                         <a
                           className="btn btn-soft"
-                          href={buildTaskHref(service, {
-                            intent: 'dashboard-entry',
-                            skill: service.key,
-                            reason: 'hub-entry',
-                          })}
+                          href={session
+                            ? buildTaskHref(service, {
+                                intent: 'dashboard-entry',
+                                skill: service.key,
+                                reason: 'hub-entry',
+                              })
+                            : pricingHref}
                         >
-                          Open routed start
+                          {session ? 'Open suggested activity' : 'See access'}
                         </a>
                       </div>
                     </article>
@@ -1123,12 +1197,12 @@ const App = () => {
                 </section>
 
                 <section className="connection frame">
-                  <h3>How the reorganized hub works</h3>
+                  <h3>One learning loop, not seven separate tools</h3>
                   <ul>
-                    <li>Plan page owns the daily timeline and task preview drawer.</li>
-                    <li>Weaknesses page owns service pressure, gap categories, and quick repair jumps.</li>
-                    <li>Review page owns due vocabulary, carryover tasks, and recent learning events.</li>
-                    <li>Week page owns recap, stronger services, and progress momentum.</li>
+                    <li>Your daily plan balances new practice, due review, and focused recovery.</li>
+                    <li>Repeated mistakes become targeted repair instead of disappearing into a score.</li>
+                    <li>Saved vocabulary returns in speaking, writing, and real-world practice.</li>
+                    <li>Your weekly review shows what improved and what deserves attention next.</li>
                   </ul>
                 </section>
               </main>

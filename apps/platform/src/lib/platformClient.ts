@@ -1790,6 +1790,18 @@ export type AdminAnalyticsOverviewResponse = {
     grant_errors_by_day: AdminAnalyticsDailyPoint[];
     paid_payments_by_day: AdminAnalyticsDailyRevenuePoint[];
   };
+  public_journey: {
+    available: boolean;
+    since: string;
+    events: Record<string, { events: number; visitors: number }>;
+    funnel: {
+      discovered: number;
+      intent: number;
+      auth_started: number;
+      activated: number;
+    };
+    daily: Array<{ day: string; discovered: number; auth_started: number; activated: number }>;
+  };
   reliability: {
     stale_paid_ungranted: {
       over_5m: number;

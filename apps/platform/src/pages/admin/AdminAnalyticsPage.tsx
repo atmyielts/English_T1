@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, BadgeDollarSign, Boxes, RefreshCw, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
 import { adminAnalyticsOverview, type AdminAnalyticsOverviewResponse } from '../../lib/platformClient';
@@ -9,12 +10,32 @@ const formatNumber = (value: number): string => new Intl.NumberFormat('en-US').f
 const formatCurrency = (value: number): string =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'UZS', maximumFractionDigits: 0 }).format(value ?? 0);
 
+const formatPercent = (numerator: number, denominator: number): string =>
+  denominator > 0 ? `${Math.round((numerator / denominator) * 100)}%` : 'n/a';
+
 const MetricCard: React.FC<{ label: string; value: string; hint?: string }> = ({ label, value, hint }) => (
   <div className="bg-white border border-gray-200 rounded-2xl p-4">
     <div className="text-xs font-semibold tracking-wide uppercase text-gray-500">{label}</div>
     <div className="mt-2 text-2xl font-bold text-gray-900">{value}</div>
     {hint ? <div className="mt-1 text-xs text-gray-500">{hint}</div> : null}
   </div>
+);
+
+const LoopHandoffCard: React.FC<{
+  label: string;
+  value: string;
+  detail: string;
+  href: string;
+  action: string;
+}> = ({ label, value, detail, href, action }) => (
+  <article className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-4">
+    <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</div>
+    <div className="mt-2 text-xl font-bold text-gray-900">{value}</div>
+    <p className="mt-2 flex-1 text-sm leading-5 text-gray-600">{detail}</p>
+    <Link className="mt-4 inline-flex text-sm font-semibold text-gray-900 underline-offset-4 hover:underline" to={href}>
+      {action}
+    </Link>
+  </article>
 );
 
 const TrendBars: React.FC<{ points: Array<{ day: string; count: number }>; color: string }> = ({ points, color }) => {
@@ -99,6 +120,16 @@ export const AdminAnalyticsPage: React.FC = () => {
       },
     [analytics],
   );
+  const publicJourney = useMemo(
+    () => analytics?.public_journey ?? {
+      available: false,
+      since: '',
+      events: {},
+      funnel: { discovered: 0, intent: 0, auth_started: 0, activated: 0 },
+      daily: [] as Array<{ day: string; discovered: number; auth_started: number; activated: number }>,
+    },
+    [analytics],
+  );
 
   return (
     <AdminLayout>
@@ -142,6 +173,79 @@ export const AdminAnalyticsPage: React.FC = () => {
               />
               <MetricCard label="Revenue (30d)" value={formatCurrency(analytics.totals.revenue_30d)} hint={`${formatNumber(analytics.totals.paid_payments_30d)} paid`} />
             </div>
+            {publicJourney.available ? (
+              <section className="space-y-3" aria-label="Public activation funnel">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Public activation loop (30d)</h2>
+                  <p className="text-sm text-gray-600">Unique anonymous journeys from discovery through a completed authenticated return.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <MetricCard label="Discovered" value={formatNumber(publicJourney.funnel.discovered)} hint="Home, English discovery, or Hub" />
+                  <MetricCard
+                    label="Showed intent"
+                    value={formatNumber(publicJourney.funnel.intent)}
+                    hint={`${formatPercent(publicJourney.funnel.intent, publicJourney.funnel.discovered)} of discovery`}
+                  />
+                  <MetricCard
+                    label="Started auth"
+                    value={formatNumber(publicJourney.funnel.auth_started)}
+                    hint={`${formatPercent(publicJourney.funnel.auth_started, publicJourney.funnel.intent)} of intent`}
+                  />
+                  <MetricCard
+                    label="Returned authenticated"
+                    value={formatNumber(publicJourney.funnel.activated)}
+                    hint={`${formatPercent(publicJourney.funnel.activated, publicJourney.funnel.auth_started)} of auth starts`}
+                  />
+                </div>
+              </section>
+            ) : null}
+            <section className="space-y-3" aria-label="Operator loop handoffs">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Operator loop handoffs</h2>
+                <p className="text-sm text-gray-600">Each platform signal leads to the existing workspace where an operator can act and verify recovery.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                <LoopHandoffCard
+                  label="Learner activation"
+                  value={publicJourney.available
+                    ? `${formatNumber(publicJourney.funnel.activated)} returned`
+                    : 'Awaiting journey data'}
+                  detail="Use the acquisition funnel above to find the largest discovery, intent, or authentication drop-off."
+                  href="/admin/users"
+                  action="Inspect activated accounts"
+                />
+                <LoopHandoffCard
+                  label="Learning completion"
+                  value={`${formatPercent(analytics.totals.sessions_completed_30d, analytics.totals.sessions_30d)} completed`}
+                  detail={`${formatNumber(analytics.totals.sessions_completed_30d)} of ${formatNumber(analytics.totals.sessions_30d)} sessions completed in the last 30 days.`}
+                  href="/admin/english"
+                  action="Open English learning ops"
+                />
+                <LoopHandoffCard
+                  label="Content and transfer"
+                  value="7 connected skills"
+                  detail="Review authored-content readiness, freshness, handoff attempts, and vocabulary activation pressure together."
+                  href="/admin/english"
+                  action="Open content loop"
+                />
+                <LoopHandoffCard
+                  label="Revenue fulfillment"
+                  value={analytics.totals.payments_paid_ungranted_30m > 0
+                    ? `${formatNumber(analytics.totals.payments_paid_ungranted_30m)} need review`
+                    : 'No stuck grants'}
+                  detail="Paid checkouts older than 30 minutes must converge to an entitlement or an operator-owned exception."
+                  href="/admin/payments"
+                  action="Open payment anomalies"
+                />
+                <LoopHandoffCard
+                  label="Academy operations"
+                  value="Owned service queues"
+                  detail="Continue into Academy for service requests, collections, staff cases, communications, and operational follow-through."
+                  href="/academy-control"
+                  action="Open Academy operations"
+                />
+              </div>
+            </section>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <MetricCard
                 label="Paid not granted (5m)"

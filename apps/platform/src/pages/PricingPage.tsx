@@ -8,6 +8,7 @@ import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { useI18n } from '../i18n';
 import type { TranslationKey } from '../i18n/locales/en';
+import { platformJourney } from '../lib/journeyAnalytics';
 
 type ProductRow = {
   id: string;
@@ -206,6 +207,11 @@ export const PricingPage: React.FC = () => {
         navigate(`/auth?returnTo=${encodeURIComponent(`/pricing?${searchParams.toString()}`)}`, { replace: true });
         return;
       }
+      platformJourney.track('pricing_viewed', {
+        target: productParam || productIdParam || 'all',
+        accessToken: data.session.access_token,
+        once: true,
+      });
 
       try {
         const [productsRes, me] = await Promise.all([
@@ -295,6 +301,10 @@ export const PricingPage: React.FC = () => {
 
   const choose = (planId: string) => {
     if (!selectedProduct) return;
+    platformJourney.track('checkout_started', {
+      target: productSlug(selectedProduct),
+      metadata: { plan_selected: true },
+    });
     setBusy(true);
     setError(null);
     try {

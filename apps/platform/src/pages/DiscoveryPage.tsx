@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowUpRight, BookOpenCheck, Compass, ExternalLink, Sparkles, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -12,6 +12,7 @@ import {
   createWebPageSchema,
 } from '../components/seo/SeoHead';
 import { discoveryPagesByKey, type DiscoveryLink, type DiscoveryPageKey } from '../content/discoveryPages';
+import { platformJourney } from '../lib/journeyAnalytics';
 
 type DiscoveryPageProps = {
   pageKey: DiscoveryPageKey;
@@ -42,13 +43,15 @@ const LinkButton: React.FC<{
   href: string;
   label: string;
   primary?: boolean;
-}> = ({ href, label, primary = false }) => {
+  onSelect?: () => void;
+}> = ({ href, label, primary = false, onSelect }) => {
   const navigate = useNavigate();
 
   return (
     <button
       type="button"
       onClick={() => {
+        onSelect?.();
         void openHref(navigate, href);
       }}
       className={[
@@ -88,6 +91,11 @@ const LinkCard: React.FC<{ link: DiscoveryLink }> = ({ link }) => {
 export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
   const navigate = useNavigate();
   const page = discoveryPagesByKey[pageKey];
+
+  useEffect(() => {
+    if (page.family !== 'english') return;
+    platformJourney.track('english_discovery_viewed', { target: page.key, once: true });
+  }, [page.family, page.key]);
 
   const navItems: SiteHeaderNavItem[] = [
     { id: 'home', label: 'Platform', onClick: () => navigate('/') },
@@ -149,8 +157,23 @@ export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
                 <h1 className="mt-3 text-3xl md:text-5xl font-bold leading-tight max-w-3xl">{page.heroTitle}</h1>
                 <p className="mt-4 text-base md:text-lg text-gray-700 max-w-3xl leading-relaxed">{page.heroDescription}</p>
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                  <LinkButton href={page.primaryCta.href} label={page.primaryCta.label} primary />
-                  {page.secondaryCta ? <LinkButton href={page.secondaryCta.href} label={page.secondaryCta.label} /> : null}
+                  <LinkButton
+                    href={page.primaryCta.href}
+                    label={page.primaryCta.label}
+                    primary
+                    onSelect={page.family === 'english'
+                      ? () => platformJourney.track('platform_path_selected', { target: 'english_hub' })
+                      : undefined}
+                  />
+                  {page.secondaryCta ? (
+                    <LinkButton
+                      href={page.secondaryCta.href}
+                      label={page.secondaryCta.label}
+                      onSelect={page.family === 'english'
+                        ? () => platformJourney.track('platform_path_selected', { target: 'english_plans' })
+                        : undefined}
+                    />
+                  ) : null}
                 </div>
                 <ul className="mt-6 space-y-2">
                   {page.heroBullets.map((bullet) => (
@@ -206,7 +229,13 @@ export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
                 <h2 className="mt-3 text-2xl font-bold">{page.primaryCta.label}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-white/85">{page.primaryCta.description}</p>
                 <div className="mt-5">
-                  <LinkButton href={page.primaryCta.href} label={page.primaryCta.label} />
+                  <LinkButton
+                    href={page.primaryCta.href}
+                    label={page.primaryCta.label}
+                    onSelect={page.family === 'english'
+                      ? () => platformJourney.track('platform_path_selected', { target: 'english_hub' })
+                      : undefined}
+                  />
                 </div>
                 {page.secondaryCta ? <p className="mt-4 text-sm text-white/75">{page.secondaryCta.description}</p> : null}
               </article>
