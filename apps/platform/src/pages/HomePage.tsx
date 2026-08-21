@@ -6,6 +6,7 @@ import { getAccessEffective, getMe, partnerOfficeCenter } from '../lib/platformC
 import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { buildReferralContext, storeReferral } from '../lib/referralContext';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
+import { platformJourney } from '../lib/journeyAnalytics';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import { GoogleOneTap } from '../components/auth/GoogleOneTap';
 import {
@@ -72,6 +73,10 @@ export const HomePage: React.FC = () => {
     const ref = new URLSearchParams(location.search).get('ref')?.trim().toUpperCase();
     if (ref) storeReferral(ref, buildReferralContext(location.pathname, location.search, ref));
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    platformJourney.track('platform_home_viewed', { once: true });
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -196,7 +201,7 @@ export const HomePage: React.FC = () => {
   }, [t]);
 
   const featuredProduct = products[0] ?? null;
-  const productCount = products.length;
+  const startingPathCount = 3;
   const accessCount = products.reduce((count, product) => (entitlements.has(product.id) ? count + 1 : count), 0);
   const subscribedProducts = useMemo(
     () => products.filter((product) => entitlements.has(product.id)),
@@ -228,12 +233,18 @@ export const HomePage: React.FC = () => {
         {
           id: 'login',
           label: t('common.login'),
-          onClick: () => navigate(`/auth?mode=signin&returnTo=${encodeURIComponent('/')}`),
+          onClick: () => {
+            platformJourney.track('signin_started', { target: 'header' });
+            navigate(`/auth?mode=signin&returnTo=${encodeURIComponent('/')}`);
+          },
         },
         {
           id: 'signup',
           label: t('common.signup'),
-          onClick: () => navigate(`/auth?mode=signup&returnTo=${encodeURIComponent('/')}`),
+          onClick: () => {
+            platformJourney.track('signup_started', { target: 'header' });
+            navigate(`/auth?mode=signup&returnTo=${encodeURIComponent('/')}`);
+          },
           primary: true,
         },
       ];
@@ -285,16 +296,22 @@ export const HomePage: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => navigate('/plans')}
+                  onClick={() => {
+                    platformJourney.track('platform_path_selected', { target: 'services' });
+                    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                   className="w-full sm:w-auto px-5 py-3 rounded-full bg-[#0f172a] text-white font-semibold flex items-center justify-center gap-2"
                 >
-                  {t('home.cta.explorePlans')} <ChevronRight size={18} />
+                  {t('home.cta.viewServices')} <ChevronRight size={18} />
                 </button>
                 <button
-                  onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => {
+                    platformJourney.track('platform_path_selected', { target: 'plans' });
+                    navigate('/plans');
+                  }}
                   className="w-full sm:w-auto px-5 py-3 rounded-full border border-gray-900 bg-white/70 text-gray-900 font-semibold"
                 >
-                  {t('home.cta.viewServices')}
+                  {t('home.cta.explorePlans')}
                 </button>
               </div>
 
@@ -316,7 +333,7 @@ export const HomePage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-3xl border border-gray-900 bg-white/80 p-5">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gray-600">{t('home.stats.services')}</div>
-                  <div className="text-3xl font-bold mt-2">{productCount}</div>
+                  <div className="text-3xl font-bold mt-2">{startingPathCount}</div>
                   <div className="text-sm text-gray-600 mt-2">{t('home.stats.servicesDesc')}</div>
                 </div>
                 <div className="rounded-3xl border border-gray-900 bg-white/80 p-5">

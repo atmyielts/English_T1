@@ -14,6 +14,7 @@ import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 import { SeoHead } from '../components/seo/SeoHead';
+import { platformJourney } from '../lib/journeyAnalytics';
 import {
   fetchAuthProviderAvailability,
   hasProviderIdentity,
@@ -99,6 +100,15 @@ const withPlatformAuthHandoff = (target: string, session: Session): string => {
   return url.toString();
 };
 
+const journeyReturnTarget = (returnTo: string): string => {
+  if (!isExternalUrl(returnTo)) return returnTo.split(/[?#]/, 1)[0].slice(0, 120) || '/';
+  try {
+    return new URL(returnTo).hostname.slice(0, 120);
+  } catch {
+    return 'external';
+  }
+};
+
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,6 +161,14 @@ export const AuthPage: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (mode !== 'signin' && mode !== 'signup') return;
+    platformJourney.track(mode === 'signin' ? 'signin_started' : 'signup_started', {
+      target: journeyReturnTarget(returnTo),
+      once: true,
+    });
+  }, [mode, returnTo]);
 
   const mapAuthError = useCallback((err: unknown, currentMode: Mode): string => {
     const message = err instanceof Error ? err.message : '';
@@ -287,13 +305,18 @@ export const AuthPage: React.FC = () => {
     await syncProfile(session.user.id, resolvedProfile);
     clearPendingOAuthProfile();
     await claimStoredReferral(session.access_token);
+    platformJourney.track('authenticated_return_completed', {
+      target: journeyReturnTarget(returnTo),
+      accessToken: session.access_token,
+      metadata: { auth_mode: mode === 'signup' ? 'signup' : 'signin' },
+    });
 
     if (isExternalUrl(returnTo)) {
       window.location.assign(withPlatformAuthHandoff(returnTo, session));
       return;
     }
     navigate(returnTo, { replace: true });
-  }, [claimStoredReferral, navigate, returnTo, syncProfile, t]);
+  }, [claimStoredReferral, mode, navigate, returnTo, syncProfile, t]);
 
   useEffect(() => {
     const controller = new AbortController();

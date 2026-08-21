@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "close-platform-activation-and-release-loops",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "english-hub",
+    "platform"
+  ],
+  "migrations": [
+    "20260821120000_platform_journey_measurement.sql"
+  ],
+  "edgeFunctions": [
+    "admin-analytics",
+    "platform-events"
+  ],
+  "workers": [],
+  "requiredSecrets": [
+    "PUBLIC_JOURNEY_HASH_SECRET"
+  ],
+  "rolloutOrder": [
+    "pages",
+    "migration:20260821120000_platform_journey_measurement.sql",
+    "secret:PUBLIC_JOURNEY_HASH_SECRET",
+    "function:platform-events",
+    "function:admin-analytics"
+  ],
+  "manualFollowUps": [
+    "supabase migration list --linked",
+    "supabase db push --linked",
+    "supabase secrets set PUBLIC_JOURNEY_HASH_SECRET=<generated-value> --project-ref <production-project-ref>",
+    "supabase functions deploy platform-events --project-ref <production-project-ref>",
+    "supabase functions deploy admin-analytics --project-ref <production-project-ref>",
+    "supabase migration list --linked"
+  ],
+  "verification": [
+    "Confirm the Pages workflow succeeded for the merged commit before any manual backend write.",
+    "Confirm platform-events accepts an allow-listed event and rejects an invalid origin or event name.",
+    "Confirm Admin Analytics shows the public activation loop without platform_journey_events in unavailable sources.",
+    "Verify the English Hub and a skill sign-in return at desktop and mobile widths."
+  ],
+  "rollback": {
+    "frontends": "Roll back the Cloudflare Pages deployment to the previous known-good commit.",
+    "edgeFunctions": "Redeploy platform-events and admin-analytics from the previous known-good commit.",
+    "database": "Keep the additive journey tables and retention job in place; remove them only in a later reviewed migration after all dependent code is absent."
+  }
+}

@@ -32,6 +32,15 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(196, 58, 34, 0.32);
+  outline-offset: 3px;
+}
+
 .hub-root {
   min-height: 100dvh;
   position: relative;
@@ -82,6 +91,104 @@ a {
   background: var(--paper);
   backdrop-filter: blur(5px);
   box-shadow: 0 10px 26px rgba(31, 21, 14, 0.06);
+}
+
+.access-gate-root {
+  display: grid;
+  align-items: center;
+}
+
+.access-gate-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.access-gate-nav {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.access-gate-nav > .btn {
+  justify-self: end;
+}
+
+.access-redirect-card {
+  min-height: min(620px, calc(100dvh - 140px));
+  padding: clamp(24px, 5vw, 64px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 76px);
+  overflow: hidden;
+}
+
+.access-gate-copy {
+  display: grid;
+  gap: 16px;
+}
+
+.access-gate-copy h1 {
+  margin: 0;
+  max-width: 13ch;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.96;
+}
+
+.access-gate-copy > p:not(.kicker) {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--ink-700);
+  line-height: 1.65;
+}
+
+.access-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.access-gate-next {
+  border: 1px solid rgba(156, 44, 26, 0.22);
+  border-radius: 24px;
+  padding: clamp(20px, 3vw, 28px);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(196, 58, 34, 0.07));
+}
+
+.access-gate-next ol {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.access-gate-next li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-700);
+}
+
+.access-gate-next li span {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--accent-strong);
+  background: rgba(196, 58, 34, 0.1);
+  font-weight: 800;
+}
+
+.access-gate-next li strong {
+  color: var(--ink-900);
+  line-height: 1.35;
 }
 
 .app-crash-container {
@@ -880,6 +987,40 @@ a {
       'controls controls';
     gap: 10px;
     align-items: center;
+  }
+
+  .access-gate-root {
+    align-items: start;
+  }
+
+  .access-gate-nav {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
+  }
+
+  .access-gate-nav .brand,
+  .access-gate-nav .btn {
+    grid-area: auto;
+  }
+
+  .access-gate-nav > .btn {
+    justify-self: stretch;
+  }
+
+  .access-redirect-card {
+    min-height: 0;
+    padding: 28px 20px;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .access-gate-copy h1 {
+    font-size: clamp(38px, 12vw, 52px);
+  }
+
+  .access-gate-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .brand-copy strong {

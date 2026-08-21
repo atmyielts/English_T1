@@ -245,6 +245,20 @@ serve(async (req) => {
     let hardDeleteBlocks7d = 0;
     let recentHardDeleteBlocks: GuardrailEventRow[] = [];
     const reliabilityUnavailableSources: string[] = [];
+    let publicJourney: Record<string, unknown> = {
+      available: false,
+      since: since30d,
+      events: {},
+      funnel: { discovered: 0, intent: 0, auth_started: 0, activated: 0 },
+      daily: [],
+    };
+    try {
+      const { data, error } = await sb.rpc("admin_platform_journey_funnel", { p_since: since30d });
+      if (error || !data || typeof data !== "object" || Array.isArray(data)) throw error ?? new Error("invalid_journey_funnel");
+      publicJourney = { available: true, ...(data as Record<string, unknown>) };
+    } catch (_err) {
+      reliabilityUnavailableSources.push("platform_journey_events");
+    }
     try {
       const [
         guardrail24h,
@@ -625,6 +639,7 @@ serve(async (req) => {
         if (b.sessions_30d !== a.sessions_30d) return b.sessions_30d - a.sessions_30d;
         return a.name.localeCompare(b.name);
       }),
+      public_journey: publicJourney,
       admin_activity: adminActivity,
       diagnostics: {
         truncated_sources: [

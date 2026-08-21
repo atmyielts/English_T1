@@ -771,13 +771,13 @@ const pages: DiscoveryPageConfig[] = [
       'English learning platform',
     ],
     eyebrow: 'English skills ecosystem',
-    heroTitle: 'Bring the English skill services together under one public home.',
+    heroTitle: 'Build every English skill without losing sight of what comes next.',
     heroDescription:
-      'Schood English is larger than a single tool. This page gives search engines and learners one place to understand the English ecosystem before they branch into the right skill-specific service.',
+      'Practice reading, listening, writing, speaking, grammar, vocabulary, and real-world use as one connected learning path. Schood uses your work in each skill to guide the next one.',
     heroBullets: [
-      'Reading, writing, listening, speaking, grammar, vocabulary, and immersion routes.',
-      'A stronger public bridge into the English hub and individual services.',
-      'Better search discoverability than leaving every skill siloed.',
+      'Choose the skill that matters today without losing your shared progress.',
+      'Turn mistakes into focused review and a clear next activity.',
+      'Move saved vocabulary and corrected patterns into real English use.',
     ],
     primaryCta: {
       label: 'Open English hub',
@@ -791,28 +791,28 @@ const pages: DiscoveryPageConfig[] = [
       description: 'See platform plans and shared access.',
     },
     highlights: [
-      { value: '7', label: 'skill routes', detail: 'Reading, Writing, Listening, Speaking, Grammar, Vocabulary, and Immersion.' },
-      { value: '1', label: 'public hub', detail: 'A single page explains the ecosystem before learners split into skill pages.' },
-      { value: 'Cross-skill', label: 'growth path', detail: 'Learners can move between related English services more naturally.' },
+      { value: '7', label: 'connected skills', detail: 'Reading, Writing, Listening, Speaking, Grammar, Vocabulary, and Immersion.' },
+      { value: '1', label: 'shared plan', detail: 'Your activity, review, and progress come together in the English hub.' },
+      { value: 'Cross-skill', label: 'practice', detail: 'What you learn in one skill becomes useful work in another.' },
     ],
     features: [
       {
-        title: 'Better ecosystem discovery',
-        description: 'Instead of forcing searchers into isolated subdomains immediately, the platform now offers a public English overview page.',
+        title: 'Know what to practice today',
+        description: 'Your hub brings together current weaknesses, due review, and the next useful activity instead of leaving you to choose blindly.',
       },
       {
-        title: 'Stronger internal linking',
-        description: 'The English page can send authority and context into the skill services and the English hub.',
+        title: 'Turn mistakes into a recovery route',
+        description: 'A listening miss can become vocabulary review, a repeated writing error can become grammar repair, and both can return to real use.',
       },
       {
-        title: 'Ready for future tools',
-        description: 'This route can grow into calculators, guides, and more search-friendly English assets over time.',
+        title: 'Remember progress across skills',
+        description: 'One English profile keeps your completed work, saved vocabulary, review pressure, and recommendations connected.',
       },
     ],
     outcomes: [
-      'Make the English suite understandable from the main domain.',
-      'Create a better public bridge into the English hub and skill-specific services.',
-      'Support future topic clusters around English practice and improvement.',
+      'Start with the skill that matches your goal today.',
+      'Receive focused correction and a useful retry instead of a score alone.',
+      'Carry stronger language into speaking, writing, and real-world missions.',
     ],
     faq: [
       {
@@ -821,11 +821,11 @@ const pages: DiscoveryPageConfig[] = [
       },
       {
         question: 'Why put English on the main platform too?',
-        answer: 'A platform-level English page makes the ecosystem easier for search engines and new users to understand before they enter the individual skill services.',
+        answer: 'It helps you see how the seven skills work together, choose a starting point, and understand how completed work shapes review and recommendations.',
       },
       {
         question: 'Does this replace the English hub?',
-        answer: 'No. It supports the hub by acting as the public discovery layer on the main domain.',
+        answer: 'No. This page helps you choose a starting point; the English hub holds your daily plan, weaknesses, review, and weekly progress after sign-in.',
       },
     ],
     relatedLinks: [
