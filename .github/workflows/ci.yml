@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -49,6 +51,9 @@ jobs:
 
       - name: Production readiness checks
         run: npm run verify:prod
+
+      - name: Release manifest drift check
+        run: npm run verify:release -- --base origin/${{ github.base_ref || 'main' }}
 
       - name: Academy product readiness checks
         run: npm run verify:academy

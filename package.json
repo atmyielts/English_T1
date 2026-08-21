@@ -38,6 +38,7 @@
     "verify:academy:automation": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-academy-automation-worker.ps1",
     "check:academy:github": "node scripts/check-academy-github-readiness.mjs",
     "verify:prod": "node scripts/verify-production-readiness.mjs",
+    "verify:release": "node scripts/verify-release-manifest.mjs",
     "verify:auth-providers": "node scripts/verify-auth-providers.mjs",
     "verify:click-prod": "node scripts/verify-click-production-readiness.mjs",
     "verify:telegram:identities": "node scripts/verify-telegram-bot-identities.mjs",

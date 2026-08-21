@@ -2,10 +2,13 @@ import { execSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
-const trackedFiles = execSync('git ls-files', { encoding: 'utf8' })
-  .split(/\r?\n/)
+const trackedFiles = [
+  ...execSync('git ls-files', { encoding: 'utf8' }).split(/\r?\n/),
+  ...execSync('git ls-files --others --exclude-standard', { encoding: 'utf8' }).split(/\r?\n/),
+]
   .map((line) => line.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .filter((file, index, files) => files.indexOf(file) === index);
 
 const errors = [];
 
