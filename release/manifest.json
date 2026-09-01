@@ -1,53 +1,28 @@
 {
   "schemaVersion": 1,
-  "releaseId": "connect-academy-teacher-lesson-flow",
+  "releaseId": "enhance-academy-production-docs",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy"
+    "academy-docs"
   ],
-  "migrations": [
-    "20260901120000_academy_teacher_lesson_flow.sql"
-  ],
-  "edgeFunctions": [
-    "academy",
-    "academy-telegram"
-  ],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "academy",
-    "academy-telegram"
-  ],
-  "requiredSecrets": [
-    "ACADEMY_TELEGRAM_BOT_TOKEN",
-    "ACADEMY_TELEGRAM_WEBHOOK_SECRET"
-  ],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20260901120000_academy_teacher_lesson_flow.sql",
-    "secret:ACADEMY_TELEGRAM_BOT_TOKEN",
-    "secret:ACADEMY_TELEGRAM_WEBHOOK_SECRET",
-    "function:academy",
-    "function:academy-telegram"
+    "pages"
   ],
-  "manualFollowUps": [
-    "supabase migration list --linked",
-    "supabase db push --linked",
-    "Confirm ACADEMY_TELEGRAM_BOT_TOKEN exists with supabase secrets list; only if missing run supabase secrets set ACADEMY_TELEGRAM_BOT_TOKEN=<existing-secret> --project-ref <production-project-ref>",
-    "Confirm ACADEMY_TELEGRAM_WEBHOOK_SECRET exists with supabase secrets list; only if missing run supabase secrets set ACADEMY_TELEGRAM_WEBHOOK_SECRET=<existing-secret> --project-ref <production-project-ref>",
-    "supabase functions deploy academy --project-ref <production-project-ref>",
-    "supabase functions deploy academy-telegram --project-ref <production-project-ref>",
-    "supabase migration list --linked"
-  ],
+  "manualFollowUps": [],
   "verification": [
-    "Confirm the Pages workflow succeeded for the merged commit before any manual backend write.",
-    "Confirm the additive teacher lesson migration is present in the linked migration list.",
-    "Confirm both Academy Edge Functions answer authenticated teacher-day requests without schema errors.",
-    "Verify a real teacher can start a lesson, save attendance, finish it, and see the assigned homework in web and Telegram before enabling the teacher-flow flag."
+    "Confirm the Academy docs workspace builds successfully.",
+    "Verify English, Uzbek, and Russian content renders at desktop and mobile widths.",
+    "Verify role, teacher-day, Telegram, guardian, Academy, and bot links resolve correctly."
   ],
   "rollback": {
-    "frontends": "Roll back the Cloudflare Pages deployment to the previous known-good commit.",
-    "edgeFunctions": "Redeploy academy and academy-telegram from the previous known-good commit and keep VITE_ACADEMY_TEACHER_FLOW_V2 disabled.",
-    "database": "Keep the additive teacher lesson table and functions in place; remove them only in a later reviewed migration after all dependent code is absent."
+    "frontends": "Roll back the schood-academy-docs Cloudflare Pages deployment to the previous known-good commit.",
+    "edgeFunctions": "No Edge Function changes.",
+    "database": "No database changes."
   }
 }
