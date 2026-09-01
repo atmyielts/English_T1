@@ -782,6 +782,50 @@ export type TeacherStudioScheduleSlot = {
   created_at?: string;
 };
 
+export type TeacherLessonCoverage = {
+  id: string;
+  label: string;
+  covered: boolean;
+};
+
+export type TeacherDaySession = {
+  id: string;
+  academy_id: string;
+  classroom_id: string;
+  classroom_name: string;
+  room_name: string | null;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  timezone: string;
+  status: string;
+  delivery_mode: string;
+  roster: Array<{ contact_id: string; name: string; status: string | null; notes: string | null }>;
+  attendance_saved: boolean;
+  curriculum: {
+    course_id: string | null;
+    course_title: string | null;
+    module_id: string | null;
+    module_title: string | null;
+    lesson_id: string | null;
+    lesson_title: string;
+    lesson_summary: string | null;
+    estimated_minutes: number;
+    objectives: TeacherLessonCoverage[];
+  };
+  resources: Array<{ id: string; title: string; kind: string; url: string | null; description: string | null }>;
+  homework: { title: string; description: string; due_at: string };
+  run: ({ id: string; status: string; coverage?: TeacherLessonCoverage[]; teacher_notes?: string | null; homework_draft?: Json; homework_assignment_id?: string | null; started_at?: string | null; finished_at?: string | null } & Json) | null;
+  connected_group_count: number;
+};
+
+export type TeacherDay = {
+  date: string;
+  generated_at: string;
+  sessions: TeacherDaySession[];
+  counts: { sessions: number; students: number; attendance_pending: number; homework_pending: number };
+};
+
 export type TeacherStudioStaff = {
   id: string;
   grant_id?: string | null;
@@ -2427,6 +2471,38 @@ export const teacherStudioCurriculum = async (
     params: { classroom_id: classroomId ?? undefined },
   });
 };
+
+export const teacherStudioTeacherDay = async (academyId: string, date?: string): Promise<TeacherDay> =>
+  callTeacherStudio<TeacherDay>({ action: 'teacher_day', academyId, params: { date } });
+
+export const teacherStudioStartTeacherLesson = async (
+  academyId: string,
+  body: { session_id: string; idempotency_key: string },
+): Promise<{ run: Json }> => callTeacherStudio<{ run: Json }>({
+  method: 'POST', action: 'teacher_lesson_start', academyId, body,
+});
+
+export const teacherStudioSaveTeacherAttendance = async (
+  academyId: string,
+  body: { session_id: string; records: Array<{ contact_id: string; status: string; notes?: string | null }>; idempotency_key: string },
+): Promise<{ saved: number; duplicate?: boolean }> => callTeacherStudio<{ saved: number; duplicate?: boolean }>({
+  method: 'POST', action: 'teacher_lesson_attendance', academyId, body,
+});
+
+export const teacherStudioFinishTeacherLesson = async (
+  academyId: string,
+  body: {
+    session_id: string;
+    coverage: TeacherLessonCoverage[];
+    teacher_notes?: string | null;
+    homework: { title: string; description: string; due_at: string };
+    assign_homework: boolean;
+    idempotency_key: string;
+  },
+): Promise<{ run: Json; assignment: Json | null; duplicate?: boolean }> =>
+  callTeacherStudio<{ run: Json; assignment: Json | null; duplicate?: boolean }>({
+    method: 'POST', action: 'teacher_lesson_finish', academyId, body,
+  });
 
 export const teacherStudioQuizzes = async (
   academyId: string,

@@ -9,6 +9,10 @@ type EntitlementsViewProps = {
   formatDate: (iso: string | null | undefined) => string;
 };
 
+const readableAccessName = (value: string | null | undefined) => value
+  ? value.replaceAll('_', ' ').replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+  : 'General learning access';
+
 export const EntitlementsView = ({
   entitlements,
   contacts,
@@ -48,7 +52,7 @@ export const EntitlementsView = ({
         <div className="panel">
           <h3>{translate("Filters")}</h3>
           <div className="filters-grid">
-            <input className="input" placeholder={translate("Search capability, grant, contact...")} value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className="input" placeholder={translate("Search student, course, or test...")} value={query} onChange={(e) => setQuery(e.target.value)} />
             <select className="input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'expired' | 'revoked')}>
               <option value="all">{translate("All statuses")}</option>
               <option value="active">{translate("Active")}</option>
@@ -59,36 +63,36 @@ export const EntitlementsView = ({
         </div>
 
         <div className="panel">
-          <h3>{translate("Capability distribution")}</h3>
+          <h3>{translate("Access by product")}</h3>
           <div className="metric-list">
             {capabilityDist.map(([key, value]) => (
               <div key={key} className="metric-row">
-                <span>{key}</span>
+                <span>{translate(readableAccessName(key))}</span>
                 <strong>{value}</strong>
               </div>
             ))}
-            {capabilityDist.length === 0 ? <div className="muted">{translate("No capability data yet.")}</div> : null}
+            {capabilityDist.length === 0 ? <div className="muted">{translate("No student access data yet.")}</div> : null}
           </div>
         </div>
       </section>
 
       <section className="panel">
-        <h3>{translate("Entitlements")}</h3>
+        <h3>{translate("Student access")}</h3>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>{translate("Contact")}</th><th>{translate("Grant")}</th><th>{translate("Capability")}</th><th>{translate("Remaining")}</th><th>{translate("Status")}</th><th>{translate("Expires")}</th></tr></thead>
+            <thead><tr><th>{translate("Student")}</th><th>{translate("Access method")}</th><th>{translate("Course or test")}</th><th>{translate("Uses left")}</th><th>{translate("Status")}</th><th>{translate("Expires")}</th></tr></thead>
             <tbody>
               {filtered.map((e) => (
                 <tr key={e.id}>
                   <td>{contacts.find((c) => c.id === e.contact_id)?.email ?? e.contact_id}</td>
-                  <td>{e.grant_type}</td>
-                  <td>{e.capability_key ?? '-'}</td>
+                  <td>{translate(readableAccessName(e.grant_type))}</td>
+                  <td>{translate(readableAccessName(e.capability_key))}</td>
                   <td>{e.remaining ?? '-'}</td>
                   <td><span className={statusClass(e.status)}>{e.status}</span></td>
                   <td>{formatDate(e.expires_at)}</td>
                 </tr>
               ))}
-              {filtered.length === 0 ? <tr><td colSpan={6}>{translate("No entitlements match these filters.")}</td></tr> : null}
+              {filtered.length === 0 ? <tr><td colSpan={6}>{translate("No student access matches these filters.")}</td></tr> : null}
             </tbody>
           </table>
         </div>

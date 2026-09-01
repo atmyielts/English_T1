@@ -62,6 +62,29 @@ type Group = {
   last_verified_at: string | null;
   last_error: string | null;
 };
+type TeacherDaySession = {
+  id: string;
+  classroom_id: string;
+  classroom_name: string;
+  room_name: string | null;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  delivery_mode: string;
+  roster: Array<{ contact_id: string; name: string; status: string | null; notes: string | null }>;
+  attendance_saved: boolean;
+  curriculum: {
+    lesson_id: string | null;
+    course_title: string | null;
+    module_title: string | null;
+    lesson_title: string;
+    objectives: Array<{ id: string; label: string; covered: boolean }>;
+  };
+  homework: { title: string; description: string; due_at: string };
+  run: { id: string; status: string; coverage?: Array<{ id: string; label: string; covered: boolean }> } | null;
+  connected_group_count: number;
+};
 type Dashboard = {
   settings: { enabled: boolean; default_locale: string; timezone: string; digest_time: string; emergency_override_enabled: boolean };
   metrics: { sessions_today: number; open_requests: number; urgent_requests: number; due_homework: number; connected_groups: number; failed_deliveries: number };
@@ -74,6 +97,7 @@ type Dashboard = {
   assignments: Array<{ id: string; classroom_id: string; title: string; due_at: string; status: string }>;
   contacts: Array<{ id: string; first_name: string; last_name: string; status: string; primary_branch_id: string | null; telegram_linked: boolean }>;
   deliveries: Array<{ id: string; type: string; title: string | null; status: string; error: string | null; scheduled_at: string; sent_at: string | null; chat_binding_id: string | null; created_at: string }>;
+  teacher_day?: { date: string; sessions: TeacherDaySession[]; counts: Record<string, number> } | null;
 };
 type Bootstrap = {
   linked: boolean;
@@ -95,6 +119,13 @@ type ComposeState = {
 };
 type GroupLinkState = { purpose: string; branchId: string; classroomId: string; locale: string };
 type AttendanceState = { sessionId: string; classroomId: string; roster: Array<{ id: string; first_name: string; last_name: string }>; statuses: Record<string, string> };
+type LessonState = {
+  sessionId: string;
+  coverage: Array<{ id: string; label: string; covered: boolean }>;
+  homeworkTitle: string;
+  homeworkDescription: string;
+  homeworkDueAt: string;
+};
 
 const tabs: Array<{ id: Tab; label: string; icon: typeof Home }> = [
   { id: 'today', label: 'Today', icon: Home },
@@ -209,6 +240,7 @@ export const AcademyTelegramApp = () => {
   const [compose, setCompose] = useState<ComposeState>({ messageType: 'announcement', groupId: '', contactId: '', classroomId: '', title: '', body: '', dueAt: '', scheduledAt: '' });
   const [groupLink, setGroupLink] = useState<GroupLinkState>({ purpose: 'classroom_community', branchId: '', classroomId: '', locale: 'uz' });
   const [attendance, setAttendance] = useState<AttendanceState | null>(null);
+  const [lesson, setLesson] = useState<LessonState | null>(null);
 
   const invoke = useCallback(async <T,>(action: string, payload: Json = {}): Promise<T> => {
     const activeInitData = initData || getInitData();
@@ -312,6 +344,70 @@ export const AcademyTelegramApp = () => {
     setAttendance(null); setNotice(translate('Attendance saved')); await load(academyId);
   });
 
+  const openLesson = (session: TeacherDaySession) => {
+    const coverage = session.run?.coverage?.length ? session.run.coverage : session.curriculum.objectives;
+    setLesson({
+      sessionId: session.id,
+      coverage: coverage.map((item) => ({ ...item })),
+      homeworkTitle: session.homework.title,
+      homeworkDescription: session.homework.description,
+      homeworkDueAt: session.homework.due_at.slice(0, 16),
+    });
+    setAttendance({
+      sessionId: session.id,
+      classroomId: session.classroom_id,
+      roster: session.roster.map((student) => {
+        const [first_name, ...rest] = student.name.split(' ');
+        return { id: student.contact_id, first_name, last_name: rest.join(' ') };
+      }),
+      statuses: Object.fromEntries(session.roster.map((student) => [student.contact_id, student.status || 'present'])),
+    });
+  };
+  const startTeacherLesson = (session: TeacherDaySession) => action(`lesson-start:${session.id}`, async () => {
+    await invoke('teacher_lesson_start', {
+      academy_id: academyId,
+      session_id: session.id,
+      lesson_id: session.curriculum.lesson_id,
+      idempotency_key: uuid(),
+    });
+    openLesson(session);
+    setNotice(translate('Lesson started'));
+    await load(academyId);
+  });
+  const saveTeacherAttendance = () => action('teacher-attendance', async () => {
+    if (!attendance) return;
+    await invoke('teacher_lesson_attendance', {
+      academy_id: academyId,
+      session_id: attendance.sessionId,
+      records: attendance.roster.map((student) => ({
+        contact_id: student.id,
+        status: attendance.statuses[student.id] || 'present',
+      })),
+      idempotency_key: uuid(),
+    });
+    setNotice(translate('Attendance saved'));
+    await load(academyId);
+  });
+  const finishTeacherLesson = () => action('lesson-finish', async () => {
+    if (!lesson) return;
+    await invoke('teacher_lesson_finish', {
+      academy_id: academyId,
+      session_id: lesson.sessionId,
+      coverage: lesson.coverage,
+      homework: {
+        title: lesson.homeworkTitle,
+        description: lesson.homeworkDescription,
+        due_at: new Date(lesson.homeworkDueAt).toISOString(),
+      },
+      assign_homework: true,
+      idempotency_key: uuid(),
+    });
+    setLesson(null);
+    setAttendance(null);
+    setNotice(translate('Lesson finished and homework assigned'));
+    await load(academyId);
+  });
+
   if (!initData && !loading) {
     return (
       <main className="academy-tg-standalone">
@@ -377,9 +473,9 @@ export const AcademyTelegramApp = () => {
             </div>
             <Card className="academy-tg-register">
               <div className="academy-tg-card-head"><div><p className="academy-tg-eyebrow">{translate('Daily register')}</p><h2>{translate("Today's classes")}</h2></div><span className="academy-tg-count">{dashboard?.sessions.length ?? 0}</span></div>
-              {dashboard?.sessions.length ? <div className="academy-tg-timeline">{dashboard.sessions.map((session) => <article key={session.id}><time>{new Date(session.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time><span className="academy-tg-dot" /><div><strong>{session.title}</strong><small>{session.delivery_mode} · {session.status}</small></div>{canAttendance ? <BusyButton busy={busy === `roster:${session.id}`} className="academy-tg-small" onClick={() => void startAttendance(session)}>{translate('Attendance')}<ChevronRight size={16} /></BusyButton> : null}</article>)}</div> : <Empty title={translate('No classes scheduled today')} body={translate('Use the full Academy workspace to review the timetable.')} />}
+              {dashboard?.teacher_day?.sessions.length ? <div className="academy-tg-timeline">{dashboard.teacher_day.sessions.map((session) => <article key={session.id}><time>{new Date(session.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time><span className="academy-tg-dot" /><div><strong>{session.classroom_name}</strong><small>{session.curriculum.lesson_title} · {session.room_name || session.delivery_mode}</small></div><BusyButton busy={busy === `lesson-start:${session.id}`} className="academy-tg-small" onClick={() => session.run?.status === 'in_progress' ? openLesson(session) : void startTeacherLesson(session)}>{translate(session.run?.status === 'in_progress' ? 'Continue' : session.run?.status === 'finished' ? 'Review' : 'Start lesson')}<ChevronRight size={16} /></BusyButton></article>)}</div> : dashboard?.sessions.length ? <div className="academy-tg-timeline">{dashboard.sessions.map((session) => <article key={session.id}><time>{new Date(session.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time><span className="academy-tg-dot" /><div><strong>{session.title}</strong><small>{session.delivery_mode} · {session.status}</small></div>{canAttendance ? <BusyButton busy={busy === `roster:${session.id}`} className="academy-tg-small" onClick={() => void startAttendance(session)}>{translate('Attendance')}<ChevronRight size={16} /></BusyButton> : null}</article>)}</div> : <Empty title={translate('No classes scheduled today')} body={translate('Use the full Academy workspace to review the timetable.')} />}
             </Card>
-            {attendance ? <Card className="academy-tg-attendance"><div className="academy-tg-card-head"><div><p className="academy-tg-eyebrow">{translate('Attendance')}</p><h2>{translate('Mark the class')}</h2></div><button className="academy-tg-icon-btn" type="button" onClick={() => setAttendance(null)}><X size={18} /></button></div>{attendance.roster.map((student) => <label key={student.id}><span>{`${student.first_name} ${student.last_name}`.trim()}</span><select value={attendance.statuses[student.id]} onChange={(event) => setAttendance((current) => current ? { ...current, statuses: { ...current.statuses, [student.id]: event.target.value } } : current)}><option value="present">{translate('Present')}</option><option value="late">{translate('Late')}</option><option value="absent">{translate('Absent')}</option><option value="excused">{translate('Excused')}</option></select></label>)}<BusyButton busy={busy === 'attendance'} className="academy-tg-primary" onClick={() => void saveAttendance()}><ClipboardCheck size={17} />{translate('Save attendance')}</BusyButton></Card> : null}
+            {lesson ? <Card className="academy-tg-attendance"><div className="academy-tg-card-head"><div><p className="academy-tg-eyebrow">{translate('Lesson progress')}</p><h2>{translate('Teach, record, finish')}</h2></div><button className="academy-tg-icon-btn" type="button" onClick={() => { setLesson(null); setAttendance(null); }}><X size={18} /></button></div><div className="academy-tg-lesson-objectives"><strong>{translate('Covered today')}</strong>{lesson.coverage.map((item) => <label key={item.id}><input type="checkbox" checked={item.covered} onChange={(event) => setLesson((current) => current ? { ...current, coverage: current.coverage.map((entry) => entry.id === item.id ? { ...entry, covered: event.target.checked } : entry) } : current)} /><span>{item.label}</span></label>)}</div>{attendance?.roster.map((student) => <label key={student.id}><span>{`${student.first_name} ${student.last_name}`.trim()}</span><select value={attendance.statuses[student.id]} onChange={(event) => setAttendance((current) => current ? { ...current, statuses: { ...current.statuses, [student.id]: event.target.value } } : current)}><option value="present">{translate('Present')}</option><option value="late">{translate('Late')}</option><option value="absent">{translate('Absent')}</option><option value="excused">{translate('Excused')}</option></select></label>)}<BusyButton busy={busy === 'teacher-attendance'} className="academy-tg-secondary" onClick={() => void saveTeacherAttendance()}><ClipboardCheck size={17} />{translate('Save attendance')}</BusyButton><label><span>{translate('Homework title')}</span><input value={lesson.homeworkTitle} onChange={(event) => setLesson({ ...lesson, homeworkTitle: event.target.value })} /></label><label><span>{translate('Homework instructions')}</span><textarea rows={4} value={lesson.homeworkDescription} onChange={(event) => setLesson({ ...lesson, homeworkDescription: event.target.value })} /></label><label><span>{translate('Due date')}</span><input type="datetime-local" value={lesson.homeworkDueAt} onChange={(event) => setLesson({ ...lesson, homeworkDueAt: event.target.value })} /></label><p className="academy-tg-privacy-note"><BellRing size={17} />{translate('When you finish, homework is assigned and the connected class group is notified automatically.')}</p><BusyButton busy={busy === 'lesson-finish'} className="academy-tg-primary" onClick={() => void finishTeacherLesson()}><BookOpenCheck size={17} />{translate('Finish lesson and assign')}</BusyButton></Card> : attendance ? <Card className="academy-tg-attendance"><div className="academy-tg-card-head"><div><p className="academy-tg-eyebrow">{translate('Attendance')}</p><h2>{translate('Mark the class')}</h2></div><button className="academy-tg-icon-btn" type="button" onClick={() => setAttendance(null)}><X size={18} /></button></div>{attendance.roster.map((student) => <label key={student.id}><span>{`${student.first_name} ${student.last_name}`.trim()}</span><select value={attendance.statuses[student.id]} onChange={(event) => setAttendance((current) => current ? { ...current, statuses: { ...current.statuses, [student.id]: event.target.value } } : current)}><option value="present">{translate('Present')}</option><option value="late">{translate('Late')}</option><option value="absent">{translate('Absent')}</option><option value="excused">{translate('Excused')}</option></select></label>)}<BusyButton busy={busy === 'attendance'} className="academy-tg-primary" onClick={() => void saveAttendance()}><ClipboardCheck size={17} />{translate('Save attendance')}</BusyButton></Card> : null}
           </div>
         ) : null}
 

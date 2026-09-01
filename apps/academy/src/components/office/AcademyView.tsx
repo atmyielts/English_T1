@@ -71,13 +71,9 @@ export const AcademyView = ({
       <div className="panel academy-overview__context">
         <div>
           <span className="eyebrow">{translate("Current workspace")}</span>
-          <h3>{translate("Academy workspace")}</h3>
+          <h3>{landingForm.name || translate("Academy workspace")}</h3>
         </div>
         <dl className="academy-overview__identity">
-          <div>
-            <dt>{translate("Academy ID")}</dt>
-            <dd>{academyId || '-'}</dd>
-          </div>
           <div>
             <dt>{translate("Role")}</dt>
             <dd>{role || 'Member'}</dd>
@@ -87,6 +83,10 @@ export const AcademyView = ({
             <dd>{scopeLabel}</dd>
           </div>
         </dl>
+        <details className="advanced-fields">
+          <summary>{translate("Technical details")}</summary>
+          <div className="small muted">{translate("Workspace reference")}: {academyId || '-'}</div>
+        </details>
       </div>
 
       <div className="academy-overview__grid">
@@ -103,7 +103,7 @@ export const AcademyView = ({
             </div>
             {canViewOffers ? (
               <div className="metric-row">
-                <span>{translate("Offers")}</span>
+                <span>{translate("Plans & pricing")}</span>
                 <strong>{summary?.counts.offers ?? offersCount}</strong>
               </div>
             ) : null}
@@ -164,7 +164,7 @@ export const AcademyView = ({
               />
             </label>
             <label className="grid">
-              <span className="small muted">{translate("Landing headline")}</span>
+              <span className="small muted">{translate("Page headline")}</span>
               <input
                 className="input"
                 value={landingForm.headline}
@@ -174,7 +174,7 @@ export const AcademyView = ({
               />
             </label>
             <label className="grid">
-              <span className="small muted">{translate("Landing subheadline")}</span>
+              <span className="small muted">{translate("Page description")}</span>
               <textarea
                 className="input"
                 value={landingForm.subheadline}
@@ -185,7 +185,7 @@ export const AcademyView = ({
             </label>
             <div className="grid two">
               <label className="grid">
-                <span className="small muted">{translate("Primary CTA label")}</span>
+                <span className="small muted">{translate("Main button text")}</span>
                 <input
                   className="input"
                   value={landingForm.primary_cta_label}
@@ -195,7 +195,7 @@ export const AcademyView = ({
                 />
               </label>
               <label className="grid">
-                <span className="small muted">{translate("Secondary CTA label")}</span>
+                <span className="small muted">{translate("Second button text")}</span>
                 <input
                   className="input"
                   value={landingForm.secondary_cta_label}
@@ -206,7 +206,7 @@ export const AcademyView = ({
               </label>
             </div>
             <button className="primary-btn" type="submit" disabled={busy}>
-              {translate("Save academy landing")}{' '}</button>
+              {translate("Save center page")}{' '}</button>
           </form>
         </div>
       ) : null}

@@ -255,6 +255,7 @@ export const EducationOSView = ({
   statusClass,
 }: EducationOSViewProps) => {
   const [activeTab, setActiveTab] = useState<EducationOSTab>('today');
+  const [showAllSections, setShowAllSections] = useState(false);
   const [selectedClassroomId, setSelectedClassroomId] = useState('');
   const [localBusy, setLocalBusy] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -1101,7 +1102,12 @@ export const EducationOSView = ({
     { id: 'audit', label: 'Audit', visible: tabAvailable('audit') },
     { id: 'brand', label: 'Brand', visible: tabAvailable('brand') },
   ];
-  const tabs = allTabs.filter((tab) => tab.visible);
+  const coreTabIds: EducationOSTab[] = mode === 'teacher'
+    ? ['today', 'calendar', 'learning', 'attendance']
+    : ['today', 'calendar', 'learning', 'attendance', 'intelligence'];
+  const availableTabs = allTabs.filter((tab) => tab.visible);
+  const tabs = availableTabs.filter((tab) => showAllSections || coreTabIds.includes(tab.id) || tab.id === activeTab);
+  const hiddenTabsCount = availableTabs.length - tabs.length;
   const visibleActiveTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : tabs[0]?.id ?? 'today';
 
   useEffect(() => {
@@ -1114,8 +1120,8 @@ export const EducationOSView = ({
       <div className="panel">
         <div className="row between wrap">
           <div>
-            <h3>{translate("Education OS")}</h3>
-            <p className="muted">{translate("Run the academy from action queue to lifecycle, automation, calendar, intelligence, and execution tools.")}</p>
+            <h3>{translate(mode === 'teacher' ? "Curriculum & grading" : "Daily operations")}</h3>
+            <p className="muted">{translate(mode === 'teacher' ? "Review curriculum progress, grade student work, and complete teaching follow-ups." : "Review today's work, schedules, follow-ups, and center performance.")}</p>
           </div>
           <div className="topbar-actions">
             <select className="input academy-select" value={selectedClassroomId} onChange={(event) => setSelectedClassroomId(event.target.value)}>
@@ -1127,10 +1133,10 @@ export const EducationOSView = ({
               {classrooms.length === 0 ? <option value="">{translate("No classrooms")}</option> : null}
             </select>
             <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>
-              {translate("Refresh OS")}{' '}</button>
+              {translate("Refresh")}{' '}</button>
           </div>
         </div>
-        <div className="segmented-row" role="tablist" aria-label={translate("Education OS sections")}>
+        <div className="segmented-row" role="tablist" aria-label={translate("Daily operations sections")}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -1141,6 +1147,7 @@ export const EducationOSView = ({
               {translate(tab.label)}
             </button>
           ))}
+          {availableTabs.length > coreTabIds.length ? <button className="small-btn education-os__more-sections" type="button" aria-expanded={showAllSections} onClick={() => setShowAllSections((current) => !current)}>{translate(showAllSections ? 'Show fewer' : 'More tools')}{!showAllSections && hiddenTabsCount > 0 ? ` (${hiddenTabsCount})` : ''}</button> : null}
         </div>
       </div>
 

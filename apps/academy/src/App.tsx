@@ -166,6 +166,8 @@ const loadPaymentsView = () => import('./components/office/PaymentsView')
   .then((module) => ({ default: module.PaymentsView }));
 const loadEntitlementsView = () => import('./components/office/EntitlementsView')
   .then((module) => ({ default: module.EntitlementsView }));
+const loadTeacherDayView = () => import('./components/teachers/TeacherDayView')
+  .then((module) => ({ default: module.TeacherDayView }));
 
 const BusinessFoundationView = lazy(loadBusinessFoundationView);
 const CommercialCoreView = lazy(loadCommercialCoreView);
@@ -189,6 +191,8 @@ const OffersView = lazy(loadOffersView);
 const ClassroomsView = lazy(loadClassroomsView);
 const PaymentsView = lazy(loadPaymentsView);
 const EntitlementsView = lazy(loadEntitlementsView);
+const TeacherDayView = lazy(loadTeacherDayView);
+const academyTeacherFlowV2Enabled = import.meta.env.VITE_ACADEMY_TEACHER_FLOW_V2 === 'true';
 
 const WorkspaceSectionSkeleton = () => (
   <section className="workspace-section-skeleton" aria-label={translate("Loading workspace")} aria-busy="true">
@@ -311,15 +315,15 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   relationships: 'Guardians & Parents',
   intelligence: 'Intelligence',
   operations: 'Operations Finance',
-  os: 'Command Center',
+  os: 'Daily operations',
   contacts: 'Contacts',
   inbox: 'Inbox',
   announcements: 'Announcements',
   alerts: 'Alerts',
   classrooms: 'Classrooms',
-  offers: 'Offers',
-  payments: 'Payments',
-  entitlements: 'Entitlements',
+  offers: 'Plans & pricing',
+  payments: 'Billing & payments',
+  entitlements: 'Student access',
 };
 
 const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
@@ -579,7 +583,7 @@ const officeLaneViewLabel = (
   if (view === 'academy') return academyLabel;
   if (view === 'os') return osLabel;
   if (intent === 'teacher') {
-    if (view === 'classrooms') return 'My LMS classes';
+    if (view === 'classrooms') return 'My classes';
     if (view === 'contacts') return 'My students';
     if (view === 'inbox') return 'Student inbox';
     if (view === 'announcements') return 'Class updates';
@@ -3129,14 +3133,14 @@ const App = () => {
 
             <section className="market-hero">
               <div className="market-copy">
-                <div className="market-eyebrow"><Sparkles size={14} /> {translate("Schood service")}</div>
-                <h1>{translate("Academy")}</h1>
+                <div className="market-eyebrow"><Sparkles size={14} /> {translate("Schood Academy")}</div>
+                <h1>{translate("Run your learning center from one connected workspace")}</h1>
                 <p>
-                  {translate("A living operating layer for education businesses: public academy pages, classroom hubs, teacher operations, student access, payments, alerts, and messaging in one connected flow.")}{' '}</p>
+                  {translate("Organize classes, guide teachers, assign IELTS and SAT practice, track attendance and homework, and collect tuition without scattered chats or spreadsheets.")}{' '}</p>
                 <div className="market-actions">
                   {state === 'unauthenticated' ? (
                     <a className="primary-btn" href={toAuthUrl()}>
-                      {translate("Sign in")}{' '}</a>
+                      {translate("Open Academy")}{' '}</a>
                   ) : null}
                   {state === 'loading' ? <span className="market-note">{translate("Checking your session...")}</span> : null}
                   {state === 'error' ? (
@@ -3144,52 +3148,48 @@ const App = () => {
                       {translate("Retry")}{' '}</button>
                   ) : null}
                 </div>
-                <div className="market-proof-strip" aria-label={translate("Academy service highlights")}>
-                  <span>{translate("Public pages")}</span>
-                  <span>{translate("Teacher office")}</span>
-                  <span>{translate("Student workplace")}</span>
+                <div className="market-proof-strip" aria-label={translate("What Academy connects")}>
+                  <span>{translate("Classes & students")}</span>
+                  <span>{translate("Teacher workflow")}</span>
+                  <span>{translate("Billing & access")}</span>
                 </div>
               </div>
 
               <div className="academy-command-card">
                 <div className="academy-command-head">
                   <div>
-                    <span className="market-badge">{translate("Live command center")}</span>
-                    <h2>{translate("Run the academy week from one surface")}</h2>
+                    <span className="market-badge">{translate("A teacher's next lesson")}</span>
+                    <h2>{translate("Everything is ready before class starts")}</h2>
                   </div>
                   <span className="pulse-dot" aria-hidden="true" />
                 </div>
 
-                <div className="academy-mini-chart" aria-label={translate("Weekly academy activity chart")}>
-                  <span style={{ height: '42%' }} />
-                  <span style={{ height: '58%' }} />
-                  <span style={{ height: '49%' }} />
-                  <span style={{ height: '76%' }} />
-                  <span style={{ height: '63%' }} />
-                  <span style={{ height: '88%' }} />
-                  <span style={{ height: '70%' }} />
+                <div className="academy-lesson-preview" aria-label={translate("Teacher lesson workflow preview")}>
+                  <div className="academy-lesson-preview__time"><strong>18:00</strong><span>19:30</span></div>
+                  <div className="academy-lesson-preview__body"><span>{translate("IELTS 6.5 · Group A17")}</span><strong>{translate("Writing · Problem and solution essays")}</strong><small>{translate("17 students · Room 12 · resources attached")}</small></div>
+                  <span className="academy-lesson-preview__ready">{translate("Ready")}</span>
                 </div>
 
                 <div className="academy-command-grid">
                   <article>
                     <UsersRound size={18} />
-                    <strong>{translate("Contacts")}</strong>
-                    <span>{translate("Student records, family contacts, and academy roles.")}</span>
+                    <strong>{translate("Students & classes")}</strong>
+                    <span>{translate("Rosters, schedules, attendance, and family contacts.")}</span>
                   </article>
                   <article>
                     <CreditCard size={18} />
-                    <strong>{translate("Revenue")}</strong>
-                    <span>{translate("Click checkout, offers, grants, and access windows.")}</span>
+                    <strong>{translate("Billing")}</strong>
+                    <span>{translate("Tuition plans, Click payments, and student access.")}</span>
                   </article>
                   <article>
                     <MessageSquare size={18} />
-                    <strong>{translate("Comms")}</strong>
-                    <span>{translate("Inbox, announcements, classroom discussion, and alerts.")}</span>
+                    <strong>{translate("Communication")}</strong>
+                    <span>{translate("Messages, class updates, reminders, and Telegram delivery.")}</span>
                   </article>
                   <article>
                     <BookOpenCheck size={18} />
-                    <strong>{translate("Learning")}</strong>
-                    <span>{translate("Classroom landings, resources, progress, and mock links.")}</span>
+                    <strong>{translate("Teaching")}</strong>
+                    <span>{translate("Curriculum, resources, homework, grading, and mock tests.")}</span>
                   </article>
                 </div>
               </div>
@@ -3198,36 +3198,36 @@ const App = () => {
             {state === 'error' && error ? <div className="error-banner">{translate(error)}</div> : null}
 
             <section className="market-section-head">
-              <span className="market-badge">{translate("Structure")}</span>
-              <h2>{translate("Four surfaces, one academy identity")}</h2>
+              <span className="market-badge">{translate("One connected center")}</span>
+              <h2>{translate("The right workspace for every person")}</h2>
               <p>
-                {translate("The service is not just a dashboard. It gives every academy a public face, a staff workspace, a classroom layer, and a student portal that all understand the same access model.")}{' '}</p>
+                {translate("Owners see the whole center, teachers see today's classes, and students see their learning. Everyone works from the same schedule, roster, assignments, and payment records.")}{' '}</p>
             </section>
 
             <section className="market-grid academy-surface-grid">
               <article className="market-card surface-card surface-card--lime">
                 <div className="surface-icon"><Building2 size={22} /></div>
-                <h3>{translate("Academy landing")}</h3>
+                <h3>{translate("Center page")}</h3>
                 <p>{translate("Tell the academy story, show the offer, and send families to the right classroom or office entry.")}</p>
-                <div className="surface-meta">{translate("Brand narrative · CTAs · directory cards")}</div>
+                <div className="surface-meta">{translate("Story · programs · contact paths")}</div>
               </article>
               <article className="market-card surface-card surface-card--sky">
                 <div className="surface-icon"><Store size={22} /></div>
-                <h3>{translate("Staff workspaces")}</h3>
+                <h3>{translate("Staff workspace")}</h3>
                 <p>{translate("Route administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.")}</p>
-                <div className="surface-meta">{translate("Operations · billing · access control")}</div>
+                <div className="surface-meta">{translate("Daily work · billing · student access")}</div>
               </article>
               <article className="market-card surface-card surface-card--violet">
                 <div className="surface-icon"><BookOpenCheck size={22} /></div>
-                <h3>{translate("Classroom landing")}</h3>
+                <h3>{translate("Classroom home")}</h3>
                 <p>{translate("Give each classroom a living home with resources, modules, lessons, progress, and discussion.")}</p>
                 <div className="surface-meta">{translate("Syllabus · resources · classroom chat")}</div>
               </article>
               <article className="market-card surface-card surface-card--coral">
                 <div className="surface-icon"><GraduationCap size={22} /></div>
-                <h3>{translate("Student Workplace")}</h3>
-                <p>{translate("Students see their classrooms, announcements, messages, alerts, access grants, and payments in one focused space.")}</p>
-                <div className="surface-meta">{translate("Learning view · alerts · access history")}</div>
+                <h3>{translate("Student workspace")}</h3>
+                <p>{translate("Students see classes, homework, messages, test-prep access, and payments in one focused place.")}</p>
+                <div className="surface-meta">{translate("Learning · reminders · access history")}</div>
               </article>
             </section>
 
@@ -3236,7 +3236,7 @@ const App = () => {
                 <span className="market-badge">{translate("Daily rhythm")}</span>
                 <h2>{translate("Built around the real week of an academy")}</h2>
                 <p>
-                  {translate("The flow follows how teams actually work: attract a student, enroll them, place them in a cohort, keep the family informed, collect payment, and keep access clean.")}{' '}</p>
+                  {translate("The flow follows how centers actually work: enroll a student, place them in a class, teach from the curriculum, keep families informed, collect tuition, and track progress.")}{' '}</p>
               </div>
               <div className="rhythm-track">
                 <article className="market-step">
@@ -3252,39 +3252,39 @@ const App = () => {
                 <article className="market-step">
                 <div className="market-step-index">03</div>
                   <h3>{translate("Teach and track")}</h3>
-                  <p>{translate("Attach resources, publish assignments, send announcements, and keep classroom discussion visible.")}</p>
+                  <p>{translate("Open the lesson plan, take attendance, record what was covered, and assign homework in one guided flow.")}</p>
                 </article>
                 <article className="market-step">
                   <div className="market-step-index">04</div>
                   <h3>{translate("Collect and retain")}</h3>
-                  <p>{translate("Connect offers to access grants, track payments, resolve alerts, and keep students active.")}</p>
+                  <p>{translate("Connect tuition plans to student access, track payments, resolve concerns, and keep learners active.")}</p>
                 </article>
               </div>
             </section>
 
             <section className="academy-capability-panel">
               <div>
-                <span className="market-badge">{translate("Substance")}</span>
-                <h2>{translate("What the service controls")}</h2>
+                <span className="market-badge">{translate("What you can run")}</span>
+                <h2>{translate("The daily work, in one place")}</h2>
                 <p>
-                  {translate("Academy is designed as the operational service behind Schood learning products, not a loose admin page.")}{' '}</p>
+                  {translate("Academy connects Schood learning products to the people, classes, payments, and communication that keep a center moving.")}{' '}</p>
               </div>
               <div className="capability-list">
-                <div><span>01</span> {translate("Academy and classroom public presentation")}</div>
-                <div><span>02</span> {translate("Contacts, membership roles, cohorts, and classroom access")}</div>
-                <div><span>03</span> {translate("Offers, Click payment tracking, grants, and entitlements")}</div>
-                <div><span>04</span> {translate("Announcements, direct inbox, alerts, and student feed")}</div>
-                <div><span>05</span> {translate("Classroom resources, progress, live refresh, and discussion")}</div>
+                <div><span>01</span> {translate("Center and classroom pages for families")}</div>
+                <div><span>02</span> {translate("Student enrollment, class placement, and attendance")}</div>
+                <div><span>03</span> {translate("Tuition plans, Click payments, and learning access")}</div>
+                <div><span>04</span> {translate("Messages, class updates, alerts, and Telegram delivery")}</div>
+                <div><span>05</span> {translate("Curriculum, lesson resources, homework, tests, and progress")}</div>
               </div>
             </section>
 
             <section className="academy-final-cta">
               <div>
                 <span className="market-badge">{translate("Next step")}</span>
-                <h2>{translate("Open the role workspace when you need control. Open the classroom when you need focus.")}</h2>
+                <h2>{translate("Give your team one clear way to run every learning day.")}</h2>
               </div>
               <a className="primary-btn" href={toAuthUrl()}>
-                {translate("Sign in to Academy")}{' '}</a>
+                {translate("Open Academy")}{' '}</a>
             </section>
           </div>
         </div>
@@ -3680,8 +3680,8 @@ const App = () => {
                 <div className="market-badge">{translate("Current academy")}</div>
                 <div className="market-kpis">
                   <article className="market-kpi">
-                    <span>{translate("Academy ID")}</span>
-                    <strong>{currentAcademyId || '-'}</strong>
+                    <span>{translate("Center")}</span>
+                    <strong>{currentAcademyName || translate("Academy")}</strong>
                   </article>
                   <article className="market-kpi">
                     <span>{translate("Classrooms")}</span>
@@ -4857,7 +4857,7 @@ const App = () => {
             {studentPortalView === 'access' ? (
               <section className="grid two">
                 <div className="panel">
-                  <h3>{translate("Your entitlements")}</h3>
+                  <h3>{translate("Your learning access")}</h3>
                   <ul className="list">
                     {studentDashboard.entitlements.map((entitlement) => {
                       const offer = entitlement.offer_id ? offerById.get(entitlement.offer_id) : null;
@@ -4867,16 +4867,14 @@ const App = () => {
                             <strong>{offer?.name ?? entitlement.grant_type}</strong>
                             <span className={statusClass(entitlement.status)}>{entitlement.status}</span>
                           </div>
-                          <div className="small muted">
-                            {entitlement.resource_type ?? 'resource'} | {entitlement.resource_id ?? '-'}
-                          </div>
+                          <div className="small muted">{translate(entitlement.capability_key?.replaceAll('_', ' ') ?? entitlement.resource_type?.replaceAll('_', ' ') ?? 'Learning product')}</div>
                           <div className="small muted">{translate('Access active until: {date}', {
                             date: formatDate(entitlement.expires_at),
                           })}</div>
                         </li>
                       );
                     })}
-                    {studentDashboard.entitlements.length === 0 ? <li>{translate("No access grants yet.")}</li> : null}
+                    {studentDashboard.entitlements.length === 0 ? <li>{translate("No learning access has been added yet.")}</li> : null}
                   </ul>
                 </div>
 
@@ -4950,7 +4948,7 @@ const App = () => {
   const todayNav = officeNavItem('today', officeRouteIntent === 'teacher' ? 'Teaching today' : 'Today', <LayoutDashboard size={17} />);
   const classroomNav = officeNavItem(
     'classrooms',
-    officeLaneViewLabel('classrooms', officeRouteIntent, academyHomeLabel, osCenterLabel),
+    officeRouteIntent === 'teacher' ? officeLaneViewLabel('classrooms', officeRouteIntent, academyHomeLabel, osCenterLabel) : 'Classes & students',
     <BookOpenCheck size={17} />,
   );
   const contactsNav = officeNavItem(
@@ -4965,14 +4963,14 @@ const App = () => {
   );
   const osNav = officeNavItem(
     'os',
-    officeRouteIntent === 'teacher' ? 'Teaching queue' : 'Education OS',
+    officeRouteIntent === 'teacher' ? 'Curriculum & grading' : 'Test prep & practice',
     <Sparkles size={17} />,
   );
   const financeView: OfficeView = canManageFinance ? 'payments' : 'commercial';
-  const financeNav = officeNavItem(financeView, 'Finance', <CreditCard size={17} />);
+  const financeNav = officeNavItem(financeView, officeRouteIntent === 'teacher' ? 'Finance' : 'Billing & finance', <CreditCard size={17} />);
   const staffNavigationGroups: WorkspaceNavigationGroup[] = [
     {
-      label: 'Workspace',
+      label: officeRouteIntent === 'teacher' ? 'Teaching' : 'Core workspace',
       items: visibleNavItems([
         {
           id: 'academies',
@@ -4983,25 +4981,37 @@ const App = () => {
         },
         todayNav,
         classroomNav,
-        contactsNav,
+        officeRouteIntent === 'teacher' ? contactsNav : null,
         officeRouteIntent === 'admin' || officeRouteIntent === 'center' ? financeNav : null,
-        officeRouteIntent === 'teacher' ? osNav : inboxNav,
+        officeRouteIntent === 'teacher' ? inboxNav : osNav,
       ]),
     },
     {
-      label: officeRouteIntent === 'teacher' ? 'Class communication' : 'Daily operations',
+      label: officeRouteIntent === 'teacher' ? 'Teaching tools' : 'Daily operations',
+      collapsible: true,
+      defaultExpanded: false,
       items: visibleNavItems([
-        officeRouteIntent === 'teacher' ? inboxNav : osNav,
+        officeRouteIntent === 'teacher' ? osNav : contactsNav,
+        officeRouteIntent === 'teacher' ? null : inboxNav,
+        officeRouteIntent === 'teacher' ? officeNavItem('announcements', 'Class updates', <Megaphone size={17} />) : null,
         officeNavItem('alerts', 'Alerts', <ShieldAlert size={17} />, alerts.filter((alert) => !alert.resolved).length),
         officeNavItem('services', 'Service desk', <ClipboardList size={17} />),
-        officeNavItem('announcements', 'Announcements', <Megaphone size={17} />),
+        officeRouteIntent === 'teacher' ? {
+          id: 'telegram-assistant',
+          label: 'Telegram assistant',
+          icon: <Send size={17} />,
+          active: false,
+          onSelect: () => void openTelegramAssistant(),
+        } : officeNavItem('announcements', 'Announcements', <Megaphone size={17} />),
         officeRouteIntent === 'office' ? financeNav : null,
       ]),
     },
     {
       label: officeRouteIntent === 'teacher' ? 'More' : 'Manage',
+      collapsible: true,
+      defaultExpanded: false,
       items: visibleNavItems([
-        {
+        officeRouteIntent === 'teacher' ? null : {
           id: 'telegram-assistant',
           label: 'Telegram assistant',
           icon: <Send size={17} />,
@@ -5011,8 +5021,8 @@ const App = () => {
         officeNavItem('academy', academyHomeLabel, <Store size={17} />),
         officeNavItem('business', 'Admissions', <UsersRound size={17} />),
         financeView === 'commercial' ? null : officeNavItem('commercial', 'Plans & billing', <ReceiptText size={17} />),
-        officeNavItem('offers', 'Offers', <Store size={17} />),
-        officeNavItem('entitlements', 'Access grants', <KeyRound size={17} />),
+        officeNavItem('offers', 'Plans & pricing', <Store size={17} />),
+        officeNavItem('entitlements', 'Student access', <KeyRound size={17} />),
         officeNavItem('operations', 'Cash & payroll', <Banknote size={17} />),
         officeNavItem('academic', 'Academic operations', <CalendarDays size={17} />),
         officeNavItem('relationships', 'Guardians', <UsersRound size={17} />),
@@ -5079,7 +5089,16 @@ const App = () => {
             <span className="sr-only">{translate('Updating {section}', { section: translate(selectedViewLabel) })}</span>
           </div>
         ) : null}
-        {officeView === 'today' && officeCanOpen('today') ? (
+        {officeView === 'today' && officeCanOpen('today') && officeRouteIntent === 'teacher' && academyTeacherFlowV2Enabled ? (
+          <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
+            <TeacherDayView
+              academyId={academyId}
+              academyName={selectedOfficeAcademy?.name || academyId}
+              onNavigate={(path) => navigate(academyScopedPath(path))}
+            />
+          </LazyRouteBoundary>
+        ) : null}
+        {officeView === 'today' && officeCanOpen('today') && (officeRouteIntent !== 'teacher' || !academyTeacherFlowV2Enabled) ? (
           <WorkspaceHomeView
             intent={officeRouteIntent}
             academyName={selectedOfficeAcademy?.name || academyId}

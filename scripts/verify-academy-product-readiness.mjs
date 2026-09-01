@@ -12,6 +12,7 @@ const requiredFiles = [
   'ACADEMY_BUSINESS_OS_REQUIREMENT_MATRIX.md',
   'ACADEMY_START.md',
   'ACADEMY_EDUCATION_BUSINESS_OS_AUDIT.md',
+  'ACADEMY_TEACHER_LESSON_FLOW.md',
   'scripts/smoke-academy-product.mjs',
   'scripts/verify-academy-33-step-lifecycle.sql',
   'scripts/verify-academy-business-os-invariants.sql',
@@ -25,6 +26,7 @@ const requiredFiles = [
   'apps/academy/tests/academy-routes.spec.ts',
   'apps/academy/src/lib/client.ts',
   'apps/academy/src/components/office/EducationOSView.tsx',
+  'apps/academy/src/components/teachers/TeacherDayView.tsx',
   'apps/academy/src/components/office/CurriculumView.tsx',
   'apps/academy/src/components/office/BusinessFoundationView.tsx',
   'apps/academy/src/components/office/CommercialCoreView.tsx',
@@ -40,6 +42,7 @@ const requiredFiles = [
   'supabase/functions/academy/index.ts',
   'supabase/functions/academy/access.ts',
   'supabase/functions/academy/academy-contract.test.ts',
+  'supabase/functions/academy/teacher-lesson-flow-schema-contract.test.ts',
   'supabase/functions/academy/curriculum-schema-contract.test.ts',
   'supabase/functions/academy/business-os-phase-a-schema-contract.test.ts',
   'supabase/functions/academy/business-os-phase-b-schema-contract.test.ts',
@@ -54,6 +57,7 @@ const requiredFiles = [
   'supabase/functions/academy/business-os-phase-k-schema-contract.test.ts',
   'supabase/functions/telegram-app/guardian-contract.test.ts',
   'supabase/functions/_shared/academy-curriculum.ts',
+  'supabase/functions/_shared/academy-teacher-flow.ts',
   'supabase/functions/_shared/academy-curriculum.test.ts',
   'supabase/migrations/20260810120000_academy_curriculum_assessments.sql',
   'supabase/migrations/20260810130000_academy_business_os_phase_a.sql',
@@ -68,6 +72,7 @@ const requiredFiles = [
   'supabase/migrations/20260810220000_academy_tenant_integrity_completion.sql',
   'supabase/migrations/20260810230000_academy_lifecycle_automation_worker.sql',
   'supabase/migrations/20260810240000_academy_direct_rls_scope_boundary.sql',
+  'supabase/migrations/20260901120000_academy_teacher_lesson_flow.sql',
   'supabase/functions/click/index.ts',
   '.github/workflows/deploy-pages.yml',
   '.github/workflows/academy-live-smoke.yml',
@@ -221,6 +226,7 @@ const requiredReadActions = [
   'grade_categories',
   'rubrics',
   'quiz_attempts',
+  'teacher_day',
 ];
 
 for (const action of requiredReadActions) {
@@ -253,6 +259,9 @@ for (const action of requiredStudentActions) {
 }
 
 const requiredWriteActions = [
+  'teacher_lesson_start',
+  'teacher_lesson_attendance',
+  'teacher_lesson_finish',
   'create_academy',
   'update_academy_landing',
   'upsert_contact',
@@ -335,6 +344,7 @@ const requiredTables = [
   'academy_assignments',
   'academy_submissions',
   'academy_attendance',
+  'academy_teacher_lesson_runs',
   'academy_bulk_invites',
   'academy_classroom_schedules',
   'academy_notifications',
@@ -401,6 +411,17 @@ addCheck(
   migrationSql.includes('public.apply_academy_payment') &&
     migrationSql.includes('academy_entitlements_payment_grant_unique') &&
     migrationSql.includes('payment_grant_key'),
+);
+
+addCheck(
+  'Teacher lesson flow is replay-safe and closes attendance, curriculum, homework, and Telegram loops',
+  includesAll(migrationSql, [
+    'public.academy_start_teacher_lesson',
+    'public.academy_record_teacher_attendance_batch',
+    'public.academy_finish_teacher_lesson',
+    'academy_assignments_teacher_lesson_run_uidx',
+    "s.event_type = 'homework_published'",
+  ]),
 );
 
 addCheck(

@@ -10,6 +10,13 @@ import {
   validateAcademyQuizQuestion,
   type AcademyQuizQuestionType,
 } from "../_shared/academy-curriculum.ts";
+import {
+  finishAcademyTeacherLesson,
+  loadAcademyTeacherDay,
+  recordAcademyTeacherAttendance,
+  startAcademyTeacherLesson,
+  type AcademyTeacherFlowAccess,
+} from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
 
 type Json = Record<string, unknown>;
@@ -118,6 +125,7 @@ type StudioBody = {
   title?: string;
   description?: string;
   content?: string;
+  date?: string;
   type?: string;
   sort_order?: number | string;
   is_published?: boolean;
@@ -2605,6 +2613,7 @@ const handleReadAction = async (
   quizIdRaw: string | null = null,
   searchQueryRaw: string | null = null,
   searchLimitRaw: string | null = null,
+  dateRaw: string | null = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -2639,6 +2648,7 @@ const handleReadAction = async (
       "audit_events",
       "owner_dashboard",
       "education_os",
+      "teacher_day",
       "business_foundation",
       "commercial_core",
       "operations_finance",
@@ -2704,6 +2714,12 @@ const handleReadAction = async (
   const access = requireAcademyAccess(memberships, academyId);
   const scopedClassroomIds = academyAccessClassroomIds(access);
   const operationalBranchIds = academyAccessBranchIds(access);
+
+  if (action === "teacher_day") {
+    const profile = academyAccessProfile(access);
+    const day = await loadAcademyTeacherDay(sb, { ...access, permissions: profile.permissions as Record<string, boolean> }, dateRaw);
+    return json(200, day);
+  }
 
   if (action === "summary") {
     if (scopedClassroomIds !== null) {
@@ -7831,6 +7847,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(url.searchParams.get("quiz_id"), 64) || null,
         normalizeText(url.searchParams.get("query"), 200) || null,
         normalizeText(url.searchParams.get("limit"), 10) || null,
+        normalizeText(url.searchParams.get("date"), 10) || null,
       );
       if (readResponse) return readResponse;
     }
@@ -7850,6 +7867,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(body?.quiz_id, 64) || null,
         normalizeText(body?.query, 200) || null,
         normalizeText(body?.limit, 10) || null,
+        normalizeText(body?.date, 10) || null,
       );
       if (readResponse) return readResponse;
 
@@ -7910,6 +7928,22 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
       const access = requireAcademyAccess(memberships, academyId);
+      const teacherFlowAccess: AcademyTeacherFlowAccess = {
+        ...access,
+        permissions: academyAccessProfile(access).permissions as Record<string, boolean>,
+      };
+      if (actionBody === "teacher_lesson_start") {
+        const result = await startAcademyTeacherLesson(sb, teacherFlowAccess, userId, body ?? {});
+        return json(200, result);
+      }
+      if (actionBody === "teacher_lesson_attendance") {
+        const result = await recordAcademyTeacherAttendance(sb, teacherFlowAccess, userId, body ?? {});
+        return json(200, result);
+      }
+      if (actionBody === "teacher_lesson_finish") {
+        const result = await finishAcademyTeacherLesson(sb, teacherFlowAccess, userId, body ?? {});
+        return json(200, result);
+      }
       const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
       const explicitBranchId = normalizeText(body?.branch_id ?? body?.primary_branch_id, 64);

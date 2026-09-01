@@ -1,6 +1,6 @@
 import { translate } from '../../i18n';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export type WorkspaceNavigationItem = {
   id: string;
@@ -15,6 +15,8 @@ export type WorkspaceNavigationItem = {
 export type WorkspaceNavigationGroup = {
   label: string;
   items: WorkspaceNavigationItem[];
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
 };
 
 type WorkspaceNavigationProps = {
@@ -39,8 +41,14 @@ export const WorkspaceNavigation = ({
   const navRef = useRef<HTMLElement>(null);
   const [canScrollBack, setCanScrollBack] = useState(false);
   const [canScrollForward, setCanScrollForward] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const visibleGroups = useMemo(() => groups.filter((group) => group.items.length > 0), [groups]);
   const activeItemId = visibleGroups.flatMap((group) => group.items).find((item) => item.active)?.id ?? '';
+
+  const groupIsExpanded = (group: WorkspaceNavigationGroup) => {
+    if (!group.collapsible) return true;
+    return group.items.some((item) => item.active) || (expandedGroups[group.label] ?? group.defaultExpanded ?? false);
+  };
 
   const updateScrollState = useCallback(() => {
     const node = navRef.current;
@@ -97,10 +105,12 @@ export const WorkspaceNavigation = ({
       </div>
 
       <nav ref={navRef} className="workspace-nav" aria-label={translate("{workspace} navigation", { workspace: translate(title) })} onScroll={updateScrollState}>
-        {visibleGroups.map((group) => (
-          <section className="workspace-nav__group" key={group.label} aria-label={translate(group.label)}>
-            <span className="workspace-nav__label">{translate(group.label)}</span>
-            {group.items.map((item) => (
+        {visibleGroups.map((group) => {
+          const expanded = groupIsExpanded(group);
+          return (
+          <section className={`workspace-nav__group ${group.collapsible ? 'is-collapsible' : ''}`} key={group.label} aria-label={translate(group.label)}>
+            {group.collapsible ? <button className="workspace-nav__group-toggle" type="button" aria-expanded={expanded} onClick={() => setExpandedGroups((current) => ({ ...current, [group.label]: !expanded }))}><span>{translate(group.label)}</span><ChevronDown size={15} /></button> : <span className="workspace-nav__label">{translate(group.label)}</span>}
+            {expanded ? group.items.map((item) => (
               <button
                 className={`nav-btn ${item.active ? 'is-active' : ''}`}
                 type="button"
@@ -115,9 +125,9 @@ export const WorkspaceNavigation = ({
                 <span className="nav-label">{translate(item.label)}</span>
                 {item.badge && item.badge > 0 ? <span className="nav-badge">{item.badge}</span> : null}
               </button>
-            ))}
+            )) : null}
           </section>
-        ))}
+        )})}
       </nav>
 
       <div className="sidebar-footer">
