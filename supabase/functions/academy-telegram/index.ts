@@ -18,6 +18,12 @@ import {
   normalizeAcademyRole,
   type MembershipRow,
 } from "../academy/access.ts";
+import {
+  finishAcademyTeacherLesson,
+  loadAcademyTeacherDay,
+  recordAcademyTeacherAttendance,
+  startAcademyTeacherLesson,
+} from "../_shared/academy-teacher-flow.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -359,6 +365,11 @@ const dashboard = async (sb: Db, access: Access) => {
   const scopedDeliveries = (deliveries.data ?? []).filter((row: any) => row.audience_kind === "group"
     ? chatIds.has(row.chat_binding_id)
     : Boolean(row.contact_id && contactIds.has(String(row.contact_id))));
+  const teacherDay = ["teacher", "assistant"].includes(normalizeAcademyRole(access.role)) &&
+      academyAccessHas(access, "viewEducationOS") &&
+      (academyAccessHas(access, "markAttendance") || academyAccessHas(access, "manageAssignments"))
+    ? await loadAcademyTeacherDay(sb, access)
+    : null;
   return {
     settings: settings.data ?? { enabled: false, default_locale: "uz", timezone: "Asia/Tashkent", digest_time: "08:00", emergency_override_enabled: true },
     branches: scopedBranches,
@@ -370,6 +381,7 @@ const dashboard = async (sb: Db, access: Access) => {
     assignments: scopedAssignments,
     contacts,
     deliveries: scopedDeliveries,
+    teacher_day: teacherDay,
     metrics: {
       sessions_today: scopedSessions.length,
       open_requests: scopedRequests.length,
@@ -614,7 +626,17 @@ const handleWebhook = async (sb: Db, update: BotUpdate) => {
           } else if (privateChat) {
             const profiles = await loadAccess(sb, linked);
             const openLabel = command === "/homework" ? "Create homework" : command === "/attendance" ? "Take attendance" : command === "/announce" ? "Write an announcement" : "Open Academy operations";
-            await telegramApi("sendMessage", { chat_id: chatId, text: profiles.length ? `You have ${profiles.length} Academy workspace${profiles.length === 1 ? "" : "s"}. Open the staff app for today’s scoped work.` : "No active Academy staff workspace is linked to this account.", reply_markup: profiles.length ? privateMarkup(openLabel) : undefined });
+            let messageText = profiles.length ? `You have ${profiles.length} Academy workspace${profiles.length === 1 ? "" : "s"}. Open the staff app for today’s scoped work.` : "No active Academy staff workspace is linked to this account.";
+            if (command === "/today" && profiles.length === 1 && ["teacher", "assistant"].includes(normalizeAcademyRole(profiles[0].role))) {
+              const teachingDay = await loadAcademyTeacherDay(sb, profiles[0]);
+              const next = teachingDay.sessions.find((session) => session.run?.status !== "finished" && session.status !== "completed");
+              messageText = next
+                ? `Today: ${teachingDay.sessions.length} class${teachingDay.sessions.length === 1 ? "" : "es"}. Next is ${next.classroom_name} at ${new Date(next.starts_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: next.timezone })}: ${next.curriculum.lesson_title}. The lesson plan, attendance, homework, and class update are ready in the staff app.`
+                : teachingDay.sessions.length
+                  ? `All ${teachingDay.sessions.length} of today’s classes are finished. Open the staff app to review attendance and homework.`
+                  : "You have no classes scheduled today.";
+            }
+            await telegramApi("sendMessage", { chat_id: chatId, text: messageText, reply_markup: profiles.length ? privateMarkup(openLabel) : undefined });
           } else {
             const { data: binding } = await sb.from("academy_telegram_chats").select("academy_id,branch_id,classroom_id,status").eq("chat_id", chatId).eq("status", "active").maybeSingle();
             const profile = binding ? (await loadAccess(sb, linked)).find((row) => row.tenant_id === binding.academy_id) : null;
@@ -726,6 +748,17 @@ serve(async (req) => {
     }
     if (action === "publish_message") return json(200, await queueGroupMessage(sb, selected, user, body));
     if (action === "send_private_warning") return json(200, await sendPrivateWarning(sb, selected, user, body));
+    if (action === "teacher_lesson_start") {
+      return json(200, await startAcademyTeacherLesson(sb, selected, user.id, body));
+    }
+    if (action === "teacher_lesson_attendance") {
+      return json(200, await recordAcademyTeacherAttendance(sb, selected, user.id, body));
+    }
+    if (action === "teacher_lesson_finish") {
+      const result = await finishAcademyTeacherLesson(sb, selected, user.id, body);
+      await callDelivery();
+      return json(200, result);
+    }
 
     if (action === "create_homework") {
       requirePermission(selected, "manageAssignments");

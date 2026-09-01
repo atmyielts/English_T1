@@ -1778,6 +1778,46 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
         ],
       },
       entitlements: { entitlements: studentDashboard.entitlements },
+      teacher_day: {
+        date: "2026-09-01",
+        generated_at: "2026-09-01T08:00:00.000Z",
+        counts: { sessions: 1, students: 1, attendance_pending: 1, homework_pending: 1 },
+        sessions: [
+          {
+            id: "teacher-session-route-smoke",
+            academy_id: academyId,
+            classroom_id: classroomId,
+            classroom_name: "IELTS Evening A",
+            room_name: "Room 12",
+            title: "Writing workshop",
+            starts_at: "2026-09-01T13:00:00.000Z",
+            ends_at: "2026-09-01T14:30:00.000Z",
+            timezone: "Asia/Tashkent",
+            status: "scheduled",
+            delivery_mode: "physical",
+            roster: [{ contact_id: studentContactId, name: "Ali Karimov", status: null, notes: null }],
+            attendance_saved: false,
+            curriculum: {
+              course_id: course.id,
+              course_title: course.title,
+              module_id: courseModule.id,
+              module_title: courseModule.title,
+              lesson_id: lesson.id,
+              lesson_title: "Problem and solution essays",
+              lesson_summary: "Build a clear IELTS Writing Task 2 response.",
+              estimated_minutes: 90,
+              objectives: [
+                { id: "objective-1", label: "Write a precise thesis", covered: false },
+                { id: "objective-2", label: "Structure the body paragraphs", covered: false },
+              ],
+            },
+            resources: [{ id: "resource-route-smoke", title: "Essay checklist", kind: "asset", url: "https://example.test/checklist.pdf", description: "Checklist" }],
+            homework: { title: "Write a problem and solution essay", description: "Complete one timed response.", due_at: "2026-09-03T15:00:00.000Z" },
+            run: null,
+            connected_group_count: 1,
+          },
+        ],
+      },
       education_os: { ...educationOS, access: accessForPersona(persona) },
       business_foundation: {
         ...businessFoundation,
@@ -2049,7 +2089,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
 
     await expect(page.getByText("Academy Admin")).toBeVisible();
-    await expect(page.getByRole("heading", { name: /^Payments$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^Billing & payments$/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Create Click checkout/i })).toBeVisible();
     await expect(page.getByLabel("Contact")).toBeVisible();
     await expect(page.getByLabel("Offer")).toBeVisible();
@@ -2067,9 +2107,12 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByText("Teacher Workspace")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: /^Teaching today$/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /^Your teaching day$/i })).toBeVisible();
-    await expect(page.getByText("Grade Writing Task 2")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Problem and solution essays" })).toBeVisible();
+    await expect(page.getByText("Essay checklist")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Start lesson$/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Save attendance$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^Finance$/i })).toHaveCount(0);
-    await page.getByRole("button", { name: /^My LMS classes$/i }).click();
+    await page.getByRole("button", { name: /^My classes$/i }).click();
     await expect(page).toHaveURL(/\/academy\/teacher\/classrooms/);
     await expect(page.getByRole("button", { name: "IELTS Evening A" })).toBeVisible();
   });
@@ -2103,7 +2146,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
     await page.goto(`/academy/office/payments?academy_id=${academyId}`);
     await expect(page.getByRole("heading", { name: "Create Click checkout" })).toHaveCount(0);
-    await page.getByRole("button", { name: "Finance" }).click();
+    await page.getByRole("button", { name: "Daily operations", exact: true }).click();
+    await page.getByRole("button", { name: "Billing & finance" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Commercial core" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Balances and aging" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Plans & agreements" })).toHaveCount(0);
@@ -2115,6 +2159,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("button", { name: "Ledger & reconciliation" })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Post adjustment" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Offers" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Manage" }).click();
     await expect(page.getByRole("button", { name: "Cash & payroll" })).toBeVisible();
     await page.getByRole("button", { name: "Cash & payroll" }).click();
     await expect(page.getByRole("heading", { name: "Open cashier shift" })).toBeVisible();
@@ -2210,7 +2255,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
     await page.goto(`/academy/teacher?academy_id=${academyId}`);
     await expect(page.getByRole("heading", { level: 1, name: "Teaching today" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "My LMS classes" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "My classes" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Finance" })).toHaveCount(0);
     expect(accessForPersona("assistant").permissions.manageAssignments).toBe(true);
     expect(accessForPersona("assistant").permissions.manageFinance).toBe(false);
@@ -2371,7 +2416,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         landing: "/academy/teacher",
         landingHeading: /^Teaching today$/,
         allowedPath: "/academy/teacher",
-        allowedButton: /^My LMS classes$/,
+        allowedButton: /^My classes$/,
         forbiddenNav: "Finance",
         forbiddenPath: "/academy/admin/offers",
         forbiddenControl: "Create offer",
@@ -2381,7 +2426,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         landing: "/academy/teacher",
         landingHeading: /^Teaching today$/,
         allowedPath: "/academy/teacher",
-        allowedButton: /^My LMS classes$/,
+        allowedButton: /^My classes$/,
         forbiddenNav: "Finance",
         forbiddenPath: "/academy/admin/offers",
         forbiddenControl: "Create offer",
@@ -2416,12 +2461,12 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       counselor: "Admissions",
       receptionist: "Admissions",
       salesperson: "Admissions",
-      cashier: "Finance",
-      accountant: "Finance",
+      cashier: "Billing & finance",
+      accountant: "Billing & finance",
       payroll_officer: "Cash & payroll",
       parent_liaison: "Guardians",
-      teacher: "My LMS classes",
-      assistant: "My LMS classes",
+      teacher: "My classes",
+      assistant: "My classes",
       student: "My classrooms",
       guardian: "Grades & homework",
     };
@@ -2436,6 +2481,9 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       await page.goto(`${roleCase.landing}?academy_id=${academyId}`);
       await expect(page.getByRole("heading", { level: 1, name: roleCase.landingHeading }), `${roleCase.persona} landing`).toBeVisible();
       const navigation = page.locator(roleCase.persona === "guardian" ? ".business-tabs" : ".workspace-nav");
+      for (const toggle of await navigation.locator(".workspace-nav__group-toggle").all()) {
+        if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
+      }
       await expect(navigation.getByRole("button", { name: expectedNavigation[roleCase.persona], exact: true }), `${roleCase.persona} expected navigation`).toBeVisible();
       await expect(navigation.getByRole("button", { name: roleCase.forbiddenNav, exact: true }), `${roleCase.persona} forbidden navigation`).toHaveCount(0);
       await page.goto(`${roleCase.allowedPath}?academy_id=${academyId}`);
@@ -2658,8 +2706,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await mockAcademyEdge(page, "teacher");
 
     await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
-    await expect(page.getByRole("heading", { name: "Education OS" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Refresh OS" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: "Curriculum & grading" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Refresh", exact: true }).last()).toBeEnabled();
     await page.getByRole("button", { name: "Learning" }).click();
 
     await expect(page.getByRole("heading", { name: "Curriculum and assessments" })).toBeVisible();
@@ -3138,6 +3186,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     actionLog.splice(0, actionLog.length);
     delayActions.summary = 5_000;
 
+    await page.getByRole("button", { name: "Daily operations" }).click();
     await page.getByRole("button", { name: "Contacts", exact: true }).click();
     await expect(page.locator(".ts-sidebar")).toBeVisible();
     await expect(page.locator(".workspace-identity")).toContainText("Owner");
@@ -3528,7 +3577,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         expect(focusEvidence.contrast, `${lane.name} focus contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(3);
         await page.keyboard.press("Tab");
         await expect(page.locator(":focus")).not.toHaveCount(0);
-        const primaryAction = lane.persona === "student" ? page.locator(".student-continue") : lane.persona === "guardian" ? page.locator(".business-tabs button").first() : page.locator(".workspace-shortcuts__list button").first();
+        const primaryAction = lane.persona === "student" ? page.locator(".student-continue") : lane.persona === "guardian" ? page.locator(".business-tabs button").first() : ["teacher", "assistant"].includes(lane.persona) ? page.locator(".teacher-session-card").first() : page.locator(".workspace-shortcuts__list button").first();
         await expect(primaryAction, `${lane.name} reachable action at ${viewport.width}px`).toBeVisible();
         const primaryBox = await primaryAction.boundingBox();
         expect(primaryBox?.x ?? -1, `${lane.name} action left edge at ${viewport.width}px`).toBeGreaterThanOrEqual(0);
@@ -3601,8 +3650,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         teacherScope: "1 biriktirilgan o‘quv guruhi",
         navigation: {
           owner: "Qabul",
-          accountant: "Moliya",
-          teacher: "Mening LMS guruhlarim",
+          accountant: "To‘lov va moliya",
+          teacher: "Mening guruhlarim",
           student: "Mening o‘quv guruhlarim",
           guardian: "Baholar va uy vazifalari",
         },
@@ -3616,8 +3665,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         teacherScope: "1 назначенная учебная группа",
         navigation: {
           owner: "Приём",
-          accountant: "Финансы",
-          teacher: "Мои группы LMS",
+          accountant: "Оплата и финансы",
+          teacher: "Мои группы",
           student: "Мои учебные группы",
           guardian: "Оценки и домашнее задание",
         },
@@ -3652,6 +3701,9 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
           await expect(page.getByRole("button", { name: localeCase.refresh, exact: true }).first()).toBeVisible();
           await expect(page.getByRole("button", { name: "Refresh", exact: true })).toHaveCount(0);
           const navigation = page.locator(roleCase.navigation);
+          for (const toggle of await navigation.locator(".workspace-nav__group-toggle").all()) {
+            if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
+          }
           await expect(navigation.getByRole("button", { name: localeCase.navigation[roleCase.persona], exact: true })).toBeVisible();
           if (roleCase.persona === "owner") {
             await expect(page.getByText(localeCase.ownerShortcut, { exact: true })).toBeVisible();
@@ -3659,7 +3711,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
             await expect(page.locator(".workspace-context").getByText(localeCase.ownerRole, { exact: true })).toBeVisible();
           }
           if (roleCase.persona === "teacher") {
-            await expect(page.getByText(localeCase.teacherScope, { exact: true }).first()).toBeVisible();
+            await expect(page.getByText("IELTS Evening A", { exact: true }).first()).toBeVisible();
           }
           const switcher = page.locator(".academy-language-switcher");
           const switcherBox = await switcher.boundingBox();
@@ -3685,13 +3737,13 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       {
         code: "uz",
         language: "Til",
-        serviceHeading: "Akademiya haftasini bir joydan boshqaring",
+        serviceHeading: "O‘quv markazingizni bitta bog‘langan ish joyidan boshqaring",
         directoryHeading: "Ish maydonini tanlang",
       },
       {
         code: "ru",
         language: "Язык",
-        serviceHeading: "Управляйте неделей академии на одном экране",
+        serviceHeading: "Управляйте учебным центром из единого рабочего пространства",
         directoryHeading: "Выберите рабочее пространство",
       },
     ] as const;
@@ -3744,6 +3796,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await seedSessionCookie(page, "receptionist-telegram-user");
     await mockAcademyEdge(page, "receptionist", { actionLog: actions });
     await page.goto(`/academy/office?academy_id=${academyId}`);
+    await page.getByRole("button", { name: "Manage", exact: true }).click();
     const assistant = page.getByRole("button", { name: "Telegram assistant" });
     await expect(assistant).toBeVisible();
     await assistant.click();
@@ -3772,6 +3825,60 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByText("Telegram session expired", { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Open Academy bot" })).toHaveAttribute("href", "https://t.me/schoodacademybot");
     await expect(page.getByText("Edge Function returned a non-2xx status code")).toHaveCount(0);
+  });
+
+  test("Academy Telegram gives an assigned teacher the complete lesson flow", async ({ page }) => {
+    const telegramActions: string[] = [];
+    await page.setViewportSize({ width: 390, height: 820 });
+    await page.addInitScript(() => {
+      window.Telegram = {
+        WebApp: {
+          initData: "query_id=teacher-flow&user=%7B%22id%22%3A2002%7D&auth_date=1787155200&hash=teacher-flow",
+          ready: () => undefined,
+          expand: () => undefined,
+          disableVerticalSwipes: () => undefined,
+        },
+      };
+    });
+    await page.route("**/functions/v1/academy-telegram", async (route) => {
+      const body = route.request().postDataJSON() as { action?: string };
+      if (body.action) telegramActions.push(body.action);
+      if (body.action !== "bootstrap") return route.fulfill(json({ ok: true }));
+      return route.fulfill(json({
+        linked: true,
+        user: { id: "teacher-user", full_name: "Teacher Route", email: "teacher@example.test" },
+        academies: [{
+          id: academyId,
+          name: "Route Smoke Academy",
+          access: { role: "teacher", source: "staff", scope: "assigned_classrooms", branch_ids: [], classroom_ids: [classroomId], permissions: { viewEducationOS: true, manageAssignments: true, markAttendance: true } },
+        }],
+        selected_academy_id: academyId,
+        dashboard: {
+          settings: { enabled: true, default_locale: "en", timezone: "Asia/Tashkent", digest_time: "08:00", emergency_override_enabled: true },
+          metrics: { sessions_today: 1, open_requests: 0, urgent_requests: 0, due_homework: 0, connected_groups: 1, failed_deliveries: 0 },
+          branches: [], classrooms: [{ id: classroomId, name: "IELTS Evening A", branch_id: "branch-main", is_active: true }], groups: [], subscriptions: [], requests: [], assignments: [], contacts: [], deliveries: [],
+          sessions: [{ id: "teacher-tg-session", branch_id: "branch-main", classroom_id: classroomId, title: "Writing workshop", starts_at: "2026-09-01T13:00:00.000Z", ends_at: "2026-09-01T14:30:00.000Z", status: "confirmed", delivery_mode: "physical" }],
+          teacher_day: {
+            date: "2026-09-01", counts: { sessions: 1, students: 1, attendance_pending: 1, homework_pending: 1 },
+            sessions: [{
+              id: "teacher-tg-session", classroom_id: classroomId, classroom_name: "IELTS Evening A", room_name: "Room 12", title: "Writing workshop", starts_at: "2026-09-01T13:00:00.000Z", ends_at: "2026-09-01T14:30:00.000Z", status: "confirmed", delivery_mode: "physical",
+              roster: [{ contact_id: studentContactId, name: "Ali Karimov", status: null, notes: null }], attendance_saved: false,
+              curriculum: { lesson_id: lesson.id, course_title: course.title, module_title: courseModule.title, lesson_title: "Problem and solution essays", objectives: [{ id: "objective-1", label: "Write a precise thesis", covered: false }] },
+              homework: { title: "Write one timed essay", description: "Complete a full response.", due_at: "2026-09-03T15:00:00.000Z" }, run: null, connected_group_count: 1,
+            }],
+          },
+        },
+      }));
+    });
+
+    await page.goto("/telegram?lang=en");
+    await page.getByRole("button", { name: /Start lesson/ }).click();
+    await expect(page.getByRole("heading", { name: "Teach, record, finish" })).toBeVisible();
+    await page.getByRole("button", { name: "Save attendance" }).click();
+    await page.getByLabel("Write a precise thesis").check();
+    await page.getByRole("button", { name: "Finish lesson and assign" }).click();
+    await expect(page.getByText("Lesson finished and homework assigned")).toBeVisible();
+    expect(telegramActions).toEqual(expect.arrayContaining(["teacher_lesson_start", "teacher_lesson_attendance", "teacher_lesson_finish"]));
   });
 
   test("Academy Telegram Mini App keeps daily staff work clear and usable at 320px", async ({ page }) => {

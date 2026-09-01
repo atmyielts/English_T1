@@ -21,6 +21,7 @@ export default defineConfig({
       VITE_SUPABASE_ANON_KEY: 'academy-route-smoke-anon-key',
       VITE_PLATFORM_URL: 'http://127.0.0.1:4177',
       VITE_PLATFORM_PRODUCT_SLUG: 'academy',
+      VITE_ACADEMY_TEACHER_FLOW_V2: 'true',
     },
   },
 });
