@@ -41,7 +41,7 @@ There is no staging environment. Activate in this order so the existing teacher 
 2. Apply the additive migration with `supabase db push --linked` and confirm it with `supabase migration list --linked`.
 3. Deploy `academy` and `academy-telegram` Edge Functions manually from the merged commit.
 4. Exercise authenticated staff smoke checks for teacher day, start, attendance, finish, assignment, and Telegram delivery.
-5. Set `VITE_ACADEMY_TEACHER_FLOW_V2=true` in the Academy Pages project and redeploy through CI.
+5. Set the GitHub repository variable `VITE_ACADEMY_TEACHER_FLOW_V2=true`; `deploy-pages.yml` injects it into the Academy build, then redeploy through CI.
 6. Verify one real assigned teacher lesson on web and Telegram. If needed, set the flag back to `false`; the schema and Edge changes are additive and can remain deployed.
 
 Do not enable the frontend flag before the migration and both Edge Functions are healthy.
