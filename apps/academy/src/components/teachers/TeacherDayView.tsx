@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Circle,
   ClipboardCheck,
-  Clock3,
   ExternalLink,
   LoaderCircle,
   MessageSquareText,
@@ -167,7 +166,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
     <section className="teacher-day" aria-labelledby="teacher-day-title">
       <header className="teacher-day__hero">
         <div>
-          <span className="eyebrow">{translate('Teaching workspace')}</span>
+          <span className="eyebrow">{academyName} · {translate('Teaching workspace')}</span>
           <h2 id="teacher-day-title">{translate('Your teaching day')}</h2>
           <p>{translate('Everything for each class—from attendance to homework—stays in one guided flow.')}</p>
         </div>
