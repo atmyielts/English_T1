@@ -151,6 +151,7 @@ jobs:
           VITE_DISABLE_PAYWALL: "false"
           VITE_USE_MOCK_PERSISTENCE: "false"
           VITE_DEBUG_AUTH: "false"
+          VITE_ACADEMY_TEACHER_FLOW_V2: ${{ vars.VITE_ACADEMY_TEACHER_FLOW_V2 || 'false' }}
           VITE_RELEASE_SHA: ${{ github.sha }}
         run: npm --workspace ${{ matrix.workspace }} run build
 
