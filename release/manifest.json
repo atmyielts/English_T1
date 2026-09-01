@@ -1,47 +1,53 @@
 {
   "schemaVersion": 1,
-  "releaseId": "close-platform-activation-and-release-loops",
+  "releaseId": "connect-academy-teacher-lesson-flow",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "english-hub",
-    "platform"
+    "academy"
   ],
   "migrations": [
-    "20260821120000_platform_journey_measurement.sql"
+    "20260901120000_academy_teacher_lesson_flow.sql"
   ],
   "edgeFunctions": [
-    "admin-analytics",
-    "platform-events"
+    "academy",
+    "academy-telegram"
   ],
   "workers": [],
+  "sharedEdgeConsumers": [
+    "academy",
+    "academy-telegram"
+  ],
   "requiredSecrets": [
-    "PUBLIC_JOURNEY_HASH_SECRET"
+    "ACADEMY_TELEGRAM_BOT_TOKEN",
+    "ACADEMY_TELEGRAM_WEBHOOK_SECRET"
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20260821120000_platform_journey_measurement.sql",
-    "secret:PUBLIC_JOURNEY_HASH_SECRET",
-    "function:platform-events",
-    "function:admin-analytics"
+    "migration:20260901120000_academy_teacher_lesson_flow.sql",
+    "secret:ACADEMY_TELEGRAM_BOT_TOKEN",
+    "secret:ACADEMY_TELEGRAM_WEBHOOK_SECRET",
+    "function:academy",
+    "function:academy-telegram"
   ],
   "manualFollowUps": [
     "supabase migration list --linked",
     "supabase db push --linked",
-    "supabase secrets set PUBLIC_JOURNEY_HASH_SECRET=<generated-value> --project-ref <production-project-ref>",
-    "supabase functions deploy platform-events --project-ref <production-project-ref>",
-    "supabase functions deploy admin-analytics --project-ref <production-project-ref>",
+    "Confirm ACADEMY_TELEGRAM_BOT_TOKEN exists with supabase secrets list; only if missing run supabase secrets set ACADEMY_TELEGRAM_BOT_TOKEN=<existing-secret> --project-ref <production-project-ref>",
+    "Confirm ACADEMY_TELEGRAM_WEBHOOK_SECRET exists with supabase secrets list; only if missing run supabase secrets set ACADEMY_TELEGRAM_WEBHOOK_SECRET=<existing-secret> --project-ref <production-project-ref>",
+    "supabase functions deploy academy --project-ref <production-project-ref>",
+    "supabase functions deploy academy-telegram --project-ref <production-project-ref>",
     "supabase migration list --linked"
   ],
   "verification": [
     "Confirm the Pages workflow succeeded for the merged commit before any manual backend write.",
-    "Confirm platform-events accepts an allow-listed event and rejects an invalid origin or event name.",
-    "Confirm Admin Analytics shows the public activation loop without platform_journey_events in unavailable sources.",
-    "Verify the English Hub and a skill sign-in return at desktop and mobile widths."
+    "Confirm the additive teacher lesson migration is present in the linked migration list.",
+    "Confirm both Academy Edge Functions answer authenticated teacher-day requests without schema errors.",
+    "Verify a real teacher can start a lesson, save attendance, finish it, and see the assigned homework in web and Telegram before enabling the teacher-flow flag."
   ],
   "rollback": {
     "frontends": "Roll back the Cloudflare Pages deployment to the previous known-good commit.",
-    "edgeFunctions": "Redeploy platform-events and admin-analytics from the previous known-good commit.",
-    "database": "Keep the additive journey tables and retention job in place; remove them only in a later reviewed migration after all dependent code is absent."
+    "edgeFunctions": "Redeploy academy and academy-telegram from the previous known-good commit and keep VITE_ACADEMY_TEACHER_FLOW_V2 disabled.",
+    "database": "Keep the additive teacher lesson table and functions in place; remove them only in a later reviewed migration after all dependent code is absent."
   }
 }
