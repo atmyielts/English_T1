@@ -4558,6 +4558,7 @@
       "apps/platform": {
         "packageJson": {
           "dependencies": [
+            "npm:@axe-core/playwright@4.13.0",
             "npm:@eslint/js@^9.39.1",
             "npm:@playwright/test@^1.61.1",
             "npm:@schood/journey-analytics@*",

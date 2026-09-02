@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { linkGuidePayment } from '../lib/guideClient';
 import {
   billingPlansList,
   billingQuote,
@@ -276,6 +277,7 @@ export const CheckoutPage: React.FC = () => {
       });
 
       setTransactionId(res.transaction_id);
+      if (returnTo === '/start/result') await linkGuidePayment(res.transaction_id);
       setPaymentUrl(res.payment_url);
       setCardWidget(res.card_widget ?? null);
       setCheckoutPricing({
