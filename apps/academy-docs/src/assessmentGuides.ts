@@ -1,13 +1,15 @@
+import { assessmentOperationsGuides } from './assessmentOperationsGuides';
 // Center-facing guides share the existing documentation layout and search.
 export const assessmentGuides = {
   'en': [
+    assessmentOperationsGuides.en,
     {
       'id': 'placement',
       'title': 'Placement: help a learner choose the right course',
       'intro':
         'Use Placement & exams → Placement before enrollment. A useful placement report explains what the learner can do, what needs support, and which course to discuss—not just a score.',
       'steps': [
-        'Ask a teacher to prepare an assessment paper. Choose the skills to check: grammar, vocabulary, reading, listening with audio, written work, or an interview. Use materials you own or have permission to use.',
+        'Choose Add Schood starter paper or prepare your own permitted materials. A teacher must review the tasks, answers, listening instructions and rubrics and mark the paper ready for a supervised pilot before a session can open. The starter is not CEFR- or IELTS-validated.',
         'Plan an intake session with its date, room, time limit, and available seats. The teacher who prepared the paper reviews intake submissions; owners and administrators can also review them.',
         'In Admissions, record the learner’s own email. In the placement session, choose Invite an applicant from Admissions. This creates or links the student record but keeps the application open and does not charge tuition.',
         'Open the session. The learner signs in using the email on their record, opens My assessments, and chooses Start assessment. No paid enrollment is needed.',
@@ -35,8 +37,8 @@ export const assessmentGuides = {
       ],
       'tips': [
         'The timer is not an anti-cheating system. Plan human invigilation, identity checks, and the appropriate conditions for your exam.',
-        'This feature does not book Schood examiners, supply licensed IELTS papers, issue network-verified certificates, or certify an official exam score. Agree those services separately before selling them.',
-        'Registration and group assignment do not create charges. Use the center’s existing offer and payment process when an assessment has a fee.',
+        'Use the exam desk for check-in, extra time, assigned marking, second-teacher review and concerns. An owner can issue a verifiable mock-result certificate after publication. It is not an official IELTS result or a network-certified standard.',
+        'Registration does not create charges. In Assessment packages and fees, explicitly grant a paid package to create one charge in the existing learner account, or include it in an active subscription without another charge.',
       ],
     },
     {
@@ -54,11 +56,12 @@ export const assessmentGuides = {
       'tips': [
         'Changes are percentage points, not fractional CEFR levels. Repeated questions can improve through familiarity; this is a progress signal, not independent proof of teacher effectiveness.',
         'Reports become comparable by the date the assessment was taken, even when teachers publish reports later.',
-        'The first version does not predict IELTS outcomes, diagnose dropout risk, or produce causal teacher/branch rankings. Use the evidence alongside attendance, learning context, and professional judgment.',
+        'The audit adds branch and recorded-teacher comparisons, provisional level-mismatch flags, and follow-up plans with owners, dates and outcomes. It does not predict IELTS outcomes, diagnose dropout risk, or establish causal teacher effectiveness.',
       ],
     },
   ],
   'uz': [
+    assessmentOperationsGuides.uz,
     {
       'id': 'placement',
       'title': 'Darajani aniqlash: o‘quvchiga mos kurs tanlash',
@@ -93,8 +96,8 @@ export const assessmentGuides = {
       ],
       'tips': [
         'Taymer ko‘chirishdan himoya tizimi emas. Shaxsni tekshirish va imtihon nazoratini markaz tashkil qiladi.',
-        'Bu funksiya Schood imtihonchilarini band qilmaydi, litsenziyalangan IELTS topshiriqlari yoki tarmoqda tekshiriladigan sertifikat bermaydi. Bunday xizmatlarni sotishdan oldin alohida kelishing.',
-        'Ro‘yxatga olish va guruhga yozish to‘lov yaratmaydi. Pullik baholash uchun markazning mavjud taklif va to‘lov tartibidan foydalaning.',
+        'Imtihon boshqaruvida kelishni tasdiqlash, qo‘shimcha vaqt, tekshiruvchi, ikkinchi tekshiruv va holatlar qayd etiladi. Ega natija ulashilgach tekshiriladigan sinov sertifikatini berishi mumkin. Bu rasmiy IELTS yoki tarmoq tasdiqlagan standart emas.',
+        'Ro‘yxatga olish to‘lov yaratmaydi. Test paketlari va to‘lovlar bo‘limida pulli paket berish mavjud o‘quvchi hisobiga bitta to‘lov yozadi. Amaldagi abonementga kiritish qo‘shimcha to‘lov yaratmaydi.',
       ],
     },
     {
@@ -112,11 +115,12 @@ export const assessmentGuides = {
       'tips': [
         'O‘zgarish foiz punktida, CEFR darajasining kasrida emas. Tanish savollar natijani oshirishi mumkin; bu ustoz samaradorligining mustaqil isboti emas.',
         'Taqqoslash xulosa ulashilgan sanaga emas, baholash bajarilgan sanaga asoslanadi.',
-        'Birinchi versiya IELTS natijasi yoki o‘qishni tashlash xavfini bashorat qilmaydi, ustoz va filiallarning sababiy reytingini tuzmaydi. Davomat, o‘quv sharoiti va mutaxassis fikrini birga hisobga oling.',
+        'Audit filial va qayd etilgan o‘qituvchi kesimida taqqoslaydi, taxminiy daraja nomuvofiqligini va mas’ul, muddat, natijali yordam rejalarini ko‘rsatadi. IELTS natijasi yoki o‘qishni tashlash bashorati va sababiy reyting emas.',
       ],
     },
   ],
   'ru': [
+    assessmentOperationsGuides.ru,
     {
       'id': 'placement',
       'title': 'Определение уровня: подобрать ученику подходящий курс',
@@ -151,8 +155,8 @@ export const assessmentGuides = {
       ],
       'tips': [
         'Таймер не предотвращает списывание. Центр организует проверку личности и наблюдение на экзамене.',
-        'Функция не бронирует экзаменаторов Schood, не предоставляет лицензированные задания IELTS и не выдаёт сетевые проверяемые сертификаты. Такие услуги нужно согласовать отдельно до продажи.',
-        'Регистрация и зачисление в группу не начисляют плату. Для платной оценки используйте существующий процесс предложений и платежей центра.',
+        'Экзаменационный пункт ведёт прибытие, дополнительное время, назначения проверяющих, повторную проверку и обращения. После публикации владелец может выдать проверяемый сертификат пробного теста. Это не официальный IELTS и не сетевой сертифицированный стандарт.',
+        'Регистрация не начисляет плату. В пакетах тестов явно выдайте платный пакет, чтобы создать одно начисление на существующем счёте, или включите его в действующий абонемент без повторного начисления.',
       ],
     },
     {
@@ -170,7 +174,7 @@ export const assessmentGuides = {
       'tips': [
         'Изменения выражены в процентных пунктах, а не долях уровня CEFR. Знакомство с вопросами может повышать результат; это не независимое доказательство эффективности преподавателя.',
         'Порядок сравнения определяется датой выполнения, а не датой публикации отчёта.',
-        'Первая версия не прогнозирует IELTS или уход ученика и не строит причинные рейтинги преподавателей и филиалов. Используйте данные вместе с посещаемостью, контекстом обучения и профессиональным суждением.',
+        'Аудит добавляет сравнения филиалов и указанных преподавателей, предварительные сигналы несоответствия уровня и планы поддержки с ответственными, сроками и итогами. Это не прогноз IELTS или ухода и не доказательство причинной эффективности преподавателя.',
       ],
     },
   ],

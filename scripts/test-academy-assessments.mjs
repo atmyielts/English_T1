@@ -191,6 +191,85 @@ try {
       ),
     /foreign key/,
   );
+  // The operational extension executes against PostgreSQL as well, including real
+  // constraints, transaction rollback, moderation gates and ledger idempotency.
+  await db.exec(`
+    create table academy_branches(id uuid primary key,academy_id uuid,unique(academy_id,id));
+    create table academy_subscriptions(id uuid primary key,academy_id uuid,contact_id uuid,status text,starts_on date,ends_on date,unique(academy_id,contact_id,id));
+    create table academy_charges(id uuid primary key default gen_random_uuid(),academy_id uuid,contact_id uuid,charge_number text,charge_type text,due_on date,original_amount bigint,discount_amount bigint,net_amount bigint,currency text,description text,idempotency_key text,created_by uuid,metadata jsonb,status text default 'open',unique(academy_id,contact_id,id),unique(academy_id,idempotency_key));
+    create table academy_account_ledger_entries(id uuid primary key default gen_random_uuid(),academy_id uuid,contact_id uuid,charge_id uuid,entry_type text,amount bigint,currency text,reason text,idempotency_key text,created_by uuid,unique(academy_id,idempotency_key));
+  `);
+  await db.exec(readFileSync(new URL('../supabase/migrations/20260902120000_academy_assessment_operations.sql',import.meta.url),'utf8'));
+  const moderator=id(20), exam=id(21);
+  await query('insert into users values ($1)',[moderator]);
+  await query("insert into academy_assessment_runs(id,academy_id,paper_id,title,kind,starts_at,ends_at,capacity,created_by,require_check_in,require_moderation) values($1,$2,$3,'Exam day','exam',now()-interval '1 minute',now()+interval '2 hours',10,$4,true,true)",[exam,academy,paper,actor]);
+  await reject(()=>query("update academy_assessment_runs set status='open' where id=$1",[exam]),/review this paper/);
+  await query("insert into academy_assessment_paper_reviews(academy_id,paper_id,decision,evidence,reviewed_by) values($1,$2,'pilot_ready','All answers and marking guidance reviewed for supervised pilot use; no CEFR claim.',$3)",[academy,paper,actor]);
+  await query("update academy_assessment_runs set status='open' where id=$1",[exam]);
+  await query('select academy_register_assessment_candidates($1,$2,$3::uuid[])',[academy,exam,[contact,third]]);
+  const examCandidate=(await query('select id from academy_assessment_candidates where run_id=$1 and contact_id=$2',[exam,contact]))[0].id;
+  const spare=(await query('select id from academy_assessment_candidates where run_id=$1 and contact_id=$2',[exam,third]))[0].id;
+  const examCmd=async(action,payload={},user=actor,candidateId=examCandidate)=>(await query('select academy_assessment_candidate_command($1,$2,$3,$4,$5) as result',[academy,candidateId,action,user,JSON.stringify(payload)]))[0].result;
+  const opsCmd=async(action,payload={},user=actor,candidateId=examCandidate)=>(await query('select academy_assessment_ops_command($1,$2,$3,$4,$5) as result',[academy,candidateId,action,user,JSON.stringify(payload)]))[0].result;
+  await reject(()=>examCmd('start'),/check in/);
+  await reject(()=>opsCmd('check_in',{seat:'A1',extra_minutes:10}),/accommodation/);
+  await opsCmd('check_in',{seat:'A1',extra_minutes:10,note:'Additional reading time agreed with the learner.'});
+  await reject(()=>opsCmd('check_in',{seat:'a1',extra_minutes:0},actor,spare),/unique constraint/);
+  const examStarted=await examCmd('start');
+  check(Math.round((Date.parse(examStarted.expires_at)-Date.parse(examStarted.started_at))/60000),15);
+  check((await examCmd('start')).expires_at,examStarted.expires_at);
+  await reject(()=>opsCmd('check_in',{seat:'A2',extra_minutes:20,note:'Cannot extend after start.'}),/before the student starts/);
+  await examCmd('submit',{answers:{g:1,w:'My response for exam review.'}});
+  await opsCmd('assign_grader',{grader_id:actor,grading_due_at:new Date(Date.now()+86400000).toISOString()});
+  const reviewPayload={marks:{w:6},review_notes:'Detailed writing evidence checked.',report:{basis:'Writing and grammar reviewed; no global level inferred.'}};
+  await reject(()=>examCmd('review',reviewPayload,moderator),/assigned to another teacher/);
+  await examCmd('review',reviewPayload);
+  await reject(()=>examCmd('release'),/second teacher/);
+  await reject(()=>opsCmd('moderate',{note:'Checked all responses and the report.'}),/different teacher/);
+  await opsCmd('moderate',{note:'Independent check of responses, marks and limitations.'},moderator);
+  await examCmd('review',reviewPayload);
+  await reject(()=>examCmd('release'),/second teacher/);
+  await opsCmd('moderate',{note:'Independent check after the latest grading change.'},moderator);
+  const concern=await opsCmd('incident',{kind:'integrity',note:'Observed possible outside help; needs investigation.'});
+  await reject(()=>examCmd('release'),/open review/);
+  await opsCmd('resolve_incident',{incident_id:concern.id,note:'Reviewed the observation; no outside assistance was found.'},moderator);
+  check((await examCmd('release')).status,'released');
+  const certificate=await opsCmd('certificate',{snapshot:{name:'Learner',classification:'Schood mock assessment'}});
+  check(certificate.public_consent,false);
+  check((await opsCmd('certificate',{snapshot:{name:'Replacement'}})).id,certificate.id);
+  await opsCmd('certificate_consent',{consent:true});
+  check((await query('select public_consent from academy_assessment_certificates where id=$1',[certificate.id]))[0].public_consent,true);
+  await opsCmd('incident',{kind:'appeal',note:'Please review the writing mark against the rubric.'});
+  check(Boolean((await query('select revoked_at from academy_assessment_certificates where id=$1',[certificate.id]))[0].revoked_at),true);
+  await opsCmd('reopen',{note:'Reopen the published report to check the writing evidence.'});
+  check((await query('select report_version,status from academy_assessment_candidates where id=$1',[examCandidate]))[0],{report_version:2,status:'submitted'});
+  check((await query('select version from academy_assessment_report_history where candidate_id=$1',[examCandidate]))[0].version,1);
+  const pack=id(22), subscription=id(23);
+  await query("insert into academy_assessment_packages(id,academy_id,name,assessments,price,valid_days,created_by) values($1,$2,'Two assessments',2,150000,30,$3)",[pack,academy,actor]);
+  const grant=async(key,contactId=contact,subscriptionId=null)=>(await query('select academy_assessment_grant_package($1,$2,$3,$4,$5,$6) as result',[academy,contactId,pack,subscriptionId,actor,key]))[0].result;
+  const allowance=await grant('package-request-1');
+  check((await grant('package-request-1')).id,allowance.id);
+  check((await query('select count(*)::int as n from academy_charges'))[0].n,1);
+  check((await query('select sum(amount)::int as amount from academy_account_ledger_entries'))[0].amount,150000);
+  await reject(()=>grant('package-request-1',third),/different package grant/);
+  const use=async(candidateId=examCandidate,allowanceId=allowance.id)=>query('select academy_assessment_use_allowance($1,$2,$3)',[academy,candidateId,allowanceId]);
+  await use();await use();
+  check((await query('select used from academy_assessment_allowances where id=$1',[allowance.id]))[0].used,1);
+  await reject(()=>use(spare),/for this learner/);
+  await query("insert into academy_subscriptions values($1,$2,$3,'active',current_date-1,current_date+30)",[subscription,academy,contact]);
+  const included=await grant('package-included-1',contact,subscription);
+  check(included.charge_id,null);
+  check((await query('select count(*)::int as n from academy_charges'))[0].n,1);
+  await query("update academy_subscriptions set status='cancelled' where id=$1",[subscription]);
+  await reject(()=>grant('package-included-2',contact,subscription),/current active subscription/);
+  await query("update academy_assessment_allowances set expires_at=now()-interval '1 day' where id=$1",[included.id]);
+  await reject(()=>use(candidate,included.id),/unexpired/);
+  const transactionCount=(await query('select count(*)::int as n from academy_assessment_allowances'))[0].n;
+  await reject(()=>grant('package-cross-tenant',outsider),/Student not found/);
+  check((await query('select count(*)::int as n from academy_assessment_allowances'))[0].n,transactionCount);
+  for (const table of ['academy_assessment_certificates','academy_assessment_incidents','academy_assessment_allowances','academy_assessment_report_history']) {
+    check((await query("select has_table_privilege('authenticated',$1,'select') as allowed",[table]))[0].allowed,false);
+  }
   console.log(
     `Academy assessment SQL: ${checks} assertions passed (in-memory PostgreSQL; no hosted writes).`,
   );

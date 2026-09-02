@@ -1,4 +1,5 @@
 import { academyAssessmentRequest } from './client';
+import type { AssessmentOperations } from './assessmentOperations';
 
 export const skills = [
   'grammar',
@@ -17,6 +18,7 @@ export type AssessmentItem = {
   rubric?: string;
   passage: string;
   media_url: string;
+  listening_script?: string;
   options: string[];
   correct?: number | null;
   points: number;
@@ -39,6 +41,11 @@ export type AssessmentRun = {
   capacity: number;
   room: string;
   instructions: string;
+  require_check_in?: boolean;
+  require_moderation?: boolean;
+  branch_id?: string | null;
+  teaching_user_id?: string | null;
+  expected_level?: string;
 };
 export type AssessmentReport = {
   level: string;
@@ -74,12 +81,24 @@ export type AssessmentCandidate = {
   report: AssessmentReport | null;
   review_notes: string;
   summary: AssessmentSummary | null;
+  checked_in_at?: string | null;
+  seat?: string;
+  extra_minutes?: number;
+  accommodation_note?: string;
+  grader_id?: string | null;
+  grading_due_at?: string | null;
+  moderated_at?: string | null;
+  moderated_by?: string | null;
+  reviewed_by?: string | null;
+  moderation_note?: string;
+  report_version?: number;
 };
 export type StudentAssessment =
   & Omit<AssessmentCandidate, 'contact_id' | 'lead_id' | 'marks' | 'review_notes' | 'answers'>
-  & { answers?: Record<string, string | number>; learner_name?: string }
+  & { answers?: Record<string, string | number>; learner_name?: string; certificates?: import('./assessmentOperations').AssessmentCertificate[] }
   & { run: AssessmentRun; duration_minutes: number; items?: AssessmentItem[] };
 export type AssessmentWorkspace = {
+  operations?: AssessmentOperations;
   leads: Array<
     { id: string; full_name: string; email: string | null; interested_course: string | null }
   >;

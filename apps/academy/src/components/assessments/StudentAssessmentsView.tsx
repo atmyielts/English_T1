@@ -6,6 +6,8 @@ import {
   studentAssessments,
 } from '../../lib/assessmentServices';
 import { AssessmentReportView } from './AssessmentReportView';
+import { certificateUrl } from '../../lib/assessmentOperations';
+import { assessmentCommand } from '../../lib/assessmentServices';
 import './assessments.css';
 
 export function StudentAssessmentsView(
@@ -24,6 +26,13 @@ export function StudentAssessmentsView(
   const [busy, setBusy] = useState(false);
   const [remaining, setRemaining] = useState(0);
   const [dirty, setDirty] = useState(false);
+  const [appealNote,setAppealNote]=useState('');
+  const resultAction=async(command:string,body:Record<string,unknown>)=>{
+    setBusy(true);setError('');
+    try {await assessmentCommand(academyId,`student_${command}`,body);await load();setNotice(translate('Request saved.'));}
+    catch(error){setError(error instanceof Error?error.message:translate('Unable to save. Please try again.'));}
+    finally {setBusy(false);}
+  };
   const answerRef = useRef(answers);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const serverOffset = useRef(0);
@@ -345,10 +354,11 @@ export function StudentAssessmentsView(
                       )}
                     </p>
                   )}
+                  {candidate.status==='invited' && candidate.run.require_check_in && !candidate.checked_in_at && <p className='assessment-caution'>{translate('Check in with the exam desk before starting.')}</p>}
                   <button
                     className='primary-btn'
                     disabled={busy ||
-                      (candidate.status === 'invited' && candidate.run.status !== 'open')}
+                      (candidate.status === 'invited' && (candidate.run.status !== 'open' || (candidate.run.require_check_in===true && !candidate.checked_in_at)))}
                     onClick={() => void open(candidate)}
                   >
                     {translate(
@@ -372,6 +382,7 @@ export function StudentAssessmentsView(
               </p>
             )}
             {active?.status === 'released' && active.report && active.summary && (
+              <>
               <AssessmentReportView
                 academy={academyName}
                 name={active.learner_name}
@@ -381,6 +392,22 @@ export function StudentAssessmentsView(
                 summary={active.summary}
                 date={formatDate(active.released_at)}
               />
+              <section className='assessment-form assessment-no-print'>
+                <h3>{translate('Your certificate and result review')}</h3>
+                {(list.find(c=>c.id===active.id)?.certificates || []).map(cert=><article key={cert.public_token}>
+                  <p>{translate(cert.revoked_at?'Certificate withdrawn':'Certificate issued')} · {translate('Version')} {cert.version}</p>
+                  <a href={certificateUrl(cert.public_token)} target='_blank' rel='noreferrer'>{translate('Open verification page')}</a>
+                  {!cert.revoked_at && <label className='assessment-check'><input type='checkbox' checked={cert.public_consent} disabled={busy} onChange={e=>void resultAction('certificate_consent',{candidate_id:active.id,consent:e.target.checked})}/>{translate('Allow anyone with this link to see my name, center and assessment score')}</label>}
+                </article>)}
+                <details><summary>{translate('Request a result review')}</summary>
+                  <form className='assessment-form' onSubmit={e=>{e.preventDefault();void resultAction('appeal',{candidate_id:active.id,note:appealNote});}}>
+                    <p>{translate('Explain what you would like your center to check. This opens a review request and withdraws any certificate while the concern is investigated.')}</p>
+                    <label>{translate('What should we check?')}<textarea className='input' required minLength={10} maxLength={3000} value={appealNote} onChange={e=>setAppealNote(e.target.value)}/></label>
+                    <button className='primary-btn' disabled={busy}>{translate('Send review request')}</button>
+                  </form>
+                </details>
+              </section>
+              </>
             )}
             {active && ['submitted', 'reviewed'].includes(active.status) && (
               <p className='assessment-notice'>

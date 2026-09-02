@@ -1,0 +1,62 @@
+export const assessmentOperationsGuides = {
+  en: {
+    id:'assessment-operations', title:'From intake to follow-up: the assessment desk',
+    intro:'A practical checklist for the center manager, examiner and teacher. Start with a small supervised pilot, agree who is responsible, and keep the learner informed.',
+    steps:[
+      'Papers and course guidance: add the Schood starter paper or create your own. The starter has 34 tasks covering six skills, including teacher-read listening and a speaking interview. Read the private listening script twice; never show it to learners. A teacher records a content review before the session opens.',
+      'Course suggestion rules: record a provisional score range, any minimum by assessed skill, a course name, and why the rule is suitable. A suggestion does not replace a teacher’s placement decision. Review and save marks first; eligible suggestions can then be selected into the reviewed report before publication.',
+      'Exam desk: before opening, choose whether check-in and a second teacher’s review are required. Record the group’s expected level and teaching context if you want those audit comparisons later. Check identity in person, allocate a unique seat and agree any extra time before the learner starts.',
+      'Assign marking with a due date. Only the assigned reviewer saves marks; another authorized teacher records moderation when required. Changing marks clears the previous moderation. Collect saved answers after an abandoned attempt expires.',
+      'Record technical issues, wellbeing concerns or suspected irregularities as observations. An open integrity concern or appeal blocks new result publication. Resolve it with a reason. To correct an already published report, reopen it: the prior version is retained and its certificate withdrawn.',
+      'After sharing the report, an owner or administrator can issue a mock-result certificate. In My assessments, the learner chooses whether the verification link may reveal their name, center and score. They can turn sharing off or request a result review. Withdrawn certificates stay withdrawn; correct and republish the report before issuing a new version.',
+      'Packages and fees: create a single-test or multi-test package with price and expiry. Adding a paid package creates a charge, not a payment. Use the existing Accounts workflow to collect it. An included package requires a current active subscription. Apply an available package to each assessment once.',
+      'Service coordination: record the request, agreed provider, responsible coordinator, due date and agreed price. Confirm only after the provider accepts the work separately. Move it through in progress to delivered after all reports are shared. This record does not itself book external staff or collect service fees.',
+      'Academic audit: filter a period and compare groups, branches or the teaching context recorded at assessment time. Look at matched sample sizes, dates and skill scores. Use provisional mismatch flags to review placement. Assign a follow-up goal, responsible teacher and date; record the outcome after support.',
+    ],
+    tips:[
+      'Schood does not yet have benchmark data validating this starter against CEFR or IELTS. Do not advertise a certified level, a predicted IELTS band or a guaranteed timeline. An academic specialist, representative pilot evidence and a documented standard-setting study are required for those claims.',
+      'Reports, seat allocations, marking and support stay within existing staff permissions. Do not give an examiner the owner’s password; grant the appropriate existing Academy access first.',
+      'The 500-seat setting is a registration capacity, not proof of 500 simultaneous connections. Rehearse with the intended equipment and load before a large event. A limited-history warning means the audit is incomplete.',
+    ],
+  },
+  uz:{
+    id:'assessment-operations',title:'Qabuldan keyingi yordamgacha: test boshqaruvi',
+    intro:'Markaz menejeri, imtihonchi va ustoz uchun amaliy ro‘yxat. Kichik nazoratli sinovdan boshlang, mas’ullarni kelishing va o‘quvchini xabardor qiling.',
+    steps:[
+      'Testlar va kurs tanlash: Schood boshlang‘ich testini qo‘shing yoki o‘zingiz tayyorlang. Testda olti ko‘nikma bo‘yicha 34 topshiriq, jumladan o‘qituvchi o‘qib beradigan tinglash va suhbat bor. Maxfiy tinglash matnini ikki marta o‘qing, o‘quvchiga ko‘rsatmang. Sessiya ochilishidan oldin ustoz mazmun tekshiruvini qayd etadi.',
+      'Kurs tavsiyasi qoidalari: dastlabki ball oralig‘i, ko‘nikma bo‘yicha minimum, kurs nomi va asosini yozing. Tavsiya ustoz qarorini almashtirmaydi. Avval ballarni tekshirib saqlang; keyin mos tavsiyani ulashishdan oldin hisobotga kiriting.',
+      'Imtihon boshqaruvi: ochishdan oldin kelishni tasdiqlash va ikkinchi ustoz tekshiruvi kerakligini belgilang. Audit uchun guruhning kutilgan darajasi va o‘qituvchini oldindan yozing. Shaxsni yuzma-yuz tekshiring, takrorlanmas joy ajrating va qo‘shimcha vaqtni boshlashdan oldin kelishing.',
+      'Tekshiruvchi va muddat tayinlang. Ballarni faqat tayinlangan ustoz saqlaydi; kerak bo‘lsa, boshqa vakolatli ustoz ikkinchi tekshiruvni qayd etadi. Ball o‘zgarsa, oldingi ikkinchi tekshiruv bekor bo‘ladi. Tugallanmagan ishning muddati o‘tgach saqlangan javoblarni yig‘ing.',
+      'Texnik muammo, o‘quvchi holati yoki shubhali vaziyatni ayblovsiz yozing. Ochiq halollik masalasi yoki e’tiroz yangi natija ulashishni to‘xtatadi. Sabab bilan hal qiling. Ulashilgan hisobotni tuzatish uchun qayta oching: oldingi nusxa saqlanadi va sertifikat bekor qilinadi.',
+      'Hisobot ulashilgach, ega yoki administrator sinov natijasi sertifikatini beradi. O‘quvchi Mening testlarim bo‘limida havola orqali ism, markaz va ball ko‘rinishiga ruxsat beradi yoki uni o‘chiradi. Natijani qayta ko‘rishni so‘rashi mumkin. Bekor qilingan sertifikat qayta faollashmaydi; hisobotni tuzatib, qayta ulashing va yangi nusxa bering.',
+      'Test paketlari va to‘lovlar: bitta yoki bir nechta test uchun narx va muddat belgilang. Pulli paket berish qarzdorlik yozadi, pul qabul qilmaydi. To‘lovni mavjud Hisoblar bo‘limida oling. Abonementga kiritish uchun amaldagi faol abonement kerak. Har bir testga paketdan bir marta foydalaning.',
+      'Xizmatni muvofiqlashtirish: so‘rov, kelishilgan ijrochi, mas’ul, muddat va narxni yozing. Ijrochi alohida rozi bo‘lgach tasdiqlang. Barcha hisobotlar ulashilgach bajarilgan deb belgilang. Bu qayd tashqi xodimni o‘zi band qilmaydi va xizmat pulini olmaydi.',
+      'Akademik audit: davrni tanlab guruh, filial yoki test vaqtida qayd etilgan o‘qituvchi bo‘yicha solishtiring. Namuna soni, sanalar va ko‘nikmalarni hisobga oling. Daraja nomuvofiqligi joylashtirishni qayta tekshirish uchun signal. Yordam maqsadi, ustoz va sanani belgilang, so‘ng natijani yozing.',
+    ],
+    tips:[
+      'Schood boshlang‘ich testini CEFR yoki IELTS bilan tasdiqlaydigan mezon ma’lumotlari hali yo‘q. Sertifikatlangan daraja, IELTS bashorati yoki kafolatlangan muddatni reklama qilmang. Buning uchun mutaxassis, yetarli sinov dalillari va hujjatlashtirilgan standart belgilash tadqiqoti kerak.',
+      'Hisobot, joy, baholash va yordam mavjud vakolatlar doirasida qoladi. Imtihonchiga egasining parolini bermang; tegishli Academy kirishini oldindan bering.',
+      '500 o‘rin sozlamasi ro‘yxat sig‘imi, bir vaqtda 500 ulanish isboti emas. Katta tadbirdan oldin qurilmalar va yuklamani sinang. Tarix cheklangan bo‘lsa, audit to‘liq emas.',
+    ],
+  },
+  ru:{
+    id:'assessment-operations',title:'От приёма до поддержки: управление тестированием',
+    intro:'Практический список для руководителя центра, экзаменатора и преподавателя. Начните с небольшого пилота под наблюдением, назначьте ответственных и информируйте ученика.',
+    steps:[
+      'Тесты и выбор курса: добавьте стартовый тест Schood или создайте свой. В стартовом тесте 34 задания по шести навыкам, включая аудирование с чтением преподавателем и интервью. Прочитайте закрытый текст дважды, не показывайте его ученикам. До открытия сессии преподаватель фиксирует проверку содержания.',
+      'Правила рекомендаций: задайте предварительный диапазон баллов, минимумы по навыкам, название курса и обоснование. Подсказка не заменяет решения преподавателя. Сначала проверьте и сохраните баллы; затем подходящую рекомендацию можно добавить в проверенный отчёт до публикации.',
+      'Экзаменационный пункт: до открытия решите, нужны ли подтверждение прибытия и проверка вторым преподавателем. Заранее запишите ожидаемый уровень группы и преподавателя для последующего аудита. Проверьте личность очно, выделите уникальное место и согласуйте дополнительное время до начала.',
+      'Назначьте проверяющего и срок. Только он сохраняет баллы; другой уполномоченный преподаватель проводит модерацию, если она обязательна. Изменение баллов сбрасывает прежнюю модерацию. После истечения срока незавершённой попытки соберите сохранённые ответы.',
+      'Фиксируйте технические проблемы, самочувствие и подозрительные ситуации без обвинений. Открытый вопрос добросовестности или апелляция блокирует новую публикацию. Закройте обращение с обоснованием. Для исправления опубликованного отчёта откройте пересмотр: прежняя версия сохранится, сертификат будет отозван.',
+      'После публикации владелец или администратор выдаёт сертификат пробного результата. В «Моих тестах» ученик разрешает или запрещает показывать по ссылке имя, центр и балл и может запросить пересмотр. Отозванный сертификат не восстанавливается: исправьте и опубликуйте отчёт, затем выдайте новую версию.',
+      'Пакеты и оплата: создайте пакет на один или несколько тестов с ценой и сроком. Выдача платного пакета создаёт начисление, а не оплату. Получите платёж через существующий раздел счетов. Для включения в абонемент нужен действующий активный абонемент. Применяйте пакет к каждому тесту один раз.',
+      'Координация услуги: запишите заявку, согласованного исполнителя, координатора, срок и стоимость. Подтверждайте после отдельного согласия исполнителя. Отметьте выполнение после публикации всех отчётов. Запись сама не бронирует внешних сотрудников и не принимает оплату за услугу.',
+      'Академический аудит: выберите период и сравните группы, филиалы или преподавателей, указанных на момент теста. Учитывайте размер парной выборки, даты и навыки. Несоответствие уровня — повод пересмотреть распределение. Назначьте цель поддержки, преподавателя и дату, затем запишите итог.',
+    ],
+    tips:[
+      'У Schood пока нет эталонных данных для валидации стартового теста по CEFR или IELTS. Не рекламируйте сертифицированный уровень, прогноз IELTS или гарантированный срок. Для таких заявлений нужны специалист, репрезентативный пилот и документированное исследование стандартов.',
+      'Отчёты, места, проверка и поддержка доступны в рамках существующих прав. Не передавайте экзаменатору пароль владельца; заранее предоставьте соответствующий доступ Academy.',
+      'Настройка 500 мест означает вместимость регистрации, а не доказательство 500 одновременных подключений. Перед крупным мероприятием проверьте оборудование и нагрузку. Предупреждение об ограниченной истории означает неполный аудит.',
+    ],
+  },
+};

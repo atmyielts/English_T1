@@ -8,7 +8,8 @@
     "academy-docs"
   ],
   "migrations": [
-    "20260902100000_academy_assessment_services.sql"
+    "20260902100000_academy_assessment_services.sql",
+    "20260902120000_academy_assessment_operations.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -21,6 +22,7 @@
   "rolloutOrder": [
     "pages",
     "migration:20260902100000_academy_assessment_services.sql",
+    "migration:20260902120000_academy_assessment_operations.sql",
     "function:academy"
   ],
   "manualFollowUps": [

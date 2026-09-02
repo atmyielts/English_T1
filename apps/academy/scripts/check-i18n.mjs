@@ -23,6 +23,8 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  'Verification is temporarily unavailable. Try again later.',
+  'Decision notes', 'Requested', 'Confirmed', 'In progress', 'Delivered', 'Cancelled',
   'Add marking guidance for every teacher-reviewed task.',
   // Assessment lane metadata, server validation, report fields, and action notices.
   "Placement & exams",
@@ -176,7 +178,7 @@ for (const file of files) {
   const visit = (node) => {
     if (
       ts.isCallExpression(node)
-      && node.expression.getText(sourceFile) === 'translate'
+      && ['translate','t'].includes(node.expression.getText(sourceFile))
       && node.arguments[0]
     ) {
       collectLiteralPhrases(node.arguments[0]);
@@ -195,6 +197,7 @@ for (const file of files) {
         collectLiteralPhrases(node.arguments[0]);
       }
       if (callName === 'run') collectLiteralPhrases(node.arguments[1]);
+      if (file.includes('assessments') && callName === 'command') collectLiteralPhrases(node.arguments[2]);
       if (callName === 'officeNavItem') collectLiteralPhrases(node.arguments[1]);
     }
 
@@ -238,6 +241,11 @@ for (const file of files) {
       for (const element of node.initializer.elements) collectLiteralPhrases(element);
     }
 
+    if (
+      file.includes('assessments') && ts.isJsxAttribute(node) && node.initializer &&
+      ts.isStringLiteral(node.initializer) && ['label','title'].includes(node.name.text)
+    ) collectLiteralPhrases(node.initializer);
+
     if (ts.isJsxText(node)) {
       const normalized = node.getText(sourceFile).replace(/\s+/g, ' ').trim();
       if (/[A-Za-z]/.test(normalized)) rawText.push(`${path.relative(sourceRoot, file)}: ${normalized}`);
@@ -248,6 +256,7 @@ for (const file of files) {
       && node.initializer
       && ts.isStringLiteral(node.initializer)
       && translatableAttributes.has(node.name.text)
+      && !(file.includes('assessments') && node.parent.parent.tagName?.getText(sourceFile)==='Section')
       && /[A-Za-z]/.test(node.initializer.text)
     ) {
       rawText.push(`${path.relative(sourceRoot, file)}: ${node.name.text}="${node.initializer.text}"`);
@@ -308,7 +317,7 @@ for (const locale of ['uz', 'ru']) {
   if (untranslated.length) failures.push(`${locale}: ${untranslated.length} untranslated phrases`);
 }
 
-if (rawText.length) failures.push(`${rawText.length} raw JSX strings remain`);
+if (rawText.length) failures.push(`${rawText.length} raw JSX strings remain: ${rawText.join('; ')}`);
 
 if (failures.length) {
   console.error(`Academy localization check failed:\n- ${failures.join('\n- ')}`);

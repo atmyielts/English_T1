@@ -1,4 +1,26 @@
 .assessment-services { --assessment-ink:#193747; --assessment-blue:#277e9c; --assessment-teal:#287968; --assessment-paper:#f5f9fb; color:var(--text-primary, #193747); display:grid; gap:20px; min-width:0; }
+.assessment-operations { min-width:0; }
+.assessment-ops-section { border-top:1px solid #cedfe7; padding-top:14px; margin-top:14px; }
+.assessment-ops-section>summary { cursor:pointer; font-weight:700; font-size:16px; color:#193747; padding:8px 0; }
+.assessment-ops-content { display:grid; gap:14px; padding-top:12px; min-width:0; }
+.assessment-ops-content .assessment-form { padding:16px; background:#f5f9fb; }
+.assessment-paper-preview { max-height:450px; overflow:auto; border:1px solid #cedfe7; border-radius:10px; padding:16px; }
+.assessment-paper-preview article+article { border-top:1px solid #cedfe7; margin-top:16px; padding-top:16px; }
+.assessment-operations blockquote { margin:12px 0; padding:12px 16px; border-left:4px solid #287968; background:#eef8f3; }
+.assessment-desk-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); background:#193747; border-radius:12px; color:#fff; overflow:hidden; }
+.assessment-desk-strip>div { display:grid; gap:8px; padding:18px; border-right:1px solid #456373; }
+.assessment-desk-strip strong { font-family:'Aptos Display','Segoe UI',sans-serif; font-size:28px; font-variant-numeric:tabular-nums; }
+.assessment-desk-strip span { font-size:13px; }
+.assessment-candidate-desk { border-left:4px solid #277e9c; padding-left:18px; min-width:0; }
+.assessment-candidate-desk h4 { display:flex; flex-wrap:wrap; gap:10px; font-size:19px; }
+.assessment-candidate-desk code { font-size:13px; color:#287968; background:#eef8f3; padding:4px 8px; border-radius:6px; }
+.assessment-operations :is(p,strong,summary,code,a) { overflow-wrap:anywhere; }
+.assessment-operations select { width:100%; min-width:0; max-width:100%; }
+.assessment-operations dl>div { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; }
+.assessment-operations dd { margin:0; }
+.assessment-verification { max-width:780px; margin:70px auto 32px; padding:16px; }
+.assessment-ops-section summary:focus-visible { outline:3px solid #277e9c; outline-offset:3px; }
+@media(max-width:700px) { .assessment-desk-strip { grid-template-columns:repeat(2,minmax(0,1fr)); }.assessment-candidate-desk { padding-left:10px; }.assessment-desk-strip>div { padding:14px; } }
 .assessment-intro { padding:28px; border-left:5px solid var(--assessment-blue); border-radius:12px; background:var(--assessment-paper); }
 .assessment-intro h2 { font-family:'Aptos Display','Segoe UI',sans-serif; font-size:clamp(24px,3vw,36px); letter-spacing:-.035em; line-height:1.12; max-width:720px; margin:12px 0; }
 .assessment-intro p { max-width:740px; line-height:1.65; }

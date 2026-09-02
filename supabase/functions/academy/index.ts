@@ -6757,6 +6757,27 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     const sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
+    // Public verification is token-addressed and opt-in. Never expose private report notes,
+    // contacts, tokens for other certificates, or the reason for an investigation.
+    const verificationUrl = new URL(req.url);
+    if (req.method === 'GET' && verificationUrl.searchParams.get('action') === 'assessment_verify_certificate') {
+      const certificateToken = verificationUrl.searchParams.get('token') ?? '';
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(certificateToken)) return json(404,{error:'Certificate not found'});
+      const {data:certificate,error}=await sb.from('academy_assessment_certificates').select('snapshot,issued_at,revoked_at,public_consent,version').eq('public_token',certificateToken).maybeSingle();
+      if(error)return json(503,{error:'Certificate verification is temporarily unavailable'});
+      if(!certificate)return json(404,{error:'Certificate not found'});
+      const snapshot=certificate.snapshot as Record<string,unknown>;
+      return new Response(JSON.stringify({
+        status:certificate.revoked_at ? 'withdrawn' : certificate.public_consent ? 'verified' : 'private',
+        issued_at:certificate.issued_at,version:certificate.version,
+        ...(certificate.public_consent && !certificate.revoked_at ? {
+          academy:snapshot.academy,name:snapshot.name,title:snapshot.title,assessed_at:snapshot.assessed_at,
+          score:(snapshot.summary as Record<string,unknown>)?.percent,
+          classification:'Schood mock assessment — not an official IELTS result or CEFR certificate',
+        } : {}),
+      }),{status:200,headers:{...corsHeaders,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+    }
+
     // ── Cron worker path: authenticated via DB-managed x-worker-secret ────────
     const workerSecret = req.headers.get("x-worker-secret");
     if (workerSecret) {

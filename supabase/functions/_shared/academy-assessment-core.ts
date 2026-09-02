@@ -15,6 +15,7 @@ export type AssessmentItem = {
   rubric: string;
   passage: string;
   media_url: string;
+  listening_script?: string;
   options: string[];
   correct: number | null;
   points: number;
@@ -55,6 +56,7 @@ export function validateAssessmentItems(input: unknown): AssessmentItem[] {
     const options = Array.isArray(item.options) ? item.options.map((o) => text(o, 1000)) : [];
     const points = Number(item.points);
     const media_url = text(item.media_url, 2000);
+    const listening_script = text(item.listening_script, 6000);
     if (!id || !/^[a-zA-Z0-9_-]+$/.test(id) || ids.has(id)) {
       throw new Error('Each question needs a unique reference.');
     }
@@ -85,7 +87,7 @@ export function validateAssessmentItems(input: unknown): AssessmentItem[] {
     if ((skill === 'writing' || skill === 'speaking') && kind === 'choice') {
       throw new Error('Writing and speaking need teacher-reviewed evidence, not multiple choice.');
     }
-    if (skill === 'listening' && !media_url) {
+    if (skill === 'listening' && !media_url && listening_script.length < 50) {
       throw new Error('Add the listening audio before saving this paper.');
     }
     if (kind !== 'choice' && rubric.length < 10) {
@@ -99,6 +101,7 @@ export function validateAssessmentItems(input: unknown): AssessmentItem[] {
       rubric,
       passage: text(item.passage, 15000),
       media_url,
+      ...(listening_script ? { listening_script } : {}),
       options: kind === 'choice' ? options : [],
       correct,
       points,
@@ -107,7 +110,7 @@ export function validateAssessmentItems(input: unknown): AssessmentItem[] {
 }
 
 export function publicAssessmentItems(items: AssessmentItem[]) {
-  return items.map(({ correct: _correct, rubric: _rubric, ...item }) => item);
+  return items.map(({ correct: _correct, rubric: _rubric, listening_script: _script, ...item }) => item);
 }
 
 export function assessmentSummary(

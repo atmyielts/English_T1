@@ -1,4 +1,5 @@
 import type { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { handleOperations, operationsActions, operationsWorkspace, studentOperations } from './assessment-operations.ts';
 import {
   academyAccessBranchIds,
   academyAccessClassroomIds,
@@ -30,6 +31,9 @@ const checked = <T>(result: { data: T; error: { message: string } | null }): T =
 };
 const rows = (value: unknown): Row[] => (value ?? []) as Row[];
 export const assessmentActions = new Set([
+  ...operationsActions,
+  'assessment_student_certificate_consent',
+  'assessment_student_appeal',
   'assessment_workspace',
   'assessment_create_paper',
   'assessment_create_run',
@@ -68,6 +72,8 @@ export function assessmentStudentView(candidate: Row, run: Row, paper: Row, incl
     expires_at: candidate.expires_at,
     submitted_at: candidate.submitted_at,
     released_at: candidate.released_at,
+    report_version: candidate.report_version,
+    checked_in_at: candidate.checked_in_at,
     run: {
       id: run.id,
       title: run.title,
@@ -77,6 +83,7 @@ export function assessmentStudentView(candidate: Row, run: Row, paper: Row, incl
       ends_at: run.ends_at,
       room: run.room,
       instructions: run.instructions,
+      require_check_in: run.require_check_in,
     },
     duration_minutes: paper.duration_minutes,
     report: released ? candidate.report : null,
@@ -154,10 +161,12 @@ export async function handleAssessmentService(
       return { run, paper };
     };
     if (action === 'assessment_student_list') {
+      const certificates = candidates.length ? rows(checked(await sb.from('academy_assessment_certificates')
+        .select('candidate_id,public_token,issued_at,revoked_at,public_consent,version').eq('academy_id',academyId).in('candidate_id',candidates.map(c=>c.id)))) : [];
       return {
         candidates: candidates.map((candidate) => {
           const { run, paper } = context(candidate);
-          return studentView(candidate, run, paper);
+          return {...studentView(candidate, run, paper), certificates:certificates.filter(c=>c.candidate_id===candidate.id)};
         }),
         server_time: new Date().toISOString(),
       };
@@ -165,6 +174,10 @@ export async function handleAssessmentService(
     const candidate = candidates.find((c) => c.id === str(body.candidate_id, 64));
     if (!candidate) fail();
     const { run, paper } = context(candidate);
+    if (['assessment_student_certificate_consent','assessment_student_appeal'].includes(action)) {
+      await studentOperations(sb,action,body,candidate,academyId,userId);
+      return {ok:true};
+    }
     if (action === 'assessment_student_resume') {
       return {
         candidate: studentView(candidate, run, paper, true),
@@ -188,7 +201,7 @@ export async function handleAssessmentService(
     };
   }
 
-  const access = memberships.find((m) => m.tenant_id === academyId);
+  const access = memberships.find((m) => m.tenant_id === academyId && m.status === 'active');
   if (!access || !academyAccessHas(access, 'viewContacts')) fail();
   if (
     !academyAccessHas(access, 'manageAdmissions') &&
@@ -293,6 +306,8 @@ export async function handleAssessmentService(
   );
   const contactIds = new Set(allowedContacts.map((c) => str(c.id)));
   const candidates = allCandidates.filter((c) => contactIds.has(str(c.contact_id)));
+  const opsContext = {academyId,userId,access,runs,papers,candidates,classrooms,contacts:allowedContacts,canRun,canReview,canCreate,unscoped};
+  if (operationsActions.includes(action)) return handleOperations(sb,action,body,opsContext);
   if (action === 'assessment_workspace') {
     const summaries: Array<Row & { summary: ReturnType<typeof assessmentSummary> | null }> =
       candidates.map((candidate) => {
@@ -327,6 +342,7 @@ export async function handleAssessmentService(
           answers: {},
           marks: {},
           review_notes: '',
+          moderation_note: '',
           report: c.status === 'released' ? c.report : {},
           summary: c.status === 'released' ? c.summary : null,
         }
@@ -334,6 +350,7 @@ export async function handleAssessmentService(
       contacts: allowedContacts,
       classrooms,
       memberships: membershipsRows,
+      operations: await operationsWorkspace(sb,opsContext),
       permissions: {
         create: canCreate,
         run: canRun,
@@ -343,8 +360,8 @@ export async function handleAssessmentService(
         admissions: academyAccessHas(access, 'manageAdmissions'),
       },
       limited: allRuns.length === 500 || allPapers.length === 500 ||
-        allCandidates.length === 5000 || membershipsRows.length === 10000 ||
-        allClasses.length === 2000 || allContacts.length === 10000,
+        allCandidates.length >= 1000 || membershipsRows.length >= 1000 ||
+        allClasses.length >= 1000 || allContacts.length >= 1000,
       progress: assessmentProgress(
         summaries.filter((c) => c.status === 'released').map((c) => {
           const run = runs.find((r) => r.id === c.run_id)!;
@@ -396,6 +413,7 @@ export async function handleAssessmentService(
         academy_id: academyId,
         paper_id: body.paper_id,
         classroom_id: classroomId,
+        branch_id: classrooms.find(c=>c.id===classroomId)?.branch_id ?? null,
         title,
         kind,
         starts_at: new Date(start).toISOString(),

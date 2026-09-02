@@ -8,6 +8,8 @@ import './index.css';
 
 const App = lazy(() => import('./App'));
 const AcademyTelegramApp = lazy(() => import('./components/telegram/AcademyTelegramApp'));
+const AssessmentCertificatePage = lazy(() => import('./components/assessments/AssessmentCertificatePage'));
+const verificationRoute = window.location.pathname === '/verify-assessment';
 const telegramRoute = /^\/(?:academy\/)?telegram(?:\/|$)/.test(window.location.pathname);
 
 const root = document.getElementById('root');
@@ -18,7 +20,7 @@ createRoot(root).render(
     <BrowserRouter>
       {!telegramRoute ? <LanguageSwitcher /> : null}
       <LazyRouteBoundary fallback={<main className="ts-loading" aria-busy="true">{translate('Loading Academy')}</main>}>
-        {telegramRoute ? <AcademyTelegramApp /> : <App />}
+        {verificationRoute ? <AssessmentCertificatePage /> : telegramRoute ? <AcademyTelegramApp /> : <App />}
       </LazyRouteBoundary>
     </BrowserRouter>
   </I18nProvider>,

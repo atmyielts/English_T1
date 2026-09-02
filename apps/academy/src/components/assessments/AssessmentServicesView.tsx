@@ -20,6 +20,8 @@ import {
 } from '../../lib/assessmentServices';
 import { teacherStudioConvertLead, teacherStudioUpsertClassroomMembership } from '../../lib/client';
 import { AssessmentReportView } from './AssessmentReportView';
+import { AssessmentPreparation, ExamDesk } from './AssessmentOperationsView';
+import { AcademicAuditView } from './AcademicAuditView';
 import './assessments.css';
 
 const blankReport: AssessmentReport = {
@@ -293,11 +295,12 @@ function PaperBuilder(
 }
 
 function ReportReview(
-  { candidate, paper, busy, onSave }: {
+  { candidate, paper, busy, onSave, suggestions = [] }: {
     candidate: AssessmentCandidate;
     paper: AssessmentPaper;
     busy: boolean;
     onSave: (body: Record<string, unknown>) => Promise<boolean>;
+    suggestions?: Array<{id:string;course_name:string;evidence:string}>;
   },
 ) {
   const [report, setReport] = useState<AssessmentReport>({ ...blankReport, ...candidate.report });
@@ -320,6 +323,7 @@ function ReportReview(
       {paper.items.map((item, index) => (
         <div className='assessment-question' key={item.id}>
           <strong>{index + 1}. {translate(item.skill)} · {item.prompt}</strong>
+          {item.listening_script && paper.items[index-1]?.listening_script!==item.listening_script && <blockquote><strong>{translate('Teacher only — read aloud')}</strong><p>{item.listening_script}</p></blockquote>}
           <p className='assessment-response'>
             {item.kind === 'choice'
               ? (typeof candidate.answers[item.id] === 'number'
@@ -381,6 +385,7 @@ function ReportReview(
           ))}
         </select>
       </label>
+      {suggestions.map(suggestion=><div key={suggestion.id}><button type='button' className='secondary-btn' onClick={()=>setReport({...report,recommended_course:suggestion.course_name})}>{translate('Recommended course')}: {suggestion.course_name}</button><p className='muted'>{suggestion.evidence}</p></div>)}
       {([
         ['basis', 'Assessment evidence'],
         ['strengths', 'Strengths'],
@@ -563,7 +568,7 @@ export function AssessmentServicesView(
       {notice && <p className='assessment-notice' role='status'>{notice}</p>}
       {!data ? (!error && <p role='status'>{translate('Loading assessments…')}</p>) : (
         <>
-          {data.limited && (
+          {(data.limited || data.operations?.limited) && (
             <p className='assessment-caution'>
               {translate(
                 'This workspace shows a limited history. Do not treat these figures as a complete center-wide audit.',
@@ -807,6 +812,8 @@ export function AssessmentServicesView(
               </div>
             </section>
           )}
+          <AssessmentPreparation data={data} busy={busy} command={command}/>
+          {lane==='audit' && <AcademicAuditView data={data}/>}
           <section className='assessment-form'>
             <h3>{translate('Assessment sessions')}</h3>
             {!visibleRuns.length
@@ -842,6 +849,9 @@ export function AssessmentServicesView(
                 </div>
               )}
           </section>
+          {selectedRun && (
+            <ExamDesk key={selectedRun.id} data={data} run={selectedRun} candidate={selectedCandidate} busy={busy} command={command}/>
+          )}
           {selectedRun && (
             <section className='assessment-form'>
               <header className='assessment-actions'>
@@ -1044,6 +1054,7 @@ export function AssessmentServicesView(
                 <ReportReview
                   key={`${selectedCandidate.id}:${selectedCandidate.status}`}
                   candidate={selectedCandidate}
+                  suggestions={data.operations?.suggestions.find(s=>s.candidate_id===selectedCandidate.id)?.rules}
                   paper={paper}
                   busy={busy}
                   onSave={(body) =>
