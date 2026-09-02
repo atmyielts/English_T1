@@ -25,3 +25,9 @@ createRoot(root).render(
     </BrowserRouter>
   </I18nProvider>,
 );
+import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';
+
+observeGuideArrival(
+  `${String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '')}/functions/v1`,
+  String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''),
+);

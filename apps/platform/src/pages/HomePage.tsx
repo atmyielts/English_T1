@@ -18,6 +18,8 @@ import {
 } from '../components/seo/SeoHead';
 import { discoveryPageCards, getDiscoveryPageForProductSlug } from '../content/discoveryPages';
 import { useI18n } from '../i18n';
+import { guideRequest } from '../lib/guideClient';
+import { guideCopy } from '../components/guide/copy';
 
 type ProductRow = {
   id: string;
@@ -62,7 +64,13 @@ const HOME_SCHEMA = [
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const [guideEnabled, setGuideEnabled] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    void guideRequest<{ enabled: boolean }>('/status').then(result => { if (mounted) setGuideEnabled(result.enabled); }).catch(() => { /* Keep existing browsing when the guide is unavailable. */ });
+    return () => { mounted = false; };
+  }, []);
 
   const returnTo = useMemo(() => {
     const raw = new URLSearchParams(location.search).get('returnTo');
@@ -297,12 +305,13 @@ export const HomePage: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => {
+                    if (guideEnabled) { platformJourney.track('platform_path_selected', { target: 'guide' }); navigate('/start'); return; }
                     platformJourney.track('platform_path_selected', { target: 'services' });
                     document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className="w-full sm:w-auto px-5 py-3 rounded-full bg-[#0f172a] text-white font-semibold flex items-center justify-center gap-2"
                 >
-                  {t('home.cta.viewServices')} <ChevronRight size={18} />
+                  {guideEnabled ? guideCopy.cta[locale] : t('home.cta.viewServices')} <ChevronRight size={18} />
                 </button>
                 <button
                   onClick={() => {

@@ -33,6 +33,7 @@ export const AdminLayout: React.FC<Props> = ({ children }) => {
       { to: '/admin/function-errors', label: 'Function errors', icon: AlertTriangle, permission: 'admin.analytics.view' },
       { to: '/admin/english', label: 'English', icon: BookOpen, permission: 'admin.analytics.view' },
       { to: '/admin/products', label: 'Products', icon: LayoutGrid, permission: 'admin.products.manage' },
+      { to: '/admin/onboarding', label: 'Onboarding', icon: BookOpen, permission: 'admin.products.manage' },
       { to: '/admin/billing', label: 'Billing', icon: CreditCard, permission: 'admin.billing.manage' },
       { to: '/admin/coupons', label: 'Coupons', icon: Tag, permission: 'admin.coupons.manage' },
       { to: '/admin/referrals', label: 'Referrals', icon: HandCoins, permission: 'admin.referrals.manage' },

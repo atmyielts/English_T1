@@ -1,4 +1,5 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RequireAuth } from './components/platform/RequireAuth';
 import { RequireAdmin } from './components/platform/RequireAdmin';
@@ -6,6 +7,9 @@ import { RequireAdminPermission } from './components/platform/RequireAdminPermis
 import { ReferralCapture } from './components/platform/ReferralCapture';
 import { UpdatesButton } from './components/platform/UpdatesButton';
 import { useI18n } from './i18n';
+
+const GuidePage = lazy(() => import('./pages/GuidePage').then(m => ({ default: m.GuidePage })));
+const AdminOnboardingPage = lazy(() => import('./pages/admin/AdminOnboardingPage').then(m => ({ default: m.AdminOnboardingPage })));
 
 const lazyWithChunkRetry = <T extends React.ComponentType<any>>(factory: () => Promise<{ default: T }>) =>
   lazy(async () => {
@@ -116,11 +120,14 @@ const RouteLoading: React.FC<{ label?: string }> = ({ label }) => {
 
 const AppChrome: React.FC = () => {
   const location = useLocation();
+  useEffect(() => {
+    observeGuideArrival(`${String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '')}/functions/v1`, String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''));
+  }, [location.key]);
   if (location.pathname.startsWith('/telegram')) return null;
   return (
     <>
       <ReferralCapture />
-      <UpdatesButton />
+      {!location.pathname.startsWith('/start') && <UpdatesButton />}
     </>
   );
 };
@@ -131,6 +138,8 @@ function App() {
       <Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/start" element={<GuidePage />} />
+          <Route path="/start/result" element={<GuidePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -198,6 +207,7 @@ function App() {
           </Route>
           <Route element={<RequireAdmin />}>
             <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/onboarding" element={<RequireAdminPermission permission="admin.products.manage" title="Onboarding"><AdminOnboardingPage /></RequireAdminPermission>} />
             <Route
               path="/admin/english"
               element={

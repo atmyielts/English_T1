@@ -28,7 +28,8 @@
   "manualFollowUps": [
     "After an authorized PR merge and successful Pages deploy, verify the linked production project and pending migrations before supabase db push --linked. Review unrelated pending migrations separately.",
     "Deploy supabase functions deploy academy --project-ref <verified-production-project>. No new secrets.",
-    "Complete authenticated owner, scoped teacher and learner acceptance in a designated test academy before accepting bookings. Check cross-tenant denial."
+    "Complete authenticated owner, scoped teacher and learner acceptance in a designated test academy before accepting bookings. Check cross-tenant denial.",
+    "The previously merged onboarding release retains its own checklist in release/history/adaptive-onboarding-guide.json. Preserve its code and published state; do not deploy or publish guide changes as part of this Academy release."
   ],
   "verification": [
     "Run npm run test:academy:assessments, Academy lint, i18n, routes, Edge contracts/typecheck, both builds, verify:academy and verify:prod.",
