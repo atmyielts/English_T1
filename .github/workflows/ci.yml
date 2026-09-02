@@ -70,6 +70,16 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      # This CI-only change can land before the independently reviewed feature.
+      # Once the guide exists, its contracts are required and run without a skip override.
+      - name: Adaptive onboarding contracts and Edge typecheck
+        if: hashFiles('supabase/functions/guide/handler.test.ts') != ''
+        run: npm run test:guide && npm run check:guide
+
+      - name: Adaptive onboarding browser and accessibility contracts
+        if: hashFiles('apps/platform/tests/guide.spec.ts') != ''
+        run: npm run test:guide:browser
+
       - name: English Edge typecheck
         run: deno check supabase/functions/hub/index.ts
 
