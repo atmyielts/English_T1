@@ -1,8 +1,10 @@
 import { assessmentOperationsGuides } from './assessmentOperationsGuides';
+import { assessmentHelpGuides } from './assessmentHelpGuides';
 // Center-facing guides share the existing documentation layout and search.
 export const assessmentGuides = {
   'en': [
     assessmentOperationsGuides.en,
+    ...assessmentHelpGuides.en,
     {
       'id': 'placement',
       'title': 'Placement: help a learner choose the right course',
@@ -62,13 +64,14 @@ export const assessmentGuides = {
   ],
   'uz': [
     assessmentOperationsGuides.uz,
+    ...assessmentHelpGuides.uz,
     {
       'id': 'placement',
       'title': 'Darajani aniqlash: o‘quvchiga mos kurs tanlash',
       'intro':
         'Kursga yozishdan oldin «Daraja va imtihonlar → Darajani aniqlash»ni oching. Foydali xulosa faqat ball emas: o‘quvchi nimalarni bilishi, qayerda yordam kerakligi va qaysi kurs mosligini tushuntiradi.',
       'steps': [
-        'Ustoz baholash topshiriqlarini tayyorlaydi: grammatika, lug‘at, o‘qish, audioli tinglash, yozma ish yoki suhbat. Faqat o‘zingizga tegishli yoki foydalanishga ruxsat berilgan materiallarni ishlating.',
+        'Schood boshlang‘ich testini qo‘shing yoki foydalanishga ruxsat berilgan materiallardan o‘zingiz tayyorlang. Seans ochilishidan oldin ustoz topshiriq, javob, tinglash yo‘riqnomasi va baholash mezonlarini tekshirib, nazoratli sinovga tayyorligini qayd etadi. Boshlang‘ich test CEFR yoki IELTS bo‘yicha tasdiqlanmagan.',
         'Qabul seansining sanasi, xonasi, vaqt chegarasi va o‘rinlarini belgilang. Yangi talabgor ishini topshiriq muallifi tekshiradi; Academy egasi va administratorlari ham tekshira oladi.',
         'Qabul bo‘limida o‘quvchining shaxsiy emailini kiriting. Seansda «Qabuldan talabgorni taklif qilish»ni tanlang. O‘quvchi yozuvi yaratiladi yoki bog‘lanadi; ariza ochiq qoladi va to‘lov yaratilmaydi.',
         'Seansni oching. O‘quvchi yozuvidagi email bilan kirib, «Mening baholashlarim → Baholashni boshlash»ni tanlaydi. Pullik kursga yozilish shart emas.',
@@ -121,13 +124,14 @@ export const assessmentGuides = {
   ],
   'ru': [
     assessmentOperationsGuides.ru,
+    ...assessmentHelpGuides.ru,
     {
       'id': 'placement',
       'title': 'Определение уровня: подобрать ученику подходящий курс',
       'intro':
         'Перед зачислением откройте «Уровень и экзамены → Определение уровня». Полезный отчёт объясняет, что ученик умеет, где нужна поддержка и какой курс обсудить, а не просто показывает балл.',
       'steps': [
-        'Преподаватель готовит задания по нужным навыкам: грамматике, лексике, чтению, аудированию, письму или собеседованию. Используйте свои материалы или материалы с разрешением на использование.',
+        'Добавьте стартовый тест Schood или подготовьте свои разрешённые материалы. До открытия сессии преподаватель проверяет задания, ответы, инструкции по аудированию и критерии оценки, затем отмечает готовность к пилоту под наблюдением. Стартовый тест не валидирован по CEFR или IELTS.',
         'Запланируйте вступительную сессию: дату, аудиторию, лимит времени и места. Работы проверяет автор заданий; владельцы и администраторы Academy также могут их проверять.',
         'В разделе «Приём» укажите личную почту ученика. В сессии выберите приглашение поступающего из этого раздела. Карточка создаётся или связывается, но заявка остаётся открытой и плата не начисляется.',
         'Откройте сессию. Ученик входит с почтой из карточки и выбирает «Мои оценки → Начать работу». Оплачивать зачисление для этого не нужно.',
