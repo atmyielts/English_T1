@@ -82,6 +82,9 @@ jobs:
       - name: Academy Edge contract tests
         run: npm run test:academy:edge
 
+      - name: Academy assessment scoring, access, and SQL lifecycle
+        run: npm run test:academy:assessments
+
       - name: Audit runtime dependencies
         # Fail closed on high/critical findings. The wrapper permits only the
         # owner-approved, RSC-only exception documented in the repository.

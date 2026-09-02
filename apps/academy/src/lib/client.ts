@@ -1188,6 +1188,9 @@ export const getMe = async (): Promise<MeResponse> => {
   return invokeEdge<MeResponse>('me', { method: 'GET' });
 };
 
+export const academyAssessmentRequest = <T>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> =>
+  callTeacherStudio<T>({ academyId, action, body });
+
 export const teacherStudioSummary = async (academyId?: string | null): Promise<TeacherStudioSummary> => {
   return callTeacherStudio<TeacherStudioSummary>({ action: 'summary', academyId });
 };

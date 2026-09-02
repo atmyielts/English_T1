@@ -1,28 +1,41 @@
 {
   "schemaVersion": 1,
-  "releaseId": "enhance-academy-production-docs",
+  "releaseId": "academy-assessment-services",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
+    "academy",
     "academy-docs"
   ],
-  "migrations": [],
-  "edgeFunctions": [],
+  "migrations": [
+    "20260902100000_academy_assessment_services.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
   "workers": [],
-  "sharedEdgeConsumers": [],
+  "sharedEdgeConsumers": [
+    "academy"
+  ],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages"
+    "pages",
+    "migration:20260902100000_academy_assessment_services.sql",
+    "function:academy"
   ],
-  "manualFollowUps": [],
+  "manualFollowUps": [
+    "After an authorized PR merge and successful Pages deploy, verify the linked production project and pending migrations before supabase db push --linked. Review unrelated pending migrations separately.",
+    "Deploy supabase functions deploy academy --project-ref <verified-production-project>. No new secrets.",
+    "Complete authenticated owner, scoped teacher and learner acceptance in a designated test academy before accepting bookings. Check cross-tenant denial."
+  ],
   "verification": [
-    "Confirm the Academy docs workspace builds successfully.",
-    "Verify English, Uzbek, and Russian content renders at desktop and mobile widths.",
-    "Verify role, teacher-day, Telegram, guardian, Academy, and bot links resolve correctly."
+    "Run npm run test:academy:assessments, Academy lint, i18n, routes, Edge contracts/typecheck, both builds, verify:academy and verify:prod.",
+    "Verify registration without enrollment, timed save/restore, deadline rejection, review, release, report persistence and enrollment using authorized production test accounts.",
+    "Check English, Uzbek and Russian at phone and desktop widths, and confirm printed reports exclude unrelated records."
   ],
   "rollback": {
-    "frontends": "Roll back the schood-academy-docs Cloudflare Pages deployment to the previous known-good commit.",
-    "edgeFunctions": "No Edge Function changes.",
-    "database": "No database changes."
+    "frontends": "Roll back schood-academy and schood-academy-docs Pages to the previous known-good commit in Cloudflare; never deploy Pages locally.",
+    "edgeFunctions": "Stop new assessment starts and redeploy the previous known-good academy Edge Function from its exact commit.",
+    "database": "Retain additive tables and all submitted evidence. Do not drop assessment data; existing Academy flows do not depend on the new tables."
   }
 }

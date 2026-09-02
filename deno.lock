@@ -4403,6 +4403,7 @@
       "dependencies": [
         "npm:@aws-sdk/client-s3@3.1085.0",
         "npm:@aws-sdk/s3-request-presigner@3.1085.0",
+        "npm:@electric-sql/pglite@0.5.8",
         "npm:@supabase/supabase-js@^2.89.0",
         "npm:@tailwindcss/postcss@^4.1.18",
         "npm:autoprefixer@^10.4.23",
