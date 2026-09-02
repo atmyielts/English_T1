@@ -23,3 +23,5 @@ coverage
 test-results/
 playwright-report/
 .playwright-cli/
+output/playwright/
+output/supabase-assessment/

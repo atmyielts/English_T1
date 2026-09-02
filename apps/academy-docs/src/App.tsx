@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { assessmentGuides } from './assessmentGuides';
 
 type Lang = 'en' | 'uz' | 'ru';
 
@@ -73,7 +74,7 @@ const docs: Record<Lang, Copy> = {
       'A practical guide for owners, center teams, teachers, assistants, and students. It explains the routes, role grants, LMS workflows, Click payments, and daily operating rhythm of Academy.',
     primaryCta: 'Open Academy',
     secondaryCta: 'Start with your role',
-    updated: 'Updated September 1, 2026 · aligned with the current production service',
+    updated: 'Updated September 2, 2026 · includes placement, exam day, and academic progress',
     currentLabel: 'Current production guide',
     searchLabel: 'Find a workflow',
     searchPlaceholder: 'Teacher, attendance, Telegram…',
@@ -131,6 +132,7 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'Own enrolled classrooms', can: 'View lessons, messages, announcements, assignments, progress, attendance, alerts, and payments.', cannot: 'Cannot access office, staff, roster, finance, or other students records.' },
     ],
     sections: [
+      ...assessmentGuides.en,
       {
         id: 'model',
         title: '0. Organize the service model',
@@ -414,7 +416,7 @@ const docs: Record<Lang, Copy> = {
       'Bu qo‘llanma egalar, markaz jamoasi, menejerlar, o‘qituvchilar, assistentlar va talabalar uchun. Unda yo‘nalishlar, rollar, grantlar, LMS jarayonlari, Click to‘lovlari va kunlik ish tartibi tushuntiriladi.',
     primaryCta: 'Academy ni ochish',
     secondaryCta: 'Rolingizdan boshlang',
-    updated: '2026-yil 1-sentabrda yangilangan · amaldagi production xizmatiga mos',
+    updated: '2026-yil 2-sentabrda yangilangan · darajani aniqlash, imtihon kuni va o‘quv rivoji',
     currentLabel: 'Amaldagi production qo‘llanmasi',
     searchLabel: 'Jarayonni topish',
     searchPlaceholder: 'O‘qituvchi, davomat, Telegram…',
@@ -472,6 +474,7 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'O‘z sinflari', can: 'Darslar, xabarlar, e’lonlar, topshiriqlar, progress, davomat, alertlar va to‘lovlarini ko‘radi.', cannot: 'Office, staff, roster, moliya yoki boshqa talabalarning ma’lumotlariga kira olmaydi.' },
     ],
     sections: [
+      ...assessmentGuides.uz,
       {
         id: 'model',
         title: '0. Xizmat modelini tartibga solish',
@@ -755,7 +758,7 @@ const docs: Record<Lang, Copy> = {
       'Руководство для владельцев, администраторов центров, менеджеров, преподавателей, ассистентов и студентов. Здесь описаны маршруты, роли, гранты доступа, LMS-процессы, платежи Click и ежедневная операционная работа.',
     primaryCta: 'Открыть Academy',
     secondaryCta: 'Начать со своей роли',
-    updated: 'Обновлено 1 сентября 2026 года · соответствует текущему production-сервису',
+    updated: 'Обновлено 2 сентября 2026 года · определение уровня, день экзамена и учебный прогресс',
     currentLabel: 'Актуальное production-руководство',
     searchLabel: 'Найти рабочий процесс',
     searchPlaceholder: 'Преподаватель, посещаемость, Telegram…',
@@ -813,6 +816,7 @@ const docs: Record<Lang, Copy> = {
       { role: 'Student', scope: 'Свои классы', can: 'Видит уроки, сообщения, объявления, задания, прогресс, посещаемость, alerts и платежи.', cannot: 'Не имеет доступа к office, staff, roster, финансам и данным других студентов.' },
     ],
     sections: [
+      ...assessmentGuides.ru,
       {
         id: 'model',
         title: '0. Организация модели сервиса',

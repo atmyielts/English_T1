@@ -23,6 +23,78 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  'Verification is temporarily unavailable. Try again later.',
+  'Decision notes', 'Requested', 'Confirmed', 'In progress', 'Delivered', 'Cancelled',
+  'Add marking guidance for every teacher-reviewed task.',
+  // Assessment lane metadata, server validation, report fields, and action notices.
+  "Placement & exams",
+  "Placement, exam days, reviewed reports, and academic progress",
+  "grammar",
+  "vocabulary",
+  "reading",
+  "listening",
+  "writing",
+  "speaking",
+  "Registered",
+  "Taking assessment",
+  "Needs review",
+  "Ready to share",
+  "Report shared",
+  "Preparing",
+  "Open",
+  "Closed",
+  "Placement",
+  "Help each learner start in the right course.",
+  "Assess skills",
+  "Review the report",
+  "Exam day",
+  "Prepare the session, welcome candidates, and share reviewed results.",
+  "Prepare the paper",
+  "Register candidates",
+  "Open the session",
+  "Review and share",
+  "Academic progress",
+  "Understand learning progress and decide where support will help.",
+  "Set a baseline",
+  "Repeat the assessment",
+  "Compare the evidence",
+  "Plan support",
+  "Assessment evidence",
+  "Strengths",
+  "Recommended course",
+  "Next learning steps",
+  "Learning plan",
+  "Record interview evidence in review notes.",
+  "Not assessed",
+  "Assessment workspace refreshed.",
+  "Assessment paper saved. You can now plan a session.",
+  "Assessment session prepared. Register students, then open it.",
+  "Session opened. Registered students can start at the scheduled time.",
+  "Session closed. Saved answers remain available for submission.",
+  "Students registered. Share the session instructions with them.",
+  "Applicant registered for placement. Their lead stays open until enrollment.",
+  "Report approved. Check it before sharing with the student.",
+  "Report shared with the student.",
+  "Student enrolled. Their assessment history remains available here.",
+  "Unsaved changes",
+  "View report",
+  "Continue assessment",
+  "Start assessment",
+  "Awaiting teacher review",
+  "Saved answers collected. You can now review the work.",
+  "Wait until the assessment ends before collecting saved answers.",
+  "This assessment is not open. Check the session time with your center.",
+  "Time has ended. Submit your saved answers.",
+  "This exam session has no remaining seats for this selection.",
+  "Registration is closed.",
+  "Add the learner email in Admissions before registering.",
+  "This phone belongs to another student record. Resolve the duplicate in Contacts first.",
+  "Name the paper and choose 5–240 minutes.",
+  "Add 2–8 answer choices and select the correct answer.",
+  "Check the title, session dates, and available seats.",
+  "Enter a valid mark for every teacher-reviewed task.",
+  "Add review notes and explain the evidence before approving.",
+  "Explain the assessment evidence and any limitations before approving the report.",
   'Language',
   'English',
   'Uzbek',
@@ -106,7 +178,7 @@ for (const file of files) {
   const visit = (node) => {
     if (
       ts.isCallExpression(node)
-      && node.expression.getText(sourceFile) === 'translate'
+      && ['translate','t'].includes(node.expression.getText(sourceFile))
       && node.arguments[0]
     ) {
       collectLiteralPhrases(node.arguments[0]);
@@ -125,6 +197,7 @@ for (const file of files) {
         collectLiteralPhrases(node.arguments[0]);
       }
       if (callName === 'run') collectLiteralPhrases(node.arguments[1]);
+      if (file.includes('assessments') && callName === 'command') collectLiteralPhrases(node.arguments[2]);
       if (callName === 'officeNavItem') collectLiteralPhrases(node.arguments[1]);
     }
 
@@ -168,6 +241,11 @@ for (const file of files) {
       for (const element of node.initializer.elements) collectLiteralPhrases(element);
     }
 
+    if (
+      file.includes('assessments') && ts.isJsxAttribute(node) && node.initializer &&
+      ts.isStringLiteral(node.initializer) && ['label','title'].includes(node.name.text)
+    ) collectLiteralPhrases(node.initializer);
+
     if (ts.isJsxText(node)) {
       const normalized = node.getText(sourceFile).replace(/\s+/g, ' ').trim();
       if (/[A-Za-z]/.test(normalized)) rawText.push(`${path.relative(sourceRoot, file)}: ${normalized}`);
@@ -178,6 +256,7 @@ for (const file of files) {
       && node.initializer
       && ts.isStringLiteral(node.initializer)
       && translatableAttributes.has(node.name.text)
+      && !(file.includes('assessments') && node.parent.parent.tagName?.getText(sourceFile)==='Section')
       && /[A-Za-z]/.test(node.initializer.text)
     ) {
       rawText.push(`${path.relative(sourceRoot, file)}: ${node.name.text}="${node.initializer.text}"`);
@@ -238,7 +317,7 @@ for (const locale of ['uz', 'ru']) {
   if (untranslated.length) failures.push(`${locale}: ${untranslated.length} untranslated phrases`);
 }
 
-if (rawText.length) failures.push(`${rawText.length} raw JSX strings remain`);
+if (rawText.length) failures.push(`${rawText.length} raw JSX strings remain: ${rawText.join('; ')}`);
 
 if (failures.length) {
   console.error(`Academy localization check failed:\n- ${failures.join('\n- ')}`);

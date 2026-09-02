@@ -124,6 +124,10 @@ import { useI18n } from './i18n';
 
 const loadBusinessFoundationView = () => import('./components/office/BusinessFoundationView')
   .then((module) => ({ default: module.BusinessFoundationView }));
+const loadAssessmentServicesView = () => import('./components/assessments/AssessmentServicesView')
+  .then((module) => ({ default: module.AssessmentServicesView }));
+const loadStudentAssessmentsView = () => import('./components/assessments/StudentAssessmentsView')
+  .then((module) => ({ default: module.StudentAssessmentsView }));
 const loadCommercialCoreView = () => import('./components/office/CommercialCoreView')
   .then((module) => ({ default: module.CommercialCoreView }));
 const loadOperationsFinanceView = () => import('./components/office/OperationsFinanceView')
@@ -170,6 +174,8 @@ const loadTeacherDayView = () => import('./components/teachers/TeacherDayView')
   .then((module) => ({ default: module.TeacherDayView }));
 
 const BusinessFoundationView = lazy(loadBusinessFoundationView);
+const AssessmentServicesView = lazy(loadAssessmentServicesView);
+const StudentAssessmentsView = lazy(loadStudentAssessmentsView);
 const CommercialCoreView = lazy(loadCommercialCoreView);
 const OperationsFinanceView = lazy(loadOperationsFinanceView);
 const AcademicOperationsView = lazy(loadAcademicOperationsView);
@@ -220,14 +226,15 @@ type DirectoryWorkspaceAcademy = {
   student: TeacherStudioStudentDashboard['academies'][number] | null;
 };
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'today' | 'academy' | 'platform' | 'services' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
-type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan';
+type OfficeView = 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan' | 'assessments';
 
 const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
   academy: loadAcademyView,
   platform: loadBusinessPlatformView,
   services: loadOperationalServicesView,
   business: loadBusinessFoundationView,
+  assessments: loadAssessmentServicesView,
   commercial: loadCommercialCoreView,
   academic: loadAcademicOperationsView,
   relationships: loadGuardianRelationshipsView,
@@ -277,9 +284,9 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['today', 'academy', 'platform', 'services', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
+const OFFICE_VIEWS: OfficeView[] = ['today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
 const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
-const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan'];
+const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan', 'assessments'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
 const CLASSROOM_RESOURCE_KIND_LABELS: Record<TeacherStudioClassroomResource['kind'], string> = {
@@ -310,6 +317,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   platform: 'Business Platform',
   services: 'Service desk',
   business: 'Admissions',
+  assessments: 'Placement & exams',
   commercial: 'Commercial Core',
   academic: 'Academic Operations',
   relationships: 'Guardians & Parents',
@@ -332,6 +340,7 @@ const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   platform: 'viewBusinessIntelligence',
   services: 'viewEducationOS',
   business: 'viewAdmissions',
+  assessments: 'viewContacts',
   commercial: 'viewFinance',
   academic: 'manageAcademicOperations',
   relationships: 'manageGuardians',
@@ -499,10 +508,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: ['today', 'contacts', 'classrooms', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
-  admin: ['today', 'contacts', 'classrooms', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
-  teacher: ['today', 'classrooms', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['today', 'academy', 'contacts', 'classrooms', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
+  office: ['today', 'contacts', 'classrooms', 'assessments', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
+  admin: ['today', 'contacts', 'classrooms', 'assessments', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
+  teacher: ['today', 'classrooms', 'assessments', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
+  center: ['today', 'academy', 'contacts', 'classrooms', 'assessments', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
 };
 
 const hasOfficeRoutePermission = (
@@ -543,6 +552,8 @@ const officeViewsForIntent = (
   const caps = OFFICE_ROUTE_VIEW_CAPS[intent] ?? OFFICE_VIEWS;
   return caps.filter((view) => view === 'operations'
     ? ['viewEconomics', 'manageCashier', 'viewPayroll'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
+    : view === 'assessments'
+      ? ['manageAdmissions', 'viewAcademicReports', 'gradeSubmissions'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
     : view === 'services'
       ? ['manageRoster', 'manageStaff', 'manageGuardians', 'manageAcademicOperations', 'manageAutomation', 'collectFinance', 'manageRetention', 'manageAssignments', 'viewClassrooms'].some((permission) => hasOfficeRoutePermission(access, intent, permission as AccessPermissionKey))
       : hasOfficeRoutePermission(access, intent, OFFICE_VIEW_PERMISSIONS[view]));
@@ -724,6 +735,7 @@ const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
   access: 'Tuition & access',
   requests: 'My requests',
   plan: 'Learning plan',
+  assessments: 'My assessments',
 };
 
 const toAuthUrl = (): string => {
@@ -1283,6 +1295,7 @@ const App = () => {
       intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
       platform: { title: 'Education Business Platform', caption: 'Student lifecycle, branch performance, unit economics, governed automation, and reviewable AI assistance' },
       services: { title: 'Service desk', caption: 'Student requests, staff changes, schedules, learning plans, and follow-through' },
+      assessments: { title: 'Placement & exams', caption: 'Placement, exam days, reviewed reports, and academic progress' },
       operations: { title: 'Operations Finance', caption: 'Cashier, expenses, contribution economics, compensation, and payroll' },
       os: { title: osCenterLabel, caption: 'Automations, actions, reports, and learning signals' },
     };
@@ -4655,6 +4668,12 @@ const App = () => {
             onSelect: () => navigate(academyScopedPath('/academy/student/plan', studentAcademyId)),
             onPrepare: () => { void loadStudentServicesView().catch(() => undefined); },
           },
+          {
+            id: 'student-assessments', label: 'My assessments', icon: <ClipboardList size={17} />,
+            active: studentPortalView === 'assessments',
+            onSelect: () => navigate(academyScopedPath('/academy/student/assessments', studentAcademyId)),
+            onPrepare: () => { void loadStudentAssessmentsView().catch(() => undefined); },
+          },
         ],
       },
       {
@@ -4805,6 +4824,12 @@ const App = () => {
             {studentPortalView === 'requests' || studentPortalView === 'plan' ? (
               <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
                 <StudentServicesView academyId={studentAcademyId} mode={studentPortalView} classrooms={studentClassrooms} formatDate={formatDate} />
+              </LazyRouteBoundary>
+            ) : null}
+
+            {studentPortalView === 'assessments' ? (
+              <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
+                <StudentAssessmentsView key={studentAcademyId} academyId={studentAcademyId} academyName={studentAcademyName} formatDate={formatDate} />
               </LazyRouteBoundary>
             ) : null}
 
@@ -4981,6 +5006,7 @@ const App = () => {
         },
         todayNav,
         classroomNav,
+        officeNavItem('assessments', 'Placement & exams', <ClipboardList size={17} />),
         officeRouteIntent === 'teacher' ? contactsNav : null,
         officeRouteIntent === 'admin' || officeRouteIntent === 'center' ? financeNav : null,
         officeRouteIntent === 'teacher' ? inboxNav : osNav,
@@ -5166,6 +5192,12 @@ const App = () => {
         <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
           {officeView === 'business' && officeCanOpen('business') ? (
             <BusinessFoundationView academyId={academyId} formatDate={formatDate} />
+          ) : null}
+
+          {officeView === 'assessments' && officeCanOpen('assessments') ? (
+            <AssessmentServicesView key={academyId} academyId={academyId} formatDate={formatDate}
+              onOpenContact={(id) => navigate(academyScopedPath(academyOfficePath('contacts', id, officeRouteIntent), academyId))}
+              onOpenAdmissions={() => navigate(academyScopedPath(academyOfficePath('business', undefined, officeRouteIntent), academyId))} />
           ) : null}
 
           {officeView === 'commercial' && officeCanOpen('commercial') ? (

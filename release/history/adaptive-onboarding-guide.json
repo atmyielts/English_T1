@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "adaptive-onboarding-guide",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": ["academy", "english-hub", "ielts-playbook", "ielts-practice", "ielts-simulator", "itep-simulator", "platform", "sat-playbook", "sat-practice", "sat-simulator", "toefl-ibt-simulator", "toefl-playbook"],
+  "migrations": ["20260902090000_adaptive_onboarding.sql"],
+  "edgeFunctions": ["guide"],
+  "workers": [],
+  "sharedEdgeConsumers": ["guide"],
+  "requiredSecrets": [],
+  "rolloutOrder": ["pages", "migration:20260902090000_adaptive_onboarding.sql", "function:guide"],
+  "manualFollowUps": [
+    "After separately authorized PR/CI release, run supabase db push --linked against the verified production project.",
+    "Run supabase functions deploy guide --project-ref <verified-production-ref>; confirm the guide gateway configuration from supabase/config.toml.",
+    "Verify the guide-retention cleanup schedule or install the service-role cleanup job before publishing.",
+    "Keep entry disabled until an authorized admin has reviewed translations, audio, real catalog mappings and privacy copy, validated, then published the first version."
+  ],
+  "verification": [
+    "Run npm run test:guide, npm run check:guide, npm run test:guide:browser and npm run verify:prod.",
+    "Verify authorized guest-to-result, account claim, owned access, confirmed goal transfer and separately authorized payment journeys on production before publishing.",
+    "Confirm version rollback, private-table RLS, answer-key projection and seven-day retention.",
+    "Confirm page-loaded receipts, confirmed paid attribution and honest no-match fallback; do not treat page loads as learning activation."
+  ],
+  "rollback": {
+    "frontends": "Disable entry in Admin Onboarding, or restore a validated earlier guide version. If code rollback is needed, use tracked Cloudflare Pages rollback to the previous known-good commit; never local Pages deploy.",
+    "edgeFunctions": "Keep guide_release disabled and redeploy the prior reviewed guide function through the authorized operations workflow. Existing products do not depend on this function.",
+    "database": "Leave additive private tables intact. Do not drop retained session or payment data as a frontend rollback."
+  }
+}

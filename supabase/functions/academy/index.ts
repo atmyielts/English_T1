@@ -18,6 +18,7 @@ import {
   type AcademyTeacherFlowAccess,
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
+import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -978,28 +979,28 @@ const loadStudentContacts = async (
   if (directError) throw new Error(`Failed to load student contacts: ${directError.message}`);
 
   const directContacts = (directRows ?? []) as Array<Record<string, unknown>>;
-  if (directContacts.length > 0) return directContacts;
 
   const normalizedEmail = normalizeEmail(userEmail);
-  if (!normalizedEmail) return [];
+  if (!normalizedEmail) return directContacts;
 
   // Auto-link existing contacts created before the student account existed.
   const { data: emailRows, error: emailError } = await sb
     .from("academy_contacts")
     .select(STUDENT_CONTACT_SELECT)
     .is("user_id", null)
-    .ilike("email", normalizedEmail)
+    .ilike("email", normalizedEmail.replace(/[\\%_]/g, "\\$&"))
     .in("status", STUDENT_CONTACT_STATUSES);
   if (emailError) throw new Error(`Failed to load student contacts by email: ${emailError.message}`);
 
   const emailContacts = (emailRows ?? []) as Array<Record<string, unknown>>;
-  if (emailContacts.length === 0) return [];
+  if (emailContacts.length === 0) return directContacts;
 
   const contactIds = Array.from(new Set(emailContacts.map((row) => String(row.id ?? "")).filter((id) => id.length > 0)));
   if (contactIds.length > 0) {
     const { error: linkError } = await sb
       .from("academy_contacts")
       .update({ user_id: userId })
+      .is("user_id", null)
       .in("id", contactIds);
     if (linkError) throw new Error(`Failed to link student contacts: ${linkError.message}`);
   }
@@ -6756,6 +6757,27 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     const sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
+    // Public verification is token-addressed and opt-in. Never expose private report notes,
+    // contacts, tokens for other certificates, or the reason for an investigation.
+    const verificationUrl = new URL(req.url);
+    if (req.method === 'GET' && verificationUrl.searchParams.get('action') === 'assessment_verify_certificate') {
+      const certificateToken = verificationUrl.searchParams.get('token') ?? '';
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(certificateToken)) return json(404,{error:'Certificate not found'});
+      const {data:certificate,error}=await sb.from('academy_assessment_certificates').select('snapshot,issued_at,revoked_at,public_consent,version').eq('public_token',certificateToken).maybeSingle();
+      if(error)return json(503,{error:'Certificate verification is temporarily unavailable'});
+      if(!certificate)return json(404,{error:'Certificate not found'});
+      const snapshot=certificate.snapshot as Record<string,unknown>;
+      return new Response(JSON.stringify({
+        status:certificate.revoked_at ? 'withdrawn' : certificate.public_consent ? 'verified' : 'private',
+        issued_at:certificate.issued_at,version:certificate.version,
+        ...(certificate.public_consent && !certificate.revoked_at ? {
+          academy:snapshot.academy,name:snapshot.name,title:snapshot.title,assessed_at:snapshot.assessed_at,
+          score:(snapshot.summary as Record<string,unknown>)?.percent,
+          classification:'Schood mock assessment — not an official IELTS result or CEFR certificate',
+        } : {}),
+      }),{status:200,headers:{...corsHeaders,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+    }
+
     // ── Cron worker path: authenticated via DB-managed x-worker-secret ────────
     const workerSecret = req.headers.get("x-worker-secret");
     if (workerSecret) {
@@ -7074,6 +7096,25 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     const memberships = await loadMemberships(sb, userId, userEmail);
+
+    if (assessmentActions.has(requestedAction)) {
+      if (req.method !== 'POST') return json(405, { error: 'Use POST for assessment requests.' });
+      try {
+        const contacts = requestedAction.startsWith('assessment_student_')
+          ? await loadStudentContacts(sb, userId, authData.user.email_confirmed_at ? userEmail : null)
+          : [];
+        const result = await handleAssessmentService(sb, requestedAction, body ?? {}, userId, memberships, contacts);
+        if (!['assessment_workspace','assessment_student_list','assessment_student_resume','assessment_student_save'].includes(requestedAction)) {
+          await logAcademyAuditEvent(sb, { academyId: String(body?.academy_id ?? ''), actorUserId: userId, action: requestedAction, targetType: 'assessment', targetId: String(body?.candidate_id ?? body?.run_id ?? ''), metadata: {} });
+        }
+        return json(200, result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Assessment request failed.';
+        if (message === 'Forbidden') return json(403, { error: message });
+        if (/does not exist|schema cache/.test(message)) return json(503, { error: 'Assessment tools are not available yet. Ask your academy administrator to complete setup.' });
+        return json(400, { error: message });
+      }
+    }
 
     if (requestedAction === "student_curriculum") {
       const enrollment = await loadStudentClassroomEnrollment(
