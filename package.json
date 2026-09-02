@@ -19,6 +19,10 @@
     "packages/*"
   ],
   "scripts": {
+    "test:guide": "deno test --no-lock --allow-env supabase/functions/_shared/guide.test.ts supabase/functions/_shared/guide-metrics.test.ts supabase/functions/guide/handler.test.ts && deno test --no-config --no-lock --node-modules-dir=none --allow-read --allow-env supabase/functions/guide/migration.test.ts",
+    "test:guide:browser": "npm --workspace apps/platform exec -- playwright test tests/guide.spec.ts --reporter=list",
+    "test:guide:local": "deno run --no-lock --allow-read --allow-run=supabase.exe,supabase --allow-net=127.0.0.1:60921 scripts/guide-local-smoke.ts",
+    "check:guide": "deno check --no-lock supabase/functions/guide/index.ts",
     "test": "npm run test:sat && npm run test:shared && npm run test:telegram",
     "test:shared": "deno test --allow-read supabase/functions/_shared/payment-terms.test.ts supabase/functions/_shared/pricing.test.ts supabase/functions/_shared/entitlements.test.ts supabase/functions/_shared/academy-scoring.test.ts supabase/functions/_shared/academy-curriculum.test.ts supabase/functions/_shared/english-learning.test.ts supabase/functions/_shared/internal-service-auth.test.ts supabase/functions/academy/access-matrix.test.ts supabase/functions/click/webhook-security.test.ts supabase/functions/click/payment-safety.test.ts supabase/functions/click/payment-flow-simulation.test.ts supabase/functions/click/launch-contract.test.ts",
     "test:english-core": "deno test supabase/functions/_shared/english-learning.test.ts",

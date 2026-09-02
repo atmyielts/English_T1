@@ -1,0 +1,403 @@
+.onboarding-admin {
+  max-width: 1400px;
+  margin: auto;
+  color: #17243a;
+}
+.onboarding-admin h1 {
+  font-family: Sora, Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+.onboarding-admin h2 {
+  font-size: 18px;
+  font-weight: 750;
+  margin: 12px 0;
+}
+.onboarding-admin p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #536278;
+}
+.onboarding-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.onboarding-kicker {
+  color: #0b766e !important;
+  font-size: 11px !important;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.onboarding-admin button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d6dee8;
+  background: white;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #17243a;
+  cursor: pointer;
+}
+.onboarding-admin button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.onboarding-admin button:hover:not(:disabled) {
+  border-color: #0b766e;
+}
+.onboarding-admin label {
+  font-size: 12px;
+  font-weight: 650;
+  display: block;
+  line-height: 1.7;
+}
+.onboarding-admin input:not([type="checkbox"]), .onboarding-admin select, .onboarding-admin textarea {
+  display: block;
+  background: white;
+  width: 100%;
+  border: 1px solid #d6dee8;
+  border-radius: 9px;
+  padding: 9px 11px;
+  color: #17243a;
+  font-size: 13px;
+  margin: 5px 0 12px;
+  min-height: 42px;
+}
+.onboarding-admin textarea {
+  resize: vertical;
+  font-weight: 400;
+}
+.onboarding-admin input[type="checkbox"] {
+  margin-right: 7px;
+  width: 17px;
+  height: 17px;
+  vertical-align: middle;
+}
+.onboarding-admin :is(button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #0b766e;
+  outline-offset: 3px;
+}
+.onboarding-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: white;
+  padding: 15px;
+  border: 1px solid #d6dee8;
+  border-radius: 16px;
+  margin: 16px 0;
+}
+.onboarding-toolbar select {
+  margin-bottom: 0 !important;
+}
+.onboarding-status {
+  font-size: 11px;
+  color: #536278;
+  margin: auto;
+}
+.onboarding-admin .onboarding-publish {
+  background: #0b766e;
+  color: white;
+  border-color: #0b766e;
+}
+.onboarding-tabs {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+.onboarding-tabs button {
+  white-space: nowrap;
+  background: transparent;
+  border-color: transparent;
+}
+.onboarding-tabs button[aria-current="page"] {
+  background: #17243a;
+  color: white;
+}
+.onboarding-editor-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.onboarding-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  position: sticky;
+  top: 0;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+.onboarding-step-list button {
+  flex: none;
+  min-height: 60px;
+  overflow-wrap: anywhere;
+  display: block;
+  text-align: left;
+  padding: 12px 14px;
+  line-height: 1.6;
+}
+.onboarding-step-list small {
+  display: block;
+  color: #617087;
+  font-size: 10px;
+}
+.onboarding-step-list .selected {
+  background: #ddf3e8;
+  border-color: #0b766e;
+}
+.onboarding-step-list .selected small { color: #536278; }
+.onboarding-panel {
+  border: 1px solid #d6dee8;
+  border-radius: 18px;
+  padding: 24px;
+  background: white;
+  min-width: 0;
+}
+.onboarding-panel:disabled {
+  opacity: 0.85;
+}
+.onboarding-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.onboarding-row code {
+  font-size: 11px;
+  color: #617087;
+  overflow-wrap: anywhere;
+}
+.onboarding-row > div {
+  display: flex;
+  gap: 6px;
+}
+.onboarding-translations {
+  margin: 20px 0;
+  border: 0;
+  padding: 0;
+}
+.onboarding-translations legend {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.onboarding-translations label {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.onboarding-translations label span {
+  font-size: 10px;
+  padding-top: 16px;
+  color: #617087;
+}
+.onboarding-fields {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 16px 0;
+}
+.onboarding-fields > label {
+  flex: 1;
+  min-width: 125px;
+}
+.onboarding-option-editor {
+  border: 1px solid #e2e7ef;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  background: #f6f8fc;
+}
+.onboarding-option-editor .onboarding-row {
+  margin-bottom: 0;
+}
+.onboarding-options-editor {
+  margin: 20px 0;
+}
+.onboarding-condition {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.6fr) minmax(90px, 1fr) minmax(90px, 1fr) 40px;
+  gap: 8px;
+  align-items: center;
+}
+.onboarding-conditions fieldset {
+  border: 1px solid #d6dee8;
+  border-radius: 12px;
+  padding: 15px;
+  margin: 15px 0;
+}
+.onboarding-conditions legend {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 6px;
+}
+.onboarding-help {
+  font-size: 12px !important;
+  background: #f6f8fc;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 15px 0;
+}
+.onboarding-message, .onboarding-validation {
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #b4d8ca;
+  background: #edf8f2;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 16px 0;
+}
+.onboarding-validation.has-errors {
+  background: #fff4ed;
+  border-color: #e7c5ac;
+}
+.onboarding-validation ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin-top: 8px;
+}
+.onboarding-empty {
+  padding: 45px;
+  background: white;
+  border: 1px dashed #b8c3d1;
+  border-radius: 16px;
+}
+.onboarding-admin .guide-preview {
+  border: 1px solid #d6dee8;
+  border-radius: 18px;
+  min-height: 500px;
+  overflow: hidden;
+}
+.onboarding-admin .guide-preview .guide-layout {
+  gap: 28px;
+  grid-template-columns: 190px minmax(0, 1fr);
+  padding: 30px;
+}
+.onboarding-admin .guide-preview button.guide-primary {
+  background: var(--guide-teal, #0b766e);
+  color: white;
+}
+.onboarding-admin .guide-preview .guide-option input[type="radio"],
+.onboarding-admin .guide-preview .guide-option input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.onboarding-admin .guide-preview .guide-option-copy strong {
+  font-size: 14px;
+}
+.onboarding-admin .guide-preview .guide-option {
+  width: 100%;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
+}
+.onboarding-mobile-preview {
+  max-width: 390px;
+  margin: auto;
+}
+.onboarding-admin .onboarding-mobile-preview .guide-layout {
+  grid-template-columns: 1fr;
+  padding: 20px;
+}
+.onboarding-mobile-preview .guide-route-art,
+.onboarding-mobile-preview .guide-route-hint,
+.onboarding-mobile-preview .guide-route-heading {
+  display: none;
+}
+.onboarding-mobile-preview .guide-chapters {
+  display: flex;
+}
+.onboarding-mobile-preview .guide-chapters li {
+  flex: 1;
+  flex-direction: column;
+  font-size: 10px;
+  text-align: center;
+}
+.onboarding-mobile-preview .guide-chapters li:after {
+  display: none;
+}
+.onboarding-mobile-preview .guide-route {
+  position: static;
+}
+.onboarding-mobile-preview h1 {
+  font-size: 26px;
+}
+.onboarding-table-wrap {
+  overflow: auto;
+}
+.onboarding-scenarios {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #d6dee8;
+  border-radius: 12px;
+}
+.onboarding-scenarios summary { cursor: pointer; font-weight: 700; }
+.onboarding-scenarios fieldset { margin: 16px 0; }
+.onboarding-scenarios label { margin: 12px 0; }
+.onboarding-funnel { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 12px; margin: 20px 0; }
+.onboarding-funnel article { border: 1px solid #d6dee8; border-radius: 12px; padding: 16px; }
+.onboarding-funnel span { display: block; font-size: 12px; }
+.onboarding-funnel strong { display: block; font-size: 28px; margin-top: 8px; }
+.onboarding-admin table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+.onboarding-admin td, .onboarding-admin th {
+  text-align: left;
+  border-bottom: 1px solid #e0e6ee;
+  padding: 12px;
+  white-space: nowrap;
+}
+.onboarding-admin th {
+  font-weight: 800;
+  background: #f6f8fc;
+}
+@media (max-width: 1000px) {
+  .onboarding-editor-grid {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-step-list {
+    position: static;
+    flex-direction: row;
+    max-height: none;
+    overflow: auto;
+  }
+  .onboarding-step-list button {
+    min-width: 190px;
+  }
+  .onboarding-condition {
+    grid-template-columns: 1fr 1fr;
+  }
+  .onboarding-title {
+    align-items: start;
+    flex-direction: column;
+  }
+  .onboarding-admin .guide-preview .guide-layout {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-panel {
+    padding: 16px;
+  }
+}
