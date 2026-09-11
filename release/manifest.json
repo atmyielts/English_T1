@@ -1,44 +1,34 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-assessment-services",
+  "releaseId": "account-startup-speed",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy",
-    "academy-docs"
+    "platform"
   ],
-  "migrations": [
-    "20260902100000_academy_assessment_services.sql",
-    "20260902120000_academy_assessment_operations.sql"
-  ],
+  "migrations": [],
   "edgeFunctions": [
-    "academy"
+    "me"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "academy"
-  ],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20260902100000_academy_assessment_services.sql",
-    "migration:20260902120000_academy_assessment_operations.sql",
-    "function:academy"
+    "function:me"
   ],
   "manualFollowUps": [
-    "After an authorized PR merge and successful Pages deploy, verify the linked production project and pending migrations before supabase db push --linked. Review unrelated pending migrations separately.",
-    "Deploy supabase functions deploy academy --project-ref <verified-production-project>. No new secrets.",
-    "Complete authenticated owner, scoped teacher and learner acceptance in a designated test academy before accepting bookings. Check cross-tenant denial.",
-    "The previously merged onboarding release retains its own checklist in release/history/adaptive-onboarding-guide.json. Preserve its code and published state; do not deploy or publish guide changes as part of this Academy release."
+    "After the authorized PR merge and successful Pages deployment, run supabase functions deploy me --project-ref bbjawctnqrufvnesdsel.",
+    "Verify landing-page session restoration and Academy workspace entry with an authorized production test account."
   ],
   "verification": [
-    "Run npm run test:academy:assessments, Academy lint, i18n, routes, Edge contracts/typecheck, both builds, verify:academy and verify:prod.",
-    "Verify registration without enrollment, timed save/restore, deadline rejection, review, release, report persistence and enrollment using authorized production test accounts.",
-    "Check English, Uzbek and Russian at phone and desktop widths, and confirm printed reports exclude unrelated records."
+    "Run verify:prod, both frontend builds, touched-file lint, the platform and Academy browser route suites, and the me handler tests and Deno check.",
+    "Confirm signed-in account controls appear without a guest-state flash on schood.online.",
+    "Confirm academy.schood.online dispatches a returning owner, teacher, and learner to the correct workspace without a repeated profile request."
   ],
   "rollback": {
-    "frontends": "Roll back schood-academy and schood-academy-docs Pages to the previous known-good commit in Cloudflare; never deploy Pages locally.",
-    "edgeFunctions": "Stop new assessment starts and redeploy the previous known-good academy Edge Function from its exact commit.",
-    "database": "Retain additive tables and all submitted evidence. Do not drop assessment data; existing Academy flows do not depend on the new tables."
+    "frontends": "Roll back schood-platform and schood-academy Pages to commit 781d8d5b7dcef8dc87520ffde8da6118b89f7fc5 in Cloudflare; never deploy Pages locally.",
+    "edgeFunctions": "Redeploy the me Edge Function from commit 781d8d5b7dcef8dc87520ffde8da6118b89f7fc5.",
+    "database": "No migration is included. Do not change production data during rollback."
   }
 }

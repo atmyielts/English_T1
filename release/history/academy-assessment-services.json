@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "academy-assessment-services",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": ["academy", "academy-docs"],
+  "migrations": ["20260902100000_academy_assessment_services.sql", "20260902120000_academy_assessment_operations.sql"],
+  "edgeFunctions": ["academy"],
+  "workers": [],
+  "sharedEdgeConsumers": ["academy"],
+  "requiredSecrets": [],
+  "rolloutOrder": ["pages", "migration:20260902100000_academy_assessment_services.sql", "migration:20260902120000_academy_assessment_operations.sql", "function:academy"],
+  "manualFollowUps": [
+    "After an authorized PR merge and successful Pages deploy, verify the linked production project and pending migrations before supabase db push --linked. Review unrelated pending migrations separately.",
+    "Deploy supabase functions deploy academy --project-ref <verified-production-project>. No new secrets.",
+    "Complete authenticated owner, scoped teacher and learner acceptance in a designated test academy before accepting bookings. Check cross-tenant denial.",
+    "The previously merged onboarding release retains its own checklist in release/history/adaptive-onboarding-guide.json. Preserve its code and published state; do not deploy or publish guide changes as part of this Academy release."
+  ],
+  "verification": [
+    "Run npm run test:academy:assessments, Academy lint, i18n, routes, Edge contracts/typecheck, both builds, verify:academy and verify:prod.",
+    "Verify registration without enrollment, timed save/restore, deadline rejection, review, release, report persistence and enrollment using authorized production test accounts.",
+    "Check English, Uzbek and Russian at phone and desktop widths, and confirm printed reports exclude unrelated records."
+  ],
+  "rollback": {
+    "frontends": "Roll back schood-academy and schood-academy-docs Pages to the previous known-good commit in Cloudflare; never deploy Pages locally.",
+    "edgeFunctions": "Stop new assessment starts and redeploy the previous known-good academy Edge Function from its exact commit.",
+    "database": "Retain additive tables and all submitted evidence. Do not drop assessment data; existing Academy flows do not depend on the new tables."
+  }
+}

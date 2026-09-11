@@ -47,6 +47,69 @@ const mockStudentCenter = async (page: Page, enabled = true, response: typeof da
 };
 
 test.describe('Student Center route and responsive contract', () => {
+  test('startup latency benchmark with fixed backend delays', async ({ page }) => {
+    test.skip(process.env.STARTUP_BENCHMARK !== '1', 'Run explicitly for before/after measurements.');
+    await seedSession(page);
+    await mockStudentCenter(page);
+    await page.route('**/rest/v1/products*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([
+        { id: 'ielts', name: 'IELTS Simulator', type: 'exam', status: 'active', description: 'Practice', metadata: { slug: 'ielts-simulator' } },
+      ]) });
+    });
+    await page.route('**/functions/v1/me', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ user: session.user, entitlements: [{ resource_type: 'product', resource_id: 'ielts' }] }) });
+    });
+    await page.route('**/functions/v1/access-effective*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{"effective_product_ids":["ielts"]}' });
+    });
+    await page.route('**/functions/v1/partner-office*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await route.fallback();
+    });
+    for (let sample = 0; sample < 3; sample += 1) {
+      const start = Date.now();
+      await page.goto('/');
+      await expect(page.getByRole('button', { name: 'Account', exact: true })).toBeVisible();
+      const accountMs = Date.now() - start;
+      await expect(page.locator('#my-services')).toBeVisible();
+      console.log('STARTUP_METRIC', JSON.stringify({ app: 'platform', sample, accountMs, servicesMs: Date.now() - start }));
+    }
+  });
+
+  test('restores the account before the catalog or optional center request finishes', async ({ page }) => {
+    await seedSession(page);
+    await mockStudentCenter(page);
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    const started: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/functions/v1/')) started.push(new URL(request.url()).pathname.split('/').pop()!);
+    });
+    await page.route('**/rest/v1/products*', async (route) => { await blocked; await route.fallback(); });
+    await page.route('**/functions/v1/partner-office*', async (route) => { await blocked; await route.fallback(); });
+    try {
+      await page.goto('/');
+      await expect(page.getByRole('button', { name: 'Your learning centre' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Account', exact: true })).toBeVisible();
+      await expect.poll(() => started.includes('me') && started.includes('access-effective')).toBe(true);
+      await expect(page.getByRole('button', { name: 'Sign up', exact: true })).toHaveCount(0);
+    } finally {
+      release();
+    }
+  });
+
+  test('catalog failure does not turn a returning learner into a guest', async ({ page }) => {
+    await seedSession(page);
+    await mockStudentCenter(page);
+    await page.route('**/rest/v1/products*', (route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"Catalog unavailable"}' }));
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Account', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Your learning centre' })).toBeVisible();
+  });
+
   test('signed-in learners can enter the Student Center from the platform header', async ({ page }) => {
     await seedSession(page);
     await mockStudentCenter(page);

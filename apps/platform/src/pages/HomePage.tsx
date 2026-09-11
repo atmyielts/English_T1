@@ -111,14 +111,76 @@ export const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    let authRevision = 0;
+    let accountUserId: string | undefined;
+    let accountToken: string | undefined;
+    let profileAccess = new Set<string>();
+    let effectiveAccess = new Set<string>();
+    const loadAccount = async (
+      session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session'],
+      force = false,
+    ) => {
+      if (!force && accountToken && accountToken === session?.access_token) return;
+      const revision = ++authRevision;
+      const current = () => !cancelled && revision === authRevision;
+      // Identity is already in the restored session; optional account data must
+      // never hold the header behind the catalog or the center-office request.
+      setEmail(session?.user.email ?? null);
+      if (accountUserId !== session?.user.id) {
+        setRole('user');
+        setEntitlements(new Set());
+        setHasCenterProfile(false);
+      }
+      accountUserId = session?.user.id;
+      accountToken = session?.access_token;
+      profileAccess = new Set();
+      effectiveAccess = new Set();
+      if (!session) return;
+
+      const publishAccess = () => {
+        if (current()) setEntitlements(new Set([...profileAccess, ...effectiveAccess]));
+      };
+      await Promise.allSettled([
+        getMe(session.access_token)
+          .then((me) => {
+            if (!current()) return;
+            setRole(String(me.user.role ?? 'user'));
+            profileAccess = new Set(
+              (me.entitlements ?? [])
+                .filter((e) => e.resource_type === 'product' && e.resource_id)
+                .map((e) => e.resource_id!),
+            );
+            publishAccess();
+          })
+          .catch((error: unknown) => {
+            if (current()) setError(error instanceof Error ? error.message : t('home.error.load'));
+          }),
+        getAccessEffective(session.access_token).then((effective) => {
+          effectiveAccess = new Set(effective.effective_product_ids ?? []);
+          publishAccess();
+        }),
+        partnerOfficeCenter(session.access_token).then((center) => {
+          if (current()) setHasCenterProfile(Boolean(center?.center?.tenant_id));
+        }),
+      ]);
+    };
+    // INITIAL_SESSION supplies the restored session too, avoiding duplicate
+    // bootstrap requests from getSession plus the auth event subscription.
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!cancelled) void loadAccount(session, event === 'USER_UPDATED');
+    });
+    return () => {
+      cancelled = true;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     const run = async () => {
       setLoading(true);
       setError(null);
-      setProducts([]);
-      setEntitlements(new Set());
-      setEmail(null);
-      setRole('user');
-      setHasCenterProfile(false);
 
       try {
         const { data: productsRes, error: prodErr } = await supabase
@@ -139,35 +201,16 @@ export const HomePage: React.FC = () => {
           return a.name.localeCompare(b.name);
         });
 
-        setProducts(sorted);
-
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData.session) {
-          const [me, effective, centerRes] = await Promise.all([
-            getMe(sessionData.session.access_token),
-            getAccessEffective(sessionData.session.access_token).catch(() => null),
-            partnerOfficeCenter(sessionData.session.access_token).catch(() => null),
-          ]);
-          setEmail(me.user.email ?? null);
-          setRole(String(me.user.role ?? 'user'));
-          setHasCenterProfile(Boolean(centerRes?.center?.tenant_id));
-          const set = new Set<string>();
-          (me.entitlements ?? []).forEach((e) => {
-            if (e.resource_type === 'product' && e.resource_id) set.add(e.resource_id);
-          });
-          (effective?.effective_product_ids ?? []).forEach((productId) => {
-            if (productId) set.add(String(productId));
-          });
-          setEntitlements(set);
-        }
+        if (!cancelled) setProducts(sorted);
       } catch (e) {
-        setError(e instanceof Error ? e.message : t('home.error.load'));
+        if (!cancelled) setError(e instanceof Error ? e.message : t('home.error.load'));
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     void run();
+    return () => { cancelled = true; };
   }, []);
 
   const isAuthed = !!email;
