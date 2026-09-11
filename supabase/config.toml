@@ -146,6 +146,9 @@ verify_jwt = false
 [functions.domain-events]
 verify_jwt = false
 
+[functions.domain-events-v2]
+verify_jwt = false
+
 [functions.exam-state]
 verify_jwt = false
 
