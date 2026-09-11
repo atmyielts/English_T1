@@ -245,6 +245,11 @@ const getEnv = (key: string): string => {
   return value;
 };
 
+const getOptionalEnv = (key: string): string | null => {
+  const value = Deno.env.get(key)?.trim();
+  return value ? value : null;
+};
+
 const getBearerToken = (req: Request): string | null => {
   const auth = req.headers.get("Authorization") ?? "";
   const authToken = auth.startsWith("Bearer ") ? auth.slice(7).trim() : auth.trim();
@@ -6778,15 +6783,19 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }),{status:200,headers:{...corsHeaders,'Content-Type':'application/json','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
     }
 
-    // ── Cron worker path: authenticated via DB-managed x-worker-secret ────────
+    // ── Cron worker path: authenticated via x-worker-secret ────────────────
     const workerSecret = req.headers.get("x-worker-secret");
     if (workerSecret) {
-      const { data: secretRow } = await sb
-        .from("internal_runtime_secrets")
-        .select("secret")
-        .eq("key", "academy_worker_secret")
-        .maybeSingle();
-      if (!secretRow?.secret || String(secretRow.secret) !== workerSecret) {
+      const envWorkerSecret = getOptionalEnv("ACADEMY_WORKER_SECRET");
+      const dbWorkerSecret = envWorkerSecret
+        ? null
+        : await sb
+          .from("internal_runtime_secrets")
+          .select("secret")
+          .eq("key", "academy_worker_secret")
+          .maybeSingle();
+      const expectedWorkerSecret = envWorkerSecret ?? String(dbWorkerSecret?.data?.secret ?? "").trim();
+      if (!expectedWorkerSecret || expectedWorkerSecret !== workerSecret) {
         return json(401, { error: "Unauthorized" });
       }
       const cronBody = req.method === "POST" ? await req.json().catch(() => ({})) : {};
