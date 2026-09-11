@@ -2081,6 +2081,52 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
   });
 };
 
+test('returning Academy entry loads access alongside the profile and reads the profile once', async ({ page }) => {
+  await seedSessionCookie(page, 'owner-user');
+  const actionLog: string[] = [];
+  await mockAcademyEdge(page, 'owner', { actionLog });
+  let release!: () => void;
+  const blocked = new Promise<void>((resolve) => { release = resolve; });
+  let profileRequests = 0;
+  await page.route('**/functions/v1/me', async (route) => {
+    profileRequests += 1;
+    await blocked;
+    await route.fallback();
+  });
+  try {
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/academy\/workspace/);
+    await expect.poll(() => actionLog.includes('academies') && actionLog.includes('student-dashboard')).toBe(true);
+  } finally {
+    release();
+  }
+  await expect(page).toHaveURL(/\/academies$/);
+  await expect(page.getByRole('heading', { name: 'Choose a workspace' })).toBeVisible();
+  expect(profileRequests).toBe(1);
+});
+
+test('startup latency benchmark with fixed backend delays', async ({ page }) => {
+  test.skip(process.env.STARTUP_BENCHMARK !== '1', 'Run explicitly for before/after measurements.');
+  await seedSessionCookie(page, 'owner-user');
+  await mockAcademyEdge(page, 'owner', {
+    delayActions: { academies: 800, 'student-dashboard': 800 },
+    actionOverrides: { 'student-dashboard': emptyStudentDashboardFixture },
+  });
+  let profileRequests = 0;
+  await page.route('**/functions/v1/me', async (route) => {
+    profileRequests += 1;
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    await route.fallback();
+  });
+  for (let sample = 0; sample < 3; sample += 1) {
+    profileRequests = 0;
+    const start = Date.now();
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Today at your academy' })).toBeVisible();
+    console.log('STARTUP_METRIC', JSON.stringify({ app: 'academy', sample, workspaceMs: Date.now() - start, profileRequests }));
+  }
+});
+
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
   test("owner can open the administrator route and see finance controls", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");

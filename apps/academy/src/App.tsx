@@ -1712,7 +1712,7 @@ const App = () => {
     return data;
   }, []);
 
-  const bootstrap = useCallback(async () => {
+  const bootstrap = useCallback(async (forceProfile = false) => {
     try {
       setError('');
       setNotice('');
@@ -1728,7 +1728,26 @@ const App = () => {
         return;
       }
 
-      const meResponse = await getMe();
+      // The service root only dispatches signed-in visitors. Resolve the
+      // workspace directly instead of fetching /me on both sides of a redirect.
+      if (isServiceLanding) {
+        navigate(location.search ? `/academy/workspace${location.search}` : '/academy/workspace', { replace: true });
+        return;
+      }
+
+      const shouldPreloadStudentData =
+        isWorkspaceEntry || isAcademyDirectory || isStudentWorkspaceRoute || !!academyClassroomLandingId;
+      const shouldAttemptTeacherData =
+        !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isInvitationAccept && !isAcademySetup;
+      // Each endpoint authenticates independently. Start these together rather
+      // than waiting for the full profile before asking for workspace access.
+      const [meResult, academiesResult, studentResult] = await Promise.allSettled([
+        getMe({ force: forceProfile }),
+        shouldAttemptTeacherData ? teacherStudioAcademies() : Promise.resolve([] as TeacherStudioAcademy[]),
+        shouldPreloadStudentData ? teacherStudioStudentDashboard() : Promise.resolve(null),
+      ]);
+      if (meResult.status === 'rejected') throw meResult.reason;
+      const meResponse = meResult.value;
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
       const teacherMembershipRows = memberships.filter(isAcademyStaffMembership);
       if (isInvitationAccept) {
@@ -1755,31 +1774,18 @@ const App = () => {
         setState('ready');
         return;
       }
-      if (isServiceLanding) {
-        setMe(meResponse);
-        setAcademies([]);
-        setStudentDashboard(null);
-        setAcademyId('');
-        setState('ready');
-        return;
-      }
-      let cachedStudentData: TeacherStudioStudentDashboard | null = null;
+      if (studentResult.status === 'rejected') throw studentResult.reason;
+      let cachedStudentData = studentResult.value;
       const loadStudentDataOnce = async (): Promise<TeacherStudioStudentDashboard> => {
         if (cachedStudentData) return cachedStudentData;
         cachedStudentData = await loadStudentData();
         return cachedStudentData;
       };
-      const shouldPreloadStudentData =
-        isWorkspaceEntry ||
-        isAcademyDirectory ||
-        isStudentWorkspaceRoute ||
-        !!academyClassroomLandingId;
-      const studentDataPromise = shouldPreloadStudentData ? loadStudentDataOnce() : null;
       let academyList: TeacherStudioAcademy[] = [];
-      const shouldAttemptTeacherData = !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isServiceLanding && !isInvitationAccept;
       if (shouldAttemptTeacherData) {
         try {
-          academyList = await teacherStudioAcademies();
+          if (academiesResult.status === 'rejected') throw academiesResult.reason;
+          academyList = academiesResult.value;
           academyList = academyList.filter(academyCanEnterOffice);
         } catch (teacherErr) {
           if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory || isWorkspaceEntry) {
@@ -1794,7 +1800,7 @@ const App = () => {
         !!academyClassroomLandingId ||
         !hasTeacherRouteAccess;
       const studentData = shouldLoadStudentData
-        ? await (studentDataPromise ?? loadStudentDataOnce())
+        ? await loadStudentDataOnce()
         : null;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
 
@@ -1859,6 +1865,8 @@ const App = () => {
     loadAcademyData,
     loadStudentData,
     requestedAcademyId,
+    navigate,
+    location.search,
   ]);
 
   useEffect(() => {
@@ -1866,11 +1874,6 @@ const App = () => {
     bootstrapScopeRef.current = bootstrapScope;
     void bootstrap();
   }, [bootstrap, bootstrapScope]);
-
-  useEffect(() => {
-    if (state !== 'ready' || !isServiceLanding || !me) return;
-    navigate(location.search ? `/academy/workspace${location.search}` : '/academy/workspace', { replace: true });
-  }, [isServiceLanding, location.search, me, navigate, state]);
 
   useEffect(() => {
     if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
@@ -1965,7 +1968,7 @@ const App = () => {
     if (!isTeacherWorkspaceRoute) {
       setBusy(true);
       try {
-        await bootstrap();
+        await bootstrap(true);
       } finally {
         setBusy(false);
       }
@@ -1973,7 +1976,7 @@ const App = () => {
     }
 
     if (!academyId) {
-      await bootstrap();
+      await bootstrap(true);
       return;
     }
     setBusy(true);

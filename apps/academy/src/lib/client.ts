@@ -1184,8 +1184,29 @@ const callTeacherStudio = async <T>(opts: {
   throw lastError instanceof Error ? lastError : new Error('Academy service call failed');
 };
 
-export const getMe = async (): Promise<MeResponse> => {
-  return invokeEdge<MeResponse>('me', { method: 'GET' });
+// Keep profile reads within a single entry/navigation burst together. The token
+// keys the cache, so switching accounts or refreshing credentials cannot reuse
+// another session's profile. Server endpoints still enforce current permissions.
+let profileRead: { token: string; expiresAt: number; promise: Promise<MeResponse> } | null = null;
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') profileRead = null;
+});
+
+export const getMe = async (options?: { force?: boolean }): Promise<MeResponse> => {
+  const token = await getAccessToken();
+  if (!options?.force && profileRead?.token === token && profileRead.expiresAt > Date.now()) return profileRead.promise;
+  const entry = {
+    token,
+    expiresAt: Date.now() + 15_000,
+    promise: invokeEdge<MeResponse>('me', { method: 'GET' }),
+  };
+  profileRead = entry;
+  try {
+    return await entry.promise;
+  } catch (error) {
+    if (profileRead === entry) profileRead = null;
+    throw error;
+  }
 };
 
 export const academyAssessmentRequest = <T>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> =>
