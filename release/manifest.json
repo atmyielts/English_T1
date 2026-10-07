@@ -1,44 +1,31 @@
 {
   "schemaVersion": 1,
-  "releaseId": "background-worker-retry-containment",
+  "releaseId": "sat-practice-access-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
-  "migrations": [
-    "20260911120000_stagger_background_workers.sql"
-  ],
+  "migrations": [],
   "edgeFunctions": [
-    "academy"
+    "sat-practice"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "academy",
-    "domain-events",
-    "domain-events-v2"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "secret:DOMAIN_EVENTS_WORKER_SECRET",
-    "secret:ACADEMY_WORKER_SECRET",
-    "migration:20260911120000_stagger_background_workers.sql",
-    "function:academy",
-    "function:domain-events-v2"
+    "pages",
+    "function:sat-practice"
   ],
   "manualFollowUps": [
-    "Synchronize the existing database values with supabase secrets set DOMAIN_EVENTS_WORKER_SECRET=... and supabase secrets set ACADEMY_WORKER_SECRET=... --project-ref bbjawctnqrufvnesdsel without exposing either value.",
-    "Run supabase db push --linked for 20260911120000_stagger_background_workers.sql after the authorized merge; the migration is idempotent with the incident hotfix.",
-    "Run supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel and supabase functions deploy domain-events-v2 --project-ref bbjawctnqrufvnesdsel after the migration is registered.",
-    "Verify Data API health, all three cron schedules, worker response codes, platform-events ingestion, and the signed-out landing and Academy routes."
+    "After the PR is merged and the automatic Pages deployment is healthy, run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel. No database migration or secret change is required."
   ],
   "verification": [
     "Run npm run verify:prod and npm run verify:release -- --base origin/main.",
-    "Run deno check for academy, domain-events, and domain-events-v2, plus the background-worker resilience contract.",
-    "Confirm the production health endpoint reports REST, Auth, Storage, and Realtime healthy after the rollout.",
-    "Confirm platform-events returns 202 and the scheduled Academy and domain-event workers no longer overlap or reject their internal secret."
+    "Run deno test --no-lock supabase/functions/sat-practice/access.test.ts and deno check --no-lock supabase/functions/sat-practice/index.ts.",
+    "Verify a QA learner without SAT Practice access is denied before reads or writes; check QA-owned effective access and normal public startup. Questions withhold the separate answer key until scoring, including spaced review."
   ],
   "rollback": {
-    "frontends": "No frontend source changed. If the automatic Pages redeploy fails, restore the previous deployment for the affected project in Cloudflare; never deploy Pages locally.",
-    "edgeFunctions": "Redeploy academy from b24b2785ae43620724243931bae396b54ce43678. Restore domain-events-v2 gateway verification only after disabling its cron job, otherwise scheduled calls will return 401 again.",
-    "database": "Restore the previous cron expressions from their source migrations. Keep the worker secrets because they are copies of the existing database-managed values and remain valid for the fallback path."
+    "frontends": "No frontend source changed. Use the previous Cloudflare Pages deployment if an unchanged frontend redeploy regresses; never deploy Pages locally.",
+    "edgeFunctions": "Baseline revision 1d713840d1b9639f16cca28081a9eab9ff538b05. Prefer a forward fix for access availability: reverting this function reopens the known access and answer-key gap.",
+    "database": "No schema, grant or customer data change."
   }
 }

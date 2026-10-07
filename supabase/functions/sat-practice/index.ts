@@ -18,10 +18,10 @@ import {
   type SatSectionType,
 } from "../_shared/sat-practice-core.ts";
 import { buildSatPracticePlan } from "../_shared/sat-practice-plan-generator.ts";
+import { practiceAccess, questionForLearner, SAT_PRACTICE_PRODUCT_ID } from "./access.ts";
 
 type JsonRecord = Record<string, unknown>;
 
-const SAT_PRACTICE_PRODUCT_ID = "2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -377,7 +377,11 @@ serve(async (req) => {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
     const sb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
-    const user = await assertUser(sb, getBearerToken(req));
+    const token = getBearerToken(req);
+    const user = await assertUser(sb, token);
+    const access = await practiceAccess(supabaseUrl, getEnv("SUPABASE_ANON_KEY"), token);
+    if (access === "unavailable") return json(503, { error: "Access verification is temporarily unavailable. Please retry.", code: "access_unavailable" });
+    if (access === "denied") return json(403, { error: "Premium access required", code: "premium_required", product_id: SAT_PRACTICE_PRODUCT_ID });
 
     if (req.method === "GET" && path === "/goals") {
       return json(200, { goals: await getOrCreateGoals(sb, user.id) });
@@ -418,7 +422,7 @@ serve(async (req) => {
         difficulty: url.searchParams.get("difficulty") ? canonicalDifficulty(url.searchParams.get("difficulty")) : undefined,
         limit: Math.round(toNumber(url.searchParams.get("limit")) ?? 30),
       });
-      return json(200, { questions });
+      return json(200, { questions: questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/start") {
@@ -442,7 +446,7 @@ serve(async (req) => {
         status: "in_progress",
       }).select("*").single();
       if (error) throw error;
-      return json(200, { attempt: data, questions });
+      return json(200, { attempt: data, questions: questions.map(questionForLearner) });
     }
 
     const attemptMatch = path.match(/^\/attempts\/([0-9a-f-]{36})$/i);
@@ -451,7 +455,7 @@ serve(async (req) => {
       const { data: attempt, error } = await sb.from("sat_practice_lab_attempts").select("*").eq("id", attemptId).eq("user_id", user.id).single();
       if (error) throw error;
       const questions = await loadBankQuestions(sb, { question_ids: attempt.question_ids ?? [], limit: 100 });
-      return json(200, { attempt, questions });
+      return json(200, { attempt, questions: attempt.status === "scored" ? questions : questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/submit") {
@@ -536,14 +540,14 @@ serve(async (req) => {
         status: "in_progress",
       }).select("*").single();
       if (attemptError) throw attemptError;
-      return json(200, { attempt, questions });
+      return json(200, { attempt, questions: questions.map(questionForLearner) });
     }
 
     if (req.method === "GET" && path === "/srs/due") {
       const { data, error } = await sb.from("sat_practice_srs_queue").select("*").eq("user_id", user.id).lte("next_review_at", new Date().toISOString()).order("next_review_at").limit(20);
       if (error) throw error;
       const questions = await loadBankQuestions(sb, { question_ids: (data ?? []).map((row: any) => row.question_id), limit: 30 });
-      const byId = new Map<string, any>(questions.map((q: any) => [q.id, q]));
+      const byId = new Map<string, any>(questions.map((q: any) => [q.id, questionForLearner(q)]));
       const items = (data ?? []).map((row: any) => ({
         id: row.id,
         section_type: byId.get(row.question_id)?.section_type ?? "reading_writing",
