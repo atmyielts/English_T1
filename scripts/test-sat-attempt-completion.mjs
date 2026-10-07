@@ -52,6 +52,9 @@ try {
   const spine=readFileSync('supabase/migrations/20260202170000_platform_spine.sql','utf8');
   const tableDDL=name=>spine.slice(spine.indexOf('create table if not exists public.'+name+' ('),spine.indexOf('\n);',spine.indexOf('create table if not exists public.'+name+' ('))+4);
   await sql(tableDDL('sessions')+'\n'+tableDDL('responses'));
+  await sql("alter table sessions add column token_id uuid,add column registration_id uuid;create function auth.role() returns text language sql as $$ select coalesce(current_setting('request.jwt.claim.role',true),'') $$;");
+  await sql(readFileSync('supabase/migrations/20260217193000_sessions_integrity_guard.sql','utf8'));
+  await sql(readFileSync('supabase/migrations/20260303234000_fix_sessions_integrity_guard_service_role.sql','utf8'));
   for(const file of ['20260514121000_sat_practice_mistake_notebook.sql','20260514122000_sat_practice_mastery_and_plan.sql','20260514123000_sat_practice_lab_attempts_and_srs.sql','20260514124000_sat_practice_activity_and_ai_questions.sql'])await sql(readFileSync('supabase/migrations/'+file,'utf8'));
   await sql('grant all on all tables in schema public to service_role;grant select,insert,update,delete on all tables in schema public to authenticated;grant update(score_raw) on sat_practice_lab_attempts to authenticated;');
   await sql(readFileSync('supabase/migrations/20261007100000_sat_attempt_atomic_completion.sql','utf8'));
