@@ -4005,7 +4005,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.getByRole("button", { name: "Review message" }).click();
     await expect(page.getByText("This message stays private and is delivered by the student bot.")).toBeVisible();
     await page.getByRole("button", { name: "Send privately" }).click();
-    expect(telegramActions).toContain("send_private_warning");
+    await expect.poll(() => telegramActions).toContain("send_private_warning");
     await navigation.getByRole("button", { name: "Inbox" }).click();
     await expect(page.getByRole("heading", { name: "Open requests" })).toBeVisible();
     await expect(page.getByText("Move Friday lesson")).toBeVisible();
