@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-atomic-completion",
+  "releaseId": "sat-practice-filtered-bank",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "sat-practice"
   ],
   "migrations": [
-    "20261007100000_sat_attempt_atomic_completion.sql"
+    "20261008100000_sat_bank_filtered_selection.sql"
   ],
   "edgeFunctions": [
     "sat-practice"
@@ -19,21 +19,21 @@
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261007100000_sat_attempt_atomic_completion.sql",
+    "migration:20261008100000_sat_bank_filtered_selection.sql",
     "function:sat-practice"
   ],
   "manualFollowUps": [
-    "After merge and healthy Pages rollout, inspect supabase db push --linked --dry-run; apply only 20261007100000_sat_attempt_atomic_completion.sql using supabase db push --linked. Verify migration list.",
-    "Then run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel --use-api and verify source/JWT configuration."
+    "After the reviewed Pages release is healthy, inspect supabase db push --linked --dry-run; apply only 20261008100000_sat_bank_filtered_selection.sql using supabase db push --linked. Verify migration list.",
+    "Deploy supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel --use-api, then verify the source, JWT verification and exclusive-QA filtered-bank smoke."
   ],
   "verification": [
-    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:completion; SAT build and Edge typecheck.",
-    "Native PostgreSQL proves independent concurrent retries, competing answers, cross-actor rejection, all-or-nothing rollback, immutable snapshots and browser grant denial.",
-    "QA-owned production smoke: exact effective access, original result on identical retries, changed-answer conflict, no extra mastery/SRS/responses/notebook/activity/XP, saved feedback, and QA entitlement cleanup."
+    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:bank; npm run test:sat:completion; SAT Practice build and Edge typecheck.",
+    "Native PostgreSQL checks filters before limits, actor-isolated legacy/SRS history, explicit empty IDs, retired content, stable sort and private RPC permissions. Actual browser checks filter races, history propagation, empty/error recovery, one-flight starts, labels and mobile fit.",
+    "Production QA: Math filter after earlier RW items, unavailable difficulty returns empty, no unfiltered start fallback, history matches own progress, unchanged scored receipt replay and answer-key privacy."
   ],
   "rollback": {
-    "frontends": "Previous healthy Pages source 8723bc04fbef52d6d30523299538d52eec093553. Use tracked CI deployments/Pages dashboard if needed; never local Pages deploy.",
-    "edgeFunctions": "Prefer a forward fix. Restoring version15 keeps additive schema compatibility but reopens duplicate progress and XP; do not silently revert.",
-    "database": "Keep additive receipt table and permissions. No drop or existing-row rewrites. Migration before new Edge; old Edge service-role writes remain permitted. Shared simulator sessions/responses grants unchanged."
+    "frontends": "Previous healthy Pages source 254302fecb81677dd618562a4b77b7665fa23bd5. Use tracked CI deployments or Pages dashboard; never local Pages deploy.",
+    "edgeFunctions": "Previous healthy SAT Practice Edge version16 is compatible with the additive query migration. Prefer a forward fix; retain atomic completion.",
+    "database": "Keep the additive service-only query function. No existing content, scores, customer rows, permissions or keys are rewritten by this migration."
   }
 }

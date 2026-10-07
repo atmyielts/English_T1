@@ -1,3 +1,4 @@
+import { bankFilters, loadBankQuestions } from './bank.ts';
 import { AttemptError, ownedAttempt, savedAttemptResult, submitAttempt } from './completion.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -8,11 +9,7 @@ import {
   canonicalSection,
   expectedPointImpact,
   isObject,
-  sectionForDomain,
   toNumber,
-  type SatDifficulty,
-  type SatDomain,
-  type SatSectionType,
 } from "../_shared/sat-practice-core.ts";
 import { buildSatPracticePlan } from "../_shared/sat-practice-plan-generator.ts";
 import { practiceAccess, questionForLearner, SAT_PRACTICE_PRODUCT_ID } from "./access.ts";
@@ -58,91 +55,6 @@ const assertUser = async (sb: any, token: string): Promise<{ id: string; email: 
   const { data, error } = await sb.auth.getUser(token);
   if (error || !data?.user) throw new Error("Unauthorized");
   return { id: data.user.id, email: data.user.email ?? null };
-};
-
-const normalizeQuestion = (unit: any, answerKey?: any) => {
-  const metadata = isObject(unit.metadata) ? unit.metadata : {};
-  const rawSection = canonicalSection(metadata.section_type ?? metadata.section ?? metadata.domain);
-  const rawDomain = canonicalDomain(metadata.sat_domain ?? metadata.domain, rawSection);
-  const section = sectionForDomain(rawDomain) === "math" || rawSection === "math" ? "math" : "reading_writing";
-  return {
-    id: String(unit.id),
-    type: String(unit.type),
-    data: isObject(unit.data) ? unit.data : {},
-    metadata,
-    section_type: section,
-    domain: rawDomain,
-    difficulty: canonicalDifficulty(metadata.difficulty ?? metadata.difficulty_tier),
-    correct: answerKey?.correct ?? null,
-  };
-};
-
-const loadBankQuestions = async (
-  sb: any,
-  filters: Partial<{
-    section_type: SatSectionType;
-    domain: SatDomain;
-    difficulty: SatDifficulty;
-    question_ids: string[];
-    limit: number;
-  }> = {},
-) => {
-  const { data: experiences, error: expError } = await sb
-    .from("experiences")
-    .select("id, metadata")
-    .eq("metadata->>format", "sat_practice_bank")
-    .eq("is_active", true);
-  if (expError) throw expError;
-  const experienceIds = (experiences ?? []).map((row: any) => row.id);
-  if (experienceIds.length === 0) return [];
-
-  const { data: sections, error: secError } = await sb
-    .from("sections")
-    .select("id, experience_id, metadata")
-    .in("experience_id", experienceIds);
-  if (secError) throw secError;
-  const sectionIds = (sections ?? []).map((row: any) => row.id);
-  if (sectionIds.length === 0) return [];
-
-  const { data: parts, error: partError } = await sb
-    .from("parts")
-    .select("id, section_id")
-    .in("section_id", sectionIds);
-  if (partError) throw partError;
-  const partIds = (parts ?? []).map((row: any) => row.id);
-  if (partIds.length === 0) return [];
-
-  let unitQuery = sb
-    .from("content_units")
-    .select("id, part_id, type, data, display_order, metadata")
-    .in("part_id", partIds)
-    .neq("type", "instruction")
-    .order("display_order", { ascending: true })
-    .limit(Math.max(1, Math.min(100, filters.limit ?? 30)));
-
-  if (filters.question_ids && filters.question_ids.length > 0) {
-    unitQuery = unitQuery.in("id", filters.question_ids);
-  }
-
-  const { data: units, error: unitError } = await unitQuery;
-  if (unitError) throw unitError;
-  const ids = (units ?? []).map((row: any) => row.id);
-
-  const answerById = new Map<string, any>();
-  if (ids.length > 0) {
-    const { data: keys, error: keyError } = await sb
-      .from("answer_keys")
-      .select("content_unit_id, correct")
-      .in("content_unit_id", ids);
-    if (keyError) throw keyError;
-    for (const key of keys ?? []) answerById.set(String(key.content_unit_id), key);
-  }
-
-  return (units ?? [])
-    .map((unit: any) => normalizeQuestion(unit, answerById.get(String(unit.id))))
-    .filter((q: any) => !filters.section_type || q.section_type === filters.section_type)
-    .filter((q: any) => !filters.domain || q.domain === filters.domain)
-    .filter((q: any) => !filters.difficulty || q.difficulty === filters.difficulty);
 };
 
 const getOrCreateGoals = async (sb: any, userId: string) => {
@@ -221,7 +133,7 @@ const computeScoreImpact = (notebook: any[], mastery: any[]) => {
   let conservative = 0;
   let optimistic = 0;
   for (const [domain, entry] of byDomain.entries()) {
-    const impact = expectedPointImpact(domain as SatDomain, entry.accuracy, entry.count);
+    const impact = expectedPointImpact(domain as Parameters<typeof expectedPointImpact>[0], entry.accuracy, entry.count);
     conservative += impact.conservative;
     optimistic += impact.optimistic;
   }
@@ -255,8 +167,8 @@ const createSessionForAttempt = async (sb: any, userId: string, metadata: JsonRe
   return data?.id ?? null;
 };
 
-const getQuestionById = async (sb: any, questionId: string) => {
-  const questions = await loadBankQuestions(sb, { question_ids: [questionId], limit: 1 });
+const getQuestionById = async (sb: any, userId: string, questionId: string) => {
+  const questions = await loadBankQuestions(sb, userId, { question_ids: [questionId], limit: 1 });
   return questions[0] ?? null;
 };
 
@@ -308,27 +220,15 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && path === "/bank") {
-      const questions = await loadBankQuestions(sb, {
-        section_type: url.searchParams.get("section_type") ? canonicalSection(url.searchParams.get("section_type")) : undefined,
-        domain: url.searchParams.get("domain") ? canonicalDomain(url.searchParams.get("domain")) : undefined,
-        difficulty: url.searchParams.get("difficulty") ? canonicalDifficulty(url.searchParams.get("difficulty")) : undefined,
-        limit: Math.round(toNumber(url.searchParams.get("limit")) ?? 30),
-      });
+      const filters = bankFilters(Object.fromEntries(url.searchParams));
+      const questions = await loadBankQuestions(sb, user.id, filters);
       return json(200, { questions: questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/start") {
       const body = await readBody(req);
-      const questionIds = Array.isArray(body.question_ids) ? body.question_ids.map(String).filter(Boolean) : [];
-      const filters = {
-        section_type: body.section_type ? canonicalSection(body.section_type) : undefined,
-        domain: body.domain ? canonicalDomain(body.domain, body.section_type ? canonicalSection(body.section_type) : undefined) : undefined,
-        difficulty: body.difficulty ? canonicalDifficulty(body.difficulty) : undefined,
-        question_ids: questionIds.length > 0 ? questionIds : undefined,
-        limit: Math.round(toNumber(body.question_count) ?? 10),
-      };
-      let questions = await loadBankQuestions(sb, filters);
-      if (questions.length === 0) questions = await loadBankQuestions(sb, { limit: filters.limit });
+      const filters = bankFilters({ ...body, limit: body.question_count }, 10);
+      const questions = await loadBankQuestions(sb, user.id, filters);
       if (questions.length === 0) return json(409, { error: "No practice questions are available. Please try a different filter." });
       const sessionId = await createSessionForAttempt(sb, user.id, { filters });
       const { data, error } = await sb.from("sat_practice_lab_attempts").insert({
@@ -348,13 +248,13 @@ serve(async (req) => {
       const attempt = await ownedAttempt(sb, user.id, attemptId);
       const saved = await savedAttemptResult(sb, user.id, attempt);
       if (saved) return json(200, saved);
-      const questions = await loadBankQuestions(sb, { question_ids: attempt.question_ids ?? [], limit: 100 });
+      const questions = await loadBankQuestions(sb, user.id, { question_ids: attempt.question_ids ?? [], limit: 100 }, { includeRetired: true });
       return json(200, { attempt, questions: attempt.status === "scored" ? questions : questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/submit") {
       const body = await readBody(req);
-      const result = await submitAttempt(sb, user.id, body, ids => loadBankQuestions(sb, { question_ids: ids, limit: 100 }));
+      const result = await submitAttempt(sb, user.id, body, ids => loadBankQuestions(sb, user.id, { question_ids: ids, limit: 100 }, { includeRetired: true }));
       return json(200, result);
     }
 
@@ -379,12 +279,13 @@ serve(async (req) => {
     if (notebookMatch && req.method === "POST" && path.endsWith("/retry")) {
       const { data: item, error } = await sb.from("sat_practice_mistake_notebook").select("*").eq("id", notebookMatch[1]).eq("user_id", user.id).single();
       if (error) throw error;
-      const questions = await loadBankQuestions(sb, {
+      const questions = await loadBankQuestions(sb, user.id, {
         section_type: canonicalSection(item.section_type),
         domain: canonicalDomain(item.domain, canonicalSection(item.section_type)),
         difficulty: canonicalDifficulty(item.difficulty),
         limit: 6,
       });
+      if (questions.length === 0) return json(409, { error: "No questions match this review. Try another domain in the question bank." });
       const sessionId = await createSessionForAttempt(sb, user.id, { retry_notebook_id: item.id });
       const { data: attempt, error: attemptError } = await sb.from("sat_practice_lab_attempts").insert({
         user_id: user.id,
@@ -398,15 +299,13 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && path === "/srs/due") {
-      const { data, error } = await sb.from("sat_practice_srs_queue").select("*").eq("user_id", user.id).lte("next_review_at", new Date().toISOString()).order("next_review_at").limit(20);
-      if (error) throw error;
-      const questions = await loadBankQuestions(sb, { question_ids: (data ?? []).map((row: any) => row.question_id), limit: 30 });
-      const byId = new Map<string, any>(questions.map((q: any) => [q.id, questionForLearner(q)]));
-      const items = (data ?? []).map((row: any) => ({
+      const { data, error } = await sb.rpc("select_sat_practice_due_questions", { p_user_id: user.id });
+      if (error || !Array.isArray(data)) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.");
+      const items = data.map((row: any) => ({
         id: row.id,
-        section_type: byId.get(row.question_id)?.section_type ?? "reading_writing",
-        domain: byId.get(row.question_id)?.domain ?? "grammar",
-        difficulty: byId.get(row.question_id)?.difficulty ?? "medium",
+        section_type: row.question.section_type,
+        domain: row.question.domain,
+        difficulty: row.question.difficulty,
         source: "practice_lab",
         question_id: row.question_id,
         reason_tag: "unknown",
@@ -417,7 +316,7 @@ serve(async (req) => {
         next_review_at: row.next_review_at,
         last_seen_at: row.last_reviewed_at,
         created_at: row.created_at,
-        question: byId.get(row.question_id) ?? null,
+        question: questionForLearner(row.question),
       }));
       return json(200, { items });
     }
@@ -448,7 +347,7 @@ serve(async (req) => {
       const mode = tutorMatch[1];
       const body = await readBody(req);
       const questionId = String(body.question_id ?? "");
-      const question = await getQuestionById(sb, questionId);
+      const question = await getQuestionById(sb, user.id, questionId);
       if (!question) return json(404, { error: "Question not found" });
       const fallback = {
         steps: ["Identify the tested concept.", "Eliminate choices that do not match the rule.", "Select the answer that satisfies the prompt."],

@@ -12,7 +12,9 @@ const qaId = value('--qa-user-id');
 if (!/^[0-9a-f-]{36}$/i.test(qaId ?? '')) throw Error('An existing tagged QA identity is required.');
 const after = args.includes('--after');
 const atomic = args.includes('--atomic');
+const filteredBank = args.includes('--bank');
 if (atomic && !after) throw Error('Atomic smoke requires --after.');
+if (filteredBank && !after) throw Error('Filtered bank smoke requires --after.');
 const base = 'https://bbjawctnqrufvnesdsel.supabase.co';
 const product = '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010';
 const lookup = spawnSync('supabase', ['projects', 'api-keys', '--project-ref', 'bbjawctnqrufvnesdsel', '--output', 'json'], { encoding: 'utf8', windowsHide: true });
@@ -62,8 +64,44 @@ try {
     check('Temporary QA-only entitlement created', grant.status === 201 && grant.data?.[0]?.id === grantId, { status: grant.status, databaseErrorCode: grant.data?.code ?? null });
     const allowed = await request('/functions/v1/access-effective', qaHeaders);
     check('Canonical access recognizes the QA grant', allowed.status === 200 && allowed.data?.effective_product_ids?.includes(product));
+    if (filteredBank) {
+      const mathBank = await request('/functions/v1/sat-practice/bank?section_type=math&limit=10', qaHeaders);
+      check('Math selection reaches matching questions beyond earlier RW items', mathBank.status === 200 && mathBank.data?.questions?.length === 10 && mathBank.data.questions.every(q => q.section_type === 'math' && !Object.hasOwn(q,'correct')));
+      const contradictory = await request('/functions/v1/sat-practice/bank?section_type=reading_writing&domain=algebra&limit=10', qaHeaders);
+      check('Contradictory filters return an explicit empty bank', contradictory.status === 200 && contradictory.data?.questions?.length === 0);
+      const beforeEmpty = await request(`/rest/v1/sat_practice_lab_attempts?user_id=eq.${qaId}&select=id`);
+      for (const body of [{section_type:'reading_writing',domain:'algebra',question_count:10},{question_ids:[],question_count:10}]) {
+        const empty = await request('/functions/v1/sat-practice/attempts/start',qaHeaders,'POST',body);
+        check('Empty or contradictory drill selection has no unrelated fallback',empty.status === 409,{status:empty.status});
+      }
+      const afterEmpty = await request(`/rest/v1/sat_practice_lab_attempts?user_id=eq.${qaId}&select=id`);
+      assert.equal(beforeEmpty.status,200);assert.equal(afterEmpty.status,200);
+      assert.deepEqual(afterEmpty.data.map(q=>q.id).sort(),beforeEmpty.data.map(q=>q.id).sort());
+      check('Rejected empty starts create no QA attempts',true);
+      const invalid = await request('/functions/v1/sat-practice/bank?domain=unknown',qaHeaders);
+      check('Invalid subject is rejected rather than changed to grammar',invalid.status===400,{status:invalid.status});
+      const queue = await request(`/rest/v1/sat_practice_srs_queue?user_id=eq.${qaId}&select=question_id,incorrect_count,correct_count,leitner_box`);
+      const attempts = await request(`/rest/v1/sat_practice_lab_attempts?user_id=eq.${qaId}&status=eq.scored&select=question_ids,scored_items`);
+      assert.equal(queue.status,200);assert.equal(attempts.status,200);
+      const seen = new Set(queue.data.filter(q=>q.correct_count+q.incorrect_count>0).map(q=>q.question_id));
+      const missed = new Set(queue.data.filter(q=>q.incorrect_count>0).map(q=>q.question_id));
+      const mastered = new Set(queue.data.filter(q=>q.leitner_box===5&&q.correct_count>0).map(q=>q.question_id));
+      for(const a of attempts.data){for(const id of a.question_ids)seen.add(id);for(const item of a.scored_items??[])if(item.correct===false)missed.add(item.question_id);}
+      for(const history of ['previously_missed','mastered','unseen']){
+        const selected = await request('/functions/v1/sat-practice/bank?mistake_history='+history+'&limit=100',qaHeaders);
+        check('QA history matches its own scored progress: '+history,selected.status===200&&Array.isArray(selected.data?.questions)&&selected.data.questions.every(q=>history==='unseen'?!seen.has(q.id):history==='mastered'?mastered.has(q.id):missed.has(q.id)));
+      }
+      const missedStart = await request('/functions/v1/sat-practice/attempts/start',qaHeaders,'POST',{mistake_history:'previously_missed',question_count:1});
+      check('Drill start applies and records the same history filter',missed.size===0?missedStart.status===409:missedStart.status===200&&missedStart.data?.attempt?.filters_used?.mistake_history==='previously_missed'&&missedStart.data?.questions?.length===1&&missed.has(missedStart.data.questions[0].id));
+      for(const rpc of ['select_sat_practice_questions','select_sat_practice_due_questions']){
+        const privateQuery=await request('/rest/v1/rpc/'+rpc,qaHeaders,'POST',{p_user_id:qaId});
+        check('Browser cannot directly call private bank RPC: '+rpc,[401,403].includes(privateQuery.status),{status:privateQuery.status});
+      }
+      const reviews=await request('/functions/v1/sat-practice/srs/due',qaHeaders);
+      check('QA due reviews contain usable questions and withhold answer keys',reviews.status===200&&Array.isArray(reviews.data?.items)&&reviews.data.items.every(q=>q.question?.id&&!Object.hasOwn(q.question,'correct')));
+    }
     const paidBank = await request('/functions/v1/sat-practice/bank?limit=1', qaHeaders);
-    check('Entitled QA can read usable questions without keys', paidBank.status === 200 && paidBank.data?.questions?.length === 1 && paidBank.data.questions.every((q) => q.id && q.data && !Object.hasOwn(q, 'correct')), { status: paidBank.status });
+    check('Entitled QA can read question data without keys', paidBank.status === 200 && paidBank.data?.questions?.length === 1 && paidBank.data.questions.every((q) => q.id && q.data && !Object.hasOwn(q, 'correct')), { status: paidBank.status });
     const started = await request('/functions/v1/sat-practice/attempts/start', qaHeaders, 'POST', { question_count: 1, question_ids: [paidBank.data.questions[0].id] });
     check('QA attempt starts with withheld keys', started.status === 200 && started.data?.attempt?.user_id === qaId && started.data.attempt.status === 'in_progress' && started.data.questions?.length === 1 && !Object.hasOwn(started.data.questions[0], 'correct'), { status: started.status });
     const attemptId = started.data.attempt.id;
