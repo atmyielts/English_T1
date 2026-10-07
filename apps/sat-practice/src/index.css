@@ -281,6 +281,10 @@ a {
 .kpi-grid,
 .two-col,
 .feature-grid,
+.bank-filters { border: 0; padding: 0; margin-inline: 0; }
+.bank-filters legend { margin-bottom: 0.75rem; font-weight: 600; }
+.bank-filters label { display: grid; gap: 0.4rem; }
+
 .question-grid {
   display: grid;
   gap: 16px;

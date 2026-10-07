@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T19:52:17.689Z",
+  "engine": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+  "productionContacted": false,
+  "checks": [
+    {
+      "name": "Math filters scan past 40 earlier RW questions before applying the limit",
+      "status": "passed"
+    },
+    {
+      "name": "Late geometry and hard-difficulty matches are found",
+      "status": "passed"
+    },
+    {
+      "name": "Contradictory or unavailable filters produce empty results",
+      "status": "passed"
+    },
+    {
+      "name": "Explicit empty IDs stay empty; selected IDs respect filters",
+      "status": "passed"
+    },
+    {
+      "name": "Retired and missing-key questions stay out of new drills while historical prompts remain reviewable",
+      "status": "passed"
+    },
+    {
+      "name": "Previously missed history includes scored legacy work and excludes another actor",
+      "status": "passed"
+    },
+    {
+      "name": "Repeatedly correct means the actor reached the highest review box",
+      "status": "passed"
+    },
+    {
+      "name": "Unseen excludes scored legacy questions and reviewed questions, not someone else’s history",
+      "status": "passed"
+    },
+    {
+      "name": "History is applied before limits and sort order is stable",
+      "status": "passed"
+    },
+    {
+      "name": "Inactive content cannot enter new drills but explicitly owned legacy reads can load it",
+      "status": "passed"
+    },
+    {
+      "name": "Browser roles cannot request keys or another actor’s history",
+      "status": "passed"
+    },
+    {
+      "name": "Invalid server filters are rejected, including an unrestricted retired read",
+      "status": "passed"
+    },
+    {
+      "name": "Retired reviews cannot hide later usable due items; due history is actor isolated and private",
+      "status": "passed"
+    }
+  ]
+}

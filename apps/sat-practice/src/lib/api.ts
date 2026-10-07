@@ -227,6 +227,7 @@ export const attemptStart = (
     difficulty: SatDifficulty;
     question_count: number;
     question_ids: string[];
+    mistake_history: string;
   }>,
 ): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
   call(accessToken, '/sat-practice/attempts/start', { method: 'POST', body });

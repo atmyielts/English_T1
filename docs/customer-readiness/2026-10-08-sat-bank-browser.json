@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-07T19:27:48.956Z",
+  "productionContacted": false,
+  "checks": [
+    {
+      "case": "subject-domain-consistency-and-shareable-filter-url",
+      "passed": true
+    },
+    {
+      "case": "slow-old-filter-response-cannot-overwrite-current-results",
+      "passed": true
+    },
+    {
+      "case": "empty-history-results-have-explicit-state-and-no-start",
+      "passed": true
+    },
+    {
+      "case": "double-start-sends-once-preserves-history-and-exposes-retry-error",
+      "passed": true
+    },
+    {
+      "case": "bank-outage-clears-old-questions-and-recovers-with-retry",
+      "passed": true
+    },
+    {
+      "case": "accessible-labeled-filters-and-responsive-320-390-1280",
+      "passed": true
+    },
+    {
+      "case": "successful-start-opens-the-confirmed-attempt",
+      "passed": true
+    }
+  ],
+  "accessibilityViolations": [],
+  "widths": [
+    320,
+    390,
+    1280
+  ],
+  "screenshotsVisuallyInspected": true,
+  "syntheticContent": true,
+  "externalRequestsBlocked": true
+}
