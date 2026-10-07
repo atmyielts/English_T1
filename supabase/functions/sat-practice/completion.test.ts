@@ -21,14 +21,14 @@ function fixture(status = "in_progress", rpcError: any = null) {
     answers: {},
   };
   const sb = {
-    from: () => {
+    from: (table: string) => {
       const query: any = {
         select: () => query,
         eq: (key: string, value: string) => {
           calls.push({ key, value });
           return query;
         },
-        maybeSingle: () => Promise.resolve({ data: attempt, error: null }),
+        maybeSingle: () => Promise.resolve({ data: table === 'sat_practice_attempt_sources' ? null : attempt, error: null }),
       };
       return query;
     },

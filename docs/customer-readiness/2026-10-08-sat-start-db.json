@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T20:32:28.341Z",
+  "engine": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+  "productionContacted": false,
+  "checks": [
+    {
+      "name": "Start atomically creates the session, attempt and private frozen questions",
+      "status": "passed"
+    },
+    {
+      "name": "Twelve concurrent retries create one drill and replay its original selection",
+      "status": "passed"
+    },
+    {
+      "name": "Foreign request identity stays private and changed selection cannot reuse an ID",
+      "status": "passed"
+    },
+    {
+      "name": "Different-selection start races have one winner and leave one session/source",
+      "status": "passed"
+    },
+    {
+      "name": "No matches, empty IDs and malformed limits leave no orphan session",
+      "status": "passed"
+    },
+    {
+      "name": "A failure on the final source insert rolls back the preceding session and attempt",
+      "status": "passed"
+    },
+    {
+      "name": "Editing prompts and removing live keys does not alter a started drill or its score",
+      "status": "passed"
+    },
+    {
+      "name": "Substituted questions are rejected before any scoring effects",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent start replay and twelve completions through the wrapper produce one receipt and reward",
+      "status": "passed"
+    },
+    {
+      "name": "Browser roles cannot start, read frozen keys, or bypass the completion wrapper",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy attempts created by the previous Edge can still complete and replay",
+      "status": "passed"
+    },
+    {
+      "name": "Notebook retries require ownership and replay the same owned review",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent different actors retain separate starts and source rows",
+      "status": "passed"
+    }
+  ]
+}

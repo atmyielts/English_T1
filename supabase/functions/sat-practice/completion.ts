@@ -39,6 +39,23 @@ export async function savedAttemptResult(
   return data?.result ?? null;
 }
 
+export async function attemptQuestions(
+  sb: any, userId: string, attempt: any,
+  loadLegacyQuestions: (ids: string[]) => Promise<any[]>,
+) {
+  const { data, error } = await sb.from('sat_practice_attempt_sources').select('questions')
+    .eq('attempt_id', attempt.id).eq('user_id', userId).maybeSingle();
+  if (error) throw new AttemptError(503, 'Your drill questions are temporarily unavailable. Please retry.');
+  if (data == null) return loadLegacyQuestions(attempt.question_ids ?? []);
+  const questions = data.questions;
+  const ids: string[] = attempt.question_ids ?? [];
+  if (!Array.isArray(questions) || questions.length !== ids.length ||
+    questions.some((q: any, i: number) => !q || q.id !== ids[i] || q.correct == null)) {
+    throw new AttemptError(503, 'Your drill questions could not be confirmed. Please retry.');
+  }
+  return questions;
+}
+
 export async function submitAttempt(
   sb: any,
   userId: string,
@@ -70,7 +87,7 @@ export async function submitAttempt(
         "This drill has no valid question set. Please start a new drill.",
       );
     }
-    const bank = await loadQuestions(ids);
+    const bank = await attemptQuestions(sb, userId, attempt, loadQuestions);
     const byId = new Map(bank.map((q) => [q.id, q]));
     questions = ids.map((id) => byId.get(id));
     if (questions.some((q) => !q || q.correct == null)) {
