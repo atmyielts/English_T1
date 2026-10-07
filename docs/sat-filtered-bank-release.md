@@ -15,6 +15,8 @@ The screen has named filters, shareable URLs, loading/empty/error recovery, a su
 - Seven actual browser scenarios cover filter races, history propagation, start failures/double clicks, recovery, empty results, navigation and widths 320/390/1280. Main-content WCAG A/AA scan returned no violations; desktop/mobile screenshots were inspected.
 - SAT Practice build, Edge typecheck, completion/grading tests and production/release guards pass locally. Full required CI remains mandatory before merge.
 
+The first PR CI exposed a native-test startup race: the Docker image's temporary initialization server accepted a query and then shut down before fixture loading. Both native helpers now wait for the final PostgreSQL process as PID1 before checking SQL readiness. All26 native completion/bank cases pass with that corrected setup; full CI must run again on the updated head. No production state was changed by the failed CI.
+
 ## Production sequence
 
 Use the feature PR and required CI; merge normally, then wait for the tracked Pages release. Inspect the linked migration dry run and apply only `20261008100000_sat_bank_filtered_selection.sql`. Deploy `sat-practice` after the migration and verify downloaded source/JWT configuration. Run the exclusive QA smoke with `--live --after --atomic --bank`; its temporary entitlement must be removed and its absence confirmed. Confirm the public service responds and the production bank screen uses the reviewed build.

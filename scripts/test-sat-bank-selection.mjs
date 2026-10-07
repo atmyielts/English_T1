@@ -27,7 +27,13 @@ const select=async(f,u)=>JSON.parse(await sql('set role service_role;'+query(f,u
 async function check(name,test) {await test();checks.push({name,status:'passed'});console.log('PASS: '+name);}
 try {
   containerId=await run(['run','--detach','--name',container,'--label','schood.qa=sat-bank','--network','none','-e','POSTGRES_HOST_AUTH_METHOD=trust',image],'',60000);assert.match(containerId,/^[0-9a-f]{64}$/);
-  let ready=false;for(let i=0;i<30;i++){try{await sql('select 1');ready=true;break;}catch{await new Promise(done=>setTimeout(done,250));}}assert.ok(ready);
+  // A temporary initialization server accepts SQL before it stops. Require
+  // the final PostgreSQL process as PID1 before trusting a successful query.
+  let ready=false;for(let i=0;i<120;i++){
+    try{if(await run(['exec',container,'cat','/proc/1/comm'])==='postgres'){await sql('select 1');ready=true;break;}}
+    catch{/* The final server may still be opening its socket. */}
+    await new Promise(done=>setTimeout(done,250));
+  }assert.ok(ready,'Final local PostgreSQL server did not become ready');
   await sql(`create role anon;create role authenticated;create role service_role bypassrls;grant usage on schema public to anon,authenticated,service_role;
     create schema auth;create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     create table users(id uuid primary key);insert into users values('${actor}'),('${other}');create table products(id uuid primary key);insert into products values('${rw}');`);
