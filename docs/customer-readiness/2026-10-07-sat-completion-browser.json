@@ -1,0 +1,32 @@
+{
+  "productionContacted": false,
+  "checks": [
+    {
+      "case": "single-flight-and-uncertain-reply-freezes-exact-answers",
+      "passed": true
+    },
+    {
+      "case": "reload-retry-preserves-payload-and-clears-completed-local-copy",
+      "passed": true
+    },
+    {
+      "case": "results-outage-retry-without-fake-zero-score",
+      "passed": true
+    },
+    {
+      "case": "loading-state-withholds-unconfirmed-score",
+      "passed": true
+    },
+    {
+      "case": "unsubmitted-result-links-back-to-drill",
+      "passed": true
+    },
+    {
+      "case": "results-responsive-320-390-1280",
+      "passed": true
+    }
+  ],
+  "accessibilityViolations": [],
+  "checkedAt": "2026-10-07T18:17:05.977Z",
+  "checkout": "codex/sat-atomic-completion"
+}

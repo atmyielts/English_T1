@@ -1,3 +1,4 @@
+import { AttemptError, ownedAttempt, savedAttemptResult, submitAttempt } from './completion.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { callOpenRouterJsonWithStatus } from "../_shared/sat-ai.ts";
@@ -6,11 +7,7 @@ import {
   canonicalDomain,
   canonicalSection,
   expectedPointImpact,
-  isCorrectAnswer,
   isObject,
-  masteryLevel,
-  masteryStatus,
-  nextLeitner,
   sectionForDomain,
   toNumber,
   type SatDifficulty,
@@ -258,111 +255,6 @@ const createSessionForAttempt = async (sb: any, userId: string, metadata: JsonRe
   return data?.id ?? null;
 };
 
-const updateMastery = async (
-  sb: any,
-  userId: string,
-  question: any,
-  correct: boolean,
-) => {
-  const { data: existing } = await sb
-    .from("sat_practice_mastery")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("section_type", question.section_type)
-    .eq("domain", question.domain)
-    .eq("difficulty", question.difficulty)
-    .maybeSingle();
-  const attempts = Number(existing?.attempts ?? 0) + 1;
-  const previousRolling = toNumber(existing?.rolling_accuracy);
-  const lastAccuracy = correct ? 1 : 0;
-  const rolling = previousRolling == null ? lastAccuracy : (previousRolling * 0.7 + lastAccuracy * 0.3);
-  const level = masteryLevel(rolling, attempts);
-  const payload = {
-    user_id: userId,
-    section_type: question.section_type,
-    domain: question.domain,
-    difficulty: question.difficulty,
-    attempts,
-    rolling_accuracy: Math.round(rolling * 1000) / 1000,
-    last_accuracy: lastAccuracy,
-    mastery_status: masteryStatus(level),
-    mastery_level: level,
-    last_practiced_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-  const { error } = await sb.from("sat_practice_mastery").upsert(payload, {
-    onConflict: "user_id,section_type,domain,difficulty",
-  });
-  if (error) throw error;
-};
-
-const seedMistake = async (sb: any, userId: string, question: any, source: "simulator" | "practice_lab", sessionId: string | null) => {
-  const { data, error } = await sb
-    .from("sat_practice_mistake_notebook")
-    .insert({
-      user_id: userId,
-      section_type: question.section_type,
-      domain: question.domain,
-      difficulty: question.difficulty,
-      source,
-      source_session_id: sessionId,
-      question_id: question.id,
-      reason_tag: "unknown",
-      mistake_pattern: `${question.domain.replaceAll("_", " ")} miss`,
-      coach_note: "Review the underlying concept, then retry a similar item.",
-      status: "active",
-      next_review_at: new Date().toISOString(),
-      last_seen_at: new Date().toISOString(),
-    })
-    .select("*")
-    .single();
-  if (error) throw error;
-  return data;
-};
-
-const updateSrs = async (sb: any, userId: string, question: any, correct: boolean) => {
-  const { data: existing } = await sb
-    .from("sat_practice_srs_queue")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("question_id", question.id)
-    .maybeSingle();
-  const currentBox = Number(existing?.leitner_box ?? 1);
-  const next = nextLeitner(correct, currentBox);
-  const due = new Date();
-  due.setUTCDate(due.getUTCDate() + next.interval);
-  const payload = {
-    user_id: userId,
-    question_id: question.id,
-    leitner_box: next.box,
-    interval_days: next.interval,
-    next_review_at: due.toISOString(),
-    last_reviewed_at: new Date().toISOString(),
-    correct_count: Number(existing?.correct_count ?? 0) + (correct ? 1 : 0),
-    incorrect_count: Number(existing?.incorrect_count ?? 0) + (correct ? 0 : 1),
-    updated_at: new Date().toISOString(),
-  };
-  const { error } = await sb.from("sat_practice_srs_queue").upsert(payload, { onConflict: "user_id,question_id" });
-  if (error) throw error;
-};
-
-const updateActivity = async (sb: any, userId: string, correctCount: number, total: number) => {
-  const day = todayIso();
-  const xp = correctCount * 10 + 25;
-  const minutes = Math.max(5, Math.ceil(total * 1.5));
-  const { data: existing } = await sb.from("sat_practice_daily_activity").select("*").eq("user_id", userId).eq("day", day).maybeSingle();
-  const payload = {
-    user_id: userId,
-    day,
-    attempts: Number(existing?.attempts ?? 0) + 1,
-    minutes_studied: Number(existing?.minutes_studied ?? 0) + minutes,
-    xp_earned: Number(existing?.xp_earned ?? 0) + xp,
-    updated_at: new Date().toISOString(),
-  };
-  const { error } = await sb.from("sat_practice_daily_activity").upsert(payload, { onConflict: "user_id,day" });
-  if (error) throw error;
-};
-
 const getQuestionById = async (sb: any, questionId: string) => {
   const questions = await loadBankQuestions(sb, { question_ids: [questionId], limit: 1 });
   return questions[0] ?? null;
@@ -437,6 +329,7 @@ serve(async (req) => {
       };
       let questions = await loadBankQuestions(sb, filters);
       if (questions.length === 0) questions = await loadBankQuestions(sb, { limit: filters.limit });
+      if (questions.length === 0) return json(409, { error: "No practice questions are available. Please try a different filter." });
       const sessionId = await createSessionForAttempt(sb, user.id, { filters });
       const { data, error } = await sb.from("sat_practice_lab_attempts").insert({
         user_id: user.id,
@@ -452,56 +345,17 @@ serve(async (req) => {
     const attemptMatch = path.match(/^\/attempts\/([0-9a-f-]{36})$/i);
     if (req.method === "GET" && attemptMatch) {
       const attemptId = attemptMatch[1];
-      const { data: attempt, error } = await sb.from("sat_practice_lab_attempts").select("*").eq("id", attemptId).eq("user_id", user.id).single();
-      if (error) throw error;
+      const attempt = await ownedAttempt(sb, user.id, attemptId);
+      const saved = await savedAttemptResult(sb, user.id, attempt);
+      if (saved) return json(200, saved);
       const questions = await loadBankQuestions(sb, { question_ids: attempt.question_ids ?? [], limit: 100 });
       return json(200, { attempt, questions: attempt.status === "scored" ? questions : questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/submit") {
       const body = await readBody(req);
-      const attemptId = String(body.attempt_id ?? "");
-      const answers = isObject(body.answers) ? body.answers : {};
-      const { data: attempt, error } = await sb.from("sat_practice_lab_attempts").select("*").eq("id", attemptId).eq("user_id", user.id).single();
-      if (error) throw error;
-      const questions = await loadBankQuestions(sb, { question_ids: attempt.question_ids ?? [], limit: 100 });
-      const scored = [];
-      const notebook = [];
-      let correctCount = 0;
-      for (const question of questions) {
-        const answer = answers[question.id];
-        const correct = isCorrectAnswer(answer, question.correct);
-        if (correct) correctCount += 1;
-        scored.push({ question_id: question.id, correct, expected: question.correct, answer });
-        await updateMastery(sb, user.id, question, correct);
-        await updateSrs(sb, user.id, question, correct);
-        if (attempt.session_id) {
-          await sb.from("responses").insert({
-            session_id: attempt.session_id,
-            content_unit_id: question.id,
-            type: question.type,
-            data: isObject(answer) ? answer : { value: answer },
-            metadata: { source: "sat_practice" },
-          });
-        }
-        if (!correct) notebook.push(await seedMistake(sb, user.id, question, "practice_lab", attempt.session_id));
-      }
-      await updateActivity(sb, user.id, correctCount, questions.length);
-      const accuracy = questions.length > 0 ? correctCount / questions.length : 0;
-      const { data: updated, error: updateError } = await sb.from("sat_practice_lab_attempts").update({
-        answers,
-        scored_items: scored,
-        submitted_at: new Date().toISOString(),
-        scored_at: new Date().toISOString(),
-        score_raw: correctCount,
-        score_accuracy: Math.round(accuracy * 1000) / 1000,
-        status: "scored",
-      }).eq("id", attemptId).eq("user_id", user.id).select("*").single();
-      if (updateError) throw updateError;
-      if (attempt.session_id) {
-        await sb.from("sessions").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", attempt.session_id);
-      }
-      return json(200, { attempt: updated, questions, notebook });
+      const result = await submitAttempt(sb, user.id, body, ids => loadBankQuestions(sb, { question_ids: ids, limit: 100 }));
+      return json(200, result);
     }
 
     if (req.method === "GET" && path === "/notebook") {
@@ -622,6 +476,7 @@ serve(async (req) => {
 
     return json(404, { error: "Not found", path });
   } catch (err) {
+    if (err instanceof AttemptError) return json(err.status, { error: err.message });
     const message = err instanceof Error ? err.message : String(err);
     const status = message === "Unauthorized" ? 401 : 500;
     return json(status, { error: message });

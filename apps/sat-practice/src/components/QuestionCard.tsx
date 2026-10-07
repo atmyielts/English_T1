@@ -25,8 +25,13 @@ export const QuestionCard = (props: {
   const selected = typeof props.value === 'string'
     ? props.value
     : props.value && typeof props.value === 'object'
-      ? String((props.value as Record<string, unknown>).selected_option ?? '')
+      ? String((props.value as Record<string, unknown>).selected_option ?? (props.value as Record<string, unknown>).option_id ?? '')
       : '';
+  const answer = props.value && typeof props.value === 'object'
+    ? (props.value as Record<string, unknown>).text ?? (props.value as Record<string, unknown>).value
+    : props.value;
+  const text = typeof answer === 'string' || typeof answer === 'number' ? String(answer) : '';
+  const promptId = `question-prompt-${props.question.id}`;
 
   if (options.length > 0) {
     return (
@@ -53,13 +58,14 @@ export const QuestionCard = (props: {
 
   return (
     <article className="question-card">
-      <p className="question-prompt">{prompt}</p>
-      <textarea
+      <p id={promptId} className="question-prompt">{prompt}</p>
+      {props.readOnly ? (props.value != null ? <p><strong>Your answer:</strong> {text || 'No answer entered'}</p> : null) : <textarea
         rows={4}
-        value={typeof props.value === 'string' ? props.value : ''}
-        disabled={props.readOnly}
+        aria-label="Your answer"
+        aria-describedby={promptId}
+        value={text}
         onChange={(event) => props.onChange?.({ text: event.target.value })}
-      />
+      />}
     </article>
   );
 };
