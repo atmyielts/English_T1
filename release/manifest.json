@@ -1,13 +1,11 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-filtered-bank",
+  "releaseId": "sat-practice-atomic-start",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "sat-practice"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261008100000_sat_bank_filtered_selection.sql"
+    "20261008110000_sat_attempt_atomic_start.sql"
   ],
   "edgeFunctions": [
     "sat-practice"
@@ -19,21 +17,22 @@
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261008100000_sat_bank_filtered_selection.sql",
+    "migration:20261008110000_sat_attempt_atomic_start.sql",
     "function:sat-practice"
   ],
   "manualFollowUps": [
-    "After the reviewed Pages release is healthy, inspect supabase db push --linked --dry-run; apply only 20261008100000_sat_bank_filtered_selection.sql using supabase db push --linked. Verify migration list.",
-    "Deploy supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel --use-api, then verify the source, JWT verification and exclusive-QA filtered-bank smoke."
+    "After tracked Pages succeeds, inspect supabase db push --linked --dry-run and apply only 20261008110000_sat_attempt_atomic_start.sql using supabase db push --linked. Verify migration list.",
+    "Deploy supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel after the migration; verify downloaded source, JWT enforcement and dedicated-QA start/completion replay smoke.",
+    "Release the separately prepared durable-start frontend after the backend is verified; current version17 clients remain supported."
   ],
   "verification": [
-    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:bank; npm run test:sat:completion; SAT Practice build and Edge typecheck.",
-    "Native PostgreSQL checks filters before limits, actor-isolated legacy/SRS history, explicit empty IDs, retired content, stable sort and private RPC permissions. Actual browser checks filter races, history propagation, empty/error recovery, one-flight starts, labels and mobile fit.",
-    "Production QA: Math filter after earlier RW items, unavailable difficulty returns empty, no unfiltered start fallback, history matches own progress, unchanged scored receipt replay and answer-key privacy."
+    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:start; npm run test:sat:completion; npm run test:sat:bank; deno check --no-lock supabase/functions/sat-practice/index.ts.",
+    "Native PostgreSQL uses actual migrations, default service grants and concurrent connections: atomic insertion/replay, cross-actor collisions, immutable questions, content/key revisions, rollback, browser denial and previous-Edge legacy completion.",
+    "Exclusive production QA: concurrent identical start IDs return one attempt/session/source, changed filters conflict, private source/RPC browser denial, owned resume and immutable completion replay. Remove temporary grant and verify its absence."
   ],
   "rollback": {
-    "frontends": "Previous healthy Pages source 254302fecb81677dd618562a4b77b7665fa23bd5. Use tracked CI deployments or Pages dashboard; never local Pages deploy.",
-    "edgeFunctions": "Previous healthy SAT Practice Edge version16 is compatible with the additive query migration. Prefer a forward fix; retain atomic completion.",
-    "database": "Keep the additive service-only query function. No existing content, scores, customer rows, permissions or keys are rewritten by this migration."
+    "frontends": "No frontend behavior changes in this backend PR. Baseline c42b74ad8148307c24d460805bf1ec817c1c9a21. Use tracked CI or Pages dashboard only.",
+    "edgeFunctions": "Prefer a forward fix to preserve frozen-question reads. Version17 supports legacy attempts on the additive schema, but loading current keys for newly frozen attempts after a content edit can correctly fail snapshot validation; do not weaken that check.",
+    "database": "Keep the additive source table and service-only functions. Do not delete old attempts, frozen sources, content rows, progress or receipts; retire published content instead."
   }
 }

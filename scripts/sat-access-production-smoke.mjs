@@ -13,8 +13,10 @@ if (!/^[0-9a-f-]{36}$/i.test(qaId ?? '')) throw Error('An existing tagged QA ide
 const after = args.includes('--after');
 const atomic = args.includes('--atomic');
 const filteredBank = args.includes('--bank');
+const atomicStart = args.includes('--start');
 if (atomic && !after) throw Error('Atomic smoke requires --after.');
 if (filteredBank && !after) throw Error('Filtered bank smoke requires --after.');
+if (atomicStart && (!after || !atomic)) throw Error('Start smoke requires --after --atomic.');
 const base = 'https://bbjawctnqrufvnesdsel.supabase.co';
 const product = '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010';
 const lookup = spawnSync('supabase', ['projects', 'api-keys', '--project-ref', 'bbjawctnqrufvnesdsel', '--output', 'json'], { encoding: 'utf8', windowsHide: true });
@@ -102,6 +104,32 @@ try {
     }
     const paidBank = await request('/functions/v1/sat-practice/bank?limit=1', qaHeaders);
     check('Entitled QA can read question data without keys', paidBank.status === 200 && paidBank.data?.questions?.length === 1 && paidBank.data.questions.every((q) => q.id && q.data && !Object.hasOwn(q, 'correct')), { status: paidBank.status });
+    if (atomicStart) {
+      const beforeAttempts = await request(`/rest/v1/sat_practice_lab_attempts?user_id=eq.${qaId}&select=id,session_id`);
+      const beforeSessions = await request(`/rest/v1/sessions?user_id=eq.${qaId}&metadata->>mode=eq.sat_practice_lab&select=id`);
+      if (beforeAttempts.status !== 200 || beforeSessions.status !== 200) throw Error('QA start baseline unavailable.');
+      const requestId = randomUUID(), body = {request_id:requestId,question_ids:[paidBank.data.questions[0].id],question_count:1};
+      const starts = await Promise.all(Array.from({length:4},()=>request('/functions/v1/sat-practice/attempts/start',qaHeaders,'POST',body)));
+      check('Four same-identity QA starts return one owned drill and withhold keys',starts.every(r=>r.status===200&&r.data?.attempt?.id===requestId&&r.data.questions?.length===1&&!Object.hasOwn(r.data.questions[0],'correct')));
+      for (const r of starts) assert.deepEqual(r.data.attempt,starts[0].data.attempt);
+      const afterAttempts = await request(`/rest/v1/sat_practice_lab_attempts?user_id=eq.${qaId}&select=id,session_id`);
+      const afterSessions = await request(`/rest/v1/sessions?user_id=eq.${qaId}&metadata->>mode=eq.sat_practice_lab&select=id`);
+      const source = await request(`/rest/v1/sat_practice_attempt_sources?user_id=eq.${qaId}&attempt_id=eq.${requestId}&select=attempt_id,questions`);
+      check('QA starts add exactly one session, attempt and private snapshot',afterAttempts.status===200&&afterSessions.status===200&&afterAttempts.data.length===beforeAttempts.data.length+1&&afterSessions.data.length===beforeSessions.data.length+1&&source.status===200&&source.data?.length===1&&source.data[0].questions?.[0]?.correct!=null);
+      const changed = await request('/functions/v1/sat-practice/attempts/start',qaHeaders,'POST',{...body,question_count:2});
+      check('Reusing the start identity with changed filters conflicts',changed.status===409,{status:changed.status});
+      const resumed = await request('/functions/v1/sat-practice/attempts/'+requestId,qaHeaders);
+      check('Owned start snapshot resumes without private keys',resumed.status===200&&resumed.data?.questions?.length===1&&!Object.hasOwn(resumed.data.questions[0],'correct'));
+      const deniedSource = await request(`/rest/v1/sat_practice_attempt_sources?attempt_id=eq.${requestId}&select=*`,qaHeaders);
+      check('Browser cannot directly read private start snapshots',deniedSource.status===401||deniedSource.status===403,{status:deniedSource.status});
+      const deniedStart = await request('/rest/v1/rpc/start_sat_practice_attempt',qaHeaders,'POST',{p_user_id:qaId,p_request_id:randomUUID(),p_filters:{limit:1}});
+      check('Browser cannot directly invoke the private start command',deniedStart.status===401||deniedStart.status===403,{status:deniedStart.status});
+      const submittedStart = await request('/functions/v1/sat-practice/attempts/submit',qaHeaders,'POST',{attempt_id:requestId,answers:{}});
+      check('The frozen QA start completes through the validated wrapper',submittedStart.status===200&&submittedStart.data?.attempt?.status==='scored');
+      assert.deepEqual(submittedStart.data.questions,source.data[0].questions);
+      const completedStartReplay = await request('/functions/v1/sat-practice/attempts/start',qaHeaders,'POST',body);
+      check('A lost start response can reopen the same completed QA drill',completedStartReplay.status===200&&completedStartReplay.data?.attempt?.id===requestId&&completedStartReplay.data.attempt.status==='scored');
+    }
     const started = await request('/functions/v1/sat-practice/attempts/start', qaHeaders, 'POST', { question_count: 1, question_ids: [paidBank.data.questions[0].id] });
     check('QA attempt starts with withheld keys', started.status === 200 && started.data?.attempt?.user_id === qaId && started.data.attempt.status === 'in_progress' && started.data.questions?.length === 1 && !Object.hasOwn(started.data.questions[0], 'correct'), { status: started.status });
     const attemptId = started.data.attempt.id;
@@ -148,7 +176,11 @@ finally {
     results.push({ name: 'QA-only entitlement cleanup confirmed', passed: checked.status === 200 && checked.data?.length === 0 });
     if (checked.status !== 200 || checked.data?.length !== 0) failure ??= Error('QA cleanup verification failed.');
   }
-  if (qaHeaders) await request('/auth/v1/logout?scope=local', qaHeaders, 'POST').catch(() => {});
+  if (qaHeaders) {
+    const loggedOut = await request('/auth/v1/logout?scope=local', qaHeaders, 'POST').catch(() => null);
+    results.push({ name: 'QA session logout confirmed', passed: loggedOut?.status === 204 });
+    if (loggedOut?.status !== 204) failure ??= Error('QA logout could not be confirmed.');
+  }
   const output = value('--output');
   if (output) { mkdirSync(dirname(output), { recursive: true }); writeFileSync(output, JSON.stringify({ checkedAt: new Date().toISOString(), projectRef: 'bbjawctnqrufvnesdsel', phase: after ? 'after' : 'before', qaUserId: qaId, results, passed: !failure }, null, 2) + '\n'); }
 }

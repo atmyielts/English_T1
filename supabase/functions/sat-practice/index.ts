@@ -1,5 +1,6 @@
 import { bankFilters, loadBankQuestions } from './bank.ts';
-import { AttemptError, ownedAttempt, savedAttemptResult, submitAttempt } from './completion.ts';
+import { AttemptError, attemptQuestions, ownedAttempt, savedAttemptResult, submitAttempt } from './completion.ts';
+import { readStartBody, startAttempt } from './start.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { callOpenRouterJsonWithStatus } from "../_shared/sat-ai.ts";
@@ -143,30 +144,6 @@ const computeScoreImpact = (notebook: any[], mastery: any[]) => {
   };
 };
 
-const createSessionForAttempt = async (sb: any, userId: string, metadata: JsonRecord) => {
-  const { data: exp, error: expError } = await sb
-    .from("experiences")
-    .select("id")
-    .eq("metadata->>format", "sat_practice_bank")
-    .limit(1)
-    .maybeSingle();
-  if (expError) throw expError;
-  if (!exp?.id) return null;
-  const { data, error } = await sb
-    .from("sessions")
-    .insert({
-      user_id: userId,
-      experience_id: exp.id,
-      status: "active",
-      started_at: new Date().toISOString(),
-      metadata: { mode: "sat_practice_lab", ...metadata },
-    })
-    .select("id")
-    .single();
-  if (error) throw error;
-  return data?.id ?? null;
-};
-
 const getQuestionById = async (sb: any, userId: string, questionId: string) => {
   const questions = await loadBankQuestions(sb, userId, { question_ids: [questionId], limit: 1 });
   return questions[0] ?? null;
@@ -226,20 +203,9 @@ serve(async (req) => {
     }
 
     if (req.method === "POST" && path === "/attempts/start") {
-      const body = await readBody(req);
-      const filters = bankFilters({ ...body, limit: body.question_count }, 10);
-      const questions = await loadBankQuestions(sb, user.id, filters);
-      if (questions.length === 0) return json(409, { error: "No practice questions are available. Please try a different filter." });
-      const sessionId = await createSessionForAttempt(sb, user.id, { filters });
-      const { data, error } = await sb.from("sat_practice_lab_attempts").insert({
-        user_id: user.id,
-        session_id: sessionId,
-        filters_used: filters,
-        question_ids: questions.map((q: any) => q.id),
-        status: "in_progress",
-      }).select("*").single();
-      if (error) throw error;
-      return json(200, { attempt: data, questions: questions.map(questionForLearner) });
+      const body = await readStartBody(req);
+      const result = await startAttempt(sb, user.id, body);
+      return json(200, { ...result, questions: result.questions.map(questionForLearner) });
     }
 
     const attemptMatch = path.match(/^\/attempts\/([0-9a-f-]{36})$/i);
@@ -248,7 +214,8 @@ serve(async (req) => {
       const attempt = await ownedAttempt(sb, user.id, attemptId);
       const saved = await savedAttemptResult(sb, user.id, attempt);
       if (saved) return json(200, saved);
-      const questions = await loadBankQuestions(sb, user.id, { question_ids: attempt.question_ids ?? [], limit: 100 }, { includeRetired: true });
+      const questions = await attemptQuestions(sb, user.id, attempt,
+        ids => loadBankQuestions(sb, user.id, { question_ids: ids, limit: 100 }, { includeRetired: true }));
       return json(200, { attempt, questions: attempt.status === "scored" ? questions : questions.map(questionForLearner) });
     }
 
@@ -277,25 +244,16 @@ serve(async (req) => {
     }
 
     if (notebookMatch && req.method === "POST" && path.endsWith("/retry")) {
-      const { data: item, error } = await sb.from("sat_practice_mistake_notebook").select("*").eq("id", notebookMatch[1]).eq("user_id", user.id).single();
-      if (error) throw error;
-      const questions = await loadBankQuestions(sb, user.id, {
+      const { data: item, error } = await sb.from("sat_practice_mistake_notebook").select("*").eq("id", notebookMatch[1]).eq("user_id", user.id).maybeSingle();
+      if (error) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.");
+      if (!item) throw new AttemptError(404, "Review not found.");
+      const result = await startAttempt(sb, user.id, await readStartBody(req), {
+        id: item.id,
         section_type: canonicalSection(item.section_type),
         domain: canonicalDomain(item.domain, canonicalSection(item.section_type)),
         difficulty: canonicalDifficulty(item.difficulty),
-        limit: 6,
       });
-      if (questions.length === 0) return json(409, { error: "No questions match this review. Try another domain in the question bank." });
-      const sessionId = await createSessionForAttempt(sb, user.id, { retry_notebook_id: item.id });
-      const { data: attempt, error: attemptError } = await sb.from("sat_practice_lab_attempts").insert({
-        user_id: user.id,
-        session_id: sessionId,
-        filters_used: { retry_notebook_id: item.id },
-        question_ids: questions.map((q: any) => q.id),
-        status: "in_progress",
-      }).select("*").single();
-      if (attemptError) throw attemptError;
-      return json(200, { attempt, questions: questions.map(questionForLearner) });
+      return json(200, { ...result, questions: result.questions.map(questionForLearner) });
     }
 
     if (req.method === "GET" && path === "/srs/due") {
