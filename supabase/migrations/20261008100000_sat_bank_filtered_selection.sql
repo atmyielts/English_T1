@@ -34,11 +34,11 @@ begin
     join public.sections s on s.experience_id = e.id
     join public.parts p on p.section_id = s.id
     join public.content_units u on u.part_id = p.id
-    join public.answer_keys k on k.content_unit_id = u.id
+    left join public.answer_keys k on k.content_unit_id = u.id
     where e.metadata->>'format' = 'sat_practice_bank'
       and (e.is_active or p_include_retired)
       and u.type like 'question_%' and jsonb_typeof(u.data) = 'object'
-      and k.correct is not null and k.correct <> 'null'::jsonb
+      and (p_include_retired or (k.correct is not null and k.correct <> 'null'::jsonb))
       and (p_question_ids is null or u.id = any(p_question_ids))
       and (p_include_retired or coalesce(u.metadata->>'content_status','published') not in ('retired','legacy_placeholder'))
   ), domains as (
