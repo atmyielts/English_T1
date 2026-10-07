@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-07T18:14:32.534Z",
+  "engine": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+  "productionContacted": false,
+  "checks": [
+    {
+      "name": "Completion writes all effects and immutable receipt once",
+      "status": "passed"
+    },
+    {
+      "name": "Twelve independent retries return exactly the same receipt without duplicate effects",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent different attempts preserve every aggregate update",
+      "status": "passed"
+    },
+    {
+      "name": "Changed-answer race has one winner and a conflict without extra XP",
+      "status": "passed"
+    },
+    {
+      "name": "A late response failure rolls back mastery, SRS, notebook, activity and scoring",
+      "status": "passed"
+    },
+    {
+      "name": "Incomplete questions or wrong question identity cannot partially score",
+      "status": "passed"
+    },
+    {
+      "name": "Foreign actor and extra answers are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Legacy scored attempts return old result without any re-award",
+      "status": "passed"
+    },
+    {
+      "name": "Snapshot replay survives source content deletion",
+      "status": "passed"
+    },
+    {
+      "name": "Browser roles cannot finalize, forge progress, alter scores or read private snapshots",
+      "status": "passed"
+    },
+    {
+      "name": "Owned reads remain isolated and shared simulator write grants are preserved",
+      "status": "passed"
+    },
+    {
+      "name": "Wrong session owner prevents all progress changes",
+      "status": "passed"
+    },
+    {
+      "name": "Failure saving the final receipt rolls back every completed side effect",
+      "status": "passed"
+    }
+  ]
+}

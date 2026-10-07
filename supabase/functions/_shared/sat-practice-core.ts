@@ -104,9 +104,16 @@ export const expectedPointImpact = (
 export const isCorrectAnswer = (answer: unknown, correct: unknown): boolean => {
   const answerObj = isObject(answer) ? answer : {};
   const correctObj = isObject(correct) ? correct : {};
-  const selected = String(answerObj.selected_option ?? answerObj.option_id ?? answer ?? "").trim().toUpperCase();
-  const expected = String(correctObj.option_id ?? correctObj.selected_option ?? correctObj.correct ?? correct ?? "").trim().toUpperCase();
-  return selected.length > 0 && expected.length > 0 && selected === expected;
+  const token = (value: unknown): string | null => {
+    if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) return null;
+    const text = String(value).trim().toUpperCase();
+    return text || null;
+  };
+  const selected = token(answerObj.selected_option ?? answerObj.option_id ?? answerObj.text ?? answerObj.value ?? answer);
+  const key = correctObj.option_id ?? correctObj.selected_option ?? correctObj.correct ?? correctObj.text ?? correctObj.value ?? correct;
+  // Never compare arbitrary objects via their identical '[object Object]' representation.
+  const expected = Array.isArray(key) ? key.map(token).filter((value): value is string => value !== null) : [token(key)];
+  return selected !== null && expected.includes(selected);
 };
 
 export const nextLeitner = (wasCorrect: boolean, currentBox = 1): { box: number; interval: number } => {

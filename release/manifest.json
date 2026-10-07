@@ -1,31 +1,39 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-access-boundary",
+  "releaseId": "sat-practice-atomic-completion",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
+  "frontends": [
+    "sat-practice"
+  ],
+  "migrations": [
+    "20261007100000_sat_attempt_atomic_completion.sql"
+  ],
   "edgeFunctions": [
     "sat-practice"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [],
+  "sharedEdgeConsumers": [
+    "sat-practice"
+  ],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
+    "migration:20261007100000_sat_attempt_atomic_completion.sql",
     "function:sat-practice"
   ],
   "manualFollowUps": [
-    "After the PR is merged and the automatic Pages deployment is healthy, run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel. No database migration or secret change is required."
+    "After merge and healthy Pages rollout, inspect supabase db push --linked --dry-run; apply only 20261007100000_sat_attempt_atomic_completion.sql using supabase db push --linked. Verify migration list.",
+    "Then run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel --use-api and verify source/JWT configuration."
   ],
   "verification": [
-    "Run npm run verify:prod and npm run verify:release -- --base origin/main.",
-    "Run deno test --no-lock supabase/functions/sat-practice/access.test.ts and deno check --no-lock supabase/functions/sat-practice/index.ts.",
-    "Verify a QA learner without SAT Practice access is denied before reads or writes; check QA-owned effective access and normal public startup. Questions withhold the separate answer key until scoring, including spaced review."
+    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:completion; SAT build and Edge typecheck.",
+    "Native PostgreSQL proves independent concurrent retries, competing answers, cross-actor rejection, all-or-nothing rollback, immutable snapshots and browser grant denial.",
+    "QA-owned production smoke: exact effective access, original result on identical retries, changed-answer conflict, no extra mastery/SRS/responses/notebook/activity/XP, saved feedback, and QA entitlement cleanup."
   ],
   "rollback": {
-    "frontends": "No frontend source changed. Use the previous Cloudflare Pages deployment if an unchanged frontend redeploy regresses; never deploy Pages locally.",
-    "edgeFunctions": "Baseline revision 1d713840d1b9639f16cca28081a9eab9ff538b05. Prefer a forward fix for access availability: reverting this function reopens the known access and answer-key gap.",
-    "database": "No schema, grant or customer data change."
+    "frontends": "Previous healthy Pages source 8723bc04fbef52d6d30523299538d52eec093553. Use tracked CI deployments/Pages dashboard if needed; never local Pages deploy.",
+    "edgeFunctions": "Prefer a forward fix. Restoring version15 keeps additive schema compatibility but reopens duplicate progress and XP; do not silently revert.",
+    "database": "Keep additive receipt table and permissions. No drop or existing-row rewrites. Migration before new Edge; old Edge service-role writes remain permitted. Shared simulator sessions/responses grants unchanged."
   }
 }
