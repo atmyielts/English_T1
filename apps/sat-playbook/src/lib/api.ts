@@ -59,8 +59,8 @@ const resolveApiError = (status: number, details: unknown): Error => {
   return err;
 };
 
-const callPublic = async <T>(path: string): Promise<T> => {
-  const res = await fetch(`${edgeBase}${path}`, { headers: publicHeaders() });
+const callPublic = async <T>(path: string, signal?: AbortSignal): Promise<T> => {
+  const res = await fetch(`${edgeBase}${path}`, { headers: publicHeaders(), signal });
   if (!res.ok) throw resolveApiError(res.status, await readBody(res));
   return (await res.json()) as T;
 };
@@ -68,12 +68,13 @@ const callPublic = async <T>(path: string): Promise<T> => {
 const callAuthed = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; signal?: AbortSignal },
 ): Promise<T> => {
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
     fetch(`${edgeBase}${path}`, {
       method,
+      signal: opts?.signal,
       headers: authHeaders(token, opts?.body != null),
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
     });
@@ -129,13 +130,13 @@ export type SatPlaybookPagePayload = {
   sources: Json[];
 };
 
-export const satPlaybookCatalogGet = (): Promise<SatPlaybookCatalog> =>
-  callPublic('/sat-playbook/catalog');
+export const satPlaybookCatalogGet = (signal?: AbortSignal): Promise<SatPlaybookCatalog> =>
+  callPublic('/sat-playbook/catalog', signal);
 
-export const satPlaybookPageGet = (slug: string, accessToken?: string | null): Promise<SatPlaybookPagePayload> =>
+export const satPlaybookPageGet = (slug: string, accessToken?: string | null, signal?: AbortSignal): Promise<SatPlaybookPagePayload> =>
   accessToken
-    ? callAuthed(accessToken, `/sat-playbook/pages/${encodeURIComponent(slug)}`)
-    : callPublic(`/sat-playbook/pages/${encodeURIComponent(slug)}`);
+    ? callAuthed(accessToken, `/sat-playbook/pages/${encodeURIComponent(slug)}`, { signal })
+    : callPublic(`/sat-playbook/pages/${encodeURIComponent(slug)}`, signal);
 
 export const satPlaybookDashboardGet = (accessToken: string): Promise<Json> =>
   callAuthed(accessToken, '/sat-playbook/dashboard');

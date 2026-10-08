@@ -46,12 +46,12 @@ export const DiagnosticPage = () => {
         <section className="page-header">
           <div>
             <p className="eyebrow">Diagnostic output</p>
-            <h1>Your current SAT strategy</h1>
+            <h1>Your current TOEFL strategy</h1>
             <p>Blends your profile, simulator outcomes, and planning rules into one action order.</p>
           </div>
           <div className="hero-actions">
             <a href="https://toefl.schood.online/dashboard?source=playbook" className="btn ghost">Simulator</a>
-            <a href="https://practice.toefl.schood.online/dashboard?source=playbook" className="btn ghost">Practice</a>
+            <a href="https://toefl.schood.online/practice?source=playbook" className="btn ghost">Practice</a>
           </div>
         </section>
 
@@ -92,8 +92,9 @@ export const DiagnosticPage = () => {
 
             <section className="panel" style={{ marginTop: 16 }}>
               <p className="eyebrow">Module priority</p>
+              {!moduleOrder.length ? <p>No module recommendations are available yet. <Link to="/modules">Browse published modules</Link></p> : null}
               <div style={{ display: 'grid', gap: 8 }}>
-                {(moduleOrder.length ? moduleOrder : [{ slug: 'format-overview', reason: 'Start here.' }]).map((item, i) => (
+                {moduleOrder.map((item, i) => (
                   <Link key={`${String(item.slug)}-${i}`} to={`/${String(item.slug)}`} className="nav-link">
                     <strong style={{ minWidth: 22 }}>{i + 1}</strong>
                     <span>{title(item.slug)} — {String(item.reason ?? '')}</span>

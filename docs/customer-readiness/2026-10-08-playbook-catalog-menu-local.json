@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-08T18:41:17.339Z",
+  "productionContacted": false,
+  "syntheticApi": true,
+  "checks": [
+    {
+      "service": "SAT",
+      "case": "closed-links-hidden-keyboard-open-and-escape-focus",
+      "passed": true
+    },
+    {
+      "service": "SAT",
+      "case": "outside-pointer-and-focus-exit-close",
+      "passed": true
+    },
+    {
+      "service": "SAT",
+      "case": "route-closes-and-desktop-to-mobile-resets",
+      "passed": true
+    },
+    {
+      "service": "SAT",
+      "case": "fits-320-390-768-1024-1440-and-header-axe-clean",
+      "passed": true,
+      "violations": []
+    },
+    {
+      "service": "TOEFL",
+      "case": "closed-links-hidden-keyboard-open-and-escape-focus",
+      "passed": true
+    },
+    {
+      "service": "TOEFL",
+      "case": "outside-pointer-and-focus-exit-close",
+      "passed": true
+    },
+    {
+      "service": "TOEFL",
+      "case": "route-closes-and-desktop-to-mobile-resets",
+      "passed": true
+    },
+    {
+      "service": "TOEFL",
+      "case": "fits-320-390-768-1024-1440-and-header-axe-clean",
+      "passed": true,
+      "violations": []
+    }
+  ],
+  "unhandledBrowserErrors": 0
+}

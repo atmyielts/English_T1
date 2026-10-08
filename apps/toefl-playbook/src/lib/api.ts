@@ -59,8 +59,8 @@ const resolveApiError = (status: number, details: unknown): Error => {
   return err;
 };
 
-const callPublic = async <T>(path: string): Promise<T> => {
-  const res = await fetch(`${edgeBase}${path}`, { headers: publicHeaders() });
+const callPublic = async <T>(path: string, signal?: AbortSignal): Promise<T> => {
+  const res = await fetch(`${edgeBase}${path}`, { headers: publicHeaders(), signal });
   if (!res.ok) throw resolveApiError(res.status, await readBody(res));
   return (await res.json()) as T;
 };
@@ -68,12 +68,13 @@ const callPublic = async <T>(path: string): Promise<T> => {
 const callAuthed = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; signal?: AbortSignal },
 ): Promise<T> => {
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
     fetch(`${edgeBase}${path}`, {
       method,
+      signal: opts?.signal,
       headers: authHeaders(token, opts?.body != null),
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
     });
@@ -129,13 +130,13 @@ export type ToeflPlaybookPagePayload = {
   sources: Json[];
 };
 
-export const toeflPlaybookCatalogGet = (): Promise<ToeflPlaybookCatalog> =>
-  callPublic('/toefl-playbook/catalog');
+export const toeflPlaybookCatalogGet = (signal?: AbortSignal): Promise<ToeflPlaybookCatalog> =>
+  callPublic('/toefl-playbook/catalog', signal);
 
-export const toeflPlaybookPageGet = (slug: string, accessToken?: string | null): Promise<ToeflPlaybookPagePayload> =>
+export const toeflPlaybookPageGet = (slug: string, accessToken?: string | null, signal?: AbortSignal): Promise<ToeflPlaybookPagePayload> =>
   accessToken
-    ? callAuthed(accessToken, `/toefl-playbook/pages/${encodeURIComponent(slug)}`)
-    : callPublic(`/toefl-playbook/pages/${encodeURIComponent(slug)}`);
+    ? callAuthed(accessToken, `/toefl-playbook/pages/${encodeURIComponent(slug)}`, { signal })
+    : callPublic(`/toefl-playbook/pages/${encodeURIComponent(slug)}`, signal);
 
 export const toeflPlaybookDashboardGet = (accessToken: string): Promise<Json> =>
   callAuthed(accessToken, '/toefl-playbook/dashboard');

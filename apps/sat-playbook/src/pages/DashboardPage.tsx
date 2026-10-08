@@ -112,7 +112,11 @@ export const DashboardPage = () => {
               ))}
             </div>
           </section>
-        ) : null}
+        ) : <section className="panel" style={{ marginTop: 16 }}>
+          <h2>Strategy modules</h2>
+          <p>{catalog ? "No strategy modules have been published yet." : "The module catalog is not available here yet."}</p>
+          <Link to="/modules" className="btn ghost">Browse modules</Link>
+        </section>}
       </main>
     </div>
   );
