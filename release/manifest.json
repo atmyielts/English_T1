@@ -1,24 +1,28 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-client-start-recovery",
+  "releaseId": "playbook-responsive-navigation",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": ["sat-practice"],
+  "frontends": [
+    "sat-playbook",
+    "toefl-playbook"
+  ],
   "migrations": [],
   "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
-  "rolloutOrder": ["pages"],
+  "rolloutOrder": [
+    "pages"
+  ],
   "manualFollowUps": [],
   "verification": [
-    "The prerequisite PR205 backend is already live: migration20261008110000, SAT Edge18, exact downloaded-source match and41 dedicated-QA checks including cleanup passed.",
-    "npm run verify:prod; npm run verify:release -- --base origin/main; deno test --no-lock apps/sat-practice/tests/start-requests.test.ts; npm --workspace apps/sat-practice run build.",
-    "Real local browser screens with synthetic isolated APIs: lost start/reload preserves actor-scoped identity; owned Lab acknowledges only confirmed starts; Reviews/Notebook/Today recover load/write errors and duplicate clicks send once.",
-    "After exact-head CI and normal merge, wait for tracked Pages, inspect provider source and run dedicated-QA signed-in browser recovery without altering customer records."
+    "npm run verify:prod; npm run verify:release -- --base origin/main; build both changed playbooks.",
+    "Actual local browser menu interactions and header accessibility at mobile/tablet/desktop widths, with isolated synthetic APIs.",
+    "After exact-head full CI and normal merge, wait for tracked Pages and inspect published public-page menus."
   ],
   "rollback": {
-    "frontends": "Baseline76b17822286fa80ff0ad13bb2924093b2bfb6a1f. Use tracked CI or Pages dashboard. Existing browser behavior remains compatible with deployed Edge18.",
-    "database": "No new backend deployment. Preserve the existing private immutable start snapshots and atomic completion protections."
+    "database": "No backend change.",
+    "frontends": "Baseline151df74f62cf3dfc59febf0c4a6eaabd1858a792; use tracked CI or each project Pages dashboard."
   }
 }
