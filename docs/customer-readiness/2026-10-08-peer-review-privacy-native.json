@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-10-08T19:49:03.898Z",
+  "nativePostgres": true,
+  "productionContacted": false,
+  "image": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+  "checks": [
+    {
+      "name": "legacy anonymous policy exposes synthetic essay without consent",
+      "passed": true
+    },
+    {
+      "name": "busy-table migration times out and rolls back without changing data or grants",
+      "passed": true
+    },
+    {
+      "name": "anon cannot directly read or mutate essays, feedback, assignments or trusted commands",
+      "passed": true
+    },
+    {
+      "name": "authenticated cannot directly read or mutate essays, feedback, assignments or trusted commands",
+      "passed": true
+    },
+    {
+      "name": "legacy essays retained privately; author can opt in and withdraw",
+      "passed": true
+    },
+    {
+      "name": "submission consent, types, lengths, supported exams and identity are enforced",
+      "passed": true
+    },
+    {
+      "name": "12 same-request independent submissions create one immutable identity; changed content conflicts",
+      "passed": true
+    },
+    {
+      "name": "12 competing reviewers reserve exactly two slots; strangers cannot open or complete",
+      "passed": true
+    },
+    {
+      "name": "one reviewer concurrently claiming two essays gets only one assignment",
+      "passed": true
+    },
+    {
+      "name": "12 review retries create one receipt and count; first feedback remains in queue",
+      "passed": true
+    },
+    {
+      "name": "simultaneous differing reviews save once and close atomically at the actual count",
+      "passed": true
+    },
+    {
+      "name": "owner history is scoped, counts actual reviews and retains original feedback; other history stays private",
+      "passed": true
+    },
+    {
+      "name": "only author can rate helpfulness and boolean false is preserved",
+      "passed": true
+    },
+    {
+      "name": "failure at final counter update rolls back feedback and keeps reservation for retry",
+      "passed": true
+    },
+    {
+      "name": "same-reviewer claim versus completion avoids the user foreign-key lock inversion",
+      "passed": true
+    },
+    {
+      "name": "expired reservation rejects reads and writes; explicit renewal retains a valid assignment",
+      "passed": true
+    },
+    {
+      "name": "withdrawal serializes with reads/claims and revokes all remaining reservations",
+      "passed": true
+    },
+    {
+      "name": "supported iTEP feedback scale, required text and range are enforced",
+      "passed": true
+    },
+    {
+      "name": "academy-scoped essays never enter public queue or reviewer access",
+      "passed": true
+    }
+  ]
+}
