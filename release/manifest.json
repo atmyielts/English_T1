@@ -1,28 +1,30 @@
 {
   "schemaVersion": 1,
-  "releaseId": "playbook-catalog-recovery",
+  "releaseId": "score-cache-privacy",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "sat-playbook",
-    "toefl-playbook"
+  "frontends": [],
+  "migrations": [
+    "20261008183000_score_prediction_cache_privacy.sql"
   ],
-  "migrations": [],
   "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages"
+    "pages",
+    "migration:20261008183000_score_prediction_cache_privacy.sql"
   ],
-  "manualFollowUps": [],
+  "manualFollowUps": [
+    "Verify linked project bbjawctnqrufvnesdsel and that dry-run lists only the reviewed migration, then supabase db push --linked; verify migration list and exclusive-QA permission denials."
+  ],
   "verification": [
-    "Both Playbook builds;16 isolated catalog/content browser cases and8 menu regression cases; scoped accessibility and production/release guards.",
-    "Full exact-head CI, tracked Pages,13 provider sources,20 public HTML addresses and actual rendered public catalog/error checks."
+    "14 native PostgreSQL cases reproduce legacy access, reject both browser roles, retain service CRUD and records, enforce bounded locks and prove repeatability.",
+    "Exact-head full CI, normal merge, tracked Pages and post-merge checks; exclusive-QA hosted permission matrix and fixture cleanup after the reviewed migration."
   ],
   "rollback": {
-    "frontends": "Reviewed baseline1f460f6ab1c770f074eac4933421cc455ba0c645 through tracked CI or affected Pages dashboards.",
-    "database": "No schema or educational content migration.",
-    "edgeFunctions": "No Edge change."
+    "frontends": "No frontend source change; baseline e534db3ad5aeb79ff312955dbb750c55682dfc28.",
+    "database": "Retain browser cache denial and existing rows. Investigate compatibility through service-role access; never restore the permissive public policy. Failed lock acquisition rolls back the migration.",
+    "edgeFunctions": "Live score-prediction source is unchanged. Existing schema-query failure requires its own scoped release."
   }
 }
