@@ -14,6 +14,8 @@ export const en = {
   'common.login': 'Login',
   'common.signup': 'Sign up',
   'common.menu': 'Menu',
+  'common.menuOpen': 'Open menu',
+  'common.menuClose': 'Close menu',
   'common.support': 'Support',
   'common.send': 'Send',
   'common.cancel': 'Cancel',

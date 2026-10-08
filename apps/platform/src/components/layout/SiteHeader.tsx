@@ -1,5 +1,6 @@
-import React, { useId, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Menu, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../../i18n';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
@@ -40,6 +41,25 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
   const { t } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileNavId = useId();
+  const header = useRef<HTMLElement>(null);
+  const menuToggle = useRef<HTMLButtonElement>(null);
+  const { pathname } = useLocation();
+
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => {
+    const viewport = window.matchMedia('(min-width: 768px)');
+    const close = () => setMobileOpen(false);
+    viewport.addEventListener('change', close);
+    return () => viewport.removeEventListener('change', close);
+  }, []);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const outside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !header.current?.contains(event.target)) setMobileOpen(false);
+    };
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
+  }, [mobileOpen]);
 
   const hasMobileContent = useMemo(() => navItems.length > 0 || actions.length > 0 || showLanguageSwitcher, [actions.length, navItems.length, showLanguageSwitcher]);
 
@@ -53,7 +73,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
   const brandButton = (
     <button
       type="button"
-      onClick={onBrandClick ?? (() => navigate('/'))}
+      onClick={() => runAndClose(onBrandClick ?? (() => navigate('/')))}
       className="flex items-center gap-2 font-semibold tracking-tight text-gray-900 hover:text-gray-700"
     >
       <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#0f172a]" />
@@ -62,7 +82,15 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
   );
 
   return (
-    <header className={`px-6 md:px-10 pt-6 ${className}`.trim()}>
+    <header ref={header} className={`px-6 md:px-10 pt-6 ${className}`.trim()}
+      onKeyDown={event => {
+        if (event.key === 'Escape' && mobileOpen) {
+          event.preventDefault();setMobileOpen(false);menuToggle.current?.focus();
+        }
+      }}
+      onBlur={event => {
+        if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) setMobileOpen(false);
+      }}>
       <div className="mx-auto max-w-6xl rounded-3xl md:rounded-full border border-[#1f2937] bg-[#efe6d8]/80 px-4 py-3 backdrop-blur">
         <div className="md:hidden flex items-center justify-between gap-3">
           {brandButton}
@@ -70,12 +98,14 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
           {hasMobileContent ? (
             <button
               type="button"
-              className={`${buttonBase} md:hidden bg-white/70`}
+              ref={menuToggle}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1f2937] bg-white/70 text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f172a]"
               onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label={t(mobileOpen ? 'common.menuClose' : 'common.menuOpen')}
               aria-expanded={mobileOpen}
               aria-controls={mobileNavId}
             >
-              {t('common.menu')}
+              {mobileOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
             </button>
           ) : null}
         </div>
@@ -125,7 +155,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
                 key={`mobile-${item.id}`}
                 type="button"
                 onClick={() => runAndClose(item.onClick)}
-                className={`w-full text-left px-3 py-2 rounded-xl ${item.active ? 'bg-[#0f172a] text-white' : 'bg-white/70 border border-[#1f2937] text-sm font-semibold text-gray-900'}`}
+                className={`w-full min-h-11 text-left px-3 py-2 rounded-xl ${item.active ? 'bg-[#0f172a] text-white' : 'bg-white/70 border border-[#1f2937] text-sm font-semibold text-gray-900'}`}
               >
                 {item.label}
               </button>
@@ -136,7 +166,7 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
                 key={`mobile-action-${action.id}`}
                 type="button"
                 onClick={() => runAndClose(action.onClick)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-sm font-semibold border border-[#1f2937] ${action.primary ? 'bg-[#0f172a] text-white' : 'bg-white/70 text-gray-900'}`}
+                className={`w-full min-h-11 text-left px-3 py-2 rounded-xl text-sm font-semibold border border-[#1f2937] ${action.primary ? 'bg-[#0f172a] text-white' : 'bg-white/70 text-gray-900'}`}
               >
                 {action.label}
               </button>

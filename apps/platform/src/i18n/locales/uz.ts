@@ -16,6 +16,8 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'common.login': 'Kirish',
   'common.signup': "Ro‘yxatdan o‘tish",
   'common.menu': 'Menyu',
+  'common.menuOpen': 'Menyuni ochish',
+  'common.menuClose': 'Menyuni yopish',
   'common.support': 'Yordam',
   'common.send': 'Yuborish',
   'common.cancel': 'Bekor qilish',

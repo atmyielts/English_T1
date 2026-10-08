@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
-  "releaseId": "playbook-responsive-navigation",
+  "releaseId": "responsive-navigation",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
+    "platform",
     "sat-playbook",
     "toefl-playbook"
   ],
@@ -17,7 +18,7 @@
   ],
   "manualFollowUps": [],
   "verification": [
-    "npm run verify:prod; npm run verify:release -- --base origin/main; build both changed playbooks.",
+    "npm run verify:prod; npm run verify:release -- --base origin/main; build platform and both changed playbooks.",
     "Actual local browser menu interactions and header accessibility at mobile/tablet/desktop widths, with isolated synthetic APIs.",
     "After exact-head full CI and normal merge, wait for tracked Pages and inspect published public-page menus."
   ],
