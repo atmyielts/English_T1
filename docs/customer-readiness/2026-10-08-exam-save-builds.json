@@ -1,0 +1,22 @@
+[
+  {
+    "app": "ielts-simulator",
+    "exitCode": 0,
+    "buildPassed": true
+  },
+  {
+    "app": "sat-simulator",
+    "exitCode": 0,
+    "buildPassed": true
+  },
+  {
+    "app": "toefl-ibt-simulator",
+    "exitCode": 0,
+    "buildPassed": true
+  },
+  {
+    "app": "itep-simulator",
+    "exitCode": 0,
+    "buildPassed": true
+  }
+]

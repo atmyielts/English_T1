@@ -1,33 +1,34 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-original-scored-feedback",
+  "releaseId": "simulator-save-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "sat-practice"
+    "ielts-simulator",
+    "sat-simulator",
+    "toefl-ibt-simulator",
+    "itep-simulator"
+  ],
+  "sharedFrontendSources": [
+    "apps/exam-shared"
   ],
   "migrations": [],
-  "edgeFunctions": [
-    "sat-practice"
-  ],
+  "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "function:sat-practice"
+    "pages"
   ],
-  "manualFollowUps": [
-    "After tracked Pages succeeds, run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel. Confirm downloaded sources match, JWT enforcement and exclusive-QA original/legacy result behavior; remove and verify the temporary grant."
-  ],
+  "manualFollowUps": [],
   "verification": [
-    "verify:prod, verify:release, all SAT start/completion/bank tests, Edge typecheck and SAT Practice build.",
-    "Actual local browser original recorded feedback, legacy scores, outages, red wrong-answer labels and mobile/desktop accessibility.",
-    "Full exact-head CI, normal merge, tracked Pages, byte-matching Edge sources and signed-in exclusive-QA result delivery."
+    "Four simulator builds,15 shared save/draft tests, actual mocked owned-player 44 browser recovery cases and production/release guards.",
+    "Full exact-head CI, tracked Pages, provider source inventory and public reachability; dedicated-QA signed-in checks only.",
+    "Exclusive QA production storage persistence/closure contract and verified fixture cleanup; no grading or provider calls."
   ],
   "rollback": {
-    "frontends": "Baselinefd4d658be005183a6307d35eb1432769b15a7300 through tracked CI or Pages dashboard.",
-    "database": "No migration; do not change customer answers, scores, content or receipts.",
-    "edgeFunctions": "Previous version18 supports unchanged schema. Preserve immutable receipts and frozen sources; prefer a forward correction."
+    "frontends": "Previous reviewed main adaa4e03ebf939aeebcd809173cd71bc6e5d87ac through tracked CI or Pages dashboard.",
+    "database": "No schema or customer data migration. Preserve remaining per-tab drafts.",
+    "edgeFunctions": "No Edge change."
   }
 }
