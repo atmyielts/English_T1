@@ -1,5 +1,5 @@
 import { bankFilters, loadBankQuestions } from './bank.ts';
-import { AttemptError, attemptQuestions, ownedAttempt, savedAttemptResult, submitAttempt } from './completion.ts';
+import { AttemptError, getAttemptResult, submitAttempt } from './completion.ts';
 import { readStartBody, startAttempt } from './start.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -211,12 +211,9 @@ serve(async (req) => {
     const attemptMatch = path.match(/^\/attempts\/([0-9a-f-]{36})$/i);
     if (req.method === "GET" && attemptMatch) {
       const attemptId = attemptMatch[1];
-      const attempt = await ownedAttempt(sb, user.id, attemptId);
-      const saved = await savedAttemptResult(sb, user.id, attempt);
-      if (saved) return json(200, saved);
-      const questions = await attemptQuestions(sb, user.id, attempt,
-        ids => loadBankQuestions(sb, user.id, { question_ids: ids, limit: 100 }, { includeRetired: true }));
-      return json(200, { attempt, questions: attempt.status === "scored" ? questions : questions.map(questionForLearner) });
+      const result = await getAttemptResult(sb, user.id, attemptId,
+        ids => loadBankQuestions(sb, user.id, { question_ids: ids, limit: 100 }, { includeRetired: true }), questionForLearner);
+      return json(200, result);
     }
 
     if (req.method === "POST" && path === "/attempts/submit") {

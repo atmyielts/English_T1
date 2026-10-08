@@ -308,14 +308,14 @@ a {
 .kpi-grid,
 .two-col,
 .feature-grid,
-.bank-filters { border: 0; padding: 0; margin-inline: 0; }
-.bank-filters legend { margin-bottom: 0.75rem; font-weight: 600; }
-.bank-filters label { display: grid; gap: 0.4rem; }
-
 .question-grid {
   display: grid;
   gap: 16px;
 }
+
+.bank-filters { border: 0; padding: 0; margin-inline: 0; }
+.bank-filters legend { margin-bottom: 0.75rem; font-weight: 600; }
+.bank-filters label { display: grid; gap: 0.4rem; }
 
 .kpi-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -594,6 +594,29 @@ textarea {
 .option-row.selected {
   border-color: rgba(5, 150, 105, 0.5);
   background: #ecfdf5;
+}
+
+.option-row.selected.answer-incorrect {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.option-answer-status {
+  grid-column: 3;
+  color: #064e3b;
+}
+
+.answer-incorrect .option-answer-status {
+  color: #b91c1c;
+}
+
+.option-row.selected.answer-unconfirmed {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.answer-unconfirmed .option-answer-status {
+  color: #92400e;
 }
 
 .option-row input {

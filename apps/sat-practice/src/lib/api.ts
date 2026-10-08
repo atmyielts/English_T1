@@ -261,7 +261,7 @@ export const attemptSubmit = (
 export const attemptGet = (
   accessToken: string,
   attemptId: string,
-): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
+): Promise<{ attempt: Attempt; questions: SatQuestion[]; legacy_result?: boolean }> =>
   call(accessToken, `/sat-practice/attempts/${encodeURIComponent(attemptId)}`);
 
 export const notebookGet = (accessToken: string): Promise<{ items: NotebookItem[] }> =>
