@@ -1,0 +1,19 @@
+# SAT browser start and recovery repair
+
+A lost start response or reload can currently leave the browser unable to identify the drill it created. The deployed PR205 backend already replays a supplied request identity atomically; this frontend retains that identity per signed-in actor and selection until Lab confirms that the owned drill loaded. Duplicate clicks share one request. Reloads, including the response-to-navigation gap, reopen the original drill. Browser storage failure stops a new mutation before an unrecoverable identity is sent.
+
+Reviews, Notebook and Today distinguish failed loads from empty history, expose retry guidance, guard duplicate actions and retain confirmed values after failed tag or plan updates. The navigation shows XP and streak only when real activity values are supplied; other pages no longer display invented zeros. The subtitle describes daily practice without implying validated score growth.
+
+Read calls and the already atomic start/submission commands have a thirty-second request deadline. This change does not shorten the legacy Tutor/provider operation or introduce a new deadline for other commands without replay protection. Tutor quota/provider hardening and atomic plan regeneration remain separate work.
+
+The responsive header uses a44-pixel mobile menu button instead of displaying every link above the workspace. Hidden links stay outside the tab order and accessibility tree. Keyboard activation, Escape with focus return, outside clicks, route selection and viewport changes close or open the disclosure correctly. Desktop navigation remains visible.
+
+Validation: three actor/identity/storage tests pass and are included in the existing root SAT start test command. Eleven actual bank/menu browser scenarios and five Reviews/Notebook/Today recovery scenarios pass with synthetic APIs and external traffic blocked. They cover uncertain-start reloads, navigation acknowledgement, duplicate clicks, failed writes, stale bank responses, explicit empty selections, absence of invented activity and mobile-menu keyboard/route/resize behavior. There are no unhandled recovery browser errors; scoped bank and expanded-menu accessibility checks report zero violations. Layout fits320/390/1280 widths; collapsed/open mobile and desktop screenshots were visually inspected. The SAT Practice build, secret guard, release guard and diff check pass. These fixtures do not qualify published teaching content or actual provider quality.
+
+Backend baseline: main `76b17822286fa80ff0ad13bb2924093b2bfb6a1f`, SAT Edge18, migration `20261008110000_sat_attempt_atomic_start.sql`. Full CI and tracked Pages for PR205 succeeded. Eight downloaded Edge source files match the reviewed checkout;41 live dedicated-QA checks passed, including grant absence and logout. This PR changes no Edge Function, migration, workflow, content, price, secret or provider budget.
+
+Require exact-head full CI, normal PR merge, tracked Pages and provider source confirmation. Then verify the published browser with the exclusive tagged QA account: lose only the start reply, reload the same selection, confirm the same request/drill and inspect one new attempt/session/source. Remove the temporary QA grant and verify logout. Never deliberately fail customer workflows to perform these checks.
+
+Rollback baseline is `76b17822286fa80ff0ad13bb2924093b2bfb6a1f` through tracked CI or the Pages dashboard. The additive backend remains compatible with the previous browser. Preserve all existing frozen sources, content, attempts, scores and receipts.
+
+Remaining customer-readiness work includes replacing placeholder SAT material, private original scored explanations, truthful daily-plan task types/estimates, Dashboard error recovery, broader simulator fidelity and the separately prepared AI add-on/quota protections. This frontend repair does not qualify the whole service as ready for customers.

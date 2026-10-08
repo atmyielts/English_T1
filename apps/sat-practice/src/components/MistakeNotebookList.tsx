@@ -4,6 +4,7 @@ import type { NotebookItem } from '../lib/api';
 
 export const MistakeNotebookList = (props: {
   items: NotebookItem[];
+  busy?: boolean;
   onRetry?: (item: NotebookItem) => void;
   onTag?: (item: NotebookItem, reasonTag: string) => void;
 }) => (
@@ -22,6 +23,7 @@ export const MistakeNotebookList = (props: {
         <div className="row-actions">
           <select
             value={item.reason_tag}
+            disabled={props.busy}
             onChange={(event) => props.onTag?.(item, event.target.value)}
             aria-label="Reason tag"
           >
@@ -31,7 +33,7 @@ export const MistakeNotebookList = (props: {
             <option value="misread_wording">Misread wording</option>
             <option value="unknown">Unknown</option>
           </select>
-          <button type="button" className="icon-button" onClick={() => props.onRetry?.(item)} title="Retry similar">
+          <button type="button" className="icon-button" onClick={() => props.onRetry?.(item)} disabled={props.busy} title="Retry similar">
             <ArrowRight size={17} />
           </button>
           <Tag size={15} aria-hidden="true" />

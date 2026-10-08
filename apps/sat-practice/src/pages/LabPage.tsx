@@ -10,6 +10,7 @@ import {
 } from "../lib/api";
 import { useAccess } from "../lib/useAccess";
 import { supabase } from "../lib/supabase";
+import { acknowledgeStart } from '../lib/start-requests';
 
 export const LabPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -69,6 +70,10 @@ const LabWorkspace = (
     setError(null);
     attemptGet(token.current, attemptId).then((res) => {
       if (cancelled) return;
+      try { acknowledgeStart(sessionStorage, userId, res.attempt.id); } catch {
+        // Browser privacy settings may deny even obtaining the storage object.
+        // The owned server drill remains usable without a local acknowledgement.
+      }
       setAttempt(res.attempt);
       setQuestions(res.questions);
       let saved: Record<string, unknown> | null = null;

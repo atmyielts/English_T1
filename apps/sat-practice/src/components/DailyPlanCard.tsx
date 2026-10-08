@@ -35,7 +35,7 @@ export const DailyPlanCard = (props: {
               <strong>{taskLabel(item)}</strong>
               <span>{item.estimated_minutes} min · {item.status.replace('_', ' ')}</span>
             </div>
-            <button type="button" className="icon-button" onClick={() => props.onStart(item)} title="Start task">
+            <button type="button" className="icon-button" onClick={() => props.onStart(item)} disabled={props.busy} title="Start task">
               <ArrowRight size={17} />
             </button>
           </li>
