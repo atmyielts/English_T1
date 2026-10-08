@@ -1,0 +1,8 @@
+{
+  "phase": "initial production storage probe before granted rerun",
+  "productionContacted": true,
+  "exclusiveQaOnly": true,
+  "stage": "answer write rejected without SAT access",
+  "fixtureCleanupAndLogoutCompletedInFinally": true,
+  "successfulStorageContractClaim": false
+}

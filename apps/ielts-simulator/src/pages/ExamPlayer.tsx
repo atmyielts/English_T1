@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Bookmark, BookOpen, ChevronLeft, ChevronRight, Maximize2, Menu, ShieldAlert, StickyNote, Volume2 } from 'lucide-react';
+import { AnswerDraftStore, tabDraftStorage } from '../../../exam-shared/src/answer-draft';
+import { ANSWER_SAVE_ERROR, AnswerSaveQueue, transitionAfterSaving } from '../../../exam-shared/src/submission';
 import type { ContentUnit } from '../domain/models';
 import { PassageViewer, type PassageAnnotation } from '../components/exam/PassageViewer';
 import { PreTestGate, type PreTestGateStatus } from '../components/exam/PreTestGate';
@@ -264,6 +266,16 @@ export const ExamPlayer: React.FC = () => {
   const [loadedOnce, setLoadedOnce] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [autosaveError, setAutosaveError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [draftRecovery, setDraftRecovery] = useState<{ answers: Record<string, unknown>; conflicts: number } | null>(null);
+  const [draftWarning, setDraftWarning] = useState<string | null>(null);
+  const draftStoreRef = useRef<AnswerDraftStore | null>(null);
+  const answerSnapshotRef = useRef<Record<string, unknown>>({});
+  const submissionInFlightRef = useRef(false);
+  const pendingSavesRef = useRef(new Set<Promise<void>>());
+  const answerSaveQueueRef = useRef(new AnswerSaveQueue());
 
   const [experience, setExperience] = useState<ExperienceRow | null>(null);
   const [sections, setSections] = useState<SectionRow[]>([]);
@@ -278,7 +290,7 @@ export const ExamPlayer: React.FC = () => {
   const [sessionMeta, setSessionMeta] = useState<Record<string, unknown> | null>(null);
   const [showNavigator, setShowNavigator] = useState(false);
   const [mobilePassageOpen, setMobilePassageOpen] = useState(true);
-  const { accessToken } = useAccess();
+  const { accessToken, userId } = useAccess();
   const [activePartId, setActivePartId] = useState<string | null>(null);
 
   const [flags, setFlags] = useState<Record<string, true>>({});
@@ -397,16 +409,19 @@ export const ExamPlayer: React.FC = () => {
   const flushSaves = useCallback(async (): Promise<void> => {
     const sid = sessionId;
     if (!sid) return;
+    const draftStore = draftStoreRef.current;
 
     const timers = saveTimersRef.current;
     for (const t of timers.values()) window.clearTimeout(t);
     timers.clear();
+    // Let earlier autosaves settle before writing the final answer snapshot.
+    await Promise.allSettled([...pendingSavesRef.current]);
 
     const toInsert: { session_id: string; content_unit_id: string; type: string; data: unknown }[] = [];
 
     for (const unit of units) {
       if (!isQuestionUnit(unit)) continue;
-      const data = answers[unit.id];
+      const data = answerSnapshotRef.current[unit.id];
       if (data == null) continue;
 
       const serialized = JSON.stringify(data);
@@ -415,20 +430,38 @@ export const ExamPlayer: React.FC = () => {
       toInsert.push({ session_id: sid, content_unit_id: unit.id, type: unit.type, data });
     }
 
-    if (toInsert.length === 0) return;
+    if (toInsert.length === 0) { setAutosaveError(null); return; }
 
-    const { error: insertError } = await supabase.from('responses').insert(toInsert);
-    if (!insertError) {
-      for (const row of toInsert) lastSavedRef.current[row.content_unit_id] = JSON.stringify(row.data);
+    await answerSaveQueueRef.current.run(() => supabase.from('responses').insert(toInsert));
+    for (const row of toInsert) {
+      lastSavedRef.current[row.content_unit_id] = JSON.stringify(row.data);
+      draftStore?.acknowledge(row.content_unit_id, row.data);
     }
-  }, [answers, sessionId, units]);
+    setAutosaveError(null);
+  }, [sessionId, units]);
+
+  const retrySaving = async () => {
+    if (submissionInFlightRef.current || loading || draftRecovery) return;
+    submissionInFlightRef.current = true;
+    setSubmitting(true);
+    try { await flushSaves(); }
+    catch { setAutosaveError(ANSWER_SAVE_ERROR); }
+    finally { submissionInFlightRef.current = false; setSubmitting(false); }
+  };
 
   const queueSave = (unit: ContentUnit, data: unknown) => {
+    if (submissionInFlightRef.current || draftRecovery || loading || timeLeftSeconds === 0 || section?.id !== sectionId) return;
     const sid = sessionId;
-    setAnswers((prev) => ({ ...prev, [unit.id]: data }));
+    answerSnapshotRef.current = { ...answerSnapshotRef.current, [unit.id]: data };
+    setAnswers(answerSnapshotRef.current);
+    let base: unknown;
+    try { const stored = lastSavedRef.current[unit.id]; base = stored === undefined ? undefined : JSON.parse(stored); } catch { base = undefined; }
+    if (!draftStoreRef.current?.put(unit.id, data, base)) {
+      setDraftWarning('This browser cannot keep a reload recovery draft. Keep this page open until your answers are saved.');
+    }
 
     const serialized = JSON.stringify(data);
-    if (lastSavedRef.current[unit.id] === serialized) return;
+    const draftStore = draftStoreRef.current;
     if (!sid) return;
 
     const timers = saveTimersRef.current;
@@ -447,16 +480,19 @@ export const ExamPlayer: React.FC = () => {
               : 150;
 
     const t = window.setTimeout(async () => {
+      timers.delete(unit.id);
+      const save = answerSaveQueueRef.current.run(() => supabase.from('responses').insert({
+        session_id: sid, content_unit_id: unit.id, type: unit.type, data,
+      }));
+      pendingSavesRef.current.add(save);
       try {
-        const { error: insertError } = await supabase.from('responses').insert({
-          session_id: sid,
-          content_unit_id: unit.id,
-          type: unit.type,
-          data,
-        });
-        if (!insertError) lastSavedRef.current[unit.id] = serialized;
+        await save;
+        if (draftStoreRef.current === draftStore) lastSavedRef.current[unit.id] = serialized;
+        draftStore?.acknowledge(unit.id, data);
       } catch {
-        // ignore; best-effort autosave
+        if (draftStoreRef.current === draftStore) setAutosaveError(ANSWER_SAVE_ERROR);
+      } finally {
+        pendingSavesRef.current.delete(save);
       }
     }, debounceMs);
 
@@ -468,10 +504,15 @@ export const ExamPlayer: React.FC = () => {
     const timers = saveTimersRef.current;
 
     const run = async () => {
-      if (!sessionId || !sectionId || !accessToken) return;
+      if (!sessionId || !sectionId || !accessToken || !userId) return;
 
       setLoading(true);
       setError(null);
+      setSubmissionError(null);
+      setAutosaveError(null);
+      setDraftWarning(null);
+      setDraftRecovery(null);
+      draftStoreRef.current = null;
       setDeadlineIso(null);
       setTimeLeftSeconds(null);
       setNextSectionId(null);
@@ -504,7 +545,12 @@ export const ExamPlayer: React.FC = () => {
         setSection(state.current_section as any);
         setNextSectionId(state.next_section_id);
         setUnits(normalizedUnits);
-        setAnswers(state.answers ?? {});
+        answerSnapshotRef.current = state.answers ?? {};
+        const drafts = new AnswerDraftStore(tabDraftStorage(), { app: 'ielts', actor: userId, session: sessionId, section: sectionId });
+        draftStoreRef.current = drafts;
+        const pending = drafts.pending(state.answers ?? {}, new Set(normalizedUnits.filter(isQuestionUnit).map(u => u.id)));
+        setDraftRecovery(Object.keys(pending.answers).length ? pending : null);
+        setAnswers(answerSnapshotRef.current);
         setDeadlineIso(state.deadline_iso);
         setSessionMeta((state.session?.metadata ?? {}) as Record<string, unknown>);
         setShowNavigator(false);
@@ -559,7 +605,7 @@ export const ExamPlayer: React.FC = () => {
       for (const t of timers.values()) window.clearTimeout(t);
       timers.clear();
     };
-  }, [accessToken, navigate, sectionId, sessionId]);
+  }, [accessToken, navigate, sectionId, sessionId, userId]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -620,7 +666,7 @@ export const ExamPlayer: React.FC = () => {
     const tick = () => {
       const now = Date.now() + serverNowOffsetMsRef.current;
       const ms = Date.parse(deadlineIso) - now;
-      setTimeLeftSeconds(Math.max(0, Math.floor(ms / 1000)));
+      setTimeLeftSeconds(Math.max(0, Math.ceil(ms / 1000)));
     };
 
     tick();
@@ -628,37 +674,50 @@ export const ExamPlayer: React.FC = () => {
     return () => window.clearInterval(t);
   }, [deadlineIso]);
 
+  const completeOrAdvance = useCallback(async (automatic: boolean, failureMessage: string) => {
+    strict.logEvent(automatic ? 'auto_submit' : 'manual_submit', { section_id: sectionId, section_type: type, is_final: !nextSectionId });
+    if (nextSectionId) {
+      navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`, { replace: automatic });
+      return;
+    }
+    const { data: completedSession, error: finalizeError } = await supabase.from('sessions')
+      .update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', sessionId).select('id,status').single();
+    if (finalizeError || completedSession?.id !== sessionId || completedSession.status !== 'completed') throw new Error(failureMessage);
+    navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`, { replace: automatic });
+  }, [navigate, nextSectionId, sessionBasePath, sessionId, sectionSearch, resultsSearch, strict, sectionId, type]);
+
+  const submitSection = useCallback(async (automatic: boolean) => {
+    if (submissionInFlightRef.current || loading || draftRecovery || section?.id !== sectionId) return;
+    submissionInFlightRef.current = true;
+    setSubmitting(true);
+    setSubmissionError(null);
+    try {
+      await transitionAfterSaving(flushSaves, async () => {
+        draftStoreRef.current?.clear();
+        await completeOrAdvance(automatic, 'Your answers are saved, but this attempt could not be completed. Retry submission.');
+      });
+    } catch (cause) {
+      setSubmissionError(cause instanceof Error ? cause.message : ANSWER_SAVE_ERROR);
+    } finally {
+      submissionInFlightRef.current = false;
+      setSubmitting(false);
+    }
+  }, [loading, draftRecovery, section?.id, sectionId, flushSaves, completeOrAdvance]);
+
   useEffect(() => {
     if (timeLeftSeconds == null) return;
-    if (timeLeftSeconds > 0) return;
+    if (timeLeftSeconds > 0 || loading || draftRecovery) return;
     if (!sectionId || section?.id !== sectionId) return;
-    if (!deadlineIso) return;
+    if (!deadlineIso || Date.parse(deadlineIso) > Date.now() + serverNowOffsetMsRef.current) return;
     if (autoAdvanceRef.current) return;
     autoAdvanceRef.current = true;
 
     // Auto-advance when time ends.
-    const go = async () => {
-      try {
-        await flushSaves();
-      } catch {
-        // ignore
-      }
-
-      if (!autoSubmitLoggedRef.current) {
-        autoSubmitLoggedRef.current = true;
-        strict.logEvent('auto_submit', { section_id: sectionId, section_type: type }, 'high');
-      }
-
-      if (nextSectionId) {
-        navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`, { replace: true });
-      } else {
-        await supabase.from('sessions').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', sessionId);
-        navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`, { replace: true });
-      }
-    };
-
-    go();
+    void submitSection(true);
   }, [
+    submitSection,
+    loading,
+    draftRecovery,
     deadlineIso,
     flushSaves,
     navigate,
@@ -674,54 +733,50 @@ export const ExamPlayer: React.FC = () => {
     type,
   ]);
 
-  const performNext = async () => {
-    setError(null);
-
-    try {
-      await flushSaves();
-    } catch {
-      // ignore
-    }
-
-    strict.logEvent('manual_submit', { section_id: sectionId, section_type: type, is_final: !nextSectionId });
-
-    if (nextSectionId) {
-      navigate(`${sessionBasePath}/${sessionId}/${nextSectionId}${sectionSearch}`);
-      return;
-    }
-
-    const { error: finalizeError } = await supabase
-      .from('sessions')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
-      .eq('id', sessionId);
-
-    if (finalizeError) {
-      setError(finalizeError.message);
-      return;
-    }
-
-    navigate(`${sessionBasePath}/${sessionId}/results${resultsSearch}`);
-  };
+  const performNext = async () => { await submitSection(false); };
 
   const handleNext = () => {
     setConfirmOpen(true);
   };
 
+  const continueWithSavedAnswers = async () => {
+    if (submissionInFlightRef.current || loading || draftRecovery || timeLeftSeconds !== 0 || !accessToken || !sessionId || !sectionId) return;
+    submissionInFlightRef.current = true;
+    setSubmitting(true);
+    try {
+      // Reconcile a lost write reply without allowing late answer edits or relying
+      // on the prefetched/cache snapshot. This is an explicit learner decision.
+      const saved = await getExamState(accessToken, sessionId, sectionId, { force: true });
+      if (saved.session.id !== sessionId || saved.current_section.id !== sectionId) throw new Error('Unconfirmed saved section.');
+      await completeOrAdvance(false, 'This attempt could not be completed.');
+    } catch {
+      setSubmissionError('The saved section could not be confirmed or closed. Keep this page open and retry.');
+    } finally {
+      submissionInFlightRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
   const handleAbandon = async () => {
-    if (!sessionId) return;
+    if (!sessionId || submissionInFlightRef.current || draftRecovery) return;
     const ok = window.confirm('Leaving now will mark this attempt as abandoned and cannot be restarted. Leave exam?');
     if (!ok) return;
 
+    submissionInFlightRef.current = true;
+    setSubmitting(true);
     try {
-      await supabase
-        .from('sessions')
-        .update({ status: 'abandoned', completed_at: new Date().toISOString() })
-        .eq('id', sessionId);
-    } catch {
-      // ignore
+      await flushSaves();
+      const { data: abandonedSession, error: abandonError } = await supabase.from('sessions')
+        .update({ status: 'abandoned', completed_at: new Date().toISOString() }).eq('id', sessionId).select('id,status').single();
+      if (abandonError || abandonedSession?.id !== sessionId || abandonedSession.status !== 'abandoned') throw new Error('This attempt could not be closed. Keep this page open and retry leaving.');
+      draftStoreRef.current?.clear();
+      navigate('/', { replace: true });
+    } catch (cause) {
+      setAutosaveError(cause instanceof Error ? cause.message : ANSWER_SAVE_ERROR);
+    } finally {
+      submissionInFlightRef.current = false;
+      setSubmitting(false);
     }
-
-    navigate('/', { replace: true });
   };
 
   const parts = useMemo(() => {
@@ -1044,6 +1099,41 @@ export const ExamPlayer: React.FC = () => {
 
   return (
     <div className={`${themeClass} ${textSizeClass} h-[100dvh] md:h-screen flex flex-col bg-[var(--inspera-bg)] text-[var(--inspera-text)] overflow-hidden`}>
+      {draftRecovery && (
+        <div role="alert" className="shrink-0 border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p>This tab has {Object.keys(draftRecovery.answers).length} answer draft(s) that the server has not confirmed.
+            {draftRecovery.conflicts > 0 ? ' Some saved answers changed. Restoring will replace those answers when you retry saving.' : ' Choose what to recover before continuing.'}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" className="min-h-[44px] rounded border border-amber-800 px-3 py-2 font-semibold" onClick={() => {
+              answerSnapshotRef.current = { ...answerSnapshotRef.current, ...draftRecovery.answers };
+              setAnswers(answerSnapshotRef.current);
+              setDraftRecovery(null);
+              setAutosaveError('Your draft has been recovered in this tab. Retry saving to confirm it on the server.');
+            }}>Restore tab draft</button>
+            <button type="button" className="min-h-[44px] rounded border border-amber-800 px-3 py-2 font-semibold" onClick={() => {
+              draftStoreRef.current?.clear(); setDraftRecovery(null);
+            }}>Use server answers</button>
+          </div>
+        </div>
+      )}
+      {draftWarning && <div role="status" className="shrink-0 bg-amber-50 px-4 py-2 text-sm text-amber-950">{draftWarning}</div>}
+      {(submissionError || autosaveError) && (
+        <div role="alert" className="shrink-0 border-b border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900">
+          <p>{submissionError ?? autosaveError}</p>
+          <button type="button" disabled={submitting || loading || Boolean(draftRecovery)} className="mt-2 min-h-[44px] rounded border border-red-700 px-3 py-2 font-semibold disabled:opacity-50" onClick={() => {
+            if (submissionError) void submitSection(false);
+            else void retrySaving();
+          }}>
+            {submissionError ? 'Retry submission' : 'Retry saving'}
+          </button>
+          {timeLeftSeconds === 0 && !draftRecovery && (
+            <div className="mt-3">
+              <p>The section time has ended. Only answers confirmed by the server will count. Unsaved changes cannot be added after the deadline. Keep a copy of any unsaved work before continuing.</p>
+              <button type="button" disabled={submitting || loading} className="mt-2 min-h-[44px] rounded border border-red-700 px-3 py-2 font-semibold disabled:opacity-50" onClick={() => void continueWithSavedAnswers()}>Continue with saved answers</button>
+            </div>
+          )}
+        </div>
+      )}
       <header
         className={`h-12 shrink-0 border-b border-[var(--inspera-border)] bg-[var(--inspera-panel)] flex items-center px-4 gap-4 ${
           oneMinuteWarning ? 'bg-amber-50 border-amber-200' : ''
@@ -1121,6 +1211,7 @@ export const ExamPlayer: React.FC = () => {
             <button
               type="button"
               onClick={handleAbandon}
+              disabled={submitting || loading || Boolean(draftRecovery)}
               className="px-3 py-2 rounded border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 text-sm font-semibold"
             >
               Leave
@@ -1130,6 +1221,7 @@ export const ExamPlayer: React.FC = () => {
           <button
             type="button"
             onClick={handleNext}
+            disabled={submitting || loading || Boolean(draftRecovery)}
             className="ml-1 px-3 py-2 rounded border border-[var(--inspera-border)] bg-[var(--inspera-panel)] hover:bg-gray-50 text-sm font-semibold"
             title={isLastSection ? 'Finish test' : 'Submit section'}
           >
@@ -1251,6 +1343,7 @@ export const ExamPlayer: React.FC = () => {
                       <InputRenderer
                         unit={u}
                         value={answers[u.id]}
+                        readOnly={isQuestionUnit(u) && (submitting || loading || timeLeftSeconds === 0 || Boolean(draftRecovery))}
                         onChange={(val) => queueSave(u, val)}
                         audioContext={accessToken ? { accessToken, sessionId, volume } : null}
                         audioAutoStartEnabled={allAcknowledged}
@@ -1290,6 +1383,7 @@ export const ExamPlayer: React.FC = () => {
                     <InputRenderer
                       unit={u}
                       value={answers[u.id]}
+                      readOnly={isQuestionUnit(u) && (submitting || loading || timeLeftSeconds === 0 || Boolean(draftRecovery))}
                       onChange={(val) => queueSave(u, val)}
                       audioContext={accessToken ? { accessToken, sessionId, volume } : null}
                       audioAutoStartEnabled={allAcknowledged}
