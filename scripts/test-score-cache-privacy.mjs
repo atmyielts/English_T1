@@ -25,7 +25,13 @@ const check = async (name, action) => { await action(); checks.push({name,passed
 try {
   await run(['run','--detach','--name',name,'--network','none','--label','schood.qa=score-cache','-e','POSTGRES_HOST_AUTH_METHOD=trust',image]); created = true;
   let ready = false;
-  for (let n=0; n<100; n++) { try { await run(['exec',name,'pg_isready','-U','postgres']); ready = true; break; } catch { await pause(); } }
+  // The image briefly exposes an initialization server that stops again.
+  // Require the final server as PID1 and a successful SQL query before testing.
+  for (let n=0; n<120; n++) {
+    try { if (await run(['exec',name,'cat','/proc/1/comm']) === 'postgres') { await sql('select 1'); ready = true; break; } }
+    catch { /* Final socket may still be opening. */ }
+    await pause();
+  }
   assert.ok(ready,'Local PostgreSQL did not become ready');
   await sql(`create role anon; create role authenticated; create role service_role bypassrls;
     create schema auth; create function auth.uid() returns uuid language sql as $$ select null::uuid $$;
