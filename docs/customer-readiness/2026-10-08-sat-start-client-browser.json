@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-08T16:06:30.758Z",
+  "checkedAt": "2026-10-08T16:14:13.1Z",
   "productionContacted": false,
   "checks": [
     {
@@ -31,6 +31,14 @@
       "passed": true
     },
     {
+      "case": "mobile-menu-keyboard-disclosure-escape-focus-and-accessibility",
+      "passed": true
+    },
+    {
+      "case": "mobile-menu-outside-click-route-close-and-desktop-resize",
+      "passed": true
+    },
+    {
       "case": "accessible-labeled-filters-and-responsive-320-390-1280",
       "passed": true
     },
@@ -40,6 +48,7 @@
     }
   ],
   "accessibilityViolations": [],
+  "menuAccessibilityViolations": [],
   "bankRequests": [
     {
       "limit": "24"
@@ -71,6 +80,12 @@
       "section_type": "math",
       "difficulty": "hard",
       "mistake_history": "mastered",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "previously_missed",
       "limit": "24"
     },
     {

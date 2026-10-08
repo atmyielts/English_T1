@@ -23,6 +23,7 @@ async(page)=>{
         return route.fulfill({status:failStart?503:200,json:failStart?{error:'Drill could not be started. Please retry.'}:{attempt:{id},questions:[question(2,'math')]}});
       }
       if(url.pathname.endsWith('/sat-practice/attempts/'+id))return route.fulfill({json:{attempt:{id,status:'in_progress',question_ids:[],answers:{}},questions:[]}});
+      if(url.pathname.endsWith('/sat-practice/notebook'))return route.fulfill({json:{items:[]}});
       return route.fulfill({json:{user:session.user,entitlements:[],effective_product_ids:['2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010']}});
     }
     return url.origin===origin?route.continue():route.abort();
@@ -64,6 +65,34 @@ async(page)=>{
   checks.push({case:'bank-outage-clears-old-questions-and-recovers-with-retry',passed:true});
   for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Overflow at '+width);}
   await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+  const savedBankUrl=page.url();
+  await page.setViewportSize({width:390,height:900});
+  const menu=page.getByRole('button',{name:'Open menu',exact:true});
+  assert(await page.getByRole('navigation',{name:'SAT Practice',exact:true}).count()===0,'Collapsed navigation must not be exposed to assistive technology');
+  assert(await page.locator('header.top-nav').evaluate(header=>header.getBoundingClientRect().height)<110,'Mobile navigation must start compact');
+  await menu.focus();await page.keyboard.press('Enter');
+  const closeMenu=page.getByRole('button',{name:'Close menu',exact:true});
+  assert(await closeMenu.getAttribute('aria-expanded')==='true','Open menu must announce expanded state');
+  await page.keyboard.press('Tab');
+  assert(await page.getByRole('navigation',{name:'SAT Practice',exact:true}).getByRole('link',{name:'Dashboard',exact:true}).evaluate(link=>link===document.activeElement),'Keyboard should enter the disclosed links');
+  const menuViolations=await page.evaluate(async()=>(await axe.run('header.top-nav',{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}})).violations.map(v=>v.id));
+  assert(menuViolations.length===0,'Menu accessibility: '+menuViolations.join(','));
+  await page.screenshot({path:'docs/customer-readiness/2026-10-08-sat-menu-open-390.png',fullPage:true});
+  await page.keyboard.press('Escape');
+  assert(await menu.getAttribute('aria-expanded')==='false'&&await menu.evaluate(button=>button===document.activeElement),'Escape must close the menu and return focus');
+  checks.push({case:'mobile-menu-keyboard-disclosure-escape-focus-and-accessibility',passed:true});
+  await menu.click();await page.getByRole('heading',{name:'Filterable SAT drills',exact:true}).click();
+  assert(await menu.getAttribute('aria-expanded')==='false','Outside click should dismiss mobile navigation');
+  await menu.click();await page.setViewportSize({width:1280,height:900});
+  assert(await page.getByRole('button',{name:'Open menu',exact:true}).count()===0,'Desktop must show links without a burger');
+  await page.setViewportSize({width:390,height:900});
+  assert(await menu.getAttribute('aria-expanded')==='false','Returning to mobile must start collapsed');
+  await menu.click();await page.getByRole('navigation',{name:'SAT Practice',exact:true}).getByRole('link',{name:'Notebook',exact:true}).click();
+  await page.waitForURL('**/notebook');await page.getByRole('button',{name:'Open menu',exact:true}).waitFor();
+  assert(await page.getByRole('navigation',{name:'SAT Practice',exact:true}).count()===0,'Navigation must close after route selection');
+  await page.goto(savedBankUrl);await page.getByText('Showing 1 matching questions.',{exact:true}).waitFor();
+  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});
+  checks.push({case:'mobile-menu-outside-click-route-close-and-desktop-resize',passed:true});
   const violations=await page.evaluate(async()=>(await axe.run('main',{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}})).violations.map(v=>v.id));assert(violations.length===0,'Bank accessibility: '+violations.join(','));
   await page.setViewportSize({width:390,height:900});await page.screenshot({path:'docs/customer-readiness/2026-10-08-sat-start-390.png',fullPage:true});
   await page.setViewportSize({width:1280,height:900});await page.screenshot({path:'docs/customer-readiness/2026-10-08-sat-start-1280.png',fullPage:true});
@@ -73,5 +102,5 @@ async(page)=>{
   assert(starts.at(-1).request_id===firstId,'Confirmed retry must reuse original identity');
   assert(await page.evaluate(()=>!Object.keys(sessionStorage).some(k=>k.startsWith('schood.sat-start.pending.'))),'Loaded owned drill clears pending start identity');
   checks.push({case:'successful-start-opens-the-confirmed-attempt',passed:true});
-  return {checkedAt:new Date().toISOString(),productionContacted:false,checks,accessibilityViolations:violations,bankRequests};
+  return {checkedAt:new Date().toISOString(),productionContacted:false,checks,accessibilityViolations:violations,menuAccessibilityViolations:menuViolations,bankRequests};
 }
