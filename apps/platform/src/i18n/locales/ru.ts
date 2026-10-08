@@ -16,6 +16,8 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'common.login': 'Вход',
   'common.signup': 'Регистрация',
   'common.menu': 'Меню',
+  'common.menuOpen': 'Открыть меню',
+  'common.menuClose': 'Закрыть меню',
   'common.support': 'Поддержка',
   'common.send': 'Отправить',
   'common.cancel': 'Отмена',
