@@ -17,6 +17,7 @@ The floating Updates button is suppressed only on Peer Review because it obscure
 - 15 browser cases with synthetic API/session fixtures, including interrupted save/reload identity, malformed receipt, denied storage, account switch, withdrawn access, synchronous double click, responsive and accessibility checks.
 - Platform production build using child-process-only synthetic configuration; no environment files created.
 - Full local Supabase stack reset was not run. Native tests exercise the legacy Peer DDL and the exact migration, not the entire application schema. Exact-head CI and hosted proof remain distinct release gates.
+- Initial PR CI run `37839783193` stopped at the account-switch browser case: production cookie-domain settings inherited by the loopback fixture caused the browser to discard the SDK's new session. The same failure was reproduced locally with those inherited settings. The fixture now explicitly uses host cookies on loopback; production cookie configuration and assertions are unchanged.
 
 ## Production sequence and limits
 
