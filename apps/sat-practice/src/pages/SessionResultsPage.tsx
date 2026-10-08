@@ -4,6 +4,7 @@ import { PracticeTopNav } from "../components/PracticeTopNav";
 import { QuestionCard } from "../components/QuestionCard";
 import { type Attempt, attemptGet, type SatQuestion } from "../lib/api";
 import { useAccess } from "../lib/useAccess";
+import { savedAnswerText, savedFeedback } from '../lib/saved-feedback';
 
 export const SessionResultsPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -31,6 +32,7 @@ const ResultsWorkspace = (
 ) => {
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [questions, setQuestions] = useState<SatQuestion[]>([]);
+  const [immutableResult, setImmutableResult] = useState(false);
   const [error, setError] = useState<string | null>(null),
     [loading, setLoading] = useState(true),
     [reload, setReload] = useState(0);
@@ -42,10 +44,12 @@ const ResultsWorkspace = (
     setError(null);
     setAttempt(null);
     setQuestions([]);
+    setImmutableResult(false);
     attemptGet(token.current, attemptId).then((res) => {
       if (!cancelled) {
         setAttempt(res.attempt);
         setQuestions(res.questions);
+        setImmutableResult(res.legacy_result === false);
       }
     })
       .catch((err) => {
@@ -106,17 +110,30 @@ const ResultsWorkspace = (
             </div>
           )
           : null}
-        {scored
+        {scored && !immutableResult ? <div className="alert" role="status">Your saved score is preserved. The original question snapshot could not be confirmed, so original answer explanations are unavailable for this result.</div> : null}
+        {scored && !immutableResult ? <section className="panel" aria-label="Saved answers">
+          <h2>Saved answers</h2>
+          <ol>{attempt.question_ids.map(id => <li key={id}>{savedAnswerText(attempt.answers[id])}</li>)}</ol>
+        </section> : null}
+        {scored && immutableResult
           ? (
             <section className="question-stack">
-              {questions.map((question, index) => (
+              {questions.map((question, index) => {
+                const feedback = savedFeedback(attempt, question, immutableResult);
+                return (
                 <div key={question.id} className="question-shell">
                   <div className="question-number">Question {index + 1}</div>
                   <QuestionCard
                     question={question}
                     value={attempt.answers[question.id]}
                     readOnly
+                    answerCorrect={feedback?.correct ?? null}
                   />
+                  {feedback ? <div className="panel">
+                    <strong>{feedback.correct ? 'Correct' : 'Incorrect'}</strong>
+                    {feedback.expected ? <p><strong>Correct answer:</strong> {feedback.expected}</p> : <p>The original expected answer is unavailable.</p>}
+                    {feedback.explanation ? <p>{feedback.explanation}</p> : <p>An explanation was not saved for this question.</p>}
+                  </div> : null}
                   <Link
                     className="btn ghost compact"
                     to={"/tutor/" + question.id}
@@ -124,7 +141,7 @@ const ResultsWorkspace = (
                     Open tutor
                   </Link>
                 </div>
-              ))}
+              );})}
             </section>
           )
           : null}

@@ -18,6 +18,7 @@ export const QuestionCard = (props: {
   question: SatQuestion;
   value?: unknown;
   readOnly?: boolean;
+  answerCorrect?: boolean | null;
   onChange?: (value: unknown) => void;
 }) => {
   const prompt = String(props.question.data.prompt ?? props.question.data.text ?? 'SAT question');
@@ -39,7 +40,7 @@ export const QuestionCard = (props: {
         <p className="question-prompt">{prompt}</p>
         <div className="option-list">
           {options.map((option) => (
-            <label key={option.id} className={`option-row${selected === option.id ? ' selected' : ''}`}>
+            <label key={option.id} className={`option-row${selected === option.id ? ' selected' : ''}${props.readOnly && selected === option.id && props.answerCorrect === false ? ' answer-incorrect' : ''}${props.readOnly && selected === option.id && props.answerCorrect === null ? ' answer-unconfirmed' : ''}`}>
               <input
                 type="radio"
                 name={props.question.id}
@@ -49,6 +50,7 @@ export const QuestionCard = (props: {
               />
               <span>{option.id}</span>
               <strong>{option.label}</strong>
+              {props.readOnly && selected === option.id && props.answerCorrect !== undefined ? <small className="option-answer-status">{props.answerCorrect === null ? 'Your saved answer — outcome unavailable' : 'Your answer — ' + (props.answerCorrect ? 'correct' : 'incorrect')}</small> : null}
             </label>
           ))}
         </div>

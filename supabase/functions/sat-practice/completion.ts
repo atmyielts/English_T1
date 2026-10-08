@@ -56,6 +56,21 @@ export async function attemptQuestions(
   return questions;
 }
 
+export async function getAttemptResult(
+  sb: any, userId: string, attemptId: string,
+  loadLegacyQuestions: (ids: string[]) => Promise<any[]>,
+  questionForLearner: (question: any) => any,
+) {
+  const attempt = await ownedAttempt(sb, userId, attemptId);
+  const saved = await savedAttemptResult(sb, userId, attempt);
+  if (saved) return { ...saved, legacy_result: false };
+  // No original receipt exists for these older scores. Preserve the score and
+  // recorded answers without presenting edited current prompts as originals.
+  if (attempt.status === 'scored') return { attempt, questions: [], legacy_result: true };
+  const questions = await attemptQuestions(sb, userId, attempt, loadLegacyQuestions);
+  return { attempt, questions: questions.map(questionForLearner) };
+}
+
 export async function submitAttempt(
   sb: any,
   userId: string,
@@ -138,7 +153,7 @@ export async function submitAttempt(
   // Older scored attempts have no immutable question snapshot. Keep their original
   // scores and clearly identify them; never recompute their progress.
   if (data.legacy_result) {
-    data.questions = await loadQuestions(ids);
+    data.questions = [];
     return data;
   }
   return data;

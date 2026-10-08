@@ -1,29 +1,33 @@
 {
   "schemaVersion": 1,
-  "releaseId": "responsive-navigation",
+  "releaseId": "sat-original-scored-feedback",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform",
-    "sat-playbook",
-    "toefl-playbook"
+    "sat-practice"
   ],
   "migrations": [],
-  "edgeFunctions": [],
+  "edgeFunctions": [
+    "sat-practice"
+  ],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages"
+    "pages",
+    "function:sat-practice"
   ],
-  "manualFollowUps": [],
+  "manualFollowUps": [
+    "After tracked Pages succeeds, run supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel. Confirm downloaded sources match, JWT enforcement and exclusive-QA original/legacy result behavior; remove and verify the temporary grant."
+  ],
   "verification": [
-    "npm run verify:prod; npm run verify:release -- --base origin/main; build platform and both changed playbooks.",
-    "Actual local browser menu interactions and header accessibility at mobile/tablet/desktop widths, with isolated synthetic APIs.",
-    "After exact-head full CI and normal merge, wait for tracked Pages and inspect published public-page menus."
+    "verify:prod, verify:release, all SAT start/completion/bank tests, Edge typecheck and SAT Practice build.",
+    "Actual local browser original recorded feedback, legacy scores, outages, red wrong-answer labels and mobile/desktop accessibility.",
+    "Full exact-head CI, normal merge, tracked Pages, byte-matching Edge sources and signed-in exclusive-QA result delivery."
   ],
   "rollback": {
-    "database": "No backend change.",
-    "frontends": "Baseline151df74f62cf3dfc59febf0c4a6eaabd1858a792; use tracked CI or each project Pages dashboard."
+    "frontends": "Baselinefd4d658be005183a6307d35eb1432769b15a7300 through tracked CI or Pages dashboard.",
+    "database": "No migration; do not change customer answers, scores, content or receipts.",
+    "edgeFunctions": "Previous version18 supports unchanged schema. Preserve immutable receipts and frozen sources; prefer a forward correction."
   }
 }
