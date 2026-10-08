@@ -52,7 +52,7 @@
     "verify:telegram:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-telegram-growth-local.ps1",
     "test:sat:completion": "deno test --no-lock supabase/functions/sat-practice/completion.test.ts supabase/functions/sat-practice/answers.test.ts && node scripts/test-sat-attempt-completion.mjs",
     "test:sat:bank": "deno test --no-lock supabase/functions/sat-practice/bank.test.ts && node scripts/test-sat-bank-selection.mjs",
-    "test:sat:start": "deno test --no-lock supabase/functions/sat-practice/start.test.ts && node scripts/test-sat-attempt-start.mjs"
+    "test:sat:start": "deno test --no-lock supabase/functions/sat-practice/start.test.ts apps/sat-practice/tests/start-requests.test.ts && node scripts/test-sat-attempt-start.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

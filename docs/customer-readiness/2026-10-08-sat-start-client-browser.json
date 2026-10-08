@@ -1,0 +1,101 @@
+{
+  "checkedAt": "2026-10-08T16:06:30.758Z",
+  "productionContacted": false,
+  "checks": [
+    {
+      "case": "unknown-activity-does-not-show-invented-zero-xp-or-streak",
+      "passed": true
+    },
+    {
+      "case": "subject-domain-consistency-and-shareable-filter-url",
+      "passed": true
+    },
+    {
+      "case": "slow-old-filter-response-cannot-overwrite-current-results",
+      "passed": true
+    },
+    {
+      "case": "empty-history-results-have-explicit-state-and-no-start",
+      "passed": true
+    },
+    {
+      "case": "double-start-sends-once-preserves-history-and-exposes-retry-error",
+      "passed": true
+    },
+    {
+      "case": "uncertain-start-reload-reuses-exact-request-and-selection",
+      "passed": true
+    },
+    {
+      "case": "bank-outage-clears-old-questions-and-recovers-with-retry",
+      "passed": true
+    },
+    {
+      "case": "accessible-labeled-filters-and-responsive-320-390-1280",
+      "passed": true
+    },
+    {
+      "case": "successful-start-opens-the-confirmed-attempt",
+      "passed": true
+    }
+  ],
+  "accessibilityViolations": [],
+  "bankRequests": [
+    {
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "domain": "algebra",
+      "limit": "24"
+    },
+    {
+      "section_type": "reading_writing",
+      "limit": "24"
+    },
+    {
+      "section_type": "reading_writing",
+      "difficulty": "hard",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "mastered",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "previously_missed",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "previously_missed",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "previously_missed",
+      "limit": "24"
+    },
+    {
+      "section_type": "math",
+      "difficulty": "hard",
+      "mistake_history": "previously_missed",
+      "limit": "24"
+    }
+  ]
+}

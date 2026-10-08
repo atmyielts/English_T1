@@ -1,5 +1,6 @@
 import type { SatDifficulty, SatDomain, SatSectionType } from '@schood/sat-core';
 import { supabase } from './supabase';
+import { pendingStart, startActor, startSelection } from './start-requests';
 
 export type Json = Record<string, unknown>;
 
@@ -152,12 +153,14 @@ const resolveApiErrorMessage = (status: number, details: unknown): string => {
 const call = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; timeoutMs?: number },
 ): Promise<T> => {
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
     fetch(`${edgeBase}${path}`, {
       method,
+      signal: method === 'GET' || opts?.timeoutMs != null
+        ? AbortSignal.timeout(opts?.timeoutMs ?? 30000) : undefined,
       headers: headers(token, opts?.body != null),
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
     });
@@ -219,6 +222,23 @@ export const bankGet = (
   return call(accessToken, `/sat-practice/bank${qs.toString() ? `?${qs.toString()}` : ''}`);
 };
 
+const starting = new Map<string, Promise<{ attempt: Attempt; questions: SatQuestion[] }>>();
+const durableStart = async (accessToken: string, path: string, body: Record<string, unknown>) => {
+  const actor = startActor(accessToken), selection = startSelection(path, body), key = actor + ':' + selection;
+  const existing = starting.get(key);
+  if (existing) return existing;
+  let storage: Storage;
+  try { storage = sessionStorage; } catch { throw new Error('Enable browser storage before starting a drill, then retry.'); }
+  const requestId = pendingStart(storage, actor, selection);
+  const promise = call<{ attempt: Attempt; questions: SatQuestion[] }>(accessToken, path, {
+    method: 'POST', body: { ...body, request_id: requestId }, timeoutMs: 30000,
+  }).finally(() => { if (starting.get(key) === promise) starting.delete(key); });
+  // Retain the ID until Lab confirms the owned drill loaded. A reload between
+  // the start response and navigation must also reopen the original attempt.
+  starting.set(key, promise);
+  return promise;
+};
+
 export const attemptStart = (
   accessToken: string,
   body: Partial<{
@@ -230,13 +250,13 @@ export const attemptStart = (
     mistake_history: string;
   }>,
 ): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
-  call(accessToken, '/sat-practice/attempts/start', { method: 'POST', body });
+  durableStart(accessToken, '/sat-practice/attempts/start', body);
 
 export const attemptSubmit = (
   accessToken: string,
   body: { attempt_id: string; answers: Record<string, unknown> },
 ): Promise<{ attempt: Attempt; questions: SatQuestion[]; notebook: NotebookItem[] }> =>
-  call(accessToken, '/sat-practice/attempts/submit', { method: 'POST', body });
+  call(accessToken, '/sat-practice/attempts/submit', { method: 'POST', body, timeoutMs: 30000 });
 
 export const attemptGet = (
   accessToken: string,
@@ -258,7 +278,7 @@ export const notebookRetry = (
   accessToken: string,
   id: string,
 ): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
-  call(accessToken, `/sat-practice/notebook/${encodeURIComponent(id)}/retry`, { method: 'POST', body: {} });
+  durableStart(accessToken, `/sat-practice/notebook/${encodeURIComponent(id)}/retry`, {});
 
 export const srsDueGet = (accessToken: string): Promise<{ items: Array<NotebookItem & { question: SatQuestion | null }> }> =>
   call(accessToken, '/sat-practice/srs/due');

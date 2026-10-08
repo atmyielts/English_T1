@@ -16,7 +16,7 @@ export const PracticeTopNav = (props: { streakDays?: number; xp?: number }) => (
       <img src="/schood-logo.png" alt="Schood" />
       <div>
         <strong>SAT Practice Lab</strong>
-        <span>Daily score-growth workspace</span>
+        <span>Daily practice workspace</span>
       </div>
     </Link>
     <nav className="nav-links" aria-label="SAT Practice">
@@ -30,9 +30,9 @@ export const PracticeTopNav = (props: { streakDays?: number; xp?: number }) => (
         );
       })}
     </nav>
-    <div className="nav-metrics">
-      <span title="Current streak"><Flame size={16} />{props.streakDays ?? 0}d</span>
-      <span title="XP earned"><Sparkles size={16} />{props.xp ?? 0} XP</span>
-    </div>
+    {(props.streakDays != null || props.xp != null) ? <div className="nav-metrics">
+      {props.streakDays != null ? <span title="Current streak"><Flame size={16} />{props.streakDays}d</span> : null}
+      {props.xp != null ? <span title="XP earned"><Sparkles size={16} />{props.xp} XP</span> : null}
+    </div> : null}
   </header>
 );

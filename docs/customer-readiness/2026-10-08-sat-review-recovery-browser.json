@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-08T16:05:52.698Z",
+  "productionContacted": false,
+  "checks": [
+    {
+      "case": "reviews-loading-error-single-flight-and-reload-start-recovery",
+      "passed": true
+    },
+    {
+      "case": "notebook-tag-outage-preserves-confirmed-value-and-retries",
+      "passed": true
+    },
+    {
+      "case": "notebook-loading-error-single-flight-and-reload-start-recovery",
+      "passed": true
+    },
+    {
+      "case": "today-plan-update-error-recovers-and-keeps-confirmed-plan",
+      "passed": true
+    },
+    {
+      "case": "today-loading-error-single-flight-and-reload-start-recovery",
+      "passed": true
+    }
+  ],
+  "unhandledBrowserErrors": 0
+}

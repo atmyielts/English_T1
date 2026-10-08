@@ -1,38 +1,24 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-atomic-start",
+  "releaseId": "sat-practice-client-start-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261008110000_sat_attempt_atomic_start.sql"
-  ],
-  "edgeFunctions": [
-    "sat-practice"
-  ],
+  "frontends": ["sat-practice"],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "sat-practice"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [],
-  "rolloutOrder": [
-    "pages",
-    "migration:20261008110000_sat_attempt_atomic_start.sql",
-    "function:sat-practice"
-  ],
-  "manualFollowUps": [
-    "After tracked Pages succeeds, inspect supabase db push --linked --dry-run and apply only 20261008110000_sat_attempt_atomic_start.sql using supabase db push --linked. Verify migration list.",
-    "Deploy supabase functions deploy sat-practice --project-ref bbjawctnqrufvnesdsel after the migration; verify downloaded source, JWT enforcement and dedicated-QA start/completion replay smoke.",
-    "Release the separately prepared durable-start frontend after the backend is verified; current version17 clients remain supported."
-  ],
+  "rolloutOrder": ["pages"],
+  "manualFollowUps": [],
   "verification": [
-    "npm run verify:prod; npm run verify:release -- --base origin/main; npm run test:sat:start; npm run test:sat:completion; npm run test:sat:bank; deno check --no-lock supabase/functions/sat-practice/index.ts.",
-    "Native PostgreSQL uses actual migrations, default service grants and concurrent connections: atomic insertion/replay, cross-actor collisions, immutable questions, content/key revisions, rollback, browser denial and previous-Edge legacy completion.",
-    "Exclusive production QA: concurrent identical start IDs return one attempt/session/source, changed filters conflict, private source/RPC browser denial, owned resume and immutable completion replay. Remove temporary grant and verify its absence."
+    "The prerequisite PR205 backend is already live: migration20261008110000, SAT Edge18, exact downloaded-source match and41 dedicated-QA checks including cleanup passed.",
+    "npm run verify:prod; npm run verify:release -- --base origin/main; deno test --no-lock apps/sat-practice/tests/start-requests.test.ts; npm --workspace apps/sat-practice run build.",
+    "Real local browser screens with synthetic isolated APIs: lost start/reload preserves actor-scoped identity; owned Lab acknowledges only confirmed starts; Reviews/Notebook/Today recover load/write errors and duplicate clicks send once.",
+    "After exact-head CI and normal merge, wait for tracked Pages, inspect provider source and run dedicated-QA signed-in browser recovery without altering customer records."
   ],
   "rollback": {
-    "frontends": "No frontend behavior changes in this backend PR. Baseline c42b74ad8148307c24d460805bf1ec817c1c9a21. Use tracked CI or Pages dashboard only.",
-    "edgeFunctions": "Prefer a forward fix to preserve frozen-question reads. Version17 supports legacy attempts on the additive schema, but loading current keys for newly frozen attempts after a content edit can correctly fail snapshot validation; do not weaken that check.",
-    "database": "Keep the additive source table and service-only functions. Do not delete old attempts, frozen sources, content rows, progress or receipts; retire published content instead."
+    "frontends": "Baseline76b17822286fa80ff0ad13bb2924093b2bfb6a1f. Use tracked CI or Pages dashboard. Existing browser behavior remains compatible with deployed Edge18.",
+    "database": "No new backend deployment. Preserve the existing private immutable start snapshots and atomic completion protections."
   }
 }
