@@ -1,16 +1,11 @@
 {
   "schemaVersion": 1,
-  "releaseId": "simulator-save-recovery",
+  "releaseId": "playbook-catalog-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "ielts-simulator",
-    "sat-simulator",
-    "toefl-ibt-simulator",
-    "itep-simulator"
-  ],
-  "sharedFrontendSources": [
-    "apps/exam-shared"
+    "sat-playbook",
+    "toefl-playbook"
   ],
   "migrations": [],
   "edgeFunctions": [],
@@ -22,13 +17,12 @@
   ],
   "manualFollowUps": [],
   "verification": [
-    "Four simulator builds,15 shared save/draft tests, actual mocked owned-player 44 browser recovery cases and production/release guards.",
-    "Full exact-head CI, tracked Pages, provider source inventory and public reachability; dedicated-QA signed-in checks only.",
-    "Exclusive QA production storage persistence/closure contract and verified fixture cleanup; no grading or provider calls."
+    "Both Playbook builds;16 isolated catalog/content browser cases and8 menu regression cases; scoped accessibility and production/release guards.",
+    "Full exact-head CI, tracked Pages,13 provider sources,20 public HTML addresses and actual rendered public catalog/error checks."
   ],
   "rollback": {
-    "frontends": "Previous reviewed main adaa4e03ebf939aeebcd809173cd71bc6e5d87ac through tracked CI or Pages dashboard.",
-    "database": "No schema or customer data migration. Preserve remaining per-tab drafts.",
+    "frontends": "Reviewed baseline1f460f6ab1c770f074eac4933421cc455ba0c645 through tracked CI or affected Pages dashboards.",
+    "database": "No schema or educational content migration.",
     "edgeFunctions": "No Edge change."
   }
 }

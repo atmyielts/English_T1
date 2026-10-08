@@ -814,3 +814,13 @@ textarea {
     border-radius: 26px;
   }
 }
+
+/* Recovery controls and catalog navigation need comfortable touch targets. */
+[aria-label="Page recovery"] .btn,
+[aria-label="Catalog recovery"] .btn,
+.workspace > .hero-actions .btn { min-height: 44px; }
+.feature-card h3 { margin: 18px 0 6px; font-size: 1.2rem; }
+
+.catalog-grid .feature-card { display: block; text-decoration: none; }
+.catalog-grid .feature-card:hover { border-color: var(--ink); }
+.catalog-grid .feature-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }

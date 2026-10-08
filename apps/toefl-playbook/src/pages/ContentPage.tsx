@@ -15,15 +15,33 @@ export const ContentPage = () => {
   const { accessToken, status } = useAccess({ includeEffective: true });
   const [payload, setPayload] = useState<Json | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [missing, setMissing] = useState(false);
+  const [loadedToken, setLoadedToken] = useState<string | null | undefined>(undefined);
+  const [loadedSlug, setLoadedSlug] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     if (!slug) return;
     if (status === 'loading') return;
     let active = true;
+    const controller = new AbortController();
+    setPayload(null); setError(null); setMissing(false); setLoadedSlug(null);
+    const timeout = window.setTimeout(() => {
+      if (!active) return;
+      active = false; controller.abort();
+      setError('This page is taking too long to load. Please try again.');
+    }, 12000);
+    const fail = (errStatus?: number) => {
+      window.clearTimeout(timeout);
+      setMissing(errStatus === 404);
+      setError(errStatus === 404 ? 'This page is not published or is no longer available.' : 'We could not load this page. Please try again.');
+    };
 
     const handleLoaded = (data: Json, token?: string | null) => {
       if (!active) return;
-      setPayload(data);
+      if (!data.page || typeof data.page !== 'object' || Array.isArray(data.page) || typeof (data.page as Json).id !== 'string' || typeof (data.page as Json).title !== 'string' || !String((data.page as Json).title).trim()) { fail(); return; }
+      window.clearTimeout(timeout);
+      setPayload(data); setLoadedSlug(slug); setLoadedToken(accessToken);
       setError(null);
       const page = (data.page ?? null) as Json | null;
       void toeflPlaybookTrackEvent(
@@ -34,10 +52,11 @@ export const ContentPage = () => {
           module_key: String(page?.module_key ?? ''),
         },
         token,
-      );
+      ).catch(() => { /* Analytics must not interrupt reading. */ });
     };
 
     const redirectForAccessError = (errStatus?: number): boolean => {
+      if (!active) return true;
       if (errStatus === 403) {
         window.location.assign(buildPlatformUrl('/pricing', window.location.href, { product: TOEFL_PLAYBOOK_PRODUCT_SLUG }));
         return true;
@@ -52,39 +71,41 @@ export const ContentPage = () => {
 
     const load = async () => {
       try {
-        const publicData = await toeflPlaybookPageGet(slug);
+        const publicData = await toeflPlaybookPageGet(slug, null, controller.signal);
         handleLoaded(publicData as unknown as Json, null);
       } catch (publicErr) {
+        if (!active) return;
         const e = publicErr as Error & { status?: number };
         if ((e.status === 401 || e.status === 403) && accessToken) {
           try {
-            const authed = await toeflPlaybookPageGet(slug, accessToken);
+            const authed = await toeflPlaybookPageGet(slug, accessToken, controller.signal);
             handleLoaded(authed as unknown as Json, accessToken);
             return;
           } catch (authedErr) {
             const ae = authedErr as Error & { status?: number };
             if (!active) return;
             if (redirectForAccessError(ae.status)) return;
-            setError(ae.message);
+            fail(ae.status);
             return;
           }
         }
         if (!active) return;
         if (redirectForAccessError(e.status)) return;
-        setError(e.message);
+        fail(e.status);
       }
     };
 
     void load();
     return () => {
-      active = false;
+      active = false; controller.abort(); window.clearTimeout(timeout);
     };
-  }, [accessToken, slug, status]);
+  }, [accessToken, slug, status, retry]);
 
-  const page = (payload?.page ?? null) as Json | null;
-  const sections = Array.isArray(payload?.sections) ? (payload?.sections as Json[]) : [];
-  const childPages = Array.isArray(payload?.child_pages) ? (payload?.child_pages as Json[]) : [];
-  const sources = Array.isArray(payload?.sources) ? (payload?.sources as Json[]) : [];
+  const visiblePayload = loadedSlug === slug && loadedToken === accessToken ? payload : null;
+  const page = (visiblePayload?.page ?? null) as Json | null;
+  const sections = Array.isArray(visiblePayload?.sections) ? (visiblePayload?.sections as Json[]) : [];
+  const childPages = Array.isArray(visiblePayload?.child_pages) ? (visiblePayload?.child_pages as Json[]) : [];
+  const sources = Array.isArray(visiblePayload?.sources) ? (visiblePayload?.sources as Json[]) : [];
 
   return (
     <div className="app-shell">
@@ -93,19 +114,24 @@ export const ContentPage = () => {
         <section className="page-header">
           <div>
             <p className="eyebrow">{String(page?.module_key ?? 'TOEFL Playbook')}</p>
-            <h1>{String(page?.title ?? 'Loading…')}</h1>
+            <h1>{String(page?.title ?? (error ? (missing ? 'Page unavailable' : 'Unable to load page') : 'Loading…'))}</h1>
             <p>{String(page?.summary ?? 'Working on the right TOEFL skills matters as much as working hard.')}</p>
           </div>
-          <div className="hero-actions">
+          {page ? <div className="hero-actions">
             <Link to="/dashboard" className="btn solid">Use in my plan</Link>
-            <a href={`${TOEFL_PRACTICE_URL}/dashboard?source=playbook`} className="btn ghost">
+            <a href={`${TOEFL_PRACTICE_URL}/practice?source=playbook`} className="btn ghost">
               Practice this <ArrowRight size={15} />
             </a>
-          </div>
+          </div> : null}
         </section>
 
-        {error ? <p className="alert error">{error}</p> : null}
-        {page ? <PageBlocks sections={sections} /> : <div className="route-loading">Loading page…</div>}
+        {error ? <section className="panel" aria-label="Page recovery">
+          <p className="alert error" role="alert">{error}</p>
+          <div className="hero-actions">
+            <button type="button" className="btn solid" onClick={() => setRetry(value => value + 1)}>Try again</button>
+            <Link to="/modules" className="btn ghost">Browse modules</Link>
+          </div>
+        </section> : page ? <PageBlocks sections={sections} /> : <div className="route-loading" role="status">Loading page…</div>}
 
         {childPages.length > 0 ? (
           <section className="panel" style={{ marginTop: 24 }}>

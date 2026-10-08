@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-10-08T18:40:20.117Z",
+  "syntheticApi": true,
+  "productionContacted": false,
+  "checks": [
+    {
+      "service": "sat",
+      "case": "empty-public-catalog-honest-no-invented-modules",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "catalog-outage-retry-and-actual-published-slug-navigation",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "missing-content-terminal-state-explicit-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "malformed-catalog-and-unsafe-slug-fail-closed-with-retry",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "cancelled-old-content-cannot-replace-new-route",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "hung-read-times-out-and-user-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "hung-content-read-times-out-and-explicit-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "sat",
+      "case": "populated-public-catalog-fits-mobile-tablet-desktop-and-scoped-axe-clean",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "empty-public-catalog-honest-no-invented-modules",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "catalog-outage-retry-and-actual-published-slug-navigation",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "missing-content-terminal-state-explicit-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "malformed-catalog-and-unsafe-slug-fail-closed-with-retry",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "cancelled-old-content-cannot-replace-new-route",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "hung-read-times-out-and-user-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "hung-content-read-times-out-and-explicit-retry-recovers",
+      "passed": true
+    },
+    {
+      "service": "toefl",
+      "case": "populated-public-catalog-fits-mobile-tablet-desktop-and-scoped-axe-clean",
+      "passed": true
+    }
+  ],
+  "unhandledPageErrors": 0
+}

@@ -5,7 +5,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LineChart },
   { to: '/diagnostic', label: 'Diagnostic', icon: Compass },
-  { to: '/format-overview', label: 'Modules', icon: BookOpenCheck },
+  { to: '/modules', label: 'Modules', icon: BookOpenCheck },
 ] as const;
 
 export const PlaybookTopNav = () => {
