@@ -4,7 +4,8 @@ const migration = await Deno.readTextFile(new URL("../../migrations/202608141200
 const academy = await Deno.readTextFile(new URL("./index.ts", import.meta.url));
 const studentCenter = await Deno.readTextFile(new URL("../student-center/index.ts", import.meta.url));
 const academyVideo = await Deno.readTextFile(new URL("../academy-video/index.ts", import.meta.url));
-const platformSettings = await Deno.readTextFile(new URL("../platform-settings/index.ts", import.meta.url));
+const platformSettingsEntry = await Deno.readTextFile(new URL("../platform-settings/index.ts", import.meta.url));
+const platformSettings = await Deno.readTextFile(new URL("../platform-settings/handler.ts", import.meta.url));
 const config = (await Deno.readTextFile(new URL("../../config.toml", import.meta.url))).replaceAll("\r\n", "\n");
 
 Deno.test("Student Center and Classroom 2.0 ship disabled by default", () => {
@@ -60,6 +61,8 @@ Deno.test("managed video requires provider health, global approval, academy appr
   assert(academyVideo.includes('.eq("status", "published")'));
   assert(migration.includes("for update;"));
   assert(migration.includes("grant execute on function public.academy_reserve_video_asset"));
+  assert(platformSettingsEntry.includes('from "./handler.ts"') || platformSettingsEntry.includes("from './handler.ts'"));
+  assert(platformSettingsEntry.includes("serve(handlePlatformSettings)"));
   assert(platformSettings.includes("Video hosting must be fully configured before uploads can be enabled"));
 });
 

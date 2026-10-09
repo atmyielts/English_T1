@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { edgeRuntimeInventory } from './edge-release-inventory.mjs';
 
 const args = process.argv.slice(2);
 const option = (name) => {
@@ -38,15 +39,11 @@ const migrations = uniqueSorted(changedFiles.flatMap((file) => {
   const match = file.match(/^supabase\/migrations\/([^/]+\.sql)$/);
   return match ? [match[1]] : [];
 }));
-const edgeFunctions = uniqueSorted(changedFiles.flatMap((file) => {
-  const match = file.match(/^supabase\/functions\/([^/]+)\//);
-  return match && match[1] !== '_shared' ? [match[1]] : [];
-}));
+const { edgeFunctions, sharedEdgeChanged } = edgeRuntimeInventory(changedFiles);
 const workers = uniqueSorted(changedFiles.flatMap((file) => {
   const match = file.match(/^workers\/([^/]+)\//);
   return match ? [match[1]] : [];
 }));
-const sharedEdgeChanged = changedFiles.some((file) => file.startsWith('supabase/functions/_shared/'));
 const hasManualBackend = migrations.length > 0 || edgeFunctions.length > 0 || workers.length > 0 || sharedEdgeChanged;
 
 if (!hasManualBackend) {

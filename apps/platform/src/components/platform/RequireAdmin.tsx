@@ -8,6 +8,8 @@ type AdminState =
   | { status: 'loading' }
   | { status: 'unauthenticated'; reason?: 'idle_timeout' | 'missing_session' }
   | { status: 'forbidden' }
+  | { status: 'mfa_required' }
+  | { status: 'unavailable' }
   | { status: 'authorized'; access: AdminAccessInfo };
 
 const returnToFromLocation = (pathname: string, search: string, hash: string): string =>
@@ -24,15 +26,24 @@ export const RequireAdmin: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    let epoch = 0;
+    let observedActor: string | null = null;
 
-    const check = async (session: { access_token: string } | null) => {
+    const check = async (session: { access_token: string; userId: string } | null) => {
+      const current = ++epoch;
+      const isCurrent = () => !cancelled && current === epoch;
+      // Clear a previous actor immediately, but keep same-account forms mounted
+      // during routine token refresh so periodic Auth updates do not erase drafts.
+      if (session?.userId !== observedActor) setState({ status: 'loading' });
+      observedActor = session?.userId ?? null;
       if (!session) {
         if (!cancelled) setState({ status: 'unauthenticated', reason: 'missing_session' });
         return;
       }
 
       try {
-        const me = await getMe(session.access_token);
+        const me = await getMe(session.access_token, { force: true });
+        if (!isCurrent()) return;
         const role = String(me.user.role ?? '').toLowerCase();
         const admin = me.admin ?? null;
         if (!admin?.is_admin || !Array.isArray(admin.permissions)) {
@@ -42,6 +53,11 @@ export const RequireAdmin: React.FC = () => {
 
         if (!hasAdminPermission(admin.permissions, 'admin.portal.access')) {
           if (!cancelled) setState({ status: 'forbidden' });
+          return;
+        }
+
+        if (admin.security_policy?.require_mfa && admin.session_aal !== 'aal2') {
+          setState({ status: 'mfa_required' });
           return;
         }
 
@@ -60,18 +76,20 @@ export const RequireAdmin: React.FC = () => {
         }
       } catch (err) {
         const status = typeof err === 'object' && err && 'status' in err ? Number((err as { status?: number }).status) : null;
-        if (!cancelled) setState(status === 401 ? { status: 'unauthenticated', reason: 'missing_session' } : { status: 'forbidden' });
+        if (isCurrent()) setState(status === 401 ? { status: 'unauthenticated', reason: 'missing_session' } : status === 403 ? { status: 'forbidden' } : { status: 'unavailable' });
       }
     };
 
     getAuthSession().then((session) => {
-      if (cancelled) return;
-      void check(session ? { access_token: session.access_token } : null);
+      if (cancelled || epoch !== 0) return;
+      void check(session ? { access_token: session.access_token, userId: session.user.id } : null);
+    }).catch(() => {
+      if (!cancelled && epoch === 0) setState({ status: 'unauthenticated', reason: 'missing_session' });
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
-      void check(session ? { access_token: session.access_token } : null);
+      void check(session ? { access_token: session.access_token, userId: session.user.id } : null);
     });
 
     return () => {
@@ -127,6 +145,17 @@ export const RequireAdmin: React.FC = () => {
 
   if (state.status === 'forbidden') {
     return <Navigate to={`/account?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+  }
+
+  if (state.status === 'mfa_required') {
+    return <Navigate to={`/admin-mfa?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+  }
+
+  if (state.status === 'unavailable') {
+    return <div className="min-h-screen bg-gray-50 flex flex-col gap-4 items-center justify-center p-6">
+      <p role="alert">Admin access checks are temporarily unavailable. Your session is retained.</p>
+      <button type="button" onClick={() => window.location.reload()} className="rounded-xl bg-gray-900 px-4 py-2 text-white">Retry access check</button>
+    </div>;
   }
 
   return (
