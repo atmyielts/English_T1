@@ -27,7 +27,7 @@
   ],
   "verification": [
     "26 targeted native PostgreSQL cases qualify the actual Marketplace DDL and command migration, independent connection races, lock rollback, private grants, immutable requests, academy scope, account suspension and legacy badge suppression. Full Supabase reset is not claimed.",
-    "10 HTTP handler cases and 23 synthetic-API browser cases qualify identity binding, failure honesty, request recovery, employer decisions, four responsive widths and scoped accessibility.",
+    "10 HTTP handler cases and 24 synthetic-API browser cases qualify identity binding, failure honesty, request recovery, employer decisions, four responsive widths and scoped accessibility.",
     "Exact-head full CI, normal merge, tracked Pages/post-merge CI and provider/public commit evidence before separate backend follow-ups."
   ],
   "rollback": {

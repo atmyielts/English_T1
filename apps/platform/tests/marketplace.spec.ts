@@ -64,6 +64,7 @@ const session = {
   },
 };
 type Options = {
+  currency?: string;
   profileRevision?: number;
   anonymous?: boolean;
   legacy?: boolean;
@@ -81,7 +82,7 @@ type Options = {
 };
 async function setup(page: Page, options: Options = {}, tab = 'teachers') {
   const calls: Record<string, unknown>[] = [];
-  let current = options.noProfile ? null : { ...profile };
+  let current = options.noProfile ? null : { ...profile, currency: options.currency ?? 'UZS' };
   let apps = options.duplicateTitles ? [{ ...application, status: 'hired' }] : [] as typeof application[];
   let currentStatus = 'pending';
   if (!options.anonymous) {
@@ -143,7 +144,12 @@ async function setup(page: Page, options: Options = {}, tab = 'teachers') {
         if (body.expected_revision !== (current?.revision ?? 0)) {
           return send({ error: 'Your profile changed. Reload it before saving.' }, 409);
         }
-        current = { ...profile, ...body, revision: body.expected_revision + 1 };
+        current = {
+          ...profile,
+          currency: options.currency ?? 'UZS',
+          ...body,
+          revision: body.expected_revision + 1,
+        };
         return send({ profile: current, request_id: body.request_id });
       }
       case 'post_job':
@@ -252,6 +258,15 @@ test('new profiles start private and zero values are submitted without losing hi
   expect(body.is_public).toBe(false);
   expect(body.expected_revision).toBe(0);
   expect(body.verified).toBeUndefined();
+});
+test('existing profile currency is labelled accurately and is not rewritten by the editor', async ({ page }) => {
+  const { calls } = await setup(page, { currency: 'USD' }, 'profile');
+  await expect(page.getByLabel('Hourly rate (USD)', { exact: true })).toBeEnabled();
+  await expect(page.getByLabel('Hourly rate (UZS)', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(page.getByText('Profile save confirmed.', { exact: true })).toBeVisible();
+  expect(calls.find((c) => c.action === 'upsert_profile')?.currency).toBeUndefined();
+  await expect(page.getByLabel('Hourly rate (USD)', { exact: true })).toHaveValue('0');
 });
 test('failed profile save survives reload with the exact original request and disabled replacement writes', async ({ page }) => {
   const { calls } = await setup(page, { failProfile: true }, 'profile');

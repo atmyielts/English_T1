@@ -373,6 +373,7 @@ export const TeacherMarketplacePage: React.FC = () => {
                         </div>
                       )}
                       <MarketplaceProfileForm
+                        currency={m.profileReady ? m.profile?.currency ?? 'UZS' : 'loading…'}
                         value={m.profileDraft}
                         setValue={m.setProfileDraft}
                         disabled={frozen || m.conflict}

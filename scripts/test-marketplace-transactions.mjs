@@ -197,9 +197,10 @@ try{
   });
   await check('unreviewed historical verification flags never become public trust badges',async()=>{
     const auditedTeacher=actors[17];const saved=await profile(auditedTeacher,{is_public:true});
-    await sql('update teacher_profiles set verified=true where id='+quote(saved.profile.id)+';');
+    await sql('update teacher_profiles set verified=true,currency=\'USD\' where id='+quote(saved.profile.id)+';');
     assert.equal((await command(null,'teachers')).teachers.find(t=>t.id===saved.profile.id).verified,false);
     await command(auditedTeacher,'upsert_profile',{full_name:'Synthetic audited teacher',request_id:randomUUID(),expected_revision:1,is_public:true,verification_reviewed_at:'2026-10-01T00:00:00Z',verification_reviewed_by:auditedTeacher});
+    assert.equal((await command(auditedTeacher,'get_my_profile')).profile.currency,'USD');
     assert.equal((await command(null,'teachers')).teachers.find(t=>t.id===saved.profile.id).verified,false);
     await sql('update teacher_profiles set verification_reviewed_at=clock_timestamp(),verification_reviewed_by='+quote(admin)+' where id='+quote(saved.profile.id)+';');
     assert.equal((await command(null,'teachers')).teachers.find(t=>t.id===saved.profile.id).verified,true);

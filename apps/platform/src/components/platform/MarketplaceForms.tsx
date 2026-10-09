@@ -35,11 +35,12 @@ function Subjects({ value, onChange }: { value: string[]; onChange: (v: string[]
   );
 }
 export function MarketplaceProfileForm(
-  { value, setValue, disabled, onSave }: {
+  { value, setValue, disabled, onSave, currency }: {
     value: ProfileForm;
     setValue: Dispatch<SetStateAction<ProfileForm>>;
     disabled: boolean;
     onSave: () => void;
+    currency: string;
   },
 ) {
   const change = <K extends keyof ProfileForm>(key: K, next: ProfileForm[K]) =>
@@ -96,7 +97,9 @@ export function MarketplaceProfileForm(
             />
           </label>
           <div className='space-y-1'>
-            <label htmlFor='market-rate' className='block text-sm font-medium'>Hourly rate (UZS)</label>
+            <label htmlFor='market-rate' className='block text-sm font-medium'>
+              Hourly rate ({currency})
+            </label>
             <input
               id='market-rate'
               aria-describedby='market-rate-help'
