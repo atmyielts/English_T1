@@ -223,9 +223,9 @@ const enrollVoucherUserInClassroom = async (
   if (!existing && email) {
     const { data } = await sbAdmin
       .from("academy_contacts")
-      .select("id, user_id, metadata")
+      .select("id, user_id, email, metadata")
       .eq("academy_id", classroom.academy_id)
-      .ilike("email", email)
+      .ilike("email", email.replace(/[\\%_]/g, '\\$&'))
       .maybeSingle();
     existing = data ?? null;
   }
@@ -255,7 +255,7 @@ const enrollVoucherUserInClassroom = async (
   };
 
   const { data: contact, error: contactError } = existing?.id
-    ? await sbAdmin.from("academy_contacts").update(contactPayload).eq("id", existing.id).select("id").maybeSingle()
+    ? await sbAdmin.from("academy_contacts").update(contactPayload).eq("id", existing.id).or(`user_id.is.null,user_id.eq.${userId}`).select("id").maybeSingle()
     : await sbAdmin.from("academy_contacts").insert(contactPayload).select("id").maybeSingle();
   if (contactError || !contact?.id) return;
 
@@ -426,11 +426,12 @@ export async function handleCandidateEntry(req: Request, clients: { sbDb: any; s
 
     const { data: productRow, error: productErr } = await sbDb
       .from("products")
-      .select("id, user_id, metadata")
+      .select("id, status, metadata")
       .eq("id", String((experienceRow as any)?.product_id ?? ""))
       .maybeSingle();
 
     if (productErr) return json(500, { error: "Failed to load product" });
+    if (productRow && productRow.status !== 'active') return json(409, {error:'This exam service is unavailable. Ask your center to review it.'});
 
     const product = productRow
       ? {

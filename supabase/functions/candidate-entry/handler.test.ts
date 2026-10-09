@@ -7,23 +7,25 @@ const other = '22222222-2222-4222-8222-222222222222';
 const tokenId = '33333333-3333-4333-8333-333333333333';
 const sessionId = '44444444-4444-4444-8444-444444444444';
 const body = { token_code: 'QA-EXAM-123', first_name: 'QA', last_name: 'Student', email: 'qa@example.test', phone: '+998900000001' };
-type Step = { table: string; operation?: string; data?: unknown; error?: unknown };
+type Step = { table: string; operation?: string; columns?: string; data?: unknown; error?: unknown };
 function fixture(steps: Step[] = [], user: unknown = { id: actor, email: body.email, email_confirmed_at: '2026-01-01' }, authError: unknown = null) {
   const calls: { table: string; operation: string; payload?: any; filters: unknown[][] }[] = [];
   const authTokens: string[] = [];
   const sbAuth = { auth: { getUser: (token: string) => { authTokens.push(token); return Promise.resolve({ data: { user }, error: authError }); } } };
   const sbDb = { from(table: string) {
     const call = { table, operation: 'select', payload: undefined as any, filters: [] as unknown[][] };
+    let columns = '';
     calls.push(call);
     const run = () => {
       const expected = steps.shift();
       assert(expected, `Unexpected query on ${table}`);
       assertEquals(table, expected.table);
       if (expected.operation) assertEquals(call.operation, expected.operation);
+      if (expected.columns) assertEquals(columns.replaceAll(' ', ''), expected.columns.replaceAll(' ', ''));
       return Promise.resolve({ data: expected.data ?? null, error: expected.error ?? null });
     };
     const query: any = {
-      select() { return query; },
+      select(value: string) { columns = value; return query; },
       maybeSingle: run,
       then(resolve: any, reject: any) { return run().then(resolve, reject); },
     };
@@ -41,7 +43,7 @@ function admission(status = 'active', claimed_by: string | null = null, voucher:
   return [
     { table: 'exam_tokens', data: { id: tokenId, tenant_id: tokenId, experience_id: tokenId, status, claimed_by, uses_count: claimed_by ? 1 : 0, max_uses: 1 } },
     { table: 'experiences', data: { id: tokenId, product_id: tokenId, is_active: true } },
-    { table: 'products', data: { id: tokenId, metadata: { slug: 'ielts', app_url: appUrl } } },
+    { table: 'products', columns: 'id,status,metadata', data: { id: tokenId, status: 'active', metadata: { slug: 'ielts', app_url: appUrl } } },
     { table: 'sections', data: { id: tokenId } },
     { table: 'partner_vouchers', data: voucher },
   ];
@@ -106,6 +108,25 @@ Deno.test('candidate HTTP binds new claim, profile, session and registration to 
   assertEquals(f.calls.find(c=>c.table==='exam_tokens'&&c.operation==='update')!.payload.claimed_by,actor);
   assertEquals(f.authTokens,['own-token']); assertEquals(f.steps.length,0);
 });
+Deno.test('candidate voucher retry cannot overwrite an academy contact linked to another account', async () => {
+  const voucher={id:tokenId,tenant_id:tokenId,code:body.token_code,access_kind:'mock_exam',status:'redeemed',redeemed_by:actor,classroom_id:tokenId};
+  const f=fixture([...admission('claimed',actor,voucher),
+    {table:'exam_tokens',data:{status:'claimed',claimed_by:actor}},
+    {table:'sessions',data:{id:sessionId,experience_id:tokenId}},
+    {table:'partner_vouchers',data:voucher},{table:'partner_vouchers',operation:'update'},
+    {table:'partner_center_students'}, {table:'partner_center_students',operation:'insert'},
+    {table:'academy_classrooms',data:{id:tokenId,academy_id:tokenId}}, {table:'tenants',data:{id:tokenId}},
+    {table:'academy_contacts'}, {table:'academy_contacts',columns:'id,user_id,email,metadata',data:{id:tokenId,user_id:other,email:body.email}},
+    {table:'sessions',data:{metadata:{}}}, {table:'sessions',operation:'update'},
+  ]);
+  const response=await f.handle(f.request());assertEquals(response.status,200);assertEquals(f.steps.length,0);
+  assertEquals(f.calls.filter(c=>c.table==='academy_contacts'&&c.operation!=='select').length,0);
+  assertEquals(f.calls.filter(c=>c.table==='academy_classroom_memberships').length,0);
+  assert(f.calls.filter(c=>c.table==='academy_contacts').every(c=>!c.filters.some(args=>args[1]==='phone')));
+  const patch=f.calls.find(c=>c.table==='partner_vouchers'&&c.operation==='update')!;
+  assertEquals(patch.payload.assigned_email,undefined);assertEquals(patch.payload.assigned_name,undefined);
+  assert(patch.filters.some(args=>args[0]==='or'&&String(args[1]).includes(actor)));
+});
 for (const voucher of [
   {access_kind:'mock_exam',status:'unused',assigned_email:'victim@example.test'},
   {access_kind:'mock_exam',status:'redeemed',redeemed_by:other},
@@ -123,6 +144,10 @@ Deno.test('candidate HTTP rejects untrusted exam destination before using code',
   for(const url of ['https://evil.example','https://ielts.schood.online.evil.example','https://ielts.schood.online/path','https://ielts.schood.online/?next=evil']) {
     const f=fixture(admission('active',null,null,url).slice(0,3)); assertEquals((await f.handle(f.request())).status,400); assert(f.calls.every(c=>c.operation==='select')); assertEquals(f.steps.length,0);
   }
+});
+Deno.test('candidate HTTP refuses disabled exam service before claiming access', async () => {
+  const steps=admission().slice(0,3); (steps[2].data as {status:string}).status='disabled';
+  const f=fixture(steps); assertEquals((await f.handle(f.request())).status,409); assert(f.calls.every(c=>c.operation==='select')); assertEquals(f.steps.length,0);
 });
 const localSession={access_token:'own-access',refresh_token:'own-refresh',expires_in:3600,token_type:'bearer',user:{id:actor,email:body.email}};
 Deno.test('candidate client overwrites credentials from legacy server with current account session',()=>{
