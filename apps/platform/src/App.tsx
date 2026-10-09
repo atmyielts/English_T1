@@ -166,6 +166,7 @@ function App() {
           <Route path="/parent-report" element={<ParentReportPage />} />
           <Route path="/telegram" element={<TelegramAppPage />} />
           <Route path="/telegram/discover" element={<TelegramDiscoverPage />} />
+          <Route path="/marketplace" element={<TeacherMarketplacePage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />
@@ -200,7 +201,6 @@ function App() {
             <Route path="/peer-review" element={<PeerReviewPage />} />
             <Route path="/whitelabel" element={<WhitelabelPage />} />
             <Route path="/corporate-assessment" element={<CorporateAssessmentPage />} />
-            <Route path="/marketplace" element={<TeacherMarketplacePage />} />
             <Route path="/education-center" element={<Navigate to="/center-office" replace />} />
             <Route path="/center-admin" element={<Navigate to="/center-office" replace />} />
             <Route path="/teacher" element={<Navigate to="/academy/teacher" replace />} />

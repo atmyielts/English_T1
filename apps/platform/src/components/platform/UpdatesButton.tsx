@@ -14,7 +14,7 @@ import {
 } from '../../lib/updates';
 import { useI18n } from '../../i18n';
 
-const HIDDEN_PREFIXES = ['/auth', '/admin', '/candidate', '/peer-review'];
+const HIDDEN_PREFIXES = ['/auth', '/admin', '/candidate', '/peer-review', '/marketplace'];
 
 export const UpdatesButton: React.FC = () => {
   const navigate = useNavigate();
