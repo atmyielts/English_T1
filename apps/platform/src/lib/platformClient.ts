@@ -2730,6 +2730,7 @@ export type PartnerVoucherBatch = {
   plan_id: string | null;
   classroom_id?: string | null;
   quantity: number;
+  created_by?: string | null;
   expires_at: string;
   status: string;
   prefix?: string | null;
@@ -3393,6 +3394,9 @@ export const partnerOfficeCreateWalletTopup = (
   body: { idempotency_key?: string; tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
 ) => partnerOfficePost<ClickCreateResponse | { ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
 
+export type IssuedVoucherBatch = {state:'issued';idempotency_key:string;deduped:boolean;batch:PartnerVoucherBatch;vouchers:PartnerVoucher[]};
+export type VoucherRequestOutcome = IssuedVoucherBatch | {state:'canceled';idempotency_key:string};
+
 export const partnerOfficeCreateVoucherBatch = (
   accessToken: string,
   body: {
@@ -3411,7 +3415,10 @@ export const partnerOfficeCreateVoucherBatch = (
     center_office?: boolean;
     assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
   },
-) => partnerOfficePost<{ batch: PartnerVoucherBatch; vouchers: PartnerVoucher[] }>(accessToken, { action: 'create_voucher_batch', ...body });
+) => partnerOfficePost<IssuedVoucherBatch>(accessToken, { action: 'create_voucher_batch', ...body });
+
+export const partnerOfficeCancelVoucherRequest = (accessToken:string,body:Parameters<typeof partnerOfficeCreateVoucherBatch>[1]) =>
+  partnerOfficePost<VoucherRequestOutcome>(accessToken,{action:'cancel_voucher_request',...body});
 
 export const partnerOfficeExportVoucherSheet = (
   accessToken: string,

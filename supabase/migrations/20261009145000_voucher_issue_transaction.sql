@@ -22,10 +22,19 @@ create table public.voucher_seat_reservations (
   purchased_terms jsonb not null,
   committed_at timestamptz not null default now()
 );
+create table public.voucher_issue_cancellations (
+  actor_id uuid not null references public.users(id) on delete restrict,
+  request_key uuid not null,
+  tenant_id uuid not null references public.tenants(id) on delete restrict,
+  request jsonb not null,
+  canceled_at timestamptz not null default now(),
+  primary key(actor_id,request_key)
+);
 alter table public.voucher_issue_receipts enable row level security;
 alter table public.voucher_seat_reservations enable row level security;
-revoke all on public.voucher_issue_receipts,public.voucher_seat_reservations from public,anon,authenticated,service_role;
-grant select on public.voucher_issue_receipts,public.voucher_seat_reservations to service_role;
+alter table public.voucher_issue_cancellations enable row level security;
+revoke all on public.voucher_issue_receipts,public.voucher_seat_reservations,public.voucher_issue_cancellations from public,anon,authenticated,service_role;
+grant select on public.voucher_issue_receipts,public.voucher_seat_reservations,public.voucher_issue_cancellations to service_role;
 -- Financial configuration and inventory require authenticated server commands.
 -- Existing membership-scoped reads remain available. No browser can select a
 -- cheaper commercial agreement, fund itself or manufacture an inventory batch.
@@ -81,6 +90,9 @@ begin
   perform 1 from public.tenants where id=p_tenant for update;
   perform public.assert_center_checkout_actor(p_actor,p_tenant);
   select * into profile from public.partner_center_profiles where tenant_id=p_tenant for update;
+  if exists(select 1 from public.voucher_issue_cancellations where actor_id=p_actor and request_key=key) then
+    raise exception using errcode='23505',message='Voucher purchase reference is closed; do not reopen it';
+  end if;
   select * into saved from public.voucher_issue_receipts where actor_id=p_actor and request_key=key;
   if found then
     if saved.tenant_id<>p_tenant or saved.request is distinct from p_request then
@@ -274,6 +286,45 @@ begin
 end; $$;
 revoke all on function public.issue_purchased_vouchers(uuid,uuid,uuid,jsonb) from public,anon,authenticated;
 grant execute on function public.issue_purchased_vouchers(uuid,uuid,uuid,jsonb) to service_role;
+
+-- A canceled key is durable. Racing issue/cancel calls use the same advisory
+-- lock, so cancellation cannot claim absence while a late request creates stock.
+-- This closes only uncommitted intents; it never voids a paid batch or grants.
+create function public.cancel_uncreated_voucher_issue(p_actor uuid,p_tenant uuid,p_key uuid,p_request jsonb) returns jsonb
+language plpgsql security definer set search_path=pg_catalog,public
+set lock_timeout='3s' set statement_timeout='20s' as $$
+declare saved public.voucher_issue_receipts%rowtype; canceled public.voucher_issue_cancellations%rowtype;
+begin
+  if p_actor is null or p_tenant is null or p_key is null or jsonb_typeof(p_request) is distinct from 'object'
+    or pg_column_size(p_request)>262144 then
+    raise exception using errcode='22023',message='Invalid voucher purchase reference';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended('voucher-issue:'||p_actor::text||':'||p_key::text,0));
+  perform 1 from public.tenants where id=p_tenant for update;
+  perform public.assert_center_checkout_actor(p_actor,p_tenant);
+  select * into saved from public.voucher_issue_receipts where actor_id=p_actor and request_key=p_key;
+  if found then
+    if saved.tenant_id<>p_tenant or saved.request is distinct from p_request then
+      raise exception using errcode='23505',message='Voucher purchase key belongs to another intent';
+    end if;
+    if not exists(select 1 from public.partner_voucher_batches where id=saved.batch_id and status='active') then
+      raise exception using errcode='23505',message='Committed voucher batch requires review';
+    end if;
+    return saved.result||jsonb_build_object('deduped',true);
+  end if;
+  select * into canceled from public.voucher_issue_cancellations where actor_id=p_actor and request_key=p_key;
+  if found then
+    if canceled.tenant_id<>p_tenant or canceled.request is distinct from p_request then
+      raise exception using errcode='23505',message='Voucher purchase key belongs to another intent';
+    end if;
+  else
+    insert into public.voucher_issue_cancellations(actor_id,request_key,tenant_id,request)
+      values(p_actor,p_key,p_tenant,p_request);
+  end if;
+  return jsonb_build_object('ok',true,'state','canceled','request_key',p_key);
+end; $$;
+revoke all on function public.cancel_uncreated_voucher_issue(uuid,uuid,uuid,jsonb) from public,anon,authenticated;
+grant execute on function public.cancel_uncreated_voucher_issue(uuid,uuid,uuid,jsonb) to service_role;
 
 create function public.enforce_voucher_purchase_identity() returns trigger
 language plpgsql security definer set search_path=pg_catalog,public as $$

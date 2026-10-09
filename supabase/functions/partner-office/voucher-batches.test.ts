@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import { hasProtectedCenterFinanceFields, issueVoucherBatch } from './voucher-batches.ts';
+import { cancelVoucherBatchRequest, hasProtectedCenterFinanceFields, issueVoucherBatch } from './voucher-batches.ts';
 const actor='11111111-1111-4111-8111-111111111111',tenant='22222222-2222-4222-8222-222222222222';
 const key='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',plan='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const batch='33333333-3333-4333-8333-333333333333',voucher='44444444-4444-4444-8444-444444444444';
@@ -59,4 +59,18 @@ Deno.test('center profile guard rejects self-service financial agreement and pri
   for(const field of ['commercial_model','wholesale_pricing','wallet_settings','commission_rules','package_tier','status'])
     assertEquals(hasProtectedCenterFinanceFields({[field]:null}),true);
   assertEquals(hasProtectedCenterFinanceFields({display_name:'Owned center',slug:'owned',branding:{},public_instructions:'Welcome'}),false);
+});
+
+Deno.test('voucher cancellation adapter closes only the exact key through one authenticated command',async()=>{
+  const calls:any[]=[];
+  const response=await cancelVoucherBatchRequest({rpc:(name:string,args:any)=>{calls.push({name,args});return {data:{ok:true,state:'canceled',request_key:key},error:null};}},actor,tenant,input);
+  assertEquals(response.status,200);assertEquals(response.body,{state:'canceled',idempotency_key:key});
+  assertEquals(calls,[{name:'cancel_uncreated_voucher_issue',args:{p_actor:actor,p_tenant:tenant,p_key:key,p_request:{access_kind:'subscription',quantity:1,plan_id:plan}}}]);
+});
+Deno.test('voucher cancellation adapter returns a committed batch and refuses unkeyed or uncertain closures',async()=>{
+  const committed=await cancelVoucherBatchRequest({rpc:()=>({data:result(),error:null})},actor,tenant,input);
+  assertEquals(committed.status,200);assertEquals(committed.body.state,'issued');
+  let calls=0;assertEquals((await cancelVoucherBatchRequest({rpc:()=>{calls++;throw Error('not called');}},actor,tenant,{access_kind:'subscription',quantity:1})).status,400);assertEquals(calls,0);
+  for(const data of [{ok:false,state:'canceled',request_key:key},{ok:true,state:'canceled',request_key:plan},null])
+    assertEquals((await cancelVoucherBatchRequest({rpc:()=>({data,error:null})},actor,tenant,input)).status,503);
 });

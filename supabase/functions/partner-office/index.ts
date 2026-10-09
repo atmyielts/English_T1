@@ -5,7 +5,7 @@ import { toDataURL } from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 import { partnerCheckoutPayload } from "./checkout.ts";
-import { hasProtectedCenterFinanceFields, issueVoucherBatch } from "./voucher-batches.ts";
+import { cancelVoucherBatchRequest, hasProtectedCenterFinanceFields, issueVoucherBatch } from "./voucher-batches.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
@@ -2971,6 +2971,13 @@ serve(async (req) => {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
         const result = await issueVoucherBatch(sb, userId, tenantId, body);
+        return json(result.status, result.body);
+      }
+
+      if (actionBody === "cancel_voucher_request") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const result = await cancelVoucherBatchRequest(sb, userId, tenantId, body);
         return json(result.status, result.body);
       }
 

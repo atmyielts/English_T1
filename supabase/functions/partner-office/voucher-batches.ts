@@ -10,12 +10,21 @@ export const hasProtectedCenterFinanceFields = (body: Json): boolean =>
 // funding, capability admission and every write belong to the SQL transaction.
 export async function issueVoucherBatch(client: any, actor: string, tenant: string, body: Json):
   Promise<{ status: number; body: Json }> {
+  return executeVoucherRequest(client,actor,tenant,body,'issue');
+}
+export async function cancelVoucherBatchRequest(client: any, actor: string, tenant: string, body: Json):
+  Promise<{ status: number; body: Json }> {
+  return executeVoucherRequest(client,actor,tenant,body,'cancel');
+}
+async function executeVoucherRequest(client: any, actor: string, tenant: string, body: Json, mode: 'issue'|'cancel'):
+  Promise<{ status: number; body: Json }> {
   if (!uuid(actor) || !uuid(tenant) || !object(body) || typeof body.access_kind !== 'string' || !['mock_exam', 'subscription', 'seat'].includes(body.access_kind)
     || typeof body.quantity !== 'number' || !Number.isInteger(body.quantity) || body.quantity < 1 || body.quantity > 1000
     || (body.idempotency_key != null && !uuid(body.idempotency_key))) {
     return { status: 400, body: { error: 'A valid voucher purchase and quantity are required.', error_code: 'voucher_input_invalid' } };
   }
   const requestKey = typeof body.idempotency_key === 'string' ? body.idempotency_key.toLowerCase() : null;
+  if (mode==='cancel' && !requestKey) return {status:400,body:{error:'The original voucher reference is required.',error_code:'voucher_input_invalid'}};
   const request: Json = { access_kind: body.access_kind, quantity: body.quantity };
   for (const name of ['experience_id', 'plan_id', 'classroom_id'] as const) {
     const value = body[name];
@@ -53,7 +62,7 @@ export async function issueVoucherBatch(client: any, actor: string, tenant: stri
     request.assigned_students = roster;
   }
   try {
-    const { data, error } = await client.rpc('issue_purchased_vouchers', {
+    const { data, error } = await client.rpc(mode==='issue'?'issue_purchased_vouchers':'cancel_uncreated_voucher_issue', {
       p_actor: actor, p_tenant: tenant, p_key: requestKey, p_request: request,
     });
     if (error) {
@@ -63,6 +72,9 @@ export async function issueVoucherBatch(client: any, actor: string, tenant: stri
         error_code: 'voucher_purchase_review',
       } };
       return { status: 503, body: { error: 'Voucher issuance is temporarily unavailable. Retry the original purchase.', error_code: 'voucher_purchase_unavailable' } };
+    }
+    if (mode==='cancel' && object(data) && data.ok===true && data.state==='canceled' && data.request_key===requestKey) {
+      return {status:200,body:{state:'canceled',idempotency_key:requestKey}};
     }
     const batch = object(data) && object(data.batch) ? data.batch : null;
     if (!object(data) || data.ok !== true || data.state !== 'issued' || typeof data.deduped !== 'boolean'
@@ -75,7 +87,7 @@ export async function issueVoucherBatch(client: any, actor: string, tenant: stri
         || v.access_kind !== body.access_kind || typeof v.code !== 'string' || !v.code)) {
       return { status: 503, body: { error: 'The recorded batch response is unavailable. Retry the original purchase.', error_code: 'voucher_response_unavailable' } };
     }
-    return { status: 200, body: { batch: data.batch, vouchers: data.vouchers, deduped: data.deduped, idempotency_key: data.request_key } };
+    return { status: 200, body: { state:'issued',batch: data.batch, vouchers: data.vouchers, deduped: data.deduped, idempotency_key: data.request_key } };
   } catch {
     return { status: 503, body: { error: 'Voucher issuance is temporarily unavailable. Retry the original purchase.', error_code: 'voucher_purchase_unavailable' } };
   }

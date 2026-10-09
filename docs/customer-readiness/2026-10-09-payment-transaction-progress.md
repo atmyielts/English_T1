@@ -234,3 +234,49 @@ correction and voucher reservation guard. All owned database containers were
 removed. See `2026-10-09-voucher-issuance-local.json` for source hashes, the
 retained published dependency and verification boundaries. Final-head CI remains
 pending for this extension; broader customer readiness is not established.
+
+## Voucher recovery, cancellation and redemption extension (local candidate)
+
+The Center Office now persists the original actor, center, request key and bounded
+choices before issuing vouchers. Refresh recovery retains the roster, including
+200-row imports, and retries the same purchase. Pending choices are locked. Failed,
+discarded or corrupt browser storage blocks a new financial request. The misleading
+funding picker is replaced with the approved center agreement. Closing a request
+serializes with issuance: it records an immutable closure only when no batch exists,
+or recovers the committed batch. It never voids or refunds existing vouchers.
+
+Subscription and seat redemption now use a service-only SQL transaction. Captured
+terms, product grants, seat assignment, student registration, classroom enrollment
+and a redemption receipt commit together. Same-code retries return the original
+receipt without extending access. Different renewals serialize and preserve active
+lifetime access. Assigned vouchers require the verified Auth email; no business
+tenant fallback or phone-based contact takeover remains. Public voucher previews
+exclude assigned student identity, and private SQL errors stay server-side.
+
+Shared protected routes now remount when account identity changes, and session
+validation rejects stale results. Office refreshes also reject older responses.
+An in-flight purchase cannot restore another account's roster or confirmation;
+its original account retains the recovery reference. Token refresh in the same
+account preserves its current purchase intent.
+
+The complete payment suite passed with 128 native PostgreSQL cases, 57 Deno cases
+and 26 existing mocked payment browser cases. Playwright CLI checks on the actual
+Platform screen cover 16 additional recovery/account scenarios with owned synthetic
+sessions and API doubles. The existing peer-review account-switch regression passed.
+The Platform production build passed using the public production configuration in
+process memory. Source-preserving Partner Office and voucher-redeem candidates
+typecheck with their captured published media dependency. These are local proofs;
+no production function, schema, customer charge or worker setting changed.
+
+CI37965111561 passed at 68de8a5b80aba7d7a36bfde5a58e3acb579b0ce5 for the
+previous issuance checkpoint. This later extension still requires final-head CI.
+The combined draft remains unsuitable for direct merge. Seven additive migrations
+and five functions must be split from the dependent frontend release and reviewed.
+
+Legacy vouchers without captured financial evidence deliberately require review;
+every existing voucher/grant must be reconciled before this consumer reaches live
+customers. Mock candidate claim/session creation is still separate. Closed-browser
+and cross-device recovery, financial retention/deletion, refund/void workflows,
+commercial settlement, large inventory performance, fresh provider source/gateway
+review and owned hosted canaries remain open. See
+`2026-10-09-voucher-recovery-redemption-local.json` for evidence and source hashes.
