@@ -1,5 +1,11 @@
 # Payment transaction progress — 9 October 2026
 
+This file records successive historical checkpoints. Current scope and executed
+evidence are in [the atomic admission checkpoint](2026-10-10-candidate-admission-transaction.md)
+and `release/manifest.json`: eight migrations and six source-preserving Edge
+functions remain unpublished in draft PR 215. The separate verified-account
+hotfix PR 216 is already installed; it does not qualify this payment candidate.
+
 Status: locally tested draft PR [215](https://github.com/atmyielts/English_T1/pull/215).
 Not merged, migrated, deployed or production-qualified. No production payment,
 customer charge, account, migration or function was changed by this candidate.

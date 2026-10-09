@@ -16,6 +16,7 @@ const centerMigration=read('20261009143000_center_tier_checkout_transaction.sql'
 const seatMigration=read('20261009144000_seat_assignment_transaction.sql');
 const voucherIssueMigration=read('20261009145000_voucher_issue_transaction.sql');
 const voucherRedemptionMigration=read('20261009146000_voucher_redemption_transaction.sql');
+const candidateAdmissionMigration=read('20261009147000_candidate_admission_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
@@ -136,6 +137,13 @@ try {
   await sql(read('20260606130000_partner_voucher_classroom_binding.sql'));
   await sql(voucherIssueMigration);
   await sql(voucherRedemptionMigration);
+  await sql(`${table('20260202170000_platform_spine.sql','sections')}
+    ${table('20260202170000_platform_spine.sql','sessions')}
+    alter table sessions add column token_id uuid references exam_tokens(id),add column registration_id uuid;
+    ${table('20260210150000_exam_tokens_candidates.sql','exam_registrations')}
+    alter table sessions add constraint owned_session_registration_fk foreign key(registration_id) references exam_registrations(id);
+    ${table('20260208040000_user_profiles.sql','user_profiles')}`);
+  await sql(candidateAdmissionMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -1104,6 +1112,140 @@ try {
   for(const role of ['anon','authenticated','service_role'])await check(role+' cannot rewrite voucher redemption receipts or impersonate claims through private helpers',async()=>{
     for(const change of ["update voucher_redemption_receipts set result='{}'",'delete from voucher_redemption_receipts','insert into voucher_redemption_receipts default values'])await assert.rejects(sql(`set role ${role};${change};`),/permission denied/);
     if(role!=='service_role')await assert.rejects(sql(`set role ${role};select redeem_purchased_voucher(${q(user)},'OWNED-EXAMPLE');`),/permission denied/);
+  });
+
+  async function candidateFixture(kind='voucher',classroom=false) {
+    const ctx=await voucherFixture(1),examProduct=randomUUID(),section=randomUUID();
+    await sql(`insert into products(id,status,metadata) values(${q(examProduct)},'active',${json({slug:'ielts-academic-simulator',app_url:'https://ielts.schood.online'})});
+      update experiences set product_id=${q(examProduct)} where id=${q(ctx.mock)};
+      insert into sections(id,experience_id,name,display_order) values(${q(section)},${q(ctx.mock)},'Owned test section',0);
+      insert into auth.users(id,email,email_confirmed_at) values(${q(ctx.recipient)},${q(ctx.email)},now());`);
+    let extra={},academy=null,classroomId=null;
+    if(classroom) {
+      academy=randomUUID();classroomId=randomUUID();extra={classroom_id:classroomId};
+      await sql(`insert into tenants(id,metadata) values(${q(academy)},${json({parent_center_id:ctx.scope,service_family:'academy'})});
+        insert into academy_classrooms(id,academy_id,name) values(${q(classroomId)},${q(academy)},'Owned exam classroom');`);
+    }
+    let voucherId=null,token;
+    if(kind==='voucher') {
+      const issued=await issueVouchers(ctx,ctx.key,voucherRequest(ctx,'mock_exam',extra));voucherId=issued.vouchers[0].id;
+      token=JSON.parse(await sql(`select row_to_json(t) from exam_tokens t where id=${q(issued.vouchers[0].exam_token_id)};`));
+    }else {
+      const id=await payment({user_id:ctx.actor,tenant_id:ctx.scope,product_id:examProduct,plan_id:null,purchase_type:'token_pack',entitlement_terms:null,
+        metadata:{quantity:1,expires_in_days:7,experience_id:ctx.mock}});
+      assert.equal((await fulfill(id)).state,'fulfilled');
+      token=JSON.parse(await sql(`select row_to_json(t) from exam_tokens t where metadata->>'payment_id'=${q(id)};`));
+    }
+    return {...ctx,examProduct,section,token,voucherId,academy,classroom:classroomId};
+  }
+  const admitCall=(ctx,actor=ctx.recipient,email=ctx.email)=>`admit_candidate_exam(${q(actor)},${q(ctx.token.token_code)},'Owned','Candidate',${q(email)},'unverified-phone')`;
+  const admit=(ctx,actor,email)=>sql(`set role service_role;select ${admitCall(ctx,actor,email)};`).then(JSON.parse);
+  const admissions=ctx=>sql(`select count(*) from exam_admission_receipts where token_id=${q(ctx.token.id)};`);
+  const candidateRows=ctx=>sql(`select json_build_object('profiles',(select count(*) from user_profiles where user_id=${q(ctx.recipient)}),
+    'sessions',(select count(*) from sessions where token_id=${q(ctx.token.id)}),'registrations',(select count(*) from exam_registrations where token_id=${q(ctx.token.id)}),
+    'receipts',(select count(*) from exam_admission_receipts where token_id=${q(ctx.token.id)}),
+    'students',(select count(*) from partner_center_students where tenant_id=${q(ctx.scope)} and user_id=${q(ctx.recipient)}),
+    'contacts',(select count(*) from academy_contacts where user_id=${q(ctx.recipient)}),
+    'memberships',(select count(*) from academy_classroom_memberships m join academy_contacts c on c.id=m.contact_id where c.user_id=${q(ctx.recipient)}));`).then(JSON.parse);
+  await check('candidate admission sixteen simultaneous voucher retries commit one complete exam and classroom enrollment',async()=>{
+    const ctx=await candidateFixture('voucher',true),results=await Promise.all(Array.from({length:16},()=>admit(ctx)));
+    assert.equal(results.filter(r=>!r.deduped).length,1);assert.equal(new Set(results.map(r=>r.session_id)).size,1);
+    assert.deepEqual(await candidateRows(ctx),{profiles:1,sessions:1,registrations:1,receipts:1,students:1,contacts:1,memberships:1});
+    assert.equal(await sql(`select count(*) from voucher_redemption_receipts where voucher_id=${q(ctx.voucherId)};`),'0');
+    assert.equal(await sql(`select claimed_by=${q(ctx.recipient)}::uuid and status='claimed' and uses_count=1 from exam_tokens where id=${q(ctx.token.id)};`),'t');
+    assert.equal(await sql(`select redeemed_by=${q(ctx.recipient)}::uuid and status='redeemed' and uses_count=1 from partner_vouchers where id=${q(ctx.voucherId)};`),'t');
+    assert.equal(results[0].actor_id,ctx.recipient);assert.equal(results[0].session,undefined);assert.equal(results[0].first_section_id,ctx.section);
+  });
+  await check('candidate admission sixteen simultaneous purchased standalone token retries create one exam',async()=>{
+    const ctx=await candidateFixture('standalone'),results=await Promise.all(Array.from({length:16},()=>admit(ctx)));
+    assert.equal(results.filter(r=>!r.deduped).length,1);assert.equal(new Set(results.map(r=>r.session_id)).size,1);
+    assert.deepEqual(await candidateRows(ctx),{profiles:1,sessions:1,registrations:1,receipts:1,students:0,contacts:0,memberships:0});
+  });
+  for(const tableName of ['user_profiles','sessions','exam_registrations','partner_center_students','academy_contacts','academy_classroom_memberships','partner_vouchers','exam_tokens','exam_admission_receipts'])
+    await check(`candidate admission ${tableName} failure rolls back code session voucher and every enrollment effect`,async()=>{
+      const ctx=await candidateFixture('voucher',true);
+      await sql(`create function qa_admission_failure() returns trigger language plpgsql as $$begin raise exception 'owned admission fault';end;$$;
+        create trigger qa_admission_failure before insert or update on ${tableName} for each row execute function qa_admission_failure();`);
+      try {await assert.rejects(admit(ctx),/owned admission fault/);}finally{await sql(`drop trigger qa_admission_failure on ${tableName};drop function qa_admission_failure();`);}
+      assert.deepEqual(await candidateRows(ctx),{profiles:0,sessions:0,registrations:0,receipts:0,students:0,contacts:0,memberships:0});
+      assert.equal(await sql(`select status='active' and claimed_by is null and uses_count=0 from exam_tokens where id=${q(ctx.token.id)};`),'t');
+      assert.equal(await sql(`select status='unused' and redeemed_by is null and uses_count=0 from partner_vouchers where id=${q(ctx.voucherId)};`),'t');
+      assert.equal((await admit(ctx)).deduped,false);
+    });
+  await check('candidate admission competing verified beneficiaries leave only the winning owned attempt',async()=>{
+    const ctx=await candidateFixture(),other=randomUUID(),target=randomUUID(),email='other-'+other+'@example.invalid';
+    await sql(`insert into users(id,email) values(${q(other)},${q(email)});insert into auth.users(id,email,email_confirmed_at) values(${q(other)},${q(email)},now());
+      insert into tenants(id,type) values(${q(target)},'personal');insert into tenant_memberships(user_id,tenant_id) values(${q(other)},${q(target)});`);
+    const results=await Promise.allSettled([admit(ctx),admit(ctx,other,email)]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+    assert.equal(await admissions(ctx),'1');assert.equal(await sql(`select count(*) from sessions where token_id=${q(ctx.token.id)};`),'1');
+    const winner=results.find(r=>r.status==='fulfilled').value;
+    await assert.rejects(admit(ctx,winner.actor_id===other?ctx.recipient:other,winner.actor_id===other?ctx.email:email),/unavailable for this account/);
+  });
+  await check('candidate admission late failure restores an existing profile and never changes marketing consent',async()=>{
+    const ctx=await candidateFixture();
+    await sql(`insert into user_profiles(user_id,first_name,last_name,phone,marketing_opt_in) values(${q(ctx.recipient)},'Original','Profile','original-phone',true);
+      create function qa_profile_admission_failure() returns trigger language plpgsql as $$begin raise exception 'owned admission profile fault';end;$$;
+      create trigger qa_profile_admission_failure before insert on exam_admission_receipts for each row execute function qa_profile_admission_failure();`);
+    try{await assert.rejects(admit(ctx),/owned admission profile fault/);}finally{await sql('drop trigger qa_profile_admission_failure on exam_admission_receipts;drop function qa_profile_admission_failure();');}
+    assert.equal(await sql(`select first_name||' '||last_name||' '||phone from user_profiles where user_id=${q(ctx.recipient)};`),'Original Profile original-phone');
+    assert.equal(await admissions(ctx),'0');await admit(ctx);
+    assert.equal(await sql(`select marketing_opt_in from user_profiles where user_id=${q(ctx.recipient)};`),'t');
+  });
+  for(const kind of ['unconfirmed','wrong-email','suspended','revoked','business','ambiguous'])await check(`candidate admission rejects ${kind} beneficiary without consuming access`,async()=>{
+    const ctx=await candidateFixture();let email=ctx.email;
+    if(kind==='unconfirmed')await sql(`update auth.users set email_confirmed_at=null where id=${q(ctx.recipient)};`);
+    if(kind==='wrong-email')email='another@example.invalid';
+    if(kind==='suspended')await sql(`update users set is_active=false where id=${q(ctx.recipient)};`);
+    if(kind==='revoked')await sql(`update tenant_memberships set status='disabled' where user_id=${q(ctx.recipient)};`);
+    if(kind==='business')await sql(`update tenants set type='business' where id=${q(ctx.target)};`);
+    if(kind==='ambiguous'){const id=randomUUID();await sql(`insert into tenants(id,type) values(${q(id)},'personal');insert into tenant_memberships(user_id,tenant_id) values(${q(ctx.recipient)},${q(id)});`);}
+    await assert.rejects(admit(ctx,ctx.recipient,email));assert.equal(await admissions(ctx),'0');assert.equal((await candidateRows(ctx)).sessions,0);
+  });
+  for(const kind of ['assigned-other','void','center-paused','missing-sections','untrusted-destination','disabled-service','inactive-exam','legacy-partial','legacy-claim'])
+    await check(`candidate admission ${kind} inventory cannot manufacture a new attempt`,async()=>{
+      const ctx=await candidateFixture();
+      if(kind==='assigned-other')await sql(`update partner_vouchers set assigned_email='other@example.invalid' where id=${q(ctx.voucherId)};`);
+      if(kind==='void')await sql(`update partner_vouchers set status='void' where id=${q(ctx.voucherId)};`);
+      if(kind==='center-paused')await sql(`update partner_center_profiles set status='paused' where tenant_id=${q(ctx.scope)};`);
+      if(kind==='missing-sections')await sql(`delete from sections where id=${q(ctx.section)};`);
+      if(kind==='untrusted-destination')await sql(`update products set metadata='{"app_url":"https://evil.example"}' where id=${q(ctx.examProduct)};`);
+      if(kind==='disabled-service')await sql(`update products set status='disabled' where id=${q(ctx.examProduct)};`);
+      if(kind==='inactive-exam')await sql(`update experiences set is_active=false where id=${q(ctx.mock)};`);
+      if(kind==='legacy-partial')await sql(`insert into sessions(user_id,experience_id,token_id) values(${q(ctx.recipient)},${q(ctx.mock)},${q(ctx.token.id)});`);
+      if(kind==='legacy-claim')await sql(`update exam_tokens set status='claimed',claimed_by=${q(ctx.recipient)},uses_count=1 where id=${q(ctx.token.id)};`);
+      await assert.rejects(admit(ctx));assert.equal(await admissions(ctx),'0');assert.equal((await candidateRows(ctx)).registrations,0);
+    });
+  await check('candidate admission unreceipted standalone inventory requires reconciliation instead of fabricated financial evidence',async()=>{
+    const ctx=await candidateFixture('standalone'),id=randomUUID(),code='LEGACY-'+randomUUID().toUpperCase();
+    await sql(`insert into exam_tokens(id,tenant_id,experience_id,token_code,expires_at) values(${q(id)},${q(ctx.scope)},${q(ctx.mock)},${q(code)},now()+interval '1 day');`);
+    ctx.token={id,token_code:code};await assert.rejects(admit(ctx),/purchase evidence requires reconciliation/);assert.equal(await admissions(ctx),'0');
+  });
+  await check('candidate admission foreign academy contact aborts the entire purchased mock claim without matching phone',async()=>{
+    const ctx=await candidateFixture('voucher',true);
+    await sql(`insert into academy_contacts(academy_id,user_id,first_name,email,phone) values(${q(ctx.academy)},${q(ctx.actor)},'Original identity',${q(ctx.email)},'unverified-phone');`);
+    await assert.rejects(admit(ctx),/Academy identity/);assert.equal(await admissions(ctx),'0');assert.equal((await candidateRows(ctx)).sessions,0);
+    await sql(`update academy_contacts set email='other@example.invalid' where academy_id=${q(ctx.academy)};`);
+    assert.equal((await admit(ctx)).deduped,false);assert.equal(await sql(`select user_id=${q(ctx.actor)}::uuid from academy_contacts where academy_id=${q(ctx.academy)} and phone='unverified-phone';`),'t');
+  });
+  await check('candidate admission retries do not overwrite original roster or mint a second attempt after token expiry',async()=>{
+    const ctx=await candidateFixture(),first=await admit(ctx);
+    await sql(`update exam_tokens set expires_at=now()-interval '1 day' where id=${q(ctx.token.id)};update sessions set status='paused' where id=${q(first.session_id)};`);
+    const replay=JSON.parse(await sql(`set role service_role;select admit_candidate_exam(${q(ctx.recipient)},${q(ctx.token.token_code)},'Changed','Input',${q(ctx.email)},'changed-phone');`));
+    assert.equal(replay.session_id,first.session_id);assert.equal(replay.deduped,true);
+    assert.equal(await sql(`select first_name||' '||last_name from exam_registrations where token_id=${q(ctx.token.id)};`),'Owned Candidate');
+    await sql(`update sessions set status='completed' where id=${q(first.session_id)};`);assert.equal((await admit(ctx)).deduped,true);
+    await sql(`update sessions set status='abandoned' where id=${q(first.session_id)};`);await assert.rejects(admit(ctx),/unavailable/);
+  });
+  await check('candidate admission evidence prevents session reassignment code reopening and voucher owner changes',async()=>{
+    const ctx=await candidateFixture(),result=await admit(ctx);
+    for(const statement of [`update sessions set user_id=${q(ctx.actor)} where id=${q(result.session_id)}`,`update sessions set token_id=null where id=${q(result.session_id)}`,
+      `update exam_registrations set user_id=${q(ctx.actor)} where token_id=${q(ctx.token.id)}`,`update exam_tokens set status='active' where id=${q(ctx.token.id)}`,
+      `update partner_vouchers set redeemed_by=${q(ctx.actor)} where id=${q(ctx.voucherId)}`])await assert.rejects(sql(statement),/immutable/);
+    assert.equal((await admit(ctx)).session_id,result.session_id);
+  });
+  for(const role of ['anon','authenticated','service_role'])await check(`candidate admission ${role} cannot forge or rewrite admission evidence`,async()=>{
+    for(const statement of ["update exam_admission_receipts set result='{}'",'delete from exam_admission_receipts','insert into exam_admission_receipts default values'])await assert.rejects(sql(`set role ${role};${statement};`),/permission denied/);
+    if(role!=='service_role')await assert.rejects(sql(`set role ${role};select admit_candidate_exam(${q(user)},'OWNED-EXAMPLE','A','B','own@example.invalid','phone');`),/permission denied/);
   });
 
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{

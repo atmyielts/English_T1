@@ -385,6 +385,9 @@ export const en = {
   'candidate.header.label': 'Candidate entry',
   'candidate.header.backHome': 'Back to home',
   'candidate.form.title': 'Enter your candidate details',
+  'candidate.error.review': 'This exam access needs review. Contact your teacher or center with the same candidate code.',
+  'candidate.error.retrySameCode': 'Exam entry is temporarily unavailable. Retry the same candidate code; do not request a new one.',
+  'candidate.error.accountUnavailable': 'This code is unavailable for your account. Sign in with the assigned account or contact your center.',
   'candidate.form.desc':
     'Sign in with your verified email and use the Candidate ID provided by your teacher. Each code belongs to one account and one exam attempt.',
   'candidate.form.candidateId': 'Candidate ID',

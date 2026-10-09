@@ -382,6 +382,9 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'candidate.header.label': 'Nomzod kirishi',
   'candidate.header.backHome': 'Bosh sahifaga qaytish',
   'candidate.form.title': "Nomzod ma’lumotlarini kiriting",
+  'candidate.error.review': 'Imtihonga kirish ruxsatini tekshirish kerak. Shu nomzod kodi bilan o‘qituvchingiz yoki markazingizga murojaat qiling.',
+  'candidate.error.retrySameCode': 'Imtihonga kirish vaqtincha mavjud emas. Shu nomzod kodi bilan qayta urinib ko‘ring; yangi kod so‘ramang.',
+  'candidate.error.accountUnavailable': 'Bu kod hisobingiz uchun mavjud emas. Kod tayinlangan hisobga kiring yoki markazingizga murojaat qiling.',
   'candidate.form.desc':
     "Tasdiqlangan emailingiz bilan kiring va o‘qituvchi bergan Candidate ID dan foydalaning. Har bir kod bitta hisob va bitta imtihon urinishi uchun beriladi.",
   'candidate.form.candidateId': 'Candidate ID',

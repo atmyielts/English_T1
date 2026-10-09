@@ -399,6 +399,9 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'candidate.header.label': 'Доступ кандидата',
   'candidate.header.backHome': 'На главную',
   'candidate.form.title': 'Данные кандидата',
+  'candidate.error.review': 'Доступ к экзамену требует проверки. Обратитесь к преподавателю или центру с тем же кодом кандидата.',
+  'candidate.error.retrySameCode': 'Вход в экзамен временно недоступен. Повторите попытку с тем же кодом кандидата; не запрашивайте новый.',
+  'candidate.error.accountUnavailable': 'Этот код недоступен для вашего аккаунта. Войдите в назначенный аккаунт или обратитесь в центр.',
   'candidate.form.desc':
     'Войдите с подтверждённым email и используйте Candidate ID от преподавателя. Каждый код привязан к одному аккаунту и одной попытке экзамена.',
   'candidate.form.candidateId': 'Candidate ID',
