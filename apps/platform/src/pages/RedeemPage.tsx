@@ -3,6 +3,7 @@ import { ArrowUpRight, BookOpen, CheckCircle2, KeyRound, Loader2, Ticket } from 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteHeader, type SiteHeaderAction } from '../components/layout/SiteHeader';
 import { supabase } from '../lib/supabase';
+import { useCandidateAccount } from '../lib/useCandidateAccount';
 import { buildCandidateHandoffUrl, candidateEntry, voucherPreview, voucherRedeem, type VoucherPreview } from '../lib/platformClient';
 
 const inputClass =
@@ -27,6 +28,7 @@ const toErrorMessage = (err: unknown) => {
 
 export const RedeemPage: React.FC = () => {
   const navigate = useNavigate();
+  const account = useCandidateAccount();
   const params = useParams();
   const [searchParams] = useSearchParams();
   const initialCode = useMemo(() => normalizeCode(params.code ?? searchParams.get('code')), [params.code, searchParams]);
@@ -38,6 +40,12 @@ export const RedeemPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
   const [candidate, setCandidate] = useState({ first_name: '', last_name: '', email: '', phone: '' });
+  useEffect(() => {
+    setCandidate(account.profile);
+    setHandoffUrl(null);
+    setError(null);
+    setSuccess(null);
+  }, [account.identity, account.profile]);
 
   const preview = async (targetCode = code) => {
     const clean = normalizeCode(targetCode);
@@ -141,7 +149,7 @@ export const RedeemPage: React.FC = () => {
               </button>
             </div>
 
-            {error ? <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+            {error ? <div role="alert" className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
             {success ? <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
             {handoffUrl ? (
               <div className="mt-5 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
@@ -149,11 +157,12 @@ export const RedeemPage: React.FC = () => {
               </div>
             ) : null}
 
-            {voucher?.access_kind === 'mock_exam' && voucher.status === 'unused' ? (
+            {voucher?.access_kind === 'mock_exam' && voucher.status === 'unused' && !account.session ? <button type="button" disabled={account.loading} className={`${primaryButton} mt-8`} onClick={() => navigate(`/auth?mode=signin&returnTo=${encodeURIComponent(`/redeem/${encodeURIComponent(voucher.code)}`)}`)}>Sign in to start your exam</button> : null}
+            {voucher?.access_kind === 'mock_exam' && voucher.status === 'unused' && account.session ? (
               <form onSubmit={redeemMock} className="mt-8 grid gap-4 md:grid-cols-2">
                 <label className="text-sm font-semibold text-gray-800">First name<input required value={candidate.first_name} onChange={(e) => setCandidate((prev) => ({ ...prev, first_name: e.target.value }))} className={inputClass} /></label>
                 <label className="text-sm font-semibold text-gray-800">Last name<input required value={candidate.last_name} onChange={(e) => setCandidate((prev) => ({ ...prev, last_name: e.target.value }))} className={inputClass} /></label>
-                <label className="text-sm font-semibold text-gray-800">Email<input required type="email" value={candidate.email} onChange={(e) => setCandidate((prev) => ({ ...prev, email: e.target.value }))} className={inputClass} /></label>
+                <label className="text-sm font-semibold text-gray-800">Email<input required readOnly type="email" value={candidate.email} className={inputClass} /></label>
                 <label className="text-sm font-semibold text-gray-800">Phone<input required value={candidate.phone} onChange={(e) => setCandidate((prev) => ({ ...prev, phone: e.target.value }))} className={inputClass} /></label>
                 <div className="md:col-span-2"><button type="submit" disabled={redeeming} className={primaryButton}>{redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />}Start mock exam</button></div>
               </form>

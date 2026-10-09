@@ -1,4 +1,5 @@
-import { clearLocalAuthStorage, edgeBase, refreshAuthSession, supabaseAnonKey } from './supabase';
+import { clearLocalAuthStorage, edgeBase, getAuthSession, refreshAuthSession, supabaseAnonKey } from './supabase';
+import { admitCandidateResponse, candidateAppBase } from './candidateAdmission';
 
 type Json = Record<string, unknown> | unknown[];
 
@@ -3667,6 +3668,7 @@ export const adminPartnersWallet = async (
 };
 
 export type CandidateEntryResponse = {
+  actor_id?: string;
   session: { access_token: string; refresh_token: string; expires_in: number; token_type: string };
   session_id: string;
   experience_id: string;
@@ -3689,16 +3691,22 @@ export const candidateEntry = async (body: {
   email: string;
   phone: string;
 }): Promise<CandidateEntryResponse> => {
+  const initial = await getAuthSession();
+  if (!initial) throw new Error('Sign in to start or resume your exam.');
+  if (!initial.user.email_confirmed_at) throw new Error('Verify your email before starting your exam.');
+  if (body.email.trim().toLowerCase() !== initial.user.email?.trim().toLowerCase()) {
+    throw new Error('Use the email of your signed-in account.');
+  }
   const res = await fetch(`${edgeBase}/candidate-entry`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: apiHeaders(initial.access_token),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);
     throw new Error(`POST /candidate-entry failed (${res.status}): ${JSON.stringify(details)}`);
   }
-  return (await res.json()) as CandidateEntryResponse;
+  return admitCandidateResponse(await res.json() as CandidateEntryResponse, initial, await getAuthSession());
 };
 
 export const buildCandidateHandoffUrl = (
@@ -3711,8 +3719,7 @@ export const buildCandidateHandoffUrl = (
     centerSlug?: string | null;
   },
 ): string => {
-  const appBase = String(res.app_url ?? '').trim().replace(/\/$/, '');
-  if (!appBase) throw new Error('Exam app URL is not configured');
+  const appBase = candidateAppBase(res.app_url);
 
   const qs = new URLSearchParams({
     access_token: res.session.access_token,
@@ -3733,7 +3740,7 @@ export const buildCandidateHandoffUrl = (
   const centerSlug = String(opts?.centerSlug ?? '').trim();
   if (centerSlug) qs.set('center_slug', centerSlug);
 
-  return `${appBase}/candidate?${qs.toString()}`;
+  return `${appBase}/candidate#${qs.toString()}`;
 };
 
 export type VoucherPreview = {

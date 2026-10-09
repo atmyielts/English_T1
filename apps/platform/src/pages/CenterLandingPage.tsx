@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
+import { useCandidateAccount } from '../lib/useCandidateAccount';
 import {
   ArrowUpRight,
   BookOpen,
@@ -48,28 +48,6 @@ const toErrorMessage = (err: unknown) => {
   return raw;
 };
 
-const splitName = (value?: string | null) => {
-  const parts = String(value ?? '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { first_name: '', last_name: '' };
-  if (parts.length === 1) return { first_name: parts[0], last_name: '' };
-  return { first_name: parts.slice(0, -1).join(' '), last_name: parts[parts.length - 1] };
-};
-
-const textFromMeta = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
-
-const candidateProfileFromSession = (session: Session | null) => {
-  const user = session?.user;
-  const meta = (user?.user_metadata && typeof user.user_metadata === 'object' ? user.user_metadata : {}) as Record<string, unknown>;
-  const fullName = textFromMeta(meta.full_name) || textFromMeta(meta.name);
-  const split = splitName(fullName);
-  return {
-    first_name: textFromMeta(meta.first_name) || textFromMeta(meta.given_name) || split.first_name,
-    last_name: textFromMeta(meta.last_name) || textFromMeta(meta.family_name) || split.last_name,
-    email: user?.email?.trim() || textFromMeta(meta.email),
-    phone: textFromMeta(meta.phone) || textFromMeta(meta.phone_number),
-  };
-};
-
 export const CenterLandingPage: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -85,42 +63,14 @@ export const CenterLandingPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
   const [candidate, setCandidate] = useState({ first_name: '', last_name: '', email: '', phone: '' });
-  const [session, setSession] = useState<Session | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { session, loading: authLoading, identity, profile } = useCandidateAccount();
   const [googleBusy, setGoogleBusy] = useState(false);
-
-  const applySessionToCandidate = (nextSession: Session | null) => {
-    const profile = candidateProfileFromSession(nextSession);
-    setCandidate((prev) => ({
-      first_name: prev.first_name || profile.first_name,
-      last_name: prev.last_name || profile.last_name,
-      email: prev.email || profile.email,
-      phone: prev.phone || profile.phone,
-    }));
-  };
-
   useEffect(() => {
-    let mounted = true;
-    supabase.auth.getSession().then(({ data: authData }) => {
-      if (!mounted) return;
-      const nextSession = authData.session ?? null;
-      setSession(nextSession);
-      applySessionToCandidate(nextSession);
-      setAuthLoading(false);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted) return;
-      setSession(nextSession);
-      applySessionToCandidate(nextSession);
-      setAuthLoading(false);
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, []);
+    setCandidate(profile);
+    setHandoffUrl(null);
+    setVoucherError(null);
+    setSuccess(null);
+  }, [identity, profile]);
 
   useEffect(() => {
     const slug = String(params.slug ?? '').trim();
@@ -196,14 +146,7 @@ export const CenterLandingPage: React.FC = () => {
       }
       setVoucher(res.voucher);
       setVoucherCode(res.voucher.code);
-      const names = splitName(res.voucher.assigned_name);
-      const profile = candidateProfileFromSession(session);
-      setCandidate((prev) => ({
-        first_name: prev.first_name || names.first_name || profile.first_name,
-        last_name: prev.last_name || names.last_name || profile.last_name,
-        email: prev.email || res.voucher.assigned_email || profile.email,
-        phone: prev.phone || profile.phone,
-      }));
+
     } catch (err) {
       setVoucher(null);
       setVoucherError(toErrorMessage(err));
@@ -368,7 +311,7 @@ export const CenterLandingPage: React.FC = () => {
                                 {session
                                   ? `Signed in as ${session.user.email ?? 'your Schood account'}.`
                                   : voucher.access_kind === 'mock_exam'
-                                    ? 'Sign in with Google or Schood to prefill your exam identity, or enter the student details below.'
+                                    ? 'Sign in with Google or Schood before starting your exam. Use your verified account email.'
                                     : 'Sign in or create an account before activating this learning access.'}
                               </p>
                             </div>
@@ -398,11 +341,11 @@ export const CenterLandingPage: React.FC = () => {
                         </div>
                       ) : null}
 
-                      {voucher.access_kind === 'mock_exam' && voucher.status === 'unused' ? (
+                      {voucher.access_kind === 'mock_exam' && voucher.status === 'unused' && session ? (
                         <form onSubmit={redeemMock} className="mt-5 grid gap-3 md:grid-cols-2">
                           <label className="text-sm font-semibold text-gray-800">First name<input required value={candidate.first_name} onChange={(e) => setCandidate((prev) => ({ ...prev, first_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
                           <label className="text-sm font-semibold text-gray-800">Last name<input required value={candidate.last_name} onChange={(e) => setCandidate((prev) => ({ ...prev, last_name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
-                          <label className="text-sm font-semibold text-gray-800">Email<input required type="email" value={candidate.email} onChange={(e) => setCandidate((prev) => ({ ...prev, email: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
+                          <label className="text-sm font-semibold text-gray-800">Email<input required readOnly type="email" value={candidate.email} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
                           <label className="text-sm font-semibold text-gray-800">Phone<input required value={candidate.phone} onChange={(e) => setCandidate((prev) => ({ ...prev, phone: e.target.value }))} className="mt-2 w-full rounded-2xl border border-gray-900/25 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" /></label>
                           <div className="md:col-span-2">
                             <button type="submit" disabled={redeeming} className={primaryButton}>

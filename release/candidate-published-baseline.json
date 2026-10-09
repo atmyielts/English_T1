@@ -1,0 +1,11 @@
+{
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "function": "candidate-entry",
+  "functionId": "f5ccb4aa-d5e7-4a5d-9d87-057bd2119934",
+  "version": 44,
+  "verifyJwt": false,
+  "sourceSha256": "0353373391d57bbf100907d943de0d0d979c8e1603002ebe9062953de5fb658e",
+  "sourceNormalization": "UTF-8 with CRLF normalized to LF",
+  "publishedRuntimeFiles": ["supabase/functions/candidate-entry/index.ts"],
+  "capturedAt": "2026-10-09T18:27:35Z"
+}
