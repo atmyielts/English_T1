@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-09T16:25:39.017135+00:00",
+  "scope": "QR import correction only; seat work remains uncommitted",
+  "productionChanged": false,
+  "failedCI": {
+    "head": "16e2e95567b188a0afa81e7f5ebfe1850b0e7798",
+    "run": 37957434639,
+    "failure": "TS2613: published @types/qrcode has no default export"
+  },
+  "fix": "Use the actual named toDataURL export from the same pinned qrcode 1.5.4 implementation.",
+  "runtimeProof": {
+    "method": "Actual Deno evaluation of the remote named export",
+    "input": "Owned noncustomer voucher URL",
+    "output": "PNG data URL, 1806 characters",
+    "mocked": false
+  },
+  "coldCacheTypecheck": {
+    "command": "deno check --no-lock supabase/functions/partner-office/index.ts",
+    "exitCode": 0,
+    "usedExistingDenoCache": false
+  },
+  "normalizedSourceSha256": "66265b0a828a63d4efbb1c8db8e99e9c2a8d4ca0c65f7beceef8891c2889a406",
+  "seatAssignmentQualification": "Not covered by this source-only import fix; new SQL remains uncommitted and must pass actual database checks."
+}

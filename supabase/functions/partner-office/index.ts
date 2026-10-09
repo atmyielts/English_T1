@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
-import QRCode from "https://esm.sh/qrcode@1.5.4";
+import { toDataURL } from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 import { partnerCheckoutPayload } from "./checkout.ts";
@@ -1520,7 +1520,7 @@ const createVoucherSheetPdf = async (
         font,
         color: rgb(0.38, 0.42, 0.48),
       });
-      const qrDataUrl = await QRCode.toDataURL(redeem, { type: "image/png", margin: 1, width: 106 });
+      const qrDataUrl = await toDataURL(redeem, { type: "image/png", margin: 1, width: 106 });
       const qrImage = await pdf.embedPng(base64DataUrlToBytes(qrDataUrl));
       page.drawImage(qrImage, { x: x + slipWidth - 88, y: y - 101, width: 72, height: 72 });
       page.drawText("1. Scan QR", { x: x + 12, y: y - 98, size: 7, font, color: rgb(0.17, 0.2, 0.25) });
