@@ -1,30 +1,38 @@
 {
   "schemaVersion": 1,
-  "releaseId": "score-cache-privacy",
+  "releaseId": "peer-review-privacy",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261008183000_score_prediction_cache_privacy.sql"
+  "frontends": [
+    "platform"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261008194000_peer_review_privacy_commands.sql"
+  ],
+  "edgeFunctions": [
+    "peer-review"
+  ],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261008183000_score_prediction_cache_privacy.sql"
+    "migration:20261008194000_peer_review_privacy_commands.sql",
+    "function:peer-review"
   ],
   "manualFollowUps": [
-    "Verify linked project bbjawctnqrufvnesdsel and that dry-run lists only the reviewed migration, then supabase db push --linked; verify migration list and exclusive-QA permission denials."
+    "Verify linked project bbjawctnqrufvnesdsel and dry-run lists only the reviewed migration; supabase db push --linked, then verify migration list.",
+    "After the migration, supabase functions deploy peer-review --project-ref bbjawctnqrufvnesdsel; retain existing JWT verification and compare downloaded source to the reviewed commit.",
+    "Run the exclusive temporary-QA API permission/concurrency matrix and actual published author/reviewer browser journey; verify fixture, account, tenant and session cleanup."
   ],
   "verification": [
-    "14 native PostgreSQL cases reproduce legacy access, reject both browser roles, retain service CRUD and records, enforce bounded locks and prove repeatability.",
-    "Exact-head full CI, normal merge, tracked Pages and post-merge checks; exclusive-QA hosted permission matrix and fixture cleanup after the reviewed migration."
+    "19 native PostgreSQL cases cover legacy exposure, browser table and column denials, bounded migration rollback, concurrent submit/review receipts, capacity, lease expiry, withdrawal, tenant separation and atomic counter failure.",
+    "8 handler tests and 15 browser cases cover authentication, recovery, account changes, honest load failures, four responsive widths and scoped accessibility.",
+    "Exact-head full CI and normal merge, tracked Pages/post-merge checks, provider commit identities and public URLs before separate reviewed backend follow-ups."
   ],
   "rollback": {
-    "frontends": "No frontend source change; baseline e534db3ad5aeb79ff312955dbb750c55682dfc28.",
-    "database": "Retain browser cache denial and existing rows. Investigate compatibility through service-role access; never restore the permissive public policy. Failed lock acquisition rolls back the migration.",
-    "edgeFunctions": "Live score-prediction source is unchanged. Existing schema-query failure requires its own scoped release."
+    "frontends": "Previous baseline f1b5641eec3400170b368764deaa5ccdc67405ce. The new page safely gates mutations until the version-2 API is ready. Older tabs must refresh before mutations.",
+    "database": "Retain private browser grants, all existing essays/reviews and the additive command schema. Never restore open essay policies. A 2-second lock timeout rolls back the entire migration.",
+    "edgeFunctions": "Keep the version-2 authenticated command boundary. Fix forward or return a bounded temporary-unavailable response; never restore the old open queue or direct-table mutation handler."
   }
 }
