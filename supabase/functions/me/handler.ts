@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loadSecurityPolicy, resolvePermissions } from "../_shared/admin-access.ts";
 
 type EntitlementRow = {
   id: string;
@@ -103,8 +104,8 @@ export const handleMe = async (req: Request): Promise<Response> => {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     });
 
-    const [{ data: profileRow }, { data: memberships, error: membershipError }] = await Promise.all([
-      userClient.from("users").select("role").eq("id", user.id).maybeSingle(),
+    const [{ data: profileRow, error: profileError }, { data: memberships, error: membershipError }] = await Promise.all([
+      userClient.from("users").select("role,is_active").eq("id", user.id).maybeSingle(),
       userClient
         .from("tenant_memberships")
         .select("tenant_id, role, status, tenants ( id, type, metadata )")
@@ -112,7 +113,13 @@ export const handleMe = async (req: Request): Promise<Response> => {
         .eq("status", "active")
         .order("created_at", { ascending: true }),
     ]);
-    const role = profileRow?.role ?? null;
+    if (profileError) return new Response(JSON.stringify({ error: "Account checks temporarily unavailable" }), {
+      status: 503, headers: { "Content-Type": "application/json", ...corsHeaders, "Cache-Control": "no-store" },
+    });
+    if (!profileRow || profileRow.is_active !== true) return new Response(JSON.stringify({ error: "Account is unavailable" }), {
+      status: 403, headers: { "Content-Type": "application/json", ...corsHeaders, "Cache-Control": "no-store" },
+    });
+    const role = profileRow.role ?? null;
     const normalizedRole = String(role ?? "").trim().toLowerCase();
 
     if (membershipError) {
@@ -162,47 +169,14 @@ export const handleMe = async (req: Request): Promise<Response> => {
     } | null = null;
 
     if (normalizedRole.startsWith("admin")) {
-      let permissions: string[] = normalizedRole === "admin" ? ["admin.*"] : [];
+      let permissions: string[], securityPolicy: AdminSecurityPolicyRow;
       try {
-        const { data: permsData } = await serviceClient.rpc("admin_effective_permissions", {
-          p_user_id: user.id,
-          p_role: normalizedRole,
+        permissions = await resolvePermissions(serviceClient, user.id, normalizedRole);
+        securityPolicy = await loadSecurityPolicy(serviceClient);
+      } catch {
+        return new Response(JSON.stringify({ error: "Admin security checks temporarily unavailable", code: "admin_security_unavailable" }), {
+          status: 503, headers: { "Content-Type": "application/json", ...corsHeaders, "Cache-Control": "no-store" },
         });
-        if (Array.isArray(permsData)) {
-          permissions = permsData
-            .map((row: unknown) => {
-              if (typeof row === "string") return row;
-              if (row && typeof row === "object" && "permission_key" in row) {
-                return String((row as Record<string, unknown>).permission_key ?? "");
-              }
-              return "";
-            })
-            .map((value) => value.trim())
-            .filter(Boolean);
-        }
-      } catch {
-        // Keep role-derived fallback permissions.
-      }
-
-      let securityPolicy: AdminSecurityPolicyRow | null = null;
-      try {
-        const { data: policyData } = await serviceClient
-          .from("admin_security_policies")
-          .select("require_mfa, session_timeout_minutes, rate_limit_per_minute, ip_allowlist")
-          .eq("id", 1)
-          .maybeSingle();
-        if (policyData) {
-          securityPolicy = {
-            require_mfa: false,
-            session_timeout_minutes: Number((policyData as Record<string, unknown>).session_timeout_minutes ?? 30),
-            rate_limit_per_minute: Number((policyData as Record<string, unknown>).rate_limit_per_minute ?? 120),
-            ip_allowlist: Array.isArray((policyData as Record<string, unknown>).ip_allowlist)
-              ? ((policyData as Record<string, unknown>).ip_allowlist as unknown[]).map((item) => String(item ?? "")).filter(Boolean)
-              : [],
-          };
-        }
-      } catch {
-        securityPolicy = null;
       }
 
       adminPayload = {

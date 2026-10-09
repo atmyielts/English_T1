@@ -1,38 +1,105 @@
 {
   "schemaVersion": 1,
-  "releaseId": "marketplace-transactions",
+  "releaseId": "admin-security-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "platform"
   ],
-  "migrations": [
-    "20261009110000_marketplace_transaction_boundary.sql"
-  ],
+  "migrations": [],
   "edgeFunctions": [
-    "teacher-marketplace"
+    "guide",
+    "me",
+    "platform-settings"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [],
+  "sharedEdgeConsumers": [
+    "academy-video",
+    "admin-analytics",
+    "admin-assets",
+    "admin-billing",
+    "admin-builder",
+    "admin-coupons",
+    "admin-english-content",
+    "admin-english-ops",
+    "admin-function-errors",
+    "admin-ielts-playbook",
+    "admin-ielts-practice",
+    "admin-language-config",
+    "admin-partners",
+    "admin-payments",
+    "admin-products",
+    "admin-referrals",
+    "admin-tests",
+    "admin-users",
+    "admin-writing-reviews",
+    "guide",
+    "import-experience",
+    "me",
+    "platform-settings",
+    "support-center"
+  ],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261009110000_marketplace_transaction_boundary.sql",
-    "function:teacher-marketplace"
+    "function:academy-video",
+    "function:admin-analytics",
+    "function:admin-assets",
+    "function:admin-billing",
+    "function:admin-builder",
+    "function:admin-coupons",
+    "function:admin-english-content",
+    "function:admin-english-ops",
+    "function:admin-function-errors",
+    "function:admin-ielts-playbook",
+    "function:admin-ielts-practice",
+    "function:admin-language-config",
+    "function:admin-partners",
+    "function:admin-payments",
+    "function:admin-products",
+    "function:admin-referrals",
+    "function:admin-tests",
+    "function:admin-users",
+    "function:admin-writing-reviews",
+    "function:guide",
+    "function:import-experience",
+    "function:me",
+    "function:platform-settings",
+    "function:support-center"
   ],
   "manualFollowUps": [
-    "Verify linked project bbjawctnqrufvnesdsel and require a fresh dry-run to list only the reviewed migration; supabase db push --linked, then verify remote migration history.",
-    "After the migration, supabase functions deploy teacher-marketplace --project-ref bbjawctnqrufvnesdsel; preserve the verified existing public gateway setting verify_jwt=false. Private commands verify bearer identities inside the handler. Compare downloaded runtime source to the reviewed commit.",
-    "Run exclusive temporary-QA role, permission, retry and hiring checks plus actual published teacher/employer journeys; verify all fixture, actor, tenant and session cleanup. Historical verification flags require independent operator review before public badges."
+    "After tracked Pages, compare the saved production security policy and each function gateway flag; preserve them. Deploy each shared consumer separately and verify downloaded runtime source, admission checks and exclusive QA cleanup. No global MFA or IP policy change is part of this release.",
+    "supabase functions deploy academy-video --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-analytics --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-assets --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-billing --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-builder --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-coupons --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-english-ops --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-function-errors --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-ielts-playbook --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-ielts-practice --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-language-config --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-partners --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-products --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-referrals --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-tests --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-users --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy admin-writing-reviews --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy guide --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy import-experience --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy me --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy platform-settings --project-ref bbjawctnqrufvnesdsel",
+    "supabase functions deploy support-center --project-ref bbjawctnqrufvnesdsel"
   ],
   "verification": [
-    "26 targeted native PostgreSQL cases qualify the actual Marketplace DDL and command migration, independent connection races, lock rollback, private grants, immutable requests, academy scope, account suspension and legacy badge suppression. Full Supabase reset is not claimed.",
-    "10 HTTP handler cases and 24 synthetic-API browser cases qualify identity binding, failure honesty, request recovery, employer decisions, four responsive widths and scoped accessibility.",
-    "Exact-head full CI, normal merge, tracked Pages/post-merge CI and provider/public commit evidence before separate backend follow-ups."
+    "40 focused authorization cases, 10 actual HTTP handler contract steps with intercepted transport, 5 synthetic-API browser cases and existing Guide HTTP contracts. No hosted admin qualification is claimed.",
+    "Full exact-head CI, normal merge, tracked Pages and provider evidence precede any backend deployment. Qualify suspended exclusive QA actors, failure behavior and supported MFA enrollment/recovery; do not read or alter customer private data."
   ],
   "rollback": {
-    "frontends": "Previous baseline 97f5756d47fe4a6221b9274301be24e4b12e8c57. Saving is gated until version-2 commands are published; older tabs must refresh before changes.",
-    "database": "Retain all records, browser grant restrictions and additive request/audit columns. Never restore self-verification or teacher-owned hiring policies. A two-second migration lock timeout rolls back the transaction.",
-    "edgeFunctions": "Keep the version-2 actor-bound transaction handler; fix forward or return temporary-unavailable responses. Never restore direct-table owner writes or application upserts that reset hiring decisions."
+    "frontends": "Previous reviewed Marketplace merge 21064f81f5c693f7c1c7b965f28345338c166690. Qualify its deployment before the independent admin release. No policy row or schema changes.",
+    "edgeFunctions": "Preserve active-account and fail-closed admission protections. Stop rollout and fix forward on incompatible provider state. Never restore a policy read or settings save that silently disables MFA."
   }
 }

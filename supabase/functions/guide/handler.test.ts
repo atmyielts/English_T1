@@ -82,8 +82,8 @@ Deno.test("guide HTTP security and session contracts", async (t) => {
       return json({ enabled: true, revision: 2 });
     }
     const table = url.pathname.split("/").at(-1)!;
-    if (table === "users") return one({ role });
-    if (table === "admin_security_policies") return one(null);
+    if (table === "users") return one({ role, is_active: true });
+    if (table === "admin_security_policies") return one({ require_mfa: false, session_timeout_minutes: 30, rate_limit_per_minute: 120, ip_allowlist: [] });
     if (table === "admin_audit_logs") return json(null, 201);
     if (table === "guide_release") return one({ id: true, enabled: true, version_id: VERSION, revision: 1 });
     if (table === "guide_versions") return one(version);
