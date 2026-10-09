@@ -1,3 +1,4 @@
+import { checkoutAttempt, completeCheckoutAttempt, restoreCheckoutAttempt } from '../lib/checkoutAttempt';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -88,7 +89,8 @@ export const CheckoutPage: React.FC = () => {
   const location = useLocation();
   const { t } = useI18n();
   const quoteSeq = useRef(0);
-  const checkoutAttemptKey = useRef(crypto.randomUUID());
+  const checkoutAttemptKey = useRef<string | null>(null);
+  const checkoutCreating = useRef(false);
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const returnTo = useMemo(() => sanitizeReturnTo(searchParams.get('returnTo')), [searchParams]);
@@ -156,6 +158,16 @@ export const CheckoutPage: React.FC = () => {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
+
+        if (planId) {
+          const saved = restoreCheckoutAttempt(data.session.user.id, `plan:${planId}`);
+          if (saved?.intent.plan_id === planId) {
+            checkoutAttemptKey.current = saved.key;
+            setCouponCode(typeof saved.intent.coupon_code === 'string' ? saved.intent.coupon_code : '');
+            setReferralCode(typeof saved.intent.referral_code === 'string' ? saved.intent.referral_code : '');
+            setApplyCredit(saved.intent.apply_credit === true);
+          }
+        }
 
         const provider = await clickReadiness(data.session.access_token);
         setClickReady(provider.configured);
@@ -250,8 +262,9 @@ export const CheckoutPage: React.FC = () => {
   };
 
   const createCheckout = async () => {
-    if (status && isSuccessStatus(status)) return;
+    if (checkoutCreating.current || (status && isSuccessStatus(status))) return;
     if (!planId) return;
+    checkoutCreating.current = true;
 
     setError(null);
     setStatus(null);
@@ -269,6 +282,10 @@ export const CheckoutPage: React.FC = () => {
 
       const description = selectedPlan?.name ? `Plan: ${selectedPlan.name}` : t('checkout.selectedPlan');
 
+      checkoutAttemptKey.current = checkoutAttempt(data.session.user.id, {
+        plan_id: planId, coupon_code: couponCode.trim().toUpperCase() || null,
+        apply_credit: applyCredit, referral_code: referralCode.trim().toUpperCase() || null,
+      }, `plan:${planId}`);
       const res = await clickCreateTransaction(data.session.access_token, {
         plan_id: planId,
         description,
@@ -280,7 +297,8 @@ export const CheckoutPage: React.FC = () => {
       });
 
       setTransactionId(res.transaction_id);
-      if (returnTo === '/start/result') await linkGuidePayment(res.transaction_id);
+      setStatus(res.status ?? 'pending');
+      if (returnTo === '/start/result') void linkGuidePayment(res.transaction_id).catch(() => { /* The durable order must remain usable if guide tracking is unavailable. */ });
       setPaymentUrl(res.payment_url);
       setCardWidget(res.card_widget ?? null);
       setCheckoutPricing({
@@ -299,6 +317,7 @@ export const CheckoutPage: React.FC = () => {
         setStatus(res.status ?? 'paid');
         setGrantCompleted(res.grant_completed === true);
         if (res.grant_completed !== true) return;
+        completeCheckoutAttempt(data.session.user.id, checkoutAttemptKey.current);
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
           continueTo(returnTo);
@@ -315,6 +334,7 @@ export const CheckoutPage: React.FC = () => {
       const msg = err instanceof Error ? err.message : t('checkout.error.unknown');
       setError(msg);
     } finally {
+      checkoutCreating.current = false;
       setBusy(false);
     }
   };
@@ -337,8 +357,14 @@ export const CheckoutPage: React.FC = () => {
       const res = await clickStatus(data.session.access_token, transactionId);
       setStatus(res.status);
       setGrantCompleted(res.grant_completed === true);
+      if (['failed', 'failure', 'canceled', 'cancelled', 'expired', 'rejected'].includes(res.status.toLowerCase())) {
+        completeCheckoutAttempt(data.session.user.id, checkoutAttemptKey.current);
+        setTransactionId(null); setPaymentUrl(null); setCardWidget(null);
+        return;
+      }
 
       if (isSuccessStatus(res.status) && res.grant_completed === true) {
+        completeCheckoutAttempt(data.session.user.id, checkoutAttemptKey.current);
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
           continueTo(returnTo);
@@ -403,7 +429,13 @@ export const CheckoutPage: React.FC = () => {
         if (cancelled) return;
         setStatus(res.status);
         setGrantCompleted(res.grant_completed === true);
+        if (['failed', 'failure', 'canceled', 'cancelled', 'expired', 'rejected'].includes(res.status.toLowerCase())) {
+          completeCheckoutAttempt(data.session.user.id, checkoutAttemptKey.current);
+          setTransactionId(null); setPaymentUrl(null); setCardWidget(null);
+          return;
+        }
         if (isSuccessStatus(res.status) && res.grant_completed === true) {
+          completeCheckoutAttempt(data.session.user.id, checkoutAttemptKey.current);
           const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
           if (ok) {
             continueTo(returnTo);

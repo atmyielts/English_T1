@@ -43,3 +43,22 @@ for(const width of [390,1280])for(const credit of [false,true])test(`checkout ${
   qa.activate();await page.getByRole('button',{name:'Check status'}).click();
   await expect(page).toHaveURL(/\/$/);expect(qa.orders()).toBe(1);
 });
+
+for (const changeChoices of [false,true])test(`checkout restores ${changeChoices?'changed':'default'} purchase choices after a lost response and page refresh`,async({page})=>{
+  await fixture(page,true);const keys:string[]=[];
+  await page.route('**/functions/v1/click/create-transaction',route=>{
+    keys.push(route.request().postDataJSON().idempotency_key);
+    if(keys.length===1)return route.fulfill({status:503,json:{error:'Checkout is temporarily unavailable. Retry the same order.'}});
+    return route.fulfill({status:202,json:{transaction_id:'owned-credit-order',status:'paid',grant_completed:false,payment_url:null,
+      amount:0,currency:'UZS',original_amount:1000,discount_amount:0,credit_amount:1000,final_amount:0,product_id:product,plan_id:plan}});
+  });
+  await page.goto(`/checkout?plan_id=${plan}&product_id=${product}`);
+  if(changeChoices)await page.getByRole('checkbox').uncheck();
+  await page.getByRole('button',{name:'Create payment link and continue'}).click();
+  await expect(page.getByText(/Checkout is temporarily unavailable/)).toBeVisible();
+  await page.reload();
+  if(changeChoices)await expect(page.getByRole('checkbox')).not.toBeChecked();
+  await page.getByRole('button',{name:'Create payment link and continue'}).click();
+  await expect(page.getByRole('status')).toContainText('Do not pay again');
+  expect(keys).toHaveLength(2);expect(keys[1]).toBe(keys[0]);expect(keys[0]).toMatch(/^[a-f0-9-]{36}$/i);
+});

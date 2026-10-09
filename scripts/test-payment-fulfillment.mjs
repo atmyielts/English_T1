@@ -2,17 +2,20 @@
 // PostgreSQL server. No provider calls, credentials, customer data or production DB.
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
+import { dirname } from 'node:path';
 
 const name='schood-payment-'+randomUUID().slice(0,8);
 const image='postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa';
 const read=file=>readFileSync('supabase/migrations/'+file,'utf8');
 const migration=read('20261009140000_payment_fulfillment_transaction.sql');
+const checkoutMigration=read('20261009141000_payment_checkout_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
 let owned=false;
+let report=null;
 function run(args,input='') {
   return new Promise((resolve,reject)=>{
     const child=spawn('docker',args,{windowsHide:true,stdio:['pipe','pipe','pipe']});let out='',err='';
@@ -57,7 +60,8 @@ try {
   await sql(`create role anon;create role authenticated;create role service_role bypassrls;
     grant usage on schema public to anon,authenticated,service_role;
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
-    create table users(id uuid primary key);create table tenants(id uuid primary key);
+    create table users(id uuid primary key,is_active boolean not null default true);create table tenants(id uuid primary key);
+    create table tenant_memberships(id uuid primary key default gen_random_uuid(),user_id uuid references users(id),tenant_id uuid references tenants(id),status text not null default 'active',role text not null default 'owner');
     create table products(id uuid primary key);create table plans(id uuid primary key,product_id uuid references products(id),duration_days integer);
     create table experiences(id uuid primary key);create table coupons(id uuid primary key);
     ${table('20260202170000_platform_spine.sql','payments')}
@@ -89,7 +93,7 @@ try {
     create unique index coupon_redemptions_coupon_user_context_unique on coupon_redemptions(coupon_id,user_id,context_id) where context_id is not null;
     ${['academy_contacts','academy_offers','academy_offer_grants','academy_payments','academy_entitlements'].map(name=>table('20260212000000_teacher_studio_core.sql',name)).join('\n')}
     ${read('20260212010000_teacher_studio_payment_engine.sql')}
-    insert into users values(${q(user)}),(${q(referrer)});insert into tenants values(${q(tenant)});
+    insert into users(id) values(${q(user)}),(${q(referrer)});insert into tenants values(${q(tenant)});
     insert into products values(${q(product)}),(${q(bundle)});insert into plans values(${q(plan)},${q(product)},30);
     insert into experiences values(${q(experience)});insert into coupons values(${q(coupon)});`);
   await sql(read('20260812120000_click_payment_launch_guardrails.sql'));
@@ -100,6 +104,10 @@ try {
     assert.equal(await sql("select to_regclass('public.payment_fulfillment_receipts') is null;"),'t');
   });
   await sql(migration);
+  const creditSource=read('20260501120000_partner_referrals_and_credits.sql');
+  await sql(creditSource.slice(creditSource.indexOf('create or replace function public.platform_credit_available('),creditSource.indexOf('create or replace function public.consume_platform_credit(')));
+  await sql(checkoutMigration);
+  await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
     assert.equal(await count('payment_fulfillment_receipts',legacy),'0');assert.equal(await count('payment_fulfillment_receipts',legacyDone),'0');
@@ -241,7 +249,7 @@ try {
   });
   await check('first-purchase referral reward stays singular across independent paid orders and concurrent retries',async()=>{
     const referred=randomUUID(),scope=randomUUID(),pg=randomUUID(),at=randomUUID();
-    await sql(`insert into users values(${q(referred)});insert into tenants values(${q(scope)});
+    await sql(`insert into users(id) values(${q(referred)});insert into tenants values(${q(scope)});
       insert into referral_programs(id,program_key,name,status,first_purchase_only,referrer_credit_type,referrer_credit_value)
         values(${q(pg)},'qa-first','QA first purchase','active',true,'fixed',100);
       insert into referral_attributions(id,program_id,referrer_user_id,referred_user_id,referral_code)
@@ -258,16 +266,125 @@ try {
     assert.equal((await fulfill(id)).state,'reconciliation');assert.equal((await job(id)).attempts,12);
     assert.equal(await count('payment_fulfillment_receipts',id),'0');
   });
+  const intent={purchase_type:'plan',plan_id:plan,apply_credit:true};
+  async function checkoutActor(balance=1000) {
+    const actor=randomUUID(),scope=randomUUID();
+    await sql(`insert into users(id) values(${q(actor)});insert into tenants values(${q(scope)});
+      insert into tenant_memberships(user_id,tenant_id) values(${q(actor)},${q(scope)});`);
+    if(balance>0)await sql(`insert into platform_credit_ledger(user_id,tenant_id,entry_kind,status,amount,currency) values(${q(actor)},${q(scope)},'grant','posted',${balance},'UZS');`);
+    return {actor,scope,key:randomUUID()};
+  }
+  const order=(ctx,extra={})=>({provider:'platform_credit',user_id:ctx.actor,tenant_id:ctx.scope,product_id:product,plan_id:plan,
+    amount:0,original_amount:1000,discount_amount:0,credit_amount:1000,referral_discount_amount:0,currency:'UZS',
+    purchase_type:'plan',entitlement_terms:terms,plan_snapshot:{id:plan,duration_days:30},metadata:{},...extra});
+  const createCheckout=(ctx,extra={},choices=intent)=>sql(`set role service_role;select public.create_payment_checkout(${q(ctx.actor)},${q(ctx.key)},${json(choices)},${json(order(ctx,extra))});`).then(JSON.parse);
+  const replayCheckout=(ctx,choices=intent)=>sql(`set role service_role;select public.payment_checkout_replay(${q(ctx.actor)},${q(ctx.key)},${json(choices)});`).then(JSON.parse);
+  await check('concurrent checkout retries commit one cross-provider order, reservation and durable job',async()=>{
+    const ctx=await checkoutActor();const replies=await Promise.all(Array.from({length:12},()=>createCheckout(ctx)));
+    assert.equal(replies.filter(r=>r.state==='created').length,1);assert.equal(new Set(replies.map(r=>r.payment.id)).size,1);
+    const id=replies[0].payment.id;assert.equal(await count('payment_checkout_requests',id),'1');
+    assert.equal(await count('platform_credit_ledger',id),'1');assert.equal((await job(id)).state,'pending');
+    assert.equal(await sql(`select platform_credit_available(${q(ctx.actor)},'UZS');`),'0');
+    assert.equal((await replayCheckout(ctx)).payment.status,'paid');
+    assert.ok((await fulfill(id)).ok);assert.equal(await count('payment_fulfillment_receipts',id),'1');
+  });
+  await check('replay survives consumed credit and changed catalogue and never converts to another provider',async()=>{
+    const ctx=await checkoutActor();const original=await createCheckout(ctx);assert.ok((await fulfill(original.payment.id)).ok);
+    await sql(`update plans set duration_days=1 where id=${q(plan)};`);
+    const changed=await createCheckout(ctx,{provider:'click',amount:2500,original_amount:2500,credit_amount:0,entitlement_terms:{...terms,duration_days:1}});
+    assert.equal(changed.state,'existing');assert.equal(changed.payment.id,original.payment.id);
+    assert.equal(changed.payment.provider,'platform_credit');assert.equal(changed.payment.credit_amount,1000);
+    assert.equal(changed.payment.entitlement_terms.duration_days,30);assert.equal((await replayCheckout(ctx)).payment.id,original.payment.id);
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'1');
+    await sql(`update plans set duration_days=30 where id=${q(plan)};`);
+  });
+  await check('same key with changed purchase choices conflicts without another order or reservation',async()=>{
+    const ctx=await checkoutActor();const original=await createCheckout(ctx);
+    assert.equal((await replayCheckout(ctx,{...intent,apply_credit:false})).state,'conflict');
+    assert.equal((await createCheckout(ctx,{}, {...intent,plan_id:randomUUID()})).state,'conflict');
+    assert.equal(await count('platform_credit_ledger',original.payment.id),'1');
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'1');
+  });
+  await check('revoked account or membership cannot reopen a committed checkout or create another',async()=>{
+    const ctx=await checkoutActor();await createCheckout(ctx);
+    await sql(`update users set is_active=false where id=${q(ctx.actor)};`);
+    await assert.rejects(replayCheckout(ctx),/Checkout account is unavailable/);
+    await assert.rejects(createCheckout({...ctx,key:randomUUID()}),/Checkout account is unavailable/);
+    await sql(`update users set is_active=true where id=${q(ctx.actor)};update tenant_memberships set status='disabled' where user_id=${q(ctx.actor)};`);
+    await assert.rejects(replayCheckout(ctx),/Checkout membership is unavailable/);
+    await assert.rejects(createCheckout({...ctx,key:randomUUID()}),/Checkout membership is unavailable/);
+  });
+  await check('insufficient credit and malformed finance leave no orphan order, request or reservation',async()=>{
+    const ctx=await checkoutActor(500);
+    await assert.rejects(createCheckout(ctx),/Insufficient credit balance/);
+    await assert.rejects(createCheckout(ctx,{original_amount:999}),/Invalid checkout terms/);
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'0');
+    assert.equal(await sql(`select count(*) from payment_checkout_requests where user_id=${q(ctx.actor)};`),'0');
+    assert.equal(await sql(`select count(*) from platform_credit_ledger where user_id=${q(ctx.actor)} and entry_kind='reserve';`),'0');
+  });
+  await check('two distinct checkouts cannot overspend the same balance; losing transaction leaves no payable orphan',async()=>{
+    const ctx=await checkoutActor();const replies=await Promise.allSettled([createCheckout(ctx),createCheckout({...ctx,key:randomUUID()})]);
+    assert.equal(replies.filter(r=>r.status==='fulfilled').length,1);assert.equal(replies.filter(r=>r.status==='rejected').length,1);
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'1');
+    assert.equal(await sql(`select platform_credit_available(${q(ctx.actor)},'UZS');`),'0');
+  });
+  await check('partial credit checkout is pending with one exact reservation and ignores injected completion markers',async()=>{
+    const ctx=await checkoutActor();const result=await createCheckout(ctx,{provider:'click',amount:1000,original_amount:1500,credit_amount:500,
+      status:'paid',grant_completed_at:new Date().toISOString(),granted_at:new Date().toISOString(),id:randomUUID(),provider_transaction_id:'attacker'});
+    assert.equal(result.payment.status,'pending');assert.equal(result.payment.grant_completed_at,null);assert.equal(result.payment.granted_at,null);
+    assert.equal(result.payment.provider_transaction_id,result.payment.id);assert.equal(await count('payment_fulfillment_jobs',result.payment.id),'0');
+    assert.equal(await sql(`select status||':'||amount from platform_credit_ledger where payment_id=${q(result.payment.id)};`),'reserved:500');
+  });
+  await check('late checkout failure rolls back order, credit and queued fulfillment as a unit',async()=>{
+    const ctx=await checkoutActor();
+    await sql(`create function qa_checkout_fault() returns trigger language plpgsql as $$begin if new.user_id=${q(ctx.actor)}::uuid then raise exception 'owned checkout fault';end if;return new;end$$;
+      create trigger qa_checkout_fault before insert on payment_checkout_requests for each row execute function qa_checkout_fault();`);
+    await assert.rejects(createCheckout(ctx),/owned checkout fault/);
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'0');
+    assert.equal(await sql(`select count(*) from platform_credit_ledger where user_id=${q(ctx.actor)} and entry_kind='reserve';`),'0');
+    await sql('drop trigger qa_checkout_fault on payment_checkout_requests;drop function qa_checkout_fault();');
+    assert.equal((await createCheckout(ctx)).state,'created');
+  });
+  await check('connection loss during checkout rolls back all writes and safely resumes with the same key',async()=>{
+    const ctx=await checkoutActor();
+    await sql(`create function qa_checkout_abort() returns trigger language plpgsql as $$begin if new.user_id=${q(ctx.actor)}::uuid then perform pg_advisory_xact_lock(434352);perform pg_sleep(10);end if;return new;end$$;
+      create trigger qa_checkout_abort before insert on payment_checkout_requests for each row execute function qa_checkout_abort();`);
+    const aborted=assert.rejects(sql(`set application_name='schood-owned-checkout-abort';set role service_role;select public.create_payment_checkout(${q(ctx.actor)},${q(ctx.key)},${json(intent)},${json(order(ctx))});`),/terminating|connection|server closed/i);
+    await barrier(434352);await sql("select pg_terminate_backend(pid) from pg_stat_activity where application_name='schood-owned-checkout-abort';");await aborted;
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'0');
+    assert.equal(await sql(`select platform_credit_available(${q(ctx.actor)},'UZS');`),'1000');
+    await sql('drop trigger qa_checkout_abort on payment_checkout_requests;drop function qa_checkout_abort();');
+    assert.equal((await createCheckout(ctx)).state,'created');
+  });
+  await check('legacy checkout references fail closed instead of generating a second charge',async()=>{
+    const ctx=await checkoutActor();const id=await payment({user_id:ctx.actor,tenant_id:ctx.scope,status:'pending',checkout_idempotency_key:ctx.key});
+    assert.deepEqual(await replayCheckout(ctx),{ok:false,state:'legacy_review',transaction_id:id});
+    assert.equal((await createCheckout(ctx)).state,'legacy_review');
+    assert.equal(await sql(`select count(*) from payments where user_id=${q(ctx.actor)};`),'1');assert.equal(await count('platform_credit_ledger',id),'0');
+  });
+  for(const role of ['anon','authenticated'])await check(role+' cannot access checkout records or invoke checkout commands',async()=>{
+    await assert.rejects(sql('set role '+role+';select * from payment_checkout_requests;'),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select payment_checkout_replay(${q(user)},${q(randomUUID())},'{}');`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select create_payment_checkout(${q(user)},${q(randomUUID())},'{}','{}');`),/permission denied/);
+  });
+  await check('service callers cannot rewrite or delete checkout identities directly',async()=>{
+    for(const statement of ['delete from payment_checkout_requests',"update payment_checkout_requests set intent='{}'",'insert into payment_checkout_requests default values'])
+      await assert.rejects(sql('set role service_role;'+statement+';'),/permission denied/);
+  });
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{
     const id=await payment({status:'pending'});await sql('update payments set status=\'paid\' where id='+q(id)+';');assert.equal((await job(id)).state,'pending');
     // Other deliberate invalid fixtures remain in retry with future backoff.
     await sql('update payment_fulfillment_config set worker_enabled=true;');
-    const result=JSON.parse(await sql('set role service_role;select retry_payment_fulfillment(5);'));assert.ok(result.fulfilled>=1);
+    let recovered=0;for(let batch=0;batch<10 && (await job(id)).state!=='fulfilled';batch++){
+      const result=JSON.parse(await sql('set role service_role;select retry_payment_fulfillment(5);'));assert.ok(result.attempted<=5);recovered+=result.fulfilled;
+    }assert.ok(recovered>=1);
     assert.equal((await job(id)).state,'fulfilled');assert.equal(await count('payment_fulfillment_receipts',id),'1');
   });
-  const report={status:'passed',engine:'native PostgreSQL 17.5',checks,productionChanged:false,cleanup:'owned container removed'};
-  if(process.argv.find(a=>a.startsWith('--output=')))writeFileSync(process.argv.find(a=>a.startsWith('--output=')).slice(9),JSON.stringify(report,null,2)+'\n');
+  report={status:'passed',engine:'native PostgreSQL 17.5',checks,productionChanged:false,cleanup:'owned container removed'};
   console.log(checks.length+' native payment cases passed.');
 } finally {
   if(owned){assert.equal(await run(['inspect','--format','{{index .Config.Labels "schood.qa"}}',name]),'payment-fulfillment');await run(['rm','--force',name]);console.log('Owned network-isolated PostgreSQL container removed.');}
 }
+
+const reportPath=process.argv.find(a=>a.startsWith('--output='))?.slice(9);
+if(report && reportPath){mkdirSync(dirname(reportPath),{recursive:true});writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n');}

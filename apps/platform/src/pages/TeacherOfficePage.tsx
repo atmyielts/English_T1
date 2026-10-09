@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import { checkoutAttempt, completeCheckoutAttempt } from '../lib/checkoutAttempt';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -21,6 +22,11 @@ import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 
 export const TeacherOfficePage: React.FC = () => {
   const navigate = useNavigate();
+  const purchasing = useRef(false);
+  const tokenChecking = useRef(false);
+  const seatChecking = useRef(false);
+  const tokenAttempt = useRef<{ userId: string; key: string } | null>(null);
+  const seatAttempt = useRef<{ userId: string; key: string } | null>(null);
   const { t } = useI18n();
   const [experiences, setExperiences] = useState<TeacherOfficeExperience[]>([]);
   const [tokens, setTokens] = useState<TeacherOfficeToken[]>([]);
@@ -125,17 +131,23 @@ export const TeacherOfficePage: React.FC = () => {
   }, []);
 
   const createToken = async () => {
-    const token = await getValidToken();
-    if (!token || !experienceId) {
-      setError(t('teacher.error.signInContinue'));
-      navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
-      return;
-    }
+    if (purchasing.current || tokenTransactionId) return;
+    purchasing.current = true;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
+      const token = await getValidToken();
+      if (!token || !experienceId) {
+        setError(t('teacher.error.signInContinue'));
+        navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user.id) throw new Error('Unauthorized');
+      tokenAttempt.current = { userId: data.session.user.id, key: checkoutAttempt(data.session.user.id, { purchase_type: 'token_pack', experience_id: experienceId, quantity: tokenQuantity, expires_in_days: expiryDays }) };
       const res = await clickCreateTransaction(token, {
+        idempotency_key: tokenAttempt.current.key,
         purchase_type: 'token_pack',
         experience_id: experienceId,
         quantity: tokenQuantity,
@@ -144,7 +156,12 @@ export const TeacherOfficePage: React.FC = () => {
       });
       setTokenTransactionId(res.transaction_id);
       setTokenPaymentUrl(res.payment_url);
-      setTokenStatus('pending');
+      setTokenStatus(res.status ?? 'pending');
+      if (res.status && ['paid', 'success', 'completed'].includes(res.status.toLowerCase()) && res.grant_completed !== true) {
+        setTokenPaymentUrl(null);
+        setSuccess(t('checkout.status.activationPending'));
+        return;
+      }
       if (res.payment_url) {
         const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
         if (!popup) {
@@ -154,31 +171,45 @@ export const TeacherOfficePage: React.FC = () => {
         }
       } else {
         setTokenStatus(res.status ?? 'paid');
+        if (res.grant_completed !== true) { setSuccess(t('checkout.status.activationPending')); return; }
+        completeCheckoutAttempt(tokenAttempt.current.userId, tokenAttempt.current.key);
+        setTokenTransactionId(null);
         await refreshAll();
         setSuccess(t('teacher.success.tokensGenerated'));
       }
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.createToken')));
     } finally {
+      purchasing.current = false;
       setLoading(false);
     }
   };
 
   const checkTokenPayment = async () => {
-    if (!tokenTransactionId) return;
-    const token = await getValidToken();
-    if (!token) {
-      setError(t('teacher.error.signInContinue'));
-      navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
-      return;
-    }
+    if (!tokenTransactionId || tokenChecking.current) return;
+    tokenChecking.current = true;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
+      const token = await getValidToken();
+      if (!token) {
+        setError(t('teacher.error.signInContinue'));
+        navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
+        return;
+      }
       const res = await clickStatus(token, tokenTransactionId);
       setTokenStatus(res.status);
-      if (['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase())) {
+      if (['failed', 'failure', 'canceled', 'cancelled', 'expired', 'rejected'].includes(res.status.trim().toLowerCase())) {
+        if (tokenAttempt.current) completeCheckoutAttempt(tokenAttempt.current.userId, tokenAttempt.current.key);
+        setTokenTransactionId(null); setTokenPaymentUrl(null); return;
+      }
+      const paid = ['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase());
+      if (paid && res.grant_completed !== true) {
+        setTokenPaymentUrl(null); setSuccess(t('checkout.status.activationPending')); return;
+      }
+      if (paid && res.grant_completed === true) {
+        if (tokenAttempt.current) completeCheckoutAttempt(tokenAttempt.current.userId, tokenAttempt.current.key);
         setTokenTransactionId(null);
         setTokenPaymentUrl(null);
         setTokenStatus('paid');
@@ -188,22 +219,29 @@ export const TeacherOfficePage: React.FC = () => {
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.checkToken')));
     } finally {
+      tokenChecking.current = false;
       setLoading(false);
     }
   };
 
   const createSeatPurchase = async () => {
-    const token = await getValidToken();
-    if (!token || !seatPlanId) {
-      setError(t('teacher.error.signInContinue'));
-      navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
-      return;
-    }
+    if (purchasing.current || seatTransactionId) return;
+    purchasing.current = true;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
+      const token = await getValidToken();
+      if (!token || !seatPlanId) {
+        setError(t('teacher.error.signInContinue'));
+        navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user.id) throw new Error('Unauthorized');
+      seatAttempt.current = { userId: data.session.user.id, key: checkoutAttempt(data.session.user.id, { purchase_type: 'seat_pack', plan_id: seatPlanId, seat_count: seatQuantity }) };
       const res = await clickCreateTransaction(token, {
+        idempotency_key: seatAttempt.current.key,
         purchase_type: 'seat_pack',
         plan_id: seatPlanId,
         seat_count: seatQuantity,
@@ -212,7 +250,12 @@ export const TeacherOfficePage: React.FC = () => {
       setSeatTransactionId(res.transaction_id);
       setSeatStatus(null);
       setSeatPaymentUrl(res.payment_url);
-      setSeatStatus('pending');
+      setSeatStatus(res.status ?? 'pending');
+      if (res.status && ['paid', 'success', 'completed'].includes(res.status.toLowerCase()) && res.grant_completed !== true) {
+        setSeatPaymentUrl(null);
+        setSuccess(t('checkout.status.activationPending'));
+        return;
+      }
       if (res.payment_url) {
         const popup = window.open(res.payment_url, '_blank', 'noopener,noreferrer');
         if (!popup) {
@@ -222,31 +265,45 @@ export const TeacherOfficePage: React.FC = () => {
         }
       } else {
         setSeatStatus(res.status ?? 'paid');
+        if (res.grant_completed !== true) { setSuccess(t('checkout.status.activationPending')); return; }
+        completeCheckoutAttempt(seatAttempt.current.userId, seatAttempt.current.key);
+        setSeatTransactionId(null);
         await refreshAll();
         setSuccess(t('teacher.success.seatsAdded'));
       }
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.createSeat')));
     } finally {
+      purchasing.current = false;
       setLoading(false);
     }
   };
 
   const checkSeatPayment = async () => {
-    if (!seatTransactionId) return;
-    const token = await getValidToken();
-    if (!token) {
-      setError(t('teacher.error.signInContinue'));
-      navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
-      return;
-    }
+    if (!seatTransactionId || seatChecking.current) return;
+    seatChecking.current = true;
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
+      const token = await getValidToken();
+      if (!token) {
+        setError(t('teacher.error.signInContinue'));
+        navigate(`/auth?returnTo=${encodeURIComponent('/teacher')}`, { replace: true });
+        return;
+      }
       const res = await clickStatus(token, seatTransactionId);
       setSeatStatus(res.status);
-      if (['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase())) {
+      if (['failed', 'failure', 'canceled', 'cancelled', 'expired', 'rejected'].includes(res.status.trim().toLowerCase())) {
+        if (seatAttempt.current) completeCheckoutAttempt(seatAttempt.current.userId, seatAttempt.current.key);
+        setSeatTransactionId(null); setSeatPaymentUrl(null); return;
+      }
+      const paid = ['paid', 'success', 'completed'].includes(res.status.trim().toLowerCase());
+      if (paid && res.grant_completed !== true) {
+        setSeatPaymentUrl(null); setSuccess(t('checkout.status.activationPending')); return;
+      }
+      if (paid && res.grant_completed === true) {
+        if (seatAttempt.current) completeCheckoutAttempt(seatAttempt.current.userId, seatAttempt.current.key);
         setSeatTransactionId(null);
         setSeatPaymentUrl(null);
         setSeatStatus('paid');
@@ -256,6 +313,7 @@ export const TeacherOfficePage: React.FC = () => {
     } catch (err) {
       setError(toUserMessage(err, t('teacher.error.checkSeat')));
     } finally {
+      seatChecking.current = false;
       setLoading(false);
     }
   };
@@ -413,7 +471,7 @@ export const TeacherOfficePage: React.FC = () => {
               </label>
               <button
                 onClick={createToken}
-                disabled={loading || !experienceId || !selectedExperience?.price_amount}
+                disabled={loading || !!tokenTransactionId || !experienceId || !selectedExperience?.price_amount}
                 className="w-full px-4 py-3 rounded-full bg-gray-900 text-white font-semibold disabled:opacity-60"
               >
                 {loading ? t('teacher.button.creating') : tokenTransactionId ? t('teacher.button.awaitingPayment') : t('teacher.button.payGenerate')}
@@ -482,7 +540,7 @@ export const TeacherOfficePage: React.FC = () => {
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   onClick={createSeatPurchase}
-                  disabled={loading || !seatPlanId}
+                  disabled={loading || !!seatTransactionId || !seatPlanId}
                   className="px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-semibold disabled:opacity-60"
                 >
                   {seatTransactionId ? t('teacher.button.awaitingPayment') : t('teacher.button.buySeats')}

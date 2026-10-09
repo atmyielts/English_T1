@@ -981,34 +981,6 @@ const getCreditAvailable = async (
   return normalizeMoney(data);
 };
 
-const reserveCredit = async (
-  sb: any,
-  input: {
-    userId: string;
-    tenantId: string;
-    amount: number;
-    currency: string;
-    paymentId: string;
-    metadata?: Record<string, unknown>;
-  },
-): Promise<{ ok: boolean; details: any }> => {
-  if (!input.amount) return { ok: true, details: { ok: true, amount: 0 } };
-  const { data, error } = await sb.rpc("reserve_platform_credit", {
-    p_user_id: input.userId,
-    p_tenant_id: input.tenantId,
-    p_amount: input.amount,
-    p_currency: input.currency,
-    p_payment_id: input.paymentId,
-    p_metadata: input.metadata ?? {},
-  });
-  if (error) return { ok: false, details: error };
-  return { ok: Boolean((data as any)?.ok), details: data };
-};
-
-// ---------------------------------------------------------------------------
-// Payment grant types + helpers
-// ---------------------------------------------------------------------------
-
 type PaymentGrantRow = {
   id: string;
   provider?: string | null;
@@ -1034,6 +1006,7 @@ type PaymentGrantRow = {
   entitlement_terms?: Record<string, unknown> | null;
   metadata: Record<string, unknown> | null;
 };
+
 
 const syncAcademyPaymentFromPlatformPayment = async (
   sb: any,
@@ -1701,11 +1674,33 @@ export const handleClickWebhook = async (
   return respond(400, { error: -3, error_note: "Action not found" });
 };
 
+// Only customer purchase choices identify a request. Prices, catalogue snapshots,
+// credit balances, descriptions and referral tracking context do not: retries
+// must keep the original financial terms when those mutable values change.
+export const checkoutIntent = (body: CreateTransactionInput): Record<string, unknown> => {
+  const kind = normalizePurchaseType(body.purchase_type) || "plan";
+  const meta = isPlainObject(body.metadata) ? body.metadata : {};
+  const id = (raw: unknown) => String(raw ?? "").trim().toLowerCase() || null;
+  return {
+    purchase_type: kind, tenant_id: id(body.tenant_id), plan_id: id(body.plan_id), product_id: id(body.product_id),
+    experience_id: kind === "token_pack" ? id(body.experience_id) : null,
+    quantity: kind === "token_pack" ? body.quantity ?? null : kind === "seat_pack" ? body.seat_count ?? body.quantity ?? null : null,
+    expires_in_days: kind === "token_pack" ? body.expires_in_days ?? (body as any).expires_in ?? (body as any).days ?? null : null,
+    amount: kind === "center_wallet_topup" ? body.amount ?? null : null,
+    currency: kind === "center_wallet_topup" ? String(body.currency ?? "UZS").toUpperCase() : null,
+    coupon_code: normalizeCouponCode(body.coupon_code) || null,
+    apply_credit: body.apply_credit === true, credit_amount: body.credit_amount ?? null,
+    referral_code: normalizeReferralCode(body.referral_code) || null, referral_attribution_id: id(body.referral_attribution_id),
+    requested_tier: meta.requested_tier ?? meta.center_tier ?? null, billing_period: meta.billing_period ?? null,
+    tier_change_request_id: id(meta.tier_change_request_id),
+  };
+};
+
 // ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
 
-export const handleClickRequest = async (req: Request): Promise<Response> => {
+export const handleClickRequest = async (req: Request, clientOverride?: any): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -1714,7 +1709,7 @@ export const handleClickRequest = async (req: Request): Promise<Response> => {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const supabaseServiceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    const supabase = clientOverride ?? createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
@@ -1767,17 +1762,15 @@ export const handleClickRequest = async (req: Request): Promise<Response> => {
       req.method === "POST" &&
       url.pathname.endsWith("/create-transaction")
     ) {
-      const body = (await req.json()) as CreateTransactionInput;
-
-      const readiness = clickConfiguration();
-      if (!readiness.configured) {
-        return jsonResponse(503, {
-          error: "CLICK payments are not configured",
-          error_code: "click_not_configured",
-          missing_configuration: readiness.missing,
-          service_id_matches_production: readiness.serviceIdMatchesProduction,
-        });
+      let rawBody: unknown;
+      try { rawBody = await req.json(); } catch {
+        return jsonResponse(400, { error: "A valid checkout request is required" });
       }
+      if (!isPlainObject(rawBody) || (rawBody.metadata != null && !isPlainObject(rawBody.metadata))) {
+        return jsonResponse(400, { error: "A valid checkout request is required" });
+      }
+      if (JSON.stringify(rawBody).length > 32768) return jsonResponse(413, { error: "Checkout request is too large" });
+      const body = rawBody as CreateTransactionInput;
 
       const checkoutIdempotencyKey = normalizeCheckoutIdempotencyKey(
         body.idempotency_key,
@@ -1790,10 +1783,71 @@ export const handleClickRequest = async (req: Request): Promise<Response> => {
         return jsonResponse(400, { error: "Description is required" });
       }
 
+      const checkoutRequestKey = checkoutIdempotencyKey ?? crypto.randomUUID();
+      const intent = checkoutIntent(body);
+      const checkoutFailure = (error: any): Response => jsonResponse(error?.code === "42501" ? 403 : 503, {
+        error: error?.code === "42501" ? "This account can no longer create or reopen this checkout." : "Checkout is temporarily unavailable. Retry the same order.",
+        error_code: error?.code === "42501" ? "checkout_forbidden" : "checkout_unavailable",
+      });
+      const checkoutResponse = async (result: any): Promise<Response | null> => {
+        if (result?.ok === false && result.state === "conflict") return jsonResponse(409, {
+          error: "This checkout reference belongs to different purchase choices.", error_code: "checkout_idempotency_conflict",
+        });
+        if (result?.ok === false && result.state === "legacy_review") return jsonResponse(409, {
+          error: "This existing order needs review. Check its payment status before creating another order.",
+          error_code: "checkout_legacy_review", transaction_id: result.transaction_id,
+        });
+        if (result?.ok === true && result.state === "absent") return null;
+        const payment = result?.payment;
+        if (result?.ok !== true || !["created", "existing"].includes(result.state) || !payment?.id
+          || payment.user_id !== authedUserId || !["click", "platform_credit"].includes(payment.provider)) {
+          return jsonResponse(503, { error: "Checkout is temporarily unavailable. Retry the same order.", error_code: "checkout_unavailable" });
+        }
+        const paid = ["paid", "success", "completed"].includes(normalizePaymentStatus(payment.status));
+        let completed = !!payment.grant_completed_at;
+        if (paid && !completed) completed = !(await grantPaidPaymentOnce(supabase, payment, payment.id));
+        const payable = payment.provider === "click" && ["created", "pending"].includes(normalizePaymentStatus(payment.status));
+        if (payable && !clickConfiguration().configured) return jsonResponse(503, {
+          error: "This order is recorded; its payment link is temporarily unavailable. Retry the same order.",
+          error_code: "click_not_configured", transaction_id: payment.id, status: payment.status,
+        });
+        const transactionId = payment.provider === "platform_credit" ? payment.provider_transaction_id : payment.id;
+        const returnUrl = withPaymentReturnParams(normalizeRedirectUrl(body.redirect_url), transactionId, payment.purchase_type);
+        return jsonResponse(paid && !completed ? 202 : 200, {
+          transaction_id: transactionId, status: payment.status, grant_completed: completed,
+          payment_url: payable ? buildClickPaymentUrl(getClickServiceId(), getClickMerchantId(), payment.amount, payment.id, returnUrl) : null,
+          card_widget: payable ? buildCardWidgetConfig(getClickServiceId(), getClickMerchantId(), payment.amount, payment.id) : null,
+          amount: payment.amount, currency: payment.currency, original_amount: payment.original_amount,
+          discount_amount: payment.discount_amount, credit_amount: payment.credit_amount,
+          referral_discount_amount: payment.referral_discount_amount, final_amount: payment.amount,
+          coupon_code: payment.coupon_code, referral_code: payment.metadata?.referral_code ?? null,
+          plan_id: payment.plan_id, product_id: payment.product_id, idempotent_replay: result.state === "existing",
+          message: paid && !completed ? "Payment received; access activation is pending. Do not pay again." : undefined,
+        });
+      };
+      if (normalizePurchaseType(body.purchase_type) !== "academy_tuition") {
+        const { data: existing, error: replayError } = await supabase.rpc("payment_checkout_replay", {
+          p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
+        });
+        if (replayError) return checkoutFailure(replayError);
+        const response = await checkoutResponse(existing);
+        if (response) return response;
+      }
+
       // ── Academy tuition (student-initiated; contact-based auth) ───────────────
       // Students are academy *contacts*, not tenant members, so this branch
       // resolves access via academy_contacts instead of tenant_memberships.
       if (normalizePurchaseType(body.purchase_type) === "academy_tuition") {
+      const readiness = clickConfiguration();
+      if (!readiness.configured) {
+        return jsonResponse(503, {
+          error: "CLICK payments are not configured",
+          error_code: "click_not_configured",
+          missing_configuration: readiness.missing,
+          service_id_matches_production: readiness.serviceIdMatchesProduction,
+        });
+      }
+
         const meta = isPlainObject(body.metadata) ? body.metadata : {};
         const academyId = String(
           (meta as any).academy_id ?? body.tenant_id ?? "",
@@ -2320,351 +2374,60 @@ export const handleClickRequest = async (req: Request): Promise<Response> => {
         return jsonResponse(400, { error: "Invalid final amount" });
       }
 
-      // ── Full credit path (amount = 0) ────────────────────────────────────
-      if (amount === 0) {
-        const providerId = `credit-${crypto.randomUUID()}`;
-        const metadata: Record<string, unknown> = {
-          ...(body.metadata ?? {}),
-        };
-        metadata.purchase_type = purchaseKind;
-        metadata.referral_code = referralCheckout.referralCode ?? null;
-        metadata.credit_applied = creditAmount;
-        if (purchaseType === "token_pack") {
-          metadata.purchase_type = "token_pack";
-          metadata.experience_id = experience?.id ?? null;
-          metadata.quantity = quantity;
-          metadata.expires_in_days = expiresInDays ?? null;
-          metadata.unit_price_amount = experience?.price_amount ?? null;
-          metadata.unit_price_currency = experience?.price_currency ?? currency;
-        } else if (purchaseType === "seat_pack") {
-          metadata.purchase_type = "seat_pack";
-          metadata.seat_count = quantity;
-          metadata.seat_plan_id = plan?.id ?? null;
-        } else if (purchaseType === "center_wallet_topup") {
-          metadata.purchase_type = "center_wallet_topup";
-          metadata.wallet_topup_amount = originalAmount;
-          metadata.wallet_topup_currency = currency;
-          metadata.center_tenant_id = tenantId;
-        }
-
-        const planSnapshot = plan ? buildPlanSnapshot(plan) : {};
-        const entitlementTerms = plan ? buildEntitlementTerms(plan) : {};
-
-        const { data: insertedPayment, error: insertError } = await supabase
-          .from("payments")
-          .insert({
-            provider: "platform_credit",
-            provider_transaction_id: providerId,
-            amount: 0,
-            original_amount: originalAmount,
-            discount_amount: discountAmount,
-            credit_amount: creditAmount,
-            referral_discount_amount: referralDiscountAmount,
-            referral_attribution_id: referralCheckout.referralAttributionId,
-            purchase_type: purchaseKind,
-            coupon_code: couponCode,
-            coupon_id: couponId,
-            currency,
-            status: "paid",
-            user_id: authedUserId,
-            tenant_id: tenantId,
-            product_id: productId,
-            plan_id: planId,
-            plan_snapshot: planSnapshot,
-            entitlement_terms: entitlementTerms,
-            metadata,
-            provider_payload: {
-              provider: "platform_credit",
-              full_credit: true,
-            },
-          })
-          .select(
-            "id, provider_transaction_id, user_id, tenant_id, product_id, plan_id, status, granted_at, coupon_id, coupon_code, original_amount, discount_amount, amount, currency, credit_amount, referral_discount_amount, referral_attribution_id, purchase_type, plan_snapshot, entitlement_terms, metadata",
-          )
-          .maybeSingle();
-
-        if (insertError || !insertedPayment?.id) {
-          return jsonResponse(500, {
-            error: "Failed to record payment",
-            details: insertError,
-          });
-        }
-
-        const reserve = await reserveCredit(supabase, {
-          userId: authedUserId,
-          tenantId,
-          amount: creditAmount,
-          currency,
-          paymentId: insertedPayment.id,
-          metadata: {
-            provider: "platform_credit",
-            purchase_type: purchaseKind,
-          },
-        });
-        if (!reserve.ok) {
-          await supabase
-            .from("payments")
-            .update({
-              status: "failed",
-              grant_error: "Credit reserve failed",
-            })
-            .eq("id", insertedPayment.id);
-          return jsonResponse(400, {
-            error: "Credit reserve failed",
-            details: reserve.details,
-          });
-        }
-
-        const grantResponse = await grantPaidPaymentOnce(
-          supabase,
-          insertedPayment as PaymentGrantRow,
-          providerId,
-        );
-        return jsonResponse(grantResponse ? 202 : 200, {
-          payment_url: null,
-          transaction_id: providerId,
-          status: "paid",
-          grant_completed: !grantResponse,
-          message: grantResponse ? "Payment received; access activation is pending. Do not pay again." : undefined,
-          amount: 0,
-          currency,
-          original_amount: originalAmount,
-          discount_amount: discountAmount,
-          credit_amount: creditAmount,
-          referral_discount_amount: referralDiscountAmount,
-          final_amount: 0,
-          coupon_code: couponCode,
-          referral_code: referralCheckout.referralCode,
-          plan_id: planId,
-          product_id: productId,
+      if (amount > 0) {
+      const readiness = clickConfiguration();
+      if (!readiness.configured) {
+        return jsonResponse(503, {
+          error: "CLICK payments are not configured",
+          error_code: "click_not_configured",
+          missing_configuration: readiness.missing,
+          service_id_matches_production: readiness.serviceIdMatchesProduction,
         });
       }
 
-      // ── Click.uz payment path ─────────────────────────────────────────────
-      if (String(currency ?? "").toUpperCase() !== "UZS") {
-        return jsonResponse(400, {
-          error: "Click payments require UZS currency",
-        });
+        if (String(currency ?? "").toUpperCase() !== "UZS") {
+          return jsonResponse(400, { error: "Click payments require UZS currency" });
+        }
+        const amountGuard = assertClickAmountAllowed(amount);
+        if (amountGuard) return amountGuard;
       }
-      const amountGuard = assertClickAmountAllowed(amount);
-      if (amountGuard) return amountGuard;
 
-      const serviceId = getClickServiceId();
-      const merchantId = getClickMerchantId();
-      const redirectUrl = normalizeRedirectUrl(body.redirect_url);
-
-      const metadata: Record<string, unknown> = {
-        ...(body.metadata ?? {}),
-      };
+      const metadata: Record<string, unknown> = { ...(body.metadata ?? {}) };
       metadata.purchase_type = purchaseKind;
       metadata.referral_code = referralCheckout.referralCode ?? null;
       metadata.credit_applied = creditAmount;
-      metadata.click_service_id = serviceId;
-      metadata.click_merchant_id = merchantId;
-      metadata.checkout_idempotency_key = checkoutIdempotencyKey;
-
+      metadata.checkout_idempotency_key = checkoutRequestKey;
+      if (amount > 0) {
+        metadata.click_service_id = getClickServiceId();
+        metadata.click_merchant_id = getClickMerchantId();
+      }
       if (purchaseType === "token_pack") {
-        metadata.purchase_type = "token_pack";
         metadata.experience_id = experience?.id ?? null;
         metadata.quantity = quantity;
         metadata.expires_in_days = expiresInDays ?? null;
         metadata.unit_price_amount = experience?.price_amount ?? null;
         metadata.unit_price_currency = experience?.price_currency ?? currency;
       } else if (purchaseType === "seat_pack") {
-        metadata.purchase_type = "seat_pack";
         metadata.seat_count = quantity;
         metadata.seat_plan_id = plan?.id ?? null;
       } else if (purchaseType === "center_wallet_topup") {
-        metadata.purchase_type = "center_wallet_topup";
         metadata.wallet_topup_amount = originalAmount;
         metadata.wallet_topup_currency = currency;
         metadata.center_tenant_id = tenantId;
       }
-
-      const planSnapshot = plan ? buildPlanSnapshot(plan) : {};
-      const entitlementTerms = plan ? buildEntitlementTerms(plan) : {};
-
-      const loadExistingCheckout = async (): Promise<any | null> => {
-        if (!checkoutIdempotencyKey) return null;
-        const { data: existing, error: existingError } = await supabase
-          .from("payments")
-          .select(
-            "id, amount, currency, status, tenant_id, product_id, plan_id, purchase_type, original_amount, discount_amount, credit_amount, referral_discount_amount, coupon_code, metadata",
-          )
-          .eq("provider", "click")
-          .eq("user_id", authedUserId)
-          .eq("checkout_idempotency_key", checkoutIdempotencyKey)
-          .maybeSingle();
-        if (existingError) throw existingError;
-        return existing ?? null;
-      };
-
-      const existingCheckoutResponse = (existing: any): Response => {
-        if (
-          existing.tenant_id !== tenantId ||
-          existing.product_id !== productId ||
-          existing.plan_id !== planId ||
-          normalizeMoney(existing.amount) !== amount ||
-          normalizePurchaseType(existing.purchase_type) !== purchaseKind
-        ) {
-          return jsonResponse(409, {
-            error:
-              "Checkout idempotency key was already used for another order",
-            error_code: "checkout_idempotency_conflict",
-          });
-        }
-        const existingUrl = buildClickPaymentUrl(
-          serviceId,
-          merchantId,
-          normalizeMoney(existing.amount),
-          String(existing.id),
-          withPaymentReturnParams(
-            redirectUrl,
-            String(existing.id),
-            purchaseKind,
-          ),
-        );
-        return jsonResponse(200, {
-          payment_url: existingUrl,
-          card_widget: buildCardWidgetConfig(
-            serviceId,
-            merchantId,
-            normalizeMoney(existing.amount),
-            String(existing.id),
-          ),
-          transaction_id: existing.id,
-          status: existing.status,
-          amount: normalizeMoney(existing.amount),
-          currency: existing.currency,
-          original_amount: normalizeMoney(existing.original_amount),
-          discount_amount: normalizeMoney(existing.discount_amount),
-          credit_amount: normalizeMoney(existing.credit_amount),
-          referral_discount_amount: normalizeMoney(
-            existing.referral_discount_amount,
-          ),
-          final_amount: normalizeMoney(existing.amount),
-          coupon_code: existing.coupon_code ?? null,
-          referral_code: (existing.metadata as any)?.referral_code ?? null,
-          plan_id: existing.plan_id,
-          product_id: existing.product_id,
-          idempotent_replay: true,
-        });
-      };
-
-      const existingCheckout = await loadExistingCheckout();
-      if (existingCheckout) return existingCheckoutResponse(existingCheckout);
-
-      // Insert payment first — its UUID becomes merchant_trans_id for Click.
-      const paymentUuid = crypto.randomUUID();
-      const { data: insertedPayment, error: insertError } = await supabase
-        .from("payments")
-        .insert({
-          id: paymentUuid,
-          provider: "click",
-          provider_transaction_id: paymentUuid,
-          checkout_idempotency_key: checkoutIdempotencyKey,
-          amount,
-          original_amount: originalAmount,
-          discount_amount: discountAmount,
-          credit_amount: creditAmount,
-          referral_discount_amount: referralDiscountAmount,
-          referral_attribution_id: referralCheckout.referralAttributionId,
-          purchase_type: purchaseKind,
-          coupon_code: couponCode,
-          coupon_id: couponId,
-          currency,
-          status: "pending",
-          fiscalization_status: "not_configured",
-          user_id: authedUserId,
-          tenant_id: tenantId,
-          product_id: productId,
-          plan_id: planId,
-          plan_snapshot: planSnapshot,
-          entitlement_terms: entitlementTerms,
-          metadata,
-          provider_payload: { stage: "local_order_created" },
-        })
-        .select("id")
-        .maybeSingle();
-
-      if (insertError || !insertedPayment?.id) {
-        if ((insertError as any)?.code === "23505" && checkoutIdempotencyKey) {
-          const racedCheckout = await loadExistingCheckout();
-          if (racedCheckout) return existingCheckoutResponse(racedCheckout);
-        }
-        return jsonResponse(500, {
-          error: "Failed to record payment",
-          details: insertError,
-        });
-      }
-
-      if (creditAmount > 0) {
-        const reserve = await reserveCredit(supabase, {
-          userId: authedUserId,
-          tenantId,
-          amount: creditAmount,
-          currency,
-          paymentId: paymentUuid,
-          metadata: {
-            provider: "click",
-            purchase_type: purchaseKind,
-          },
-        });
-        if (!reserve.ok) {
-          await supabase
-            .from("payments")
-            .update({ grant_error: "Credit reserve failed" })
-            .eq("id", paymentUuid);
-          return jsonResponse(400, {
-            error: "Credit reserve failed",
-            details: reserve.details,
-          });
-        }
-      }
-
-      const paymentUrl = buildClickPaymentUrl(
-        serviceId,
-        merchantId,
-        amount,
-        paymentUuid,
-        withPaymentReturnParams(redirectUrl, paymentUuid, purchaseKind),
-      );
-
-      await supabase
-        .from("payments")
-        .update({
-          metadata: {
-            ...metadata,
-            click_payment_url: paymentUrl,
-          },
-          provider_payload: {
-            stage: "click_url_built",
-            payment_url: paymentUrl,
-          },
-        })
-        .eq("id", paymentUuid);
-
-      return jsonResponse(200, {
-        payment_url: paymentUrl,
-        card_widget: buildCardWidgetConfig(
-          serviceId,
-          merchantId,
-          amount,
-          paymentUuid,
-        ),
-        transaction_id: paymentUuid,
-        amount,
-        currency,
-        original_amount: originalAmount,
-        discount_amount: discountAmount,
-        credit_amount: creditAmount,
-        referral_discount_amount: referralDiscountAmount,
-        final_amount: amount,
-        coupon_code: couponCode,
-        referral_code: referralCheckout.referralCode,
-        plan_id: planId,
-        product_id: productId,
+      const { data: checkout, error: checkoutError } = await supabase.rpc("create_payment_checkout", {
+        p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
+        p_order: {
+          provider: amount === 0 ? "platform_credit" : "click", user_id: authedUserId, tenant_id: tenantId,
+          product_id: productId, plan_id: planId, amount, currency, purchase_type: purchaseKind,
+          original_amount: originalAmount, discount_amount: discountAmount, credit_amount: creditAmount,
+          referral_discount_amount: referralDiscountAmount, referral_attribution_id: referralCheckout.referralAttributionId,
+          coupon_id: couponId, coupon_code: couponCode,
+          plan_snapshot: plan ? buildPlanSnapshot(plan) : {}, entitlement_terms: plan ? buildEntitlementTerms(plan) : {}, metadata,
+        },
       });
+      if (checkoutError) return checkoutFailure(checkoutError);
+      return await checkoutResponse(checkout) ?? jsonResponse(503, { error: "Checkout is temporarily unavailable. Retry the same order.", error_code: "checkout_unavailable" });
     }
 
     // ── GET /click/status ─────────────────────────────────────────────────

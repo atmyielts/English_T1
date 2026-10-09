@@ -7,7 +7,8 @@
     "platform"
   ],
   "migrations": [
-    "20261009140000_payment_fulfillment_transaction.sql"
+    "20261009140000_payment_fulfillment_transaction.sql",
+    "20261009141000_payment_checkout_transaction.sql"
   ],
   "edgeFunctions": [
     "admin-payments",
@@ -27,13 +28,14 @@
     "secret:CLICK_SERVICE_ID",
     "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
     "migration:20261009140000_payment_fulfillment_transaction.sql",
+    "migration:20261009141000_payment_checkout_transaction.sql",
     "function:admin-payments",
     "function:click"
   ],
   "manualFollowUps": [
-    "Before merging: complete the credit checkout identity and Academy checkout snapshot boundaries, legacy reconciliation inventory, full exact-head CI and release review. This candidate is not production qualified.",
+    "Before merging: qualify stable per-intent keys and recovery for every live checkout caller (old unkeyed requests remain compatible but cannot replay automatically), complete Academy checkout snapshots, legacy reconciliation/account-retention inventory, full exact-head CI and release review. This draft is not production qualified.",
     "Archive this manifest in release/history/payment-fulfillment-transaction.json when the final release is reviewed. Freshly download Click and admin-payments; preserve every published dependency and gateway flag. Refuse baseline drift. Never publish unrelated repository modules.",
-    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing this reviewed additive migration and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
+    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these two reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
     "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payment-bundle>",
     "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-click-bundle>",
     "Preserve the existing CLICK_MERCHANT_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_MERCHANT_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
@@ -44,9 +46,9 @@
     "Enable the dormant payment-fulfillment-v1 cron flag only after both backend source proofs and owned hosted canaries pass. Verify pg_cron installation and an actual retry recovery. Retain reviewed original source for an isolated Edge rollback; disable the worker first. Leave additive schema in place."
   ],
   "verification": [
-    "24 native PostgreSQL concurrency, connection-loss, rollback, variant and permission cases (rerun the final source).",
-    "10 actual callback/parser/signature/RPC integration tests plus existing payment contracts.",
-    "4 mocked mobile/desktop checkout activation cases; full platform build.",
+    "37 native PostgreSQL fulfillment/checkout concurrency, connection-loss, rollback, credit, variant and permission cases.",
+    "20 actual callback and checkout handler tests plus existing payment contracts.",
+    "6 mocked mobile/desktop activation and lost-response refresh cases; platform production build.",
     "Exact reviewed-head full CI; matching Pages/provider source hashes and public reachability.",
     "Actual exclusive production canaries and legacy reconciliation review before activation."
   ],
