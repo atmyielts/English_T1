@@ -65,7 +65,7 @@ begin
     raise exception using errcode='22023',message='Legacy seat assignment requires reconciliation';
   end if;
   if seat.expires_at<=now() then raise exception using errcode='22023',message='Seat assignment window has ended'; end if;
-  if exists(select 1 from public.partner_vouchers where seat_license_id=p_seat and status='unused'
+  if exists(select 1 from public.partner_vouchers where seat_license_id=p_seat
     and id is distinct from p_voucher) then
     raise exception using errcode='23505',message='Seat is reserved for a voucher';
   end if;

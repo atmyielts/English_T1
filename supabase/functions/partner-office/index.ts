@@ -5,6 +5,7 @@ import { toDataURL } from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 import { partnerCheckoutPayload } from "./checkout.ts";
+import { hasProtectedCenterFinanceFields, issueVoucherBatch } from "./voucher-batches.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
@@ -2902,6 +2903,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "update_center_profile") {
+        if (hasProtectedCenterFinanceFields(body)) {
+          return json(403, { error: "Center financial configuration requires platform finance approval." });
+        }
         const current = await ensureCenterProfile(sb, tenantId, userId);
         const patch: Json = {};
         if ("display_name" in body) patch.display_name = String(body.display_name ?? current.display_name).trim().slice(0, 120) || current.display_name;
@@ -2921,10 +2925,6 @@ serve(async (req) => {
           patch.powered_by_schood = Boolean(body.powered_by_schood);
         }
         if ("branding" in body) patch.branding = isObject(body.branding) ? body.branding : {};
-        if ("commercial_model" in body && ["prepaid_wallet", "wholesale", "revenue_share", "hybrid"].includes(String(body.commercial_model))) {
-          patch.commercial_model = String(body.commercial_model);
-        }
-
         const { data, error } = await sb
           .from("partner_center_profiles")
           .update(patch)
@@ -2970,260 +2970,8 @@ serve(async (req) => {
       if (actionBody === "create_voucher_batch") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
-        const profile = await ensureCenterProfile(sb, tenantId, userId);
-        const capabilities = getCenterCapabilities(profile);
-        const accessKind = String(body.access_kind ?? "").trim();
-        if (!["mock_exam", "subscription", "seat"].includes(accessKind)) return json(400, { error: "Unsupported access_kind" });
-        const quantity = normalizeQuantity(body.quantity, 1000);
-        if (!quantity) return json(400, { error: "quantity must be between 1 and 1000" });
-        if (quantity > capabilities.max_voucher_batch_quantity) {
-          return json(403, {
-            error: `${capabilities.tier_label} centers can generate up to ${capabilities.max_voucher_batch_quantity} vouchers per batch.`,
-            error_code: "center_tier_limit_reached",
-            limit: capabilities.max_voucher_batch_quantity,
-            tier: capabilities.tier,
-          });
-        }
-        const prefix = normalizeCode(body.prefix ?? `SCH-${String(profile.slug ?? "CENTER").toUpperCase()}`);
-        const expiresAt = body.expires_at
-          ? new Date(String(body.expires_at)).toISOString()
-          : new Date(Date.now() + (normalizeDays(body.expires_in_days, 365) ?? 30) * 86400000).toISOString();
-        if (Date.parse(expiresAt) <= Date.now()) return json(400, { error: "expires_at must be in the future" });
-
-        let productId = String(body.product_id ?? "").trim() || null;
-        let experienceId = String(body.experience_id ?? "").trim() || null;
-        let planId = String(body.plan_id ?? "").trim() || null;
-        const requestedClassroomId = String(body.classroom_id ?? "").trim();
-        let classroomBinding: { id: string; academy_id: string; name: string } | null = null;
-        let unitPrice = 0;
-        let currency = "UZS";
-
-        if (requestedClassroomId) {
-          if (!isUuid(requestedClassroomId)) return json(400, { error: "classroom_id is invalid" });
-          const { data: classroom, error: classroomError } = await sb
-            .from("academy_classrooms")
-            .select("id, academy_id, name, is_active")
-            .eq("id", requestedClassroomId)
-            .eq("is_active", true)
-            .maybeSingle();
-          if (classroomError) return json(500, { error: "Failed to validate classroom", detail: classroomError.message });
-          if (!classroom?.id) return json(400, { error: "Classroom not found or inactive" });
-
-          const { data: academy, error: academyError } = await sb
-            .from("tenants")
-            .select("id")
-            .eq("id", classroom.academy_id)
-            .contains("metadata", { parent_center_id: tenantId, service_family: "academy" })
-            .maybeSingle();
-          if (academyError) return json(500, { error: "Failed to validate classroom academy", detail: academyError.message });
-          if (!academy?.id) return json(403, { error: "Classroom must belong to a center-owned academy" });
-
-          classroomBinding = {
-            id: String(classroom.id),
-            academy_id: String(classroom.academy_id),
-            name: String(classroom.name ?? "Classroom"),
-          };
-        }
-
-        if (accessKind === "mock_exam") {
-          if (!experienceId) return json(400, { error: "experience_id is required for mock vouchers" });
-          const { data: exp, error } = await sb
-            .from("experiences")
-            .select("id, product_id, is_active, name, price_amount, price_currency, metadata, products ( id, name, status, metadata )")
-            .eq("id", experienceId)
-            .maybeSingle();
-          if (error || !exp?.id || !exp.is_active) return json(400, { error: "Invalid experience_id" });
-          if (!isSellableMockExperience(exp)) return json(400, { error: "Mock test is not priced or ticket eligible" });
-          productId = exp.product_id;
-          currency = String(exp.price_currency ?? "UZS");
-          unitPrice = lookupWholesalePrice(profile, accessKind, experienceId, productId, Number(exp.price_amount ?? 0));
-        } else if (accessKind === "subscription") {
-          if (!planId) return json(400, { error: "plan_id is required for subscription vouchers" });
-          const { data: plan, error } = await sb
-            .from("plans")
-            .select("id, product_id, amount, currency, is_active")
-            .eq("id", planId)
-            .maybeSingle();
-          if (error || !plan?.id || !plan.is_active) return json(400, { error: "Invalid plan_id" });
-          productId = plan.product_id;
-          currency = String(plan.currency ?? "UZS");
-          unitPrice = lookupWholesalePrice(profile, accessKind, planId, productId, Number(plan.amount ?? 0));
-        } else {
-          if (!planId) return json(400, { error: "plan_id is required for seat vouchers" });
-          const { data: seatRows, error } = await sb
-            .from("seat_licenses")
-            .select("id, plan_id, product_id")
-            .eq("tenant_id", tenantId)
-            .eq("plan_id", planId)
-            .eq("status", "unassigned")
-            .order("created_at", { ascending: true })
-            .limit(quantity);
-          if (error) return json(500, { error: "Failed to load seats", detail: error.message });
-          if ((seatRows ?? []).length < quantity) return json(400, { error: "Not enough unassigned seats for this plan" });
-          productId = String((seatRows ?? [])[0]?.product_id ?? productId ?? "");
-          unitPrice = 0;
-        }
-
-        const sourceModel = String(body.source_model ?? profile.commercial_model ?? "prepaid_wallet");
-        const totalAmount = unitPrice * quantity;
-        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
-          const { data: available } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency });
-          if (Number(available ?? 0) < totalAmount) return json(400, { error: "Insufficient partner wallet balance" });
-        }
-
-        const batchCode = await buildBatchCode(sb, tenantId, prefix);
-        const { data: batch, error: batchError } = await sb
-          .from("partner_voucher_batches")
-          .insert({
-            tenant_id: tenantId,
-            batch_code: batchCode,
-            access_kind: accessKind,
-            product_id: productId,
-            experience_id: experienceId,
-            plan_id: planId,
-            classroom_id: classroomBinding?.id ?? null,
-            quantity,
-            expires_at: expiresAt,
-            prefix,
-            source_model: sourceModel === "prepaid_wallet" || sourceModel === "wholesale" || sourceModel === "revenue_share" ? sourceModel : "manual",
-            created_by: userId,
-            metadata: {
-              unit_price: unitPrice,
-              total_amount: totalAmount,
-              currency,
-              assigned_students: Array.isArray(body.assigned_students) ? body.assigned_students.length : 0,
-              classroom: classroomBinding,
-            },
-          })
-          .select("*")
-          .maybeSingle();
-        if (batchError || !batch?.id) return json(500, { error: "Failed to create voucher batch", detail: batchError?.message });
-
-        const assignedStudents = Array.isArray(body.assigned_students) ? body.assigned_students : [];
-        const vouchers = [];
-        if (accessKind === "mock_exam") {
-          for (let i = 0; i < quantity; i += 1) {
-            const code = await ensureUniqueVoucherCode(sb, prefix);
-            const { data: tokenRow, error: tokenError } = await sb
-              .from("exam_tokens")
-              .insert({
-                tenant_id: tenantId,
-                experience_id: experienceId,
-                token_code: code,
-                status: "active",
-                expires_at: expiresAt,
-                max_uses: 1,
-                uses_count: 0,
-                created_by: userId,
-                metadata: { source: "partner_voucher", batch_id: batch.id, classroom_id: classroomBinding?.id ?? null },
-              })
-              .select("id")
-              .maybeSingle();
-            if (tokenError || !tokenRow?.id) return json(500, { error: "Failed to create exam token", detail: tokenError?.message });
-            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-            vouchers.push({
-              tenant_id: tenantId,
-              batch_id: batch.id,
-              code,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: experienceId,
-              plan_id: null,
-              exam_token_id: tokenRow.id,
-              classroom_id: classroomBinding?.id ?? null,
-              status: "unused",
-              expires_at: expiresAt,
-              assigned_name: String(assigned.name ?? "").trim() || null,
-              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
-              assigned_phone: String(assigned.phone ?? "").trim() || null,
-              source_payment_id: null,
-              metadata: { batch_code: batchCode, classroom: classroomBinding },
-            });
-          }
-        } else {
-          let seatRows: any[] = [];
-          if (accessKind === "seat") {
-            const { data } = await sb
-              .from("seat_licenses")
-              .select("id")
-              .eq("tenant_id", tenantId)
-              .eq("plan_id", planId)
-              .eq("status", "unassigned")
-              .order("created_at", { ascending: true })
-              .limit(quantity);
-            seatRows = data ?? [];
-          }
-          for (let i = 0; i < quantity; i += 1) {
-            const code = await ensureUniqueVoucherCode(sb, prefix);
-            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-            vouchers.push({
-              tenant_id: tenantId,
-              batch_id: batch.id,
-              code,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: null,
-              plan_id: planId,
-              seat_license_id: accessKind === "seat" ? seatRows[i]?.id ?? null : null,
-              classroom_id: classroomBinding?.id ?? null,
-              status: "unused",
-              expires_at: expiresAt,
-              assigned_name: String(assigned.name ?? "").trim() || null,
-              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
-              assigned_phone: String(assigned.phone ?? "").trim() || null,
-              source_payment_id: null,
-              metadata: { batch_code: batchCode, classroom: classroomBinding },
-            });
-          }
-        }
-
-        const { data: insertedVouchers, error: voucherError } = await sb.from("partner_vouchers").insert(vouchers).select("*");
-        if (voucherError) return json(500, { error: "Failed to create vouchers", detail: voucherError.message });
-
-        const insertedRows = insertedVouchers ?? [];
-        for (let i = 0; i < Math.min(assignedStudents.length, insertedRows.length); i += 1) {
-          const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-          const voucher = insertedRows[i];
-          const fullName = String(assigned.name ?? assigned.full_name ?? "").trim();
-          const email = normalizeEmail(assigned.email);
-          const phone = String(assigned.phone ?? "").trim();
-          if (!fullName && !email && !phone) continue;
-          await upsertCenterStudent(sb, {
-            tenantId,
-            fullName: fullName || null,
-            email,
-            phone: phone || null,
-            voucherId: voucher?.id ?? null,
-            createdBy: userId,
-            metadata: {
-              invite_source: "voucher_batch_roster",
-              batch_id: batch.id,
-              voucher_code: voucher?.code ?? null,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: experienceId,
-              plan_id: planId,
-              classroom_id: classroomBinding?.id ?? null,
-              expires_at: expiresAt,
-            },
-          });
-        }
-
-        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
-          await sb.from("partner_wallet_ledger").insert({
-            tenant_id: tenantId,
-            user_id: userId,
-            entry_kind: "debit",
-            status: "posted",
-            amount: totalAmount,
-            currency,
-            voucher_batch_id: batch.id,
-            created_by: userId,
-            metadata: { access_kind: accessKind, quantity, unit_price: unitPrice },
-          });
-        }
-
-        return json(200, { batch, vouchers: insertedVouchers ?? [] });
+        const result = await issueVoucherBatch(sb, userId, tenantId, body);
+        return json(result.status, result.body);
       }
 
       if (actionBody === "export_voucher_sheet") {

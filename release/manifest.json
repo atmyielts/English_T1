@@ -12,7 +12,8 @@
     "20261009141000_payment_checkout_transaction.sql",
     "20261009142000_academy_purchase_transaction.sql",
     "20261009143000_center_tier_checkout_transaction.sql",
-    "20261009144000_seat_assignment_transaction.sql"
+    "20261009144000_seat_assignment_transaction.sql",
+    "20261009145000_voucher_issue_transaction.sql"
   ],
   "edgeFunctions": [
     "admin-payments",
@@ -38,6 +39,7 @@
     "migration:20261009142000_academy_purchase_transaction.sql",
     "migration:20261009143000_center_tier_checkout_transaction.sql",
     "migration:20261009144000_seat_assignment_transaction.sql",
+    "migration:20261009145000_voucher_issue_transaction.sql",
     "function:admin-payments",
     "function:click",
     "function:partner-office",
@@ -48,7 +50,7 @@
     "Before merging: qualify remaining live purchase consumers, seat/voucher claims, legacy reconciliation/account-retention inventory, full exact-head CI and release review. Platform, Academy and center/partner checkout/recovery have local tests. Old unkeyed HTTP requests remain compatible but cannot replay automatically. This draft is not production qualified.",
     "Archive this manifest in release/history/payment-fulfillment-transaction.json when the final release is reviewed. Freshly download Click, admin-payments and partner-office; preserve every published dependency and gateway flag. Refuse baseline drift. Never publish unrelated repository modules.",
     "Before applying the Academy migration, capture and review the installed apply_academy_payment(uuid,uuid) function definition and owner. The migration preserves its non-Click body behind a private invoker copy and retains the original public function owner/OID. Refuse ownership or source drift. Qualify account/contact retention before installation.",
-    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these five reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
+    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these six reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
     "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payment-bundle>",
     "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-click-bundle>",
     "Preserve the existing CLICK_MERCHANT_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_MERCHANT_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
@@ -58,6 +60,7 @@
     "Download deployed source and compare every expected file hash, verify gateway flags, qualify exclusive QA purchase/receipt/status flows and cleanup. Do not create customer charges. Test the published Node crypto MD5 path with a signed owned callback before routing a customer checkout through this version.",
     "supabase functions deploy partner-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-partner-office-bundle>; publish after Click. Older office tier requests remain compatible only with exact tenant/payer/catalogue terms. Never publish unrelated provider source.",
     "supabase functions deploy teacher-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-teacher-office-bundle>; capture current source/gateway flags, replace only assignment and its exact adapter, preserve published score-reporting behavior. New claims require new committed financial evidence; classify every legacy seat before installation. Hosted old-client seat assignment and owned retry canaries remain required.",
+    "Before voucher rollout, qualify operator-approved commercial models, all direct ledger writers, legacy negative balances, credit reversals and refund/void/account-retention compatibility. Hybrid agreements deliberately require review rather than inferring financing. Protect captured inventory identity. Finish original-key recovery UI and atomic redemption/candidate launch; do not release issuance alone into older consumers. Existing unkeyed callers remain compatible but cannot recover the original batch automatically.",
     "Enable the dormant payment-fulfillment-v1 cron flag only after both backend source proofs and owned hosted canaries pass. Verify pg_cron installation and an actual retry recovery. Retain reviewed original source for an isolated Edge rollback; disable the worker first. Leave additive schema in place."
   ],
   "verification": [
@@ -80,7 +83,7 @@
     "reason": "Current published partner-office drops retry keys; shipping the recovery UI first would allow a retry to create another order.",
     "phases": [
       "Create a reviewed backend-only PR from this candidate; its tracked Pages run keeps the existing frontend sources.",
-      "After that matching Pages run, apply only the five reviewed additive migrations and publish source-preserving admin-payments, Click, then partner-office and Teacher Office; qualify old-client compatibility and owned hosted canaries.",
+      "After that matching Pages run, apply only the six reviewed additive migrations and publish source-preserving admin-payments, Click, then partner-office and Teacher Office; qualify old-client compatibility and owned hosted canaries.",
       "Create and qualify a separate frontend follow-up PR for the Platform/Academy recovery UI; its tracked Pages run ships only after retry-aware backend proof.",
       "Enable the fulfillment worker only after published source, signed callback, grant/receipt and retry recovery proofs."
     ]

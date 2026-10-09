@@ -3289,7 +3289,7 @@ export const partnerOfficeStatements = (accessToken: string, tenantId?: string |
 
 export const partnerOfficeUpdateCenter = (
   accessToken: string,
-  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding' | 'commercial_model'>> & {
+  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding'>> & {
     tenant_id?: string | null;
     center_office?: boolean;
   },
@@ -3397,6 +3397,7 @@ export const partnerOfficeCreateVoucherBatch = (
   accessToken: string,
   body: {
     tenant_id?: string | null;
+    idempotency_key?: string | null;
     access_kind: 'mock_exam' | 'subscription' | 'seat';
     experience_id?: string | null;
     plan_id?: string | null;

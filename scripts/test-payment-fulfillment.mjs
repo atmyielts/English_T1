@@ -14,6 +14,7 @@ const checkoutMigration=read('20261009141000_payment_checkout_transaction.sql');
 const academyMigration=read('20261009142000_academy_purchase_transaction.sql');
 const centerMigration=read('20261009143000_center_tier_checkout_transaction.sql');
 const seatMigration=read('20261009144000_seat_assignment_transaction.sql');
+const voucherIssueMigration=read('20261009145000_voucher_issue_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
@@ -122,6 +123,14 @@ try {
   await sql(academyMigration);
   await sql(centerMigration);
   await sql(seatMigration);
+  await sql(`alter table products add column status text not null default 'active',add column metadata jsonb not null default '{}';
+    alter table experiences add column is_active boolean not null default true,add column product_id uuid references products(id),
+      add column price_amount integer default 1000,add column price_currency text default 'UZS',add column name text default 'Owned mock',add column metadata jsonb default '{}';
+    ${table('20260507170000_rich_partner_centers.sql','partner_center_students')}
+    create unique index partner_center_students_user_unique on partner_center_students(tenant_id,user_id) where user_id is not null;
+    create unique index partner_center_students_email_unique on partner_center_students(tenant_id,lower(email)) where email is not null and length(email)>0;`);
+  await sql(read('20260606130000_partner_voucher_classroom_binding.sql'));
+  await sql(voucherIssueMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -755,6 +764,184 @@ try {
       await assert.rejects(sql(`set role ${role};select assign_purchased_seat(${q(user)},${q(tenant)},${q(randomUUID())},'owned@example.invalid');`),/permission denied/);
     }
   });
+
+  async function voucherFixture(quantity=2,balance=10000) {
+    const ctx=await seatFixture(quantity);
+    const mock=randomUUID();
+    await sql(`insert into partner_center_profiles(tenant_id,display_name,slug,status,package_tier) values(${q(ctx.scope)},'Owned voucher center',${q('voucher-'+ctx.scope)},'active','starter');
+      update plans set metadata=${json({included_product_ids:[bundle],limits:{attempts:10}})} where id=${q(ctx.seatPlan)};
+      insert into experiences(id,product_id,price_amount,metadata) values(${q(mock)},${q(product)},1000,'{"ticketing":{"eligible":true,"mode":"single_sitting"}}');`);
+    if(balance>0)await sql(`insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'credit',${balance});`);
+    return {...ctx,mock,key:randomUUID()};
+  }
+  const voucherRequest=(ctx,kind='subscription',extra={})=>({access_kind:kind,quantity:2,expires_in_days:30,prefix:'OWNED',
+    ...(kind==='mock_exam'?{experience_id:ctx.mock}:{plan_id:ctx.seatPlan}),...extra});
+  const issueVouchers=(ctx,key=ctx.key,request=voucherRequest(ctx))=>sql(`set role service_role;select issue_purchased_vouchers(${q(ctx.actor)},${q(ctx.scope)},${key===null?'null':q(key)},${json(request)});`).then(JSON.parse);
+  const voucherCount=ctx=>sql(`select count(*) from partner_vouchers where tenant_id=${q(ctx.scope)};`);
+  const voucherDebits=ctx=>sql(`select count(*) from partner_wallet_ledger where tenant_id=${q(ctx.scope)} and entry_kind='debit';`);
+  await check('voucher issue sixteen concurrent retries commit one batch roster inventory and wallet debit',async()=>{
+    const ctx=await voucherFixture(),request=voucherRequest(ctx,'subscription',{assigned_students:[{name:'Owned learner',email:ctx.email}]});
+    const replies=await Promise.all(Array.from({length:16},()=>issueVouchers(ctx,ctx.key,request)));
+    assert.equal(replies.filter(r=>!r.deduped).length,1);assert.equal(new Set(replies.map(r=>r.batch.id)).size,1);
+    assert.equal(await voucherCount(ctx),'2');assert.equal(await voucherDebits(ctx),'1');
+    assert.equal(await sql(`select count(*) from voucher_issue_receipts where tenant_id=${q(ctx.scope)};`),'1');
+    assert.equal(await sql(`select count(*) from partner_center_students where tenant_id=${q(ctx.scope)};`),'1');
+    assert.equal(await sql(`select amount from partner_wallet_ledger where tenant_id=${q(ctx.scope)} and entry_kind='debit';`),'2000');
+  });
+  await check('voucher issue original key retains funded terms and inventory after catalogue and pricing changes',async()=>{
+    const ctx=await voucherFixture();const original=await issueVouchers(ctx);
+    await sql(`update plans set amount=9999,duration_days=999,is_active=false,metadata='{}' where id=${q(ctx.seatPlan)};
+      update partner_center_profiles set wholesale_pricing='{"subscription":9999}' where tenant_id=${q(ctx.scope)};`);
+    const replay=await issueVouchers(ctx);assert.equal(replay.deduped,true);assert.equal(replay.batch.id,original.batch.id);
+    assert.deepEqual(replay.vouchers,original.vouchers);assert.equal(replay.batch.metadata.purchased_terms.duration_days,30);
+    assert.equal(replay.batch.metadata.purchased_terms.limits.attempts,10);assert.equal(await voucherDebits(ctx),'1');
+    await assert.rejects(issueVouchers(ctx,ctx.key,voucherRequest(ctx,'subscription',{quantity:1})),/another intent/);
+  });
+  await check('voucher issue different keys cannot overspend a wallet or leave an unfunded losing batch',async()=>{
+    const ctx=await voucherFixture(2,2000);const replies=await Promise.allSettled([issueVouchers(ctx),issueVouchers(ctx,randomUUID())]);
+    assert.equal(replies.filter(r=>r.status==='fulfilled').length,1);assert.equal(await voucherCount(ctx),'2');assert.equal(await voucherDebits(ctx),'1');
+    assert.equal(await sql(`select count(*) from partner_voucher_batches where tenant_id=${q(ctx.scope)};`),'1');
+  });
+  await check('voucher issue late receipt failure rolls back roster batch tokens and debit together',async()=>{
+    const ctx=await voucherFixture(),request=voucherRequest(ctx,'mock_exam',{assigned_students:[{email:ctx.email}]});
+    await sql(`create function reject_voucher_issue() returns trigger language plpgsql as $$begin raise exception 'owned late voucher receipt failure';end;$$;create trigger reject_voucher_issue before insert on voucher_issue_receipts for each row execute function reject_voucher_issue();`);
+    try {await assert.rejects(issueVouchers(ctx,ctx.key,request),/owned late/);}finally{await sql('drop trigger reject_voucher_issue on voucher_issue_receipts;drop function reject_voucher_issue();');}
+    assert.equal(await voucherCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
+    assert.equal(await sql(`select count(*) from exam_tokens where tenant_id=${q(ctx.scope)};`),'0');assert.equal(await sql(`select count(*) from partner_center_students where tenant_id=${q(ctx.scope)};`),'0');
+    assert.equal((await issueVouchers(ctx,ctx.key,request)).vouchers.length,2);
+  });
+  await check('voucher issue connection loss rolls back funded inventory and same key resumes once',async()=>{
+    const ctx=await voucherFixture();await sql(`create function delay_voucher_issue() returns trigger language plpgsql as $$begin perform pg_advisory_xact_lock(434380);perform pg_sleep(10);return new;end;$$;create trigger delay_voucher_issue before insert on voucher_issue_receipts for each row execute function delay_voucher_issue();`);
+    const pending=issueVouchers(ctx).then(()=>null,error=>error);
+    try {await barrier(434380);await sql("select pg_terminate_backend(pid) from pg_stat_activity where pid<>pg_backend_pid() and query like '%select issue_purchased_vouchers(%' and state='active';");}
+    finally{await pending;await sql('drop trigger delay_voucher_issue on voucher_issue_receipts;drop function delay_voucher_issue();');}
+    assert.equal(await voucherCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
+    assert.equal((await issueVouchers(ctx)).deduped,false);assert.equal((await issueVouchers(ctx)).deduped,true);assert.equal(await voucherDebits(ctx),'1');
+  });
+  await check('voucher issue rejects caller manual funding and scoped commercial overrides before inventory',async()=>{
+    const ctx=await voucherFixture();
+    for(const source_model of ['manual','wholesale','revenue_share','hybrid'])await assert.rejects(issueVouchers(ctx,randomUUID(),voucherRequest(ctx,'subscription',{source_model})),/funding cannot override/);
+    assert.equal(await voucherCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
+    await sql(`update partner_center_profiles set commercial_model='hybrid' where tenant_id=${q(ctx.scope)};`);
+    await assert.rejects(issueVouchers(ctx),/agreement requires review/);assert.equal(await voucherCount(ctx),'0');
+  });
+  await check('voucher issue configured wholesale and revenue share preserve agreements without fabricated wallet debits',async()=>{
+    for(const model of ['wholesale','revenue_share']) {
+      const ctx=await voucherFixture(2,0);await sql(`update partner_center_profiles set commercial_model=${q(model)},wholesale_pricing=${json({['subscription:'+ctx.seatPlan]:500})} where tenant_id=${q(ctx.scope)};`);
+      const result=await issueVouchers(ctx);assert.equal(result.batch.source_model,model);assert.equal(result.batch.metadata.total_amount,1000);assert.equal(await voucherDebits(ctx),'0');
+      assert.equal(await sql(`select funding->>'commercial_model' from voucher_issue_receipts where batch_id=${q(result.batch.id)};`),model);
+    }
+  });
+  await check('voucher issue current finance authority applies to new inventory and committed replay',async()=>{
+    for(const change of ['teacher','revoked','suspended','paused']) {
+      const ctx=await voucherFixture();await issueVouchers(ctx);
+      if(change==='teacher')await sql(`update tenant_memberships set role='teacher' where user_id=${q(ctx.actor)};`);
+      if(change==='revoked')await sql(`update tenant_memberships set status='inactive' where user_id=${q(ctx.actor)};`);
+      if(change==='suspended')await sql(`update users set is_active=false where id=${q(ctx.actor)};`);
+      if(change==='paused')await sql(`update partner_center_profiles set status='paused' where tenant_id=${q(ctx.scope)};`);
+      await assert.rejects(issueVouchers(ctx));await assert.rejects(issueVouchers(ctx,randomUUID()));assert.equal(await voucherCount(ctx),'2');
+    }
+  });
+  await check('voucher issue validates quantity roster pricing access terms and currency before funding',async()=>{
+    for(const invalid of ['quantity','roster','price','limits','duration','currency','product','overflow','expiry']) {
+      const ctx=await voucherFixture();let request=voucherRequest(ctx);
+      if(invalid==='quantity')request.quantity=51;
+      if(invalid==='roster')request.assigned_students=[{email:42}];
+      if(invalid==='price')await sql(`update partner_center_profiles set wholesale_pricing='{"subscription":null}' where tenant_id=${q(ctx.scope)};`);
+      if(invalid==='limits')await sql(`update plans set metadata='{"limits":{"attempts":true}}' where id=${q(ctx.seatPlan)};`);
+      if(invalid==='duration')await sql(`update plans set duration_days=0 where id=${q(ctx.seatPlan)};`);
+      if(invalid==='currency')await sql(`update plans set currency='ZZZZ' where id=${q(ctx.seatPlan)};`);
+      if(invalid==='product')await sql(`update products set status='disabled' where id=${q(product)};`);
+      if(invalid==='overflow')await sql(`update plans set amount=2000000000 where id=${q(ctx.seatPlan)};`);
+      if(invalid==='expiry')request.expires_at='infinity';
+      await assert.rejects(issueVouchers(ctx,ctx.key,request));assert.equal(await voucherCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
+      if(invalid==='product')await sql(`update products set status='active' where id=${q(product)};`);
+    }
+  });
+  await check('voucher issue mock inventory binds one-use tokens and captured experience without partial batches',async()=>{
+    const ctx=await voucherFixture();const issued=await issueVouchers(ctx,ctx.key,voucherRequest(ctx,'mock_exam'));
+    assert.equal(issued.vouchers.length,2);assert.equal(new Set(issued.vouchers.map(v=>v.code)).size,2);
+    assert.equal(await sql(`select count(*) from partner_vouchers v join exam_tokens t on t.id=v.exam_token_id where v.tenant_id=${q(ctx.scope)} and t.token_code=v.code and t.tenant_id=v.tenant_id and t.experience_id=v.experience_id and t.max_uses=1 and t.uses_count=0;`),'2');
+    await sql(`update experiences set metadata='{}' where id=${q(ctx.mock)};`);await assert.rejects(issueVouchers(ctx,randomUUID(),voucherRequest(ctx,'mock_exam')),/ticket eligible/);
+  });
+  await check('voucher issue competing batches reserve a purchased seat exactly once and block direct assignment',async()=>{
+    const ctx=await voucherFixture(1),request=voucherRequest(ctx,'seat',{quantity:1});
+    const results=await Promise.allSettled([issueVouchers(ctx,ctx.key,request),issueVouchers(ctx,randomUUID(),request)]);
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(await voucherCount(ctx),'1');assert.equal(await voucherDebits(ctx),'0');
+    assert.equal(await sql(`select count(*) from voucher_seat_reservations where tenant_id=${q(ctx.scope)};`),'1');
+    await assert.rejects(assignSeat(ctx),/reserved for a voucher/);assert.equal(await seatGrants(ctx),'0');
+    const winner=results.find(r=>r.status==='fulfilled').value;assert.deepEqual(winner.vouchers[0].metadata.purchased_terms.included_product_ids,[bundle]);
+  });
+  await check('voucher issue insufficient inventory and foreign classrooms leave no reservation or batch',async()=>{
+    const ctx=await voucherFixture(1);await assert.rejects(issueVouchers(ctx,ctx.key,voucherRequest(ctx,'seat')),/inventory is unavailable/);
+    await assert.rejects(issueVouchers(ctx,ctx.key,voucherRequest(ctx,'subscription',{classroom_id:randomUUID()})),/Classroom is outside/);
+    assert.equal(await voucherCount(ctx),'0');assert.equal(await sql(`select count(*) from voucher_seat_reservations where tenant_id=${q(ctx.scope)};`),'0');
+  });
+
+  await check('voucher issue financial inventory and debit identities stay immutable while unpurchased legacy rows can be removed',async()=>{
+    const ctx=await voucherFixture();const issued=await issueVouchers(ctx);
+    for(const mutation of [`delete from partner_voucher_batches where id=${q(issued.batch.id)}`,
+      `update partner_voucher_batches set metadata='{}' where id=${q(issued.batch.id)}`,
+      `update partner_vouchers set expires_at=now()+interval '999 days' where batch_id=${q(issued.batch.id)}`,
+      `update partner_vouchers set plan_id=null where batch_id=${q(issued.batch.id)}`,
+      `delete from partner_vouchers where batch_id=${q(issued.batch.id)}`,
+      `update partner_wallet_ledger set amount=1 where voucher_batch_id=${q(issued.batch.id)}`,
+      `delete from partner_wallet_ledger where voucher_batch_id=${q(issued.batch.id)}`])await assert.rejects(sql(mutation),/immutable|retained/);
+    await assert.rejects(sql(`delete from plans where id=${q(ctx.seatPlan)};`),/immutable|retained/);
+    const legacy=randomUUID();await sql(`insert into partner_voucher_batches(id,tenant_id,batch_code,access_kind,quantity,expires_at) values(${q(legacy)},${q(ctx.scope)},${q('LEGACY-'+legacy)},'subscription',1,now()+interval '1 day');delete from partner_voucher_batches where id=${q(legacy)};`);
+    assert.equal(await sql(`select count(*) from partner_voucher_batches where id=${q(legacy)};`),'0');
+  });
+  await check('voucher wallet guard serializes direct ledger writers and rejects unfunded losing debits',async()=>{
+    const ctx=await voucherFixture(2,2000);
+    const outcomes=await Promise.allSettled(Array.from({length:8},()=>sql(`set role service_role;insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'debit',1000);`)));
+    assert.equal(outcomes.filter(r=>r.status==='fulfilled').length,2);assert.equal(await voucherDebits(ctx),'2');
+    assert.equal(await sql(`select sum(case when entry_kind='credit' then amount else -amount end) from partner_wallet_ledger where tenant_id=${q(ctx.scope)};`),'0');
+  });
+  await check('voucher wallet guard coordinates new batches with legacy direct debits on one balance',async()=>{
+    const ctx=await voucherFixture(2,2000);
+    const results=await Promise.allSettled([issueVouchers(ctx),sql(`set role service_role;insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'debit',1500);`)]);
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(await voucherDebits(ctx),'1');
+    assert.equal(await voucherCount(ctx),results[0].status==='fulfilled'?'2':'0');
+  });
+  await check('voucher wallet guard accounts for reservation status currency scope and credit reversals',async()=>{
+    const ctx=await voucherFixture(2,2000),debit=randomUUID();
+    await sql(`insert into partner_wallet_ledger(id,tenant_id,entry_kind,status,amount,currency) values(${q(debit)},${q(ctx.scope)},'debit','reserved',1500,'uzs');update partner_wallet_ledger set status='posted' where id=${q(debit)};`);
+    await assert.rejects(sql(`update partner_wallet_ledger set status='void' where tenant_id=${q(ctx.scope)} and entry_kind='credit';`),/exceeds available/);
+    await assert.rejects(sql(`delete from partner_wallet_ledger where tenant_id=${q(ctx.scope)} and entry_kind='credit';`),/exceeds available/);
+    await assert.rejects(sql(`update partner_wallet_ledger set currency='USD' where id=${q(debit)};`),/exceeds available/);
+    const target=randomUUID();await sql(`insert into tenants(id) values(${q(target)});`);
+    await assert.rejects(sql(`update partner_wallet_ledger set tenant_id=${q(target)} where id=${q(debit)};`),/exceeds available/);
+    await sql(`insert into partner_wallet_ledger(tenant_id,entry_kind,amount,currency) values(${q(target)},'credit',2000,'UZS');update partner_wallet_ledger set tenant_id=${q(target)} where id=${q(debit)};`);
+    assert.equal(await sql(`select tenant_id from partner_wallet_ledger where id=${q(debit)};`),target);
+  });
+  await check('voucher wallet guard permits debt recovery credits but refuses making historical debt worse',async()=>{
+    const ctx=await voucherFixture(2,0),debit=randomUUID();
+    await sql(`alter table partner_wallet_ledger disable trigger partner_wallet_balance_guard;insert into partner_wallet_ledger(id,tenant_id,entry_kind,amount) values(${q(debit)},${q(ctx.scope)},'debit',1000);alter table partner_wallet_ledger enable trigger partner_wallet_balance_guard;`);
+    await sql(`insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'credit',500);`);
+    await assert.rejects(sql(`insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'debit',1);`),/exceeds available/);
+    await sql(`insert into partner_wallet_ledger(tenant_id,entry_kind,amount) values(${q(ctx.scope)},'credit',2500);`);
+    assert.equal((await issueVouchers(ctx)).ok,true);
+  });
+  await check('voucher issue expired or void inventory never silently releases an immutable seat reservation',async()=>{
+    for(const status of ['expired','void']) {
+      const ctx=await voucherFixture(1);const issued=await issueVouchers(ctx,ctx.key,voucherRequest(ctx,'seat',{quantity:1}));
+      await sql(`update partner_vouchers set status=${q(status)} where id=${q(issued.vouchers[0].id)};`);
+      await assert.rejects(assignSeat(ctx),/reserved for a voucher/);
+      await assert.rejects(issueVouchers(ctx,randomUUID(),voucherRequest(ctx,'seat',{quantity:1})),/inventory is unavailable/);
+      assert.equal(await sql(`select count(*) from voucher_seat_reservations where tenant_id=${q(ctx.scope)};`),'1');
+    }
+  });
+
+  for(const role of ['anon','authenticated','service_role'])await check(role+' cannot rewrite voucher issue receipts reservations or invoke private term validation',async()=>{
+    await assert.rejects(sql(`set role ${role};update voucher_issue_receipts set funding='{}';`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};delete from voucher_seat_reservations;`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select validate_voucher_access_terms('{}',${q(product)},${q(plan)});`),/permission denied/);
+    if(role!=='service_role') {
+      for(const table of ['partner_center_profiles','partner_wallet_ledger','partner_voucher_batches','partner_vouchers'])await assert.rejects(sql(`set role ${role};delete from ${table};`),/permission denied/);
+      await assert.rejects(sql(`set role ${role};select issue_purchased_vouchers(${q(user)},${q(tenant)},${q(randomUUID())},'{}');`),/permission denied/);
+    }
+  });
+
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{
     const id=await payment({status:'pending'});await sql('update payments set status=\'paid\' where id='+q(id)+';');assert.equal((await job(id)).state,'pending');
     // Other deliberate invalid fixtures remain in retry with future backoff.

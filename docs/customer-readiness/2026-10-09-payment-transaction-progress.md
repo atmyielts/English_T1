@@ -183,3 +183,54 @@ in the payment suite. A final focused native retention check passed after correc
 the BEFORE DELETE return value for unpurchased seats. Its scope is recorded
 separately; exact final-head CI still must exercise the complete final tree.
 See `2026-10-09-seat-assignment-local.json` for proof boundaries and source hashes.
+
+## Voucher issuance and wallet admission extension (local candidate)
+
+All three issuance kinds now execute one authenticated service command: subscription
+vouchers, paid mock tokens and purchased-seat vouchers. Batch inventory, roster
+attachment, immutable captured access/funding terms, seat reservations and wallet
+debit commit with one append-only purchase receipt. Concurrent requests using the
+same actor/key return the same batch. Changed choices conflict. Replay preserves
+original prices, limits and durations after catalogue edits. Seat selection and
+reservation use the same locked rows; expired/void vouchers require explicit
+reconciliation rather than silently freeing their financially reserved seats.
+
+Funding derives from the configured center agreement and server catalogue/wholesale
+prices. Caller-injected manual or different commercial models cannot bypass payment.
+Center self-service profile edits cannot change agreements, prices, wallet settings
+or tier/status. Direct browser mutations of financial profiles, ledgers and voucher
+inventory are revoked, while scoped reads remain. Configured wholesale and revenue
+share modes remain captured agreements; their full fiscal settlement is still open.
+Hybrid requires a reviewed funding policy rather than an invented manual fallback.
+
+A wallet trigger locks affected tenant scopes and checks the signed change of every
+ledger writer, including legacy direct server writes. Concurrent direct debits and
+new voucher batches cannot overspend the same available funds. Reservation/posting,
+currency/scope moves and credit reversals are checked. Positive credits may reduce
+historical debt; additional debits cannot worsen it. Captured batch/voucher/debit
+identities cannot be repriced, reassigned or removed. Legacy unpurchased row deletion
+remains available. Refund, void, deletion and all-provider reconciliation workflows
+still need qualification before this trigger is installed in production.
+
+The actual Partner Office adapter calls one SQL command and excludes caller prices,
+purchased terms and identities. Its seven Deno cases include invalid inputs, private
+errors, malformed receipts, replay and the actual protected-profile-field guard.
+The full entrypoint and an isolated source candidate retaining the captured published
+media helper typecheck. The Platform changes in this extension are API types only;
+its typecheck passes. This does not prove the voucher creation/recovery screen.
+
+CI37961458581 passed at 5fa1ff0d571a297d19300b9a00060f757c1d91f1 for the
+previous seat extension. It does not qualify the later voucher issuance changes.
+Original-key voucher UI recovery, removal of the misleading commercial-model picker,
+atomic subscription/seat redemption, mock candidate launch and enrollment, legacy
+agreement/seat classification, final exact-head CI/review and owned hosted canaries
+remain required. Unkeyed old issuance callers remain compatible but cannot replay
+the original batch automatically. No production mutation or customer charge occurred.
+The combined draft must still split reviewed backend and frontend release PRs.
+
+Final affected payment suite passed with 105 native PostgreSQL cases, 43 Deno
+cases and 26 mocked browser cases. This full run includes the final seat retention
+correction and voucher reservation guard. All owned database containers were
+removed. See `2026-10-09-voucher-issuance-local.json` for source hashes, the
+retained published dependency and verification boundaries. Final-head CI remains
+pending for this extension; broader customer readiness is not established.
