@@ -2562,5 +2562,10 @@
   "Your session expired. Please sign in again.": "Your session expired. Please sign in again.",
   "Your teacher has published the plan. Specific goals will appear here when they are added.": "Your teacher has published the plan. Specific goals will appear here when they are added.",
   "Your teacher will complete this interview and record the evidence. Follow the instructions from your center.": "Your teacher will complete this interview and record the evidence. Follow the instructions from your center.",
-  "Your teaching day": "Your teaching day"
+  "Your teaching day": "Your teaching day",
+  "Payment confirmed. Purchased access is active.": "Payment confirmed. Purchased access is active.",
+  "Payment received. Access is still being activated. Do not pay again.": "Payment received. Access is still being activated. Do not pay again.",
+  "Activation pending": "Activation pending",
+  "Pay with Click": "Pay with Click",
+  "Redirecting...": "Redirecting..."
 }

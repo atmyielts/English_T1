@@ -1,4 +1,4 @@
-import { checkoutAttempt, completeCheckoutAttempt } from '../lib/checkoutAttempt';
+import { checkoutAttempt, completeCheckoutAttempt } from '../../../../packages/checkout-session/attempt';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';

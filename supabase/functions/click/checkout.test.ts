@@ -21,6 +21,7 @@ async function scenario(test:(ctx:any)=>Promise<void>) {
       if(name==="fulfill_paid_payment")return {data:ctx.fulfillment,error:null};
       if(name==="platform_credit_available")return {data:ctx.balance??1000,error:null};
       if(name==="create_payment_checkout")return {data:ctx.created,error:ctx.createError??null};
+      if(name==="create_academy_payment_checkout")return {data:ctx.created,error:ctx.createError??null};
       throw Error("Unexpected command: "+name);
     },from:(table:string)=>{
       if(!ctx.allowPricing)throw Error("Replay must not read mutable catalogue/balance: "+table);
@@ -103,4 +104,35 @@ Deno.test("actual paid checkout remains recoverable during missing Click configu
   assertEquals((await ctx.request()).status,200);
   ctx.replay={ok:true,state:"existing",payment:order({provider:"click",status:"pending",amount:1000,grant_completed_at:null})};
   const response=await ctx.request();assertEquals(response.status,503);assertEquals(response.body.transaction_id,id);
+}));
+
+const academyInput={plan_id:null,purchase_type:"academy_tuition",metadata:{academy_id:tenant,offer_id:plan,contact_id:actor}};
+const academyOrder=(patch={})=>order({provider:"click",provider_transaction_id:id,purchase_type:"academy_tuition",status:"pending",
+  amount:1000,credit_amount:0,grant_completed_at:null,metadata:{academy_payment_id:actor},...patch});
+Deno.test("actual Academy checkout delegates pricing, contact admission and linked records to one database command",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"absent"};ctx.created={ok:true,state:"created",payment:academyOrder()};
+  const response=await ctx.request({...academyInput,amount:1,metadata:{...academyInput.metadata,quantity:999,duration_days:999,source:"forged"}});
+  assertEquals(response.status,200);assertEquals(response.body.amount,1000);assertEquals(response.body.academy_payment_id,actor);
+  assertEquals(ctx.calls.map((c:any)=>c.name),["payment_checkout_replay","create_academy_payment_checkout"]);
+  const command=ctx.calls[1].args;assertEquals(command.p_academy_id,tenant);assertEquals(command.p_offer_id,plan);assertEquals(command.p_contact_id,actor);
+  assertEquals(command.p_provider_metadata,{click_service_id:"104316",click_merchant_id:"1"});assert(!Object.hasOwn(command,"p_order"));
+}));
+Deno.test("actual Academy paid replay retains its linked payment and offers no second payment during activation",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"existing",payment:academyOrder({status:"paid"})};
+  const response=await ctx.request(academyInput);assertEquals(response.status,202);assertEquals(response.body.academy_payment_id,actor);
+  assertEquals(response.body.payment_url,null);assertEquals(response.body.grant_completed,false);
+  assertEquals(ctx.calls.map((c:any)=>c.name),["payment_checkout_replay","fulfill_paid_payment"]);
+}));
+Deno.test("actual Academy invalid identity/configuration and private admission errors never leave fallback writes",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"absent"};assertEquals((await ctx.request({...academyInput,metadata:{...academyInput.metadata,contact_id:"invalid"}})).status,400);
+  for(const code of ["42501","22023","08006"]){ctx.createError={code,message:"private finance failure"};
+    const response=await ctx.request(academyInput);assertEquals(response.status,code==="42501"?403:code==="22023"?400:503);
+    assert(!JSON.stringify(response).includes("private"));}
+  Deno.env.delete("CLICK_SECRET_KEY");assertEquals((await ctx.request(academyInput)).status,503);
+  assert(ctx.calls.every((c:any)=>["payment_checkout_replay","create_academy_payment_checkout"].includes(c.name)));
+}));
+Deno.test("actual Academy self-payment can resolve the contact in the database without tenant membership",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"absent"};ctx.created={ok:true,state:"created",payment:academyOrder()};
+  assertEquals((await ctx.request({...academyInput,metadata:{academy_id:tenant,offer_id:plan}})).status,200);
+  assertEquals(ctx.calls[1].args.p_contact_id,null);
 }));

@@ -4,11 +4,13 @@
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "platform",
+    "academy"
   ],
   "migrations": [
     "20261009140000_payment_fulfillment_transaction.sql",
-    "20261009141000_payment_checkout_transaction.sql"
+    "20261009141000_payment_checkout_transaction.sql",
+    "20261009142000_academy_purchase_transaction.sql"
   ],
   "edgeFunctions": [
     "admin-payments",
@@ -29,13 +31,15 @@
     "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
     "migration:20261009140000_payment_fulfillment_transaction.sql",
     "migration:20261009141000_payment_checkout_transaction.sql",
+    "migration:20261009142000_academy_purchase_transaction.sql",
     "function:admin-payments",
     "function:click"
   ],
   "manualFollowUps": [
-    "Before merging: qualify stable per-intent keys and recovery for every live checkout caller (old unkeyed requests remain compatible but cannot replay automatically), complete Academy checkout snapshots, legacy reconciliation/account-retention inventory, full exact-head CI and release review. This draft is not production qualified.",
+    "Before merging: qualify stable per-intent keys and recovery for remaining live center/partner checkout forwarding (old unkeyed requests remain compatible but cannot replay automatically), seat/voucher consumers, legacy reconciliation/account-retention inventory, full exact-head CI and release review. Platform and Academy checkout snapshots/recovery have local proof. This draft is not production qualified.",
     "Archive this manifest in release/history/payment-fulfillment-transaction.json when the final release is reviewed. Freshly download Click and admin-payments; preserve every published dependency and gateway flag. Refuse baseline drift. Never publish unrelated repository modules.",
-    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these two reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
+    "Before applying the Academy migration, capture and review the installed apply_academy_payment(uuid,uuid) function definition and owner. The migration preserves its non-Click body behind a private invoker copy and retains the original public function owner/OID. Refuse ownership or source drift. Qualify account/contact retention before installation.",
+    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these three reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
     "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payment-bundle>",
     "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-click-bundle>",
     "Preserve the existing CLICK_MERCHANT_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_MERCHANT_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
@@ -46,9 +50,10 @@
     "Enable the dormant payment-fulfillment-v1 cron flag only after both backend source proofs and owned hosted canaries pass. Verify pg_cron installation and an actual retry recovery. Retain reviewed original source for an isolated Edge rollback; disable the worker first. Leave additive schema in place."
   ],
   "verification": [
-    "37 native PostgreSQL fulfillment/checkout concurrency, connection-loss, rollback, credit, variant and permission cases.",
-    "20 actual callback and checkout handler tests plus existing payment contracts.",
-    "6 mocked mobile/desktop activation and lost-response refresh cases; platform production build.",
+    "55 native PostgreSQL fulfillment/checkout concurrency, connection-loss, rollback, credit, Academy snapshot/linkage/admission, variant and permission cases.",
+    "24 actual callback and checkout handler tests plus existing payment contracts; transport/persistence boundaries use doubles.",
+    "10 browser cases with mocked APIs: mobile/desktop activation and lost-response refresh, including Academy owner and student workflows; Platform and Academy production builds.",
+    "Read-only exact aggregate inventory found zero Click paid platform payments and zero pending/paid Academy Click invoices at 2026-10-09T15:02:58Z. This is scoped inventory, not full reconciliation or financial certification.",
     "Exact reviewed-head full CI; matching Pages/provider source hashes and public reachability.",
     "Actual exclusive production canaries and legacy reconciliation review before activation."
   ],

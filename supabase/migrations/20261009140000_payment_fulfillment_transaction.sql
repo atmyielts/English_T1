@@ -70,10 +70,10 @@ begin
       new.purchase_type,new.entitlement_terms,new.plan_snapshot,new.credit_amount,
       new.original_amount,new.discount_amount,new.referral_discount_amount,new.referral_attribution_id,new.coupon_id)
     or (select jsonb_object_agg(k,old.metadata->k) from unnest(array['experience_id','quantity','expires_in_days',
-      'seat_count','seat_plan_id','requested_tier','center_tier','billing_period','tier_change_request_id','academy_payment_id']) k)
+      'seat_count','seat_plan_id','requested_tier','center_tier','billing_period','tier_change_request_id','academy_payment_id','academy_id','offer_id','contact_id']) k)
       is distinct from
       (select jsonb_object_agg(k,new.metadata->k) from unnest(array['experience_id','quantity','expires_in_days',
-      'seat_count','seat_plan_id','requested_tier','center_tier','billing_period','tier_change_request_id','academy_payment_id']) k)
+      'seat_count','seat_plan_id','requested_tier','center_tier','billing_period','tier_change_request_id','academy_payment_id','academy_id','offer_id','contact_id']) k)
   ) then raise exception using errcode='23514',message='Payment fulfillment terms are immutable'; end if;
   return new;
 end; $$;
@@ -240,18 +240,23 @@ begin
       outcome := jsonb_build_object('tier',tier,'expires_at',expires);
       meta := meta||jsonb_build_object('center_tier_applied',tier,'center_tier_period_end',expires);
     elsif kind='academy_tuition' then
+      if not exists(select 1 from public.academy_payment_purchase_terms where platform_payment_id=p.id) then
+        update public.payment_fulfillment_jobs set state='reconciliation',last_error_code='academy_snapshot_missing' where payment_id=p.id;
+        update public.payments set grant_error='Payment received; access activation needs review.' where id=p.id;
+        return jsonb_build_object('ok',false,'state','reconciliation');
+      end if;
       select * into ap from public.academy_payments where id=(meta->>'academy_payment_id')::uuid for update;
       if not found or ap.academy_id<>p.tenant_id or ap.amount<>p.amount or upper(ap.currency)<>upper(p.currency)
         or ap.metadata->>'platform_payment_id' is distinct from p.id::text then raise exception 'academy_payment_mismatch'; end if;
       -- A separately pre-marked paid row may have skipped the old grant procedure.
       if ap.status='paid' then raise exception 'academy_payment_requires_review'; end if;
       if ap.status<>'pending' then raise exception 'academy_payment_not_pending'; end if;
-      outcome := public.apply_academy_payment(ap.id,p.user_id);
+      outcome := public.apply_academy_payment_purchase(ap.id,p.user_id);
       if outcome->>'ok' is distinct from 'true' or coalesce((outcome->>'created_entitlements')::integer,0)<1 then
         raise exception 'academy_grant_missing';
       end if;
       update public.academy_payments set provider=p.provider,provider_transaction_id=p.provider_transaction_id,
-        metadata=metadata||jsonb_build_object('platform_payment_status',p.status,'platform_grant_completed_at',now()) where id=ap.id;
+        metadata=metadata||jsonb_build_object('platform_payment_status',p.status,'platform_grant_completed_at',now(),'platform_grant_error',null) where id=ap.id;
     elsif kind in ('plan','subscription','') then
       if p.product_id is null or terms is null or jsonb_typeof(terms)<>'object'
         or not (terms ? 'duration_days') then raise exception 'missing_product_terms'; end if;
@@ -351,6 +356,12 @@ begin
       attempts=attempts+1,last_error_code=error_code,
       next_attempt_at=now()+make_interval(secs=>least(86400,30*power(2,least(attempts,11))::integer)) where payment_id=p.id;
     update public.payments set grant_error='Payment received; access activation is pending.' where id=p.id;
+    if kind='academy_tuition' then
+      update public.academy_payments academy_record set metadata=academy_record.metadata||jsonb_build_object('platform_payment_status',p.status,
+        'platform_grant_error','Payment received; access activation is pending.')
+        from public.academy_payment_purchase_terms purchased
+        where purchased.platform_payment_id=p.id and academy_record.id=purchased.academy_payment_id;
+    end if;
     return jsonb_build_object('ok',false,'state',case when j.attempts>=11 then 'reconciliation' else 'retry' end);
   end;
 end; $$;

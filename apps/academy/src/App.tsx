@@ -42,6 +42,8 @@ import {
   teacherStudioContacts,
   teacherStudioCreateOffer,
   teacherStudioCreateClickTuitionPayment,
+  teacherStudioClickPaymentStatus,
+  teacherStudioCompleteCheckoutAttempt,
   teacherStudioEntitlements,
   teacherStudioEducationOS,
   teacherStudioMarkPaymentPaid,
@@ -1193,6 +1195,8 @@ const App = () => {
   const summaryCacheRef = useRef(new Map<string, TeacherStudioSummary>());
   const contactsCacheRef = useRef(new Map<string, TeacherStudioContact[]>());
   const bootstrapScopeRef = useRef('');
+  const tuitionCreatingRef = useRef(false);
+  const [pendingTuition, setPendingTuition] = useState<{ transactionId: string; key: string } | null>(null);
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
@@ -3016,9 +3020,33 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    if (!pendingTuition) return;
+    let canceled = false, checking = false;
+    const check = async () => {
+      if (checking || canceled) return;
+      checking = true;
+      try {
+        const result = await teacherStudioClickPaymentStatus(pendingTuition.transactionId);
+        if (canceled) return;
+        if (['paid', 'success', 'completed'].includes(result.status.toLowerCase()) && result.grant_completed === true) {
+          await teacherStudioCompleteCheckoutAttempt(pendingTuition.key);
+          if (canceled) return;
+          setPendingTuition(null);
+          setNotice('Payment confirmed. Purchased access is active.');
+          await loadAcademyData(academyId, selectedConversationId);
+        }
+      } catch { /* The recorded payment remains pending; never create another order on a status error. */ }
+      finally { checking = false; }
+    };
+    const timer = window.setInterval(() => void check(), 6000);
+    return () => { canceled = true; window.clearInterval(timer); };
+  }, [pendingTuition, academyId, selectedConversationId, loadAcademyData]);
+
   const submitPayment = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
+    if (tuitionCreatingRef.current || pendingTuition || !academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
+    tuitionCreatingRef.current = true;
     setBusy(true);
     setError('');
     setNotice('');
@@ -3032,11 +3060,14 @@ const App = () => {
         const popup = window.open(result.payment_url, '_blank', 'noopener,noreferrer');
         if (!popup) window.location.assign(result.payment_url);
       }
-      setNotice('Click checkout created.');
+      const paid = ['paid', 'success', 'completed'].includes(String(result.status ?? '').toLowerCase());
+      if (paid && result.grant_completed !== true && result.checkout_attempt_key) setPendingTuition({ transactionId: result.transaction_id, key: result.checkout_attempt_key });
+      setNotice(paid ? result.grant_completed === true ? 'Payment confirmed. Purchased access is active.' : 'Payment received. Access is still being activated. Do not pay again.' : 'Click checkout created.');
       await loadAcademyData(academyId, selectedConversationId);
     } catch (err) {
       setError(normalizeError(err));
     } finally {
+      tuitionCreatingRef.current = false;
       setBusy(false);
     }
   };
@@ -5376,6 +5407,7 @@ const App = () => {
         {officeView === 'payments' && officeCanOpen('payments') ? (
           <PaymentsView
             busy={busy}
+            activationPending={pendingTuition !== null}
             paymentForm={paymentForm}
             setPaymentForm={setPaymentForm}
             contacts={contacts}

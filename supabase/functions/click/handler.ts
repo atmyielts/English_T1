@@ -1693,6 +1693,9 @@ export const checkoutIntent = (body: CreateTransactionInput): Record<string, unk
     referral_code: normalizeReferralCode(body.referral_code) || null, referral_attribution_id: id(body.referral_attribution_id),
     requested_tier: meta.requested_tier ?? meta.center_tier ?? null, billing_period: meta.billing_period ?? null,
     tier_change_request_id: id(meta.tier_change_request_id),
+    academy_id: kind === "academy_tuition" ? id(meta.academy_id ?? body.tenant_id) : null,
+    offer_id: kind === "academy_tuition" ? id(meta.offer_id ?? body.plan_id) : null,
+    contact_id: kind === "academy_tuition" ? id(meta.contact_id) : null,
   };
 };
 
@@ -1822,10 +1825,11 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           referral_discount_amount: payment.referral_discount_amount, final_amount: payment.amount,
           coupon_code: payment.coupon_code, referral_code: payment.metadata?.referral_code ?? null,
           plan_id: payment.plan_id, product_id: payment.product_id, idempotent_replay: result.state === "existing",
+          academy_payment_id: payment.purchase_type === "academy_tuition" ? payment.metadata?.academy_payment_id : undefined,
           message: paid && !completed ? "Payment received; access activation is pending. Do not pay again." : undefined,
         });
       };
-      if (normalizePurchaseType(body.purchase_type) !== "academy_tuition") {
+      {
         const { data: existing, error: replayError } = await supabase.rpc("payment_checkout_replay", {
           p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
         });
@@ -1838,247 +1842,27 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       // Students are academy *contacts*, not tenant members, so this branch
       // resolves access via academy_contacts instead of tenant_memberships.
       if (normalizePurchaseType(body.purchase_type) === "academy_tuition") {
-      const readiness = clickConfiguration();
-      if (!readiness.configured) {
-        return jsonResponse(503, {
-          error: "CLICK payments are not configured",
-          error_code: "click_not_configured",
-          missing_configuration: readiness.missing,
-          service_id_matches_production: readiness.serviceIdMatchesProduction,
+        if (!clickConfiguration().configured) return jsonResponse(503, { error: "Click checkout is temporarily unavailable", error_code: "click_not_configured" });
+        const academyId = intent.academy_id;
+        const offerId = intent.offer_id;
+        const contactId = intent.contact_id;
+        const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+        if (typeof academyId !== "string" || !uuid.test(academyId) || typeof offerId !== "string" || !uuid.test(offerId)
+          || (contactId !== null && (typeof contactId !== "string" || !uuid.test(contactId)))) {
+          return jsonResponse(400, { error: "Valid academy_id, offer_id and contact_id are required" });
+        }
+        const { data: checkout, error: checkoutError } = await supabase.rpc("create_academy_payment_checkout", {
+          p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
+          p_academy_id: academyId, p_offer_id: offerId, p_contact_id: contactId,
+          p_provider_metadata: { click_service_id: getClickServiceId(), click_merchant_id: getClickMerchantId() },
         });
-      }
-
-        const meta = isPlainObject(body.metadata) ? body.metadata : {};
-        const academyId = String(
-          (meta as any).academy_id ?? body.tenant_id ?? "",
-        ).trim();
-        const offerId = String((meta as any).offer_id ?? body.plan_id ?? "")
-          .trim();
-        const requestedContactId = String((meta as any).contact_id ?? "")
-          .trim();
-        if (!academyId || !offerId) {
-          return jsonResponse(400, {
-            error: "academy_id and offer_id are required",
+        if (checkoutError) {
+          if (checkoutError.code === "22023" || checkoutError.code === "P0002" || checkoutError.code === "P0003") return jsonResponse(400, {
+            error: "This Academy offer or contact is unavailable for checkout. Please refresh the offer or contact the Academy.", error_code: "academy_checkout_invalid",
           });
+          return checkoutFailure(checkoutError);
         }
-
-        const { data: offer, error: offerErr } = await supabase
-          .from("academy_offers")
-          .select(
-            "id, academy_id, name, price_amount, currency, is_active, classroom_id",
-          )
-          .eq("id", offerId)
-          .eq("academy_id", academyId)
-          .maybeSingle();
-        if (offerErr) {
-          return jsonResponse(500, {
-            error: "Failed to load offer",
-            details: offerErr,
-          });
-        }
-        if (!offer?.id) return jsonResponse(404, { error: "Offer not found" });
-        if (!offer.is_active) {
-          return jsonResponse(400, { error: "Offer is inactive" });
-        }
-
-        // Resolve the contact: explicit id, else the caller's linked contact.
-        let contactQuery = supabase
-          .from("academy_contacts")
-          .select("id, user_id")
-          .eq("academy_id", academyId);
-        contactQuery = requestedContactId
-          ? contactQuery.eq("id", requestedContactId)
-          : contactQuery.eq("user_id", authedUserId);
-        const { data: contact, error: contactErr } = await contactQuery
-          .maybeSingle();
-        if (contactErr) {
-          return jsonResponse(500, {
-            error: "Failed to load contact",
-            details: contactErr,
-          });
-        }
-        if (!contact?.id) {
-          return jsonResponse(404, { error: "Contact not found" });
-        }
-
-        // Authorization: payer is the contact's linked user, OR an academy finance operator.
-        const isContactOwner = String(contact.user_id ?? "") === authedUserId;
-        let hasAcademyFinanceAccess = false;
-        if (!isContactOwner) {
-          const { data: adminMembership } = await supabase
-            .from("tenant_memberships")
-            .select("role")
-            .eq("tenant_id", academyId)
-            .eq("user_id", authedUserId)
-            .eq("status", "active")
-            .maybeSingle();
-          hasAcademyFinanceAccess = isAcademyFinanceRole(adminMembership?.role);
-
-          if (!hasAcademyFinanceAccess) {
-            const { data: academyTenant, error: academyTenantErr } =
-              await supabase
-                .from("tenants")
-                .select("metadata")
-                .eq("id", academyId)
-                .maybeSingle();
-            if (academyTenantErr) {
-              return jsonResponse(500, {
-                error: "Failed to load academy tenant",
-                details: academyTenantErr,
-              });
-            }
-
-            const parentCenterId = String(
-              (academyTenant?.metadata as any)?.parent_center_id ?? "",
-            ).trim();
-            if (parentCenterId) {
-              const { data: centerMembership } = await supabase
-                .from("tenant_memberships")
-                .select("role")
-                .eq("tenant_id", parentCenterId)
-                .eq("user_id", authedUserId)
-                .eq("status", "active")
-                .maybeSingle();
-              hasAcademyFinanceAccess = isAcademyFinanceRole(
-                centerMembership?.role,
-              );
-            }
-          }
-
-          if (!hasAcademyFinanceAccess) {
-            return jsonResponse(403, { error: "Forbidden" });
-          }
-        }
-        const paymentSource = isContactOwner
-          ? "student_portal"
-          : "academy_office";
-
-        const tuitionAmount = Math.floor(Number(offer.price_amount));
-        const tuitionCurrency = String(offer.currency ?? "UZS").toUpperCase();
-        if (!Number.isFinite(tuitionAmount) || tuitionAmount <= 0) {
-          return jsonResponse(400, { error: "Offer price is not set" });
-        }
-        const tuitionGuard = assertClickAmountAllowed(tuitionAmount);
-        if (tuitionGuard) return tuitionGuard;
-        if (tuitionCurrency !== "UZS") {
-          return jsonResponse(400, {
-            error: "Click payments require UZS currency",
-          });
-        }
-        const tuitionServiceId = getClickServiceId();
-        const tuitionMerchantId = getClickMerchantId();
-
-        // Create the academy_payments row that apply_academy_payment will settle.
-        const academyProviderTxn = `click-${crypto.randomUUID()}`;
-        const { data: academyPayment, error: academyPaymentErr } =
-          await supabase
-            .from("academy_payments")
-            .insert({
-              academy_id: academyId,
-              offer_id: offerId,
-              contact_id: contact.id,
-              provider: "click",
-              provider_transaction_id: academyProviderTxn,
-              amount: tuitionAmount,
-              currency: tuitionCurrency,
-              status: "pending",
-              metadata: { source: paymentSource, initiated_by: authedUserId },
-              created_by: authedUserId,
-            })
-            .select("id")
-            .maybeSingle();
-        if (academyPaymentErr || !academyPayment?.id) {
-          return jsonResponse(500, {
-            error: "Failed to create academy payment",
-            details: academyPaymentErr,
-          });
-        }
-
-        const tuitionMetadata: Record<string, unknown> = {
-          ...(meta as Record<string, unknown>),
-          source: paymentSource,
-          purchase_type: "academy_tuition",
-          academy_id: academyId,
-          academy_payment_id: academyPayment.id,
-          offer_id: offerId,
-          contact_id: contact.id,
-          classroom_id: offer.classroom_id ?? null,
-          click_service_id: tuitionServiceId,
-          click_merchant_id: tuitionMerchantId,
-          checkout_idempotency_key: checkoutIdempotencyKey,
-        };
-
-        const tuitionUuid = crypto.randomUUID();
-        const { data: tuitionPaymentRow, error: tuitionInsertErr } =
-          await supabase
-            .from("payments")
-            .insert({
-              id: tuitionUuid,
-              provider: "click",
-              provider_transaction_id: tuitionUuid,
-              checkout_idempotency_key: checkoutIdempotencyKey,
-              amount: tuitionAmount,
-              currency: tuitionCurrency,
-              status: "pending",
-              fiscalization_status: "not_configured",
-              user_id: authedUserId,
-              tenant_id: academyId,
-              product_id: null,
-              purchase_type: "academy_tuition",
-              metadata: tuitionMetadata,
-              provider_payload: { stage: "local_order_created" },
-            })
-            .select("id")
-            .maybeSingle();
-        if (tuitionInsertErr || !tuitionPaymentRow?.id) {
-          return jsonResponse(500, {
-            error: "Failed to record payment",
-            details: tuitionInsertErr,
-          });
-        }
-
-        await supabase
-          .from("academy_payments")
-          .update({
-            metadata: {
-              source: paymentSource,
-              initiated_by: authedUserId,
-              platform_payment_id: tuitionUuid,
-            },
-          })
-          .eq("id", academyPayment.id);
-
-        const tuitionUrl = buildClickPaymentUrl(
-          tuitionServiceId,
-          tuitionMerchantId,
-          tuitionAmount,
-          tuitionUuid,
-          withPaymentReturnParams(
-            normalizeRedirectUrl(body.redirect_url),
-            tuitionUuid,
-            "academy_tuition",
-          ),
-        );
-
-        await supabase
-          .from("payments")
-          .update({
-            metadata: { ...tuitionMetadata, click_payment_url: tuitionUrl },
-            provider_payload: {
-              stage: "click_url_built",
-              payment_url: tuitionUrl,
-            },
-          })
-          .eq("id", tuitionUuid);
-
-        return jsonResponse(200, {
-          payment_url: tuitionUrl,
-          transaction_id: tuitionUuid,
-          amount: tuitionAmount,
-          currency: tuitionCurrency,
-          final_amount: tuitionAmount,
-          academy_payment_id: academyPayment.id,
-        });
+        return await checkoutResponse(checkout) ?? jsonResponse(503, { error: "Checkout is temporarily unavailable. Retry the same order.", error_code: "checkout_unavailable" });
       }
 
       const { data: memberships, error: membershipError } = await supabase

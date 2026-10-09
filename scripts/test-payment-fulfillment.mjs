@@ -11,6 +11,7 @@ const image='postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402d
 const read=file=>readFileSync('supabase/migrations/'+file,'utf8');
 const migration=read('20261009140000_payment_fulfillment_transaction.sql');
 const checkoutMigration=read('20261009141000_payment_checkout_transaction.sql');
+const academyMigration=read('20261009142000_academy_purchase_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
@@ -60,7 +61,7 @@ try {
   await sql(`create role anon;create role authenticated;create role service_role bypassrls;
     grant usage on schema public to anon,authenticated,service_role;
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
-    create table users(id uuid primary key,is_active boolean not null default true);create table tenants(id uuid primary key);
+    create table users(id uuid primary key,is_active boolean not null default true);create table tenants(id uuid primary key,metadata jsonb not null default '{}'::jsonb);
     create table tenant_memberships(id uuid primary key default gen_random_uuid(),user_id uuid references users(id),tenant_id uuid references tenants(id),status text not null default 'active',role text not null default 'owner');
     create table products(id uuid primary key);create table plans(id uuid primary key,product_id uuid references products(id),duration_days integer);
     create table experiences(id uuid primary key);create table coupons(id uuid primary key);
@@ -91,9 +92,14 @@ try {
       add column redeemed_at timestamptz not null default now(),add column snapshot jsonb;
     create unique index coupon_redemptions_payment_id_unique on coupon_redemptions(payment_id) where payment_id is not null;
     create unique index coupon_redemptions_coupon_user_context_unique on coupon_redemptions(coupon_id,user_id,context_id) where context_id is not null;
-    ${['academy_contacts','academy_offers','academy_offer_grants','academy_payments','academy_entitlements'].map(name=>table('20260212000000_teacher_studio_core.sql',name)).join('\n')}
+    ${['academy_contacts','academy_classrooms','academy_offers','academy_offer_grants','academy_payments','academy_entitlements'].map(name=>table('20260212000000_teacher_studio_core.sql',name)).join('\n')}
+    alter table academy_offers add column classroom_id uuid references academy_classrooms(id);
     ${read('20260212010000_teacher_studio_payment_engine.sql')}
-    insert into users(id) values(${q(user)}),(${q(referrer)});insert into tenants values(${q(tenant)});
+    create role academy_legacy_owner;
+    grant usage on schema public to academy_legacy_owner;
+    grant select,insert,update on academy_contacts,academy_offers,academy_offer_grants,academy_payments,academy_entitlements to academy_legacy_owner;
+    alter function public.apply_academy_payment(uuid,uuid) owner to academy_legacy_owner;
+    insert into users(id) values(${q(user)}),(${q(referrer)});insert into tenants(id) values(${q(tenant)});
     insert into products values(${q(product)}),(${q(bundle)});insert into plans values(${q(plan)},${q(product)},30);
     insert into experiences values(${q(experience)});insert into coupons values(${q(coupon)});`);
   await sql(read('20260812120000_click_payment_launch_guardrails.sql'));
@@ -107,6 +113,7 @@ try {
   const creditSource=read('20260501120000_partner_referrals_and_credits.sql');
   await sql(creditSource.slice(creditSource.indexOf('create or replace function public.platform_credit_available('),creditSource.indexOf('create or replace function public.consume_platform_credit(')));
   await sql(checkoutMigration);
+  await sql(academyMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -228,16 +235,16 @@ try {
     const forged=await payment({purchase_type:'center_tier_upgrade',plan_snapshot:snapshot,metadata:{...tierMeta,requested_tier:'exclusive'}});
     assert.equal((await fulfill(forged)).state,'retry');assert.equal(await sql('select package_tier from partner_center_profiles;'),'growth');
   });
-  await check('Academy tuition commits grants and paid status together; tenant/amount mismatches do not apply',async()=>{
+  await check('legacy uncaptured Academy tuition requires reconciliation instead of reading the live grant catalogue',async()=>{
     const contact=randomUUID(),offer=randomUUID(),ap=randomUUID(),id=randomUUID();
     await sql(`insert into academy_contacts(id,academy_id,user_id) values(${q(contact)},${q(tenant)},${q(user)});
       insert into academy_offers(id,academy_id,name,type,price_amount,duration_days) values(${q(offer)},${q(tenant)},'QA offer','subscription',1000,30);
       insert into academy_offer_grants(academy_id,offer_id,grant_type,resource_type,resource_id,quantity) values(${q(tenant)},${q(offer)},'product_access','product',${q(product)},1);
       insert into academy_payments(id,academy_id,contact_id,offer_id,provider,provider_transaction_id,amount,metadata) values(${q(ap)},${q(tenant)},${q(contact)},${q(offer)},'click',${q(ap)},1000,${json({platform_payment_id:id})});`);
-    await payment({id,purchase_type:'academy_tuition',metadata:{academy_payment_id:ap}});assert.ok((await fulfill(id)).ok);assert.ok((await fulfill(id)).deduped);
-    assert.equal(await sql('select status from academy_payments where id='+q(ap)+';'),'paid');assert.equal(await count('academy_entitlements',ap),'1');
-    const mismatch=await payment({purchase_type:'academy_tuition',amount:2000,metadata:{academy_payment_id:ap}});
-    assert.equal((await fulfill(mismatch)).state,'retry');assert.equal(await count('academy_entitlements',ap),'1');
+    await payment({id,purchase_type:'academy_tuition',metadata:{academy_payment_id:ap}});
+    assert.equal((await fulfill(id)).state,'reconciliation');assert.equal(await count('academy_entitlements',ap),'0');
+    assert.equal(await sql('select status from academy_payments where id='+q(ap)+';'),'pending');
+    await assert.rejects(sql(`set role service_role;select apply_academy_payment(${q(ap)},${q(user)});`),/atomic fulfillment command/);
   });
   await check('referral cash and credit rewards are part of the same atomic receipt',async()=>{
     const pg=randomUUID(),at=randomUUID();await sql(`insert into referral_programs(id,program_key,name,status,first_purchase_only,referrer_credit_type,referrer_credit_value,cash_payouts_enabled,referrer_cash_type,referrer_cash_value)
@@ -249,7 +256,7 @@ try {
   });
   await check('first-purchase referral reward stays singular across independent paid orders and concurrent retries',async()=>{
     const referred=randomUUID(),scope=randomUUID(),pg=randomUUID(),at=randomUUID();
-    await sql(`insert into users(id) values(${q(referred)});insert into tenants values(${q(scope)});
+    await sql(`insert into users(id) values(${q(referred)});insert into tenants(id) values(${q(scope)});
       insert into referral_programs(id,program_key,name,status,first_purchase_only,referrer_credit_type,referrer_credit_value)
         values(${q(pg)},'qa-first','QA first purchase','active',true,'fixed',100);
       insert into referral_attributions(id,program_id,referrer_user_id,referred_user_id,referral_code)
@@ -269,7 +276,7 @@ try {
   const intent={purchase_type:'plan',plan_id:plan,apply_credit:true};
   async function checkoutActor(balance=1000) {
     const actor=randomUUID(),scope=randomUUID();
-    await sql(`insert into users(id) values(${q(actor)});insert into tenants values(${q(scope)});
+    await sql(`insert into users(id) values(${q(actor)});insert into tenants(id) values(${q(scope)});
       insert into tenant_memberships(user_id,tenant_id) values(${q(actor)},${q(scope)});`);
     if(balance>0)await sql(`insert into platform_credit_ledger(user_id,tenant_id,entry_kind,status,amount,currency) values(${q(actor)},${q(scope)},'grant','posted',${balance},'UZS');`);
     return {actor,scope,key:randomUUID()};
@@ -369,6 +376,157 @@ try {
   });
   await check('service callers cannot rewrite or delete checkout identities directly',async()=>{
     for(const statement of ['delete from payment_checkout_requests',"update payment_checkout_requests set intent='{}'",'insert into payment_checkout_requests default values'])
+      await assert.rejects(sql('set role service_role;'+statement+';'),/permission denied/);
+  });
+  async function academyFixture() {
+    const actor=randomUUID(),scope=randomUUID(),contact=randomUUID(),offer=randomUUID(),grant=randomUUID(),credits=randomUUID();
+    await sql(`insert into users(id) values(${q(actor)});insert into tenants(id) values(${q(scope)});
+      insert into academy_contacts(id,academy_id,user_id) values(${q(contact)},${q(scope)},${q(actor)});
+      insert into academy_offers(id,academy_id,name,type,price_amount,duration_days) values(${q(offer)},${q(scope)},'Captured QA offer','subscription',1000,30);
+      insert into academy_offer_grants(id,academy_id,offer_id,grant_type,resource_type,resource_id,quantity) values(${q(grant)},${q(scope)},${q(offer)},'product_access','product',${q(product)},1);
+      insert into academy_offer_grants(id,academy_id,offer_id,grant_type,quantity,duration_days) values(${q(credits)},${q(scope)},${q(offer)},'writing_credits',3,7);`);
+    return {actor,scope,contact,offer,grant,credits,key:randomUUID()};
+  }
+  const academyIntent=ctx=>({purchase_type:'academy_tuition',academy_id:ctx.scope,offer_id:ctx.offer,contact_id:ctx.contact});
+  const academyCheckout=(ctx,choices=academyIntent(ctx))=>sql(`set role service_role;select create_academy_payment_checkout(${q(ctx.actor)},${q(ctx.key)},${json(choices)},${q(ctx.scope)},${q(ctx.offer)},${ctx.contact?q(ctx.contact):'null'},'{"click_service_id":"104316","click_merchant_id":"1"}');`).then(JSON.parse);
+  const settleAcademy=async id=>{await sql("update payments set status='paid' where id="+q(id)+';');return fulfill(id);};
+  await check('Academy contact self-payment requires no tenant membership and creates a linked contract atomically',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout({...ctx,contact:null}),id=result.payment.id,ap=result.payment.metadata.academy_payment_id;
+    assert.equal(result.state,'created');assert.equal(result.payment.amount,1000);assert.equal(result.payment.status,'pending');
+    assert.equal(await count('payment_checkout_requests',id),'1');
+    assert.equal(await sql(`select count(*) from academy_payment_purchase_terms where academy_payment_id=${q(ap)} and platform_payment_id=${q(id)};`),'1');
+    assert.equal(await sql(`select metadata->>'platform_payment_id' from academy_payments where id=${q(ap)};`),id);
+    assert.equal(await sql(`select count(*) from tenant_memberships where user_id=${q(ctx.actor)};`),'0');
+    assert.equal(await count('academy_entitlements',ap),'0');
+    assert.ok((await settleAcademy(id)).ok);assert.equal(await count('academy_entitlements',ap),'2');
+    assert.ok((await fulfill(id)).deduped);assert.equal(await count('academy_entitlements',ap),'2');
+  });
+  await check('eight concurrent Academy checkout retries create one order, payment, snapshot and key',async()=>{
+    const ctx=await academyFixture();const results=await Promise.all(Array.from({length:8},()=>academyCheckout(ctx)));
+    assert.equal(results.filter(r=>r.state==='created').length,1);assert.equal(new Set(results.map(r=>r.payment.id)).size,1);
+    assert.equal(await sql(`select count(*) from academy_payments where academy_id=${q(ctx.scope)};`),'1');
+    assert.equal(await sql(`select count(*) from academy_payment_purchase_terms where academy_id=${q(ctx.scope)};`),'1');
+    assert.equal((await academyCheckout(ctx,{...academyIntent(ctx),offer_id:randomUUID()})).state,'conflict');
+  });
+  await check('Academy replay and settlement retain purchased price, duration, resource and credits after live edits',async()=>{
+    const ctx=await academyFixture(),original=await academyCheckout(ctx),id=original.payment.id,ap=original.payment.metadata.academy_payment_id;
+    await sql(`update academy_offers set price_amount=3000,duration_days=1,is_active=false where id=${q(ctx.offer)};
+      update academy_offer_grants set quantity=999,duration_days=2,resource_id=${q(bundle)} where id=${q(ctx.grant)};
+      update academy_offer_grants set quantity=1000,duration_days=1 where id=${q(ctx.credits)};`);
+    const replay=await academyCheckout(ctx);assert.equal(replay.state,'existing');assert.equal(replay.payment.amount,1000);assert.equal(replay.payment.id,id);
+    assert.ok((await settleAcademy(id)).ok);
+    assert.equal(await sql(`select resource_id||':'||quantity||':'||round(extract(epoch from expires_at-now())/86400) from academy_entitlements where payment_id=${q(ap)} and grant_type='product_access';`),product+':1:30');
+    assert.equal(await sql(`select remaining||':'||round(extract(epoch from expires_at-now())/86400) from academy_entitlements where payment_id=${q(ap)} and grant_type='writing_credits';`),'3:7');
+  });
+  await check('deleting the catalogue offer and grants cannot erase purchased Academy access',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),ap=result.payment.metadata.academy_payment_id;
+    await sql(`delete from academy_offers where id=${q(ctx.offer)};`);assert.ok((await settleAcademy(result.payment.id)).ok);
+    assert.equal(await count('academy_entitlements',ap),'2');
+    assert.equal(await sql(`select bool_and(offer_id is null and metadata->>'purchased_offer_id'=${q(ctx.offer)}) from academy_entitlements where payment_id=${q(ap)};`),'t');
+  });
+  await check('Academy finance authorization is tenant-bound and a regular member cannot buy for another contact',async()=>{
+    const ctx=await academyFixture(),staff=randomUUID(),foreign=await academyFixture();
+    await sql(`insert into users(id) values(${q(staff)});insert into tenant_memberships(user_id,tenant_id,role) values(${q(staff)},${q(ctx.scope)},'teacher');`);
+    await assert.rejects(academyCheckout({...ctx,actor:staff}),/finance access is unavailable/);
+    await assert.rejects(academyCheckout({...ctx,contact:foreign.contact}),/contact is unavailable/);
+    await assert.rejects(academyCheckout({...ctx,offer:foreign.offer}),/offer is unavailable/);
+    await sql(`update tenant_memberships set role='owner' where user_id=${q(staff)};`);
+    const financed=await academyCheckout({...ctx,actor:staff});assert.equal(financed.payment.user_id,staff);
+    assert.ok((await settleAcademy(financed.payment.id)).ok);
+    assert.equal(await sql(`select bool_and(user_id=${q(ctx.actor)}::uuid) from academy_entitlements where payment_id=${q(financed.payment.metadata.academy_payment_id)};`),'t');
+  });
+  await check('parent-center finance authority is revalidated on Academy checkout and replay',async()=>{
+    const ctx=await academyFixture(),center=randomUUID(),staff=randomUUID();
+    await sql(`insert into tenants(id) values(${q(center)});insert into users(id) values(${q(staff)});
+      update tenants set metadata=${json({parent_center_id:center})} where id=${q(ctx.scope)};
+      insert into tenant_memberships(user_id,tenant_id,role) values(${q(staff)},${q(center)},'center_admin');`);
+    const delegated={...ctx,actor:staff};assert.equal((await academyCheckout(delegated)).state,'created');
+    await sql(`update tenant_memberships set status='disabled' where user_id=${q(staff)};`);
+    await assert.rejects(academyCheckout(delegated),/finance access is unavailable/);
+  });
+  await check('ambiguous linked contacts, empty grants and invalid finite terms fail before any payable order',async()=>{
+    const ctx=await academyFixture();await sql(`insert into academy_contacts(academy_id,user_id) values(${q(ctx.scope)},${q(ctx.actor)});`);
+    await assert.rejects(academyCheckout({...ctx,contact:null}),/more than one row/);
+    await sql(`update academy_offer_grants set duration_days=0 where id=${q(ctx.grant)};`);
+    await assert.rejects(academyCheckout(ctx),/grant configuration is invalid/);
+    await sql(`delete from academy_offer_grants where offer_id=${q(ctx.offer)};`);
+    await assert.rejects(academyCheckout(ctx),/offer is not purchasable/);
+    assert.equal(await sql(`select count(*) from academy_payments where academy_id=${q(ctx.scope)};`),'0');
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+  });
+  await check('captured Academy payment and platform link cannot be repriced or reassigned',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),ap=result.payment.metadata.academy_payment_id;
+    for(const change of ["amount=2000","currency='USD'","contact_id=null","metadata='{}'::jsonb"])
+      await assert.rejects(sql(`update academy_payments set ${change} where id=${q(ap)};`),/purchased identity is immutable/);
+    await assert.rejects(sql(`update payments set metadata=metadata||'{"contact_id":"${randomUUID()}"}'::jsonb where id=${q(result.payment.id)};`),/fulfillment terms are immutable/);
+  });
+  await check('direct Click grant application cannot bypass the atomic financial receipt boundary',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),ap=result.payment.metadata.academy_payment_id;
+    await assert.rejects(sql(`set role service_role;select apply_academy_payment(${q(ap)},${q(ctx.actor)});`),/atomic fulfillment command/);
+    await assert.rejects(sql(`set role service_role;select apply_academy_payment_purchase(${q(ap)},${q(ctx.actor)});`),/permission denied/);
+    await assert.rejects(sql(`set role service_role;select apply_academy_payment_legacy(${q(ap)},${q(ctx.actor)});`),/permission denied/);
+    assert.equal(await count('academy_entitlements',ap),'0');assert.equal(await count('payment_fulfillment_receipts',result.payment.id),'0');
+    assert.ok((await settleAcademy(result.payment.id)).ok);
+  });
+  await check('Academy late receipt failure rolls back grants and paid status together; retry commits once',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),id=result.payment.id,ap=result.payment.metadata.academy_payment_id;
+    await sql(`create function qa_academy_receipt_fault() returns trigger language plpgsql as $$begin if new.payment_id=${q(id)}::uuid then raise exception 'owned Academy late fault';end if;return new;end$$;
+      create trigger qa_academy_receipt_fault before insert on payment_fulfillment_receipts for each row execute function qa_academy_receipt_fault();`);
+    assert.equal((await settleAcademy(id)).state,'retry');assert.equal(await count('academy_entitlements',ap),'0');
+    assert.equal(await sql(`select status from academy_payments where id=${q(ap)};`),'pending');
+    assert.equal(await sql(`select metadata->>'platform_payment_status' from academy_payments where id=${q(ap)};`),'paid');
+    await sql('drop trigger qa_academy_receipt_fault on payment_fulfillment_receipts;drop function qa_academy_receipt_fault();');
+    assert.ok((await fulfill(id)).ok);assert.equal(await count('academy_entitlements',ap),'2');
+    assert.equal(await sql(`select metadata->>'platform_grant_error' is null from academy_payments where id=${q(ap)};`),'t');
+  });
+  await check('Academy checkout linkage failure leaves neither an Academy invoice nor a payable platform orphan',async()=>{
+    const ctx=await academyFixture();
+    await sql(`create function qa_academy_checkout_fault() returns trigger language plpgsql as $$begin if new.academy_id=${q(ctx.scope)}::uuid then raise exception 'owned Academy checkout fault';end if;return new;end$$;
+      create trigger qa_academy_checkout_fault before insert on academy_payment_purchase_terms for each row execute function qa_academy_checkout_fault();`);
+    await assert.rejects(academyCheckout(ctx),/owned Academy checkout fault/);
+    assert.equal(await sql(`select count(*) from academy_payments where academy_id=${q(ctx.scope)};`),'0');
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+    await sql('drop trigger qa_academy_checkout_fault on academy_payment_purchase_terms;drop function qa_academy_checkout_fault();');
+    assert.equal((await academyCheckout(ctx)).state,'created');
+  });
+  await check('contact reassignment after checkout cannot deliver purchased Academy access to another user',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),ap=result.payment.metadata.academy_payment_id;
+    await sql(`update academy_contacts set user_id=${q(referrer)} where id=${q(ctx.contact)};`);
+    assert.equal((await settleAcademy(result.payment.id)).state,'retry');assert.equal(await count('academy_entitlements',ap),'0');
+    assert.equal(await count('payment_fulfillment_receipts',result.payment.id),'0');
+    await sql(`update academy_contacts set user_id=${q(ctx.actor)} where id=${q(ctx.contact)};`);
+    assert.ok((await fulfill(result.payment.id)).ok);assert.equal(await count('academy_entitlements',ap),'2');
+  });
+  await check('a separately marked-paid Academy record cannot manufacture a fulfillment receipt',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),ap=result.payment.metadata.academy_payment_id;
+    await sql(`update academy_payments set status='paid' where id=${q(ap)};`);
+    assert.equal((await settleAcademy(result.payment.id)).state,'retry');assert.equal(await count('academy_entitlements',ap),'0');
+    assert.equal(await count('payment_fulfillment_receipts',result.payment.id),'0');
+  });
+  await check('connection loss during Academy grants rolls back access and invoice status; the paid job recovers',async()=>{
+    const ctx=await academyFixture(),result=await academyCheckout(ctx),id=result.payment.id,ap=result.payment.metadata.academy_payment_id;
+    await sql(`update payments set status='paid' where id=${q(id)};
+      create function qa_academy_abort() returns trigger language plpgsql as $$begin if new.payment_id=${q(id)}::uuid then perform pg_advisory_xact_lock(434353);perform pg_sleep(10);end if;return new;end$$;
+      create trigger qa_academy_abort before insert on payment_fulfillment_receipts for each row execute function qa_academy_abort();`);
+    const aborted=assert.rejects(sql(`set application_name='schood-owned-academy-abort';set role service_role;select fulfill_paid_payment(${q(id)});`),/terminating|connection|server closed/i);
+    await barrier(434353);await sql("select pg_terminate_backend(pid) from pg_stat_activity where application_name='schood-owned-academy-abort';");await aborted;
+    assert.equal(await count('academy_entitlements',ap),'0');assert.equal(await sql(`select status from academy_payments where id=${q(ap)};`),'pending');
+    await sql('drop trigger qa_academy_abort on payment_fulfillment_receipts;drop function qa_academy_abort();');
+    assert.ok((await fulfill(id)).ok);assert.equal(await count('academy_entitlements',ap),'2');
+  });
+  await check('installed non-Click Academy settlement remains available through the private preserved implementation',async()=>{
+    const ctx=await academyFixture(),ap=randomUUID();
+    await sql(`insert into academy_payments(id,academy_id,contact_id,offer_id,provider,provider_transaction_id,amount,currency) values(${q(ap)},${q(ctx.scope)},${q(ctx.contact)},${q(ctx.offer)},'offline',${q(ap)},1000,'UZS');`);
+    const result=JSON.parse(await sql(`set role service_role;select apply_academy_payment(${q(ap)},${q(ctx.actor)});`));assert.ok(result.ok);
+    assert.equal(await count('academy_entitlements',ap),'2');
+  });
+  for(const role of ['anon','authenticated'])await check(role+' cannot read snapshots or invoke Academy checkout/settlement helpers',async()=>{
+    await assert.rejects(sql(`set role ${role};select * from academy_payment_purchase_terms;`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select create_academy_payment_checkout(${q(user)},${q(randomUUID())},'{}',${q(tenant)},${q(plan)},null,'{}');`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select apply_academy_payment_purchase(${q(plan)},${q(user)});`),/permission denied/);
+  });
+  await check('service application role cannot rewrite or remove purchased Academy snapshots',async()=>{
+    for(const statement of ["update academy_payment_purchase_terms set grants='[]'","delete from academy_payment_purchase_terms","insert into academy_payment_purchase_terms default values"])
       await assert.rejects(sql('set role service_role;'+statement+';'),/permission denied/);
   });
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{

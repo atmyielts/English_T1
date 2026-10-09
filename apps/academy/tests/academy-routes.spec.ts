@@ -2128,6 +2128,70 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test("Academy checkout reuses a purchase key after a lost response and refresh", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");await mockAcademyEdge(page, "owner");
+    const keys:string[]=[];
+    await page.route('**/functions/v1/click/create-transaction',route=>{
+      keys.push(route.request().postDataJSON().idempotency_key);
+      if(keys.length===1)return route.fulfill({status:503,json:{error:'Checkout is temporarily unavailable. Retry the same order.'}});
+      return route.fulfill({status:202,json:{transaction_id:'owned-academy-payment',academy_payment_id:'owned-invoice',
+        status:'paid',grant_completed:false,payment_url:null,amount:500000,currency:'UZS',final_amount:500000}});
+    });
+    await page.route('**/functions/v1/click/status?*',route=>route.fulfill({json:{status:'paid',grant_completed:false}}));
+    const choose=async()=>{
+      await page.getByRole('combobox',{name:'Contact',exact:true}).selectOption(studentContactId);
+      await page.getByRole('combobox',{name:'Offer',exact:true}).selectOption('offer-route-smoke');
+      await page.getByRole('button',{name:'Create Click checkout',exact:true}).click();
+    };
+    await page.goto(`/academy/admin/payments?academy_id=${academyId}`);await choose();
+    await expect(page.getByText(/Checkout is temporarily unavailable/)).toBeVisible();
+    await page.reload();await choose();
+    await expect(page.getByText('Payment received. Access is still being activated. Do not pay again.',{exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Activation pending',exact:true})).toBeDisabled();
+    expect(keys).toHaveLength(2);expect(keys[1]).toBe(keys[0]);
+  });
+
+  for(const width of [390,1280])test(`Academy checkout ${width}px polls paid access without another order`,async({page})=>{
+    await page.setViewportSize({width,height:900});await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner');
+    let activated=false,orders=0,polls=0;
+    await page.route('**/functions/v1/click/create-transaction',route=>{
+      orders++;return route.fulfill({status:202,json:{transaction_id:'owned-academy-payment',academy_payment_id:'owned-invoice',
+        status:'paid',grant_completed:false,payment_url:null,amount:500000,currency:'UZS',final_amount:500000}});
+    });
+    await page.route('**/functions/v1/click/status?*',route=>{polls++;return route.fulfill({json:{status:'paid',grant_completed:activated}});});
+    await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
+    await page.getByRole('combobox',{name:'Contact',exact:true}).selectOption(studentContactId);
+    await page.getByRole('combobox',{name:'Offer',exact:true}).selectOption('offer-route-smoke');
+    await page.getByRole('button',{name:'Create Click checkout',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Activation pending',exact:true})).toBeDisabled();
+    await expect.poll(()=>polls,{timeout:12000}).toBeGreaterThan(0);expect(orders).toBe(1);
+    activated=true;await expect(page.getByText('Payment confirmed. Purchased access is active.',{exact:true})).toBeVisible({timeout:12000});
+    await expect(page.getByRole('button',{name:'Create Click checkout',exact:true})).toBeEnabled();expect(orders).toBe(1);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1)).toBe(false);
+  });
+
+  test('Academy checkout student keeps checking received payment until access commits',async({page})=>{
+    await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student',{
+      actionOverrides:{student_billing:{accounts:[],items:[{
+        academy_id:academyId,classroom_id:classroomId,contact_id:studentContactId,paid:false,last_payment:null,
+        offer:{id:'offer-route-smoke',name:'Synthetic tuition',price_amount:500000,currency:'UZS',description:null},
+      }]}},
+    });
+    let activated=false,orders=0,polls=0;
+    await page.route('**/functions/v1/click/create-transaction',route=>{
+      orders++;return route.fulfill({status:202,json:{transaction_id:'owned-student-payment',academy_payment_id:'owned-invoice',
+        status:'paid',grant_completed:false,payment_url:null,amount:500000,currency:'UZS',final_amount:500000}});
+    });
+    await page.route('**/functions/v1/click/status?*',route=>{polls++;return route.fulfill({json:{status:'paid',grant_completed:activated}});});
+    await page.goto(`/academy/student/classrooms/${classroomId}?academy_id=${academyId}`);
+    await page.getByRole('button',{name:'Billing',exact:true}).click();
+    await page.getByRole('button',{name:'Pay with Click',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Activation pending',exact:true})).toBeDisabled();
+    await expect.poll(()=>polls,{timeout:12000}).toBeGreaterThan(0);expect(orders).toBe(1);
+    activated=true;await expect(page.getByText('Payment confirmed. Purchased access is active.',{exact:true})).toBeVisible({timeout:12000});
+    expect(orders).toBe(1);
+  });
+
   test("owner can open the administrator route and see finance controls", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     await mockAcademyEdge(page, "owner");
