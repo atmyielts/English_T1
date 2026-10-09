@@ -46,6 +46,23 @@ and explain activation in English, Russian and Uzbek. Already-paid responses can
 open another payment URL. Legacy TeacherOfficePage uses the helper but is unmounted;
 its typecheck does not prove a live purchase flow.
 
+Center and partner checkout now forward one stable key and the original choices.
+Online wallets, ticket packs, seats and tiers share recovery across refresh and
+unknown responses. Paid activation suppresses every payment link until access
+commits. Only fixed invalid input that cannot create its exact purchase intent permits
+corrected choices with a new key. Mutable catalogue, admission and SQL failures
+retain their original key even when they return HTTP 400; another concurrent
+request may have committed it.
+
+Center tier checkout creates the server-priced order, tier request, immutable
+financial linkage and replay identity in one transaction. Catalogue edits cannot
+reprice an existing purchase. Different-key purchases serialize without lock
+upgrades. Current center owner/admin finance authority is enforced inside SQL for
+tiers, online wallets and purchased packs even when a caller omits the center flag.
+Published older tier requests remain compatible only when their recorded payer,
+tenant, price and billing choices match exactly. Legacy unkeyed requests remain
+compatible but cannot automatically replay a later request.
+
 Click callbacks/status, credit-covered fulfillment and admin refresh/regrant share
 the transaction command. Old completion markers remain separate legacy evidence.
 The unsupported dynamic MD5 WASM dependency was replaced with Deno-supported Node
@@ -54,26 +71,34 @@ required to qualify the deployed runtime.
 
 ## Executed evidence
 
-- `npm run test:payments` passed: **55 native PostgreSQL 17.5 cases**, **24 actual
-  handler tests**, **6 Platform browser cases** and **4 Academy browser cases**.
+- The final `npm run test:payments` passed with **67 native PostgreSQL 17.5
+  cases**, **31 Deno cases** (27 actual callback/checkout handlers and 4 partner
+  payload contracts), **22 Platform browser cases** and **4 Academy browser cases**.
+  Browser API boundaries are mocked; these are not hosted settlement proofs.
 - Native cases use actual migration SQL, baseline domain DDL and independent
   connections. They cover concurrent callbacks/renewals/retries, competing credit
   purchases, connection termination, injected late failures, permission denial,
   immutable identity and durable recovery. Eighteen cases specifically cover
-  Academy checkout, historical contracts, role admission, private snapshots,
-  grants/invoice rollback and preservation of non-Click settlement under its
-  original non-migration owner. Owned network-isolated containers were removed.
-- Handler tests execute callback/checkout code with persistence and notification
-  doubles. Browser tests run the actual UI with mocked API boundaries; they cover
-  390px/1280px activation, lost-response refresh, same-key retries, no second order,
-  automatic rechecks, student/owner screens and no horizontal overflow. These are
-  local boundary proofs, not real production provider settlement.
-- Platform and Academy production builds passed with actual public configuration
-  held in memory. Both typechecks, Academy lint and 2,569-phrase localization check
-  passed. Production secret scan and release-scope validation passed. Academy's
-  822 source/configuration checks passed; they do not prove all hosted workflows.
-- Earlier shared contracts: 72 passed. Historical exact-head CI for `cb88e79b9dcd0dded0297a8e28908e99c106bc12`
-  passed in run 37943728986. The Academy extension requires its own full CI run.
+  Academy contracts, role admission, private snapshots and non-Click settlement
+  preservation. Twelve additional center cases cover single/different-key
+  concurrency, legacy linkage, captured terms, failed-connection rollback and
+  current finance authority. Owned network-isolated containers were removed.
+- Browser coverage includes 390px/1280px activation, lost-response refresh,
+  original-key/choice retries, no second order, automatic checks, learner/owner
+  screens, center/partner purchase variants, removal of paid payment links,
+  fixed invalid-choice correction, mutable HTTP 400 key preservation and no
+  horizontal overflow.
+- The final Platform production build passed with actual public configuration
+  held in memory. The Academy production build, lint and 2,569-phrase localization
+  check passed for ed95919; Academy source and the shared attempt helper have not
+  changed in this extension. Academy's earlier 822 source/configuration checks
+  do not prove every hosted workflow. The root `npm test` command passed,
+  including admin, payment, marketplace, privacy, exam, SAT, shared and Telegram
+  sections, followed by the final affected payment-suite rerun after review.
+  Production secret scan, release-scope validation and diff checks passed.
+- Exact-head CI for Academy candidate `ed95919dc133495e4dc0734aaee69e607db8b0aa`
+  passed in run 37949096285. The center extension requires its own exact-head CI
+  and release review. Earlier candidate CI remains historical evidence only.
 - Read-only production aggregate inventory at **2026-10-09T15:02:58Z** found zero
   pending/paid Academy Click invoices, zero legacy metadata-only Academy Click
   pending/paid orders, and zero paid Click platform payments across purchase types.
@@ -82,19 +107,23 @@ required to qualify the deployed runtime.
 
 ## Still required before shipping this payment release
 
-1. **Center/partner checkout recovery:** three published source forwarding paths
-   still need stable per-intent keys. Tier upgrades create a request before the
-   payment and link it afterward; qualify this as a single replayable transaction.
-   Old unkeyed HTTP requests remain compatible but cannot deduplicate later retries.
-2. **Inventory consumption:** seat assignment and voucher redemption must consume
+1. **Inventory consumption:** seat assignment and voucher redemption must consume
    captured purchased terms with an atomic claim. Inventory creation tests do not
-   prove these independent consumers.
-3. **Lifecycle and reconciliation:** review retained financial identity against
+   prove these independent consumers. Fresh read-only published source capture
+   confirms separate HTTP writes for grant/claim and current catalogue reads.
+   Teacher Office also has repository-only score-reporting drift that must not
+   be published incidentally; see `2026-10-09-inventory-consumer-baseline.json`.
+2. **Lifecycle and reconciliation:** review retained financial identity against
    account/contact/tenant deletion, classify legacy evidence and define reviewed
    reconciliation commands. Never clear a grant marker to manufacture a receipt.
    Capture the actual installed Academy settlement definition/owner before replacing
    its entry point. Refund/cancellation and all-provider fiscal settlement remain open.
-4. **Release proof:** full exact-head CI and review, source-preserving backend
+3. **Release order and proof:** this combined draft must not merge as-is. Split
+   backend and frontend PRs: the first tracked Pages run retains existing frontend
+   source, then reviewed additive backend changes and old-client/hosted canaries
+   qualify retry support before the recovery UI follow-up ships. Published old
+   partner-office discards the new retry key; shipping the UI first is unsafe.
+   Full exact-head CI and review, source-preserving backend
    bundles with unchanged gateway flags, tracked Pages commit/provider hashes,
    exclusive production canaries and cleanup. Test a signed owned Click callback,
    activate the worker only after successful proofs, then demonstrate real retry
@@ -116,5 +145,5 @@ required to qualify the deployed runtime.
   proof, alerts, abuse limits and bounded load qualification.
 
 This is a substantial payment repair. It does not certify all services as ready
-for customers. All three migrations and candidate Edge/frontend changes remain
+for customers. All four migrations and candidate Edge/frontend changes remain
 unpublished; the payment worker remains disabled.

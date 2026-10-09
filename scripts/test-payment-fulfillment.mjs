@@ -12,6 +12,7 @@ const read=file=>readFileSync('supabase/migrations/'+file,'utf8');
 const migration=read('20261009140000_payment_fulfillment_transaction.sql');
 const checkoutMigration=read('20261009141000_payment_checkout_transaction.sql');
 const academyMigration=read('20261009142000_academy_purchase_transaction.sql');
+const centerMigration=read('20261009143000_center_tier_checkout_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
@@ -63,7 +64,7 @@ try {
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
     create table users(id uuid primary key,is_active boolean not null default true);create table tenants(id uuid primary key,metadata jsonb not null default '{}'::jsonb);
     create table tenant_memberships(id uuid primary key default gen_random_uuid(),user_id uuid references users(id),tenant_id uuid references tenants(id),status text not null default 'active',role text not null default 'owner');
-    create table products(id uuid primary key);create table plans(id uuid primary key,product_id uuid references products(id),duration_days integer);
+    create table products(id uuid primary key);create table plans(id uuid primary key,product_id uuid references products(id),duration_days integer,amount integer,currency text,metadata jsonb,is_active boolean,name text);
     create table experiences(id uuid primary key);create table coupons(id uuid primary key);
     ${table('20260202170000_platform_spine.sql','payments')}
     alter table payments add column tenant_id uuid references tenants(id),add column plan_id uuid references plans(id),
@@ -100,7 +101,7 @@ try {
     grant select,insert,update on academy_contacts,academy_offers,academy_offer_grants,academy_payments,academy_entitlements to academy_legacy_owner;
     alter function public.apply_academy_payment(uuid,uuid) owner to academy_legacy_owner;
     insert into users(id) values(${q(user)}),(${q(referrer)});insert into tenants(id) values(${q(tenant)});
-    insert into products values(${q(product)}),(${q(bundle)});insert into plans values(${q(plan)},${q(product)},30);
+    insert into products values(${q(product)}),(${q(bundle)});insert into plans(id,product_id,duration_days) values(${q(plan)},${q(product)},30);
     insert into experiences values(${q(experience)});insert into coupons values(${q(coupon)});`);
   await sql(read('20260812120000_click_payment_launch_guardrails.sql'));
   const legacy=await payment({granted_at:new Date().toISOString()}),legacyDone=await payment({granted_at:new Date().toISOString(),grant_completed_at:new Date().toISOString()});
@@ -114,6 +115,7 @@ try {
   await sql(creditSource.slice(creditSource.indexOf('create or replace function public.platform_credit_available('),creditSource.indexOf('create or replace function public.consume_platform_credit(')));
   await sql(checkoutMigration);
   await sql(academyMigration);
+  await sql(centerMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -528,6 +530,106 @@ try {
   await check('service application role cannot rewrite or remove purchased Academy snapshots',async()=>{
     for(const statement of ["update academy_payment_purchase_terms set grants='[]'","delete from academy_payment_purchase_terms","insert into academy_payment_purchase_terms default values"])
       await assert.rejects(sql('set role service_role;'+statement+';'),/permission denied/);
+  });
+  const centerProduct='00000000-0000-4000-8000-000000000701';
+  await sql(`insert into products(id) values(${q(centerProduct)});`);
+  async function centerFixture() {
+    const ctx={actor:randomUUID(),scope:randomUUID(),plan:randomUUID(),key:randomUUID()};
+    await sql(`insert into users(id) values(${q(ctx.actor)});insert into tenants(id) values(${q(ctx.scope)});
+      insert into tenant_memberships(user_id,tenant_id,role) values(${q(ctx.actor)},${q(ctx.scope)},'owner');
+      insert into partner_center_profiles(tenant_id,display_name,slug,status) values(${q(ctx.scope)},'Owned center',${q(ctx.scope)},'active');
+      insert into plans(id,product_id,duration_days,amount,currency,is_active,name,metadata) values(${q(ctx.plan)},${q(centerProduct)},30,1000,'UZS',true,'Owned growth plan',
+        '{"is_center_tier_plan":true,"center_tier":"growth","billing_period":"monthly"}');`);return ctx;
+  }
+  const centerIntent=ctx=>({purchase_type:'center_tier_upgrade',tenant_id:ctx.scope,plan_id:ctx.plan,
+    requested_tier:'growth',billing_period:'monthly',apply_credit:false,credit_amount:null,coupon_code:null,referral_code:null,referral_attribution_id:null});
+  const centerSql=(ctx,intent=centerIntent(ctx))=>`set role service_role;select create_center_tier_checkout(${q(ctx.actor)},${q(ctx.key)},${json(intent)},${q(ctx.scope)},'growth','monthly','{}');`;
+  const centerCheckout=async(ctx,intent)=>JSON.parse(await sql(centerSql(ctx,intent)));
+  await check('eight concurrent center tier retries commit one linked request, order and captured catalogue',async()=>{
+    const ctx=await centerFixture(),results=await Promise.all(Array.from({length:8},()=>centerCheckout(ctx)));
+    assert.equal(new Set(results.map(r=>r.payment.id)).size,1);
+    const id=results[0].payment.id,request=results[0].payment.metadata.tier_change_request_id;
+    assert.equal(await sql(`select count(*) from partner_center_tier_change_requests where tenant_id=${q(ctx.scope)} and payment_id=${q(id)} and id=${q(request)};`),'1');
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'1');
+  });
+  await check('different center tier purchases serialize without shared-lock upgrade deadlocks',async()=>{
+    const ctx=await centerFixture(),other={...ctx,key:randomUUID()};
+    const results=await Promise.all([centerCheckout(ctx),centerCheckout(other)]);assert.ok(results.every(r=>r.ok));
+    assert.notEqual(results[0].payment.id,results[1].payment.id);
+  });
+  await check('center tier replay and paid settlement preserve price and duration after catalogue edits',async()=>{
+    const ctx=await centerFixture(),result=await centerCheckout(ctx),id=result.payment.id;
+    await sql(`update plans set amount=2000,duration_days=365,is_active=false,metadata='{}' where id=${q(ctx.plan)};`);
+    const replay=await centerCheckout(ctx);assert.equal(replay.payment.id,id);assert.equal(replay.payment.amount,1000);
+    await sql(`update payments set status='paid' where id=${q(id)};`);assert.ok((await fulfill(id)).ok);
+    assert.equal(await sql(`select round(extract(epoch from current_period_end-now())/86400) from partner_center_tier_subscriptions where tenant_id=${q(ctx.scope)};`),'30');
+    assert.equal(await sql(`select status from partner_center_tier_change_requests where payment_id=${q(id)};`),'applied');
+  });
+  await check('center billing admission rejects regular members, paused centers and revoked replay authority',async()=>{
+    const ctx=await centerFixture();await sql(`update tenant_memberships set role='teacher' where tenant_id=${q(ctx.scope)};`);
+    await assert.rejects(centerCheckout(ctx),/billing authority/);
+    await sql(`update tenant_memberships set role='admin' where tenant_id=${q(ctx.scope)};update partner_center_profiles set status='paused' where tenant_id=${q(ctx.scope)};`);
+    await assert.rejects(centerCheckout(ctx),/Center is unavailable/);
+    await sql(`update partner_center_profiles set status='active' where tenant_id=${q(ctx.scope)};`);await centerCheckout(ctx);
+    await sql(`update tenant_memberships set role='teacher' where tenant_id=${q(ctx.scope)};`);await assert.rejects(centerCheckout(ctx),/billing authority/);
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'1');
+  });
+  await check('center tier invalid pricing, ambiguous catalogue and downgrades leave no payable orphan',async()=>{
+    const ctx=await centerFixture();await sql(`update plans set duration_days=0 where id=${q(ctx.plan)};`);
+    await assert.rejects(centerCheckout(ctx),/catalogue terms/);
+    await sql(`update plans set duration_days=30 where id=${q(ctx.plan)};
+      insert into plans(id,product_id,duration_days,amount,currency,is_active,metadata) select gen_random_uuid(),product_id,30,1000,currency,true,metadata from plans where id=${q(ctx.plan)};`);
+    await assert.rejects(centerCheckout(ctx,{...centerIntent(ctx),plan_id:null}),/more than one row/);
+    await sql(`update partner_center_profiles set package_tier='premium' where tenant_id=${q(ctx.scope)};`);
+    await assert.rejects(centerCheckout(ctx),/tier change requires review/);
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+    assert.equal(await sql(`select count(*) from partner_center_tier_change_requests where tenant_id=${q(ctx.scope)};`),'0');
+  });
+  await check('center tier late checkout failure rolls back request, payment and replay identity together',async()=>{
+    const ctx=await centerFixture();await sql(`create function qa_center_link_failure() returns trigger language plpgsql as $$begin if new.user_id=${q(ctx.actor)}::uuid then raise exception 'owned center late fault';end if;return new;end$$;
+      create trigger qa_center_link_failure before insert on payment_checkout_requests for each row execute function qa_center_link_failure();`);
+    await assert.rejects(centerCheckout(ctx),/owned center late fault/);
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+    assert.equal(await sql(`select count(*) from partner_center_tier_change_requests where tenant_id=${q(ctx.scope)};`),'0');
+    await sql('drop trigger qa_center_link_failure on payment_checkout_requests;drop function qa_center_link_failure();');
+    assert.ok((await centerCheckout(ctx)).ok);
+  });
+  await check('connection loss during center checkout rolls back both financial records and resumes one key',async()=>{
+    const ctx=await centerFixture();await sql(`create function qa_center_checkout_abort() returns trigger language plpgsql as $$begin if new.user_id=${q(ctx.actor)}::uuid then perform pg_advisory_xact_lock(434354);perform pg_sleep(10);end if;return new;end$$;
+      create trigger qa_center_checkout_abort before insert on payment_checkout_requests for each row execute function qa_center_checkout_abort();`);
+    const aborted=assert.rejects(sql(`set application_name='schood-owned-center-abort';${centerSql(ctx)}`),/terminating|connection|server closed/i);
+    await barrier(434354);await sql("select pg_terminate_backend(pid) from pg_stat_activity where application_name='schood-owned-center-abort';");await aborted;
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+    assert.equal(await sql(`select count(*) from partner_center_tier_change_requests where tenant_id=${q(ctx.scope)};`),'0');
+    await sql('drop trigger qa_center_checkout_abort on payment_checkout_requests;drop function qa_center_checkout_abort();');assert.ok((await centerCheckout(ctx)).ok);
+  });
+  await check('legacy center tier request links only the matching tenant, payer and captured price',async()=>{
+    const ctx=await centerFixture(),request=randomUUID();
+    await sql(`insert into partner_center_tier_change_requests(id,tenant_id,requested_tier,billing_period,amount,requested_by) values(${q(request)},${q(ctx.scope)},'growth','monthly',1000,${q(ctx.actor)});`);
+    const intent={...centerIntent(ctx),credit_amount:0,tier_change_request_id:request},result=await centerCheckout(ctx,intent);
+    assert.equal(result.payment.metadata.tier_change_request_id,request);
+    await assert.rejects(centerCheckout({...ctx,key:randomUUID()},intent),/Legacy center tier request requires review/);
+    await assert.rejects(sql(`update partner_center_tier_change_requests set amount=2000 where id=${q(request)};`),/immutable/);
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'1');
+  });
+  await check('center wallet and inventory purchases require database finance authority even without a center-office flag',async()=>{
+    const ctx=await centerFixture();await sql(`update tenant_memberships set role='teacher' where tenant_id=${q(ctx.scope)};`);
+    for(const kind of ['center_wallet_topup','token_pack','seat_pack']) {
+      const row={user_id:ctx.actor,tenant_id:ctx.scope,provider:'click',purchase_type:kind,amount:1000,original_amount:1000,
+        discount_amount:0,credit_amount:0,referral_discount_amount:0,currency:'UZS',metadata:{center_office:false}};
+      await assert.rejects(sql(`set role service_role;select create_payment_checkout(${q(ctx.actor)},${q(randomUUID())},${json({purchase_type:kind})},${json(row)});`),/billing authority/);
+    }
+    assert.equal(await sql(`select count(*) from payments where tenant_id=${q(ctx.scope)};`),'0');
+  });
+  await check('pre-applied center request cannot manufacture a receipt or tier change',async()=>{
+    const ctx=await centerFixture(),result=await centerCheckout(ctx),id=result.payment.id;
+    await sql(`update partner_center_tier_change_requests set status='applied' where payment_id=${q(id)};update payments set status='paid' where id=${q(id)};`);
+    assert.equal((await fulfill(id)).state,'retry');assert.equal(await count('payment_fulfillment_receipts',id),'0');
+    assert.equal(await sql(`select package_tier from partner_center_profiles where tenant_id=${q(ctx.scope)};`),'starter');
+  });
+  for(const role of ['anon','authenticated'])await check(role+' cannot invoke center tier checkout or billing admission helpers',async()=>{
+    await assert.rejects(sql(`set role ${role};select create_center_tier_checkout(${q(user)},${q(randomUUID())},'{}',${q(tenant)},'growth','monthly','{}');`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select assert_center_checkout_actor(${q(user)},${q(tenant)});`),/permission denied/);
   });
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{
     const id=await payment({status:'pending'});await sql('update payments set status=\'paid\' where id='+q(id)+';');assert.equal((await job(id)).state,'pending');

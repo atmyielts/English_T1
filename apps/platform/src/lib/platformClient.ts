@@ -3190,6 +3190,15 @@ export const partnerOfficeGet = async <T = unknown>(
   return (await res.json()) as T;
 };
 
+export class PartnerOfficeRequestError extends Error {
+  readonly status: number;
+  readonly details: unknown;
+  constructor(status: number, details: unknown) {
+    super(`POST /partner-office failed (${status}): ${JSON.stringify(details)}`);
+    this.status = status; this.details = details;
+  }
+}
+
 export const partnerOfficePost = async <T = unknown>(
   accessToken: string,
   body: Json,
@@ -3201,7 +3210,7 @@ export const partnerOfficePost = async <T = unknown>(
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`POST /partner-office failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new PartnerOfficeRequestError(res.status, details);
   }
   return (await res.json()) as T;
 };
@@ -3381,7 +3390,7 @@ export const partnerOfficeUploadCenterLogo = async (
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,
-  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
+  body: { idempotency_key?: string; tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
 ) => partnerOfficePost<ClickCreateResponse | { ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
 
 export const partnerOfficeCreateVoucherBatch = (
@@ -3465,6 +3474,7 @@ export const partnerOfficeAssignSeat = (
 export const partnerOfficeCreateTicketPurchase = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     experience_id: string;
     quantity: number;
@@ -3480,6 +3490,7 @@ export const partnerOfficeCreateTicketPurchase = (
 export const partnerOfficeCreateSeatPurchase = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     plan_id: string;
     seat_count: number;
@@ -3494,6 +3505,7 @@ export const partnerOfficeCreateSeatPurchase = (
 export const partnerOfficeCreateTierUpgradePayment = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     requested_tier: 'growth' | 'premium' | 'exclusive';
     billing_period: 'monthly' | 'annual';

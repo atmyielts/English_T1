@@ -81,7 +81,7 @@ begin
   perform public.assert_payment_checkout_actor(p_user_id,payment.tenant_id);
   if payment.user_id is distinct from p_user_id or payment.tenant_id is null
     or payment.provider is null or payment.provider not in ('click','platform_credit')
-    or payment.purchase_type is null or payment.purchase_type not in ('plan','subscription','token_pack','seat_pack','center_wallet_topup','center_tier_upgrade')
+    or payment.purchase_type is null or payment.purchase_type not in ('plan','subscription','token_pack','seat_pack','center_wallet_topup')
     or payment.amount is null or payment.amount<0 or payment.original_amount is null or payment.original_amount<=0
     or payment.discount_amount is null or payment.discount_amount<0 or payment.credit_amount is null or payment.credit_amount<0
     or payment.referral_discount_amount is null or payment.referral_discount_amount<0 or payment.referral_discount_amount>payment.discount_amount
@@ -90,6 +90,11 @@ begin
     or (payment.provider='click' and (payment.currency<>'UZS' or payment.amount not between 1000 and 2000000000))
     or (payment.provider='platform_credit' and payment.amount<>0) then
     raise exception using errcode='22023',message='Invalid checkout terms';
+  end if;
+  if payment.purchase_type='center_wallet_topup' or (payment.purchase_type in ('token_pack','seat_pack')
+    and exists(select 1 from public.partner_center_profiles where tenant_id=payment.tenant_id)) then
+    perform 1 from public.tenants where id=payment.tenant_id for update;
+    perform public.assert_center_checkout_actor(p_user_id,payment.tenant_id);
   end if;
   payment.id:=gen_random_uuid();
   payment.provider_transaction_id:=case when payment.provider='platform_credit' then 'credit-'||payment.id::text else payment.id::text end;

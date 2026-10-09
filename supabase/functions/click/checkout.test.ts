@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { checkoutIntent, handleClickRequest } from "./handler.ts";
+import { partnerCheckoutPayload } from "../partner-office/checkout.ts";
 
 const actor="11111111-1111-4111-8111-111111111111", tenant="22222222-2222-4222-8222-222222222222";
 const plan="33333333-3333-4333-8333-333333333333", id="44444444-4444-4444-8444-444444444444";
@@ -21,7 +22,7 @@ async function scenario(test:(ctx:any)=>Promise<void>) {
       if(name==="fulfill_paid_payment")return {data:ctx.fulfillment,error:null};
       if(name==="platform_credit_available")return {data:ctx.balance??1000,error:null};
       if(name==="create_payment_checkout")return {data:ctx.created,error:ctx.createError??null};
-      if(name==="create_academy_payment_checkout")return {data:ctx.created,error:ctx.createError??null};
+      if(name==="create_center_tier_checkout" || name==="create_academy_payment_checkout")return {data:ctx.created,error:ctx.createError??null};
       throw Error("Unexpected command: "+name);
     },from:(table:string)=>{
       if(!ctx.allowPricing)throw Error("Replay must not read mutable catalogue/balance: "+table);
@@ -136,3 +137,35 @@ Deno.test("actual Academy self-payment can resolve the contact in the database w
   assertEquals((await ctx.request({...academyInput,metadata:{academy_id:tenant,offer_id:plan}})).status,200);
   assertEquals(ctx.calls[1].args.p_contact_id,null);
 }));
+
+Deno.test("actual center tier checkout captures pricing and links the request through one command",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"absent"};ctx.created={ok:true,state:"created",payment:order({provider:"click",status:"pending",amount:1000,credit_amount:0,grant_completed_at:null,purchase_type:"center_tier_upgrade"})};
+  const response=await ctx.request({plan_id:null,purchase_type:"center_tier_upgrade",tenant_id:tenant,apply_credit:false,metadata:{requested_tier:"growth",billing_period:"monthly",amount:999,processed:true}});
+  assertEquals(response.status,200);assertEquals(ctx.calls.map((c:any)=>c.name),["payment_checkout_replay","create_center_tier_checkout"]);
+  const args=ctx.calls[1].args;assertEquals(args.p_tier,"growth");assertEquals(args.p_billing,"monthly");assertEquals(args.p_tenant_id,tenant);
+  assertEquals(Object.keys(args.p_provider_metadata).sort(),["click_merchant_id","click_service_id"]);
+}));
+Deno.test("actual center paid replay works without provider configuration and never opens a second payment",()=>scenario(async ctx=>{
+  ctx.replay.payment=order({purchase_type:"center_tier_upgrade",provider:"click",amount:1000,credit_amount:0,grant_completed_at:null});
+  Deno.env.delete("CLICK_SECRET_KEY");const response=await ctx.request({purchase_type:"center_tier_upgrade"});
+  assertEquals(response.status,202);assertEquals(response.body.payment_url,null);assertEquals(ctx.calls.map((c:any)=>c.name),["payment_checkout_replay","fulfill_paid_payment"]);
+}));
+Deno.test("actual center invalid choices and private admission errors have no fallback writes",()=>scenario(async ctx=>{
+  ctx.replay={ok:true,state:"absent"};
+  const input={plan_id:null,purchase_type:"center_tier_upgrade",tenant_id:tenant,apply_credit:false,metadata:{requested_tier:"growth",billing_period:"monthly"}};
+  const invalid=await ctx.request({...input,metadata:{requested_tier:"starter",billing_period:"monthly"}});
+  assertEquals(invalid.status,400);assertEquals(invalid.body.checkout_not_created,true);
+  for(const code of ["42501","22023","P0003","PGRST002"]){ctx.createError={code,message:"private database details"};
+    const response=await ctx.request(input);assertEquals(response.status,code==="42501"?403:["22023","P0003"].includes(code)?400:503);
+    assert(!JSON.stringify(response.body).includes("private"));
+    // A mutable SQL failure cannot retire a key another request may have used.
+    assertEquals(response.body.checkout_not_created,undefined);}
+}));
+for(const action of ["create_wallet_topup","create_ticket_purchase","create_seat_purchase","create_tier_upgrade_payment"])Deno.test(`partner ${action} retains the purchase key and authoritative tenant without repricing`,()=>{
+  const payload=partnerCheckoutPayload(action,tenant,{idempotency_key:input.idempotency_key,tenant_id:actor,amount:1000,quantity:2,seat_count:3,
+    experience_id:plan,plan_id:plan,center_office:true,apply_credit:true,credit_amount:500,requested_tier:"GROWTH",metadata:{grant_completed:true,tier_change_request_id:actor}});
+  assertEquals(payload.idempotency_key,input.idempotency_key);assertEquals(payload.tenant_id,tenant);
+  assertEquals((payload.metadata as any).grant_completed,undefined);assertEquals((payload.metadata as any).tier_change_request_id,undefined);
+  if(action==="create_wallet_topup")assertEquals(payload.credit_amount,undefined);
+  if(action==="create_tier_upgrade_payment"){assertEquals(payload.plan_id,undefined);assertEquals((payload.metadata as any).requested_tier,"growth");}
+});

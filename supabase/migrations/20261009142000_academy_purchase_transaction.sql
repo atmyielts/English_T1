@@ -66,6 +66,9 @@ begin
       select contact_id into contact from public.academy_payment_purchase_terms where platform_payment_id=payment.id;
       if not found then raise exception using errcode='23514',message='Academy purchase terms are unavailable'; end if;
       perform public.assert_academy_checkout_actor(p_user_id,payment.tenant_id,contact);
+    elsif payment.purchase_type in ('center_tier_upgrade','center_wallet_topup') or (payment.purchase_type in ('token_pack','seat_pack')
+      and exists(select 1 from public.partner_center_profiles where tenant_id=payment.tenant_id)) then
+      perform public.assert_center_checkout_actor(p_user_id,payment.tenant_id);
     else perform public.assert_payment_checkout_actor(p_user_id,payment.tenant_id); end if;
     if request.intent is distinct from p_intent then return jsonb_build_object('ok',false,'state','conflict'); end if;
     return jsonb_build_object('ok',true,'state','existing','payment',to_jsonb(payment));
@@ -76,6 +79,9 @@ begin
       select ap.contact_id into contact from public.academy_payments ap
         where ap.id=nullif(payment.metadata->>'academy_payment_id','')::uuid and ap.academy_id=payment.tenant_id;
       perform public.assert_academy_checkout_actor(p_user_id,payment.tenant_id,contact);
+    elsif payment.purchase_type in ('center_tier_upgrade','center_wallet_topup') or (payment.purchase_type in ('token_pack','seat_pack')
+      and exists(select 1 from public.partner_center_profiles where tenant_id=payment.tenant_id)) then
+      perform public.assert_center_checkout_actor(p_user_id,payment.tenant_id);
     else perform public.assert_payment_checkout_actor(p_user_id,payment.tenant_id); end if;
     return jsonb_build_object('ok',false,'state','legacy_review','transaction_id',payment.id);
   end if;

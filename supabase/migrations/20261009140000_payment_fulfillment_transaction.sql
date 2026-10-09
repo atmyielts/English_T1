@@ -98,6 +98,7 @@ declare
   i integer; retries integer; outcome jsonb := '{}'::jsonb;
   cp public.partner_center_profiles%rowtype;
   sub public.partner_center_tier_subscriptions%rowtype;
+  center_request public.partner_center_tier_change_requests%rowtype;
   tier text; billing text; previous_tier text;
   ap public.academy_payments%rowtype;
   credit public.platform_credit_ledger%rowtype;
@@ -209,6 +210,17 @@ begin
       if tier not in ('growth','premium','exclusive') or terms is null or days is null then raise exception 'invalid_tier_terms'; end if;
       select * into cp from public.partner_center_profiles where tenant_id=p.tenant_id for update;
       if not found then raise exception 'missing_center_profile'; end if;
+      if nullif(meta->>'tier_change_request_id','') is not null then
+        select * into center_request from public.partner_center_tier_change_requests
+          where id=(meta->>'tier_change_request_id')::uuid for update;
+        if not found or (center_request.tenant_id,center_request.requested_by,center_request.requested_tier,
+          center_request.billing_period,center_request.amount,center_request.currency) is distinct from
+          (p.tenant_id,p.user_id,tier,p.plan_snapshot#>>'{metadata,billing_period}',coalesce(p.original_amount,p.amount),p.currency)
+          or center_request.status not in ('pending_payment','paid')
+          or (center_request.payment_id is not null and center_request.payment_id<>p.id) then raise exception 'tier_request_mismatch'; end if;
+      elsif exists(select 1 from public.payment_checkout_requests where payment_id=p.id) then
+        raise exception 'captured_tier_request_missing';
+      end if;
       previous_tier := cp.package_tier;
       if array_position(array['starter','growth','premium','exclusive'],tier)
         <array_position(array['starter','growth','premium','exclusive'],previous_tier) then raise exception 'tier_downgrade_requires_review'; end if;

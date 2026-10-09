@@ -1838,6 +1838,32 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         if (response) return response;
       }
 
+      // Catalogue/admission/SQL failures do not prove absence of a concurrent
+      // same-key order. Only fixed invalid input cannot create this exact intent.
+      const checkoutInvalid = (detail: Record<string, unknown>, fixedInput = false) =>
+        jsonResponse(400, { ...detail, ...(fixedInput ? { checkout_not_created: true } : {}) });
+      if (normalizePurchaseType(body.purchase_type) === "center_tier_upgrade") {
+        if (!clickConfiguration().configured) return jsonResponse(503, { error: "Click checkout is temporarily unavailable", error_code: "click_not_configured" });
+        const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+        if (typeof intent.tenant_id !== "string" || !uuid.test(intent.tenant_id)
+          || !["growth", "premium", "exclusive"].includes(String(intent.requested_tier))
+          || !["monthly", "annual"].includes(String(intent.billing_period))
+          || (intent.plan_id != null && !uuid.test(String(intent.plan_id)))
+          || (intent.tier_change_request_id != null && !uuid.test(String(intent.tier_change_request_id)))) {
+          return checkoutInvalid({ error: "Valid center, tier and billing period are required" }, true);
+        }
+        const { data: checkout, error: checkoutError } = await supabase.rpc("create_center_tier_checkout", {
+          p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
+          p_tenant_id: intent.tenant_id, p_tier: intent.requested_tier, p_billing: intent.billing_period,
+          p_provider_metadata: { click_service_id: getClickServiceId(), click_merchant_id: getClickMerchantId() },
+        });
+        if (checkoutError?.code === "22023" || checkoutError?.code === "P0002" || checkoutError?.code === "P0003") return checkoutInvalid({
+          error: "This center tier is unavailable for checkout. Refresh the catalogue or contact support.", error_code: "center_checkout_invalid",
+        });
+        if (checkoutError) return checkoutFailure(checkoutError);
+        return await checkoutResponse(checkout) ?? jsonResponse(503, { error: "Checkout is temporarily unavailable. Retry the same order.", error_code: "checkout_unavailable" });
+      }
+
       // ── Academy tuition (student-initiated; contact-based auth) ───────────────
       // Students are academy *contacts*, not tenant members, so this branch
       // resolves access via academy_contacts instead of tenant_memberships.
@@ -1849,7 +1875,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
         if (typeof academyId !== "string" || !uuid.test(academyId) || typeof offerId !== "string" || !uuid.test(offerId)
           || (contactId !== null && (typeof contactId !== "string" || !uuid.test(contactId)))) {
-          return jsonResponse(400, { error: "Valid academy_id, offer_id and contact_id are required" });
+          return checkoutInvalid({ error: "Valid academy_id, offer_id and contact_id are required" });
         }
         const { data: checkout, error: checkoutError } = await supabase.rpc("create_academy_payment_checkout", {
           p_user_id: authedUserId, p_request_key: checkoutRequestKey, p_intent: intent,
@@ -1857,7 +1883,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           p_provider_metadata: { click_service_id: getClickServiceId(), click_merchant_id: getClickMerchantId() },
         });
         if (checkoutError) {
-          if (checkoutError.code === "22023" || checkoutError.code === "P0002" || checkoutError.code === "P0003") return jsonResponse(400, {
+          if (checkoutError.code === "22023" || checkoutError.code === "P0002" || checkoutError.code === "P0003") return checkoutInvalid({
             error: "This Academy offer or contact is unavailable for checkout. Please refresh the offer or contact the Academy.", error_code: "academy_checkout_invalid",
           });
           return checkoutFailure(checkoutError);
@@ -1888,7 +1914,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         : defaultTenantId;
 
       if (!tenantId) {
-        return jsonResponse(400, {
+        return checkoutInvalid({
           error: "No active tenant membership",
         });
       }
@@ -1905,20 +1931,20 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         directAmount = normalizeMoney((body as any).amount);
         directCurrency = String((body as any).currency ?? "UZS").toUpperCase();
         if (directAmount <= 0) {
-          return jsonResponse(400, { error: "amount must be positive" });
+          return checkoutInvalid({ error: "amount must be positive" }, true);
         }
         if (directCurrency !== "UZS") {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Center wallet top-up currently supports UZS only",
           });
         }
         if (body.apply_credit || typeof body.credit_amount !== "undefined") {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Platform credit cannot be used to top up a center wallet",
           });
         }
         if (body.referral_code || body.referral_attribution_id) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error:
               "Referral discounts cannot be used to top up a center wallet",
           });
@@ -1926,14 +1952,14 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       } else if (purchaseType === "token_pack") {
         const experienceId = String(body.experience_id ?? "");
         if (!experienceId) {
-          return jsonResponse(400, { error: "experience_id is required" });
+          return checkoutInvalid({ error: "experience_id is required" });
         }
 
         const qty = normalizeQuantity(body.quantity, 200);
         if (!qty) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "quantity must be between 1 and 200",
-          });
+          }, true);
         }
         quantity = qty;
 
@@ -1943,9 +1969,9 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
             (body as any).days,
         );
         if (!days) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "expires_in_days must be between 1 and 30",
-          });
+          }, true);
         }
         expiresInDays = days;
 
@@ -1955,17 +1981,17 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           .eq("id", experienceId)
           .maybeSingle();
         if (expErr || !expRow) {
-          return jsonResponse(400, { error: "Invalid experience_id" });
+          return checkoutInvalid({ error: "Invalid experience_id" });
         }
         experience = expRow as ExperiencePriceRow;
         if (!experience.is_active) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Experience is not active",
           });
         }
         const unitAmount = Number(experience.price_amount);
         if (!Number.isFinite(unitAmount) || unitAmount <= 0) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Experience price is not set",
           });
         }
@@ -1975,13 +2001,13 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           200,
         );
         if (!qty) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "seat_count must be between 1 and 200",
-          });
+          }, true);
         }
         quantity = qty;
         if (!body.plan_id) {
-          return jsonResponse(400, { error: "plan_id is required" });
+          return checkoutInvalid({ error: "plan_id is required" });
         }
 
         const { data: planRow, error: planError } = await supabase
@@ -1994,7 +2020,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           .maybeSingle();
 
         if (planError || !planRow) {
-          return jsonResponse(400, { error: "Invalid plan_id" });
+          return checkoutInvalid({ error: "Invalid plan_id" });
         }
         plan = planRow as PlanRow;
       } else if (body.plan_id) {
@@ -2008,7 +2034,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           .maybeSingle();
 
         if (planError || !planRow) {
-          return jsonResponse(400, { error: "Invalid plan_id" });
+          return checkoutInvalid({ error: "Invalid plan_id" });
         }
         plan = planRow as PlanRow;
       } else if (body.product_id) {
@@ -2024,13 +2050,13 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           .maybeSingle();
 
         if (planError || !planRow) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "No active plan for product",
           });
         }
         plan = planRow as PlanRow;
       } else {
-        return jsonResponse(400, {
+        return checkoutInvalid({
           error: "plan_id or product_id is required",
         });
       }
@@ -2053,7 +2079,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       }
 
       if (!Number.isFinite(originalAmount) || originalAmount <= 0) {
-        return jsonResponse(400, { error: "Invalid plan amount" });
+        return checkoutInvalid({ error: "Invalid plan amount" });
       }
 
       let amount = originalAmount;
@@ -2067,7 +2093,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           purchaseType === "token_pack" || purchaseType === "seat_pack" ||
           purchaseType === "center_wallet_topup"
         ) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Coupons are not supported for this purchase type",
           });
         }
@@ -2086,10 +2112,10 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           });
         }
         if (!couponRow) {
-          return jsonResponse(400, { error: "Invalid coupon code" });
+          return checkoutInvalid({ error: "Invalid coupon code" });
         }
         if (!plan) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: "Coupon requires a plan purchase",
           });
         }
@@ -2102,7 +2128,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           authedUserId,
         );
         if (!validation.ok) {
-          return jsonResponse(400, {
+          return checkoutInvalid({
             error: validation.error,
             error_code: validation.error_code,
           });
@@ -2155,7 +2181,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       }
 
       if (!Number.isFinite(amount) || amount < 0) {
-        return jsonResponse(400, { error: "Invalid final amount" });
+        return checkoutInvalid({ error: "Invalid final amount" });
       }
 
       if (amount > 0) {
@@ -2170,7 +2196,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       }
 
         if (String(currency ?? "").toUpperCase() !== "UZS") {
-          return jsonResponse(400, { error: "Click payments require UZS currency" });
+          return checkoutInvalid({ error: "Click payments require UZS currency" });
         }
         const amountGuard = assertClickAmountAllowed(amount);
         if (amountGuard) return amountGuard;
@@ -2210,6 +2236,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
           plan_snapshot: plan ? buildPlanSnapshot(plan) : {}, entitlement_terms: plan ? buildEntitlementTerms(plan) : {}, metadata,
         },
       });
+      if (checkoutError?.code === "22023") return checkoutInvalid({ error: "These purchase terms are unavailable. Refresh your choices.", error_code: "checkout_invalid" });
       if (checkoutError) return checkoutFailure(checkoutError);
       return await checkoutResponse(checkout) ?? jsonResponse(503, { error: "Checkout is temporarily unavailable. Retry the same order.", error_code: "checkout_unavailable" });
     }

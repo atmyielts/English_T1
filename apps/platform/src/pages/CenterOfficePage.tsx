@@ -1,3 +1,4 @@
+import { useOfficeCheckout } from '../lib/useOfficeCheckout';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpRight,
@@ -36,8 +37,6 @@ import {
   partnerOfficeCenter,
   partnerOfficeAcademies,
   partnerOfficeCreateAcademy,
-  partnerOfficeCreateSeatPurchase,
-  partnerOfficeCreateTicketPurchase,
   partnerOfficeCreateVoucherBatch,
   partnerOfficeCreateWalletTopup,
   partnerOfficeDashboard,
@@ -56,7 +55,6 @@ import {
   partnerOfficeInviteStaff,
   partnerOfficeCreateMockEvent,
   partnerOfficeCreateStudentInvites,
-  partnerOfficeCreateTierUpgradePayment,
   partnerOfficeMarkEventAttendance,
   partnerOfficeRequestCashPayout,
   partnerOfficeResendStudentInvite,
@@ -80,7 +78,6 @@ import {
   partnerOfficeVoucherBatches,
   partnerOfficeVouchers,
   partnerOfficeWallet,
-  clickStatus,
   type PartnerCenterAcademy,
   type PartnerCenterProfile,
   type PartnerCenterCapabilities,
@@ -880,6 +877,18 @@ export const CenterOfficePage: React.FC = () => {
     }
   };
 
+  const officeCheckout = useOfficeCheckout('center-office', async kind => {
+    setPendingTransactionId(null); setPendingKind(null);
+    setPendingPaymentUrl(null);
+    await refreshAll();
+    setSuccess(kind === 'seats' ? 'Seats added.' : kind === 'tier' ? 'Center tier updated.' : kind === 'wallet' ? 'Wallet topped up.' : 'Mock tickets generated.');
+  }, setSuccess);
+  useEffect(() => {
+    if (!officeCheckout.pending || officeCheckout.pending.paid) setPendingPaymentUrl(null);
+    if (!officeCheckout.pending) { setPendingTransactionId(null); setPendingKind(null); }
+  }, [officeCheckout.pending]);
+
+
   useEffect(() => {
     void refreshAll();
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -924,21 +933,18 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTicketPurchase(token, {
+      const res = await officeCheckout.start('tickets', {
         ...ticketForm,
         tenant_id: centerTenantId,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('tickets'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('tickets');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('tickets'); }
       if (res.payment_url) {
         openPayment(res.payment_url, 'mock ticket pack payment');
         setSuccess('Payment opened. Mock tickets will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Mock tickets generated.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -964,21 +970,18 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateSeatPurchase(token, {
+      const res = await officeCheckout.start('seats', {
         ...seatForm,
         tenant_id: centerTenantId,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('seats'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('seats');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('seats'); }
       if (res.payment_url) {
         openPayment(res.payment_url, 'seat pack payment');
         setSuccess('Payment opened. Seats will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Seats added.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -988,36 +991,8 @@ export const CenterOfficePage: React.FC = () => {
   };
 
   const checkPayment = async (transactionId = pendingTransactionId, kindOverride: PendingKind | null = pendingKind) => {
-    if (!transactionId) return;
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
     setError(null);
-    try {
-      const res = await clickStatus(token, transactionId);
-      if (isPaid(res.status)) {
-        const completedKind = kindOverride ?? pendingKind;
-        setPendingTransactionId(null);
-        setPendingKind(null);
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess(
-          completedKind === 'seats'
-            ? 'Seats added.'
-            : completedKind === 'tier'
-              ? 'Center tier updated.'
-              : completedKind === 'wallet'
-                ? 'Wallet topped up.'
-                : 'Mock tickets generated.',
-        );
-      } else {
-        setSuccess(`Payment status: ${res.status}`);
-      }
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+    try { await officeCheckout.check(transactionId, kindOverride); } catch (err) { setError(parseError(err)); }
   };
 
   useEffect(() => {
@@ -1115,22 +1090,19 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTierUpgradePayment(token, {
+      const res = await officeCheckout.start('tier', {
         tenant_id: centerTenantId,
         requested_tier: plan.tier,
         billing_period: plan.billing_period,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('tier'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('tier');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('tier'); }
       if (res.payment_url) {
         openPayment(res.payment_url, `${plan.tier} tier payment`);
         setSuccess('Payment opened. The center tier updates automatically after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Center tier updated.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -1142,39 +1114,24 @@ export const CenterOfficePage: React.FC = () => {
   const requestTopup = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setLoading(true); setError(null); setSuccess(null);
     try {
-      const res = await partnerOfficeCreateWalletTopup(token, {
-        tenant_id: centerTenantId,
-        amount: walletTopup.amount,
-        currency: wallet.currency,
-        note: walletTopup.note,
-        center_office: true,
-        settlement_mode: clickPaymentsEnabled ? 'online' : 'manual',
-        redirect_url: buildPaymentReturnUrl('wallet'),
-      });
+      const request = { tenant_id: centerTenantId, amount: walletTopup.amount, currency: wallet.currency,
+        note: walletTopup.note, center_office: true, redirect_url: buildPaymentReturnUrl('wallet') };
+      const res = clickPaymentsEnabled ? await officeCheckout.start('wallet', request)
+        : await partnerOfficeCreateWalletTopup(token, { ...request, settlement_mode: 'manual' });
       if ('transaction_id' in res) {
-        setPendingTransactionId(res.transaction_id);
-        setPendingKind('wallet');
+        if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('wallet'); }
         if (res.payment_url) {
           openPayment(res.payment_url, 'wallet top-up');
           setSuccess('Click payment opened. Wallet credit posts automatically after payment is confirmed.');
-        } else if (isPaid(res.status)) {
-          setPendingPaymentUrl(null);
-          await refreshAll();
-          setSuccess('Wallet topped up.');
+        } else if (isPaid(res.status) && res.grant_completed !== true) {
+          setPendingPaymentUrl(null); setSuccess('Payment received. Activation is still pending. Do not pay again.');
         }
       } else {
-        await refreshAll();
-        setSuccess(clickPaymentsEnabled ? 'Manual top-up request recorded.' : 'Click is not configured yet. Manual top-up request recorded for admin settlement.');
+        await refreshAll(); setSuccess('Manual top-up request recorded for admin settlement.');
       }
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(parseError(err)); } finally { setLoading(false); }
   };
 
   const saveBranding = async () => {
@@ -1774,6 +1731,16 @@ export const CenterOfficePage: React.FC = () => {
 
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+          {officeCheckout.pending ? (
+            <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p>{officeCheckout.pending.paid ? 'Payment received. Activation is still pending. Do not pay again.' : officeCheckout.pending.transactionId ? 'Your purchase is recorded. Check its payment status before creating another.' : 'The original purchase is saved. Resume it before creating another.'}</p>
+              {officeCheckout.pending.paymentUrl && !officeCheckout.pending.paid ? <a href={officeCheckout.pending.paymentUrl} target="_blank" rel="noreferrer" className={secondaryButton}>Open recorded payment</a> : null}
+              <button type="button" className={secondaryButton} disabled={loading} onClick={() => {
+                setLoading(true); setError(null);
+                void (officeCheckout.pending?.transactionId ? officeCheckout.check() : officeCheckout.resume()).catch(err => setError(parseError(err))).finally(() => setLoading(false));
+              }}>{officeCheckout.pending.transactionId ? 'Check recorded purchase' : 'Resume original purchase'}</button>
+            </div>
+          ) : null}
           {pendingPaymentUrl ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1909,7 +1876,7 @@ export const CenterOfficePage: React.FC = () => {
               catalog={tierCatalog}
               currentTier={capabilities.tier}
               billingPeriod={tierBillingPeriod}
-              loading={loading}
+              loading={loading || Boolean(officeCheckout.pending)}
               pending={pendingKind === 'tier' ? pendingTransactionId : null}
               maxOnlineAmount={onlineMaxAmount}
               paymentsEnabled={clickPaymentsEnabled}
@@ -1931,7 +1898,7 @@ export const CenterOfficePage: React.FC = () => {
                   Note
                   <textarea value={walletTopup.note} onChange={(e) => setWalletTopup((prev) => ({ ...prev, note: e.target.value }))} className={`${inputClass} min-h-[90px]`} />
                 </label>
-                <button type="button" onClick={() => void requestTopup()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
+                <button type="button" onClick={() => void requestTopup()} disabled={loading || Boolean(officeCheckout.pending)} className={`${primaryButton} mt-5 w-full`}>
                   <WalletCards className="h-4 w-4" />
                   {clickPaymentsEnabled ? 'Pay with Click' : 'Request manual top-up'}
                 </button>
@@ -1961,7 +1928,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineQuantity={ticketMaxOnlineQuantity}
                 onlineBlocked={ticketOnlineBlocked}
                 paymentsEnabled={clickPaymentsEnabled}
-                loading={loading}
+                loading={loading || Boolean(officeCheckout.pending)}
                 pending={pendingKind === 'tickets' ? pendingTransactionId : null}
                 onChange={setTicketForm}
                 onBuy={() => void buyTickets()}
@@ -1975,7 +1942,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineQuantity={seatMaxOnlineQuantity}
                 onlineBlocked={seatOnlineBlocked}
                 paymentsEnabled={clickPaymentsEnabled}
-                loading={loading}
+                loading={loading || Boolean(officeCheckout.pending)}
                 pending={pendingKind === 'seats' ? pendingTransactionId : null}
                 onChange={setSeatForm}
                 onBuy={() => void buySeats()}
