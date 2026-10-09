@@ -383,7 +383,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'candidate.header.backHome': 'Bosh sahifaga qaytish',
   'candidate.form.title': "Nomzod ma’lumotlarini kiriting",
   'candidate.form.desc':
-    "O‘qituvchi bergan Candidate ID dan foydalaning. Bu kirish bir martalik. Testni yarimda tark etsangiz sessiya yopiladi va davom etib bo‘lmaydi.",
+    "Tasdiqlangan emailingiz bilan kiring va o‘qituvchi bergan Candidate ID dan foydalaning. Har bir kod bitta hisob va bitta imtihon urinishi uchun beriladi.",
   'candidate.form.candidateId': 'Candidate ID',
   'candidate.form.candidateIdPlaceholder': 'masalan ABCD-1234',
   'candidate.form.firstName': 'Ism',

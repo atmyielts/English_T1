@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { buildCandidateHandoffUrl, candidateEntry } from '../lib/platformClient';
 import { useI18n } from '../i18n';
 import { LanguageSwitcher } from '../components/layout/LanguageSwitcher';
 import { SeoHead } from '../components/seo/SeoHead';
+import { useCandidateAccount } from '../lib/useCandidateAccount';
 
 export const CandidateEntryPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
+  const account = useCandidateAccount();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
@@ -23,6 +26,7 @@ export const CandidateEntryPage: React.FC = () => {
 
   const toUserMessage = (err: unknown): string => {
     const raw = err instanceof Error ? err.message : String(err ?? t('candidate.error.startFailed'));
+    if (/sign in|verify your email|signed-in account|account changed/i.test(raw)) return raw.match(/"error":"([^"]+)"/)?.[1] ?? raw;
     if (/already been used/i.test(raw)) return t('candidate.error.used');
     if (/not found/i.test(raw)) return t('candidate.error.notFound');
     if (/expired/i.test(raw)) return t('candidate.error.expired');
@@ -42,6 +46,12 @@ export const CandidateEntryPage: React.FC = () => {
   const onChange = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   };
+
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, ...account.profile }));
+    setHandoffUrl(null);
+    setError(null);
+  }, [account.identity, account.profile]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -109,11 +119,12 @@ export const CandidateEntryPage: React.FC = () => {
             </div>
             <button
               type="button"
-              className="sm:hidden w-full px-4 py-2 rounded-full border border-gray-900 bg-white/80 text-sm font-semibold"
+              className="sm:hidden w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-gray-900 bg-white/80 text-sm font-semibold"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-expanded={mobileMenuOpen}
               aria-controls="candidate-mobile-actions"
             >
+              {mobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
               {t('common.menu')}
             </button>
           </div>
@@ -149,7 +160,7 @@ export const CandidateEntryPage: React.FC = () => {
           </p>
 
           {error ? (
-            <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
+            <div role="alert" className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
           ) : null}
           {handoffUrl ? (
             <div className="mt-4 text-sm text-blue-800 bg-blue-50 border border-blue-200 rounded-lg p-3 flex flex-col gap-3">
@@ -164,6 +175,7 @@ export const CandidateEntryPage: React.FC = () => {
             </div>
           ) : null}
 
+          {!account.session ? <button type="button" disabled={account.loading} className="mt-6 px-5 py-3 rounded-full bg-gray-900 text-white font-semibold disabled:opacity-60" onClick={() => navigate(`/auth?mode=signin&returnTo=${encodeURIComponent(`/candidate${form.token_code ? `?code=${encodeURIComponent(form.token_code)}` : ''}`)}`)}>{t('header.signIn')}</button> : null}
           <form onSubmit={submit} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="md:col-span-2 text-sm font-semibold text-gray-700">
               {t('candidate.form.candidateId')}
@@ -199,6 +211,7 @@ export const CandidateEntryPage: React.FC = () => {
               {t('candidate.form.email')}
               <input
                 type="email"
+                readOnly
                 value={form.email}
                 onChange={onChange('email')}
                 required
@@ -220,7 +233,7 @@ export const CandidateEntryPage: React.FC = () => {
             <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || account.loading || !account.session}
                 className="px-5 py-3 rounded-full bg-gray-900 text-white font-semibold disabled:opacity-60"
               >
                 {loading ? t('candidate.form.starting') : t('candidate.form.start')}
