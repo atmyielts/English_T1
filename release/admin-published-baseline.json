@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "capturedAt": "2026-10-09T11:37:19.986617+00:00",
+  "metadataRecheckedAt": "2026-10-09T11:49:44.178981+00:00",
+  "comparedBase": "21064f81f5c693f7c1c7b965f28345338c166690",
+  "normalization": "CRLF to LF only; source BOM is retained",
+  "mode": "Read-only published source capture. No deployed source, policy or customer records changed.",
+  "functions": [
+    {
+      "name": "academy-video",
+      "version": 5,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/academy/access.ts",
+          "sha256": "21d65dbda17bd448641cd30fda55adecc1631a14229b9fe44edd2c5588ce3d84",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/academy-video/index.ts",
+          "sha256": "20bc87efca450b6d0981cd49a372e88ce8a874733996f4417b2a8c987f7d39d2",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "admin-analytics",
+      "version": 26,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-analytics/index.ts",
+          "sha256": "d234831fa0340f9ff2daa84c4bd92da763e1a0be96038ec219b1eb6d263e4f42",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "admin-assets",
+      "version": 40,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-assets/index.ts",
+          "sha256": "512f5a63bf927484f9c46bf2432a2a3d1afa61f03ecb0532bb157b1f14245ac1",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/media-storage.ts",
+          "sha256": "6740ec103aaab1ef280e11b968eeb4dc83e77d2533436f7643599732d2b516e2",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-billing",
+      "version": 35,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-billing/index.ts",
+          "sha256": "b470d5d042827e718994275c91071fa799af4eac988c92ff800d55d36e8927ac",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-builder",
+      "version": 44,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-builder/index.ts",
+          "sha256": "9fa59c546268c0afd89167c1100b1b26acef64a91da590b31c1aecc0e4b741cb",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-coupons",
+      "version": 35,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-coupons/index.ts",
+          "sha256": "af09c32aa95c5cedc56d7eeed408e7260e283d53e48f8350b7f7fdac694aa440",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-english-content",
+      "version": 18,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-english-content/index.ts",
+          "sha256": "08c4e645094e461e4a17609cf880fa42d95db0eedd50a34cb68cf00c0a944b42",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/english-learning.ts",
+          "sha256": "f673f8b230b6ed8dd84367b1a361d03a5ae7b282deb83a20692a2f5eaa338b58",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-english-ops",
+      "version": 18,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-english-ops/index.ts",
+          "sha256": "dd8a9312516a0e6698c79de87223eb49197ea8dec7439028454f5367aaf8dea3",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/english-learning.ts",
+          "sha256": "f673f8b230b6ed8dd84367b1a361d03a5ae7b282deb83a20692a2f5eaa338b58",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-function-errors",
+      "version": 15,
+      "verifyJwt": true,
+      "files": [
+        {
+          "path": "supabase/functions/admin-function-errors/index.ts",
+          "sha256": "1e7c8173128e7dc100d447728c33b1dd17a693d7110a117a6224e0e3e3ea36ee",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "admin-ielts-playbook",
+      "version": 25,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-ielts-playbook/index.ts",
+          "sha256": "18fff1442c9767d9de14da77bb9e086125c4208160e6f0a472a40d63bb25fae6",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/ielts-playbook.ts",
+          "sha256": "3e55b99f23c64973c3cf5ccee79380d8491b79c06ba76a831961d414a40a57da",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-ielts-practice",
+      "version": 23,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-ielts-practice/index.ts",
+          "sha256": "5e9e94933d3b08d53ab0c4661862be8333c79daebfe2aa39a1c459d115a0275e",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/ielts-practice-blueprints.ts",
+          "sha256": "957a8ca1469f0039cbb2eb3cca9c46da0fbbd20599739ad2edc30e8cd113ed4b",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-language-config",
+      "version": 19,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-language-config/index.ts",
+          "sha256": "09fe7c551302d3e0965ad31b15874a7346ab34d5f3cb8ad3ddaa45a0ac26f1dc",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-partners",
+      "version": 19,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-partners/index.ts",
+          "sha256": "48604e7215006bbd297dd399e828ada48150a8e8746d540944d52a56ad401afe",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "admin-payments",
+      "version": 46,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-payments/index.ts",
+          "sha256": "b30b9b5da432a79745e057051703692361cf82aab0a32368c1b04496f350462e",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/payment-terms.ts",
+          "sha256": "f02548fc9ca3728638d431bfd316593cc7a7f1b4974b26a79a370bf5281fc6d2",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "admin-products",
+      "version": 22,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-products/index.ts",
+          "sha256": "204a4748c9b2e9f7d7483ee32abc3cb18160b307f292067c48859264968b462a",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-referrals",
+      "version": 17,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-referrals/index.ts",
+          "sha256": "4b3e8d9ab4796cc1c81cd78ea532400aa152485ea6776d8f178023a7248dcbcf",
+          "matchesReviewedBase": false
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-tests",
+      "version": 40,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-tests/index.ts",
+          "sha256": "697baa4b332924fdc3282270b6bb2d94e0abe7c72b1b0f0b4e834fccefb412ab",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-users",
+      "version": 38,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-users/index.ts",
+          "sha256": "d27ae50df7e19f521b33a3c422de2405c4c103f7942048a461bd90d150af8bf6",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "admin-writing-reviews",
+      "version": 20,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-writing-reviews/index.ts",
+          "sha256": "2c745dc495bee7e9a19ba710c3e7496ff462ea09392a53af739c345d37774073",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "guide",
+      "version": 2,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/guide/handler.ts",
+          "sha256": "75c1f702f572da3b9bf04b552533ed796eea4f5ee715e94c2941e566b38e7e8e",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/guide/index.ts",
+          "sha256": "05fdd705d5419c4645f3ade670c1b1ac7fef90373bf577d025fcb80e2c316503",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/guide-checks.ts",
+          "sha256": "be38f435ecdc170d96f0e5d85c05ecd28e96ebfb58c1d1d93f92259a4b44b4d7",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/guide-goals.ts",
+          "sha256": "627cfb0d235ad5cfe894016ec03de6f9b637751e332be0b412ee82efe53e4b65",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/guide-metrics.ts",
+          "sha256": "df4f318885febacc8c25f1e768936c2bee96465c4fe61afbf0b479d8aef19a74",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/guide-seed.ts",
+          "sha256": "8bba0061bc3d894f8519f1e941bee414dab089acc2842d8254fde650591bb57e",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/guide.ts",
+          "sha256": "241f46e0bbc148e285d5da6781dcba27205e550cf6bef452e8e8d3e1f219becf",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "import-experience",
+      "version": 40,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/import-experience/index.ts",
+          "sha256": "5ec7062f0472751bb84157e901f85c002ebd029044c909e549d19f5ba8953624",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "b3b0f66777ef27652e4b1785ab4b24745a9c2e1ddd5856e8c6975846a8ca41ab",
+          "matchesReviewedBase": false
+        }
+      ]
+    },
+    {
+      "name": "me",
+      "version": 43,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/me/handler.ts",
+          "sha256": "f84ddae1e5960ea381e90feacd039bb1f5778afc87c809fa9e9bf0915102ae34",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/me/index.ts",
+          "sha256": "85cc95e06a32bc1baceb9b9f0e04dd7166995257c9fdc8e552e12f4378afd908",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "platform-settings",
+      "version": 43,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/platform-settings/index.ts",
+          "sha256": "f6db21f123b79404a712709c63a14c1182afb0f7bbb44495798112386ef40aaf",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    },
+    {
+      "name": "support-center",
+      "version": 40,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/support-center/index.ts",
+          "sha256": "9f2f740ef40ce24683ed71ed36554d21c3b7dbb2f9c29e969f55534ec53eabe9",
+          "matchesReviewedBase": true
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "1b3de3fa91d1e0213c04e41a0eed509eb46d3cce0ae5d869b45f111be06c3c0f",
+          "matchesReviewedBase": true
+        }
+      ]
+    }
+  ]
+}

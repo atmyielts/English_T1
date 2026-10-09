@@ -17,7 +17,7 @@ const actors=Array.from({length:6},(_,index)=>({id:randomUUID(),email:'marketpla
 const [owner,teacher,manager,member,disabled,outsider]=actors;
 const tenantId=randomUUID(),otherTenant=randomUUID(),tenantIds=[tenantId,otherTenant];
 const checks=[],created=new Set(),sessions=new Map(),cleanupErrors=[];
-let cleanupPromise,server,served=false;
+let cleanupPromise,server,served=false,cleanupFinished=false,cleanupSucceeded=false;
 const assert=(value,message)=>{if(!value)throw Error(message);};
 async function request(path,headers=admin,method='GET',body){const response=await fetch(base+path,{headers,method,body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(20_000)});return{status:response.status,data:await response.json().catch(()=>null),version:response.headers.get('X-Marketplace-Version')};}
 const headers=actor=>({...publicHeaders,Authorization:'Bearer '+sessions.get(actor.id).access_token,'X-Marketplace-Client-Version':'2'});
@@ -56,8 +56,8 @@ async function cleanup(){
     }
     sessions.clear();actors.forEach(a=>{a.password='';});
     const evidence={checkedAt:new Date().toISOString(),productionContacted:true,exclusiveQaFixturesOnly:true,customerPrivateRecordsRead:0,customerRecordsChanged:0,runId:run,checks,ownedActors:actors.map(a=>({id:a.id,email:a.email})),ownedTenants:tenantIds,cleanupConfirmed:cleanupErrors.length===0,fixturesRemoved:cleanupErrors.length===0,temporaryActorsRemoved:cleanupErrors.length===0,logoutConfirmed:cleanupErrors.length===0,cleanupErrors};
-    writeFileSync(output,JSON.stringify(evidence,null,2)+'\n');if(cleanupErrors.length)throw Error(cleanupErrors.join('; '));console.log(JSON.stringify(evidence));return evidence;
-  })();return cleanupPromise;
+    writeFileSync(output,JSON.stringify(evidence,null,2)+'\n');if(cleanupErrors.length)throw Error(cleanupErrors.join('; '));cleanupSucceeded=true;console.log(JSON.stringify(evidence));return evidence;
+  })().finally(()=>{cleanupFinished=true;});return cleanupPromise;
 }
 try{
   // Refuse fixture creation until both permission and v2 command boundaries exist.
@@ -116,7 +116,8 @@ try{
       res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
       if(req.headers.host!=='127.0.0.1:61988'){res.writeHead(403);return res.end('{}');}
       if(req.method==='GET'&&req.url==='/session'&&!served){served=true;return res.end(JSON.stringify(bootstrap));}
-      if(req.method==='POST'&&req.url==='/cleanup'){try{const e=await cleanup();res.end(JSON.stringify({cleaned:e.cleanupConfirmed}));}catch{res.writeHead(500);res.end('{"cleaned":false}');}finally{server.close();}return;}
+      if(req.method==='POST'&&req.url==='/cleanup'){void cleanup().catch(()=>{process.exitCode=1;});res.writeHead(202);return res.end('{"started":true}');}
+      if(req.method==='GET'&&req.url==='/cleanup-status'){res.writeHead(cleanupFinished&&!cleanupSucceeded?500:200);res.end(JSON.stringify({finished:cleanupFinished,cleaned:cleanupSucceeded}));if(cleanupFinished)server.close();return;}
       res.writeHead(404);res.end('{}');
     });
     await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(61988,'127.0.0.1',resolve);});

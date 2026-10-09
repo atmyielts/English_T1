@@ -1,7 +1,7 @@
 async (page) => {
   const bridge='http://127.0.0.1:61988',origin='https://schood.online';
   const assert=(value,message)=>{if(!value)throw Error(message);};
-  let consumed=false,teacherContext,ownedListing,ownedApplication;
+  let consumed=false,teacherContext,ownedListing,ownedApplication,evidence;
   const checks=[],errors=[],blockedWrites=[];
   try{
     const reply=await page.request.get(bridge+'/session');assert(reply.status()===200,'Exclusive QA bridge unavailable');
@@ -92,9 +92,13 @@ async (page) => {
     await teacher.getByRole('heading',{name:title,exact:true}).waitFor();await teacher.getByText('Status: hired',{exact:true}).waitFor();
     checks.push({case:'published-closure-removes-public-listing-and-retains-owned-hiring-history',passed:true});
     assert(errors.length===0&&blockedWrites.length===0,'Unexpected browser error or application write');
-    return {checkedAt:new Date().toISOString(),productionContacted:true,actualQaBrowserJourney:true,customerPrivateRecordsRead:0,customerRecordsChanged:0,checks,pageErrors:errors,blockedWrites};
+    evidence={checkedAt:new Date().toISOString(),productionContacted:true,actualQaBrowserJourney:true,customerPrivateRecordsRead:0,customerRecordsChanged:0,checks,pageErrors:errors,blockedWrites,cleanupConfirmed:false};return evidence;
   }finally{
-    try{if(consumed){const response=await page.request.post(bridge+'/cleanup');assert(response.status()===200&&(await response.json()).cleaned===true,'Exclusive QA cleanup not confirmed');}}
+    try{if(consumed){const response=await page.request.post(bridge+'/cleanup',{timeout:10_000});assert(response.status()===202&&(await response.json()).started===true,'Exclusive QA cleanup did not start');
+      const deadline=Date.now()+180_000;let confirmed=false;
+      while(Date.now()<deadline){const status=await page.request.get(bridge+'/cleanup-status',{timeout:10_000}),state=await status.json();if(state.finished){assert(status.status()===200&&state.cleaned===true,'Exclusive QA cleanup failed');confirmed=true;break;}await new Promise(resolve=>setTimeout(resolve,500));}
+      assert(confirmed,'Exclusive QA cleanup was not confirmed within the bounded wait');if(evidence)evidence.cleanupConfirmed=true;
+    }}
     finally{await page.context().clearCookies();if(teacherContext){await teacherContext.clearCookies();await teacherContext.close();}}
   }
 }

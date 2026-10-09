@@ -59,7 +59,7 @@
     "test:score-cache:privacy": "node scripts/test-score-cache-privacy.mjs",
     "test:marketplace": "deno test --no-lock supabase/functions/teacher-marketplace/handler.test.ts && deno check --no-lock supabase/functions/teacher-marketplace/index.ts && node scripts/test-marketplace-transactions.mjs && npm run test:marketplace:browser",
     "test:marketplace:browser": "npm --workspace apps/platform exec -- playwright test tests/marketplace.spec.ts --reporter=list",
-    "test:admin:security": "deno test --no-lock --allow-env supabase/functions/_shared/admin-access.test.ts && deno test --no-lock --allow-env supabase/functions/platform-settings/handler.test.ts && npm --workspace apps/platform exec -- playwright test tests/admin-security.spec.ts --reporter=list"
+    "test:admin:security": "node --test scripts/prepare-admin-release-bundles.test.mjs scripts/edge-release-inventory.test.mjs && deno test --no-lock --allow-env supabase/functions/_shared/admin-access.test.ts && deno test --no-lock --allow-env supabase/functions/platform-settings/handler.test.ts && npm --workspace apps/platform exec -- playwright test tests/admin-security.spec.ts --reporter=list"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
