@@ -321,6 +321,12 @@ verify_jwt = false
 [functions.teacher-studio]
 verify_jwt = false
 
+[functions.teacher-marketplace]
+# Public directory reads are anonymous; private commands independently verify
+# the bearer identity with Auth and enforce account/academy authority in SQL.
+# This explicitly preserves the current production gateway setting.
+verify_jwt = false
+
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]
 # public = false

@@ -1,38 +1,38 @@
 {
   "schemaVersion": 1,
-  "releaseId": "peer-review-privacy",
+  "releaseId": "marketplace-transactions",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "platform"
   ],
   "migrations": [
-    "20261008194000_peer_review_privacy_commands.sql"
+    "20261009110000_marketplace_transaction_boundary.sql"
   ],
   "edgeFunctions": [
-    "peer-review"
+    "teacher-marketplace"
   ],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261008194000_peer_review_privacy_commands.sql",
-    "function:peer-review"
+    "migration:20261009110000_marketplace_transaction_boundary.sql",
+    "function:teacher-marketplace"
   ],
   "manualFollowUps": [
-    "Verify linked project bbjawctnqrufvnesdsel and dry-run lists only the reviewed migration; supabase db push --linked, then verify migration list.",
-    "After the migration, supabase functions deploy peer-review --project-ref bbjawctnqrufvnesdsel; retain existing JWT verification and compare downloaded source to the reviewed commit.",
-    "Run the exclusive temporary-QA API permission/concurrency matrix and actual published author/reviewer browser journey; verify fixture, account, tenant and session cleanup."
+    "Verify linked project bbjawctnqrufvnesdsel and require a fresh dry-run to list only the reviewed migration; supabase db push --linked, then verify remote migration history.",
+    "After the migration, supabase functions deploy teacher-marketplace --project-ref bbjawctnqrufvnesdsel; preserve the verified existing public gateway setting verify_jwt=false. Private commands verify bearer identities inside the handler. Compare downloaded runtime source to the reviewed commit.",
+    "Run exclusive temporary-QA role, permission, retry and hiring checks plus actual published teacher/employer journeys; verify all fixture, actor, tenant and session cleanup. Historical verification flags require independent operator review before public badges."
   ],
   "verification": [
-    "19 native PostgreSQL cases cover legacy exposure, browser table and column denials, bounded migration rollback, concurrent submit/review receipts, capacity, lease expiry, withdrawal, tenant separation and atomic counter failure.",
-    "8 handler tests and 15 browser cases cover authentication, recovery, account changes, honest load failures, four responsive widths and scoped accessibility.",
-    "Exact-head full CI and normal merge, tracked Pages/post-merge checks, provider commit identities and public URLs before separate reviewed backend follow-ups."
+    "26 targeted native PostgreSQL cases qualify the actual Marketplace DDL and command migration, independent connection races, lock rollback, private grants, immutable requests, academy scope, account suspension and legacy badge suppression. Full Supabase reset is not claimed.",
+    "10 HTTP handler cases and 24 synthetic-API browser cases qualify identity binding, failure honesty, request recovery, employer decisions, four responsive widths and scoped accessibility.",
+    "Exact-head full CI, normal merge, tracked Pages/post-merge CI and provider/public commit evidence before separate backend follow-ups."
   ],
   "rollback": {
-    "frontends": "Previous baseline f1b5641eec3400170b368764deaa5ccdc67405ce. The new page safely gates mutations until the version-2 API is ready. Older tabs must refresh before mutations.",
-    "database": "Retain private browser grants, all existing essays/reviews and the additive command schema. Never restore open essay policies. A 2-second lock timeout rolls back the entire migration.",
-    "edgeFunctions": "Keep the version-2 authenticated command boundary. Fix forward or return a bounded temporary-unavailable response; never restore the old open queue or direct-table mutation handler."
+    "frontends": "Previous baseline 97f5756d47fe4a6221b9274301be24e4b12e8c57. Saving is gated until version-2 commands are published; older tabs must refresh before changes.",
+    "database": "Retain all records, browser grant restrictions and additive request/audit columns. Never restore self-verification or teacher-owned hiring policies. A two-second migration lock timeout rolls back the transaction.",
+    "edgeFunctions": "Keep the version-2 actor-bound transaction handler; fix forward or return temporary-unavailable responses. Never restore direct-table owner writes or application upserts that reset hiring decisions."
   }
 }

@@ -1,0 +1,112 @@
+{
+  "checkedAt": "2026-10-09T10:55:32.936Z",
+  "nativePostgres": true,
+  "productionContacted": false,
+  "image": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+  "checks": [
+    {
+      "case": "legacy browser can self-verify and insert a forged hired application",
+      "passed": true
+    },
+    {
+      "case": "bounded migration lock failure rolls back grants and schema changes",
+      "passed": true
+    },
+    {
+      "case": "anon cannot directly read/write trusted tables, columns or commands",
+      "passed": true
+    },
+    {
+      "case": "authenticated cannot directly read/write trusted tables, columns or commands",
+      "passed": true
+    },
+    {
+      "case": "existing records and service CRUD retained; ledgers are append-only",
+      "passed": true
+    },
+    {
+      "case": "public profile DTO hides private metadata and private/unavailable profiles",
+      "passed": true
+    },
+    {
+      "case": "12 profile retries produce one immutable receipt and never self-verify",
+      "passed": true
+    },
+    {
+      "case": "stale profile edits conflict; an old receipt never overwrites a newer visibility decision",
+      "passed": true
+    },
+    {
+      "case": "profile validation rejects invalid arrays, booleans, numbers and long fields",
+      "passed": true
+    },
+    {
+      "case": "manager discovery excludes disabled, unrelated and ordinary members",
+      "passed": true
+    },
+    {
+      "case": "browser membership edits cannot turn an ordinary member into a manager",
+      "passed": true
+    },
+    {
+      "case": "automatic personal-tenant ownership does not grant academy publishing access",
+      "passed": true
+    },
+    {
+      "case": "disabled accounts cannot issue private commands or remain publicly listed",
+      "passed": true
+    },
+    {
+      "case": "12 post retries create one job and preserve original expiration and content",
+      "passed": true
+    },
+    {
+      "case": "job validation rejects invalid salary bounds, duration, employment and text",
+      "passed": true
+    },
+    {
+      "case": "12 applications save once, always pending, without accepting forged status",
+      "passed": true
+    },
+    {
+      "case": "application management denies other tenants, disabled managers and ordinary members",
+      "passed": true
+    },
+    {
+      "case": "12 decision retries append one receipt and preserve an employer decision",
+      "passed": true
+    },
+    {
+      "case": "optimistic decisions conflict and old decision receipts cannot regress a later hire",
+      "passed": true
+    },
+    {
+      "case": "application histories use stable listing identities even when job titles match",
+      "passed": true
+    },
+    {
+      "case": "closed and expired jobs disappear publicly and reject new applications",
+      "passed": true
+    },
+    {
+      "case": "profile receipt failure rolls back the edit and its revision together",
+      "passed": true
+    },
+    {
+      "case": "concurrent listing close and application serialize without admitting after-close writes",
+      "passed": true
+    },
+    {
+      "case": "membership revocation serializes with manager commands and denies access after commit",
+      "passed": true
+    },
+    {
+      "case": "account suspension serializes with private commands and refuses them after commit",
+      "passed": true
+    },
+    {
+      "case": "unreviewed historical verification flags never become public trust badges",
+      "passed": true
+    }
+  ]
+}
