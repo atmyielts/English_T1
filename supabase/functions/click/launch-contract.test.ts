@@ -1,6 +1,6 @@
 import { assert } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
-const source = await Deno.readTextFile(new URL("./index.ts", import.meta.url));
+const source = await Deno.readTextFile(new URL("./handler.ts", import.meta.url));
 const migration = await Deno.readTextFile(
   new URL(
     "../../migrations/20260812120000_click_payment_launch_guardrails.sql",
@@ -63,10 +63,11 @@ Deno.test("CLICK launch contract does not persist signatures and locks Academy g
 Deno.test("grant claims require completion evidence and unsafe automatic replay is blocked", () => {
   assert(source.includes("grant_completed_at"));
   assert(migration.includes("add column if not exists grant_completed_at"));
-  assert(adminPayments.includes('is("grant_completed_at", null)'));
+  assert(adminPayments.includes('await fulfillPayment(sb, payment.id)'));
+  assert(!adminPayments.includes('.update({ granted_at: null, grant_error: null })'));
   assert(
     adminPayments.includes(
-      "Automatic replay is disabled for this purchase type to prevent duplicate access or credit.",
+      "Automatic replay is disabled to prevent duplicate access or credit.",
     ),
   );
 });

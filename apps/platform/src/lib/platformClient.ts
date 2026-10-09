@@ -1228,6 +1228,7 @@ export type ClickCreateResponse = {
   card_widget?: ClickCardWidgetConfig | null;
   transaction_id: string;
   status?: string;
+  grant_completed?: boolean;
   amount: number;
   currency: string;
   original_amount: number;
@@ -1267,6 +1268,8 @@ export const clickCreateTransaction = async (
 
 export type ClickStatusResponse = {
   status: string;
+  grant_completed?: boolean;
+  grant_error?: string | null;
   api_status?: string;
   status_query_id?: string;
   credit_amount?: number;

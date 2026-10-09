@@ -100,6 +100,7 @@ export const CheckoutPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [grantCompleted, setGrantCompleted] = useState(false);
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [cardWidget, setCardWidget] = useState<ClickCardWidgetConfig | null>(null);
@@ -249,10 +250,12 @@ export const CheckoutPage: React.FC = () => {
   };
 
   const createCheckout = async () => {
+    if (status && isSuccessStatus(status)) return;
     if (!planId) return;
 
     setError(null);
     setStatus(null);
+    setGrantCompleted(false);
     setBusy(true);
 
     try {
@@ -294,6 +297,8 @@ export const CheckoutPage: React.FC = () => {
       // Credit/coupons may fully cover the price → no payment needed.
       if (isSuccessStatus(res.status ?? '')) {
         setStatus(res.status ?? 'paid');
+        setGrantCompleted(res.grant_completed === true);
+        if (res.grant_completed !== true) return;
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
           continueTo(returnTo);
@@ -331,8 +336,9 @@ export const CheckoutPage: React.FC = () => {
 
       const res = await clickStatus(data.session.access_token, transactionId);
       setStatus(res.status);
+      setGrantCompleted(res.grant_completed === true);
 
-      if (isSuccessStatus(res.status)) {
+      if (isSuccessStatus(res.status) && res.grant_completed === true) {
         const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
         if (ok) {
           continueTo(returnTo);
@@ -383,18 +389,21 @@ export const CheckoutPage: React.FC = () => {
 
   useEffect(() => {
     if (!transactionId) return;
-    if (status && isSuccessStatus(status)) return;
+    if (status && isSuccessStatus(status) && grantCompleted) return;
 
     let cancelled = false;
+    let checking = false;
     const interval = window.setInterval(async () => {
-      if (cancelled) return;
+      if (cancelled || checking) return;
+      checking = true;
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session) return;
         const res = await clickStatus(data.session.access_token, transactionId);
         if (cancelled) return;
         setStatus(res.status);
-        if (isSuccessStatus(res.status)) {
+        setGrantCompleted(res.grant_completed === true);
+        if (isSuccessStatus(res.status) && res.grant_completed === true) {
           const ok = await loadEntitlement(data.session.access_token, resolvedProductId ?? null, true);
           if (ok) {
             continueTo(returnTo);
@@ -402,6 +411,8 @@ export const CheckoutPage: React.FC = () => {
         }
       } catch {
         // ignore polling errors
+      } finally {
+        checking = false;
       }
     }, 6000);
 
@@ -409,7 +420,7 @@ export const CheckoutPage: React.FC = () => {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [transactionId, status, resolvedProductId, returnTo, navigate]);
+  }, [transactionId, status, grantCompleted, resolvedProductId, returnTo, navigate]);
 
   const signOut = async () => {
     try {
@@ -436,7 +447,7 @@ export const CheckoutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-3xl shadow-sm p-8">
+      <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-3xl shadow-sm p-5 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">{t('checkout.badge')}</div>
@@ -447,11 +458,11 @@ export const CheckoutPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             <button
               onClick={() => navigate(`/pricing?${backQuery.toString()}`, { replace: true })}
-              className="w-full sm:w-auto px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50"
+              className="w-full sm:w-auto whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50"
             >
               {t('common.back')}
             </button>
-            <button onClick={signOut} className="w-full sm:w-auto px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50">
+            <button onClick={signOut} className="w-full sm:w-auto whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 hover:bg-gray-50">
               {t('common.signOut')}
             </button>
             <button
@@ -480,9 +491,7 @@ export const CheckoutPage: React.FC = () => {
                           <span className="mx-2">-</span>
                           <span className="font-semibold">{t('checkout.discountOff', { amount: formatMoney(pricing.discount_amount, selectedPlan.currency) })}</span>
                         </div>
-                      ) : (
-                        <div className="text-xs text-gray-600">{formatMoney(pricing.original_amount, selectedPlan.currency)}</div>
-                      )}
+                      ) : null}
                     </div>
                   ) : (
                     formatMoney(selectedPlan.amount, selectedPlan.currency)
@@ -552,14 +561,14 @@ export const CheckoutPage: React.FC = () => {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-6">
           <div className="border border-gray-200 rounded-2xl p-6">
             <div className="text-sm font-semibold text-gray-900">{t('checkout.step1.title')}</div>
             <div className="text-sm text-gray-500 mt-1">{t('checkout.step1.desc')}</div>
 
             <button
               onClick={createCheckout}
-              disabled={busy || !selectedPlan || clickReady !== true}
+              disabled={busy || !selectedPlan || clickReady !== true || Boolean(status && isSuccessStatus(status))}
               className="mt-6 w-full bg-gray-900 hover:bg-black disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition-colors"
             >
               {busy ? t('checkout.working') : t('checkout.step1.button')}
@@ -608,7 +617,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
+              {!(status && isSuccessStatus(status)) ? <div>
                 <div className="text-xs text-gray-500 mb-1">{t('checkout.field.paymentUrl')}</div>
                 {paymentUrl ? (
                   <a href={paymentUrl} target="_blank" rel="noreferrer" className="text-emerald-700 hover:text-emerald-900 underline break-all">
@@ -617,11 +626,14 @@ export const CheckoutPage: React.FC = () => {
                 ) : (
                   <div className="text-gray-400">{t('checkout.payment.notCreated')}</div>
                 )}
-              </div>
+              </div> : null}
 
               <div>
                 <div className="text-xs text-gray-500 mb-1">{t('checkout.field.status')}</div>
                 <div className="text-gray-900">{status ?? t('checkout.status.unknown')}</div>
+                {status && isSuccessStatus(status) && !grantCompleted ? (
+                  <p role="status" className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{t('checkout.status.activationPending')}</p>
+                ) : null}
               </div>
             </div>
 
