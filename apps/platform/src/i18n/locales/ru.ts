@@ -399,7 +399,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'candidate.header.backHome': 'На главную',
   'candidate.form.title': 'Данные кандидата',
   'candidate.form.desc':
-    'Используйте Candidate ID от преподавателя. Доступ одноразовый. Если выйти из теста, сессия закроется и продолжить будет нельзя.',
+    'Войдите с подтверждённым email и используйте Candidate ID от преподавателя. Каждый код привязан к одному аккаунту и одной попытке экзамена.',
   'candidate.form.candidateId': 'Candidate ID',
   'candidate.form.candidateIdPlaceholder': 'например ABCD-1234',
   'candidate.form.firstName': 'Имя',

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "releaseId": "admin-security-boundary",
+  "releaseId": "candidate-account-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
@@ -8,98 +8,25 @@
   ],
   "migrations": [],
   "edgeFunctions": [
-    "me",
-    "platform-settings"
+    "candidate-entry"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "academy-video",
-    "admin-analytics",
-    "admin-assets",
-    "admin-billing",
-    "admin-builder",
-    "admin-coupons",
-    "admin-english-content",
-    "admin-english-ops",
-    "admin-function-errors",
-    "admin-ielts-playbook",
-    "admin-ielts-practice",
-    "admin-language-config",
-    "admin-partners",
-    "admin-payments",
-    "admin-products",
-    "admin-referrals",
-    "admin-tests",
-    "admin-users",
-    "admin-writing-reviews",
-    "guide",
-    "import-experience",
-    "me",
-    "platform-settings",
-    "support-center"
-  ],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "function:academy-video",
-    "function:admin-analytics",
-    "function:admin-assets",
-    "function:admin-billing",
-    "function:admin-builder",
-    "function:admin-coupons",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:admin-function-errors",
-    "function:admin-ielts-playbook",
-    "function:admin-ielts-practice",
-    "function:admin-language-config",
-    "function:admin-partners",
-    "function:admin-payments",
-    "function:admin-products",
-    "function:admin-referrals",
-    "function:admin-tests",
-    "function:admin-users",
-    "function:admin-writing-reviews",
-    "function:guide",
-    "function:import-experience",
-    "function:me",
-    "function:platform-settings",
-    "function:support-center"
+    "function:candidate-entry"
   ],
   "manualFollowUps": [
-    "Prepare source-preserving bundles with scripts/prepare-admin-release-bundles.mjs from the exact reviewed commit and release/admin-published-baseline.json. The builder freshly checks all 24 published versions/gateway flags and refuses any changed source fingerprint before writing. Retain every published non-security module. Typecheck every prepared entry point, then deploy each qualified isolated function directory and verify downloaded source hashes against prepared-bundles.json. No global MFA/IP policy change. Guide and Academy changes outside the shared helper are test-only; do not deploy Academy for a test correction.",
-    "supabase functions deploy academy-video --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/academy-video",
-    "supabase functions deploy admin-analytics --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-analytics",
-    "supabase functions deploy admin-assets --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-assets",
-    "supabase functions deploy admin-billing --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-billing",
-    "supabase functions deploy admin-builder --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-builder",
-    "supabase functions deploy admin-coupons --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-coupons",
-    "supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-english-content",
-    "supabase functions deploy admin-english-ops --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-english-ops",
-    "supabase functions deploy admin-function-errors --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-function-errors",
-    "supabase functions deploy admin-ielts-playbook --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-ielts-playbook",
-    "supabase functions deploy admin-ielts-practice --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-ielts-practice",
-    "supabase functions deploy admin-language-config --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-language-config",
-    "supabase functions deploy admin-partners --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-partners",
-    "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-payments",
-    "supabase functions deploy admin-products --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-products",
-    "supabase functions deploy admin-referrals --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-referrals",
-    "supabase functions deploy admin-tests --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-tests",
-    "supabase functions deploy admin-users --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-users",
-    "supabase functions deploy admin-writing-reviews --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/admin-writing-reviews",
-    "supabase functions deploy guide --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/guide",
-    "supabase functions deploy import-experience --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/import-experience",
-    "supabase functions deploy me --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/me",
-    "supabase functions deploy platform-settings --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/platform-settings",
-    "supabase functions deploy support-center --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-bundle-root>/support-center"
+    "After exact-head CI and tracked Pages release, refresh the published candidate-entry source and gateway inventory. Refuse drift from source SHA256 0353373391d57bbf100907d943de0d0d979c8e1603002ebe9062953de5fb658e. Candidate entry is the only Edge Function in this release; retain its gateway flag and all other production functions.",
+    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-bundle>"
   ],
   "verification": [
-    "40 focused authorization cases, 10 actual HTTP handler contract steps with intercepted transport, 5 synthetic-API browser cases and existing Guide HTTP contracts. No hosted admin qualification is claimed.",
-    "Full exact-head CI, normal merge, tracked Pages and provider evidence precede any backend deployment. Qualify suspended exclusive QA actors, failure behavior and supported MFA enrollment/recovery; do not read or alter customer private data.",
-    "15 source-preserving bundle tests and 8 deployment inventory cases qualify source/version/gateway refusals, retained published-only modules and test-only changes. All 24 prepared published-base entry points typecheck. Hosted admission qualification remains separate."
+    "Run npm run test:candidate:security, Platform production build and existing route checks. Own-account new claim, same-account retry, guest sign-in and code-preserving return need signed-in browser and provider proof.",
+    "Download the installed function after deployment, compare all runtime source hashes, and verify unauthenticated requests fail before lookup, foreign claims cannot recover, and owned QA account can start and resume. Do not mint credentials or touch customer accounts.",
+    "This release changes the authentication boundary only. Multi-table exam admission remains non-atomic and must be replaced in the separate payment transaction release."
   ],
   "rollback": {
-    "frontends": "Previous reviewed Marketplace merge 21064f81f5c693f7c1c7b965f28345338c166690. Qualify its deployment before the independent admin release. No policy row or schema changes.",
-    "edgeFunctions": "Preserve active-account and fail-closed admission protections. Stop rollout and fix forward on incompatible provider state. Never restore a policy read or settings save that silently disables MFA."
+    "edgeFunctions": "Preserve verified account admission and fix forward; never reinstall an endpoint that mints credentials from profile details.",
+    "frontends": "Previous tracked Pages deployment at b0dabff7fee0dcb73e5694a9e34b5ef4413a6d24. Do not pair the old guest form with disabled server authentication."
   }
 }

@@ -1,0 +1,37 @@
+{
+  "mode": "local-reviewed-handler-production-owned-QA-schema",
+  "time": "2026-10-09T18:42:09.647Z",
+  "checks": [
+    "guest request fails before code lookup",
+    "owned owner confirmed account authenticates",
+    "owned other confirmed account authenticates",
+    "owned account bootstrap has an isolated tenant",
+    "existing public IELTS destination is available",
+    "existing active exam structure can be read without question data",
+    "verified actor cannot submit another account email",
+    "new owned exam claim succeeds against installed production schema",
+    "claim response is bound to the verified owner",
+    "claim returns no Auth credentials",
+    "other owned account cannot recover claimed code",
+    "same verified owner retry recovers the existing exam session",
+    "claim and retry create exactly one owned session",
+    "production registration stays bound to own actor and session",
+    "production code ownership and use count remain correct"
+  ],
+  "count": 15,
+  "cleanup": [
+    "owned token/session/registration removed",
+    "owned bootstrap tenant removed",
+    "owned bootstrap tenant removed",
+    "owned QA account removed",
+    "owned QA account removed"
+  ],
+  "passed": true,
+  "createdUserIds": [
+    "c6398136-0f82-40a7-b2e0-1c0ed9eea871",
+    "31780139-e8af-4927-bfcd-00c4bc01939f"
+  ],
+  "ownedTokenIds": [
+    "8b2e707c-64f0-4bf4-b9dc-c51b309f7b56"
+  ]
+}

@@ -385,7 +385,7 @@ export const en = {
   'candidate.header.backHome': 'Back to home',
   'candidate.form.title': 'Enter your candidate details',
   'candidate.form.desc':
-    'Use the Candidate ID provided by your teacher. This access is single-use. Leaving the test early will mark it as abandoned and it cannot be resumed.',
+    'Sign in with your verified email and use the Candidate ID provided by your teacher. Each code belongs to one account and one exam attempt.',
   'candidate.form.candidateId': 'Candidate ID',
   'candidate.form.candidateIdPlaceholder': 'e.g. ABCD-1234',
   'candidate.form.firstName': 'First name',
