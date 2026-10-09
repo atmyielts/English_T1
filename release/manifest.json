@@ -68,7 +68,7 @@
     "function:support-center"
   ],
   "manualFollowUps": [
-    "After tracked Pages, compare the saved production security policy and each function gateway flag; preserve them. Deploy each shared consumer separately and verify downloaded runtime source, admission checks and exclusive QA cleanup. No global MFA or IP policy change is part of this release.",
+    "Compare saved production policy and every gateway flag; preserve them. All 24 published bundles were captured read-only. Seven have material unrelated source drift (academy-video, admin-assets, admin-english-content, admin-english-ops, admin-ielts-playbook, admin-ielts-practice, admin-referrals). Do not deploy them straight from checkout. Prepare reviewed source-preserving per-consumer bundles or independently qualify those differences before backend rollout. Compare runtime source hashes and qualify exclusive QA cleanup. No global MFA or IP policy change.",
     "supabase functions deploy academy-video --project-ref bbjawctnqrufvnesdsel",
     "supabase functions deploy admin-analytics --project-ref bbjawctnqrufvnesdsel",
     "supabase functions deploy admin-assets --project-ref bbjawctnqrufvnesdsel",
@@ -96,7 +96,8 @@
   ],
   "verification": [
     "40 focused authorization cases, 10 actual HTTP handler contract steps with intercepted transport, 5 synthetic-API browser cases and existing Guide HTTP contracts. No hosted admin qualification is claimed.",
-    "Full exact-head CI, normal merge, tracked Pages and provider evidence precede any backend deployment. Qualify suspended exclusive QA actors, failure behavior and supported MFA enrollment/recovery; do not read or alter customer private data."
+    "Full exact-head CI, normal merge, tracked Pages and provider evidence precede any backend deployment. Qualify suspended exclusive QA actors, failure behavior and supported MFA enrollment/recovery; do not read or alter customer private data.",
+    "Provider baseline drift must be resolved explicitly before backend rollout; typechecks on checkout alone do not qualify published-only IELTS evidence code or unrelated media/referral/Academy changes."
   ],
   "rollback": {
     "frontends": "Previous reviewed Marketplace merge 21064f81f5c693f7c1c7b965f28345338c166690. Qualify its deployment before the independent admin release. No policy row or schema changes.",
