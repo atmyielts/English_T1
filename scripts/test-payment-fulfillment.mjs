@@ -13,9 +13,12 @@ const migration=read('20261009140000_payment_fulfillment_transaction.sql');
 const checkoutMigration=read('20261009141000_payment_checkout_transaction.sql');
 const academyMigration=read('20261009142000_academy_purchase_transaction.sql');
 const centerMigration=read('20261009143000_center_tier_checkout_transaction.sql');
+const seatMigration=read('20261009144000_seat_assignment_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
+const filterArgument=process.argv.find(arg=>arg.startsWith("--grep="))?.slice(7);
+const caseFilter=filterArgument ? new RegExp(filterArgument) : null;
 let owned=false;
 let report=null;
 function run(args,input='') {
@@ -29,7 +32,7 @@ function run(args,input='') {
 }
 const sql=text=>run(['exec','-i',name,'psql','-U','postgres','-d','postgres','-Atq','-v','ON_ERROR_STOP=1'],text);
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const check=async(label,test)=>{await test();checks.push({case:label,passed:true});console.log('PASS: '+label);};
+const check=async(label,test)=>{if(caseFilter && !caseFilter.test(label))return;await test();checks.push({case:label,passed:true});console.log('PASS: '+label);};
 const table=(file,name)=>{
   const source=read(file), start=source.indexOf('create table if not exists public.'+name+' (');
   assert.ok(start>=0,'Baseline DDL missing: '+name);
@@ -62,12 +65,12 @@ try {
   await sql(`create role anon;create role authenticated;create role service_role bypassrls;
     grant usage on schema public to anon,authenticated,service_role;
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
-    create table users(id uuid primary key,is_active boolean not null default true);create table tenants(id uuid primary key,metadata jsonb not null default '{}'::jsonb);
+    create table users(id uuid primary key,is_active boolean not null default true,email text);create table tenants(id uuid primary key,metadata jsonb not null default '{}'::jsonb,type text not null default 'business');
     create table tenant_memberships(id uuid primary key default gen_random_uuid(),user_id uuid references users(id),tenant_id uuid references tenants(id),status text not null default 'active',role text not null default 'owner');
     create table products(id uuid primary key);create table plans(id uuid primary key,product_id uuid references products(id),duration_days integer,amount integer,currency text,metadata jsonb,is_active boolean,name text);
     create table experiences(id uuid primary key);create table coupons(id uuid primary key);
     ${table('20260202170000_platform_spine.sql','payments')}
-    alter table payments add column tenant_id uuid references tenants(id),add column plan_id uuid references plans(id),
+    alter table payments add column tenant_id uuid references tenants(id),add column plan_id uuid references plans(id) on delete set null,
       add column granted_at timestamptz,add column grant_completed_at timestamptz,add column grant_error text,
       add column purchase_type text,add column plan_snapshot jsonb,add column entitlement_terms jsonb,
       add column coupon_id uuid references coupons(id),add column coupon_code text,add column original_amount integer,
@@ -78,6 +81,8 @@ try {
     alter table entitlements add constraint entitlements_tenant_resource_unique unique(tenant_id,resource_type,resource_id);
     ${table('20260210193000_seats_and_experience_pricing.sql','seat_licenses')}
     ${table('20260210150000_exam_tokens_candidates.sql','exam_tokens')}
+    ${table('20260507120000_partner_centers_vouchers.sql','partner_voucher_batches')}
+    ${table('20260507120000_partner_centers_vouchers.sql','partner_vouchers')}
     ${table('20260507120000_partner_centers_vouchers.sql','partner_center_profiles')}
     ${table('20260507120000_partner_centers_vouchers.sql','partner_wallet_ledger')}
     ${table('20260507184000_partner_center_tier_billing.sql','partner_center_tier_subscriptions')}
@@ -116,6 +121,7 @@ try {
   await sql(checkoutMigration);
   await sql(academyMigration);
   await sql(centerMigration);
+  await sql(seatMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -631,6 +637,124 @@ try {
     await assert.rejects(sql(`set role ${role};select create_center_tier_checkout(${q(user)},${q(randomUUID())},'{}',${q(tenant)},'growth','monthly','{}');`),/permission denied/);
     await assert.rejects(sql(`set role ${role};select assert_center_checkout_actor(${q(user)},${q(tenant)});`),/permission denied/);
   });
+  async function seatFixture(quantity=1,overrides={}) {
+    const actor=randomUUID(),scope=randomUUID(),recipient=randomUUID(),target=randomUUID(),seatPlan=randomUUID();
+    const email='seat-'+recipient+'@example.invalid';
+    await sql(`insert into users(id,email) values(${q(actor)},${q('manager-'+actor+'@example.invalid')}),(${q(recipient)},${q(email)});
+      insert into tenants(id,type) values(${q(scope)},'business'),(${q(target)},'personal');
+      insert into tenant_memberships(user_id,tenant_id) values(${q(actor)},${q(scope)}),(${q(recipient)},${q(target)});
+      insert into plans(id,product_id,duration_days,amount,currency,metadata,is_active,name)
+        values(${q(seatPlan)},${q(product)},30,1000,'UZS','{}',true,'Owned seat plan');`);
+    const captured={source_plan_id:seatPlan,duration_days:30,included_product_ids:[bundle],limits:{attempts:10},...overrides};
+    const order=await payment({user_id:actor,tenant_id:scope,plan_id:seatPlan,purchase_type:'seat_pack',entitlement_terms:captured,
+      metadata:{seat_count:quantity,seat_plan_id:seatPlan}});
+    assert.equal((await fulfill(order)).state,'fulfilled');
+    const seats=JSON.parse(await sql(`select json_agg(id order by id) from seat_licenses where payment_id=${q(order)};`));
+    return {actor,scope,recipient,target,email,seatPlan,order,seats};
+  }
+  const assignSeat=(ctx,seat=ctx.seats[0],email=ctx.email)=>sql(`set role service_role;select assign_purchased_seat(${q(ctx.actor)},${q(ctx.scope)},${q(seat)},${q(email)});`).then(JSON.parse);
+  const seatGrants=ctx=>sql(`select count(*) from entitlements where tenant_id=${q(ctx.target)};`);
+  const seatReceipts=seat=>sql(`select count(*) from seat_assignment_receipts where seat_id=${q(seat)};`);
+  await check('sixteen same-seat assignment retries commit one captured grant and immutable claim',async()=>{
+    const ctx=await seatFixture();const results=await Promise.all(Array.from({length:16},()=>assignSeat(ctx)));
+    assert.equal(results.filter(r=>!r.deduped).length,1);assert.equal(await seatReceipts(ctx.seats[0]),'1');assert.equal(await seatGrants(ctx),'2');
+    assert.equal(await sql(`select bool_and(round(extract(epoch from ends_at-now())/86400)=30) from entitlements where tenant_id=${q(ctx.target)};`),'t');
+  });
+  await check('competing recipients cannot both claim one seat or keep losing access',async()=>{
+    const ctx=await seatFixture(),other=randomUUID(),target=randomUUID(),email='other-'+other+'@example.invalid';
+    await sql(`insert into users(id,email) values(${q(other)},${q(email)});insert into tenants(id,type) values(${q(target)},'personal');insert into tenant_memberships(user_id,tenant_id) values(${q(other)},${q(target)});`);
+    const results=await Promise.allSettled([assignSeat(ctx),assignSeat(ctx,ctx.seats[0],email)]);
+    assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(await seatReceipts(ctx.seats[0]),'1');
+    assert.equal(await sql(`select count(distinct tenant_id) from entitlements where tenant_id in (${q(target)},${q(ctx.target)});`),'1');
+  });
+  await check('different seats renewing one learner serialize and retain sixty days',async()=>{
+    const ctx=await seatFixture(2);await Promise.all(ctx.seats.map(seat=>assignSeat(ctx,seat)));
+    assert.equal(await sql(`select bool_and(round(extract(epoch from ends_at-now())/86400)=60) from entitlements where tenant_id=${q(ctx.target)};`),'t');
+    assert.equal(await sql(`select count(*) from seat_assignment_receipts where buyer_tenant_id=${q(ctx.scope)};`),'2');
+    assert.equal(await sql(`select max(round(extract(epoch from ends_at-now())/86400)) from seat_licenses where tenant_id=${q(ctx.scope)};`),'60');
+  });
+  await check('seat grants and replay use purchased products duration and limits after catalogue edits',async()=>{
+    const ctx=await seatFixture();await sql(`update plans set duration_days=999,amount=999999,is_active=false,metadata='{"included_product_ids":[],"limits":{"attempts":999}}' where id=${q(ctx.seatPlan)};`);
+    await assignSeat(ctx);const before=await sql(`select json_agg(row_to_json(e) order by resource_id) from entitlements e where tenant_id=${q(ctx.target)};`);
+    assert.equal((await assignSeat(ctx)).deduped,true);assert.equal(await seatGrants(ctx),'2');
+    assert.equal(await sql(`select bool_and(value#>>'{limits,attempts}'='10' and round(extract(epoch from ends_at-now())/86400)=30) from entitlements where tenant_id=${q(ctx.target)};`),'t');
+    assert.equal(await sql(`select json_agg(row_to_json(e) order by resource_id) from entitlements e where tenant_id=${q(ctx.target)};`),before);
+  });
+  await check('seat replay preserves its original beneficiary after email changes',async()=>{
+    const ctx=await seatFixture();await assignSeat(ctx);await sql(`update users set email=${q('changed-'+ctx.email)} where id=${q(ctx.recipient)};`);
+    assert.equal((await assignSeat(ctx)).seat.assigned_user_id,ctx.recipient);assert.equal(await seatGrants(ctx),'2');
+  });
+  await check('seat assignment requires exactly one owned personal tenant and never grants a shared business tenant',async()=>{
+    for(const kind of ['none','member','ambiguous']) {
+      const ctx=await seatFixture();
+      if(kind==='none')await sql(`update tenants set type='business' where id=${q(ctx.target)};`);
+      if(kind==='member')await sql(`update tenant_memberships set role='member' where user_id=${q(ctx.recipient)};`);
+      if(kind==='ambiguous'){const extra=randomUUID();await sql(`insert into tenants(id,type) values(${q(extra)},'personal');insert into tenant_memberships(user_id,tenant_id) values(${q(ctx.recipient)},${q(extra)});`);}
+      await assert.rejects(assignSeat(ctx),/personal account/);assert.equal(await seatReceipts(ctx.seats[0]),'0');assert.equal(await seatGrants(ctx),'0');
+    }
+  });
+  await check('seat admission rejects teachers suspended users revoked memberships and paused centers',async()=>{
+    for(const kind of ['teacher','actor-suspended','recipient-suspended','actor-revoked','center-paused']) {
+      const ctx=await seatFixture();
+      if(kind==='teacher')await sql(`update tenant_memberships set role='teacher' where user_id=${q(ctx.actor)};`);
+      if(kind==='actor-suspended')await sql(`update users set is_active=false where id=${q(ctx.actor)};`);
+      if(kind==='recipient-suspended')await sql(`update users set is_active=false where id=${q(ctx.recipient)};`);
+      if(kind==='actor-revoked')await sql(`update tenant_memberships set status='inactive' where user_id=${q(ctx.actor)};`);
+      if(kind==='center-paused')await sql(`insert into partner_center_profiles(tenant_id,display_name,slug,status) values(${q(ctx.scope)},'Owned paused center',${q('seat-'+ctx.scope)},'paused');`);
+      await assert.rejects(assignSeat(ctx));assert.equal(await seatReceipts(ctx.seats[0]),'0');assert.equal(await seatGrants(ctx),'0');
+    }
+  });
+  await check('finite seat renewals preserve active lifetime access and do not revive inactive lifetime records',async()=>{
+    for(const active of [true,false]) {
+      const ctx=await seatFixture();await sql(`insert into entitlements(user_id,tenant_id,resource_type,resource_id,is_active,starts_at,ends_at,source) values(${q(ctx.recipient)},${q(ctx.target)},'product',${q(product)},${active},now(),null,'owned_fixture');`);
+      await assignSeat(ctx);assert.equal(await sql(`select ends_at is null from entitlements where tenant_id=${q(ctx.target)} and resource_id=${q(product)};`),active?'t':'f');
+    }
+  });
+  await check('legacy assigned seats and missing financial evidence cannot manufacture new claims',async()=>{
+    const ctx=await seatFixture();await sql(`update seat_licenses set status='active',assigned_user_id=${q(ctx.recipient)} where id=${q(ctx.seats[0])};`);
+    await assert.rejects(assignSeat(ctx),/Legacy seat assignment/);assert.equal(await seatReceipts(ctx.seats[0]),'0');assert.equal(await seatGrants(ctx),'0');
+    const legacy=randomUUID();await sql(`insert into seat_licenses(id,tenant_id,plan_id,product_id,purchaser_id,status,expires_at) values(${q(legacy)},${q(ctx.scope)},${q(ctx.seatPlan)},${q(product)},${q(ctx.actor)},'unassigned',now()+interval '1 day');`);
+    await assert.rejects(assignSeat(ctx,legacy),/purchase evidence/);assert.equal(await seatGrants(ctx),'0');
+  });
+  await check('invalid captured seat products limits and missing duration fail before access or claim',async()=>{
+    for(const invalid of [{included_product_ids:[randomUUID()]},{included_product_ids:[null]},{limits:{attempts:true}},{duration_days:undefined}]) {
+      const ctx=await seatFixture(1,invalid);await assert.rejects(assignSeat(ctx));assert.equal(await seatReceipts(ctx.seats[0]),'0');assert.equal(await seatGrants(ctx),'0');
+    }
+  });
+  await check('late assignment receipt failure rolls back seat and every product grant together',async()=>{
+    const ctx=await seatFixture();await sql(`create function reject_seat_claim() returns trigger language plpgsql as $$begin raise exception 'owned late seat receipt failure';end;$$;create trigger reject_seat_claim before insert on seat_assignment_receipts for each row execute function reject_seat_claim();`);
+    try {await assert.rejects(assignSeat(ctx),/owned late seat/);assert.equal(await seatGrants(ctx),'0');assert.equal(await sql(`select status from seat_licenses where id=${q(ctx.seats[0])};`),'unassigned');}
+    finally {await sql('drop trigger reject_seat_claim on seat_assignment_receipts;drop function reject_seat_claim();');}
+    assert.equal((await assignSeat(ctx)).state,'assigned');assert.equal(await seatGrants(ctx),'2');
+  });
+  await check('lost connection during seat assignment rolls back and safely resumes the original claim',async()=>{
+    const ctx=await seatFixture();await sql(`create function delay_seat_claim() returns trigger language plpgsql as $$begin perform pg_advisory_xact_lock(434370);perform pg_sleep(10);return new;end;$$;create trigger delay_seat_claim before insert on seat_assignment_receipts for each row execute function delay_seat_claim();`);
+    const pending=sql(`set application_name='owned-seat-loss';set role service_role;select assign_purchased_seat(${q(ctx.actor)},${q(ctx.scope)},${q(ctx.seats[0])},${q(ctx.email)});`).then(()=>({ok:true}),()=>({ok:false}));
+    try {await barrier(434370);await sql("select pg_terminate_backend(pid) from pg_stat_activity where application_name='owned-seat-loss';");assert.equal((await pending).ok,false);assert.equal(await seatGrants(ctx),'0');assert.equal(await seatReceipts(ctx.seats[0]),'0');assert.equal(await sql(`select status from seat_licenses where id=${q(ctx.seats[0])};`),'unassigned');}
+    finally {await pending;await sql('drop trigger delay_seat_claim on seat_assignment_receipts;drop function delay_seat_claim();');}
+    assert.equal((await assignSeat(ctx)).state,'assigned');assert.equal((await assignSeat(ctx)).deduped,true);
+  });
+  await check('purchased seat identity and completed assignment cannot be rewritten or removed',async()=>{
+    const ctx=await seatFixture();await assignSeat(ctx);
+    for(const mutation of [`delete from seat_licenses where id=${q(ctx.seats[0])}`,`update seat_licenses set expires_at=now()+interval '999 days' where id=${q(ctx.seats[0])}`,`update seat_licenses set assigned_user_id=${q(ctx.actor)} where id=${q(ctx.seats[0])}`,`update seat_licenses set metadata='{}' where id=${q(ctx.seats[0])}`])await assert.rejects(sql(mutation),/immutable|retained/);
+    await assert.rejects(sql(`delete from plans where id=${q(ctx.seatPlan)};`),/immutable|retained/);
+    assert.equal(await sql(`select count(*) from plans where id=${q(ctx.seatPlan)};`),'1');
+    const unpurchased=randomUUID();
+    await sql(`insert into seat_licenses(id,tenant_id,plan_id,product_id,purchaser_id,status,expires_at) values(${q(unpurchased)},${q(ctx.scope)},${q(ctx.seatPlan)},${q(product)},${q(ctx.actor)},'unassigned',now()+interval '1 day');delete from seat_licenses where id=${q(unpurchased)};`);
+    assert.equal(await sql(`select count(*) from seat_licenses where id=${q(unpurchased)};`),'0');
+  });
+  await check('seats reserved for unused vouchers cannot be assigned through the direct manager command',async()=>{
+    const ctx=await seatFixture();await sql(`insert into partner_vouchers(tenant_id,code,access_kind,product_id,plan_id,seat_license_id,expires_at) values(${q(ctx.scope)},${q('OWNED-'+randomUUID())},'seat',${q(product)},${q(ctx.seatPlan)},${q(ctx.seats[0])},now()+interval '1 day');`);
+    await assert.rejects(assignSeat(ctx),/reserved for a voucher/);assert.equal(await seatGrants(ctx),'0');assert.equal(await seatReceipts(ctx.seats[0]),'0');
+  });
+  for(const role of ['anon','authenticated','service_role'])await check(role+' cannot mutate assignment receipts or invoke private seat grant helpers',async()=>{
+    await assert.rejects(sql(`set role ${role};update seat_assignment_receipts set result='{}';`),/permission denied/);
+    await assert.rejects(sql(`set role ${role};select commit_seat_assignment(${q(user)},${q(tenant)},${q(randomUUID())},${q(user)},${q(tenant)},'owned@example.invalid');`),/permission denied/);
+    if(role!=='service_role') {
+      await assert.rejects(sql(`set role ${role};update seat_licenses set status='unassigned';`),/permission denied/);
+      await assert.rejects(sql(`set role ${role};select assign_purchased_seat(${q(user)},${q(tenant)},${q(randomUUID())},'owned@example.invalid');`),/permission denied/);
+    }
+  });
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{
     const id=await payment({status:'pending'});await sql('update payments set status=\'paid\' where id='+q(id)+';');assert.equal((await job(id)).state,'pending');
     // Other deliberate invalid fixtures remain in retry with future backoff.
@@ -640,7 +764,7 @@ try {
     }assert.ok(recovered>=1);
     assert.equal((await job(id)).state,'fulfilled');assert.equal(await count('payment_fulfillment_receipts',id),'1');
   });
-  report={status:'passed',engine:'native PostgreSQL 17.5',checks,productionChanged:false,cleanup:'owned container removed'};
+  report={status:'passed',scope:caseFilter?.source ?? 'all',engine:'native PostgreSQL 17.5',checks,productionChanged:false,cleanup:'owned container removed'};
   console.log(checks.length+' native payment cases passed.');
 } finally {
   if(owned){assert.equal(await run(['inspect','--format','{{index .Config.Labels "schood.qa"}}',name]),'payment-fulfillment');await run(['rm','--force',name]);console.log('Owned network-isolated PostgreSQL container removed.');}

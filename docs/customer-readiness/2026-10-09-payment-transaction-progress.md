@@ -147,3 +147,39 @@ required to qualify the deployed runtime.
 This is a substantial payment repair. It does not certify all services as ready
 for customers. All four migrations and candidate Edge/frontend changes remain
 unpublished; the payment worker remains disabled.
+
+## Seat assignment extension (local candidate)
+
+Direct seat assignment now executes one service-only database command. It locks
+buyer/recipient scopes consistently, admits a current active manager and one
+owned personal recipient tenant, and checks committed financial inventory.
+Ownership, captured-term grants and an append-only assignment receipt commit
+together. The same seat/email intent replays its original beneficiary without
+extending access, including after a recipient email change. Competing recipients
+cannot retain losing grants. Finite renewals stack and preserve active lifetime
+access. The displayed seat end retains the published latest-finite-grant convention.
+Browser roles can read through existing policies but cannot mutate purchased seats.
+
+The actual Teacher Office adapter calls only this command and returns a bounded
+legacy-compatible seat DTO. Five adapter cases verify caller-field exclusion,
+response ownership, replay and private error handling with persistence doubles.
+The full Teacher Office entry point typechecks. A local isolated source candidate
+excludes repository-only score-reporting drift and preserves the captured published
+results behavior; it is not a qualified provider deployment bundle. Fresh published
+source, dependencies and gateway flags still require review before installation.
+
+CI run 37959058082 passed at f129f831f62adf18f9c3c685a7d099f6124f0e25,
+including the previous center checkout and clean-runtime QR import repair. That
+success does not qualify the later seat extension; its exact-head CI is pending.
+
+Voucher issuance/redemption still uses separate writes and mutable catalogue
+terms. Legacy seat classification, retention/deletion compatibility, reconciliation,
+full final CI, release review and owned hosted canaries remain required. This
+combined draft remains unsuitable for direct merge. No production mutation or
+customer charge occurred while developing this extension.
+
+Validation: 84 native PostgreSQL cases, 36 Deno cases and 26 browser cases passed
+in the payment suite. A final focused native retention check passed after correcting
+the BEFORE DELETE return value for unpurchased seats. Its scope is recorded
+separately; exact final-head CI still must exercise the complete final tree.
+See `2026-10-09-seat-assignment-local.json` for proof boundaries and source hashes.
