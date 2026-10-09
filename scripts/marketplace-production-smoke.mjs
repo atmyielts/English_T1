@@ -71,6 +71,13 @@ try{
   }
   for(const [id,creator,name] of [[tenantId,owner,'QA Marketplace '+run],[otherTenant,outsider,'QA Other '+run]])assert((await request('/rest/v1/tenants',admin,'POST',{id,name,slug:'marketplace-qa-'+id,type:'team',created_by:creator.id,metadata:{qa_run_id:run}})).status===201,'Exclusive academy creation failed');
   assert((await request('/rest/v1/tenant_memberships',admin,'POST',[[owner,'owner','active'],[manager,'admin','active'],[member,'member','active'],[disabled,'admin','disabled']].map(([actor,role,status])=>({tenant_id:tenantId,user_id:actor.id,role,status})).concat([{tenant_id:otherTenant,user_id:outsider.id,role:'owner',status:'active'}]))).status===201,'Exclusive memberships failed');
+  const originalRole=await request('/rest/v1/users?id=eq.'+teacher.id+'&select=role');assert(originalRole.status===200&&originalRole.data.length===1,'Own QA role baseline unavailable');
+  await request('/rest/v1/users?id=eq.'+teacher.id,headers(teacher),'PATCH',{role:'admin'});
+  const retainedRole=await request('/rest/v1/users?id=eq.'+teacher.id+'&select=role');
+  checked('browser-cannot-self-promote-global-role',retainedRole.status===200&&retainedRole.data.length===1&&retainedRole.data[0].role===originalRole.data[0].role);
+  await request('/rest/v1/tenant_memberships?tenant_id=eq.'+tenantId+'&user_id=eq.'+member.id,headers(member),'PATCH',{role:'owner'});
+  const retainedMembership=await request('/rest/v1/tenant_memberships?tenant_id=eq.'+tenantId+'&user_id=eq.'+member.id+'&select=role');
+  checked('browser-cannot-self-promote-academy-role',retainedMembership.status===200&&retainedMembership.data.length===1&&retainedMembership.data[0].role==='member');
   checked('manager-discovery-excludes-personal-workspaces',(await command(owner,'manageable_tenants')).data.tenants.length===1&&(await command(teacher,'manageable_tenants')).data.tenants.length===0);
   const profilePayload={full_name:'QA teacher '+run,bio:'Exclusively synthetic teaching profile.',subjects:['qa-'+run],languages:['English'],certifications:[],location:'QA location',hourly_rate:0,experience_years:0,is_public:true,available:true,expected_revision:0,request_id:randomUUID(),verified:true,user_id:owner.id,metadata:{forged:true}};
   const profiles=await Promise.all([command(teacher,'upsert_profile',profilePayload),command(teacher,'upsert_profile',profilePayload)]),profileId=profiles[0].data?.profile?.id;

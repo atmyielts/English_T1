@@ -22,7 +22,7 @@
   ],
   "manualFollowUps": [
     "Verify linked project bbjawctnqrufvnesdsel and require a fresh dry-run to list only the reviewed migration; supabase db push --linked, then verify remote migration history.",
-    "After the migration, supabase functions deploy teacher-marketplace --project-ref bbjawctnqrufvnesdsel; retain JWT verification and compare downloaded runtime source to the reviewed commit.",
+    "After the migration, supabase functions deploy teacher-marketplace --project-ref bbjawctnqrufvnesdsel; preserve the verified existing public gateway setting verify_jwt=false. Private commands verify bearer identities inside the handler. Compare downloaded runtime source to the reviewed commit.",
     "Run exclusive temporary-QA role, permission, retry and hiring checks plus actual published teacher/employer journeys; verify all fixture, actor, tenant and session cleanup. Historical verification flags require independent operator review before public badges."
   ],
   "verification": [
