@@ -25,7 +25,8 @@
     "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement.",
     "Parallel build/check workflow from PR222 retains every suite and aggregate validate gate; the earlier 20-minute CI timeout is not reused as a pass. Requalify this merged UI head.",
     "Merge newer main while preserving both AI security and payment UI test suites. Financial activation remains held independently.",
-    "Includes the independently released AI screens without changing payment recovery behavior."
+    "Includes the independently released AI screens without changing payment recovery behavior.",
+    "Preserves the released production secret-scanner regression gate, all browser-protection policies and tests, and private provider diagnostics. Payment and Pages security suites remain mandatory together."
   ],
   "rollback": {
     "frontend": "Tracked revert PR and Pages CI; never local Pages deployment.",
@@ -36,6 +37,6 @@
     "backendRelease": "payment-transactions-backend",
     "backendHostedQualificationRequired": true,
     "ciWorkflowCommit": "937e51d71494fb5007546d4fc00b5b4b7684ea97",
-    "latestPublishedFrontendBase": "e0def8f7c8855a77f3a72ebb904327eaaced2a04"
+    "latestPublishedFrontendBase": "051ca03fcbacc3c80e0fc10d4f55feae10051df8"
   }
 }

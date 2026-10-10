@@ -12,6 +12,7 @@ import {
   writingInput,
 } from "./grading.ts";
 import { resolveWritingAllowance } from "./allowance.ts";
+import { coachingProviderFailureCode } from "../_shared/coaching-handler.ts";
 
 const id = "11111111-1111-4111-8111-111111111111",
   lease = "22222222-2222-4222-8222-222222222222";
@@ -50,12 +51,15 @@ function fixture(
     replay?: boolean;
     saveFailures?: number;
     providerFailure?: boolean;
+    providerError?: Error;
+    reporterThrows?: boolean;
     queryFailure?: boolean;
     authFailure?: boolean;
     started?: boolean;
   } = {},
 ) {
   const calls: { name: string; args: Record<string, unknown> }[] = [];
+  const diagnostics: Record<string, string>[] = [];
   let generated = 0, saves = 0;
   const query = {
     select() {
@@ -111,6 +115,10 @@ function fixture(
   } as unknown as SupabaseClient;
   const handler = createWritingTutorHandler({
     client,
+    reportProviderFailure: (event) => {
+      diagnostics.push(event);
+      if (options.reporterThrows) throw new Error("private-logger-failure");
+    },
     authenticate: async () => {
       if (options.authFailure) throw new Error("auth outage");
       return id;
@@ -118,11 +126,12 @@ function fixture(
     allowance: async () => policy,
     generate: async () => {
       generated++;
+      if (options.providerError) throw options.providerError;
       if (options.providerFailure) throw new Error("private-provider-error");
       return feedback;
     },
   });
-  return { handler, calls, generated: () => generated };
+  return { handler, calls, diagnostics, generated: () => generated };
 }
 const request = (value: unknown = body) =>
   new Request("https://test.invalid/writing-tutor", {
@@ -130,6 +139,84 @@ const request = (value: unknown = body) =>
     headers: { Authorization: "Bearer test" },
     body: JSON.stringify(value),
   });
+
+Deno.test("provider diagnostics retain only approved codes and never change uncertain request accounting", async () => {
+  for (
+    const failure of [
+      new Error("provider_http_401"),
+      new Error("provider_http_429"),
+      new Error("provider_http_404"),
+    ]
+  ) {
+    const f = fixture({ providerError: failure, reporterThrows: true });
+    const response = await f.handler(request());
+    assertEquals(response.status, 502);
+    assertEquals(f.generated(), 1);
+    assertEquals(f.diagnostics, [{
+      service: "writing-tutor",
+      request_id: id,
+      code: failure.message,
+    }]);
+    assertEquals(
+      f.calls.filter((call) => call.name === "finish_ai_request").map((call) =>
+        call.args.p_status
+      ),
+      ["uncertain"],
+    );
+    assertEquals((await response.json()).code, "provider_unconfirmed");
+  }
+  const secret = "private learner text, provider key and response body";
+  const f = fixture({ providerError: new Error(secret) });
+  assertEquals((await f.handler(request())).status, 502);
+  assertEquals(f.diagnostics, [{
+    service: "writing-tutor",
+    request_id: id,
+    code: "provider_unknown",
+  }]);
+  assertEquals(JSON.stringify(f.diagnostics).includes(secret), false);
+  assertEquals(
+    coachingProviderFailureCode(new SyntaxError(secret)),
+    "invalid_provider_json",
+  );
+  assertEquals(
+    coachingProviderFailureCode(new DOMException(secret, "TimeoutError")),
+    "provider_timeout",
+  );
+  assertEquals(
+    coachingProviderFailureCode({ message: secret }),
+    "provider_unknown",
+  );
+  assertEquals(
+    coachingProviderFailureCode(new Error("provider_http_401 " + secret)),
+    "provider_unknown",
+  );
+});
+Deno.test("provider HTTP failures expose only the status classification and are never retried", async () => {
+  for (const status of [401, 404, 429, 503]) {
+    let calls = 0;
+    const grader = createWritingGrader(
+      {
+        key: "synthetic",
+        model: "test",
+        baseUrl: "https://test.invalid",
+        referer: "https://test.invalid",
+      },
+      (() => {
+        calls++;
+        return Promise.resolve(
+          new Response("private provider response", { status }),
+        );
+      }) as typeof fetch,
+    );
+    await assertRejects(
+      () => grader(writingInput(body)),
+      Error,
+      "provider_http_" + status,
+    );
+    assertEquals(calls, 1);
+  }
+});
+
 Deno.test("writing dispatch requires a fresh reservation and successful begin", async () => {
   for (
     const status of [

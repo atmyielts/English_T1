@@ -146,7 +146,7 @@ export function createSpeakingGrader(
     );
     if (!response.ok) {
       await response.body?.cancel();
-      throw new Error("provider_unavailable");
+      throw new Error("provider_http_" + response.status);
     }
     const payload = await boundedJson(response, 65536) as {
       choices?: { finish_reason?: string; message?: { content?: unknown } }[];
