@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createWritingTutorHandler } from "./handler.ts";
 import { createWritingGrader } from "./grading.ts";
 import { resolveWritingAllowance } from "./allowance.ts";
+import { createCoachingCapacityReader } from "../_shared/coaching-capacity.ts";
 const getEnv = (key: string) => Deno.env.get(key);
 const required = (key: string) => {
   const value = getEnv(key);
@@ -21,6 +22,21 @@ const auth = createClient(base, anon, {
   global: { fetch: boundedFetch },
 });
 const key = getEnv("OPENROUTER_API_KEY") ?? "";
+const model = getEnv("OPENROUTER_MODEL") ?? "google/gemma-4-31b-it:free";
+const providerBase = getEnv("OPENROUTER_BASE_URL") ??
+  "https://openrouter.ai/api/v1";
+const capacity = createCoachingCapacityReader(
+  { key, model, baseUrl: providerBase },
+  fetch,
+  (status) =>
+    console.warn(
+      JSON.stringify({
+        event: "coaching_provider_capacity",
+        service: "writing-tutor",
+        ...status,
+      }),
+    ),
+);
 const configuredLimit = Number(getEnv("WRITING_TUTOR_SERVICE_DAILY_LIMIT"));
 const serviceLimit = Number.isInteger(configuredLimit) && configuredLimit > 0 &&
     configuredLimit <= 1000000
@@ -30,7 +46,9 @@ const addonId = getEnv("AI_ADDON_PRODUCT_ID") ?? "";
 serve(createWritingTutorHandler({
   client,
   reportProviderFailure: (event) =>
-    console.warn(JSON.stringify({ event: "coaching_provider_failure", ...event })),
+    console.warn(
+      JSON.stringify({ event: "coaching_provider_failure", ...event }),
+    ),
   authenticate: async (token) => {
     const { data, error } = await auth.auth.getUser(token);
     if (error) {
@@ -39,19 +57,19 @@ serve(createWritingTutorHandler({
     }
     return data.user?.id ?? null;
   },
-  allowance: (token) =>
+  allowance: async (token) =>
     resolveWritingAllowance({
       client,
       base,
       anon,
       addonId,
       serviceLimit,
-      providerConfigured: Boolean(key),
+      providerConfigured: (await capacity()).available,
     }, token),
   generate: createWritingGrader({
     key,
-    model: getEnv("OPENROUTER_MODEL") ?? "google/gemma-4-31b-it:free",
-    baseUrl: getEnv("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1",
+    model,
+    baseUrl: providerBase,
     referer: getEnv("OPENROUTER_REFERER") ?? "https://schood.online",
   }),
 }));

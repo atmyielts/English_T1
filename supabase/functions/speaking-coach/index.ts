@@ -4,6 +4,7 @@ import { createSpeakingCoachHandler } from "./handler.ts";
 const getEnv = (key: string) => Deno.env.get(key);
 import { createSpeakingGrader } from "./grading.ts";
 import { resolveAiAllowance } from "../_shared/ai-addon.ts";
+import { createCoachingCapacityReader } from "../_shared/coaching-capacity.ts";
 const required = (key: string) => {
   const value = getEnv(key);
   if (!value) throw new Error("Missing " + key);
@@ -21,6 +22,21 @@ const auth = createClient(base, anon, {
   global: { fetch: boundedFetch },
 });
 const key = getEnv("OPENROUTER_API_KEY") ?? "";
+const model = getEnv("OPENROUTER_MODEL") ?? "google/gemma-4-31b-it:free";
+const providerBase = getEnv("OPENROUTER_BASE_URL") ??
+  "https://openrouter.ai/api/v1";
+const capacity = createCoachingCapacityReader(
+  { key, model, baseUrl: providerBase },
+  fetch,
+  (status) =>
+    console.warn(
+      JSON.stringify({
+        event: "coaching_provider_capacity",
+        service: "speaking-coach",
+        ...status,
+      }),
+    ),
+);
 const configuredLimit = Number(
   getEnv("SPEAKING_COACH_SERVICE_DAILY_LIMIT"),
 );
@@ -32,7 +48,9 @@ const addonId = getEnv("AI_ADDON_PRODUCT_ID") ?? "";
 serve(createSpeakingCoachHandler({
   client,
   reportProviderFailure: (event) =>
-    console.warn(JSON.stringify({ event: "coaching_provider_failure", ...event })),
+    console.warn(
+      JSON.stringify({ event: "coaching_provider_failure", ...event }),
+    ),
   authenticate: async (token) => {
     const { data, error } = await auth.auth.getUser(token);
     if (error) {
@@ -41,20 +59,19 @@ serve(createSpeakingCoachHandler({
     }
     return data.user?.id ?? null;
   },
-  allowance: (token) =>
+  allowance: async (token) =>
     resolveAiAllowance({
       client,
       base,
       anon,
       addonId,
       serviceLimit,
-      providerConfigured: Boolean(key),
+      providerConfigured: (await capacity()).available,
     }, token),
   generate: createSpeakingGrader({
     key,
-    model: getEnv("OPENROUTER_MODEL") ?? "google/gemma-4-31b-it:free",
-    baseUrl: getEnv("OPENROUTER_BASE_URL") ??
-      "https://openrouter.ai/api/v1",
+    model,
+    baseUrl: providerBase,
     referer: getEnv("OPENROUTER_REFERER") ?? "https://schood.online",
   }),
 }));
