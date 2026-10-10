@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-10T12:46:14.827Z",
+  "status": "local_qualified_not_published",
+  "releaseId": "payment-transactions-backend",
+  "productionChanged": false,
+  "frontendSourceChanged": false,
+  "baseCommit": "582c187e28d5ef6d8d86ba07d6db5dc52622bbc0",
+  "migrations": [
+    "20261010162000_payment_fulfillment_transaction.sql",
+    "20261010163000_payment_checkout_transaction.sql",
+    "20261010164000_academy_purchase_transaction.sql",
+    "20261010165000_center_tier_checkout_transaction.sql",
+    "20261010170000_seat_assignment_transaction.sql",
+    "20261010171000_voucher_issue_transaction.sql",
+    "20261010172000_voucher_redemption_transaction.sql",
+    "20261010173000_candidate_admission_transaction.sql",
+    "20261010174000_voucher_void_transaction.sql"
+  ],
+  "functions": [
+    "admin-payments",
+    "click",
+    "partner-office",
+    "teacher-office",
+    "voucher-redeem",
+    "candidate-entry"
+  ],
+  "aggregateInventory": {
+    "seats": [
+      {
+        "total": 1,
+        "status": "active",
+        "assigned": false,
+        "payment_linked": true
+      }
+    ],
+    "payments": [
+      {
+        "total": 2,
+        "grants": 0,
+        "status": "pending",
+        "provider": "click",
+        "completed": 0
+      },
+      {
+        "total": 2,
+        "grants": 0,
+        "status": "pending",
+        "provider": "paddle",
+        "completed": 0
+      },
+      {
+        "total": 5,
+        "grants": 1,
+        "status": "canceled",
+        "provider": "tspay",
+        "completed": 1
+      },
+      {
+        "total": 1,
+        "grants": 0,
+        "status": "cancelled",
+        "provider": "tspay",
+        "completed": 0
+      },
+      {
+        "total": 1,
+        "grants": 0,
+        "status": "failed",
+        "provider": "tspay",
+        "completed": 0
+      },
+      {
+        "total": 5,
+        "grants": 5,
+        "status": "paid",
+        "provider": "tspay",
+        "completed": 5
+      },
+      {
+        "total": 23,
+        "grants": 0,
+        "status": "pending",
+        "provider": "tspay",
+        "completed": 0
+      },
+      {
+        "total": 1,
+        "grants": 0,
+        "status": "unknown",
+        "provider": "tspay",
+        "completed": 0
+      }
+    ],
+    "readOnly": true,
+    "vouchers": [
+      {
+        "total": 1,
+        "status": "redeemed",
+        "redeemed": true,
+        "access_kind": "subscription",
+        "captured_terms": false
+      },
+      {
+        "total": 9,
+        "status": "unused",
+        "redeemed": false,
+        "access_kind": "subscription",
+        "captured_terms": false
+      }
+    ],
+    "capturedAt": "2026-10-10T12:26:45.997479+00:00",
+    "examTokens": [],
+    "legacyUsable": {
+      "unusedTokens": 0,
+      "unusedVouchers": 0,
+      "unassignedSeats": 0
+    },
+    "partnerWallet": {
+      "maximum": 310000,
+      "minimum": 310000,
+      "negative": 0,
+      "overInteger": 0,
+      "scopeCurrencies": 1
+    },
+    "academyPayments": [],
+    "batchMetadataKeys": [
+      {
+        "key": "assigned_students"
+      },
+      {
+        "key": "currency"
+      },
+      {
+        "key": "total_amount"
+      },
+      {
+        "key": "unit_price"
+      }
+    ],
+    "installedReceipts": {
+      "issuance": false,
+      "admission": false,
+      "redemption": false,
+      "fulfillment": false
+    },
+    "voucherMetadataKeys": [
+      {
+        "key": "batch_code"
+      },
+      {
+        "key": "grant"
+      },
+      {
+        "key": "redeemed_via"
+      }
+    ],
+    "accountClosureEnabled": true,
+    "centerCommercialModels": [
+      {
+        "total": 1,
+        "status": "active",
+        "commercial_model": "hybrid"
+      }
+    ],
+    "customerRecordsReturned": false
+  },
+  "baselineSuite": {
+    "nativeCases": 178,
+    "denoCases": 55,
+    "scope": "before final hybrid and legacy extension"
+  },
+  "finalPolicy": {
+    "status": "passed",
+    "scope": "hybrid|voucher issue rejects caller|legacy .*confirmation|legacy redeemed voucher",
+    "engine": "native PostgreSQL 17.5",
+    "checks": [
+      {
+        "case": "voucher issue rejects caller manual funding and scoped commercial overrides before inventory",
+        "passed": true
+      },
+      {
+        "case": "hybrid voucher retries use one prepaid debit and cannot choose deferred funding or overspend",
+        "passed": true
+      },
+      {
+        "case": "legacy redeemed voucher confirms only existing history without renewing access or inventing a receipt",
+        "passed": true
+      },
+      {
+        "case": "legacy confirmation refuses a foreign beneficiary missing access and malformed recorded terms",
+        "passed": true
+      },
+      {
+        "case": "legacy confirmation cannot add uncaptured products or claim lifetime access from a finite grant",
+        "passed": true
+      }
+    ],
+    "productionChanged": false,
+    "cleanup": "owned container removed"
+  },
+  "modernReceiptBoundary": {
+    "status": "passed",
+    "scope": "legacy confirmation cannot substitute",
+    "engine": "native PostgreSQL 17.5",
+    "checks": [
+      {
+        "case": "legacy confirmation cannot substitute for missing modern purchase and redemption receipts",
+        "passed": true
+      }
+    ],
+    "productionChanged": false,
+    "cleanup": "owned container removed"
+  },
+  "liveReadOnlyCompatibility": {
+    "capturedAt": "2026-10-10T12:45:54.185257+00:00",
+    "readOnly": true,
+    "productionChanged": false,
+    "customerRecordsReturned": false,
+    "function": {
+      "owner": "postgres",
+      "securityDefiner": true,
+      "definitionSha256": "38139a6458cf21e425f4dff19d4985ce0499e8b3e905aeedbfb1373a04df3321",
+      "bodySha256": "a38d83604af206c55c66b480d99aba988920f5fa3e159ffa6f9adaeac88bce8d",
+      "bodyNormalization": "LF and outer whitespace trimmed, matching original baseline",
+      "matchesReviewedBaseline": true
+    },
+    "legacy": {
+      "redeemedLegacy": 1,
+      "validGrantShape": 1,
+      "sameBeneficiaryMainEntitlement": 1,
+      "exactGrantClassification": {
+        "total": 1,
+        "corroboratedReadOnlyConfirmation": 1
+      }
+    }
+  },
+  "capturedSchema": {
+    "sha256": "bdac29206b74fdc0f42629e7d08d22f07aea0132ff23ccdb856f6c43f8ccf169",
+    "checks": 14,
+    "passed": true,
+    "cleanupVerified": true,
+    "customerRowsCopied": false,
+    "includesAllNineFinalPaymentMigrations": true
+  },
+  "publicationGates": [
+    "exact-head CI",
+    "fresh live schema/source/inventory compatibility",
+    "isolated runtime source typecheck",
+    "owned hosted old-client and retry checks",
+    "hosted signed callback and durable recovery before worker activation"
+  ],
+  "supersedes": "Historical combined draft evidence is retained with its original scope. UI source and hosted publication are separate."
+}

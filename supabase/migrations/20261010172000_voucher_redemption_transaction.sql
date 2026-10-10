@@ -25,6 +25,7 @@ declare voucher public.partner_vouchers%rowtype; receipt public.voucher_redempti
   classroom public.academy_classrooms%rowtype; beneficiary_email text; full_name text; original_scope jsonb;
   terms jsonb; targets uuid[]; product uuid; days integer; old_end timestamptz; old_active boolean;
   old_found boolean; ends timestamptz; primary_end timestamptz; grant_result jsonb; outcome jsonb;
+  legacy_start timestamptz; legacy_end timestamptz;
   student public.partner_center_students%rowtype; contact public.academy_contacts%rowtype;
 begin
   if p_actor is null or p_code is null or p_code !~ '^[A-Z0-9-]{6,90}$' then
@@ -65,6 +66,48 @@ begin
       raise exception using errcode='23505',message='Committed voucher requires review';
     end if;
     return receipt.result||jsonb_build_object('deduped',true);
+  end if;
+  -- An already redeemed legacy voucher can confirm its recorded grant to its
+  -- original beneficiary. This read-only replay never renews access, debits a
+  -- wallet, or manufactures a purchased financial receipt. Require corroborating
+  -- access in this personal tenant, rather than trusting editable metadata alone.
+  if voucher.status='redeemed' and voucher.redeemed_by=p_actor and voucher.redeemed_at is not null
+    and voucher.access_kind in('subscription','seat') and voucher.metadata->'purchased_terms' is null
+    and not exists(select 1 from public.voucher_issue_receipts where batch_id=voucher.batch_id) then
+    grant_result:=voucher.metadata->'grant';
+    if jsonb_typeof(grant_result) is distinct from 'object'
+      or jsonb_typeof(grant_result->'product_ids') is distinct from 'array'
+      or jsonb_typeof(grant_result->'starts_at') is distinct from 'string'
+      or not(grant_result ? 'ends_at')
+      or jsonb_typeof(grant_result->'ends_at') not in('string','null') then
+      raise exception using errcode='22023',message='Legacy voucher confirmation requires review';
+    end if;
+    begin
+      select array_agg(value::uuid order by value::uuid) into targets from jsonb_array_elements_text(grant_result->'product_ids');
+      legacy_start:=(grant_result->>'starts_at')::timestamptz;
+      legacy_end:=(grant_result->>'ends_at')::timestamptz;
+    exception when invalid_text_representation or invalid_datetime_format or datetime_field_overflow then
+      raise exception using errcode='22023',message='Legacy voucher confirmation requires review';
+    end;
+    if coalesce(cardinality(targets),0) not between 1 and 101
+      or (select count(distinct p) from unnest(targets) p)<>cardinality(targets)
+      or not(voucher.product_id=any(targets)) or not isfinite(legacy_start)
+      or legacy_start>voucher.redeemed_at
+      or (legacy_end is not null and (not isfinite(legacy_end) or legacy_end<=legacy_start)) then
+      raise exception using errcode='22023',message='Legacy voucher confirmation requires review';
+    end if;
+    perform 1 from public.entitlements e where e.tenant_id=target and e.resource_type='product'
+      and e.resource_id=any(targets) order by e.id for share;
+    foreach product in array targets loop
+      if not exists(select 1 from public.entitlements e where e.tenant_id=target and e.user_id=p_actor
+        and e.resource_type='product' and e.resource_id=product and e.starts_at<=legacy_start
+        and (e.ends_at is null or (legacy_end is not null and e.ends_at>=legacy_end))) then
+        raise exception using errcode='22023',message='Legacy voucher confirmation requires review';
+      end if;
+    end loop;
+    return jsonb_build_object('ok',true,'state','redeemed','deduped',true,'legacy_confirmation',true,
+      'voucher_id',voucher.id,'beneficiary_id',p_actor,'beneficiary_tenant_id',target,'redeemed_at',voucher.redeemed_at,
+      'grant',jsonb_build_object('product_ids',to_jsonb(targets),'starts_at',legacy_start,'ends_at',legacy_end));
   end if;
   if voucher.status<>'unused' or voucher.redeemed_by is not null or voucher.redeemed_at is not null or voucher.uses_count<>0
     or voucher.expires_at<=now() or voucher.access_kind not in ('subscription','seat') then

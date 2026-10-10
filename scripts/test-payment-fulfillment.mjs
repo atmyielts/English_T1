@@ -838,7 +838,19 @@ try {
     for(const source_model of ['manual','wholesale','revenue_share','hybrid'])await assert.rejects(issueVouchers(ctx,randomUUID(),voucherRequest(ctx,'subscription',{source_model})),/funding cannot override/);
     assert.equal(await voucherCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
     await sql(`update partner_center_profiles set commercial_model='hybrid' where tenant_id=${q(ctx.scope)};`);
-    await assert.rejects(issueVouchers(ctx),/agreement requires review/);assert.equal(await voucherCount(ctx),'0');
+    const hybrid=await issueVouchers(ctx);assert.equal(hybrid.batch.source_model,'prepaid_wallet');assert.equal(await voucherDebits(ctx),'1');
+    assert.equal(await sql(`select funding->>'commercial_model' from voucher_issue_receipts where batch_id=${q(hybrid.batch.id)};`),'hybrid');
+  });
+  await check('hybrid voucher retries use one prepaid debit and cannot choose deferred funding or overspend',async()=>{
+    const ctx=await voucherFixture(2,2000);await sql(`update partner_center_profiles set commercial_model='hybrid' where tenant_id=${q(ctx.scope)};`);
+    const request=voucherRequest(ctx,'subscription',{source_model:'prepaid_wallet'});
+    const results=await Promise.all(Array.from({length:16},()=>issueVouchers(ctx,ctx.key,request)));
+    assert.equal(results.filter(r=>!r.deduped).length,1);assert(results.every(r=>r.batch.source_model==='prepaid_wallet'));
+    assert.equal(await voucherDebits(ctx),'1');assert.equal(await voucherCount(ctx),'2');
+    await assert.rejects(issueVouchers(ctx,randomUUID(),request),/Insufficient partner wallet/);
+    for(const source_model of ['manual','wholesale','revenue_share','hybrid'])await assert.rejects(issueVouchers(ctx,randomUUID(),voucherRequest(ctx,'subscription',{source_model})),/funding cannot override/);
+    await sql(`update partner_center_profiles set commercial_model='wholesale' where tenant_id=${q(ctx.scope)};`);
+    const replay=await issueVouchers(ctx,ctx.key,request);assert.equal(replay.deduped,true);assert.equal(replay.batch.source_model,'prepaid_wallet');assert.equal(await voucherDebits(ctx),'1');
   });
   await check('voucher issue configured wholesale and revenue share preserve agreements without fabricated wallet debits',async()=>{
     for(const model of ['wholesale','revenue_share']) {
@@ -1015,6 +1027,48 @@ try {
   }
   const redeemVoucher=(ctx,index=0,actor=ctx.recipient)=>sql(`set role service_role;select redeem_purchased_voucher(${q(actor)},${q(ctx.vouchers[index].code)});`).then(JSON.parse);
   const redemptionCount=ctx=>sql(`select count(*) from voucher_redemption_receipts where center_tenant_id=${q(ctx.scope)};`);
+  async function legacyRedemptionFixture(){
+    const ctx=await voucherFixture(1),batch=randomUUID(),voucher=randomUUID(),code='OWNED-LEGACY-'+randomUUID().replaceAll('-','').toUpperCase();
+    await sql(`begin; insert into auth.users(id,email,email_confirmed_at) values(${q(ctx.recipient)},${q(ctx.email)},now());
+      insert into partner_voucher_batches(id,tenant_id,batch_code,access_kind,product_id,plan_id,quantity,expires_at,prefix,created_by)
+      values(${q(batch)},${q(ctx.scope)},${q(code)},'subscription',${q(product)},${q(ctx.seatPlan)},1,now()-interval '20 days','OWNED',${q(ctx.actor)});
+      insert into entitlements(user_id,tenant_id,resource_type,resource_id,is_active,starts_at,ends_at,source)
+      values(${q(ctx.recipient)},${q(ctx.target)},'product',${q(product)},false,now()-interval '40 days',now()-interval '10 days','partner_voucher');
+      insert into partner_vouchers(id,tenant_id,batch_id,code,access_kind,product_id,plan_id,status,uses_count,redeemed_by,redeemed_at,expires_at,metadata)
+      values(${q(voucher)},${q(ctx.scope)},${q(batch)},${q(code)},'subscription',${q(product)},${q(ctx.seatPlan)},'redeemed',1,${q(ctx.recipient)},now()-interval '40 days',now()-interval '20 days',
+        jsonb_build_object('grant',jsonb_build_object('product_ids',jsonb_build_array(${q(product)}),'starts_at',now()-interval '40 days','ends_at',now()-interval '10 days','private','not returned'))); commit;`);
+    return {...ctx,vouchers:[{id:voucher,code}]};
+  }
+  await check('legacy redeemed voucher confirms only existing history without renewing access or inventing a receipt',async()=>{
+    const ctx=await legacyRedemptionFixture();const before=await sql(`select jsonb_agg(to_jsonb(e) order by id) from entitlements e where tenant_id=${q(ctx.target)};`);
+    const results=await Promise.all(Array.from({length:16},()=>redeemVoucher(ctx)));
+    assert(results.every(r=>r.deduped&&r.legacy_confirmation&&r.state==='redeemed'));
+    assert(results.every(r=>!('private' in r.grant)));assert.equal(await redemptionCount(ctx),'0');assert.equal(await voucherDebits(ctx),'0');
+    assert.equal(await sql(`select jsonb_agg(to_jsonb(e) order by id) from entitlements e where tenant_id=${q(ctx.target)};`),before);
+    assert.equal(await sql(`select count(*) from partner_center_students where tenant_id=${q(ctx.scope)};`),'0');
+  });
+  await check('legacy confirmation refuses a foreign beneficiary missing access and malformed recorded terms',async()=>{
+    const ctx=await legacyRedemptionFixture(),other=randomUUID(),target=randomUUID();
+    await sql(`insert into users(id,email) values(${q(other)},'owned-foreign@example.invalid');insert into tenants(id,type) values(${q(target)},'personal');insert into tenant_memberships(user_id,tenant_id) values(${q(other)},${q(target)});`);
+    await assert.rejects(redeemVoucher(ctx,0,other));
+    await sql(`update entitlements set user_id=${q(other)} where tenant_id=${q(ctx.target)};`);await assert.rejects(redeemVoucher(ctx),/confirmation requires review/);
+    await sql(`update entitlements set user_id=${q(ctx.recipient)} where tenant_id=${q(ctx.target)};update partner_vouchers set metadata=jsonb_set(metadata,'{grant,ends_at}','"not-a-date"') where id=${q(ctx.vouchers[0].id)};`);
+    await assert.rejects(redeemVoucher(ctx),/confirmation requires review/);assert.equal(await redemptionCount(ctx),'0');
+  });
+  await check('legacy confirmation cannot add uncaptured products or claim lifetime access from a finite grant',async()=>{
+    const ctx=await legacyRedemptionFixture();await sql(`update partner_vouchers set metadata=jsonb_set(metadata,'{grant,ends_at}','null') where id=${q(ctx.vouchers[0].id)};`);
+    await assert.rejects(redeemVoucher(ctx),/confirmation requires review/);
+    await sql(`update entitlements set ends_at=null where tenant_id=${q(ctx.target)};update partner_vouchers set metadata=jsonb_set(metadata,'{grant,product_ids}',${json([product,bundle])}) where id=${q(ctx.vouchers[0].id)};`);
+    await assert.rejects(redeemVoucher(ctx),/confirmation requires review/);
+    await sql(`update partner_vouchers set metadata=jsonb_set(metadata,'{grant,product_ids}',${json([product,product])}) where id=${q(ctx.vouchers[0].id)};`);
+    await assert.rejects(redeemVoucher(ctx),/confirmation requires review/);assert.equal(await redemptionCount(ctx),'0');
+  });
+  await check('legacy confirmation cannot substitute for missing modern purchase and redemption receipts',async()=>{
+    const ctx=await legacyRedemptionFixture();
+    await sql(`update partner_vouchers set metadata=metadata||jsonb_build_object('purchased_terms',jsonb_build_object('duration_days',30)) where id=${q(ctx.vouchers[0].id)};`);
+    await assert.rejects(redeemVoucher(ctx));assert.equal(await redemptionCount(ctx),'0');
+    assert.equal(await sql(`select is_active from entitlements where tenant_id=${q(ctx.target)};`),'f');
+  });
   await check('voucher redemption sixteen simultaneous retries commit one captured renewal and student record',async()=>{
     const ctx=await redemptionFixture();const results=await Promise.all(Array.from({length:16},()=>redeemVoucher(ctx)));
     assert.equal(results.filter(r=>!r.deduped).length,1);assert.equal(await redemptionCount(ctx),'1');assert.equal(await seatGrants(ctx),'2');

@@ -1,112 +1,36 @@
 {
   "schemaVersion": 1,
-  "releaseId": "payment-fulfillment-transaction",
+  "releaseId": "payment-recovery-ui",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "platform",
     "academy"
   ],
-  "migrations": [
-    "20261010162000_payment_fulfillment_transaction.sql",
-    "20261010163000_payment_checkout_transaction.sql",
-    "20261010164000_academy_purchase_transaction.sql",
-    "20261010165000_center_tier_checkout_transaction.sql",
-    "20261010170000_seat_assignment_transaction.sql",
-    "20261010171000_voucher_issue_transaction.sql",
-    "20261010172000_voucher_redemption_transaction.sql",
-    "20261010173000_candidate_admission_transaction.sql",
-    "20261010174000_voucher_void_transaction.sql"
-  ],
-  "edgeFunctions": [
-    "admin-payments",
-    "click",
-    "partner-office",
-    "teacher-office",
-    "voucher-redeem",
-    "candidate-entry"
-  ],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "requiredSecrets": [
-    "CLICK_MERCHANT_ID",
-    "CLICK_SECRET_KEY",
-    "CLICK_SERVICE_ID",
-    "TELEGRAM_PUBLIC_BOT_TOKEN"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "secret:CLICK_MERCHANT_ID",
-    "secret:CLICK_SECRET_KEY",
-    "secret:CLICK_SERVICE_ID",
-    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
-    "migration:20261010162000_payment_fulfillment_transaction.sql",
-    "migration:20261010163000_payment_checkout_transaction.sql",
-    "migration:20261010164000_academy_purchase_transaction.sql",
-    "migration:20261010165000_center_tier_checkout_transaction.sql",
-    "migration:20261010170000_seat_assignment_transaction.sql",
-    "migration:20261010171000_voucher_issue_transaction.sql",
-    "migration:20261010172000_voucher_redemption_transaction.sql",
-    "migration:20261010173000_candidate_admission_transaction.sql",
-    "migration:20261010174000_voucher_void_transaction.sql",
-    "function:admin-payments",
-    "function:click",
-    "function:partner-office",
-    "function:teacher-office",
-    "function:voucher-redeem",
-    "function:candidate-entry"
+    "pages"
   ],
   "manualFollowUps": [
-    "The nine unpublished payment migration filenames now follow installed account migration 20261010161000. Bodies are unchanged. Earlier execution proofs retain their original filenames; fresh final release qualification must use the ordered names.",
-    "Account dependency PR218 is protected-merged as 582c187e28d5ef6d8d86ba07d6db5dc52622bbc0. Four lifecycle migrations are installed, account v35 preserves verify_jwt=true, and ordinary deletion is enabled after exclusively owned hosted personal, institutional and activation checks. Preserve closed principals and markers; active/unknown billing and current institutional ownership still block closure. This does not qualify or publish this payment draft.",
-    "Do not merge this combined draft as-is. Split reviewed backend and frontend release PRs. A new recovery client must not run against the installed partner-office that discards its key. The first tracked Pages run must retain existing frontend source; qualify the reviewed additive backend and old-client canaries before the separate frontend follow-up ships. Never bypass CI or locally deploy Pages.",
-    "Before merging: qualify remaining live purchase consumers, seat/voucher claims, legacy reconciliation/account-retention inventory, full exact-head CI and release review. Platform, Academy and center/partner checkout/recovery have local tests. Old unkeyed HTTP requests remain compatible but cannot replay automatically. This draft is not production qualified.",
-    "Archive this manifest in release/history/payment-fulfillment-transaction.json when the final release is reviewed. Freshly download Click, admin-payments and partner-office; preserve every published dependency and gateway flag. Refuse baseline drift. Never publish unrelated repository modules.",
-    "Before applying the Academy migration, capture and review the installed apply_academy_payment(uuid,uuid) function definition and owner. The migration preserves its non-Click body behind a private invoker copy and retains the original public function owner/OID. Refuse ownership or source drift. Qualify account/contact retention before installation.",
-    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these nine reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
-    "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payment-bundle>",
-    "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-click-bundle>",
-    "Preserve the existing CLICK_MERCHANT_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_MERCHANT_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
-    "Preserve the existing CLICK_SECRET_KEY configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_SECRET_KEY=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
-    "Preserve the existing CLICK_SERVICE_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_SERVICE_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
-    "Preserve the existing TELEGRAM_PUBLIC_BOT_TOKEN configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
-    "Download deployed source and compare every expected file hash, verify gateway flags, qualify exclusive QA purchase/receipt/status flows and cleanup. Do not create customer charges. Test the published Node crypto MD5 path with a signed owned callback before routing a customer checkout through this version.",
-    "supabase functions deploy partner-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-partner-office-bundle>; publish after Click. Older office tier requests remain compatible only with exact tenant/payer/catalogue terms. Never publish unrelated provider source.",
-    "supabase functions deploy teacher-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-teacher-office-bundle>; capture current source/gateway flags, replace only assignment and its exact adapter, preserve published score-reporting behavior. New claims require new committed financial evidence; classify every legacy seat before installation. Hosted old-client seat assignment and owned retry canaries remain required.",
-    "Before voucher rollout, qualify operator-approved commercial models, all direct ledger writers, legacy negative balances, credit reversals and refund/void/account-retention compatibility. Hybrid agreements deliberately require review rather than inferring financing. Protect captured inventory identity. Qualify original-key recovery UI, atomic subscription/seat redemption and the atomic mock candidate adapter with legacy purchase reconciliation; do not release issuance alone into older consumers. Existing unkeyed callers remain compatible but cannot recover the original batch automatically.",
-    "Enable the dormant payment-fulfillment-v1 cron flag only after both backend source proofs and owned hosted canaries pass. Verify pg_cron installation and an actual retry recovery. Retain reviewed original source for an isolated Edge rollback; disable the worker first. Leave additive schema in place.",
-    "supabase functions deploy voucher-redeem --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-voucher-redeem-bundle>; preserve downloaded media dependencies and gateway flags. Deploy only after legacy reconciliation and old-client/owned hosted redemption canaries are reviewed.",
-    "Subscription/seat redemption is one captured-term transaction with student/enrollment effects and immutable receipt. Existing vouchers without reviewed purchase evidence deliberately require reconciliation. Classify every legacy unused/redeemed voucher, finance source and learner grant before deploying this consumer. Do not switch live customers to an unqualified reconciliation-only path.",
-    "Safe voucher cancellation closes only an uncreated original key. A committed batch is returned instead; cancellation never refunds or voids issued stock. Browser recovery is actor/tenant scoped; closed-browser/cross-device server recovery, void/refund workflows and account deletion/retention remain separate release gates.",
-    "Candidate entry hotfix PR216 is independently installed as version45 and source-qualified. Preserve its verified-account admission. Before the atomic consumer, classify every legacy standalone and voucher token, sessions/registrations and paid receipt; never replace valid customer access with an unqualified reconciliation-only path. Qualify receipt/account-retention and refund/void behavior.",
-    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-published-source-preserving-bundle>",
-    "Voucher voiding must ship with the reviewed atomic adapter and ninth migration. It preserves purchased metadata and disables a linked unused exam token in one transaction. Closures are idempotent and immutable; redeemed or uncertain legacy claims require review. It does not refund funding, release retained seat reservations or manufacture replacement inventory. Qualify old-client/hosted closure and financial retention before production."
+    "Backend PR220 is protected-merged as f8b7c5d1a6f6806b59920b9de00570dbb372ea8e. The nine migrations and six isolated Edge functions are NOT activated by this frontend merge. Before publishing this UI, finish and qualify that backend rollout, including exclusively owned original-request, old-client and signed callback/recovery checks. Never rely on an older function that discards retry keys.",
+    "Preserve actor/tenant-scoped original browser purchase keys across retry and refresh. A failed or ambiguous response must reopen the same order or batch and must not create a replacement purchase. No automatic retry after changed terms or caller scope.",
+    "Run exact-head frontend/browser CI, then inspect published checkout and office layouts at desktop/mobile sizes. Pages must match the protected merge SHA. Keep the backend worker disabled until its independent recovery qualification passes."
   ],
   "verification": [
-    "Native PostgreSQL payment/checkout/Academy/center/seat assignment concurrency, connection-loss, rollback, immutable linkage and permission cases; record final executed counts in the release evidence.",
-    "Actual callback/checkout handler tests and seat assignment adapter tests plus partner forwarding contracts; transport/persistence boundaries use doubles.",
-    "Actual Platform, Academy, center and partner browser screens with mocked APIs; activation, original-key recovery, purchase variants and responsive layouts; both production builds.",
-    "Read-only exact aggregate inventory found zero Click paid platform payments and zero pending/paid Academy Click invoices at 2026-10-09T15:02:58Z. This is scoped inventory, not full reconciliation or financial certification.",
-    "Exact reviewed-head full CI; matching Pages/provider source hashes and public reachability.",
-    "Actual exclusive production canaries and legacy reconciliation review before activation.",
-    "35 new native candidate admission cases cover concurrent purchased token/voucher claims, every write boundary rollback, account/enrollment scope and immutable evidence; the atomic HTTP adapter adds 7 cases. The full 162-case suite passed before enriching the profile fixture; the final 35 candidate cases passed with the canonical profile DDL and consent rollback case. Exact-head CI and hosted source/schema qualification remain required.",
-    "Final void extension: execute native race, rollback, connection-loss, first-closure replay, permission and evidence-retention checks plus actual HTTP adapter contract cases; earlier 163-case CI qualifies the pre-void head only."
+    "UI attempt contracts plus actual Platform activation, original-order office recovery and responsive tests; actual Academy checkout tests; both affected production builds and Academy locale checks.",
+    "The unchanged backend source and migrations retain exact main bytes and prior 183-case CI qualification; this UI release adds no schema/function publication.",
+    "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement."
   ],
   "rollback": {
-    "worker": "Database owner disables payment_fulfillment_config.worker_enabled before any backend rollback.",
-    "backend": "Redeploy the verified prior published Click/admin-payments isolated bundles through the reviewed manual Edge path; preserve original gateway settings. Old grants become legacy evidence, not automatic new receipts.",
-    "database": "Retain additive jobs/receipts; never drop receipts or reset customer grant claims. Review any immutable-term compatibility issue before reverting a trigger.",
-    "frontend": "Use a tracked Git revert PR and Pages CI; never a local Pages deploy."
+    "frontend": "Tracked revert PR and Pages CI; never local Pages deployment.",
+    "backend": "Retain the independently reviewed backend and additive receipt history; this release changes no Edge function or migration."
   },
-  "releaseStrategy": {
-    "kind": "split_backend_then_frontends",
-    "combinedDraftMayMerge": false,
-    "reason": "Current published partner-office drops retry keys; shipping the recovery UI first would allow a retry to create another order.",
-    "phases": [
-      "Create a reviewed backend-only PR from this candidate; its tracked Pages run keeps the existing frontend sources.",
-      "After that matching Pages run, apply only the nine reviewed additive migrations and publish source-preserving admin-payments, Click, partner-office, Teacher Office, voucher-redeem and candidate-entry; qualify old-client compatibility and owned hosted canaries.",
-      "Create and qualify a separate frontend follow-up PR for the Platform/Academy recovery UI; its tracked Pages run ships only after retry-aware backend proof.",
-      "Enable the fulfillment worker only after published source, signed callback, grant/receipt and retry recovery proofs."
-    ]
-  },
-  "legacyVoucherCompatibilityQualified": false
+  "dependencies": {
+    "backendCommit": "f8b7c5d1a6f6806b59920b9de00570dbb372ea8e",
+    "backendRelease": "payment-transactions-backend",
+    "backendHostedQualificationRequired": true
+  }
 }

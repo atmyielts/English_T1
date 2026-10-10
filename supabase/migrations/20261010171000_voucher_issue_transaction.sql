@@ -147,7 +147,10 @@ begin
       for share of c,t;
     if not found then raise exception using errcode='42501',message='Classroom is outside this active center'; end if;
   end if;
-  model:=profile.commercial_model;
+  -- Hybrid centers use their existing prepaid balance for new voucher stock.
+  -- The captured agreement remains hybrid; callers cannot choose deferred or
+  -- manual funding, and original-key replays keep the committed source model.
+  model:=case profile.commercial_model when 'hybrid' then 'prepaid_wallet' else profile.commercial_model end;
   if model not in ('prepaid_wallet','wholesale','revenue_share') or model is null then
     raise exception using errcode='22023',message='Voucher commercial agreement requires review';
   end if;
