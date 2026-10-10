@@ -15,7 +15,8 @@
     "20261009144000_seat_assignment_transaction.sql",
     "20261009145000_voucher_issue_transaction.sql",
     "20261009146000_voucher_redemption_transaction.sql",
-    "20261009147000_candidate_admission_transaction.sql"
+    "20261009147000_candidate_admission_transaction.sql",
+    "20261009148000_voucher_void_transaction.sql"
   ],
   "edgeFunctions": [
     "admin-payments",
@@ -46,6 +47,7 @@
     "migration:20261009145000_voucher_issue_transaction.sql",
     "migration:20261009146000_voucher_redemption_transaction.sql",
     "migration:20261009147000_candidate_admission_transaction.sql",
+    "migration:20261009148000_voucher_void_transaction.sql",
     "function:admin-payments",
     "function:click",
     "function:partner-office",
@@ -58,7 +60,7 @@
     "Before merging: qualify remaining live purchase consumers, seat/voucher claims, legacy reconciliation/account-retention inventory, full exact-head CI and release review. Platform, Academy and center/partner checkout/recovery have local tests. Old unkeyed HTTP requests remain compatible but cannot replay automatically. This draft is not production qualified.",
     "Archive this manifest in release/history/payment-fulfillment-transaction.json when the final release is reviewed. Freshly download Click, admin-payments and partner-office; preserve every published dependency and gateway flag. Refuse baseline drift. Never publish unrelated repository modules.",
     "Before applying the Academy migration, capture and review the installed apply_academy_payment(uuid,uuid) function definition and owner. The migration preserves its non-Click body behind a private invoker copy and retains the original public function owner/OID. Refuse ownership or source drift. Qualify account/contact retention before installation.",
-    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these eight reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
+    "After Pages succeeds on the reviewed merge SHA, use supabase db push --linked only from an isolated checkout containing these nine reviewed additive migrations and the already-published migration history. Inspect the plan; refuse extra pending migrations. Keep worker_enabled=false.",
     "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payment-bundle>",
     "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-click-bundle>",
     "Preserve the existing CLICK_MERCHANT_ID configuration. Do not replace values. Only if a reviewed configuration repair is needed: supabase secrets set CLICK_MERCHANT_ID=<existing-protected-value> --project-ref bbjawctnqrufvnesdsel; never save/print the value.",
@@ -74,7 +76,8 @@
     "Subscription/seat redemption is one captured-term transaction with student/enrollment effects and immutable receipt. Existing vouchers without reviewed purchase evidence deliberately require reconciliation. Classify every legacy unused/redeemed voucher, finance source and learner grant before deploying this consumer. Do not switch live customers to an unqualified reconciliation-only path.",
     "Safe voucher cancellation closes only an uncreated original key. A committed batch is returned instead; cancellation never refunds or voids issued stock. Browser recovery is actor/tenant scoped; closed-browser/cross-device server recovery, void/refund workflows and account deletion/retention remain separate release gates.",
     "Candidate entry hotfix PR216 is independently installed as version45 and source-qualified. Preserve its verified-account admission. Before the atomic consumer, classify every legacy standalone and voucher token, sessions/registrations and paid receipt; never replace valid customer access with an unqualified reconciliation-only path. Qualify receipt/account-retention and refund/void behavior.",
-    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-published-source-preserving-bundle>"
+    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-published-source-preserving-bundle>",
+    "Voucher voiding must ship with the reviewed atomic adapter and ninth migration. It preserves purchased metadata and disables a linked unused exam token in one transaction. Closures are idempotent and immutable; redeemed or uncertain legacy claims require review. It does not refund funding, release retained seat reservations or manufacture replacement inventory. Qualify old-client/hosted closure and financial retention before production."
   ],
   "verification": [
     "Native PostgreSQL payment/checkout/Academy/center/seat assignment concurrency, connection-loss, rollback, immutable linkage and permission cases; record final executed counts in the release evidence.",
@@ -83,7 +86,8 @@
     "Read-only exact aggregate inventory found zero Click paid platform payments and zero pending/paid Academy Click invoices at 2026-10-09T15:02:58Z. This is scoped inventory, not full reconciliation or financial certification.",
     "Exact reviewed-head full CI; matching Pages/provider source hashes and public reachability.",
     "Actual exclusive production canaries and legacy reconciliation review before activation.",
-    "35 new native candidate admission cases cover concurrent purchased token/voucher claims, every write boundary rollback, account/enrollment scope and immutable evidence; the atomic HTTP adapter adds 7 cases. The full 162-case suite passed before enriching the profile fixture; the final 35 candidate cases passed with the canonical profile DDL and consent rollback case. Exact-head CI and hosted source/schema qualification remain required."
+    "35 new native candidate admission cases cover concurrent purchased token/voucher claims, every write boundary rollback, account/enrollment scope and immutable evidence; the atomic HTTP adapter adds 7 cases. The full 162-case suite passed before enriching the profile fixture; the final 35 candidate cases passed with the canonical profile DDL and consent rollback case. Exact-head CI and hosted source/schema qualification remain required.",
+    "Final void extension: execute native race, rollback, connection-loss, first-closure replay, permission and evidence-retention checks plus actual HTTP adapter contract cases; earlier 163-case CI qualifies the pre-void head only."
   ],
   "rollback": {
     "worker": "Database owner disables payment_fulfillment_config.worker_enabled before any backend rollback.",
@@ -97,7 +101,7 @@
     "reason": "Current published partner-office drops retry keys; shipping the recovery UI first would allow a retry to create another order.",
     "phases": [
       "Create a reviewed backend-only PR from this candidate; its tracked Pages run keeps the existing frontend sources.",
-      "After that matching Pages run, apply only the eight reviewed additive migrations and publish source-preserving admin-payments, Click, partner-office, Teacher Office, voucher-redeem and candidate-entry; qualify old-client compatibility and owned hosted canaries.",
+      "After that matching Pages run, apply only the nine reviewed additive migrations and publish source-preserving admin-payments, Click, partner-office, Teacher Office, voucher-redeem and candidate-entry; qualify old-client compatibility and owned hosted canaries.",
       "Create and qualify a separate frontend follow-up PR for the Platform/Academy recovery UI; its tracked Pages run ships only after retry-aware backend proof.",
       "Enable the fulfillment worker only after published source, signed callback, grant/receipt and retry recovery proofs."
     ]

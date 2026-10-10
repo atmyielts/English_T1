@@ -6,6 +6,28 @@ export const hasProtectedCenterFinanceFields = (body: Json): boolean =>
   ['commercial_model', 'wholesale_pricing', 'wallet_settings', 'commission_rules', 'package_tier', 'status']
     .some(field => field in body);
 
+export async function voidVoucher(client: any, actor: string, tenant: string, body: Json): Promise<{status:number;body:Json}> {
+  if (!uuid(actor) || !uuid(tenant) || !object(body) || !uuid(body.voucher_id)
+    || (body.reason != null && (typeof body.reason !== 'string' || body.reason.length>500))) {
+    return {status:400,body:{error:'A valid voucher reference and bounded reason are required.',error_code:'voucher_void_input_invalid'}};
+  }
+  try {
+    const {data,error}=await client.rpc('void_unused_voucher',{p_actor:actor,p_tenant:tenant,p_voucher:body.voucher_id.toLowerCase(),
+      p_reason:typeof body.reason==='string' && body.reason.trim()?body.reason.trim():'voided_by_center'});
+    if(error){
+      const status=error.code==='42501'?403:['P0002','23505','23514','22023'].includes(error.code)?409:503;
+      return {status,body:{error:status===503?'Voucher closure is temporarily unavailable. Retry the same voucher.':'Voucher closure requires review; only unused unclaimed vouchers can be voided.',error_code:'voucher_void_unavailable'}};
+    }
+    if(!object(data)||data.ok!==true||data.state!=='void'||typeof data.deduped!=='boolean'||!object(data.voucher)
+      ||data.voucher.id!==body.voucher_id.toLowerCase()||data.voucher.tenant_id!==tenant||data.voucher.status!=='void') {
+      return {status:503,body:{error:'The recorded voucher closure is unavailable. Retry the same voucher.',error_code:'voucher_void_response_unavailable'}};
+    }
+    return {status:200,body:{voucher:data.voucher,deduped:data.deduped}};
+  } catch {
+    return {status:503,body:{error:'Voucher closure is temporarily unavailable. Retry the same voucher.',error_code:'voucher_void_unavailable'}};
+  }
+}
+
 // Actor and center scope come from the authenticated entry point. Catalogue,
 // funding, capability admission and every write belong to the SQL transaction.
 export async function issueVoucherBatch(client: any, actor: string, tenant: string, body: Json):

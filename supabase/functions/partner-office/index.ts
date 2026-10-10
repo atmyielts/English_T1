@@ -5,7 +5,7 @@ import { toDataURL } from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
 
 import { partnerCheckoutPayload } from "./checkout.ts";
-import { cancelVoucherBatchRequest, hasProtectedCenterFinanceFields, issueVoucherBatch } from "./voucher-batches.ts";
+import { cancelVoucherBatchRequest, hasProtectedCenterFinanceFields, issueVoucherBatch, voidVoucher } from "./voucher-batches.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
@@ -3203,22 +3203,8 @@ serve(async (req) => {
       if (actionBody === "void_voucher") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
-        const voucherId = String(body.voucher_id ?? "").trim();
-        if (!voucherId) return json(400, { error: "voucher_id is required" });
-        const { data, error } = await sb
-          .from("partner_vouchers")
-          .update({ status: "void", metadata: { reason: body.reason ?? "voided_by_center", voided_by: userId } })
-          .eq("id", voucherId)
-          .eq("tenant_id", tenantId)
-          .eq("status", "unused")
-          .select("*")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to void voucher", detail: error.message });
-        if (!data?.id) return json(400, { error: "Only unused vouchers can be voided" });
-        if (data.exam_token_id) {
-          await sb.from("exam_tokens").update({ status: "disabled" }).eq("id", data.exam_token_id).eq("status", "active");
-        }
-        return json(200, { voucher: data });
+        const result = await voidVoucher(sb, userId, tenantId, body);
+        return json(result.status, result.body);
       }
 
       if (actionBody === "export_report") {

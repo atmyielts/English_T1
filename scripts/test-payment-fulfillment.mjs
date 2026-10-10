@@ -17,6 +17,7 @@ const seatMigration=read('20261009144000_seat_assignment_transaction.sql');
 const voucherIssueMigration=read('20261009145000_voucher_issue_transaction.sql');
 const voucherRedemptionMigration=read('20261009146000_voucher_redemption_transaction.sql');
 const candidateAdmissionMigration=read('20261009147000_candidate_admission_transaction.sql');
+const voucherVoidMigration=read('20261009148000_voucher_void_transaction.sql');
 const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 const json=value=>q(JSON.stringify(value))+'::jsonb';
 const checks=[];
@@ -144,6 +145,7 @@ try {
     alter table sessions add constraint owned_session_registration_fk foreign key(registration_id) references exam_registrations(id);
     ${table('20260208040000_user_profiles.sql','user_profiles')}`);
   await sql(candidateAdmissionMigration);
+  await sql(voucherVoidMigration);
   await sql(`insert into tenant_memberships(user_id,tenant_id) values(${q(user)},${q(tenant)});`);
   await check('legacy uncertainty never reissues access; old completion remains separate evidence',async()=>{
     assert.equal((await fulfill(legacy)).state,'reconciliation');assert.equal((await fulfill(legacyDone)).state,'legacy_completed');
@@ -1246,6 +1248,106 @@ try {
   for(const role of ['anon','authenticated','service_role'])await check(`candidate admission ${role} cannot forge or rewrite admission evidence`,async()=>{
     for(const statement of ["update exam_admission_receipts set result='{}'",'delete from exam_admission_receipts','insert into exam_admission_receipts default values'])await assert.rejects(sql(`set role ${role};${statement};`),/permission denied/);
     if(role!=='service_role')await assert.rejects(sql(`set role ${role};select admit_candidate_exam(${q(user)},'OWNED-EXAMPLE','A','B','own@example.invalid','phone');`),/permission denied/);
+  });
+
+  const voidVoucher=(ctx,id=ctx.vouchers?.[0]?.id??ctx.voucherId,reason='Owned closure')=>sql(`set role service_role;select void_unused_voucher(${q(ctx.actor)},${q(ctx.scope)},${q(id)},${q(reason)});`).then(JSON.parse);
+  const voidCount=id=>sql(`select count(*) from voucher_void_receipts where voucher_id=${q(id)};`);
+  await check('voucher void sixteen concurrent retries preserve purchase terms funding and first closure evidence',async()=>{
+    const ctx=await redemptionFixture(),before=ctx.vouchers[0];
+    const replies=await Promise.all(Array.from({length:16},()=>voidVoucher(ctx)));
+    assert.equal(replies.filter(r=>!r.deduped).length,1);assert.equal(await voidCount(before.id),'1');
+    assert.deepEqual(replies[0].voucher.metadata.purchased_terms,before.metadata.purchased_terms);
+    assert.equal(await voucherDebits(ctx),'1');assert.equal(await seatGrants(ctx),'0');
+    const replay=await voidVoucher(ctx,before.id,'Different retry reason');assert.equal(replay.voucher.metadata.reason,'Owned closure');
+    assert.deepEqual(replay.voucher,replies[0].voucher);
+    await assert.rejects(redeemVoucher(ctx),/unavailable|reconciliation/);
+  });
+  await check('voucher void mock closure disables the linked code and prevents exam launch or reactivation',async()=>{
+    const ctx=await candidateFixture('voucher');const closed=await voidVoucher(ctx);
+    assert.equal(closed.voucher.status,'void');assert.equal(await sql(`select status from exam_tokens where id=${q(ctx.token.id)};`),'disabled');
+    await assert.rejects(admit(ctx));assert.equal(await admissions(ctx),'0');
+    for(const statement of [`update exam_tokens set status='active' where id=${q(ctx.token.id)}`,`update partner_vouchers set status='unused' where id=${q(ctx.voucherId)}`,
+      `update partner_vouchers set metadata='{}' where id=${q(ctx.voucherId)}`,`delete from exam_tokens where id=${q(ctx.token.id)}`,`delete from partner_vouchers where id=${q(ctx.voucherId)}`])await assert.rejects(sql(statement),/immutable|retained/);
+  });
+  await check('voucher void late receipt failure rolls back both voucher and linked code',async()=>{
+    const ctx=await candidateFixture('voucher');
+    await sql(`create function reject_voucher_void() returns trigger language plpgsql as $$begin raise exception 'owned late void receipt failure';end;$$;create trigger reject_voucher_void before insert on voucher_void_receipts for each row execute function reject_voucher_void();`);
+    try{await assert.rejects(voidVoucher(ctx),/owned late/);}finally{await sql('drop trigger reject_voucher_void on voucher_void_receipts;drop function reject_voucher_void();');}
+    assert.equal(await voidCount(ctx.voucherId),'0');assert.equal(await sql(`select status from exam_tokens where id=${q(ctx.token.id)};`),'active');
+    assert.equal(await sql(`select status from partner_vouchers where id=${q(ctx.voucherId)};`),'unused');
+    assert.equal((await voidVoucher(ctx)).deduped,false);
+  });
+  await check('voucher void lost connection rolls back both writes and original voucher retries once',async()=>{
+    const ctx=await candidateFixture('voucher');
+    await sql(`create function delay_voucher_void() returns trigger language plpgsql as $$begin perform pg_advisory_xact_lock(434395);perform pg_sleep(10);return new;end;$$;create trigger delay_voucher_void before insert on voucher_void_receipts for each row execute function delay_voucher_void();`);
+    const pending=voidVoucher(ctx).then(()=>null,error=>error);
+    try{await barrier(434395);await sql("select pg_terminate_backend(pid) from pg_stat_activity where pid<>pg_backend_pid() and query like '%select void_unused_voucher(%' and state='active';");}
+    finally{await pending;await sql('drop trigger delay_voucher_void on voucher_void_receipts;drop function delay_voucher_void();');}
+    assert.equal(await voidCount(ctx.voucherId),'0');assert.equal(await sql(`select status from exam_tokens where id=${q(ctx.token.id)};`),'active');
+    assert.equal(await sql(`select status from partner_vouchers where id=${q(ctx.voucherId)};`),'unused');
+    assert.equal((await voidVoucher(ctx)).deduped,false);assert.equal((await voidVoucher(ctx)).deduped,true);
+  });
+  await check('voucher void and subscription redemption race commit exactly one terminal outcome',async()=>{
+    const ctx=await redemptionFixture(),id=ctx.vouchers[0].id;
+    const replies=await Promise.allSettled([voidVoucher(ctx),redeemVoucher(ctx)]);
+    assert.equal(replies.filter(r=>r.status==='fulfilled').length,1);
+    assert.equal(Number(await voidCount(id))+Number(await redemptionCount(ctx)),1);
+    const status=await sql(`select status from partner_vouchers where id=${q(id)};`);
+    assert.equal(await seatGrants(ctx),status==='void'?'0':'2');assert.equal(await voucherDebits(ctx),'1');
+  });
+  await check('voucher void and mock admission race never commit a voided usable session',async()=>{
+    const ctx=await candidateFixture('voucher');const replies=await Promise.allSettled([voidVoucher(ctx),admit(ctx)]);
+    assert.equal(replies.filter(r=>r.status==='fulfilled').length,1);assert.equal(Number(await voidCount(ctx.voucherId))+Number(await admissions(ctx)),1);
+    const status=await sql(`select status from partner_vouchers where id=${q(ctx.voucherId)};`);
+    assert.equal(await sql(`select status from exam_tokens where id=${q(ctx.token.id)};`),status==='void'?'disabled':'claimed');
+    assert.equal((await candidateRows(ctx)).sessions,status==='void'?0:1);
+  });
+  await check('voucher void retains seat reservation and never fabricates stock or wallet refunds',async()=>{
+    const ctx=await redemptionFixture('seat'),before=ctx.vouchers[0];await voidVoucher(ctx);
+    assert.equal(await sql(`select count(*) from voucher_seat_reservations where voucher_id=${q(before.id)};`),'1');
+    assert.equal(await sql(`select status from seat_licenses where id=${q(before.seat_license_id)};`),'unassigned');
+    assert.equal(await seatGrants(ctx),'0');assert.equal(await sql(`select count(*) from partner_wallet_ledger where tenant_id=${q(ctx.scope)} and entry_kind='refund';`),'0');
+    await assert.rejects(assignSeat({...ctx,seats:[before.seat_license_id]}),/reserved for a voucher/);
+  });
+  await check('voucher void cannot undo a committed subscription redemption or its original access receipt',async()=>{
+    const ctx=await redemptionFixture(),redeemed=await redeemVoucher(ctx);await assert.rejects(voidVoucher(ctx),/Only unused/);
+    assert.equal(await voidCount(ctx.vouchers[0].id),'0');assert.equal(await redemptionCount(ctx),'1');assert.equal(await seatGrants(ctx),'2');
+    assert.deepEqual((await redeemVoucher(ctx)).grant,redeemed.grant);
+  });
+  await check('voucher void cannot undo a committed mock admission or invalidate its recoverable session',async()=>{
+    const ctx=await candidateFixture('voucher'),started=await admit(ctx);await assert.rejects(voidVoucher(ctx),/Only unused/);
+    assert.equal(await voidCount(ctx.voucherId),'0');assert.equal(await admissions(ctx),'1');assert.equal((await admit(ctx)).session_id,started.session_id);
+    assert.equal(await sql(`select status from exam_tokens where id=${q(ctx.token.id)};`),'claimed');
+  });
+  await check('voucher void closes expired unused legacy stock without inventing purchase or redemption evidence',async()=>{
+    const ctx=await redemptionFixture(),id=randomUUID();
+    await sql(`insert into partner_vouchers(id,tenant_id,code,access_kind,status,product_id,expires_at,metadata) values(${q(id)},${q(ctx.scope)},${q('OLD-'+id)},'subscription','unused',${q(product)},now()-interval '1 day','{"original_note":"retained"}');`);
+    const closed=await voidVoucher(ctx,id);assert.equal(closed.voucher.metadata.original_note,'retained');assert.equal(closed.voucher.metadata.purchased_terms,undefined);
+    assert.equal(await voidCount(id),'1');assert.equal(await sql(`select count(*) from voucher_redemption_receipts where voucher_id=${q(id)};`),'0');
+    assert.equal(await seatGrants(ctx),'0');
+  });
+  await check('voucher void current finance authority applies to closure and committed retry',async()=>{
+    for(const kind of ['teacher','revoked','suspended','paused']){
+      const ctx=await redemptionFixture();await voidVoucher(ctx);
+      if(kind==='teacher')await sql(`update tenant_memberships set role='teacher' where user_id=${q(ctx.actor)};`);
+      if(kind==='revoked')await sql(`update tenant_memberships set status='inactive' where user_id=${q(ctx.actor)};`);
+      if(kind==='suspended')await sql(`update users set is_active=false where id=${q(ctx.actor)};`);
+      if(kind==='paused')await sql(`update partner_center_profiles set status='paused' where tenant_id=${q(ctx.scope)};`);
+      await assert.rejects(voidVoucher(ctx));assert.equal(await voidCount(ctx.vouchers[0].id),'1');
+      await assert.rejects(voidVoucher(ctx,ctx.vouchers[1].id));assert.equal(await voidCount(ctx.vouchers[1].id),'0');
+    }
+  });
+  await check('voucher void foreign scope partial claims and legacy void uncertainty cannot manufacture closure evidence',async()=>{
+    const ctx=await candidateFixture('voucher'),foreign=await redemptionFixture();
+    await assert.rejects(voidVoucher(ctx,foreign.vouchers[0].id),/unavailable/);assert.equal(await voidCount(foreign.vouchers[0].id),'0');
+    await sql(`insert into sessions(user_id,experience_id,token_id) values(${q(ctx.recipient)},${q(ctx.mock)},${q(ctx.token.id)});`);
+    await assert.rejects(voidVoucher(ctx),/requires review/);assert.equal(await voidCount(ctx.voucherId),'0');
+    const legacyId=randomUUID();await sql(`insert into partner_vouchers(id,tenant_id,code,access_kind,status,product_id,expires_at) values(${q(legacyId)},${q(foreign.scope)},${q('LEGACY-'+legacyId)},'subscription','void',${q(product)},now());`);
+    await assert.rejects(voidVoucher(foreign,legacyId),/Only unused/);assert.equal(await voidCount(legacyId),'0');
+  });
+  for(const role of ['anon','authenticated','service_role'])await check(`voucher void ${role} cannot forge rewrite or remove closure receipts`,async()=>{
+    for(const statement of ["update voucher_void_receipts set result='{}'",'delete from voucher_void_receipts','insert into voucher_void_receipts default values'])await assert.rejects(sql(`set role ${role};${statement};`),/permission denied/);
+    if(role!=='service_role')await assert.rejects(sql(`set role ${role};select void_unused_voucher(${q(user)},${q(tenant)},${q(randomUUID())});`),/permission denied/);
   });
 
   await check('durable trigger enqueues paid transitions and worker recovers after no Edge retry',async()=>{
