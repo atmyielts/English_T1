@@ -362,6 +362,8 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'account.error.save': "O‘zgarishlarni saqlab bo‘lmadi. Qayta urinib ko‘ring.",
   'account.error.delete': "Hisobni o‘chirib bo‘lmadi. Qayta urinib ko‘ring yoki bog‘langan yozuvlarni tekshirish uchun yordam xizmatiga murojaat qiling.",
   'account.error.changed': "Hisobingiz o‘zgardi. O‘chirishdan oldin joriy hisobning email manzilini tasdiqlang.",
+  'account.error.ownershipTransfer': "Hisobni o‘chirishdan oldin akademiya yoki markaz egaligini boshqa foydalanuvchiga o‘tkazing.",
+  'account.error.billingReview': "Hisobni o‘chirishdan oldin faol obuna to‘lovlarini hal qiling yoki yordam xizmatiga murojaat qiling.",
   'account.error.sessionExpired': "Sessiya tugadi. Qayta kiring.",
   'account.loading': "Hisob yuklanmoqda...",
 

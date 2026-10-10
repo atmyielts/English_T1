@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "parent-report-revocation-authority",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [],
+  "migrations": ["20261010153000_parent_report_revocation_authority.sql"],
+  "edgeFunctions": ["parent-report"],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": ["migration:20261010153000_parent_report_revocation_authority.sql", "function:parent-report"],
+  "manualFollowUps": [
+    "Require current-head CI and tracked deploy, then refresh installed parent-report v15 source/gateway and authority schema/audit trigger compatibility. Refuse drift from release/parent-report-published-baseline.json. No account closure or financial worker activation.",
+    "Inspect linked history in an isolated reviewed checkout and use supabase db push --linked for only the report migration. Refuse unrelated pending SQL; additive RPC is compatible with the installed handler. Qualify current owner/delegate, role removal, scope, audit rollback and private execute using exclusively owned fixtures before replacing the live function.",
+    "supabase functions deploy parent-report --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-report-bundle>. Preserve verify_jwt=false and published remote imports; ship only reviewed runtime files and refuse source hash drift.",
+    "Download installed runtime files and compare reviewed hashes. Use exclusively owned accounts/academy/report links to qualify valid public reading, transfer, current-owner revocation, removed issuer denial, revoked/expired denial and cleanup. Never use customer tokens or academy IDs."
+  ],
+  "verification": [
+    "37 native PostgreSQL authority/concurrency/rollback cases; owned isolated container removed and absence verified",
+    "23 Deno checks including actual HTTP handler with synthetic Auth/service responses, plus report Edge typecheck",
+    "Production/release scans and current-head CI; owned installed-provider canaries remain required before completion"
+  ],
+  "rollback": {
+    "frontend": "No frontend changes. Previous live main 292dc97702a14e0c9fe0530a30cb28910a0e6875; tracked Pages continues normally after merge.",
+    "backend": "Fix forward and preserve revoked links, audit evidence and the additive RPC. Never restore the creator-only no-op success path or reactivate private report capabilities."
+  },
+  "limits": [
+    "No production migration/function installation or customer report access has occurred during local qualification.",
+    "Full installed schema/audit compatibility and own-account hosted provider proof remain required.",
+    "Existing direct browser token management, Academy monolith scope behavior, best-effort view counts and public request limits remain further review items.",
+    "This release does not enable account erasure, financial workers or establish full platform readiness."
+  ]
+}
