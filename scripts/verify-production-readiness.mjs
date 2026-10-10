@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import { secretLabels } from './production-secret-rules.mjs';
 
 const trackedFiles = [
   ...execSync('git ls-files', { encoding: 'utf8' }).split(/\r?\n/),
@@ -63,15 +64,6 @@ const textExtensions = new Set([
   '.html',
 ]);
 
-const secretRules = [
-  { label: 'Supabase service role literal', regex: /\bsb_secret_[A-Za-z0-9_-]{20,}\b/g },
-  { label: 'Supabase publishable literal', regex: /\bsb_publishable_[A-Za-z0-9_-]{20,}\b/g },
-  { label: 'OpenRouter key literal', regex: /\bsk-or-v1-[A-Za-z0-9_-]{20,}\b/g },
-  { label: 'OpenAI key literal', regex: /\bsk-[A-Za-z0-9]{20,}\b/g },
-  { label: 'AWS access key id literal', regex: /\bAKIA[0-9A-Z]{16}\b/g },
-  { label: 'Private key block', regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g },
-];
-
 for (const file of trackedFiles) {
   const extension = extname(file).toLowerCase();
   const basename = file.split('/').pop() ?? file.split('\\').pop() ?? file;
@@ -85,12 +77,7 @@ for (const file of trackedFiles) {
     continue;
   }
 
-  for (const rule of secretRules) {
-    if (rule.regex.test(content)) {
-      errors.push(`${rule.label} found in ${file}`);
-      break;
-    }
-  }
+  for (const label of secretLabels(content)) errors.push(`${label} found in ${file}`);
 }
 
 const productionExampleFiles = trackedFiles.filter((file) =>
