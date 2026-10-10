@@ -56,6 +56,7 @@ function fixture(
     queryFailure?: boolean;
     authFailure?: boolean;
     started?: boolean;
+    capacityUnavailable?: boolean;
   } = {},
 ) {
   const calls: { name: string; args: Record<string, unknown> }[] = [];
@@ -91,7 +92,8 @@ function fixture(
       if (name === "reserve_ai_request") {
         return {
           data: {
-            status: options.status ?? "reserved",
+            status: options.status ??
+              (args.p_global_limit === 0 ? "service_limit" : "reserved"),
             replay: options.replay ?? false,
             lease_token: lease,
             result: saved,
@@ -123,7 +125,10 @@ function fixture(
       if (options.authFailure) throw new Error("auth outage");
       return id;
     },
-    allowance: async () => policy,
+    allowance: async () => ({
+      ...policy,
+      enabled: !options.capacityUnavailable,
+    }),
     generate: async () => {
       generated++;
       if (options.providerError) throw options.providerError;
@@ -139,6 +144,25 @@ const request = (value: unknown = body) =>
     headers: { Authorization: "Bearer test" },
     body: JSON.stringify(value),
   });
+
+Deno.test("unavailable capacity refuses fresh dispatch before beginning or generating, while a saved receipt still replays", async () => {
+  const fresh = fixture({ capacityUnavailable: true });
+  const response = await fresh.handler(request());
+  assertEquals(response.status, 503);
+  assertEquals((await response.json()).code, "service_limit");
+  assertEquals(fresh.generated(), 0);
+  assertEquals(fresh.calls.map((call) => call.name), ["reserve_ai_request"]);
+  assertEquals(fresh.calls[0].args.p_global_limit, 0);
+  const cached = fixture({
+    capacityUnavailable: true,
+    status: "succeeded",
+    replay: true,
+  });
+  const replay = await cached.handler(request());
+  assertEquals(replay.status, 200);
+  assertEquals((await replay.json()).session_id, lease);
+  assertEquals(cached.generated(), 0);
+});
 
 Deno.test("provider diagnostics retain only approved codes and never change uncertain request accounting", async () => {
   for (
