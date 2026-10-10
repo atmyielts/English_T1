@@ -1,0 +1,123 @@
+{
+  "browser": [
+    {
+      "checkedAt": "2026-10-10T15:08:24.328Z",
+      "results": [
+        {
+          "case": "failed-save-draft-and-duplicate-protection",
+          "passed": true
+        },
+        {
+          "case": "saved-result-recovery-without-another-grade",
+          "passed": true
+        },
+        {
+          "case": "same-payload-replay-identity",
+          "passed": true
+        },
+        {
+          "case": "reload-receipt-recovery",
+          "passed": true
+        },
+        {
+          "case": "history-outage-is-explicit",
+          "passed": true
+        },
+        {
+          "case": "legacy-backend-grading-gate",
+          "passed": true
+        },
+        {
+          "case": "quota-outage-and-recovery",
+          "passed": true
+        }
+      ],
+      "environment": "localhost synthetic APIs; no production/provider requests",
+      "service": "writing"
+    },
+    {
+      "checkedAt": "2026-10-10T15:09:43.221Z",
+      "results": [
+        {
+          "case": "dictation-appends-and-cleans-up-on-end",
+          "passed": true
+        },
+        {
+          "case": "microphone-denial-preserves-text-and-clears-timer",
+          "passed": true
+        },
+        {
+          "case": "failed-save-mobile-recovery-and-accessibility",
+          "passed": true
+        },
+        {
+          "case": "transcript-only-feedback-and-safe-history",
+          "passed": true
+        },
+        {
+          "case": "same-payload-replay",
+          "passed": true
+        },
+        {
+          "case": "reload-recovery",
+          "passed": true
+        },
+        {
+          "case": "legacy-and-outage-gates",
+          "passed": true
+        },
+        {
+          "case": "route-exit-aborts-dictation",
+          "passed": true
+        }
+      ],
+      "environment": "localhost synthetic service and speech engine; no microphone/provider/production calls",
+      "service": "speaking"
+    },
+    {
+      "checkedAt": "2026-10-10T15:02:00.636Z",
+      "results": [
+        {
+          "case": "writing-account-change-clears-private-data-and-cancels-delayed-feedback",
+          "passed": true
+        },
+        {
+          "case": "speaking-account-change-clears-private-data-and-cancels-delayed-feedback",
+          "passed": true
+        },
+        {
+          "case": "account-change-detaches-late-dictation-and-stops-microphone",
+          "passed": true
+        }
+      ],
+      "environment": "localhost synthetic account and speech events only",
+      "service": "privacy"
+    }
+  ],
+  "limits": [
+    "Local synthetic APIs, auth and speech events only",
+    "No hosted provider or real microphone qualification",
+    "Broader pre-existing Platform lint is not green"
+  ],
+  "recordedAt": "2026-10-10T15:12:28.7990612Z",
+  "lint": "four changed screens/hooks; zero errors or warnings",
+  "build": "passed; synthetic local configuration",
+  "runtimeDependencies": {
+    "vulnerabilities": 0
+  },
+  "productionChanged": false,
+  "accessibility": {
+    "writing": "whole page",
+    "speaking": "main",
+    "violations": 0,
+    "standard": "WCAG 2.1 A/AA"
+  },
+  "backendSource": "88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a",
+  "widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440
+  ]
+}
