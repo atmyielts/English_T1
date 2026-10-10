@@ -1,201 +1,376 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAiCoaching } from "../lib/useAiCoaching";
+import { useTranscriptDictation } from "../lib/useTranscriptDictation";
 
-const edgeBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
-
-type Result = { overall_band: number | null; criteria: { FC: number; LR: number; GRA: number; P: number } | null; strengths: string[]; improvements: string[]; feedback: string; word_count: number };
-type HistoryItem = { id: string; topic: string | null; task_type: string; overall_band: number | null; word_count: number; created_at: string };
-
-const TOPICS = {
-  part1: ['Describe your hometown.', 'Talk about your favourite season.', 'Describe your daily routine.'],
-  part2: ['Describe a place you have visited that you found interesting.', 'Describe a person who has influenced you.', 'Describe a book or film that impressed you.'],
-  part3: ['How do you think cities will change in the future?', 'What role does technology play in modern education?', 'How has globalisation affected local cultures?'],
+type Result = {
+  session_id: string;
+  assessment_scope: "transcript_only";
+  observations: { coherence: string; vocabulary: string; grammar: string };
+  strengths: string[];
+  improvements: string[];
+  feedback: string;
+  word_count: number;
 };
-
-const bandColor = (b: number | null) => b === null ? '' : b >= 7 ? 'text-emerald-600' : b >= 5.5 ? 'text-amber-600' : 'text-red-600';
-const fmtDate = (s: string) => new Date(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-
+type HistoryItem = {
+  id: string;
+  topic: string;
+  task_type: string;
+  assessment_scope: string;
+  word_count: number;
+  created_at: string;
+};
+type Task = "part1" | "part2" | "part3" | "free";
+const TOPICS: Record<Task, string[]> = {
+  part1: [
+    "Describe your hometown.",
+    "Talk about your favourite season.",
+    "Describe your daily routine.",
+  ],
+  part2: [
+    "Describe a place you found interesting.",
+    "Describe a person who has influenced you.",
+    "Describe a book or film that impressed you.",
+  ],
+  part3: [
+    "How might cities change in the future?",
+    "What role does technology play in education?",
+    "How has globalisation affected local cultures?",
+  ],
+  free: [
+    "Talk about something you learned recently.",
+    "Explain an idea you care about.",
+  ],
+};
 export const SpeakingCoachPage: React.FC = () => {
   const navigate = useNavigate();
-  const [token, setToken] = useState<string | null>(null);
-  const [taskType, setTaskType] = useState<'part1' | 'part2' | 'part3'>('part2');
-  const [topic, setTopic] = useState('');
-  const [transcript, setTranscript] = useState('');
-  const [recording, setRecording] = useState(false);
-  const [scoring, setScoring] = useState(false);
-  const [result, setResult] = useState<Result | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [speechSupported] = useState(() => 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
-  const recRef = useRef<any>(null);
-  const timerRef = useRef<number>(0);
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) { navigate('/auth?returnTo=/speaking-coach', { replace: true }); return; }
-      setToken(data.session.access_token);
-      fetch(`${edgeBase}/speaking-coach?action=history`, { headers: { Authorization: `Bearer ${data.session.access_token}` } })
-        .then((r) => r.json()).then((d) => setHistory(d.sessions ?? [])).catch(() => null);
-    });
-  }, [navigate]);
-
-  const startRecording = () => {
-    if (!speechSupported) { setError('Speech recognition requires Chrome or Edge browser.'); return; }
-    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
-    const rec = new SR();
-    rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
-    let final = '';
-    rec.onresult = (e: any) => {
-      let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
-        else interim += e.results[i][0].transcript;
-      }
-      setTranscript(final + interim);
-    };
-    rec.onerror = () => { setRecording(false); };
-    rec.start(); recRef.current = rec; setRecording(true); setResult(null); setError(null);
-    setElapsed(0);
-    timerRef.current = window.setInterval(() => setElapsed((t) => t + 1), 1000);
+  const [task, setTask] = useState<Task>("part2"),
+    [topic, setTopic] = useState(""),
+    [transcript, setTranscript] = useState("");
+  const dictation = useTranscriptDictation(transcript, setTranscript);
+  const coach = useAiCoaching<Result, HistoryItem>("speaking-coach", () => {
+    dictation.cancel();
+    setTranscript("");
+    setTopic("");
+  });
+  const locked = coach.busy || coach.pending || dictation.recording;
+  const updateInput = (update: () => void) => {
+    update();
+    coach.clearResult();
   };
-
-  const stopRecording = () => {
-    recRef.current?.stop(); recRef.current = null;
-    clearInterval(timerRef.current); setRecording(false);
-  };
-
-  const score = async () => {
-    if (!token || !transcript.trim()) return;
-    setScoring(true); setError(null);
-    try {
-      const res = await fetch(`${edgeBase}/speaking-coach`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'score', transcript: transcript.trim(), topic: topic || null, task_type: taskType, duration_secs: elapsed }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Scoring failed'); return; }
-      setResult(data);
-      setHistory((h) => [{ id: data.session_id, topic: topic || null, task_type: taskType, overall_band: data.overall_band, word_count: data.word_count, created_at: data.graded_at }, ...h.slice(0, 9)]);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Failed'); }
-    setScoring(false);
-  };
-
-  const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-
+  const canSubmit = !locked && coach.quota?.enabled &&
+    coach.quota.api_version === 2 && coach.quota.remaining > 0 &&
+    coach.quota.attempts_remaining > 0 && transcript.trim().length >= 20 &&
+    topic.trim().length >= 5;
+  const words = transcript.trim().split(/\s+/).filter(Boolean).length;
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <div className="bg-white border-b border-gray-200 px-4 py-5">
+    <div className="min-h-screen bg-gray-50 pb-28">
+      <header className="bg-white border-b border-gray-200 px-4 py-5">
         <div className="max-w-3xl mx-auto">
-          <button onClick={() => navigate(-1)} className="text-xs text-gray-400 mb-1 block">← Back</button>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-sm text-gray-600 mb-2 underline"
+          >
+            Back
+          </button>
           <h1 className="text-xl font-bold text-gray-900">AI Speaking Coach</h1>
-          <p className="text-sm text-gray-500">Speak and receive IELTS band score + detailed feedback</p>
+          <p className="text-sm text-gray-600 mt-2">
+            Practise an answer, then get feedback on the ideas, vocabulary and
+            grammar in its transcript.
+          </p>
+          <p className="text-sm text-gray-600 mt-2">
+            This reviews text only. Pronunciation, oral fluency and an overall
+            IELTS Speaking band require audio assessment.
+          </p>
         </div>
-      </div>
-
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-        {!speechSupported && <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">For best results, use Chrome or Edge — Speech Recognition is required for the microphone button. You can also type or paste a transcript below.</div>}
-
-        {/* Controls */}
-        <div className="flex gap-3 flex-wrap items-end">
+      </header>
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+        {coach.loading && (
+          <p role="status">Loading your allowance and history…</p>
+        )}
+        {coach.quotaError && (
+          <div role="alert" className="text-sm text-red-700">
+            {coach.quotaError}{" "}
+            <button onClick={coach.refreshQuota} className="underline">
+              Retry allowance
+            </button>
+          </div>
+        )}
+        {coach.quota && (
+          <div className="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">
+            <p>
+              <strong>{coach.quota.remaining} of {coach.quota.limit}</strong>
+              {" "}
+              {coach.quota.has_paid_access ? "AI add-on" : "free"}{" "}
+              requests remaining today. Resets at midnight UTC.
+            </p>
+            {!coach.quota.enabled && (
+              <p role="status" className="mt-2">
+                AI feedback is temporarily unavailable. You can continue
+                drafting.
+              </p>
+            )}
+            {coach.quota.addon_available && !coach.quota.has_paid_access && (
+              <p className="mt-2">
+                Higher allowance requires the dedicated AI add-on. Other
+                purchases do not include it.
+              </p>
+            )}
+          </div>
+        )}
+        <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Task Type</label>
-            <select value={taskType} onChange={(e) => setTaskType(e.target.value as any)} className="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none">
-              <option value="part1">Part 1 (Introduction)</option>
-              <option value="part2">Part 2 (Long turn)</option>
-              <option value="part3">Part 3 (Discussion)</option>
-              <option value="free">Free Practice</option>
+            <label
+              htmlFor="speaking-task"
+              className="block text-sm font-semibold text-gray-700 mb-1"
+            >
+              Practice task
+            </label>
+            <select
+              id="speaking-task"
+              disabled={locked}
+              value={task}
+              onChange={(e) =>
+                updateInput(() => setTask(e.target.value as Task))}
+              className="w-full border border-gray-300 rounded-xl p-3 text-sm"
+            >
+              <option value="part1">Part 1: Introduction</option>
+              <option value="part2">Part 2: Long turn</option>
+              <option value="part3">Part 3: Discussion</option>
+              <option value="free">Free practice</option>
             </select>
           </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Topic / Question</label>
-            <div className="flex gap-2">
-              <input value={topic} onChange={(e) => setTopic(e.target.value)} className="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none" placeholder="Describe a place you have visited…" />
-              <select onChange={(e) => setTopic(e.target.value)} className="border border-gray-300 rounded-xl px-2 py-2 text-xs focus:outline-none" value="">
-                <option value="">Sample…</option>
-                {TOPICS[taskType]?.map((t, i) => <option key={i} value={t}>{t.slice(0, 50)}</option>)}
-              </select>
-            </div>
+          <div className="min-w-0">
+            <label
+              htmlFor="speaking-topic"
+              className="block text-sm font-semibold text-gray-700 mb-1"
+            >
+              Topic or question
+            </label>
+            <input
+              id="speaking-topic"
+              readOnly={locked}
+              maxLength={2000}
+              value={topic}
+              onChange={(e) => updateInput(() => setTopic(e.target.value))}
+              className="w-full border border-gray-300 rounded-xl p-3 text-sm"
+              placeholder="What will you talk about?"
+            />
           </div>
         </div>
-
-        {/* Record button */}
-        <div className="flex items-center gap-4">
-          {speechSupported && (
-            <button
-              onClick={recording ? stopRecording : startRecording}
-              className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm ${recording ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' : 'bg-gray-900 text-white hover:bg-black'}`}
-            >
-              {recording ? `⏹ Stop (${fmtTime(elapsed)})` : '🎙 Start Recording'}
-            </button>
-          )}
-          {recording && <div className="text-sm text-red-500 animate-pulse">● Recording…</div>}
-        </div>
-
-        {/* Transcript */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">
-            Transcript {transcript && <span className="text-gray-400 font-normal">({transcript.split(/\s+/).filter(Boolean).length} words)</span>}
+          <label
+            htmlFor="speaking-sample"
+            className="block text-sm text-gray-600 mb-1"
+          >
+            Try a sample topic
+          </label>
+          <select
+            id="speaking-sample"
+            disabled={locked}
+            value=""
+            onChange={(e) => updateInput(() => setTopic(e.target.value))}
+            className="max-w-full w-full border border-gray-300 rounded-xl p-3 text-sm"
+          >
+            <option value="">Choose a topic…</option>
+            {TOPICS[task].map((text) => (
+              <option key={text} value={text}>{text}</option>
+            ))}
+          </select>
+        </div>
+        <section aria-label="Dictation" className="space-y-3">
+          <p className="text-sm text-gray-600">
+            You can type, paste or dictate your answer. Browser dictation may
+            send audio to your browser’s speech service. Schood sends the
+            transcript to its AI provider when you request feedback.
+          </p>
+          {dictation.supported
+            ? (
+              <button
+                disabled={coach.busy || coach.pending}
+                onClick={() => {
+                  coach.clearResult();
+                  if (dictation.recording) dictation.stop();
+                  else dictation.start();
+                }}
+                className="px-5 py-3 rounded-xl bg-gray-900 text-white font-semibold text-sm disabled:bg-gray-500"
+              >
+                {dictation.recording ? "Stop dictation" : "Start dictation"}
+              </button>
+            )
+            : (
+              <p className="text-sm text-gray-600">
+                Dictation is unavailable in this browser. Type or paste your
+                transcript below.
+              </p>
+            )}
+          {dictation.recording && (
+            <p role="status" className="text-sm text-red-700">
+              Dictating · {Math.floor(dictation.elapsed / 60)}:{String(
+                dictation.elapsed % 60,
+              ).padStart(2, "0")}
+            </p>
+          )}
+          {dictation.error && (
+            <p role="alert" className="text-sm text-red-700">
+              {dictation.error}
+            </p>
+          )}
+        </section>
+        <div>
+          <label
+            htmlFor="speaking-transcript"
+            className="block text-sm font-semibold text-gray-700 mb-1"
+          >
+            Your transcript <span className="font-normal">({words} words)</span>
           </label>
           <textarea
-            value={transcript} onChange={(e) => setTranscript(e.target.value)} rows={8}
-            className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none leading-relaxed"
-            placeholder={recording ? 'Transcript will appear here as you speak…' : 'Or type/paste your transcript here for scoring…'}
+            id="speaking-transcript"
+            readOnly={locked}
+            maxLength={20000}
+            value={transcript}
+            onChange={(e) => updateInput(() => setTranscript(e.target.value))}
+            rows={9}
+            className="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed"
+            placeholder="Type or paste your answer…"
           />
+          <p className="text-xs text-gray-600 mt-1">
+            Use 20–20,000 characters and a topic of at least 5 characters. Check
+            dictated text for recognition mistakes. Drafts are not saved across
+            reloads.
+          </p>
         </div>
-
-        {error && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>}
-
-        <button onClick={score} disabled={scoring || !transcript.trim() || recording} className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold hover:bg-black disabled:bg-gray-300 text-sm">
-          {scoring ? 'Scoring…' : 'Get IELTS Band Score'}
+        {coach.error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          >
+            {coach.error}
+          </div>
+        )}
+        {coach.pending && (
+          <section
+            aria-label="Request recovery"
+            className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm space-y-3"
+          >
+            <p>
+              A previous request needs checking. Your transcript stays on this
+              page.
+            </p>
+            <p className="break-all text-xs">Request: {coach.requestId}</p>
+            <button
+              disabled={coach.busy}
+              onClick={coach.checkResult}
+              className="underline font-semibold"
+            >
+              Check saved result
+            </button>
+            <p>
+              Starting again may use another request from your daily allowance.
+            </p>
+            <button
+              disabled={coach.busy}
+              onClick={coach.startSeparate}
+              className="underline"
+            >
+              Start a separate request
+            </button>
+          </section>
+        )}
+        <button
+          disabled={!canSubmit}
+          onClick={() =>
+            coach.submit({
+              transcript: transcript.trim(),
+              topic: topic.trim(),
+              task_type: task,
+              duration_secs: null,
+            })}
+          className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold disabled:bg-gray-500 disabled:cursor-not-allowed"
+        >
+          {coach.busy ? "Checking feedback…" : coach.quota?.remaining === 0 ||
+              coach.quota?.attempts_remaining === 0
+            ? "Daily allowance reached"
+            : "Get transcript feedback"}
         </button>
-
-        {/* Result */}
-        {result && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-6 p-5 bg-gray-50 rounded-2xl border border-gray-200">
-              <div className="text-center">
-                <div className={`text-5xl font-bold ${bandColor(result.overall_band)}`}>{result.overall_band?.toFixed(1) ?? '—'}</div>
-                <div className="text-xs text-gray-500 mt-1 uppercase tracking-wide">Overall Band</div>
+        {coach.result && (
+          <section aria-label="Transcript feedback" className="space-y-4">
+            <h2 className="text-lg font-semibold">
+              Feedback on your transcript
+            </h2>
+            <p className="text-sm text-gray-600">
+              Text evidence only · {coach.result.word_count}{" "}
+              words · No overall Speaking score
+            </p>
+            <p className="bg-white rounded-xl border border-gray-200 p-4 text-sm leading-relaxed">
+              {coach.result.feedback}
+            </p>
+            {Object.entries(coach.result.observations).map(([name, text]) => (
+              <div
+                key={name}
+                className="bg-white rounded-xl border border-gray-200 p-4"
+              >
+                <h3 className="font-semibold capitalize mb-2">
+                  {name === "coherence" ? "Coherence of ideas" : name}
+                </h3>
+                <p className="text-sm leading-relaxed">{text}</p>
               </div>
-              {result.criteria && (
-                <div className="flex-1">
-                  {Object.entries(result.criteria).map(([k, v]) => (
-                    <div key={k} className="flex items-center gap-2 mb-1.5">
-                      <div className="text-xs font-semibold text-gray-500 w-8">{k}</div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${(v / 9) * 100}%` }} /></div>
-                      <div className="text-sm font-bold text-gray-800 w-6 text-right">{v}</div>
-                    </div>
-                  ))}
-                </div>
+            ))}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(["strengths", "improvements"] as const).map((kind) =>
+                coach.result![kind].length > 0 && (
+                  <div
+                    key={kind}
+                    className="rounded-xl border border-gray-200 p-4"
+                  >
+                    <h3 className="font-semibold capitalize mb-2">{kind}</h3>
+                    <ul className="list-disc pl-5 space-y-2 text-sm">
+                      {coach.result![kind].map((text, i) => (
+                        <li key={i}>{text}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )
               )}
             </div>
-            {result.feedback && <div className="p-4 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 leading-relaxed">{result.feedback}</div>}
-            <div className="grid grid-cols-2 gap-4">
-              {result.strengths?.length > 0 && <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl"><div className="text-xs font-semibold text-emerald-700 mb-2 uppercase">Strengths</div><ul className="space-y-1">{result.strengths.map((s, i) => <li key={i} className="text-sm text-emerald-800">✓ {s}</li>)}</ul></div>}
-              {result.improvements?.length > 0 && <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl"><div className="text-xs font-semibold text-amber-700 mb-2 uppercase">To Improve</div><ul className="space-y-1">{result.improvements.map((s, i) => <li key={i} className="text-sm text-amber-800">→ {s}</li>)}</ul></div>}
-            </div>
-            <div className="text-xs text-gray-400 text-right">{result.word_count} words spoken</div>
+          </section>
+        )}
+        {coach.historyError && (
+          <div role="alert" className="text-sm text-red-700">
+            {coach.historyError}{" "}
+            <button onClick={coach.refreshHistory} className="underline">
+              Retry history
+            </button>
           </div>
         )}
-
-        {/* History */}
-        {history.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <div className="text-sm font-semibold text-gray-700 mb-3">Recent Sessions</div>
-            <div className="space-y-2">
-              {history.map((h) => (
-                <div key={h.id ?? h.created_at} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
-                  <div><span className="font-medium text-gray-800">{h.task_type}</span><span className="text-gray-400 ml-2 truncate">{h.topic?.slice(0, 50)}</span></div>
-                  <div className="flex gap-3 shrink-0"><span className={`font-bold ${bandColor(h.overall_band)}`}>{h.overall_band?.toFixed(1) ?? '—'}</span><span className="text-xs text-gray-400">{fmtDate(h.created_at)}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <section
+          aria-label="Recent sessions"
+          className="rounded-xl border border-gray-200 bg-white p-4"
+        >
+          <h2 className="font-semibold mb-3">Recent sessions</h2>
+          {!coach.loading && !coach.historyError &&
+            coach.history.length === 0 && (
+            <p className="text-sm text-gray-600">No saved feedback yet.</p>
+          )}
+          <ul className="space-y-3">
+            {coach.history.map((item) => (
+              <li
+                key={item.id}
+                className="border-b border-gray-100 pb-3 text-sm break-words"
+              >
+                <p className="font-medium">{item.topic || item.task_type}</p>
+                <p className="text-gray-600 mt-1">
+                  {new Date(item.created_at).toLocaleDateString()} ·{" "}
+                  {item.word_count} words ·{" "}
+                  {item.assessment_scope === "transcript_only"
+                    ? "Transcript feedback"
+                    : "Earlier session — audio scoring unverified"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </main>
     </div>
   );
 };

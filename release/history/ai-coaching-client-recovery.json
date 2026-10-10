@@ -1,0 +1,35 @@
+{
+  "rollback": {
+    "frontend": "Use a checked fix-forward or Pages rollback to 88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a. If version 2 handlers are active, keep provider dispatch disabled during any old-client rollback; do not restore unsafe legacy scorers."
+  },
+  "migrations": [],
+  "schemaVersion": 1,
+  "requiredSecrets": [],
+  "workers": [],
+  "releaseId": "ai-coaching-client-recovery",
+  "dependencies": {
+    "backendPr": "https://github.com/atmyielts/English_T1/pull/223",
+    "backendSource": "88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a",
+    "runtimeActivation": "not performed"
+  },
+  "manualFollowUps": [
+    "Hold publication until exact-head CI passes and the reviewed AI schema/function bundles, configuration and owned provider qualification are prepared. Existing handlers remain version 1; the new screens show a clear unavailable state until version 2 is live.",
+    "After the qualified client release, activate only the reviewed Writing/Speaking handlers following docs/ai-coaching-boundary-release.md; no pending financial migration is included.",
+    "Verify published owned signed-in recovery, transcript-only feedback, account changes and mobile layout before declaring the coaching services ready."
+  ],
+  "status": "code_ready",
+  "verification": [
+    "Platform build with synthetic local configuration and strict lint of both screens and both hooks passed.",
+    "18 local real-Chromium scenarios cover replay identity, failed saves, reload recovery, quota/history outages, unsupported legacy backend gating, dictation cleanup and account-change privacy.",
+    "Overflow checks at 320,390,768,1024,1440px and both scoped WCAG 2.1 A/AA checks passed; external fonts and providers were not live-qualified.",
+    "Runtime npm audit reports zero vulnerabilities; unrelated Platform lint debt remains outside the changed screens/hooks."
+  ],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "edgeFunctions": [],
+  "backwardCompatible": true,
+  "frontends": [
+    "platform"
+  ]
+}
