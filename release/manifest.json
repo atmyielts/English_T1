@@ -1,26 +1,51 @@
 {
   "schemaVersion": 1,
-  "releaseId": "responsive-menu-completion",
+  "releaseId": "ai-coaching-transaction-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub",
-    "ielts-practice"
+  "frontends": [],
+  "migrations": [
+    "20261010175000_ai_request_ledger.sql",
+    "20261010180000_writing_tutor_atomic_result.sql",
+    "20261010181000_speaking_coach_atomic_result.sql"
   ],
-  "migrations": [],
-  "edgeFunctions": [],
+  "edgeFunctions": ["speaking-coach", "writing-tutor"],
+  "sharedEdgeConsumers": ["speaking-coach", "writing-tutor"],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL",
+    "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SPEAKING_COACH_SERVICE_DAILY_LIMIT",
+    "WRITING_TUTOR_SERVICE_DAILY_LIMIT"
+  ],
   "rolloutOrder": [
-    "pages"
+    "migration:20261010175000_ai_request_ledger.sql",
+    "migration:20261010180000_writing_tutor_atomic_result.sql",
+    "migration:20261010181000_speaking_coach_atomic_result.sql",
+    "secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL",
+    "secret:OPENROUTER_REFERER", "secret:SPEAKING_COACH_SERVICE_DAILY_LIMIT",
+    "secret:WRITING_TUTOR_SERVICE_DAILY_LIMIT",
+    "function:speaking-coach", "function:writing-tutor"
   ],
   "manualFollowUps": [
-    "Verify public IELTS Practice and English Hub menus at phone and desktop sizes after the tracked Pages release. No backend activation is required."
+    "Run supabase db push --linked only from an isolated reviewed migration workdir excluding pending financial migrations; first dry-run and confirm project identity.",
+    "Before either function activation, publish and verify the version 2 Writing/Speaking client transition described in docs/ai-coaching-boundary-release.md. Source merge does not activate these functions.",
+    "Preserve or configure supabase secrets set OPENROUTER_API_KEY= through protected terminal input; never log its value.",
+    "Preserve or configure supabase secrets set OPENROUTER_BASE_URL= through protected terminal input.",
+    "Preserve or configure supabase secrets set OPENROUTER_MODEL= through protected terminal input.",
+    "Preserve or configure supabase secrets set OPENROUTER_REFERER= through protected terminal input.",
+    "Configure supabase secrets set AI_ADDON_PRODUCT_ID= only for the reviewed dedicated add-on; otherwise leave unset for free allowance.",
+    "Configure supabase secrets set WRITING_TUTOR_SERVICE_DAILY_LIMIT= and supabase secrets set SPEAKING_COACH_SERVICE_DAILY_LIMIT= before enabling provider dispatch.",
+    "After the client and configuration gates, use supabase functions deploy writing-tutor and supabase functions deploy speaking-coach from isolated reviewed bundles with JWT verification preserved.",
+    "Run owned hosted provider, retry, quota and personal-erasure qualification before claiming these services customer-ready. SAT and financial runtime remain unchanged."
   ],
   "verification": [
-    "Both affected builds, 23 real local Chromium behavior/overflow checks and six scoped WCAG 2.1 A/AA header checks passed. Local API/font fixtures do not establish signed-in service readiness."
+    "15 handler/provider/access tests and two entrypoint typechecks passed.",
+    "23 independent-connection native PostgreSQL checks passed, including quota, dispatch and erasure races.",
+    "Seven complete installed-schema checks passed with real Auth erasure triggers and synthetic records; payment and global budget retained.",
+    "Full exact-head CI and live provider/client qualification are separate release gates."
   ],
   "rollback": {
-    "frontend": "Tracked revert PR or Pages dashboard rollback."
+    "backend": "Disable provider dispatch with zero service caps and refresh the reviewed functions, or fix forward through a checked PR. Preserve additive schema and erasure registry; do not restore unlimited scoring or unrelated-purchase premium."
   }
 }
