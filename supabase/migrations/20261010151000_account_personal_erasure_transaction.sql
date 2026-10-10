@@ -37,6 +37,26 @@ create table if not exists public.account_closed_personal_tenants (
 alter table public.account_closed_personal_tenants enable row level security;
 revoke all on public.account_closed_personal_tenants from public,anon,authenticated,service_role;
 
+-- Institution-linked acquisition evidence may remain, but a closed journey is
+-- an archive: delayed bots must not relink the login or recreate diagnostics.
+create table if not exists public.account_closed_acquisition_sessions (
+  session_id uuid primary key,
+  user_id uuid not null references public.users(id) on delete restrict
+);
+alter table public.account_closed_acquisition_sessions enable row level security;
+revoke all on public.account_closed_acquisition_sessions from public,anon,authenticated,service_role;
+do $$
+begin
+  if to_regclass('public.telegram_acquisition_sessions') is not null and not exists(
+    select 1 from pg_constraint where conrelid='public.account_closed_acquisition_sessions'::regclass
+      and conname='account_closed_acquisition_session_fk') then
+    alter table public.account_closed_acquisition_sessions
+      add constraint account_closed_acquisition_session_fk foreign key(session_id)
+      references public.telegram_acquisition_sessions(id) on delete cascade;
+  end if;
+end;
+$$;
+
 create or replace function public.account_closure_is_enabled(p_actor uuid)
 returns boolean language sql volatile security definer
 set search_path=pg_catalog,public
@@ -191,6 +211,70 @@ begin
 end;
 $$;
 
+create or replace function public.guard_closed_acquisition_record()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public
+set lock_timeout='3s'
+as $$
+declare scoped_session uuid; actor_id uuid;
+begin
+  if tg_table_name='telegram_acquisition_sessions' then
+    scoped_session:=new.id;actor_id:=new.schood_user_id;
+  else
+    scoped_session:=new.session_id;
+    select s.schood_user_id into actor_id from public.telegram_acquisition_sessions s
+      where s.id=scoped_session for share;
+  end if;
+  if actor_id is not null then perform 1 from public.users where id=actor_id for share;end if;
+  if exists(select 1 from public.account_closed_acquisition_sessions c where c.session_id=scoped_session)
+    or exists(select 1 from public.account_closure_receipts c where c.user_id=actor_id) then
+    raise exception using errcode='P0001',message='account_closed';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_closed_acquisition_record() from public,anon,authenticated,service_role;
+
+create or replace function public.guard_closed_personal_lead()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public
+set lock_timeout='3s'
+as $$
+declare linked_actor uuid; closed_scope boolean; closed_journey boolean;
+begin
+  -- Academy/partner and institution-owned student leads are business records.
+  if new.lead_type<>'student' then return new;end if;
+  if new.tenant_id is not null then perform 1 from public.tenants where id=new.tenant_id for share;end if;
+  closed_scope:=exists(select 1 from public.account_closed_personal_tenants where tenant_id=new.tenant_id);
+  if new.tenant_id is not null and not closed_scope then return new;end if;
+  if new.acquisition_session_id is not null then
+    select schood_user_id into linked_actor from public.telegram_acquisition_sessions
+      where id=new.acquisition_session_id for share;
+  end if;
+  perform 1 from public.users where id=any(array[new.schood_user_id,linked_actor]) order by id for share;
+  closed_journey:=exists(select 1 from public.account_closed_acquisition_sessions where session_id=new.acquisition_session_id);
+  if closed_scope or closed_journey or exists(select 1 from public.account_closure_receipts where user_id=any(array[new.schood_user_id,linked_actor])) then
+    raise exception using errcode='P0001',message='account_closed';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_closed_personal_lead() from public,anon,authenticated,service_role;
+do $$
+declare relation_name text;
+begin
+  foreach relation_name in array array['telegram_acquisition_sessions','telegram_acquisition_touches','telegram_journey_events'] loop
+    if to_regclass('public.'||relation_name) is null then continue;end if;
+    execute format('drop trigger if exists account_closed_acquisition_guard on public.%I',relation_name);
+    execute format('create trigger account_closed_acquisition_guard before insert or update on public.%I for each row execute function public.guard_closed_acquisition_record()',relation_name);
+  end loop;
+  if to_regclass('public.sales_leads') is not null then
+    execute 'drop trigger if exists account_closed_personal_lead_guard on public.sales_leads';
+    execute 'create trigger account_closed_personal_lead_guard before insert or update on public.sales_leads for each row execute function public.guard_closed_personal_lead()';
+  end if;
+end;
+$$;
+
 -- Audit evidence may outlive an operator's login. A request that started before
 -- closure must not repopulate email/IP/agent data after the purge has committed.
 create or replace function public.redact_closed_account_audit()
@@ -235,6 +319,7 @@ declare
   linked_sessions uuid[];
   personal_tenants uuid[];
   personal_email text;
+  archived_acquisitions uuid[];
   owner_column text;
   has_storage boolean;
 begin
@@ -337,12 +422,33 @@ begin
   if to_regclass('public.admin_audit_logs') is not null then
     update public.admin_audit_logs set user_email=null,ip=null,user_agent=null,metadata='{}' where user_id=old.id;
   end if;
+  if to_regclass('public.sales_leads') is not null then
+    -- Remove student contact/notes and cascading activities before the journey
+    -- purge. The lead FK then clears academy_lead_id, so a personal journey is
+    -- not mistaken for institution-owned evidence. Also cover sessions linked
+    -- after the lead was created, when its direct schood_user_id stayed NULL.
+    delete from public.sales_leads l where l.lead_type='student'
+      and (l.tenant_id is null or l.tenant_id=any(personal_tenants))
+      and (l.schood_user_id=old.id or exists(select 1 from public.telegram_acquisition_sessions s
+        where s.id=l.acquisition_session_id and s.schood_user_id=old.id));
+  end if;
   if to_regclass('public.telegram_acquisition_sessions') is not null then
     -- Personal acquisition/diagnostic journeys are erased; institution-linked
     -- acquisition evidence survives but must no longer authenticate a login.
     delete from public.telegram_acquisition_sessions where schood_user_id=old.id and academy_lead_id is null;
-    update public.telegram_acquisition_sessions set schood_user_id=null,journey_state='{}',metadata='{}',status='canceled'
+    select coalesce(array_agg(id),'{}'::uuid[]) into archived_acquisitions
+      from public.telegram_acquisition_sessions where schood_user_id=old.id;
+    update public.telegram_acquisition_sessions set schood_user_id=null,journey_state='{}',metadata='{}',
+      original_attribution='{}',latest_attribution='{}',deep_link_payload=null,status='canceled'
       where schood_user_id=old.id;
+    if to_regclass('public.telegram_journey_events') is not null then
+      update public.telegram_journey_events set metadata='{}' where session_id=any(archived_acquisitions);
+    end if;
+    if to_regclass('public.telegram_acquisition_touches') is not null then
+      update public.telegram_acquisition_touches set attribution='{}',deep_link_payload=null where session_id=any(archived_acquisitions);
+    end if;
+    insert into public.account_closed_acquisition_sessions(session_id,user_id)
+      select unnest(archived_acquisitions),old.id;
   end if;
   if to_regclass('public.teacher_profiles') is not null then
     update public.teacher_profiles set full_name='Deleted account',bio=null,avatar_url=null,

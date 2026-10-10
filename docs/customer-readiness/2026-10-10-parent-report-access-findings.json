@@ -1,0 +1,27 @@
+{
+  "status": "confirmed-published-source-finding-remediation-pending",
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "function": "parent-report",
+  "version": 15,
+  "verifyJwt": false,
+  "sourceSha256LfNormalized": "c7c8f76c7702685492321780e690de19651196d499dd7c3dd5e3796986f6e8ce",
+  "evidence": "Fresh Supabase API source download; inspected without calling customer report or mutation endpoints",
+  "finding": "revoke_token updates only id plus created_by; it does not check current academy membership or verify that a row was actually revoked",
+  "consequences": [
+    "An active replacement academy owner cannot revoke a prior issuer's report link, but receives success when no row changes",
+    "A still-signed-in former issuer can revoke a link after losing academy authority"
+  ],
+  "requiredCorrection": [
+    "Authorize against the token's stored academy and current appropriate report-management capability",
+    "Keep authorization and revocation in one database transaction with concurrent demotion/closure checks",
+    "Preserve valid public report reads, scope and revoked/expired behavior",
+    "Preserve downloaded runtime dependencies and verify_jwt=false for the public read endpoint",
+    "Qualify solely with exclusively owned academy/report fixtures and no customer report access"
+  ],
+  "remediationInstalled": false,
+  "hostedExploitPerformed": false,
+  "productionChanged": false,
+  "customerDataRead": false,
+  "capturedAt": "2026-10-10T09:05:22.1029147Z",
+  "metadataRecheckedAt": "2026-10-10T09:09:55.3540460Z"
+}

@@ -41,6 +41,26 @@ Deno.test('account deletion requires current email and refuses previous-account 
 Deno.test('account deletion bounds actual request bytes without trusting content length', async () => {
   const f = fixture(); assert((await handleAccountDeletion(req({ confirm_email: email, padding: 'x'.repeat(1025) }), f.client)).status === 400); assert(!f.deleted.length);
 });
+Deno.test('oversized account requests cannot hold the handler open with unresolved stream cancellation', async () => {
+  const f=fixture();let canceled=0;
+  const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new Uint8Array(1100));},cancel(){canceled++;return new Promise(()=>{});}});
+  const request=new Request('https://example.invalid/account',{method:'DELETE',headers:{Authorization:'Bearer owned-test-token'},body:stream});
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{
+    const response=await Promise.race([handleAccountDeletion(request,f.client),new Promise<Response>((_resolve,reject)=>{timer=setTimeout(()=>reject(Error('Request-body cancellation hung')),250);})]);
+    assert(response.status===400 && canceled===1 && !f.preflights.length && !f.deleted.length);
+  }finally{if(timer!==undefined)clearTimeout(timer);}
+});
+Deno.test('unfinished account request bodies time out before preflight or Auth deletion', async () => {
+  const f=fixture();let canceled=0;
+  const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new TextEncoder().encode('{'));},cancel(){canceled++;return new Promise(()=>{});}});
+  const request=new Request('https://example.invalid/account',{method:'DELETE',headers:{Authorization:'Bearer owned-test-token'},body:stream});
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{
+    const response=await Promise.race([handleAccountDeletion(request,f.client),new Promise<Response>((_resolve,reject)=>{timer=setTimeout(()=>reject(Error('Request-body deadline failed')),6000);})]);
+    assert(response.status===400 && canceled===1 && !f.preflights.length && !f.deleted.length);
+  }finally{if(timer!==undefined)clearTimeout(timer);}
+});
 Deno.test('account deletion refuses invalid or missing provider identities', async () => {
   for (const id of ['', 'malformed']) {
     const f = fixture(); f.client.auth.getUser = () => Promise.resolve({ data: { user: { id, email } }, error: null });

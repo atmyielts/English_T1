@@ -94,6 +94,11 @@ try {
     ${canonical('20260501120000_partner_referrals_and_credits.sql','referral_accounts')}
     ${canonical('20260227120000_admin_rbac_and_security_controls.sql','admin_audit_logs')}
     ${canonical('20260812130000_telegram_growth_system.sql','telegram_acquisition_sessions')}
+    ${canonical('20260812130000_telegram_growth_system.sql','sales_leads')}
+    ${canonical('20260812130000_telegram_growth_system.sql','sales_lead_activities')}
+    ${canonical('20260812130000_telegram_growth_system.sql','telegram_acquisition_touches')}
+    ${canonical('20260812130000_telegram_growth_system.sql','telegram_journey_events')}
+    alter table telegram_acquisition_sessions add constraint owned_acquisition_lead_fk foreign key(academy_lead_id) references sales_leads(id) on delete set null;
     ${table('sessions')}${table('responses')}${table('payments')}${table('entitlements')}
     alter table entitlements add column tenant_id uuid references tenants(id);
     ${canonical('20260210225000_trial_claims_and_limits.sql','trial_claims')}
@@ -149,6 +154,7 @@ try {
     for(const query of ['insert into account_closure_receipts default values','update account_closure_receipts set purge_version=2','delete from account_closure_receipts'])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
     for(const query of ['select * from account_closure_qualifications','insert into account_closure_qualifications default values','update account_closure_qualifications set expires_at=now()','delete from account_closure_qualifications',`select account_closure_is_enabled(${q(randomUUID())})`,`select account_personal_tenants(${q(randomUUID())})`])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
     for(const query of ['select * from account_closed_personal_tenants','insert into account_closed_personal_tenants default values','update account_closed_personal_tenants set user_id=null','delete from account_closed_personal_tenants','select guard_closed_account_billing()'])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
+    for(const query of ['select * from account_closed_acquisition_sessions','insert into account_closed_acquisition_sessions default values','update account_closed_acquisition_sessions set user_id=null','delete from account_closed_acquisition_sessions','select guard_closed_acquisition_record()','select guard_closed_personal_lead()'])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
   });
   await check('owner-only qualification erases only the selected QA actor while global closure stays disabled',async()=>{
     const qa=await actor(),other=await actor();await study(qa);await study(other);
@@ -285,12 +291,13 @@ try {
     await close(u);await writer;assert.equal(await sql(`select count(*) from user_profiles where user_id=${q(u)};`),'0');
   });
   await check('retained teacher/referral/audit roots are pseudonymous and personal Telegram journeys are purged',async()=>{
-    const u=await actor(),other=await actor(),journey=randomUUID(),institution=randomUUID();
+    const u=await actor(),other=await actor(),journey=randomUUID(),institution=randomUUID(),lead=randomUUID();
     await sql(`insert into teacher_profiles(user_id,full_name,bio,avatar_url,subjects,languages,location,certifications,experience_years,metadata) values(${q(u)},'Private Teacher','Private bio','private-avatar',array['ielts'],array['uz'],'Private city',array['private-certificate'],7,'{"private":"name"}');
       insert into referral_accounts(user_id,referral_code,metadata) values(${q(u)},${q(randomUUID())},'{"private":"name"}');
       insert into admin_audit_logs(user_id,user_email,action,method,path,status_code,ip,user_agent,metadata) values(${q(u)},'private@example.invalid','owned','POST','/owned',200,'private-ip','private-agent','{"private":"name"}');
       insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,journey_state,metadata) values(${q(journey)},'schoodonlinebot','private-chat',${q(u)},'{"private":"answers"}','{"private":"name"}');
-      insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,academy_lead_id,journey_state,metadata) values(${q(institution)},'schoodonlinebot','institution-chat',${q(u)},${q(randomUUID())},'{"private":"answers"}','{"private":"name"}');
+      insert into sales_leads(id,schood_user_id,lead_type,contact_name) values(${q(lead)},${q(u)},'academy','Institution contact');
+      insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,academy_lead_id,journey_state,metadata) values(${q(institution)},'schoodonlinebot','institution-chat',${q(u)},${q(lead)},'{"private":"answers"}','{"private":"name"}');
       insert into teacher_profiles(user_id,full_name) values(${q(other)},'Other Teacher');`);
     await close(u);
     assert.equal(await sql(`select full_name||':'||is_public::text||':'||available::text||':'||metadata::text||':'||(bio is null)::text from teacher_profiles where user_id=${q(u)};`),'Deleted account:false:false:{}:true');
@@ -302,6 +309,68 @@ try {
     assert.equal(await sql(`select experience_years is null from teacher_profiles where user_id=${q(u)};`),'t');
     await assert.rejects(sql(`set role service_role;update referral_accounts set metadata='{"private":"restored"}' where user_id=${q(u)};`),/account_closed/);
     assert.equal(await sql(`select full_name from teacher_profiles where user_id=${q(other)};`),'Other Teacher');
+  });
+  await check('personal student leads and cascading notes are erased before their linked acquisition journeys',async()=>{
+    const u=await actor(),other=await actor(),t=await tenant(null,'personal');await membership(u,t);
+    const journeys=[randomUUID(),randomUUID()],leads=[randomUUID(),randomUUID(),randomUUID()];
+    for(let i=0;i<journeys.length;i++){
+      await sql(`insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id) values(${q(journeys[i])},'schoodonlinebot',${q('owned-'+i)},${q(u)});
+        insert into sales_leads(id,tenant_id,acquisition_session_id,schood_user_id,lead_type,contact_name,phone,email,notes,metadata) values(${q(leads[i])},${i===0?'null':q(t)},${q(journeys[i])},${i===0?'null':q(u)},'student','Private name','private-phone','private@example.invalid','Private notes','{"private":"answers"}');
+        update telegram_acquisition_sessions set academy_lead_id=${q(leads[i])} where id=${q(journeys[i])};
+        insert into sales_lead_activities(lead_id,actor_user_id,activity_type,note,metadata) values(${q(leads[i])},${q(u)},'contact','Private contact notes','{"private":"name"}');
+        insert into telegram_acquisition_touches(session_id,attribution) values(${q(journeys[i])},'{"private":"answers"}');
+        insert into telegram_journey_events(session_id,telegram_user_id,event_name,metadata) values(${q(journeys[i])},'private-chat','owned','{"private":"answers"}');`);
+    }
+    await sql(`insert into sales_leads(id,schood_user_id,lead_type,contact_name) values(${q(leads[2])},${q(other)},'student','Other personal lead');`);
+    await close(u);
+    assert.equal(await sql(`select count(*) from sales_leads where id=any(array[${q(leads[0])}::uuid,${q(leads[1])}::uuid]);`),'0');
+    assert.equal(await sql(`select count(*) from sales_lead_activities where lead_id=any(array[${q(leads[0])}::uuid,${q(leads[1])}::uuid]);`),'0');
+    for(const table of ['telegram_acquisition_sessions','telegram_acquisition_touches','telegram_journey_events'])assert.equal(await sql(`select count(*) from ${table} where ${table==='telegram_acquisition_sessions'?'id':'session_id'}=any(array[${q(journeys[0])}::uuid,${q(journeys[1])}::uuid]);`),'0');
+    assert.equal(await sql(`select contact_name from sales_leads where id=${q(leads[2])};`),'Other personal lead');
+  });
+  await check('academy and institution-owned student leads remain unchanged while closed acquisition evidence becomes read-only',async()=>{
+    const u=await actor(),owner=await actor(),t=await tenant(owner),lead=randomUUID(),student=randomUUID(),journey=randomUUID();await membership(owner,t);await membership(u,t,'member');
+    await sql(`insert into sales_leads(id,tenant_id,schood_user_id,lead_type,contact_name,notes) values(${q(lead)},${q(t)},${q(u)},'academy','Academy contact','Business notes'),(${q(student)},${q(t)},${q(u)},'student','Academy student','Institution notes');
+      insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,academy_lead_id,journey_state) values(${q(journey)},'schoodonlinebot','institution-chat',${q(u)},${q(lead)},'{"private":"answers"}');`);
+    const before=await sql(`select jsonb_agg(to_jsonb(l) order by id) from sales_leads l where id=any(array[${q(lead)}::uuid,${q(student)}::uuid]);`);
+    await close(u);assert.equal(await sql(`select jsonb_agg(to_jsonb(l) order by id) from sales_leads l where id=any(array[${q(lead)}::uuid,${q(student)}::uuid]);`),before);
+    await sql(`update sales_leads set status='contacted' where id=${q(student)};`);
+    await assert.rejects(sql(`set role service_role;update telegram_acquisition_sessions set schood_user_id=${q(u)},status='active',journey_state='{"private":"restored"}' where id=${q(journey)};`),/account_closed/);
+    await assert.rejects(sql(`insert into telegram_acquisition_touches(session_id,attribution) values(${q(journey)},'{"private":"restored"}');`),/account_closed/);
+    await assert.rejects(sql(`insert into telegram_journey_events(session_id,telegram_user_id,event_name,metadata) values(${q(journey)},'private-chat','late','{"private":"restored"}');`),/account_closed/);
+    await assert.rejects(sql(`insert into sales_leads(acquisition_session_id,lead_type,contact_name) values(${q(journey)},'student','Restored private contact');`),/account_closed/);
+  });
+  await check('a delayed student lead insert cannot repopulate personal contact data after closure',async()=>{
+    const u=await actor();const closure=sql(`begin;update auth.users set deleted_at=now() where id=${q(u)};select pg_advisory_xact_lock(464417);select pg_sleep(1.2);commit;`);await barrier(464417);
+    await assert.rejects(sql(`set role service_role;insert into sales_leads(schood_user_id,lead_type,contact_name,email) values(${q(u)},'student','Late private name','private@example.invalid');`),/account_closed/);await closure;
+    assert.equal(await sql(`select count(*) from sales_leads where schood_user_id=${q(u)};`),'0');
+  });
+  await check('a student lead writer that commits first is included in the subsequent purge',async()=>{
+    const u=await actor();const writer=sql(`begin;set local role service_role;insert into sales_leads(schood_user_id,lead_type,contact_name,email) values(${q(u)},'student','Concurrent private name','private@example.invalid');select pg_advisory_xact_lock(464418);select pg_sleep(1.2);commit;`);await barrier(464418);
+    await close(u);await writer;assert.equal(await sql(`select count(*) from sales_leads where schood_user_id=${q(u)};`),'0');
+  });
+  await check('delayed acquisition relinking and event logging cannot recreate erased diagnostics after closure',async()=>{
+    const u=await actor(),lead=randomUUID(),journey=randomUUID();
+    await sql(`insert into sales_leads(id,schood_user_id,lead_type,contact_name) values(${q(lead)},${q(u)},'academy','Business contact');
+      insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,academy_lead_id) values(${q(journey)},'schoodonlinebot','owned-institution',${q(u)},${q(lead)});`);
+    const closure=sql(`begin;update auth.users set deleted_at=now() where id=${q(u)};select pg_advisory_xact_lock(464419);select pg_sleep(1.2);commit;`);await barrier(464419);
+    await Promise.all([
+      assert.rejects(sql(`set role service_role;update telegram_acquisition_sessions set schood_user_id=${q(u)},status='active',journey_state='{"private":"restored"}' where id=${q(journey)};`),/account_closed/),
+      assert.rejects(sql(`set role service_role;insert into telegram_journey_events(session_id,telegram_user_id,event_name,metadata) values(${q(journey)},'private-chat','late-diagnostic','{"private":"restored"}');`),/account_closed/)
+    ]);await closure;
+    assert.equal(await sql(`select (schood_user_id is null)::text||':'||status||':'||journey_state::text from telegram_acquisition_sessions where id=${q(journey)};`),'true:canceled:{}');
+    assert.equal(await sql(`select count(*) from telegram_journey_events where session_id=${q(journey)};`),'0');
+  });
+  await check('an acquisition event writer that commits first retains business evidence but loses private payloads in the purge',async()=>{
+    const u=await actor(),lead=randomUUID(),journey=randomUUID();
+    await sql(`insert into sales_leads(id,schood_user_id,lead_type,contact_name) values(${q(lead)},${q(u)},'academy','Business contact');
+      insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,academy_lead_id,original_attribution,latest_attribution,deep_link_payload) values(${q(journey)},'schoodonlinebot','owned-institution',${q(u)},${q(lead)},'{"private":"name"}','{"private":"contact"}','private-launch');
+      insert into telegram_acquisition_touches(session_id,attribution,deep_link_payload) values(${q(journey)},'{"private":"answers"}','private-touch');`);
+    const writer=sql(`begin;set local role service_role;insert into telegram_journey_events(session_id,telegram_user_id,event_name,metadata) values(${q(journey)},'private-chat','business-step','{"private":"answers"}');select pg_advisory_xact_lock(464420);select pg_sleep(1.2);commit;`);await barrier(464420);
+    await close(u);await writer;
+    assert.equal(await sql(`select event_name||':'||metadata::text from telegram_journey_events where session_id=${q(journey)};`),'business-step:{}');
+    assert.equal(await sql(`select attribution::text||':'||(deep_link_payload is null)::text from telegram_acquisition_touches where session_id=${q(journey)};`),'{}:true');
+    assert.equal(await sql(`select original_attribution::text||':'||latest_attribution::text||':'||(deep_link_payload is null)::text from telegram_acquisition_sessions where id=${q(journey)};`),'{}:{}:true');
   });
   await check('a delayed audit logger keeps security evidence but cannot restore closed-account PII',async()=>{
     const u=await actor(),audit=randomUUID();

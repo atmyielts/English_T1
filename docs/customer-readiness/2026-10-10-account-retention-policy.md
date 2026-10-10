@@ -51,6 +51,18 @@ Private 409 error bodies have a 1 KiB limit and a two-second read deadline;
 unresolved stream cancellation cannot leave the deletion controls pending.
 Late audit writes preserve security evidence but redact the closed actor's
 email, IP, user agent and arbitrary metadata.
+The server also limits confirmation bodies to 1 KiB and a five-second read
+deadline; an unfinished request never reaches preflight or Auth deletion.
+
+Personal student leads in the actor's personal scopes (or with no tenant) are
+erased with their notes/activities. Attribution through a linked acquisition
+session also counts when the lead's direct user field was never populated.
+Lead deletion clears the journey's lead FK before personal journey deletion,
+allowing the real child cascades to remove attribution and event payloads.
+Academy/partner and institution-owned student leads are retained. A surviving
+institution-linked acquisition becomes a read-only archive under a private
+identifier-only marker. Its arbitrary state, event/touch payloads and deep-link
+attribution are cleared; delayed relinking or diagnostic logging is refused.
 
 Locks can produce a bounded timeout or deadlock under mixed tenant-first and
 Auth-first operations. The transaction rolls back and can retry. This does not
@@ -58,16 +70,17 @@ claim every lock ordering is deadlock-free.
 
 ## Executed evidence
 
-- **59 native PostgreSQL/PostgREST cases passed**: ownership races, private
+- **65 native PostgreSQL/PostgREST cases passed**: ownership races, private
   permissions, disabled configuration, hook drift, personal erasure, financial
   and institutional roots, late rollback, both concurrent-write orderings,
   reactivation denial, teacher anonymization and both Storage ownership columns,
   per-QA expiry/revocation, creatorless scopes, billing review and both callback
-  orderings, terminal billing updates and delayed audit redaction.
+  orderings, terminal billing updates, delayed audit redaction, canonical student
+  lead/acquisition cascades, business retention and both acquisition-write races.
   Eight cases are actual PostgREST 13 HTTP checks, including privileged-view and
   definer-RPC denial, missing principals, public browsing and service access.
-- **26 actual account handler/client tests** and the Edge typecheck passed,
-  including an unfinished small response and unresolved stream cancellation.
+- **28 actual account handler/client tests** and the Edge typecheck passed,
+  including unfinished small requests/responses and unresolved cancellation.
 - The updated Platform build passed with a public local fixture configuration.
   **20 rendered browser checks** cover ownership and billing messages in all
   three locales, confirmation, account switching, mobile fit and keyboard focus.
@@ -110,8 +123,13 @@ gateway checks, old clients and final exact-head CI are qualified. Zero owned
 Supabase Storage objects does not establish external S3 asset erasure. Future
 public RLS tables also require the restrictive boundary; the API hook covers
 future REST/RPC/view entry points but not every other data transport.
-Personal sales/acquisition records, institution-owned sharing/report credentials
-and all remaining schema exceptions still need final classification. The billing
+The classified student lead/acquisition paths now have native proof; unlinked
+external contacts and all remaining schema exceptions still need review.
+Institution-owned sharing/report credentials also remain a gate: the freshly
+downloaded live parent-report v15 source restricts revocation to the original
+issuer without checking current academy membership, so replacement owners cannot
+revoke those links and a former issuer can still revoke them. That endpoint needs
+a separate scoped access-control fix and hosted qualification. The billing
 fixture is minimal; its guards do not establish a live cancellation integration.
 
 Schema installation precedes the new handler. Apply only the four reviewed

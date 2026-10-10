@@ -15,15 +15,19 @@ async function confirmation(req: Request): Promise<string | null> {
   if (!reader) return null;
   let size = 0;
   const chunks: Uint8Array[] = [];
+  let timer: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<'timeout'>(resolve => { timer = setTimeout(() => resolve('timeout'), 5000); });
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      const result = await Promise.race([reader.read(), deadline]);
+      if (result === 'timeout') { void reader.cancel().catch(() => {}); return null; }
+      const { done, value } = result;
       if (done) break;
       size += value.byteLength;
-      if (size > 1024) { await reader.cancel(); return null; }
+      if (size > 1024) { void reader.cancel().catch(() => {}); return null; }
       chunks.push(value);
     }
-  } finally { reader.releaseLock(); }
+  } finally { clearTimeout(timer!); reader.releaseLock(); }
   const bytes = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
