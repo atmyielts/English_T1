@@ -1,35 +1,20 @@
 {
-  "rollback": {
-    "frontend": "Use a checked fix-forward or Pages rollback to 88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a. If version 2 handlers are active, keep provider dispatch disabled during any old-client rollback; do not restore unsafe legacy scorers."
-  },
-  "migrations": [],
   "schemaVersion": 1,
-  "requiredSecrets": [],
-  "workers": [],
-  "releaseId": "ai-coaching-client-recovery",
-  "dependencies": {
-    "backendPr": "https://github.com/atmyielts/English_T1/pull/223",
-    "backendSource": "88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a",
-    "runtimeActivation": "not performed"
-  },
-  "manualFollowUps": [
-    "Hold publication until exact-head CI passes and the reviewed AI schema/function bundles, configuration and owned provider qualification are prepared. Existing handlers remain version 1; the new screens show a clear unavailable state until version 2 is live.",
-    "After the qualified client release, activate only the reviewed Writing/Speaking handlers following docs/ai-coaching-boundary-release.md; no pending financial migration is included.",
-    "Verify published owned signed-in recovery, transcript-only feedback, account changes and mobile layout before declaring the coaching services ready."
-  ],
+  "releaseId": "ai-provider-private-diagnostics",
   "status": "code_ready",
-  "verification": [
-    "Platform build with synthetic local configuration and strict lint of both screens and both hooks passed.",
-    "18 local real-Chromium scenarios cover replay identity, failed saves, reload recovery, quota/history outages, unsupported legacy backend gating, dictation cleanup and account-change privacy.",
-    "Overflow checks at 320,390,768,1024,1440px and both scoped WCAG 2.1 A/AA checks passed; external fonts and providers were not live-qualified.",
-    "Runtime npm audit reports zero vulnerabilities; unrelated Platform lint debt remains outside the changed screens/hooks."
-  ],
-  "rolloutOrder": [
-    "pages"
-  ],
-  "edgeFunctions": [],
   "backwardCompatible": true,
-  "frontends": [
-    "platform"
-  ]
+  "frontends": [],
+  "migrations": [],
+  "edgeFunctions": ["speaking-coach", "writing-tutor"],
+  "sharedEdgeConsumers": ["speaking-coach", "writing-tutor"],
+  "workers": [],
+  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SPEAKING_COACH_SERVICE_DAILY_LIMIT", "WRITING_TUTOR_SERVICE_DAILY_LIMIT"],
+  "rolloutOrder": ["secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:OPENROUTER_REFERER", "secret:SPEAKING_COACH_SERVICE_DAILY_LIMIT", "secret:WRITING_TUTOR_SERVICE_DAILY_LIMIT", "function:speaking-coach", "function:writing-tutor"],
+  "manualFollowUps": [
+    "Retain existing configuration; supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free already completed. No API key changes requested. Verify existing supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL=, supabase secrets set OPENROUTER_REFERER=, supabase secrets set SPEAKING_COACH_SERVICE_DAILY_LIMIT= and supabase secrets set WRITING_TUTOR_SERVICE_DAILY_LIMIT= values without printing them. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until a dedicated product is qualified.",
+    "After exact-head CI passes, supabase functions deploy speaking-coach and supabase functions deploy writing-tutor from isolated reviewed bundles; no migrations or other runtime activation.",
+    "Qualify the actual provider using exclusively owned QA actors; inspect only private fixed-code diagnostics, verify saved feedback, replay and cleanup. A passing deployment alone does not prove AI readiness."
+  ],
+  "verification": ["Coaching handler, privacy and provider failure contracts and both entrypoints must pass; production scan and release manifest must pass.", "Verify downloaded source hashes, runtime identities and JWT settings after publication; then perform actual owned provider checks."],
+  "rollback": {"edge": "Use the previous reviewed coaching sources from e0def8f7c8855a77f3a72ebb904327eaaced2a04, keeping the current available model and additive SQL. Alternatively set the two service caps to zero; retain saved result retrieval and never restore unlimited legacy dispatch."}
 }

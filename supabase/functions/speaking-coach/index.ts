@@ -31,6 +31,8 @@ const serviceLimit = Number.isInteger(configuredLimit) && configuredLimit > 0 &&
 const addonId = getEnv("AI_ADDON_PRODUCT_ID") ?? "";
 serve(createSpeakingCoachHandler({
   client,
+  reportProviderFailure: (event) =>
+    console.warn(JSON.stringify({ event: "coaching_provider_failure", ...event })),
   authenticate: async (token) => {
     const { data, error } = await auth.auth.getUser(token);
     if (error) {
@@ -50,7 +52,7 @@ serve(createSpeakingCoachHandler({
     }, token),
   generate: createSpeakingGrader({
     key,
-    model: getEnv("OPENROUTER_MODEL") ?? "google/gemma-3-27b-it:free",
+    model: getEnv("OPENROUTER_MODEL") ?? "google/gemma-4-31b-it:free",
     baseUrl: getEnv("OPENROUTER_BASE_URL") ??
       "https://openrouter.ai/api/v1",
     referer: getEnv("OPENROUTER_REFERER") ?? "https://schood.online",
