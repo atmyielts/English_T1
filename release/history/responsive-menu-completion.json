@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "responsive-menu-completion",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "english-hub",
+    "ielts-practice"
+  ],
+  "migrations": [],
+  "edgeFunctions": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "manualFollowUps": [
+    "Verify public IELTS Practice and English Hub menus at phone and desktop sizes after the tracked Pages release. No backend activation is required."
+  ],
+  "verification": [
+    "Both affected builds, 23 real local Chromium behavior/overflow checks and six scoped WCAG 2.1 A/AA header checks passed. Local API/font fixtures do not establish signed-in service readiness."
+  ],
+  "rollback": {
+    "frontend": "Tracked revert PR or Pages dashboard rollback."
+  }
+}
