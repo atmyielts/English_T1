@@ -55,6 +55,9 @@ jobs:
       - name: Production readiness checks
         run: npm run verify:prod
 
+      - name: Production secret scanner regression contracts
+        run: node --test scripts/production-secret-rules.test.mjs
+
       - name: Release manifest drift check
         run: npm run verify:release -- --base origin/${{ github.base_ref || 'main' }}
 
