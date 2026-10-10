@@ -1,20 +1,42 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ai-provider-private-diagnostics",
+  "releaseId": "payment-recovery-ui",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
-  "edgeFunctions": ["speaking-coach", "writing-tutor"],
-  "sharedEdgeConsumers": ["speaking-coach", "writing-tutor"],
-  "workers": [],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SPEAKING_COACH_SERVICE_DAILY_LIMIT", "WRITING_TUTOR_SERVICE_DAILY_LIMIT"],
-  "rolloutOrder": ["secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:OPENROUTER_REFERER", "secret:SPEAKING_COACH_SERVICE_DAILY_LIMIT", "secret:WRITING_TUTOR_SERVICE_DAILY_LIMIT", "function:speaking-coach", "function:writing-tutor"],
-  "manualFollowUps": [
-    "Retain existing configuration; supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free already completed. No API key changes requested. Verify existing supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL=, supabase secrets set OPENROUTER_REFERER=, supabase secrets set SPEAKING_COACH_SERVICE_DAILY_LIMIT= and supabase secrets set WRITING_TUTOR_SERVICE_DAILY_LIMIT= values without printing them. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until a dedicated product is qualified.",
-    "After exact-head CI passes, supabase functions deploy speaking-coach and supabase functions deploy writing-tutor from isolated reviewed bundles; no migrations or other runtime activation.",
-    "Qualify the actual provider using exclusively owned QA actors; inspect only private fixed-code diagnostics, verify saved feedback, replay and cleanup. A passing deployment alone does not prove AI readiness."
+  "frontends": [
+    "platform",
+    "academy"
   ],
-  "verification": ["Coaching handler, privacy and provider failure contracts and both entrypoints must pass; production scan and release manifest must pass.", "Verify downloaded source hashes, runtime identities and JWT settings after publication; then perform actual owned provider checks."],
-  "rollback": {"edge": "Use the previous reviewed coaching sources from e0def8f7c8855a77f3a72ebb904327eaaced2a04, keeping the current available model and additive SQL. Alternatively set the two service caps to zero; retain saved result retrieval and never restore unlimited legacy dispatch."}
+  "migrations": [],
+  "edgeFunctions": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "manualFollowUps": [
+    "Backend PR220 is merged as f8b7c5d1a6f6806b59920b9de00570dbb372ea8e. The nine migrations and six isolated Edge functions are NOT activated by this frontend merge. Before publishing this UI, finish and qualify that backend rollout, including exclusively owned original-request, old-client and signed callback/recovery checks. Never rely on an older function that discards retry keys.",
+    "Preserve actor/tenant-scoped original browser purchase keys across retry and refresh. A failed or ambiguous response must reopen the same order or batch and must not create a replacement purchase. No automatic retry after changed terms or caller scope.",
+    "Run exact-head frontend/browser CI, then inspect published checkout and office layouts at desktop/mobile sizes. Pages must match the reviewed merge SHA. Keep the backend worker disabled until its independent recovery qualification passes."
+  ],
+  "verification": [
+    "UI attempt contracts plus actual Platform activation, original-order office recovery and responsive tests; actual Academy checkout tests; both affected production builds and Academy locale checks.",
+    "The unchanged backend source and migrations retain exact main bytes and prior 183-case CI qualification; this UI release adds no schema/function publication.",
+    "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement.",
+    "Parallel build/check workflow from PR222 retains every suite and aggregate validate gate; the earlier 20-minute CI timeout is not reused as a pass. Requalify this merged UI head.",
+    "Merge newer main while preserving both AI security and payment UI test suites. Financial activation remains held independently.",
+    "Includes the independently released AI screens without changing payment recovery behavior.",
+    "Preserves the released production secret-scanner regression gate, all browser-protection policies and tests, and private provider diagnostics. Payment and Pages security suites remain mandatory together."
+  ],
+  "rollback": {
+    "frontend": "Tracked revert PR and Pages CI; never local Pages deployment.",
+    "backend": "Retain the independently reviewed backend and additive receipt history; this release changes no Edge function or migration."
+  },
+  "dependencies": {
+    "backendCommit": "f8b7c5d1a6f6806b59920b9de00570dbb372ea8e",
+    "backendRelease": "payment-transactions-backend",
+    "backendHostedQualificationRequired": true,
+    "ciWorkflowCommit": "937e51d71494fb5007546d4fc00b5b4b7684ea97",
+    "latestPublishedFrontendBase": "051ca03fcbacc3c80e0fc10d4f55feae10051df8"
+  }
 }

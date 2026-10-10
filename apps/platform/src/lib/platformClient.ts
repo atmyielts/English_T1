@@ -1229,6 +1229,7 @@ export type ClickCreateResponse = {
   card_widget?: ClickCardWidgetConfig | null;
   transaction_id: string;
   status?: string;
+  grant_completed?: boolean;
   amount: number;
   currency: string;
   original_amount: number;
@@ -1268,6 +1269,8 @@ export const clickCreateTransaction = async (
 
 export type ClickStatusResponse = {
   status: string;
+  grant_completed?: boolean;
+  grant_error?: string | null;
   api_status?: string;
   status_query_id?: string;
   credit_amount?: number;
@@ -2728,6 +2731,7 @@ export type PartnerVoucherBatch = {
   plan_id: string | null;
   classroom_id?: string | null;
   quantity: number;
+  created_by?: string | null;
   expires_at: string;
   status: string;
   prefix?: string | null;
@@ -3188,6 +3192,15 @@ export const partnerOfficeGet = async <T = unknown>(
   return (await res.json()) as T;
 };
 
+export class PartnerOfficeRequestError extends Error {
+  readonly status: number;
+  readonly details: unknown;
+  constructor(status: number, details: unknown) {
+    super(`POST /partner-office failed (${status}): ${JSON.stringify(details)}`);
+    this.status = status; this.details = details;
+  }
+}
+
 export const partnerOfficePost = async <T = unknown>(
   accessToken: string,
   body: Json,
@@ -3199,7 +3212,7 @@ export const partnerOfficePost = async <T = unknown>(
   });
   if (!res.ok) {
     const details = await readJsonOrText(res);
-    throw new Error(`POST /partner-office failed (${res.status}): ${JSON.stringify(details)}`);
+    throw new PartnerOfficeRequestError(res.status, details);
   }
   return (await res.json()) as T;
 };
@@ -3278,7 +3291,7 @@ export const partnerOfficeStatements = (accessToken: string, tenantId?: string |
 
 export const partnerOfficeUpdateCenter = (
   accessToken: string,
-  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding' | 'commercial_model'>> & {
+  body: Partial<Pick<PartnerCenterProfile, 'display_name' | 'slug' | 'logo_url' | 'public_instructions' | 'powered_by_schood' | 'branding'>> & {
     tenant_id?: string | null;
     center_office?: boolean;
   },
@@ -3379,13 +3392,17 @@ export const partnerOfficeUploadCenterLogo = async (
 
 export const partnerOfficeCreateWalletTopup = (
   accessToken: string,
-  body: { tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
+  body: { idempotency_key?: string; tenant_id?: string | null; amount: number; currency?: string; note?: string | null; center_office?: boolean; settlement_mode?: 'online' | 'manual'; redirect_url?: string | null },
 ) => partnerOfficePost<ClickCreateResponse | { ledger_entry: PartnerCreditLedgerEntry }>(accessToken, { action: 'create_wallet_topup', ...body });
+
+export type IssuedVoucherBatch = {state:'issued';idempotency_key:string;deduped:boolean;batch:PartnerVoucherBatch;vouchers:PartnerVoucher[]};
+export type VoucherRequestOutcome = IssuedVoucherBatch | {state:'canceled';idempotency_key:string};
 
 export const partnerOfficeCreateVoucherBatch = (
   accessToken: string,
   body: {
     tenant_id?: string | null;
+    idempotency_key?: string | null;
     access_kind: 'mock_exam' | 'subscription' | 'seat';
     experience_id?: string | null;
     plan_id?: string | null;
@@ -3399,7 +3416,10 @@ export const partnerOfficeCreateVoucherBatch = (
     center_office?: boolean;
     assigned_students?: Array<{ name?: string; email?: string; phone?: string }>;
   },
-) => partnerOfficePost<{ batch: PartnerVoucherBatch; vouchers: PartnerVoucher[] }>(accessToken, { action: 'create_voucher_batch', ...body });
+) => partnerOfficePost<IssuedVoucherBatch>(accessToken, { action: 'create_voucher_batch', ...body });
+
+export const partnerOfficeCancelVoucherRequest = (accessToken:string,body:Parameters<typeof partnerOfficeCreateVoucherBatch>[1]) =>
+  partnerOfficePost<VoucherRequestOutcome>(accessToken,{action:'cancel_voucher_request',...body});
 
 export const partnerOfficeExportVoucherSheet = (
   accessToken: string,
@@ -3463,6 +3483,7 @@ export const partnerOfficeAssignSeat = (
 export const partnerOfficeCreateTicketPurchase = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     experience_id: string;
     quantity: number;
@@ -3478,6 +3499,7 @@ export const partnerOfficeCreateTicketPurchase = (
 export const partnerOfficeCreateSeatPurchase = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     plan_id: string;
     seat_count: number;
@@ -3492,6 +3514,7 @@ export const partnerOfficeCreateSeatPurchase = (
 export const partnerOfficeCreateTierUpgradePayment = (
   accessToken: string,
   body: {
+    idempotency_key?: string;
     tenant_id?: string | null;
     requested_tier: 'growth' | 'premium' | 'exclusive';
     billing_period: 'monthly' | 'annual';

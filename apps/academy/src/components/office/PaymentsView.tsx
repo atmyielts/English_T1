@@ -26,6 +26,7 @@ type ReconciliationKey =
 
 type PaymentsViewProps = {
   busy: boolean;
+  activationPending?: boolean;
   paymentForm: PaymentFormState;
   setPaymentForm: Dispatch<SetStateAction<PaymentFormState>>;
   contacts: TeacherStudioContact[];
@@ -108,6 +109,10 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   }
 
   if (provider === 'click') {
+    if (['paid', 'success', 'completed'].includes(metadataText(payment.metadata, 'platform_payment_status'))) return {
+      key: 'grant_mismatch', label: 'Activation pending',
+      detail: 'Payment received. Access is still being activated. Do not pay again.', className: 'status status--pending',
+    };
     if (providerStage === 'complete_duplicate' || metadataHasValue(payment.metadata, 'duplicate_of_payment_id')) {
       return {
         key: 'duplicate',
@@ -153,6 +158,7 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
 
 export const PaymentsView = ({
   busy,
+  activationPending = false,
   paymentForm,
   setPaymentForm,
   contacts,
@@ -252,8 +258,8 @@ export const PaymentsView = ({
               ))}
             </select>
           </label>
-          <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>
-              {translate("Create Click checkout")}{' '}</button></div>
+          <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy || activationPending}>
+              {translate(activationPending ? "Activation pending" : "Create Click checkout")}{' '}</button></div>
         </form>
 
         <div className="panel">
@@ -306,8 +312,8 @@ export const PaymentsView = ({
                     <td>{formatDate(p.created_at)}</td>
                     <td><span className={statusClass(p.status)}>{p.status}</span></td>
                     <td>
-                      <span className={reconciliation.className}>{reconciliation.label}</span>
-                      <div className="small muted">{reconciliation.detail}</div>
+                      <span className={reconciliation.className}>{translate(reconciliation.label)}</span>
+                      <div className="small muted">{translate(reconciliation.detail)}</div>
                       {platformPaymentId ? <div className="small muted">{translate("Platform payment:")}{' '}{platformPaymentId}</div> : null}
                     </td>
                     <td>

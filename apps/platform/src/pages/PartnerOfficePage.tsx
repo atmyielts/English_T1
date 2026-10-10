@@ -1,3 +1,4 @@
+import { useOfficeCheckout } from '../lib/useOfficeCheckout';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowUpRight,
@@ -24,8 +25,6 @@ import { supabase } from '../lib/supabase';
 import {
   partnerOfficeAssignSeat,
   partnerOfficeCatalog,
-  partnerOfficeCreateSeatPurchase,
-  partnerOfficeCreateTicketPurchase,
   partnerOfficeCredits,
   partnerOfficeDashboard,
   partnerOfficePayments,
@@ -35,7 +34,6 @@ import {
   partnerOfficeResults,
   partnerOfficeSeats,
   partnerOfficeTickets,
-  clickStatus,
   type PartnerCreditLedgerEntry,
   type PartnerOfficeExperience,
   type PartnerOfficePayment,
@@ -291,6 +289,16 @@ export const PartnerOfficePage: React.FC = () => {
     }
   };
 
+  const officeCheckout = useOfficeCheckout('partner-office', async kind => {
+    setPendingTransactionId(null); setPendingKind(null);
+    await refreshAll();
+    setSuccess(kind === 'seats' ? 'Seats added.' : kind === 'tier' ? 'Center tier updated.' : kind === 'wallet' ? 'Wallet topped up.' : 'Mock tickets generated.');
+  }, setSuccess);
+  useEffect(() => {
+    if (!officeCheckout.pending) { setPendingTransactionId(null); setPendingKind(null); }
+  }, [officeCheckout.pending]);
+
+
   useEffect(() => {
     void refreshAll();
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -313,20 +321,18 @@ export const PartnerOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTicketPurchase(token, {
+      const res = await officeCheckout.start('tickets', {
         experience_id: experienceId,
         quantity: ticketQuantity,
         expires_in_days: expiryDays,
         apply_credit: ticketApplyCredit,
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('tickets');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('tickets'); }
       if (res.payment_url) {
         openPayment(res.payment_url);
         setSuccess('Payment opened. Tickets will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        await refreshAll();
-        setSuccess('Tickets generated using platform credit.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -342,19 +348,17 @@ export const PartnerOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateSeatPurchase(token, {
+      const res = await officeCheckout.start('seats', {
         plan_id: seatPlanId,
         seat_count: seatQuantity,
         apply_credit: seatApplyCredit,
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('seats');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('seats'); }
       if (res.payment_url) {
         openPayment(res.payment_url);
         setSuccess('Payment opened. Seats will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        await refreshAll();
-        setSuccess('Seats added using platform credit.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -364,26 +368,8 @@ export const PartnerOfficePage: React.FC = () => {
   };
 
   const checkPayment = async () => {
-    if (!pendingTransactionId) return;
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
     setError(null);
-    try {
-      const res = await clickStatus(token, pendingTransactionId);
-      if (isPaid(res.status)) {
-        setPendingTransactionId(null);
-        setPendingKind(null);
-        await refreshAll();
-        setSuccess(pendingKind === 'seats' ? 'Seats added.' : 'Tickets generated.');
-      } else {
-        setSuccess(`Payment status: ${res.status}`);
-      }
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+    try { await officeCheckout.check(); } catch (err) { setError(parseError(err)); }
   };
 
   const assignSeat = async (seatId: string) => {
@@ -533,6 +519,16 @@ export const PartnerOfficePage: React.FC = () => {
 
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+          {officeCheckout.pending ? (
+            <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p>{officeCheckout.pending.paid ? 'Payment received. Activation is still pending. Do not pay again.' : officeCheckout.pending.transactionId ? 'Your purchase is recorded. Check its payment status before creating another.' : 'The original purchase is saved. Resume it before creating another.'}</p>
+              {officeCheckout.pending.paymentUrl && !officeCheckout.pending.paid ? <a href={officeCheckout.pending.paymentUrl} target="_blank" rel="noreferrer" className={secondaryButton}>Open recorded payment</a> : null}
+              <button type="button" className={secondaryButton} disabled={loading} onClick={() => {
+                setLoading(true); setError(null);
+                void (officeCheckout.pending?.transactionId ? officeCheckout.check() : officeCheckout.resume()).catch(err => setError(parseError(err))).finally(() => setLoading(false));
+              }}>{officeCheckout.pending.transactionId ? 'Check recorded purchase' : 'Resume original purchase'}</button>
+            </div>
+          ) : null}
 
           {pendingTransactionId ? (
             <div className="flex flex-col gap-3 rounded-3xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
@@ -670,7 +666,7 @@ export const PartnerOfficePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button type="button" onClick={() => void buyTickets()} disabled={loading || !selectedExperience?.is_ticket_ready} className={primaryButton}>
+                  <button type="button" onClick={() => void buyTickets()} disabled={loading || Boolean(officeCheckout.pending) || !selectedExperience?.is_ticket_ready} className={primaryButton}>
                     <CreditCard className="h-4 w-4" />
                     Buy tickets
                   </button>
@@ -720,7 +716,7 @@ export const PartnerOfficePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button type="button" onClick={() => void buySeats()} disabled={loading || !selectedPlan} className={primaryButton}>
+                  <button type="button" onClick={() => void buySeats()} disabled={loading || Boolean(officeCheckout.pending) || !selectedPlan} className={primaryButton}>
                     <CreditCard className="h-4 w-4" />
                     Buy seats
                   </button>

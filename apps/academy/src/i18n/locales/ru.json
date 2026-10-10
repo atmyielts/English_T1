@@ -2562,5 +2562,10 @@
   "Your role can inspect automation evidence but cannot change rules.": "Ваша роль позволяет просматривать подтверждения автоматизации, но не позволяет изменять правила.",
   "Your session expired. Please sign in again.": "Время сессии истекло. Пожалуйста, войдите снова.",
   "Your teacher has published the plan. Specific goals will appear here when they are added.": "Преподаватель опубликовал план. Конкретные цели появятся здесь после добавления.",
-  "Your teaching day": "Ваш учебный день"
+  "Your teaching day": "Ваш учебный день",
+  "Payment confirmed. Purchased access is active.": "Оплата подтверждена. Купленный доступ активен.",
+  "Payment received. Access is still being activated. Do not pay again.": "Оплата получена. Доступ ещё активируется. Не оплачивайте повторно.",
+  "Activation pending": "Доступ активируется",
+  "Pay with Click": "Оплатить через Click",
+  "Redirecting...": "Переходим к оплате..."
 }

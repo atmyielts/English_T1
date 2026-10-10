@@ -1,3 +1,5 @@
+import { useOfficeCheckout } from '../lib/useOfficeCheckout';
+import { useVoucherIssue } from '../lib/useVoucherIssue';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpRight,
@@ -36,9 +38,6 @@ import {
   partnerOfficeCenter,
   partnerOfficeAcademies,
   partnerOfficeCreateAcademy,
-  partnerOfficeCreateSeatPurchase,
-  partnerOfficeCreateTicketPurchase,
-  partnerOfficeCreateVoucherBatch,
   partnerOfficeCreateWalletTopup,
   partnerOfficeDashboard,
   partnerOfficeDispatchVoucherBatch,
@@ -56,7 +55,6 @@ import {
   partnerOfficeInviteStaff,
   partnerOfficeCreateMockEvent,
   partnerOfficeCreateStudentInvites,
-  partnerOfficeCreateTierUpgradePayment,
   partnerOfficeMarkEventAttendance,
   partnerOfficeRequestCashPayout,
   partnerOfficeResendStudentInvite,
@@ -80,7 +78,6 @@ import {
   partnerOfficeVoucherBatches,
   partnerOfficeVouchers,
   partnerOfficeWallet,
-  clickStatus,
   type PartnerCenterAcademy,
   type PartnerCenterProfile,
   type PartnerCenterCapabilities,
@@ -624,7 +621,6 @@ export const CenterOfficePage: React.FC = () => {
     quantity: 10,
     expires_in_days: 30,
     prefix: 'SCH',
-    source_model: 'prepaid_wallet',
   });
   const [walletTopup, setWalletTopup] = useState({ amount: 1000000, note: '' });
   const [dispatchForm, setDispatchForm] = useState({
@@ -635,6 +631,9 @@ export const CenterOfficePage: React.FC = () => {
   });
   const [inviteForm, setInviteForm] = useState({ name: '', email: '', phone: '', voucher_batch_id: '' });
   const [bulkInviteText, setBulkInviteText] = useState('');
+  const voucherCreateButton = useRef<HTMLButtonElement>(null);
+  const officeRefreshVersion = useRef(0);
+  const officeActor = useRef<string | null>(null);
   const [voucherRosterText, setVoucherRosterText] = useState('');
   const [lessonPlan, setLessonPlan] = useState<{ classroom_name: string; lesson_plan: string } | null>(null);
   const [eventForm, setEventForm] = useState({
@@ -766,21 +765,25 @@ export const CenterOfficePage: React.FC = () => {
   };
 
   const refreshAll = async () => {
+    const version = ++officeRefreshVersion.current;
     setLoading(true);
     setError(null);
     try {
       const token = await getValidToken();
+      if (version !== officeRefreshVersion.current) return;
       if (!token) {
         navigate(`/auth?returnTo=${encodeURIComponent('/center-office')}`, { replace: true });
         return;
       }
       await partnerOfficeAcceptStaffInvites(token).catch(() => null);
       const centerRes = await partnerOfficeCenter(token);
+      if (version !== officeRefreshVersion.current) return;
       const currentAccess = centerRes.access ?? EMPTY_ACCESS;
       setCenter(centerRes.center);
       setAccess(currentAccess);
       if (!centerRes.center?.tenant_id) {
         const { data } = await supabase.auth.getUser();
+        if (version !== officeRefreshVersion.current) return;
         setApplicationForm((prev) => ({
           ...prev,
           contact_email: prev.contact_email || data.user?.email || '',
@@ -836,6 +839,8 @@ export const CenterOfficePage: React.FC = () => {
           currentAccess.can_view_results ? partnerOfficeAnalytics(token, tenant_id).catch(() => ({ analytics: {} })) : Promise.resolve({ analytics: {} }),
         ]);
 
+      if (version !== officeRefreshVersion.current) return;
+
       setDashboard(dashRes);
       setCatalog(catalogRes.experiences ?? []);
       setPlans(plansRes.plans ?? catalogRes.plans ?? []);
@@ -874,18 +879,56 @@ export const CenterOfficePage: React.FC = () => {
         powered_by_schood: Boolean(centerRes.center.powered_by_schood),
       });
     } catch (err) {
-      setError(parseError(err));
+      if (version === officeRefreshVersion.current) setError(parseError(err));
     } finally {
-      setLoading(false);
+      if (version === officeRefreshVersion.current) setLoading(false);
     }
   };
+
+  const officeCheckout = useOfficeCheckout('center-office', async kind => {
+    setPendingTransactionId(null); setPendingKind(null);
+    setPendingPaymentUrl(null);
+    await refreshAll();
+    setSuccess(kind === 'seats' ? 'Seats added.' : kind === 'tier' ? 'Center tier updated.' : kind === 'wallet' ? 'Wallet topped up.' : 'Mock tickets generated.');
+  }, setSuccess);
+  const voucherIssue = useVoucherIssue(centerTenantId, async result => {
+    setVoucherRosterText('');
+    setTab('vouchers');
+    setSuccess(`${result.deduped ? 'Recovered' : 'Created'} ${result.vouchers.length} vouchers in ${result.batch.batch_code}.`);
+    await refreshAll();
+  }, message => {
+    setSuccess(message);
+    window.requestAnimationFrame(() => voucherCreateButton.current?.focus());
+  });
+  useEffect(() => {
+    setVoucherRosterText('');
+    setVoucherForm({access_kind:'mock_exam',experience_id:'',plan_id:'',classroom_id:'',quantity:10,expires_in_days:30,prefix:'SCH'});
+  }, [voucherIssue.actor]);
+  useEffect(() => {
+    const choices = voucherIssue.pending?.choices;
+    if (!choices) return;
+    setVoucherForm({access_kind:choices.access_kind,experience_id:choices.experience_id??'',plan_id:choices.plan_id??'',classroom_id:choices.classroom_id??'',
+      quantity:choices.quantity,expires_in_days:choices.expires_in_days,prefix:choices.prefix});
+    setVoucherRosterText(choices.assigned_students.map(row => [row.name??'',row.email??'',row.phone??''].join(', ')).join('\n'));
+  }, [voucherIssue.pending]);
+  useEffect(() => {
+    if (!officeCheckout.pending || officeCheckout.pending.paid) setPendingPaymentUrl(null);
+    if (!officeCheckout.pending) { setPendingTransactionId(null); setPendingKind(null); }
+  }, [officeCheckout.pending]);
+
 
   useEffect(() => {
     void refreshAll();
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (officeActor.current !== (session?.user.id ?? null)) {
+        officeActor.current = session?.user.id ?? null;
+        officeRefreshVersion.current++;
+        setCenter(null); setAccess(EMPTY_ACCESS); setError(null); setSuccess(null);
+        setVoucherRosterText('');
+      }
       if (session) void refreshAll();
     });
-    return () => data.subscription.unsubscribe();
+    return () => { officeRefreshVersion.current++; data.subscription.unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -924,21 +967,18 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTicketPurchase(token, {
+      const res = await officeCheckout.start('tickets', {
         ...ticketForm,
         tenant_id: centerTenantId,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('tickets'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('tickets');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('tickets'); }
       if (res.payment_url) {
         openPayment(res.payment_url, 'mock ticket pack payment');
         setSuccess('Payment opened. Mock tickets will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Mock tickets generated.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -964,21 +1004,18 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateSeatPurchase(token, {
+      const res = await officeCheckout.start('seats', {
         ...seatForm,
         tenant_id: centerTenantId,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('seats'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('seats');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('seats'); }
       if (res.payment_url) {
         openPayment(res.payment_url, 'seat pack payment');
         setSuccess('Payment opened. Seats will appear after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Seats added.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -988,36 +1025,8 @@ export const CenterOfficePage: React.FC = () => {
   };
 
   const checkPayment = async (transactionId = pendingTransactionId, kindOverride: PendingKind | null = pendingKind) => {
-    if (!transactionId) return;
-    const token = await getValidToken();
-    if (!token) return;
-    setLoading(true);
     setError(null);
-    try {
-      const res = await clickStatus(token, transactionId);
-      if (isPaid(res.status)) {
-        const completedKind = kindOverride ?? pendingKind;
-        setPendingTransactionId(null);
-        setPendingKind(null);
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess(
-          completedKind === 'seats'
-            ? 'Seats added.'
-            : completedKind === 'tier'
-              ? 'Center tier updated.'
-              : completedKind === 'wallet'
-                ? 'Wallet topped up.'
-                : 'Mock tickets generated.',
-        );
-      } else {
-        setSuccess(`Payment status: ${res.status}`);
-      }
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+    try { await officeCheckout.check(transactionId, kindOverride); } catch (err) { setError(parseError(err)); }
   };
 
   useEffect(() => {
@@ -1064,38 +1073,27 @@ export const CenterOfficePage: React.FC = () => {
   };
 
   const createVoucherBatch = async () => {
-    const token = await getValidToken();
-    if (!token || !centerTenantId) return;
+    if (!centerTenantId || officeCheckout.pending) return;
     const assignedStudents = parseBulkStudents(voucherRosterText);
     const quantity = assignedStudents.length > 0 ? assignedStudents.length : voucherForm.quantity;
     if (quantity > capabilities.max_voucher_batch_quantity) {
       setError(`${capabilities.tier_label} centers can generate up to ${capabilities.max_voucher_batch_quantity} vouchers per batch.`);
       return;
     }
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setLoading(true);setError(null);setSuccess(null);
     try {
-      const payload = {
-        ...voucherForm,
-        quantity,
-        tenant_id: centerTenantId,
-        center_office: true,
-        experience_id: voucherForm.access_kind === 'mock_exam' ? voucherForm.experience_id : null,
-        plan_id: voucherForm.access_kind === 'mock_exam' ? null : voucherForm.plan_id,
-        classroom_id: voucherForm.classroom_id || null,
-        assigned_students: assignedStudents,
-      };
-      const res = await partnerOfficeCreateVoucherBatch(token, payload);
-      setVoucherRosterText('');
-      await refreshAll();
-      setTab('vouchers');
-      setSuccess(`Created ${res.vouchers.length} vouchers in ${res.batch.batch_code}${assignedStudents.length ? ' and attached the roster.' : '.'}`);
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+      await voucherIssue.start({...voucherForm,quantity,tenant_id:centerTenantId,center_office:true,
+        experience_id:voucherForm.access_kind==='mock_exam'?voucherForm.experience_id:null,
+        plan_id:voucherForm.access_kind==='mock_exam'?null:voucherForm.plan_id,
+        classroom_id:voucherForm.classroom_id||null,assigned_students:assignedStudents});
+    } catch(err) {setError(parseError(err));}
+    finally {setLoading(false);}
+  };
+  const recoverVoucherBatch = async (mode:'issue'|'cancel') => {
+    setLoading(true);setError(null);setSuccess(null);
+    try {await voucherIssue.resume(mode);}
+    catch(err) {setError(parseError(err));}
+    finally {setLoading(false);}
   };
 
   const buyTier = async (plan: PartnerCenterTierPlan) => {
@@ -1115,22 +1113,19 @@ export const CenterOfficePage: React.FC = () => {
     setError(null);
     setSuccess(null);
     try {
-      const res = await partnerOfficeCreateTierUpgradePayment(token, {
+      const res = await officeCheckout.start('tier', {
         tenant_id: centerTenantId,
         requested_tier: plan.tier,
         billing_period: plan.billing_period,
         center_office: true,
         redirect_url: buildPaymentReturnUrl('tier'),
       });
-      setPendingTransactionId(res.transaction_id);
-      setPendingKind('tier');
+      if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('tier'); }
       if (res.payment_url) {
         openPayment(res.payment_url, `${plan.tier} tier payment`);
         setSuccess('Payment opened. The center tier updates automatically after payment is confirmed.');
-      } else if (isPaid(res.status)) {
-        setPendingPaymentUrl(null);
-        await refreshAll();
-        setSuccess('Center tier updated.');
+      } else if (isPaid(res.status) && res.grant_completed !== true) {
+        setSuccess('Payment received. Activation is still pending. Do not pay again.');
       }
     } catch (err) {
       setError(parseError(err));
@@ -1142,39 +1137,24 @@ export const CenterOfficePage: React.FC = () => {
   const requestTopup = async () => {
     const token = await getValidToken();
     if (!token || !centerTenantId) return;
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
+    setLoading(true); setError(null); setSuccess(null);
     try {
-      const res = await partnerOfficeCreateWalletTopup(token, {
-        tenant_id: centerTenantId,
-        amount: walletTopup.amount,
-        currency: wallet.currency,
-        note: walletTopup.note,
-        center_office: true,
-        settlement_mode: clickPaymentsEnabled ? 'online' : 'manual',
-        redirect_url: buildPaymentReturnUrl('wallet'),
-      });
+      const request = { tenant_id: centerTenantId, amount: walletTopup.amount, currency: wallet.currency,
+        note: walletTopup.note, center_office: true, redirect_url: buildPaymentReturnUrl('wallet') };
+      const res = clickPaymentsEnabled ? await officeCheckout.start('wallet', request)
+        : await partnerOfficeCreateWalletTopup(token, { ...request, settlement_mode: 'manual' });
       if ('transaction_id' in res) {
-        setPendingTransactionId(res.transaction_id);
-        setPendingKind('wallet');
+        if (!(isPaid(res.status) && res.grant_completed === true)) { setPendingTransactionId(res.transaction_id); setPendingKind('wallet'); }
         if (res.payment_url) {
           openPayment(res.payment_url, 'wallet top-up');
           setSuccess('Click payment opened. Wallet credit posts automatically after payment is confirmed.');
-        } else if (isPaid(res.status)) {
-          setPendingPaymentUrl(null);
-          await refreshAll();
-          setSuccess('Wallet topped up.');
+        } else if (isPaid(res.status) && res.grant_completed !== true) {
+          setPendingPaymentUrl(null); setSuccess('Payment received. Activation is still pending. Do not pay again.');
         }
       } else {
-        await refreshAll();
-        setSuccess(clickPaymentsEnabled ? 'Manual top-up request recorded.' : 'Click is not configured yet. Manual top-up request recorded for admin settlement.');
+        await refreshAll(); setSuccess('Manual top-up request recorded for admin settlement.');
       }
-    } catch (err) {
-      setError(parseError(err));
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(parseError(err)); } finally { setLoading(false); }
   };
 
   const saveBranding = async () => {
@@ -1772,8 +1752,36 @@ export const CenterOfficePage: React.FC = () => {
             </div>
           </section>
 
-          {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+          {error ? <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
           {success ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</div> : null}
+          {voucherIssue.problem ? (
+            <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <p>{voucherIssue.problem}</p>
+              <button type="button" disabled={loading} className={`${secondaryButton} mt-3`} onClick={() => void voucherIssue.recover()}>Try voucher recovery again</button>
+              <button type="button" className={`${secondaryButton} mt-3`} onClick={() => setTab('vouchers')}>View recorded batches</button>
+            </div>
+          ) : null}
+          {voucherIssue.pending ? (
+            <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p>Your original voucher request is saved. Check it before generating another batch.</p>
+              <p className="mt-2">{voucherIssue.pending.choices.quantity} vouchers · {voucherIssue.pending.choices.access_kind.replace('_',' ')} · {voucherIssue.pending.choices.expires_in_days} days</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" disabled={loading} className={secondaryButton} onClick={() => void recoverVoucherBatch('issue')}>Resume original voucher request</button>
+                <button type="button" disabled={loading} className={secondaryButton} onClick={() => void recoverVoucherBatch('cancel')}>Check or close voucher request</button>
+              </div>
+              <p className="mt-2 text-xs">Closing checks for an existing batch first. It will not cancel vouchers that were already created.</p>
+            </div>
+          ) : null}
+          {officeCheckout.pending ? (
+            <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p>{officeCheckout.pending.paid ? 'Payment received. Activation is still pending. Do not pay again.' : officeCheckout.pending.transactionId ? 'Your purchase is recorded. Check its payment status before creating another.' : 'The original purchase is saved. Resume it before creating another.'}</p>
+              {officeCheckout.pending.paymentUrl && !officeCheckout.pending.paid ? <a href={officeCheckout.pending.paymentUrl} target="_blank" rel="noreferrer" className={secondaryButton}>Open recorded payment</a> : null}
+              <button type="button" className={secondaryButton} disabled={loading} onClick={() => {
+                setLoading(true); setError(null);
+                void (officeCheckout.pending?.transactionId ? officeCheckout.check() : officeCheckout.resume()).catch(err => setError(parseError(err))).finally(() => setLoading(false));
+              }}>{officeCheckout.pending.transactionId ? 'Check recorded purchase' : 'Resume original purchase'}</button>
+            </div>
+          ) : null}
           {pendingPaymentUrl ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1909,7 +1917,7 @@ export const CenterOfficePage: React.FC = () => {
               catalog={tierCatalog}
               currentTier={capabilities.tier}
               billingPeriod={tierBillingPeriod}
-              loading={loading}
+              loading={loading || Boolean(officeCheckout.pending) || Boolean(voucherIssue.pending) || Boolean(voucherIssue.problem)}
               pending={pendingKind === 'tier' ? pendingTransactionId : null}
               maxOnlineAmount={onlineMaxAmount}
               paymentsEnabled={clickPaymentsEnabled}
@@ -1931,7 +1939,7 @@ export const CenterOfficePage: React.FC = () => {
                   Note
                   <textarea value={walletTopup.note} onChange={(e) => setWalletTopup((prev) => ({ ...prev, note: e.target.value }))} className={`${inputClass} min-h-[90px]`} />
                 </label>
-                <button type="button" onClick={() => void requestTopup()} disabled={loading} className={`${primaryButton} mt-5 w-full`}>
+                <button type="button" onClick={() => void requestTopup()} disabled={loading || Boolean(officeCheckout.pending) || Boolean(voucherIssue.pending) || Boolean(voucherIssue.problem)} className={`${primaryButton} mt-5 w-full`}>
                   <WalletCards className="h-4 w-4" />
                   {clickPaymentsEnabled ? 'Pay with Click' : 'Request manual top-up'}
                 </button>
@@ -1961,7 +1969,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineQuantity={ticketMaxOnlineQuantity}
                 onlineBlocked={ticketOnlineBlocked}
                 paymentsEnabled={clickPaymentsEnabled}
-                loading={loading}
+                loading={loading || Boolean(officeCheckout.pending) || Boolean(voucherIssue.pending) || Boolean(voucherIssue.problem)}
                 pending={pendingKind === 'tickets' ? pendingTransactionId : null}
                 onChange={setTicketForm}
                 onBuy={() => void buyTickets()}
@@ -1975,7 +1983,7 @@ export const CenterOfficePage: React.FC = () => {
                 maxOnlineQuantity={seatMaxOnlineQuantity}
                 onlineBlocked={seatOnlineBlocked}
                 paymentsEnabled={clickPaymentsEnabled}
-                loading={loading}
+                loading={loading || Boolean(officeCheckout.pending) || Boolean(voucherIssue.pending) || Boolean(voucherIssue.problem)}
                 pending={pendingKind === 'seats' ? pendingTransactionId : null}
                 onChange={setSeatForm}
                 onBuy={() => void buySeats()}
@@ -1989,7 +1997,9 @@ export const CenterOfficePage: React.FC = () => {
                 classrooms={classroomOptions}
                 assignedText={voucherRosterText}
                 maxQuantity={capabilities.max_voucher_batch_quantity}
-                loading={loading}
+                loading={loading || Boolean(officeCheckout.pending) || Boolean(voucherIssue.pending) || Boolean(voucherIssue.problem) || !voucherIssue.ready}
+                fundingModel={center?.commercial_model??null}
+                createButtonRef={voucherCreateButton}
                 onChange={setVoucherForm}
                 onAssignedTextChange={setVoucherRosterText}
                 onImportRosterFile={(file) => void importVoucherRoster(file)}
@@ -3084,21 +3094,24 @@ const VoucherGeneratorPanel: React.FC<{
   catalog: PartnerOfficeExperience[];
   plans: PartnerOfficePlan[];
   wallet: { currency: string; available_amount: number };
-  form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string };
+  form: { access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string };
   classrooms: Array<{ id: string; academy_id: string; name: string; academy_name: string; is_active: boolean }>;
   assignedText: string;
+  fundingModel: string | null;
+  createButtonRef: React.RefObject<HTMLButtonElement | null>;
   maxQuantity: number;
   loading: boolean;
-  onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string; source_model: string }>>;
+  onChange: React.Dispatch<React.SetStateAction<{ access_kind: 'mock_exam' | 'subscription' | 'seat'; experience_id: string; plan_id: string; classroom_id: string; quantity: number; expires_in_days: number; prefix: string }>>;
   onAssignedTextChange: React.Dispatch<React.SetStateAction<string>>;
   onImportRosterFile: (file: File) => void;
   onCreate: () => void;
-}> = ({ catalog, plans, wallet, form, classrooms, assignedText, maxQuantity, loading, onChange, onAssignedTextChange, onImportRosterFile, onCreate }) => {
+}> = ({ catalog, plans, wallet, form, classrooms, assignedText, fundingModel, createButtonRef, maxQuantity, loading, onChange, onAssignedTextChange, onImportRosterFile, onCreate }) => {
   const assignedCount = parseBulkStudents(assignedText).length;
   const exceedsBatchLimit = assignedCount > maxQuantity;
   return (
     <div className={`${panelClass} p-5 md:p-6`}>
       <SectionTitle icon={UserPlus} label="Distribution" title="Generate vouchers" />
+      <fieldset aria-label="Voucher generation choices" disabled={loading} className="min-w-0">
       <label className="mt-5 block text-sm font-semibold text-gray-800">Access type<select value={form.access_kind} onChange={(e) => onChange((prev) => ({ ...prev, access_kind: e.target.value as any }))} className={inputClass}><option value="mock_exam">Mock exam</option><option value="subscription">Subscription</option><option value="seat">Seat voucher</option></select></label>
       {form.access_kind === 'mock_exam' ? (
         <label className="mt-4 block text-sm font-semibold text-gray-800">Mock exam<select value={form.experience_id} onChange={(e) => onChange((prev) => ({ ...prev, experience_id: e.target.value }))} className={inputClass}><option value="">Select mock</option>{catalog.map((item) => <option key={item.id} value={item.id}>{item.product_name ? `${item.product_name} - ${item.name}` : item.name}{item.is_ticket_ready ? '' : ' (price needed)'}</option>)}</select></label>
@@ -3139,10 +3152,11 @@ const VoucherGeneratorPanel: React.FC<{
         {assignedCount ? `${assignedCount} students parsed; voucher quantity will follow the roster.` : `No roster attached; quantity stays ${form.quantity}.`}
       </p>
       <label className="mt-4 block text-sm font-semibold text-gray-800">Code prefix<input value={form.prefix} onChange={(e) => onChange((prev) => ({ ...prev, prefix: e.target.value }))} className={inputClass} /></label>
-      <label className="mt-4 block text-sm font-semibold text-gray-800">Commercial model<select value={form.source_model} onChange={(e) => onChange((prev) => ({ ...prev, source_model: e.target.value }))} className={inputClass}><option value="prepaid_wallet">Prepaid wallet</option><option value="wholesale">Wholesale</option><option value="revenue_share">Revenue share</option><option value="manual">Manual</option></select></label>
+      <p className="mt-4 text-sm text-gray-700">Funding: <strong>{fundingModel ? fundingModel.replace(/_/g,' ') : 'Agreement not available'}</strong>. Your approved center agreement determines pricing and funding.</p>
       <p className="mt-4 text-sm text-gray-600">Wallet available: <strong>{money(wallet.available_amount, wallet.currency)}</strong></p>
       <p className="mt-2 text-xs text-gray-500">Your current tier allows up to {maxQuantity} vouchers per batch.</p>
-      <button type="button" onClick={onCreate} disabled={loading || exceedsBatchLimit || (form.access_kind === 'mock_exam' && !catalog.some((item) => item.id === form.experience_id && item.is_ticket_ready))} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
+      <button ref={createButtonRef} type="button" onClick={onCreate} disabled={loading || exceedsBatchLimit || (form.access_kind === 'mock_exam' && !catalog.some((item) => item.id === form.experience_id && item.is_ticket_ready))} className={`${primaryButton} mt-5 w-full`}>Generate vouchers</button>
+      </fieldset>
     </div>
   );
 };

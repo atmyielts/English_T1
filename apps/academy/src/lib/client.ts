@@ -1,3 +1,4 @@
+import { checkoutAttempt, completeCheckoutAttempt } from '../../../../packages/checkout-session/attempt';
 import { supabase } from './supabase';
 
 export type Json = Record<string, unknown> | unknown[];
@@ -279,9 +280,12 @@ export type TeacherStudioAuditEvent = {
 };
 
 export type TeacherStudioClickTuitionTransaction = {
-  payment_url: string;
+  payment_url: string | null;
   transaction_id: string;
   academy_payment_id: string;
+  status?: string;
+  grant_completed?: boolean;
+  checkout_attempt_key?: string;
   amount: number;
   currency: string;
   final_amount: number;
@@ -2181,9 +2185,14 @@ export const teacherStudioCreateClickTuitionPayment = async (
   academyId: string,
   body: { contact_id: string; offer_id: string; redirect_url?: string | null },
 ): Promise<TeacherStudioClickTuitionTransaction> => {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session?.user.id) throw new Error('Unauthorized');
+  const actorId = data.session.user.id;
+  const requestKey = checkoutAttempt(actorId, { purchase_type: 'academy_tuition', academy_id: academyId, contact_id: body.contact_id, offer_id: body.offer_id });
   const result = await invokeEdge<TeacherStudioClickTuitionTransaction>('click/create-transaction', {
     method: 'POST',
     body: {
+      idempotency_key: requestKey,
       description: 'Academy tuition',
       purchase_type: 'academy_tuition',
       redirect_url: body.redirect_url ?? null,
@@ -2195,12 +2204,27 @@ export const teacherStudioCreateClickTuitionPayment = async (
       },
     },
   });
-  const paymentUrl = new URL(result.payment_url);
-  if (
-    paymentUrl.protocol !== 'https:' || paymentUrl.hostname !== 'my.click.uz' ||
-    paymentUrl.pathname !== '/services/pay'
-  ) throw new Error('CLICK returned an untrusted payment URL');
-  return result;
+  const paid = ['paid', 'success', 'completed'].includes(String(result.status ?? '').toLowerCase());
+  if (paid && result.grant_completed === true) completeCheckoutAttempt(actorId, requestKey);
+  if (['failed', 'failure', 'canceled', 'cancelled', 'expired', 'rejected'].includes(String(result.status ?? '').toLowerCase())) {
+    completeCheckoutAttempt(actorId, requestKey);
+    throw new Error('This checkout has ended. Please create a new order.');
+  }
+  if (result.payment_url) {
+    const paymentUrl = new URL(result.payment_url);
+    if (paymentUrl.protocol !== 'https:' || paymentUrl.hostname !== 'my.click.uz' || paymentUrl.pathname !== '/services/pay') {
+      throw new Error('CLICK returned an untrusted payment URL');
+    }
+  } else if (!paid) throw new Error('Payment link is unavailable. Retry the same order.');
+  return { ...result, payment_url: paid ? null : result.payment_url, checkout_attempt_key: requestKey };
+};
+
+export const teacherStudioClickPaymentStatus = async (transactionId: string): Promise<{ status: string; grant_completed?: boolean }> =>
+  invokeEdge(`click/status?transaction_id=${encodeURIComponent(transactionId)}`, { method: 'GET' });
+
+export const teacherStudioCompleteCheckoutAttempt = async (requestKey: string): Promise<void> => {
+  const { data } = await supabase.auth.getSession();
+  if (data.session?.user.id) completeCheckoutAttempt(data.session.user.id, requestKey);
 };
 
 export const teacherStudioMarkPaymentPaid = async (

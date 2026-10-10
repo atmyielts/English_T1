@@ -2562,5 +2562,10 @@
   "Your role can inspect automation evidence but cannot change rules.": "Sizning rolingiz avtomatlashtirish dalillarini tekshirishi mumkin, lekin qoidalarni o‘zgartira olmaydi.",
   "Your session expired. Please sign in again.": "Seans muddati tugadi. Tizimga qayta kiring.",
   "Your teacher has published the plan. Specific goals will appear here when they are added.": "O‘qituvchingiz rejani e’lon qildi. Aniq maqsadlar qo‘shilganda shu yerda ko‘rinadi.",
-  "Your teaching day": "Sizning dars kuningiz"
+  "Your teaching day": "Sizning dars kuningiz",
+  "Payment confirmed. Purchased access is active.": "To‘lov tasdiqlandi. Xarid qilingan kirish huquqi faol.",
+  "Payment received. Access is still being activated. Do not pay again.": "To‘lov qabul qilindi. Kirish huquqi hali faollashtirilmoqda. Qayta to‘lov qilmang.",
+  "Activation pending": "Kirish huquqi faollashtirilmoqda",
+  "Pay with Click": "Click orqali to‘lash",
+  "Redirecting...": "To‘lov sahifasiga o‘tilmoqda..."
 }

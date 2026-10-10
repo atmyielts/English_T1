@@ -26,6 +26,9 @@ export const CandidateEntryPage: React.FC = () => {
 
   const toUserMessage = (err: unknown): string => {
     const raw = err instanceof Error ? err.message : String(err ?? t('candidate.error.startFailed'));
+    if (/candidate_review_required/.test(raw)) return t('candidate.error.review');
+    if (/candidate_retry/.test(raw)) return t('candidate.error.retrySameCode');
+    if (/candidate_account_unavailable/.test(raw)) return t('candidate.error.accountUnavailable');
     if (/sign in|verify your email|signed-in account|account changed/i.test(raw)) return raw.match(/"error":"([^"]+)"/)?.[1] ?? raw;
     if (/already been used/i.test(raw)) return t('candidate.error.used');
     if (/not found/i.test(raw)) return t('candidate.error.notFound');

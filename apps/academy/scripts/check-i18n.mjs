@@ -311,7 +311,7 @@ for (const locale of ['uz', 'ru']) {
     && !untranslatedAllowlist.has(phrase)
   ));
 
-  if (missing.length) failures.push(`${locale}: ${missing.length} missing translations`);
+  if (missing.length) failures.push(`${locale}: ${missing.length} missing translations: ${missing.slice(0, 10).join("; ")}`);
   if (extras.length) failures.push(`${locale}: ${extras.length} unused translations`);
   if (badPlaceholders.length) failures.push(`${locale}: ${badPlaceholders.length} placeholder mismatches`);
   if (untranslated.length) failures.push(`${locale}: ${untranslated.length} untranslated phrases`);

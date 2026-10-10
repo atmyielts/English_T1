@@ -1,9 +1,11 @@
 import { getLocaleTag, translate } from '../../i18n';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   teacherStudioClassroomChat,
   teacherStudioCreateClickTuitionPayment,
+  teacherStudioClickPaymentStatus,
+  teacherStudioCompleteCheckoutAttempt,
   teacherStudioSendClassroomChatMessage,
   teacherStudioSetClassroomResourceProgress,
   teacherStudioStudentAssignments,
@@ -101,6 +103,8 @@ export const StudentClassroomView = ({
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [payingOfferId, setPayingOfferId] = useState('');
+  const tuitionCreatingRef = useRef(false);
+  const [pendingTuition, setPendingTuition] = useState<{ transactionId: string; key: string } | null>(null);
   const [joiningSessionId, setJoiningSessionId] = useState('');
 
   useEffect(() => {
@@ -411,7 +415,32 @@ export const StudentClassroomView = ({
     }
   };
 
+  useEffect(() => {
+    if (!pendingTuition) return;
+    let canceled = false, checking = false;
+    const check = async () => {
+      if (checking || canceled) return;
+      checking = true;
+      try {
+        const result = await teacherStudioClickPaymentStatus(pendingTuition.transactionId);
+        if (canceled) return;
+        if (['paid', 'success', 'completed'].includes(result.status.toLowerCase()) && result.grant_completed === true) {
+          await teacherStudioCompleteCheckoutAttempt(pendingTuition.key);
+          if (canceled) return;
+          setPendingTuition(null);
+          setNotice('Payment confirmed. Purchased access is active.');
+          await loadClassroomLms();
+        }
+      } catch { /* The recorded payment remains pending; never create another order on a status error. */ }
+      finally { checking = false; }
+    };
+    const timer = window.setInterval(() => void check(), 6000);
+    return () => { canceled = true; window.clearInterval(timer); };
+  }, [pendingTuition, loadClassroomLms]);
+
   const payTuition = async (item: TeacherStudioStudentBillingItem) => {
+    if (tuitionCreatingRef.current || pendingTuition) return;
+    tuitionCreatingRef.current = true;
     setPayingOfferId(item.offer.id);
     setError('');
     setNotice('');
@@ -421,9 +450,16 @@ export const StudentClassroomView = ({
         offer_id: item.offer.id,
         redirect_url: typeof window !== 'undefined' ? window.location.href : null,
       });
-      if (result.payment_url) window.location.href = result.payment_url;
+      if (result.payment_url) { window.location.href = result.payment_url; }
+      else {
+        if (result.grant_completed !== true && result.checkout_attempt_key) setPendingTuition({ transactionId: result.transaction_id, key: result.checkout_attempt_key });
+        setNotice(result.grant_completed === true ? 'Payment confirmed. Purchased access is active.' : 'Payment received. Access is still being activated. Do not pay again.');
+        await loadClassroomLms();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      tuitionCreatingRef.current = false;
       setPayingOfferId('');
     }
   };
@@ -941,10 +977,10 @@ export const StudentClassroomView = ({
                   <button
                     className="primary-btn"
                     type="button"
-                    disabled={payingOfferId === item.offer.id}
+                    disabled={!!payingOfferId || pendingTuition !== null}
                     onClick={() => void payTuition(item)}
                   >
-                    {payingOfferId === item.offer.id ? 'Redirecting...' : 'Pay with Click'}
+                    {translate(pendingTuition ? 'Activation pending' : payingOfferId === item.offer.id ? 'Redirecting...' : 'Pay with Click')}
                   </button>
                 ) : null}
               </article>
