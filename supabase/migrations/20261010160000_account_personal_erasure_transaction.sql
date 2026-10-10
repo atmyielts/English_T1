@@ -318,7 +318,7 @@ declare
   institutional_sessions uuid[] := '{}'::uuid[];
   linked_sessions uuid[];
   personal_tenants uuid[];
-  personal_email text;
+  trusted_email text;
   archived_acquisitions uuid[];
   owner_column text;
   has_storage boolean;
@@ -331,7 +331,11 @@ begin
     raise exception using errcode='P0001',message='account_closure_unavailable';
   end if;
   if exists(select 1 from public.account_closure_receipts where user_id=old.id) then return new; end if;
-  select email into personal_email from public.users where id=old.id for update;
+  perform 1 from public.users where id=old.id for update;
+  -- Profile email is editable application data, never proof of ownership of an
+  -- unlinked invitation or configured administrator. Bound user IDs take
+  -- precedence over stale email attribution. Use the verified Auth address only.
+  trusted_email := case when old.email_confirmed_at is not null then nullif(old.email,'') else null end;
 
   -- Unknown owned Storage objects require classification before erasure. Never
   -- remove an academy/shared object or report it erased on a mere DB cascade.
@@ -469,11 +473,15 @@ begin
     -- Older minimal installations may have no login linkage yet.
     if exists(select 1 from pg_attribute where attrelid='public.academy_staff'::regclass and attname='user_id' and not attisdropped) then
       update public.academy_staff set is_active=false where user_id=old.id;
+      if exists(select 1 from pg_attribute where attrelid='public.academy_staff'::regclass and attname='email' and not attisdropped) then
+        update public.academy_staff set is_active=false where user_id is null
+          and trusted_email is not null and lower(email)=lower(trusted_email);
+      end if;
     end if;
   end if;
   if to_regclass('public.academy_role_grants') is not null then
     update public.academy_role_grants set status='revoked',revoked_at=coalesce(revoked_at,now())
-      where user_id=old.id or (email is not null and lower(email) in(lower(personal_email),lower(old.email)));
+      where user_id=old.id or (user_id is null and trusted_email is not null and lower(email)=lower(trusted_email));
   end if;
   if to_regclass('public.academy_contacts') is not null then
     if exists(select 1 from pg_attribute where attrelid='public.academy_contacts'::regclass and attname='user_id' and not attisdropped) then
@@ -485,7 +493,7 @@ begin
   end if;
   delete from public.tenant_memberships where user_id=old.id;
   if to_regclass('public.platform_admins') is not null then
-    delete from public.platform_admins where lower(email) in(lower(personal_email),lower(old.email));
+    delete from public.platform_admins where trusted_email is not null and lower(email)=lower(trusted_email);
   end if;
   if to_regclass('public.entitlements') is not null then
     update public.entitlements set is_active=false where tenant_id=any(personal_tenants);

@@ -70,7 +70,7 @@ claim every lock ordering is deadlock-free.
 
 ## Executed evidence
 
-- **65 native PostgreSQL/PostgREST cases passed**: ownership races, private
+- **68 native PostgreSQL/PostgREST cases passed**: ownership races, private
   permissions, disabled configuration, hook drift, personal erasure, financial
   and institutional roots, late rollback, both concurrent-write orderings,
   reactivation denial, teacher anonymization and both Storage ownership columns,
@@ -79,6 +79,11 @@ claim every lock ordering is deadlock-free.
   lead/acquisition cascades, business retention and both acquisition-write races.
   Eight cases are actual PostgREST 13 HTTP checks, including privileged-view and
   definer-RPC denial, missing principals, public browsing and service access.
+  Three cases reproduce permission attribution errors: an editable profile email
+  cannot remove another configured administrator or invitation, grants bound to
+  another user survive matching email attribution, and unverified Auth email
+  cannot claim unlinked invitations/staff/admin records. Cleanup uses the original
+  verified Auth email only for unlinked access, and user ID for bound access.
 - **28 actual account handler/client tests** and the Edge typecheck passed,
   including unfinished small requests/responses and unresolved cancellation.
 - The updated Platform build passed with a public local fixture configuration.
@@ -100,6 +105,18 @@ claim every lock ordering is deadlock-free.
   checkout/payment/fulfillment evidence, assigned seats, redeemed vouchers, exam
   admissions, Academy invoices after transfer, and refusal to delete/detach the
   retained principals. Closed recipients could not repeat purchase/access claims.
+- **13 local cases against the complete captured public/Auth/Storage schema
+  passed**: 406 tables, 238 public triggers, one Auth trigger and 1,245 public
+  foreign keys. No customer rows were included. The pinned Supabase PostgreSQL
+  17.6 image restores the captured definitions, matches observed extension
+  versions and role attributes/memberships, and applies candidate SQL as the
+  observed non-superuser `postgres` role. The installed Supautils privileged
+  runtime configuration is also reproduced; ordinary PostgreSQL parameter ACLs
+  alone do not describe that permission path. Actual Auth mirroring, transactional
+  erasure, ownership refusal/transfer, immutable Academy events, byte-identical
+  payments, permission attribution and replacement-owner report revocation pass.
+  The prior editable-email defect failed this fixture before the fix. Both the
+  failed reproducer and successful final run removed their owned containers.
 
 PostgreSQL 17.5, PostgREST 13.0.7 and the Node HTTP client images are digest-pinned.
 The ordinary test command now includes the SQL/HTTP suite. Exclusively owned
@@ -114,23 +131,44 @@ Reproduce the financial qualification from this checkout with
 It pins payment candidate `16a8eb759d470410b14e1f0e1c898b636aa834b2` and its reviewed
 harness hash, refuses tracked edits and never calls production providers.
 
+The complete captured-schema qualifier is separate from ordinary CI because its
+provider schema and metadata inputs remain ignored local artifacts. Run
+`node scripts/qualify-account-installed-schema.mjs --schema-file <schema-only-capture> --expected-sha256 <reviewed-capture-hash> --runtime-catalog <metadata-only-capture>`.
+The qualified schema SHA256 is
+`bdac29206b74fdc0f42629e7d08d22f07aea0132ff23ccdb856f6c43f8ccf169`.
+The script refuses a mismatched capture or data dump and has no provider
+credentials or connection. It replaces bootstrap schemas only inside its fresh,
+label-verified, network-isolated container. This is local compatibility with
+captured definitions, not execution through the live Auth service.
+
+Fresh published-source checks classify Academy uploads and center logos as
+institutional, and admin library media as platform content. All seven
+creator-attributed library rows match the platform pattern and have admin
+creators. Preserve these objects across login closure; uploader attribution alone
+does not establish personal ownership. No S3 objects, signed URLs or contents
+were accessed. Historical orphan objects and future personal uploads remain
+unqualified. The downloaded admin-assets shared module differs only in its AWS
+dependency versions; this candidate does not publish that module or change them.
+
 ## Publication gates
 
 Keep the candidate disabled and payment draft215 unpublished until the complete
-hosted lifecycle, full installed table/trigger compatibility, external S3/media
-classification, subscription cancellation/recovery, fresh provider/source and
+hosted lifecycle, installed Auth trigger qualification, historical/future media
+coverage, subscription cancellation/recovery, fresh provider/source and
 gateway checks, old clients and final exact-head CI are qualified. Zero owned
 Supabase Storage objects does not establish external S3 asset erasure. Future
 public RLS tables also require the restrictive boundary; the API hook covers
 future REST/RPC/view entry points but not every other data transport.
 The classified student lead/acquisition paths now have native proof; unlinked
 external contacts and all remaining schema exceptions still need review.
-Institution-owned sharing/report credentials also remain a gate: the freshly
-downloaded live parent-report v15 source restricts revocation to the original
-issuer without checking current academy membership, so replacement owners cannot
-revoke those links and a former issuer can still revoke them. That endpoint needs
-a separate scoped access-control fix and hosted qualification. The billing
-fixture is minimal; its guards do not establish a live cancellation integration.
+The report-authority dependency is now separately published as parent-report v16
+through PR219, with its service-only authority migration installed and 25 owned
+published-endpoint checks passed. Current owners can revoke links issued by a
+former member; historical issuance alone grants no authority. The complete
+local-schema case also verifies replacement-owner revocation after issuer closure.
+The billing fixture and separate financial SQL proof do not establish a live
+subscription cancellation integration. Storage, Realtime and other non-REST
+transports still require qualification; the REST hook does not cover them.
 
 Schema installation precedes the new handler. Apply only the four reviewed
 migrations from an isolated checkout containing the published migration history;

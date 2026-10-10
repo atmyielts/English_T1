@@ -23,7 +23,7 @@ const block=`
   const voucherCase=await redemptionFixture();await redeemVoucher(voucherCase);
   const examCase=await candidateFixture('voucher',true);const admission=await admit(examCase);
   const academyCase=await academyFixture();const academyOrder=await academyCheckout(academyCase);await settleAcademy(academyOrder.payment.id);
-  await sql(\`alter table auth.users add column deleted_at timestamptz;
+  await sql(\`alter table auth.users add column if not exists deleted_at timestamptz,add column if not exists email_confirmed_at timestamptz;
     insert into auth.users(id,email) select id,coalesce(email,id::text||'@example.invalid') from users on conflict(id) do nothing;
     alter table users add constraint owned_auth_user_fk foreign key(id) references auth.users(id) on delete cascade;
     alter table users add column full_name text,add column avatar_url text,add column telegram_chat_id text,add column role text default 'user';
@@ -39,7 +39,7 @@ const block=`
     update tenants set created_by=\$\{q(examCase.recipient)\} where id=\$\{q(examCase.target)\};
     update tenant_memberships set role='member' where tenant_id=\$\{q(academyCase.scope)\} and user_id=\$\{q(academyCase.actor)\};
     insert into tenant_memberships(tenant_id,user_id) values(\$\{q(academyCase.scope)\},\$\{q(referrer)\});\`);
-  for(const file of ['20261009149000_account_deletion_ownership_guard.sql','20261010150000_account_closed_principal_boundary.sql','20261010151000_account_personal_erasure_transaction.sql','20261010152000_account_api_request_guard.sql'])await sql(readFileSync(${JSON.stringify(accountRoot+'/supabase/migrations/')}+file,'utf8'));
+  for(const file of ['20261010154000_account_deletion_ownership_guard.sql','20261010155000_account_closed_principal_boundary.sql','20261010160000_account_personal_erasure_transaction.sql','20261010161000_account_api_request_guard.sql'])await sql(readFileSync(${JSON.stringify(accountRoot+'/supabase/migrations/')}+file,'utf8'));
   await sql('update account_closure_config set enabled=true;');
   const closeAccount=id=>sql(\`update auth.users set deleted_at=now(),email='provider-obfuscated' where id=\$\{q(id)\};\`);
   const snapshot=(relation,predicate)=>sql(\`select coalesce(jsonb_agg(to_jsonb(r) order by to_jsonb(r)::text),'[]') from \$\{relation\} r where \$\{predicate\};\`);

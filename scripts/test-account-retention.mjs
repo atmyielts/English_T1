@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 const name='schood-account-retention-'+randomUUID().slice(0,8);
 const image='postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa';
 const source=readFileSync('supabase/migrations/20260202170000_platform_spine.sql','utf8');
-const migration=readFileSync('supabase/migrations/20261009149000_account_deletion_ownership_guard.sql','utf8');
+const migration=readFileSync('supabase/migrations/20261010154000_account_deletion_ownership_guard.sql','utf8');
 const q=v=>"'"+String(v).replaceAll("'","''")+"'";
 const table=n=>{const start=source.indexOf('create table if not exists public.'+n+' (');assert.ok(start>=0);return source.slice(start,source.indexOf('\n);',start)+4);};
 const canonical=(file,n)=>{const s=readFileSync('supabase/migrations/'+file,'utf8').replaceAll('\r\n','\n');const start=s.indexOf('create table if not exists public.'+n+' (');assert.ok(start>=0,'Canonical table missing: '+n);return s.slice(start,s.indexOf('\n);',start)+4);};
@@ -28,7 +28,7 @@ const sql=text=>run(['exec','-i',name,'psql','-U','postgres','-d','postgres','-A
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const check=async(label,action)=>{await action();checks.push(label);console.log('PASS: '+label);};
 async function barrier(id){for(let i=0;i<80;i++){if(await sql("select count(*) from pg_locks where locktype='advisory' and objid="+id+" and granted;")==='1')return;await pause(30);}throw Error('Owned SQL barrier unavailable');}
-async function actor(){const id=randomUUID();await sql(`insert into auth.users(id,email) values(${q(id)},'owned@example.invalid');insert into users(id,email) values(${q(id)},'owned@example.invalid');`);return id;}
+async function actor(){const id=randomUUID();await sql(`insert into auth.users(id,email,email_confirmed_at) values(${q(id)},'owned@example.invalid',now());insert into users(id,email) values(${q(id)},'owned@example.invalid');`);return id;}
 async function tenant(creator,type='org') {const id=randomUUID();await sql(`insert into tenants(id,name,slug,type,created_by) values(${q(id)},'Owned QA',${q(id)},${q(type)},${creator===null?'null':q(creator)});`);return id;}
 const membership=(id,t,role='owner',status='active')=>sql(`insert into tenant_memberships(tenant_id,user_id,role,status) values(${q(t)},${q(id)},${q(role)},${q(status)});`);
 const preflight=id=>sql(`set role service_role;select public.account_deletion_preflight(${q(id)}::uuid);`).then(JSON.parse);
@@ -41,7 +41,7 @@ try {
     create role authenticator noinherit login;grant anon,authenticated,service_role to authenticator;
     grant usage on schema public to anon,authenticated,service_role;
     alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
-    create schema auth;create table auth.users(id uuid primary key,email text,deleted_at timestamptz);
+    create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,deleted_at timestamptz);
     ${table('users')}${table('tenants')}${table('tenant_memberships')}
     create table academy_contacts(id uuid primary key default gen_random_uuid(),academy_id uuid references tenants(id));
     create table academy_staff(id uuid primary key default gen_random_uuid(),academy_id uuid references tenants(id));
@@ -76,7 +76,10 @@ try {
     alter table users add column telegram_chat_id text;
     alter table tenants add column metadata jsonb not null default '{}';
     alter table academy_contacts add column user_id uuid references users(id),add column notify_enabled boolean not null default true;
-    alter table academy_staff add column user_id uuid references users(id),add column is_active boolean not null default true;
+    alter table academy_staff add column user_id uuid references users(id),add column email text,add column is_active boolean not null default true;
+    ${canonical('20260618103000_academy_role_grants.sql','academy_role_grants')}
+    ${table('platform_admins')}
+    alter table academy_role_grants enable row level security;alter table platform_admins enable row level security;
     create table languages(id uuid primary key);create table products(id uuid primary key);
     create table learning_content_registry_items(id uuid primary key);create table writing_prompts(id uuid primary key);create table speaking_prompts(id uuid primary key);
     create table experiences(id uuid primary key);create table content_units(id uuid primary key);
@@ -114,15 +117,15 @@ try {
     alter table user_profiles enable row level security;create policy own_profile on user_profiles for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
     alter table public_catalog enable row level security;create policy public_catalog_read on public_catalog for select to anon,authenticated using(true);
     alter table academy_submissions enable row level security;create policy owned_fixture_academy_read on academy_submissions for select to authenticated using(true);`);
-  const principalBoundary=readFileSync('supabase/migrations/20261010150000_account_closed_principal_boundary.sql','utf8');
+  const principalBoundary=readFileSync('supabase/migrations/20261010155000_account_closed_principal_boundary.sql','utf8');
   await check('principal migration contention rolls back its entire policy/receipt installation',async()=>{
     const holder=sql('begin;lock users in access exclusive mode;select pg_advisory_xact_lock(464410);select pg_sleep(3);rollback;');await barrier(464410);
     await assert.rejects(sql(principalBoundary),/lock timeout/);await holder;
     assert.equal(await sql("select to_regclass('public.account_closure_receipts') is null;"),'t');
   });
   await sql(principalBoundary);
-  await sql(readFileSync('supabase/migrations/20261010151000_account_personal_erasure_transaction.sql','utf8'));
-  const apiGuard=readFileSync('supabase/migrations/20261010152000_account_api_request_guard.sql','utf8');
+  await sql(readFileSync('supabase/migrations/20261010160000_account_personal_erasure_transaction.sql','utf8'));
+  const apiGuard=readFileSync('supabase/migrations/20261010161000_account_api_request_guard.sql','utf8');
   await check('API guard refuses an existing unreviewed request hook without replacing it',async()=>{
     await sql("alter role authenticator set pgrst.db_pre_request='public.owned_existing_hook';");
     await assert.rejects(sql(apiGuard),/Existing API request hook requires review/);
@@ -309,6 +312,40 @@ try {
     assert.equal(await sql(`select experience_years is null from teacher_profiles where user_id=${q(u)};`),'t');
     await assert.rejects(sql(`set role service_role;update referral_accounts set metadata='{"private":"restored"}' where user_id=${q(u)};`),/account_closed/);
     assert.equal(await sql(`select full_name from teacher_profiles where user_id=${q(other)};`),'Other Teacher');
+  });
+  await check('verified Auth erasure preserves grants bound to another actor and disables its unlinked staff login',async()=>{
+    const u=await actor(),other=await actor(),t=await tenant(other),foreign=randomUUID(),own=randomUUID(),staff=randomUUID();
+    await sql(`insert into academy_role_grants(id,academy_id,user_id,email,role,status,accepted_at) values
+      (${q(foreign)},${q(t)},${q(other)},'owned@example.invalid','teacher','active',now()),
+      (${q(own)},${q(t)},${q(u)},'old-attribution@example.invalid','teacher','active',now());
+      insert into academy_staff(id,academy_id,email,is_active) values(${q(staff)},${q(t)},'owned@example.invalid',true);`);
+    await close(u);
+    assert.equal(await sql(`select status from academy_role_grants where id=${q(foreign)};`),'active');
+    assert.equal(await sql(`select status from academy_role_grants where id=${q(own)};`),'revoked');
+    assert.equal(await sql(`select is_active from academy_staff where id=${q(staff)};`),'f');
+  });
+  await check('editable profile email cannot delete another configured administrator or invitation',async()=>{
+    const u=await actor(),other=await actor(),t=await tenant(other),foreignEmail=randomUUID()+'@example.invalid',grant=randomUUID();
+    await sql(`update users set email=${q(foreignEmail)} where id=${q(u)};
+      insert into platform_admins(email) values(${q(foreignEmail)}),('owned@example.invalid');
+      insert into academy_role_grants(id,academy_id,email,role,status) values(${q(grant)},${q(t)},${q(foreignEmail)},'teacher','invited');`);
+    await close(u);
+    assert.equal(await sql(`select count(*) from platform_admins where email=${q(foreignEmail)};`),'1');
+    assert.equal(await sql("select count(*) from platform_admins where email='owned@example.invalid';"),'0');
+    assert.equal(await sql(`select status from academy_role_grants where id=${q(grant)};`),'invited');
+  });
+  await check('unverified Auth email cannot claim unlinked grants staff or administrator ownership during erasure',async()=>{
+    const u=await actor(),other=await actor(),t=await tenant(other),t2=await tenant(other),email=randomUUID()+'@example.invalid',grant=randomUUID(),unlinked=randomUUID(),bound=randomUUID();
+    await sql(`update auth.users set email=${q(email)},email_confirmed_at=null where id=${q(u)};
+      update users set email=${q(email)} where id=${q(u)};
+      insert into platform_admins(email) values(${q(email)});
+      insert into academy_role_grants(id,academy_id,email,role,status) values(${q(grant)},${q(t)},${q(email)},'teacher','invited');
+      insert into academy_staff(id,academy_id,user_id,email,is_active) values(${q(unlinked)},${q(t)},null,${q(email)},true),(${q(bound)},${q(t2)},${q(u)},${q(email)},true);`);
+    await close(u);
+    assert.equal(await sql(`select count(*) from platform_admins where email=${q(email)};`),'1');
+    assert.equal(await sql(`select status from academy_role_grants where id=${q(grant)};`),'invited');
+    assert.equal(await sql(`select is_active from academy_staff where id=${q(unlinked)};`),'t');
+    assert.equal(await sql(`select is_active from academy_staff where id=${q(bound)};`),'f');
   });
   await check('personal student leads and cascading notes are erased before their linked acquisition journeys',async()=>{
     const u=await actor(),other=await actor(),t=await tenant(null,'personal');await membership(u,t);
