@@ -1,33 +1,57 @@
 {
   "schemaVersion": 1,
-  "releaseId": "parent-report-revocation-authority",
+  "releaseId": "account-erasure-retention",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": ["20261010153000_parent_report_revocation_authority.sql"],
-  "edgeFunctions": ["parent-report"],
+  "frontends": [
+    "platform"
+  ],
+  "migrations": [
+    "20261010154000_account_deletion_ownership_guard.sql",
+    "20261010155000_account_closed_principal_boundary.sql",
+    "20261010160000_account_personal_erasure_transaction.sql",
+    "20261010161000_account_api_request_guard.sql"
+  ],
+  "edgeFunctions": [
+    "account"
+  ],
   "workers": [],
   "requiredSecrets": [],
-  "rolloutOrder": ["migration:20261010153000_parent_report_revocation_authority.sql", "function:parent-report"],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261010154000_account_deletion_ownership_guard.sql",
+    "migration:20261010155000_account_closed_principal_boundary.sql",
+    "migration:20261010160000_account_personal_erasure_transaction.sql",
+    "migration:20261010161000_account_api_request_guard.sql",
+    "function:account"
+  ],
   "manualFollowUps": [
-    "Require current-head CI and tracked deploy, then refresh installed parent-report v15 source/gateway and authority schema/audit trigger compatibility. Refuse drift from release/parent-report-published-baseline.json. No account closure or financial worker activation.",
-    "Inspect linked history in an isolated reviewed checkout and use supabase db push --linked for only the report migration. Refuse unrelated pending SQL; additive RPC is compatible with the installed handler. Qualify current owner/delegate, role removal, scope, audit rollback and private execute using exclusively owned fixtures before replacing the live function.",
-    "supabase functions deploy parent-report --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-report-bundle>. Preserve verify_jwt=false and published remote imports; ship only reviewed runtime files and refuse source hash drift.",
-    "Download installed runtime files and compare reviewed hashes. Use exclusively owned accounts/academy/report links to qualify valid public reading, transfer, current-owner revocation, removed issuer denial, revoked/expired denial and cleanup. Never use customer tokens or academy IDs."
+    "Draft disabled lifecycle candidate. Keep payment draft215 unpublished until installed Auth/lifecycle/transport, media, subscription and old-client compatibility is qualified. Complete captured-schema compatibility is locally qualified, not installed activation proof.",
+    "After reviewed exact-head CI and tracked Pages: supabase db push --linked only from an isolated checkout containing these four reviewed migrations and published history. Inspect the plan and refuse unrelated pending migrations. Keep account_closure_config.enabled=false; retain financial worker disabled. Schema and the reloaded API guard must precede the soft-delete handler.",
+    "Refresh installed account source/version and preserve verify_jwt=true. The committed earlier source baseline is historical (live v34 at the checkpoint). Build only the reviewed source-preserving isolated account bundle and refuse baseline or dependency drift.",
+    "Before changing the live handler or global flag: a database owner grants only one exclusively owned disposable QA identity a private account_closure_qualifications row of at most one hour. All ownership/billing/media/API guards still apply. Invoke trusted Auth soft deletion directly, qualify installed triggers and actual REST/RPC/view denial, password/refresh denial, learning purge, immutable receipts and Academy retention, race rollback and public browsing. Revoke the qualification afterward. No customer identities or charges.",
+    "After isolated lifecycle qualification and a fresh live source check: supabase functions deploy account --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-account-bundle>. Download and compare installed source hashes and verify verify_jwt=true before activation.",
+    "Activate account_closure_config.enabled only after fresh hook reload and provider/retention/storage/subscription canaries succeed. A disabled configuration returns a private unavailable response through the new handler. Preserve closed-personal-tenant and acquisition-archive markers after grant revocation or global disablement. Do not clear unrelated hooks, bypass CI, remove retained receipt FKs or fall back to hard deletion."
   ],
   "verification": [
-    "37 native PostgreSQL authority/concurrency/rollback cases; owned isolated container removed and absence verified",
-    "23 Deno checks including actual HTTP handler with synthetic Auth/service responses, plus report Edge typecheck",
-    "Production/release scans and current-head CI; owned installed-provider canaries remain required before completion"
+    "68 native PostgreSQL/PostgREST cases passed, including 8 actual HTTP checks and 3 verified-identity regressions; ownership/billing/acquisition races and private per-QA qualifications remain covered. Ordinary npm test includes the pinned-container suite.",
+    "28 actual account handler/client cases and Edge check; current Platform build with public local fixture configuration; 20 rendered synthetic-API browser cases and 3 menu checks.",
+    "Owned hosted Auth-only soft-delete provider probe reproduced old-token REST access; six checks and cleanup verified. This is not qualification of the unpublished lifecycle candidate.",
+    "Six native cases against the actual nine reviewed draft-financial migrations passed with immutable receipt/identity triggers. Complete captured public/Auth/Storage schema independently passed 14 local cases: 406 tables, 238 public triggers, 1 Auth trigger and 1,245 public foreign keys, with actual role attributes/memberships and privileged runtime configuration. Captured private Storage policy denial and trusted delivery access also pass.",
+    "Final exact-head CI; matching tracked Pages/provider source and preserved gateway; complete exclusively owned hosted erasure/retention/API canaries before activation."
   ],
   "rollback": {
-    "frontend": "No frontend changes. Previous live main 292dc97702a14e0c9fe0530a30cb28910a0e6875; tracked Pages continues normally after merge.",
-    "backend": "Fix forward and preserve revoked links, audit evidence and the additive RPC. Never restore the creator-only no-op success path or reactivate private report capabilities."
+    "database": "Disable new closures if needed; keep pseudonymous principals, private closure/closed-personal-scope/acquisition-archive markers, immutable payment/admission evidence and closed-account denial. Terminal billing settlement updates remain possible. Never restore erased PII, reset grants, unlink frozen roots or resume closed billing or archived diagnostic journeys.",
+    "backend": "Fix forward with the reviewed soft-delete handler. The old v34 hard-delete handler is deliberately refused while retained-principal mode is enabled; do not weaken constraints or add a fallback to make it succeed.",
+    "frontend": "Tracked revert/Pages CI. Current published base c6380e141a95d34ab640035e416b7c634604dce0. Existing confirmation and fixed error protocol remain compatible."
   },
   "limits": [
-    "No production migration/function installation or customer report access has occurred during local qualification.",
-    "Full installed schema/audit compatibility and own-account hosted provider proof remain required.",
-    "Existing direct browser token management, Academy monolith scope behavior, best-effort view counts and public request limits remain further review items.",
-    "This release does not enable account erasure, financial workers or establish full platform readiness."
+    "No lifecycle migration, handler or global flag installed or activated. Final exact-head CI and tracked deployment remain required.",
+    "Complete captured public/Auth/Storage definitions now have isolated local compatibility proof, including actual triggers and runtime role configuration. No production seed/catalogue/customer rows were loaded. The actual hosted Auth service must still qualify the installed trigger chain.",
+    "Focused native optional institutional fixtures are minimal; the separate complete captured-schema and actual-nine-financial-migration suites broaden local proof.",
+    "Published source and aggregate metadata classify platform/institutional uploads for retention. No S3 object listing, contents, historical orphan cleanup or future personal-upload coverage has been qualified. Unclassified owned Storage objects continue to block closure.",
+    "Subscription cancellation/recovery and access through Storage, Realtime and other non-REST transports remain publication gates.",
+    "Read-only provider captures and previous Auth-only canaries do not qualify the unpublished lifecycle. Business contacts are retained by policy; remaining unlinked personal-contact attribution needs review.",
+    "Configuration defaults disabled; additive SQL alone does not switch the live handler or enable erasure. The report-authority dependency is separately installed and qualified as parent-report v16."
   ]
 }

@@ -8,22 +8,26 @@ const json = (status: number, body: unknown) => new Response(JSON.stringify(body
 });
 type AccountClient = { auth: {
   getUser(token: string): PromiseLike<{ data: { user: { id: string; email?: string } | null }; error: unknown }>;
-  admin: { deleteUser(id: string): PromiseLike<{ error: unknown }> };
-} };
+  admin: { deleteUser(id: string, shouldSoftDelete: boolean): PromiseLike<{ error: unknown }> };
+}; rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }> };
 async function confirmation(req: Request): Promise<string | null> {
   const reader = req.body?.getReader();
   if (!reader) return null;
   let size = 0;
   const chunks: Uint8Array[] = [];
+  let timer: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<'timeout'>(resolve => { timer = setTimeout(() => resolve('timeout'), 5000); });
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      const result = await Promise.race([reader.read(), deadline]);
+      if (result === 'timeout') { void reader.cancel().catch(() => {}); return null; }
+      const { done, value } = result;
       if (done) break;
       size += value.byteLength;
-      if (size > 1024) { await reader.cancel(); return null; }
+      if (size > 1024) { void reader.cancel().catch(() => {}); return null; }
       chunks.push(value);
     }
-  } finally { reader.releaseLock(); }
+  } finally { clearTimeout(timer!); reader.releaseLock(); }
   const bytes = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
@@ -49,8 +53,22 @@ export async function handleAccountDeletion(req: Request, client: AccountClient)
     if (!email) return json(400, { code: 'account_confirmation_required', error: 'Confirm your current account email before deletion.' });
     if (!actor.email || email !== actor.email.trim().toLowerCase())
       return json(409, { code: 'account_confirmation_changed', error: 'Your account changed. Confirm the current account before deletion.' });
-    // Caller-supplied IDs are never used. Existing database retention restrictions stay authoritative.
-    const { error: deleteError } = await client.auth.admin.deleteUser(actor.id);
+    // The final Auth transaction repeats this guard under database locks; this
+    // preflight provides a useful response without weakening that race boundary.
+    const readiness = await client.rpc('account_closure_preflight', { p_actor: actor.id });
+    if (readiness.error || !readiness.data || typeof readiness.data !== 'object')
+      return json(503, { code: 'account_delete_unavailable', error: 'Account deletion is temporarily unavailable.' });
+    const decision = readiness.data as { eligible?: unknown; code?: unknown };
+    if (decision.eligible === false && decision.code === 'account_ownership_transfer_required')
+      return json(409, { code: 'account_ownership_transfer_required', error: 'Transfer your academy or center ownership before deleting your account.' });
+    if (decision.eligible === false && decision.code === 'account_billing_review_required')
+      return json(409, { code: 'account_billing_review_required', error: 'Resolve your active subscription billing or contact support before deleting your account.' });
+    if (decision.eligible !== true || decision.code !== undefined)
+      return json(503, { code: 'account_delete_unavailable', error: 'Account deletion is temporarily unavailable.' });
+    // The gated Auth trigger erases personal application data in this same
+    // provider transaction and retains the pseudonymous financial principal.
+    // Never fall back to hard deletion if that lifecycle is unavailable.
+    const { error: deleteError } = await client.auth.admin.deleteUser(actor.id, true);
     if (deleteError) return json(503, { code: 'account_delete_unavailable', error: 'We could not delete your account. Try again or contact support for help reviewing linked records.' });
     return json(200, { ok: true, actor_id: actor.id });
   } catch {
