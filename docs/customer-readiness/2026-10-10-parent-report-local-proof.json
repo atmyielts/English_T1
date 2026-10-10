@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-10T10:12:20.953Z",
+  "recordedAt": "2026-10-10T10:14:31.918Z",
   "status": "local-qualification-publication-pending",
   "base": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
   "baseline": {
@@ -16,7 +16,9 @@
     "productionChanged": false,
     "requiresFreshCaptureBeforePublication": true
   },
-  "productionMutation": false,
+  "candidateInstalledInProduction": false,
+  "productionSchemaOrFunctionChanged": false,
+  "productionQaDataWritten": true,
   "customerDataRead": false,
   "native": {
     "status": "passed",
