@@ -1,6 +1,6 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export type PracticeNavAction = {
   id: string;
@@ -37,7 +37,41 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileNavId = useId();
-  const closeMobileNav = () => setMobileOpen(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const focusedControlRef = useRef<HTMLElement | null>(null);
+  const { pathname, search } = useLocation();
+  const closeMobileNav = () => {
+    if (document.activeElement instanceof Element && document.activeElement.closest('.mobile-nav-panel')) toggleRef.current?.focus();
+    setMobileOpen(false);
+  };
+
+  useEffect(() => setMobileOpen(false), [pathname, search]);
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 760px)');
+    const resize = () => {
+      setMobileOpen(false);
+      const focused = document.activeElement === document.body ? focusedControlRef.current : document.activeElement;
+      if (viewport.matches && focused instanceof Element && focused.matches('.top-nav-actions > .btn')) {
+        if (headerRef.current?.contains(focused)) toggleRef.current?.focus();
+      } else if (!viewport.matches && (focused === toggleRef.current || (focused instanceof Element && focused.closest('.mobile-nav-panel') && headerRef.current?.contains(focused)))) {
+        headerRef.current?.querySelector<HTMLElement>('.brand')?.focus();
+      }
+    };
+    viewport.addEventListener('change', resize);
+    return () => viewport.removeEventListener('change', resize);
+  }, []);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const outside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !headerRef.current?.contains(event.target)) {
+        if (document.activeElement instanceof Element && document.activeElement.closest('.mobile-nav-panel')) toggleRef.current?.focus();
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
+  }, [mobileOpen]);
 
   const renderAction = (action: PracticeNavAction, mobile = false) => {
     const className = `${mobile ? 'mobile-nav-action' : 'btn'} ${action.variant ?? 'ghost'}`;
@@ -92,7 +126,23 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
   );
 
   return (
-    <header className={`top-nav glass${compact ? ' compact' : ''}${mobileOpen ? ' mobile-open' : ''}`}>
+    <header ref={headerRef} className={`top-nav glass${compact ? ' compact' : ''}${mobileOpen ? ' mobile-open' : ''}`}
+      onFocusCapture={(event) => {
+        if (event.target instanceof HTMLElement) focusedControlRef.current = event.target;
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && mobileOpen) {
+          event.preventDefault();
+          setMobileOpen(false);
+          toggleRef.current?.focus();
+        }
+      }}
+      onBlur={(event) => {
+        if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) {
+          focusedControlRef.current = null;
+          setMobileOpen(false);
+        }
+      }}>
       <div className="top-nav-row">
         {brandHref ? (
           <a className="brand" href={brandHref} onClick={closeMobileNav}>
@@ -110,22 +160,23 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
           {actions.length > 0 ? (
             <button
               className="nav-menu-button"
+              ref={toggleRef}
               type="button"
               onClick={() => setMobileOpen((open) => !open)}
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
               aria-controls={mobileNavId}
             >
-              {mobileOpen ? <X size={17} strokeWidth={2.4} /> : <Menu size={17} strokeWidth={2.4} />}
-              Menu
+              {mobileOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
             </button>
           ) : null}
         </div>
       </div>
 
       {actions.length > 0 ? (
-        <div id={mobileNavId} className="mobile-nav-panel" hidden={!mobileOpen} aria-hidden={!mobileOpen}>
+        <nav id={mobileNavId} aria-label="IELTS Practice" className="mobile-nav-panel" hidden={!mobileOpen} aria-hidden={!mobileOpen}>
           {actions.map((action) => renderAction(action, true))}
-        </div>
+        </nav>
       ) : null}
     </header>
   );

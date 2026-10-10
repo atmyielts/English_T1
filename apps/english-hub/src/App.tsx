@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { withEnglishRouteContext } from '../../english-shared/src/routeContext';
@@ -424,6 +424,37 @@ const renderStatusStrip = ({
 const App = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuHeaderRef = useRef<HTMLElement>(null);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const focusedMenuControlRef = useRef<HTMLElement | null>(null);
+  const menuHeaderProps = {
+    ref: menuHeaderRef,
+    onFocusCapture: (event: FocusEvent<HTMLElement>) => {
+      if (event.target instanceof HTMLElement) focusedMenuControlRef.current = event.target;
+    },
+    onClick: (event: MouseEvent<HTMLElement>) => {
+      if (mobileMenuOpen && event.target instanceof Element && event.target.closest('.hub-links a, .hub-controls a, .hub-controls button')) {
+        menuToggleRef.current?.focus();
+        setMobileMenuOpen(false);
+      }
+    },
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      if (event.key === 'Escape' && mobileMenuOpen) {
+        event.preventDefault();
+        setMobileMenuOpen(false);
+        menuToggleRef.current?.focus();
+      }
+    },
+    onBlur: (event: FocusEvent<HTMLElement>) => {
+      if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) {
+        focusedMenuControlRef.current = null;
+        setMobileMenuOpen(false);
+      }
+    },
+  };
+  const menuIcon = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    {mobileMenuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+  </svg>;
   const [session, setSession] = useState<Session | null>(null);
   const [sessionResolved, setSessionResolved] = useState(false);
   const [notebookLoading, setNotebookLoading] = useState(false);
@@ -457,7 +488,33 @@ const App = () => {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 760px)');
+    const resize = () => {
+      setMobileMenuOpen(false);
+      const focused = document.activeElement === document.body ? focusedMenuControlRef.current : document.activeElement;
+      if (viewport.matches && focused instanceof Element && focused.closest('.hub-links, .hub-controls')) {
+        if (menuHeaderRef.current?.contains(focused)) menuToggleRef.current?.focus();
+      } else if (!viewport.matches && focused === menuToggleRef.current) {
+        menuHeaderRef.current?.querySelector<HTMLElement>('.brand')?.focus();
+      }
+    };
+    viewport.addEventListener('change', resize);
+    return () => viewport.removeEventListener('change', resize);
+  }, []);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const outside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !menuHeaderRef.current?.contains(event.target)) {
+        if (document.activeElement instanceof Element && document.activeElement.closest('.hub-links, .hub-controls')) menuToggleRef.current?.focus();
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     let mounted = true;
@@ -1009,7 +1066,7 @@ const App = () => {
             <div className="hub-root">
               <div className="hub-ambient" aria-hidden />
               <main className="hub-shell">
-                <header className="hub-nav frame">
+                <header className="hub-nav frame" {...menuHeaderProps}>
                   <Link className="brand" to="/">
                     <img className="brand-logo" src="/schood-logo.png" alt="Schood" />
                     <span className="brand-copy">
@@ -1020,21 +1077,23 @@ const App = () => {
 
                   <button
                     className="hub-menu-toggle"
+                    ref={menuToggleRef}
                     type="button"
+                    aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                     aria-expanded={mobileMenuOpen}
-                    aria-controls="hub-nav-panel"
+                    aria-controls="hub-nav-panel hub-control-panel"
                     onClick={() => setMobileMenuOpen((prev) => !prev)}
                   >
-                    Menu
+                    {menuIcon}
                   </button>
 
-                  <nav id="hub-nav-panel" className={`hub-links ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
+                  <nav id="hub-nav-panel" aria-label="English Hub" className={`hub-links ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
                     <NavLink className={({ isActive }) => (isActive ? 'route-btn active' : 'route-btn')} to="/" end>
                       Home
                     </NavLink>
                   </nav>
 
-                  <div className={`hub-controls ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
+                  <div id="hub-control-panel" className={`hub-controls ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
                     <a className="btn btn-ghost" href={workspaceHref}>
                       Platform
                     </a>
@@ -1237,7 +1296,7 @@ const App = () => {
       <VoiceFirstFab accessToken={session.access_token} />
       <div className="hub-ambient" aria-hidden />
       <main className="hub-shell">
-        {!isModuleWorkspace ? <header className="hub-nav frame">
+        {!isModuleWorkspace ? <header className="hub-nav frame" {...menuHeaderProps}>
           <Link className="brand" to="/">
             <img className="brand-logo" src="/schood-logo.png" alt="Schood" />
             <span className="brand-copy">
@@ -1248,12 +1307,14 @@ const App = () => {
 
           <button
             className="hub-menu-toggle"
+            ref={menuToggleRef}
             type="button"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
-            aria-controls="hub-nav-panel"
+            aria-controls="hub-nav-panel hub-control-panel"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
           >
-            Menu
+            {menuIcon}
           </button>
 
           <nav id="hub-nav-panel" className={`hub-links ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()} aria-label="Hub routes">
@@ -1269,7 +1330,7 @@ const App = () => {
             ))}
           </nav>
 
-          <div className={`hub-controls ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
+          <div id="hub-control-panel" className={`hub-controls ${mobileMenuOpen ? 'mobile-open' : ''}`.trim()}>
             <a className="btn btn-ghost" href={workspaceHref}>
               Platform
             </a>
