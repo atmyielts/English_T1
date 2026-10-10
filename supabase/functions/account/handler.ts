@@ -57,6 +57,8 @@ export async function handleAccountDeletion(req: Request, client: AccountClient)
     const decision = readiness.data as { eligible?: unknown; code?: unknown };
     if (decision.eligible === false && decision.code === 'account_ownership_transfer_required')
       return json(409, { code: 'account_ownership_transfer_required', error: 'Transfer your academy or center ownership before deleting your account.' });
+    if (decision.eligible === false && decision.code === 'account_billing_review_required')
+      return json(409, { code: 'account_billing_review_required', error: 'Resolve your active subscription billing or contact support before deleting your account.' });
     if (decision.eligible !== true || decision.code !== undefined)
       return json(503, { code: 'account_delete_unavailable', error: 'Account deletion is temporarily unavailable.' });
     // The gated Auth trigger erases personal application data in this same

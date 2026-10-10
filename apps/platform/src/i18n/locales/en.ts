@@ -365,6 +365,7 @@ export const en = {
   'account.error.delete': 'We could not delete your account. Try again or contact support to review linked records.',
   'account.error.changed': 'Your account changed. Confirm the current account email before deleting it.',
   'account.error.ownershipTransfer': 'Transfer your academy or center ownership before deleting your account.',
+  'account.error.billingReview': 'Resolve your active subscription billing or contact support before deleting your account.',
   'account.error.sessionExpired': 'Your session expired. Please sign in again.',
   'account.loading': 'Loading account...',
 

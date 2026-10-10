@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-10T07:56:42.0737390Z",
+  "recordedAt": "2026-10-10T08:50:54.133Z",
   "status": "draft-disabled-lifecycle-locally-qualified",
   "pullRequest": "https://github.com/atmyielts/English_T1/pull/218",
   "base": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
@@ -9,9 +9,9 @@
   "fullHostedDeletionQualified": false,
   "configurationDefault": "disabled",
   "native": {
-    "time": "2026-10-10T07:44:19.555Z",
+    "time": "2026-10-10T08:46:22.145Z",
     "passed": true,
-    "count": 48,
+    "count": 59,
     "checks": [
       "anon cannot inspect or invoke account ownership commands",
       "authenticated cannot inspect or invoke account ownership commands",
@@ -40,8 +40,18 @@
       "anon cannot enable erasure or rewrite closure receipts",
       "authenticated cannot enable erasure or rewrite closure receipts",
       "service_role cannot enable erasure or rewrite closure receipts",
+      "owner-only qualification erases only the selected QA actor while global closure stays disabled",
+      "a revoked qualification is rechecked in the final Auth transaction without any purge",
+      "qualification expiry is checked after ownership lock waits using the current clock",
+      "qualification cannot bypass ownership and cannot last more than one hour",
       "enabled closure still fails closed if its API hook pointer is absent",
       "old live JWT can read its own profile before closure and public access stays available",
+      "legacy personal ownership without creator attribution still anonymizes the tenant and deactivates access",
+      "ongoing personal or institutional payer billing blocks erasure without changing financial or learning data",
+      "terminal subscription evidence remains unchanged and other institutional payers continue after closure",
+      "closed payer and creatorless personal scope cannot resume billing or detach retained subscription identities",
+      "late billing callback waits for closure and cannot attach recurring billing to its retained personal scope",
+      "a billing callback that commits first is included in the final closure billing check",
       "paid personal erasure keeps immutable finance roots and clears private learning across services",
       "old JWT writes and delayed service writes cannot recreate a closed personal profile",
       "hard deletion cannot bypass the qualified retained-principal mode",
@@ -49,6 +59,7 @@
       "a delayed independent service insert cannot recreate PII after erasure commits",
       "a writer that starts first is included in the subsequent committed purge",
       "retained teacher/referral/audit roots are pseudonymous and personal Telegram journeys are purged",
+      "a delayed audit logger keeps security evidence but cannot restore closed-account PII",
       "institutional submissions and answers remain available to another live academy actor",
       "financial exam roots survive while their personal answers and registration PII are erased",
       "unclassified owned Storage objects fail closed before any personal data is erased",
@@ -105,7 +116,7 @@
     "source": {
       "financialHead": "16a8eb759d470410b14e1f0e1c898b636aa834b2",
       "originalHarnessSha256": "e094514ee07602fde70b8d6276cf93f15cc38b98d75d0ccb9c75cec32778f4f1",
-      "derivedHarnessSha256": "e9a8ad7da6bcaaefcb610a483cedc8755bffbb67bf6745edff766d8f2377da3a",
+      "derivedHarnessSha256": "56d006c79a3d8eb693542903589903433edba404063f328df9071f50678d961c",
       "productionChanged": false
     },
     "cleanupVerified": true,
@@ -114,16 +125,18 @@
       "Auth deletion column/canonical Auth FK and public identity fields added to the owned fixture",
       "Canonical Academy notify_enabled extension; minimal authenticator/auth.uid fixture",
       "All exclusively owned financial cases created before lifecycle schema installation"
-    ]
+    ],
+    "reproducer": "node scripts/qualify-account-financial-retention.mjs --financial-root=<clean reviewed payment checkout>"
   },
-  "accountHandlerClientCases": 23,
+  "accountHandlerClientCases": 26,
   "edgeTypecheck": "passed",
   "productionSecretScan": "passed",
   "releaseManifest": "passed",
   "priorUnchangedFrontendEvidence": {
+    "historical": true,
     "publicConfiguredPlatformBuild": "passed",
     "renderedSyntheticBrowserCases": 14,
-    "sourceUnchangedSinceChecks": true
+    "qualifiedPreviousCheckpoint": "0e84aa0c5ea17e2548b003db0317f711a77903db"
   },
   "installedProviderProbe": {
     "cleanupVerified": true,
@@ -344,18 +357,63 @@
     "readOnly": true
   },
   "sourceHashesLfNormalized": {
-    "supabase/functions/account/handler.ts": "cc34a9f69376c84ec5385b9df45342f76a205e8e60b13ac3ed51afbbdcdc9cd1",
+    "supabase/functions/account/handler.ts": "73d86e37e6ead90af459bdedb78024c39abca8c86d67b63a0a4bf88c28282eaa",
     "supabase/migrations/20261010150000_account_closed_principal_boundary.sql": "07dfaf5e9e807a79a934571d569c995f1a37ae29b9485f03fe7487c7b647dced",
-    "scripts/test-account-retention.mjs": "92a3dc78ffc268f19f746234416fec2f197be3e669a8b1d7b9744472bc6948c0",
+    "scripts/test-account-retention.mjs": "63f5c183474d99b2379b2f9673eb23d3c903644ea0ebfc84dde3f3eddfa2abd7",
     "supabase/migrations/20261010152000_account_api_request_guard.sql": "2bde804ba087cb7c717c2781061f845c7edc5d27b87bc29a6ba344a318bd1989",
-    "supabase/migrations/20261010151000_account_personal_erasure_transaction.sql": "10c4c4024fc6f9558a4c56e8afc21c301d9e275255fa2bb0ca23bee70964928b",
+    "supabase/migrations/20261010151000_account_personal_erasure_transaction.sql": "cb904f280fae77df3cf5771d97152e11e5b04e72f9ecff1591e0a2a6e160d637",
     "supabase/migrations/20261009149000_account_deletion_ownership_guard.sql": "d8703206359aa3019afca2418d4e4b5c2c421dc0f0b6caff991a25e308c58188",
-    "supabase/functions/account/handler.test.ts": "d67e479537387cb4aec566f414aafae97e58900f98393db3d981e74f60e53e84"
+    "supabase/functions/account/handler.test.ts": "929ce082306367ea27ac3902aa67b366e0806b34c7fe4f36d61b6729f35e74b7",
+    "scripts/qualify-account-financial-retention.mjs": "0747fcdd80822e7960189392718c4f5a6c940f3b0b49ef0e34ce366d28c0c96c",
+    "apps/platform/src/lib/accountDeletion.ts": "c15746bbecb723ce91abd0b74779d7e1c929d394d0b142bde36dd09cf5dec563",
+    "apps/platform/src/pages/AccountPage.tsx": "34b5a0fde1ec24398ac47ab6c32ddeccbd687664fbb8910c4722493d9c622404",
+    "apps/platform/src/i18n/locales/en.ts": "70b0eea0c0d7f3be1e4a85f4b95f841dc2ebb636724625132faad7116597c3a4",
+    "apps/platform/src/i18n/locales/ru.ts": "32870c2b642bcfb035598564a53305955b709fe909121fc47b124f4ee2161890",
+    "apps/platform/src/i18n/locales/uz.ts": "b62f87c98722ece6250767b350208e17a8152ca4183d9e07ee20bd6c19c81a73"
   },
   "limits": [
     "No hosted candidate activation or installation. Exact final-head CI remains required.",
     "Complete installed table/trigger compatibility, storage and external S3/media, subscription cancellation/recovery and non-REST transports remain publication gates.",
     "Standard native optional institutional fixtures are minimal; financial proof separately uses the actual nine reviewed migrations.",
-    "Provider-only probe observes current hosted Auth behavior and cleanup; it does not qualify these unpublished erasure triggers."
-  ]
+    "Provider-only probe observes current hosted Auth behavior and cleanup; it does not qualify these unpublished erasure triggers.",
+    "Billing fixture is minimal; closed payer/scope callback guards do not establish live external subscription cancellation. Personal sales/acquisition records and institutional report/share credentials still require final classification."
+  ],
+  "currentFrontendEvidence": {
+    "platformBuild": "passed",
+    "configuration": "public synthetic local fixture",
+    "renderedSyntheticBrowserCases": 20,
+    "locales": [
+      "en",
+      "ru",
+      "uz"
+    ],
+    "covers": [
+      "ownership guidance",
+      "billing guidance",
+      "verified email confirmation",
+      "account switch during deletion",
+      "mobile fit",
+      "keyboard focus"
+    ],
+    "additionalMenuChecks": {
+      "escapeDismissal": true,
+      "focusReturned": true,
+      "mobileFits": true
+    },
+    "hostedDeletionProof": false,
+    "expectedConsoleErrors": "mocked 409 constraint responses only",
+    "resourcesRemoved": true
+  },
+  "ci": {
+    "status": "new exact-head run required",
+    "historicalPreviousHead": "0e84aa0c5ea17e2548b003db0317f711a77903db",
+    "historicalPreviousSuccessfulRun": 38036214901
+  },
+  "currentQualification": {
+    "ownerOnly": true,
+    "maximumLifetimeMinutes": 60,
+    "qualificationLeavesGlobalDisabled": true,
+    "expiredOrRevokedAfterPreflightFails": true,
+    "ownershipAndBillingCannotBeBypassed": true
+  }
 }

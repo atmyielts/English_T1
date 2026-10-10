@@ -29,7 +29,7 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const check=async(label,action)=>{await action();checks.push(label);console.log('PASS: '+label);};
 async function barrier(id){for(let i=0;i<80;i++){if(await sql("select count(*) from pg_locks where locktype='advisory' and objid="+id+" and granted;")==='1')return;await pause(30);}throw Error('Owned SQL barrier unavailable');}
 async function actor(){const id=randomUUID();await sql(`insert into auth.users(id,email) values(${q(id)},'owned@example.invalid');insert into users(id,email) values(${q(id)},'owned@example.invalid');`);return id;}
-async function tenant(creator,type='org') {const id=randomUUID();await sql(`insert into tenants(id,name,slug,type,created_by) values(${q(id)},'Owned QA',${q(id)},${q(type)},${q(creator)});`);return id;}
+async function tenant(creator,type='org') {const id=randomUUID();await sql(`insert into tenants(id,name,slug,type,created_by) values(${q(id)},'Owned QA',${q(id)},${q(type)},${creator===null?'null':q(creator)});`);return id;}
 const membership=(id,t,role='owner',status='active')=>sql(`insert into tenant_memberships(tenant_id,user_id,role,status) values(${q(t)},${q(id)},${q(role)},${q(status)});`);
 const preflight=id=>sql(`set role service_role;select public.account_deletion_preflight(${q(id)}::uuid);`).then(JSON.parse);
 const remove=id=>sql(`delete from auth.users where id=${q(id)};`);
@@ -94,7 +94,10 @@ try {
     ${canonical('20260501120000_partner_referrals_and_credits.sql','referral_accounts')}
     ${canonical('20260227120000_admin_rbac_and_security_controls.sql','admin_audit_logs')}
     ${canonical('20260812130000_telegram_growth_system.sql','telegram_acquisition_sessions')}
-    ${table('sessions')}${table('responses')}${table('payments')}
+    ${table('sessions')}${table('responses')}${table('payments')}${table('entitlements')}
+    alter table entitlements add column tenant_id uuid references tenants(id);
+    ${canonical('20260210225000_trial_claims_and_limits.sql','trial_claims')}
+    create table billing_subscriptions(id uuid primary key,user_id uuid references users(id),tenant_id uuid references tenants(id),status text,metadata jsonb not null default '{}');
     create table exam_tokens(id uuid primary key,tenant_id uuid references tenants(id));
     create table exam_registrations(id uuid primary key,user_id uuid references users(id),tenant_id uuid references tenants(id),session_id uuid references sessions(id),first_name text,last_name text,legal_name text,email text,phone text);
     alter table sessions add column token_id uuid references exam_tokens(id),add column registration_id uuid references exam_registrations(id);
@@ -144,6 +147,34 @@ try {
   for(const role of ['anon','authenticated','service_role'])await check(role+' cannot enable erasure or rewrite closure receipts',async()=>{
     await assert.rejects(sql(`set role ${role};update account_closure_config set enabled=true;`),/permission denied/);
     for(const query of ['insert into account_closure_receipts default values','update account_closure_receipts set purge_version=2','delete from account_closure_receipts'])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
+    for(const query of ['select * from account_closure_qualifications','insert into account_closure_qualifications default values','update account_closure_qualifications set expires_at=now()','delete from account_closure_qualifications',`select account_closure_is_enabled(${q(randomUUID())})`,`select account_personal_tenants(${q(randomUUID())})`])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
+    for(const query of ['select * from account_closed_personal_tenants','insert into account_closed_personal_tenants default values','update account_closed_personal_tenants set user_id=null','delete from account_closed_personal_tenants','select guard_closed_account_billing()'])await assert.rejects(sql(`set role ${role};${query};`),/permission denied/);
+  });
+  await check('owner-only qualification erases only the selected QA actor while global closure stays disabled',async()=>{
+    const qa=await actor(),other=await actor();await study(qa);await study(other);
+    await sql(`insert into account_closure_qualifications(user_id,expires_at) values(${q(qa)},clock_timestamp()+interval '30 minutes');`);
+    assert.deepEqual(JSON.parse(await sql(`set role service_role;select account_closure_preflight(${q(qa)});`)),{eligible:true});
+    await close(qa);await assert.rejects(close(other),/account_closure_unavailable/);
+    assert.equal(await sql('select enabled from account_closure_config;'),'f');assert.equal(await sql(`select count(*) from writing_drafts where user_id=${q(other)};`),'1');
+    await sql(`delete from account_closure_qualifications where user_id=${q(qa)};`);
+    await assert.rejects(remove(qa),/account_soft_delete_required/);
+  });
+  await check('a revoked qualification is rechecked in the final Auth transaction without any purge',async()=>{
+    const u=await actor();await study(u);await sql(`insert into account_closure_qualifications(user_id,expires_at) values(${q(u)},clock_timestamp()+interval '30 minutes');`);
+    assert.deepEqual(JSON.parse(await sql(`set role service_role;select account_closure_preflight(${q(u)});`)),{eligible:true});
+    await sql(`delete from account_closure_qualifications where user_id=${q(u)};`);await assert.rejects(close(u),/account_closure_unavailable/);
+    assert.equal(await sql(`select count(*) from writing_drafts where user_id=${q(u)};`),'1');
+  });
+  await check('qualification expiry is checked after ownership lock waits using the current clock',async()=>{
+    const u=await actor();await study(u);await sql(`insert into account_closure_qualifications(user_id,expires_at) values(${q(u)},clock_timestamp()+interval '1.5 seconds');`);
+    const holder=sql(`begin;select id from users where id=${q(u)} for update;select pg_advisory_xact_lock(464413);select pg_sleep(2.2);commit;`);await barrier(464413);
+    await assert.rejects(close(u),/account_closure_unavailable/);await holder;assert.equal(await sql(`select deleted_at is null from auth.users where id=${q(u)};`),'t');
+  });
+  await check('qualification cannot bypass ownership and cannot last more than one hour',async()=>{
+    const u=await actor(),t=await tenant(u);await membership(u,t);await profile(u);
+    await assert.rejects(sql(`insert into account_closure_qualifications(user_id,expires_at) values(${q(u)},clock_timestamp()+interval '2 hours');`),/check constraint/);
+    await sql(`insert into account_closure_qualifications(user_id,expires_at) values(${q(u)},clock_timestamp()+interval '30 minutes');`);
+    await assert.rejects(close(u),/account_ownership_transfer_required/);assert.equal(await sql(`select count(*) from user_profiles where user_id=${q(u)};`),'1');
   });
   await sql('update account_closure_config set enabled=true;');
   await check('enabled closure still fails closed if its API hook pointer is absent',async()=>{
@@ -154,6 +185,61 @@ try {
   });
   await check('old live JWT can read its own profile before closure and public access stays available',async()=>{
     const u=await actor();await profile(u);assert.equal(await asActor(u,`select count(*) from user_profiles where user_id=${q(u)};`),'1');assert.equal(await asActor(u,'select count(*) from public_catalog;'),'1');assert.equal(await sql('set role anon;select count(*) from public_catalog;'),'1');
+  });
+  await check('legacy personal ownership without creator attribution still anonymizes the tenant and deactivates access',async()=>{
+    const u=await actor(),t=await tenant(null,'personal');await membership(u,t);await study(u);
+    await sql(`update tenants set name='Private legacy workspace',metadata='{"private":"owner"}' where id=${q(t)};
+      insert into entitlements(user_id,tenant_id,resource_type,resource_id,is_active) values(${q(u)},${q(t)},'product',${q(product)},true);
+      insert into trial_claims(user_id,tenant_id,product_id,expires_at,metadata) values(${q(u)},${q(t)},${q(product)},now()+interval '7 days','{"private":"answers"}');`);
+    await close(u);assert.equal(await sql(`select name||':'||metadata::text from tenants where id=${q(t)};`),'Deleted personal account:{}');
+    assert.equal(await sql(`select is_active from entitlements where user_id=${q(u)};`),'f');assert.equal(await sql(`select metadata::text from trial_claims where user_id=${q(u)};`),'{}');
+    await assert.rejects(sql(`set role service_role;update trial_claims set metadata='{"private":"restored"}' where user_id=${q(u)};`),/account_closed/);
+  });
+  await check('ongoing personal or institutional payer billing blocks erasure without changing financial or learning data',async()=>{
+    for(const kind of ['active','trialing','past_due','paused','unrecognized','']){
+      const u=await actor(),t=await tenant(null,'personal'),bill=randomUUID();await membership(u,t);await study(u);
+      await sql(`insert into billing_subscriptions values(${q(bill)},${q(u)},${q(t)},${q(kind)},'{"financial":"history"}');`);
+      const before=await sql(`select row_to_json(b) from billing_subscriptions b where id=${q(bill)};`);
+      assert.equal(JSON.parse(await sql(`set role service_role;select account_closure_preflight(${q(u)});`)).code,'account_billing_review_required');
+      await assert.rejects(close(u),/account_closure_unavailable/);assert.equal(await sql(`select row_to_json(b) from billing_subscriptions b where id=${q(bill)};`),before);
+      assert.equal(await sql(`select count(*) from writing_drafts where user_id=${q(u)};`),'1');
+    }
+    const u=await actor(),owner=await actor(),t=await tenant(owner);await membership(u,t,'member');await membership(owner,t);
+    await sql(`insert into billing_subscriptions values(${q(randomUUID())},${q(u)},${q(t)},'active','{}');`);
+    await assert.rejects(close(u),/account_closure_unavailable/);
+  });
+  await check('terminal subscription evidence remains unchanged and other institutional payers continue after closure',async()=>{
+    for(const status of ['canceled','cancelled','expired']){
+      const u=await actor(),bill=randomUUID();await sql(`insert into billing_subscriptions values(${q(bill)},${q(u)},null,${q(status)},'{"financial":"history"}');`);
+      const before=await sql(`select row_to_json(b) from billing_subscriptions b where id=${q(bill)};`);await close(u);
+      assert.equal(await sql(`select row_to_json(b) from billing_subscriptions b where id=${q(bill)};`),before);
+    }
+    const u=await actor(),owner=await actor(),t=await tenant(owner),bill=randomUUID();await membership(u,t,'member');await membership(owner,t);
+    await sql(`insert into billing_subscriptions values(${q(bill)},${q(owner)},${q(t)},'active','{"institution":"contract"}');`);
+    await close(u);assert.equal(await sql(`select status||':'||metadata::text from billing_subscriptions where id=${q(bill)};`),'active:{"institution": "contract"}');
+  });
+  await check('closed payer and creatorless personal scope cannot resume billing or detach retained subscription identities',async()=>{
+    const u=await actor(),other=await actor(),t=await tenant(null,'personal'),bill=randomUUID();await membership(u,t);
+    await sql(`insert into billing_subscriptions values(${q(bill)},${q(u)},${q(t)},'canceled','{"financial":"history"}');`);
+    await close(u);
+    await assert.rejects(sql(`set role service_role;update billing_subscriptions set status='active' where id=${q(bill)};`),/account_closed/);
+    await assert.rejects(sql(`update billing_subscriptions set user_id=${q(other)},tenant_id=null where id=${q(bill)};`),/account_closed/);
+    await assert.rejects(sql(`insert into billing_subscriptions values(${q(randomUUID())},null,${q(t)},'active','{}');`),/account_closed/);
+    await assert.rejects(sql(`insert into billing_subscriptions values(${q(randomUUID())},${q(u)},null,'active','{}');`),/account_closed/);
+    await sql(`set role service_role;update billing_subscriptions set status='expired' where id=${q(bill)};`);
+    assert.equal(await sql(`select status||':'||metadata::text from billing_subscriptions where id=${q(bill)};`),'expired:{"financial": "history"}');
+  });
+  await check('late billing callback waits for closure and cannot attach recurring billing to its retained personal scope',async()=>{
+    const u=await actor(),t=await tenant(null,'personal');await membership(u,t);
+    const closure=sql(`begin;update auth.users set deleted_at=now() where id=${q(u)};select pg_advisory_xact_lock(464415);select pg_sleep(1.2);commit;`);await barrier(464415);
+    await assert.rejects(sql(`set role service_role;insert into billing_subscriptions values(${q(randomUUID())},null,${q(t)},'active','{}');`),/account_closed/);await closure;
+    assert.equal(await sql(`select count(*) from billing_subscriptions where tenant_id=${q(t)};`),'0');
+  });
+  await check('a billing callback that commits first is included in the final closure billing check',async()=>{
+    const u=await actor(),t=await tenant(null,'personal');await membership(u,t);
+    const writer=sql(`begin;set local role service_role;insert into billing_subscriptions values(${q(randomUUID())},null,${q(t)},'active','{}');select pg_advisory_xact_lock(464416);select pg_sleep(1.2);commit;`);await barrier(464416);
+    await assert.rejects(close(u),/account_closure_unavailable/);await writer;
+    assert.equal(await sql(`select deleted_at is null from auth.users where id=${q(u)};`),'t');assert.equal(await sql(`select count(*) from account_closure_receipts where user_id=${q(u)};`),'0');
   });
   await check('paid personal erasure keeps immutable finance roots and clears private learning across services',async()=>{
     const u=await actor(),other=await actor(),t=await tenant(u,'personal'),pay=randomUUID();await membership(u,t);await study(u);await study(other);
@@ -200,7 +286,7 @@ try {
   });
   await check('retained teacher/referral/audit roots are pseudonymous and personal Telegram journeys are purged',async()=>{
     const u=await actor(),other=await actor(),journey=randomUUID(),institution=randomUUID();
-    await sql(`insert into teacher_profiles(user_id,full_name,bio,avatar_url,subjects,languages,location,certifications,metadata) values(${q(u)},'Private Teacher','Private bio','private-avatar',array['ielts'],array['uz'],'Private city',array['private-certificate'],'{"private":"name"}');
+    await sql(`insert into teacher_profiles(user_id,full_name,bio,avatar_url,subjects,languages,location,certifications,experience_years,metadata) values(${q(u)},'Private Teacher','Private bio','private-avatar',array['ielts'],array['uz'],'Private city',array['private-certificate'],7,'{"private":"name"}');
       insert into referral_accounts(user_id,referral_code,metadata) values(${q(u)},${q(randomUUID())},'{"private":"name"}');
       insert into admin_audit_logs(user_id,user_email,action,method,path,status_code,ip,user_agent,metadata) values(${q(u)},'private@example.invalid','owned','POST','/owned',200,'private-ip','private-agent','{"private":"name"}');
       insert into telegram_acquisition_sessions(id,bot_name,telegram_user_id,schood_user_id,journey_state,metadata) values(${q(journey)},'schoodonlinebot','private-chat',${q(u)},'{"private":"answers"}','{"private":"name"}');
@@ -213,7 +299,15 @@ try {
     assert.equal(await sql(`select count(*) from telegram_acquisition_sessions where id=${q(journey)};`),'0');
     assert.equal(await sql(`select (schood_user_id is null)::text||':'||status||':'||journey_state::text||':'||metadata::text from telegram_acquisition_sessions where id=${q(institution)};`),'true:canceled:{}:{}');
     await assert.rejects(sql(`set role service_role;update teacher_profiles set full_name='Restored private name' where user_id=${q(u)};`),/account_closed/);
+    assert.equal(await sql(`select experience_years is null from teacher_profiles where user_id=${q(u)};`),'t');
+    await assert.rejects(sql(`set role service_role;update referral_accounts set metadata='{"private":"restored"}' where user_id=${q(u)};`),/account_closed/);
     assert.equal(await sql(`select full_name from teacher_profiles where user_id=${q(other)};`),'Other Teacher');
+  });
+  await check('a delayed audit logger keeps security evidence but cannot restore closed-account PII',async()=>{
+    const u=await actor(),audit=randomUUID();
+    const closure=sql(`begin;update auth.users set deleted_at=now() where id=${q(u)};select pg_advisory_xact_lock(464414);select pg_sleep(1.2);commit;`);await barrier(464414);
+    await sql(`set role service_role;insert into admin_audit_logs(id,user_id,user_email,action,method,path,status_code,ip,user_agent,metadata) values(${q(audit)},${q(u)},'private@example.invalid','owned-security-event','DELETE','/account',401,'private-ip','private-agent','{"private":"name"}');`);await closure;
+    assert.equal(await sql(`select action||':'||(user_email is null and ip is null and user_agent is null)::text||':'||metadata::text from admin_audit_logs where id=${q(audit)};`),'owned-security-event:true:{}');
   });
   await check('institutional submissions and answers remain available to another live academy actor',async()=>{
     const u=await actor(),owner=await actor(),t=await tenant(owner),s=randomUUID(),r=randomUUID();await membership(u,t,'member');await membership(owner,t);

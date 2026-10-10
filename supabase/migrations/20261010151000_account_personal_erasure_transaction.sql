@@ -15,6 +15,54 @@ alter table public.account_closure_config enable row level security;
 revoke all on public.account_closure_config from public,anon,authenticated,service_role;
 grant select on public.account_closure_config to service_role;
 
+-- The database owner may qualify a disposable QA identity without changing the
+-- global flag. This is not a client feature or an alternate deletion authority.
+-- The normal ownership, billing, media and transactional guards still apply.
+create table if not exists public.account_closure_qualifications (
+  user_id uuid primary key references public.users(id) on delete cascade,
+  created_at timestamptz not null default clock_timestamp(),
+  expires_at timestamptz not null,
+  check(expires_at>created_at and expires_at<=created_at+interval '1 hour')
+);
+alter table public.account_closure_qualifications enable row level security;
+revoke all on public.account_closure_qualifications from public,anon,authenticated,service_role;
+
+-- A retained personal billing scope must not become renewable again after its
+-- owner is erased, including legacy scopes that have no created_by value.
+-- Only identifiers are retained; this table is private even to service clients.
+create table if not exists public.account_closed_personal_tenants (
+  tenant_id uuid primary key references public.tenants(id) on delete restrict,
+  user_id uuid not null references public.users(id) on delete restrict
+);
+alter table public.account_closed_personal_tenants enable row level security;
+revoke all on public.account_closed_personal_tenants from public,anon,authenticated,service_role;
+
+create or replace function public.account_closure_is_enabled(p_actor uuid)
+returns boolean language sql volatile security definer
+set search_path=pg_catalog,public
+as $$
+  select exists(select 1 from public.account_closure_config where id and enabled)
+    or exists(select 1 from public.account_closure_qualifications
+      where user_id=p_actor and expires_at>clock_timestamp());
+$$;
+revoke all on function public.account_closure_is_enabled(uuid) from public,anon,authenticated,service_role;
+
+-- Legacy personal scopes may have no creator attribution. Current ownership
+-- is authoritative too. The caller first holds the ownership-preflight locks;
+-- any institutional scope must have another owner and is excluded here.
+create or replace function public.account_personal_tenants(p_actor uuid)
+returns uuid[] language sql stable security definer
+set search_path=pg_catalog,public
+as $$
+  select coalesce(array_agg(t.id order by t.id),'{}'::uuid[]) from public.tenants t
+    where t.type='personal'
+    and (t.created_by=p_actor or exists(select 1 from public.tenant_memberships m
+      where m.tenant_id=t.id and m.user_id=p_actor and m.role='owner' and m.status='active'))
+    and not exists(select 1 from public.tenant_memberships m
+      where m.tenant_id=t.id and m.user_id<>p_actor and m.status='active');
+$$;
+revoke all on function public.account_personal_tenants(uuid) from public,anon,authenticated,service_role;
+
 create or replace function public.account_personal_erasure_tables()
 returns text[] language sql immutable
 set search_path = pg_catalog, public
@@ -56,11 +104,11 @@ set search_path = pg_catalog, public
 set lock_timeout = '3s'
 set statement_timeout = '15s'
 as $$
-declare decision jsonb;
+declare decision jsonb; personal_scopes uuid[]; billing_review boolean;
 begin
   decision := public.account_deletion_preflight(p_actor);
   if decision->'eligible' is distinct from 'true'::jsonb then return decision; end if;
-  if not exists(select 1 from public.account_closure_config where id and enabled) then
+  if not public.account_closure_is_enabled(p_actor) then
     return jsonb_build_object('eligible',false,'code','account_delete_unavailable');
   end if;
   if not exists(select 1 from pg_db_role_setting s join pg_roles r on r.oid=s.setrole
@@ -68,24 +116,105 @@ begin
     where r.rolname='authenticator' and v.setting='pgrst.db_pre_request=public.account_api_pre_request') then
     return jsonb_build_object('eligible',false,'code','account_delete_unavailable');
   end if;
+  -- Retaining payment history must not silently leave personal renewal billing
+  -- running. This also covers an institution's subscription that still names
+  -- this account as payer; transfer billing responsibility before erasure.
+  -- Unknown/non-terminal states require review, not invented cancellation.
+  personal_scopes := public.account_personal_tenants(p_actor);
+  if to_regclass('public.billing_subscriptions') is not null then
+    perform 1 from public.billing_subscriptions b
+      where b.tenant_id=any(personal_scopes) or b.user_id=p_actor
+      order by b.id for update;
+    select exists(select 1 from public.billing_subscriptions b
+      where (b.tenant_id=any(personal_scopes) or b.user_id=p_actor)
+        and coalesce(lower(b.status),'') not in('canceled','cancelled','expired')) into billing_review;
+    if billing_review then
+      return jsonb_build_object('eligible',false,'code','account_billing_review_required');
+    end if;
+  end if;
   return decision;
 end;
 $$;
 revoke all on function public.account_closure_preflight(uuid) from public,anon,authenticated;
 grant execute on function public.account_closure_preflight(uuid) to service_role;
 
+-- A webhook that started before closure may finish after it. Serialize with
+-- both the tenant and payer before reading the private closure markers. Allow
+-- terminal settlement/history updates; reject new or revived renewal billing.
+-- Mixed tenant-first/user-first contention is bounded and rolls back safely.
+create or replace function public.guard_closed_account_billing()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public
+set lock_timeout='3s'
+as $$
+declare closed_scope boolean; closed_payer boolean; old_scope uuid; old_payer uuid;
+begin
+  if tg_op='UPDATE' then old_scope:=old.tenant_id;old_payer:=old.user_id;end if;
+  perform 1 from public.tenants where id=any(array[new.tenant_id,old_scope]) order by id for share;
+  perform 1 from public.users where id=any(array[new.user_id,old_payer]) order by id for share;
+  closed_scope := exists(select 1 from public.account_closed_personal_tenants where tenant_id=any(array[new.tenant_id,old_scope]));
+  closed_payer := exists(select 1 from public.account_closure_receipts where user_id=any(array[new.user_id,old_payer]));
+  if (closed_scope or closed_payer) and tg_op='UPDATE' then
+    if new.tenant_id is distinct from old.tenant_id or new.user_id is distinct from old.user_id then
+      raise exception using errcode='P0001',message='account_closed';
+    end if;
+  end if;
+  if (closed_scope or closed_payer)
+    and coalesce(lower(new.status),'') not in('canceled','cancelled','expired') then
+    raise exception using errcode='P0001',message='account_closed';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.guard_closed_account_billing() from public,anon,authenticated,service_role;
+do $$
+begin
+  if to_regclass('public.billing_subscriptions') is not null then
+    execute 'drop trigger if exists account_closed_billing_guard on public.billing_subscriptions';
+    execute 'create trigger account_closed_billing_guard before insert or update on public.billing_subscriptions for each row execute function public.guard_closed_account_billing()';
+  end if;
+end;
+$$;
+
 -- Stale definer RPCs and delayed service workers must not recreate erased
 -- writing, speech, profiles or study history after the account has closed.
 do $$
 declare relation_name text; actor_column text;
 begin
-  foreach relation_name in array public.account_personal_erasure_tables()||array['teacher_profiles','english_learning_analytics_events'] loop
+  foreach relation_name in array public.account_personal_erasure_tables()||array['teacher_profiles','trial_claims','referral_accounts','english_learning_analytics_events'] loop
     if to_regclass('public.'||relation_name) is null then continue; end if;
     actor_column := case when relation_name in('peer_reviews','peer_review_assignments') then 'reviewer_id'
       when relation_name='english_learning_analytics_events' then 'learner_user_id' else 'user_id' end;
     execute format('drop trigger if exists account_closed_personal_guard on public.%I',relation_name);
     execute format('create trigger account_closed_personal_guard before insert or update on public.%I for each row execute function public.guard_closed_personal_record(%L)',relation_name,actor_column);
   end loop;
+end;
+$$;
+
+-- Audit evidence may outlive an operator's login. A request that started before
+-- closure must not repopulate email/IP/agent data after the purge has committed.
+create or replace function public.redact_closed_account_audit()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public
+set lock_timeout='3s'
+as $$
+begin
+  if new.user_id is not null then
+    perform 1 from public.users where id=new.user_id for share;
+    if exists(select 1 from public.account_closure_receipts where user_id=new.user_id) then
+      new.user_email:=null;new.ip:=null;new.user_agent:=null;new.metadata:='{}'::jsonb;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.redact_closed_account_audit() from public,anon,authenticated,service_role;
+do $$
+begin
+  if to_regclass('public.admin_audit_logs') is not null then
+    execute 'drop trigger if exists account_closed_audit_guard on public.admin_audit_logs';
+    execute 'create trigger account_closed_audit_guard before insert or update on public.admin_audit_logs for each row execute function public.redact_closed_account_audit()';
+  end if;
 end;
 $$;
 
@@ -131,9 +260,7 @@ begin
     if has_storage then raise exception using errcode='P0001',message='account_storage_review_required'; end if;
   end if;
 
-  select coalesce(array_agg(t.id),'{}'::uuid[]) into personal_tenants
-    from public.tenants t where t.created_by=old.id and t.type='personal'
-    and not exists(select 1 from public.tenant_memberships m where m.tenant_id=t.id and m.user_id<>old.id and m.status='active');
+  personal_tenants := public.account_personal_tenants(old.id);
 
   -- Paid/exam admission roots and institutional assessment evidence survive.
   -- Pure self-study sessions are erased with their responses/evaluations.
@@ -203,6 +330,10 @@ begin
   if to_regclass('public.referral_accounts') is not null then
     update public.referral_accounts set status='disabled',metadata='{}' where user_id=old.id;
   end if;
+  if to_regclass('public.trial_claims') is not null then
+    -- Retain the consumed trial identity; erase arbitrary personal metadata.
+    update public.trial_claims set metadata='{}' where user_id=old.id;
+  end if;
   if to_regclass('public.admin_audit_logs') is not null then
     update public.admin_audit_logs set user_email=null,ip=null,user_agent=null,metadata='{}' where user_id=old.id;
   end if;
@@ -216,7 +347,7 @@ begin
   if to_regclass('public.teacher_profiles') is not null then
     update public.teacher_profiles set full_name='Deleted account',bio=null,avatar_url=null,
       subjects='{}',languages='{}',location=null,timezone='UTC',hourly_rate=null,
-      available=false,certifications='{}',is_public=false,verified=false,metadata='{}'
+      available=false,certifications='{}',experience_years=null,is_public=false,verified=false,metadata='{}'
       where user_id=old.id;
   end if;
   if to_regclass('public.support_messages') is not null then
@@ -257,6 +388,8 @@ begin
     where id=any(personal_tenants);
   update public.users set email='deleted-'||id::text||'@deleted.invalid',full_name=null,
     avatar_url=null,telegram_chat_id=null,role='user',is_active=false where id=old.id;
+  insert into public.account_closed_personal_tenants(tenant_id,user_id)
+    select unnest(personal_tenants),old.id;
   insert into public.account_closure_receipts(user_id,purge_version,erased_counts) values(old.id,1,counts);
   return new;
 end;
@@ -272,8 +405,9 @@ set search_path = pg_catalog, public
 as $$
 begin
   if tg_op='DELETE' then
-    if exists(select 1 from public.account_closure_config where id and enabled)
-      and exists(select 1 from public.users where id=old.id) then
+    if exists(select 1 from public.users where id=old.id)
+      and (public.account_closure_is_enabled(old.id)
+        or exists(select 1 from public.account_closure_receipts where user_id=old.id)) then
       raise exception using errcode='P0001',message='account_soft_delete_required';
     end if;
     return old;

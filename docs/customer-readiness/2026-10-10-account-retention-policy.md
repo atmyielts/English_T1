@@ -28,7 +28,15 @@ not been installed or enabled in production.
   A late failure rolls back Auth changes and the whole purge. Hard deletion and
   reactivation cannot bypass retained-principal mode. Unclassified owned Storage
   objects cause a private failure before erasure. Configuration starts false,
-  and closure also requires the reviewed API hook pointer.
+  and closure also requires the reviewed API hook pointer. A database-owner-only
+  qualification grants one disposable QA actor at most an hour without enabling
+  global erasure; revocation/expiry are rechecked after ownership lock waits.
+  Legacy personal scopes are classified by current ownership even when creator
+  attribution is missing. Private identifier-only markers retain their closed
+  billing identity. Active/unknown subscription states require billing review;
+  terminal history remains unchanged. Delayed callbacks cannot renew a closed
+  payer/scope or detach its retained subscription identity. Another institution's
+  payer may continue its subscription after the deleting member leaves.
 - **1520** installs an invoker pre-request guard before REST queries, privileged
   views and definer RPCs. Closed or missing authenticated principals receive a
   fixed HTTP 401. Public anonymous browsing and trusted service callbacks keep
@@ -38,7 +46,11 @@ The handler requests explicit Auth soft deletion after the verified actor's
 closure preflight. There is no hard-delete fallback. Confirmation remains bound
 to the current account; delayed responses cannot delete or sign out a newly
 selected account. Transfer guidance is localized in English, Russian and Uzbek;
-SQL/provider diagnostics remain private.
+SQL/provider diagnostics remain private. Billing guidance is localized too.
+Private 409 error bodies have a 1 KiB limit and a two-second read deadline;
+unresolved stream cancellation cannot leave the deletion controls pending.
+Late audit writes preserve security evidence but redact the closed actor's
+email, IP, user agent and arbitrary metadata.
 
 Locks can produce a bounded timeout or deadlock under mixed tenant-first and
 Auth-first operations. The transaction rolls back and can retry. This does not
@@ -46,18 +58,21 @@ claim every lock ordering is deadlock-free.
 
 ## Executed evidence
 
-- **48 native PostgreSQL/PostgREST cases passed**: ownership races, private
+- **59 native PostgreSQL/PostgREST cases passed**: ownership races, private
   permissions, disabled configuration, hook drift, personal erasure, financial
   and institutional roots, late rollback, both concurrent-write orderings,
-  reactivation denial, teacher anonymization and both Storage ownership columns.
+  reactivation denial, teacher anonymization and both Storage ownership columns,
+  per-QA expiry/revocation, creatorless scopes, billing review and both callback
+  orderings, terminal billing updates and delayed audit redaction.
   Eight cases are actual PostgREST 13 HTTP checks, including privileged-view and
   definer-RPC denial, missing principals, public browsing and service access.
-- **23 actual account handler/client tests** and the Edge typecheck passed.
-- The previously executed Platform build used current public production
-  configuration in process memory. The frontend has not changed since its
-  **14 rendered browser checks** covering all three locales, confirmation,
-  account switches, mobile fit and keyboard focus. Browser APIs were synthetic;
-  they are not hosted deletion proof.
+- **26 actual account handler/client tests** and the Edge typecheck passed,
+  including an unfinished small response and unresolved stream cancellation.
+- The updated Platform build passed with a public local fixture configuration.
+  **20 rendered browser checks** cover ownership and billing messages in all
+  three locales, confirmation, account switching, mobile fit and keyboard focus.
+  Three additional menu checks verified Escape dismissal, returned focus and
+  mobile fit. Browser APIs were synthetic; these are not hosted deletion proof.
 - Read-only production inspection captured 371 public RLS tables and 1,245
   public-child foreign keys, empty stored authenticator hook configuration,
   23 views and zero currently owned Supabase Storage objects. No customer rows
@@ -81,6 +96,10 @@ Personal table definitions are canonical. Optional institutional anchors in the
 ordinary suite have minimal owned fixtures. The separate financial qualifier
 uses the actual nine migrations, canonical financial tables and their immutable
 identity/receipt triggers, with explicitly described fixture augmentation.
+Reproduce the financial qualification from this checkout with
+`node scripts/qualify-account-financial-retention.mjs --financial-root=<clean-review-checkout>`.
+It pins payment candidate `16a8eb759d470410b14e1f0e1c898b636aa834b2` and its reviewed
+harness hash, refuses tracked edits and never calls production providers.
 
 ## Publication gates
 
@@ -91,6 +110,9 @@ gateway checks, old clients and final exact-head CI are qualified. Zero owned
 Supabase Storage objects does not establish external S3 asset erasure. Future
 public RLS tables also require the restrictive boundary; the API hook covers
 future REST/RPC/view entry points but not every other data transport.
+Personal sales/acquisition records, institution-owned sharing/report credentials
+and all remaining schema exceptions still need final classification. The billing
+fixture is minimal; its guards do not establish a live cancellation integration.
 
 Schema installation precedes the new handler. Apply only the four reviewed
 migrations from an isolated checkout containing the published migration history;
@@ -98,7 +120,10 @@ inspect the plan and refuse unrelated pending migrations. Refresh the installed
 account source baseline (v34 at the checkpoint), retain verify_jwt=true, and
 download-verify a source-preserving reviewed Edge bundle. The committed earlier
 baseline is historical. Activate erasure only after API-hook reload and owned
-hosted canaries succeed. Preserve closure and financial receipts on rollback;
+hosted canaries succeed. First grant only a disposable QA actor a bounded private
+qualification and invoke trusted Auth soft deletion directly; global erasure and
+the live handler remain unchanged during that isolated qualification. Remove the
+grant afterward. Preserve closed personal scope markers, closure and financial receipts on rollback;
 never unlink immutable financial roots or restore erased data.
 
 Supabase documents the explicit soft-delete option and the continued validity of

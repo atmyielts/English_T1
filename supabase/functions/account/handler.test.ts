@@ -72,6 +72,11 @@ Deno.test('account deletion requires ownership transfer before calling Auth dele
   const response=await handleAccountDeletion(req(),f.client); const body=await response.json();
   assert(response.status===409 && body.code==='account_ownership_transfer_required' && !f.deleted.length);
 });
+Deno.test('account deletion requires personal billing review and hides subscription details', async () => {
+  const f=fixture();f.client.rpc=()=>Promise.resolve({data:{eligible:false,code:'account_billing_review_required',provider_details:'private-billing'},error:null});
+  const response=await handleAccountDeletion(req(),f.client);const body=await response.text();
+  assert(response.status===409 && body.includes('account_billing_review_required') && !body.includes('private-billing') && !f.deleted.length);
+});
 Deno.test('account deletion fails closed for unavailable or malformed ownership decisions', async () => {
   for(const data of [null,true,{}, {eligible:'true'},{eligible:false},{eligible:true,code:'unexpected'}]) {
     const f=fixture();f.client.rpc=()=>Promise.resolve({data,error:null});
@@ -98,17 +103,40 @@ function browserClient() {
 async function rejected(action: () => Promise<unknown>, code: string) {
   try { await action(); throw Error('Expected rejection'); } catch (error) { assert(error instanceof AccountDeletionError && error.code === code); }
 }
-Deno.test('account deletion client maps only the bounded ownership error to transfer guidance', async () => {
+Deno.test('account deletion client maps only bounded known deletion constraints to guidance', async () => {
   for(const [status,body,expected] of [
     [409,JSON.stringify({code:'account_ownership_transfer_required'}),'ownership_transfer_required'],
     [503,JSON.stringify({code:'account_ownership_transfer_required'}),'delete_unavailable'],
+    [409,JSON.stringify({code:'account_billing_review_required'}),'billing_review_required'],
+    [503,JSON.stringify({code:'account_billing_review_required'}),'delete_unavailable'],
     [409,JSON.stringify({code:'private-provider-error'}),'delete_unavailable'],
     [409,'invalid-json','delete_unavailable'],
     [409,JSON.stringify({code:'account_ownership_transfer_required',padding:'x'.repeat(1024)}),'delete_unavailable'],
+    [409,JSON.stringify({code:'account_billing_review_required',padding:'x'.repeat(1024)}),'delete_unavailable'],
   ] as const){
     const f=browserClient();f.client.functions.invoke=()=>Promise.resolve({data:null,error:{context:new Response(body,{status})}});
     await rejected(()=>deleteOwnAccount(f.client,actor,email,()=>true),expected);
   }
+});
+Deno.test('oversized streaming deletion errors cannot hang cancellation on another body consumer', async () => {
+  const f=browserClient();let canceled=0;
+  const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new Uint8Array(1100));},cancel(){canceled++;return new Promise(()=>{});}});
+  f.client.functions.invoke=()=>Promise.resolve({data:null,error:{context:new Response(stream,{status:409})}});
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{
+    await Promise.race([rejected(()=>deleteOwnAccount(f.client,actor,email,()=>true),'delete_unavailable'),new Promise((_resolve,reject)=>{timer=setTimeout(()=>reject(Error('Error-body cancellation hung')),250);})]);
+    assert(canceled===1);
+  }finally{if(timer!==undefined)clearTimeout(timer);}
+});
+Deno.test('unfinished small deletion errors have a deadline and cannot leave deletion pending forever', async () => {
+  const f=browserClient();let canceled=0;
+  const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new TextEncoder().encode('{'));},cancel(){canceled++;return new Promise(()=>{});}});
+  f.client.functions.invoke=()=>Promise.resolve({data:null,error:{context:new Response(stream,{status:409})}});
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  try{
+    await Promise.race([rejected(()=>deleteOwnAccount(f.client,actor,email,()=>true),'delete_unavailable'),new Promise((_resolve,reject)=>{timer=setTimeout(()=>reject(Error('Unfinished error-body deadline failed')),3000);})]);
+    assert(canceled===1);
+  }finally{if(timer!==undefined)clearTimeout(timer);}
 });
 Deno.test('account deletion client captures verified actor token and confirmation in one request', async () => {
   const f = browserClient(); const result = await deleteOwnAccount(f.client, actor, ' OWNER@example.invalid ', () => true);
