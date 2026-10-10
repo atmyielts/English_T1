@@ -226,13 +226,14 @@ textarea:focus-visible {
 .hub-menu-toggle {
   display: none;
   min-height: 44px;
+  min-width: 44px;
   border-radius: 999px;
   border: 1px solid rgba(44, 35, 27, 0.6);
   background: rgba(255, 255, 255, 0.82);
   color: var(--ink-900);
   font: inherit;
   font-weight: 700;
-  padding: 0 18px;
+  padding: 0 10px;
   cursor: pointer;
 }
 

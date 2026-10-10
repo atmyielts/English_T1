@@ -1,106 +1,26 @@
 {
   "schemaVersion": 1,
-  "releaseId": "payment-transactions-backend",
+  "releaseId": "responsive-menu-completion",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261010162000_payment_fulfillment_transaction.sql",
-    "20261010163000_payment_checkout_transaction.sql",
-    "20261010164000_academy_purchase_transaction.sql",
-    "20261010165000_center_tier_checkout_transaction.sql",
-    "20261010170000_seat_assignment_transaction.sql",
-    "20261010171000_voucher_issue_transaction.sql",
-    "20261010172000_voucher_redemption_transaction.sql",
-    "20261010173000_candidate_admission_transaction.sql",
-    "20261010174000_voucher_void_transaction.sql"
+  "frontends": [
+    "english-hub",
+    "ielts-practice"
   ],
-  "edgeFunctions": [
-    "admin-payments",
-    "click",
-    "partner-office",
-    "teacher-office",
-    "voucher-redeem",
-    "candidate-entry"
-  ],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "requiredSecrets": [
-    "CLICK_MERCHANT_ID",
-    "CLICK_SECRET_KEY",
-    "CLICK_SERVICE_ID",
-    "TELEGRAM_PUBLIC_BOT_TOKEN"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "secret:CLICK_MERCHANT_ID",
-    "secret:CLICK_SECRET_KEY",
-    "secret:CLICK_SERVICE_ID",
-    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
-    "migration:20261010162000_payment_fulfillment_transaction.sql",
-    "migration:20261010163000_payment_checkout_transaction.sql",
-    "migration:20261010164000_academy_purchase_transaction.sql",
-    "migration:20261010165000_center_tier_checkout_transaction.sql",
-    "migration:20261010170000_seat_assignment_transaction.sql",
-    "migration:20261010171000_voucher_issue_transaction.sql",
-    "migration:20261010172000_voucher_redemption_transaction.sql",
-    "migration:20261010173000_candidate_admission_transaction.sql",
-    "migration:20261010174000_voucher_void_transaction.sql",
-    "function:admin-payments",
-    "function:click",
-    "function:partner-office",
-    "function:teacher-office",
-    "function:voucher-redeem",
-    "function:candidate-entry"
+    "pages"
   ],
   "manualFollowUps": [
-    "Protected backend-only release. Frontend source is unchanged. Wait for exact-head CI and tracked Pages on the protected merge SHA before manual backend publication. Separate recovery UI follows hosted backend qualification.",
-    "supabase db push --linked only from the isolated reviewed checkout for project bbjawctnqrufvnesdsel. Inspect the dry-run and refuse migrations other than these nine ordered additive files. Keep payment_fulfillment_config.worker_enabled=false until published canaries and actual recovery pass.",
-    "Before installation, refresh the aggregate payment/inventory counts and installed apply_academy_payment(uuid,uuid) owner and source hashes. Refuse source drift. Preserve the private non-Click implementation and public function identity. Account deletion remains enabled and qualified separately.",
-    "Read-only inventory at 2026-10-10T12:26:45Z found no currently usable unused vouchers, unassigned seats or exam tokens, no Academy payments and no paid Click payments. Historical TSpay grants remain historical evidence; do not create replacement receipts or renew them. Refresh these counts immediately before publication.",
-    "New hybrid-center voucher batches use prepaid_wallet funding from the existing wallet. The captured agreement remains hybrid. Caller-supplied deferred/manual funding is refused. Original-key replay retains the original debit and terms. No center configuration or existing voucher is changed.",
-    "Previously redeemed legacy subscription/seat vouchers may return only validated original grant history corroborated by the same beneficiary and actual personal entitlement. This confirmation writes no receipt, debit, roster or entitlement and never renews access. Ambiguous history requires review; existing access is retained.",
-    "Prepare all six isolated bundles with scripts/prepare-payment-release-bundles.mjs using the reviewed commit and release/payment-published-baseline.json. Preserve every downloaded dependency and verify_jwt setting. Refuse baseline drift; typecheck each actual bundle. Voucher media retains the published AWS package versions.",
-    "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payments-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-click-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "supabase functions deploy partner-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-partner-office-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "supabase functions deploy teacher-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-teacher-office-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "supabase functions deploy voucher-redeem --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-voucher-redeem-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-candidate-entry-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
-    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_MERCHANT_ID=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
-    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_SECRET_KEY=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
-    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_SERVICE_ID=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
-    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
-    "Published qualification must use exclusively owned QA actors and data, create no customer charge, and cover original-key checkout recovery, seat/voucher issuance/redemption/admission/void and denied foreign actors. Retain immutable financial/institutional QA history and close/pseudonymize owned principals through the qualified lifecycle.",
-    "Qualify the published Node crypto MD5 callback path and signed owned callback before routing customer checkout through the new Click version. Local handler doubles do not prove hosted provider settlement.",
-    "Enable the dormant payment-fulfillment-v1 worker only after all published backend source checks and owned recovery canaries pass. Verify pg_cron and actual retry recovery. Disable the worker first if a backend rollback is necessary. Retain all additive immutable receipt tables.",
-    "Voucher voiding atomically closes only unused stock and its unused linked exam token. It never refunds funding, releases retained seat reservations, renews access or manufactures replacement inventory. Closed original issuance keys replay a closure; committed issuance returns its original batch."
+    "Verify public IELTS Practice and English Hub menus at phone and desktop sizes after the tracked Pages release. No backend activation is required."
   ],
   "verification": [
-    "Baseline backend suite: 178 native PostgreSQL cases and 55 actual Deno handler/adapter cases passed before the final hybrid/legacy extension. Final exact-head CI must execute the complete enlarged suite.",
-    "Final hybrid funding and legacy confirmation targeted checks cover sixteen retries, one debit, overspend refusal, funding override refusal, same-beneficiary history, malformed/missing grants, finite versus lifetime and modern receipt boundaries.",
-    "All nine payment and four lifecycle migrations installed on a local restoration of the complete captured production Auth/public/Storage schema. Fourteen actual-schema account and financial/institutional retention checks passed after the final SQL policy changes; no customer rows were copied.",
-    "Fresh source inventory captures identities, versions, gateway flags, dependency paths and normalized hashes for all six affected published functions. Isolated bundle checks precede publication; post-publication downloads must match the protected commit and retained dependency hashes.",
-    "Exact reviewed-head CI is the final merge gate, including existing frontend tests and builds. No frontend source is modified in this release.",
-    "Hosted owned old-client, retry, authorization and signed callback/recovery evidence remains required before worker activation and the separate recovery UI release."
+    "Both affected builds, 23 real local Chromium behavior/overflow checks and six scoped WCAG 2.1 A/AA header checks passed. Local API/font fixtures do not establish signed-in service readiness."
   ],
   "rollback": {
-    "worker": "Database owner disables payment_fulfillment_config.worker_enabled before any backend rollback.",
-    "backend": "Redeploy the verified prior published Click/admin-payments isolated bundles through the reviewed manual Edge path; preserve original gateway settings. Old grants become legacy evidence, not automatic new receipts.",
-    "database": "Retain additive jobs/receipts; never drop receipts or reset customer grant claims. Review any immutable-term compatibility issue before reverting a trigger.",
-    "frontend": "Use a tracked Git revert PR and Pages CI; never a local Pages deploy."
-  },
-  "releaseStrategy": {
-    "kind": "backend_before_recovery_frontends",
-    "frontendSourceUnchanged": true,
-    "reason": "Existing recovery clients cannot ship before the retry-aware backend.",
-    "phases": [
-      "Protected backend PR with exact-head CI and tracked Pages preserving current frontend sources.",
-      "Install only nine reviewed additive migrations, preserving disabled fulfillment worker; publish the six isolated source-preserving functions after legacy/source compatibility qualification.",
-      "Qualify exclusively owned hosted old-client, original-key replay and signed callback flows, then enable worker only after retry proof.",
-      "Ship reviewed recovery UI in a separate protected frontend PR after backend qualification."
-    ]
-  },
-  "legacyVoucherCompatibilityQualified": false,
-  "hybridVoucherFunding": "prepaid_wallet",
-  "legacyReadOnlyConfirmation": true
+    "frontend": "Tracked revert PR or Pages dashboard rollback."
+  }
 }
