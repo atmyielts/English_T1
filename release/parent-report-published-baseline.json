@@ -1,0 +1,14 @@
+{
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "function": "parent-report",
+  "functionId": "d64860c9-7033-41ee-af51-8a7a9adc1edb",
+  "version": 15,
+  "verifyJwt": false,
+  "capturedAt": "2026-10-10T09:05:22.1029147Z",
+  "sourceSha256LfNormalized": "c7c8f76c7702685492321780e690de19651196d499dd7c3dd5e3796986f6e8ce",
+  "sourceMatchesReviewedMain": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
+  "sourceCapture": "Supabase API download; no customer report or mutation endpoint called",
+  "gatewayRequirement": "Preserve verify_jwt=false for public bearer-capability reads; the handler verifies Auth for management",
+  "productionChanged": false,
+  "requiresFreshCaptureBeforePublication": true
+}
