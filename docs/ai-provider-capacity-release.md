@@ -1,0 +1,19 @@
+# Coaching provider capacity and controlled recovery
+
+The published private diagnostic for an owned Writing request reported `provider_http_429` on 2026-10-10. Both coaching service daily caps were set to zero. All other secret digests, function identities, JWT settings and active states remained unchanged; downloaded source hashes for ten critical functions were unchanged after the configuration refresh. This disables fresh grading before dispatch while preserving saved-result and history retrieval. Actual provider feedback is not yet qualified.
+
+Writing and Speaking now check OpenRouter's authenticated `GET /api/v1/key` before determining dispatch eligibility. This request uses the existing server key, sends no learner text and does not generate feedback. Each runtime isolate shares concurrent reads and caches the result for 30 seconds. The read has a five-second timeout and a 64 KiB response bound. Missing, malformed, oversized or unavailable metadata disables eligibility. Free models require a confirmed positive daily request balance; paid models additionally require a provider-enforced key or organization spending cap with positive remaining budget. Zero and negative balances disable eligibility.
+
+The private `coaching_provider_capacity` event contains only the service, fixed reason, availability, free request limit/remaining and bounded budget remaining. It excludes the key, account label, learner identity/input, raw provider response and arbitrary exception text. Logging failures cannot grant availability or interrupt the handler. The existing atomic service/user limits, dedicated add-on rules, receipts and replay behavior remain authoritative.
+
+This is an availability preflight, not a provider reservation. Cached capacity can change, upstream per-minute/model limits can still reject a call, and a positive budget does not prove sufficient account credits or feedback quality. There is no automatic retry, paid fallback, new key or secret-export endpoint. Keep both service caps at zero until owned provider and published recovery checks pass. Do not describe deployment or a successful capacity read as customer readiness.
+
+After exact-head CI and production verification pass, publish only isolated reviewed Writing and Speaking bundles, including their new shared dependency. No migrations or other runtime activation are required. Verify downloaded source hashes, identity and JWT settings. Perform an owned quota read with grading still disabled; inspect only curated private capacity diagnostics. Then qualify actual saved feedback, concurrent/replayed requests, cleanup and the published recovery screens before restoring nonzero caps. The pending financial migrations and draft payment PR remain separate.
+
+Rollback: publish the previous reviewed sources from `051ca03fcbacc3c80e0fc10d4f55feae10051df8`, preserving zero service caps and the installed additive AI schema. Saved retrieval must remain available. Do not restore the retired model or unlimited Speaking allowance.
+
+Local validation: 23 coaching/capacity tests and both entrypoint type checks passed. The unavailable-capacity test proves fresh requests do not begin/generate while a confirmed saved receipt still replays. The root AI security suite retains its real PostgreSQL ledger checks. Hosted qualification remains a separate release gate.
+
+The current published zero-cap mitigation passed ten owned SDK/Auth checks: disabled quota, valid fresh-request refusal, no receipt, accessible history and no charged/attempted usage for each service. Published account closure erased the owned actor's private stores. This proves the mitigation against the current runtime; it does not qualify the unpublished capacity guard or real provider feedback.
+
+Reference: [OpenRouter key capacity, rate limits and budgets](https://openrouter.ai/docs/api_reference/limits).
