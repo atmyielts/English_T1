@@ -1,0 +1,173 @@
+{
+  "installedSchema": {
+    "recordedAt": "2026-10-10T14:41:46.078Z",
+    "count": 7,
+    "catalog": {
+      "tables": 406,
+      "authTriggers": 1,
+      "publicTriggers": 238,
+      "publicForeignKeys": 1245
+    },
+    "checks": [
+      "restore complete installed Auth/public/Storage schema without customer rows",
+      "database role attributes and relevant memberships match installed metadata",
+      "installed lifecycle migrations and AI foundation compose without financial activation",
+      "real Auth mirror and service role atomically save both owned feedback receipts",
+      "actual Auth erasure purges private AI stores and preserves global budget and payment evidence",
+      "late provider and stale reservation commands cannot repopulate a real closed principal",
+      "actual browser roles cannot access private AI ledger or mutate tutor history"
+    ],
+    "cleanupVerified": true,
+    "schema": {
+      "sha256": "bdac29206b74fdc0f42629e7d08d22f07aea0132ff23ccdb856f6c43f8ccf169",
+      "tableCount": 406,
+      "customerRowsIncluded": false
+    },
+    "migrations": [
+      {
+        "file": "20261010154000_account_deletion_ownership_guard.sql",
+        "sha256LF": "d8703206359aa3019afca2418d4e4b5c2c421dc0f0b6caff991a25e308c58188"
+      },
+      {
+        "file": "20261010155000_account_closed_principal_boundary.sql",
+        "sha256LF": "07dfaf5e9e807a79a934571d569c995f1a37ae29b9485f03fe7487c7b647dced"
+      },
+      {
+        "file": "20261010160000_account_personal_erasure_transaction.sql",
+        "sha256LF": "c6d391e11655ff3028345a1775bfc5e7082a9deeea9bb342f004e4319e6a6930"
+      },
+      {
+        "file": "20261010161000_account_api_request_guard.sql",
+        "sha256LF": "2bde804ba087cb7c717c2781061f845c7edc5d27b87bc29a6ba344a318bd1989"
+      },
+      {
+        "file": "20261010175000_ai_request_ledger.sql",
+        "sha256LF": "de631d5acfcf413becaa2de22bbe600b95092606e3e2c752e31dbc85bd3f1e84"
+      },
+      {
+        "file": "20261010180000_writing_tutor_atomic_result.sql",
+        "sha256LF": "d09d345b818fc0d17a216e8d408271e10423a1f055f41b66e3c45ec2081809b8"
+      },
+      {
+        "file": "20261010181000_speaking_coach_atomic_result.sql",
+        "sha256LF": "768b2dcc488767af89af14e2b0dc7f11eb841a335abdfa628ae6beecdfa4114a"
+      }
+    ],
+    "image": "public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426"
+  },
+  "productionChanged": false,
+  "nativeLedger": {
+    "count": 23,
+    "results": [
+      {
+        "name": "20 independent reservations cannot exceed a two-request user allowance",
+        "status": "passed"
+      },
+      {
+        "name": "cross-user contention cannot exceed the global service allowance",
+        "status": "passed"
+      },
+      {
+        "name": "duplicate reservation and begin races permit one provider dispatch",
+        "status": "passed"
+      },
+      {
+        "name": "successful result is replayed; changed completion and wrong actor/lease are denied",
+        "status": "passed"
+      },
+      {
+        "name": "pre-dispatch cancellations refund once but cannot bypass the attempt ceiling",
+        "status": "passed"
+      },
+      {
+        "name": "expired reservations refund once and stale holders cannot dispatch",
+        "status": "passed"
+      },
+      {
+        "name": "cancellation racing dispatch either refunds an unused call or preserves its charge",
+        "status": "passed"
+      },
+      {
+        "name": "request identity survives a UTC usage-day rollover",
+        "status": "passed"
+      },
+      {
+        "name": "uncertain provider outcomes stay charged and accept only the original late result",
+        "status": "passed"
+      },
+      {
+        "name": "history deletion and account deletion cannot replenish the global budget",
+        "status": "passed"
+      },
+      {
+        "name": "browser roles cannot inspect or mutate the ledger or execute commands",
+        "status": "passed"
+      },
+      {
+        "name": "invalid policy/input and forged completion roll back without consuming allowance",
+        "status": "passed"
+      },
+      {
+        "name": "concurrent writing completion saves exactly one history row and one replayable result",
+        "status": "passed"
+      },
+      {
+        "name": "writing history and replay receipt roll back together on either persistence failure",
+        "status": "passed"
+      },
+      {
+        "name": "writing completion rejects forged scores and browser history writes including column grants",
+        "status": "passed"
+      },
+      {
+        "name": "speaking allowance is atomic and independent of writing allowance",
+        "status": "passed"
+      },
+      {
+        "name": "speaking completion is replay-safe and cannot fabricate audio scores",
+        "status": "passed"
+      },
+      {
+        "name": "speaking history and receipt roll back atomically on persistence failure",
+        "status": "passed"
+      },
+      {
+        "name": "erasure registry preserves existing stores and adds private AI stores",
+        "status": "passed"
+      },
+      {
+        "name": "deactivated and missing Auth actors cannot consume or replay allowance",
+        "status": "passed"
+      },
+      {
+        "name": "soft closure erases saved and in-flight AI data without refunding global allowance",
+        "status": "passed"
+      },
+      {
+        "name": "closure holding the actor lock prevents a delayed reservation from recreating private state",
+        "status": "passed"
+      },
+      {
+        "name": "a reservation holding the actor lock completes before closure erases its state",
+        "status": "passed"
+      }
+    ],
+    "recordedAt": "2026-10-10T14:42:28.124Z",
+    "image": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+    "containerRemoved": true
+  },
+  "handlerAndAccess": {
+    "passed": 15,
+    "entrypointsTypechecked": [
+      "writing-tutor",
+      "speaking-coach"
+    ],
+    "provider": "deterministic doubles only"
+  },
+  "limits": [
+    "No live provider quality or hosted AI activation proof",
+    "The schema capture contains no customer rows",
+    "Source-only release; version 2 client transition required before function activation"
+  ],
+  "recordedAt": "2026-10-10T14:42:41.3847417Z"
+}

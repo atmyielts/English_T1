@@ -1,0 +1,35 @@
+{
+  "productionChanged": false,
+  "schemaVersion": 1,
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "readOnly": true,
+  "hashNormalization": "LF",
+  "functions": [
+    {
+      "version": 14,
+      "files": [
+        {
+          "sha256": "0439bf75af392f926b16ed58217e57191e54756778e9e042ec63bf535cbe0c6b",
+          "path": "supabase/functions/writing-tutor/index.ts"
+        }
+      ],
+      "verifyJwt": true,
+      "id": "907d482f-8cab-4c93-bdb0-d50a3a29fffd",
+      "name": "writing-tutor"
+    },
+    {
+      "version": 15,
+      "files": [
+        {
+          "sha256": "0ab17d621613ab8c251e0881391cee8a623709a3317574b29dfb4dd77037585b",
+          "path": "supabase/functions/speaking-coach/index.ts"
+        }
+      ],
+      "verifyJwt": true,
+      "id": "ca97f86e-b1ad-4080-955f-6a784943eea1",
+      "name": "speaking-coach"
+    }
+  ],
+  "customerRowsRead": false,
+  "capturedAt": "2026-10-10T14:37:18.3617316Z"
+}

@@ -15,15 +15,16 @@
     "pages"
   ],
   "manualFollowUps": [
-    "Backend PR220 is protected-merged as f8b7c5d1a6f6806b59920b9de00570dbb372ea8e. The nine migrations and six isolated Edge functions are NOT activated by this frontend merge. Before publishing this UI, finish and qualify that backend rollout, including exclusively owned original-request, old-client and signed callback/recovery checks. Never rely on an older function that discards retry keys.",
+    "Backend PR220 is merged as f8b7c5d1a6f6806b59920b9de00570dbb372ea8e. The nine migrations and six isolated Edge functions are NOT activated by this frontend merge. Before publishing this UI, finish and qualify that backend rollout, including exclusively owned original-request, old-client and signed callback/recovery checks. Never rely on an older function that discards retry keys.",
     "Preserve actor/tenant-scoped original browser purchase keys across retry and refresh. A failed or ambiguous response must reopen the same order or batch and must not create a replacement purchase. No automatic retry after changed terms or caller scope.",
-    "Run exact-head frontend/browser CI, then inspect published checkout and office layouts at desktop/mobile sizes. Pages must match the protected merge SHA. Keep the backend worker disabled until its independent recovery qualification passes."
+    "Run exact-head frontend/browser CI, then inspect published checkout and office layouts at desktop/mobile sizes. Pages must match the reviewed merge SHA. Keep the backend worker disabled until its independent recovery qualification passes."
   ],
   "verification": [
     "UI attempt contracts plus actual Platform activation, original-order office recovery and responsive tests; actual Academy checkout tests; both affected production builds and Academy locale checks.",
     "The unchanged backend source and migrations retain exact main bytes and prior 183-case CI qualification; this UI release adds no schema/function publication.",
     "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement.",
-    "Parallel build/check workflow from PR222 retains every suite and aggregate validate gate; the earlier 20-minute CI timeout is not reused as a pass. Requalify this merged UI head."
+    "Parallel build/check workflow from PR222 retains every suite and aggregate validate gate; the earlier 20-minute CI timeout is not reused as a pass. Requalify this merged UI head.",
+    "Merge newer main while preserving both AI security and payment UI test suites. Financial activation remains held independently."
   ],
   "rollback": {
     "frontend": "Tracked revert PR and Pages CI; never local Pages deployment.",
@@ -34,6 +35,6 @@
     "backendRelease": "payment-transactions-backend",
     "backendHostedQualificationRequired": true,
     "ciWorkflowCommit": "937e51d71494fb5007546d4fc00b5b4b7684ea97",
-    "latestPublishedFrontendBase": "937e51d71494fb5007546d4fc00b5b4b7684ea97"
+    "latestPublishedFrontendBase": "88dffd7bafef1d5e38c9dfe79ac8ff7be0cba74a"
   }
 }
