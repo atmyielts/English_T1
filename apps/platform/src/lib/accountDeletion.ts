@@ -7,8 +7,20 @@ type Client = {
   functions: { invoke(name: string, options: { method: 'DELETE'; headers: Record<string, string>; body: { confirm_email: string } }): PromiseLike<{ data: unknown; error: unknown }> };
 };
 export class AccountDeletionError extends Error {
-  readonly code: 'account_changed' | 'session_required' | 'delete_unavailable';
-  constructor(code: 'account_changed' | 'session_required' | 'delete_unavailable') { super(code); this.code = code; }
+  readonly code: 'account_changed' | 'session_required' | 'delete_unavailable' | 'ownership_transfer_required';
+  constructor(code: 'account_changed' | 'session_required' | 'delete_unavailable' | 'ownership_transfer_required') { super(code); this.code = code; }
+}
+async function requiresOwnershipTransfer(error: unknown): Promise<boolean> {
+  const response=error && typeof error==='object' && 'context' in error ? error.context : null;
+  if (!(response instanceof Response) || response.status!==409 || !response.body) return false;
+  const reader=response.clone().body!.getReader();
+  const chunks: Uint8Array[]=[];let size=0;
+  try {
+    while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;
+      if(size>1024){await reader.cancel();return false;}chunks.push(value);}
+    const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+    return JSON.parse(new TextDecoder().decode(bytes))?.code==='account_ownership_transfer_required';
+  }catch{return false;}finally{reader.releaseLock();}
 }
 export async function deleteOwnAccount(client: Client, actor: string, confirmedEmail: string, mounted: () => boolean) {
   const email = confirmedEmail.trim().toLowerCase();
@@ -29,6 +41,7 @@ export async function deleteOwnAccount(client: Client, actor: string, confirmedE
   const { data, error } = await client.functions.invoke('account', {
     method: 'DELETE', headers: { Authorization: `Bearer ${session.access_token}`, 'x-user-jwt': session.access_token }, body: { confirm_email: email },
   });
+  if (await requiresOwnershipTransfer(error)) throw new AccountDeletionError('ownership_transfer_required');
   if (error || !data || typeof data !== 'object' || !('ok' in data) || data.ok !== true
     || ('actor_id' in data && data.actor_id !== actor)) throw new AccountDeletionError('delete_unavailable');
   // The installed older endpoint returns only {ok:true}; it already used the captured verified token.

@@ -9,7 +9,7 @@ const json = (status: number, body: unknown) => new Response(JSON.stringify(body
 type AccountClient = { auth: {
   getUser(token: string): PromiseLike<{ data: { user: { id: string; email?: string } | null }; error: unknown }>;
   admin: { deleteUser(id: string): PromiseLike<{ error: unknown }> };
-} };
+}; rpc(name: string, args: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }> };
 async function confirmation(req: Request): Promise<string | null> {
   const reader = req.body?.getReader();
   if (!reader) return null;
@@ -49,7 +49,19 @@ export async function handleAccountDeletion(req: Request, client: AccountClient)
     if (!email) return json(400, { code: 'account_confirmation_required', error: 'Confirm your current account email before deletion.' });
     if (!actor.email || email !== actor.email.trim().toLowerCase())
       return json(409, { code: 'account_confirmation_changed', error: 'Your account changed. Confirm the current account before deletion.' });
-    // Caller-supplied IDs are never used. Existing database retention restrictions stay authoritative.
+    // The final Auth transaction repeats this guard under database locks; this
+    // preflight provides a useful response without weakening that race boundary.
+    const readiness = await client.rpc('account_deletion_preflight', { p_actor: actor.id });
+    if (readiness.error || !readiness.data || typeof readiness.data !== 'object')
+      return json(503, { code: 'account_delete_unavailable', error: 'Account deletion is temporarily unavailable.' });
+    const decision = readiness.data as { eligible?: unknown; code?: unknown };
+    if (decision.eligible === false && decision.code === 'account_ownership_transfer_required')
+      return json(409, { code: 'account_ownership_transfer_required', error: 'Transfer your academy or center ownership before deleting your account.' });
+    if (decision.eligible !== true || decision.code !== undefined)
+      return json(503, { code: 'account_delete_unavailable', error: 'Account deletion is temporarily unavailable.' });
+    // Personal erasure and financial retention are a separate migration gate.
+    // Keep hard deletion until that complete lifecycle is qualified; simply
+    // soft-deleting Auth would retain personal data in application tables.
     const { error: deleteError } = await client.auth.admin.deleteUser(actor.id);
     if (deleteError) return json(503, { code: 'account_delete_unavailable', error: 'We could not delete your account. Try again or contact support for help reviewing linked records.' });
     return json(200, { ok: true, actor_id: actor.id });

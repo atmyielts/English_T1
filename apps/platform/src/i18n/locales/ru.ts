@@ -378,6 +378,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'account.error.save': 'Не удалось сохранить изменения. Попробуйте ещё раз.',
   'account.error.delete': 'Не удалось удалить аккаунт. Попробуйте снова или обратитесь в поддержку для проверки связанных записей.',
   'account.error.changed': 'Аккаунт изменился. Перед удалением подтвердите email текущего аккаунта.',
+  'account.error.ownershipTransfer': 'Перед удалением аккаунта передайте права владельца академии или центра.',
   'account.error.sessionExpired': 'Сессия истекла. Войдите снова.',
   'account.loading': 'Загрузка аккаунта...',
 

@@ -6,12 +6,14 @@ function assert(value: unknown, message = 'Assertion failed'): asserts value { i
 const req = (body: unknown = { confirm_email: email }, headers: Record<string, string> = { Authorization: 'Bearer owned-test-token' }, method = 'DELETE') =>
   new Request('https://example.invalid/account', { method, headers, ...(method !== 'GET' ? { body: JSON.stringify(body) } : {}) });
 function fixture() {
-  const deleted: string[] = [], tokens: string[] = [];
+  const deleted: string[] = [], tokens: string[] = [], preflights: { name: string; args: Record<string, unknown> }[] = [];
   const client = { auth: {
     getUser: (token: string) => { tokens.push(token); return Promise.resolve({ data: { user: { id: actor, email } as { id: string; email: string } | null }, error: null as unknown }); },
     admin: { deleteUser: (id: string) => { deleted.push(id); return Promise.resolve({ error: null as unknown }); } },
+  }, rpc: (name: string, args: Record<string, unknown>) => {
+    preflights.push({ name, args }); return Promise.resolve({ data: { eligible: true } as unknown, error: null as unknown });
   } };
-  return { client, deleted, tokens };
+  return { client, deleted, tokens, preflights };
 }
 Deno.test('account deletion requires bearer credentials before any Auth lookup', async () => {
   const variants: Record<string, string>[] = [{}, { Authorization: 'owned-test-token' }, { 'x-user-jwt': 'owned-test-token' }, { Authorization: 'Bearer ' + 'a'.repeat(8193) }];
@@ -59,6 +61,29 @@ Deno.test('account deletion hides unexpected runtime diagnostics', async () => {
   const f = fixture(); f.client.auth.getUser = () => { throw Error('private-secret-diagnostic'); };
   const response = await handleAccountDeletion(req(), f.client); assert(response.status === 503 && !(await response.text()).includes('private-secret-diagnostic')); assert(!f.deleted.length);
 });
+Deno.test('account deletion binds ownership preflight only to the verified caller', async () => {
+  const f=fixture(); const response=await handleAccountDeletion(req({confirm_email:email,user_id:other,p_actor:other}),f.client);
+  assert(response.status===200 && f.preflights.length===1);
+  assert(f.preflights[0].name==='account_deletion_preflight' && JSON.stringify(f.preflights[0].args)===JSON.stringify({p_actor:actor}));
+});
+Deno.test('account deletion requires ownership transfer before calling Auth deletion', async () => {
+  const f=fixture(); f.client.rpc=()=>Promise.resolve({data:{eligible:false,code:'account_ownership_transfer_required'},error:null});
+  const response=await handleAccountDeletion(req(),f.client); const body=await response.json();
+  assert(response.status===409 && body.code==='account_ownership_transfer_required' && !f.deleted.length);
+});
+Deno.test('account deletion fails closed for unavailable or malformed ownership decisions', async () => {
+  for(const data of [null,true,{}, {eligible:'true'},{eligible:false},{eligible:true,code:'unexpected'}]) {
+    const f=fixture();f.client.rpc=()=>Promise.resolve({data,error:null});
+    assert((await handleAccountDeletion(req(),f.client)).status===503 && !f.deleted.length);
+  }
+  const f=fixture();f.client.rpc=()=>Promise.resolve({data:{eligible:true},error:{message:'private-ownership-diagnostic'}});
+  const response=await handleAccountDeletion(req(),f.client);
+  assert(response.status===503 && !(await response.text()).includes('private-ownership-diagnostic') && !f.deleted.length);
+});
+Deno.test('invalid confirmation never invokes ownership inspection', async () => {
+  const f=fixture();assert((await handleAccountDeletion(req({confirm_email:'foreign@example.invalid'}),f.client)).status===409);
+  assert(!f.preflights.length && !f.deleted.length);
+});
 function browserClient() {
   const session = { access_token: 'owned-browser-token', user: { id: actor, email } };
   let current: typeof session | null = session;
@@ -72,6 +97,18 @@ function browserClient() {
 async function rejected(action: () => Promise<unknown>, code: string) {
   try { await action(); throw Error('Expected rejection'); } catch (error) { assert(error instanceof AccountDeletionError && error.code === code); }
 }
+Deno.test('account deletion client maps only the bounded ownership error to transfer guidance', async () => {
+  for(const [status,body,expected] of [
+    [409,JSON.stringify({code:'account_ownership_transfer_required'}),'ownership_transfer_required'],
+    [503,JSON.stringify({code:'account_ownership_transfer_required'}),'delete_unavailable'],
+    [409,JSON.stringify({code:'private-provider-error'}),'delete_unavailable'],
+    [409,'invalid-json','delete_unavailable'],
+    [409,JSON.stringify({code:'account_ownership_transfer_required',padding:'x'.repeat(1024)}),'delete_unavailable'],
+  ] as const){
+    const f=browserClient();f.client.functions.invoke=()=>Promise.resolve({data:null,error:{context:new Response(body,{status})}});
+    await rejected(()=>deleteOwnAccount(f.client,actor,email,()=>true),expected);
+  }
+});
 Deno.test('account deletion client captures verified actor token and confirmation in one request', async () => {
   const f = browserClient(); const result = await deleteOwnAccount(f.client, actor, ' OWNER@example.invalid ', () => true);
   assert(result.actor === actor && f.calls.length === 1); const text = JSON.stringify(f.calls[0]); assert(text.includes('owned-browser-token') && text.includes('confirm_email') && !text.includes(other));

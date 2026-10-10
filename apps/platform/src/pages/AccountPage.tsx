@@ -380,7 +380,8 @@ export const AccountPage: React.FC = () => {
       if (!mounted.current || current.session?.user.id !== accountUserId) return;
       const friendly = e instanceof AccountDeletionError && e.code === 'account_changed'
         ? t('account.error.changed') : e instanceof AccountDeletionError && e.code === 'session_required'
-          ? t('account.error.sessionExpired') : t('account.error.delete');
+          ? t('account.error.sessionExpired') : e instanceof AccountDeletionError && e.code === 'ownership_transfer_required'
+            ? t('account.error.ownershipTransfer') : t('account.error.delete');
       setError(friendly);
     } finally {
       if (mounted.current) setSaving(false);
