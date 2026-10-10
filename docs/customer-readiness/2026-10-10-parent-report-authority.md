@@ -34,6 +34,11 @@ This is source and metadata evidence; no customer report was opened or changed.
   use `Cache-Control: no-store`; valid public links remain unauthenticated,
   and revoked/expired links retain their existing denial behavior.
 - Public classroom relationships normalize both object and array results.
+  Both classroom and assignment embeds name the installed composite academy
+  foreign keys explicitly. The live schema also has legacy single-column keys;
+  unqualified embeds fail as ambiguous and the old handler silently reports
+  missing grades/classes. The candidate's private error checks exposed this
+  during the owned provider canary before publication.
   Auth outages return a retryable private failure. Creation failures cannot
   expose database details or produce an undefined success URL.
 
@@ -52,6 +57,24 @@ synthetic service/Auth responses, plus the Edge entrypoint typecheck. The test
 command is part of ordinary `npm test`; no workflow or deployment gate changed.
 These are local proofs, not installed-provider canaries or proof of the complete
 production schema. Native Auth is a selected fixture, not an Auth service emulator.
+
+An owned published-baseline canary passed 13 checks and complete disposable
+Auth/domain/academy cleanup, reproducing the two revocation defects. A further
+20 checks ran the candidate's actual default SDK and handler locally against the
+production provider with only owned identities and academy records. They verify
+real Auth, populated classroom/assignment relationships, an 80% synthetic grade,
+100% synthetic attendance, the score trend, no-store responses and private
+fail-closed behavior while the new RPC is absent. The local server was removed.
+
+The populated fixture's enrollment generated immutable institutional history.
+The database refused deleting those events. Their inactive own student/classroom/
+branch and clearly marked QA academy were therefore archived; the retained
+creator's Auth identity was soft-deleted and its domain identity anonymized and
+disabled. The other test actor, personal bootstrap tenants and disposable report,
+grade, attendance, assignment and membership records were removed. This is a
+verified retention disposition, **not complete record removal**. No immutable
+guard, customer record, production schema or published function was changed.
+Do not run an enrollment fixture again while assuming ordinary cascade cleanup.
 
 ## Publication and remaining qualification
 

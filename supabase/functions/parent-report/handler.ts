@@ -50,9 +50,9 @@ return async (req: Request): Promise<Response> => {
       const [contactResult, academyResult, membershipsResult, submissionsResult, attendanceResult] = await Promise.all([
         sb.from("academy_contacts").select("id, academy_id, first_name, last_name, email, status, last_activity_at").eq("id", contactId).eq("academy_id", academyId).maybeSingle(),
         sb.from("tenants").select("id, name, metadata").eq("id", academyId).maybeSingle(),
-        sb.from("academy_classroom_memberships").select("classroom_id, role, joined_at, academy_classrooms(id, name, is_active, score_weights)").eq("contact_id", contactId).eq("academy_id", academyId).limit(20),
+        sb.from("academy_classroom_memberships").select("classroom_id, role, joined_at, academy_classrooms:academy_classrooms!academy_memberships_classroom_tenant_fk(id, name, is_active, score_weights)").eq("contact_id", contactId).eq("academy_id", academyId).limit(20),
         sb.from("academy_submissions")
-          .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, academy_assignments(title, assignment_type, due_at, max_score, score_weight)")
+          .select("id, assignment_id, score, max_score, status, submitted_at, graded_at, notes, academy_assignments:academy_assignments!academy_submissions_assignment_tenant_fk(title, assignment_type, due_at, max_score, score_weight)")
           .eq("contact_id", contactId).eq("academy_id", academyId)
           .order("submitted_at", { ascending: false }).limit(50),
         sb.from("academy_attendance")

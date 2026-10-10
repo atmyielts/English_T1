@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-10T09:43:59.931Z",
+  "recordedAt": "2026-10-10T10:12:20.953Z",
   "status": "local-qualification-publication-pending",
   "base": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
   "baseline": {
@@ -198,7 +198,7 @@
     },
     {
       "path": "supabase/functions/parent-report/handler.ts",
-      "sha256LF": "0ce83dc5b1f3e86fe35019bd917abe4202f1d38b2b051200f6d5da8c52d115d8"
+      "sha256LF": "b011989633ec6c2d5addbc30381feda9cd03d28a72be93cb7421b84e8a66491a"
     },
     {
       "path": "supabase/functions/parent-report/revoke.ts",
@@ -219,13 +219,70 @@
     "No account-closure or financial-worker activation."
   ],
   "installedMetadata": {
-    "capturedAt": "2026-10-10T09:39:15.2795516Z",
+    "capturedAt": "2026-10-10T10:00:31.4370452Z",
     "readOnly": true,
     "customerRowsRead": false,
     "requiredColumnsVerified": 56,
     "commandExists": false,
     "reportAndAuditTriggers": [],
-    "constraintsSha256": "3b1d402dc147b79f44571a6e34b1fdc5e9bfbbe1df793171d777096d6be0edc3",
-    "limits": "Metadata compatibility, not owned hosted command/provider execution proof."
+    "constraintsSha256": "7fb525045ae95bda32728c003a7887f616ad4dd72297bc2f34c8d18d38ea28f0",
+    "limits": "Metadata compatibility, not owned hosted command/provider execution proof.",
+    "reportCompositeRelationshipsVerified": [
+      "academy_memberships_classroom_tenant_fk",
+      "academy_submissions_assignment_tenant_fk"
+    ]
+  },
+  "ownedCandidateProviderPreflight": {
+    "recordedAt": "2026-10-10T10:03:52.572Z",
+    "count": 20,
+    "passed": true,
+    "checks": [
+      "owned provider identity marker verified",
+      "owned provider ID validated",
+      "owned sign-in actor verified",
+      "owned provider identity marker verified",
+      "owned provider ID validated",
+      "owned sign-in actor verified",
+      "owned report generated through authenticated endpoint",
+      "owned public report matches academy and contact",
+      "candidate loads the owned classroom through its academy relationship",
+      "candidate reports the owned grade and attendance",
+      "candidate resolves the owned assignment and score trend",
+      "qualified private report cannot be cached",
+      "owned report scope verified",
+      "candidate fails closed when reviewed RPC is not installed",
+      "candidate schema failure stays private",
+      "owned report scope verified",
+      "candidate fails closed when reviewed RPC is not installed",
+      "candidate schema failure stays private",
+      "own preflight capability revoked for cleanup",
+      "owned revoked public capability is denied"
+    ],
+    "actualDefaultSdk": true,
+    "servedLocallyAgainstProductionProvider": true,
+    "productionFunctionChanged": false,
+    "productionSchemaChanged": false,
+    "productionQaDataWritten": true,
+    "customerDataRead": false,
+    "customerAccountsChanged": false,
+    "credentialsPersisted": false,
+    "gatewayCleanupVerified": true,
+    "completeRecordRemoval": false,
+    "retentionDispositionVerified": true,
+    "disposition": {
+      "verifiedAt": "2026-10-10T10:10:07.994Z",
+      "kind": "immutable-institutional-QA-history-archived",
+      "retained": "Inactive own student/classroom/branch, immutable enrollment events, marked own academy and anonymized closed creator principal",
+      "deleted": "Own report capabilities, grades, attendance, assignments, memberships, access audit and personal bootstrap tenants",
+      "ownAuth": "One previously hard-removed actor; retained creator is now soft-deleted with inactive anonymous domain mirror",
+      "completeRecordRemoval": false,
+      "customerDataRead": false,
+      "customerAccountsChanged": false,
+      "guardBypass": false
+    },
+    "limits": [
+      "New report RPC is absent; both revoked-role/current-owner attempts fail privately without a fallback.",
+      "Installed RPC and published endpoint authorization canaries remain required."
+    ]
   }
 }
