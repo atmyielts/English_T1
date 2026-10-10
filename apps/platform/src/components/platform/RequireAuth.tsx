@@ -24,40 +24,52 @@ export const RequireAuth: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    let revision = 0;
+    let actor: string | null = null;
 
-    const validateSession = async (session: Session | null) => {
+    const validateSession = async (session: Session | null, version: number) => {
+      const current = () => !cancelled && version === revision;
+      if (!current()) return;
       if (!session) {
-        if (!cancelled) setState({ status: 'unauthenticated' });
+        actor = null;
+        setState({ status: 'unauthenticated' });
         return;
       }
 
       const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
-      if (!userError && userData?.user) {
-        if (!cancelled) setState({ status: 'authenticated', session });
+      if (!current()) return;
+      if (!userError && userData?.user?.id === session.user.id) {
+        actor = session.user.id;
+        setState({ status: 'authenticated', session });
         return;
       }
 
       const refreshed = await refreshAuthSession();
-      if (!refreshed?.access_token) {
+      if (!current()) return;
+      if (!refreshed?.access_token || refreshed.user.id !== session.user.id) {
         clearLocalAuthStorage();
-        if (!cancelled) setState({ status: 'unauthenticated' });
+        actor = null;
+        setState({ status: 'unauthenticated' });
         return;
       }
 
-      if (!cancelled) setState({ status: 'authenticated', session: refreshed });
+      actor = refreshed.user.id;
+      setState({ status: 'authenticated', session: refreshed });
     };
 
     const init = async () => {
+      const version = ++revision;
       const session = await getAuthSession();
-      if (cancelled) return;
-      await validateSession(session);
+      await validateSession(session, version);
     };
 
     init();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (cancelled) return;
-      void validateSession(session ?? null);
+      const version = ++revision;
+      if (session?.user.id !== actor) setState({ status: 'loading' });
+      void validateSession(session ?? null, version);
     });
 
     return () => {
@@ -74,5 +86,5 @@ export const RequireAuth: React.FC = () => {
     return <Navigate to={`/auth?returnTo=${encodeURIComponent(returnTo)}`} replace />;
   }
 
-  return <Outlet />;
+  return <Outlet key={state.session.user.id} />;
 };

@@ -1,0 +1,13 @@
+{
+  "name": "account",
+  "verifyJwt": true,
+  "source": "fresh published source download",
+  "runtimeFiles": {
+    "index.ts": "18791f40de11d06697f7a2ceb690f81a4931992e2ea9bac5bb6a4f64fa45e98b"
+  },
+  "capturedAt": "2026-10-09T19:43:04.0605458Z",
+  "functionId": "e047f301-24f1-4550-adfe-02af24e1c45b",
+  "version": 33,
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "productionChanged": false
+}

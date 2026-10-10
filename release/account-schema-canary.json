@@ -1,0 +1,43 @@
+{
+  "mode": "local-reviewed-handler-production-owned-QA",
+  "time": "2026-10-09T19:46:28.562Z",
+  "checks": [
+    "guest cannot delete an account",
+    "owned owner signs in",
+    "owned other signs in",
+    "previous or foreign email confirmation fails",
+    "confirmation mismatch leaves both owned accounts intact",
+    "conflicting identity headers cannot delete either account",
+    "old missing-confirmation request cannot delete",
+    "correct confirmation deletes only the verified caller",
+    "success contains no credentials or internal details",
+    "deleted owned Auth identity is absent",
+    "caller-injected foreign ID remains intact",
+    "deleted identity cannot replay deletion"
+  ],
+  "count": 12,
+  "runtimeFiles": {
+    "index.ts": "ccae6020d9e1abd1f3ba6c8e19f742ae759b59f4c778b192f5ac7122ee5540ba",
+    "handler.ts": "d01fc67c70a4617db584f7bbe651b4df84caa78865036729f3894f156e2e5774"
+  },
+  "cleanup": [
+    "owned bootstrap tenant removed",
+    "owned bootstrap tenant removed",
+    "owned QA account absent",
+    "owned QA account absent"
+  ],
+  "cleanupVerified": true,
+  "passed": true,
+  "ownedUserIds": [
+    "6b2040e5-62ba-4789-a993-cb448140c753",
+    "72576597-dc91-49b5-88b6-0c42a1767aa1"
+  ],
+  "ownedTenantIds": [
+    "fbebbf25-d58b-4d02-af3d-cd2a8d586f67",
+    "45f8969a-0ea6-4ccc-a2ba-08b26a8c0538"
+  ],
+  "limits": [
+    "No customer accounts or financial records were changed",
+    "Fresh-auth/MFA and linked financial retention/anonymization workflows remain unqualified"
+  ]
+}

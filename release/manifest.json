@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "releaseId": "candidate-account-boundary",
+  "releaseId": "account-deletion-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
@@ -8,25 +8,32 @@
   ],
   "migrations": [],
   "edgeFunctions": [
-    "candidate-entry"
+    "account"
   ],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "function:candidate-entry"
+    "function:account"
   ],
   "manualFollowUps": [
-    "After exact-head CI and tracked Pages release, refresh the published candidate-entry source and gateway inventory. Refuse drift from source SHA256 0353373391d57bbf100907d943de0d0d979c8e1603002ebe9062953de5fb658e. Candidate entry is the only Edge Function in this release; retain its gateway flag and all other production functions.",
-    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-bundle>"
+    "After exact-head CI and the matching tracked Platform Pages release, refresh account published source and gateway inventory. Refuse source/version drift from release/account-published-baseline.json. Preserve verify_jwt=true; account is the only manual function in this release.",
+    "New frontend sends server confirmation while remaining compatible with installed {ok:true} responses. Publish server guard after the tracked client release. Older tabs missing confirmation must refresh; never allow a missing-confirmation deletion fallback.",
+    "supabase functions deploy account --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-account-bundle>",
+    "Download installed runtime files and compare reviewed hashes. Verify owned QA confirmation mismatch/header conflicts cannot delete either account, correct confirmation deletes only the verified caller, and cleanup removes exclusively owned bootstrap data. Do not test deletion on customer accounts or relax existing financial restrictions."
   ],
   "verification": [
-    "Run npm run test:candidate:security, Platform production build and existing route checks. Own-account new claim, same-account retry, guest sign-in and code-preserving return need signed-in browser and provider proof.",
-    "Download the installed function after deployment, compare all runtime source hashes, and verify unauthenticated requests fail before lookup, foreign claims cannot recover, and owned QA account can start and resume. Do not mint credentials or touch customer accounts.",
-    "This release changes the authentication boundary only. Multi-table exam admission remains non-atomic and must be replaced in the separate payment transaction release."
+    "Actual HTTP and client account-boundary Deno tests, Edge typecheck and public-production-configured Platform build",
+    "CLI browser account-switch, in-flight delete response, localized failure/reconfirmation, keyboard and mobile behavior with synthetic APIs; existing private account-switch regression",
+    "Owned production-provider local handler canary before installation; matching CI/Pages/source hashes and exclusively owned installed-endpoint canary afterward"
   ],
   "rollback": {
-    "edgeFunctions": "Preserve verified account admission and fix forward; never reinstall an endpoint that mints credentials from profile details.",
-    "frontends": "Previous tracked Pages deployment at b0dabff7fee0dcb73e5694a9e34b5ef4413a6d24. Do not pair the old guest form with disabled server authentication."
-  }
+    "frontend": "Tracked Git revert/Pages CI. Previous main c97c09ee363ee8497ba542f1042ce9a20f021772. Keep the confirming client compatible with the guarded endpoint.",
+    "backend": "Fix forward and preserve server confirmation; never restore unsafe identity-header precedence or private error disclosure."
+  },
+  "limits": [
+    "This release preserves existing financial retention constraints; it does not implement account anonymization or a reviewed financial retention/deletion workflow.",
+    "Fresh authentication or stronger MFA requirements for account deletion remain a separate qualification item.",
+    "No customer accounts, payment schema, billing functions or secrets are changed."
+  ]
 }

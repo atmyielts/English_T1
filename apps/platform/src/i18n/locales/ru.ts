@@ -370,13 +370,14 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'account.danger.label': 'Опасная зона',
   'account.danger.title': 'Удалить аккаунт',
   'account.danger.desc':
-    'Аккаунт и все связанные данные будут удалены без возможности восстановления.',
+    'Удаление безвозвратно убирает ваш аккаунт для входа. Некоторые записи о платежах и общих рабочих пространствах могут сохраниться.',
   'account.danger.confirmLabel': 'Введите email для подтверждения',
   'account.danger.confirmPlaceholder': 'ваш email',
   'account.danger.delete': 'Удалить аккаунт',
   'account.error.load': 'Не удалось загрузить аккаунт. Попробуйте ещё раз.',
   'account.error.save': 'Не удалось сохранить изменения. Попробуйте ещё раз.',
-  'account.error.delete': 'Не удалось удалить аккаунт. Попробуйте ещё раз.',
+  'account.error.delete': 'Не удалось удалить аккаунт. Попробуйте снова или обратитесь в поддержку для проверки связанных записей.',
+  'account.error.changed': 'Аккаунт изменился. Перед удалением подтвердите email текущего аккаунта.',
   'account.error.sessionExpired': 'Сессия истекла. Войдите снова.',
   'account.loading': 'Загрузка аккаунта...',
 
