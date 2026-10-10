@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircleAlert, CreditCard, LogOut, Trash2, User2 } from 'lucide-react';
 import { edgeBase, supabase } from '../lib/supabase';
@@ -151,6 +151,7 @@ import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import { useI18n } from '../i18n';
+import { AccountDeletionError, deleteOwnAccount } from '../lib/accountDeletion';
 
 type ProductRow = {
   id: string;
@@ -190,6 +191,9 @@ export const AccountPage: React.FC = () => {
   const [profileSaved, setProfileSaved] = useState(false);
 
   const [email, setEmail] = useState<string | null>(null);
+  const [accountUserId, setAccountUserId] = useState<string | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [role, setRole] = useState<string>('user');
   const [tenantName, setTenantName] = useState<string | null>(null);
   const [entitlements, setEntitlements] = useState<MeResponse['entitlements']>([]);
@@ -255,7 +259,9 @@ export const AccountPage: React.FC = () => {
         if (productsRes.error) throw productsRes.error;
         if (profileRes.error) throw profileRes.error;
 
-        setEmail(me.user.email ?? data.session.user.email ?? null);
+        if (me.user.id !== data.session.user.id) throw new Error('Account changed');
+        setAccountUserId(data.session.user.id);
+        setEmail(data.session.user.email ?? me.user.email ?? null);
         setRole(String(me.user.role ?? 'user'));
         setTenantName(me.current_tenant?.name ?? null);
         setEntitlements(me.entitlements ?? []);
@@ -307,6 +313,7 @@ export const AccountPage: React.FC = () => {
     try {
       const { data } = await supabase.auth.getSession();
       if (!data.session) throw new Error(t('account.error.sessionExpired'));
+      if (!mounted.current || data.session.user.id !== accountUserId) throw new Error(t('account.error.changed'));
 
       const payload: ProfileRow = {
         user_id: data.session.user.id,
@@ -317,10 +324,11 @@ export const AccountPage: React.FC = () => {
 
       const { error: upErr } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
       if (upErr) throw upErr;
-
+      const { data: current } = await supabase.auth.getSession();
+      if (!mounted.current || current.session?.user.id !== accountUserId) return;
       setProfileSaved(true);
     } catch (e) {
-      setProfileError(toFriendlyError(e, t('account.error.save')));
+      if (mounted.current) setProfileError(toFriendlyError(e, t('account.error.save')));
     } finally {
       setSaving(false);
     }
@@ -349,30 +357,16 @@ export const AccountPage: React.FC = () => {
   ];
 
   const deleteAccount = async () => {
-    if (!email) return;
+    if (!email || !accountUserId) return;
     if (deleteConfirm.trim().toLowerCase() !== email.trim().toLowerCase()) return;
 
     setSaving(true);
     setError(null);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      let session = sessionData.session;
-      if (!session) throw new Error(t('account.error.sessionExpired'));
-
-      const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
-      if (userError || !userData?.user) {
-        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError || !refreshed.session) throw new Error(t('account.error.sessionExpired'));
-        session = refreshed.session;
-      }
-
-      const { data, error } = await supabase.functions.invoke('account', {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${session.access_token}`, 'x-user-jwt': session.access_token },
-      });
-      if (error) throw error;
-      if (!data || (data as { ok?: boolean }).ok !== true) throw new Error(t('account.error.delete'));
+      await deleteOwnAccount(supabase, accountUserId, deleteConfirm, () => mounted.current);
+      const { data: current } = await supabase.auth.getSession();
+      if (!mounted.current || (current.session && current.session.user.id !== accountUserId)) return;
 
       try {
         await supabase.auth.signOut({ scope: 'local' });
@@ -381,18 +375,15 @@ export const AccountPage: React.FC = () => {
       }
       navigate('/', { replace: true });
     } catch (e) {
-      const friendly = toFriendlyError(e, t('account.error.delete'));
+      if (!mounted.current) return;
+      const { data: current } = await supabase.auth.getSession();
+      if (!mounted.current || current.session?.user.id !== accountUserId) return;
+      const friendly = e instanceof AccountDeletionError && e.code === 'account_changed'
+        ? t('account.error.changed') : e instanceof AccountDeletionError && e.code === 'session_required'
+          ? t('account.error.sessionExpired') : t('account.error.delete');
       setError(friendly);
-      if (friendly.toLowerCase().includes('session expired')) {
-        try {
-          await supabase.auth.signOut({ scope: 'local' });
-        } catch {
-          // ignore sign-out failures
-        }
-        navigate(`/auth?returnTo=${encodeURIComponent(authReturnTo)}`, { replace: true });
-      }
     } finally {
-      setSaving(false);
+      if (mounted.current) setSaving(false);
     }
   };
 
@@ -591,8 +582,11 @@ export const AccountPage: React.FC = () => {
                   {t('account.danger.desc')}
                 </p>
                 <div className="mt-4">
-                  <label className="text-xs font-semibold text-red-700">{t('account.danger.confirmLabel')}</label>
+                  <label htmlFor="delete-account-email" className="text-xs font-semibold text-red-700">{t('account.danger.confirmLabel')}</label>
                   <input
+                    id="delete-account-email"
+                    type="email"
+                    autoComplete="off"
                     value={deleteConfirm}
                     onChange={(e) => setDeleteConfirm(e.target.value)}
                     className="mt-2 w-full border border-red-300 rounded-2xl px-4 py-3 bg-white"
