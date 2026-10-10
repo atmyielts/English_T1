@@ -1,0 +1,231 @@
+{
+  "recordedAt": "2026-10-10T09:43:59.931Z",
+  "status": "local-qualification-publication-pending",
+  "base": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
+  "baseline": {
+    "projectRef": "bbjawctnqrufvnesdsel",
+    "function": "parent-report",
+    "functionId": "d64860c9-7033-41ee-af51-8a7a9adc1edb",
+    "version": 15,
+    "verifyJwt": false,
+    "capturedAt": "2026-10-10T09:05:22.1029147Z",
+    "sourceSha256LfNormalized": "c7c8f76c7702685492321780e690de19651196d499dd7c3dd5e3796986f6e8ce",
+    "sourceMatchesReviewedMain": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
+    "sourceCapture": "Supabase API download; no customer report or mutation endpoint called",
+    "gatewayRequirement": "Preserve verify_jwt=false for public bearer-capability reads; the handler verifies Auth for management",
+    "productionChanged": false,
+    "requiresFreshCaptureBeforePublication": true
+  },
+  "productionMutation": false,
+  "customerDataRead": false,
+  "native": {
+    "status": "passed",
+    "capturedAt": "2026-10-10T09:43:07.502Z",
+    "image": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+    "checks": [
+      {
+        "case": "anon cannot execute or impersonate a report revocation",
+        "passed": true
+      },
+      {
+        "case": "authenticated cannot execute or impersonate a report revocation",
+        "passed": true
+      },
+      {
+        "case": "null actors and unknown links have fixed private denials",
+        "passed": true
+      },
+      {
+        "case": "replacement owner can revoke the previous issuer link",
+        "passed": true
+      },
+      {
+        "case": "replacement admin can revoke the previous issuer link",
+        "passed": true
+      },
+      {
+        "case": "historical creator without current academy access cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "another academy owner and a regular member cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "public account deactivation prevents revocation",
+        "passed": true
+      },
+      {
+        "case": "auth account deactivation prevents revocation",
+        "passed": true
+      },
+      {
+        "case": "disabled membership and malformed center metadata do not grant authority",
+        "passed": true
+      },
+      {
+        "case": "current parent-center owner can revoke a child link and loses access after unlinking",
+        "passed": true
+      },
+      {
+        "case": "accepted academy admin grant can revoke another issuer link",
+        "passed": true
+      },
+      {
+        "case": "invited grant cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "revoked grant cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "expired grant cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "future grant cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "students delegate can revoke only own in-scope student link",
+        "passed": true
+      },
+      {
+        "case": "classrooms delegate can revoke only own in-scope student link",
+        "passed": true
+      },
+      {
+        "case": "branches delegate can revoke only own in-scope student link",
+        "passed": true
+      },
+      {
+        "case": "classroom scope removal prevents historical issuer access",
+        "passed": true
+      },
+      {
+        "case": "malformed delegated scope objects or scalar IDs cannot supply authority",
+        "passed": true
+      },
+      {
+        "case": "current staff manager can revoke own link but not another issuer link",
+        "passed": true
+      },
+      {
+        "case": "staff admin can revoke another issuer link until deactivated",
+        "passed": true
+      },
+      {
+        "case": "teacher and assistant staff have no reporting authority",
+        "passed": true
+      },
+      {
+        "case": "unlinked email grant requires verified current Auth email and cannot bind another user",
+        "passed": true
+      },
+      {
+        "case": "branch staff current assignment controls own-link authority",
+        "passed": true
+      },
+      {
+        "case": "repeated revocation is idempotent and audit never contains the bearer token",
+        "passed": true
+      },
+      {
+        "case": "audit failure rolls back token revocation instead of returning false success",
+        "passed": true
+      },
+      {
+        "case": "simultaneous current-owner revocations commit one audit entry",
+        "passed": true
+      },
+      {
+        "case": "concurrent membership demotion wins before revocation",
+        "passed": true
+      },
+      {
+        "case": "concurrent grant demotion wins before revocation",
+        "passed": true
+      },
+      {
+        "case": "concurrent staff demotion wins before revocation",
+        "passed": true
+      },
+      {
+        "case": "concurrent principal demotion wins before revocation",
+        "passed": true
+      },
+      {
+        "case": "a grant that expires while waiting for the token lock cannot revoke",
+        "passed": true
+      },
+      {
+        "case": "concurrent token scope change cannot use authority from its old academy",
+        "passed": true
+      },
+      {
+        "case": "long contention is bounded and leaves the report active without an audit entry",
+        "passed": true
+      },
+      {
+        "case": "additive migration replay preserves revoked links and private execute permissions",
+        "passed": true
+      }
+    ],
+    "count": 37,
+    "cleanupVerified": true,
+    "productionMutation": false,
+    "customerDataRead": false,
+    "migration": "supabase/migrations/20261010153000_parent_report_revocation_authority.sql",
+    "migrationSha256": "9f5da94192508bc6f3a6cdce50dfc2f5740a6ca40619a73c7f28ada9187262d6",
+    "limits": [
+      "Synthetic Auth table, not a provider Auth emulator.",
+      "Selected canonical authority/FK DDL, not the complete installed schema.",
+      "Installed Edge/provider and production own-account canaries remain required."
+    ]
+  },
+  "deno": {
+    "count": 23,
+    "status": "passed",
+    "actualHttpHandlerCases": 10,
+    "entrypointTypecheck": "passed",
+    "fixture": "Synthetic Auth/service responses; no hosted report request"
+  },
+  "sourceHashes": [
+    {
+      "path": "supabase/functions/parent-report/index.ts",
+      "sha256LF": "04faeaaa901f37227812ed4e8ddb9afa7bba68febc245a64db84213be2072f55"
+    },
+    {
+      "path": "supabase/functions/parent-report/handler.ts",
+      "sha256LF": "0ce83dc5b1f3e86fe35019bd917abe4202f1d38b2b051200f6d5da8c52d115d8"
+    },
+    {
+      "path": "supabase/functions/parent-report/revoke.ts",
+      "sha256LF": "acca97523dab5659bdb57e749a7bb5826f506fb8238d80e6378f55c52fd57df9"
+    },
+    {
+      "path": "supabase/functions/parent-report/public-boundary.ts",
+      "sha256LF": "3dc2e55265b9a5837f195e3ae3f93529c062914b49a6e8e8bbec4b0cee2b4bc2"
+    }
+  ],
+  "ci": {
+    "status": "new-exact-head-run-required"
+  },
+  "hostedOwnAccountCanary": "not-performed",
+  "limits": [
+    "Complete installed schema/audit compatibility remains required.",
+    "Source hashes and native tests do not prove an installed-provider report workflow.",
+    "No account-closure or financial-worker activation."
+  ],
+  "installedMetadata": {
+    "capturedAt": "2026-10-10T09:39:15.2795516Z",
+    "readOnly": true,
+    "customerRowsRead": false,
+    "requiredColumnsVerified": 56,
+    "commandExists": false,
+    "reportAndAuditTriggers": [],
+    "constraintsSha256": "3b1d402dc147b79f44571a6e34b1fdc5e9bfbbe1df793171d777096d6be0edc3",
+    "limits": "Metadata compatibility, not owned hosted command/provider execution proof."
+  }
+}
