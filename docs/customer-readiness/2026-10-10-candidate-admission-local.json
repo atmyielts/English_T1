@@ -1,0 +1,205 @@
+{
+  "status": "local_passed_not_production_qualified",
+  "capturedAt": "2026-10-09T19:28:31.0693024Z",
+  "scope": "Atomic candidate exam admission, draft PR215",
+  "productionChanged": false,
+  "productionWorkerActivated": false,
+  "legacyCompatibilityQualified": false,
+  "nativeCandidate": {
+    "status": "passed",
+    "scope": "candidate admission",
+    "engine": "native PostgreSQL 17.5",
+    "checks": [
+      {
+        "case": "candidate admission sixteen simultaneous voucher retries commit one complete exam and classroom enrollment",
+        "passed": true
+      },
+      {
+        "case": "candidate admission sixteen simultaneous purchased standalone token retries create one exam",
+        "passed": true
+      },
+      {
+        "case": "candidate admission user_profiles failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission sessions failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission exam_registrations failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission partner_center_students failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission academy_contacts failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission academy_classroom_memberships failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission partner_vouchers failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission exam_tokens failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission exam_admission_receipts failure rolls back code session voucher and every enrollment effect",
+        "passed": true
+      },
+      {
+        "case": "candidate admission competing verified beneficiaries leave only the winning owned attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission late failure restores an existing profile and never changes marketing consent",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects unconfirmed beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects wrong-email beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects suspended beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects revoked beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects business beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission rejects ambiguous beneficiary without consuming access",
+        "passed": true
+      },
+      {
+        "case": "candidate admission assigned-other inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission void inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission center-paused inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission missing-sections inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission untrusted-destination inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission disabled-service inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission inactive-exam inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission legacy-partial inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission legacy-claim inventory cannot manufacture a new attempt",
+        "passed": true
+      },
+      {
+        "case": "candidate admission unreceipted standalone inventory requires reconciliation instead of fabricated financial evidence",
+        "passed": true
+      },
+      {
+        "case": "candidate admission foreign academy contact aborts the entire purchased mock claim without matching phone",
+        "passed": true
+      },
+      {
+        "case": "candidate admission retries do not overwrite original roster or mint a second attempt after token expiry",
+        "passed": true
+      },
+      {
+        "case": "candidate admission evidence prevents session reassignment code reopening and voucher owner changes",
+        "passed": true
+      },
+      {
+        "case": "candidate admission anon cannot forge or rewrite admission evidence",
+        "passed": true
+      },
+      {
+        "case": "candidate admission authenticated cannot forge or rewrite admission evidence",
+        "passed": true
+      },
+      {
+        "case": "candidate admission service_role cannot forge or rewrite admission evidence",
+        "passed": true
+      }
+    ],
+    "productionChanged": false,
+    "cleanup": "owned container removed"
+  },
+  "nativePaymentBeforeProfileFixtureEnrichment": {
+    "productionChanged": false,
+    "caveat": "Full native suite passed before canonical profile DDL fixture and extra consent rollback case; final 35 targeted candidate cases passed afterward",
+    "count": 162,
+    "cleanup": "owned container removed",
+    "status": "passed"
+  },
+  "candidateDeno": {
+    "atomicAdapterCases": 7,
+    "count": 33,
+    "edgeTypecheck": "passed",
+    "status": "passed"
+  },
+  "existingPaymentDeno": {
+    "status": "passed",
+    "count": 57
+  },
+  "browser": {
+    "existingPlatformCases": 22,
+    "boundary": "Actual browser screens with synthetic provider APIs; not hosted persistence proof",
+    "locales": [
+      "en",
+      "ru",
+      "uz"
+    ],
+    "status": "passed",
+    "mobileOverflow": false,
+    "candidateCliCases": 12
+  },
+  "platformBuild": "passed_public_production_configuration",
+  "sourceHashes": {
+    "supabase/migrations/20261009147000_candidate_admission_transaction.sql": "17812afda73732755ca49fbb618517500fe6f1560daadfca6401f0548dc0938f",
+    "supabase/functions/candidate-entry/index.ts": "824fe13058c4f7bd3ee6e675517f6c10dd2da2faf8b1b05c91afa2a19a52edf9",
+    "supabase/functions/candidate-entry/atomic.ts": "0c302bfc74d80f3db5abdd41999870ed78fa19b13246de47dc0b3e7c089b1210",
+    "supabase/functions/candidate-entry/atomic.test.ts": "3d2b5ebeb79b83c464ffcc2875605237ecf0a36a0c2cf20ab3808a313fe688ad",
+    "supabase/functions/candidate-entry/auth.ts": "bffbcac78aedabf28138fd9007f39ffde49093b0f8a3d21bde8545f40c9ad97a",
+    "supabase/functions/candidate-entry/handler.test.ts": "ed5c3d22ffddfafca530943b47a38865c49183404abbc5ee3adfde4c9995f458",
+    "scripts/test-payment-fulfillment.mjs": "c9b768b37cb56b977e2cf6bcd77282ce95963fcbe24f956568c25facc0c0f902",
+    "apps/platform/src/pages/CandidateEntryPage.tsx": "df22a737b17e520109bf71e8d9213b379296139767027323918ac5e42967cbb7"
+  },
+  "remaining": [
+    "Exact-head full CI",
+    "Legacy purchase/token/voucher/claim reconciliation and reviewed adoption",
+    "Account retention and refund/void compatibility",
+    "Fresh installed source SQL owner dependencies and gateway proof",
+    "Split backend then frontend rollout",
+    "Owned hosted canaries and signed Click retry proof"
+  ]
+}

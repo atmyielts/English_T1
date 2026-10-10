@@ -1,0 +1,30 @@
+{
+  "productionChanged": false,
+  "customerRowContentRead": false,
+  "credentialValuesPersisted": false,
+  "project": "bbjawctnqrufvnesdsel",
+  "method": "Supabase Management API dedicated read-only query endpoint; authenticated current CLI profile in memory",
+  "function": {
+    "normalizedDefinitionSha256": "38139a6458cf21e425f4dff19d4985ce0499e8b3e905aeedbfb1373a04df3321",
+    "securityDefiner": true,
+    "bodyProof": {
+      "fixtureBodySha256": "a38d83604af206c55c66b480d99aba988920f5fa3e159ffa6f9adaeac88bce8d",
+      "fixture": "20260212010000_teacher_studio_payment_engine.sql",
+      "installedBodySha256": "a38d83604af206c55c66b480d99aba988920f5fa3e159ffa6f9adaeac88bce8d",
+      "matchesNativeFixture": true
+    },
+    "definitionBytes": 3189,
+    "arguments": "p_payment_id uuid, p_actor_id uuid",
+    "name": "apply_academy_payment",
+    "owner": "postgres",
+    "relationReferences": [
+      "academy_contacts",
+      "academy_entitlements",
+      "academy_offer_grants",
+      "academy_offers",
+      "academy_payments",
+      "apply_academy_payment"
+    ]
+  },
+  "capturedAt": "2026-10-10T06:24:22.1889049Z"
+}

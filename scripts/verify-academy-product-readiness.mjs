@@ -94,7 +94,7 @@ for (const file of requiredFiles) {
 const safeRead = (file) => (existsSync(join(root, file)) ? read(file) : '');
 const academyEdge = safeRead('supabase/functions/academy/index.ts');
 const academyAccess = safeRead('supabase/functions/academy/access.ts');
-const clickFunction = safeRead('supabase/functions/click/index.ts');
+const clickFunction = safeRead('supabase/functions/click/handler.ts');
 const academyClient = safeRead('apps/academy/src/lib/client.ts');
 const academyApp = safeRead('apps/academy/src/App.tsx');
 const educationOsView = safeRead('apps/academy/src/components/office/EducationOSView.tsx');

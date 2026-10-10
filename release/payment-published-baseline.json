@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-10T12:29:31.919Z",
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "readOnly": true,
+  "productionChanged": false,
+  "customerRowsRead": false,
+  "hashNormalization": "LF",
+  "functions": [
+    {
+      "name": "admin-payments",
+      "id": "c922041a-4c8c-4f01-84dc-f1ec6c704c8c",
+      "version": 47,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/admin-payments/index.ts",
+          "sha256": "b30b9b5da432a79745e057051703692361cf82aab0a32368c1b04496f350462e",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2"
+          ]
+        },
+        {
+          "path": "supabase/functions/_shared/admin-access.ts",
+          "sha256": "5334bdf7584d3c53aab38d629bd14a0799ebc7b266f3fe6142de3078f704c419",
+          "imports": [
+            "https://esm.sh/@supabase/supabase-js@2"
+          ]
+        },
+        {
+          "path": "supabase/functions/_shared/payment-terms.ts",
+          "sha256": "f02548fc9ca3728638d431bfd316593cc7a7f1b4974b26a79a370bf5281fc6d2",
+          "imports": []
+        }
+      ]
+    },
+    {
+      "name": "candidate-entry",
+      "id": "f5ccb4aa-d5e7-4a5d-9d87-057bd2119934",
+      "version": 45,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/candidate-entry/auth.ts",
+          "sha256": "ae91db93d7bb1ac6451bb0bfe11236707325c34e8e2025e3aeb7fbcb067bf557",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/candidate-entry/handler.ts",
+          "sha256": "2875c1606e7d278a771ba82e9f31efc9e4410f621c9ebb5550e5dbb5727e0cbb",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/candidate-entry/index.ts",
+          "sha256": "922a62583cdae6522d349e181782fbb90cf5ccf4e692c1051539c3a8207f7bf6",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "click",
+      "id": "2119c917-f37b-43d2-8e27-54826f1757eb",
+      "version": 27,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/click/index.ts",
+          "sha256": "a97da6665a5c08f2ca6062c1b6ff7d8f13252bfa4e54c8208596aa4b5ac2a9fe",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2",
+            "https://deno.land/std@0.224.0/crypto/mod.ts"
+          ]
+        },
+        {
+          "path": "supabase/functions/click/ops-alerts.ts",
+          "sha256": "663e4faf7877358f0e7e12dcd062e0dade05edeef253bc41be06e2f341155114",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/click/payment-safety.ts",
+          "sha256": "14ef61be593911c702df6706de36be1c5dd0c7a36d3be594c2e2417f5db2b816",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/click/webhook-security.ts",
+          "sha256": "dd0d2ae2cac0fddbe2067754500c99ee9095effbd231eb78a9cdc54aee23c96f",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/_shared/entitlements.ts",
+          "sha256": "84213492138fe2e16d7afed1c91568a5b37ad7f5e4e441af6002fe945ad232aa",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/_shared/payment-terms.ts",
+          "sha256": "f02548fc9ca3728638d431bfd316593cc7a7f1b4974b26a79a370bf5281fc6d2",
+          "imports": []
+        },
+        {
+          "path": "supabase/functions/_shared/pricing.ts",
+          "sha256": "b30a7725aaa0528aa700a7d078ef8492b56f3426ad7cec339a1e7ab869c85897",
+          "imports": []
+        }
+      ]
+    },
+    {
+      "name": "partner-office",
+      "id": "467bfb91-340a-4ee0-917c-86c1099d4d8a",
+      "version": 45,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/partner-office/index.ts",
+          "sha256": "66c866425a45c9ba02c310469ebf9293d205523e731843e5736412eb71a49331",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2",
+            "https://esm.sh/pdf-lib@1.17.1",
+            "https://esm.sh/qrcode@1.5.4"
+          ]
+        },
+        {
+          "path": "supabase/functions/_shared/media-storage.ts",
+          "sha256": "fb51f8571bfb67aa5d751104debb63be3a48e6431851c50e557841f018273f1e",
+          "imports": []
+        }
+      ]
+    },
+    {
+      "name": "teacher-office",
+      "id": "cf0bd1e5-757a-4a74-8ca7-7305fc174941",
+      "version": 39,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/teacher-office/index.ts",
+          "sha256": "6dc0707e30126b0c80136c33785572e34e8936fb2b73b014cfc15ea0c548afaf",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "voucher-redeem",
+      "id": "7cf009bb-23c8-40e2-ba20-8a2446f19ce4",
+      "version": 22,
+      "verifyJwt": false,
+      "files": [
+        {
+          "path": "supabase/functions/voucher-redeem/index.ts",
+          "sha256": "08a8dc90b132b0a67ef7b0e506334b2fc7837d787be00cf421d59499b8b0e139",
+          "imports": [
+            "https://deno.land/std@0.224.0/http/server.ts",
+            "https://esm.sh/@supabase/supabase-js@2"
+          ]
+        },
+        {
+          "path": "supabase/functions/_shared/media-storage.ts",
+          "sha256": "6740ec103aaab1ef280e11b968eeb4dc83e77d2533436f7643599732d2b516e2",
+          "imports": []
+        }
+      ]
+    }
+  ]
+}
