@@ -66,7 +66,7 @@
     "test:parent-report:security": "deno test --no-lock --node-modules-dir=none supabase/functions/parent-report/revoke.test.ts supabase/functions/parent-report/public-boundary.test.ts supabase/functions/parent-report/handler.test.ts && deno check --no-lock supabase/functions/parent-report/index.ts && node scripts/test-parent-report-authority.mjs",
     "test:payments": "deno check --no-lock supabase/functions/click/index.ts supabase/functions/admin-payments/index.ts supabase/functions/partner-office/index.ts supabase/functions/teacher-office/index.ts supabase/functions/voucher-redeem/index.ts && deno test --no-lock --allow-env --node-modules-dir=none supabase/functions/click/handler.test.ts supabase/functions/click/checkout.test.ts supabase/functions/teacher-office/assignment.test.ts supabase/functions/partner-office/voucher-batches.test.ts supabase/functions/voucher-redeem/redemption.test.ts supabase/functions/voucher-redeem/preview.test.ts && node scripts/test-payment-fulfillment.mjs",
     "test:ai:security": "deno test --no-lock --node-modules-dir=none supabase/functions/writing-tutor/handler.test.ts supabase/functions/speaking-coach/handler.test.ts && deno check --no-lock --node-modules-dir=none supabase/functions/writing-tutor/index.ts supabase/functions/speaking-coach/index.ts && node scripts/test-ai-request-ledger.mjs",
-    "test:pages:security": "node scripts/test-pages-browser-protection.mjs"
+    "test:pages:security": "node scripts/test-pages-asset-policy.mjs && node scripts/test-pages-browser-protection.mjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
