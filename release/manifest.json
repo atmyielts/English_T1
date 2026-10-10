@@ -37,7 +37,7 @@
     "68 native PostgreSQL/PostgREST cases passed, including 8 actual HTTP checks and 3 verified-identity regressions; ownership/billing/acquisition races and private per-QA qualifications remain covered. Ordinary npm test includes the pinned-container suite.",
     "28 actual account handler/client cases and Edge check; current Platform build with public local fixture configuration; 20 rendered synthetic-API browser cases and 3 menu checks.",
     "Owned hosted Auth-only soft-delete provider probe reproduced old-token REST access; six checks and cleanup verified. This is not qualification of the unpublished lifecycle candidate.",
-    "Six native cases against the actual nine reviewed draft-financial migrations passed with immutable receipt/identity triggers. Complete captured public/Auth/Storage schema independently passed 13 local cases: 406 tables, 238 public triggers, 1 Auth trigger and 1,245 public foreign keys, with actual role attributes/memberships and privileged runtime configuration.",
+    "Six native cases against the actual nine reviewed draft-financial migrations passed with immutable receipt/identity triggers. Complete captured public/Auth/Storage schema independently passed 14 local cases: 406 tables, 238 public triggers, 1 Auth trigger and 1,245 public foreign keys, with actual role attributes/memberships and privileged runtime configuration. Captured private Storage policy denial and trusted delivery access also pass.",
     "Final exact-head CI; matching tracked Pages/provider source and preserved gateway; complete exclusively owned hosted erasure/retention/API canaries before activation."
   ],
   "rollback": {

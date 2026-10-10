@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-10T11:28:51.157Z",
+  "recordedAt": "2026-10-10T11:36:18.157Z",
   "status": "draft-disabled-lifecycle-locally-qualified",
   "pullRequest": "https://github.com/atmyielts/English_T1/pull/218",
   "base": "c6380e141a95d34ab640035e416b7c634604dce0",
@@ -379,7 +379,7 @@
     "apps/platform/src/i18n/locales/en.ts": "70b0eea0c0d7f3be1e4a85f4b95f841dc2ebb636724625132faad7116597c3a4",
     "apps/platform/src/i18n/locales/ru.ts": "32870c2b642bcfb035598564a53305955b709fe909121fc47b124f4ee2161890",
     "apps/platform/src/i18n/locales/uz.ts": "b62f87c98722ece6250767b350208e17a8152ca4183d9e07ee20bd6c19c81a73",
-    "scripts/qualify-account-installed-schema.mjs": "bcf8f3bfd2da9ffd0208ad4cffbad69892ed3c41a3e0adc5db9f5028007aa272"
+    "scripts/qualify-account-installed-schema.mjs": "65d0a292ac24b779c798ba4fb406817d476c20d2bc25a5a8c8c6cbde2982f719"
   },
   "limits": [
     "No lifecycle migration, handler or global flag installed or activated. Final exact-head CI and tracked deployment remain required.",
@@ -450,11 +450,11 @@
   },
   "nativeCoverage": "Selected-schema SQL/concurrency and actual PostgREST HTTP suite. Separate complete captured-schema and draft-financial qualifications below broaden local compatibility; none establishes installed lifecycle activation.",
   "installedSchemaLocalQualification": {
-    "recordedAt": "2026-10-10T11:23:46.763Z",
+    "recordedAt": "2026-10-10T11:35:17.308Z",
     "passed": true,
     "cleanupVerified": true,
     "stage": "revoking QA qualifications cannot reopen or hard-delete retained principals",
-    "count": 13,
+    "count": 14,
     "checks": [
       "restore complete installed Auth/public/Storage schema without customer rows",
       "database role attributes and relevant memberships match installed metadata",
@@ -463,6 +463,7 @@
       "disabled closure rolls back actual Auth triggers and private data",
       "qualified closure erases personal records through actual Auth trigger chain",
       "closed actor is denied by actual RLS and private API guard",
+      "captured private Storage policies deny closed and anonymous actors while retaining trusted delivery",
       "actual financial and immutable Academy fixture can coexist with personal learning data",
       "actual owner closure refuses before transfer with no partial erasure",
       "after ownership transfer actual closure retains Academy and byte-identical payment history",
@@ -641,5 +642,25 @@
     "publishedEndpointChecks": 25,
     "cleanupVerified": true,
     "localClosedCreatorReplacementOwnerRevocationPassed": true
+  },
+  "readOnlyTransportCatalog": {
+    "capturedAt": "2026-10-10T11:33:00.1436882Z",
+    "readOnly": true,
+    "customerRowsRead": false,
+    "storageCounts": {
+      "buckets": 3,
+      "objects": 77,
+      "publicBuckets": 0,
+      "ownerAttributedObjects": 0
+    },
+    "storageAndRealtimePolicyCount": 0,
+    "realtimePublishedTableCount": 0,
+    "graphqlExtensionCount": 0,
+    "localCapturedStorageDenialPassed": true,
+    "sourceFrontendRealtimeSubscriptionsFound": 0,
+    "limits": [
+      "Catalogue and local policy execution only; no live Storage HTTP or Realtime delivery claim.",
+      "No object names, paths, identifiers or contents were fetched."
+    ]
   }
 }

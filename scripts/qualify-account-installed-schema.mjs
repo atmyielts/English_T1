@@ -106,6 +106,20 @@ try{
     await sql('set role anon;select public.account_api_pre_request();');
     await sql('set role service_role;select public.account_api_pre_request();');
   });
+  await check('captured private Storage policies deny closed and anonymous actors while retaining trusted delivery',async()=>{
+    assert.equal(await sql("select count(*) from pg_policies where schemaname='storage';"),'0');
+    const bucket='owned-schema-'+randomUUID(),object=randomUUID();
+    await sql(`set role service_role;insert into storage.buckets(id,name,public) values(${q(bucket)},${q(bucket)},false);
+      insert into storage.objects(id,bucket_id,name,metadata) values(${q(object)},${q(bucket)},'owned-private.txt','{"fixture":true}');`);
+    for(const role of ['anon','authenticated']){
+      assert.equal(await sql(`set request.jwt.claims=${q(JSON.stringify({sub:actor,role}))};set role ${role};select count(*) from storage.objects where id=${q(object)};`),'0');
+      assert.equal(await sql(`set request.jwt.claims=${q(JSON.stringify({sub:actor,role}))};set role ${role};select count(*) from storage.buckets where id=${q(bucket)};`),'0');
+    }
+    await assert.rejects(sql(`set request.jwt.claims=${q(JSON.stringify({sub:actor,role:'authenticated'}))};set role authenticated;
+      insert into storage.objects(bucket_id,name,owner_id) values(${q(bucket)},'closed-write.txt',${q(actor)});`));
+    assert.equal(await sql(`set role service_role;select count(*) from storage.objects where id=${q(object)};`),'1');
+    assert.equal(await sql(`select count(*) from storage.objects where bucket_id=${q(bucket)};`),'1');
+  });
   const issuer=randomUUID(),replacement=randomUUID(),academy=randomUUID(),branch=randomUUID(),contact=randomUUID(),classroom=randomUUID(),token=randomUUID(),payment=randomUUID(),staff=randomUUID(),foreignGrant=randomUUID();
   const issuerEmail='schema-'+issuer+'@example.invalid',foreignEmail='unlinked-config-'+randomUUID()+'@example.invalid';
   let paymentBefore,eventsBefore;

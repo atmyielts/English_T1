@@ -10,18 +10,18 @@ Draft PR218 now contains four additive migrations and the account handler/client
 change. Erasure starts disabled. This is an implemented local candidate; it has
 not been installed or enabled in production.
 
-- **1490** checks current and historical business ownership at the service-only
+- **20261010154000** checks current and historical business ownership at the service-only
   preflight and final Auth transaction. An active owner must transfer/demote their
   role even when another owner exists. Legacy personal tenants with Academy or
   center anchors are institutional. Disabled members and inactive users cannot
   serve as replacement owners.
-- **1500** retains a frozen, pseudonymous domain principal for financial and
+- **20261010155000** retains a frozen, pseudonymous domain principal for financial and
   institutional foreign keys. Private closure receipts contain counts, not erased
   content. Restrictive authenticated policies add an account-open requirement to
   existing public RLS tables. Personal writes lock the principal before checking
   closure, so a delayed insert cannot wait on a foreign key and recreate PII after
   erasure commits.
-- **1510** erases classified profiles, writing, speech and learning records in
+- **20261010160000** erases classified profiles, writing, speech and learning records in
   the Auth soft-delete transaction; anonymizes personal tenants and public teacher
   profiles; removes login memberships and grants; disables personal access; and
   retains payment/admission roots and institutional assessment evidence.
@@ -37,7 +37,7 @@ not been installed or enabled in production.
   terminal history remains unchanged. Delayed callbacks cannot renew a closed
   payer/scope or detach its retained subscription identity. Another institution's
   payer may continue its subscription after the deleting member leaves.
-- **1520** installs an invoker pre-request guard before REST queries, privileged
+- **20261010161000** installs an invoker pre-request guard before REST queries, privileged
   views and definer RPCs. Closed or missing authenticated principals receive a
   fixed HTTP 401. Public anonymous browsing and trusted service callbacks keep
   their existing behavior. Installation refuses an unreviewed existing hook.
@@ -105,7 +105,7 @@ claim every lock ordering is deadlock-free.
   checkout/payment/fulfillment evidence, assigned seats, redeemed vouchers, exam
   admissions, Academy invoices after transfer, and refusal to delete/detach the
   retained principals. Closed recipients could not repeat purchase/access claims.
-- **13 local cases against the complete captured public/Auth/Storage schema
+- **14 local cases against the complete captured public/Auth/Storage schema
   passed**: 406 tables, 238 public triggers, one Auth trigger and 1,245 public
   foreign keys. No customer rows were included. The pinned Supabase PostgreSQL
   17.6 image restores the captured definitions, matches observed extension
@@ -117,6 +117,9 @@ claim every lock ordering is deadlock-free.
   payments, permission attribution and replacement-owner report revocation pass.
   The prior editable-email defect failed this fixture before the fix. Both the
   failed reproducer and successful final run removed their owned containers.
+  A service-owned local private bucket/object verifies that captured Storage
+  policies deny anonymous and closed-user reads and closed-user inserts while
+  retaining service-role delivery access. This does not exercise live Storage HTTP.
 
 PostgreSQL 17.5, PostgREST 13.0.7 and the Node HTTP client images are digest-pinned.
 The ordinary test command now includes the SQL/HTTP suite. Exclusively owned
@@ -149,6 +152,13 @@ does not establish personal ownership. No S3 objects, signed URLs or contents
 were accessed. Historical orphan objects and future personal uploads remain
 unqualified. The downloaded admin-assets shared module differs only in its AWS
 dependency versions; this candidate does not publish that module or change them.
+
+The fresh transport catalogue contains three private Supabase buckets and 77
+objects with no owner attribution, no Storage/Realtime policies, no Realtime
+published tables and no GraphQL extension. Frontend source has no Realtime
+subscriptions. Storage RLS therefore denies ordinary browser access; the shared
+server delivery helper signs private paths. These are catalogue and source
+findings, not proof of live file delivery or a reason to delete unowned objects.
 
 ## Publication gates
 
