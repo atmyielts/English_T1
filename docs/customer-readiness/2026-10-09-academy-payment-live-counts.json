@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-09T15:02:58.9266360Z",
+  "method": "REST HEAD with exact aggregate counts only; no row content",
+  "read_only": true,
+  "counts": [
+    {
+      "scope": "academy_click_pending",
+      "count": 0,
+      "http_status": 200
+    },
+    {
+      "scope": "academy_click_paid",
+      "count": 0,
+      "http_status": 200
+    },
+    {
+      "scope": "legacy_metadata_academy_pending",
+      "count": 0,
+      "http_status": 200
+    },
+    {
+      "scope": "legacy_metadata_academy_paid",
+      "count": 0,
+      "http_status": 200
+    },
+    {
+      "scope": "click_paid_all_purchase_types",
+      "count": 0,
+      "http_status": 200
+    }
+  ],
+  "limitation": "Scoped provider/type/status counts do not classify orphan linkage, old grant evidence, retention, or all commerce."
+}

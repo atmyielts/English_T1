@@ -1,0 +1,45 @@
+{
+  "capturedAt": "2026-10-09T16:00:35.478564+00:00",
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "productionChanged": false,
+  "readMethod": "Authenticated CLI source download only; no customer records or mutations",
+  "functions": [
+    {
+      "function": "voucher-redeem",
+      "normalizedTextSha256": "08a8dc90b132b0a67ef7b0e506334b2fc7837d787be00cf421d59499b8b0e139",
+      "repositoryExactNormalizedMatch": true,
+      "sourceOnlyProof": true,
+      "repositoryDrift": [],
+      "observedConsumerBoundaries": [
+        "Grant, seat assignment and voucher redemption are separate HTTP writes.",
+        "Current plan catalogue determines granted durations/products.",
+        "Voucher status update allows unused or redeemed after an earlier unused read.",
+        "Seat query omits assigned_user_id while the availability branch refers to it."
+      ]
+    },
+    {
+      "function": "teacher-office",
+      "normalizedTextSha256": "6dc0707e30126b0c80136c33785572e34e8936fb2b73b014cfc15ea0c548afaf",
+      "repositoryExactNormalizedMatch": false,
+      "sourceOnlyProof": true,
+      "repositoryDrift": [
+        "Repository adds overall_score and uses it as a results overall_band fallback; published assignment code is otherwise unchanged."
+      ],
+      "observedConsumerBoundaries": [
+        "Grant and seat assignment are separate HTTP writes.",
+        "Current plans determine durations/products instead of purchased snapshots.",
+        "Final assignment update filters by seat ID only after an earlier unassigned read."
+      ]
+    }
+  ],
+  "nextQualification": [
+    "Native concurrent single-seat and single-voucher ownership proof, callback/HTTP failure rollback and original-term replay.",
+    "Review installed schema, policies and consumer dependencies before a reviewed additive transaction migration.",
+    "Preserve published Teacher Office results behavior; do not ship unrelated repository scoring changes with the consumer repair.",
+    "Bound and authenticate beneficiary/tenant resolution, retain valid lifetime grants and immutable financial evidence."
+  ],
+  "limitations": [
+    "Source observations identify risks; this capture does not prove an exploit against the installed production schema.",
+    "No customer assignment, voucher or account was created or changed."
+  ]
+}

@@ -65,6 +65,13 @@ Deno.test('candidate HTTP does not leak authentication provider failures', async
   const f = fixture(); f.sbAuth.auth.getUser = () => { throw new Error('private auth details'); };
   const res = await f.handle(f.request()); assertEquals(res.status, 503); assert(!(await res.text()).includes('private'));
 });
+Deno.test('candidate HTTP auth provider outages and throttling are retryable without claiming access',async()=>{
+  for(const status of [429,500,502,503]){
+    const f=fixture([],null,{status,message:'private provider detail'});
+    const response=await f.handle(f.request());assertEquals(response.status,503);assertEquals(f.calls.length,0);
+    assert(!(await response.text()).includes('private'));
+  }
+});
 Deno.test('candidate HTTP rejects another email and malformed input without queries', async () => {
   for (const [value, status] of [[{...body,email:'victim@example.test'},403], [[],400], [null,400], [{...body, phone:12},400], [{...body,first_name:'x'.repeat(101)},400], [{...body,token_code:'bad/code'},400]] as const) {
     const f = fixture(); assertEquals((await f.handle(f.request(value))).status,status); assertEquals(f.calls.length,0);

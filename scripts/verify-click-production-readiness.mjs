@@ -29,7 +29,7 @@ const run = (name, command, args, options = {}) => {
 const config = await readFile('supabase/config.toml', 'utf8');
 gate('click config', /\[functions\.click\]\s*verify_jwt\s*=\s*false/.test(config), 'click has config-controlled verify_jwt=false');
 
-const source = await readFile('supabase/functions/click/index.ts', 'utf8');
+const source = await readFile('supabase/functions/click/handler.ts', 'utf8');
 gate('callback route', source.includes('url.pathname.endsWith("/webhook")'), '/functions/v1/click/webhook is intentional');
 gate('signature boundary', source.includes('verifyClickWebhookSignature') && source.includes('sanitizeClickCallbackPayload(params)'), 'signature validation precedes payment mutation and signatures are not persisted');
 

@@ -11,7 +11,7 @@ import {
 const serviceId = "24680";
 const paymentId = "2d73048f-48d7-42bf-9e3b-111c70f5031f";
 const clickSource = await Deno.readTextFile(
-  new URL("./index.ts", import.meta.url),
+  new URL("./handler.ts", import.meta.url),
 );
 const supabaseConfig = await Deno.readTextFile(
   new URL("../../config.toml", import.meta.url),
@@ -132,7 +132,7 @@ Deno.test("CLICK mutations remain behind signature, provider, order, and replay 
       "merchantPrepareId !== payment.id",
       "isSuccessStatus(payment.status) && clickError < 0",
       "isTerminalFailureStatus(payment.status)",
-      '.is("granted_at", null)',
+      'isSuccessStatus(payment.status) && payment.grant_completed_at',
     ]
   ) assert(clickSource.includes(signal), signal);
 });

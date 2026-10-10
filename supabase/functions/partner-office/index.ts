@@ -1,8 +1,11 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
-import QRCode from "https://esm.sh/qrcode@1.5.4";
+import { toDataURL } from "https://esm.sh/qrcode@1.5.4";
 import { getS3Config, signStoredPath, uploadFileToS3 } from "../_shared/media-storage.ts";
+
+import { partnerCheckoutPayload } from "./checkout.ts";
+import { cancelVoucherBatchRequest, hasProtectedCenterFinanceFields, issueVoucherBatch, voidVoucher } from "./voucher-batches.ts";
 
 type Json = Record<string, unknown>;
 type MembershipRow = { id?: string; tenant_id: string; user_id?: string; role: string; status: string };
@@ -1518,7 +1521,7 @@ const createVoucherSheetPdf = async (
         font,
         color: rgb(0.38, 0.42, 0.48),
       });
-      const qrDataUrl = await QRCode.toDataURL(redeem, { type: "image/png", margin: 1, width: 106 });
+      const qrDataUrl = await toDataURL(redeem, { type: "image/png", margin: 1, width: 106 });
       const qrImage = await pdf.embedPng(base64DataUrlToBytes(qrDataUrl));
       page.drawImage(qrImage, { x: x + slipWidth - 88, y: y - 101, width: 72, height: 72 });
       page.drawText("1. Scan QR", { x: x + 12, y: y - 98, size: 7, font, color: rgb(0.17, 0.2, 0.25) });
@@ -2900,6 +2903,9 @@ serve(async (req) => {
       }
 
       if (actionBody === "update_center_profile") {
+        if (hasProtectedCenterFinanceFields(body)) {
+          return json(403, { error: "Center financial configuration requires platform finance approval." });
+        }
         const current = await ensureCenterProfile(sb, tenantId, userId);
         const patch: Json = {};
         if ("display_name" in body) patch.display_name = String(body.display_name ?? current.display_name).trim().slice(0, 120) || current.display_name;
@@ -2919,10 +2925,6 @@ serve(async (req) => {
           patch.powered_by_schood = Boolean(body.powered_by_schood);
         }
         if ("branding" in body) patch.branding = isObject(body.branding) ? body.branding : {};
-        if ("commercial_model" in body && ["prepaid_wallet", "wholesale", "revenue_share", "hybrid"].includes(String(body.commercial_model))) {
-          patch.commercial_model = String(body.commercial_model);
-        }
-
         const { data, error } = await sb
           .from("partner_center_profiles")
           .update(patch)
@@ -2941,43 +2943,12 @@ serve(async (req) => {
         if (!amount) return json(400, { error: "amount must be positive" });
         const settlementMode = String(body.settlement_mode ?? body.mode ?? "online").trim().toLowerCase();
         if (settlementMode !== "manual") {
-          if (!isClickConfigured()) return clickNotConfigured("Click checkout for center wallet top-ups");
-          if (currency !== "UZS") return json(400, { error: "Online wallet top-up currently supports UZS only" });
-          if (amount < CLICK_MIN_AMOUNT_UZS || amount > CLICK_MAX_AMOUNT_UZS) {
-            return json(400, {
-              error: `Online wallet top-up must be between ${CLICK_MIN_AMOUNT_UZS} and ${CLICK_MAX_AMOUNT_UZS} UZS.`,
-              error_code: "online_payment_amount_limit",
-              min_amount: CLICK_MIN_AMOUNT_UZS,
-              max_amount: CLICK_MAX_AMOUNT_UZS,
-              amount,
-              currency,
-            });
-          }
-          const profile = await getCenterProfile(sb, tenantId);
           const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
-            method: "POST",
-            body: JSON.stringify({
-              purchase_type: "center_wallet_topup",
-              tenant_id: tenantId,
-              amount,
-              currency,
-              description: `${profile?.display_name ?? "Education center"} wallet top-up`,
-              redirect_url: body.redirect_url ?? null,
-              apply_credit: false,
-              credit_amount: 0,
-              metadata: {
-                center_office: true,
-                center_tenant_id: tenantId,
-                wallet_topup: true,
-                wallet_topup_amount: amount,
-                wallet_topup_currency: currency,
-                note: body.note ?? null,
-              },
-            }),
+            method: "POST", body: JSON.stringify(partnerCheckoutPayload(actionBody, tenantId, body)),
           });
-          const text = await forwarded.text();
-          return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+          return new Response(await forwarded.text(), { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
+
         const { data, error } = await sb
           .from("partner_wallet_ledger")
           .insert({
@@ -2999,260 +2970,15 @@ serve(async (req) => {
       if (actionBody === "create_voucher_batch") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
-        const profile = await ensureCenterProfile(sb, tenantId, userId);
-        const capabilities = getCenterCapabilities(profile);
-        const accessKind = String(body.access_kind ?? "").trim();
-        if (!["mock_exam", "subscription", "seat"].includes(accessKind)) return json(400, { error: "Unsupported access_kind" });
-        const quantity = normalizeQuantity(body.quantity, 1000);
-        if (!quantity) return json(400, { error: "quantity must be between 1 and 1000" });
-        if (quantity > capabilities.max_voucher_batch_quantity) {
-          return json(403, {
-            error: `${capabilities.tier_label} centers can generate up to ${capabilities.max_voucher_batch_quantity} vouchers per batch.`,
-            error_code: "center_tier_limit_reached",
-            limit: capabilities.max_voucher_batch_quantity,
-            tier: capabilities.tier,
-          });
-        }
-        const prefix = normalizeCode(body.prefix ?? `SCH-${String(profile.slug ?? "CENTER").toUpperCase()}`);
-        const expiresAt = body.expires_at
-          ? new Date(String(body.expires_at)).toISOString()
-          : new Date(Date.now() + (normalizeDays(body.expires_in_days, 365) ?? 30) * 86400000).toISOString();
-        if (Date.parse(expiresAt) <= Date.now()) return json(400, { error: "expires_at must be in the future" });
+        const result = await issueVoucherBatch(sb, userId, tenantId, body);
+        return json(result.status, result.body);
+      }
 
-        let productId = String(body.product_id ?? "").trim() || null;
-        let experienceId = String(body.experience_id ?? "").trim() || null;
-        let planId = String(body.plan_id ?? "").trim() || null;
-        const requestedClassroomId = String(body.classroom_id ?? "").trim();
-        let classroomBinding: { id: string; academy_id: string; name: string } | null = null;
-        let unitPrice = 0;
-        let currency = "UZS";
-
-        if (requestedClassroomId) {
-          if (!isUuid(requestedClassroomId)) return json(400, { error: "classroom_id is invalid" });
-          const { data: classroom, error: classroomError } = await sb
-            .from("academy_classrooms")
-            .select("id, academy_id, name, is_active")
-            .eq("id", requestedClassroomId)
-            .eq("is_active", true)
-            .maybeSingle();
-          if (classroomError) return json(500, { error: "Failed to validate classroom", detail: classroomError.message });
-          if (!classroom?.id) return json(400, { error: "Classroom not found or inactive" });
-
-          const { data: academy, error: academyError } = await sb
-            .from("tenants")
-            .select("id")
-            .eq("id", classroom.academy_id)
-            .contains("metadata", { parent_center_id: tenantId, service_family: "academy" })
-            .maybeSingle();
-          if (academyError) return json(500, { error: "Failed to validate classroom academy", detail: academyError.message });
-          if (!academy?.id) return json(403, { error: "Classroom must belong to a center-owned academy" });
-
-          classroomBinding = {
-            id: String(classroom.id),
-            academy_id: String(classroom.academy_id),
-            name: String(classroom.name ?? "Classroom"),
-          };
-        }
-
-        if (accessKind === "mock_exam") {
-          if (!experienceId) return json(400, { error: "experience_id is required for mock vouchers" });
-          const { data: exp, error } = await sb
-            .from("experiences")
-            .select("id, product_id, is_active, name, price_amount, price_currency, metadata, products ( id, name, status, metadata )")
-            .eq("id", experienceId)
-            .maybeSingle();
-          if (error || !exp?.id || !exp.is_active) return json(400, { error: "Invalid experience_id" });
-          if (!isSellableMockExperience(exp)) return json(400, { error: "Mock test is not priced or ticket eligible" });
-          productId = exp.product_id;
-          currency = String(exp.price_currency ?? "UZS");
-          unitPrice = lookupWholesalePrice(profile, accessKind, experienceId, productId, Number(exp.price_amount ?? 0));
-        } else if (accessKind === "subscription") {
-          if (!planId) return json(400, { error: "plan_id is required for subscription vouchers" });
-          const { data: plan, error } = await sb
-            .from("plans")
-            .select("id, product_id, amount, currency, is_active")
-            .eq("id", planId)
-            .maybeSingle();
-          if (error || !plan?.id || !plan.is_active) return json(400, { error: "Invalid plan_id" });
-          productId = plan.product_id;
-          currency = String(plan.currency ?? "UZS");
-          unitPrice = lookupWholesalePrice(profile, accessKind, planId, productId, Number(plan.amount ?? 0));
-        } else {
-          if (!planId) return json(400, { error: "plan_id is required for seat vouchers" });
-          const { data: seatRows, error } = await sb
-            .from("seat_licenses")
-            .select("id, plan_id, product_id")
-            .eq("tenant_id", tenantId)
-            .eq("plan_id", planId)
-            .eq("status", "unassigned")
-            .order("created_at", { ascending: true })
-            .limit(quantity);
-          if (error) return json(500, { error: "Failed to load seats", detail: error.message });
-          if ((seatRows ?? []).length < quantity) return json(400, { error: "Not enough unassigned seats for this plan" });
-          productId = String((seatRows ?? [])[0]?.product_id ?? productId ?? "");
-          unitPrice = 0;
-        }
-
-        const sourceModel = String(body.source_model ?? profile.commercial_model ?? "prepaid_wallet");
-        const totalAmount = unitPrice * quantity;
-        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
-          const { data: available } = await sb.rpc("partner_wallet_available", { p_tenant_id: tenantId, p_currency: currency });
-          if (Number(available ?? 0) < totalAmount) return json(400, { error: "Insufficient partner wallet balance" });
-        }
-
-        const batchCode = await buildBatchCode(sb, tenantId, prefix);
-        const { data: batch, error: batchError } = await sb
-          .from("partner_voucher_batches")
-          .insert({
-            tenant_id: tenantId,
-            batch_code: batchCode,
-            access_kind: accessKind,
-            product_id: productId,
-            experience_id: experienceId,
-            plan_id: planId,
-            classroom_id: classroomBinding?.id ?? null,
-            quantity,
-            expires_at: expiresAt,
-            prefix,
-            source_model: sourceModel === "prepaid_wallet" || sourceModel === "wholesale" || sourceModel === "revenue_share" ? sourceModel : "manual",
-            created_by: userId,
-            metadata: {
-              unit_price: unitPrice,
-              total_amount: totalAmount,
-              currency,
-              assigned_students: Array.isArray(body.assigned_students) ? body.assigned_students.length : 0,
-              classroom: classroomBinding,
-            },
-          })
-          .select("*")
-          .maybeSingle();
-        if (batchError || !batch?.id) return json(500, { error: "Failed to create voucher batch", detail: batchError?.message });
-
-        const assignedStudents = Array.isArray(body.assigned_students) ? body.assigned_students : [];
-        const vouchers = [];
-        if (accessKind === "mock_exam") {
-          for (let i = 0; i < quantity; i += 1) {
-            const code = await ensureUniqueVoucherCode(sb, prefix);
-            const { data: tokenRow, error: tokenError } = await sb
-              .from("exam_tokens")
-              .insert({
-                tenant_id: tenantId,
-                experience_id: experienceId,
-                token_code: code,
-                status: "active",
-                expires_at: expiresAt,
-                max_uses: 1,
-                uses_count: 0,
-                created_by: userId,
-                metadata: { source: "partner_voucher", batch_id: batch.id, classroom_id: classroomBinding?.id ?? null },
-              })
-              .select("id")
-              .maybeSingle();
-            if (tokenError || !tokenRow?.id) return json(500, { error: "Failed to create exam token", detail: tokenError?.message });
-            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-            vouchers.push({
-              tenant_id: tenantId,
-              batch_id: batch.id,
-              code,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: experienceId,
-              plan_id: null,
-              exam_token_id: tokenRow.id,
-              classroom_id: classroomBinding?.id ?? null,
-              status: "unused",
-              expires_at: expiresAt,
-              assigned_name: String(assigned.name ?? "").trim() || null,
-              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
-              assigned_phone: String(assigned.phone ?? "").trim() || null,
-              source_payment_id: null,
-              metadata: { batch_code: batchCode, classroom: classroomBinding },
-            });
-          }
-        } else {
-          let seatRows: any[] = [];
-          if (accessKind === "seat") {
-            const { data } = await sb
-              .from("seat_licenses")
-              .select("id")
-              .eq("tenant_id", tenantId)
-              .eq("plan_id", planId)
-              .eq("status", "unassigned")
-              .order("created_at", { ascending: true })
-              .limit(quantity);
-            seatRows = data ?? [];
-          }
-          for (let i = 0; i < quantity; i += 1) {
-            const code = await ensureUniqueVoucherCode(sb, prefix);
-            const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-            vouchers.push({
-              tenant_id: tenantId,
-              batch_id: batch.id,
-              code,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: null,
-              plan_id: planId,
-              seat_license_id: accessKind === "seat" ? seatRows[i]?.id ?? null : null,
-              classroom_id: classroomBinding?.id ?? null,
-              status: "unused",
-              expires_at: expiresAt,
-              assigned_name: String(assigned.name ?? "").trim() || null,
-              assigned_email: String(assigned.email ?? "").trim().toLowerCase() || null,
-              assigned_phone: String(assigned.phone ?? "").trim() || null,
-              source_payment_id: null,
-              metadata: { batch_code: batchCode, classroom: classroomBinding },
-            });
-          }
-        }
-
-        const { data: insertedVouchers, error: voucherError } = await sb.from("partner_vouchers").insert(vouchers).select("*");
-        if (voucherError) return json(500, { error: "Failed to create vouchers", detail: voucherError.message });
-
-        const insertedRows = insertedVouchers ?? [];
-        for (let i = 0; i < Math.min(assignedStudents.length, insertedRows.length); i += 1) {
-          const assigned = isObject(assignedStudents[i]) ? assignedStudents[i] as Json : {};
-          const voucher = insertedRows[i];
-          const fullName = String(assigned.name ?? assigned.full_name ?? "").trim();
-          const email = normalizeEmail(assigned.email);
-          const phone = String(assigned.phone ?? "").trim();
-          if (!fullName && !email && !phone) continue;
-          await upsertCenterStudent(sb, {
-            tenantId,
-            fullName: fullName || null,
-            email,
-            phone: phone || null,
-            voucherId: voucher?.id ?? null,
-            createdBy: userId,
-            metadata: {
-              invite_source: "voucher_batch_roster",
-              batch_id: batch.id,
-              voucher_code: voucher?.code ?? null,
-              access_kind: accessKind,
-              product_id: productId,
-              experience_id: experienceId,
-              plan_id: planId,
-              classroom_id: classroomBinding?.id ?? null,
-              expires_at: expiresAt,
-            },
-          });
-        }
-
-        if (sourceModel === "prepaid_wallet" && totalAmount > 0) {
-          await sb.from("partner_wallet_ledger").insert({
-            tenant_id: tenantId,
-            user_id: userId,
-            entry_kind: "debit",
-            status: "posted",
-            amount: totalAmount,
-            currency,
-            voucher_batch_id: batch.id,
-            created_by: userId,
-            metadata: { access_kind: accessKind, quantity, unit_price: unitPrice },
-          });
-        }
-
-        return json(200, { batch, vouchers: insertedVouchers ?? [] });
+      if (actionBody === "cancel_voucher_request") {
+        const gate = await requireActiveCenterOffice(sb, tenantId, body);
+        if (gate) return gate;
+        const result = await cancelVoucherBatchRequest(sb, userId, tenantId, body);
+        return json(result.status, result.body);
       }
 
       if (actionBody === "export_voucher_sheet") {
@@ -3477,22 +3203,8 @@ serve(async (req) => {
       if (actionBody === "void_voucher") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
-        const voucherId = String(body.voucher_id ?? "").trim();
-        if (!voucherId) return json(400, { error: "voucher_id is required" });
-        const { data, error } = await sb
-          .from("partner_vouchers")
-          .update({ status: "void", metadata: { reason: body.reason ?? "voided_by_center", voided_by: userId } })
-          .eq("id", voucherId)
-          .eq("tenant_id", tenantId)
-          .eq("status", "unused")
-          .select("*")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to void voucher", detail: error.message });
-        if (!data?.id) return json(400, { error: "Only unused vouchers can be voided" });
-        if (data.exam_token_id) {
-          await sb.from("exam_tokens").update({ status: "disabled" }).eq("id", data.exam_token_id).eq("status", "active");
-        }
-        return json(200, { voucher: data });
+        const result = await voidVoucher(sb, userId, tenantId, body);
+        return json(result.status, result.body);
       }
 
       if (actionBody === "export_report") {
@@ -3551,135 +3263,10 @@ serve(async (req) => {
         if (gate) return gate;
         if (!requireTenantAdmin(memberships, tenantId)) return json(403, { error: "Only center owners/admins can manage tier billing" });
 
-        const profile = await getCenterProfile(sb, tenantId);
-        if (!profile?.tenant_id) return json(404, { error: "Education center profile is required" });
-
-        const currentTier = normalizeCenterTier(profile.package_tier);
-        const requestedTier = normalizeCenterTier(body.requested_tier ?? body.tier);
-        if (requestedTier === "starter") return json(400, { error: "Starter is the free base tier and cannot be purchased" });
-        if (CENTER_TIER_RANK[requestedTier] < CENTER_TIER_RANK[currentTier]) {
-          return json(400, { error: "Tier downgrades are handled by Schood admin support" });
-        }
-
-        const billingPeriod = normalizeBillingPeriod(body.billing_period);
-        const { data: plan, error: planError } = await sb
-          .from("plans")
-          .select("id, product_id, name, amount, currency, duration_days, metadata, is_active")
-          .eq("product_id", CENTER_TIER_PRODUCT_ID)
-          .eq("is_active", true)
-          .eq("metadata->>center_tier", requestedTier)
-          .eq("metadata->>billing_period", billingPeriod)
-          .maybeSingle();
-        if (planError) return json(500, { error: "Failed to load tier pricing", detail: planError.message });
-        if (!plan?.id) return json(400, { error: "Tier pricing is not configured for this period" });
-
-        const amount = normalizeMoney((plan as any).amount);
-        const currency = String((plan as any).currency ?? "UZS").toUpperCase();
-        if (!amount) return json(400, { error: "Tier plan amount is not configured" });
-        if (!isClickConfigured()) return clickNotConfigured("Click checkout for center tier upgrades");
-        if (currency === "UZS" && amount > CLICK_MAX_AMOUNT_UZS) {
-          return json(400, {
-            error: `Current Click payment limit is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction. Ask Schood admin to invoice this tier manually.`,
-            error_code: "online_payment_amount_limit",
-            max_amount: CLICK_MAX_AMOUNT_UZS,
-            amount,
-            currency,
-          });
-        }
-
-        const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
-        const { data: tierRequest, error: requestError } = await sb
-          .from("partner_center_tier_change_requests")
-          .insert({
-            tenant_id: tenantId,
-            previous_tier: currentTier,
-            requested_tier: requestedTier,
-            billing_period: billingPeriod,
-            amount,
-            currency,
-            status: "pending_payment",
-            requested_by: userId,
-            expires_at: expiresAt,
-            metadata: {
-              source: "center_office",
-              plan_id: plan.id,
-              plan_name: plan.name,
-              duration_days: plan.duration_days ?? null,
-            },
-          })
-          .select("*")
-          .maybeSingle();
-        if (requestError || !tierRequest?.id) return json(500, { error: "Failed to create tier request", detail: requestError?.message });
-
-        const payload = {
-          plan_id: plan.id,
-          purchase_type: "center_tier_upgrade",
-          tenant_id: tenantId,
-          description: `${profile.display_name ?? "Education center"} ${CENTER_TIER_CAPABILITIES[requestedTier].tier_label} ${billingPeriod} tier`,
-          redirect_url: body.redirect_url ?? null,
-          apply_credit: false,
-          credit_amount: 0,
-          metadata: {
-            center_office: true,
-            center_tenant_id: tenantId,
-            purchase_type: "center_tier_upgrade",
-            tier_change_request_id: tierRequest.id,
-            requested_tier: requestedTier,
-            previous_tier: currentTier,
-            billing_period: billingPeriod,
-          },
-        };
-
         const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
-          method: "POST",
-          body: JSON.stringify(payload),
+          method: "POST", body: JSON.stringify(partnerCheckoutPayload(actionBody, tenantId, body)),
         });
-        const text = await forwarded.text();
-        let parsed: any = null;
-        try {
-          parsed = text ? JSON.parse(text) : null;
-        } catch {
-          parsed = null;
-        }
-
-        if (!forwarded.ok) {
-          await sb
-            .from("partner_center_tier_change_requests")
-            .update({ status: "failed", metadata: { ...(tierRequest.metadata ?? {}), click_error: parsed ?? text } })
-            .eq("id", tierRequest.id);
-          return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
-        }
-
-        const transactionId = String(parsed?.transaction_id ?? "").trim();
-        let paymentId: string | null = null;
-        if (transactionId) {
-          const { data: paymentRow } = await sb
-            .from("payments")
-            .select("id")
-            .eq("tenant_id", tenantId)
-            .eq("purchase_type", "center_tier_upgrade")
-            .eq("provider_transaction_id", transactionId)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          paymentId = paymentRow?.id ?? null;
-        }
-
-        const { data: updatedRequest } = await sb
-          .from("partner_center_tier_change_requests")
-          .update({
-            payment_id: paymentId,
-            metadata: {
-              ...(tierRequest.metadata ?? {}),
-              click_transaction_id: parsed?.transaction_id ?? null,
-              payment_url: parsed?.payment_url ?? null,
-            },
-          })
-          .eq("id", tierRequest.id)
-          .select("*")
-          .maybeSingle();
-
-        return json(200, { ...(parsed ?? {}), tier_request: updatedRequest ?? tierRequest });
+        return new Response(await forwarded.text(), { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
       }
 
       if (actionBody === "quote_purchase") {
@@ -3724,82 +3311,10 @@ serve(async (req) => {
       if (actionBody === "create_ticket_purchase" || actionBody === "create_seat_purchase") {
         const gate = await requireActiveCenterOffice(sb, tenantId, body);
         if (gate) return gate;
-        if (!isClickConfigured()) return clickNotConfigured("Click checkout for center purchases");
-        const purchaseType = actionBody === "create_ticket_purchase" ? "token_pack" : "seat_pack";
-        const quantity = normalizeQuantity(purchaseType === "token_pack" ? body.quantity : body.seat_count ?? body.quantity, 200) ?? 1;
-        let originalAmount = 0;
-        let currency = "UZS";
-
-        if (purchaseType === "token_pack") {
-          const experienceId = String(body.experience_id ?? "");
-          const { data: exp } = await sb
-            .from("experiences")
-            .select("id, price_amount, price_currency")
-            .eq("id", experienceId)
-            .eq("is_active", true)
-            .maybeSingle();
-          originalAmount = Number((exp as any)?.price_amount ?? 0) * quantity;
-          currency = String((exp as any)?.price_currency ?? "UZS");
-        } else {
-          const planId = String(body.plan_id ?? "");
-          const { data: plan } = await sb
-            .from("plans")
-            .select("id, amount, currency")
-            .eq("id", planId)
-            .eq("is_active", true)
-            .maybeSingle();
-          originalAmount = Number((plan as any)?.amount ?? 0) * quantity;
-          currency = String((plan as any)?.currency ?? "UZS");
-        }
-
-        if (Number.isFinite(originalAmount) && originalAmount > 0 && currency === "UZS") {
-          const { data: creditAvailable } = await sb.rpc("platform_credit_available", { p_user_id: userId, p_currency: currency });
-          const requestedCredit = Boolean(body.center_office) ? 0 : body.apply_credit || typeof body.credit_amount !== "undefined"
-            ? (typeof body.credit_amount === "undefined" || body.credit_amount === null ? originalAmount : normalizeMoney(body.credit_amount))
-            : 0;
-          const creditAmount = Math.min(originalAmount, Number(creditAvailable ?? 0), requestedCredit);
-          const finalAmount = Math.max(0, originalAmount - creditAmount);
-          if (finalAmount > CLICK_MAX_AMOUNT_UZS) {
-            return json(400, {
-              error: `Current Click checkout limit is ${CLICK_MAX_AMOUNT_UZS.toLocaleString()} UZS per transaction. For larger education center purchases, use wallet top-up/admin settlement or split the purchase.`,
-              error_code: "online_payment_amount_limit",
-              temporary: false,
-              max_amount: CLICK_MAX_AMOUNT_UZS,
-              original_amount: originalAmount,
-              credit_amount: creditAmount,
-              final_amount: finalAmount,
-              currency,
-            });
-          }
-        }
-
-        const payload = {
-          ...body,
-          purchase_type: purchaseType,
-          tenant_id: String(body.tenant_id ?? tenantId),
-          description: String(body.description ?? (purchaseType === "token_pack" ? "Partner mock ticket pack" : "Partner seat pack")),
-          apply_credit: Boolean(body.center_office) ? false : body.apply_credit,
-          credit_amount: Boolean(body.center_office) ? 0 : body.credit_amount,
-          metadata: {
-            ...(isObject(body.metadata) ? body.metadata : {}),
-            center_office: Boolean(body.center_office),
-            center_tenant_id: tenantId,
-            purchaser_user_id: userId,
-          },
-        };
-        delete (payload as any).action;
-        delete (payload as any).center_office;
-
-        if (purchaseType === "token_pack" && !normalizeDays((payload as any).expires_in_days)) {
-          (payload as any).expires_in_days = 30;
-        }
-
         const forwarded = await forwardEdge(supabaseUrl, anonKey, token, "click/create-transaction", {
-          method: "POST",
-          body: JSON.stringify(payload),
+          method: "POST", body: JSON.stringify(partnerCheckoutPayload(actionBody, tenantId, body)),
         });
-        const text = await forwarded.text();
-        return new Response(text, { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+        return new Response(await forwarded.text(), { status: forwarded.status, headers: { "Content-Type": "application/json", ...corsHeaders } });
       }
 
       return json(400, { error: "Unknown action" });

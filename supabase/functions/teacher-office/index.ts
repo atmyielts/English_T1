@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { assignPurchasedSeat } from "./assignment.ts";
 
 type Json = Record<string, unknown>;
 
@@ -92,7 +93,7 @@ const randomCode = (len = 10): string => {
 };
 
 const ensureUniqueCode = async (
-  sb: ReturnType<typeof createClient>,
+  sb: SupabaseClient<any>,
   attempts = 8,
 ): Promise<string> => {
   for (let i = 0; i < attempts; i += 1) {
@@ -103,7 +104,7 @@ const ensureUniqueCode = async (
   throw new Error("Failed to generate unique code");
 };
 
-const loadMemberships = async (sb: ReturnType<typeof createClient>, userId: string): Promise<MembershipRow[]> => {
+const loadMemberships = async (sb: SupabaseClient<any>, userId: string): Promise<MembershipRow[]> => {
   const { data, error } = await sb
     .from("tenant_memberships")
     .select("tenant_id, role, status")
@@ -150,7 +151,7 @@ const getEntitlementTargets = (productId: string, planMeta: unknown): string[] =
   return Array.from(set);
 };
 
-const findPersonalTenant = async (sb: ReturnType<typeof createClient>, userId: string): Promise<string | null> => {
+const findPersonalTenant = async (sb: SupabaseClient<any>, userId: string): Promise<string | null> => {
   const { data, error } = await sb
     .from("tenant_memberships")
     .select("tenant_id, tenants ( type )")
@@ -226,7 +227,7 @@ serve(async (req) => {
         .eq("is_active", true)
         .order("created_at", { ascending: true });
       if (error) return json(500, { error: "Failed to load plans", detail: error.message });
-      return json(200, { plans: (data ?? []) as PlanRow[] });
+      return json(200, { plans: data ?? [] });
     }
 
     if (req.method === "GET" && action === "tokens") {
@@ -312,7 +313,7 @@ serve(async (req) => {
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
       if (error) return json(500, { error: "Failed to load seats", detail: error.message });
-      return json(200, { seats: (data ?? []) as SeatRow[] });
+      return json(200, { seats: data ?? [] });
     }
 
     if (req.method === "POST") {
@@ -328,105 +329,8 @@ serve(async (req) => {
           return json(403, { error: "Forbidden" });
         }
 
-        const seatId = String(body?.seat_id ?? "");
-        const email = String(body?.email ?? "").trim().toLowerCase();
-        if (!seatId) return json(400, { error: "seat_id is required" });
-        if (!email) return json(400, { error: "email is required" });
-
-        const { data: seat, error: seatErr } = await sb
-          .from("seat_licenses")
-          .select("id, tenant_id, plan_id, product_id, status, expires_at")
-          .eq("id", seatId)
-          .maybeSingle();
-        if (seatErr) return json(500, { error: "Failed to load seat", detail: seatErr.message });
-        if (!seat || seat.tenant_id !== tenantId) return json(404, { error: "Seat not found" });
-        if (seat.status !== "unassigned") return json(400, { error: "Seat already assigned" });
-        if (seat.expires_at && Date.parse(seat.expires_at) < Date.now()) {
-          await sb.from("seat_licenses").update({ status: "expired" }).eq("id", seatId);
-          return json(400, { error: "Seat expired" });
-        }
-
-        const { data: userRow } = await sb.from("users").select("id, email").eq("email", email).maybeSingle();
-        if (!userRow?.id) return json(400, { error: "User not found. Ask them to sign up first." });
-
-        const assignedUserId = String(userRow.id);
-        const assignedTenantId = await findPersonalTenant(sb, assignedUserId);
-        if (!assignedTenantId) return json(400, { error: "User has no personal tenant" });
-
-        const { data: planRow, error: planErr } = await sb
-          .from("plans")
-          .select("id, product_id, duration_days, metadata")
-          .eq("id", seat.plan_id)
-          .maybeSingle();
-        if (planErr || !planRow) return json(500, { error: "Failed to load plan" });
-
-        const planDuration = planRow.duration_days ?? null;
-        const planMeta = planRow.metadata ?? null;
-        const entitlementValue = buildEntitlementValue(planRow.id, planMeta);
-        const targetProductIds = getEntitlementTargets(String(planRow.product_id), planMeta);
-
-        const { data: existingRows } = await sb
-          .from("entitlements")
-          .select("resource_id, ends_at")
-          .eq("tenant_id", assignedTenantId)
-          .eq("resource_type", "product")
-          .in("resource_id", targetProductIds);
-
-        const existingMap = new Map<string, string | null>();
-        (existingRows ?? []).forEach((row: any) => {
-          if (row?.resource_id) existingMap.set(String(row.resource_id), row?.ends_at ?? null);
-        });
-
-        const nowIso = new Date().toISOString();
-        let seatEndsAt: string | null = null;
-        const payload = targetProductIds.map((pid) => {
-          let targetEndsAt: string | null = null;
-          if (planDuration && planDuration > 0) {
-            const nowMs = Date.now();
-            const existing = existingMap.get(pid);
-            const baseMs = existing ? Math.max(nowMs, Date.parse(existing)) : nowMs;
-            targetEndsAt = new Date(baseMs + planDuration * 24 * 60 * 60 * 1000).toISOString();
-            if (!seatEndsAt || Date.parse(targetEndsAt) > Date.parse(seatEndsAt)) {
-              seatEndsAt = targetEndsAt;
-            }
-          }
-
-          return {
-            user_id: assignedUserId,
-            tenant_id: assignedTenantId,
-            resource_type: "product",
-            resource_id: pid,
-            is_active: true,
-            starts_at: nowIso,
-            ends_at: targetEndsAt,
-            source: "seat",
-            value: entitlementValue,
-          };
-        });
-
-        const { error: grantErr } = await sb.from("entitlements").upsert(payload, {
-          onConflict: "tenant_id,resource_type,resource_id",
-        });
-        if (grantErr) return json(500, { error: "Failed to grant entitlement", detail: grantErr.message });
-
-        const { data: updatedSeat, error: updErr } = await sb
-          .from("seat_licenses")
-          .update({
-            assigned_user_id: assignedUserId,
-            assigned_tenant_id: assignedTenantId,
-            status: "active",
-            assigned_at: nowIso,
-            starts_at: nowIso,
-            ends_at: seatEndsAt,
-          })
-          .eq("id", seatId)
-          .select(
-            "id, status, expires_at, assigned_at, starts_at, ends_at, plan_id, product_id, assigned_user_id, plans ( name, duration_days ), assigned_user:users!seat_licenses_assigned_user_id_fkey ( email )",
-          )
-          .maybeSingle();
-
-        if (updErr) return json(500, { error: "Failed to update seat", detail: updErr.message });
-        return json(200, { seat: updatedSeat });
+        const result = await assignPurchasedSeat(sb, authedUserId, tenantId, body);
+        return json(result.status, result.body);
       }
 
       if (actionBody === "create_token") {

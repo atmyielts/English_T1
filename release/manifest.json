@@ -1,57 +1,106 @@
 {
   "schemaVersion": 1,
-  "releaseId": "account-erasure-retention",
+  "releaseId": "payment-transactions-backend",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "platform"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261010154000_account_deletion_ownership_guard.sql",
-    "20261010155000_account_closed_principal_boundary.sql",
-    "20261010160000_account_personal_erasure_transaction.sql",
-    "20261010161000_account_api_request_guard.sql"
+    "20261010162000_payment_fulfillment_transaction.sql",
+    "20261010163000_payment_checkout_transaction.sql",
+    "20261010164000_academy_purchase_transaction.sql",
+    "20261010165000_center_tier_checkout_transaction.sql",
+    "20261010170000_seat_assignment_transaction.sql",
+    "20261010171000_voucher_issue_transaction.sql",
+    "20261010172000_voucher_redemption_transaction.sql",
+    "20261010173000_candidate_admission_transaction.sql",
+    "20261010174000_voucher_void_transaction.sql"
   ],
   "edgeFunctions": [
-    "account"
+    "admin-payments",
+    "click",
+    "partner-office",
+    "teacher-office",
+    "voucher-redeem",
+    "candidate-entry"
   ],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "CLICK_MERCHANT_ID",
+    "CLICK_SECRET_KEY",
+    "CLICK_SERVICE_ID",
+    "TELEGRAM_PUBLIC_BOT_TOKEN"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261010154000_account_deletion_ownership_guard.sql",
-    "migration:20261010155000_account_closed_principal_boundary.sql",
-    "migration:20261010160000_account_personal_erasure_transaction.sql",
-    "migration:20261010161000_account_api_request_guard.sql",
-    "function:account"
+    "secret:CLICK_MERCHANT_ID",
+    "secret:CLICK_SECRET_KEY",
+    "secret:CLICK_SERVICE_ID",
+    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
+    "migration:20261010162000_payment_fulfillment_transaction.sql",
+    "migration:20261010163000_payment_checkout_transaction.sql",
+    "migration:20261010164000_academy_purchase_transaction.sql",
+    "migration:20261010165000_center_tier_checkout_transaction.sql",
+    "migration:20261010170000_seat_assignment_transaction.sql",
+    "migration:20261010171000_voucher_issue_transaction.sql",
+    "migration:20261010172000_voucher_redemption_transaction.sql",
+    "migration:20261010173000_candidate_admission_transaction.sql",
+    "migration:20261010174000_voucher_void_transaction.sql",
+    "function:admin-payments",
+    "function:click",
+    "function:partner-office",
+    "function:teacher-office",
+    "function:voucher-redeem",
+    "function:candidate-entry"
   ],
   "manualFollowUps": [
-    "Draft disabled lifecycle candidate. Keep payment draft215 unpublished until installed Auth/lifecycle/transport, media, subscription and old-client compatibility is qualified. Complete captured-schema compatibility is locally qualified, not installed activation proof.",
-    "After reviewed exact-head CI and tracked Pages: supabase db push --linked only from an isolated checkout containing these four reviewed migrations and published history. Inspect the plan and refuse unrelated pending migrations. Keep account_closure_config.enabled=false; retain financial worker disabled. Schema and the reloaded API guard must precede the soft-delete handler.",
-    "Refresh installed account source/version and preserve verify_jwt=true. The committed earlier source baseline is historical (live v34 at the checkpoint). Build only the reviewed source-preserving isolated account bundle and refuse baseline or dependency drift.",
-    "Before changing the live handler or global flag: a database owner grants only one exclusively owned disposable QA identity a private account_closure_qualifications row of at most one hour. All ownership/billing/media/API guards still apply. Invoke trusted Auth soft deletion directly, qualify installed triggers and actual REST/RPC/view denial, password/refresh denial, learning purge, immutable receipts and Academy retention, race rollback and public browsing. Revoke the qualification afterward. No customer identities or charges.",
-    "After isolated lifecycle qualification and a fresh live source check: supabase functions deploy account --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-account-bundle>. Download and compare installed source hashes and verify verify_jwt=true before activation.",
-    "Activate account_closure_config.enabled only after fresh hook reload and provider/retention/storage/subscription canaries succeed. A disabled configuration returns a private unavailable response through the new handler. Preserve closed-personal-tenant and acquisition-archive markers after grant revocation or global disablement. Do not clear unrelated hooks, bypass CI, remove retained receipt FKs or fall back to hard deletion."
+    "Protected backend-only release. Frontend source is unchanged. Wait for exact-head CI and tracked Pages on the protected merge SHA before manual backend publication. Separate recovery UI follows hosted backend qualification.",
+    "supabase db push --linked only from the isolated reviewed checkout for project bbjawctnqrufvnesdsel. Inspect the dry-run and refuse migrations other than these nine ordered additive files. Keep payment_fulfillment_config.worker_enabled=false until published canaries and actual recovery pass.",
+    "Before installation, refresh the aggregate payment/inventory counts and installed apply_academy_payment(uuid,uuid) owner and source hashes. Refuse source drift. Preserve the private non-Click implementation and public function identity. Account deletion remains enabled and qualified separately.",
+    "Read-only inventory at 2026-10-10T12:26:45Z found no currently usable unused vouchers, unassigned seats or exam tokens, no Academy payments and no paid Click payments. Historical TSpay grants remain historical evidence; do not create replacement receipts or renew them. Refresh these counts immediately before publication.",
+    "New hybrid-center voucher batches use prepaid_wallet funding from the existing wallet. The captured agreement remains hybrid. Caller-supplied deferred/manual funding is refused. Original-key replay retains the original debit and terms. No center configuration or existing voucher is changed.",
+    "Previously redeemed legacy subscription/seat vouchers may return only validated original grant history corroborated by the same beneficiary and actual personal entitlement. This confirmation writes no receipt, debit, roster or entitlement and never renews access. Ambiguous history requires review; existing access is retained.",
+    "Prepare all six isolated bundles with scripts/prepare-payment-release-bundles.mjs using the reviewed commit and release/payment-published-baseline.json. Preserve every downloaded dependency and verify_jwt setting. Refuse baseline drift; typecheck each actual bundle. Voucher media retains the published AWS package versions.",
+    "supabase functions deploy admin-payments --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-admin-payments-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "supabase functions deploy click --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-click-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "supabase functions deploy partner-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-partner-office-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "supabase functions deploy teacher-office --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-teacher-office-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "supabase functions deploy voucher-redeem --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-voucher-redeem-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-candidate-entry-bundle>. Publish only reviewed runtime source after schema compatibility and owned old-client checks; verify downloaded hashes and unchanged gateway flag.",
+    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_MERCHANT_ID=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
+    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_SECRET_KEY=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
+    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set CLICK_SERVICE_ID=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
+    "Preserve existing configuration. Only for an explicitly reviewed repair: supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN=<protected-existing-value> --project-ref bbjawctnqrufvnesdsel. Never print or save the value.",
+    "Published qualification must use exclusively owned QA actors and data, create no customer charge, and cover original-key checkout recovery, seat/voucher issuance/redemption/admission/void and denied foreign actors. Retain immutable financial/institutional QA history and close/pseudonymize owned principals through the qualified lifecycle.",
+    "Qualify the published Node crypto MD5 callback path and signed owned callback before routing customer checkout through the new Click version. Local handler doubles do not prove hosted provider settlement.",
+    "Enable the dormant payment-fulfillment-v1 worker only after all published backend source checks and owned recovery canaries pass. Verify pg_cron and actual retry recovery. Disable the worker first if a backend rollback is necessary. Retain all additive immutable receipt tables.",
+    "Voucher voiding atomically closes only unused stock and its unused linked exam token. It never refunds funding, releases retained seat reservations, renews access or manufactures replacement inventory. Closed original issuance keys replay a closure; committed issuance returns its original batch."
   ],
   "verification": [
-    "68 native PostgreSQL/PostgREST cases passed, including 8 actual HTTP checks and 3 verified-identity regressions; ownership/billing/acquisition races and private per-QA qualifications remain covered. Ordinary npm test includes the pinned-container suite.",
-    "28 actual account handler/client cases and Edge check; current Platform build with public local fixture configuration; 20 rendered synthetic-API browser cases and 3 menu checks.",
-    "Owned hosted Auth-only soft-delete provider probe reproduced old-token REST access; six checks and cleanup verified. This is not qualification of the unpublished lifecycle candidate.",
-    "Six native cases against the actual nine reviewed draft-financial migrations passed with immutable receipt/identity triggers. Complete captured public/Auth/Storage schema independently passed 14 local cases: 406 tables, 238 public triggers, 1 Auth trigger and 1,245 public foreign keys, with actual role attributes/memberships and privileged runtime configuration. Captured private Storage policy denial and trusted delivery access also pass.",
-    "Final exact-head CI; matching tracked Pages/provider source and preserved gateway; complete exclusively owned hosted erasure/retention/API canaries before activation."
+    "Baseline backend suite: 178 native PostgreSQL cases and 55 actual Deno handler/adapter cases passed before the final hybrid/legacy extension. Final exact-head CI must execute the complete enlarged suite.",
+    "Final hybrid funding and legacy confirmation targeted checks cover sixteen retries, one debit, overspend refusal, funding override refusal, same-beneficiary history, malformed/missing grants, finite versus lifetime and modern receipt boundaries.",
+    "All nine payment and four lifecycle migrations installed on a local restoration of the complete captured production Auth/public/Storage schema. Fourteen actual-schema account and financial/institutional retention checks passed after the final SQL policy changes; no customer rows were copied.",
+    "Fresh source inventory captures identities, versions, gateway flags, dependency paths and normalized hashes for all six affected published functions. Isolated bundle checks precede publication; post-publication downloads must match the protected commit and retained dependency hashes.",
+    "Exact reviewed-head CI is the final merge gate, including existing frontend tests and builds. No frontend source is modified in this release.",
+    "Hosted owned old-client, retry, authorization and signed callback/recovery evidence remains required before worker activation and the separate recovery UI release."
   ],
   "rollback": {
-    "database": "Disable new closures if needed; keep pseudonymous principals, private closure/closed-personal-scope/acquisition-archive markers, immutable payment/admission evidence and closed-account denial. Terminal billing settlement updates remain possible. Never restore erased PII, reset grants, unlink frozen roots or resume closed billing or archived diagnostic journeys.",
-    "backend": "Fix forward with the reviewed soft-delete handler. The old v34 hard-delete handler is deliberately refused while retained-principal mode is enabled; do not weaken constraints or add a fallback to make it succeed.",
-    "frontend": "Tracked revert/Pages CI. Current published base c6380e141a95d34ab640035e416b7c634604dce0. Existing confirmation and fixed error protocol remain compatible."
+    "worker": "Database owner disables payment_fulfillment_config.worker_enabled before any backend rollback.",
+    "backend": "Redeploy the verified prior published Click/admin-payments isolated bundles through the reviewed manual Edge path; preserve original gateway settings. Old grants become legacy evidence, not automatic new receipts.",
+    "database": "Retain additive jobs/receipts; never drop receipts or reset customer grant claims. Review any immutable-term compatibility issue before reverting a trigger.",
+    "frontend": "Use a tracked Git revert PR and Pages CI; never a local Pages deploy."
   },
-  "limits": [
-    "No lifecycle migration, handler or global flag installed or activated. Final exact-head CI and tracked deployment remain required.",
-    "Complete captured public/Auth/Storage definitions now have isolated local compatibility proof, including actual triggers and runtime role configuration. No production seed/catalogue/customer rows were loaded. The actual hosted Auth service must still qualify the installed trigger chain.",
-    "Focused native optional institutional fixtures are minimal; the separate complete captured-schema and actual-nine-financial-migration suites broaden local proof.",
-    "Published source and aggregate metadata classify platform/institutional uploads for retention. No S3 object listing, contents, historical orphan cleanup or future personal-upload coverage has been qualified. Unclassified owned Storage objects continue to block closure.",
-    "Subscription cancellation/recovery and access through Storage, Realtime and other non-REST transports remain publication gates.",
-    "Read-only provider captures and previous Auth-only canaries do not qualify the unpublished lifecycle. Business contacts are retained by policy; remaining unlinked personal-contact attribution needs review.",
-    "Configuration defaults disabled; additive SQL alone does not switch the live handler or enable erasure. The report-authority dependency is separately installed and qualified as parent-report v16."
-  ]
+  "releaseStrategy": {
+    "kind": "backend_before_recovery_frontends",
+    "frontendSourceUnchanged": true,
+    "reason": "Existing recovery clients cannot ship before the retry-aware backend.",
+    "phases": [
+      "Protected backend PR with exact-head CI and tracked Pages preserving current frontend sources.",
+      "Install only nine reviewed additive migrations, preserving disabled fulfillment worker; publish the six isolated source-preserving functions after legacy/source compatibility qualification.",
+      "Qualify exclusively owned hosted old-client, original-key replay and signed callback flows, then enable worker only after retry proof.",
+      "Ship reviewed recovery UI in a separate protected frontend PR after backend qualification."
+    ]
+  },
+  "legacyVoucherCompatibilityQualified": false,
+  "hybridVoucherFunding": "prepaid_wallet",
+  "legacyReadOnlyConfirmation": true
 }
