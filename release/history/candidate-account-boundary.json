@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "candidate-account-boundary",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "platform"
+  ],
+  "migrations": [],
+  "edgeFunctions": [
+    "candidate-entry"
+  ],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "function:candidate-entry"
+  ],
+  "manualFollowUps": [
+    "After exact-head CI and tracked Pages release, refresh the published candidate-entry source and gateway inventory. Refuse drift from source SHA256 0353373391d57bbf100907d943de0d0d979c8e1603002ebe9062953de5fb658e. Candidate entry is the only Edge Function in this release; retain its gateway flag and all other production functions.",
+    "supabase functions deploy candidate-entry --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-bundle>"
+  ],
+  "verification": [
+    "Run npm run test:candidate:security, Platform production build and existing route checks. Own-account new claim, same-account retry, guest sign-in and code-preserving return need signed-in browser and provider proof.",
+    "Download the installed function after deployment, compare all runtime source hashes, and verify unauthenticated requests fail before lookup, foreign claims cannot recover, and owned QA account can start and resume. Do not mint credentials or touch customer accounts.",
+    "This release changes the authentication boundary only. Multi-table exam admission remains non-atomic and must be replaced in the separate payment transaction release."
+  ],
+  "rollback": {
+    "edgeFunctions": "Preserve verified account admission and fix forward; never reinstall an endpoint that mints credentials from profile details.",
+    "frontends": "Previous tracked Pages deployment at b0dabff7fee0dcb73e5694a9e34b5ef4413a6d24. Do not pair the old guest form with disabled server authentication."
+  }
+}
