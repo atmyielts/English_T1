@@ -22,7 +22,8 @@
   "verification": [
     "UI attempt contracts plus actual Platform activation, original-order office recovery and responsive tests; actual Academy checkout tests; both affected production builds and Academy locale checks.",
     "The unchanged backend source and migrations retain exact main bytes and prior 183-case CI qualification; this UI release adds no schema/function publication.",
-    "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement."
+    "Hosted owned checkout recovery must confirm backend receipt status before showing access as active; local mocked browser checks alone do not qualify provider settlement.",
+    "Parallel build/check workflow from PR222 retains every suite and aggregate validate gate; the earlier 20-minute CI timeout is not reused as a pass. Requalify this merged UI head."
   ],
   "rollback": {
     "frontend": "Tracked revert PR and Pages CI; never local Pages deployment.",
@@ -31,6 +32,8 @@
   "dependencies": {
     "backendCommit": "f8b7c5d1a6f6806b59920b9de00570dbb372ea8e",
     "backendRelease": "payment-transactions-backend",
-    "backendHostedQualificationRequired": true
+    "backendHostedQualificationRequired": true,
+    "ciWorkflowCommit": "937e51d71494fb5007546d4fc00b5b4b7684ea97",
+    "latestPublishedFrontendBase": "937e51d71494fb5007546d4fc00b5b4b7684ea97"
   }
 }

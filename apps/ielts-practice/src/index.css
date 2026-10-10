@@ -202,8 +202,9 @@ mark.inspera-highlight {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
   border: 1px solid var(--card-border);
   border-radius: 8px;
   background: #ffffff;

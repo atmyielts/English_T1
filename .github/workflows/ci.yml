@@ -5,29 +5,29 @@ on:
     branches: ["main", "master"]
   pull_request:
 
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+permissions:
+  contents: read
 
-    # Build steps below need the same Vite env that deploy-pages.yml provides.
-    # Without these the platform / simulator / english-* apps' vite.config.ts
-    # guards refuse to build and the validate job goes red on a clean checkout.
-    env:
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}
-      VITE_ALLOWED_RETURN_HOSTS: schood.online,academy.schood.online,docs.academy.schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,playbook.ielts.schood.online,sat.schood.online,practice.sat.schood.online,playbook.sat.schood.online,toefl.schood.online,playbook.toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
-      VITE_ADMIN_URL: https://schood.online/admin
-      VITE_IELTS_URL: https://ielts.schood.online
-      VITE_ACADEMY_URL: https://academy.schood.online
-      VITE_PLATFORM_URL: https://schood.online
-      VITE_AUTH_COOKIE_DOMAIN: .schood.online
-      VITE_AUTH_SHARED_COOKIE: "true"
-      VITE_DISABLE_PAYWALL: "false"
-      VITE_USE_MOCK_PERSISTENCE: "false"
-      VITE_DEBUG_AUTH: "false"
-      VITE_RELEASE_SHA: ${{ github.sha }}
+env:
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+  VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}
+  VITE_ALLOWED_RETURN_HOSTS: schood.online,academy.schood.online,docs.academy.schood.online,english.schood.online,ielts.schood.online,practice.ielts.schood.online,playbook.ielts.schood.online,sat.schood.online,practice.sat.schood.online,playbook.sat.schood.online,toefl.schood.online,playbook.toefl.schood.online,itep.schood.online,reading.english.schood.online,writing.english.schood.online,listening.english.schood.online,speaking.english.schood.online,grammar.english.schood.online,vocabulary.english.schood.online,immersion.english.schood.online
+  VITE_ADMIN_URL: https://schood.online/admin
+  VITE_IELTS_URL: https://ielts.schood.online
+  VITE_ACADEMY_URL: https://academy.schood.online
+  VITE_PLATFORM_URL: https://schood.online
+  VITE_AUTH_COOKIE_DOMAIN: .schood.online
+  VITE_AUTH_SHARED_COOKIE: "true"
+  VITE_DISABLE_PAYWALL: "false"
+  VITE_USE_MOCK_PERSISTENCE: "false"
+  VITE_DEBUG_AUTH: "false"
+  VITE_RELEASE_SHA: ${{ github.sha }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -48,6 +48,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: CI merge gate contracts
+        run: node --test scripts/ci-workflow.test.mjs
 
       - name: Production readiness checks
         run: npm run verify:prod
@@ -97,29 +100,50 @@ jobs:
         # owner-approved, RSC-only exception documented in the repository.
         run: node scripts/audit-runtime-dependencies.mjs
 
-      - name: Build platform
-        run: npm --workspace apps/platform run build
-
-      - name: Build IELTS simulator
-        run: npm --workspace apps/ielts-simulator run build
-
-      - name: Build SAT simulator
-        run: npm --workspace apps/sat-simulator run build
-
-      - name: Build TOEFL iBT simulator
-        run: npm --workspace apps/toefl-ibt-simulator run build
-
-      - name: Build iTEP simulator
-        run: npm --workspace apps/itep-simulator run build
-
-      - name: Build academy
-        run: npm --workspace apps/academy run build
-
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - group: platform-academy
+            workspaces: apps/platform apps/academy apps/academy-docs apps/english-hub
+          - group: simulators
+            workspaces: apps/ielts-simulator apps/sat-simulator apps/toefl-ibt-simulator apps/itep-simulator
+          - group: practice-and-playbooks
+            workspaces: apps/ielts-practice apps/ielts-playbook apps/sat-practice apps/sat-playbook apps/toefl-playbook
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build frontend group
+        env:
+          BUILD_WORKSPACES: ${{ matrix.workspaces }}
+        run: |
+          for workspace in $BUILD_WORKSPACES; do
+            npm --workspace "$workspace" run build || exit 1
+          done
       - name: Academy product smoke
+        if: matrix.group == 'platform-academy'
         run: npm run smoke:academy
 
-      - name: Build academy docs
-        run: npm --workspace apps/academy-docs run build
-
-      - name: Build english hub
-        run: npm --workspace apps/english-hub run build
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [checks, build]
+    if: ${{ always() }}
+    steps:
+      - name: Require every test and frontend build
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          BUILDS_RESULT: ${{ needs.build.result }}
+        run: |
+          [ "$CHECKS_RESULT" = "success" ] && [ "$BUILDS_RESULT" = "success" ]
