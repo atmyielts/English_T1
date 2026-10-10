@@ -168,7 +168,7 @@ export function createWritingGrader(
     );
     if (!response.ok) {
       await response.body?.cancel();
-      throw new Error("provider_unavailable");
+      throw new Error("provider_http_" + response.status);
     }
     const payload = await boundedJson(response, 65536) as {
       choices?: { message?: { content?: unknown }; finish_reason?: string }[];

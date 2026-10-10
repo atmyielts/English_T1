@@ -13,7 +13,38 @@ export type CoachingDependencies<Input, Feedback> = {
   authenticate: (token: string) => Promise<string | null>;
   allowance: (token: string) => Promise<CoachingAllowance>;
   generate: (input: Input) => Promise<Feedback>;
+  reportProviderFailure?: (event: {
+    service: string;
+    request_id: string;
+    code: string;
+  }) => void;
 };
+
+// Never copy provider bodies, error messages or learner content into logs.
+export function coachingProviderFailureCode(failure: unknown): string {
+  if (!(failure instanceof Error)) return "provider_unknown";
+  if (/^provider_http_[1-5][0-9]{2}$/.test(failure.message)) {
+    return failure.message;
+  }
+  const safeCodes = new Set([
+    "invalid_provider_result",
+    "invalid_provider_score",
+    "invalid_provider_criteria",
+    "invalid_provider_text",
+    "invalid_provider_advice",
+    "invalid_json",
+    "body_timeout",
+    "body_too_large",
+    "provider_unavailable",
+  ]);
+  if (safeCodes.has(failure.message)) return failure.message;
+  if (["TimeoutError", "AbortError"].includes(failure.name)) {
+    return "provider_timeout";
+  }
+  if (failure instanceof SyntaxError) return "invalid_provider_json";
+  if (failure instanceof TypeError) return "provider_transport";
+  return "provider_unknown";
+}
 type Configuration<Input, Feedback> = {
   service: "writing-tutor" | "speaking-coach" | "sat-tutor";
   title: string;
@@ -300,7 +331,14 @@ export const createCoachingHandler = <Input, Feedback>(
       let feedback: Feedback;
       try {
         feedback = await deps.generate(input);
-      } catch {
+      } catch (failure) {
+        try {
+          deps.reportProviderFailure?.({
+            service: config.service,
+            request_id: requestId,
+            code: coachingProviderFailureCode(failure),
+          });
+        } catch { /* Observability cannot interrupt receipt finalization. */ }
         try {
           await client.rpc("finish_ai_request", {
             ...command,
