@@ -6,14 +6,14 @@ function assert(value: unknown, message = 'Assertion failed'): asserts value { i
 const req = (body: unknown = { confirm_email: email }, headers: Record<string, string> = { Authorization: 'Bearer owned-test-token' }, method = 'DELETE') =>
   new Request('https://example.invalid/account', { method, headers, ...(method !== 'GET' ? { body: JSON.stringify(body) } : {}) });
 function fixture() {
-  const deleted: string[] = [], tokens: string[] = [], preflights: { name: string; args: Record<string, unknown> }[] = [];
+  const deleted: string[] = [], deletionModes: boolean[] = [], tokens: string[] = [], preflights: { name: string; args: Record<string, unknown> }[] = [];
   const client = { auth: {
     getUser: (token: string) => { tokens.push(token); return Promise.resolve({ data: { user: { id: actor, email } as { id: string; email: string } | null }, error: null as unknown }); },
-    admin: { deleteUser: (id: string) => { deleted.push(id); return Promise.resolve({ error: null as unknown }); } },
+    admin: { deleteUser: (id: string, shouldSoftDelete: boolean) => { deleted.push(id); deletionModes.push(shouldSoftDelete); return Promise.resolve({ error: null as unknown }); } },
   }, rpc: (name: string, args: Record<string, unknown>) => {
     preflights.push({ name, args }); return Promise.resolve({ data: { eligible: true } as unknown, error: null as unknown });
   } };
-  return { client, deleted, tokens, preflights };
+  return { client, deleted, deletionModes, tokens, preflights };
 }
 Deno.test('account deletion requires bearer credentials before any Auth lookup', async () => {
   const variants: Record<string, string>[] = [{}, { Authorization: 'owned-test-token' }, { 'x-user-jwt': 'owned-test-token' }, { Authorization: 'Bearer ' + 'a'.repeat(8193) }];
@@ -64,7 +64,8 @@ Deno.test('account deletion hides unexpected runtime diagnostics', async () => {
 Deno.test('account deletion binds ownership preflight only to the verified caller', async () => {
   const f=fixture(); const response=await handleAccountDeletion(req({confirm_email:email,user_id:other,p_actor:other}),f.client);
   assert(response.status===200 && f.preflights.length===1);
-  assert(f.preflights[0].name==='account_deletion_preflight' && JSON.stringify(f.preflights[0].args)===JSON.stringify({p_actor:actor}));
+  assert(f.preflights[0].name==='account_closure_preflight' && JSON.stringify(f.preflights[0].args)===JSON.stringify({p_actor:actor}));
+  assert(f.deletionModes.length===1 && f.deletionModes[0]===true);
 });
 Deno.test('account deletion requires ownership transfer before calling Auth deletion', async () => {
   const f=fixture(); f.client.rpc=()=>Promise.resolve({data:{eligible:false,code:'account_ownership_transfer_required'},error:null});

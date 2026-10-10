@@ -1,0 +1,361 @@
+{
+  "recordedAt": "2026-10-10T07:56:42.0737390Z",
+  "status": "draft-disabled-lifecycle-locally-qualified",
+  "pullRequest": "https://github.com/atmyielts/English_T1/pull/218",
+  "base": "292dc97702a14e0c9fe0530a30cb28910a0e6875",
+  "productionSchemaChanged": false,
+  "productionAccountEndpointChanged": false,
+  "customerAccountsChanged": false,
+  "fullHostedDeletionQualified": false,
+  "configurationDefault": "disabled",
+  "native": {
+    "time": "2026-10-10T07:44:19.555Z",
+    "passed": true,
+    "count": 48,
+    "checks": [
+      "anon cannot inspect or invoke account ownership commands",
+      "authenticated cannot inspect or invoke account ownership commands",
+      "service role cannot directly invoke the Auth trigger",
+      "missing domain identity is private and cannot become eligible",
+      "ordinary personal accounts retain the existing hard deletion path",
+      "current business owner must transfer even when another active owner exists",
+      "soft deletion cannot bypass ownership transfer and rolls back all Auth fields",
+      "unrelated Auth updates are not intercepted",
+      "a completed transfer preserves historical creator and academy records",
+      "disabled or inactive replacement owners cannot orphan a historical workspace",
+      "an owner without creator attribution must still transfer",
+      "legacy personal tenant with academy_contacts is institutional",
+      "legacy personal tenant with academy_staff is institutional",
+      "legacy personal tenant with academy_classrooms is institutional",
+      "legacy personal tenant with academy_branding is institutional",
+      "legacy personal tenant with partner_center_profiles is institutional",
+      "ownership promotion after preflight is rechecked by the final Auth transaction",
+      "uncommitted concurrent promotion blocks deletion and then fails safely",
+      "new concurrent membership cannot attach to a disappearing account",
+      "late financial restriction rolls back the entire deletion without erasing identity",
+      "pre-mirror Auth cleanup remains possible",
+      "principal migration contention rolls back its entire policy/receipt installation",
+      "API guard refuses an existing unreviewed request hook without replacing it",
+      "account closure starts disabled and cannot partially erase an account",
+      "anon cannot enable erasure or rewrite closure receipts",
+      "authenticated cannot enable erasure or rewrite closure receipts",
+      "service_role cannot enable erasure or rewrite closure receipts",
+      "enabled closure still fails closed if its API hook pointer is absent",
+      "old live JWT can read its own profile before closure and public access stays available",
+      "paid personal erasure keeps immutable finance roots and clears private learning across services",
+      "old JWT writes and delayed service writes cannot recreate a closed personal profile",
+      "hard deletion cannot bypass the qualified retained-principal mode",
+      "a late closure receipt failure rolls back Auth, PII purge and tenant membership together",
+      "a delayed independent service insert cannot recreate PII after erasure commits",
+      "a writer that starts first is included in the subsequent committed purge",
+      "retained teacher/referral/audit roots are pseudonymous and personal Telegram journeys are purged",
+      "institutional submissions and answers remain available to another live academy actor",
+      "financial exam roots survive while their personal answers and registration PII are erased",
+      "unclassified owned Storage objects fail closed before any personal data is erased",
+      "legacy Storage owner is checked even when the newer owner_id column exists",
+      "REST rejects old JWT before public_catalog while a live account still succeeds",
+      "REST rejects old JWT before user_profiles while a live account still succeeds",
+      "REST rejects old JWT before owned_fixture_owner_view while a live account still succeeds",
+      "REST rejects old JWT before rpc/owned_fixture_definer_read while a live account still succeeds",
+      "REST rejects missing authenticated principal before definer RPC",
+      "REST rejects noActor authenticated principal before definer RPC",
+      "REST public anonymous catalogue remains available",
+      "REST trusted service callbacks retain their existing role access"
+    ],
+    "cleanupVerified": true,
+    "images": {
+      "postgres": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+      "postgrest": "postgrest/postgrest:v13.0.7@sha256:0a46780309a604cdc8b56c776c6e5e15788ce58174d709e40459ab5a2d44d228",
+      "node": "node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20"
+    },
+    "limits": [
+      "Native SQL and actual PostgREST 13 HTTP proof only; complete hosted schema, actual new payment receipts/identity triggers, provider integration and external storage cleanup are not yet qualified",
+      "Core user/Auth FK, tenant/membership and representative personal table definitions are canonical; optional institutional and financial anchors have minimal owned fixtures"
+    ]
+  },
+  "financial": {
+    "passed": true,
+    "count": 6,
+    "checks": [
+      {
+        "case": "account retention keeps actual plan checkout, fulfillment and payment evidence byte-identical",
+        "passed": true
+      },
+      {
+        "case": "account retention keeps actual assigned seat identity and receipt without reactivating access",
+        "passed": true
+      },
+      {
+        "case": "account retention keeps actual voucher redemption and center records with immutable beneficiary identity",
+        "passed": true
+      },
+      {
+        "case": "account retention keeps actual exam admission and institutional session while erasing the personal profile",
+        "passed": true
+      },
+      {
+        "case": "account retention keeps actual Academy invoice and sold terms after an ownership transfer",
+        "passed": true
+      },
+      {
+        "case": "account retention cannot delete or detach the real durable financial principals",
+        "passed": true
+      }
+    ],
+    "source": {
+      "financialHead": "16a8eb759d470410b14e1f0e1c898b636aa834b2",
+      "originalHarnessSha256": "e094514ee07602fde70b8d6276cf93f15cc38b98d75d0ccb9c75cec32778f4f1",
+      "derivedHarnessSha256": "e9a8ad7da6bcaaefcb610a483cedc8755bffbb67bf6745edff766d8f2377da3a",
+      "productionChanged": false
+    },
+    "cleanupVerified": true,
+    "fixtureAugmentation": [
+      "Reviewed native financial harness, actual nine migrations and identity triggers",
+      "Auth deletion column/canonical Auth FK and public identity fields added to the owned fixture",
+      "Canonical Academy notify_enabled extension; minimal authenticator/auth.uid fixture",
+      "All exclusively owned financial cases created before lifecycle schema installation"
+    ]
+  },
+  "accountHandlerClientCases": 23,
+  "edgeTypecheck": "passed",
+  "productionSecretScan": "passed",
+  "releaseManifest": "passed",
+  "priorUnchangedFrontendEvidence": {
+    "publicConfiguredPlatformBuild": "passed",
+    "renderedSyntheticBrowserCases": 14,
+    "sourceUnchangedSinceChecks": true
+  },
+  "installedProviderProbe": {
+    "cleanupVerified": true,
+    "oldJwtRestReadGapReproduced": true,
+    "candidateMigrationsInstalled": false,
+    "checks": 6
+  },
+  "readOnlyApiCatalog": {
+    "capturedAt": "2026-10-10T07:31:24.1903872Z",
+    "customerRowsRead": false,
+    "catalog": {
+      "views": [
+        {
+          "kind": "v",
+          "name": "domain_event_outbox_health",
+          "options": [
+            "security_invoker=on"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "domain_event_outbox_recent_failures",
+          "options": [
+            "security_invoker=on"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_charge_balances",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_account_balances",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "sales_lead_funnel_metrics",
+          "options": null,
+          "authenticatedSelect": false,
+          "authenticatedColumnSelect": false
+        },
+        {
+          "kind": "v",
+          "name": "academy_payroll_row_totals",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_branch_contribution",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_classroom_contribution",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_room_capacity_summary",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_room_peak_periods",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_classroom_capacity_summary",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_owner_intelligence",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_branch_intelligence",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_student_lifecycle_summary",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_marketing_attribution_metrics",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_teacher_performance_metrics",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_staff_performance_metrics",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_unit_economics_metrics",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_unified_student_intelligence",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_branch_comparison_v2",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "academy_business_dashboard_v2",
+          "options": [
+            "security_invoker=true"
+          ],
+          "authenticatedSelect": true,
+          "authenticatedColumnSelect": true
+        },
+        {
+          "kind": "v",
+          "name": "telegram_acquisition_funnel_metrics",
+          "options": null,
+          "authenticatedSelect": false,
+          "authenticatedColumnSelect": false
+        },
+        {
+          "kind": "v",
+          "name": "telegram_notification_effectiveness",
+          "options": null,
+          "authenticatedSelect": false,
+          "authenticatedColumnSelect": false
+        }
+      ],
+      "requestHooks": [],
+      "ownedStorageObjectCount": 0
+    },
+    "readOnly": true
+  },
+  "sourceHashesLfNormalized": {
+    "supabase/functions/account/handler.ts": "cc34a9f69376c84ec5385b9df45342f76a205e8e60b13ac3ed51afbbdcdc9cd1",
+    "supabase/migrations/20261010150000_account_closed_principal_boundary.sql": "07dfaf5e9e807a79a934571d569c995f1a37ae29b9485f03fe7487c7b647dced",
+    "scripts/test-account-retention.mjs": "92a3dc78ffc268f19f746234416fec2f197be3e669a8b1d7b9744472bc6948c0",
+    "supabase/migrations/20261010152000_account_api_request_guard.sql": "2bde804ba087cb7c717c2781061f845c7edc5d27b87bc29a6ba344a318bd1989",
+    "supabase/migrations/20261010151000_account_personal_erasure_transaction.sql": "10c4c4024fc6f9558a4c56e8afc21c301d9e275255fa2bb0ca23bee70964928b",
+    "supabase/migrations/20261009149000_account_deletion_ownership_guard.sql": "d8703206359aa3019afca2418d4e4b5c2c421dc0f0b6caff991a25e308c58188",
+    "supabase/functions/account/handler.test.ts": "d67e479537387cb4aec566f414aafae97e58900f98393db3d981e74f60e53e84"
+  },
+  "limits": [
+    "No hosted candidate activation or installation. Exact final-head CI remains required.",
+    "Complete installed table/trigger compatibility, storage and external S3/media, subscription cancellation/recovery and non-REST transports remain publication gates.",
+    "Standard native optional institutional fixtures are minimal; financial proof separately uses the actual nine reviewed migrations.",
+    "Provider-only probe observes current hosted Auth behavior and cleanup; it does not qualify these unpublished erasure triggers."
+  ]
+}

@@ -1,43 +1,54 @@
 {
-  "backwardCompatible": true,
-  "limits": [
-    "Ownership boundary only. Personal erasure, immediate old-token revocation, external asset cleanup and retained financial/institutional principals remain unqualified.",
-    "Native core DDL matches canonical definitions; optional institutional anchors are minimal fixtures. Hosted Auth trigger permissions and complete institutional schema need proof.",
-    "No production schema, customer account, payment, secret or worker was changed."
-  ],
   "schemaVersion": 1,
-  "migrations": [
-    "20261009149000_account_deletion_ownership_guard.sql"
-  ],
-  "manualFollowUps": [
-    "Draft ownership boundary only. The approved full account erasure and payment/academy retention policy remains unimplemented; do not merge this as evidence of paid account deletion readiness. Keep payment PR215 unpublished until that lifecycle compatibility is qualified.",
-    "After reviewed exact-head CI and tracked Pages: supabase db push --linked only from an isolated checkout containing this reviewed additive migration and already-published history. Inspect the plan and refuse unrelated pending migrations. Schema installation must precede the new account handler; no soft-delete switch is authorized by this partial implementation.",
-    "Refresh installed account source/version and retain verify_jwt=true. The committed earlier account baseline is historical. Compare the refreshed v34 baseline and dependencies before constructing an isolated bundle.",
-    "supabase functions deploy account --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-account-bundle>",
-    "After installation, download source and compare reviewed hashes. Use only exclusively owned QA identities: ordinary personal account, academy/center owner denied, completed transfer allowed, concurrent ownership changes protected, static private failures and complete cleanup. Never test customer accounts."
-  ],
+  "releaseId": "account-erasure-retention",
+  "status": "code_ready",
+  "backwardCompatible": true,
   "frontends": [
     "platform"
   ],
-  "status": "code_ready",
-  "requiredSecrets": [],
-  "rollback": {
-    "backend": "Fix forward. The previously installed v34 handler remains compatible with the additive ownership guard. Do not weaken financial FKs or introduce an unqualified soft-delete fallback.",
-    "frontend": "Tracked revert/Pages CI. Previous main 292dc97702a14e0c9fe0530a30cb28910a0e6875. Keep client compatible with static account errors."
-  },
-  "rolloutOrder": [
-    "pages",
-    "migration:20261009149000_account_deletion_ownership_guard.sql",
-    "function:account"
-  ],
-  "releaseId": "account-retention-ownership",
-  "workers": [],
-  "verification": [
-    "Native ownership transaction/permission/race tests and 23 account handler/client tests; actual Platform build",
-    "Owned local browser localized transfer error, mobile keyboard behavior and actor-switch isolation",
-    "Published source/gateway and owned institution/transfer tests after independent review and installation"
+  "migrations": [
+    "20261009149000_account_deletion_ownership_guard.sql",
+    "20261010150000_account_closed_principal_boundary.sql",
+    "20261010151000_account_personal_erasure_transaction.sql",
+    "20261010152000_account_api_request_guard.sql"
   ],
   "edgeFunctions": [
     "account"
+  ],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261009149000_account_deletion_ownership_guard.sql",
+    "migration:20261010150000_account_closed_principal_boundary.sql",
+    "migration:20261010151000_account_personal_erasure_transaction.sql",
+    "migration:20261010152000_account_api_request_guard.sql",
+    "function:account"
+  ],
+  "manualFollowUps": [
+    "Draft disabled lifecycle candidate; do not merge or enable it as proof of hosted paid account deletion. Keep financial draft215 unpublished until complete installed-schema/trigger, external-media, subscription and old-client compatibility is qualified.",
+    "After reviewed exact-head CI and tracked Pages: supabase db push --linked only from an isolated checkout containing these four reviewed migrations and published history. Inspect the plan and refuse unrelated pending migrations. Keep account_closure_config.enabled=false; retain financial worker disabled. Schema and the reloaded API guard must precede the soft-delete handler.",
+    "Refresh installed account source/version and preserve verify_jwt=true. The committed earlier source baseline is historical (live v34 at the checkpoint). Build only the reviewed source-preserving isolated account bundle and refuse baseline or dependency drift.",
+    "supabase functions deploy account --project-ref bbjawctnqrufvnesdsel --use-api --workdir <qualified-source-preserving-account-bundle>",
+    "Download and compare installed source hashes; qualify exact reviewed ownership/erasure triggers and actual REST/RPC/view denial using only disposable QA identities. Verify password/refresh denial, profile/learning purge, retained immutable receipts and Academy history, race rollback, cleanup and no public browsing regression. No customer identities or charges.",
+    "Activate account_closure_config.enabled only after fresh hook reload and provider/retention/storage/subscription canaries succeed. A disabled configuration deliberately returns a private unavailable response through the new handler. Do not clear unrelated role hooks, bypass CI, remove retained receipt FKs or fall back to hard deletion."
+  ],
+  "verification": [
+    "48 native PostgreSQL/PostgREST cases passed at the local checkpoint; ordinary npm test now includes their pinned-container SQL/HTTP suite.",
+    "23 actual account handler/client tests and Edge check; existing public-configured Platform build and 14 rendered synthetic-API browser cases covering locales, account switching, mobile fit and keyboard focus.",
+    "Owned hosted Auth-only soft-delete provider probe reproduced old-token REST access; six checks and cleanup verified. This is not qualification of the unpublished lifecycle candidate.",
+    "Separate actual-nine-financial-migration native qualification: plan/checkout/fulfillment receipts, seats, vouchers, exam admissions, Academy invoices and retained identity constraints; record final successful evidence and hashes.",
+    "Final exact-head CI; matching tracked Pages/provider source and preserved gateway; complete exclusively owned hosted erasure/retention/API canaries before activation."
+  ],
+  "rollback": {
+    "database": "Disable new closures if needed; keep pseudonymous principals, closure receipts, immutable payment/admission evidence and closed-account access denial. Never restore erased PII, reset completed grants or unlink financial roots.",
+    "backend": "Fix forward with the reviewed soft-delete handler. The old v34 hard-delete handler is deliberately refused while retained-principal mode is enabled; do not weaken constraints or add a fallback to make it succeed.",
+    "frontend": "Tracked revert/Pages CI. Previous main 292dc97702a14e0c9fe0530a30cb28910a0e6875. Existing confirmation and fixed error protocol remain compatible."
+  },
+  "limits": [
+    "Locally implemented and qualified SQL/REST candidate; no new production schema, endpoint, worker, payment or customer account change.",
+    "Complete hosted lifecycle, installed trigger/role compatibility, external S3/media erasure, subscription cancellation/recovery and other data transports remain unqualified. Private Storage objects are rejected before purge until classified.",
+    "Representative personal/core definitions are canonical; optional institutional anchors in the standard fixture are minimal. Actual financial migrations/triggers have separate native proof. Final exact-head CI still required.",
+    "Configuration defaults disabled; installing additive SQL alone does not switch the live handler or enable erasure."
   ]
 }
