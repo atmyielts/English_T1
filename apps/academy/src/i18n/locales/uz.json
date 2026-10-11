@@ -2558,5 +2558,7 @@
   "Search sections": "Bo‘limlarni qidirish",
   "No matching sections. Try another name.": "Mos bo‘lim topilmadi. Boshqa nom bilan qidiring.",
   "Choose your child": "Farzandingizni tanlang",
-  "Your academy controls which information is shared with you.": "Sizga qaysi ma’lumotlar ko‘rsatilishini akademiyangiz belgilaydi."
+  "Your academy controls which information is shared with you.": "Sizga qaysi ma’lumotlar ko‘rsatilishini akademiyangiz belgilaydi.",
+  "The quiz attempt does not belong to this classroom.": "Bu test urinishi ushbu sinfga tegishli emas.",
+  "Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.": "Test javoblaringiz bu brauzer oynasida saqlanmayapti. Javoblarni yuborguningizcha testni ochiq qoldiring."
 }

@@ -89,6 +89,7 @@ import {
 } from './lib/client';
 import { platformUrl, supabase } from './lib/supabase';
 import { isMissingAcademyMembershipError } from './lib/academyEntry';
+import { clearOtherQuizDrafts } from './lib/quizDraft';
 import { UpdatesButton } from './components/UpdatesButton';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { InvitationAcceptView } from './components/InvitationAcceptView';
@@ -2100,6 +2101,7 @@ const App = () => {
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange((_event, session) => {
       const nextActor = session?.user.id ?? '';
+      clearOtherQuizDrafts(nextActor);
       const actorChanged = Boolean(authUserRef.current && nextActor !== authUserRef.current);
       authUserRef.current = nextActor;
       if (!session || actorChanged) {
@@ -3256,6 +3258,7 @@ const App = () => {
   };
 
   const signOut = async () => {
+    clearOtherQuizDrafts('');
     bootstrapRequestRef.current += 1;
     studentDataRequestRef.current += 1;
     academyDataRequestRef.current += 1;
@@ -4964,9 +4967,10 @@ const App = () => {
               />
             ) : null}
 
-            {studentClassroomId ? (
-              <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
+            {studentClassroomId && me ? (
+              <LazyRouteBoundary key={`${me.user.id}:${studentAcademyId}:${studentClassroomId}`} fallback={<WorkspaceSectionSkeleton />}>
                 <StudentClassroomView
+                  actorId={me.user.id}
                   classroom={selectedStudentClassroom}
                   academyName={selectedStudentAcademyName}
                   memberships={selectedStudentMemberships}
