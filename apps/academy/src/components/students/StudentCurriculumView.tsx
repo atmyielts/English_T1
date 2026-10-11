@@ -1,6 +1,6 @@
 import { translate } from '../../i18n';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { readQuizDraft, writeQuizDraft, removeQuizDraft, type QuizDraftScope } from '../../lib/quizDraft';
+import { readQuizDraft, writeQuizDraft, removeQuizDraft, validatedQuizAnswers, type QuizDraftScope } from '../../lib/quizDraft';
 import {
   academyVideoPlayback,
   teacherStudioSetLessonProgress,
@@ -46,10 +46,34 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
   const actionRef = useRef(false);
   const answersRef = useRef<Record<string, unknown>>({});
   const draftRef = useRef<QuizDraftScope | null>(null);
+  const quizDialogRef = useRef<HTMLDialogElement | null>(null);
+  const quizHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const quizOpenerRef = useRef<HTMLButtonElement | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [videoFrame, setVideoFrame] = useState<{ assetId: string; url: string } | null>(null);
   const [draftError, setDraftError] = useState('');
+  const takingQuiz = Boolean(activeQuiz && activeAttempt?.status === 'in_progress');
+
+  useEffect(() => {
+    const dialog = quizDialogRef.current;
+    if (takingQuiz && dialog) {
+      if (!dialog.open) dialog.showModal();
+      quizHeadingRef.current?.focus();
+    }
+    return () => { if (dialog?.open) dialog.close(); };
+  }, [activeAttempt?.id, takingQuiz]);
+
+  useEffect(() => {
+    if (!takingQuiz && !busy && quizOpenerRef.current?.isConnected) quizOpenerRef.current.focus();
+  }, [busy, takingQuiz]);
+
+  const returnToCourse = () => {
+    if (actionRef.current || loading) return;
+    quizDialogRef.current?.close();
+    setActiveQuiz(null);
+    setActiveAttempt(null);
+  };
 
   useEffect(() => () => { visitRef.current += 1; }, []);
 
@@ -122,8 +146,9 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
     }
   };
 
-  const startQuiz = async (quiz: TeacherStudioQuiz) => {
+  const startQuiz = async (quiz: TeacherStudioQuiz, opener: HTMLButtonElement) => {
     if (actionRef.current || loading) return;
+    quizOpenerRef.current = opener;
     actionRef.current = true;
     const visit = visitRef.current;
     setActionBusy(true);
@@ -134,13 +159,16 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
       if (visit !== visitRef.current) return;
       if (result.attempt.classroom_id !== classroomId || result.attempt.quiz_id !== quiz.id || result.attempt.status !== 'in_progress') throw new Error('The quiz attempt does not belong to this classroom.');
       const scope = { actorId, academyId, classroomId, quizId: quiz.id, attemptId: result.attempt.id };
-      const restored = result.resumed ? readQuizDraft(scope, (curriculum?.questions ?? []).filter(question => question.quiz_id === quiz.id)) : {};
+      const questions = (curriculum?.questions ?? []).filter(question => question.quiz_id === quiz.id);
+      const sameOpenDraft = draftRef.current && Object.entries(scope).every(([key, value]) => draftRef.current?.[key as keyof QuizDraftScope] === value);
+      const restored = result.resumed ? sameOpenDraft ? validatedQuizAnswers(answersRef.current, questions) : readQuizDraft(scope, questions) : {};
+      const storageUnavailable = Boolean(sameOpenDraft && draftError);
       draftRef.current = scope;
       answersRef.current = restored;
       setActiveQuiz(quiz);
       setActiveAttempt(result.attempt);
       setAnswers(restored);
-      setDraftError('');
+      if (!storageUnavailable) setDraftError('');
       if (result.resumed) setNotice('Resumed your open quiz attempt.');
     } catch (err) {
       if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
@@ -162,6 +190,7 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
       // A confirmed submission removes its draft even if the learner has left this view.
       if (submittedDraft && ['submitted', 'graded'].includes(attempt.status)) removeQuizDraft(submittedDraft);
       if (visit !== visitRef.current) return;
+      if (['submitted', 'graded'].includes(attempt.status)) quizDialogRef.current?.close();
       setActiveAttempt(attempt);
       setNotice(attempt.status === 'submitted' ? 'Quiz submitted for teacher grading.' : `Quiz graded: ${attempt.percentage ?? 0}%.`);
       await load();
@@ -211,13 +240,13 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
     }
     if (question.question_type === 'true_false') {
       return (
-        <select className="input" value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value === '' ? undefined : event.target.value === 'true')}>
+        <select className="input" aria-label={question.prompt} value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value === '' ? undefined : event.target.value === 'true')}>
           <option value="">{translate("Choose an answer")}</option><option value="true">{translate("True")}</option><option value="false">{translate("False")}</option>
         </select>
       );
     }
     return (
-      <textarea className="input" placeholder={question.question_type === 'essay' ? 'Write your response' : 'Your answer'} value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value)} />
+      <textarea className="input" aria-label={question.prompt} placeholder={question.question_type === 'essay' ? 'Write your response' : 'Your answer'} value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value)} />
     );
   };
 
@@ -225,9 +254,8 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
 
   return (
     <section className="grid student-curriculum">
-      {error ? <div className="error-banner">{translate(error)}</div> : null}
-      {notice ? <div className="info-banner">{translate(notice)}</div> : null}
-      {draftError ? <div className="error-banner" role="alert">{translate(draftError)}</div> : null}
+      {!takingQuiz && error ? <div className="error-banner">{translate(error)}</div> : null}
+      {!takingQuiz && notice ? <div className="info-banner" role="status">{translate(notice)}</div> : null}
       {(curriculum?.courses ?? []).map((course) => {
         const modules = curriculum?.modules.filter((module) => module.course_id === course.id) ?? [];
         const courseLessons = curriculum?.lessons.filter((lesson) => lesson.course_id === course.id) ?? [];
@@ -285,7 +313,7 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
                       <li key={quiz.id}>
                         <div className="row between wrap"><strong>{quiz.title}</strong><span className={latest?.passed ? 'status status--ok' : latest ? 'status status--pending' : 'status'}>{latest ? `${latest.percentage ?? '-'}%` : 'not attempted'}</span></div>
                         <div className="small muted">{translate("Pass")}{' '}{quiz.passing_score}% · {quiz.attempts_allowed} {translate("attempt")}{quiz.attempts_allowed === 1 ? '' : 's'}{quiz.time_limit_seconds ? ` · ${Math.ceil(quiz.time_limit_seconds / 60)} min` : ''}{quiz.locked ? ' · locked by lesson prerequisite' : ''}</div>
-                        <button className="small-btn" type="button" disabled={busy || quiz.locked || latest?.status === 'submitted'} onClick={() => void startQuiz(quiz)}>{latest?.status === 'in_progress' ? 'Resume quiz' : 'Start quiz'}</button>
+                        <button className="small-btn" type="button" disabled={busy || quiz.locked || latest?.status === 'submitted'} onClick={(event) => void startQuiz(quiz, event.currentTarget)}>{latest?.status === 'in_progress' ? 'Resume quiz' : 'Start quiz'}</button>
                       </li>
                     );
                   })}
@@ -299,14 +327,17 @@ export const StudentCurriculumView = ({ actorId, academyId, classroomId }: Stude
       {(curriculum?.courses ?? []).length === 0 ? <div className="panel">{translate("No published curriculum is assigned to this classroom yet.")}</div> : null}
 
       {activeQuiz && activeAttempt?.status === 'in_progress' ? (
-        <section className="panel quiz-attempt-panel">
-          <div className="row between wrap"><div><h3>{activeQuiz.title}</h3><p className="muted">{translate("Attempt")}{' '}{activeAttempt.attempt_number}</p></div><span className="status status--pending">{translate("in progress")}</span></div>
+        <dialog ref={quizDialogRef} className="panel quiz-attempt-panel" aria-labelledby={`quiz-heading-${activeAttempt.id}`} onCancel={(event) => { event.preventDefault(); returnToCourse(); }}>
+          <div className="row between wrap"><div><h2 id={`quiz-heading-${activeAttempt.id}`} ref={quizHeadingRef} tabIndex={-1}>{activeQuiz.title}</h2><p className="muted">{translate("Attempt")}{' '}{activeAttempt.attempt_number}{' · '}<span className="status status--pending">{translate('in progress')}</span></p></div><button className="ghost-btn" type="button" disabled={busy} onClick={returnToCourse}>{translate('Back to course')}</button></div>
+          {error ? <div className="error-banner" role="alert">{translate(error)}</div> : null}
+          {notice ? <div className="info-banner">{translate(notice)}</div> : null}
+          {draftError ? <div className="error-banner" role="alert">{translate(draftError)}</div> : null}
           {activeQuiz.instructions ? <p>{activeQuiz.instructions}</p> : null}
           <div className="grid">
             {questionsForQuiz.map((question, index) => <article className="quiz-question" key={question.id}><div className="row between"><strong>{index + 1}. {question.prompt}</strong><span className="small muted">{question.points} {translate("pts")}</span></div>{renderQuestion(question)}</article>)}
           </div>
           <button className="primary-btn" type="button" disabled={busy || questionsForQuiz.length === 0} onClick={() => void submitQuiz()}>{translate("Submit quiz")}</button>
-        </section>
+        </dialog>
       ) : null}
     </section>
   );
