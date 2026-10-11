@@ -2283,6 +2283,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         } else {
           await expect(page).toHaveURL(new RegExp(`/academy\\?academy_id=${academyId}`));
           await expect(page.getByRole('heading', { level: 1, name: 'Route Smoke Academy', exact: true })).toBeVisible();
+          await expect.poll(() => actionLog.filter((action) => action === 'summary').length).toBe(1);
+          await page.waitForLoadState('networkidle');
           expect(actionLog.filter((action) => action === 'summary')).toHaveLength(1);
           expect(actionLog).not.toContain('education_os');
         }

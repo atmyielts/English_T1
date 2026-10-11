@@ -32,7 +32,7 @@
     "test:english:mass-readiness": "deno test --allow-env --allow-read apps/english-hub/tests/navigation.test.ts apps/english-hub/tests/module-shell-contract.test.ts apps/english-hub/tests/public-journey-contract.test.ts apps/english-hub/tests/reading-markdown.test.ts supabase/functions/_shared/english-access.test.ts supabase/functions/_shared/english-ai.test.ts supabase/functions/_shared/english-client-recovery.test.ts supabase/functions/hub/mass-usage-contract.test.ts supabase/functions/hub/load-verifier-contract.test.ts",
     "verify:english:load": "node scripts/verify-english-load.mjs",
     "test:sat": "npm --workspace sat-simulator run test",
-    "test:academy:routes": "npm --workspace apps/academy run test:routes",
+    "test:academy:routes": "npm --workspace apps/academy run test:routes -- --workers=2 --fully-parallel",
     "test:academy:assessments": "deno test supabase/functions/academy/assessment-services.test.ts && node scripts/test-academy-assessments.mjs",
     "test:academy:assessments:integration": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-academy-assessment-integration.ps1",
     "test:platform:routes": "npm --workspace apps/platform run test:routes",

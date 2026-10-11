@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isFullAcademyRouteCommand } from './academy-route-command.mjs';
 
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), 'utf8');
@@ -768,7 +769,7 @@ addCheck(
 
 addCheck(
   'Academy mocked route smoke script is registered',
-  packageJson.scripts?.['test:academy:routes'] === 'npm --workspace apps/academy run test:routes' &&
+  isFullAcademyRouteCommand(packageJson.scripts?.['test:academy:routes']) &&
     safeRead('apps/academy/package.json').includes('"test:routes": "playwright test -c playwright.config.ts"'),
 );
 
