@@ -6,8 +6,35 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      deploy: ${{ steps.plan.outputs.deploy }}
+    steps:
+      - name: Checkout deployment history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Decide whether frontend publication is needed
+        id: plan
+        env:
+          DEPLOY_EVENT: ${{ github.event_name }}
+          DEPLOY_BEFORE: ${{ github.event.before }}
+          DEPLOY_HEAD: ${{ github.sha }}
+        run: node scripts/plan-pages-deployment.mjs
+
   deploy:
+    needs: plan
+    if: ${{ needs.plan.outputs.deploy == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -195,7 +222,7 @@ jobs:
   configure-itep-domain:
     runs-on: ubuntu-latest
     needs: deploy
-    if: ${{ always() }}
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.deploy.result == 'success' }}
 
     steps:
       - name: Validate required secrets

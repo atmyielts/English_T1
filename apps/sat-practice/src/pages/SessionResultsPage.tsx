@@ -136,7 +136,7 @@ const ResultsWorkspace = (
                   </div> : null}
                   <Link
                     className="btn ghost compact"
-                    to={"/tutor/" + question.id}
+                    to={"/tutor/" + question.id + "?attempt=" + encodeURIComponent(attempt.id)}
                   >
                     Open tutor
                   </Link>

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "pages-response-policy-asset-cache",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy",
+    "academy-docs",
+    "english-hub",
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "itep-simulator",
+    "platform",
+    "sat-playbook",
+    "sat-practice",
+    "sat-simulator",
+    "toefl-ibt-simulator",
+    "toefl-playbook"
+  ],
+  "migrations": [],
+  "edgeFunctions": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "manualFollowUps": [
+    "After CI deployment, verify current root/deep/asset response policies across all twenty public URLs; old cached Academy assets must no longer be referenced by current HTML.",
+    "Recheck public screens and actual hosted Chromium frame rejection. This release changes no backend, secret, DNS or customer data."
+  ],
+  "verification": [
+    "Actual identical-source Vite builds must generate new entry/lazy/style/media filenames and HTML references after a header-only change; CRLF/LF must preserve identity.",
+    "All thirteen frontend production builds and the existing nineteen Chromium browser-policy checks must pass.",
+    "Downloaded root HTML and currently referenced assets must match the reviewed deployment; verify actual guest screens and framing rejection. Credentialed journeys and complete source CSP remain separate."
+  ],
+  "rollback": {
+    "frontend": "Tracked revert PR and normal Pages CI from previous source 051ca03fcbacc3c80e0fc10d4f55feae10051df8. Preserve browser policies and old assets for open sessions; no local Pages publication or broad purge."
+  }
+}

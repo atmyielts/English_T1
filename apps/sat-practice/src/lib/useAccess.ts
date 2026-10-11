@@ -24,8 +24,15 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
 
   useEffect(() => {
     let cancelled = false;
+    let version = 0;
+    let actor: string | null = null;
 
     const hydrate = async (session: Session | null) => {
+      const current = ++version;
+      if (actor !== (session?.user.id ?? null)) {
+        actor = session?.user.id ?? null;
+        if (!cancelled) setState({ status: 'loading' });
+      }
       if (!session) {
         if (!cancelled) setState({ status: 'unauthenticated' });
         return;
@@ -34,15 +41,16 @@ export const useAccess = (opts?: { force?: boolean; includeEffective?: boolean }
       try {
         const me = await getMe(session.access_token);
         const effective = includeEffective ? await getAccessEffective(session.access_token).catch(() => null) : null;
-        if (!cancelled) setState({ status: 'authenticated', session, me, effective });
+        if (!cancelled && current === version) setState({ status: 'authenticated', session, me, effective });
       } catch {
-        if (!cancelled) setState({ status: 'unauthenticated' });
+        if (!cancelled && current === version) setState({ status: 'unauthenticated' });
       }
     };
 
+    const initialVersion = version;
     supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled) void hydrate(data.session);
-    });
+      if (!cancelled && version === initialVersion) void hydrate(data.session);
+    }).catch(() => { if (!cancelled && version === initialVersion) setState({ status: 'unauthenticated' }); });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!cancelled) void hydrate(session);
