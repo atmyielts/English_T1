@@ -989,6 +989,37 @@ try {
       );
     },
   );
+  await check("SAT reservations enforce a global cap across concurrent actors", async () => {
+    const ids = [randomUUID(), randomUUID()];
+    const replies = await Promise.all([actor, other].map(async (user, index) => JSON.parse(await sql(
+      `set role service_role;select reserve_ai_request('${user}','sat-tutor','${ids[index]}','${hash}',2,1);`,
+    ))));
+    assert.deepEqual(replies.map(row => row.status).sort(), ['reserved', 'service_limit']);
+    assert.equal(await sql("select charged from ai_request_usage_daily where scope='global' and service='sat-tutor'"), '1');
+  });
+  await check("SAT feedback finish and replay preserve the same private receipt", async () => {
+    const id = randomUUID(), payload = { ok: true, ai_status: 'ok', data: { steps: ['Saved solution'], key_concept: 'Algebra', why_distractors_wrong: {} } };
+    const reservation = JSON.parse(await sql(`set role service_role;select reserve_ai_request('${actor}','sat-tutor','${id}','${hash}',2,100);`));
+    assert.equal(await sql(`set role service_role;select begin_ai_request('${actor}','sat-tutor','${id}','${reservation.lease_token}');`), 't');
+    const command = `set role service_role;select finish_ai_request('${actor}','sat-tutor','${id}','${reservation.lease_token}','succeeded','${JSON.stringify(payload)}'::jsonb,null);`;
+    const first = JSON.parse(await sql(command)), replay = JSON.parse(await sql(command));
+    assert.deepEqual(first, replay);
+    assert.deepEqual(first.result, payload);
+    const repeated = JSON.parse(await sql(`set role service_role;select reserve_ai_request('${actor}','sat-tutor','${id}','${hash}',2,0);`));
+    assert.equal(repeated.status, 'succeeded');
+    assert.deepEqual(repeated.result, payload);
+    assert.equal(await sql("select charged from ai_request_usage_daily where scope='global' and service='sat-tutor'"), '1');
+    await assert.rejects(sql(`set role service_role;select finish_ai_request('${other}','sat-tutor','${id}','${reservation.lease_token}','succeeded','${JSON.stringify(payload)}'::jsonb,null);`));
+    await assert.rejects(sql(command.replace('Saved solution', 'Changed solution')));
+  });
+  await check("SAT user limits remain atomic across simultaneous fresh requests", async () => {
+    const replies = await Promise.all(Array.from({ length: 4 }, async () => JSON.parse(await sql(
+      `set role service_role;select reserve_ai_request('${actor}','sat-tutor','${randomUUID()}','${hash}',2,100);`,
+    ))));
+    assert.equal(replies.filter(row => row.status === 'reserved').length, 2);
+    assert.equal(replies.filter(row => row.status === 'user_limit').length, 2);
+    assert.equal(await sql("select charged from ai_request_usage_daily where scope='user:" + actor + "' and service='sat-tutor'"), '2');
+  });
 } finally {
   if (containerId) {
     const label = await run([

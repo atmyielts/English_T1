@@ -1,20 +1,19 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ai-provider-capacity-guard",
+  "releaseId": "sat-tutor-customer-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
+  "frontends": ["sat-practice"],
   "migrations": [],
-  "edgeFunctions": ["speaking-coach", "writing-tutor"],
-  "sharedEdgeConsumers": ["speaking-coach", "writing-tutor"],
+  "edgeFunctions": ["sat-practice"],
+  "sharedEdgeConsumers": ["sat-practice"],
   "workers": [],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SPEAKING_COACH_SERVICE_DAILY_LIMIT", "WRITING_TUTOR_SERVICE_DAILY_LIMIT"],
-  "rolloutOrder": ["secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:OPENROUTER_REFERER", "secret:SPEAKING_COACH_SERVICE_DAILY_LIMIT", "secret:WRITING_TUTOR_SERVICE_DAILY_LIMIT", "function:speaking-coach", "function:writing-tutor"],
+  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
+  "rolloutOrder": ["pages", "secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT", "function:sat-practice"],
   "manualFollowUps": [
-    "Retain existing configuration; supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free already completed. No API key changes requested. Verify existing supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_REFERER= without printing values. Preserve supabase secrets set SPEAKING_COACH_SERVICE_DAILY_LIMIT=0 and supabase secrets set WRITING_TUTOR_SERVICE_DAILY_LIMIT=0 until owned provider and browser recovery qualification passes. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until a dedicated product is qualified.",
-    "After exact-head CI passes, supabase functions deploy speaking-coach and supabase functions deploy writing-tutor from isolated reviewed bundles; no migrations or other runtime activation.",
-    "Read capacity through an owned quota request with zero dispatch caps; inspect only private curated capacity metrics. Then qualify the actual provider using exclusively owned QA actors, saved feedback, replay, cleanup and published recovery screens before restoring nonzero caps."
+    "After exact-head hosted CI passes, publish the frontend through its ordinary main merge. The updated UI refuses tutor dispatch until the v2 quota contract is present. Then supabase functions deploy sat-practice from its isolated reviewed bundle. No database migration or other function deployment is required.",
+    "Preserve existing provider configuration without reading or printing secrets: supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_MODEL= remain existing settings. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until the dedicated add-on is qualified. Leave SAT_TUTOR_SERVICE_DAILY_LIMIT unset, or use supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=0. Do not enable dispatch before owned provider feedback and published browser recovery pass."
   ],
-  "verification": ["Coaching handler, privacy and provider capacity contracts and both entrypoints must pass; production scan and release manifest must pass.", "Verify downloaded source hashes, runtime identities and JWT settings after publication; then inspect owned capacity with grading disabled and qualify actual provider feedback and published recovery."],
-  "rollback": {"edge": "Use the previous reviewed coaching sources from 051ca03fcbacc3c80e0fc10d4f55feae10051df8, keeping both service caps zero, the current available model and additive SQL. Retain saved result retrieval and never restore unlimited legacy dispatch."}
+  "verification": ["Pass SAT tutor transport, handler, receipt and browser cases, existing SAT contracts, 26 isolated PostgreSQL ledger cases, SAT app build, secret scan and release manifest validation.", "Verify downloaded published source identity and JWT settings; owned unfinished/unrelated drills must never reserve or call the provider. Qualify actual provider feedback, saved result recovery and owned cleanup before enabling a positive service cap. Local synthetic fixtures do not qualify hosted provider quality."],
+  "rollback": {"frontend": "Restore the previous reviewed Pages deployment if necessary. Never restore the old unlimited tutor backend; retain a zero SAT tutor cap and use a forward repair. Existing completed drills and scores remain available."}
 }

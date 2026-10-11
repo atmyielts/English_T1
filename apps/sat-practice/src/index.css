@@ -674,6 +674,8 @@ textarea {
 .tutor-panel {
   display: grid;
   gap: 14px;
+  background: var(--panel-solid);
+  backdrop-filter: none;
 }
 
 .ai-card {
@@ -751,6 +753,16 @@ textarea {
   background: #e2e8f0;
   margin: 8px 0;
 }
+
+.tutor-actions, .tutor-recovery { display: flex; flex-wrap: wrap; gap: 12px; }
+.tutor-actions .btn, .tutor-recovery .btn { min-height: 44px; }
+.tutor-feedback { overflow-wrap: anywhere; }
+.tutor-feedback li { margin-block: 12px; line-height: 1.6; }
+.tutor-feedback dl > div { margin-block: 16px; }
+.tutor-feedback dt { font-weight: 700; }
+.tutor-feedback dd { margin: 8px 0 0; line-height: 1.6; }
+.tutor-choices { list-style: none; padding-inline-start: 0; }
+.tutor-feedback summary { cursor: pointer; min-height: 44px; padding-block: 12px; }
 
 .skeleton-line.long {
   width: 70%;
