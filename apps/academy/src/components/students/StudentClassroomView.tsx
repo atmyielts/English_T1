@@ -1,31 +1,25 @@
 import { getLocaleTag, translate } from '../../i18n';
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  teacherStudioClassroomChat,
   teacherStudioCreateClickTuitionPayment,
   teacherStudioSendClassroomChatMessage,
   teacherStudioSetClassroomResourceProgress,
-  teacherStudioStudentAssignments,
-  teacherStudioStudentAttendance,
-  teacherStudioStudentBilling,
   teacherStudioStudentSessionJoin,
   teacherStudioSubmitStudentAssignment,
   teacherStudioSubmitStudentAssignmentFile,
   type TeacherStudioAnnouncement,
-  type TeacherStudioAttendance,
   type TeacherStudioClassroom,
   type TeacherStudioClassroomMembership,
   type TeacherStudioClassroomResource,
-  type TeacherStudioClassroomRoom,
   type TeacherStudioMessage,
   type TeacherStudioStudentAssignment,
   type TeacherStudioStudentBillingItem,
-  type TeacherStudioStudentCommercialAccount,
   type TeacherStudioStudentSession,
 } from '../../lib/client';
 import { supabase } from '../../lib/supabase';
 import { StudentCurriculumView } from './StudentCurriculumView';
+import { useStudentClassroomData } from './useStudentClassroomData';
 
 type StudentClassroomViewProps = {
   actorId: string;
@@ -87,13 +81,8 @@ export const StudentClassroomView = ({
 }: StudentClassroomViewProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<StudentLmsTab>('overview');
-  const [classroomV2Enabled, setClassroomV2Enabled] = useState(false);
-  const [room, setRoom] = useState<TeacherStudioClassroomRoom | null>(null);
-  const [assignments, setAssignments] = useState<TeacherStudioStudentAssignment[]>([]);
-  const [attendance, setAttendance] = useState<TeacherStudioAttendance[]>([]);
-  const [billingItems, setBillingItems] = useState<TeacherStudioStudentBillingItem[]>([]);
-  const [billingAccounts, setBillingAccounts] = useState<TeacherStudioStudentCommercialAccount[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [classroomV2Enabled, setClassroomV2Enabled] = useState<boolean | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [chatDraft, setChatDraft] = useState('');
@@ -105,18 +94,23 @@ export const StudentClassroomView = ({
   const [payingOfferId, setPayingOfferId] = useState('');
   const [joiningSessionId, setJoiningSessionId] = useState('');
   const visitRef = useRef(0);
-  const readRef = useRef(0);
   const actionRef = useRef(false);
   const paymentRef = useRef(false);
   const joinRef = useRef(false);
-  useEffect(() => () => { visitRef.current += 1; }, []);
 
   useEffect(() => {
     let active = true;
-    void supabase.from('platform_settings').select('classroom_v2_enabled').eq('id', 1).maybeSingle().then(({ data }) => {
-      if (active) setClassroomV2Enabled(data?.classroom_v2_enabled === true);
-    });
-    return () => { active = false; };
+    let expired = false;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      expired = true;
+      if (active) setClassroomV2Enabled(false);
+      controller.abort();
+    }, 2_000);
+    void Promise.resolve(supabase.from('platform_settings').select('classroom_v2_enabled').eq('id', 1).abortSignal(controller.signal).maybeSingle()).then(({ data }) => {
+      if (active && !expired) setClassroomV2Enabled(data?.classroom_v2_enabled === true);
+    }).catch(() => { if (active) setClassroomV2Enabled(false); }).finally(() => window.clearTimeout(timeout));
+    return () => { active = false; window.clearTimeout(timeout); controller.abort(); };
   }, []);
 
   const requestedSection = searchParams.get('section');
@@ -133,7 +127,24 @@ export const StudentClassroomView = ({
     billing: 'account',
     chat: 'people',
   };
-  const showLegacyPanel = (tab: StudentLmsTab): boolean => classroomV2Enabled
+  const dataSection = classroomV2Enabled === null ? null : classroomV2Enabled ? activeSection : activeTab;
+  const classroomData = useStudentClassroomData(classroom, dataSection);
+  const { room, assignments, attendance, billingItems, billingAccounts, refresh: loadClassroomLms } = classroomData;
+  const busy = actionBusy || classroomData.loading;
+  useLayoutEffect(() => {
+    visitRef.current += 1;
+    actionRef.current = false;
+    paymentRef.current = false;
+    joinRef.current = false;
+    setActionBusy(false);
+    setPayingOfferId('');
+    setJoiningSessionId('');
+    setError('');
+    setNotice('');
+    return () => { visitRef.current += 1; };
+  }, [classroom, dataSection]);
+
+  const showLegacyPanel = (tab: StudentLmsTab): boolean => classroomV2Enabled === null ? false : classroomV2Enabled
     ? activeSection === sectionByLegacyTab[tab]
     : activeTab === tab;
   const openLegacyTab = (tab: StudentLmsTab) => {
@@ -151,37 +162,6 @@ export const StudentClassroomView = ({
     next.set('section', section);
     setSearchParams(next);
   };
-
-  const loadClassroomLms = useCallback(async () => {
-    if (!classroom) return;
-    const visit = visitRef.current;
-    const request = ++readRef.current;
-    const isCurrent = () => visit === visitRef.current && request === readRef.current;
-    setBusy(true);
-    setError('');
-    try {
-      const [roomData, assignmentData, attendanceData, billingData] = await Promise.all([
-        teacherStudioClassroomChat(classroom.academy_id, classroom.id),
-        teacherStudioStudentAssignments(classroom.academy_id, classroom.id),
-        teacherStudioStudentAttendance(classroom.academy_id, classroom.id),
-        teacherStudioStudentBilling(classroom.academy_id),
-      ]);
-      if (!isCurrent()) return;
-      setRoom(roomData);
-      setAssignments(assignmentData.assignments);
-      setAttendance(attendanceData.attendance);
-      setBillingItems(billingData.items.filter((item) => item.classroom_id === classroom.id));
-      setBillingAccounts(billingData.accounts);
-    } catch (err) {
-      if (isCurrent()) setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (isCurrent()) setBusy(false);
-    }
-  }, [classroom]);
-
-  useEffect(() => {
-    void loadClassroomLms();
-  }, [loadClassroomLms]);
 
   const classroomAnnouncements = useMemo(
     () => room?.announcements ?? announcements.filter((announcement) =>
@@ -377,7 +357,7 @@ export const StudentClassroomView = ({
     if (!classroom || !submitTarget || busy || actionRef.current) return;
     actionRef.current = true;
     const visit = visitRef.current;
-    setBusy(true);
+    setActionBusy(true);
     setError('');
     setNotice('');
     try {
@@ -395,6 +375,7 @@ export const StudentClassroomView = ({
       } else {
         await teacherStudioSubmitStudentAssignment(classroom.academy_id, payload);
       }
+      classroomData.invalidate(['assignments']);
       if (visit !== visitRef.current) return;
       setSubmitTarget(null);
       setSubmissionFile(null);
@@ -403,7 +384,7 @@ export const StudentClassroomView = ({
     } catch (err) {
       if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
@@ -411,7 +392,7 @@ export const StudentClassroomView = ({
     if (!classroom || busy || actionRef.current) return;
     actionRef.current = true;
     const visit = visitRef.current;
-    setBusy(true);
+    setActionBusy(true);
     setError('');
     setNotice('');
     try {
@@ -420,12 +401,13 @@ export const StudentClassroomView = ({
         resource_id: resource.id,
         completed: !completedResourceIds.has(resource.id),
       });
+      classroomData.invalidate(['room']);
       if (visit !== visitRef.current) return;
       await loadClassroomLms();
     } catch (err) {
       if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
@@ -455,7 +437,7 @@ export const StudentClassroomView = ({
     if (!classroom || !chatDraft.trim() || busy || actionRef.current) return;
     actionRef.current = true;
     const visit = visitRef.current;
-    setBusy(true);
+    setActionBusy(true);
     setError('');
     setNotice('');
     try {
@@ -463,13 +445,14 @@ export const StudentClassroomView = ({
         classroom_id: classroom.id,
         content: chatDraft.trim(),
       });
+      classroomData.invalidate(['room']);
       if (visit !== visitRef.current) return;
       setChatDraft('');
       await loadClassroomLms();
     } catch (err) {
       if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
@@ -528,22 +511,21 @@ export const StudentClassroomView = ({
   ];
 
   return (
-    <section className="grid">
-      <div className="panel">
+    <section className="grid student-classroom">
+      <div className="panel student-classroom-header">
         <div className="row between wrap">
           <div>
             <h3>{classroom.name}</h3>
-            <p className="muted">{academyName}</p>
+            {showLegacyPanel('overview') ? <>
+              <p className="muted">{academyName}</p>
+              <span className="small muted">{translate('Your role')}: {translate(room?.viewer.role ?? memberships[0]?.role ?? 'student')}</span>
+            </> : null}
           </div>
           <button className="ghost-btn" type="button" onClick={onBack}>
             {translate("Back to classrooms")}{' '}</button>
         </div>
-        <p>{classroom.description || 'No classroom description yet.'}</p>
-        <section className="stats-grid">
-          <article className="stat-card">
-            <span>{translate("Your role")}</span>
-            <strong>{room?.viewer.role ?? memberships[0]?.role ?? 'student'}</strong>
-          </article>
+        {showLegacyPanel('overview') && classroom.description ? <p>{classroom.description}</p> : null}
+        {showLegacyPanel('overview') && classroomData.ready ? <section className="stats-grid student-classroom-overview-stats">
           <article className="stat-card">
             <span>{translate("Resources")}</span>
             <strong>{publishedResources.length}</strong>
@@ -560,8 +542,8 @@ export const StudentClassroomView = ({
             <span>{translate("Attendance")}</span>
             <strong>{attendanceRate === null ? '-' : `${attendanceRate}%`}</strong>
           </article>
-        </section>
-        {classroomV2Enabled ? (
+        </section> : null}
+        {classroomV2Enabled === null ? <p className="muted" role="status">{translate('Loading classroom information…')}</p> : classroomV2Enabled ? (
           <>
             <nav className="classroom-section-nav" aria-label={translate("Student classroom sections")}>
               {sections.map((section) => (
@@ -594,6 +576,17 @@ export const StudentClassroomView = ({
 
       {error ? <div className="error-banner">{translate(error)}</div> : null}
       {notice ? <div className="info-banner">{translate(notice)}</div> : null}
+      {classroomData.error ? <div className="error-banner" role="alert">
+        <p>{translate(classroomData.error)}</p>
+        <button className="ghost-btn" type="button" disabled={classroomData.loading} onClick={() => void loadClassroomLms().catch(() => {})}>{translate('Retry')}</button>
+      </div> : null}
+
+      {showLegacyPanel('curriculum') ? (
+        <StudentCurriculumView key={`${actorId}:${classroom.academy_id}:${classroom.id}`} actorId={actorId} academyId={classroom.academy_id} classroomId={classroom.id} />
+      ) : null}
+
+      {!classroomData.ready && !classroomData.error && classroomV2Enabled !== null ? <div className="panel" role="status">{translate('Loading classroom information…')}</div> : null}
+      {classroomData.ready ? <>
 
       {showLegacyPanel('overview') ? (
         <section className="grid">
@@ -699,7 +692,7 @@ export const StudentClassroomView = ({
         </section>
       ) : null}
 
-      {showLegacyPanel('resources') ? (
+      {showLegacyPanel('resources') && (!classroomV2Enabled || publishedResources.length > 0) ? (
         <section className="grid two">
           {publishedResources.map((resource) => {
             const done = completedResourceIds.has(resource.id);
@@ -724,10 +717,6 @@ export const StudentClassroomView = ({
           })}
           {publishedResources.length === 0 ? <div className="panel">{translate("No resources published yet.")}</div> : null}
         </section>
-      ) : null}
-
-      {showLegacyPanel('curriculum') ? (
-        <StudentCurriculumView key={`${actorId}:${classroom.academy_id}:${classroom.id}`} actorId={actorId} academyId={classroom.academy_id} classroomId={classroom.id} />
       ) : null}
 
       {showLegacyPanel('assignments') ? (
@@ -1028,6 +1017,7 @@ export const StudentClassroomView = ({
           </form>
         </section>
       ) : null}
+      </> : null}
     </section>
   );
 };

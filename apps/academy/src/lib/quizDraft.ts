@@ -14,6 +14,20 @@ export const clearOtherQuizDrafts = (actorId: string) => {
   } catch { /* Storage can be unavailable; no drafts can then be read or written. */ }
 };
 
+export const validatedQuizAnswers = (stored: Record<string, unknown>, questions: TeacherStudioQuizQuestion[]): Record<string, unknown> => {
+  const answers: Record<string, unknown> = {};
+  for (const question of questions) {
+    const value = stored[question.id];
+    const options = (question.options ?? []).map(String);
+    if (question.question_type === 'multiple_choice') {
+      if (Array.isArray(value) && value.every(item => typeof item === 'string' && options.includes(item))) answers[question.id] = [...new Set(value)];
+    } else if (question.question_type === 'true_false') {
+      if (typeof value === 'boolean') answers[question.id] = value;
+    } else if (typeof value === 'string' && (question.question_type !== 'single_choice' || options.includes(value))) answers[question.id] = value;
+  }
+  return answers;
+};
+
 export const readQuizDraft = (scope: QuizDraftScope, questions: TeacherStudioQuizQuestion[]): Record<string, unknown> => {
   try {
     const text = sessionStorage.getItem(keyFor(scope));
@@ -21,17 +35,7 @@ export const readQuizDraft = (scope: QuizDraftScope, questions: TeacherStudioQui
     const draft = JSON.parse(text);
     if (draft?.version !== 1 || !draft.scope || !draft.answers || typeof draft.answers !== 'object' || Array.isArray(draft.answers)) return {};
     if (Object.entries(scope).some(([key, value]) => draft.scope[key] !== value)) return {};
-    const answers: Record<string, unknown> = {};
-    for (const question of questions) {
-      const value = draft.answers[question.id];
-      const options = (question.options ?? []).map(String);
-      if (question.question_type === 'multiple_choice') {
-        if (Array.isArray(value) && value.every(item => typeof item === 'string' && options.includes(item))) answers[question.id] = [...new Set(value)];
-      } else if (question.question_type === 'true_false') {
-        if (typeof value === 'boolean') answers[question.id] = value;
-      } else if (typeof value === 'string' && (question.question_type !== 'single_choice' || options.includes(value))) answers[question.id] = value;
-    }
-    return answers;
+    return validatedQuizAnswers(draft.answers, questions);
   } catch { return {}; }
 };
 
