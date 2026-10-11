@@ -3834,6 +3834,196 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("textbox", { name: "Academy name" })).toBeVisible();
   });
 
+  const learnerNextClassroom = { ...classroom, id: 'learner-next-classroom', name: 'Next learner classroom' };
+  const learnerQuiz = (id: string) => ({ ...quiz, id: `quiz-${id}`, title: `${id === classroomId ? 'Original' : 'Next'} learner quiz` });
+  const learnerAttempt = (id: string) => ({ id: `attempt-${id}`, classroom_id: id, course_id: course.id, quiz_id: learnerQuiz(id).id, contact_id: studentContactId, attempt_number: 1, status: 'in_progress', score: null, max_score: null, percentage: null, passed: null, feedback: null, started_at: '2026-10-11T00:00:00Z', submitted_at: null, graded_at: null });
+  const mockLearnerCourses = async (page: Page, respond?: MockEdgeOptions['respond']) => {
+    await seedSessionCookie(page, 'student-user');
+    await mockAcademyEdge(page, 'student', {
+      classroomV2: true,
+      actionOverrides: { 'student-dashboard': { ...studentDashboard, classrooms: [classroom, learnerNextClassroom], classroom_memberships: [membership, { ...membership, id: 'next-membership', classroom_id: learnerNextClassroom.id }] } },
+      respond: async body => {
+        const custom = await respond?.(body);
+        if (custom !== undefined) return custom;
+        const id = String(body.classroom_id ?? classroomId);
+        const selected = id === classroomId ? classroom : learnerNextClassroom;
+        if (body.action === 'classroom-chat') return { academy_id: academyId, classroom: selected, viewer: { type: 'student', role: 'student', contact_id: studentContactId, display_name: 'student', can_manage_resources: false }, members: [], messages: [], announcements: [], resources: [], progress: { viewer_completed_resource_ids: [], resource_completed_counts: {}, total_members: 0 } };
+        if (body.action === 'student_curriculum') return { academy_id: academyId, classroom_id: id, contact_id: studentContactId, courses: [{ ...course, title: `${selected.name} course` }], modules: [courseModule], lessons: [lesson], progress: [], quizzes: [learnerQuiz(id)], questions: [{ ...quizQuestion, id: `question-${id}`, quiz_id: learnerQuiz(id).id, question_type: 'essay', options: null }], attempts: [], media: [], classroom_courses: [] };
+        if (body.action === 'start_quiz') return { quiz: learnerQuiz(id), attempt: learnerAttempt(id), resumed: true };
+        if (body.action === 'student_assignments') return { academy_id: academyId, contact_id: studentContactId, assignments: [] };
+        return undefined;
+      },
+    });
+  };
+  const learnerClassroomPath = (id: string) => `/academy/student/classrooms/${id}?academy_id=${academyId}&section=course`;
+  const moveLearnerHistory = async (page: Page, id: string) => {
+    await page.evaluate(path => { history.pushState({}, '', path); window.dispatchEvent(new PopStateEvent('popstate')); }, learnerClassroomPath(id));
+  };
+
+  test('learner classroom history discards a delayed previous curriculum read', async ({ page }) => {
+    let release!: () => void;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    let requested = false;
+    await mockLearnerCourses(page, async body => {
+      if (body.action !== 'student_curriculum' || body.classroom_id !== classroomId) return undefined;
+      requested = true; await blocked;
+      return { academy_id: academyId, classroom_id: classroomId, contact_id: studentContactId, courses: [{ ...course, title: 'Obsolete learner course' }], modules: [], lessons: [], progress: [], quizzes: [], questions: [], attempts: [], media: [], classroom_courses: [] };
+    });
+    try {
+      await page.goto(learnerClassroomPath(classroomId));
+      await expect.poll(() => requested).toBe(true);
+      await moveLearnerHistory(page, learnerNextClassroom.id);
+      await expect(page.getByRole('heading', { name: `${learnerNextClassroom.name} course`, exact: true })).toBeVisible();
+      const late = page.waitForResponse(response => response.request().postDataJSON()?.action === 'student_curriculum' && response.request().postDataJSON()?.classroom_id === classroomId);
+      release(); await late;
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByRole('heading', { name: `${learnerNextClassroom.name} course`, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Obsolete learner course', exact: true })).toHaveCount(0);
+    } finally { release(); }
+  });
+
+  test('learner classroom history ignores an obsolete quiz start', async ({ page }) => {
+    let release!: () => void;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    let requested = false;
+    await mockLearnerCourses(page, async body => {
+      if (body.action !== 'start_quiz' || body.classroom_id !== classroomId) return undefined;
+      requested = true; await blocked;
+      return { quiz: learnerQuiz(classroomId), attempt: learnerAttempt(classroomId), resumed: true };
+    });
+    try {
+      await page.goto(learnerClassroomPath(classroomId));
+      await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+      await expect.poll(() => requested).toBe(true);
+      await moveLearnerHistory(page, learnerNextClassroom.id);
+      await expect(page.getByRole('heading', { name: `${learnerNextClassroom.name} course`, exact: true })).toBeVisible();
+      const late = page.waitForResponse(response => response.request().postDataJSON()?.action === 'start_quiz');
+      release(); await late; await page.waitForLoadState('networkidle');
+      await expect(page.locator('.quiz-attempt-panel')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Start quiz', exact: true })).toBeEnabled();
+    } finally { release(); }
+  });
+
+  test('learner quiz answers survive reload and explicit attempt resume', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Keep this learner answer across reload.');
+    await page.reload();
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Keep this learner answer across reload.');
+  });
+
+  test('learner quiz freezes one submission and removes only its confirmed draft', async ({ page }) => {
+    let release!: () => void;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    const submissions: Record<string, unknown>[] = [];
+    await mockLearnerCourses(page, async body => {
+      if (body.action !== 'submit_quiz') return undefined;
+      submissions.push(body); await blocked;
+      return { attempt: { ...learnerAttempt(classroomId), status: 'submitted' } };
+    });
+    try {
+      await page.goto(learnerClassroomPath(classroomId));
+      await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+      const answer = page.getByPlaceholder('Write your response', { exact: true });
+      await answer.fill('One submitted answer.');
+      await page.getByRole('button', { name: 'Submit quiz', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
+      await expect.poll(() => submissions.length).toBe(1);
+      await expect(answer).toBeDisabled();
+      expect(submissions[0].answers).toEqual({ [`question-${classroomId}`]: 'One submitted answer.' });
+      expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(1);
+      release();
+      await expect(page.locator('.quiz-attempt-panel')).toHaveCount(0);
+      expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(0);
+    } finally { release(); }
+  });
+
+  test('learner quiz retains answers after a failed submission', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.route('**/functions/v1/academy', route => route.request().postDataJSON()?.action === 'submit_quiz'
+      ? route.fulfill({ status: 503, json: { error: 'Submission unavailable' } }) : route.fallback());
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Keep after failure.');
+    await page.getByRole('button', { name: 'Submit quiz', exact: true }).click();
+    await expect(page.locator('.student-curriculum .error-banner')).toContainText('Submission unavailable');
+    await page.reload();
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Keep after failure.');
+  });
+
+  test('learner quiz does not recover another attempt or classroom draft', async ({ page }) => {
+    let newAttempt = false;
+    await mockLearnerCourses(page, async body => body.action === 'start_quiz' && newAttempt
+      ? { quiz: learnerQuiz(String(body.classroom_id)), attempt: { ...learnerAttempt(String(body.classroom_id)), id: 'new-attempt' }, resumed: true } : undefined);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Private first attempt.');
+    await moveLearnerHistory(page, learnerNextClassroom.id);
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('');
+    newAttempt = true;
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('');
+  });
+
+  test('learner quiz rejects a resume response from another classroom', async ({ page }) => {
+    await mockLearnerCourses(page, async body => body.action === 'start_quiz'
+      ? { quiz: learnerQuiz(classroomId), attempt: learnerAttempt(learnerNextClassroom.id), resumed: true } : undefined);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.locator('.student-curriculum .error-banner')).toContainText('The quiz attempt does not belong to this classroom.');
+    await expect(page.locator('.quiz-attempt-panel')).toHaveCount(0);
+  });
+
+  test('learner quiz shows storage failure without losing the open answer', async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = Storage.prototype.setItem;
+      Storage.prototype.setItem = function(key, value) {
+        if (key.startsWith('schood.academy.quiz-draft.v1:')) throw new DOMException('Storage unavailable', 'QuotaExceededError');
+        return original.call(this, key, value);
+      };
+    });
+    await mockLearnerCourses(page);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Still available to submit.');
+    await expect(page.getByRole('alert')).toContainText('Your quiz answers cannot be saved in this browser tab.');
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Still available to submit.');
+    await expect(page.getByRole('button', { name: 'Submit quiz', exact: true })).toBeEnabled();
+  });
+
+  test('learner sign-out erases tab quiz drafts', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.route('**/auth/v1/logout**', route => route.fulfill({ status: 204, body: '' }));
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Erase on sign-out.');
+    expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(1);
+    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(0);
+  });
+
+  test('learner account startup removes foreign drafts and rejects a mismatched draft scope', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Do not restore a foreign actor.');
+    await page.evaluate(() => {
+      const key = Object.keys(sessionStorage).find(key => key.startsWith('schood.academy.quiz-draft.v1:'))!;
+      const text = JSON.parse(sessionStorage.getItem(key)!);
+      text.scope.actorId = 'another-actor';
+      sessionStorage.setItem(key, JSON.stringify(text));
+      sessionStorage.setItem(key.replace(':student-user:', ':another-actor:'), JSON.stringify(text));
+    });
+    await page.reload();
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('');
+    expect(await page.evaluate(() => Object.keys(sessionStorage).some(key => key.startsWith('schood.academy.quiz-draft.v1:another-actor:')))).toBe(false);
+  });
+
   for (const route of ['/', '/academy/workspace', '/academies']) {
     test(`legacy empty membership on ${route} opens the first-use setup path`, async ({ page }) => {
       const actionLog: string[] = [];

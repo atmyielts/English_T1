@@ -2558,5 +2558,7 @@
   "Your session expired. Please sign in again.": "Your session expired. Please sign in again.",
   "Your teacher has published the plan. Specific goals will appear here when they are added.": "Your teacher has published the plan. Specific goals will appear here when they are added.",
   "Your teacher will complete this interview and record the evidence. Follow the instructions from your center.": "Your teacher will complete this interview and record the evidence. Follow the instructions from your center.",
-  "Your teaching day": "Your teaching day"
+  "Your teaching day": "Your teaching day",
+  "The quiz attempt does not belong to this classroom.": "The quiz attempt does not belong to this classroom.",
+  "Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.": "Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit."
 }

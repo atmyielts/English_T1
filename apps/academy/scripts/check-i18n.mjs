@@ -23,6 +23,8 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  'The quiz attempt does not belong to this classroom.',
+  'Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.',
   'Verification is temporarily unavailable. Try again later.',
   'Decision notes', 'Requested', 'Confirmed', 'In progress', 'Delivered', 'Cancelled',
   'Add marking guidance for every teacher-reviewed task.',

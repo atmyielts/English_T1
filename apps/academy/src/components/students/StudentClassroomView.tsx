@@ -1,5 +1,5 @@
 import { getLocaleTag, translate } from '../../i18n';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   teacherStudioClassroomChat,
@@ -28,6 +28,7 @@ import { supabase } from '../../lib/supabase';
 import { StudentCurriculumView } from './StudentCurriculumView';
 
 type StudentClassroomViewProps = {
+  actorId: string;
   classroom: TeacherStudioClassroom | null;
   academyName: string;
   memberships: TeacherStudioClassroomMembership[];
@@ -73,6 +74,7 @@ const resourceLabel = (resource: TeacherStudioClassroomResource): string =>
   translate(resource.kind.replace(/_/g, ' '));
 
 export const StudentClassroomView = ({
+  actorId,
   classroom,
   academyName,
   memberships,
@@ -102,6 +104,12 @@ export const StudentClassroomView = ({
   const [submissionFile, setSubmissionFile] = useState<File | null>(null);
   const [payingOfferId, setPayingOfferId] = useState('');
   const [joiningSessionId, setJoiningSessionId] = useState('');
+  const visitRef = useRef(0);
+  const readRef = useRef(0);
+  const actionRef = useRef(false);
+  const paymentRef = useRef(false);
+  const joinRef = useRef(false);
+  useEffect(() => () => { visitRef.current += 1; }, []);
 
   useEffect(() => {
     let active = true;
@@ -146,6 +154,9 @@ export const StudentClassroomView = ({
 
   const loadClassroomLms = useCallback(async () => {
     if (!classroom) return;
+    const visit = visitRef.current;
+    const request = ++readRef.current;
+    const isCurrent = () => visit === visitRef.current && request === readRef.current;
     setBusy(true);
     setError('');
     try {
@@ -155,15 +166,16 @@ export const StudentClassroomView = ({
         teacherStudioStudentAttendance(classroom.academy_id, classroom.id),
         teacherStudioStudentBilling(classroom.academy_id),
       ]);
+      if (!isCurrent()) return;
       setRoom(roomData);
       setAssignments(assignmentData.assignments);
       setAttendance(attendanceData.attendance);
       setBillingItems(billingData.items.filter((item) => item.classroom_id === classroom.id));
       setBillingAccounts(billingData.accounts);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (isCurrent()) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (isCurrent()) setBusy(false);
     }
   }, [classroom]);
 
@@ -362,7 +374,9 @@ export const StudentClassroomView = ({
 
   const submitAssignment = async (event: FormEvent) => {
     event.preventDefault();
-    if (!classroom || !submitTarget) return;
+    if (!classroom || !submitTarget || busy || actionRef.current) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
     setBusy(true);
     setError('');
     setNotice('');
@@ -381,19 +395,22 @@ export const StudentClassroomView = ({
       } else {
         await teacherStudioSubmitStudentAssignment(classroom.academy_id, payload);
       }
+      if (visit !== visitRef.current) return;
       setSubmitTarget(null);
       setSubmissionFile(null);
       setNotice('Assignment submitted.');
       await loadClassroomLms();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
     }
   };
 
   const toggleResource = async (resource: TeacherStudioClassroomResource) => {
-    if (!classroom) return;
+    if (!classroom || busy || actionRef.current) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
     setBusy(true);
     setError('');
     setNotice('');
@@ -403,15 +420,19 @@ export const StudentClassroomView = ({
         resource_id: resource.id,
         completed: !completedResourceIds.has(resource.id),
       });
+      if (visit !== visitRef.current) return;
       await loadClassroomLms();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
     }
   };
 
   const payTuition = async (item: TeacherStudioStudentBillingItem) => {
+    if (paymentRef.current) return;
+    paymentRef.current = true;
+    const visit = visitRef.current;
     setPayingOfferId(item.offer.id);
     setError('');
     setNotice('');
@@ -421,16 +442,19 @@ export const StudentClassroomView = ({
         offer_id: item.offer.id,
         redirect_url: typeof window !== 'undefined' ? window.location.href : null,
       });
-      if (result.payment_url) window.location.href = result.payment_url;
+      if (visit === visitRef.current && result.payment_url) window.location.href = result.payment_url;
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPayingOfferId('');
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (visit === visitRef.current) { paymentRef.current = false; setPayingOfferId(''); }
     }
   };
 
   const sendChat = async (event: FormEvent) => {
     event.preventDefault();
-    if (!classroom || !chatDraft.trim()) return;
+    if (!classroom || !chatDraft.trim() || busy || actionRef.current) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
     setBusy(true);
     setError('');
     setNotice('');
@@ -439,26 +463,29 @@ export const StudentClassroomView = ({
         classroom_id: classroom.id,
         content: chatDraft.trim(),
       });
+      if (visit !== visitRef.current) return;
       setChatDraft('');
       await loadClassroomLms();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setBusy(false); }
     }
   };
 
   const joinSession = async (session: TeacherStudioStudentSession) => {
-    if (!classroom) return;
+    if (!classroom || joinRef.current) return;
+    joinRef.current = true;
+    const visit = visitRef.current;
     setJoiningSessionId(session.id);
     setError('');
     try {
       const delivery = await teacherStudioStudentSessionJoin(classroom.academy_id, classroom.id, session.id);
-      window.location.assign(delivery.join_url);
+      if (visit === visitRef.current) window.location.assign(delivery.join_url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setJoiningSessionId('');
+      if (visit === visitRef.current) { joinRef.current = false; setJoiningSessionId(''); }
     }
   };
 
@@ -700,7 +727,7 @@ export const StudentClassroomView = ({
       ) : null}
 
       {showLegacyPanel('curriculum') ? (
-        <StudentCurriculumView academyId={classroom.academy_id} classroomId={classroom.id} />
+        <StudentCurriculumView key={`${actorId}:${classroom.academy_id}:${classroom.id}`} actorId={actorId} academyId={classroom.academy_id} classroomId={classroom.id} />
       ) : null}
 
       {showLegacyPanel('assignments') ? (
@@ -743,17 +770,20 @@ export const StudentClassroomView = ({
                   className="input"
                   placeholder={translate("Response")}
                   value={submissionContent}
+                  disabled={busy}
                   onChange={(event) => setSubmissionContent(event.target.value)}
                 />
                 <input
                   className="input"
                   placeholder={translate("Link")}
                   value={submissionUrl}
+                  disabled={busy}
                   onChange={(event) => setSubmissionUrl(event.target.value)}
                 />
                 <input
                   className="input"
                   type="file"
+                  disabled={busy}
                   onChange={(event) => setSubmissionFile(event.target.files?.[0] ?? null)}
                 />
                 {submissionFile ? (
@@ -764,6 +794,7 @@ export const StudentClassroomView = ({
                   className="input"
                   placeholder={translate("Notes")}
                   value={submissionNotes}
+                  disabled={busy}
                   onChange={(event) => setSubmissionNotes(event.target.value)}
                 />
                 <div className="row wrap">
@@ -988,6 +1019,7 @@ export const StudentClassroomView = ({
             <textarea
               className="input"
               value={chatDraft}
+              disabled={busy}
               onChange={(event) => setChatDraft(event.target.value)}
               placeholder={translate("Message")}
             />

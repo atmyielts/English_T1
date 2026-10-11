@@ -1,5 +1,6 @@
 import { translate } from '../../i18n';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { readQuizDraft, writeQuizDraft, removeQuizDraft, type QuizDraftScope } from '../../lib/quizDraft';
 import {
   academyVideoPlayback,
   teacherStudioSetLessonProgress,
@@ -14,6 +15,7 @@ import {
 } from '../../lib/client';
 
 type StudentCurriculumViewProps = {
+  actorId: string;
   academyId: string;
   classroomId: string;
 };
@@ -30,26 +32,40 @@ const lessonText = (lesson: TeacherStudioLesson): string => {
   return '';
 };
 
-export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurriculumViewProps) => {
+export const StudentCurriculumView = ({ actorId, academyId, classroomId }: StudentCurriculumViewProps) => {
   const [curriculum, setCurriculum] = useState<TeacherStudioStudentCurriculum | null>(null);
   const [expandedLessonId, setExpandedLessonId] = useState('');
   const [activeQuiz, setActiveQuiz] = useState<TeacherStudioQuiz | null>(null);
   const [activeAttempt, setActiveAttempt] = useState<TeacherStudioQuizAttempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
-  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const busy = loading || actionBusy;
+  const visitRef = useRef(0);
+  const readRef = useRef(0);
+  const actionRef = useRef(false);
+  const answersRef = useRef<Record<string, unknown>>({});
+  const draftRef = useRef<QuizDraftScope | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [videoFrame, setVideoFrame] = useState<{ assetId: string; url: string } | null>(null);
+  const [draftError, setDraftError] = useState('');
+
+  useEffect(() => () => { visitRef.current += 1; }, []);
 
   const load = useCallback(async () => {
-    setBusy(true);
+    const visit = visitRef.current;
+    const request = ++readRef.current;
+    const isCurrent = () => visit === visitRef.current && request === readRef.current;
+    setLoading(true);
     setError('');
     try {
-      setCurriculum(await teacherStudioStudentCurriculum(academyId, classroomId));
+      const result = await teacherStudioStudentCurriculum(academyId, classroomId);
+      if (isCurrent()) setCurriculum(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (isCurrent()) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [academyId, classroomId]);
 
@@ -72,74 +88,105 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
   }, [curriculum?.attempts]);
 
   const markLesson = async (lesson: TeacherStudioLesson, status: 'in_progress' | 'completed') => {
-    setBusy(true);
+    if (actionRef.current || loading) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
+    setActionBusy(true);
     setError('');
     try {
       await teacherStudioSetLessonProgress(academyId, { classroom_id: classroomId, lesson_id: lesson.id, status });
+      if (visit !== visitRef.current) return;
       setNotice(status === 'completed' ? 'Lesson completed.' : 'Lesson started.');
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
   const watchVideo = async (assetId: string) => {
-    setBusy(true);
+    if (actionRef.current || loading) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
+    setActionBusy(true);
     setError('');
     try {
       const playback = await academyVideoPlayback(academyId, assetId);
+      if (visit !== visitRef.current) return;
       setVideoFrame({ assetId, url: playback.iframe_url });
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
   const startQuiz = async (quiz: TeacherStudioQuiz) => {
-    setBusy(true);
+    if (actionRef.current || loading) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
+    setActionBusy(true);
     setError('');
     setNotice('');
     try {
       const result = await teacherStudioStartQuiz(academyId, { classroom_id: classroomId, quiz_id: quiz.id });
+      if (visit !== visitRef.current) return;
+      if (result.attempt.classroom_id !== classroomId || result.attempt.quiz_id !== quiz.id || result.attempt.status !== 'in_progress') throw new Error('The quiz attempt does not belong to this classroom.');
+      const scope = { actorId, academyId, classroomId, quizId: quiz.id, attemptId: result.attempt.id };
+      const restored = result.resumed ? readQuizDraft(scope, (curriculum?.questions ?? []).filter(question => question.quiz_id === quiz.id)) : {};
+      draftRef.current = scope;
+      answersRef.current = restored;
       setActiveQuiz(quiz);
       setActiveAttempt(result.attempt);
-      setAnswers({});
+      setAnswers(restored);
+      setDraftError('');
       if (result.resumed) setNotice('Resumed your open quiz attempt.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
   };
 
   const submitQuiz = async () => {
-    if (!activeAttempt) return;
-    setBusy(true);
+    if (!activeAttempt || actionRef.current || loading) return;
+    actionRef.current = true;
+    const visit = visitRef.current;
+    const submittedDraft = draftRef.current;
+    setActionBusy(true);
     setError('');
     try {
-      const attempt = await teacherStudioSubmitQuiz(academyId, { classroom_id: classroomId, attempt_id: activeAttempt.id, answers });
+      const attempt = await teacherStudioSubmitQuiz(academyId, { classroom_id: classroomId, attempt_id: activeAttempt.id, answers: answersRef.current });
+      if (attempt.id !== activeAttempt.id || attempt.classroom_id !== classroomId || attempt.quiz_id !== activeAttempt.quiz_id) throw new Error('The quiz attempt does not belong to this classroom.');
+      // A confirmed submission removes its draft even if the learner has left this view.
+      if (submittedDraft && ['submitted', 'graded'].includes(attempt.status)) removeQuizDraft(submittedDraft);
+      if (visit !== visitRef.current) return;
       setActiveAttempt(attempt);
       setNotice(attempt.status === 'submitted' ? 'Quiz submitted for teacher grading.' : `Quiz graded: ${attempt.percentage ?? 0}%.`);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (visit === visitRef.current) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
+      if (visit === visitRef.current) { actionRef.current = false; setActionBusy(false); }
     }
+  };
+
+  const saveAnswer = (id: string, value: unknown) => {
+    if (actionRef.current || loading) return;
+    const next = { ...answersRef.current, [id]: value };
+    answersRef.current = next;
+    setAnswers(next);
+    if (draftRef.current) setDraftError(writeQuizDraft(draftRef.current, next) ? '' : 'Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.');
   };
 
   const setChoiceAnswer = (question: TeacherStudioQuizQuestion, value: string, checked: boolean) => {
     if (question.question_type !== 'multiple_choice') {
-      setAnswers((previous) => ({ ...previous, [question.id]: value }));
+      saveAnswer(question.id, value);
       return;
     }
-    setAnswers((previous) => {
-      const current = Array.isArray(previous[question.id]) ? previous[question.id] as string[] : [];
-      return { ...previous, [question.id]: checked ? [...new Set([...current, value])] : current.filter((item) => item !== value) };
-    });
+    const current = Array.isArray(answersRef.current[question.id]) ? answersRef.current[question.id] as string[] : [];
+    saveAnswer(question.id, checked ? [...new Set([...current, value])] : current.filter(item => item !== value));
   };
 
   const renderQuestion = (question: TeacherStudioQuizQuestion) => {
@@ -154,7 +201,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
               : String(selected ?? '') === option;
             return (
               <label className="row" key={option}>
-                <input type={question.question_type === 'multiple_choice' ? 'checkbox' : 'radio'} name={question.id} checked={checked} onChange={(event) => setChoiceAnswer(question, option, event.target.checked)} />
+                <input type={question.question_type === 'multiple_choice' ? 'checkbox' : 'radio'} name={question.id} checked={checked} disabled={busy} onChange={(event) => setChoiceAnswer(question, option, event.target.checked)} />
                 <span>{option}</span>
               </label>
             );
@@ -164,13 +211,13 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
     }
     if (question.question_type === 'true_false') {
       return (
-        <select className="input" value={String(answers[question.id] ?? '')} onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value === 'true' }))}>
+        <select className="input" value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value === '' ? undefined : event.target.value === 'true')}>
           <option value="">{translate("Choose an answer")}</option><option value="true">{translate("True")}</option><option value="false">{translate("False")}</option>
         </select>
       );
     }
     return (
-      <textarea className="input" placeholder={question.question_type === 'essay' ? 'Write your response' : 'Your answer'} value={String(answers[question.id] ?? '')} onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value }))} />
+      <textarea className="input" placeholder={question.question_type === 'essay' ? 'Write your response' : 'Your answer'} value={String(answers[question.id] ?? '')} disabled={busy} onChange={(event) => saveAnswer(question.id, event.target.value)} />
     );
   };
 
@@ -180,6 +227,7 @@ export const StudentCurriculumView = ({ academyId, classroomId }: StudentCurricu
     <section className="grid student-curriculum">
       {error ? <div className="error-banner">{translate(error)}</div> : null}
       {notice ? <div className="info-banner">{translate(notice)}</div> : null}
+      {draftError ? <div className="error-banner" role="alert">{translate(draftError)}</div> : null}
       {(curriculum?.courses ?? []).map((course) => {
         const modules = curriculum?.modules.filter((module) => module.course_id === course.id) ?? [];
         const courseLessons = curriculum?.lessons.filter((lesson) => lesson.course_id === course.id) ?? [];
