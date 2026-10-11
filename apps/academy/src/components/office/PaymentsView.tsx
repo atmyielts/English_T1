@@ -238,14 +238,14 @@ export const PaymentsView = ({
         <form className="panel workspace-form" onSubmit={onCreatePayment}>
           <h3>{translate("Create Click checkout")}</h3>
           <p className="small muted">{translate("Choose a contact and an offer. Access is applied only after Click confirms the payment.")}</p>
-          <label>{translate("Contact")}{' '}<select className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
+          <label>{translate("Contact")}{' '}<select disabled={busy} className="input" value={paymentForm.contact_id} onChange={(e) => setPaymentForm((p) => ({ ...p, contact_id: e.target.value }))} required>
               <option value="">{translate("Select contact")}</option>
               {contacts.map((c) => (
                 <option key={c.id} value={c.id}>{`${c.first_name} ${c.last_name}`.trim()} ({c.email ?? 'no email'})</option>
               ))}
             </select>
           </label>
-          <label>{translate("Offer")}{' '}<select className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
+          <label>{translate("Offer")}{' '}<select disabled={busy} className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
               <option value="">{translate("Select offer")}</option>
               {offers.map((o) => (
                 <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>

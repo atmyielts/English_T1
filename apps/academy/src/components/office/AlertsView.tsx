@@ -45,7 +45,7 @@ export const AlertsView = ({
         <form className="panel workspace-form" onSubmit={onCreate}>
           <h3>{translate("Create alert")}</h3>
           <p className="small muted">{translate("Record an operational issue for the academy or a specific contact.")}</p>
-          <label>{translate("Scope")}{' '}<select
+          <label>{translate("Scope")}{' '}<select disabled={busy}
               className="input"
               value={form.contact_id}
               onChange={(e) => setForm((previous) => ({ ...previous, contact_id: e.target.value }))}
@@ -60,14 +60,14 @@ export const AlertsView = ({
             </select>
           </label>
           <div className="grid two">
-            <label>{translate("Alert type")}<input
+            <label>{translate("Alert type")}<input disabled={busy}
               className="input"
               placeholder={translate("Attendance, progress, payment…")}
               value={form.type}
               onChange={(e) => setForm((previous) => ({ ...previous, type: e.target.value }))}
               required
             /></label>
-            <label>{translate("Severity")}<select
+            <label>{translate("Severity")}<select disabled={busy}
               className="input"
               value={form.severity}
               onChange={(e) => setForm((previous) => ({ ...previous, severity: e.target.value }))}
@@ -78,7 +78,7 @@ export const AlertsView = ({
               <option value="critical">{translate("critical")}</option>
             </select></label>
           </div>
-          <label>{translate("Message")}<textarea
+          <label>{translate("Message")}<textarea disabled={busy}
             className="input"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}

@@ -91,19 +91,19 @@ export const ContactsView = ({ busy, loading, form, setForm, contacts, classroom
           <form className="workspace-form" onSubmit={onSubmit}>
             <div className="form-grid two-col">
               <label>
-                {translate("First name")}{' '}<input className="input" autoComplete="given-name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
+                {translate("First name")}{' '}<input disabled={busy} className="input" autoComplete="given-name" value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} required />
               </label>
               <label>
-                {translate("Last name")}{' '}<input className="input" autoComplete="family-name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
+                {translate("Last name")}{' '}<input disabled={busy} className="input" autoComplete="family-name" value={form.last_name} onChange={(e) => setForm((p) => ({ ...p, last_name: e.target.value }))} required />
               </label>
             </div>
             <div className="form-grid two-col">
               <label>
-                {translate("Email")}{' '}<input className="input" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
+                {translate("Email")}{' '}<input disabled={busy} className="input" type="email" autoComplete="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
               </label>
               <label>
                 {translate("Phone")}{' '}<span className="optional-label">{translate("Optional")}</span>
-                <input className="input" autoComplete="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
+                <input disabled={busy} className="input" autoComplete="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
               </label>
             </div>
             <div className="form-actions">

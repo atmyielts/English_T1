@@ -32,28 +32,28 @@ export const OffersView = ({
         <form className="panel workspace-form" onSubmit={onCreateOffer}>
           <h3>{translate("Create tuition plan")}</h3>
           <p className="small muted">{translate("Set the price and duration, then choose the learning products included after payment.")}</p>
-          <label>{translate("Plan name")}<input className="input" value={offerForm.name} onChange={(e) => setOfferForm((p) => ({ ...p, name: e.target.value }))} required /></label>
+          <label>{translate("Plan name")}<input disabled={busy} className="input" value={offerForm.name} onChange={(e) => setOfferForm((p) => ({ ...p, name: e.target.value }))} required /></label>
           <div className="grid two">
-            <label>{translate("Plan type")}<select className="input" value={offerForm.type} onChange={(e) => setOfferForm((p) => ({ ...p, type: e.target.value }))}>
+            <label>{translate("Plan type")}<select disabled={busy} className="input" value={offerForm.type} onChange={(e) => setOfferForm((p) => ({ ...p, type: e.target.value }))}>
               <option value="subscription">{translate("subscription")}</option>
               <option value="cohort">{translate("cohort")}</option>
               <option value="product">{translate("product")}</option>
               <option value="credits">{translate("credits")}</option>
             </select></label>
-            <label>{translate("Currency")}<input className="input" value={offerForm.currency} onChange={(e) => setOfferForm((p) => ({ ...p, currency: e.target.value }))} /></label>
+            <label>{translate("Currency")}<input disabled={busy} className="input" value={offerForm.currency} onChange={(e) => setOfferForm((p) => ({ ...p, currency: e.target.value }))} /></label>
           </div>
           <div className="grid two">
-            <label>{translate("Price")}<input className="input" type="number" min={0} value={offerForm.price_amount} onChange={(e) => setOfferForm((p) => ({ ...p, price_amount: e.target.value }))} required /></label>
-            <label>{translate("Duration")}{' '}<span className="optional-label">{translate("Days, optional")}</span><input className="input" type="number" min={1} value={offerForm.duration_days} onChange={(e) => setOfferForm((p) => ({ ...p, duration_days: e.target.value }))} /></label>
+            <label>{translate("Price")}<input disabled={busy} className="input" type="number" min={0} value={offerForm.price_amount} onChange={(e) => setOfferForm((p) => ({ ...p, price_amount: e.target.value }))} required /></label>
+            <label>{translate("Duration")}{' '}<span className="optional-label">{translate("Days, optional")}</span><input disabled={busy} className="input" type="number" min={1} value={offerForm.duration_days} onChange={(e) => setOfferForm((p) => ({ ...p, duration_days: e.target.value }))} /></label>
           </div>
-          <label>{translate("Description")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea className="input" value={offerForm.description} onChange={(e) => setOfferForm((p) => ({ ...p, description: e.target.value }))} /></label>
+          <label>{translate("Description")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea disabled={busy} className="input" value={offerForm.description} onChange={(e) => setOfferForm((p) => ({ ...p, description: e.target.value }))} /></label>
           <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Create plan")}</button></div>
         </form>
 
         <form className="panel workspace-form" onSubmit={onAttachGrant}>
           <h3>{translate("Choose included access")}</h3>
           <p className="small muted">{translate("Choose what the student can open after this plan is paid.")}</p>
-          <label>{translate("Tuition plan")}<select className="input" value={grantForm.offer_id} onChange={(e) => setGrantForm((p) => ({ ...p, offer_id: e.target.value }))} required>
+          <label>{translate("Tuition plan")}<select disabled={busy} className="input" value={grantForm.offer_id} onChange={(e) => setGrantForm((p) => ({ ...p, offer_id: e.target.value }))} required>
             <option value="">{translate("Select a plan")}</option>
             {offers.map((o) => (
               <option key={o.id} value={o.id}>
@@ -62,14 +62,14 @@ export const OffersView = ({
             ))}
           </select></label>
           <div className="grid two">
-            <label>{translate("Access method")}<input className="input" value={grantForm.grant_type} onChange={(e) => setGrantForm((p) => ({ ...p, grant_type: e.target.value }))} required /></label>
-            <label>{translate("What it opens")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" value={grantForm.resource_type} onChange={(e) => setGrantForm((p) => ({ ...p, resource_type: e.target.value }))} /></label>
+            <label>{translate("Access method")}<input disabled={busy} className="input" value={grantForm.grant_type} onChange={(e) => setGrantForm((p) => ({ ...p, grant_type: e.target.value }))} required /></label>
+            <label>{translate("What it opens")}{' '}<span className="optional-label">{translate("Optional")}</span><input disabled={busy} className="input" value={grantForm.resource_type} onChange={(e) => setGrantForm((p) => ({ ...p, resource_type: e.target.value }))} /></label>
           </div>
           <details className="advanced-fields">
             <summary>{translate("Advanced targeting")}</summary>
             <div className="grid two">
-              <label>{translate("Resource ID")}<input className="input" value={grantForm.resource_id} onChange={(e) => setGrantForm((p) => ({ ...p, resource_id: e.target.value }))} /></label>
-              <label>{translate("Included product or feature")}<input className="input" value={grantForm.capability_key} onChange={(e) => setGrantForm((p) => ({ ...p, capability_key: e.target.value }))} /></label>
+              <label>{translate("Resource ID")}<input disabled={busy} className="input" value={grantForm.resource_id} onChange={(e) => setGrantForm((p) => ({ ...p, resource_id: e.target.value }))} /></label>
+              <label>{translate("Included product or feature")}<input disabled={busy} className="input" value={grantForm.capability_key} onChange={(e) => setGrantForm((p) => ({ ...p, capability_key: e.target.value }))} /></label>
             </div>
           </details>
           <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Save included access")}</button></div>
