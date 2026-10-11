@@ -3834,6 +3834,66 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("textbox", { name: "Academy name" })).toBeVisible();
   });
 
+  for (const route of ['/', '/academy/workspace', '/academies']) {
+    test(`legacy empty membership on ${route} opens the first-use setup path`, async ({ page }) => {
+      const actionLog: string[] = [];
+      await seedSessionCookie(page, 'first-use-membership-user');
+      await mockAcademyEdge(page, 'owner', {
+        actionLog,
+        meResponse: { user: { id: 'first-use-membership-user', email: 'first-use@example.test', role: 'user' }, current_tenant: null, memberships: [] },
+        actionOverrides: { 'student-dashboard': emptyStudentDashboardFixture },
+      });
+      await page.route('**/functions/v1/academy', route => {
+        if (route.request().postDataJSON()?.action !== 'academies') return route.fallback();
+        return route.fulfill({ status: 403, json: { error: 'No active academy membership' } });
+      });
+      await page.goto(route);
+      await expect(page.getByRole('heading', { name: 'No Academy access yet', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Retry', exact: true })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Set up an academy', exact: true }).click();
+      await expect(page.getByRole('textbox', { name: 'Academy name', exact: true })).toBeVisible();
+      expect(actionLog.filter(action => ['summary', 'contacts', 'classrooms', 'create_academy'].includes(action))).toEqual([]);
+    });
+  }
+
+  test('legacy empty staff membership still opens an enrolled student workspace', async ({ page }) => {
+    const actionLog: string[] = [];
+    await seedSessionCookie(page, 'student-user');
+    await mockAcademyEdge(page, 'student', { actionLog });
+    await page.route('**/functions/v1/academy', route => {
+      if (route.request().postDataJSON()?.action !== 'academies') return route.fallback();
+      return route.fulfill({ status: 403, json: { error: 'No active academy membership' } });
+    });
+    await page.goto('/academy/workspace');
+    await expect(page).toHaveURL(/\/academy\/student(?:\?|$)/);
+    await expect(page.locator('.workspace-identity')).toContainText('Student');
+    await expect(page.getByRole('heading', { name: 'No Academy access yet', exact: true })).toHaveCount(0);
+    expect(actionLog.filter(action => ['summary', 'contacts'].includes(action))).toEqual([]);
+  });
+
+  for (const failure of [
+    { label: 'another forbidden response', status: 403, error: 'Forbidden', staff: false },
+    { label: 'unavailable membership service', status: 503, error: 'No active academy membership', staff: false },
+    { label: 'denial contradicting an active staff membership', status: 403, error: 'No active academy membership', staff: true },
+  ]) {
+    test(`entry preserves retry for ${failure.label}`, async ({ page }) => {
+      await seedSessionCookie(page, 'owner-user');
+      await mockAcademyEdge(page, 'owner', {
+        ...(!failure.staff ? { meResponse: { user: { id: 'owner-user', email: 'no-staff@example.test', role: 'user' }, current_tenant: null, memberships: [] } } : {}),
+        actionOverrides: { 'student-dashboard': emptyStudentDashboardFixture },
+      });
+      await page.route('**/functions/v1/academy', route => {
+        if (route.request().postDataJSON()?.action !== 'academies') return route.fallback();
+        return route.fulfill({ status: failure.status, json: { error: failure.error } });
+      });
+      await page.goto('/academy/workspace');
+      await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'No Academy access yet', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Set up an academy', exact: true })).toHaveCount(0);
+      await expect(page.locator('.ts-sidebar')).toHaveCount(0);
+    });
+  }
+
   test("workspace navigation renders Contacts immediately while summary and core data refresh in parallel", async ({ page }) => {
     const actionLog: string[] = [];
     const delayActions = { summary: 900, contacts: 1_200 };
