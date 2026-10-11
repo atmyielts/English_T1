@@ -24,6 +24,7 @@ export default defineConfig({
       VITE_SUPABASE_ANON_KEY: 'platform-route-smoke-anon-key',
       VITE_PLATFORM_URL: baseURL,
       VITE_ACADEMY_URL: 'https://academy.schood.online',
+      VITE_ALLOWED_RETURN_HOSTS: `${new URL(baseURL).host},schood.online,academy.schood.online`,
       // The fixture runs on loopback; inherited production cookie domains
       // would discard SDK session writes during real account-switch tests.
       VITE_AUTH_COOKIE_DOMAIN: '',

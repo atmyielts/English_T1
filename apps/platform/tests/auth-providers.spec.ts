@@ -12,6 +12,30 @@ const mockAuthSettings = async (page: Page, google = true, telegram = true) => {
 };
 
 test.describe('Google and Telegram authentication', () => {
+  test('real browser return policy keeps secure destinations and rejects unsafe links', async ({ page }) => {
+    await page.route('http://127.0.0.1:54321/**', route => route.abort());
+    await mockAuthSettings(page);
+    await page.goto('/auth?mode=signin');
+    const values = await page.evaluate(async () => {
+      const modulePath = '/src/lib/returnTo.ts';
+      const { sanitizeReturnTo } = await import(modulePath);
+      return [
+        '/checkout?plan_id=practice#status',
+        'https://academy.schood.online/academy/workspace',
+        'http://academy.schood.online/academy/workspace',
+        'https://person:password@academy.schood.online/',
+        '/\\evil.test/',
+        '/\n/evil.test/',
+        'https://academy.schood.online.evil.test/',
+      ].map(target => sanitizeReturnTo(target));
+    });
+    expect(values).toEqual([
+      '/checkout?plan_id=practice#status',
+      'https://academy.schood.online/academy/workspace',
+      '/account', '/account', '/account', '/account', '/account',
+    ]);
+  });
+
   test('renders both providers and requires email and phone for signup', async ({ page }) => {
     await mockAuthSettings(page);
     await page.goto('/auth?mode=signup');
