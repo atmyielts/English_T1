@@ -24,11 +24,12 @@ export const readQuizDraft = (scope: QuizDraftScope, questions: TeacherStudioQui
     const answers: Record<string, unknown> = {};
     for (const question of questions) {
       const value = draft.answers[question.id];
+      const options = (question.options ?? []).map(String);
       if (question.question_type === 'multiple_choice') {
-        if (Array.isArray(value) && value.every(item => typeof item === 'string' && question.options?.includes(item))) answers[question.id] = [...new Set(value)];
+        if (Array.isArray(value) && value.every(item => typeof item === 'string' && options.includes(item))) answers[question.id] = [...new Set(value)];
       } else if (question.question_type === 'true_false') {
         if (typeof value === 'boolean') answers[question.id] = value;
-      } else if (typeof value === 'string' && (question.question_type !== 'single_choice' || question.options?.includes(value))) answers[question.id] = value;
+      } else if (typeof value === 'string' && (question.question_type !== 'single_choice' || options.includes(value))) answers[question.id] = value;
     }
     return answers;
   } catch { return {}; }

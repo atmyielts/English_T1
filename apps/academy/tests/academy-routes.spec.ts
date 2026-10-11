@@ -4024,6 +4024,31 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     expect(await page.evaluate(() => Object.keys(sessionStorage).some(key => key.startsWith('schood.academy.quiz-draft.v1:another-actor:')))).toBe(false);
   });
 
+  test('learner quiz restores false and single or multiple choice answers as displayed', async ({ page }) => {
+    await mockLearnerCourses(page, async body => body.action === 'student_curriculum' ? {
+      academy_id: academyId, classroom_id: classroomId, contact_id: studentContactId,
+      courses: [course], modules: [courseModule], lessons: [lesson], progress: [], quizzes: [learnerQuiz(classroomId)],
+      questions: [
+        { ...quizQuestion, id: 'single-numeric', quiz_id: learnerQuiz(classroomId).id, question_type: 'single_choice', options: [1, 2] },
+        { ...quizQuestion, id: 'multiple-numeric', quiz_id: learnerQuiz(classroomId).id, question_type: 'multiple_choice', options: [1, 2] },
+        { ...quizQuestion, id: 'false-question', quiz_id: learnerQuiz(classroomId).id, question_type: 'true_false', options: [] },
+      ], attempts: [], media: [], classroom_courses: [],
+    } : undefined);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    const panel = page.locator('.quiz-attempt-panel');
+    await panel.getByRole('radio', { name: '2', exact: true }).check();
+    await panel.getByRole('checkbox', { name: '1', exact: true }).check();
+    await panel.getByRole('checkbox', { name: '2', exact: true }).check();
+    await panel.getByRole('combobox').selectOption('false');
+    await page.reload();
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(panel.getByRole('radio', { name: '2', exact: true })).toBeChecked();
+    await expect(panel.getByRole('checkbox', { name: '1', exact: true })).toBeChecked();
+    await expect(panel.getByRole('checkbox', { name: '2', exact: true })).toBeChecked();
+    await expect(panel.getByRole('combobox')).toHaveValue('false');
+  });
+
   for (const route of ['/', '/academy/workspace', '/academies']) {
     test(`legacy empty membership on ${route} opens the first-use setup path`, async ({ page }) => {
       const actionLog: string[] = [];
