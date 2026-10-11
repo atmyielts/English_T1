@@ -2576,5 +2576,7 @@
   "Target subject": "Qiziqtirgan fan",
   "Walk-in": "Tashrif",
   "Your entry is kept. Retry saving before editing it.": "Kiritilgan ma’lumotlar saqlanib turibdi. Tahrirlashdan oldin saqlashni qayta urinib ko‘ring.",
-  "Enter a name, phone number and target subject.": "Ism, telefon raqami va qiziqtirgan fanni kiriting."
+  "Enter a name, phone number and target subject.": "Ism, telefon raqami va qiziqtirgan fanni kiriting.",
+  "The save could not be confirmed. Retry to check it safely.": "Saqlanganini tasdiqlab bo‘lmadi. Xavfsiz tekshirish uchun qayta urinib ko‘ring.",
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Murojaatni saqlab bo‘lmadi. Ma’lumotlarni tekshiring yoki ish maydonini yangilang, so‘ng qayta urinib ko‘ring."
 }

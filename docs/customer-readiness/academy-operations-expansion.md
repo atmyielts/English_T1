@@ -60,6 +60,7 @@ colour transitions respect reduced motion. No chart library, new font request
 or new home-page data request was introduced.
 
 Validate the full Academy route suite, the responsive keyboard matrix across
-13 roles at seven widths (320–1440px), four Quick Lead viewport cases, pending
+13 roles at seven widths (320–1440px), four Quick Lead viewport sizes plus a
+320px wider-font regression, pending
 retry and definitive rejection. Inspect desktop and phone captures. These use
 synthetic API responses and do not prove a real production lead write.

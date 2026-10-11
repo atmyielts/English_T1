@@ -2576,5 +2576,7 @@
   "Target subject": "Интересующий предмет",
   "Walk-in": "Личный визит",
   "Your entry is kept. Retry saving before editing it.": "Введённые данные сохранены здесь. Повторите сохранение перед редактированием.",
-  "Enter a name, phone number and target subject.": "Укажите имя, номер телефона и интересующий предмет."
+  "Enter a name, phone number and target subject.": "Укажите имя, номер телефона и интересующий предмет.",
+  "The save could not be confirmed. Retry to check it safely.": "Не удалось подтвердить сохранение. Повторите попытку для безопасной проверки.",
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Не удалось сохранить обращение. Проверьте данные или обновите рабочее пространство и повторите попытку."
 }

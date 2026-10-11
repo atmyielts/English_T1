@@ -2975,8 +2975,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     }
   });
 
-  for (const width of [320, 768, 1024, 1440]) {
-    test(`receptionist Quick lead captures a phone inquiry at ${width}px`, async ({ page }, testInfo) => {
+  for (const { width, font } of [{ width: 320 }, { width: 768 }, { width: 1024 }, { width: 1440 }, { width: 320, font: 'Verdana' }]) {
+    test(`receptionist Quick lead captures a phone inquiry at ${width}px${font ? ` with ${font}` : ''}`, async ({ page }, testInfo) => {
       await seedSessionCookie(page, 'receptionist-user');
       const captures: Record<string, unknown>[] = [];
       await mockAcademyEdge(page, 'receptionist', { respond: async body => {
@@ -2986,6 +2986,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       } });
       await page.setViewportSize({ width, height: 900 });
       await page.goto(`/academy/office/business?academy_id=${academyId}`);
+      if (font) await page.addStyleTag({ content: `body { font-family: ${font}, sans-serif !important; }` });
       const opener = page.getByRole('button', { name: 'Quick lead', exact: true });
       await opener.click();
       const dialog = page.getByRole('dialog', { name: 'Quick lead', exact: true });
@@ -2998,7 +2999,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       const bounds = (await dialog.boundingBox())!;
       expect(bounds.x).toBeGreaterThanOrEqual(8);
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width - 8);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const overflow = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, viewport: innerWidth,
+        elements: Array.from(document.querySelectorAll('body *')).map(element => ({ tag: element.tagName, className: element.className, right: element.getBoundingClientRect().right, text: element.textContent?.trim().slice(0, 80) })).filter(element => element.right > innerWidth + 1).slice(0, 12),
+      }));
+      expect(overflow.width, JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
       await page.screenshot({ path: testInfo.outputPath(`quick-lead-${width}.png`) });
       await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
       await expect(dialog).not.toBeVisible();
@@ -3037,7 +3041,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(dialog).toBeVisible();
     expect(captures).toHaveLength(1);
     release();
-    await expect(dialog.getByRole('alert')).toContainText('Capture temporarily unavailable');
+    await expect(dialog.getByRole('alert')).toContainText('The save could not be confirmed. Retry to check it safely.');
     await expect(dialog.getByLabel('Full name', { exact: true })).toBeDisabled();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
     await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
@@ -3088,7 +3092,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await dialog.getByLabel('Phone', { exact: true }).fill('invalid');
     await dialog.getByLabel('Target subject').fill('IELTS');
     await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Phone needs correction');
+    await expect(dialog.getByRole('alert')).toContainText('Unable to save the inquiry. Check the details or refresh the workspace, then try again.');
     await expect(dialog.getByLabel('Phone', { exact: true })).toBeEnabled();
     await dialog.getByLabel('Phone', { exact: true }).fill('+998900000003');
     await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();

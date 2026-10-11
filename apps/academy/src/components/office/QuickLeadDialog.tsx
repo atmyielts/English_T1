@@ -64,8 +64,11 @@ export function QuickLeadDialog({ academyId, branches, preferredBranchId, disabl
       // identity so a concurrent/committed creation can be recovered by retry.
       const definitiveRejection = /failed \((?:401|403|404|422)\)/.test(message);
       if (definitiveRejection) pending.current = null;
-      setUncertain(!definitiveRejection && pending.current !== null);
-      setError(message);
+      const saveUnconfirmed = !definitiveRejection && pending.current !== null;
+      setUncertain(saveUnconfirmed);
+      setError(saveUnconfirmed
+        ? translate('The save could not be confirmed. Retry to check it safely.')
+        : translate('Unable to save the inquiry. Check the details or refresh the workspace, then try again.'));
     } finally {
       if (currentVisit === visit.current) { mutex.current = false; setBusy(false); }
     }
