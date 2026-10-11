@@ -3,7 +3,9 @@ import { AttemptError, getAttemptResult, submitAttempt } from './completion.ts';
 import { readStartBody, startAttempt } from './start.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callOpenRouterJsonWithStatus } from "../_shared/sat-ai.ts";
+import { createSatTutorHandler, generateTutorFeedback, type TutorMode } from "./tutor.ts";
+import { resolveAiAllowance } from "../_shared/ai-addon.ts";
+import { createCoachingCapacityReader } from "../_shared/coaching-capacity.ts";
 import {
   canonicalDifficulty,
   canonicalDomain,
@@ -35,6 +37,14 @@ const getEnv = (key: string): string => {
   if (!value) throw new Error(`Missing env var: ${key}`);
   return value;
 };
+const env = (key: string): string => Deno.env.get(key) ?? "";
+const tutorCapacity = createCoachingCapacityReader({
+  key: env("OPENROUTER_API_KEY"),
+  model: env("OPENROUTER_MODEL") || "google/gemma-4-31b-it:free",
+  baseUrl: env("OPENROUTER_BASE_URL") || "https://openrouter.ai/api/v1",
+});
+const configuredTutorLimit = Number(env("SAT_TUTOR_SERVICE_DAILY_LIMIT"));
+const tutorServiceLimit = Number.isInteger(configuredTutorLimit) && configuredTutorLimit > 0 && configuredTutorLimit <= 1000000 ? configuredTutorLimit : 0;
 
 const getBearerToken = (req: Request): string => {
   const header = req.headers.get("Authorization") ?? "";
@@ -144,11 +154,6 @@ const computeScoreImpact = (notebook: any[], mastery: any[]) => {
   };
 };
 
-const getQuestionById = async (sb: any, userId: string, questionId: string) => {
-  const questions = await loadBankQuestions(sb, userId, { question_ids: [questionId], limit: 1 });
-  return questions[0] ?? null;
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -157,7 +162,10 @@ serve(async (req) => {
     const path = url.pathname.replace(/^\/sat-practice/, "");
     const supabaseUrl = getEnv("SUPABASE_URL");
     const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const sb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    const sb = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false },
+      global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal ?? AbortSignal.timeout(10000) }) },
+    });
     const token = getBearerToken(req);
     const user = await assertUser(sb, token);
     const access = await practiceAccess(supabaseUrl, getEnv("SUPABASE_ANON_KEY"), token);
@@ -298,34 +306,18 @@ serve(async (req) => {
     }
 
     const tutorMatch = path.match(/^\/tutor\/(explain|simpler|similar|why-wrong)$/);
-    if (req.method === "POST" && tutorMatch) {
-      const mode = tutorMatch[1];
-      const body = await readBody(req);
-      const questionId = String(body.question_id ?? "");
-      const question = await getQuestionById(sb, user.id, questionId);
-      if (!question) return json(404, { error: "Question not found" });
-      const fallback = {
-        steps: ["Identify the tested concept.", "Eliminate choices that do not match the rule.", "Select the answer that satisfies the prompt."],
-        key_concept: question.domain,
-        why_distractors_wrong: {},
-      };
-      const ai = await callOpenRouterJsonWithStatus({
-        systemPrompt: "You are a precise SAT tutor. Return strict JSON only. Keep explanations concise and student-friendly.",
-        userPayload: JSON.stringify({ mode, question, user_answer: body.user_answer ?? null }),
-        temperature: mode === "similar" ? 0.45 : 0.2,
-      }, fallback);
-      if (mode === "similar" && ai.status === "ok") {
-        await sb.from("sat_practice_ai_generated_questions").insert({
-          user_id: user.id,
-          source_question_id: question.id,
-          section_type: question.section_type,
-          domain: question.domain,
-          difficulty: question.difficulty,
-          payload: ai.data,
-          generation_cost_cents: 0,
-        });
-      }
-      return json(200, { ok: true, ai_status: ai.status, data: ai.data, error: ai.error });
+    if (["GET", "POST"].includes(req.method) && tutorMatch) {
+      return createSatTutorHandler({
+        client: sb,
+        authenticate: async (checkedToken) => checkedToken === token ? user.id : null,
+        allowance: async (checkedToken) => resolveAiAllowance({
+          client: sb, base: supabaseUrl, anon: getEnv("SUPABASE_ANON_KEY"),
+          addonId: env("AI_ADDON_PRODUCT_ID"), serviceLimit: tutorServiceLimit,
+          providerConfigured: (await tutorCapacity()).available,
+        }, checkedToken),
+        generate: generateTutorFeedback,
+        reportProviderFailure: event => console.warn(JSON.stringify({ event: "coaching_provider_failure", ...event })),
+      }, user.id, tutorMatch[1] as TutorMode)(req);
     }
 
     return json(404, { error: "Not found", path });
@@ -333,6 +325,6 @@ serve(async (req) => {
     if (err instanceof AttemptError) return json(err.status, { error: err.message });
     const message = err instanceof Error ? err.message : String(err);
     const status = message === "Unauthorized" ? 401 : 500;
-    return json(status, { error: message });
+    return json(status, { error: status === 401 ? "Sign in to continue." : "SAT Practice is temporarily unavailable. Please retry." });
   }
 });

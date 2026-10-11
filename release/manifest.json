@@ -1,40 +1,19 @@
 {
   "schemaVersion": 1,
-  "releaseId": "pages-response-policy-asset-cache",
+  "releaseId": "sat-tutor-customer-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "academy",
-    "academy-docs",
-    "english-hub",
-    "ielts-playbook",
-    "ielts-practice",
-    "ielts-simulator",
-    "itep-simulator",
-    "platform",
-    "sat-playbook",
-    "sat-practice",
-    "sat-simulator",
-    "toefl-ibt-simulator",
-    "toefl-playbook"
-  ],
+  "frontends": ["sat-practice"],
   "migrations": [],
-  "edgeFunctions": [],
+  "edgeFunctions": ["sat-practice"],
+  "sharedEdgeConsumers": ["sat-practice"],
   "workers": [],
-  "requiredSecrets": [],
-  "rolloutOrder": [
-    "pages"
-  ],
+  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
+  "rolloutOrder": ["pages", "secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT", "function:sat-practice"],
   "manualFollowUps": [
-    "After CI deployment, verify current root/deep/asset response policies across all twenty public URLs; old cached Academy assets must no longer be referenced by current HTML.",
-    "Recheck public screens and actual hosted Chromium frame rejection. This release changes no backend, secret, DNS or customer data."
+    "After exact-head hosted CI passes, publish the frontend through its ordinary main merge. The updated UI refuses tutor dispatch until the v2 quota contract is present. Then supabase functions deploy sat-practice from its isolated reviewed bundle. No database migration or other function deployment is required.",
+    "Preserve existing provider configuration without reading or printing secrets: supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_MODEL= remain existing settings. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until the dedicated add-on is qualified. Leave SAT_TUTOR_SERVICE_DAILY_LIMIT unset, or use supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=0. Do not enable dispatch before owned provider feedback and published browser recovery pass."
   ],
-  "verification": [
-    "Actual identical-source Vite builds must generate new entry/lazy/style/media filenames and HTML references after a header-only change; CRLF/LF must preserve identity.",
-    "All thirteen frontend production builds and the existing nineteen Chromium browser-policy checks must pass.",
-    "Downloaded root HTML and currently referenced assets must match the reviewed deployment; verify actual guest screens and framing rejection. Credentialed journeys and complete source CSP remain separate."
-  ],
-  "rollback": {
-    "frontend": "Tracked revert PR and normal Pages CI from previous source 051ca03fcbacc3c80e0fc10d4f55feae10051df8. Preserve browser policies and old assets for open sessions; no local Pages publication or broad purge."
-  }
+  "verification": ["Pass SAT tutor transport, handler, receipt and browser cases, existing SAT contracts, 26 isolated PostgreSQL ledger cases, SAT app build, secret scan and release manifest validation.", "Verify downloaded published source identity and JWT settings; owned unfinished/unrelated drills must never reserve or call the provider. Qualify actual provider feedback, saved result recovery and owned cleanup before enabling a positive service cap. Local synthetic fixtures do not qualify hosted provider quality."],
+  "rollback": {"frontend": "Restore the previous reviewed Pages deployment if necessary. Never restore the old unlimited tutor backend; retain a zero SAT tutor cap and use a forward repair. Existing completed drills and scores remain available."}
 }

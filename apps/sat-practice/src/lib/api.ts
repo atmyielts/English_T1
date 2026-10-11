@@ -115,7 +115,19 @@ export type TutorResponse<T = Json> = {
   ai_status: 'ok' | 'unconfigured' | 'failed';
   data: T;
   error?: string;
+  request_id?: string;
+  quota?: TutorQuota | null;
+  mode?: TutorMode;
+  attempt_id?: string;
+  question_id?: string;
 };
+export type TutorMode = 'explain' | 'simpler' | 'similar' | 'why-wrong';
+export type TutorQuota = { api_version: number; used: number; limit: number; remaining: number; enabled: boolean; attempts_remaining: number };
+export type TutorFeedback = { steps: string[]; key_concept: string; why_distractors_wrong: Record<string, string>;
+  similar_question?: { prompt: string; choices: { id: string; text: string }[]; correct_choice: string; explanation: string } };
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number, readonly code?: string) { super(message); }
+}
 
 const getEnv = (key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): string => {
   const value = import.meta.env[key] as string | undefined;
@@ -153,8 +165,14 @@ const resolveApiErrorMessage = (status: number, details: unknown): string => {
 const call = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; timeoutMs?: number },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; timeoutMs?: number; actorId?: string },
 ): Promise<T> => {
+  const assertActor = async () => {
+    if (!opts?.actorId) return;
+    const { data, error } = await supabase.auth.getSession();
+    if (error || data.session?.user.id !== opts.actorId) throw new Error('Your account changed. Sign in and reopen your results.');
+  };
+  await assertActor();
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
     fetch(`${edgeBase}${path}`, {
@@ -170,14 +188,18 @@ const call = async <T>(
     await readBody(res).catch(() => null);
     const refreshed = await supabase.auth.refreshSession().catch(() => null);
     const retryToken = refreshed?.data.session?.access_token ?? null;
-    if (retryToken && retryToken !== accessToken) res = await send(retryToken);
+    await assertActor();
+    if (retryToken && retryToken !== accessToken && (!opts?.actorId || refreshed?.data.session?.user.id === opts.actorId)) res = await send(retryToken);
   }
 
   if (!res.ok) {
     const details = await readBody(res);
-    throw new Error(resolveApiErrorMessage(res.status, details));
+    throw new ApiError(resolveApiErrorMessage(res.status, details), res.status,
+      details && typeof details === 'object' && 'code' in details && typeof details.code === 'string' ? details.code : undefined);
   }
-  return (await res.json()) as T;
+  const result = (await res.json()) as T;
+  await assertActor();
+  return result;
 };
 
 export const getMe = (accessToken: string): Promise<MeResponse> => call(accessToken, '/me');
@@ -289,20 +311,10 @@ export const plansTodayGet = (accessToken: string): Promise<{ items: PlanItem[] 
 export const plansRegenerate = (accessToken: string): Promise<{ ok: boolean; items: PlanItem[] }> =>
   call(accessToken, '/sat-practice/plans/regenerate', { method: 'POST', body: {} });
 
-export const tutorExplain = <T = Json>(
-  accessToken: string,
-  body: { question_id: string; user_answer?: unknown },
-): Promise<TutorResponse<T>> =>
-  call(accessToken, '/sat-practice/tutor/explain', { method: 'POST', body });
-
-export const tutorSimpler = <T = Json>(accessToken: string, questionId: string): Promise<TutorResponse<T>> =>
-  call(accessToken, '/sat-practice/tutor/simpler', { method: 'POST', body: { question_id: questionId } });
-
-export const tutorSimilar = <T = Json>(accessToken: string, questionId: string): Promise<TutorResponse<T>> =>
-  call(accessToken, '/sat-practice/tutor/similar', { method: 'POST', body: { question_id: questionId } });
-
-export const tutorWhyWrong = <T = Json>(
-  accessToken: string,
-  body: { question_id: string; user_answer?: unknown },
-): Promise<TutorResponse<T>> =>
-  call(accessToken, '/sat-practice/tutor/why-wrong', { method: 'POST', body });
+export const tutorQuota = (accessToken: string, actorId: string): Promise<TutorQuota> =>
+  call(accessToken, '/sat-practice/tutor/explain?action=quota', { actorId });
+export const tutorGenerate = (accessToken: string, actorId: string, mode: TutorMode,
+  body: { question_id: string; attempt_id: string; request_id: string }): Promise<TutorResponse<TutorFeedback>> =>
+  call(accessToken, '/sat-practice/tutor/' + mode, { method: 'POST', body, timeoutMs: 60000, actorId });
+export const tutorResult = (accessToken: string, actorId: string, mode: TutorMode, requestId: string): Promise<TutorResponse<TutorFeedback> & { status?: string }> =>
+  call(accessToken, `/sat-practice/tutor/${mode}?action=result&request_id=${encodeURIComponent(requestId)}`, { actorId });
