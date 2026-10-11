@@ -2,6 +2,7 @@ import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, CalendarClock, CheckCircle2, GitBranch, PhoneCall, Plus, RefreshCw, UsersRound } from "lucide-react";
 import { teacherStudioBusinessFoundation, teacherStudioConvertLead, teacherStudioCreateLead, teacherStudioRecordLeadActivity, teacherStudioScheduleTrial, teacherStudioSetTrialStatus, teacherStudioTransitionLead, teacherStudioUpsertBranch, teacherStudioUpsertRoom, type AcademyBusinessFoundation, type AcademyLead, type AcademyPipelineStage, type AcademyTrialLesson } from "../../lib/client";
+import { QuickLeadDialog } from './QuickLeadDialog';
 
 type BusinessTab = "pipeline" | "followups" | "trials" | "branches";
 
@@ -392,8 +393,11 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
           <h2>{translate("Admissions and branches")}</h2>
           <p>{translate("Run the real path from first inquiry through trial, conversion, and group enrollment.")}</p>
         </div>
+        <div className="row wrap">
+        {data?.access?.permissions.manageAdmissions ? <QuickLeadDialog key={academyId} academyId={academyId} branches={data.branches} preferredBranchId={leadFilters.branch_id} disabled={loading || busy} onSaved={async () => { setNotice('Lead captured and added to the admissions pipeline.'); await load(); }} /> : null}
         <button className="ghost-btn" type="button" onClick={() => void load()} disabled={loading || busy}>
           <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
+        </div>
       </div>
 
       <div className="business-os__stats" aria-label={translate("Admissions summary")}>

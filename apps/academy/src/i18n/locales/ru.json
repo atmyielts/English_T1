@@ -2561,5 +2561,22 @@
   "Your academy controls which information is shared with you.": "Ваша академия определяет, какая информация вам доступна.",
   "The quiz attempt does not belong to this classroom.": "Эта попытка теста не относится к этому классу.",
   "Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.": "Ответы на тест не сохраняются в этой вкладке браузера. Не закрывайте тест до отправки ответов.",
-  "Back to course": "Вернуться к курсу"
+  "Back to course": "Вернуться к курсу",
+  "Capture an inquiry now. Add the details later.": "Запишите обращение сейчас. Подробности добавьте позже.",
+  "Close": "Закрыть",
+  "Evening": "Вечер",
+  "Inquiry channel": "Канал обращения",
+  "Morning": "Утро",
+  "No preference": "Без предпочтений",
+  "Preferred shift": "Предпочтительная смена",
+  "Quick lead": "Быстрая заявка",
+  "Retry saving": "Повторить сохранение",
+  "Save lead": "Сохранить заявку",
+  "Saving…": "Сохранение…",
+  "Target subject": "Интересующий предмет",
+  "Walk-in": "Личный визит",
+  "Your entry is kept. Retry saving before editing it.": "Введённые данные сохранены здесь. Повторите сохранение перед редактированием.",
+  "Enter a name, phone number and target subject.": "Укажите имя, номер телефона и интересующий предмет.",
+  "The save could not be confirmed. Retry to check it safely.": "Не удалось подтвердить сохранение. Повторите попытку для безопасной проверки.",
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Не удалось сохранить обращение. Проверьте данные или обновите рабочее пространство и повторите попытку."
 }

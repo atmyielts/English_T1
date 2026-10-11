@@ -2561,5 +2561,22 @@
   "Your academy controls which information is shared with you.": "Sizga qaysi ma’lumotlar ko‘rsatilishini akademiyangiz belgilaydi.",
   "The quiz attempt does not belong to this classroom.": "Bu test urinishi ushbu sinfga tegishli emas.",
   "Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.": "Test javoblaringiz bu brauzer oynasida saqlanmayapti. Javoblarni yuborguningizcha testni ochiq qoldiring.",
-  "Back to course": "Kursga qaytish"
+  "Back to course": "Kursga qaytish",
+  "Capture an inquiry now. Add the details later.": "Murojaatni hozir yozib oling. Tafsilotlarni keyin qo‘shing.",
+  "Close": "Yopish",
+  "Evening": "Kechqurun",
+  "Inquiry channel": "Murojaat kanali",
+  "Morning": "Ertalab",
+  "No preference": "Farqi yo‘q",
+  "Preferred shift": "Afzal smena",
+  "Quick lead": "Tezkor murojaat",
+  "Retry saving": "Saqlashni qayta urinish",
+  "Save lead": "Murojaatni saqlash",
+  "Saving…": "Saqlanmoqda…",
+  "Target subject": "Qiziqtirgan fan",
+  "Walk-in": "Tashrif",
+  "Your entry is kept. Retry saving before editing it.": "Kiritilgan ma’lumotlar saqlanib turibdi. Tahrirlashdan oldin saqlashni qayta urinib ko‘ring.",
+  "Enter a name, phone number and target subject.": "Ism, telefon raqami va qiziqtirgan fanni kiriting.",
+  "The save could not be confirmed. Retry to check it safely.": "Saqlanganini tasdiqlab bo‘lmadi. Xavfsiz tekshirish uchun qayta urinib ko‘ring.",
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Murojaatni saqlab bo‘lmadi. Ma’lumotlarni tekshiring yoki ish maydonini yangilang, so‘ng qayta urinib ko‘ring."
 }

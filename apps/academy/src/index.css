@@ -39,7 +39,7 @@
 }
 
 html {
-  min-width: 320px;
+  min-width: 0;
   scrollbar-gutter: stable;
   background: var(--bg);
 }
@@ -6130,4 +6130,22 @@ dialog.quiz-attempt-panel h2 {
   .invitation-card > .ghost-btn {
     width: 100%;
   }
+}
+.quick-lead-dialog {
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  color: var(--ink);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.quick-lead-dialog:not([open]) { display: none; }
+.quick-lead-dialog::backdrop { background: rgb(66 44 34 / 65%); }
+.quick-lead-dialog h2 { margin: 0; font-size: 1.5rem; }
+.quick-lead-dialog .workspace-form { padding: 0; }
+.quick-lead-fields { display: grid; gap: .75rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.quick-lead-fields [role='group'] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.quick-lead-fields label { display: grid; gap: .3rem; }
+@media (max-width: 620px) {
+  .quick-lead-dialog { width: calc(100vw - 1.25rem); max-height: calc(100dvh - 1.25rem); margin: .625rem auto; }
 }
