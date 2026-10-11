@@ -65,13 +65,12 @@ test('parallel CI builds each deployed frontend exactly once', () => {
   assert.match(job('build'), /if: matrix\.group == 'platform-academy'\s+run: npm run smoke:academy/);
 });
 
-test('test, security, browser and audit gates remain in the checks job', () => {
+test('security, typecheck and audit gates remain in the checks job', () => {
   const checks = job('checks');
   for (const command of [
     'npm ci', 'npm run verify:prod', "npm run verify:release -- --base origin/${{ github.base_ref || 'main' }}",
     'npm run verify:academy', 'npm --workspace apps/academy run lint',
-    'npx playwright install --with-deps chromium', 'npm run test:academy:routes', 'npm test',
-    'npm run test:guide && npm run check:guide', 'npm run test:guide:browser',
+    'npm run test:guide && npm run check:guide',
     'deno check supabase/functions/hub/index.ts', 'npm run --if-present test:english:mass-readiness',
     'deno check supabase/functions/academy/index.ts', 'npm run test:academy:edge',
     'node scripts/audit-runtime-dependencies.mjs',
@@ -80,11 +79,58 @@ test('test, security, browser and audit gates remain in the checks job', () => {
   assert.doesNotMatch(source, /wrangler pages deploy|supabase (?:db push|functions deploy|secrets set)|gh pr merge/);
 });
 
+test('isolated contract groups cover every root test alias exactly once', () => {
+  const aliases = packageScripts.test.split(' && ').map(command => {
+    const match = /^npm run (test:[a-z0-9:-]+)$/.exec(command);
+    assert(match, `Unclassified root test command: ${command}`);
+    return match[1];
+  });
+  const groups = [...job('tests').matchAll(/^\s+suites: (.+)$/gm)].map(match => match[1].trim().split(/\s+/));
+  assert.equal(groups.length, 4);
+  const actual = groups.flat();
+  assert.equal(new Set(actual).size, actual.length, 'Repeated test alias');
+  assert.deepEqual(actual.sort(), aliases.sort(), 'A root test alias is missing or unclassified');
+  for (const alias of actual) assert(packageScripts[alias], `Undefined test alias: ${alias}`);
+  assert.match(job('tests'), /fail-fast: false/);
+  assert.match(job('tests'), /max-parallel: 4/);
+  assert.match(job('tests'), /uses: denoland\/setup-deno@v2/);
+  assert.match(job('tests'), /if: matrix\.group != 'payments'\s+run: npx playwright install --with-deps chromium/);
+  assert.match(job('tests'), /TEST_SUITES: \$\{\{ matrix\.suites \}\}/);
+  assert.match(job('tests'), /npm run "\$suite" \|\| exit 1/);
+  assert.doesNotMatch(job('checks'), /run: npm test\n/);
+});
+
+test('contract group execution stops at the first failing suite', () => {
+  const match = job('tests').match(/        run: \|\n((?:          .*(?:\n|$))+)/);
+  assert(match);
+  const script = match[1].replace(/^          /gm, '');
+  const shell = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+  const aliases = ['test:first', 'test:middle', 'test:last'];
+  for (const failed of ['', ...aliases]) {
+    const mock = 'npm() { printf "%s\\n" "$2"; [ "$2" != "$FAILED_SUITE" ]; }\n';
+    const result = spawnSync(shell, ['-c', mock + script], {env: {...process.env, TEST_SUITES: aliases.join(' '), FAILED_SUITE: failed}, encoding:'utf8'});
+    assert.ifError(result.error);
+    assert.equal(result.status === 0, failed === '');
+    assert.deepEqual(result.stdout.trim().split('\n'), failed ? aliases.slice(0, aliases.indexOf(failed) + 1) : aliases);
+  }
+});
+
+test('route browser groups remain isolated and retain complete suites', () => {
+  const browser = job('browser');
+  assert.match(browser, /group: \[academy, guide\]/);
+  assert.match(browser, /fail-fast: false/);
+  assert.match(browser, /max-parallel: 2/);
+  assert.match(browser, /run: npx playwright install --with-deps chromium/);
+  assert.match(browser, /if: matrix\.group == 'academy'\s+run: npm run test:academy:routes/);
+  assert.match(browser, /if: matrix\.group == 'guide' && hashFiles\('apps\/platform\/tests\/guide\.spec\.ts'\) != ''\s+run: npm run test:guide:browser/);
+  assert.doesNotMatch(job('checks'), /run: npm run test:academy:routes|run: npm run test:guide:browser/);
+});
+
 test('both release gates run the entire Academy browser suite with bounded parallelism', () => {
   const command = packageScripts['test:academy:routes'];
   assert.equal(command, 'npm --workspace apps/academy run test:routes -- --workers=2 --fully-parallel');
   assert.equal(packageScripts.test.includes('npm run test:academy:routes'), false, 'Browser gate must not run twice inside the unit suite');
-  assert.match(job('checks'), /run: npm run test:academy:routes\n/);
+  assert.match(job('browser'), /run: npm run test:academy:routes\n/);
   assert.match(pages, /name: Academy mocked route smoke\s+if: \$\{\{ matrix\.label == 'academy' \}\}\s+run: npm run test:academy:routes/);
 });
 
@@ -105,19 +151,22 @@ test('Academy readiness rejects filtered suites, command changes and unbounded w
 
 test('validate waits for every group and cannot pass a failed, canceled or skipped dependency', () => {
   const validate = job('validate');
-  assert.match(validate, /needs: \[checks, build\]/);
+  assert.match(validate, /needs: \[checks, tests, browser, build\]/);
   assert.match(validate, /if: \$\{\{ always\(\) \}\}/);
   assert.match(validate, /CHECKS_RESULT: \$\{\{ needs\.checks\.result \}\}/);
+  assert.match(validate, /TESTS_RESULT: \$\{\{ needs\.tests\.result \}\}/);
+  assert.match(validate, /BROWSER_RESULT: \$\{\{ needs\.browser\.result \}\}/);
   assert.match(validate, /BUILDS_RESULT: \$\{\{ needs\.build\.result \}\}/);
   const match = validate.match(/        run: \|\n((?:          .*(?:\n|$))+)/);
   assert(match, 'Missing executable aggregate gate');
   const script = match[1].replace(/^          /gm, '');
   const shell = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
-  for (const checks of ['success', 'failure', 'cancelled', 'skipped', 'timed_out', '']) {
-    for (const builds of ['success', 'failure', 'cancelled', 'skipped', 'timed_out', '']) {
-      const result = spawnSync(shell, ['-c', script], {env: {...process.env, CHECKS_RESULT: checks, BUILDS_RESULT: builds}, encoding: 'utf8'});
-      assert.ifError(result.error);
-      assert.equal(result.status === 0, checks === 'success' && builds === 'success', `${checks}/${builds}`);
-    }
-  }
+  // One shell evaluates all 1,296 dependency combinations without spawning
+  // a process for every combination, preserving exhaustive failure coverage.
+  const values = 'success failure cancelled skipped timed_out ""';
+  const expected = '[ "$CHECKS_RESULT" = success ] && [ "$TESTS_RESULT" = success ] && [ "$BROWSER_RESULT" = success ] && [ "$BUILDS_RESULT" = success ]';
+  const harness = `gate() {\n${script}\n}\ncount=0\nfor CHECKS_RESULT in ${values}; do\nfor TESTS_RESULT in ${values}; do\nfor BROWSER_RESULT in ${values}; do\nfor BUILDS_RESULT in ${values}; do\nif gate; then ${expected} || exit 1; else if ${expected}; then exit 1; fi; fi\ncount=$((count+1))\ndone; done; done; done\n[ "$count" = 1296 ]\n`;
+  const result = spawnSync(shell, ['-c', harness], {env:process.env, encoding:'utf8'});
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr);
 });
