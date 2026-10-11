@@ -88,6 +88,7 @@ import {
   type TeacherStudioStudentDashboard,
 } from './lib/client';
 import { platformUrl, supabase } from './lib/supabase';
+import { isMissingAcademyMembershipError } from './lib/academyEntry';
 import { UpdatesButton } from './components/UpdatesButton';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { InvitationAcceptView } from './components/InvitationAcceptView';
@@ -1995,7 +1996,9 @@ const App = () => {
           academyList = academiesResult.value;
           academyList = academyList.filter(academyCanEnterOffice);
         } catch (teacherErr) {
-          if (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory || isWorkspaceEntry) {
+          const emptyStaffDirectory = teacherMembershipRows.length === 0 &&
+            (isWorkspaceEntry || isAcademyDirectory) && isMissingAcademyMembershipError(teacherErr);
+          if (!emptyStaffDirectory && (teacherMembershipRows.length > 0 || isTeacherWorkspaceRoute || isAcademyDirectory || isWorkspaceEntry)) {
             throw teacherErr;
           }
         }
