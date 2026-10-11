@@ -78,9 +78,10 @@ export const UpdatesButton = ({ variant = 'floating' }: UpdatesButtonProps) => {
         window.location.assign(href);
       }}
       aria-label={translate("Open updates center")}
+      title={translate("Open updates center")}
     >
       <Bell size={17} aria-hidden="true" />
-      {translate("Updates")}{' '}{unreadCount > 0 ? (
+      <span className="workspace-tool-label">{translate("Updates")}</span>{' '}{unreadCount > 0 ? (
         <span className="updates-count">{unreadCount > 99 ? '99+' : unreadCount}</span>
       ) : null}
     </button>

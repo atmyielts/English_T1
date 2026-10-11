@@ -32,7 +32,6 @@ type WorkspaceNavigationProps = {
 export const WorkspaceNavigation = ({
   title,
   subtitle,
-  mark,
   groups,
   platformUrl,
   roleLabel,
@@ -64,11 +63,11 @@ export const WorkspaceNavigation = ({
     <aside className={`ts-sidebar ${mobileOpen ? 'is-menu-open' : ''}`} onKeyDown={event => {
       if (event.key === 'Escape' && mobileOpen) { event.preventDefault(); closeMenu(); }
     }}>
-      <div className="brand">
-        <span className="brand-mark" aria-hidden="true">{mark}</span>
+      <div className="brand" title={subtitle}>
+        <span className="workspace-brand-logo" aria-hidden="true"><img src="/schood-logo.png" width="40" height="40" alt="" /></span>
         <div className="brand-copy">
-          <strong>{translate(title)}</strong>
-          <p>{subtitle}</p>
+          <strong>{translate("Schood")}</strong>
+          <p>{translate(title)}</p>
         </div>
       </div>
 

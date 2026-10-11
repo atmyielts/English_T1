@@ -52,12 +52,24 @@ context. A pending capture keeps its payload and retry identity after an
 uncertain response; explicit validation rejection permits correction. Closing
 and reopening retains the entry. Duplicate submission is blocked immediately.
 
-The shared workspace now uses light mint navigation, white panels, restrained
-borders and Schood's warm dark summary. Status cards are separate and compact;
-the work queue stays above them on phones. Full workspace titles wrap rather
-than being clipped. Controls retain visible focus and 44px targets; short
-colour transitions respect reduced motion. No chart library, new font request
-or new home-page data request was introduced.
+The shared workspace uses narrow mint navigation, lime selection, a compact
+forest-green identity card and white panels with restrained borders. The
+dashboard has three balanced columns on desktop and a task-first phone layout:
+shortcuts, schedule, task table, workload and deadlines. Workload proportions
+come from the existing permission-scoped action counts; schedules and deadlines
+use the existing response. No financial trend or activity data is fabricated.
+Manrope is self-hosted with Latin and Cyrillic coverage and a system-font
+fallback. No chart library or additional home-page API read is introduced.
+Full workspace titles wrap rather than being clipped. Controls retain visible
+focus and 44px targets; short colour transitions respect reduced motion.
+
+Missing task data shows an unavailable state rather than zero work. Initial
+workspace loading clears the progress indicator only when the same scoped
+request finishes; a stale Academy response cannot clear a newer request.
+The reference dashboard regression includes rich synthetic data at 320, 390,
+768, 1200 and 1440px, desktop column alignment, first-screen task visibility,
+phone task ordering and unavailable-data behavior. Synthetic captures are
+labelled QA previews and do not describe customer records.
 
 Validate the full Academy route suite, the responsive keyboard matrix across
 13 roles at seven widths (320–1440px), four Quick Lead viewport sizes plus a

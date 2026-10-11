@@ -2594,6 +2594,71 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("button", { name: "IELTS Evening A" })).toBeVisible();
   });
 
+  for (const width of [1440, 1200, 768, 390, 320]) {
+    test(`reference dashboard keeps useful panels and controls reachable at ${width}px`, async ({ page }, testInfo) => {
+      await page.setViewportSize({width, height: 900});
+      await seedSessionCookie(page, `reference-dashboard-${width}`);
+      const now = Date.now();
+      const fixture = {
+        ...educationOS,
+        action_queue: ['Review speaking feedback', 'Confirm trial lesson', 'Follow up on attendance', 'Check renewal request'].map((title, index) => ({
+          ...educationOS.action_queue[0], id: `reference-task-${index}`, title,
+          description: ['Feedback is ready for review.', 'A learner is waiting for confirmation.', 'Contact the family about an absence.', 'Review the learner’s next course.'][index],
+          priority: index < 2 ? 'high' : 'medium', due_at: new Date(now + (index + 1) * 3_600_000).toISOString(),
+        })),
+        calendar_events: ['IELTS Speaking · Room 2', 'General English · Room 1', 'Trial lesson · Room 3'].map((title, index) => ({
+          id: `reference-event-${index}`, type: 'lesson', title, starts_at: new Date(now + (index + 2) * 3_600_000).toISOString(),
+          ends_at: new Date(now + (index + 3) * 3_600_000).toISOString(), classroom_id: classroomId,
+          contact_id: null, priority: 'low', metadata: {},
+        })),
+        stats: {...educationOS.stats, open_actions: 4, urgent_actions: 2},
+      };
+      const actionLog: string[] = [];
+      await mockAcademyEdge(page, 'owner', {actionLog, actionOverrides: {education_os: fixture}});
+      await page.goto(`/academy/admin?academy_id=${academyId}`);
+      await expect(page.getByRole('heading', {name: 'Today at your academy'})).toBeVisible();
+      await expect(page.getByRole('heading', {name: 'Workload', exact: true})).toBeVisible();
+      await expect(page.getByText('IELTS Speaking · Room 2', {exact: true})).toBeVisible();
+      await expect(page.locator('.workspace-route-stage')).toHaveAttribute('aria-busy', 'false');
+      await page.evaluate(() => document.fonts.ready);
+      await page.screenshot({path: testInfo.outputPath(`reference-dashboard-${width}.png`), fullPage: true});
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+      const panels = await page.locator('.workspace-home').evaluate(element => {
+        const rect = (selector: string) => {
+          const box = element.querySelector(selector)!.getBoundingClientRect();
+          return {x: box.x, y: box.y, right: box.right, bottom: box.bottom, width: box.width};
+        };
+        return {identity: rect('.workspace-home__hero'), metrics: rect('.workspace-pulse'), schedule: rect('.workspace-schedule'), queue: rect('.attention-ledger'), workload: rect('.workspace-workload')};
+      });
+      if (width >= 1200) {
+        expect(panels.identity.right).toBeLessThan(panels.metrics.x);
+        expect(panels.metrics.right).toBeLessThan(panels.workload.x);
+        expect(panels.identity.width).toBeLessThan(300);
+        expect(panels.queue.x).toBe(panels.metrics.x);
+        expect(panels.queue.bottom).toBeLessThanOrEqual(900);
+      }
+      if (width <= 390) {
+        expect(panels.identity.bottom).toBeLessThanOrEqual(panels.metrics.y);
+        expect(panels.queue.bottom).toBeLessThanOrEqual(panels.schedule.y);
+      }
+      const refresh = page.locator('.topbar-actions').getByRole('button', {name: 'Refresh', exact: true});
+      await refresh.focus(); await expect(refresh).toBeFocused();
+      expect((await refresh.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+      expect(actionLog.filter(action => action === 'education_os')).toHaveLength(1);
+    });
+  }
+
+  test('reference dashboard does not show an all-clear workload when task data is unavailable', async ({page}) => {
+    await seedSessionCookie(page, 'reference-pending');
+    await mockAcademyEdge(page, 'owner', {failActions: ['education_os']});
+    await page.goto(`/academy/admin?academy_id=${academyId}`);
+    await expect(page.getByRole('heading', {name: 'Today at your academy'})).toBeVisible();
+    await expect(page.locator('.workspace-workload__chart strong')).toHaveText('—');
+    await expect(page.getByText('Schedule is unavailable. Refresh to try again.', {exact: true})).toBeVisible();
+    await expect(page.getByText('No upcoming events', {exact: true})).toHaveCount(0);
+  });
+
   test("center route keeps selected-academy context without teacher controls", async ({ page }) => {
     await seedSessionCookie(page, "center-user");
     await mockAcademyEdge(page, "center_admin");

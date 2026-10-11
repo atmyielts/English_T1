@@ -982,7 +982,6 @@
   "Currency": "Valyuta",
   "Current academy": "Joriy akademiya",
   "Current brand record:": "Joriy brend yozuvi:",
-  "Current context": "Joriy kontekst",
   "Current operating pulse": "Joriy operatsion puls",
   "Current work": "Joriy ish",
   "Current workspace": "Joriy ish maydoni",
@@ -2578,5 +2577,15 @@
   "Your entry is kept. Retry saving before editing it.": "Kiritilgan ma’lumotlar saqlanib turibdi. Tahrirlashdan oldin saqlashni qayta urinib ko‘ring.",
   "Enter a name, phone number and target subject.": "Ism, telefon raqami va qiziqtirgan fanni kiriting.",
   "The save could not be confirmed. Retry to check it safely.": "Saqlanganini tasdiqlab bo‘lmadi. Xavfsiz tekshirish uchun qayta urinib ko‘ring.",
-  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Murojaatni saqlab bo‘lmadi. Ma’lumotlarni tekshiring yoki ish maydonini yangilang, so‘ng qayta urinib ko‘ring."
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Murojaatni saqlab bo‘lmadi. Ma’lumotlarni tekshiring yoki ish maydonini yangilang, so‘ng qayta urinib ko‘ring.",
+  "No dated tasks": "Muddati belgilangan vazifalar yo‘q",
+  "No upcoming events": "Yaqinlashayotgan tadbirlar yo‘q",
+  "Schood": "Schood",
+  "Task": "Vazifa",
+  "Upcoming": "Yaqinlashayotgan tadbirlar",
+  "Workload": "Ish yuklamasi",
+  "Your workspace": "Ish joyingiz",
+  "Schedule is unavailable. Refresh to try again.": "Jadvalni yuklab bo‘lmadi. Qayta urinish uchun yangilang.",
+  "Tasks are unavailable. Refresh to try again.": "Vazifalarni yuklab bo‘lmadi. Qayta urinish uchun yangilang.",
+  "Deadlines": "Muddatlar"
 }

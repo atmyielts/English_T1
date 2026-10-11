@@ -2042,7 +2042,14 @@ const App = () => {
           (requestedAcademyId && academyIds.has(requestedAcademyId) ? requestedAcademyId : '') || fallbackAcademyId;
         setAcademies(academyList);
         activateAcademy(selectedAcademy);
-        if (selectedAcademy && !isWorkspaceEntry && !isAcademyDirectory) await loadAcademyData(selectedAcademy);
+        if (selectedAcademy && !isWorkspaceEntry && !isAcademyDirectory) {
+          const pending = loadAcademyData(selectedAcademy);
+          const dataRequest = academyDataRequestRef.current;
+          await pending;
+          if (isCurrent() && dataRequest === academyDataRequestRef.current && academyScopeRef.current === selectedAcademy) {
+            setRouteLoading(false);
+          }
+        }
       } else {
         setAcademies([]);
         activateAcademy(requestedAcademyId || studentData?.academies[0]?.id || '');
@@ -5296,6 +5303,7 @@ const App = () => {
           <div className="topbar-actions">
             <select
               className="input academy-select"
+              aria-label={translate("Academy")}
               value={academyId}
               onChange={(event) => {
                 void onSelectAcademy(event.target.value);
@@ -5310,12 +5318,12 @@ const App = () => {
             </select>
             <LanguageSwitcher inline />
             <UpdatesButton variant="inline" />
-            <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
+            <button className="ghost-btn" type="button" title={translate("Refresh")} onClick={() => void refresh()} disabled={busy}>
               <RefreshCw size={16} />
-              {translate("Refresh")}{' '}</button>
-            <button className="ghost-btn" type="button" onClick={() => void signOut()}>
+              <span className="workspace-tool-label">{translate("Refresh")}</span>{' '}</button>
+            <button className="ghost-btn" type="button" title={translate("Sign out")} onClick={() => void signOut()}>
               <LogOut size={16} />
-              {translate("Sign out")}{' '}</button>
+              <span className="workspace-tool-label">{translate("Sign out")}</span>{' '}</button>
           </div>
         </header>
 
