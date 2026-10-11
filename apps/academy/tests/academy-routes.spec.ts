@@ -2197,7 +2197,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         await expect.poll(() => writes.length).toBe(1);
         await page.getByRole("button", { name: "Switch workspace", exact: true }).click();
         await page.getByRole("button", { name: "Manage Next Academy", exact: true }).click();
-        const contactsNavigation = page.getByRole('navigation', { name: 'Academy LMS navigation' }).getByRole("button", { name: "Contacts", exact: true });
+        const contactsNavigation = page.getByRole('navigation', { name: 'Academy Admin navigation' }).getByRole("button", { name: "Contacts", exact: true });
         if (!(await contactsNavigation.isVisible())) await page.getByRole("button", { name: "Daily operations", exact: true }).click();
         await contactsNavigation.click();
         await fill("New workspace");
@@ -3663,7 +3663,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
   test("mobile workspace keeps tasks visible and sections searchable with keyboard recovery", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedSessionCookie(page, "office-user");
-    await mockAcademyEdge(page, "manager");
+    await mockAcademyEdge(page, "manager", {actionOverrides: {education_os: {
+      ...educationOS,
+      action_queue: [{...educationOS.action_queue[0], source_type: 'trial_follow_up', title: 'Confirm trial lesson'}],
+    }}});
 
     await page.goto(`/academy/office?academy_id=${academyId}`);
     await expect(page.locator(".ts-topbar").getByRole("button", { name: "Open updates center" })).toBeVisible();
@@ -4502,7 +4505,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     delayActions.summary = 5_000;
 
     await page.getByRole("button", { name: "Daily operations" }).click();
-    await page.getByRole('navigation', { name: 'Academy LMS navigation' }).getByRole("button", { name: "Contacts", exact: true }).click();
+    await page.getByRole('navigation', { name: 'Academy Admin navigation' }).getByRole("button", { name: "Contacts", exact: true }).click();
     await expect(page.locator(".ts-sidebar")).toBeVisible();
     await expect(page.locator(".workspace-identity")).toContainText("Owner");
     await expect(page.locator(".ts-loading")).toHaveCount(0);
