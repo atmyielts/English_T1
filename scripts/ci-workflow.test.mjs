@@ -8,6 +8,7 @@ import { deploymentPlan, needsPagesDeployment } from './plan-pages-deployment.mj
 const root = path.resolve(import.meta.dirname, '..');
 const source = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n');
 const pages = fs.readFileSync(path.join(root, '.github/workflows/deploy-pages.yml'), 'utf8');
+const packageScripts = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).scripts;
 const job = name => {
   const marker = `  ${name}:\n`;
   const start = source.indexOf(marker, source.indexOf('jobs:\n'));
@@ -76,6 +77,14 @@ test('test, security, browser and audit gates remain in the checks job', () => {
   ]) assert(checks.includes(`run: ${command}\n`), `Missing gate: ${command}`);
   assert.match(source, /permissions:\s+contents: read/);
   assert.doesNotMatch(source, /wrangler pages deploy|supabase (?:db push|functions deploy|secrets set)|gh pr merge/);
+});
+
+test('both release gates run the entire Academy browser suite with bounded parallelism', () => {
+  const command = packageScripts['test:academy:routes'];
+  assert.equal(command, 'npm --workspace apps/academy run test:routes -- --workers=2 --fully-parallel');
+  assert.equal(packageScripts.test.includes('npm run test:academy:routes'), false, 'Browser gate must not run twice inside the unit suite');
+  assert.match(job('checks'), /run: npm run test:academy:routes\n/);
+  assert.match(pages, /name: Academy mocked route smoke\s+if: \$\{\{ matrix\.label == 'academy' \}\}\s+run: npm run test:academy:routes/);
 });
 
 test('validate waits for every group and cannot pass a failed, canceled or skipped dependency', () => {
