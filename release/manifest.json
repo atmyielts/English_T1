@@ -1,20 +1,40 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ai-provider-capacity-guard",
+  "releaseId": "pages-response-policy-asset-cache",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
-  "edgeFunctions": ["speaking-coach", "writing-tutor"],
-  "sharedEdgeConsumers": ["speaking-coach", "writing-tutor"],
-  "workers": [],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SPEAKING_COACH_SERVICE_DAILY_LIMIT", "WRITING_TUTOR_SERVICE_DAILY_LIMIT"],
-  "rolloutOrder": ["secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:OPENROUTER_REFERER", "secret:SPEAKING_COACH_SERVICE_DAILY_LIMIT", "secret:WRITING_TUTOR_SERVICE_DAILY_LIMIT", "function:speaking-coach", "function:writing-tutor"],
-  "manualFollowUps": [
-    "Retain existing configuration; supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free already completed. No API key changes requested. Verify existing supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_REFERER= without printing values. Preserve supabase secrets set SPEAKING_COACH_SERVICE_DAILY_LIMIT=0 and supabase secrets set WRITING_TUTOR_SERVICE_DAILY_LIMIT=0 until owned provider and browser recovery qualification passes. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until a dedicated product is qualified.",
-    "After exact-head CI passes, supabase functions deploy speaking-coach and supabase functions deploy writing-tutor from isolated reviewed bundles; no migrations or other runtime activation.",
-    "Read capacity through an owned quota request with zero dispatch caps; inspect only private curated capacity metrics. Then qualify the actual provider using exclusively owned QA actors, saved feedback, replay, cleanup and published recovery screens before restoring nonzero caps."
+  "frontends": [
+    "academy",
+    "academy-docs",
+    "english-hub",
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "itep-simulator",
+    "platform",
+    "sat-playbook",
+    "sat-practice",
+    "sat-simulator",
+    "toefl-ibt-simulator",
+    "toefl-playbook"
   ],
-  "verification": ["Coaching handler, privacy and provider capacity contracts and both entrypoints must pass; production scan and release manifest must pass.", "Verify downloaded source hashes, runtime identities and JWT settings after publication; then inspect owned capacity with grading disabled and qualify actual provider feedback and published recovery."],
-  "rollback": {"edge": "Use the previous reviewed coaching sources from 051ca03fcbacc3c80e0fc10d4f55feae10051df8, keeping both service caps zero, the current available model and additive SQL. Retain saved result retrieval and never restore unlimited legacy dispatch."}
+  "migrations": [],
+  "edgeFunctions": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "manualFollowUps": [
+    "After CI deployment, verify current root/deep/asset response policies across all twenty public URLs; old cached Academy assets must no longer be referenced by current HTML.",
+    "Recheck public screens and actual hosted Chromium frame rejection. This release changes no backend, secret, DNS or customer data."
+  ],
+  "verification": [
+    "Actual identical-source Vite builds must generate new entry/lazy/style/media filenames and HTML references after a header-only change; CRLF/LF must preserve identity.",
+    "All thirteen frontend production builds and the existing nineteen Chromium browser-policy checks must pass.",
+    "Downloaded root HTML and currently referenced assets must match the reviewed deployment; verify actual guest screens and framing rejection. Credentialed journeys and complete source CSP remain separate."
+  ],
+  "rollback": {
+    "frontend": "Tracked revert PR and normal Pages CI from previous source 051ca03fcbacc3c80e0fc10d4f55feae10051df8. Preserve browser policies and old assets for open sessions; no local Pages publication or broad purge."
+  }
 }
