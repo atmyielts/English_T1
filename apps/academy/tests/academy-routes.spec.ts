@@ -1644,6 +1644,7 @@ const seedSessionCookie = async (page: Page, userId: string) => {
 };
 
 type MockEdgeOptions = {
+  respond?: (body: Record<string, unknown>) => Promise<unknown | undefined>;
   delayActions?: Partial<Record<string, number>>;
   failActions?: string[];
   failActionAttempts?: Partial<Record<string, number>>;
@@ -1706,6 +1707,8 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
     } | null;
     const action = body?.action ?? "";
     options.actionLog?.push(action);
+    const customResponse = await options.respond?.(body ?? {});
+    if (customResponse !== undefined) return route.fulfill(json(customResponse));
     const attempt = (actionAttempts.get(action) ?? 0) + 1;
     actionAttempts.set(action, attempt);
 
@@ -2767,6 +2770,119 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       }),
     ).toBeVisible();
     await expect(page.getByText("16.67%")).toBeVisible();
+  });
+
+  test("classroom work loads without waiting for Academy reports", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    const actionLog: string[] = [];
+    await mockAcademyEdge(page, "teacher", { actionLog, delayActions: { education_os: 8_000 } });
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
+    await page.getByRole("button", { name: "Learning", exact: true }).click();
+    await expect(page.getByRole("combobox", { name: "Assignment", exact: true })).toHaveValue(assignment.id, { timeout: 4_000 });
+    await expect(page.getByRole("button", { name: "Save grade", exact: true })).toBeEnabled({ timeout: 4_000 });
+    expect(actionLog.filter((action) => action === "education_os")).toHaveLength(1);
+    expect(actionLog.filter((action) => action === "assignments")).toHaveLength(1);
+  });
+
+  test("classroom switching keeps current work and resets grade drafts", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    const secondId = "classroom-second";
+    const thirdId = "classroom-third";
+    const actionLog: string[] = [];
+    let releaseSecond!: () => void;
+    const secondBlocked = new Promise<void>((resolve) => { releaseSecond = resolve; });
+    let secondRequested = false;
+    await mockAcademyEdge(page, "teacher", {
+      actionLog,
+      actionOverrides: {
+        classrooms: { classrooms: [classroom, { ...classroom, id: secondId, name: "Second class" }, { ...classroom, id: thirdId, name: "Third class" }] },
+        "classroom-memberships": { classroom_memberships: [membership, { ...membership, id: "second-member", classroom_id: secondId }, { ...membership, id: "third-member", classroom_id: thirdId }] },
+      },
+      respond: async (body) => {
+        if (body.action !== "assignments") return undefined;
+        const selected = String(body.classroom_id);
+        if (selected === secondId) {
+          secondRequested = true;
+          await secondBlocked;
+        }
+        return { assignments: [{ ...assignment, id: selected === classroomId ? assignment.id : `assignment-${selected}`, classroom_id: selected, title: selected === classroomId ? assignment.title : selected }] };
+      },
+    });
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
+    await page.getByRole("button", { name: "Learning", exact: true }).click();
+    const gradeForm = page;
+    const classroomSelect = page.locator(".education-os .academy-select").first();
+    await expect(gradeForm.getByRole("combobox", { name: "Assignment", exact: true })).toHaveValue(assignment.id);
+    await gradeForm.getByRole("spinbutton", { name: "Score", exact: true }).fill("72");
+    await classroomSelect.selectOption(secondId);
+    await expect.poll(() => secondRequested).toBe(true);
+    await expect(gradeForm.getByRole("button", { name: "Save grade" })).toBeDisabled();
+    await classroomSelect.selectOption(thirdId);
+    await expect(gradeForm.getByRole("combobox", { name: "Assignment", exact: true })).toHaveValue(`assignment-${thirdId}`);
+    await expect(gradeForm.getByRole("spinbutton", { name: "Score", exact: true })).toHaveValue("");
+    const secondResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "assignments" && response.request().postDataJSON()?.classroom_id === secondId);
+    releaseSecond();
+    await secondResponse;
+    await expect(gradeForm.getByRole("combobox", { name: "Assignment", exact: true })).toHaveValue(`assignment-${thirdId}`);
+    await expect(gradeForm.getByRole("combobox", { name: "Assignment", exact: true }).getByRole("option", { name: secondId })).toHaveCount(0);
+    expect(actionLog.filter((action) => action === "education_os")).toHaveLength(1);
+  });
+
+  test("classroom load failures remain retryable and attendance drafts stay scoped", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    const secondId = "classroom-second";
+    const actionLog: string[] = [];
+    const saved: Record<string, unknown>[] = [];
+    const failures = ["assignments"];
+    await mockAcademyEdge(page, "teacher", {
+      actionLog,
+      failActions: failures,
+      actionOverrides: {
+        classrooms: { classrooms: [classroom, { ...classroom, id: secondId, name: "Second class" }] },
+        "classroom-memberships": { classroom_memberships: [membership, { ...membership, id: "second-member", classroom_id: secondId }] },
+      },
+      respond: async (body) => {
+        if (body.action === "mark_attendance") {
+          saved.push(body);
+          return { attendance: [], count: 1 };
+        }
+        return undefined;
+      },
+    });
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
+    await expect(page.getByText(/POST \/academy failed \(503\).*Mock assignments failure/)).toBeVisible();
+    failures.splice(0);
+    await page.getByRole("button", { name: "Refresh", exact: true }).last().click();
+    await page.getByRole("button", { name: "Attendance", exact: true }).click();
+    const status = page.getByLabel("Attendance status for Ali Karimov");
+    await expect(status).toHaveValue("present");
+    await status.selectOption("late");
+    await page.getByRole("combobox", { name: "Classroom", exact: true }).selectOption(secondId);
+    await expect(status).toHaveValue("present");
+    await expect(page.getByRole("button", { name: "Save attendance", exact: true })).toBeEnabled();
+    const globalReadsBeforeSave = actionLog.filter((action) => action === "education_os").length;
+    await page.getByRole("button", { name: "Save attendance", exact: true }).click();
+    await expect.poll(() => saved.length).toBe(1);
+    expect(saved[0].classroom_id).toBe(secondId);
+    expect(saved[0].records).toEqual([{ contact_id: studentContactId, status: "present", notes: null }]);
+    await expect.poll(() => actionLog.filter((action) => action === "education_os").length).toBe(globalReadsBeforeSave + 1);
+  });
+
+  test("rubric failures block grading while attendance remains usable", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    const failures = ["rubrics"];
+    await mockAcademyEdge(page, "teacher", { failActions: failures });
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
+    await expect(page.getByText(/POST \/academy failed \(503\).*Mock rubrics failure/)).toBeVisible();
+    await page.getByRole("button", { name: "Learning", exact: true }).click();
+    await expect(page.getByRole("combobox", { name: "Assignment", exact: true })).toHaveValue(assignment.id);
+    await expect(page.getByRole("button", { name: "Save grade", exact: true })).toBeDisabled();
+    await page.getByRole("button", { name: "Attendance", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Save attendance", exact: true })).toBeEnabled();
+    failures.splice(0);
+    await page.getByRole("button", { name: "Refresh", exact: true }).last().click();
+    await page.getByRole("button", { name: "Learning", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Save grade", exact: true })).toBeEnabled();
   });
 
   test("teacher can author structured curriculum and native assessments", async ({ page }) => {

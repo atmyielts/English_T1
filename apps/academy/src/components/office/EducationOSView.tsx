@@ -1,5 +1,5 @@
 import { getLocaleTag, translate } from '../../i18n';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   teacherStudioAssignments,
   teacherStudioAttendance,
@@ -256,21 +256,42 @@ export const EducationOSView = ({
 }: EducationOSViewProps) => {
   const [activeTab, setActiveTab] = useState<EducationOSTab>('today');
   const [showAllSections, setShowAllSections] = useState(false);
-  const [selectedClassroomId, setSelectedClassroomId] = useState('');
-  const [localBusy, setLocalBusy] = useState(false);
+  const [selectedClassroomId, setSelectedClassroomId] = useState(() => classrooms[0]?.id ?? '');
+  const [actionBusy, setLocalBusy] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [classroomLoading, setClassroomLoading] = useState(false);
+  const [rubricLoading, setRubricLoading] = useState(false);
+  const [rubricsReady, setRubricsReady] = useState(false);
+  const globalRequest = useRef(0);
+  const classroomRequest = useRef(0);
   const [localError, setLocalError] = useState('');
   const [localNotice, setLocalNotice] = useState('');
 
   const [osEngine, setOsEngine] = useState<TeacherStudioEducationOS | null>(null);
   const [dashboard, setDashboard] = useState<TeacherStudioOwnerDashboard | null>(null);
-  const [assignments, setAssignments] = useState<TeacherStudioAssignment[]>([]);
-  const [assignmentCurriculum, setAssignmentCurriculum] = useState<TeacherStudioCurriculum>({ courses: [], modules: [], lessons: [], classroom_courses: [] });
-  const [gradeCategories, setGradeCategories] = useState<TeacherStudioGradeCategory[]>([]);
   const [rubrics, setRubrics] = useState<TeacherStudioRubric[]>([]);
-  const [gradebook, setGradebook] = useState<TeacherStudioGradebook | null>(null);
-  const [attendance, setAttendance] = useState<TeacherStudioAttendance[]>([]);
-  const [schedule, setSchedule] = useState<TeacherStudioScheduleSlot[]>([]);
-  const [bulkInvites, setBulkInvites] = useState<BulkInviteRow[]>([]);
+  const classroomScope = `${academyId}:${selectedClassroomId}`;
+  const [classroomData, setClassroomData] = useState<{
+    scope: string;
+    assignments: TeacherStudioAssignment[];
+    curriculum: TeacherStudioCurriculum;
+    categories: TeacherStudioGradeCategory[];
+    gradebook: TeacherStudioGradebook | null;
+    attendance: TeacherStudioAttendance[];
+    schedule: TeacherStudioScheduleSlot[];
+    invites: BulkInviteRow[];
+  } | null>(null);
+  const currentClassroomData = classroomData?.scope === classroomScope ? classroomData : null;
+  const assignments = useMemo(() => currentClassroomData?.assignments ?? [], [currentClassroomData]);
+  const assignmentCurriculum = useMemo(() => currentClassroomData?.curriculum ?? { courses: [], modules: [], lessons: [], classroom_courses: [] }, [currentClassroomData]);
+  const gradeCategories = useMemo(() => currentClassroomData?.categories ?? [], [currentClassroomData]);
+  const gradebook = currentClassroomData?.gradebook ?? null;
+  const attendance = useMemo(() => currentClassroomData?.attendance ?? [], [currentClassroomData]);
+  const schedule = useMemo(() => currentClassroomData?.schedule ?? [], [currentClassroomData]);
+  const bulkInvites = useMemo(() => currentClassroomData?.invites ?? [], [currentClassroomData]);
+  const classroomReady = Boolean(currentClassroomData);
+  const localBusy = actionBusy || classroomLoading || !classroomReady;
+  const gradingBusy = localBusy || rubricLoading || !rubricsReady;
   const [staff, setStaff] = useState<TeacherStudioStaff[]>([]);
   const [notifications, setNotifications] = useState<TeacherStudioNotification[]>([]);
   const [auditEvents, setAuditEvents] = useState<TeacherStudioAuditEvent[]>([]);
@@ -293,6 +314,7 @@ export const EducationOSView = ({
   });
   const [attendanceDate, setAttendanceDate] = useState(todayDate);
   const [attendanceDraft, setAttendanceDraft] = useState<Record<string, { status: string; notes: string }>>({});
+  const attendanceDraftScope = useRef('');
   const [scheduleForm, setScheduleForm] = useState({
     day_of_week: '1',
     start_time: '',
@@ -587,9 +609,11 @@ export const EducationOSView = ({
     );
   }, [assignmentDetailRows]);
 
-  const loadOsData = useCallback(async () => {
+  const loadGlobalData = useCallback(async () => {
     if (!academyId) return;
-    setLocalBusy(true);
+    const request = ++globalRequest.current;
+    setGlobalLoading(true);
+    setRubricLoading(true);
     setLocalError('');
     try {
       const [
@@ -608,8 +632,17 @@ export const EducationOSView = ({
         modeCanUse('viewAudit') ? teacherStudioAuditEvents(academyId) : Promise.resolve([]),
         modeCanUse('manageBranding') ? teacherStudioBranding(academyId) : Promise.resolve(null),
         modeCanUse('viewReferrals') ? teacherStudioReferralLeaderboard(academyId) : Promise.resolve([]),
+        (modeCanUse('gradeSubmissions') ? teacherStudioRubrics(academyId) : Promise.resolve([]))
+          .then((data) => {
+            if (request === globalRequest.current) {
+              setRubrics(data);
+              setRubricsReady(true);
+            }
+          }).finally(() => {
+            if (request === globalRequest.current) setRubricLoading(false);
+          }),
       ]);
-
+      if (request !== globalRequest.current) return;
       setOsEngine(osData);
       setDashboard(dashboardData);
       setStaff(staffData);
@@ -617,7 +650,19 @@ export const EducationOSView = ({
       setAuditEvents(auditData);
       setBranding(brandingData);
       setReferralLeaderboard(referralData);
+    } catch (err) {
+      if (request === globalRequest.current) setLocalError(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (request === globalRequest.current) setGlobalLoading(false);
+    }
+  }, [academyId, modeCanUse]);
 
+  const loadClassroomData = useCallback(async () => {
+    if (!academyId) return;
+    const request = ++classroomRequest.current;
+    setClassroomLoading(true);
+    setLocalError('');
+    try {
       if (selectedClassroomId) {
         const [
           assignmentData,
@@ -627,7 +672,6 @@ export const EducationOSView = ({
           inviteData,
           curriculumData,
           gradeCategoryData,
-          rubricData,
         ] = await Promise.all([
           modeCanUse('manageAssignments') ? teacherStudioAssignments(academyId, selectedClassroomId) : Promise.resolve([]),
           modeCanUse('gradeSubmissions') ? teacherStudioGradebook(academyId, selectedClassroomId) : Promise.resolve(null),
@@ -636,32 +680,22 @@ export const EducationOSView = ({
           modeCanUse('manageRoster') ? teacherStudioBulkInvites(academyId, selectedClassroomId) : Promise.resolve([]),
           modeCanUse('manageAssignments') ? teacherStudioCurriculum(academyId, selectedClassroomId) : Promise.resolve({ courses: [], modules: [], lessons: [], classroom_courses: [] }),
           modeCanUse('gradeSubmissions') ? teacherStudioGradeCategories(academyId, selectedClassroomId) : Promise.resolve([]),
-          modeCanUse('gradeSubmissions') ? teacherStudioRubrics(academyId) : Promise.resolve([]),
         ]);
-        setAssignments(assignmentData);
-        setGradebook(gradebookData);
-        setAttendance(attendanceData);
-        setSchedule(scheduleData);
-        setBulkInvites(inviteData);
-        setAssignmentCurriculum(curriculumData);
-        setGradeCategories(gradeCategoryData);
-        setRubrics(rubricData);
+        if (request !== classroomRequest.current) return;
+        setClassroomData({ scope: classroomScope, assignments: assignmentData, gradebook: gradebookData, attendance: attendanceData, schedule: scheduleData, invites: inviteData, curriculum: curriculumData, categories: gradeCategoryData });
       } else {
-        setAssignments([]);
-        setGradebook(null);
-        setAttendance([]);
-        setSchedule([]);
-        setBulkInvites([]);
-        setAssignmentCurriculum({ courses: [], modules: [], lessons: [], classroom_courses: [] });
-        setGradeCategories([]);
-        setRubrics([]);
+        setClassroomData({ scope: classroomScope, assignments: [], gradebook: null, attendance: [], schedule: [], invites: [], curriculum: { courses: [], modules: [], lessons: [], classroom_courses: [] }, categories: [] });
       }
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : String(err));
+      if (request === classroomRequest.current) setLocalError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLocalBusy(false);
+      if (request === classroomRequest.current) setClassroomLoading(false);
     }
-  }, [academyId, selectedClassroomId, modeCanUse]);
+  }, [academyId, selectedClassroomId, classroomScope, modeCanUse]);
+
+  const loadOsData = useCallback(async () => {
+    await Promise.all([loadGlobalData(), loadClassroomData()]);
+  }, [loadGlobalData, loadClassroomData]);
 
   useEffect(() => {
     if (selectedClassroomId && classrooms.some((classroom) => classroom.id === selectedClassroomId)) return;
@@ -669,14 +703,29 @@ export const EducationOSView = ({
   }, [classrooms, selectedClassroomId]);
 
   useEffect(() => {
-    void loadOsData();
-  }, [loadOsData]);
+    void loadGlobalData();
+    return () => { globalRequest.current += 1; };
+  }, [loadGlobalData]);
+
+  useEffect(() => {
+    setSelectedAssignmentId('');
+    setEditingAssignmentId('');
+    setAssignmentForm({ ...emptyAssignmentForm });
+    setGradeForm({ assignment_id: '', contact_id: '', score: '', max_score: '100', notes: '', rubric_scores: {} });
+    setAttendanceDraft({});
+    setScheduleForm({ day_of_week: '1', start_time: '', end_time: '', timezone: 'Asia/Tashkent', label: '' });
+  }, [classroomScope]);
+
+  useEffect(() => {
+    void loadClassroomData();
+    return () => { classroomRequest.current += 1; };
+  }, [loadClassroomData]);
 
   useEffect(() => {
     setGradeForm((previous) => ({
       ...previous,
-      assignment_id: previous.assignment_id || assignments[0]?.id || '',
-      contact_id: previous.contact_id || selectedMembers[0]?.contact?.id || '',
+      assignment_id: assignments.some((assignment) => assignment.id === previous.assignment_id) ? previous.assignment_id : assignments[0]?.id || '',
+      contact_id: selectedMembers.some((member) => member.contact?.id === previous.contact_id) ? previous.contact_id : selectedMembers[0]?.contact?.id || '',
       max_score: previous.max_score || String(assignments[0]?.max_score ?? 100),
     }));
   }, [assignments, selectedMembers]);
@@ -699,19 +748,22 @@ export const EducationOSView = ({
 
   useEffect(() => {
     const nextDraft: Record<string, { status: string; notes: string }> = {};
+    const draftScope = `${classroomScope}:${attendanceDate}`;
+    const preserveDraft = attendanceDraftScope.current === draftScope;
+    attendanceDraftScope.current = draftScope;
     for (const member of selectedMembers) {
       const contactId = member.contact?.id ?? '';
       if (!contactId) continue;
       const existing = attendanceForDate.get(contactId);
       nextDraft[contactId] = {
-        status: existing?.status ?? attendanceDraft[contactId]?.status ?? 'present',
-        notes: existing?.notes ?? attendanceDraft[contactId]?.notes ?? '',
+        status: existing?.status ?? (preserveDraft ? attendanceDraft[contactId]?.status : undefined) ?? 'present',
+        notes: existing?.notes ?? (preserveDraft ? attendanceDraft[contactId]?.notes : undefined) ?? '',
       };
     }
     setAttendanceDraft(nextDraft);
     // Deliberately exclude attendanceDraft to avoid erasing active edits on each select change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceForDate, selectedMembers]);
+  }, [attendanceForDate, selectedMembers, classroomScope, attendanceDate]);
 
   useEffect(() => {
     if (!branding) {
@@ -798,7 +850,7 @@ export const EducationOSView = ({
 
   const submitAssignment = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedClassroomId || !requireRoutePermission('manageAssignments', 'Assignment controls')) return;
+    if (!academyId || localBusy || !selectedClassroomId || !requireRoutePermission('manageAssignments', 'Assignment controls')) return;
     const assignmentPayload = {
       title: assignmentForm.title.trim(),
       assignment_type: assignmentForm.assignment_type,
@@ -865,7 +917,9 @@ export const EducationOSView = ({
 
   const submitGrade = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !gradeForm.assignment_id || !gradeForm.contact_id || !requireRoutePermission('gradeSubmissions', 'Gradebook controls')) return;
+    if (!academyId || gradingBusy || !assignments.some((assignment) => assignment.id === gradeForm.assignment_id)
+      || !selectedMembers.some((member) => member.contact?.id === gradeForm.contact_id)
+      || !requireRoutePermission('gradeSubmissions', 'Gradebook controls')) return;
     await runAction('Grade recorded.', async () => {
       await teacherStudioSubmitAssignmentForContact(academyId, {
         assignment_id: gradeForm.assignment_id,
@@ -888,7 +942,7 @@ export const EducationOSView = ({
 
   const submitAttendance = async (event: FormEvent) => {
     event.preventDefault();
-    if (!academyId || !selectedClassroomId || !requireRoutePermission('markAttendance', 'Attendance controls')) return;
+    if (!academyId || localBusy || !selectedClassroomId || !requireRoutePermission('markAttendance', 'Attendance controls')) return;
     await runAction('Attendance saved.', async () => {
       await teacherStudioMarkAttendance(academyId, {
         classroom_id: selectedClassroomId,
@@ -1124,7 +1178,7 @@ export const EducationOSView = ({
             <p className="muted">{translate(mode === 'teacher' ? "Review curriculum progress, grade student work, and complete teaching follow-ups." : "Review today's work, schedules, follow-ups, and center performance.")}</p>
           </div>
           <div className="topbar-actions">
-            <select className="input academy-select" value={selectedClassroomId} onChange={(event) => setSelectedClassroomId(event.target.value)}>
+            <select aria-label={translate("Classroom")} className="input academy-select" value={selectedClassroomId} disabled={actionBusy} onChange={(event) => setSelectedClassroomId(event.target.value)}>
               {classrooms.map((classroom) => (
                 <option key={classroom.id} value={classroom.id}>
                   {classroom.name}
@@ -1132,7 +1186,7 @@ export const EducationOSView = ({
               ))}
               {classrooms.length === 0 ? <option value="">{translate("No classrooms")}</option> : null}
             </select>
-            <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>
+            <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={actionBusy || classroomLoading || globalLoading}>
               {translate("Refresh")}{' '}</button>
           </div>
         </div>
@@ -1591,6 +1645,7 @@ export const EducationOSView = ({
       {visibleActiveTab === 'learning' ? (
         <section className="grid">
           <CurriculumView
+            key={classroomScope}
             academyId={academyId}
             classroomId={selectedClassroomId}
             canManage={modeCanUse('manageAssignments')}
@@ -1742,7 +1797,7 @@ export const EducationOSView = ({
                   <label>{translate("Feedback")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea className="input" placeholder={translate("Feedback the student can act on")} value={gradeForm.notes} onChange={(event) => setGradeForm((prev) => ({ ...prev, notes: event.target.value }))} /></label>
                   <div className="grading-actions">
                     <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(-1)} disabled={localBusy || selectedGradeStudentIndex <= 0}>{translate("Previous")}</button>
-                    <button className="primary-btn" type="submit" disabled={localBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>{translate("Save grade")}</button>
+                    <button className="primary-btn" type="submit" disabled={gradingBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>{translate("Save grade")}</button>
                     <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(1)} disabled={localBusy || selectedGradeStudentIndex < 0 || selectedGradeStudentIndex >= gradeableContacts.length - 1}>{translate("Next student")}</button>
                   </div>
                 </form>
