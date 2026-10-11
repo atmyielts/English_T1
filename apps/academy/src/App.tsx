@@ -1191,14 +1191,56 @@ const App = () => {
   const classroomThreadRef = useRef<HTMLDivElement | null>(null);
   const classroomRefreshInFlightRef = useRef(false);
   const academyDataLoadKeyRef = useRef('');
+  const academyDataRequestRef = useRef(0);
+  const academyScopeRef = useRef('');
   const summaryCacheRef = useRef(new Map<string, TeacherStudioSummary>());
   const contactsCacheRef = useRef(new Map<string, TeacherStudioContact[]>());
   const bootstrapScopeRef = useRef('');
+  const bootstrapRequestRef = useRef(0);
+  const studentDataRequestRef = useRef(0);
+  const authUserRef = useRef('');
+  const [authRevision, setAuthRevision] = useState(0);
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
     latestMessageId: '',
     count: 0,
   });
+
+  const activateAcademy = useCallback((nextAcademyId: string) => {
+    if (academyScopeRef.current !== nextAcademyId) {
+      academyScopeRef.current = nextAcademyId;
+      academyDataRequestRef.current += 1;
+      academyDataLoadKeyRef.current = '';
+      setSummary(null);
+      setContacts([]);
+      setClassrooms([]);
+      setClassroomMemberships([]);
+      setConversations([]);
+      setMessages([]);
+      setAnnouncements([]);
+      setAlerts([]);
+      setOffers([]);
+      setOfferGrants([]);
+      setPayments([]);
+      setEntitlements([]);
+      setEducationOS(null);
+      setContactEnrichmentState(emptyContactEnrichmentState());
+      setSelectedConversationId('');
+      setContactForm(defaultContactForm());
+      setClassroomForm(defaultClassroomForm());
+      setClassroomMembershipForm(defaultClassroomMembershipForm());
+      setAnnouncementForm(defaultAnnouncementForm());
+      setAlertForm(defaultAlertForm());
+      setMessageDraft('');
+      setOfferForm(defaultOfferForm());
+      setGrantForm(defaultGrantForm());
+      setPaymentForm(defaultPaymentForm());
+      setAcademyLandingForm(defaultAcademyLandingForm());
+      setClassroomLandingForm(defaultClassroomLandingForm());
+      setRouteLoading(Boolean(nextAcademyId));
+    }
+    setAcademyId(nextAcademyId);
+  }, []);
 
   const activeMemberships = useMemo(
     () => (me?.memberships ?? []).filter((membership) => membership.status === 'active'),
@@ -1476,7 +1518,10 @@ const App = () => {
     access: TeacherStudioAccessProfile | null,
     loadKey: string,
     key: ContactEnrichmentKey,
+    request = academyDataRequestRef.current,
   ) => {
+    const isCurrent = () => academyScopeRef.current === academy && academyDataLoadKeyRef.current === loadKey && academyDataRequestRef.current === request;
+    if (!isCurrent()) return;
     const requiredPermission: Record<ContactEnrichmentKey, AccessPermissionKey> = {
       classrooms: 'viewClassrooms',
       memberships: 'viewClassrooms',
@@ -1493,27 +1538,27 @@ const App = () => {
     try {
       if (key === 'classrooms') {
         const value = await teacherStudioClassrooms(academy);
-        if (academyDataLoadKeyRef.current === loadKey) setClassrooms(value);
+        if (isCurrent()) setClassrooms(value);
       } else if (key === 'memberships') {
         const value = await teacherStudioClassroomMemberships(academy);
-        if (academyDataLoadKeyRef.current === loadKey) setClassroomMemberships(value);
+        if (isCurrent()) setClassroomMemberships(value);
       } else if (key === 'alerts') {
         const value = await teacherStudioAlerts(academy);
-        if (academyDataLoadKeyRef.current === loadKey) setAlerts(value);
+        if (isCurrent()) setAlerts(value);
       } else if (key === 'payments') {
         const value = await teacherStudioPayments(academy);
-        if (academyDataLoadKeyRef.current === loadKey) setPayments(value);
+        if (isCurrent()) setPayments(value);
       } else {
         const value = await teacherStudioEducationOS(academy);
-        if (academyDataLoadKeyRef.current === loadKey) {
+        if (isCurrent()) {
           setEducationOS(filterEducationOSForOfficeRoute(value, access, officeRouteIntent));
         }
       }
-      if (academyDataLoadKeyRef.current === loadKey) {
+      if (isCurrent()) {
         setContactEnrichmentState((previous) => ({ ...previous, [key]: 'success' }));
       }
     } catch (err) {
-      if (academyDataLoadKeyRef.current === loadKey) {
+      if (isCurrent()) {
         console.warn(`Failed to load Contacts ${key} context`, err);
         setContactEnrichmentState((previous) => ({ ...previous, [key]: 'error' }));
       }
@@ -1521,8 +1566,12 @@ const App = () => {
   }, [officeRouteIntent]);
 
   const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string, reuseSummary = false) => {
+    if (academyScopeRef.current !== academy) return;
+    const request = ++academyDataRequestRef.current;
+    const isCurrent = () => academyScopeRef.current === academy && academyDataRequestRef.current === request;
     const cachedSummary = reuseSummary ? summaryCacheRef.current.get(academy) : undefined;
     let summaryData = cachedSummary ?? await teacherStudioSummary(academy);
+    if (!isCurrent()) return;
     summaryCacheRef.current.set(academy, summaryData);
     const summaryRefresh = cachedSummary
       ? teacherStudioSummary(academy).catch((err) => {
@@ -1561,6 +1610,7 @@ const App = () => {
 
     if (loadView === 'contacts') {
       const contactsData = canLoadContacts ? await teacherStudioContacts(academy) : [];
+      if (!isCurrent()) return;
       const loadKey = academyDataLoadKey(academy);
       contactsCacheRef.current.set(academy, contactsData);
 
@@ -1584,6 +1634,7 @@ const App = () => {
       setAlertForm((previous) => ({ ...previous, contact_id: previous.contact_id || contactsData[0]?.id || '' }));
 
       summaryData = await summaryRefresh;
+      if (!isCurrent()) return;
       access = summaryData.access ?? null;
       summaryCacheRef.current.set(academy, summaryData);
       setSummary(summaryData);
@@ -1597,7 +1648,7 @@ const App = () => {
 
       academyDataLoadKeyRef.current = loadKey;
       for (const key of ['classrooms', 'memberships', 'alerts', 'payments', 'educationOS'] as ContactEnrichmentKey[]) {
-        void loadContactEnrichment(academy, access, loadKey, key);
+        void loadContactEnrichment(academy, access, loadKey, key, request);
       }
       return;
     }
@@ -1634,6 +1685,7 @@ const App = () => {
         return null;
       }) : Promise.resolve(null),
     ]);
+    if (!isCurrent()) return;
     summaryData = refreshedSummary;
     access = summaryData.access ?? null;
     summaryCacheRef.current.set(academy, summaryData);
@@ -1700,6 +1752,7 @@ const App = () => {
     }
 
     const messagesData = await teacherStudioConversationMessages(academy, { conversation_id: nextConversationId });
+    if (!isCurrent()) return;
     setMessages(messagesData.messages ?? []);
     academyDataLoadKeyRef.current = academyDataLoadKey(academy);
   }, [academyDataLoadKey, loadContactEnrichment, officeClassroomId, officeRouteIntent, officeView]);
@@ -1711,18 +1764,23 @@ const App = () => {
   }, [academyDataLoadKey, academyId, loadContactEnrichment, officeView, selectedAcademyAccess]);
 
   const loadStudentData = useCallback(async (): Promise<TeacherStudioStudentDashboard> => {
+    const request = ++studentDataRequestRef.current;
+    const actor = authUserRef.current;
     const data = await teacherStudioStudentDashboard();
-    setStudentDashboard(data);
+    if (request === studentDataRequestRef.current && actor && actor === authUserRef.current) setStudentDashboard(data);
     return data;
   }, []);
 
   const bootstrap = useCallback(async (forceProfile = false) => {
+    const request = ++bootstrapRequestRef.current;
+    const isCurrent = () => request === bootstrapRequestRef.current;
     try {
       setError('');
       setNotice('');
       setState('loading');
 
       const { data: sessionData } = await supabase.auth.getSession();
+      if (!isCurrent()) return;
       if (!sessionData.session) {
         summaryCacheRef.current.clear();
         contactsCacheRef.current.clear();
@@ -1731,6 +1789,7 @@ const App = () => {
         setState('unauthenticated');
         return;
       }
+      authUserRef.current = sessionData.session.user.id;
 
       // The service root only dispatches signed-in visitors. Resolve the
       // workspace directly instead of fetching /me on both sides of a redirect.
@@ -1761,6 +1820,7 @@ const App = () => {
         shouldAttemptTeacherData ? teacherStudioAcademies() : Promise.resolve([] as TeacherStudioAcademy[]),
         shouldPreloadStudentData ? teacherStudioStudentDashboard() : Promise.resolve(null),
       ]);
+      if (!isCurrent()) return;
       if (meResult.status === 'rejected') throw meResult.reason;
       const meResponse = meResult.value;
       const memberships = (meResponse.memberships ?? []).filter((membership) => membership.status === 'active');
@@ -1769,7 +1829,7 @@ const App = () => {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(null);
-        setAcademyId('');
+        activateAcademy('');
         setState('ready');
         return;
       }
@@ -1777,7 +1837,7 @@ const App = () => {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(emptyStudentDashboard());
-        setAcademyId('');
+        activateAcademy('');
         setState('ready');
         return;
       }
@@ -1785,7 +1845,7 @@ const App = () => {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(emptyStudentDashboard());
-        setAcademyId('');
+        activateAcademy('');
         setState('ready');
         return;
       }
@@ -1817,13 +1877,14 @@ const App = () => {
       const studentData = shouldLoadStudentData
         ? await loadStudentDataOnce()
         : null;
+      if (!isCurrent()) return;
       const hasStudentRouteAccess = hasStudentWorkspaceAccess(studentData);
 
       if (!hasTeacherRouteAccess && !hasStudentRouteAccess) {
         setMe(meResponse);
         setAcademies([]);
         setStudentDashboard(studentData ?? emptyStudentDashboard());
-        setAcademyId('');
+        activateAcademy('');
         setError('');
         setState('ready');
         return;
@@ -1844,15 +1905,16 @@ const App = () => {
         const selectedAcademy =
           (requestedAcademyId && academyIds.has(requestedAcademyId) ? requestedAcademyId : '') || fallbackAcademyId;
         setAcademies(academyList);
-        setAcademyId(selectedAcademy);
+        activateAcademy(selectedAcademy);
         if (selectedAcademy && !isWorkspaceEntry && !isAcademyDirectory) await loadAcademyData(selectedAcademy);
       } else {
         setAcademies([]);
-        setAcademyId(requestedAcademyId || studentData?.academies[0]?.id || '');
+        activateAcademy(requestedAcademyId || studentData?.academies[0]?.id || '');
       }
 
-      setState('ready');
+      if (isCurrent()) setState('ready');
     } catch (err) {
+      if (!isCurrent()) return;
       const message = normalizeError(err);
       if (message === 'Your session expired. Please sign in again.') {
         summaryCacheRef.current.clear();
@@ -1868,6 +1930,7 @@ const App = () => {
     }
   }, [
     academyClassroomLandingId,
+    activateAcademy,
     academyId,
     isAcademyDirectory,
     isAcademySetup,
@@ -1890,7 +1953,7 @@ const App = () => {
     if (bootstrapScopeRef.current === bootstrapScope) return;
     bootstrapScopeRef.current = bootstrapScope;
     void bootstrap();
-  }, [bootstrap, bootstrapScope]);
+  }, [authRevision, bootstrap, bootstrapScope]);
 
   useEffect(() => {
     if (state !== 'ready' || !isAcademyDirectory || !hasTeacherAccess || studentDashboard) return;
@@ -1901,16 +1964,32 @@ const App = () => {
 
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      const nextActor = session?.user.id ?? '';
+      const actorChanged = Boolean(authUserRef.current && nextActor !== authUserRef.current);
+      authUserRef.current = nextActor;
+      if (!session || actorChanged) {
+        bootstrapRequestRef.current += 1;
+        studentDataRequestRef.current += 1;
+        academyDataRequestRef.current += 1;
         summaryCacheRef.current.clear();
         contactsCacheRef.current.clear();
         academyDataLoadKeyRef.current = '';
+        activateAcademy('');
         setMe(null);
-        setState('unauthenticated');
+        setAcademies([]);
+        setStudentDashboard(null);
+        setState(session ? 'loading' : 'unauthenticated');
+      }
+      if (session && (actorChanged || _event === 'SIGNED_IN')) {
+        // Defer authentication API work to the effect, outside the SDK callback.
+        if (actorChanged || !academyScopeRef.current) {
+          bootstrapScopeRef.current = '';
+          setAuthRevision((current) => current + 1);
+        }
       }
     });
     return () => subscription.data.subscription.unsubscribe();
-  }, []);
+  }, [activateAcademy]);
 
   useEffect(() => {
     const normalized = normalizePath(location.pathname);
@@ -2011,22 +2090,13 @@ const App = () => {
 
   const onSelectAcademy = useCallback(async (nextAcademyId: string) => {
     if (!nextAcademyId || nextAcademyId === academyId) return;
-    setBusy(true);
     setError('');
     setNotice('');
-    setAcademyId(nextAcademyId);
-    try {
-      await loadAcademyData(nextAcademyId, selectedConversationId);
-      const params = new URLSearchParams(location.search);
-      params.set('academy_id', nextAcademyId);
-      const query = params.toString();
-      navigate(query ? `${location.pathname}?${query}` : location.pathname, { replace: true });
-    } catch (err) {
-      setError(normalizeError(err));
-    } finally {
-      setBusy(false);
-    }
-  }, [academyId, loadAcademyData, location.pathname, location.search, navigate, selectedConversationId]);
+    const params = new URLSearchParams(location.search);
+    params.set('academy_id', nextAcademyId);
+    const query = params.toString();
+    navigate(query ? `${location.pathname}?${query}` : location.pathname, { replace: true });
+  }, [academyId, location.pathname, location.search, navigate]);
 
   const academyScopedPath = useCallback((path: string, explicitAcademyId?: string): string => {
     const fallbackStudentAcademy = studentDashboard?.academies[0]?.id ?? '';
@@ -2239,7 +2309,10 @@ const App = () => {
   useLayoutEffect(() => {
     if (state !== 'ready' || !isTeacherWorkspaceRoute || !academyId || allowedOfficeViews.length === 0) return;
     const key = academyDataLoadKey(academyId);
-    if (academyDataLoadKeyRef.current !== key) setRouteLoading(true);
+    if (academyDataLoadKeyRef.current !== key) {
+      academyDataRequestRef.current += 1;
+      setRouteLoading(true);
+    }
   }, [academyDataLoadKey, academyId, allowedOfficeViews.length, isTeacherWorkspaceRoute, state]);
 
   useEffect(() => {
@@ -2247,12 +2320,16 @@ const App = () => {
     const key = academyDataLoadKey(academyId);
     if (academyDataLoadKeyRef.current === key) return;
     academyDataLoadKeyRef.current = key;
-    void loadAcademyData(academyId, selectedConversationId, true)
+    const pending = loadAcademyData(academyId, selectedConversationId, true);
+    const request = academyDataRequestRef.current;
+    void pending
       .catch((err) => {
+        if (request !== academyDataRequestRef.current) return;
         academyDataLoadKeyRef.current = '';
         setError(normalizeError(err));
       })
       .finally(() => {
+        if (request !== academyDataRequestRef.current) return;
         if (academyDataLoadKeyRef.current === key || academyDataLoadKeyRef.current === '') setRouteLoading(false);
       });
   }, [
@@ -2592,19 +2669,19 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (state !== 'ready' || isStudentWorkspaceRoute || !hasTeacherAccess) return;
     if (!requestedAcademyId || requestedAcademyId === academyId) return;
     if (!teacherAcademyIds.has(requestedAcademyId)) return;
     if (isTeacherWorkspaceRoute && !officeRouteAcademyIds.has(requestedAcademyId)) return;
-    void onSelectAcademy(requestedAcademyId);
+    activateAcademy(requestedAcademyId);
   }, [
     academyId,
     hasTeacherAccess,
     isStudentWorkspaceRoute,
     isTeacherWorkspaceRoute,
     officeRouteAcademyIds,
-    onSelectAcademy,
+    activateAcademy,
     requestedAcademyId,
     state,
     teacherAcademyIds,
@@ -2640,7 +2717,7 @@ const App = () => {
       setAcademies(academyList);
       setAcademyNameDraft('');
       setAcademySlugDraft('');
-      setAcademyId(academy.id);
+      activateAcademy(academy.id);
       await loadAcademyData(academy.id);
       navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`);
       setNotice('Academy created.');
@@ -3075,8 +3152,12 @@ const App = () => {
   };
 
   const signOut = async () => {
+    bootstrapRequestRef.current += 1;
+    studentDataRequestRef.current += 1;
+    academyDataRequestRef.current += 1;
+    authUserRef.current = '';
+    activateAcademy('');
     await supabase.auth.signOut();
-    bootstrapScopeRef.current = '';
     summaryCacheRef.current.clear();
     contactsCacheRef.current.clear();
     academyDataLoadKeyRef.current = '';
@@ -5130,7 +5211,7 @@ const App = () => {
         {error ? <div className="error-banner">{translate(error)}</div> : null}
         {notice ? <div className="info-banner">{translate(notice)}</div> : null}
 
-        <div className="workspace-route-stage" aria-busy={routeLoading}>
+        <div key={academyId} className="workspace-route-stage" aria-busy={routeLoading}>
         {routeLoading ? (
           <div className="workspace-route-progress" role="status" aria-live="polite">
             <span className="sr-only">{translate('Updating {section}', { section: translate(selectedViewLabel) })}</span>

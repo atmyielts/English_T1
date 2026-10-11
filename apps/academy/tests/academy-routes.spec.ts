@@ -2168,6 +2168,112 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect.poll(() => actionLog.includes('education_os')).toBe(true);
   });
 
+  test("teaching dates hide obsolete lesson actions and ignore late day responses", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    let releaseMiddle!: () => void;
+    const middleBlocked = new Promise<void>((resolve) => { releaseMiddle = resolve; });
+    const dates: string[] = [];
+    await mockAcademyEdge(page, "teacher", {
+      respond: async (body) => {
+        if (body.action !== "teacher_day") return undefined;
+        const requestedDate = String(body.date);
+        dates.push(requestedDate);
+        if (dates.length === 2) await middleBlocked;
+        return {
+          date: requestedDate, counts: { sessions: 1, students: 1, attendance_pending: 1, homework_pending: 1 },
+          sessions: [{
+            id: `session-${requestedDate}`, academy_id: academyId, classroom_id: classroomId,
+            classroom_name: `Class ${requestedDate}`, room_name: "Room 12", title: "Lesson", timezone: "Asia/Tashkent",
+            starts_at: `${requestedDate}T13:00:00.000Z`, ends_at: `${requestedDate}T14:30:00.000Z`, status: "scheduled", delivery_mode: "physical",
+            roster: [{ contact_id: studentContactId, name: "Ali Karimov", status: null, notes: null }], attendance_saved: false,
+            curriculum: { lesson_title: `Plan ${requestedDate}`, objectives: [], estimated_minutes: 90 },
+            resources: [], homework: { title: "Homework", description: "Task", due_at: "" }, run: null, connected_group_count: 0,
+          }],
+        };
+      },
+    });
+    await page.goto(`/academy/teacher?academy_id=${academyId}`);
+    await expect(page.getByRole("button", { name: "Start lesson", exact: true })).toBeEnabled();
+    await page.getByRole("button", { name: "Next day", exact: true }).click();
+    await expect.poll(() => dates.length).toBe(2);
+    await expect(page.getByRole("button", { name: "Start lesson", exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Next day", exact: true }).click();
+    await expect.poll(() => dates.length).toBe(3);
+    await expect(page.getByRole("heading", { name: `Plan ${dates[2]}`, exact: true })).toBeVisible();
+    const middleResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "teacher_day" && response.request().postDataJSON()?.date === dates[1]);
+    releaseMiddle();
+    await middleResponse;
+    await expect(page.getByRole("heading", { name: `Plan ${dates[2]}`, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: `Plan ${dates[1]}`, exact: true })).toHaveCount(0);
+  });
+
+  test("sign-out in another tab invalidates a pending private workspace startup", async ({ page, context }) => {
+    await seedSessionCookie(page, "owner-user");
+    let releaseContacts!: () => void;
+    const contactsBlocked = new Promise<void>((resolve) => { releaseContacts = resolve; });
+    let contactsRequested = false;
+    await mockAcademyEdge(page, "owner", { respond: async (body) => {
+      if (body.action !== "contacts") return undefined;
+      contactsRequested = true;
+      await contactsBlocked;
+      return { contacts: [contact] };
+    } });
+    await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+    await expect.poll(() => contactsRequested).toBe(true);
+    const otherTab = await context.newPage();
+    await mockAcademyEdge(otherTab, "owner");
+    await otherTab.route("**/auth/v1/logout**", (route) => route.fulfill({ status: 204, body: "" }));
+    await otherTab.goto(`/academy/admin/classrooms?academy_id=${academyId}`);
+    await otherTab.getByRole("button", { name: "Sign out", exact: true }).click();
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+    const contactsResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "contacts");
+    releaseContacts();
+    await contactsResponse;
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByText("Ali Karimov", { exact: true })).toHaveCount(0);
+  });
+
+  test("academy switching preserves the latest URL, records, and fresh forms", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    const middleId = "academy-middle";
+    const finalId = "academy-final";
+    let releaseMiddle!: () => void;
+    const middleBlocked = new Promise<void>((resolve) => { releaseMiddle = resolve; });
+    let middleRequested = false;
+    const contactRequests: string[] = [];
+    await mockAcademyEdge(page, "owner", {
+      actionOverrides: { academies: { academies: [academy("owner"), { ...academy("owner"), id: middleId, name: "Middle Academy" }, { ...academy("owner"), id: finalId, name: "Final Academy" }] } },
+      respond: async (body) => {
+        if (body.action === "summary") return { academy_id: body.academy_id, access: ownerAccess, counts: { contacts: 1, classrooms: 0, offers: 0, active_entitlements: 0, open_alerts: 0 } };
+        if (body.action !== "contacts") return undefined;
+        const selected = String(body.academy_id);
+        contactRequests.push(selected);
+        if (selected === middleId) { middleRequested = true; await middleBlocked; }
+        return { contacts: [{ ...contact, id: `${selected}-contact`, academy_id: selected, first_name: selected === academyId ? "Ali" : selected === finalId ? "Current" : "Obsolete", last_name: "Karimov" }] };
+      },
+    });
+    await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+    await expect(page.getByText("Ali Karimov", { exact: true }).first()).toBeVisible();
+    await page.getByText("Add contact", { exact: true }).click();
+    await page.getByRole("textbox", { name: "First name", exact: true }).fill("Old draft");
+    const academySelect = page.locator(".ts-topbar .academy-select");
+    await academySelect.selectOption(middleId);
+    await expect.poll(() => middleRequested).toBe(true);
+    await expect(page).toHaveURL(new RegExp(`academy_id=${middleId}`), { timeout: 2_000 });
+    await expect(page.getByText("Ali Karimov", { exact: true })).toHaveCount(0);
+    await page.getByText("Add contact", { exact: true }).click();
+    await expect(page.getByRole("textbox", { name: "First name", exact: true })).toHaveValue("");
+    await academySelect.selectOption(finalId);
+    await expect(page.getByText("Current Karimov", { exact: true }).first()).toBeVisible();
+    const middleResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "contacts" && response.request().postDataJSON()?.academy_id === middleId);
+    releaseMiddle();
+    await middleResponse;
+    await expect(page).toHaveURL(new RegExp(`academy_id=${finalId}`));
+    await expect(page.getByText("Current Karimov", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Obsolete Karimov", { exact: true })).toHaveCount(0);
+    expect(contactRequests).toEqual([academyId, middleId, finalId]);
+  });
+
   test("teacher route opens an action-first teaching day without finance controls", async ({ page }) => {
     await seedSessionCookie(page, "teacher-user");
     await mockAcademyEdge(page, "teacher");
@@ -3193,6 +3299,67 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.getByRole("button", { name: "Delivery evidence" }).click();
     await expect(page.getByRole("heading", { name: "Retry-safe notification outbox" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Immutable delivery attempts" })).toBeVisible();
+  });
+
+  test("parent switching scopes requests, drafts, and guardian preferences by stable child identity", async ({ page }) => {
+    await seedSessionCookie(page, "guardian-user");
+    const otherAcademy = "guardian-other-academy";
+    const otherGuardian = "guardian-other";
+    const otherChild = { ...guardianDashboard.children[0], academy_id: otherAcademy, relationship_id: "relationship-other", student: { ...guardianDashboard.children[0].student, id: "other-student", name: "Other Child" } };
+    let dashboard = { ...guardianDashboard, guardians: [guardianProfile, { ...guardianProfile, id: otherGuardian, academy_id: otherAcademy }], children: [guardianDashboard.children[0], otherChild], preferences: [...guardianDashboard.preferences, { ...guardianDashboard.preferences[0], id: "preference-other", guardian_id: otherGuardian, quiet_hours_start: "19:00" }] };
+    let releaseFirst!: () => void;
+    const firstBlocked = new Promise<void>((resolve) => { releaseFirst = resolve; });
+    let firstRequested = false;
+    const saved: Record<string, unknown>[] = [];
+    await mockAcademyEdge(page, "guardian", {
+      respond: async (body) => {
+        if (body.action === "guardian_dashboard") return dashboard;
+        if (body.action === "guardian_update_preferences") { saved.push(body); return {}; }
+        if (body.action !== "guardian_service_requests") return undefined;
+        const selected = String(body.academy_id);
+        if (selected === academyId) { firstRequested = true; await firstBlocked; }
+        return { requests: [{ id: `request-${selected}`, subject: selected === academyId ? "First academy request" : "Other academy request", status: "submitted", request_type: "support", created_at: "2026-01-01T00:00:00Z" }] };
+      },
+    });
+    await page.goto("/academy/parent");
+    await expect(page.getByRole("heading", { name: "Ali Karimov", exact: true })).toBeVisible();
+    await expect.poll(() => firstRequested).toBe(true);
+    await page.getByRole("button", { name: "Messages", exact: true }).click();
+    await page.locator("form").filter({ has: page.getByRole("heading", { name: "Message academy", exact: true }) }).locator("textarea").fill("Private draft for first child");
+    await page.getByRole("combobox", { name: "Choose your child", exact: true }).selectOption({ label: "Other Child" });
+    await page.getByRole("button", { name: "Messages", exact: true }).click();
+    await expect(page.locator("form").filter({ has: page.getByRole("heading", { name: "Message academy", exact: true }) }).locator("textarea")).toHaveValue("");
+    await page.getByRole("button", { name: "Ask for help", exact: true }).click();
+    await expect(page.getByText("Other academy request", { exact: true })).toBeVisible();
+    const firstResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "guardian_service_requests" && response.request().postDataJSON()?.academy_id === academyId);
+    releaseFirst();
+    await firstResponse;
+    await expect(page.getByText("First academy request", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Other academy request", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Preferences", exact: true }).click();
+    await expect(page.getByLabel("Quiet from", { exact: true })).toHaveValue("19:00");
+    await page.getByRole("button", { name: "Save preferences", exact: true }).click();
+    await expect.poll(() => saved.length).toBe(1);
+    expect(saved[0].guardian_id).toBe(otherGuardian);
+    dashboard = { ...dashboard, children: [otherChild, guardianDashboard.children[0]] };
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Other Child", exact: true })).toBeVisible();
+  });
+
+  test("parent message failures retain the draft for a successful retry", async ({ page }) => {
+    await seedSessionCookie(page, "guardian-user");
+    await mockAcademyEdge(page, "guardian", { failActionAttempts: { guardian_send_message: 1 } });
+    await page.goto("/academy/parent");
+    await page.getByRole("button", { name: "Messages", exact: true }).click();
+    const form = page.locator("form").filter({ has: page.getByRole("heading", { name: "Message academy", exact: true }) });
+    const draft = form.locator("textarea");
+    await draft.fill("Please discuss this private concern with me.");
+    await form.getByRole("button", { name: "Send message", exact: true }).click();
+    await expect(page.getByText(/Mock guardian_send_message failure/)).toBeVisible();
+    await expect(draft).toHaveValue("Please discuss this private concern with me.");
+    await form.getByRole("button", { name: "Send message", exact: true }).click();
+    await expect(page.getByText("Message sent to the academy.", { exact: true })).toBeVisible();
+    await expect(draft).toHaveValue("");
   });
 
   test("guardian sees only consented child information in the parent portal", async ({ page }) => {
