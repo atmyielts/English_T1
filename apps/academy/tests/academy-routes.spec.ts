@@ -2197,8 +2197,9 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         await expect.poll(() => writes.length).toBe(1);
         await page.getByRole("button", { name: "Switch workspace", exact: true }).click();
         await page.getByRole("button", { name: "Manage Next Academy", exact: true }).click();
-        if (!(await page.getByRole("button", { name: "Contacts", exact: true }).isVisible())) await page.getByRole("button", { name: "Daily operations", exact: true }).click();
-        await page.getByRole("button", { name: "Contacts", exact: true }).click();
+        const contactsNavigation = page.getByRole('navigation', { name: 'Academy LMS navigation' }).getByRole("button", { name: "Contacts", exact: true });
+        if (!(await contactsNavigation.isVisible())) await page.getByRole("button", { name: "Daily operations", exact: true }).click();
+        await contactsNavigation.click();
         await fill("New workspace");
         await expect.poll(() => writes.length).toBe(2);
         const oldResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "upsert_contact" && response.request().postDataJSON()?.academy_id === academyId);
@@ -3677,7 +3678,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       name: "Academy LMS navigation",
     });
     await expect(navigation).toBeHidden();
-    const openTask = page.locator('.workspace-shortcuts__list button').first();
+    const openTask = page.locator('.attention-item button').first();
     await expect(openTask).toBeInViewport();
     await nextSections.click();
     await expect(navigation).toBeVisible();
@@ -4501,7 +4502,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     delayActions.summary = 5_000;
 
     await page.getByRole("button", { name: "Daily operations" }).click();
-    await page.getByRole("button", { name: "Contacts", exact: true }).click();
+    await page.getByRole('navigation', { name: 'Academy LMS navigation' }).getByRole("button", { name: "Contacts", exact: true }).click();
     await expect(page.locator(".ts-sidebar")).toBeVisible();
     await expect(page.locator(".workspace-identity")).toContainText("Owner");
     await expect(page.locator(".ts-loading")).toHaveCount(0);
@@ -5034,7 +5035,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
           }
           await expect(navigation.getByRole("button", { name: localeCase.navigation[roleCase.persona], exact: true })).toBeVisible();
           if (roleCase.persona === "owner") {
-            await expect(page.getByText(localeCase.ownerShortcut, { exact: true })).toBeVisible();
+            await expect(page.locator('.workspace-shortcuts__list button').first()).toHaveAttribute('title', localeCase.ownerShortcut);
             await expect(page.getByText("Manage students and assistants", { exact: true })).toHaveCount(0);
             await expect(page.locator(".workspace-context").getByText(localeCase.ownerRole, { exact: true })).toBeVisible();
           }
