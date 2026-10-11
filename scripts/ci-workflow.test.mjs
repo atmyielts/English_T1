@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { deploymentPlan, needsPagesDeployment } from './plan-pages-deployment.mjs';
+import { isFullAcademyRouteCommand } from './academy-route-command.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const source = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n');
@@ -85,6 +86,21 @@ test('both release gates run the entire Academy browser suite with bounded paral
   assert.equal(packageScripts.test.includes('npm run test:academy:routes'), false, 'Browser gate must not run twice inside the unit suite');
   assert.match(job('checks'), /run: npm run test:academy:routes\n/);
   assert.match(pages, /name: Academy mocked route smoke\s+if: \$\{\{ matrix\.label == 'academy' \}\}\s+run: npm run test:academy:routes/);
+});
+
+test('Academy readiness rejects filtered suites, command changes and unbounded workers', () => {
+  const base = 'npm --workspace apps/academy run test:routes';
+  for (const valid of [base, `${base} -- --workers=2 --fully-parallel`, `${base} -- --fully-parallel --workers=1`]) {
+    assert.equal(isFullAcademyRouteCommand(valid), true, valid);
+  }
+  for (const invalid of [undefined, '', 'npm run test', base.replace('apps/academy', 'apps/platform'),
+    `${base} -- --grep contacts`, `${base} -- --workers=2 --fully-parallel --grep contacts`,
+    `${base} -- --workers=2 --fully-parallel tests/one.spec.ts`, `${base} -- --last-failed`,
+    `${base} -- --workers=0 --fully-parallel`, `${base} -- --workers=8 --fully-parallel`,
+    `${base} --workers=2 --fully-parallel`, `${base} -- --workers=2 --workers=2`,
+    `${base} -- --workers=2 --fully-parallel --list`, `${base} && echo success`]) {
+    assert.equal(isFullAcademyRouteCommand(invalid), false, String(invalid));
+  }
 });
 
 test('validate waits for every group and cannot pass a failed, canceled or skipped dependency', () => {
