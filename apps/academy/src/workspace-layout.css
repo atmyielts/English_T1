@@ -1,18 +1,34 @@
 /* Everyday work: task content leads; navigation and account tools support it. */
+html:has(.ts-shell, .parent-workspace, .workspace-card),
+body:has(.ts-shell, .parent-workspace, .workspace-card) { background: #f7f8f5; }
 .ts-shell,
-.parent-workspace {
-  --bg: #f2eee7;
-  --panel: #fffdf8;
-  --panel-subtle: #f6f1e8;
+.parent-workspace,
+.market-page:has(.workspace-card) {
+  --bg: #f7f8f5;
+  --panel: #ffffff;
+  --panel-subtle: #f0f4ee;
+  --line: #e0e5de;
+  --line-strong: #82917d;
   background: var(--bg);
   font-variant-numeric: tabular-nums;
 }
 
 .ts-shell { grid-template-columns: 252px minmax(0, 1fr); }
-.ts-sidebar { background: var(--panel-subtle); }
+.workspace-card > .row.between { flex-wrap: wrap; gap: 12px; }
+.workspace-card > .row.between > .row { flex-wrap: wrap; }
+.workspace-card__identity { flex: 1 1 12rem; }
+.ts-sidebar { background: #eef4eb; }
 .ts-sidebar .brand { align-items: center; }
+.ts-sidebar .brand-copy strong { font-size: 16px; white-space: normal; overflow: visible; line-height: 1.3; }
+.workspace-identity { border-color: var(--line); background: var(--panel); box-shadow: none; }
 .workspace-nav { gap: 16px; }
 .workspace-nav .nav-btn { min-height: 44px; font-size: 13px; }
+.workspace-nav .nav-btn { border-radius: 12px; font-weight: 600; }
+.workspace-nav .nav-btn:hover,
+.workspace-nav__group-toggle:hover { background: #e2ecdc; }
+.workspace-nav .nav-btn.is-active { color: #24533e; background: #d9edcf; border-color: transparent; box-shadow: none; }
+.workspace-nav .nav-btn.is-active .nav-icon { color: inherit; }
+.workspace-nav .nav-btn.is-active::after { display: none; }
 .workspace-nav .nav-label { white-space: normal; overflow: visible; line-height: 1.35; }
 .workspace-nav__group-toggle { min-height: 44px; text-align: left; }
 .workspace-menu-toggle { display: none; }
@@ -42,6 +58,10 @@
 .workspace-nav-search input:focus-visible { outline: none; box-shadow: none; }
 .workspace-nav-empty { color: var(--muted-strong); font-size: 13px; padding: 8px; }
 .ts-topbar h1 { font-size: 1.75rem; line-height: 1.2; }
+.ts-shell .ts-main { gap: 20px; }
+.ts-shell :is(.primary-btn, .small-btn, .ghost-btn) { font-weight: 650; box-shadow: none; }
+.ts-shell .primary-btn:hover { transform: none; box-shadow: none; }
+.ts-shell :is(.input, .academy-select) { border-color: var(--line-strong); background: var(--panel); }
 .ts-shell .panel h3::before { display: none; }
 .ts-shell .panel { padding: 20px; }
 .ts-shell .panel { border-radius: 12px; }
@@ -73,10 +93,15 @@
 .workspace-home__hero p,
 .student-home__hero p,
 .teacher-day__hero p { margin-top: 8px; color: var(--muted-strong); font-size: 14px; }
+.workspace-home__hero { padding: 24px; border-color: var(--ink); color: #fffdf8; background: var(--ink); }
+.workspace-home__hero p { color: #e7ddd1; max-width: 58ch; }
+.workspace-home__hero h2 { max-width: 24ch; }
+.workspace-home__hero .workspace-date { border-color: #8d7a69; }
+.workspace-home__hero .workspace-date :is(svg, span) { color: #fef0b6; }
 .workspace-date { min-width: 168px; border-color: var(--line); }
 .workspace-date :is(svg, span) { color: var(--muted-strong); }
 .workspace-home__grid { gap: 20px; }
-.attention-ledger { border-color: var(--line-strong); background: var(--panel); }
+.attention-ledger { border-color: var(--line); background: var(--panel); }
 .attention-ledger .section-heading { align-items: center; }
 .attention-item { gap: 16px; }
 .attention-item__copy strong { font-size: 16px; line-height: 1.35; }
@@ -85,9 +110,17 @@
 .workspace-shortcuts__list button { min-height: 64px; gap: 12px; }
 .workspace-shortcuts__list small { font-size: 13px; line-height: 1.45; }
 .workspace-context { border-left-width: 1px; }
-.workspace-pulse > div { padding: 10px 14px; }
+.workspace-pulse { gap: 12px; border: 0; background: transparent; }
+.workspace-pulse > div,
+.workspace-pulse > div:last-child { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .workspace-pulse dt { text-transform: none; font-size: 12px; letter-spacing: 0; }
-.workspace-pulse dd { margin-top: 3px; font-size: 20px; }
+.workspace-pulse dd { margin-top: 8px; font-size: 24px; }
+.workspace-shortcuts__list button:hover { color: var(--ink); background: var(--panel-subtle); }
+.workspace-shortcuts__list button { padding-inline: 8px; border-radius: 6px; }
+.ts-shell :is(.table-wrap, .finance-table-wrap) thead { background: var(--panel-subtle); }
+.ts-shell :is(.business-tabs, .segmented-row) { box-shadow: none; }
+.ts-shell :is(.nav-btn, .workspace-nav__group-toggle, .primary-btn, .ghost-btn, .small-btn, .workspace-shortcuts__list button),
+.parent-workspace .business-tabs button { transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease; }
 .teacher-day__hero .eyebrow { display: none; }
 .teacher-day__date-control { border-color: var(--line); background: var(--panel-subtle); }
 .teacher-day__date-control button { min-height: 44px; color: var(--ink); }
@@ -197,6 +230,9 @@ body:has(.parent-workspace) #root > .academy-language-switcher { display: none; 
 }
 
 @media (max-width: 700px) {
+  .ts-shell .ts-main { gap: 12px; }
+  .ts-shell :is(input.input, textarea.input, select.input),
+  .parent-workspace :is(input.input, textarea.input, select.input) { font-size: 16px; }
   .ts-sidebar { padding: 8px 12px; }
   .ts-topbar { gap: 12px; padding-bottom: 12px; }
   .ts-topbar h1 { font-size: 1.5rem; }
@@ -219,10 +255,14 @@ body:has(.parent-workspace) #root > .academy-language-switcher { display: none; 
   .workspace-date span { display: none; }
   .workspace-date strong { font-size: 12px; }
   .workspace-home__grid { gap: 16px; }
+  .workspace-home__grid { order: 1; }
+  .workspace-home > .workspace-pulse { order: 2; }
   .attention-ledger { padding: 16px; }
   .attention-item { gap: 10px; }
   .workspace-pulse { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .workspace-pulse > div { padding: 8px 12px; }
+  .workspace-pulse { gap: 8px; }
+  .workspace-pulse > div,
+  .workspace-pulse > div:nth-child(n) { padding: 12px; border: 1px solid var(--line); }
   .workspace-pulse--student { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .teacher-day__timeline {
     grid-template-columns: none;
@@ -249,4 +289,8 @@ body:has(.parent-workspace) #root > .academy-language-switcher { display: none; 
   .parent-workspace .academy-command-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .parent-workspace .academy-command-grid article { padding: 12px; }
   .parent-workspace .market-grid--wide { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ts-shell *, .parent-workspace * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

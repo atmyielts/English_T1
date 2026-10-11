@@ -2975,6 +2975,129 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     }
   });
 
+  for (const width of [320, 768, 1024, 1440]) {
+    test(`receptionist Quick lead captures a phone inquiry at ${width}px`, async ({ page }, testInfo) => {
+      await seedSessionCookie(page, 'receptionist-user');
+      const captures: Record<string, unknown>[] = [];
+      await mockAcademyEdge(page, 'receptionist', { respond: async body => {
+        if (body.action !== 'create_lead') return undefined;
+        captures.push(body);
+        return { lead: { ...businessFoundation.leads[0], ...body, id: 'quick-lead-captured' } };
+      } });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/academy/office/business?academy_id=${academyId}`);
+      const opener = page.getByRole('button', { name: 'Quick lead', exact: true });
+      await opener.click();
+      const dialog = page.getByRole('dialog', { name: 'Quick lead', exact: true });
+      await expect(dialog.getByLabel('Full name', { exact: true })).toBeFocused();
+      await dialog.getByRole('button', { name: 'Phone', exact: true }).click();
+      await dialog.getByLabel('Full name', { exact: true }).fill('Front Desk Learner');
+      await dialog.getByLabel('Phone', { exact: true }).fill('+998900000001');
+      await dialog.getByLabel('Target subject').fill('IELTS');
+      await dialog.getByLabel('Preferred shift').selectOption('morning');
+      const bounds = (await dialog.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(8);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width - 8);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: testInfo.outputPath(`quick-lead-${width}.png`) });
+      await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
+      await expect(dialog).not.toBeVisible();
+      await expect(opener).toBeFocused();
+      expect(captures).toHaveLength(1);
+      expect(captures[0]).toMatchObject({ academy_id: academyId, full_name: 'Front Desk Learner', phone: '+998900000001', interested_course: 'IELTS', preferred_schedule: 'morning', source_key: 'phone' });
+      expect(captures[0].idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
+    });
+  }
+
+  for (const responseStatus of [400, 503]) {
+  test(`Quick lead keeps one immutable pending capture after an uncertain ${responseStatus} response`, async ({ page }) => {
+    await seedSessionCookie(page, 'receptionist-user');
+    await mockAcademyEdge(page, 'receptionist');
+    let release!: () => void;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    const captures: Record<string, unknown>[] = [];
+    await page.route('**/functions/v1/academy', async route => {
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      if (body.action !== 'create_lead') return route.fallback();
+      captures.push(body);
+      if (captures.length === 1) { await blocked; return route.fulfill({ status: responseStatus, contentType: 'application/json', body: JSON.stringify({ error: 'Capture temporarily unavailable' }) }); }
+      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-retry-captured' } }));
+    });
+    await page.goto(`/academy/office/business?academy_id=${academyId}`);
+    await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Quick lead', exact: true });
+    await dialog.getByLabel('Full name', { exact: true }).fill('Retained Front Desk Learner');
+    await dialog.getByLabel('Phone', { exact: true }).fill('+998900000002');
+    await dialog.getByLabel('Target subject').fill('General English');
+    await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
+    await expect.poll(() => captures.length).toBe(1);
+    await dialog.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    await expect(dialog.getByLabel('Full name', { exact: true })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    expect(captures).toHaveLength(1);
+    release();
+    await expect(dialog.getByRole('alert')).toContainText('Capture temporarily unavailable');
+    await expect(dialog.getByLabel('Full name', { exact: true })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
+    await expect(dialog.getByLabel('Full name', { exact: true })).toHaveValue('Retained Front Desk Learner');
+    await dialog.getByRole('button', { name: 'Retry saving', exact: true }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(captures).toHaveLength(2);
+    expect(captures[1]).toEqual(captures[0]);
+  });
+  }
+
+  test('Quick lead rejects whitespace-only required values without locking or sending the draft', async ({ page }) => {
+    await seedSessionCookie(page, 'receptionist-user');
+    const captures: Record<string, unknown>[] = [];
+    await mockAcademyEdge(page, 'receptionist', { respond: async body => {
+      if (body.action !== 'create_lead') return undefined;
+      captures.push(body);
+      return { lead: { ...businessFoundation.leads[0], ...body } };
+    } });
+    await page.goto(`/academy/office/business?academy_id=${academyId}`);
+    await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Quick lead', exact: true });
+    await dialog.getByLabel('Full name', { exact: true }).fill('   ');
+    await dialog.getByLabel('Phone', { exact: true }).fill('+998900000004');
+    await dialog.getByLabel('Target subject').fill('IELTS');
+    await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Enter a name, phone number and target subject.');
+    await expect(dialog.getByLabel('Full name', { exact: true })).toBeFocused();
+    await expect(dialog.getByLabel('Phone', { exact: true })).toBeEnabled();
+    expect(captures).toHaveLength(0);
+  });
+
+  test('Quick lead allows a rejected entry to be corrected with a new capture identity', async ({ page }) => {
+    await seedSessionCookie(page, 'receptionist-user');
+    await mockAcademyEdge(page, 'receptionist');
+    const captures: Record<string, unknown>[] = [];
+    await page.route('**/functions/v1/academy', async route => {
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      if (body.action !== 'create_lead') return route.fallback();
+      captures.push(body);
+      if (captures.length === 1) return route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ error: 'Phone needs correction' }) });
+      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-corrected' } }));
+    });
+    await page.goto(`/academy/office/business?academy_id=${academyId}`);
+    await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Quick lead', exact: true });
+    await dialog.getByLabel('Full name', { exact: true }).fill('Corrected Learner');
+    await dialog.getByLabel('Phone', { exact: true }).fill('invalid');
+    await dialog.getByLabel('Target subject').fill('IELTS');
+    await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Phone needs correction');
+    await expect(dialog.getByLabel('Phone', { exact: true })).toBeEnabled();
+    await dialog.getByLabel('Phone', { exact: true }).fill('+998900000003');
+    await dialog.getByRole('button', { name: 'Save lead', exact: true }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(captures).toHaveLength(2);
+    expect(captures[1].phone).toBe('+998900000003');
+    expect(captures[1].idempotency_key).not.toBe(captures[0].idempotency_key);
+  });
+
   test("owner can run admissions pipeline and branch operations", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     await mockAcademyEdge(page, "owner");
@@ -4407,6 +4530,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       { width: 1024, height: 900 },
       { width: 768, height: 1024 },
       { width: 390, height: 844 },
+      { width: 320, height: 900 },
     ]) {
       const context = await browser.newContext({ viewport });
       const page = await context.newPage();
@@ -4653,6 +4777,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       { width: 768, height: 1024 },
       { width: 640, height: 900 },
       { width: 390, height: 844 },
+      { width: 320, height: 900 },
     ];
 
     for (const lane of lanes) {

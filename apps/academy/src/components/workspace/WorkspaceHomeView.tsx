@@ -104,6 +104,10 @@ export const WorkspaceHomeView = ({
         </div>
       </header>
 
+      <dl className="workspace-pulse" aria-label={translate("Workspace status")}>
+        {pulse.map((item) => <div key={item.label}><dt>{translate(item.label)}</dt><dd>{item.value}</dd></div>)}
+      </dl>
+
       <div className="workspace-home__grid">
         <section className="attention-ledger" aria-labelledby="attention-ledger-title">
           <div className="section-heading">
@@ -174,9 +178,6 @@ export const WorkspaceHomeView = ({
           </section>
         </aside>
       </div>
-      <dl className="workspace-pulse" aria-label={translate("Workspace status")}>
-        {pulse.map((item) => <div key={item.label}><dt>{translate(item.label)}</dt><dd>{item.value}</dd></div>)}
-      </dl>
     </section>
   );
 };
