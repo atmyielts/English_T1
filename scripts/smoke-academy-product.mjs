@@ -184,7 +184,7 @@ const workflowContracts = [
   {
     label: 'Guardian consent, secure linking, parent privacy, and notification evidence workflow',
     content: `${guardianRelationshipsView}\n${guardianPortalView}\n${academyClient}\n${academyEdge}`,
-    tokens: ['Guardians, consent, and parent communication','Issue secure link','A Telegram username alone never grants student access','Privacy boundary','Retry-safe notification outbox','Immutable delivery attempts','guardian_relationships','guardian_dashboard','guardian_claim_link','queue_guardian_notification'],
+    tokens: ['Guardians, consent, and parent communication','Issue secure link','A Telegram username alone never grants student access','Your academy controls which information is shared with you.','Retry-safe notification outbox','Immutable delivery attempts','guardian_relationships','guardian_dashboard','guardian_claim_link','queue_guardian_notification'],
   },
   {
     label: 'Explainable retention, renewal, owner KPI, unified action, search, and import workflow',

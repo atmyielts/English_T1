@@ -89,6 +89,7 @@ import {
 } from './lib/client';
 import { platformUrl, supabase } from './lib/supabase';
 import { UpdatesButton } from './components/UpdatesButton';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { InvitationAcceptView } from './components/InvitationAcceptView';
 import { WorkspaceHomeView } from './components/workspace/WorkspaceHomeView';
 import { StudentHomeView } from './components/workspace/StudentHomeView';
@@ -1543,7 +1544,10 @@ const App = () => {
     const needsOffers = loadView === 'offers' || loadView === 'payments';
     const needsFinance = ['contacts', 'payments'].includes(loadView);
     const needsEntitlements = loadView === 'entitlements';
-    const needsEducationOS = ['today', 'contacts', 'os'].includes(loadView);
+    const usesTeachingDay = loadView === 'today' && officeRouteIntent === 'teacher' && academyTeacherFlowV2Enabled;
+    // Teaching Day loads its own scoped day; EducationOSView loads its own
+    // report. Only the home queue and Contacts consume this parent's copy.
+    const needsEducationOS = ['today', 'contacts'].includes(loadView) && !usesTeachingDay;
     const canLoadContacts = needsContacts && hasOfficeRoutePermission(access, officeRouteIntent, 'viewContacts');
     const canLoadClassrooms = needsClassrooms && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
     const canLoadMemberships = needsMemberships && hasOfficeRoutePermission(access, officeRouteIntent, 'viewClassrooms');
@@ -1739,6 +1743,17 @@ const App = () => {
         isWorkspaceEntry || isAcademyDirectory || isStudentWorkspaceRoute || !!academyClassroomLandingId;
       const shouldAttemptTeacherData =
         !isStudentWorkspaceRoute && !isGuardianWorkspaceRoute && !isInvitationAccept && !isAcademySetup;
+      // Download the requested screen while access resolves. Its data requests
+      // still start only after the normal role and academy checks succeed.
+      if (isTeacherWorkspaceRoute) {
+        if (officeRouteIntent === 'teacher' && (officeView ?? 'today') === 'today' && academyTeacherFlowV2Enabled) {
+          void loadTeacherDayView().catch(() => undefined);
+        } else {
+          preloadOfficeView(officeView ?? 'today');
+        }
+      } else if (isGuardianWorkspaceRoute) {
+        void loadGuardianPortalView().catch(() => undefined);
+      }
       // Each endpoint authenticates independently. Start these together rather
       // than waiting for the full profile before asking for workspace access.
       const [meResult, academiesResult, studentResult] = await Promise.allSettled([
@@ -1864,6 +1879,8 @@ const App = () => {
     isWorkspaceEntry,
     loadAcademyData,
     loadStudentData,
+    officeRouteIntent,
+    officeView,
     requestedAcademyId,
     navigate,
     location.search,
@@ -3318,7 +3335,6 @@ const App = () => {
             <p>{isWorkspaceEntry ? 'Finding your role and opening the right workspace...' : 'Preparing Academy...'}</p>
           </div>
         </div>
-        <UpdatesButton />
       </>
     );
   }
@@ -3360,7 +3376,7 @@ const App = () => {
   }
 
   if (state === 'ready' && isGuardianWorkspaceRoute) {
-    return <><LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}><GuardianPortalView onSignOut={signOut} /></LazyRouteBoundary><UpdatesButton /></>;
+    return <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}><GuardianPortalView onSignOut={signOut} /></LazyRouteBoundary>;
   }
 
   if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasOfficeWorkspaceAccess || allowedOfficeViews.length === 0)) {
@@ -4732,6 +4748,7 @@ const App = () => {
                 </p>
               </div>
               <div className="topbar-actions">
+                <LanguageSwitcher inline />
                 <UpdatesButton variant="inline" />
                 <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                   <RefreshCw size={16} />
@@ -5099,6 +5116,7 @@ const App = () => {
                 </option>
               ))}
             </select>
+            <LanguageSwitcher inline />
             <UpdatesButton variant="inline" />
             <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
               <RefreshCw size={16} />

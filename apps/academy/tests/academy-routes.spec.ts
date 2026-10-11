@@ -2143,6 +2143,28 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("table").getByText("Awaiting Click")).toBeVisible();
   });
 
+  test("teaching day opens without waiting for unrelated operations data", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    const actionLog: string[] = [];
+    const delayActions = { education_os: 8_000, teacher_day: 200, summary: 200 };
+    await mockAcademyEdge(page, "teacher", {
+      actionLog,
+      delayActions,
+    });
+    const started = Date.now();
+    await page.goto(`/academy/teacher?academy_id=${academyId}`);
+    await expect(page.getByRole("button", { name: /^Start lesson$/i })).toBeVisible({ timeout: 4_000 });
+    console.log('ACADEMY_TEACHING_STARTUP', JSON.stringify({ usableMs: Date.now() - started, actionLog }));
+    expect(actionLog.filter((action) => action === 'teacher_day')).toHaveLength(1);
+    expect(actionLog).not.toContain('education_os');
+    expect(actionLog.filter((action) => action === 'student-feed')).toHaveLength(1);
+    delayActions.education_os = 0;
+    await page.getByRole("button", { name: /^Teaching tools$/i }).click();
+    await page.getByRole("button", { name: /^Curriculum & grading$/i }).click();
+    await expect(page.getByRole("heading", { name: /^Curriculum & grading$/i }).first()).toBeVisible();
+    await expect.poll(() => actionLog.includes('education_os')).toBe(true);
+  });
+
   test("teacher route opens an action-first teaching day without finance controls", async ({ page }) => {
     await seedSessionCookie(page, "teacher-user");
     await mockAcademyEdge(page, "teacher");
@@ -2923,7 +2945,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Students and contacts" })).toBeVisible();
   });
 
-  test("mobile workspace keeps updates in flow and exposes navigation rail controls", async ({ page }) => {
+  test("mobile workspace keeps tasks visible and sections searchable with keyboard recovery", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedSessionCookie(page, "office-user");
     await mockAcademyEdge(page, "manager");
@@ -2931,9 +2953,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.goto(`/academy/office?academy_id=${academyId}`);
     await expect(page.locator(".ts-topbar").getByRole("button", { name: "Open updates center" })).toBeVisible();
     await expect(page.locator(".updates-fab")).toHaveCount(0);
-    const nextSections = page.getByRole("button", {
-      name: "Show more workspace sections",
-    });
+    const nextSections = page.getByRole("button", { name: "Sections", exact: true });
     await expect(nextSections).toBeVisible();
     await expect(nextSections).toBeEnabled();
     const nextSectionsBox = await nextSections.boundingBox();
@@ -2942,11 +2962,25 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     const navigation = page.getByRole("navigation", {
       name: "Academy LMS navigation",
     });
-    const before = await navigation.evaluate((element) => element.scrollLeft);
+    await expect(navigation).toBeHidden();
+    const openTask = page.locator('.workspace-shortcuts__list button').first();
+    await expect(openTask).toBeInViewport();
     await nextSections.click();
-    await page.waitForTimeout(350);
-    const after = await navigation.evaluate((element) => element.scrollLeft);
-    expect(after).toBeGreaterThan(before);
+    await expect(navigation).toBeVisible();
+    const search = page.getByRole('searchbox', { name: 'Find a section' });
+    await search.fill('Contacts');
+    await expect(navigation.getByRole('button', { name: 'Contacts', exact: true })).toBeVisible();
+    await search.fill('this section does not exist');
+    await expect(navigation.getByText('No matching sections. Try another name.')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(nextSections).toBeFocused();
+    await expect(navigation).toBeHidden();
+    await nextSections.click();
+    await expect(search).toHaveValue('');
+    await search.fill('Contacts');
+    await navigation.getByRole('button', { name: 'Contacts', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Students and contacts' })).toBeVisible();
+    await expect(navigation).toBeHidden();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
@@ -3054,8 +3088,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Ali Karimov" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Grades & homework" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Payments" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Privacy boundary" })).toBeVisible();
-    await expect(page.getByText(/Provider reconciliation, payroll, internal staff notes/i)).toBeVisible();
+    await expect(page.getByText('Your academy controls which information is shared with you.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cash & payroll' })).toHaveCount(0);
     await page.getByRole("button", { name: "Attendance" }).click();
     await expect(page.getByRole("table").getByText("present")).toBeVisible();
   });
@@ -3588,6 +3622,11 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         await page.goto(`${lane.path}?academy_id=${academyId}`);
         await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
         const navigation = page.locator(lane.navigation);
+        const sections = page.locator('.workspace-menu-toggle');
+        if (lane.persona !== 'guardian' && viewport.width <= 980) {
+          await expect(navigation).toBeHidden();
+          await sections.click();
+        }
         await expect(navigation).toBeVisible();
         const firstNavigationButton = navigation.getByRole("button").first();
         await firstNavigationButton.focus();
@@ -3623,6 +3662,11 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         expect(focusEvidence.contrast, `${lane.name} focus contrast at ${viewport.width}px`).toBeGreaterThanOrEqual(3);
         await page.keyboard.press("Tab");
         await expect(page.locator(":focus")).not.toHaveCount(0);
+        if (lane.persona !== 'guardian' && viewport.width <= 980) {
+          await page.keyboard.press('Escape');
+          await expect(navigation).toBeHidden();
+          await expect(sections).toBeFocused();
+        }
         const primaryAction = lane.persona === "student" ? page.locator(".student-continue") : lane.persona === "guardian" ? page.locator(".business-tabs button").first() : ["teacher", "assistant"].includes(lane.persona) ? page.locator(".teacher-session-card").first() : page.locator(".workspace-shortcuts__list button").first();
         await expect(primaryAction, `${lane.name} reachable action at ${viewport.width}px`).toBeVisible();
         const primaryBox = await primaryAction.boundingBox();
@@ -3747,6 +3791,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
           await expect(page.getByRole("button", { name: localeCase.refresh, exact: true }).first()).toBeVisible();
           await expect(page.getByRole("button", { name: "Refresh", exact: true })).toHaveCount(0);
           const navigation = page.locator(roleCase.navigation);
+          const sections = page.locator('.workspace-menu-toggle');
+          if (roleCase.persona !== 'guardian' && viewport.width <= 980) await sections.click();
           for (const toggle of await navigation.locator(".workspace-nav__group-toggle").all()) {
             if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
           }
@@ -3759,7 +3805,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
           if (roleCase.persona === "teacher") {
             await expect(page.getByText("IELTS Evening A", { exact: true }).first()).toBeVisible();
           }
-          const switcher = page.locator(".academy-language-switcher");
+          const switcher = page.locator(".academy-language-switcher:visible");
+          await expect(switcher).toHaveCount(1);
           const switcherBox = await switcher.boundingBox();
           expect(switcherBox?.height ?? 0, `${roleCase.persona} ${localeCase.code} language target`).toBeGreaterThanOrEqual(44);
           expect(switcherBox?.x ?? -1).toBeGreaterThanOrEqual(0);

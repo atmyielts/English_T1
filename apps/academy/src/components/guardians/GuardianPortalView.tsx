@@ -1,4 +1,6 @@
 import { formatLocaleDateTime, getLocaleTag, translate } from '../../i18n';
+import { LanguageSwitcher } from '../LanguageSwitcher';
+import { UpdatesButton } from '../UpdatesButton';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BellRing,
@@ -128,6 +130,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
         <div className="market-wrap">
           <div className="market-nav">
             <span className="market-badge">{translate('Secure parent access')}</span>
+            <UpdatesButton variant="inline" />
             <button className="ghost-btn" onClick={() => void onSignOut()}>
               <LogOut size={16} /> {translate('Sign out')}
             </button>
@@ -197,10 +200,12 @@ export function GuardianPortalView({ onSignOut }: Props) {
       </div>
     );
   return (
-    <div className="market-page">
+    <div className="market-page parent-workspace">
       <div className="market-wrap">
         <div className="market-nav">
           <span className="market-badge">{translate('Parent Portal')}</span>
+          <LanguageSwitcher inline />
+          <UpdatesButton variant="inline" />
           <button className="ghost-btn" onClick={() => void load()} disabled={busy}>
             <RefreshCw size={16} /> {translate('Refresh')}
           </button>
@@ -217,15 +222,17 @@ export function GuardianPortalView({ onSignOut }: Props) {
             <p>
               {label(child?.relationship_type)} ·{' '}
               {translate(child?.is_primary_contact ? 'Primary contact' : 'Authorized contact')}{' '}
-              {translate('· every section below follows the academy’s visibility grant.')}
             </p>
-            <select className="input" value={childIndex} onChange={(e) => setChildIndex(Number(e.target.value))}>
+            <label className="parent-child-switcher">
+            <span>{translate('Choose your child')}</span>
+            <select className="input" value={childIndex} onChange={(e) => { setChildIndex(Number(e.target.value)); setTab('overview'); }}>
               {data.children.map((item, index) => (
                 <option key={item.relationship_id} value={index}>
                   {item.student.name}
                 </option>
               ))}
             </select>
+            </label>
           </div>
           <div className="academy-command-card">
             <div className="academy-command-grid">
@@ -314,15 +321,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 {translate('progress reports.')}
               </p>
             </article>
-            <article className="market-card">
-              <ShieldCheck size={20} />
-              <h3>{translate('Privacy boundary')}</h3>
-              <p>
-                {translate(
-                  'Provider reconciliation, payroll, internal staff notes, answer keys, and ungranted child data are never returned to this portal.',
-                )}
-              </p>
-            </article>
+            <p className="parent-sharing-note"><ShieldCheck size={16} aria-hidden="true" />{translate('Your academy controls which information is shared with you.')}</p>
           </section>
         ) : null}
         {tab === 'attendance' ? (
