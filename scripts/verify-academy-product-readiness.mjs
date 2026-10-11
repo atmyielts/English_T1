@@ -574,7 +574,7 @@ addCheck(
 for (const signal of ['Guardians, consent, and parent communication','Create pending relationship','Issue secure link','Revoke','Messages & preferences','Retry-safe notification outbox','Immutable delivery attempts']) {
   addCheck(`Business OS Phase E relationship UI signal: ${signal}`, guardianRelationshipsView.includes(signal));
 }
-for (const signal of ['Parent Portal','Account linking required','A Telegram username alone never grants student access','Grades & homework','Payments and debt','Privacy boundary','Notification preferences']) {
+for (const signal of ['Parent Portal','Account linking required','A Telegram username alone never grants student access','Grades & homework','Payments and debt','Your academy controls which information is shared with you.','Notification preferences']) {
   addCheck(`Business OS Phase E parent portal signal: ${signal}`, guardianPortalView.includes(signal));
 }
 addCheck(
