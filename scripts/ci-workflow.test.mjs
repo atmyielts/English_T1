@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { deploymentPlan, needsPagesDeployment } from './plan-pages-deployment.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const source = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n');
@@ -15,6 +16,41 @@ const job = name => {
   const next = rest.search(/^  [a-z][a-z-]*:\n/m);
   return next < 0 ? rest : rest.slice(0, next);
 };
+
+test('superseded PR checks cancel without interrupting main validation', () => {
+  assert.match(source, /group: ci-\$\{\{ github\.event\.pull_request\.number \|\| github\.sha \}\}/);
+  assert.match(source, /cancel-in-progress: \$\{\{ github\.event_name == 'pull_request' \}\}/);
+});
+
+test('Pages skips only documented non-frontend changes and keeps shared imports', () => {
+  assert.equal(needsPagesDeployment(['docs/release.md', 'supabase/migrations/123.sql', 'release/manifest.json']), false);
+  for (const file of ['apps/platform/src/App.tsx', 'packages/shared/index.ts', 'package-lock.json',
+    'supabase/functions/_shared/guide.ts', 'supabase/functions/writing-tutor/index.ts',
+    'scripts/pages-asset-policy.mjs', '.github/workflows/deploy-pages.yml', 'unknown-path']) {
+    assert.equal(needsPagesDeployment(['docs/release.md', file]), true, file);
+  }
+  assert.equal(needsPagesDeployment([]), true);
+  assert.match(pages, /needs: plan\s+if: \$\{\{ needs\.plan\.outputs\.deploy == 'true' \}\}/);
+  assert.match(pages, /fetch-depth: 0/);
+  assert.match(pages, /run: node scripts\/plan-pages-deployment\.mjs/);
+  assert.match(pages, /if: \$\{\{ github\.event_name == 'workflow_dispatch' && needs\.deploy\.result == 'success' \}\}/);
+});
+
+test('manual, new branch and unreadable history publish; push compares the entire change', () => {
+  const env = { DEPLOY_EVENT: 'push', DEPLOY_BEFORE: 'a'.repeat(40), DEPLOY_HEAD: 'b'.repeat(40) };
+  const mustNotRead = () => { throw new Error('unexpected comparison'); };
+  assert.equal(deploymentPlan({ ...env, DEPLOY_EVENT: 'workflow_dispatch' }, mustNotRead).deploy, true);
+  assert.equal(deploymentPlan({ ...env, DEPLOY_BEFORE: '0'.repeat(40) }, mustNotRead).deploy, true);
+  assert.equal(deploymentPlan({ ...env, DEPLOY_BEFORE: 'invalid' }, mustNotRead).deploy, true);
+  assert.equal(deploymentPlan(env, () => { throw new Error('missing history'); }).deploy, true);
+  const read = (command, args) => {
+    assert.equal(command, 'git');
+    assert.deepEqual(args, ['diff', '--name-only', '--no-renames', '-z', env.DEPLOY_BEFORE, env.DEPLOY_HEAD, '--']);
+    return 'docs/a file.md\0supabase/migrations/1.sql\0';
+  };
+  assert.equal(deploymentPlan(env, read).deploy, false);
+  assert.equal(deploymentPlan(env, () => 'apps/platform/deleted.tsx\0docs/moved.tsx\0').deploy, true);
+});
 
 test('parallel CI builds each deployed frontend exactly once', () => {
   const expected = [...pages.matchAll(/^\s+workspace: (apps\/\S+)\s*$/gm)].map(match => match[1]).sort();
