@@ -3860,6 +3860,189 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.evaluate(path => { history.pushState({}, '', path); window.dispatchEvent(new PopStateEvent('popstate')); }, learnerClassroomPath(id));
   };
 
+  test('learner course starts within the first phone viewport and avoids unrelated reads', async ({ page }) => {
+    const actions: string[] = [];
+    await mockLearnerCourses(page, async body => { actions.push(String(body.action)); return undefined; });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(learnerClassroomPath(classroomId));
+    const heading = page.getByRole('heading', { name: `${classroom.name} course`, exact: true });
+    await expect(heading).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    expect((await heading.boundingBox())!.y).toBeLessThan(500);
+    expect(actions.filter(action => ['student_assignments', 'student_attendance', 'student_billing'].includes(action))).toEqual([]);
+    expect(actions.filter(action => action === 'classroom-chat')).toHaveLength(1);
+  });
+
+  test('learner course remains healthy when the unused billing service is unavailable', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.route('**/functions/v1/academy', route => route.request().postDataJSON()?.action === 'student_billing'
+      ? route.fulfill({ status: 503, json: { error: 'Billing unavailable' } }) : route.fallback());
+    await page.goto(learnerClassroomPath(classroomId));
+    await expect(page.getByRole('heading', { name: `${classroom.name} course`, exact: true })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('.error-banner')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Start quiz', exact: true })).toBeEnabled();
+  });
+
+  test('learner quiz opens a focused phone task and returns to the course with its draft', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    const heading = page.locator('.quiz-attempt-panel').getByRole('heading', { name: 'Original learner quiz', exact: true });
+    await expect(heading).toBeFocused();
+    await expect.poll(async () => (await heading.boundingBox())?.y).toBeLessThan(180);
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Retain while returning to course.');
+    await page.getByRole('button', { name: 'Back to course', exact: true }).click();
+    await expect(page.locator('.quiz-attempt-panel')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Retain while returning to course.');
+  });
+
+  test('learner sections load required data once and reuse successful classroom reads', async ({ page }) => {
+    const actions: string[] = [];
+    await mockLearnerCourses(page, async body => { actions.push(String(body.action)); return undefined; });
+    await page.goto(learnerClassroomPath(classroomId));
+    await expect(page.getByRole('heading', { name: `${classroom.name} course`, exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Account', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Billing statement', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Progress', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Attendance', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Course', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: `${classroom.name} course`, exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Account', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Billing statement', exact: true })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    for (const action of ['classroom-chat', 'student_assignments', 'student_attendance', 'student_billing']) expect(actions.filter(value => value === action)).toHaveLength(1);
+  });
+
+  test('learner overview does not report caught up before classroom work has loaded', async ({ page }) => {
+    let release!: () => void;
+    let requested = false;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    await mockLearnerCourses(page, async body => {
+      if (body.action !== 'student_assignments') return undefined;
+      requested = true; await blocked;
+      return { academy_id: academyId, contact_id: studentContactId, assignments: [{ ...assignment, submission: null }] };
+    });
+    try {
+      await page.goto(learnerClassroomPath(classroomId).replace('section=course', 'section=overview'));
+      await expect.poll(() => requested).toBe(true);
+      await expect(page.getByText('You are caught up', { exact: true })).toHaveCount(0);
+      release();
+      await expect(page.getByRole('heading', { name: 'Next best actions', exact: true })).toBeVisible();
+      await expect(page.locator('.student-focus-card').filter({ hasText: assignment.title })).toBeVisible();
+    } finally { release(); }
+  });
+
+  test('learner late account failure stays out of Course and can be retried in Account', async ({ page }) => {
+    let release!: () => void;
+    const blocked = new Promise<void>(resolve => { release = resolve; });
+    let failed = true;
+    let requested = false;
+    await mockLearnerCourses(page);
+    await page.route('**/functions/v1/academy', async route => {
+      if (route.request().postDataJSON()?.action !== 'student_billing' || !failed) return route.fallback();
+      requested = true; await blocked;
+      return route.fulfill({ status: 503, json: { error: 'Account temporarily unavailable' } });
+    });
+    try {
+      await page.goto(learnerClassroomPath(classroomId));
+      await expect(page.getByRole('heading', { name: `${classroom.name} course`, exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Account', exact: true }).last().click();
+      await expect.poll(() => requested).toBe(true);
+      await page.getByRole('button', { name: 'Course', exact: true }).last().click();
+      const response = page.waitForResponse(response => response.request().postDataJSON()?.action === 'student_billing');
+      release(); await response;
+      await page.waitForLoadState('networkidle');
+      await expect(page.locator('.error-banner')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Account', exact: true }).last().click();
+      await expect(page.getByRole('alert')).toContainText('Account temporarily unavailable');
+      failed = false;
+      await page.getByRole('button', { name: 'Retry', exact: true }).click();
+      await expect(page.getByRole('heading', { name: 'Billing statement', exact: true })).toBeVisible();
+      await expect(page.getByRole('alert')).toHaveCount(0);
+    } finally { release(); }
+  });
+
+  test('learner parent Refresh invalidates successful account reads', async ({ page }) => {
+    let reads = 0;
+    await mockLearnerCourses(page, async body => {
+      if (body.action !== 'student_billing') return undefined;
+      reads += 1;
+      return { items: [], accounts: [] };
+    });
+    await page.goto(learnerClassroomPath(classroomId).replace('section=course', 'section=account'));
+    await expect(page.getByRole('heading', { name: 'Billing statement', exact: true })).toBeVisible();
+    expect(reads).toBe(1);
+    await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expect.poll(() => reads).toBe(2);
+    await expect(page.getByRole('heading', { name: 'Billing statement', exact: true })).toBeVisible();
+  });
+
+  for (const width of [320, 768, 1024, 1440]) {
+    test(`learner course and quiz remain visible and keyboard-operable at ${width}px`, async ({ page }, testInfo) => {
+      await mockLearnerCourses(page);
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(learnerClassroomPath(classroomId));
+      await expect(page.getByRole('heading', { name: `${classroom.name} course`, exact: true })).toBeInViewport();
+      await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+      const dialog = page.getByRole('dialog', { name: 'Original learner quiz', exact: true });
+      await expect(dialog.getByRole('heading', { name: 'Original learner quiz', exact: true })).toBeFocused();
+      const bounds = (await dialog.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(8);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width - 8);
+      expect(bounds.y).toBeGreaterThanOrEqual(8);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(892);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.keyboard.press('Tab');
+      await expect(dialog.getByRole('button', { name: 'Back to course', exact: true })).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(dialog.getByRole('textbox')).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(dialog.getByRole('button', { name: 'Submit quiz', exact: true })).toBeFocused();
+      await page.keyboard.press('Shift+Tab');
+      await expect(dialog.getByRole('textbox')).toBeFocused();
+      await page.getByPlaceholder('Write your response', { exact: true }).fill('A visible, accessible quiz answer.');
+      await page.screenshot({ path: testInfo.outputPath(`learner-experience-${width}-quiz.png`) });
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('button', { name: 'Start quiz', exact: true })).toBeFocused();
+    });
+  }
+
+  test('learner quiz escape restores keyboard access without losing its draft', async ({ page }) => {
+    await mockLearnerCourses(page);
+    await page.goto(learnerClassroomPath(classroomId));
+    const start = page.getByRole('button', { name: 'Start quiz', exact: true });
+    await start.click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Recover after Escape.');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(start).toBeFocused();
+    await start.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Original learner quiz', exact: true })).toBeVisible();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Recover after Escape.');
+  });
+
+  test('learner quiz storage failure permits returning to Course and keeps the current answer in memory', async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = Storage.prototype.setItem;
+      Storage.prototype.setItem = function(key, value) {
+        if (key.startsWith('schood.academy.quiz-draft.v1:')) throw new DOMException('Storage unavailable', 'QuotaExceededError');
+        return original.call(this, key, value);
+      };
+    });
+    await mockLearnerCourses(page);
+    await page.goto(learnerClassroomPath(classroomId));
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await page.getByPlaceholder('Write your response', { exact: true }).fill('Keep in memory while storage fails.');
+    await expect(page.getByRole('dialog').getByRole('alert')).toBeVisible();
+    await page.getByRole('button', { name: 'Back to course', exact: true }).click();
+    await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+    await expect(page.getByPlaceholder('Write your response', { exact: true })).toHaveValue('Keep in memory while storage fails.');
+    await expect(page.getByRole('dialog').getByRole('alert')).toBeVisible();
+  });
+
   test('learner classroom history discards a delayed previous curriculum read', async ({ page }) => {
     let release!: () => void;
     const blocked = new Promise<void>(resolve => { release = resolve; });
@@ -4002,6 +4185,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
     await page.getByPlaceholder('Write your response', { exact: true }).fill('Erase on sign-out.');
     expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(1);
+    await page.getByRole('button', { name: 'Back to course', exact: true }).click();
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
     await expect.poll(() => page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('schood.academy.quiz-draft.v1:')).length)).toBe(0);
   });
