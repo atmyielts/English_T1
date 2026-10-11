@@ -4,6 +4,7 @@ import type { TeacherStudioConversation, TeacherStudioMessage } from '../../lib/
 
 type InboxViewProps = {
   busy: boolean;
+  loading: boolean;
   conversations: TeacherStudioConversation[];
   selectedConversationId: string;
   messages: TeacherStudioMessage[];
@@ -16,6 +17,7 @@ type InboxViewProps = {
 
 export const InboxView = ({
   busy,
+  loading,
   conversations,
   selectedConversationId,
   messages,
@@ -41,6 +43,7 @@ export const InboxView = ({
                 type="button"
                 className={`chat-list-item ${selectedConversationId === item.id ? 'is-active' : ''}`}
                 aria-pressed={selectedConversationId === item.id}
+                disabled={busy}
                 onClick={() => void onSelectConversation(item.id)}
               >
                 <strong>{contactName}</strong>
@@ -55,7 +58,7 @@ export const InboxView = ({
 
       <div className="panel">
         <h3>{translate("Messages")}</h3>
-        <div className="chat-thread">
+        <div className="chat-thread" aria-busy={loading}>
           {messages.map((message) => (
             <div key={message.id} className={`chat-row chat-row--${message.sender_type}`}>
               <div className="small muted">{message.sender_type}</div>
@@ -63,7 +66,7 @@ export const InboxView = ({
               <div className="small muted">{formatDate(message.created_at)}</div>
             </div>
           ))}
-          {messages.length === 0 ? <div className="table-empty-state"><strong>{selectedConversationId ? 'No messages in this conversation' : 'Select a conversation'}</strong><span>{selectedConversationId ? 'Send the first message below.' : 'Choose a contact from the list to read or reply.'}</span></div> : null}
+          {loading ? <div role="status" className="table-empty-state">{translate('Updating {section}', { section: translate('Messages') })}</div> : messages.length === 0 ? <div className="table-empty-state"><strong>{selectedConversationId ? 'No messages in this conversation' : 'Select a conversation'}</strong><span>{selectedConversationId ? 'Send the first message below.' : 'Choose a contact from the list to read or reply.'}</span></div> : null}
         </div>
 
         <form className="chat-compose" onSubmit={onSendMessage}>
@@ -72,10 +75,10 @@ export const InboxView = ({
               placeholder={translate("Write a message…")}
               value={messageDraft}
               onChange={(e) => setMessageDraft(e.target.value)}
-              disabled={!selectedConversationId || busy}
+              disabled={!selectedConversationId || busy || loading}
               required
             /></label>
-          <button className="primary-btn" type="submit" disabled={!selectedConversationId || busy || !messageDraft.trim()}>
+          <button className="primary-btn" type="submit" disabled={!selectedConversationId || busy || loading || !messageDraft.trim()}>
             {translate("Send message")}{' '}</button>
         </form>
       </div>

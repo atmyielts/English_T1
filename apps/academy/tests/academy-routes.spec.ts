@@ -2131,6 +2131,145 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test("inbox switches clear private drafts and discard obsolete thread responses", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    const threadIds = ["thread-first", "thread-middle", "thread-final"];
+    let releaseMiddle!: () => void;
+    const blocked = new Promise<void>((resolve) => { releaseMiddle = resolve; });
+    let middleRequested = false;
+    await mockAcademyEdge(page, "owner", {
+      actionOverrides: { conversations: { conversations: threadIds.map((id, index) => ({ id, academy_id: academyId, contact_id: `${id}-contact`, contact: { id: `${id}-contact`, first_name: ["First", "Middle", "Final"][index], last_name: "Contact", email: null, status: "active" }, last_message: null, created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z" })) } },
+      respond: async (body) => {
+        if (body.action !== "conversation-messages") return undefined;
+        const thread = String(body.conversation_id);
+        if (thread === threadIds[1]) { middleRequested = true; await blocked; }
+        return { messages: [{ id: `${thread}-message`, academy_id: academyId, conversation_id: thread, contact_id: null, sender_type: "contact", message_type: "text", content: `${thread} private message`, metadata: {}, created_at: "2026-01-01T00:00:00Z" }] };
+      },
+    });
+    await page.goto(`/academy/admin/inbox?academy_id=${academyId}`);
+    await expect(page.getByText("thread-first private message", { exact: true })).toBeVisible();
+    await page.getByRole("textbox", { name: "Message", exact: true }).fill("Private draft for the first contact");
+    await page.getByRole("button", { name: /^Middle Contact/ }).click();
+    await expect.poll(() => middleRequested).toBe(true);
+    await expect(page.getByText("thread-first private message", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("textbox", { name: "Message", exact: true })).toHaveValue("");
+    await page.getByRole("button", { name: /^Final Contact/ }).click();
+    await expect(page.getByText("thread-final private message", { exact: true })).toBeVisible();
+    const lateResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "conversation-messages" && response.request().postDataJSON()?.conversation_id === threadIds[1]);
+    releaseMiddle();
+    await lateResponse;
+    await expect(page.getByText("thread-final private message", { exact: true })).toBeVisible();
+    await expect(page.getByText("thread-middle private message", { exact: true })).toHaveCount(0);
+  });
+
+  test("a late classroom refresh cannot replace the next classroom", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    const nextClassroom = { ...classroom, id: "classroom-next", name: "Next Classroom" };
+    let releaseRefresh!: () => void;
+    const blocked = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+    let firstReads = 0;
+    let refreshRequested = false;
+    await mockAcademyEdge(page, "owner", {
+      actionOverrides: { classrooms: { classrooms: [classroom, nextClassroom] }, "student-dashboard": { ...studentDashboard, classrooms: [classroom, nextClassroom] } },
+      respond: async (body) => {
+        if (body.action !== "classroom-chat") return undefined;
+        const selected = body.classroom_id === nextClassroom.id ? nextClassroom : classroom;
+        if (selected.id === classroomId && ++firstReads > 1) { refreshRequested = true; await blocked; }
+        return { academy_id: academyId, classroom: selected, viewer: { type: "teacher", role: "owner", can_manage_resources: true, contact_id: null, display_name: "Teacher" }, members: [], resources: [], messages: [{ id: `${selected.id}-message`, content: `${selected.name} private discussion`, sender_type: "teacher", created_at: "2026-01-01T00:00:00Z" }], announcements: [], progress: { viewer_completed_resource_ids: [], resource_completed_counts: {}, total_members: 0 } };
+      },
+    });
+    await page.goto(`/academy/classrooms/${classroomId}?academy_id=${academyId}`);
+    await expect(page.getByRole("heading", { level: 1, name: classroom.name, exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Refresh classroom", exact: true }).click();
+    await expect.poll(() => refreshRequested).toBe(true);
+    await page.getByRole("button", { name: "Classroom directory", exact: true }).click();
+    await page.locator("article").filter({ has: page.getByRole("heading", { name: nextClassroom.name, exact: true }) }).getByRole("button", { name: "Open landing", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1, name: nextClassroom.name, exact: true })).toBeVisible();
+    const lateResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "classroom-chat" && response.request().postDataJSON()?.classroom_id === classroomId);
+    releaseRefresh();
+    await lateResponse;
+    await expect(page.getByRole("heading", { level: 1, name: nextClassroom.name, exact: true })).toBeVisible();
+    await expect(page.getByText(`${classroom.name} private discussion`, { exact: true })).toHaveCount(0);
+  });
+
+  test("a pending inbox send locks its recipient and preserves the draft on failure", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    const threadIds = ["thread-first", "thread-next"];
+    let releaseSend!: () => void;
+    const blocked = new Promise<void>((resolve) => { releaseSend = resolve; });
+    let sendRequested = false;
+    await mockAcademyEdge(page, "owner", {
+      failActions: ["send_message"],
+      actionOverrides: { conversations: { conversations: threadIds.map((id, index) => ({ id, academy_id: academyId, contact_id: `${id}-contact`, contact: { id: `${id}-contact`, first_name: index === 0 ? "First" : "Next", last_name: "Contact", email: null, status: "active" }, last_message: null, created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z" })) } },
+      respond: async (body) => {
+        if (body.action === "conversation-messages") return { messages: [] };
+        if (body.action === "send_message") { sendRequested = true; await blocked; }
+        return undefined;
+      },
+    });
+    await page.goto(`/academy/admin/inbox?academy_id=${academyId}`);
+    const draft = page.getByRole("textbox", { name: "Message", exact: true });
+    await expect(draft).toBeEnabled();
+    await draft.fill("Keep this private draft after a failed send");
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
+    await expect.poll(() => sendRequested).toBe(true);
+    await expect(page.getByRole("button", { name: /^Next Contact/ })).toBeDisabled();
+    await expect(draft).toBeDisabled();
+    releaseSend();
+    await expect(page.locator('.error-banner')).toContainText("Mock send_message failure");
+    await expect(draft).toHaveValue("Keep this private draft after a failed send");
+    await expect(page.getByRole("button", { name: "Send message", exact: true })).toBeEnabled();
+    await page.getByRole("button", { name: /^Next Contact/ }).click();
+    await expect(draft).toHaveValue("");
+  });
+
+  test("an old classroom send cannot erase a draft after leaving and returning", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    let releaseSend!: () => void;
+    const blocked = new Promise<void>((resolve) => { releaseSend = resolve; });
+    const sent: Record<string, unknown>[] = [];
+    await mockAcademyEdge(page, "owner", {
+      respond: async (body) => {
+        if (body.action !== "classroom-chat-send") return undefined;
+        sent.push(body);
+        await blocked;
+        return { academy_id: academyId, classroom_id: classroomId, delivered: 1 };
+      },
+    });
+    await page.goto(`/academy/classrooms/${classroomId}?academy_id=${academyId}`);
+    const draft = page.getByPlaceholder("Write your question, insight, or answer...");
+    await expect(draft).toBeEnabled();
+    await draft.fill("Original discussion message");
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    await expect.poll(() => sent.length).toBe(1);
+    await page.getByRole("button", { name: "Classroom directory", exact: true }).click();
+    await page.locator("article").filter({ has: page.getByRole("heading", { name: classroom.name, exact: true }) }).getByRole("button", { name: "Open landing", exact: true }).click();
+    await expect(draft).toBeEnabled();
+    await draft.fill("New draft in the reopened classroom");
+    const lateResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "classroom-chat-send");
+    releaseSend();
+    await lateResponse;
+    await expect(draft).toHaveValue("New draft in the reopened classroom");
+    await expect(page.getByRole("button", { name: "Send", exact: true })).toBeEnabled();
+    await expect(page.getByText("Message sent to classroom discussion.", { exact: true })).toHaveCount(0);
+    expect(sent[0].classroom_id).toBe(classroomId);
+    expect(sent[0].content).toBe("Original discussion message");
+    expect(sent).toHaveLength(1);
+  });
+
+  test("a failed classroom opening shows the error and allows a safe refresh", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    await mockAcademyEdge(page, "owner", { failActionAttempts: { "classroom-chat": 1 } });
+    await page.goto(`/academy/classrooms/${classroomId}?academy_id=${academyId}`);
+    await expect(page.getByRole("alert")).toContainText("Mock classroom-chat failure");
+    const draft = page.getByPlaceholder("Write your question, insight, or answer...");
+    await expect(draft).toBeDisabled();
+    await page.getByRole("button", { name: "Refresh classroom", exact: true }).click();
+    await expect(page.getByText("Essay checklist", { exact: true }).first()).toBeVisible();
+    await expect(draft).toBeEnabled();
+    await expect(page.getByRole("alert")).toHaveCount(0);
+  });
+
   test("owner can open the administrator route and see finance controls", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     await mockAcademyEdge(page, "owner");
