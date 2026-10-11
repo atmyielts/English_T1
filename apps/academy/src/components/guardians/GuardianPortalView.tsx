@@ -1,7 +1,7 @@
 import { formatLocaleDateTime, getLocaleTag, translate } from '../../i18n';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { UpdatesButton } from '../UpdatesButton';
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BellRing,
   BookOpenCheck,
@@ -34,8 +34,11 @@ const money = (value: unknown, currency = 'UZS') =>
 export function GuardianPortalView({ onSignOut }: Props) {
   const [data, setData] = useState<AcademyGuardianDashboard | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
-  const [childIndex, setChildIndex] = useState(0);
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState('');
   const [busy, setBusy] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const dashboardRequest = useRef(0);
+  const requestsRequest = useRef(0);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const params = new URLSearchParams(window.location.search);
@@ -46,7 +49,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
     telegram_username: '',
   });
   const [message, setMessage] = useState('');
-  const [requests, setRequests] = useState<AcademyServiceRequest[]>([]);
+  const [requestResponse, setRequestResponse] = useState<{ academyId: string; requests: AcademyServiceRequest[] } | null>(null);
   const [requestForm, setRequestForm] = useState({
     request_type: 'support',
     subject: '',
@@ -72,19 +75,32 @@ export function GuardianPortalView({ onSignOut }: Props) {
     allow_critical_override: true,
   });
   const load = useCallback(async () => {
+    const request = ++dashboardRequest.current;
+    setDashboardLoading(true);
     setError('');
     try {
-      setData(await teacherStudioGuardianDashboard());
+      const response = await teacherStudioGuardianDashboard();
+      if (request !== dashboardRequest.current) return;
+      setData(response);
     } catch (next) {
-      setError(next instanceof Error ? next.message : 'Unable to load parent portal.');
+      if (request === dashboardRequest.current) {
+        setData(null);
+        setError(next instanceof Error ? next.message : 'Unable to load parent portal.');
+      }
+    } finally {
+      if (request === dashboardRequest.current) setDashboardLoading(false);
     }
   }, []);
   useEffect(() => {
     void load();
+    return () => { dashboardRequest.current += 1; };
   }, [load]);
-  const child = data?.children[childIndex] ?? data?.children[0];
-  const guardianId = String(data?.guardians[0]?.id ?? '');
+  const child = data?.children.find((item) => item.relationship_id === selectedRelationshipId) ?? data?.children[0];
+  const guardianId = String(data?.guardians.find((guardian) => guardian.academy_id === child?.academy_id)?.id ?? '');
+  const requests = requestResponse && requestResponse.academyId === child?.academy_id ? requestResponse.requests : [];
+  const actionBlocked = busy || dashboardLoading;
   const run = async (work: () => Promise<unknown>, messageText: string) => {
+    if (actionBlocked) return;
     setBusy(true);
     setError('');
     setNotice('');
@@ -104,23 +120,49 @@ export function GuardianPortalView({ onSignOut }: Props) {
     [child?.schedule],
   );
   const loadRequests = useCallback(async () => {
+    const request = ++requestsRequest.current;
     if (!child?.academy_id) return;
     try {
       const response = await teacherStudioGuardianServiceRequests(child.academy_id);
-      setRequests(response.requests ?? []);
+      if (request === requestsRequest.current) setRequestResponse({ academyId: child.academy_id, requests: response.requests ?? [] });
     } catch (next) {
-      setError(next instanceof Error ? next.message : 'Unable to load support requests.');
+      if (request === requestsRequest.current) setError(next instanceof Error ? next.message : 'Unable to load support requests.');
     }
   }, [child?.academy_id]);
   useEffect(() => {
     void loadRequests();
+    return () => { requestsRequest.current += 1; };
   }, [loadRequests]);
+  useEffect(() => {
+    setSelectedRelationshipId(child?.relationship_id ?? '');
+    setMessage('');
+    setRequestForm({ request_type: 'support', subject: '', details: '' });
+    setPrivateReport({ case_type: 'complaint', title: '', description: '', severity: 'medium' });
+    setNotice('');
+  }, [child?.relationship_id]);
+  const savedPreference = data?.preferences.find((item) => item.guardian_id === guardianId && item.event_type === '*');
+  useEffect(() => {
+    setPreference({
+      event_type: String(savedPreference?.event_type ?? '*'),
+      enabled: savedPreference?.enabled !== false,
+      inapp_enabled: savedPreference?.inapp_enabled !== false,
+      telegram_enabled: savedPreference?.telegram_enabled !== false,
+      email_enabled: savedPreference?.email_enabled === true,
+      sms_enabled: savedPreference?.sms_enabled === true,
+      locale: String(savedPreference?.locale ?? 'uz'),
+      timezone: String(savedPreference?.timezone ?? 'Asia/Tashkent'),
+      quiet_hours_start: String(savedPreference?.quiet_hours_start ?? '22:00'),
+      quiet_hours_end: String(savedPreference?.quiet_hours_end ?? '07:00'),
+      allow_critical_override: savedPreference?.allow_critical_override !== false,
+    });
+  }, [guardianId, savedPreference]);
   if (!data)
     return (
       <div className="ts-loading">
         <div className="auth-card">
           <h2>{translate('Parent Portal')}</h2>
           <p>{error || 'Loading securely authorized family access…'}</p>
+          {error ? <button className="primary-btn" disabled={dashboardLoading} onClick={() => void load()}>{translate('Retry')}</button> : null}
         </div>
       </div>
     );
@@ -206,7 +248,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
           <span className="market-badge">{translate('Parent Portal')}</span>
           <LanguageSwitcher inline />
           <UpdatesButton variant="inline" />
-          <button className="ghost-btn" onClick={() => void load()} disabled={busy}>
+          <button className="ghost-btn" onClick={() => void load()} disabled={busy || dashboardLoading}>
             <RefreshCw size={16} /> {translate('Refresh')}
           </button>
           <button className="ghost-btn" onClick={() => void onSignOut()}>
@@ -225,9 +267,9 @@ export function GuardianPortalView({ onSignOut }: Props) {
             </p>
             <label className="parent-child-switcher">
             <span>{translate('Choose your child')}</span>
-            <select className="input" value={childIndex} onChange={(e) => { setChildIndex(Number(e.target.value)); setTab('overview'); }}>
-              {data.children.map((item, index) => (
-                <option key={item.relationship_id} value={index}>
+            <select className="input" value={child?.relationship_id ?? ''} disabled={busy} onChange={(e) => { setSelectedRelationshipId(e.target.value); setTab('overview'); }}>
+              {data.children.map((item) => (
+                <option key={item.relationship_id} value={item.relationship_id}>
                   {item.student.name}
                 </option>
               ))}
@@ -455,19 +497,20 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 onSubmit={(e: FormEvent) => {
                   e.preventDefault();
                   void run(
-                    () =>
-                      teacherStudioGuardianSendMessage({
+                    async () => {
+                      await teacherStudioGuardianSendMessage({
                         relationship_id: child.relationship_id,
                         body: message,
-                      }),
+                      });
+                      setMessage('');
+                    },
                     'Message sent to the academy.',
                   );
-                  setMessage('');
                 }}
               >
                 <h2>{translate('Message academy')}</h2>
-                <textarea className="input" value={message} onChange={(e) => setMessage(e.target.value)} required />
-                <button className="primary-btn" disabled={busy}>
+                <textarea className="input" value={message} disabled={actionBlocked} onChange={(e) => setMessage(e.target.value)} required />
+                <button className="primary-btn" disabled={actionBlocked}>
                   {translate('Send message')}
                 </button>
               </form>
@@ -570,7 +613,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                   required
                 />
               </label>
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={actionBlocked}>
                 {translate('Send request')}
               </button>
               <details className="private-report">
@@ -607,7 +650,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 <button
                   className="ghost-btn"
                   type="button"
-                  disabled={busy || !privateReport.title || !privateReport.description}
+                  disabled={actionBlocked || !privateReport.title || !privateReport.description}
                   onClick={() => {
                     if (!child) return;
                     void run(async () => {
@@ -633,6 +676,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
               className="market-card compact-form"
               onSubmit={(e: FormEvent) => {
                 e.preventDefault();
+                if (!guardianId) return;
                 void run(
                   () =>
                     teacherStudioGuardianUpdatePreferences({
@@ -700,14 +744,14 @@ export function GuardianPortalView({ onSignOut }: Props) {
                   {translate(text)}
                 </label>
               ))}
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={actionBlocked || !guardianId}>
                 {translate('Save preferences')}
               </button>
             </form>
             <article className="market-card">
               <h2>{translate('Notification history')}</h2>
               <div className="record-list">
-                {data.notifications.map((item) => (
+                {data.notifications.filter((item) => item.guardian_id === guardianId).map((item) => (
                   <article key={String(item.id)}>
                     <strong>{String(item.title ?? label(item.event_key))}</strong>
                     <p>
