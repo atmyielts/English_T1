@@ -6,11 +6,11 @@ const localeNames: Record<LocaleCode, string> = {
   uz: 'Uzbek',
   ru: 'Russian',
 };
-export const LanguageSwitcher = () => {
+export const LanguageSwitcher = ({ inline = false }: { inline?: boolean }) => {
   const { locale, setLocale, t } = useI18n();
 
   return (
-    <label className="academy-language-switcher">
+    <label className={`academy-language-switcher${inline ? ' academy-language-switcher--inline' : ''}`}>
       <Languages aria-hidden="true" size={16} />
       <span className="sr-only">{t('Language')}</span>
       <select

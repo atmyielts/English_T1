@@ -1,6 +1,6 @@
 import { translate } from '../../i18n';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import { ChevronDown, Menu, Search, X } from 'lucide-react';
 
 export type WorkspaceNavigationItem = {
   id: string;
@@ -38,52 +38,35 @@ export const WorkspaceNavigation = ({
   roleLabel,
   contextLabel,
 }: WorkspaceNavigationProps) => {
-  const navRef = useRef<HTMLElement>(null);
-  const [canScrollBack, setCanScrollBack] = useState(false);
-  const [canScrollForward, setCanScrollForward] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const navigationId = useId();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-  const visibleGroups = useMemo(() => groups.filter((group) => group.items.length > 0), [groups]);
-  const activeItemId = visibleGroups.flatMap((group) => group.items).find((item) => item.active)?.id ?? '';
+  const visibleGroups = useMemo(() => {
+    const search = query.trim().toLocaleLowerCase();
+    return groups.map(group => ({ ...group, items: group.items.filter(item => !search || translate(item.label).toLocaleLowerCase().includes(search)) }))
+      .filter(group => group.items.length > 0);
+  }, [groups, query]);
 
   const groupIsExpanded = (group: WorkspaceNavigationGroup) => {
-    if (!group.collapsible) return true;
+    if (!group.collapsible || query.trim()) return true;
     return group.items.some((item) => item.active) || (expandedGroups[group.label] ?? group.defaultExpanded ?? false);
   };
 
-  const updateScrollState = useCallback(() => {
-    const node = navRef.current;
-    if (!node) return;
-    setCanScrollBack(node.scrollLeft > 2);
-    setCanScrollForward(node.scrollLeft + node.clientWidth < node.scrollWidth - 2);
-  }, []);
-
-  useEffect(() => {
-    const node = navRef.current;
-    if (!node) return;
-    const activeItem = node.querySelector<HTMLElement>('[aria-current="page"]');
-    if (activeItem && window.matchMedia('(max-width: 980px)').matches) {
-      activeItem.scrollIntoView({ block: 'nearest', inline: 'center' });
-    }
-    const frame = window.requestAnimationFrame(updateScrollState);
-    window.addEventListener('resize', updateScrollState);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [activeItemId, updateScrollState]);
-
-  const scrollNavigation = (direction: -1 | 1) => {
-    const node = navRef.current;
-    if (!node) return;
-    node.scrollBy({ left: direction * Math.max(220, node.clientWidth * 0.72), behavior: 'smooth' });
+  const closeMenu = () => {
+    setMobileOpen(false);
+    setQuery('');
+    menuRef.current?.focus();
   };
 
   return (
-    <aside className="ts-sidebar">
+    <aside className={`ts-sidebar ${mobileOpen ? 'is-menu-open' : ''}`} onKeyDown={event => {
+      if (event.key === 'Escape' && mobileOpen) { event.preventDefault(); closeMenu(); }
+    }}>
       <div className="brand">
         <span className="brand-mark" aria-hidden="true">{mark}</span>
         <div className="brand-copy">
-          <span className="brand-kicker">{translate("Workspace")}</span>
           <strong>{translate(title)}</strong>
           <p>{subtitle}</p>
         </div>
@@ -96,15 +79,18 @@ export const WorkspaceNavigation = ({
         </div>
       ) : null}
 
-      <div className="workspace-nav__mobile-toolbar">
-        <span>{translate("Workspace sections")}</span>
-        <div>
-          <button type="button" aria-label={translate("Show previous workspace sections")} disabled={!canScrollBack} onClick={() => scrollNavigation(-1)}><ChevronLeft size={17} /></button>
-          <button type="button" aria-label={translate("Show more workspace sections")} disabled={!canScrollForward} onClick={() => scrollNavigation(1)}><ChevronRight size={17} /></button>
-        </div>
-      </div>
+      <button ref={menuRef} className="workspace-menu-toggle" type="button" aria-expanded={mobileOpen} aria-controls={navigationId} onClick={() => { setMobileOpen(!mobileOpen); setQuery(''); }}>
+        {mobileOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+        {translate('Sections')}
+      </button>
 
-      <nav ref={navRef} className="workspace-nav" aria-label={translate("{workspace} navigation", { workspace: translate(title) })} onScroll={updateScrollState}>
+      <nav id={navigationId} className="workspace-nav" aria-label={translate("{workspace} navigation", { workspace: translate(title) })}>
+        <label className="workspace-nav-search">
+          <Search size={16} aria-hidden="true" />
+          <span className="sr-only">{translate('Find a section')}</span>
+          <input type="search" value={query} placeholder={translate('Search sections')} onChange={event => setQuery(event.target.value)} />
+        </label>
+        {visibleGroups.length === 0 ? <p className="workspace-nav-empty">{translate('No matching sections. Try another name.')}</p> : null}
         {visibleGroups.map((group) => {
           const expanded = groupIsExpanded(group);
           return (
@@ -114,7 +100,7 @@ export const WorkspaceNavigation = ({
               <button
                 className={`nav-btn ${item.active ? 'is-active' : ''}`}
                 type="button"
-                onClick={item.onSelect}
+                onClick={() => { item.onSelect(); setMobileOpen(false); setQuery(''); if (window.matchMedia('(max-width: 980px)').matches) menuRef.current?.focus(); }}
                 onPointerEnter={item.onPrepare}
                 onPointerDown={item.onPrepare}
                 onFocus={item.onPrepare}

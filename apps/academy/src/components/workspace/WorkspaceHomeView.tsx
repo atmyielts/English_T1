@@ -94,7 +94,6 @@ export const WorkspaceHomeView = ({
     <section className="workspace-home" aria-labelledby="workspace-home-title">
       <header className={`workspace-home__hero workspace-home__hero--${intent}`}>
         <div>
-          <span className="eyebrow">{translate(copy.eyebrow)}</span>
           <h2 id="workspace-home-title">{translate(copy.title)}</h2>
           <p>{translate(copy.description)}</p>
         </div>
@@ -105,20 +104,10 @@ export const WorkspaceHomeView = ({
         </div>
       </header>
 
-      <dl className="workspace-pulse" aria-label={translate("Workspace status")}>
-        {pulse.map((item) => (
-          <div key={item.label}>
-            <dt>{translate(item.label)}</dt>
-            <dd>{item.value}</dd>
-          </div>
-        ))}
-      </dl>
-
       <div className="workspace-home__grid">
         <section className="attention-ledger" aria-labelledby="attention-ledger-title">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">{translate("Action first")}</span>
               <h3 id="attention-ledger-title">{translate(copy.queue)}</h3>
             </div>
             <span className="ledger-count">{actionQueue.length} {translate("open")}</span>
@@ -159,7 +148,6 @@ export const WorkspaceHomeView = ({
           <section className="workspace-shortcuts">
             <div className="section-heading">
               <div>
-                <span className="eyebrow">{translate("Direct routes")}</span>
                 <h3>{translate("Start here")}</h3>
               </div>
             </div>
@@ -186,6 +174,9 @@ export const WorkspaceHomeView = ({
           </section>
         </aside>
       </div>
+      <dl className="workspace-pulse" aria-label={translate("Workspace status")}>
+        {pulse.map((item) => <div key={item.label}><dt>{translate(item.label)}</dt><dd>{item.value}</dd></div>)}
+      </dl>
     </section>
   );
 };

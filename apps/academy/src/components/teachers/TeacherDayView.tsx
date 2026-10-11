@@ -187,13 +187,6 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
 
       {day ? (
         <>
-          <dl className="teacher-day__pulse" aria-label={translate('Teaching day status')}>
-            <div><dt>{translate('Classes')}</dt><dd>{day.counts.sessions}</dd></div>
-            <div><dt>{translate('Students')}</dt><dd>{day.counts.students}</dd></div>
-            <div><dt>{translate('Attendance left')}</dt><dd>{day.counts.attendance_pending}</dd></div>
-            <div><dt>{translate('Lesson wrap-ups')}</dt><dd>{day.counts.homework_pending}</dd></div>
-          </dl>
-
           {day.sessions.length ? (
             <div className="teacher-day__layout">
               <aside className="teacher-day__timeline" aria-label={translate("Today's classes")}>
@@ -289,6 +282,12 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
           ) : (
             <div className="teacher-day__empty"><CalendarDays size={28} /><div><h3>{translate('No classes scheduled for this day')}</h3><p>{translate('Choose another day or ask the academic office to update the timetable.')}</p></div></div>
           )}
+          <dl className="teacher-day__pulse" aria-label={translate('Teaching day status')}>
+            <div><dt>{translate('Classes')}</dt><dd>{day.counts.sessions}</dd></div>
+            <div><dt>{translate('Students')}</dt><dd>{day.counts.students}</dd></div>
+            <div><dt>{translate('Attendance left')}</dt><dd>{day.counts.attendance_pending}</dd></div>
+            <div><dt>{translate('Lesson wrap-ups')}</dt><dd>{day.counts.homework_pending}</dd></div>
+          </dl>
         </>
       ) : null}
     </section>

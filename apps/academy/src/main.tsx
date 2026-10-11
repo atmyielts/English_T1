@@ -5,6 +5,7 @@ import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { LazyRouteBoundary } from './components/workspace/LazyRouteBoundary';
 import { I18nProvider, translate } from './i18n';
 import './index.css';
+import './workspace-layout.css';
 
 const App = lazy(() => import('./App'));
 const AcademyTelegramApp = lazy(() => import('./components/telegram/AcademyTelegramApp'));

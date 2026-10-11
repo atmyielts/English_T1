@@ -39,7 +39,6 @@ export const StudentHomeView = ({
     <section className="student-home" aria-labelledby="student-home-title">
       <header className="student-home__hero">
         <div>
-          <span className="eyebrow">{translate("Learning workspace")}</span>
           <h2 id="student-home-title">{translate("What will you continue today?")}</h2>
           <p>{academyName || 'Your academy'} {translate("keeps classrooms, updates, and account items together without staff controls.")}</p>
         </div>
@@ -63,7 +62,6 @@ export const StudentHomeView = ({
         <section className="student-next-list" aria-labelledby="student-next-title">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">{translate("Next steps")}</span>
               <h3 id="student-next-title">{translate("Your learning queue")}</h3>
             </div>
           </div>
