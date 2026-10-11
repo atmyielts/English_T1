@@ -1157,7 +1157,6 @@ const App = () => {
   const selectedConversationRef = useRef('');
   const conversationRequestRef = useRef(0);
   const conversationEpochRef = useRef(0);
-  const conversationWriteRef = useRef(0);
   const [announcements, setAnnouncements] = useState<TeacherStudioAnnouncement[]>([]);
   const [alerts, setAlerts] = useState<TeacherStudioAlert[]>([]);
   const [offers, setOffers] = useState<TeacherStudioOffer[]>([]);
@@ -1210,6 +1209,7 @@ const App = () => {
   const bootstrapRequestRef = useRef(0);
   const studentDataRequestRef = useRef(0);
   const authUserRef = useRef('');
+  const workspaceTaskRef = useRef<{ scope: string; epoch: number; pending: boolean }>({ scope: '', epoch: 0, pending: false });
   const [authRevision, setAuthRevision] = useState(0);
   const classroomMessageSnapshotRef = useRef<{ classroomId: string; latestMessageId: string; count: number }>({
     classroomId: '',
@@ -1231,7 +1231,8 @@ const App = () => {
       selectedConversationRef.current = '';
       conversationRequestRef.current += 1;
       conversationEpochRef.current += 1;
-      conversationWriteRef.current += 1;
+      workspaceTaskRef.current.epoch += 1;
+      workspaceTaskRef.current.pending = false;
       setConversationLoading(false);
       setBusy(false);
       setAnnouncements([]);
@@ -1258,6 +1259,47 @@ const App = () => {
     }
     setAcademyId(nextAcademyId);
   }, []);
+
+  const workspaceTaskScope = state === 'ready' && me?.user.id
+    ? `${me.user.id}:${academyId}:${location.pathname}:${location.search}` : '';
+
+  useLayoutEffect(() => {
+    const task = workspaceTaskRef.current;
+    const wasPending = task.pending;
+    task.scope = workspaceTaskScope;
+    task.epoch += 1;
+    task.pending = false;
+    if (wasPending) {
+      setBusy(false);
+      setError('');
+      setNotice('');
+    }
+    return () => {
+      task.scope = '';
+      task.epoch += 1;
+    };
+  }, [workspaceTaskScope]);
+
+  const beginWorkspaceTask = useCallback(() => {
+    const task = workspaceTaskRef.current;
+    const actor = authUserRef.current;
+    if (busy || task.pending || !workspaceTaskScope || task.scope !== workspaceTaskScope || actor !== me?.user.id) return null;
+    const epoch = ++task.epoch;
+    task.pending = true;
+    const isCurrent = () => task.scope === workspaceTaskScope && task.epoch === epoch
+      && actor === authUserRef.current && academyScopeRef.current === academyId;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    return {
+      isCurrent,
+      finish: () => {
+        if (!isCurrent()) return;
+        task.pending = false;
+        setBusy(false);
+      },
+    };
+  }, [academyId, busy, me?.user.id, workspaceTaskScope]);
 
   const activeMemberships = useMemo(
     () => (me?.memberships ?? []).filter((membership) => membership.status === 'active'),
@@ -2138,45 +2180,25 @@ const App = () => {
   }, [academyClassroomLandingId, isGuardianWorkspaceRoute, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, location.pathname, location.search, navigate, state]);
 
   const refresh = useCallback(async () => {
-    if (isStudentWorkspaceRoute) {
-      setBusy(true);
-      setError('');
-      try {
-        await loadStudentData();
-      } catch (err) {
-        setError(normalizeError(err));
-      } finally {
-        setBusy(false);
-      }
-      return;
-    }
-
-    if (!isTeacherWorkspaceRoute) {
-      setBusy(true);
-      try {
-        await bootstrap(true);
-      } finally {
-        setBusy(false);
-      }
-      return;
-    }
-
-    if (!academyId) {
-      await bootstrap(true);
-      return;
-    }
-    setBusy(true);
-    setError('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
-      const academyList = await teacherStudioAcademies();
-      setAcademies(academyList);
-      await loadAcademyData(academyId, selectedConversationId);
+      if (isStudentWorkspaceRoute) {
+        await loadStudentData();
+      } else if (!isTeacherWorkspaceRoute || !academyId) {
+        await bootstrap(true);
+      } else {
+        const academyList = await teacherStudioAcademies();
+        if (!task.isCurrent()) return;
+        setAcademies(academyList);
+        await loadAcademyData(academyId, selectedConversationId);
+      }
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
-  }, [academyId, bootstrap, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, loadAcademyData, loadStudentData, selectedConversationId]);
+  }, [academyId, beginWorkspaceTask, bootstrap, isStudentWorkspaceRoute, isTeacherWorkspaceRoute, loadAcademyData, loadStudentData, selectedConversationId]);
 
   const onSelectAcademy = useCallback(async (nextAcademyId: string) => {
     if (!nextAcademyId || nextAcademyId === academyId) return;
@@ -2775,26 +2797,26 @@ const App = () => {
     event.preventDefault();
     const name = academyNameDraft.trim();
     if (!name) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const academy = await teacherStudioCreateAcademy({
         name,
         slug: academySlugDraft.trim() || undefined,
       });
+      if (!task.isCurrent()) return;
       const academyList = await teacherStudioAcademies();
+      if (!task.isCurrent()) return;
       setAcademies(academyList);
       setAcademyNameDraft('');
       setAcademySlugDraft('');
-      activateAcademy(academy.id);
-      await loadAcademyData(academy.id);
-      navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`);
       setNotice('Academy created.');
+      activateAcademy(academy.id);
+      navigate(`/academy?academy_id=${encodeURIComponent(academy.id)}`);
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -2809,9 +2831,8 @@ const App = () => {
       return;
     }
 
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const academy = await teacherStudioUpdateAcademyLanding(academyId, {
         name: nextName,
@@ -2822,6 +2843,7 @@ const App = () => {
           secondary_cta_label: academyLandingForm.secondary_cta_label.trim(),
         },
       });
+      if (!task.isCurrent()) return;
 
       setAcademies((previous) => {
         if (previous.some((item) => item.id === academy.id)) {
@@ -2835,18 +2857,17 @@ const App = () => {
       });
       setNotice('Academy landing updated.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitContact = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageContacts', 'Contact management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioUpsertContact(academyId, {
         first_name: contactForm.first_name.trim(),
@@ -2854,22 +2875,23 @@ const App = () => {
         email: contactForm.email.trim(),
         phone: contactForm.phone.trim() || undefined,
       });
+      if (!task.isCurrent()) return;
       setContactForm(defaultContactForm());
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Contact saved.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitOffer = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageOffers', 'Offer management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioCreateOffer(academyId, {
         name: offerForm.name.trim(),
@@ -2879,34 +2901,37 @@ const App = () => {
         duration_days: Number(offerForm.duration_days) > 0 ? Number(offerForm.duration_days) : null,
         description: offerForm.description.trim(),
       });
+      if (!task.isCurrent()) return;
       setOfferForm(defaultOfferForm());
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Offer created.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitClassroom = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageClassrooms', 'Classroom management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioCreateClassroom(academyId, {
         name: classroomForm.name.trim(),
         description: classroomForm.description.trim(),
       });
+      if (!task.isCurrent()) return;
       setClassroomForm(defaultClassroomForm());
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Classroom created.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -2914,9 +2939,8 @@ const App = () => {
     event.preventDefault();
     if (!academyId || !selectedOfficeClassroom || !requireOfficePermission('manageClassrooms', 'Classroom landing')) return;
 
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const classroom = await teacherStudioUpdateClassroomLanding(academyId, {
         classroom_id: selectedOfficeClassroom.id,
@@ -2929,6 +2953,7 @@ const App = () => {
           card_summary: classroomLandingForm.card_summary.trim(),
         },
       });
+      if (!task.isCurrent()) return;
 
       setClassrooms((previous) =>
         previous.map((item) => (item.id === classroom.id ? { ...item, ...classroom } : item)),
@@ -2939,46 +2964,48 @@ const App = () => {
       });
       setNotice('Classroom landing updated.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitClassroomMembership = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioUpsertClassroomMembership(academyId, {
         classroom_id: classroomMembershipForm.classroom_id,
         contact_id: classroomMembershipForm.contact_id,
         role: classroomMembershipForm.role,
       });
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Classroom membership saved.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const removeClassroomMembership = async (membershipId: string) => {
     if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioRemoveClassroomMembership(academyId, { id: membershipId });
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Classroom membership removed.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -2987,17 +3014,18 @@ const App = () => {
     membershipStatus: TeacherStudioClassroomMembership['status'],
   ) => {
     if (!academyId || !requireOfficePermission('manageRoster', 'Roster management')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioSetEnrollmentStatus(academyId, { id: membershipId, membership_status: membershipStatus });
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice(`Enrollment moved to ${membershipStatus}.`);
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -3018,12 +3046,10 @@ const App = () => {
     if (busy || conversationLoading || !messageDraft.trim() || !academyId || !selectedConversationId || !requireOfficePermission('manageMessages', 'Inbox')) return;
     const actor = authUserRef.current;
     const epoch = conversationEpochRef.current;
-    const write = ++conversationWriteRef.current;
-    const isCurrent = () => Boolean(actor && actor === authUserRef.current && academyScopeRef.current === academyId
+    const task = beginWorkspaceTask();
+    if (!task) return;
+    const isCurrent = () => Boolean(task.isCurrent() && actor && actor === authUserRef.current && academyScopeRef.current === academyId
       && epoch === conversationEpochRef.current && selectedConversationRef.current === selectedConversationId);
-    setBusy(true);
-    setError('');
-    setNotice('');
     try {
       await teacherStudioSendMessage(academyId, {
         conversation_id: selectedConversationId,
@@ -3036,41 +3062,41 @@ const App = () => {
     } catch (err) {
       if (isCurrent()) setError(normalizeError(err));
     } finally {
-      if (write === conversationWriteRef.current) setBusy(false);
+      task.finish();
     }
   };
 
   const submitAnnouncement = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageAnnouncements', 'Announcements')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const response = await teacherStudioSendAnnouncement(academyId, {
         title: announcementForm.title.trim(),
         content: announcementForm.content.trim(),
         classroom_id: announcementForm.classroom_id.trim() || null,
       });
+      if (!task.isCurrent()) return;
       setAnnouncementForm((previous) => ({
         ...defaultAnnouncementForm(),
         classroom_id: previous.classroom_id,
       }));
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice(`Announcement sent to ${response.recipient_count} contact(s).`);
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitAlert = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageAlerts', 'Alerts')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioCreateAlert(academyId, {
         contact_id: alertForm.contact_id.trim() || null,
@@ -3078,32 +3104,35 @@ const App = () => {
         severity: alertForm.severity.trim().toLowerCase(),
         content: alertForm.content.trim(),
       });
+      if (!task.isCurrent()) return;
       setAlertForm((previous) => ({
         ...previous,
         content: '',
       }));
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Alert created.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const resolveAlert = async (alertId: string) => {
     if (!academyId || !requireOfficePermission('resolveAlerts', 'Alert resolution')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioResolveAlert(academyId, alertId);
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Alert resolved.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -3112,21 +3141,22 @@ const App = () => {
     status: 'resolved' | 'dismissed' | 'snoozed' | 'open' = 'resolved',
   ) => {
     if (!academyId || !requireOfficePermission('resolveActionItems', 'LMS action resolution')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioResolveActionItem(academyId, {
         id: item.id,
         status,
         resolution_note: status === 'resolved' ? 'Resolved from Academy LMS.' : 'Updated from Academy LMS.',
       });
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice(status === 'resolved' ? 'LMS action resolved.' : 'LMS action updated.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -3152,9 +3182,8 @@ const App = () => {
   const submitOfferGrant = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageOffers', 'Offer grants')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioUpsertOfferGrant(academyId, {
         offer_id: grantForm.offer_id,
@@ -3165,57 +3194,61 @@ const App = () => {
         quantity: Number(grantForm.quantity) > 0 ? Number(grantForm.quantity) : null,
         duration_days: Number(grantForm.duration_days) > 0 ? Number(grantForm.duration_days) : null,
       });
+      if (!task.isCurrent()) return;
       setGrantForm((previous) => ({
         ...defaultGrantForm(),
         offer_id: previous.offer_id,
       }));
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Offer grant saved.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const submitPayment = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const result = await teacherStudioCreateClickTuitionPayment(academyId, {
         contact_id: paymentForm.contact_id,
         offer_id: paymentForm.offer_id,
         redirect_url: typeof window !== 'undefined' ? window.location.href : null,
       });
+      if (!task.isCurrent()) return;
       if (result.payment_url) {
         const popup = window.open(result.payment_url, '_blank', 'noopener,noreferrer');
         if (!popup) window.location.assign(result.payment_url);
       }
       setNotice('Click checkout created.');
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
   const markPaid = async (paymentId: string) => {
     if (!academyId || !requireOfficePermission('manageFinance', 'Payments')) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       await teacherStudioMarkPaymentPaid(academyId, paymentId);
+      if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
+      if (!task.isCurrent()) return;
       setNotice('Settlement applied and entitlements updated.');
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -3238,16 +3271,16 @@ const App = () => {
 
   const openTelegramAssistant = async () => {
     if (!academyId) return;
-    setBusy(true);
-    setError('');
-    setNotice('');
+    const task = beginWorkspaceTask();
+    if (!task) return;
     try {
       const link = await academyTelegramCreateStaffLink(academyId);
+      if (!task.isCurrent()) return;
       window.location.assign(link.url);
     } catch (err) {
-      setError(normalizeError(err));
+      if (task.isCurrent()) setError(normalizeError(err));
     } finally {
-      setBusy(false);
+      task.finish();
     }
   };
 
@@ -3624,6 +3657,7 @@ const App = () => {
                   <input
                     className="input"
                     value={academyNameDraft}
+                    disabled={busy}
                     onChange={(event) => setAcademyNameDraft(event.target.value)}
                     required
                   />
@@ -3633,6 +3667,7 @@ const App = () => {
                   <input
                     className="input"
                     value={academySlugDraft}
+                    disabled={busy}
                     onChange={(event) => setAcademySlugDraft(event.target.value)}
                   />
                 </label>

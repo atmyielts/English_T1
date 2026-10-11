@@ -2131,6 +2131,165 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test("pending contact save freezes submitted fields and preserves a failed draft", async ({ page }) => {
+    await seedSessionCookie(page, "owner-user");
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    let requested = false;
+    await mockAcademyEdge(page, "owner", {
+      failActions: ["upsert_contact"],
+      respond: async (body) => {
+        if (body.action === "upsert_contact") { requested = true; await blocked; }
+        return undefined;
+      },
+    });
+    await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+    await page.getByText("Add contact", { exact: true }).click();
+    await page.getByRole("textbox", { name: "First name", exact: true }).fill("Saved draft");
+    await page.getByRole("textbox", { name: "Last name", exact: true }).fill("QA");
+    await page.getByRole("textbox", { name: "Email", exact: true }).fill("draft@example.test");
+    await page.getByRole("button", { name: "Save contact", exact: true }).click();
+    try {
+      await expect.poll(() => requested).toBe(true);
+      await expect(page.getByRole("textbox", { name: "First name", exact: true })).toBeDisabled();
+      release();
+      await expect(page.getByRole("button", { name: "Save contact", exact: true })).toBeEnabled();
+      await expect(page.getByRole("textbox", { name: "First name", exact: true })).toHaveValue("Saved draft");
+      await expect(page.locator('.error-banner')).toContainText("Mock upsert_contact failure");
+    } finally { release(); }
+  });
+
+  for (const obsoleteFails of [false, true]) {
+    test(`obsolete contact ${obsoleteFails ? "failure" : "success"} cannot change a new workspace save`, async ({ page }) => {
+      await seedSessionCookie(page, "owner-user");
+      const nextId = "academy-next-save";
+      let releaseOld!: () => void;
+      let releaseNew!: () => void;
+      const oldBlocked = new Promise<void>((resolve) => { releaseOld = resolve; });
+      const newBlocked = new Promise<void>((resolve) => { releaseNew = resolve; });
+      const writes: Record<string, unknown>[] = [];
+      await mockAcademyEdge(page, "owner", {
+        actionOverrides: { academies: { academies: [academy("owner"), { ...academy("owner"), id: nextId, name: "Next Academy" }] } },
+        respond: async (body) => {
+          if (body.action === "summary") return { academy_id: body.academy_id, access: ownerAccess, counts: { contacts: 1, classrooms: 0, offers: 0, active_entitlements: 0, open_alerts: 0 } };
+          if (body.action === "contacts") return { contacts: [{ ...contact, academy_id: body.academy_id }] };
+          return undefined;
+        },
+      });
+      await page.route("**/functions/v1/academy", async (route) => {
+        const body = route.request().postDataJSON();
+        if (body?.action !== "upsert_contact") return route.fallback();
+        writes.push(body);
+        await (body.academy_id === academyId ? oldBlocked : newBlocked);
+        if (body.academy_id === academyId && obsoleteFails) return route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Obsolete contact failure" }) });
+        return route.fulfill(json({ contact: { ...contact, academy_id: body.academy_id } }));
+      });
+      const fill = async (firstName: string) => {
+        await page.getByText("Add contact", { exact: true }).click();
+        await page.getByRole("textbox", { name: "First name", exact: true }).fill(firstName);
+        await page.getByRole("textbox", { name: "Last name", exact: true }).fill("QA");
+        await page.getByRole("textbox", { name: "Email", exact: true }).fill("save@example.test");
+        await page.getByRole("button", { name: "Save contact", exact: true }).click();
+      };
+      try {
+        await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+        await fill("Old workspace");
+        await expect.poll(() => writes.length).toBe(1);
+        await page.getByRole("button", { name: "Switch workspace", exact: true }).click();
+        await page.getByRole("button", { name: "Manage Next Academy", exact: true }).click();
+        if (!(await page.getByRole("button", { name: "Contacts", exact: true }).isVisible())) await page.getByRole("button", { name: "Daily operations", exact: true }).click();
+        await page.getByRole("button", { name: "Contacts", exact: true }).click();
+        await fill("New workspace");
+        await expect.poll(() => writes.length).toBe(2);
+        const oldResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "upsert_contact" && response.request().postDataJSON()?.academy_id === academyId);
+        releaseOld();
+        await oldResponse;
+        await expect(page.getByRole("textbox", { name: "First name", exact: true })).toHaveValue("New workspace");
+        await expect(page.getByRole("button", { name: "Save contact", exact: true })).toBeDisabled();
+        await expect(page.getByText("Contact saved.", { exact: true })).toHaveCount(0);
+        await expect(page.locator('.error-banner')).toHaveCount(0);
+        releaseNew();
+        await expect(page.getByRole("button", { name: "Save contact", exact: true })).toBeEnabled();
+        await expect(page.getByRole("textbox", { name: "First name", exact: true })).toHaveValue("");
+        await expect(page.getByText("Contact saved.", { exact: true })).toBeVisible();
+        expect(writes.map((body) => body.academy_id)).toEqual([academyId, nextId]);
+      } finally { releaseOld(); releaseNew(); }
+    });
+  }
+
+  test("obsolete checkout cannot open or redirect after leaving payments", async ({ page, context }) => {
+    await seedSessionCookie(page, "owner-user");
+    await mockAcademyEdge(page, "owner");
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    let requested = false;
+    let providerNavigations = 0;
+    await context.route('https://my.click.uz/**', async (route) => { providerNavigations += 1; await route.abort(); });
+    await page.route('**/functions/v1/click/create-transaction', async (route) => {
+      requested = true;
+      await blocked;
+      await route.fulfill(json({ payment_url: 'https://my.click.uz/services/pay?transaction_id=qa-fixture', transaction_id: 'qa-fixture', academy_payment_id: 'qa-payment', amount: 500000, currency: 'UZS', final_amount: 500000 }));
+    });
+    try {
+      await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
+      await page.getByRole('combobox', { name: 'Contact', exact: true }).selectOption(studentContactId);
+      await page.getByRole('combobox', { name: 'Offer', exact: true }).selectOption('offer-route-smoke');
+      await page.getByRole('button', { name: 'Create Click checkout', exact: true }).click();
+      await expect.poll(() => requested).toBe(true);
+      await page.getByRole('button', { name: 'Switch workspace', exact: true }).click();
+      await expect(page).toHaveURL(/\/academies/);
+      const response = page.waitForResponse('**/functions/v1/click/create-transaction');
+      release();
+      await response;
+      // A task queued after the response lets the submit continuation run.
+      await page.evaluate(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+      await expect(page).toHaveURL(/\/academies/);
+      expect(context.pages()).toHaveLength(1);
+      expect(providerNavigations).toBe(0);
+      await expect(page.locator('.info-banner')).toHaveCount(0);
+    } finally { release(); }
+  });
+
+  for (const leaveBeforeCompletion of [false, true]) {
+    test(`academy creation ${leaveBeforeCompletion ? 'does not redirect an abandoned setup' : 'opens the new academy without duplicate office reads'}`, async ({ page }) => {
+      await seedSessionCookie(page, 'owner-user');
+      let release!: () => void;
+      const blocked = new Promise<void>((resolve) => { release = resolve; });
+      let requested = false;
+      const actionLog: string[] = [];
+      await mockAcademyEdge(page, 'owner', {
+        actionLog,
+        respond: async (body) => {
+          if (body.action !== 'create_academy') return undefined;
+          requested = true;
+          await blocked;
+          return { academy: academy('owner') };
+        },
+      });
+      try {
+        await page.goto('/academy/setup');
+        await page.getByRole('textbox', { name: 'Academy name', exact: true }).fill('QA Academy');
+        await page.getByRole('button', { name: 'Create academy', exact: true }).click();
+        await expect.poll(() => requested).toBe(true);
+        await expect(page.getByRole('textbox', { name: 'Academy name', exact: true })).toBeDisabled();
+        if (leaveBeforeCompletion) await page.getByRole('button', { name: 'Back to workspaces', exact: true }).click();
+        const response = page.waitForResponse((response) => response.request().postDataJSON()?.action === 'create_academy');
+        release();
+        await response;
+        if (leaveBeforeCompletion) {
+          await page.evaluate(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+          await expect(page).toHaveURL(/\/academies/);
+          await expect(page.locator('.info-banner')).toHaveCount(0);
+        } else {
+          await expect(page).toHaveURL(new RegExp(`/academy\\?academy_id=${academyId}`));
+          await expect(page.getByRole('heading', { level: 1, name: 'Route Smoke Academy', exact: true })).toBeVisible();
+          expect(actionLog.filter((action) => action === 'summary')).toHaveLength(1);
+          expect(actionLog).not.toContain('education_os');
+        }
+      } finally { release(); }
+    });
+  }
+
   test("inbox switches clear private drafts and discard obsolete thread responses", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     const threadIds = ["thread-first", "thread-middle", "thread-final"];
@@ -4308,7 +4467,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
   test("receptionist can securely enter the Academy bot from the normal workspace", async ({ page }) => {
     const actions: string[] = [];
-    await seedSessionCookie(page, "receptionist-telegram-user");
+    await seedSessionCookie(page, "receptionist-user");
     await mockAcademyEdge(page, "receptionist", { actionLog: actions });
     await page.goto(`/academy/office?academy_id=${academyId}`);
     await page.getByRole("button", { name: "Manage", exact: true }).click();

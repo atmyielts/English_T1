@@ -33,7 +33,7 @@ export const AnnouncementsView = ({
       {canSendAnnouncements ? (
         <form className="panel workspace-form" onSubmit={onSubmit}>
           <h3>{translate("Send announcement")}</h3>
-          <label>{translate("Audience")}<select
+          <label>{translate("Audience")}<select disabled={busy}
             className="input"
             value={form.classroom_id}
             onChange={(e) => setForm((previous) => ({ ...previous, classroom_id: e.target.value }))}
@@ -46,13 +46,13 @@ export const AnnouncementsView = ({
               </option>
             ))}
           </select></label>
-          <label>{translate("Title")}<input
+          <label>{translate("Title")}<input disabled={busy}
             className="input"
             value={form.title}
             onChange={(e) => setForm((previous) => ({ ...previous, title: e.target.value }))}
             required
           /></label>
-          <label>{translate("Message")}<textarea
+          <label>{translate("Message")}<textarea disabled={busy}
             className="input"
             value={form.content}
             onChange={(e) => setForm((previous) => ({ ...previous, content: e.target.value }))}

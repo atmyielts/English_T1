@@ -274,8 +274,8 @@ export const ClassroomsView = ({
             <details className="panel workspace-create-disclosure">
               <summary>{translate("Create classroom")}</summary>
               <form className="workspace-form" onSubmit={onCreateClassroom}>
-                <label>{translate("Classroom name")}<input className="input" value={classroomForm.name} onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))} required /></label>
-                <label>{translate("Description")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea className="input" value={classroomForm.description} onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))} /></label>
+                <label>{translate("Classroom name")}<input disabled={busy} className="input" value={classroomForm.name} onChange={(e) => setClassroomForm((p) => ({ ...p, name: e.target.value }))} required /></label>
+                <label>{translate("Description")}{' '}<span className="optional-label">{translate("Optional")}</span><textarea disabled={busy} className="input" value={classroomForm.description} onChange={(e) => setClassroomForm((p) => ({ ...p, description: e.target.value }))} /></label>
                 <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Save classroom")}</button></div>
               </form>
             </details>
@@ -285,9 +285,9 @@ export const ClassroomsView = ({
             <details className="panel workspace-create-disclosure">
               <summary>{translate("Assign student or assistant")}</summary>
               <form className="workspace-form" onSubmit={onSaveMembership}>
-                <label>{translate("Classroom")}<select className="input" value={membershipForm.classroom_id} onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))} required><option value="">{translate("Select classroom")}</option>{classrooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-                <label>{translate("Contact")}<select className="input" value={membershipForm.contact_id} onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))} required><option value="">{translate("Select contact")}</option>{contacts.map((item) => <option key={item.id} value={item.id}>{contactLabel(item, item.id)}</option>)}</select></label>
-                <label>{translate("Classroom role")}<select className="input" value={membershipForm.role} onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}><option value="student">{translate("Student")}</option><option value="assistant">{translate("Assistant")}</option></select></label>
+                <label>{translate("Classroom")}<select disabled={busy} className="input" value={membershipForm.classroom_id} onChange={(e) => setMembershipForm((p) => ({ ...p, classroom_id: e.target.value }))} required><option value="">{translate("Select classroom")}</option>{classrooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+                <label>{translate("Contact")}<select disabled={busy} className="input" value={membershipForm.contact_id} onChange={(e) => setMembershipForm((p) => ({ ...p, contact_id: e.target.value }))} required><option value="">{translate("Select contact")}</option>{contacts.map((item) => <option key={item.id} value={item.id}>{contactLabel(item, item.id)}</option>)}</select></label>
+                <label>{translate("Classroom role")}<select disabled={busy} className="input" value={membershipForm.role} onChange={(e) => setMembershipForm((p) => ({ ...p, role: e.target.value }))}><option value="student">{translate("Student")}</option><option value="assistant">{translate("Assistant")}</option></select></label>
                 <div className="form-actions"><button className="primary-btn" type="submit" disabled={busy}>{translate("Save membership")}</button></div>
               </form>
             </details>
