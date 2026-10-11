@@ -1,3 +1,4 @@
+import { pagesAssetOutput } from '../../scripts/pages-asset-policy.mjs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
@@ -21,6 +22,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        ...pagesAssetOutput(new URL('./public/_headers', import.meta.url)),
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
           if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'

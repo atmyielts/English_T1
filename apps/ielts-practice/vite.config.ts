@@ -1,3 +1,4 @@
+import { pagesAssetOutput } from '../../scripts/pages-asset-policy.mjs'
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -6,6 +7,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        ...pagesAssetOutput(new URL('./public/_headers', import.meta.url)),
         manualChunks(id) {
           if (id.includes('ielts-simulator/src')) return 'shared-simulator-runtime';
           if (id.includes('@supabase')) return 'supabase';

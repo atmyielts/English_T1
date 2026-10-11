@@ -1,3 +1,4 @@
+import { pagesAssetOutput } from '../../scripts/pages-asset-policy.mjs'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
@@ -21,6 +22,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      rollupOptions: { output: pagesAssetOutput(new URL('./public/_headers', import.meta.url)) },
+    },
     resolve: {
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
       alias: {
