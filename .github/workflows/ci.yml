@@ -71,24 +71,11 @@ jobs:
       - name: Academy lint
         run: npm --workspace apps/academy run lint
 
-      - name: Install Academy route browser
-        run: npx playwright install --with-deps chromium
-
-      - name: Academy mocked route smoke
-        run: npm run test:academy:routes
-
-      - name: Run unit tests
-        run: npm test
-
       # This CI-only change can land before the independently reviewed feature.
       # Once the guide exists, its contracts are required and run without a skip override.
       - name: Adaptive onboarding contracts and Edge typecheck
         if: hashFiles('supabase/functions/guide/handler.test.ts') != ''
         run: npm run test:guide && npm run check:guide
-
-      - name: Adaptive onboarding browser and accessibility contracts
-        if: hashFiles('apps/platform/tests/guide.spec.ts') != ''
-        run: npm run test:guide:browser
 
       - name: English Edge typecheck
         run: deno check supabase/functions/hub/index.ts
@@ -106,6 +93,74 @@ jobs:
         # Fail closed on high/critical findings. The wrapper permits only the
         # owner-approved, RSC-only exception documented in the repository.
         run: node scripts/audit-runtime-dependencies.mjs
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - group: payments
+            suites: test:payments
+          - group: account-security
+            suites: test:parent-report:security test:account:retention test:candidate:security test:admin:security
+          - group: platform-workflows
+            suites: test:platform:return test:marketplace test:peer-review:privacy test:score-cache:privacy test:pages:security
+          - group: learning-integrations
+            suites: test:exam test:sat test:shared test:telegram test:sat:completion test:sat:bank test:sat:start test:ai:security test:sat:tutor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Install contract browsers
+        if: matrix.group != 'payments'
+        run: npx playwright install --with-deps chromium
+      - name: Run complete contract group
+        env:
+          TEST_SUITES: ${{ matrix.suites }}
+        run: |
+          for suite in $TEST_SUITES; do
+            npm run "$suite" || exit 1
+          done
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        group: [academy, guide]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install route browser
+        run: npx playwright install --with-deps chromium
+      - name: Academy mocked route smoke
+        if: matrix.group == 'academy'
+        run: npm run test:academy:routes
+      - name: Adaptive onboarding browser and accessibility contracts
+        if: matrix.group == 'guide' && hashFiles('apps/platform/tests/guide.spec.ts') != ''
+        run: npm run test:guide:browser
 
   build:
     runs-on: ubuntu-latest
@@ -145,12 +200,14 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [checks, build]
+    needs: [checks, tests, browser, build]
     if: ${{ always() }}
     steps:
       - name: Require every test and frontend build
         env:
           CHECKS_RESULT: ${{ needs.checks.result }}
+          TESTS_RESULT: ${{ needs.tests.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
           BUILDS_RESULT: ${{ needs.build.result }}
         run: |
-          [ "$CHECKS_RESULT" = "success" ] && [ "$BUILDS_RESULT" = "success" ]
+          [ "$CHECKS_RESULT" = "success" ] && [ "$TESTS_RESULT" = "success" ] && [ "$BROWSER_RESULT" = "success" ] && [ "$BUILDS_RESULT" = "success" ]
