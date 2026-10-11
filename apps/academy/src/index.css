@@ -1,10 +1,10 @@
 :root {
-  --accent: #fef0b6;
-  --accent-strong: #8a682d;
-  --accent-soft: #fbf2ca;
-  --accent-ink: #472f26;
-  --sun: #bd8737;
-  --sun-soft: #fbf4e7;
+  --accent: #baf39c;
+  --accent-strong: #286249;
+  --accent-soft: #edf6e9;
+  --accent-ink: #1d433a;
+  --sun: #567b43;
+  --sun-soft: #f0f6eb;
   --coral: #bd6a51;
   --coral-soft: #faefeb;
   --mint: #5f927e;
@@ -15,23 +15,23 @@
   --violet-soft: #efedf3;
   --aqua: #5e9190;
   --aqua-soft: #e8f1f1;
-  --ink: #472f26;
-  --muted: #786b63;
-  --muted-strong: #5e5049;
-  --line: #ddd2c4;
-  --line-strong: #bfae9f;
-  --bg: #ece4d8;
-  --panel: #f6f0e4;
-  --panel-subtle: #f1e8da;
+  --ink: #1d433a;
+  --muted: #657169;
+  --muted-strong: #52635b;
+  --line: #e5e9e6;
+  --line-strong: #829189;
+  --bg: #fafbfa;
+  --panel: #ffffff;
+  --panel-subtle: #f0f5ed;
   --success: #2f7452;
   --success-soft: #e8f3ed;
   --warning: #9a611d;
   --warning-soft: #faf1e2;
   --danger: #a33f36;
   --danger-soft: #f9ecea;
-  --shadow-soft: 0 1px 2px rgba(71, 47, 38, 0.05);
-  --shadow-card: 0 8px 24px rgba(71, 47, 38, 0.07);
-  --shadow-lift: 0 16px 40px rgba(71, 47, 38, 0.11);
+  --shadow-soft: none;
+  --shadow-card: none;
+  --shadow-lift: 0 12px 32px rgba(29, 67, 58, 0.08);
 }
 
 * {
@@ -48,8 +48,7 @@ body {
   margin: 0;
   color: var(--ink);
   font-family:
-    Aptos,
-    'Segoe UI Variable',
+    'Manrope Variable',
     'Segoe UI',
     ui-sans-serif,
     system-ui,
@@ -57,6 +56,7 @@ body {
     BlinkMacSystemFont,
     sans-serif;
   background: var(--bg);
+  font-size: 13px;
 }
 
 button,

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { LazyRouteBoundary } from './components/workspace/LazyRouteBoundary';
 import { I18nProvider, translate } from './i18n';
+import '@fontsource-variable/manrope/wght.css';
 import './index.css';
 import './workspace-layout.css';
 

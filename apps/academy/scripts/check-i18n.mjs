@@ -292,6 +292,7 @@ const untranslatedAllowlist = new Set([
   'Model',
   'Payload SHA-256',
   'SMS',
+  'Schood',
   'Telegram',
   'Telegram chat ID',
   'UZS',

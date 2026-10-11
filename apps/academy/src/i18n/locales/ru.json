@@ -982,7 +982,6 @@
   "Currency": "Валюта",
   "Current academy": "Текущая академия",
   "Current brand record:": "Текущая запись бренда:",
-  "Current context": "Текущий контекст",
   "Current operating pulse": "Текущие операционные показатели",
   "Current work": "Текущая работа",
   "Current workspace": "Текущее рабочее пространство",
@@ -2578,5 +2577,15 @@
   "Your entry is kept. Retry saving before editing it.": "Введённые данные сохранены здесь. Повторите сохранение перед редактированием.",
   "Enter a name, phone number and target subject.": "Укажите имя, номер телефона и интересующий предмет.",
   "The save could not be confirmed. Retry to check it safely.": "Не удалось подтвердить сохранение. Повторите попытку для безопасной проверки.",
-  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Не удалось сохранить обращение. Проверьте данные или обновите рабочее пространство и повторите попытку."
+  "Unable to save the inquiry. Check the details or refresh the workspace, then try again.": "Не удалось сохранить обращение. Проверьте данные или обновите рабочее пространство и повторите попытку.",
+  "No dated tasks": "Нет задач с указанным сроком",
+  "No upcoming events": "Нет ближайших событий",
+  "Schood": "Schood",
+  "Task": "Задача",
+  "Upcoming": "Ближайшие события",
+  "Workload": "Рабочая нагрузка",
+  "Your workspace": "Ваше рабочее пространство",
+  "Schedule is unavailable. Refresh to try again.": "Не удалось загрузить расписание. Обновите, чтобы повторить.",
+  "Tasks are unavailable. Refresh to try again.": "Не удалось загрузить задачи. Обновите, чтобы повторить.",
+  "Deadlines": "Сроки"
 }
