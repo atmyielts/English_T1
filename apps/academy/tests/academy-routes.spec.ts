@@ -2131,6 +2131,155 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test('manual lessons use the branch clock even when the operator is in another timezone',async({page})=>{
+    const commands:Record<string,unknown>[]=[];
+    await seedSessionCookie(page,'owner-user');
+    await mockAcademyEdge(page,'owner',{actionOverrides:{academic_operations:{...academicOperations,
+      branches:[...academicOperations.branches.map(item=>({...item,timezone:'Asia/Kathmandu'})),{id:'other-clock-branch',name:'Other clock branch',is_active:true,currency:'UZS',timezone:'America/New_York'}],
+      rooms:[...academicOperations.rooms,{id:'other-clock-room',branch_id:'other-clock-branch',name:'Other clock room',capacity:20,is_active:true}],
+      calendars:academicOperations.calendars.map(item=>({...item,branch_id:'branch-main'})),
+    }},respond:async body=>{
+      if(body.action==='create_lesson_session'){commands.push(body);return {session:academicOperations.sessions[0]};}
+      return undefined;
+    }});
+    await page.goto(`/academy/admin/academic?academy_id=${academyId}`);
+    const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Create actual lesson session',exact:true})});
+    await expect(form.getByText('Timezone: Asia/Kathmandu',{exact:true})).toBeVisible();
+    await form.getByLabel('Starts',{exact:true}).fill('2026-10-12T14:00');
+    await form.getByLabel('Ends',{exact:true}).fill('2026-10-12T15:00');
+    await form.getByRole('button',{name:'Create session',exact:true}).click();
+    await expect.poll(()=>commands.length).toBe(1);
+    expect(commands[0]).toMatchObject({starts_at:'2026-10-12T08:15:00.000Z',ends_at:'2026-10-12T09:15:00.000Z',timezone:'Asia/Kathmandu'});
+    await expect(form.getByRole('button',{name:'Create session',exact:true})).toBeEnabled();
+    await form.getByRole('combobox',{name:'Branch',exact:true}).selectOption('other-clock-branch');
+    await expect(form.getByRole('combobox',{name:'Room',exact:true})).toHaveValue('');
+    await expect(form.getByRole('combobox',{name:'Room',exact:true}).locator('option[value="room-101"]')).toHaveCount(0);
+    await form.getByRole('combobox',{name:'Room',exact:true}).selectOption('other-clock-room');
+    await form.getByRole('button',{name:'Create session',exact:true}).click();
+    await expect.poll(()=>commands.length).toBe(2);
+    expect(commands[1]).toMatchObject({branch_id:'other-clock-branch',room_id:'other-clock-room',calendar_id:null,starts_at:'2026-10-12T18:00:00.000Z',timezone:'America/New_York'});
+    await expect(form.getByRole('button',{name:'Create session',exact:true})).toBeEnabled();
+    await form.getByLabel('Starts',{exact:true}).fill('2026-10-12T16:00');
+    await form.getByLabel('Ends',{exact:true}).fill('2026-10-12T17:00');
+    await form.getByRole('button',{name:'Create session',exact:true}).click();
+    await expect.poll(()=>commands.length).toBe(3);
+    expect(commands[2]).toMatchObject({calendar_id:null,starts_at:'2026-10-12T20:00:00.000Z',timezone:'America/New_York'});
+  });
+  const roomBranch='00000000-0000-4000-8000-000000000003';
+  const roomFixture=(body:Record<string,unknown>)=>{
+    const from=String(body.from),days=Number(body.days);
+    const base={classroom_id:'room-qa-class',room_id:'room-qa-1',primary_staff_id:'room-qa-teacher',teacher_name:'Owned QA teacher',title:'IELTS lesson',delivery_mode:'physical',starts_at:from+'T09:00:00Z',ends_at:from+'T10:30:00Z'};
+    return {schema_version:1,generated_at:new Date().toISOString(),branch:{id:String(body.branch_id),name:'Owned QA branch',timezone:'Asia/Tashkent',is_active:true},from,days,starts_at:from+'T00:00:00+05:00',ends_at:from+'T23:59:59+05:00',
+      rooms:[{id:'room-qa-1',name:'Room 1',capacity:20,is_active:true},{id:'room-qa-2',name:'Room 2',capacity:15,is_active:true}],
+      sessions:[{...base,id:'room-qa-session',classroom_name:'IELTS A17',status:'scheduled'}],
+      planned:[{...base,series_id:'room-qa-series',occurrence_date:from,classroom_name:'General English B12',primary_staff_id:'room-qa-other-teacher',starts_at:from+'T09:30:00Z',ends_at:from+'T10:30:00Z'}],closures:[],unassigned_schedules:[],
+      warnings:{series_needing_setup:0,invalid_occurrences:0,room_branch_mismatches:0,rooms_truncated:false,sessions_truncated:false,series_truncated:false,plans_truncated:false,closures_truncated:false,unassigned_truncated:false}};
+  };
+  const mockRoomTimetable=async(page:Page,persona:StaffPersona='owner',extra:MockEdgeOptions={})=>{
+    const current=productionAccess(persona),access={...current,permissions:{...current.permissions,viewRoomTimetable:persona!=='teacher'}};
+    await mockAcademyEdge(page,persona,{...extra,respond:async body=>{
+      const custom=await extra.respond?.(body);if(custom!==undefined)return custom;
+      if(body.action==='academies')return {academies:[{...academy(persona),access}]};
+      if(body.action==='summary')return {academy_id:academyId,access,counts:{contacts:1,classrooms:1,offers:0,active_entitlements:0,open_alerts:0}};
+      if(body.action==='room_timetable_branches')return {branches:[{id:roomBranch,name:'Owned QA branch',timezone:'Asia/Tashkent',is_active:true},{id:'00000000-0000-4000-8000-000000000004',name:'Next QA branch',timezone:'UTC',is_active:true}],truncated:false};
+      if(body.action==='room_timetable')return roomFixture(body);
+      return undefined;
+    }});
+  };
+  for(const width of [1440,390,320]){
+    test(`room timetable shows booked lessons, unbooked plans and conflicts at ${width}px`,async({page},testInfo)=>{
+      await page.setViewportSize({width,height:1000});await seedSessionCookie(page,'owner-user');await mockRoomTimetable(page);
+      await page.goto(`/academy/admin/rooms?academy_id=${academyId}`);
+      await expect(page.locator('.room-timetable__grid')).toBeVisible();
+      await expect(page.locator('.room-timetable__lesson')).toHaveCount(2);
+      await expect(page.locator('.room-timetable__lesson.is-conflict')).toHaveCount(2);
+      await expect(page.getByRole('combobox',{name:'View',exact:true})).toHaveValue(width<640?'1':'7');
+      await page.locator('.room-timetable__lesson.is-plan').click();
+      await expect(page.getByText('This recurring lesson is a plan. It has not been booked yet.',{exact:true})).toBeVisible();
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+      if(width<420)expect(await page.getByLabel('Start date',{exact:true}).evaluate(input=>input.getBoundingClientRect().width)).toBeGreaterThanOrEqual(190);
+      await page.screenshot({path:testInfo.outputPath(`rooms-${width}.png`),fullPage:true});
+    });
+  }
+  test('room refresh preserves the selected date and performs one bounded snapshot read',async({page})=>{
+    const actions:string[]=[];await seedSessionCookie(page,'owner-user');await mockRoomTimetable(page,'owner',{actionLog:actions});
+    await page.goto(`/academy/admin/rooms?academy_id=${academyId}`);await expect(page.locator('.room-timetable__grid')).toBeVisible();
+    await page.getByLabel('Start date',{exact:true}).fill('2026-11-20');
+    await expect(page.locator('.room-timetable__grid')).toBeVisible();
+    const before=actions.filter(a=>a==='room_timetable').length;
+    await page.getByRole('button',{name:'Refresh timetable',exact:true}).click();
+    await expect(page.locator('.room-timetable__grid')).toBeVisible();
+    await expect(page.getByLabel('Start date',{exact:true})).toHaveValue('2026-11-20');
+    expect(actions.filter(a=>a==='room_timetable').length-before).toBe(1);
+    expect(actions.filter(a=>a==='room_timetable_branches').length).toBe(1);
+    expect(actions.includes('academic_operations')).toBe(false);
+  });
+  test('room calendar gives receptionist a view without lesson administration controls',async({page})=>{
+    await seedSessionCookie(page,'receptionist-user');await mockRoomTimetable(page,'receptionist');
+    await page.goto(`/academy/office/rooms?academy_id=${academyId}`);await expect(page.locator('.room-timetable__grid')).toBeVisible();
+    await expect(page.getByRole('button',{name:'Manage lessons',exact:true})).toHaveCount(0);
+  });
+  test('an obsolete room response cannot replace the newly selected branch',async({page})=>{
+    let release!:()=>void;const held=new Promise<void>(resolve=>{release=resolve;});
+    let heldRequest=false;
+    await seedSessionCookie(page,'owner-user');await mockRoomTimetable(page,'owner',{respond:async body=>{
+      if(body.action==='room_timetable'&&body.branch_id===roomBranch){heldRequest=true;await held;return {...roomFixture(body),rooms:[{id:'old-room',name:'Obsolete room',capacity:20,is_active:true}],sessions:[],planned:[]};}
+      if(body.action==='room_timetable')return {...roomFixture(body),rooms:[{id:'new-room',name:'New branch room',capacity:15,is_active:true}],sessions:[],planned:[]};
+      return undefined;
+    }});
+    await page.goto(`/academy/admin/rooms?academy_id=${academyId}`);
+    try{
+      await expect.poll(()=>heldRequest).toBe(true);
+      await page.getByRole('combobox',{name:'Branch',exact:true}).selectOption('00000000-0000-4000-8000-000000000004');
+      await expect(page.getByRole('rowheader',{name:/New branch room/})).toBeVisible();
+      release();
+      await expect(page.getByRole('rowheader',{name:/Obsolete room/})).toHaveCount(0);
+      await expect(page.getByRole('rowheader',{name:/New branch room/})).toBeVisible();
+    }finally{release();}
+  });
+  test('partial room results show an availability warning rather than a complete empty timetable',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockRoomTimetable(page,'owner',{respond:async body=>{
+      if(body.action!=='room_timetable')return undefined;
+      const data=roomFixture(body);return {...data,sessions:[],planned:[],warnings:{...data.warnings,sessions_truncated:true}};
+    }});
+    await page.goto(`/academy/admin/rooms?academy_id=${academyId}`);
+    await expect(page.getByRole('alert')).toContainText('Some records are not loaded. This view cannot confirm availability.');
+    await expect(page.locator('.room-timetable__lesson')).toHaveCount(0);
+  });
+  test('service desk term fields retain focus while typing',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{timetable_planning:{terms:[],series:[],runs:[],schedules:[],rooms:[],staff:[],branches:[],classrooms:[]}}});
+    await page.goto(`/academy/admin/services?academy_id=${academyId}`);
+    await page.getByRole('button',{name:/Teaching plan/}).click();
+    await page.getByRole('button',{name:'New term',exact:true}).click();
+    const name=page.getByRole('textbox',{name:'Term name',exact:true});
+    await name.fill('');await name.pressSequentially('Autumn term');
+    await expect(name).toHaveValue('Autumn term');await expect(name).toBeFocused();
+  });
+  test('timetable commit keeps its retry key after an uncertain response and requires the selected term preview',async({page})=>{
+    const first='00000000-0000-4000-8000-000000000091',second='00000000-0000-4000-8000-000000000092';
+    const commits:Record<string,unknown>[]=[];let attempts=0;
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{
+      actionOverrides:{timetable_planning:{terms:[{id:first,name:'First term',status:'draft'},{id:second,name:'Second term',status:'draft'}],series:[],runs:[],schedules:[],rooms:[],staff:[],branches:[],classrooms:[]}},
+      respond:async body=>body.action==='generate_timetable'?{run:{id:'owned-run',academy_id:academyId,term_id:body.term_id,dry_run:body.dry_run,status:body.dry_run?'preview_ready':'completed',candidate_count:1,conflict_count:0,skipped_count:0,generated_count:body.dry_run?0:1}}:undefined,
+    });
+    await page.route('**/functions/v1/academy',async route=>{
+      const body=route.request().postDataJSON() as Record<string,unknown>;
+      if(body.action==='generate_timetable'&&body.dry_run===false){
+        commits.push(body);attempts++;
+        if(attempts===1)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Temporary generation response failure'})});
+      }
+      return route.fallback();
+    });
+    await page.goto(`/academy/admin/services?academy_id=${academyId}`);
+    await page.getByRole('button',{name:/Teaching plan/}).click();await page.getByRole('button',{name:'Build timetable',exact:true}).click();
+    const term=page.getByRole('combobox',{name:'Term',exact:true});const commit=page.getByRole('button',{name:'Create dated lessons',exact:true});
+    await term.selectOption(first);await page.getByRole('button',{name:'Preview conflicts',exact:true}).click();await expect(commit).toBeEnabled();
+    await term.selectOption(second);await expect(commit).toBeDisabled();await term.selectOption(first);await expect(commit).toBeEnabled();
+    await commit.click();await expect(page.getByRole('alert')).toContainText('Temporary generation response failure');await expect(commit).toBeEnabled();
+    await commit.click();await expect(page.getByRole('status').filter({hasText:'Timetable committed.'})).toBeVisible();
+    expect(commits).toHaveLength(2);expect(commits[0].idempotency_key).toBeTruthy();expect(commits[1]).toEqual(commits[0]);
+    await expect(commit).toBeDisabled();
+  });
   test("pending contact save freezes submitted fields and preserves a failed draft", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     let release!: () => void;

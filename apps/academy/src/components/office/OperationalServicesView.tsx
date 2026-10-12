@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarRange,
   CircleDollarSign,
@@ -47,7 +47,16 @@ const inMonths = (months: number): string => {
   result.setMonth(result.getMonth() + months);
   return result.toISOString().slice(0, 10);
 };
-const errorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
+const errorMessage = (error: unknown): string => {
+  const message = error instanceof Error ? error.message : String(error);
+  const payload = message.match(/failed \(\d{3}\): ([\s\S]+)$/)?.[1];
+  if (!payload) return message;
+  try {
+    const data = JSON.parse(payload) as { error?: unknown };
+    if (typeof data?.error === 'string') return data.error;
+  } catch { /* Keep transport details out of the task interface. */ }
+  return translate('The service could not complete this request. Please try again.');
+};
 const statusTone = (status: unknown): string => {
   const normalized = String(status ?? '').toLowerCase();
   if (
@@ -130,6 +139,8 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
   const [tool, setTool] = useState('');
   const [preview, setPreview] = useState<Record<string, unknown> | null>(null);
   const [generation, setGeneration] = useState<Record<string, unknown> | null>(null);
+  const actionBusy = useRef(false);
+  const generationKeys = useRef(new Map<string, string>());
   const [lastSecret, setLastSecret] = useState('');
 
   const can = useCallback(
@@ -197,6 +208,8 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
     onResult?: (result: T) => void,
     keepToolOpen = false,
   ) => {
+    if (actionBusy.current) return;
+    actionBusy.current = true;
     setBusy(true);
     setError('');
     setNotice('');
@@ -209,6 +222,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
     } catch (actionError) {
       setError(errorMessage(actionError));
     } finally {
+      actionBusy.current = false;
       setBusy(false);
     }
   };
@@ -289,6 +303,26 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
     delivery_mode: 'physical',
     status: 'draft',
   });
+  const generateTimetable = async (dryRun: boolean) => {
+    const termId = series.term_id;
+    const scope = `${academyId}:${termId}:${dryRun}`;
+    let key = generationKeys.current.get(scope);
+    if (!key) { key = crypto.randomUUID(); generationKeys.current.set(scope, key); }
+    try {
+      const result = await teacherStudioOperationalCommand<Record<string, unknown>>(academyId, 'generate_timetable', {
+        term_id: termId, dry_run: dryRun, idempotency_key: key,
+      });
+      generationKeys.current.delete(scope);
+      return result;
+    } catch (error) {
+      const status = error instanceof Error ? Number(error.message.match(/\((\d{3})\)/)?.[1]) : NaN;
+      if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
+        generationKeys.current.delete(scope);
+        setGeneration(null);
+      }
+      throw error;
+    }
+  };
   const [framework, setFramework] = useState({
     code: '',
     name: '',
@@ -507,11 +541,11 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
           ))}
         </nav>
         <div className="operations-desk__stage">
-          {lane === 'access' ? <AccessLane /> : null}
-          {lane === 'support' ? <SupportLane /> : null}
-          {lane === 'teaching' ? <TeachingLane /> : null}
-          {lane === 'workforce' ? <WorkforceLane /> : null}
-          {lane === 'communications' ? <CommunicationsLane /> : null}
+          {lane === 'access' ? AccessLane() : null}
+          {lane === 'support' ? SupportLane() : null}
+          {lane === 'teaching' ? TeachingLane() : null}
+          {lane === 'workforce' ? WorkforceLane() : null}
+          {lane === 'communications' ? CommunicationsLane() : null}
         </div>
       </div>
     </section>
@@ -1089,6 +1123,9 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
     const frameworks = competencyData?.frameworks ?? [];
     const competencies = competencyData?.competencies ?? [];
     const planItems = competencyData?.items ?? [];
+    const generationRun = generation?.run as Record<string, unknown> | undefined;
+    const canCommitGeneration = generationRun?.term_id === series.term_id && generationRun?.dry_run === true
+      && generationRun?.status === 'preview_ready' && Number(generationRun?.conflict_count) === 0 && Number(generationRun?.candidate_count) > 0;
     const submitTerm = (event: FormEvent) => {
       event.preventDefault();
       void run(() => teacherStudioOperationalCommand(academyId, 'upsert_timetable_term', term), 'Term saved.');
@@ -1378,10 +1415,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
                 onClick={() =>
                   void run(
                     () =>
-                      teacherStudioOperationalCommand<Record<string, unknown>>(academyId, 'generate_timetable', {
-                        term_id: series.term_id,
-                        dry_run: true,
-                      }),
+                      generateTimetable(true),
                     'Timetable preview generated.',
                     setGeneration,
                     true,
@@ -1396,16 +1430,12 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
                 disabled={
                   busy ||
                   !series.term_id ||
-                  !generation ||
-                  Number((generation.run as Record<string, unknown> | undefined)?.conflict_count ?? 1) > 0
+                  !canCommitGeneration
                 }
                 onClick={() =>
                   void run(
                     () =>
-                      teacherStudioOperationalCommand<Record<string, unknown>>(academyId, 'generate_timetable', {
-                        term_id: series.term_id,
-                        dry_run: false,
-                      }),
+                      generateTimetable(false),
                     'Timetable committed.',
                     setGeneration,
                     true,
@@ -1415,7 +1445,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
                 {translate('Create dated lessons')}
               </button>
             </div>
-            {generation ? (
+            {generation && generationRun?.term_id === series.term_id ? (
               <div className="preview-evidence">
                 <span>
                   {value((generation.run as Record<string, unknown>) ?? {}, 'candidate_count')}{' '}

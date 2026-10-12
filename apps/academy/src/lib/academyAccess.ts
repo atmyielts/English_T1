@@ -20,6 +20,7 @@ export const isTeacherWorkspaceAccess = (access: TeacherStudioAccessProfile | nu
 
 export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet<AccessPermissionKey> | null> = {
   office: new Set<AccessPermissionKey>([
+    'viewRoomTimetable',
     'viewAcademy',
     'viewContacts',
     'manageContacts',
@@ -98,6 +99,7 @@ export const OFFICE_ROUTE_PERMISSION_CAPS: Record<OfficeRouteIntent, ReadonlySet
     'manageTrialFeedback',
   ]),
   center: new Set<AccessPermissionKey>([
+    'viewRoomTimetable',
     'viewAcademy',
     'manageAcademy',
     'manageStaff',
