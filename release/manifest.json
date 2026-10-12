@@ -1,19 +1,27 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-tutor-customer-boundary",
+  "releaseId": "academy-session-transition-integrity",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": ["sat-practice"],
-  "migrations": [],
-  "edgeFunctions": ["sat-practice"],
-  "sharedEdgeConsumers": ["sat-practice"],
-  "workers": [],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
-  "rolloutOrder": ["pages", "secret:AI_ADDON_PRODUCT_ID", "secret:OPENROUTER_API_KEY", "secret:OPENROUTER_BASE_URL", "secret:OPENROUTER_MODEL", "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT", "function:sat-practice"],
-  "manualFollowUps": [
-    "After exact-head hosted CI passes, publish the frontend through its ordinary main merge. The updated UI refuses tutor dispatch until the v2 quota contract is present. Then supabase functions deploy sat-practice from its isolated reviewed bundle. No database migration or other function deployment is required.",
-    "Preserve existing provider configuration without reading or printing secrets: supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_MODEL= remain existing settings. Leave supabase secrets set AI_ADDON_PRODUCT_ID= unconfigured until the dedicated add-on is qualified. Leave SAT_TUTOR_SERVICE_DAILY_LIMIT unset, or use supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=0. Do not enable dispatch before owned provider feedback and published browser recovery pass."
+  "frontends": [],
+  "migrations": [
+    "20261012010000_academy_session_reschedule_integrity.sql"
   ],
-  "verification": ["Pass SAT tutor transport, handler, receipt and browser cases, existing SAT contracts, 26 isolated PostgreSQL ledger cases, SAT app build, secret scan and release manifest validation.", "Verify downloaded published source identity and JWT settings; owned unfinished/unrelated drills must never reserve or call the provider. Qualify actual provider feedback, saved result recovery and owned cleanup before enabling a positive service cap. Local synthetic fixtures do not qualify hosted provider quality."],
-  "rollback": {"frontend": "Restore the previous reviewed Pages deployment if necessary. Never restore the old unlimited tutor backend; retain a zero SAT tutor cap and use a forward repair. Existing completed drills and scores remain available."}
+  "edgeFunctions": [],
+  "sharedEdgeConsumers": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "migration:20261012010000_academy_session_reschedule_integrity.sql"
+  ],
+  "manualFollowUps": [
+    "Source merge does not activate the migration. Compare current production RPC identities and migration history; prepare only this reviewed migration through an isolated linked release. Do not apply unrelated pending migrations. Qualify owned Academy canaries and cleanup before production activation; verify installed function identity and service-only privileges afterward. Use supabase db push --linked only from that reviewed isolated linked release after its dry run proves this is the sole pending migration."
+  ],
+  "verification": [
+    "Run npm run verify:prod, npm run verify:release, npm run test:academy:edge, npm run test:academy:sessions:native and exact-head CI. The native suite observes actual lock contention across independent local connections. Restore the schema-only provider capture in an isolated Supabase database and verify the exact migration hash, owner, grants and unchanged exclusion constraints.",
+    "After activation, verify owned overlapping rescheduling, destination-conflict rollback and retry recovery. Historical schema compatibility and synthetic local fixtures do not establish production customer workflow readiness."
+  ],
+  "rollback": {
+    "migration": "Restore only the captured prior RPC definition and privileges; leave customer rows and events intact. Prefer a forward repair because the previous RPC reintroduces self-overlap and retry-scope defects. See docs/customer-readiness/academy-session-rescheduling.md."
+  }
 }
