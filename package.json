@@ -74,7 +74,9 @@
     "test:academy:room-calendar": "deno test --no-lock supabase/functions/academy/room-timetable.test.ts scripts/test-academy-room-timetable-model.ts scripts/test-academy-local-time.ts && node scripts/test-academy-room-timetable.mjs",
     "test:academy:booking": "deno test --no-lock supabase/functions/academy/timetable-generation.test.ts && node scripts/test-academy-timetable-generation.mjs",
     "test:academy:booking:native": "node scripts/test-academy-timetable-generation.mjs --native",
-    "test:academy:booking:rest": "node scripts/test-academy-timetable-generation.mjs --native --rest"
+    "test:academy:booking:rest": "node scripts/test-academy-timetable-generation.mjs --native --rest",
+    "test:academy:import": "deno test --no-lock scripts/test-academy-import-file.ts supabase/functions/academy/student-import-input.test.ts && node scripts/test-academy-student-import-staging.mjs && node scripts/test-academy-student-import-normalization.mjs && node scripts/test-academy-student-import-preview.mjs",
+    "test:academy:import:native": "node scripts/test-academy-student-import-staging.mjs --native && node scripts/test-academy-student-import-normalization.mjs --native && node scripts/test-academy-student-import-preview.mjs --native"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

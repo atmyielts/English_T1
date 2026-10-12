@@ -40,13 +40,7 @@ const n = (value: unknown) => Number(value ?? 0);
 const label = (value: unknown) => translate(s(value).replaceAll("_", " "));
 const money = (value: unknown, currency = "UZS") =>
   `${new Intl.NumberFormat(getLocaleTag()).format(n(value))} ${currency}`;
-type ImportCell = string | number | boolean | Date | null;
-const normalizeImportCell = (value: unknown): ImportCell => {
-  if (value == null) return null;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value instanceof Date) return value;
-  return String(value);
-};
-type ImportRow = Record<string, ImportCell>;
+import {normalizeImportCell,normalizeImportHeading as normalizeHeading,importRowsFromMatrix as rowsFromMatrix,parseImportCsv as parseCsv,mappedImportCell,type ImportCell,type ImportRow} from "../../lib/importFile";
 const importFields: Record<
   string,
   Array<{ key: string; required?: boolean }>
@@ -110,64 +104,6 @@ const importFields: Record<
     { key: "status", required: true },
     { key: "notes" },
   ],
-};
-const normalizeHeading = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-const rowsFromMatrix = (
-  matrix: ImportCell[][],
-): { headers: string[]; rows: ImportRow[] } => {
-  if (matrix.length < 2)
-    throw new Error("The file needs a header and at least one data row.");
-  const headers = matrix[0].map((value) => s(value).trim());
-  if (headers.some((value) => !value))
-    throw new Error("Every source column needs a header.");
-  if (new Set(headers.map(normalizeHeading)).size !== headers.length)
-    throw new Error("Source headers must be unique.");
-  if (matrix.length > 5001)
-    throw new Error("Import files are limited to 5,000 rows per job.");
-  return {
-    headers,
-    rows: matrix
-      .slice(1)
-      .filter((row) => row.some((value) => s(value).trim()))
-      .map((row) =>
-        Object.fromEntries(
-          headers.map((header, index) => [header, row[index] ?? null]),
-        ),
-      ),
-  };
-};
-const parseCsv = (value: string): ImportCell[][] => {
-  const rows: ImportCell[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  for (let index = 0; index < value.length; index++) {
-    const character = value[index];
-    if (character === '"') {
-      if (quoted && value[index + 1] === '"') {
-        cell += '"';
-        index++;
-      } else quoted = !quoted;
-    } else if (character === "," && !quoted) {
-      row.push(cell.trim());
-      cell = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && value[index + 1] === "\n") index++;
-      row.push(cell.trim());
-      if (row.some((item) => item !== "")) rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += character;
-  }
-  if (quoted) throw new Error("CSV contains an unclosed quoted field.");
-  row.push(cell.trim());
-  if (row.some((item) => item !== "")) rows.push(row);
-  return rows;
 };
 const autoMapping = (headers: string[], type: string) =>
   Object.fromEntries(
@@ -372,7 +308,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             fields.map((field) => [
               field.key,
               columnMapping[field.key]
-                ? (raw[columnMapping[field.key]] ?? "")
+                ? mappedImportCell(raw[columnMapping[field.key]] ?? null, field.key)
                 : "",
             ]),
           );
