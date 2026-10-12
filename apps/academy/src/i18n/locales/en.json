@@ -2638,5 +2638,12 @@
   "The timetable could not be created. Refresh the preview and try again.": "The timetable could not be created. Refresh the preview and try again.",
   "Choose a valid date and time.": "Choose a valid date and time.",
   "This local time does not exist because the clock changes. Choose another time.": "This local time does not exist because the clock changes. Choose another time.",
-  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "This local time occurs twice because the clock changes. Choose an unambiguous time."
+  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "This local time occurs twice because the clock changes. Choose an unambiguous time.",
+  "Active status must be yes or no.": "Active status must be yes or no.",
+  "Use exact integer text for an opening balance.": "For large opening balances, format the spreadsheet cell as text.",
+  "Opening balances must be non-zero whole units.": "Opening balances must be non-zero whole numbers.",
+  "Opening balance is outside the supported range.": "Opening balance is outside the supported range.",
+  "Group capacity must be a non-negative integer.": "Group capacity must be a whole number of zero or more.",
+  "Mapped import columns are required.": "Map the import columns first.",
+  "Import row number must be an integer from 1 to 5,000.": "Import row numbers must be whole numbers from 1 to 5,000."
 }

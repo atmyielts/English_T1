@@ -116,3 +116,38 @@ legacy importer fixes, current installed-source release qualification and
 signed-in published qualification remain unfinished. Grant scopes and merged
 role authorities must be preserved before exposing the new endpoints.
 No importer migration or endpoint has been deployed.
+
+## Legacy permission and retry boundary
+
+The existing eight-type importer now checks both import authority and the
+capability for its actual saved job type at creation, staging, commit and
+recovery. General managers/counselors cannot import staff roles or opening
+balances through general import permission. History queries and responses
+exclude job types the caller cannot operate; the form offers the same permitted
+types, including a compatible fallback for the previous backend response.
+Browser roles cannot directly read or change import jobs, validation flags or
+effect snapshots. Service-owned creation freezes operator, filename, type,
+mapping, mode and duplicate strategy; concurrent key replays return one job.
+
+The migration preserves the previous Edge's two-step creation/configuration
+flow through one initial configuration while the job is draft and has no rows.
+Once configured, the identity freezes. Reviewed dry-run-to-commit remains
+supported, and the original request still replays after that mode transition.
+Nested `ON DELETE SET NULL` attribution cleanup remains compatible while
+ordinary creator reassignment is denied.
+
+Inactive flags and zero-capacity groups retain explicit values. Opening balance
+amounts and reversal amounts use exact integer text; REST queries cast ledger
+amounts to text before JSON decoding. Import cannot claim a newly verified
+guardian. Invalid/fractional or oversized row numbers fail before database
+access. Validation messages are localized in English, Uzbek and Russian.
+
+`npm run test:academy:import:permissions` runs the permission/normalization
+matrix, executes the real handler blocks for forbidden writes and creation
+replay, and exercises the database boundary. Its native variant uses real
+concurrent backends and PostgREST 12.2.12 to verify joined history filters and
+exact bigint transport. Browser checks cover a manager's phone view, owner
+choices, and a narrower server-provided list. Captured-schema compatibility is
+local evidence; production has not changed. The legacy commit/recovery loops
+still need atomic application/recovery and complete pagination, and grant scope
+preservation remains open across Academy services.

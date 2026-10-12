@@ -105,6 +105,7 @@ const importFields: Record<
     { key: "notes" },
   ],
 };
+const importCapabilities:Record<string,string>={contacts:'manageContacts',leads:'manageAdmissions',guardians:'manageGuardians',staff:'manageStaff',classrooms:'manageClassrooms',balances:'adjustFinance',enrollments:'manageRoster',attendance:'markAttendance'};
 const autoMapping = (headers: string[], type: string) =>
   Object.fromEntries(
     (importFields[type] ?? []).map((field) => {
@@ -117,6 +118,12 @@ const autoMapping = (headers: string[], type: string) =>
   );
 export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
   const [data, setData] = useState<AcademyBusinessIntelligence | null>(null);
+  const permittedImportTypes=useMemo(()=>{
+    if(!data)return [];
+    const permissions=data.access.permissions as unknown as Record<string,boolean>;
+    const types=data.allowed_import_types??Object.keys(importFields).filter(type=>permissions.manageImports&&permissions[importCapabilities[type]]);
+    return types.filter(type=>Object.hasOwn(importFields,type));
+  },[data]);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -180,6 +187,14 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
     {},
   );
   const [selectedImport, setSelectedImport] = useState("");
+  useEffect(()=>{
+    if(permittedImportTypes.length&&!permittedImportTypes.includes(importForm.import_type)){
+      const type=permittedImportTypes[0];
+      setImportForm({...importForm,import_type:type});
+      setColumnMapping(autoMapping(importHeaders,type));
+      setSelectedImport('');
+    }
+  },[permittedImportTypes,importForm,importHeaders]);
   const load = useCallback(async () => {
     setError("");
     try {
@@ -286,6 +301,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
   const stageImport = async () => {
     if (!importRows.length || !importHeaders.length)
       throw new Error("Load and preview a CSV or XLSX file before staging.");
+    if(!permittedImportTypes.includes(importForm.import_type)){setError(translate('Forbidden'));return;}
     const fields = importFields[importForm.import_type] ?? [];
     const missing = fields
       .filter((field) => field.required && !columnMapping[field.key])
@@ -1141,7 +1157,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     setColumnMapping(autoMapping(importHeaders, import_type));
                   }}
                 >
-                  {Object.keys(importFields).map((value) => (
+                  {permittedImportTypes.map((value) => (
                     <option key={value} value={value}>
                       {label(value)}
                     </option>

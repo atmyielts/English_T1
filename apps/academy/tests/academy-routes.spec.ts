@@ -4114,6 +4114,31 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Row validation evidence" })).toBeVisible();
   });
 
+  test("manager import choices preserve staff and finance authority on a phone", async ({ page }) => {
+    await page.setViewportSize({width:390,height:844});
+    await seedSessionCookie(page,"manager-user");await mockAcademyEdge(page,"manager");
+    await page.goto(`/academy/office/intelligence?academy_id=${academyId}`);
+    await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});await expect(type).toBeVisible();
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads','guardians','classrooms','enrollments']);
+    await expect(type).toHaveValue('contacts');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  });
+
+  test("owner retains all authorized import choices", async ({ page }) => {
+    await seedSessionCookie(page,"owner-user");await mockAcademyEdge(page,"owner");
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads','guardians','staff','classrooms','balances','enrollments','attendance']);
+  });
+
+  test("import choices honor the server permission list", async ({ page }) => {
+    await seedSessionCookie(page,"owner-user");await mockAcademyEdge(page,"owner",{actionOverrides:{business_intelligence:{...businessIntelligence,access:ownerAccess,allowed_import_types:['contacts','leads']}}});
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads']);
+  });
+
   test("owner can inspect the end-to-end business platform and governed controls", async ({ page }) => {
     await seedSessionCookie(page, "owner-user");
     await mockAcademyEdge(page, "owner");

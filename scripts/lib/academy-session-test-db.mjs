@@ -94,12 +94,18 @@ export async function createNativeSessionDb() {
       await new Promise(resolve=>setTimeout(resolve,100));
     }
     if(!ready)throw new Error('Owned REST fixture did not start');
-    return async(functionName,body)=>{
+    const rpc=async(functionName,body)=>{
       assert.match(functionName,/^academy_[a-z_]+$/);
       const result=await run(['exec',name,'wget','-q','-O','-','-T','55','--header=Content-Type: application/json',
         '--post-data='+JSON.stringify(body),'http://127.0.0.1:3000/rpc/'+functionName]);
       return JSON.parse(result);
     };
+    rpc.select=async(table,params)=>{
+      assert.match(table,/^academy_[a-z_]+$/);
+      const result=await run(['exec',name,'wget','-q','-O','-','-T','55','http://127.0.0.1:3000/'+table+'?'+new URLSearchParams(params)]);
+      return JSON.parse(result);
+    };
+    return rpc;
   }
   async function waitForLock(applicationName) {
     const deadline=Date.now()+15000;

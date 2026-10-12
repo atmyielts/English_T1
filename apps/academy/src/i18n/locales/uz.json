@@ -2638,5 +2638,12 @@
   "The timetable could not be created. Refresh the preview and try again.": "Jadvalni yaratib bo‘lmadi. Oldindan ko‘rishni yangilang va qayta urinib ko‘ring.",
   "Choose a valid date and time.": "To‘g‘ri sana va vaqtni tanlang.",
   "This local time does not exist because the clock changes. Choose another time.": "Soat o‘zgarishi sababli bu mahalliy vaqt mavjud emas. Boshqa vaqtni tanlang.",
-  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "Soat o‘zgarishi sababli bu mahalliy vaqt ikki marta takrorlanadi. Aniq vaqtni tanlang."
+  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "Soat o‘zgarishi sababli bu mahalliy vaqt ikki marta takrorlanadi. Aniq vaqtni tanlang.",
+  "Active status must be yes or no.": "Faollik holatini ha yoki yo‘q deb belgilang.",
+  "Use exact integer text for an opening balance.": "Katta boshlang‘ich balanslar uchun jadval katagini matn formatiga o‘tkazing.",
+  "Opening balances must be non-zero whole units.": "Boshlang‘ich balans nol bo‘lmagan butun son bo‘lishi kerak.",
+  "Opening balance is outside the supported range.": "Boshlang‘ich balans ruxsat etilgan chegaradan tashqarida.",
+  "Group capacity must be a non-negative integer.": "Guruh sig‘imi nol yoki undan katta butun son bo‘lishi kerak.",
+  "Mapped import columns are required.": "Avval import ustunlarini moslang.",
+  "Import row number must be an integer from 1 to 5,000.": "Import qator raqamlari 1 dan 5 000 gacha bo‘lgan butun sonlar bo‘lishi kerak."
 }

@@ -2638,5 +2638,12 @@
   "The timetable could not be created. Refresh the preview and try again.": "Не удалось создать расписание. Обновите предварительный просмотр и повторите попытку.",
   "Choose a valid date and time.": "Укажите правильную дату и время.",
   "This local time does not exist because the clock changes. Choose another time.": "Этого местного времени нет из-за перевода часов. Выберите другое время.",
-  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "При переводе часов это местное время повторяется дважды. Выберите однозначное время."
+  "This local time occurs twice because the clock changes. Choose an unambiguous time.": "При переводе часов это местное время повторяется дважды. Выберите однозначное время.",
+  "Active status must be yes or no.": "Укажите статус активности: да или нет.",
+  "Use exact integer text for an opening balance.": "Для больших начальных балансов задайте текстовый формат ячейки таблицы.",
+  "Opening balances must be non-zero whole units.": "Начальный баланс должен быть ненулевым целым числом.",
+  "Opening balance is outside the supported range.": "Начальный баланс выходит за допустимые пределы.",
+  "Group capacity must be a non-negative integer.": "Вместимость группы должна быть целым числом от нуля.",
+  "Mapped import columns are required.": "Сначала сопоставьте столбцы импорта.",
+  "Import row number must be an integer from 1 to 5,000.": "Номера строк импорта должны быть целыми числами от 1 до 5 000."
 }
