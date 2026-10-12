@@ -617,7 +617,7 @@ const financeSignals = [
   'Awaiting Click',
   'Manual settlement',
   'Needs attention',
-  'Access applied',
+  'Payment is recorded as paid. Check learning access separately.',
   'Canceled checkout',
   'Duplicate callback',
   'Grant mismatch',

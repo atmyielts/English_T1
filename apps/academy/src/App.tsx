@@ -9,7 +9,7 @@ import {
   Building2,
   CalendarDays,
   ClipboardList,
-  ChevronDown,
+  Menu,
   CreditCard,
   GraduationCap,
   KeyRound,
@@ -1094,6 +1094,13 @@ const defaultClassroomResourceForm = (): ClassroomResourceFormState => ({
   is_published: true,
 });
 
+const AcademyPublicBrand = () => (
+  <a className="academy-public-brand" href="/">
+    <img src="/schood-logo.png" width="32" height="32" alt="" />
+    <span>{translate('Schood Academy')}</span>
+  </a>
+);
+
 const MarketUtilityNavigation = ({
   id,
   children,
@@ -1114,6 +1121,8 @@ const MarketUtilityNavigation = ({
         toggleRef.current?.focus();
       }}
     >
+      <AcademyPublicBrand />
+      <LanguageSwitcher inline />
       <button
         ref={toggleRef}
         className="market-nav__toggle"
@@ -1122,8 +1131,8 @@ const MarketUtilityNavigation = ({
         aria-controls={id}
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{translate('Menu')}</span>
-        <ChevronDown size={20} aria-hidden="true" />
+        <span className="sr-only">{translate('Menu')}</span>
+        <Menu size={18} aria-hidden="true" />
       </button>
       <div className="market-nav__items" id={id}>
         {children}
@@ -3352,19 +3361,21 @@ const App = () => {
     }
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
-            <div className="market-nav">
+            <MarketUtilityNavigation id="academy-service-menu">
+              <a className="ghost-btn" href="#academy-workspaces">{translate("Workspaces")}</a>
+              <a className="ghost-btn" href="#academy-daily-flow">{translate("Daily workflow")}</a>
               <a className="ghost-btn" href={`${platformUrl.replace(/\/$/, '')}/`}>
                 {translate("Back to platform")}{' '}</a>
-            </div>
+            </MarketUtilityNavigation>
 
             <section className="market-hero">
               <div className="market-copy">
                 <div className="market-eyebrow"><Sparkles size={14} /> {translate("Schood Academy")}</div>
                 <h1>{translate("Run your learning center from one connected workspace")}</h1>
                 <p>
-                  {translate("Organize classes, guide teachers, assign IELTS and SAT practice, track attendance and homework, and collect tuition without scattered chats or spreadsheets.")}{' '}</p>
+                  {translate("Organize classes, guide teachers, assign IELTS and SAT practice, and keep attendance, homework and tuition records together.")}{' '}</p>
                 <div className="market-actions">
                   {state === 'unauthenticated' ? (
                     <a className="primary-btn" href={toAuthUrl()}>
@@ -3386,7 +3397,7 @@ const App = () => {
               <div className="academy-command-card">
                 <div className="academy-command-head">
                   <div>
-                    <span className="market-badge">{translate("A teacher's next lesson")}</span>
+                    <span className="market-badge">{translate("Example workspace")}</span>
                     <h2>{translate("Everything is ready before class starts")}</h2>
                   </div>
                   <span className="pulse-dot" aria-hidden="true" />
@@ -3407,7 +3418,7 @@ const App = () => {
                   <article>
                     <CreditCard size={18} />
                     <strong>{translate("Billing")}</strong>
-                    <span>{translate("Tuition plans, Click payments, and student access.")}</span>
+                    <span>{translate("Tuition plans, payment records, and student access.")}</span>
                   </article>
                   <article>
                     <MessageSquare size={18} />
@@ -3432,7 +3443,7 @@ const App = () => {
                 {translate("Owners see the whole center, teachers see today's classes, and students see their learning. Everyone works from the same schedule, roster, assignments, and payment records.")}{' '}</p>
             </section>
 
-            <section className="market-grid academy-surface-grid">
+            <section id="academy-workspaces" className="market-grid academy-surface-grid">
               <article className="market-card surface-card surface-card--lime">
                 <div className="surface-icon"><Building2 size={22} /></div>
                 <h3>{translate("Center page")}</h3>
@@ -3459,7 +3470,7 @@ const App = () => {
               </article>
             </section>
 
-            <section className="academy-rhythm">
+            <section id="academy-daily-flow" className="academy-rhythm">
               <div className="market-section-head">
                 <span className="market-badge">{translate("Daily rhythm")}</span>
                 <h2>{translate("Built around the real week of an academy")}</h2>
@@ -3516,7 +3527,7 @@ const App = () => {
             </section>
           </div>
         </div>
-        <UpdatesButton />
+        {me?.user ? <UpdatesButton /> : null}
       </>
     );
   }
@@ -3643,7 +3654,7 @@ const App = () => {
   if (state === 'ready' && isAcademySetup) {
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
             <MarketUtilityNavigation id="academy-setup-menu">
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
@@ -3707,7 +3718,7 @@ const App = () => {
 
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
             <MarketUtilityNavigation id="academy-workspace-menu">
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
@@ -3854,9 +3865,9 @@ const App = () => {
 
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
-            <div className="market-nav">
+            <MarketUtilityNavigation id="academy-overview-menu">
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
                 {translate("Switch workspace")}{' '}</button>
               <button
@@ -3869,7 +3880,7 @@ const App = () => {
                 {translate("Refresh")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void signOut()}>
                 {translate("Sign out")}{' '}</button>
-            </div>
+            </MarketUtilityNavigation>
 
             <section className="market-hero">
               <div className="market-copy">
@@ -4153,9 +4164,9 @@ const App = () => {
 
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
-            <div className="market-nav">
+            <MarketUtilityNavigation id="academy-classrooms-menu">
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy/classrooms', roomAcademyId))}>
                 {translate("Classroom directory")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy', roomAcademyId))}>
@@ -4171,7 +4182,7 @@ const App = () => {
                   status: translate(classroomAutoRefreshEnabled ? 'On' : 'Off'),
                 })}
               </button>
-            </div>
+            </MarketUtilityNavigation>
 
             <section className="market-hero">
               <div className="market-copy">
@@ -4690,16 +4701,16 @@ const App = () => {
 
     return (
       <>
-        <div className="market-page">
+        <div className="market-page academy-public-page">
           <div className="market-wrap">
-            <div className="market-nav">
+            <MarketUtilityNavigation id="academy-classroom-menu">
               <button className="ghost-btn" type="button" onClick={() => navigate(academyScopedPath('/academy'))}>
                 {translate("Academy landing")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => navigate('/academies')}>
                 {translate("Switch workspace")}{' '}</button>
               <button className="ghost-btn" type="button" onClick={() => void refresh()} disabled={busy}>
                 {translate("Refresh")}{' '}</button>
-            </div>
+            </MarketUtilityNavigation>
 
             <section className="market-hero">
               <div className="market-copy">
