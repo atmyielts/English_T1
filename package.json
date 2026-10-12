@@ -73,7 +73,8 @@
     "test:academy:sessions:native": "node scripts/test-academy-session-rescheduling.mjs --native",
     "test:academy:room-calendar": "deno test --no-lock supabase/functions/academy/room-timetable.test.ts scripts/test-academy-room-timetable-model.ts scripts/test-academy-local-time.ts && node scripts/test-academy-room-timetable.mjs",
     "test:academy:booking": "deno test --no-lock supabase/functions/academy/timetable-generation.test.ts && node scripts/test-academy-timetable-generation.mjs",
-    "test:academy:booking:native": "node scripts/test-academy-timetable-generation.mjs --native"
+    "test:academy:booking:native": "node scripts/test-academy-timetable-generation.mjs --native",
+    "test:academy:booking:rest": "node scripts/test-academy-timetable-generation.mjs --native --rest"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

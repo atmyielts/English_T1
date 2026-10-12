@@ -16,7 +16,7 @@ export const bindSql = (source, params=[]) => source.replace(/\$(\d+)/g, (_, i) 
 // credentials, or access to any pre-existing database/container.
 export async function createNativeSessionDb() {
   const name = 'schood-session-' + randomUUID().slice(0,8);
-  let owned=false, role=null;
+  let owned=false, role=null,restName=null;
   const active = new Set();
   function process(args) {
     const child=spawn('docker',args,{windowsHide:true,stdio:['pipe','pipe','pipe']});
@@ -53,6 +53,10 @@ export async function createNativeSessionDb() {
   };
   async function close() {
     for(const child of active)child.kill();
+    if(restName){
+      assert.equal(await run(['inspect',restName,'--format','{{index .Config.Labels "schood.qa"}}']),label+'-rest');
+      await run(['rm','--force','--volumes',restName]);restName=null;
+    }
     if(!owned)return;
     assert.equal(await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']),label);
     // The pinned image creates its own anonymous database volume. Remove that
@@ -74,6 +78,29 @@ export async function createNativeSessionDb() {
     return {commit:async()=>{p.child.stdin.end('commit;\n\\q\n');await p.done;},rollback:async()=>{p.child.stdin.end('rollback;\n\\q\n');await p.done;}};
   }
   const independent = (source,applicationName) => run(psql(),'set statement_timeout=\'30s\';set application_name='+quote(applicationName)+';\n'+source+';');
+  async function startRestGateway(){
+    if(!owned||restName)throw new Error('REST fixture requires one owned running database');
+    const candidateRestName='schood-session-rest-'+randomUUID().slice(0,8);
+    // Shares only the owned database's isolated network namespace. No host
+    // ports, external network, JWT/customer credentials or mounted host files.
+    await run(['run','--detach','--name',candidateRestName,'--network','container:'+name,'--label','schood.qa='+label+'-rest',
+      '-e','PGRST_DB_URI=postgresql://postgres@127.0.0.1:5432/postgres','-e','PGRST_DB_ANON_ROLE=service_role',
+      '-e','PGRST_DB_SCHEMAS=public','postgrest/postgrest@sha256:5f4ce744539bbba786b4e24dbbd95bdb2a956dcf568c5374995a0ff4a68f5bd2']);
+    restName=candidateRestName;
+    assert.equal(await run(['inspect',restName,'--format','{{index .Config.Labels "schood.qa"}}']),label+'-rest');
+    let ready=false;
+    for(let attempt=0;attempt<50;attempt++){
+      try{await run(['exec',name,'wget','-q','-O','-','-T','1','http://127.0.0.1:3000/']);ready=true;break;}catch{}
+      await new Promise(resolve=>setTimeout(resolve,100));
+    }
+    if(!ready)throw new Error('Owned REST fixture did not start');
+    return async(functionName,body)=>{
+      assert.match(functionName,/^academy_[a-z_]+$/);
+      const result=await run(['exec',name,'wget','-q','-O','-','-T','55','--header=Content-Type: application/json',
+        '--post-data='+JSON.stringify(body),'http://127.0.0.1:3000/rpc/'+functionName]);
+      return JSON.parse(result);
+    };
+  }
   async function waitForLock(applicationName) {
     const deadline=Date.now()+15000;
     while(Date.now()<deadline){
@@ -87,7 +114,7 @@ export async function createNativeSessionDb() {
     await run(['run','--detach','--name',name,'--network','none','--label','schood.qa='+label,'-e','POSTGRES_HOST_AUTH_METHOD=trust',image]);owned=true;
     assert.equal(await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']),label);
     for(let attempt=0;attempt<100;attempt++){
-      try{await exec('select 1;');return {exec,query,close,holdTransaction,independent,waitForLock};}catch{}
+      try{await exec('select 1;');return {exec,query,close,holdTransaction,independent,waitForLock,startRestGateway};}catch{}
       await new Promise(resolve=>setTimeout(resolve,100));
     }
     throw new Error('Owned scheduling database did not start');

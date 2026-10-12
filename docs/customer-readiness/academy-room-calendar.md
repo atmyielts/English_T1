@@ -93,6 +93,12 @@ role timeout is changed. Supabase documents function-level REST timeout support
 at https://supabase.com/docs/guides/database/postgres/timeouts. The final 6,280
 lesson native benchmark took 14,527 ms with the timezone guard enabled. Actual
 REST configuration reload/behavior and hosted capacity must still be qualified.
+The optional `npm run test:academy:booking:rest` suite runs pinned PostgREST
+12.2.12 beside the owned native database in its isolated network namespace,
+without publishing any host ports. With an inherited eight-second timeout and
+an injected ten-second lesson insert, the actual generation RPC completed in
+10,296 ms, returned its stable retry receipt and cleaned up both containers.
+This proves the local REST timeout path, not the installed hosted REST version.
 
 Before declaring the requested feature complete:
 

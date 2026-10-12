@@ -150,5 +150,21 @@ try{
     eq(outcome.status,'completed');assert(outcome.generated_count>=6000);checks++;
     console.log(JSON.stringify({benchmark:'40 groups, three weekly classes, one year',sessions:outcome.generated_count,elapsedMs:elapsed,scope:'Owned local database only; not hosted latency or production throughput proof.'}));
   }
+  if(process.argv.includes('--rest')){
+    if(!native)throw Error('REST qualification requires the owned native database');
+    await addTerm(90,'2027-04-05','2027-04-05');
+    await db.exec(`grant usage on schema public to service_role;
+      alter role postgres set statement_timeout='8s';
+      create function owned_generation_slow_insert() returns trigger language plpgsql as $$
+      begin if new.timetable_term_id='${id(90)}' then perform pg_sleep(10);end if;return new;end;$$;
+      create trigger owned_generation_slow_insert before insert on academy_lesson_sessions
+        for each row execute function owned_generation_slow_insert();`);
+    const rpc=await db.startRestGateway();const start=performance.now();
+    const result=await rpc('academy_generate_timetable',{p_academy_id:academy,p_term_id:id(90),p_actor_id:actor,p_dry_run:false,p_key:'rest-budget-proof'});
+    eq(result.run.status,'completed');eq(result.run.generated_count,1);
+    const elapsed=Math.round(performance.now()-start);assert(elapsed>=10000&&elapsed<45000);checks++;
+    eq((await rpc('academy_generate_timetable',{p_academy_id:academy,p_term_id:id(90),p_actor_id:actor,p_dry_run:false,p_key:'rest-budget-proof'})).run.id,result.run.id);
+    console.log(JSON.stringify({rest:'PostgREST 12.2.12 in owned isolated network',inheritedStatementTimeout:'8s',generationFunctionBudget:'45s',elapsedMs:elapsed,scope:'Synthetic local REST proof only; not installed hosted runtime qualification.'}));
+  }
   console.log(`Academy timetable generation: ${checks} ${native?'native':'isolated'} PostgreSQL checks passed; no hosted mutations.`);
 }finally{await db.close();}
