@@ -1,7 +1,6 @@
 import {PGlite} from '@electric-sql/pglite';
 import {btree_gist} from '@electric-sql/pglite/contrib/btree_gist';
 import {readFileSync} from 'node:fs';
-import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {installAcademyBookingFixture} from './lib/academy-booking-fixture.mjs';
 import {createNativeSessionDb,bindSql} from './lib/academy-session-test-db.mjs';
@@ -33,8 +32,8 @@ try{
   const original=await create(`timetable:${series}:2026-10-12`,'2026-10-12T09:00Z','2026-10-12T10:00Z');
   await rows("update academy_lesson_sessions set timetable_term_id=$1,timetable_series_id=$2,timetable_occurrence_date='2026-10-12' where id=$3",[term,series,original.id]);
   await rows("select academy_transition_lesson_session($1,$2,$3,'cancelled','{\"reason\":\"Owned fixture\"}','old-cancel')",[academy,original.id,actor]);
-  const prior=execFileSync('git',['show','HEAD:supabase/functions/academy/index.ts'],{encoding:'utf8',maxBuffer:2*1024*1024});
-  assert(prior.includes('.in("status", ["scheduled", "confirmed", "in_progress"])'));checks++;
+  // Reproduce the prior active-only occurrence lookup against real constraints.
+  // Do not require old Git objects: CI uses a shallow checkout of the repaired head.
   eq((await rows("select id from academy_lesson_sessions where academy_id=$1 and timetable_series_id=$2 and status in('scheduled','confirmed','in_progress')",[academy,series])).length,0);
   await reject(()=>rows("insert into academy_lesson_sessions(id,academy_id,branch_id,classroom_id,room_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,idempotency_key,timetable_term_id,timetable_series_id,timetable_occurrence_date) select gen_random_uuid(),academy_id,branch_id,classroom_id,room_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,'different-key',timetable_term_id,timetable_series_id,timetable_occurrence_date from academy_lesson_sessions where id=$1",[original.id]),/duplicate key/);
   console.log('Reproduced retained cancelled occurrence missing from the old active-only lookup and refusing a duplicate insert.');
