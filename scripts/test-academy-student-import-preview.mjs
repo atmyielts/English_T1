@@ -47,10 +47,13 @@ try{
  await query("insert into academy_classrooms values($1,$2,$3,'IELTS A',true,2),($4,$2,$5,'Other branch class',true,20),($6,$2,$3,'Inactive class',false,20)",[id(10),academy,branch,id(11),other,id(12)]);
  await query("insert into academy_contacts(id,academy_id,primary_branch_id,first_name,status,phone,email) values($1,$2,$3,'Existing','active','904441111','existing@example.invalid'),($4,$2,$5,'Other branch','active','905551111',null),($6,$2,$3,'Ambiguous A','active','906661111',null),($7,$2,$3,'Ambiguous B','active','+998 90 666 11 11',null),($8,$2,$3,'Paused','paused','907771111',null)",[id(20),academy,branch,id(21),other,id(22),id(23),id(24)]);
  await query("insert into academy_guardians values($1,$2,'908881111','invited'),($3,$2,'+998 90 888 11 11','invited'),($4,$2,'909991111','suspended'),($5,$2,'901111111','verified')",[id(30),academy,id(31),id(32),id(33)]);
- let job=await stage([student({parent_phone:'902222222'})]);let preview=await validate(job);
+ let job=await stage([student({parent_phone:'902222222'})]);
+ await reject(()=>query("update academy_student_import_rows set normalization='{}' where job_id=$1",[job.id]),/derived from frozen/);
+ let preview=await validate(job);
  eq(preview.status,'validated');eq(preview.validation.create_rows,1);eq(preview.validation.opening_credit,'800000');eq(preview.validation.opening_debt,'0');eq(preview.validation.requires_finance_approval,true);
  eq((await values(job))[0].normalized_data.classroom_id,id(10));
  const originalHash=preview.validation.preview_hash;eq((await validate(job)).validation.preview_hash,originalHash);
+ await reject(()=>query("update academy_student_import_rows set normalization='{}' where job_id=$1",[job.id]),/cannot be changed/);
  // Changed references are visible on a repeated preview, not frozen as trusted flags.
  await query('update academy_classrooms set student_capacity=0 where id=$1',[id(10)]);
  preview=await validate(job);eq(preview.validation.ready,false);eq(preview.validation.preview_hash===originalHash,false);

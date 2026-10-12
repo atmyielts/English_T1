@@ -71,8 +71,8 @@ and measured authenticated loading remain part of the broader readiness scope.
 ## Current draft evidence (12 October 2026)
 
 `npm run test:academy:import` exercises the shared file parser, server input and
-authority decoder, SQL upload protocol, exact row normalization and reference
-preview. `npm run test:academy:import:native` uses fresh PostgreSQL 17 containers
+authority decoder, SQL upload protocol, exact row normalization, reference
+preview and atomic commit. `npm run test:academy:import:native` uses fresh PostgreSQL 17 containers
 without host ports, mounted files, customer rows or hosted credentials. Its
 staging test uses independent connections for concurrent creation/chunks and
 checks all 5,000 supported rows, incomplete seals, immutable retries, malformed
@@ -85,10 +85,34 @@ memberships against capacity, and retains paused membership and revoked parent
 consent boundaries. Opening balances use exact integer strings, explicit source
 signs, the configured Academy currency, and a finance-approval requirement.
 Existing student balances require reconciliation. A repeated preview recalculates
-reference errors and its content hash. A preview changes only the import's own
+reference errors and its content hash. Deterministic normalization is cached only
+after the database verifies it against frozen source values; neither source
+values nor populated normalization can be altered. This avoids repeating name,
+phone, amount and date parsing during commit while still rechecking references
+and capacity. A preview changes only the import's own
 staging records; it creates no customer, guardian, membership or payment.
 
-These are local draft checks. Atomic commit/effect evidence, recovery, API
-integration, the complete wizard, legacy importer fixes, complete installed
-schema qualification and signed-in published qualification remain unfinished.
+The transaction applies new contacts, unverified parents/pending relationships,
+memberships and exact opening balances with immutable effect snapshots, audit
+and one receipt. Replays cannot apply a second copy; changed previews/actors/keys
+are rejected. A late audit failure rolls back all business records, effect
+snapshots and lifecycle events. All ordinary contact/guardian identity writers
+participate in bounded identity locks, and enrollment writers use the same
+locked capacity guard. Normal writes still publish lifecycle automation;
+historical imports retain their original date and suppress automation only
+while a service-owned import is applying in the same transaction.
+
+The native large test exercises 5,000 complete student/parent/group/balance rows
+across 50 groups, rather than proving just upload counts. A separate private
+qualification restored the full schema-only capture and relevant runtime role
+metadata, applied the candidate migrations as the non-superuser installed
+database owner, and executed rollback-only Auth/student/parent/ledger/receipt
+fixtures. It confirmed no payment, entitlement or communication event was
+created by import. This is compatibility evidence against a historical schema
+capture, not current hosted behavior or a deployed user flow.
+
+These are local draft checks. Recovery, API integration, the complete wizard,
+legacy importer fixes, current installed-source release qualification and
+signed-in published qualification remain unfinished. Grant scopes and merged
+role authorities must be preserved before exposing the new endpoints.
 No importer migration or endpoint has been deployed.

@@ -7,7 +7,7 @@ create or replace function public.academy_validate_student_import(
  set statement_timeout='30s' set lock_timeout='5s' as $$
 declare
  v_job public.academy_student_import_jobs%rowtype;v_row public.academy_student_import_rows%rowtype;
- v_result jsonb;v_normal jsonb;v_errors jsonb;v_contacts uuid[];v_contact uuid;v_groups uuid[];v_group uuid;
+ v_normal jsonb;v_errors jsonb;v_contacts uuid[];v_contact uuid;v_groups uuid[];v_group uuid;
  v_guardians uuid[];v_guardian uuid;v_action text;v_currency text;v_summary jsonb;v_hash text;
 begin
  if not exists(select 1 from public.users where id=p_actor_id and is_active) then raise exception 'An active account is required';end if;
@@ -21,10 +21,11 @@ begin
  if coalesce(v_currency,'UZS') is distinct from (v_job.settings->>'currency') then raise exception 'Import currency must match the Academy currency';end if;
  -- Normalize all source rows before duplicate detection, avoiding order-based
  -- guesses about which of two different people sharing a phone should win.
- for v_row in select * from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id order by row_number loop
-  v_result:=public.academy_normalize_student_import_row(v_row.mapped_data,v_job.settings);
-  update public.academy_student_import_rows set normalized_data=v_result->'normalized',validation_errors=v_result->'errors' where academy_id=p_academy_id and id=v_row.id;
- end loop;
+ with base as materialized (
+  select id,coalesce(normalization,public.academy_normalize_student_import_row(mapped_data,v_job.settings)) result
+   from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id
+ ) update public.academy_student_import_rows r set normalization=b.result,normalized_data=b.result->'normalized',validation_errors=b.result->'errors'
+   from base b where r.academy_id=p_academy_id and r.job_id=p_job_id and r.id=b.id;
  -- A single statement finds repeated identity columns, rather than 5,000
  -- repeated scans of the entire upload. These ambiguous rows require correction.
  with repeated as (

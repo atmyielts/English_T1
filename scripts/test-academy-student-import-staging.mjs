@@ -41,7 +41,7 @@ try{
   eq(sealed.status,'sealed');eq(sealed.staged_rows,2);eq(sealed.validation,null);eq(sealed.receipt,null);
   eq((await stage('file-one',c,[source()],0,true)).id,sealed.id);
   await reject(()=>stage('file-one',c,[source('Tampered')]),/different values/);
-  await reject(()=>rows('update academy_student_import_rows set source_data=$1::jsonb where job_id=$2',[JSON.stringify({Name:'tampered'}),first.id]),/sealed import/);
+  await reject(()=>rows('update academy_student_import_rows set source_data=$1::jsonb where job_id=$2',[JSON.stringify({Name:'tampered'}),first.id]),/cannot change source/);
   await reject(()=>rows('delete from academy_student_import_rows where job_id=$1',[first.id]),/sealed import/);
   await reject(()=>rows('update academy_student_import_rows set row_number=5 where job_id=$1',[first.id]),/cannot move/);
   // A failed seal with a final missing range rolls back its newly inserted rows.

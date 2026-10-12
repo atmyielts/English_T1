@@ -15,7 +15,7 @@ create table public.academy_student_import_jobs(
 create table public.academy_student_import_rows(
  id uuid primary key default gen_random_uuid(),academy_id uuid not null,job_id uuid not null,
  row_number integer not null check(row_number between 1 and 5000),
- source_data jsonb not null,mapped_data jsonb not null,normalized_data jsonb,validation_errors jsonb,
+ source_data jsonb not null,mapped_data jsonb not null,normalization jsonb,normalized_data jsonb,validation_errors jsonb,
  unique(academy_id,job_id,row_number),
  foreign key(academy_id,job_id) references public.academy_student_import_jobs(academy_id,id) on delete cascade
 );
@@ -35,6 +35,14 @@ begin
  select * into v_job from public.academy_student_import_jobs
   where academy_id=coalesce(new.academy_id,old.academy_id) and id=coalesce(new.job_id,old.job_id) for update;
  if not found then raise exception 'Import job not found';end if;
+ if tg_op='UPDATE' and row(new.source_data,new.mapped_data) is distinct from row(old.source_data,old.mapped_data) then
+  raise exception 'An uploaded row cannot change source values';end if;
+ if tg_op='UPDATE' and old.normalization is not null and new.normalization is distinct from old.normalization then
+  raise exception 'An import normalization cannot be changed';end if;
+ if new.normalization is not null and(tg_op='INSERT' or old.normalization is null) then
+  if new.normalization is distinct from public.academy_normalize_student_import_row(new.mapped_data,v_job.settings) then
+   raise exception 'Import normalization must be derived from frozen source values';end if;
+ end if;
  if tg_op='DELETE' or tg_op='INSERT' or row(new.source_data,new.mapped_data) is distinct from row(old.source_data,old.mapped_data) then
   if v_job.status<>'uploading' then raise exception 'A sealed import cannot change source rows';end if;
  end if;
