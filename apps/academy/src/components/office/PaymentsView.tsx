@@ -351,7 +351,7 @@ export const PaymentsView = ({
                       ) : reconciliation.key === 'needs_attention' ? (
                         <span className="status status--bad">{translate("investigate")}</span>
                       ) : reconciliation.key === 'awaiting_provider' ? (
-                        <span className="status status--pending">{translate("Awaiting Click")}</span>
+                        <span className="muted" aria-label={translate("Awaiting Click")}>—</span>
                       ) : reconciliation.key === 'duplicate' ? (
                         <span className="status status--pending">{translate("duplicate")}</span>
                       ) : reconciliation.key === 'grant_mismatch' ? (
