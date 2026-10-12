@@ -3269,6 +3269,71 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Schedule trial" })).toBeVisible();
   });
 
+  for (const width of [1440, 817, 390, 320]) {
+    test(`billing checkout keeps normal field and button sizes at ${width}px`, async ({page}, testInfo) => {
+      await page.setViewportSize({width, height: 900});
+      await seedSessionCookie(page, 'billing-layout-owner');
+      await mockAcademyEdge(page, 'owner');
+      await page.goto(`/academy/admin/payments?academy_id=${academyId}&lang=uz`);
+      const checkout=page.locator('form.workspace-form');
+      await expect(checkout.locator('select')).toHaveCount(2);
+      await expect(page.getByRole('heading',{name:'Hisob-kitob va to‘lovlar',exact:true})).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      await page.screenshot({path:testInfo.outputPath(`billing-${width}.png`),fullPage:true});
+      const geometry=await checkout.evaluate(form => ({
+        height:form.getBoundingClientRect().height,
+        fields:Array.from(form.querySelectorAll('select,button[type=submit]')).map(control=>control.getBoundingClientRect().height),
+        gap:form.querySelector('label')!.getBoundingClientRect().top-form.querySelector('p')!.getBoundingClientRect().bottom,
+      }));
+      for(const height of geometry.fields){expect(height).toBeGreaterThanOrEqual(44);expect(height).toBeLessThanOrEqual(56);}
+      expect(geometry.height).toBeLessThan(440);
+      expect(geometry.gap).toBeLessThanOrEqual(20);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test('billing summary separates currencies instead of adding dollars to sums', async ({page}) => {
+    await seedSessionCookie(page,'billing-currencies-owner');
+    const original=commercialCore.payments[0];
+    await mockAcademyEdge(page,'owner',{actionOverrides:{payments:{payments:[
+      {...original,id:'paid-uzs',amount:500000,currency:'UZS',status:'paid'},
+      {...original,id:'paid-usd',amount:50,currency:'USD',status:'paid'},
+    ]}}});
+    await page.goto(`/academy/admin/payments?academy_id=${academyId}`);
+    const amounts=page.locator('.payment-summary-amounts').first();
+    await expect(amounts).toContainText('500,000 UZS');
+    await expect(amounts).toContainText('50 USD');
+    await expect(amounts).not.toContainText('500,050');
+    await page.getByRole('textbox',{name:'Search payments'}).fill('paid-usd');
+    await expect(amounts).not.toContainText('UZS');
+    await expect(amounts).toContainText('50 USD');
+  });
+
+  for(const width of [1440,768,390,320]) {
+    test(`Academy public landing keeps Schood sign-in and responsive navigation at ${width}px`,async({page},testInfo)=>{
+      await page.setViewportSize({width,height:900});
+      await page.goto('/');
+      await expect(page.getByRole('heading',{name:'Run your learning center from one connected workspace'})).toBeVisible();
+      const entry=page.getByRole('link',{name:'Open Academy',exact:true}).first();
+      await expect(entry).toBeVisible();
+      expect(new URL((await entry.getAttribute('href'))!,page.url()).pathname).toBe('/auth');
+      await expect(page.locator('input[type=password]')).toHaveCount(0);
+      const brand=page.getByRole('link',{name:'Schood Academy',exact:true});
+      await expect(brand).toBeVisible();
+      if(width<=620){
+        const menu=page.getByRole('button',{name:'Menu',exact:true});
+        await menu.click();
+        await expect(page.getByRole('link',{name:'Workspaces',exact:true})).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeFocused();
+      }
+      await page.evaluate(()=>document.fonts.ready);
+      await page.locator('.academy-public-brand img').evaluate((image:HTMLImageElement)=>image.decode());
+      await page.screenshot({path:testInfo.outputPath(`academy-public-${width}.png`),fullPage:true});
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    });
+  }
+
   test("mobile Contacts and Payments keep wide tables and contextual lists reachable", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedSessionCookie(page, "owner-mobile-table-user");

@@ -7,6 +7,7 @@ import { I18nProvider, translate } from './i18n';
 import '@fontsource-variable/manrope/wght.css';
 import './index.css';
 import './workspace-layout.css';
+import './public-pages.css';
 
 const App = lazy(() => import('./App'));
 const AcademyTelegramApp = lazy(() => import('./components/telegram/AcademyTelegramApp'));

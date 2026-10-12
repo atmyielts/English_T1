@@ -59,6 +59,27 @@ const metadataHasValue = (value: TeacherStudioPayment['metadata'], key: string):
   return raw !== null && typeof raw !== 'undefined';
 };
 
+const amountsByCurrency = (payments: TeacherStudioPayment[]): Record<string, number> =>
+  payments.reduce((totals, payment) => {
+    const currency = payment.currency.trim().toUpperCase() || '—';
+    totals[currency] = (totals[currency] ?? 0) + payment.amount;
+    return totals;
+  }, {} as Record<string, number>);
+
+const displayAmounts = (amounts: Record<string, number>) => {
+  const entries = Object.entries(amounts).sort(([a], [b]) => a.localeCompare(b));
+  return entries.length ? entries.map(([currency, amount]) =>
+    <span key={currency}>{amount.toLocaleString(getLocaleTag())} {currency}</span>) : <span>0</span>;
+};
+
+const paymentStatusLabel = (status: string): string => {
+  if (status === 'paid') return translate('Paid');
+  if (status === 'pending') return translate('Pending');
+  if (status === 'failed') return translate('Failed');
+  if (status === 'canceled' || status === 'cancelled') return translate('Canceled');
+  return translate(status);
+};
+
 const paymentReconciliation = (payment: TeacherStudioPayment): {
   key: ReconciliationKey;
   label: string;
@@ -75,16 +96,16 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (grantError) {
       return {
         key: 'grant_mismatch',
-        label: 'Grant mismatch',
-        detail: 'Provider marked this paid, but the entitlement grant needs operator review.',
+        label: translate('Grant mismatch'),
+        detail: translate('Provider marked this paid, but the entitlement grant needs operator review.'),
         className: 'status status--bad',
       };
     }
 
     return {
       key: 'applied',
-      label: 'Access applied',
-      detail: 'Payment is settled and the entitlement engine has run.',
+        label: translate('Paid'),
+        detail: translate('Payment is recorded as paid. Check learning access separately.'),
       className: 'status status--ok',
     };
   }
@@ -92,8 +113,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   if (['canceled', 'cancelled', 'expired'].includes(status)) {
     return {
       key: 'canceled',
-      label: 'Canceled checkout',
-      detail: 'Provider canceled or expired the checkout. Create a new Click link if the student still wants access.',
+      label: translate('Canceled checkout'),
+      detail: translate('Provider canceled or expired the checkout. Create a new Click link if the student still wants access.'),
       className: 'status status--bad',
     };
   }
@@ -101,8 +122,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   if (['failed', 'failure', 'rejected'].includes(status)) {
     return {
       key: 'failed',
-      label: 'Payment failed',
-      detail: 'Student needs a new checkout or provider follow-up.',
+      label: translate('Payment failed'),
+      detail: translate('Student needs a new checkout or provider follow-up.'),
       className: 'status status--bad',
     };
   }
@@ -111,8 +132,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (providerStage === 'complete_duplicate' || metadataHasValue(payment.metadata, 'duplicate_of_payment_id')) {
       return {
         key: 'duplicate',
-        label: 'Duplicate callback',
-        detail: 'Click sent a duplicate completion signal. Keep the original payment as the source of truth.',
+        label: translate('Duplicate callback'),
+        detail: translate('Click sent a duplicate completion signal. Keep the original payment as the source of truth.'),
         className: 'status status--pending',
       };
     }
@@ -120,16 +141,16 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (!payment.provider_transaction_id || !platformPaymentId) {
       return {
         key: 'needs_attention',
-        label: 'Provider mismatch',
-        detail: 'Click checkout is missing a transaction link. Investigate before granting access.',
+        label: translate('Provider mismatch'),
+        detail: translate('Click checkout is missing a transaction link. Investigate before granting access.'),
         className: 'status status--bad',
       };
     }
 
     return {
       key: 'awaiting_provider',
-      label: 'Awaiting Click',
-      detail: 'Checkout exists. Access applies automatically after provider confirmation.',
+      label: translate('Awaiting Click'),
+      detail: translate('Checkout exists. Access applies automatically after provider confirmation.'),
       className: 'status status--pending',
     };
   }
@@ -137,16 +158,16 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   if (status === 'pending') {
     return {
       key: 'manual',
-      label: 'Manual settlement',
-      detail: 'Legacy or offline payment can be applied by finance staff.',
+      label: translate('Manual settlement'),
+      detail: translate('Legacy or offline payment can be applied by finance staff.'),
       className: 'status status--pending',
     };
   }
 
   return {
     key: 'needs_attention',
-    label: 'Needs review',
-    detail: 'Status does not match a known settlement path.',
+    label: translate('Needs review'),
+    detail: translate('Status does not match a known settlement path.'),
     className: 'status status--bad',
   };
 };
@@ -227,14 +248,14 @@ export const PaymentsView = ({
       duplicate: reconciliations.filter((item) => item.key === 'duplicate').length,
       grantMismatch: reconciliations.filter((item) => item.key === 'grant_mismatch').length,
       needsAttention: reconciliations.filter((item) => item.key === 'needs_attention').length,
-      paidAmount: paid.reduce((sum, p) => sum + p.amount, 0),
-      pendingAmount: pending.reduce((sum, p) => sum + p.amount, 0),
+      paidAmounts: amountsByCurrency(paid),
+      pendingAmounts: amountsByCurrency(pending),
     };
   }, [filteredPayments]);
 
   return (
     <>
-      <section className="grid two">
+      <section className="grid two payment-overview">
         <form className="panel workspace-form" onSubmit={onCreatePayment}>
           <h3>{translate("Create Click checkout")}</h3>
           <p className="small muted">{translate("Choose a contact and an offer. Access is applied only after Click confirms the payment.")}</p>
@@ -248,7 +269,7 @@ export const PaymentsView = ({
           <label>{translate("Offer")}{' '}<select disabled={busy} className="input" value={paymentForm.offer_id} onChange={(e) => setPaymentForm((p) => ({ ...p, offer_id: e.target.value }))} required>
               <option value="">{translate("Select offer")}</option>
               {offers.map((o) => (
-                <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount} ${o.currency}`}</option>
+                <option key={o.id} value={o.id}>{`${o.name} - ${o.price_amount.toLocaleString(getLocaleTag())} ${o.currency}`}</option>
               ))}
             </select>
           </label>
@@ -258,10 +279,18 @@ export const PaymentsView = ({
 
         <div className="panel">
           <h3>{translate("Filtered summary")}</h3>
+          <dl className="payment-summary-metrics">
+            <div><dt>{translate('Total')}</dt><dd>{summary.total}</dd></div>
+            <div><dt>{translate('Paid')}</dt><dd>{summary.paid}</dd></div>
+            <div><dt>{translate('Pending')}</dt><dd>{summary.pending}</dd></div>
+          </dl>
+          <dl className="payment-summary-amounts">
+            <div><dt>{translate('Paid amount')}</dt><dd>{displayAmounts(summary.paidAmounts)}</dd></div>
+            <div><dt>{translate('Pending amount')}</dt><dd>{displayAmounts(summary.pendingAmounts)}</dd></div>
+          </dl>
+          <details className="payment-summary-details">
+          <summary>{translate('Reconciliation')}</summary>
           <div className="metric-list">
-            <div className="metric-row"><span>{translate("Total")}</span><strong>{summary.total}</strong></div>
-            <div className="metric-row"><span>{translate("Paid")}</span><strong>{summary.paid}</strong></div>
-            <div className="metric-row"><span>{translate("Pending")}</span><strong>{summary.pending}</strong></div>
             <div className="metric-row"><span>{translate("Failed")}</span><strong>{summary.failed}</strong></div>
             <div className="metric-row"><span>{translate("Canceled")}</span><strong>{summary.canceled}</strong></div>
             <div className="metric-row"><span>{translate("Awaiting Click")}</span><strong>{summary.awaitingProvider}</strong></div>
@@ -269,9 +298,8 @@ export const PaymentsView = ({
             <div className="metric-row"><span>{translate("Duplicate callback")}</span><strong>{summary.duplicate}</strong></div>
             <div className="metric-row"><span>{translate("Grant mismatch")}</span><strong>{summary.grantMismatch}</strong></div>
             <div className="metric-row"><span>{translate("Needs attention")}</span><strong>{summary.needsAttention}</strong></div>
-            <div className="metric-row"><span>{translate("Paid amount")}</span><strong>{summary.paidAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
-            <div className="metric-row"><span>{translate("Pending amount")}</span><strong>{summary.pendingAmount.toLocaleString(getLocaleTag())} {translate("UZS")}</strong></div>
           </div>
+          </details>
         </div>
       </section>
 
@@ -304,7 +332,7 @@ export const PaymentsView = ({
                 return (
                   <tr key={p.id}>
                     <td>{formatDate(p.created_at)}</td>
-                    <td><span className={statusClass(p.status)}>{p.status}</span></td>
+                    <td><span className={statusClass(p.status)}>{paymentStatusLabel(p.status.toLowerCase())}</span></td>
                     <td>
                       <span className={reconciliation.className}>{reconciliation.label}</span>
                       <div className="small muted">{reconciliation.detail}</div>
@@ -314,7 +342,7 @@ export const PaymentsView = ({
                       <div>{p.provider || 'legacy'}</div>
                       <div className="small muted">{p.provider_transaction_id || '-'}</div>
                     </td>
-                    <td>{p.amount} {p.currency}</td>
+                    <td>{p.amount.toLocaleString(getLocaleTag())} {p.currency}</td>
                     <td>{offers.find((o) => o.id === p.offer_id)?.name ?? p.offer_id}</td>
                     <td>{contacts.find((c) => c.id === p.contact_id)?.email ?? p.contact_id}</td>
                     <td>
@@ -323,7 +351,7 @@ export const PaymentsView = ({
                       ) : reconciliation.key === 'needs_attention' ? (
                         <span className="status status--bad">{translate("investigate")}</span>
                       ) : reconciliation.key === 'awaiting_provider' ? (
-                        <span className="status status--pending">{translate("provider callback")}</span>
+                        <span className="status status--pending">{translate("Awaiting Click")}</span>
                       ) : reconciliation.key === 'duplicate' ? (
                         <span className="status status--pending">{translate("duplicate")}</span>
                       ) : reconciliation.key === 'grant_mismatch' ? (

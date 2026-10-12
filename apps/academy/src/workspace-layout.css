@@ -76,6 +76,22 @@ body:has(.ts-shell, .parent-workspace, .workspace-card) { background: #fafbfa; }
 .ts-shell :is(.input, .academy-select) { border-color: var(--line-strong); background: var(--panel); font-weight: 400; }
 .ts-shell :is(input.input, select.input, textarea.input) { min-width: 0; max-width: 100%; }
 .ts-shell .compact-form label { min-width: 0; }
+.ts-shell .workspace-form { align-content: start; align-self: start; }
+.ts-shell .workspace-form label { align-content: start; }
+.ts-shell .workspace-form .form-actions { align-items: center; }
+.ts-shell .payment-overview { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; margin-bottom: 16px; }
+.payment-summary-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.payment-summary-metrics > div { padding: 12px; border-radius: 8px; background: var(--panel-subtle); }
+.payment-summary-metrics dt { color: var(--muted-strong); font-size: 11px; }
+.payment-summary-metrics dd { margin: 6px 0 0; font-size: 24px; }
+.payment-summary-amounts { display: grid; gap: 10px; margin: 0; }
+.payment-summary-amounts > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; }
+.payment-summary-amounts dt { color: var(--muted-strong); }
+.payment-summary-amounts dd { margin: 0; display: grid; gap: 4px; text-align: right; }
+.payment-summary-details { border-top: 1px solid var(--line); }
+.payment-summary-details > summary { min-height: 44px; padding-block: 14px; cursor: pointer; color: var(--muted-strong); }
+.payment-summary-details .metric-row { padding: 8px 10px; background: var(--panel); }
+@media (max-width: 1000px) { .ts-shell .payment-overview { grid-template-columns: minmax(0, 1fr); } }
 .ts-shell .panel h3::before { display: none; }
 .ts-shell .panel { padding: 18px; border-color: var(--line); border-radius: 14px; }
 .ts-shell .section-heading h2 { font-size: 22px; }

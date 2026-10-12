@@ -193,6 +193,14 @@ for (const file of files) {
       collectLiteralPhrases(node.initializer);
     }
 
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)
+      && node.name.text === 'OFFICE_LABELS' && node.initializer
+      && ts.isObjectLiteralExpression(node.initializer)) {
+      for (const property of node.initializer.properties) {
+        if (ts.isPropertyAssignment(property)) collectLiteralPhrases(property.initializer);
+      }
+    }
+
     if (ts.isCallExpression(node)) {
       const callName = node.expression.getText(sourceFile);
       if (['setError', 'setNotice', 'setLocalError', 'setLocalNotice'].includes(callName)) {
