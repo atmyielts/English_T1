@@ -19,6 +19,8 @@ import {
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
+import { readAcademyRoomTimetable, readAcademyRoomBranches, RoomTimetableError } from "./room-timetable.ts";
+import { generateAcademyTimetable, publicTimetableRun, TimetableGenerationError } from "./timetable-generation.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -71,6 +73,7 @@ type AcademyAccessPermissions = {
   markAttendance: boolean;
   manageSchedule: boolean;
   manageAcademicOperations: boolean;
+  viewRoomTimetable: boolean;
   manageGuardians: boolean;
   communicateGuardians: boolean;
   manageRetention: boolean;
@@ -2620,6 +2623,7 @@ const handleReadAction = async (
   searchQueryRaw: string | null = null,
   searchLimitRaw: string | null = null,
   dateRaw: string | null = null,
+  roomTimetableRaw: unknown = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -2659,6 +2663,8 @@ const handleReadAction = async (
       "commercial_core",
       "operations_finance",
       "academic_operations",
+      "room_timetable",
+      "room_timetable_branches",
       "guardian_relationships",
       "business_intelligence",
       "global_search",
@@ -2720,6 +2726,17 @@ const handleReadAction = async (
   const access = requireAcademyAccess(memberships, academyId);
   const scopedClassroomIds = academyAccessClassroomIds(access);
   const operationalBranchIds = academyAccessBranchIds(access);
+
+  if (action === "room_timetable" || action === "room_timetable_branches") {
+    try {
+      return json(200, action === "room_timetable_branches"
+        ? await readAcademyRoomBranches(sb, access)
+        : await readAcademyRoomTimetable(sb, access, roomTimetableRaw));
+    } catch (error) {
+      if (error instanceof RoomTimetableError) return json(error.status, { error: error.message });
+      throw error;
+    }
+  }
 
   if (action === "teacher_day") {
     const profile = academyAccessProfile(access);
@@ -3843,7 +3860,7 @@ const handleReadAction = async (
       sb.from("academy_room_capacity_summary").select("*").eq("academy_id", academyId),
       sb.from("academy_room_peak_periods").select("*").eq("academy_id", academyId).order("session_count", { ascending: false }),
       sb.from("academy_classroom_capacity_summary").select("*").eq("academy_id", academyId),
-      sb.from("academy_branches").select("id,name,is_active,currency").eq("academy_id", academyId).order("name"),
+      sb.from("academy_branches").select("id,name,is_active,currency,timezone").eq("academy_id", academyId).order("name"),
       sb.from("academy_rooms").select("id,branch_id,name,capacity,is_active").eq("academy_id", academyId).order("name"),
       sb.from("academy_classrooms").select("id,branch_id,name,is_active,student_capacity").eq("academy_id", academyId).order("name"),
       sb.from("academy_staff").select("id,email,display_name,role,classroom_ids,is_active").eq("academy_id", academyId).order("display_name"),
@@ -4220,8 +4237,8 @@ const handleReadAction = async (
           : none,
     ]);
     const failed = [terms, series, runs, schedules, rooms, staff, branches, staffAssignments].find((result) => result.error);
-    if (failed?.error) return json(500, { error: "Failed to load timetable planning", detail: failed.error.message });
-    return json(200, { terms: terms.data ?? [], series: series.data ?? [], runs: runs.data ?? [], schedules: schedules.data ?? [], rooms: rooms.data ?? [], staff: staff.data ?? [], branches: branches.data ?? [], classrooms: classrooms.data ?? [] });
+    if (failed?.error) return json(500, { error: "Failed to load timetable planning" });
+    return json(200, { terms: terms.data ?? [], series: series.data ?? [], runs: ((runs.data ?? []) as Array<Record<string,unknown>>).map(publicTimetableRun), schedules: schedules.data ?? [], rooms: rooms.data ?? [], staff: staff.data ?? [], branches: branches.data ?? [], classrooms: classrooms.data ?? [] });
   }
 
   if (action === "service_requests") {
@@ -7898,6 +7915,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(url.searchParams.get("query"), 200) || null,
         normalizeText(url.searchParams.get("limit"), 10) || null,
         normalizeText(url.searchParams.get("date"), 10) || null,
+        { branch_id: url.searchParams.get("branch_id"), from: url.searchParams.get("from"), days: url.searchParams.get("days") ?? undefined },
       );
       if (readResponse) return readResponse;
     }
@@ -7918,6 +7936,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(body?.query, 200) || null,
         normalizeText(body?.limit, 10) || null,
         normalizeText(body?.date, 10) || null,
+        { branch_id: body?.branch_id, from: body?.from, days: body?.days },
       );
       if (readResponse) return readResponse;
 
@@ -8190,6 +8209,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           normalizeText(body?.room_id, 64) ? sb.from("academy_rooms").select("id,branch_id,is_active").eq("academy_id", academyId).eq("id", normalizeText(body?.room_id, 64)).eq("is_active", true).maybeSingle() : Promise.resolve({ data: null }),
         ]);
         if (!term?.id || !schedule?.id || String(schedule.classroom_id) !== classroomId || !staffRow?.id) return json(409, { error: "Term, schedule, classroom, or staff selection is invalid" });
+        if (term.branch_id && String(term.branch_id) !== branchId) return json(409, { error: "Term belongs to another branch" });
         const roomId = room?.id ? String(room.id) : null;
         if (deliveryMode === "physical" && !roomId) return json(400, { error: "Physical timetable series require a room" });
         if (room?.branch_id && String(room.branch_id) !== branchId) return json(409, { error: "Room belongs to a different branch" });
@@ -8206,90 +8226,12 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       if (actionBody === "generate_timetable") {
-        const termId = normalizeText(body?.term_id, 64);
-        const dryRun = body?.dry_run !== false;
-        if (!termId) return json(400, { error: "term_id is required" });
-        const { data: term, error: termError } = await sb.from("academy_timetable_terms").select("*").eq("academy_id", academyId).eq("id", termId).maybeSingle();
-        if (termError) return json(500, { error: "Failed to load timetable term", detail: termError.message });
-        if (!term?.id) return json(404, { error: "Timetable term not found" });
-        const { data: seriesRows, error: seriesError } = await sb.from("academy_timetable_series").select("*").eq("academy_id", academyId).eq("term_id", termId).in("status", ["draft", "active"]).limit(500);
-        if (seriesError) return json(500, { error: "Failed to load timetable series", detail: seriesError.message });
-        if (!seriesRows?.length) return json(409, { error: "Add at least one active timetable series before generating" });
-        const scheduleIds = (seriesRows as Array<Record<string, unknown>>).map((row) => String(row.source_schedule_id));
-        const { data: scheduleRows, error: scheduleError } = await sb.from("academy_classroom_schedules").select("id,classroom_id,day_of_week,start_time,end_time,timezone,label,is_active").eq("academy_id", academyId).in("id", scheduleIds).eq("is_active", true).limit(500);
-        if (scheduleError) return json(500, { error: "Failed to load recurring schedule slots", detail: scheduleError.message });
-        const schedules = new Map(((scheduleRows ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.id), row]));
-        let closureRows: Array<Record<string, unknown>> = [];
-        if (term.academic_calendar_id) {
-          const { data, error } = await sb.from("academy_calendar_events").select("id,starts_at,ends_at,name,event_type,affects_schedule").eq("academy_id", academyId).eq("calendar_id", term.academic_calendar_id).eq("affects_schedule", true).lt("starts_at", `${String(term.ends_on)}T23:59:59Z`).gt("ends_at", `${String(term.starts_on)}T00:00:00Z`).limit(1000);
-          if (error) return json(500, { error: "Failed to load academic calendar closures", detail: error.message });
-          closureRows = (data ?? []) as Array<Record<string, unknown>>;
+        try {
+          return json(200, await generateAcademyTimetable(sb, access, userId, body as Record<string, unknown>));
+        } catch (error) {
+          if (error instanceof TimetableGenerationError) return json(error.status, { error: error.message, ...(error.run ? { run: error.run } : {}) });
+          throw error;
         }
-        const { data: existingRows, error: existingError } = await sb.from("academy_lesson_sessions").select("id,classroom_id,room_id,primary_staff_id,starts_at,ends_at,status,timetable_series_id,timetable_occurrence_date").eq("academy_id", academyId).in("status", ["scheduled", "confirmed", "in_progress"]).lt("starts_at", `${String(term.ends_on)}T23:59:59Z`).gt("ends_at", `${String(term.starts_on)}T00:00:00Z`).limit(10000);
-        if (existingError) return json(500, { error: "Failed to load existing lesson sessions", detail: existingError.message });
-        const existing = (existingRows ?? []) as Array<Record<string, unknown>>;
-        const candidates: Array<Record<string, unknown>> = [];
-        const conflicts: Array<Record<string, unknown>> = [];
-        const skipped: Array<Record<string, unknown>> = [];
-        const overlaps = (aStart: string, aEnd: string, bStart: unknown, bEnd: unknown) => Date.parse(aStart) < Date.parse(String(bEnd)) && Date.parse(aEnd) > Date.parse(String(bStart));
-        for (const series of seriesRows as Array<Record<string, unknown>>) {
-          const schedule = schedules.get(String(series.source_schedule_id));
-          if (!schedule) {
-            conflicts.push({ series_id: series.id, reason: "schedule_unavailable" });
-            continue;
-          }
-          const startsOn = String(series.starts_on) > String(term.starts_on) ? String(series.starts_on) : String(term.starts_on);
-          const endsOn = String(series.ends_on) < String(term.ends_on) ? String(series.ends_on) : String(term.ends_on);
-          for (const date of dateRange(startsOn, endsOn)) {
-            if (new Date(`${date}T00:00:00Z`).getUTCDay() !== Number(schedule.day_of_week)) continue;
-            const startIso = localDateTimeToIso(date, String(schedule.start_time), String(schedule.timezone || term.timezone || "Asia/Tashkent"));
-            const endIso = schedule.end_time
-              ? localDateTimeToIso(date, String(schedule.end_time), String(schedule.timezone || term.timezone || "Asia/Tashkent"))
-              : new Date(Date.parse(startIso) + 60 * 60_000).toISOString();
-            if (Date.parse(endIso) <= Date.parse(startIso)) {
-              conflicts.push({ series_id: series.id, date, reason: "invalid_time_range" });
-              continue;
-            }
-            const duplicate = existing.find((row) => String(row.timetable_series_id ?? "") === String(series.id) && String(row.timetable_occurrence_date ?? "") === date);
-            if (duplicate) {
-              skipped.push({ series_id: series.id, date, reason: "already_generated", session_id: duplicate.id });
-              continue;
-            }
-            const closure = series.skip_calendar_closures !== false ? closureRows.find((row) => overlaps(startIso, endIso, row.starts_at, row.ends_at)) : null;
-            if (closure) {
-              skipped.push({ series_id: series.id, date, reason: "calendar_closure", event_id: closure.id, event_name: closure.name });
-              continue;
-            }
-            const conflictPool = [...existing, ...candidates];
-            const collision = conflictPool.find((row) => overlaps(startIso, endIso, row.starts_at, row.ends_at) && (String(row.classroom_id) === String(series.classroom_id) || Boolean(series.room_id && row.room_id && String(row.room_id) === String(series.room_id)) || String(row.primary_staff_id) === String(series.primary_staff_id)));
-            if (collision) {
-              conflicts.push({ series_id: series.id, date, reason: "resource_conflict", conflicting_session_id: collision.id ?? null, starts_at: startIso, ends_at: endIso });
-              continue;
-            }
-            candidates.push({ academy_id: academyId, branch_id: series.branch_id, classroom_id: series.classroom_id, room_id: series.room_id ?? null, primary_staff_id: series.primary_staff_id, calendar_id: term.academic_calendar_id ?? null, title: series.title, session_type: series.session_type || "regular", delivery_mode: series.delivery_mode || "physical", starts_at: startIso, ends_at: endIso, timezone: schedule.timezone || term.timezone || "Asia/Tashkent", status: "scheduled", source_schedule_id: series.source_schedule_id, idempotency_key: `timetable:${String(series.id)}:${date}`, metadata: { timetable_generated: true }, created_by: userId, updated_by: userId, timetable_term_id: termId, timetable_series_id: series.id, timetable_occurrence_date: date });
-          }
-        }
-        const { data: run, error: runError } = await sb.from("academy_timetable_generation_runs").insert({ academy_id: academyId, term_id: termId, dry_run: dryRun, status: "running", requested_by: userId }).select("*").single();
-        if (runError) return json(500, { error: "Failed to record timetable generation", detail: runError.message });
-        const evidence = { conflicts: conflicts.slice(0, 500), skipped: skipped.slice(0, 500), candidates: candidates.slice(0, 500).map((row) => ({ timetable_series_id: row.timetable_series_id, timetable_occurrence_date: row.timetable_occurrence_date, classroom_id: row.classroom_id, starts_at: row.starts_at, ends_at: row.ends_at })) };
-        if (!dryRun && conflicts.length > 0) {
-          const { data: failedRun } = await sb.from("academy_timetable_generation_runs").update({ status: "failed", candidate_count: candidates.length, conflict_count: conflicts.length, skipped_count: skipped.length, evidence, error: "Resolve timetable conflicts before committing", finished_at: new Date().toISOString() }).eq("id", run.id).select("*").single();
-          return json(409, { error: "Resolve timetable conflicts before committing", run: failedRun });
-        }
-        let generatedCount = 0;
-        if (!dryRun && candidates.length) {
-          const rows = candidates.map((row) => ({ ...row, timetable_generation_run_id: run.id }));
-          const { data: generated, error } = await sb.from("academy_lesson_sessions").insert(rows).select("id");
-          if (error) {
-            await sb.from("academy_timetable_generation_runs").update({ status: "failed", candidate_count: candidates.length, conflict_count: conflicts.length, skipped_count: skipped.length, evidence, error: error.message, finished_at: new Date().toISOString() }).eq("id", run.id);
-            return json(409, { error: "Timetable commit failed", detail: error.message });
-          }
-          generatedCount = generated?.length ?? 0;
-          await sb.from("academy_timetable_series").update({ status: "active" }).eq("academy_id", academyId).eq("term_id", termId).in("status", ["draft", "active"]);
-          await sb.from("academy_timetable_terms").update({ status: "active" }).eq("academy_id", academyId).eq("id", termId).in("status", ["draft", "active"]);
-        }
-        const { data: finishedRun } = await sb.from("academy_timetable_generation_runs").update({ status: dryRun ? "preview_ready" : "completed", candidate_count: candidates.length, conflict_count: conflicts.length, generated_count: generatedCount, skipped_count: skipped.length, evidence, finished_at: new Date().toISOString() }).eq("id", run.id).select("*").single();
-        return json(200, { run: finishedRun });
       }
 
       if (actionBody === "update_service_request") {

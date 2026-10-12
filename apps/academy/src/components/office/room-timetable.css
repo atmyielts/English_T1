@@ -1,0 +1,45 @@
+.room-timetable {display:grid;gap:16px;min-width:0}
+.room-timetable__intro {display:flex;align-items:center;justify-content:space-between;gap:16px}
+.room-timetable__intro h2 {margin:0;font-size:22px;font-weight:600}
+.room-timetable__intro p {margin:6px 0 0;color:var(--muted)}
+.room-timetable__toolbar {display:flex;flex-wrap:wrap;align-items:end;gap:12px;padding:16px!important}
+.room-timetable__toolbar label {display:grid;align-content:start;gap:6px;font-size:13px;flex:1 1 140px;min-width:0}
+.room-timetable__toolbar .input {min-width:0;min-height:44px}
+.room-timetable__date-actions {display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.room-timetable__date-actions button {min-height:44px;min-width:44px;width:auto;flex:0 0 auto}
+.room-timetable__legend {display:flex;flex-wrap:wrap;align-items:center;gap:16px;font-size:12px;color:var(--muted)}
+.room-timetable__legend span {display:flex;align-items:center;gap:6px}
+.room-timetable__legend i {width:9px;height:9px;border-radius:3px;background:#204d41}
+.room-timetable__legend i.is-plan {background:#b8ee94}
+.room-timetable__legend i.is-conflict {background:#b64c44}
+.room-timetable__note {font-size:12px;color:var(--muted);margin:0}
+.room-timetable__warning {padding:12px 16px;background:#fff5df;color:#654c19;border:1px solid #ecd7a9;border-radius:12px;margin:0;font-size:13px}
+.room-timetable__warning p {margin:6px 0}
+.room-timetable__grid-wrap {padding:0!important;overflow:auto;max-width:100%}
+.room-timetable__grid {border-collapse:separate;border-spacing:0;width:100%;min-width:0;font-size:13px}
+.ts-shell .room-timetable__grid tbody tr:hover {background:transparent}
+.ts-shell .room-timetable__grid th {text-transform:none}
+.room-timetable__grid th,.room-timetable__grid td {border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;vertical-align:top;text-align:left;min-width:150px}
+.room-timetable__grid thead th {font-size:12px;font-weight:600;background:#eef5ec;padding:12px}
+.room-timetable__grid th:first-child {position:sticky;left:0;z-index:1;min-width:110px;width:110px;background:#f9fbf8}
+.room-timetable__grid th small {display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:6px}
+.room-timetable__grid tr:last-child>* {border-bottom:0}
+.room-timetable__grid tr>*:last-child {border-right:0}
+.room-timetable__lesson {display:grid;gap:4px;padding:10px;margin:0 0 8px;width:100%;min-height:44px;background:#edf4ef;color:#204d41;border:1px solid #d9e6dd;border-left:3px solid #204d41;border-radius:8px;text-align:left;font:inherit;cursor:pointer;overflow-wrap:anywhere;transition:background-color 140ms ease}
+.room-timetable__lesson:last-child {margin-bottom:0}
+.room-timetable__lesson:hover {background:#e1ece3}
+.room-timetable__lesson.is-plan {background:#f5fbee;border-style:dashed;border-left-color:#8dc96b}
+.room-timetable__lesson.is-conflict {background:#fff0ed;border-color:#e4afa8;color:#8e342c}
+.room-timetable__lesson.is-inactive {background:#f5f5f3;color:#747871;border-color:#ddd;opacity:.75}
+.room-timetable__lesson strong {font-size:12px;font-weight:600}
+.room-timetable__lesson small {font-size:11px}
+.room-timetable__no-lessons {display:block;padding:10px 0;color:var(--muted);font-size:11px}
+.room-timetable__closure {display:block;padding-top:6px;font-size:11px;color:#805826;font-weight:400}
+.room-timetable__empty {padding:28px!important;color:var(--muted)}
+.room-timetable__empty h3 {font-size:16px;margin:0 0 8px;color:var(--ink)}
+.room-timetable__pagination,.room-timetable__details {display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.room-timetable__details {justify-content:space-between;align-items:start;padding:16px!important}
+.room-timetable__details h3 {font-size:16px;margin:0}
+.room-timetable__details p {font-size:13px;color:var(--muted);margin:6px 0}
+@media(max-width:640px){.room-timetable__intro {align-items:start;flex-direction:column}.room-timetable__toolbar label {flex-basis:calc(50% - 12px)}.room-timetable__date-actions {width:100%}.room-timetable__grid th:first-child {min-width:92px;width:92px}.room-timetable__grid th,.room-timetable__grid td {padding:8px;min-width:168px}.room-timetable__legend {gap:10px}.room-timetable__details {flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.room-timetable__lesson {transition:none}}

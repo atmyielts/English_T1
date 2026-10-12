@@ -4,13 +4,15 @@ import assert from 'node:assert/strict';
 
 const image = 'postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24';
 const label = 'academy-session-integrity';
-const quote = value => value === null ? 'null' : "'" + String(value).replaceAll("'", "''") + "'";
+const quote = value => value === null ? 'null' : Array.isArray(value)
+  ? 'ARRAY['+value.map(quote).join(',')+']::text[]'
+  : "'" + String(value).replaceAll("'", "''") + "'";
 export const bindSql = (source, params=[]) => source.replace(/\$(\d+)/g, (_, i) => {
   assert.ok(Number(i) <= params.length, 'Missing fixture query parameter');
   return quote(params[Number(i)-1]);
 });
 
-// A new network-isolated local container. No ports, mounts, hosted connection,
+// A new network-isolated local container. No ports, host mounts, hosted connection,
 // credentials, or access to any pre-existing database/container.
 export async function createNativeSessionDb() {
   const name = 'schood-session-' + randomUUID().slice(0,8);
@@ -53,7 +55,9 @@ export async function createNativeSessionDb() {
     for(const child of active)child.kill();
     if(!owned)return;
     assert.equal(await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']),label);
-    await run(['rm','--force',name]);owned=false;
+    // The pinned image creates its own anonymous database volume. Remove that
+    // owned volume with the verified container so repeated suites do not leak disk.
+    await run(['rm','--force','--volumes',name]);owned=false;
     console.log('Removed the verified owned local scheduling database.');
   }
   // Resolve only after SQL has completed inside a still-open transaction. Tests

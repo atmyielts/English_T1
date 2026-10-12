@@ -1,27 +1,38 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-session-transition-integrity",
+  "releaseId": "academy-room-calendar-and-atomic-generation",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261012010000_academy_session_reschedule_integrity.sql"
+  "frontends": [
+    "academy"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261012110000_academy_room_timetable_snapshot.sql",
+    "20261012120000_academy_timetable_booking_integrity.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261012010000_academy_session_reschedule_integrity.sql"
+    "pages",
+    "migration:20261012110000_academy_room_timetable_snapshot.sql",
+    "migration:20261012120000_academy_timetable_booking_integrity.sql",
+    "function:academy"
   ],
   "manualFollowUps": [
-    "Source merge does not activate the migration. Compare current production RPC identities and migration history; prepare only this reviewed migration through an isolated linked release. Do not apply unrelated pending migrations. Qualify owned Academy canaries and cleanup before production activation; verify installed function identity and service-only privileges afterward. Use supabase db push --linked only from that reviewed isolated linked release after its dry run proves this is the sole pending migration."
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these two reviewed migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply other repository migrations.",
+    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed reader/generation/access changes. Validate source differences, module closure, compiler and owned access scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [
-    "Run npm run verify:prod, npm run verify:release, npm run test:academy:edge, npm run test:academy:sessions:native and exact-head CI. The native suite observes actual lock contention across independent local connections. Restore the schema-only provider capture in an isolated Supabase database and verify the exact migration hash, owner, grants and unchanged exclusion constraints.",
-    "After activation, verify owned overlapping rescheduling, destination-conflict rollback and retry recovery. Historical schema compatibility and synthetic local fixtures do not establish production customer workflow readiness."
+    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge suite, native generation contention/rollback tests, local schema-only qualification and complete browser suite. Inspect final desktop/phone captures. All local/synthetic evidence remains distinct from hosted customer readiness.",
+    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC identities, role grants, owned receptionist/branch-manager/teacher scopes, branch-local manual booking, timetable retries and dated teacher assignments. Check runtime timeouts and hosted performance before qualifying large timetable requests. Verify owned fixtures are removed."
   ],
   "rollback": {
-    "migration": "Restore only the captured prior RPC definition and privileges; leave customer rows and events intact. Prefer a forward repair because the previous RPC reintroduces self-overlap and retry-scope defects. See docs/customer-readiness/academy-session-rescheduling.md."
+    "pages": "Use the prior reviewed Academy Pages deployment at main 7bb038ecf3e72ff951af9ca7a8a835ebfbf3b224.",
+    "edge": "Restore only the captured installed Academy source bundle and verify its source/runtime identity. Do not restore unrelated older repository modules.",
+    "migration": "Keep additive columns/readers/receipts and customer lessons. If required, restore the captured prior creation function and disable only the new booking trigger through a reviewed forward repair; existing room/classroom/teacher exclusion constraints remain. Never delete generated customer sessions as a rollback."
   }
 }

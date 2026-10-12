@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type {RoomBranch,RoomTimetable} from './roomTimetable';
 
 export type Json = Record<string, unknown> | unknown[];
 
@@ -65,6 +66,7 @@ export type TeacherStudioAccessProfile = {
     markAttendance?: boolean;
     manageSchedule?: boolean;
     manageAcademicOperations?: boolean;
+    viewRoomTimetable?: boolean;
     manageGuardians?: boolean;
     communicateGuardians?: boolean;
     manageRetention?: boolean;
@@ -1597,7 +1599,7 @@ export type AcademyAcademicOperations = {
   calendars:Array<Record<string,unknown>>; calendar_events:Array<Record<string,unknown>>; staff_availability:Array<Record<string,unknown>>; room_availability:Array<Record<string,unknown>>;
   sessions:AcademyLessonSession[]; session_delivery?:Array<{id:string;session_id:string;provider:string;attendee_url:string;join_opens_at:string;join_closes_at:string;status:string;updated_at:string}>; session_staff_assignments:Array<Record<string,unknown>>; attendance:AcademyAttendanceRecord[]; attendance_exceptions:Array<Record<string,unknown>>;
   make_up_lessons:Array<Record<string,unknown>>; quality_reviews:Array<Record<string,unknown>>; room_capacity:Array<Record<string,unknown>>; room_peak_periods:Array<Record<string,unknown>>; classroom_capacity:Array<Record<string,unknown>>;
-  branches:Array<{id:string;name:string;is_active:boolean;currency:string}>; rooms:Array<{id:string;branch_id:string;name:string;capacity:number;is_active:boolean}>; classrooms:Array<{id:string;name:string;is_active:boolean;student_capacity:number|null}>;
+  branches:Array<{id:string;name:string;is_active:boolean;currency:string;timezone?:string}>; rooms:Array<{id:string;branch_id:string;name:string;capacity:number;is_active:boolean}>; classrooms:Array<{id:string;name:string;is_active:boolean;student_capacity:number|null}>;
   staff:Array<{id:string;email:string;display_name:string|null;role:string;classroom_ids:Json;is_active:boolean}>; classroom_memberships:Array<{classroom_id:string;contact_id:string;role:string;status:string}>; contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;status:string}>;
 };
 export type AcademyGuardian = {id:string;academy_id:string;user_id:string|null;full_name:string;phone:string|null;email:string|null;telegram_user_id:string|null;telegram_username:string|null;telegram_verified_at:string|null;status:string;locale:string;notes:string|null;created_at:string;updated_at:string};
@@ -2295,6 +2297,8 @@ export const teacherStudioOperationsFinance = async (academyId: string): Promise
   callTeacherStudio<AcademyOperationsFinance>({ action: 'operations_finance', academyId });
 
 export const teacherStudioAcademicOperations = async (academyId:string):Promise<AcademyAcademicOperations> => callTeacherStudio<AcademyAcademicOperations>({ action: 'academic_operations', academyId });
+export const teacherStudioRoomBranches=(academyId:string)=>callTeacherStudio<{branches:RoomBranch[];truncated:boolean}>({action:'room_timetable_branches',academyId});
+export const teacherStudioRoomTimetable=(academyId:string,branchId:string,from:string,days:number)=>callTeacherStudio<RoomTimetable>({action:'room_timetable',academyId,params:{branch_id:branchId,from,days:String(days)}});
 export const teacherStudioGuardianRelationships = async (academyId:string):Promise<AcademyGuardianRelationships> => callTeacherStudio<AcademyGuardianRelationships>({ action: 'guardian_relationships', academyId });
 export const teacherStudioGuardianDashboard = async ():Promise<AcademyGuardianDashboard> => callTeacherStudio<AcademyGuardianDashboard>({ action: 'guardian_dashboard' });
 export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>) => callTeacherStudio<Record<string,unknown>>({method:'POST', action: 'guardian_claim_link',body});

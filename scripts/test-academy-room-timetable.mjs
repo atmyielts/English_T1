@@ -1,0 +1,105 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+
+const db=new PGlite();
+const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const a=id(1),b=id(2),branch=id(3),otherBranch=id(4),foreignBranch=id(5),room=id(6),classroom=id(7),staff=id(8),term=id(9),series=id(10),schedule=id(11);
+let checks=0;
+const eq=(actual,expected)=>{assert.deepEqual(actual,expected);checks++;};
+const rows=async(sql,args=[]) => (await db.query(sql,args)).rows;
+const snapshot=async(from='2026-10-12',days=7,selected=branch,academy=a)=>(await rows('select academy_room_timetable_snapshot($1,$2,$3::date,$4) as data',[academy,selected,from,days]))[0].data;
+try{
+  await db.exec(`
+    create role anon;create role authenticated;create role service_role;
+    create table academy_branches(id uuid primary key,academy_id uuid,name text,timezone text,is_active boolean);
+    create table academy_rooms(id uuid primary key,academy_id uuid,branch_id uuid,name text,capacity int,is_active boolean);
+    create table academy_classrooms(id uuid primary key,academy_id uuid,branch_id uuid,name text,is_active boolean);
+    create table academy_staff(id uuid primary key,academy_id uuid,display_name text,is_active boolean default true);
+    create table academy_lesson_sessions(id uuid primary key,academy_id uuid,branch_id uuid,classroom_id uuid,room_id uuid,primary_staff_id uuid,title text,delivery_mode text,starts_at timestamptz,ends_at timestamptz,status text,rescheduled_to_session_id uuid,timetable_series_id uuid,timetable_occurrence_date date);
+    create table academy_academic_calendars(id uuid primary key,academy_id uuid,branch_id uuid);
+    create table academy_calendar_events(id uuid primary key,academy_id uuid,calendar_id uuid,name text,starts_at timestamptz,ends_at timestamptz,affects_schedule boolean);
+    create table academy_timetable_terms(id uuid primary key,academy_id uuid,branch_id uuid,timezone text,starts_on date,ends_on date,status text);
+    create table academy_classroom_schedules(id uuid primary key,academy_id uuid,classroom_id uuid,day_of_week int,start_time time,end_time time,timezone text,is_active boolean);
+    create table academy_timetable_series(id uuid primary key,academy_id uuid,term_id uuid,classroom_id uuid,source_schedule_id uuid,branch_id uuid,room_id uuid,primary_staff_id uuid,title text,session_type text,delivery_mode text,starts_on date,ends_on date,status text,skip_calendar_closures boolean);
+  `);
+  await db.exec(readFileSync(new URL('../supabase/migrations/20261012110000_academy_room_timetable_snapshot.sql',import.meta.url),'utf8'));
+  await rows("insert into academy_branches values($1,$2,'Owned branch','Asia/Tashkent',true),($3,$2,'Other branch','America/New_York',true),($4,$5,'Foreign branch','UTC',true)",[branch,a,otherBranch,foreignBranch,b]);
+  await rows("insert into academy_rooms values($1,$2,$3,'Room 1',20,true)",[room,a,branch]);
+  await rows("insert into academy_classrooms values($1,$2,$3,'IELTS A',true)",[classroom,a,branch]);
+  await rows("insert into academy_staff(id,academy_id,display_name) values($1,$2,'Teacher A')",[staff,a]);
+  const branches=async(scope)=>(await rows('select academy_room_timetable_branches($1,$2::uuid[]) as data',[a,scope]))[0].data;
+  eq((await branches(null)).branches.length,2);
+  eq((await branches([branch])).branches.map(b=>b.id),[branch]);
+  eq((await branches([])).branches.length,0);
+  const empty=await snapshot();eq(empty.rooms.length,1);eq(empty.sessions.length,0);eq(empty.planned.length,0);
+  eq(new Date(empty.starts_at).toISOString(),'2026-10-11T19:00:00.000Z');
+  eq(new Date(empty.ends_at).toISOString(),'2026-10-18T19:00:00.000Z');
+  const duration=async(from)=>(new Date((await snapshot(from,1,otherBranch)).ends_at)-new Date((await snapshot(from,1,otherBranch)).starts_at))/3600000;
+  eq(await duration('2026-11-01'),25);eq(await duration('2026-03-08'),23);
+  await assert.rejects(()=>snapshot('2026-10-12',30),/1, 7 or 14/);checks++;
+  await assert.rejects(()=>snapshot('2026-10-12',7,branch,b),/Branch not found/);checks++;
+  const insertSession=async(n,overrides={})=>{
+    const s={academy:a,branch,classroom,room,staff,start:'2026-10-11T18:30:00Z',end:'2026-10-11T19:30:00Z',status:'scheduled',series:null,date:null,...overrides};
+    await rows("insert into academy_lesson_sessions(id,academy_id,branch_id,classroom_id,room_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,status,timetable_series_id,timetable_occurrence_date) values($1,$2,$3,$4,$5,$6,'Owned fixture lesson','physical',$7,$8,$9,$10,$11)",[id(n),s.academy,s.branch,s.classroom,s.room,s.staff,s.start,s.end,s.status,s.series,s.date]);
+  };
+  await insertSession(12);await insertSession(13,{end:'2026-10-11T19:00:00Z'});
+  await insertSession(14,{academy:b,branch:foreignBranch});await insertSession(15,{branch:otherBranch});
+  eq((await snapshot()).sessions.map(s=>s.id),[id(12)]);
+  await rows("insert into academy_timetable_terms values($1,$2,$3,'Asia/Tashkent','2026-10-01','2026-11-30','active')",[term,a,branch]);
+  await rows("insert into academy_classroom_schedules values($1,$2,$3,1,'14:00','15:30','Asia/Tashkent',true)",[schedule,a,classroom]);
+  eq((await snapshot()).unassigned_schedules.length,1);
+  await rows("insert into academy_timetable_series values($1,$2,$3,$4,$5,$6,$7,$8,'Owned weekly lesson','regular','physical','2026-10-01','2026-11-30','active',true)",[series,a,term,classroom,schedule,branch,room,staff]);
+  const weekly=await snapshot();eq(weekly.planned.length,1);eq(weekly.unassigned_schedules.length,0);
+  eq(new Date(weekly.planned[0].starts_at).toISOString(),'2026-10-12T09:00:00.000Z');
+  eq(weekly.planned[0].teacher_name,'Teacher A');
+  await insertSession(19,{branch:otherBranch,start:'2026-10-12T09:00:00Z',end:'2026-10-12T10:00:00Z'});
+  const teacherBusy=await snapshot();eq(teacherBusy.planned[0].has_recorded_conflict,true);
+  eq(teacherBusy.sessions.some(s=>s.id===id(19)),false);
+  await rows('delete from academy_lesson_sessions where id=$1',[id(19)]);
+  await insertSession(16,{start:'2026-10-12T09:00:00Z',end:'2026-10-12T10:30:00Z',series,date:'2026-10-12',status:'cancelled'});
+  eq((await snapshot()).planned.length,0);
+  await rows("update academy_lesson_sessions set status='rescheduled' where id=$1",[id(16)]);
+  eq((await snapshot()).planned.length,0);
+  await rows('delete from academy_lesson_sessions where id=$1',[id(16)]);
+  await rows('insert into academy_academic_calendars values($1,$2,$3)',[id(17),a,branch]);
+  await rows("insert into academy_calendar_events values($1,$2,$3,'Owned closure','2026-10-12T08:00:00Z','2026-10-12T11:00:00Z',true)",[id(18),a,id(17)]);
+  const closed=await snapshot();eq(closed.planned.length,0);eq(closed.closures.length,1);
+  await rows('update academy_timetable_series set skip_calendar_closures=false where id=$1',[series]);eq((await snapshot()).planned.length,1);
+  await rows('update academy_timetable_series set primary_staff_id=null where id=$1',[series]);
+  const unconfigured=await snapshot();eq(unconfigured.planned.length,0);eq(unconfigured.warnings.series_needing_setup,1);
+  await rows('update academy_timetable_series set primary_staff_id=$1 where id=$2',[staff,series]);
+  await rows('update academy_staff set is_active=false where id=$1',[staff]);
+  const inactiveTeacher=await snapshot();eq(inactiveTeacher.planned.length,0);eq(inactiveTeacher.warnings.series_needing_setup,1);
+  await rows('update academy_staff set is_active=true where id=$1',[staff]);
+  await rows('update academy_rooms set is_active=false where id=$1',[room]);
+  const inactiveRoom=await snapshot();eq(inactiveRoom.planned.length,0);eq(inactiveRoom.warnings.series_needing_setup,1);
+  await rows('update academy_rooms set is_active=true where id=$1',[room]);
+  await rows("update academy_classroom_schedules set end_time='13:00' where id=$1",[schedule]);
+  const invalid=await snapshot();eq(invalid.planned.length,0);eq(invalid.warnings.invalid_occurrences,1);
+  await rows("update academy_classroom_schedules set end_time=null where id=$1",[schedule]);
+  const defaultDuration=await snapshot();eq((new Date(defaultDuration.planned[0].ends_at)-new Date(defaultDuration.planned[0].starts_at))/60000,60);
+  // A DST gap must never silently move a recurring lesson to another wall time.
+  await rows("update academy_branches set timezone='America/New_York' where id=$1",[branch]);
+  await rows("update academy_timetable_terms set starts_on='2026-03-01',ends_on='2026-03-31' where id=$1",[term]);
+  await rows("update academy_timetable_series set starts_on='2026-03-01',ends_on='2026-03-31' where id=$1",[series]);
+  await rows("update academy_classroom_schedules set day_of_week=0,start_time='02:30',end_time='04:00',timezone='America/New_York' where id=$1",[schedule]);
+  const springGap=await snapshot('2026-03-08',1);eq(springGap.planned.length,0);eq(springGap.warnings.invalid_occurrences,1);
+  await rows("update academy_classroom_schedules set start_time='01:30',end_time='02:30' where id=$1",[schedule]);
+  const gapEnd=await snapshot('2026-03-08',1);eq(gapEnd.planned.length,0);eq(gapEnd.warnings.invalid_occurrences,1);
+  await rows("update academy_classroom_schedules set end_time='03:30' where id=$1",[schedule]);
+  const validSpring=await snapshot('2026-03-08',1);eq(validSpring.planned.length,1);eq(validSpring.warnings.invalid_occurrences,0);
+  await rows("update academy_branches set timezone='Asia/Tashkent' where id=$1",[branch]);
+  // Large unrelated branches never consume this branch's result allowance.
+  await db.exec(`insert into academy_lesson_sessions(id,academy_id,branch_id,classroom_id,room_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,status)
+    select gen_random_uuid(),'${a}','${otherBranch}','${classroom}','${room}','${staff}','Unrelated fixture','physical','2026-10-12T10:00:00Z','2026-10-12T11:00:00Z','scheduled' from generate_series(1,5002);`);
+  const scoped=await snapshot();eq(scoped.sessions.length,1);eq(scoped.warnings.sessions_truncated,false);
+  await db.exec(`insert into academy_lesson_sessions(id,academy_id,branch_id,classroom_id,room_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,status)
+    select gen_random_uuid(),'${a}','${branch}','${classroom}','${room}','${staff}','Owned fixture','physical','2026-10-12T10:00:00Z','2026-10-12T11:00:00Z','scheduled' from generate_series(1,5002);`);
+  const partial=await snapshot();eq(partial.sessions.length,5000);eq(partial.warnings.sessions_truncated,true);
+  await db.exec('set role authenticated');
+  await assert.rejects(()=>snapshot(),/permission denied for function/);checks++;
+  await assert.rejects(()=>branches(null),/permission denied for function/);checks++;
+  await db.exec('reset role');
+  console.log(`Academy room timetable: ${checks} isolated PostgreSQL checks passed; no hosted mutation or signed-in permission claim.`);
+}finally{await db.close();}

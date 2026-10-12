@@ -48,6 +48,7 @@ export type AcademyAccessPermissions = {
   markAttendance: boolean;
   manageSchedule: boolean;
   manageAcademicOperations: boolean;
+  viewRoomTimetable: boolean;
   manageGuardians: boolean;
   communicateGuardians: boolean;
   manageRetention: boolean;
@@ -268,6 +269,7 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     markAttendance: classroomLms || receptionist,
     manageSchedule: ownerAdmin || centerAdmin || manager || teacher,
     manageAcademicOperations: ops,
+    viewRoomTimetable: ops || receptionist,
     manageGuardians: ops || parentLiaison,
     communicateGuardians: ops || receptionist || teacher || parentLiaison,
     manageRetention: ops,
