@@ -42,4 +42,5 @@
 .room-timetable__details h3 {font-size:16px;margin:0}
 .room-timetable__details p {font-size:13px;color:var(--muted);margin:6px 0}
 @media(max-width:640px){.room-timetable__intro {align-items:start;flex-direction:column}.room-timetable__toolbar label {flex-basis:calc(50% - 12px)}.room-timetable__date-actions {width:100%}.room-timetable__grid th:first-child {min-width:92px;width:92px}.room-timetable__grid th,.room-timetable__grid td {padding:8px;min-width:168px}.room-timetable__legend {gap:10px}.room-timetable__details {flex-direction:column}}
+@media(max-width:420px){.room-timetable__toolbar label:nth-child(-n+2) {flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.room-timetable__lesson {transition:none}}

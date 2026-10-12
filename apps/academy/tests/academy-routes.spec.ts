@@ -2197,6 +2197,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       await page.locator('.room-timetable__lesson.is-plan').click();
       await expect(page.getByText('This recurring lesson is a plan. It has not been booked yet.',{exact:true})).toBeVisible();
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+      if(width<420)expect(await page.getByLabel('Start date',{exact:true}).evaluate(input=>input.getBoundingClientRect().width)).toBeGreaterThanOrEqual(190);
       await page.screenshot({path:testInfo.outputPath(`rooms-${width}.png`),fullPage:true});
     });
   }
