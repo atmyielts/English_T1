@@ -144,7 +144,7 @@ const workflowContracts = [
   {
     label: 'Owner finance reconciliation workflow',
     content: paymentsView,
-    tokens: ['Awaiting Click', 'Manual settlement', 'Needs attention', 'Access applied', 'Canceled checkout', 'Duplicate callback', 'Grant mismatch', 'Provider'],
+    tokens: ['Awaiting Click', 'Manual settlement', 'Needs attention', 'Payment is recorded as paid. Check learning access separately.', 'Canceled checkout', 'Duplicate callback', 'Grant mismatch', 'Provider'],
   },
   {
     label: 'Teacher LMS assignment drilldown workflow',
