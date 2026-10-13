@@ -153,6 +153,9 @@ begin
   end if;
   execute format('select 1 from public.%I parent where parent.academy_id=$1 and parent.id in(%s) order by parent.id for update',v_table,v_lock_targets) using p_academy_id,p_job_id,v_table;
  end loop;
+ if to_regprocedure('public.academy_assert_student_import_authority(uuid,uuid,uuid,text)') is not null then
+  perform public.academy_assert_student_import_authority(p_academy_id,p_actor_id,p_job_id,'recover');
+ end if;
  -- Reverse child relationships/memberships first; their resulting snapshots
  -- prove that later parent deactivation is still part of this same recovery.
  for v_effect in select * from public.academy_student_import_effects where academy_id=p_academy_id and job_id=p_job_id

@@ -23,6 +23,7 @@ import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
 import { readAcademyRoomTimetable, readAcademyRoomBranches, RoomTimetableError } from "./room-timetable.ts";
 import { generateAcademyTimetable, publicTimetableRun, TimetableGenerationError } from "./timetable-generation.ts";
+import {studentImportActions,readStudentImportRequest,handleStudentImportService,StudentImportServiceError} from "./student-import-service.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -86,6 +87,7 @@ type AcademyAccessPermissions = {
   viewStaffPerformance: boolean;
   viewRisk: boolean;
   manageImports: boolean;
+  importStudents: boolean;
   manageLocalization: boolean;
   useAcademyAI: boolean;
   manageResources: boolean;
@@ -6842,7 +6844,9 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     const actionQuery = normalizeText(url.searchParams.get("action"), 64).toLowerCase();
     const contentType = req.headers.get("content-type") ?? "";
     const body = req.method === "POST"
-      ? contentType.includes("multipart/form-data")
+      ? studentImportActions.has(actionQuery)
+        ? (await readStudentImportRequest(req)) as StudioBody
+        : contentType.includes("multipart/form-data")
         ? formDataToStudioBody(await req.formData())
         : (await req.json()) as StudioBody
       : null;
@@ -7129,6 +7133,13 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     const memberships = await loadMemberships(sb, userId, userEmail);
+
+    if (studentImportActions.has(requestedAction)) {
+      if (req.method !== "POST") return json(405,{error:"Use POST for student imports."});
+      if (actionQuery !== requestedAction) return json(400,{error:"Use the bounded student import endpoint."});
+      try{return json(200,await handleStudentImportService(sb,requestedAction,body,userId));}
+      catch(error){if(error instanceof StudentImportServiceError)return json(error.status,{error:error.message,retryable:error.retryable});throw error;}
+    }
 
     if (assessmentActions.has(requestedAction)) {
       if (req.method !== 'POST') return json(405, { error: 'Use POST for assessment requests.' });
@@ -12124,6 +12135,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof StudentImportServiceError)return json(err.status,{error:err.message,retryable:err.retryable});
     const message = err instanceof Error ? err.message : "Unknown error";
     const status = message === "Unauthorized"
       ? 401

@@ -23,27 +23,49 @@ races. The complete existing Academy Edge/import suite and compiler passed
 locally. These draft changes are not deployed with the legacy permission
 release in PR #249.
 
+The combined importer now has one service-only database command gateway. It
+locks current Auth/application identity, tenant membership, explicit grants,
+staff assignments and center delegation before deriving resource authority.
+Branch assignment dates use the branch clock. Each row receives independent
+registration, review and financial checks; a class-scoped administrator's
+finance permission cannot be promoted onto a reception assignment elsewhere.
+Paused centers cannot establish delegated authority, while explicit child
+ownership remains valid. Grant expiry is checked again after writes and rolls
+back the whole command when the lease has ended.
+
+The internal write engines and staging/evidence tables are no longer callable
+or writable by browser or service roles. Only the guarded command can invoke
+them. Reference locks use the ordinary enrollment lock order, including a
+classroom fence for membership deletion. Unknown first-upload responses can be
+resolved through an actor-bound upload-key lookup. Cancellation stops an
+unapplied job; completed jobs use retained logical correction.
+
+The new HTTP endpoints use the Auth actor, stream bounded JSON batches and
+return retryable uncertainty without replacing request identity. The browser
+transport pins requests and refreshes to the visible account. Other reviewers
+without financial visibility receive redacted source balances and summaries.
+
+Local qualification includes 56 database checks, 65 native PostgreSQL/API
+checks on the final read-redaction source, and 68 scale PostgreSQL/API
+checks with revocation contention and a verified expiry-during-write rollback,
+five endpoint tests and five account-pinned browser transport checks. A guarded
+5,000-student import with 10,000 existing contacts completed in 26.9 seconds
+against an unchanged 45-second caller limit; preview took 8.7 seconds. These
+are isolated local timings, not hosted latency promises.
+
 Remaining integration gates:
 
 - Existing multi-resource readers and writes still need capability-specific
   resource resolution. Retaining contributor entries alone does not correct
   every legacy controller's highest-role permission or resource logic.
-- The combined import API must derive the principal from Auth and resolve
-  current branch/classroom/student references. A classroom or student grant
-  cannot silently become authority over its entire branch.
-- Import staging, preview, commit and recovery must recheck current database
-  authority under locks, including account closure, grant revocation, staff
-  assignments and center delegation. A browser-supplied scope or capability
-  flag must never establish authority.
-- Per-row finance, group creation and roster rights must be enforced before
-  writes. An unrelated lower-role branch assignment must not inherit an
-  administrator's money or staff permissions.
+- Qualify the complete current schema/source identities and owned hosted
+  endpoint behavior before activation; local database tests are separate proof.
 - Finish and inspect the CSV/XLSX mapping, preview, resumption, receipt and
   logical-recovery wizard with real permission boundaries before activating
   the combined importer.
 
 The legacy boundary migration was released separately and is already installed.
-The draft release contains six remaining import migrations. They must be
+The draft release contains seven remaining import migrations. They must be
 qualified against current installed state; an isolated migration dry run must
 list exactly those reviewed files. Since some timestamps precede the installed
 legacy boundary, use the explicitly reviewed isolated `--include-all` path

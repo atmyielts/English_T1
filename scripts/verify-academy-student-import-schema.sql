@@ -22,10 +22,10 @@ begin
   'balance_convention','credit_positive','currency','UZS','date_format','iso','create_missing_groups',false,'duplicate_strategy','reject');
  source_rows:=jsonb_build_array(jsonb_build_object('source',jsonb_build_object('Name','Owned Student A','Phone','919111111','Parent','919333333','Group','Owned import group','Balance','800000','Joined','2026-10-01')),
   jsonb_build_object('source',jsonb_build_object('Name','Owned Student B','Phone','919222222','Parent','919333333','Group','Owned import group','Balance','-300000','Joined','2026-10-01')));
- job:=public.academy_stage_student_import(academy,actor,'owned-upload',settings,source_rows,0,true,array[branch])->'job';
- preview:=public.academy_validate_student_import(academy,actor,(job->>'id')::uuid,array[branch],false,false)->'job';
+ job:=public.academy_student_import_command(academy,actor,'stage',jsonb_build_object('key','owned-upload','settings',settings,'rows',source_rows,'offset',0,'seal',true))->'job';
+ preview:=public.academy_student_import_command(academy,actor,'preview',jsonb_build_object('job_id',job->>'id'))->'job';
  if preview->'validation'->>'ready'<>'true' then raise exception 'Actual schema import preview is not ready: %',preview->'validation';end if;
- committed:=public.academy_commit_student_import(academy,actor,(job->>'id')::uuid,'owned-commit',preview->'validation'->>'preview_hash',array[branch],false,false,true);
+ committed:=public.academy_student_import_command(academy,actor,'commit',jsonb_build_object('job_id',job->>'id','key','owned-commit','preview_hash',preview->'validation'->>'preview_hash'))->'job';
  if committed->'receipt'->>'applied_rows'<>'2' or committed->'receipt'->>'guardians'<>'1' then raise exception 'Actual schema commit counts differ';end if;
  select count(*) into count_rows from public.academy_student_import_effects where academy_id=academy;
  if count_rows<>9 then raise exception 'Actual schema effects missing: %',count_rows;end if;
@@ -35,7 +35,8 @@ begin
   or exists(select 1 from public.academy_student_guardian_relationships where academy_id=academy and (status<>'pending' or consent_status<>'pending' or is_financially_responsible or can_view_payments)) then raise exception 'Import granted unverified account or parent authority';end if;
  if (select count(*) from public.domain_event_outbox)<>outbox_before then raise exception 'Import sent automation';end if;
  if (public.academy_commit_student_import(academy,actor,(job->>'id')::uuid,'owned-commit',preview->'validation'->>'preview_hash',array[branch],false,false,true))->'receipt' is distinct from committed->'receipt' then raise exception 'Actual schema commit replay differs';end if;
- recovered:=public.academy_recover_student_import(academy,actor,(job->>'id')::uuid,'owned-recovery','Correct owned local fixture',array[branch],false,true);
+ recovered:=public.academy_student_import_command(academy,actor,'recover',jsonb_build_object('job_id',job->>'id','key','owned-recovery','reason','Correct owned local fixture'));
+ recovered:=recovered||jsonb_build_object('receipt',recovered->'job'->'recovery_receipt');
  if recovered->'job'->>'status'<>'reversed' or recovered->'receipt'->>'corrected_effects'<>'9' or recovered->'receipt'->>'reversal_entries'<>'2' then raise exception 'Actual schema recovery requires unexpected manual review: %',recovered->'receipt';end if;
  select sum(amount) into ledger_total from public.academy_account_ledger_entries where academy_id=academy;
  if ledger_total<>0 or (select count(*) from public.academy_contacts where academy_id=academy)<>2 then raise exception 'Recovery lost records or balance';end if;

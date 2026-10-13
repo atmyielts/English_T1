@@ -38,7 +38,10 @@ begin
     or coalesce('email:'||(b.n->>'email') in(select identity from repeated),false) file_ambiguous
   from normalized b
   cross join lateral (
-   select array_agg(c.id order by c.id) ids,bool_and(c.primary_branch_id=v_job.branch_id) in_branch,
+   select array_agg(c.id order by c.id) ids,bool_and((c.primary_branch_id=v_job.branch_id) is true
+    or(c.primary_branch_id is null and exists(select 1 from public.academy_classroom_memberships m
+     join public.academy_classrooms k on k.academy_id=m.academy_id and k.id=m.classroom_id
+     where m.academy_id=p_academy_id and m.contact_id=c.id and m.role='student' and m.status in('active','trial') and k.branch_id=v_job.branch_id))) in_branch,
     bool_and(c.status in('active','trial')) active from (
     select id,primary_branch_id,status from public.academy_contacts where academy_id=p_academy_id and phone_normalized=b.n->>'phone'
     union select id,primary_branch_id,status from public.academy_contacts where academy_id=p_academy_id and lower(email)=b.n->>'email'

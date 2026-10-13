@@ -135,6 +135,11 @@ begin
   return jsonb_build_object('job',v_validated->'job','preview_changed',true);
  end if;
  if v_validated->'job'->'validation'->>'ready' is distinct from 'true' then raise exception 'The import has validation errors';end if;
+ -- The guarded gateway owns current authority. Check again after locked
+ -- reference revalidation so a newly-resolved target cannot escape its grant.
+ if to_regprocedure('public.academy_assert_student_import_authority(uuid,uuid,uuid,text)') is not null then
+  perform public.academy_assert_student_import_authority(p_academy_id,p_actor_id,p_job_id,'commit');
+ end if;
  update public.academy_student_import_jobs set status='committing',commit_scope=v_scope where academy_id=p_academy_id and id=p_job_id;
  -- Apply each entity set in bulk inside the same transaction. Frozen source
  -- and normalization stay immutable; resolved IDs bind the applied row to its

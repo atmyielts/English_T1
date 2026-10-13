@@ -59,6 +59,7 @@ export type AcademyAccessPermissions = {
   viewStaffPerformance: boolean;
   viewRisk: boolean;
   manageImports: boolean;
+  importStudents: boolean;
   manageLocalization: boolean;
   useAcademyAI: boolean;
   manageResources: boolean;
@@ -285,6 +286,8 @@ export const buildAcademyPermissions = (access: MembershipRow): AcademyAccessPer
     viewStaffPerformance: ownerAdmin || centerAdmin || manager || branchManager,
     viewRisk: ops || parentLiaison,
     manageImports: ownerAdmin || centerAdmin || manager,
+    importStudents: access.status==='active'&&(ops||receptionist||(access.authority_entries??[]).some(entry=>
+      entry.status==='active'&&['owner','admin','center_admin','manager','counselor','branch_manager','receptionist'].includes(normalizeAcademyRole(entry.role)))),
     manageLocalization: ownerAdmin || centerAdmin,
     useAcademyAI: ownerAdmin || centerAdmin || manager || branchManager,
     manageResources: classroomLms,

@@ -77,6 +77,7 @@ export type TeacherStudioAccessProfile = {
     viewStaffPerformance?: boolean;
     viewRisk?: boolean;
     manageImports?: boolean;
+    importStudents?: boolean;
     manageLocalization?: boolean;
     useAcademyAI?: boolean;
     manageResources?: boolean;
