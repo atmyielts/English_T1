@@ -80,6 +80,11 @@ export type MembershipRow = {
   classroom_ids?: string[];
   branch_ids?: string[];
   center_tenant_id?: string | null;
+  scope_type?: string | null;
+  scope_ids?: unknown;
+  starts_at?: string | null;
+  expires_at?: string | null;
+  authority_entries?: MembershipRow[];
 };
 
 export type AcademyRoleGrantRow = {

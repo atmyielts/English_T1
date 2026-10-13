@@ -18,6 +18,7 @@ import {
   type AcademyTeacherFlowAccess,
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
+import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
 import { readAcademyRoomTimetable, readAcademyRoomBranches, RoomTimetableError } from "./room-timetable.ts";
@@ -96,17 +97,7 @@ type AcademyAccessPermissions = {
   viewAudit: boolean;
 };
 
-type MembershipRow = {
-  tenant_id: string;
-  role: string;
-  status: string;
-  source?: AcademyAccessSource;
-  staff_id?: string | null;
-  grant_id?: string | null;
-  classroom_ids?: string[];
-  branch_ids?: string[];
-  center_tenant_id?: string | null;
-};
+type MembershipRow = academyAccessPolicy.MembershipRow;
 
 type StudioBody = {
   action?: string;
@@ -544,6 +535,7 @@ export const buildAcademyPermissions = academyAccessPolicy.buildAcademyPermissio
 const academyAccessProfile = academyAccessPolicy.academyAccessProfile;
 const academyAccessHas = academyAccessPolicy.academyAccessHas;
 const academyRoleGrantToMembership = academyAccessPolicy.academyRoleGrantToMembership;
+const academyRoleGrantCanAccess = academyAccessPolicy.academyRoleGrantCanAccess;
 const normalizeAcademyRoleGrantStatus = academyAccessPolicy.normalizeAcademyRoleGrantStatus;
 const requireAcademyPermission = academyAccessPolicy.requireAcademyPermission;
 
@@ -592,6 +584,7 @@ const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
       status: String(row.status ?? "active"),
       classroom_ids: toStringArray(row.classroom_ids),
       branch_ids: toStringArray(row.branch_ids),
+      authority_entries: row.authority_entries ?? [{...row, authority_entries: undefined}],
     };
     const existing = byAcademy.get(tenantId);
     if (!existing) {
@@ -607,6 +600,7 @@ const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
       classroom_ids: classroomIds,
       branch_ids: branchIds,
       center_tenant_id: normalizedRow.center_tenant_id ?? existing.center_tenant_id ?? null,
+      authority_entries: [...(existing.authority_entries ?? []), ...(normalizedRow.authority_entries ?? [])],
     });
   }
   return Array.from(byAcademy.values()).sort((a, b) => academyRoleRank(b.role) - academyRoleRank(a.role));
@@ -1118,8 +1112,8 @@ const loadMemberships = async (
 
   const normalizedEmail = normalizeEmail(userEmail);
   const nowIso = new Date().toISOString();
+  const principal = {userId,email:normalizedEmail || null,emailVerified:Boolean(normalizedEmail)};
   const grantRowsById = new Map<string, Record<string, unknown>>();
-  const invitedGrantIds: string[] = [];
   const usedGrantIds: string[] = [];
 
   const collectGrantRows = (rows: Array<Record<string, unknown>>): void => {
@@ -1160,27 +1154,36 @@ const loadMemberships = async (
     }
   }
 
-  for (const grant of grantRowsById.values()) {
+  for (let grant of grantRowsById.values()) {
+    if (!academyAuthorityIdentityMatches(grant,principal)) continue;
+    if (!academyRoleGrantCanAccess(grant,new Date(nowIso))) continue;
+    if (String(grant.status) === "invited") {
+      let acceptance = sb.from("academy_role_grants")
+        .update({status:"active",user_id:userId,accepted_at:nowIso,updated_at:nowIso})
+        .eq("id",grant.id).eq("status","invited").lte("starts_at",nowIso)
+        .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
+      acceptance = grant.user_id == null
+        ? acceptance.is("user_id",null).eq("email",normalizedEmail)
+        : acceptance.eq("user_id",userId);
+      const {data:accepted,error:acceptanceError} = await acceptance.select(grantSelect).maybeSingle();
+      if (acceptanceError) throw new Error("Failed to accept academy access invitation");
+      if (!accepted) continue; // Revocation, expiry or reassignment won the race.
+      grant = accepted;
+      if (!academyAuthorityIdentityMatches(grant,principal)) continue;
+    }
     const membership = academyRoleGrantToMembership(grant, new Date(nowIso));
     if (!membership) continue;
-    accessRows.push(membership as MembershipRow);
+    const authority = academyGrantAuthorityEntry(grant,principal);
+    if (!authority) continue;
+    accessRows.push({...membership,authority_entries:[authority]} as MembershipRow);
     if (membership.grant_id) usedGrantIds.push(membership.grant_id);
-    if (membership.grant_id && String(grant.status ?? "invited") === "invited") invitedGrantIds.push(membership.grant_id);
-  }
-
-  const uniqueInvitedGrantIds = Array.from(new Set(invitedGrantIds.filter((id) => grantRowsById.has(id))));
-  if (grantsAvailable && uniqueInvitedGrantIds.length > 0) {
-    await sb
-      .from("academy_role_grants")
-      .update({ status: "active", user_id: userId, accepted_at: nowIso, updated_at: nowIso })
-      .in("id", uniqueInvitedGrantIds);
   }
   const uniqueUsedGrantIds = Array.from(new Set(usedGrantIds));
   if (grantsAvailable && uniqueUsedGrantIds.length > 0) {
     await sb
       .from("academy_role_grants")
       .update({ last_used_at: nowIso, updated_at: nowIso })
-      .in("id", uniqueUsedGrantIds);
+      .in("id", uniqueUsedGrantIds).eq("status","active").eq("user_id",userId);
   }
 
   const staffRowsById = new Map<string, Record<string, unknown>>();
@@ -1230,6 +1233,7 @@ const loadMemberships = async (
   }
 
   for (const staff of staffRowsById.values()) {
+    if (!academyAuthorityIdentityMatches(staff,principal)) continue;
     const academyId = String(staff.academy_id ?? "");
     if (!academyId) continue;
     const staffId = staff.id ? String(staff.id) : "";
@@ -6833,7 +6837,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if (authError || !authData?.user) return json(401, { error: "Unauthorized" });
 
     const userId = authData.user.id;
-    const userEmail = authData.user.email ?? null;
+    const userEmail = authData.user.email_confirmed_at ? (authData.user.email ?? null) : null;
     const url = new URL(req.url);
     const actionQuery = normalizeText(url.searchParams.get("action"), 64).toLowerCase();
     const contentType = req.headers.get("content-type") ?? "";
