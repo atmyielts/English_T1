@@ -18,6 +18,8 @@ import {
   type AcademyTeacherFlowAccess,
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
+import {validateAcademyMutationBranches} from "./mutation-branches.ts";
+import {resolveAcademyContactSaveTarget,academyContactSavePayload,ContactSaveTargetError} from "./contact-save.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
@@ -2451,81 +2453,7 @@ const validateBranchScopedMutation = async (
   access: MembershipRow,
   body: StudioBody,
   action: string,
-): Promise<boolean> => {
-  const scopedBranches = academyAccessBranchIds(access);
-  if (scopedBranches === null) return true;
-  const directBranchId = normalizeText(body.branch_id ?? body.primary_branch_id, 64);
-  if (directBranchId) return accessCanUseBranch(access, directBranchId);
-  if (action === "create_workforce_request") return scopedBranches.length > 0;
-  const operationalLookup: Record<string, [string, unknown, string]> = {
-    upsert_timetable_term: ["academy_timetable_terms", body.id ?? body.term_id, "branch_id"],
-    generate_timetable: ["academy_timetable_terms", body.term_id, "branch_id"],
-    update_service_request: ["academy_service_requests", body.request_id ?? body.id, "branch_id"],
-    record_collection_attempt: ["academy_collection_cases", body.case_id, "branch_id"],
-    update_workforce_request: ["academy_staff_requests", body.request_id ?? body.id, "branch_id"],
-    update_sensitive_case: ["academy_sensitive_cases", body.case_id ?? body.id, "branch_id"],
-  };
-  const operationalTarget = operationalLookup[action];
-  if (operationalTarget) {
-    const [table, idRaw, branchColumn] = operationalTarget;
-    const id = normalizeText(idRaw, 64);
-    if (!id) return false;
-    const { data, error } = await sb.from(table).select(branchColumn).eq("academy_id", academyId).eq("id", id).maybeSingle();
-    return !error && !!data && accessCanUseBranch(access, (data as unknown as Record<string, unknown>)[branchColumn]);
-  }
-  const lookups: Array<[string, unknown, string]> = [
-    ["academy_contacts", body.contact_id, "primary_branch_id"],
-    ["academy_leads", body.lead_id, "branch_id"],
-    ["academy_classrooms", body.classroom_id, "branch_id"],
-    ["academy_subscriptions", body.subscription_id, "branch_id"],
-    ["academy_charges", body.charge_id, "branch_id"],
-    ["academy_trial_lessons", body.trial_id, "branch_id"],
-    ["academy_lesson_sessions", body.session_id, "branch_id"],
-    ["academy_cashboxes", body.cashbox_id, "branch_id"],
-    ["academy_expenses", body.expense_id, "branch_id"],
-    ["academy_debt_cases", body.debt_case_id, "branch_id"],
-    ["academy_automation_executions", body.execution_id, "branch_id"],
-    ["academy_automation_rule_versions", body.rule_version_id, "branch_id"],
-    ["academy_ai_assistance_requests", body.request_id, "branch_id"],
-    ["academy_action_items", body.action_id ?? body.action_item_id, "branch_id"],
-  ];
-  for (const [table, idRaw, branchColumn] of lookups) {
-    const id = normalizeText(idRaw, 64);
-    if (!id) continue;
-    const { data, error } = await sb.from(table).select(branchColumn).eq("academy_id",academyId).eq("id",id).maybeSingle();
-    if (error || !data) return false;
-    return accessCanUseBranch(access, (data as unknown as Record<string, unknown>)[branchColumn]);
-  }
-  const paymentId = normalizeText(body.payment_id, 64);
-  if (paymentId) {
-    const { data: payment } = await sb.from("academy_payments").select("contact_id").eq("academy_id",academyId).eq("id",paymentId).maybeSingle();
-    if (!payment?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",payment.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  const shiftId = normalizeText(body.shift_id, 64);
-  if (shiftId) {
-    const { data: shift } = await sb.from("academy_cashier_shifts").select("cashbox_id").eq("academy_id",academyId).eq("id",shiftId).maybeSingle();
-    if (!shift?.cashbox_id) return false;
-    const { data: cashbox } = await sb.from("academy_cashboxes").select("branch_id").eq("academy_id",academyId).eq("id",shift.cashbox_id).maybeSingle();
-    return !!cashbox && accessCanUseBranch(access, cashbox.branch_id);
-  }
-  const relationshipId = normalizeText(body.relationship_id, 64);
-  if (relationshipId) {
-    const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("contact_id").eq("academy_id",academyId).eq("id",relationshipId).maybeSingle();
-    if (!relationship?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",relationship.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  const conversationId = normalizeText(body.conversation_id, 64);
-  if (conversationId) {
-    const { data: conversation } = await sb.from("academy_conversations").select("contact_id").eq("academy_id",academyId).eq("id",conversationId).maybeSingle();
-    if (!conversation?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",conversation.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  return false;
-};
+): Promise<boolean> => validateAcademyMutationBranches(sb as unknown as Parameters<typeof validateAcademyMutationBranches>[0], academyId, academyAccessBranchIds(access), body as unknown as Record<string, unknown>, action);
 
 const toNumber = (value: unknown): number | null => {
   const num = Number(value);
@@ -8035,7 +7963,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
       const explicitBranchId = normalizeText(body?.branch_id ?? body?.primary_branch_id, 64);
       if (explicitBranchId && !accessCanUseBranch(access, explicitBranchId)) return json(403, { error: "Forbidden" });
-      if (academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
+      if (actionBody !== "upsert_contact" && academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
         return json(403, { error: "A branch-scoped role may only mutate records in an assigned branch" });
       }
 
@@ -9771,75 +9699,47 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         if (!email && !phone) return json(400, { error: "email or phone is required" });
         if (!["active", "inactive", "trial", "paused"].includes(status)) return json(400, { error: "Invalid status" });
 
+        let target;
+        try {
+          target = await resolveAcademyContactSaveTarget(sb as unknown as Parameters<typeof resolveAcademyContactSaveTarget>[0], academyId, id, email, phone);
+        } catch (error) {
+          if (error instanceof ContactSaveTargetError) return json(error.status, {error: error.message});
+          throw error;
+        }
+        const assignedBranches = academyAccessBranchIds(access);
+        const selectedBranch = normalizeText(body?.primary_branch_id ?? body?.branch_id, 64)
+          || (!target && assignedBranches?.length === 1 ? assignedBranches[0] : null);
+        if (!(await validateBranchScopedMutation(sb, academyId, access, {
+          ...body, ...(target ? {contact_id: target.id} : {}),
+          ...(selectedBranch ? {primary_branch_id: selectedBranch} : {}),
+        }, actionBody))) return json(403, {error: "Forbidden"});
+        if (target && assignedBranches === null) await ensureContactInAccessScope(sb, academyId, access, target.id);
+
         let linkedUserId: string | null = null;
-        if (email) {
-          const { data: userRow } = await sb.from("users").select("id").eq("email", email).maybeSingle();
+        if (email && !target?.user_id) {
+          const {data: userRow, error: userError} = await sb.from("users").select("id").eq("email", email).maybeSingle();
+          if (userError) return json(503, {error: "Contact verification is temporarily unavailable. Try again."});
           linkedUserId = userRow?.id ? String(userRow.id) : null;
         }
-
-        const payload = {
-          academy_id: academyId,
-          user_id: linkedUserId,
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          phone,
-          telegram_id: telegramId,
-          status,
-          metadata,
-          created_by: userId,
-        };
-
-        if (id) {
-          const { data, error } = await sb
-            .from("academy_contacts")
-            .update(payload)
-            .eq("id", id)
-            .eq("academy_id", academyId)
-            .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-            .maybeSingle();
-          if (error) return json(500, { error: "Failed to update contact", detail: error.message });
-          return json(200, { contact: data });
+        const payload = academyContactSavePayload({
+          academy_id: academyId, first_name: firstName, last_name: lastName,
+          email, phone, telegram_id: telegramId, status, metadata,
+        }, target, userId, linkedUserId, selectedBranch);
+        const columns = "id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, primary_branch_id, metadata, created_at, updated_at";
+        if (target) {
+          let update = sb.from("academy_contacts").update(payload).eq("academy_id", academyId).eq("id", target.id);
+          // Do not overwrite a newly bound login or a record moved outside the
+          // reviewed scope while this request was resolving its identity.
+          update = target.user_id ? update.eq("user_id", target.user_id) : update.is("user_id", null);
+          update = target.primary_branch_id ? update.eq("primary_branch_id", target.primary_branch_id) : update.is("primary_branch_id", null);
+          const {data, error} = await update.select(columns).maybeSingle();
+          if (error) return json(error.code === "23505" ? 409 : 500, {error: "Failed to update contact"});
+          if (!data) return json(409, {error: "This contact changed while you were saving. Refresh it before trying again."});
+          return json(200, {contact: data, ...(id ? {} : {upserted: true})});
         }
-
-        let existing: { id: string } | null = null;
-        if (email) {
-          const { data } = await sb
-            .from("academy_contacts")
-            .select("id")
-            .eq("academy_id", academyId)
-            .eq("email", email)
-            .maybeSingle();
-          existing = (data as { id: string } | null) ?? null;
-        }
-        if (!existing && phone) {
-          const { data } = await sb
-            .from("academy_contacts")
-            .select("id")
-            .eq("academy_id", academyId)
-            .eq("phone", phone)
-            .maybeSingle();
-          existing = (data as { id: string } | null) ?? null;
-        }
-
-        if (existing?.id) {
-          const { data, error } = await sb
-            .from("academy_contacts")
-            .update(payload)
-            .eq("id", existing.id)
-            .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-            .maybeSingle();
-          if (error) return json(500, { error: "Failed to update contact", detail: error.message });
-          return json(200, { contact: data, upserted: true });
-        }
-
-        const { data, error } = await sb
-          .from("academy_contacts")
-          .insert(payload)
-          .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to create contact", detail: error.message });
-        return json(200, { contact: data, created: true });
+        const {data, error} = await sb.from("academy_contacts").insert(payload).select(columns).maybeSingle();
+        if (error) return json(error.code === "23505" ? 409 : 500, {error: "Failed to create contact"});
+        return json(200, {contact: data, created: true});
       }
 
       if (actionBody === "create_classroom") {

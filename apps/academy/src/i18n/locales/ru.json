@@ -2756,5 +2756,8 @@
   "Choose a branch.": "Выберите филиал.",
   "Map student name and phone before uploading.": "Перед загрузкой сопоставьте имя и телефон ученика.",
   "Map each source column to only one field.": "Сопоставьте каждый столбец только с одним полем.",
-  "A source row is too large to upload.": "Строка файла слишком большая для загрузки."
+  "A source row is too large to upload.": "Строка файла слишком большая для загрузки.",
+  "Contact verification is temporarily unavailable. Try again.": "Проверка контакта временно недоступна. Попробуйте ещё раз.",
+  "The email and phone belong to different contacts. Ask an administrator to resolve them.": "Email и телефон принадлежат разным контактам. Обратитесь к администратору для проверки.",
+  "This contact changed while you were saving. Refresh it before trying again.": "Контакт изменился во время сохранения. Обновите его перед повторной попыткой."
 }

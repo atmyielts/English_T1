@@ -71,6 +71,24 @@ and the server feature gate. Uzbek/Russian translations, build and lint are
 checked separately. These browser tests use synthetic mocked API responses;
 they do not establish hosted backend or customer-workflow readiness.
 
+The shared branch mutation check no longer returns early for a claimed branch
+or the first referenced record. It verifies every recognized resource and its
+stored parent inside the selected Academy, checks old update targets and nested
+student inputs, and reads IDs in batches of 200. An allowed contact or branch
+cannot conceal a forbidden payment, charge, shift, collection case or schedule.
+Contact saves separately resolve explicit ID, phone and email matches before
+writing; conflicting identities are rejected. The resolved existing contact is
+scope-checked, its bound login and original creator are retained, and conditional
+updates refuse a concurrently changed branch or login binding. A new contact
+receives the operator's sole assigned branch when none was supplied.
+
+Sixteen resource-boundary tests, six contact-policy tests and eight checks of
+the actual contact handler cover these changes. The handler fixtures simulate
+detached database responses and concurrent branch/binding changes. These are
+local application checks, not proof of atomic grant revocation. Existing records
+without branch attribution still need correct capability/resource resolution;
+the shared check does not make a classroom/student grant branch-wide.
+
 Remaining integration gates:
 
 - Existing multi-resource readers and writes still need capability-specific

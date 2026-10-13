@@ -23,6 +23,9 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  'Contact verification is temporarily unavailable. Try again.',
+  'The email and phone belong to different contacts. Ask an administrator to resolve them.',
+  'This contact changed while you were saving. Refresh it before trying again.',
   // Import and scheduling errors arrive dynamically from the API/helpers.
   'The timetable could not be created. Refresh the preview and try again.',
   'Choose a valid date and time.',
