@@ -1,14 +1,11 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-room-calendar-and-atomic-generation",
+  "releaseId": "academy-legacy-import-permission-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "academy"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261012110000_academy_room_timetable_snapshot.sql",
-    "20261012120000_academy_timetable_booking_integrity.sql"
+    "20261012210000_academy_legacy_import_boundary.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -17,22 +14,20 @@
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261012110000_academy_room_timetable_snapshot.sql",
-    "migration:20261012120000_academy_timetable_booking_integrity.sql",
+    "migration:20261012210000_academy_legacy_import_boundary.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these two reviewed migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply other repository migrations.",
-    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed reader/generation/access changes. Validate source differences, module closure, compiler and owned access scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
+    "Capture the installed Academy source and compare the selected patch/module closure with current production. Run the legacy boundary tests on the captured schema before activation.",
+    "Apply only the reviewed 20261012210000 migration using supabase db push --linked from an isolated release containing installed history plus this migration. Its dry run must list exactly one pending migration. Preserve concurrent proctor and other schema/source work.",
+    "Deploy the verified source-preserving bundle with supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel after protected CI/merge; never deploy the dirty primary checkout. This release does not expose the new combined importer."
   ],
   "verification": [
-    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge suite, native generation contention/rollback tests, local schema-only qualification and complete browser suite. Inspect final desktop/phone captures. All local/synthetic evidence remains distinct from hosted customer readiness.",
-    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC identities, role grants, owned receptionist/branch-manager/teacher scopes, branch-local manual booking, timetable retries and dated teacher assignments. Check runtime timeouts and hosted performance before qualifying large timetable requests. Verify owned fixtures are removed."
+    "verify:prod, verify:release, policy tests, actual handler denial-before-write tests, native PostgreSQL/PostgREST permissions, existing Edge contracts, captured-schema compatibility and installed source identity.",
+    "After activation verify owned manager forbidden staff/balance actions, allowed owner contact creation/retry, filtered history, browser raw-table denial and source/migration identity without customer writes or messages."
   ],
   "rollback": {
-    "pages": "Use the prior reviewed Academy Pages deployment at main 7bb038ecf3e72ff951af9ca7a8a835ebfbf3b224.",
-    "edge": "Restore only the captured installed Academy source bundle and verify its source/runtime identity. Do not restore unrelated older repository modules.",
-    "migration": "Keep additive columns/readers/receipts and customer lessons. If required, restore the captured prior creation function and disable only the new booking trigger through a reviewed forward repair; existing room/classroom/teacher exclusion constraints remain. Never delete generated customer sessions as a rollback."
+    "edge": "Restore the captured pre-release Academy source only after evaluating the retained database guard; the migration preserves the previous creation/configuration protocol.",
+    "migration": "Retain import jobs, rows, effects, immutable request identities and all customer data. Forward-repair the function/trigger if needed. Keep browser table privileges restricted; no destructive schema rollback."
   }
 }
