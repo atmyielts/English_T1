@@ -12,7 +12,6 @@
     "20261012180000_academy_student_import_preview.sql",
     "20261012190000_academy_student_import_commit.sql",
     "20261012200000_academy_student_import_lifecycle.sql",
-    "20261012210000_academy_legacy_import_boundary.sql",
     "20261012220000_academy_student_import_recovery.sql"
   ],
   "edgeFunctions": [
@@ -28,13 +27,12 @@
     "migration:20261012180000_academy_student_import_preview.sql",
     "migration:20261012190000_academy_student_import_commit.sql",
     "migration:20261012200000_academy_student_import_lifecycle.sql",
-    "migration:20261012210000_academy_legacy_import_boundary.sql",
     "migration:20261012220000_academy_student_import_recovery.sql",
     "function:academy"
   ],
   "manualFollowUps": [
     "Keep the PR draft until current per-grant/resource and transactional authorization, the combined API/wizard, and legacy atomic recovery/history are complete. Code qualification is not customer readiness. Reconcile concurrent proctor/shared-file work before merge or backend activation.",
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these seven reviewed import migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations.",
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these six reviewed import migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations.",
     "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [
@@ -42,7 +40,7 @@
     "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC/source identities, direct-table/RPC grants and owned receptionist/branch-manager/finance grant scopes. Qualify upload resumption, changed review, exact opening balances, receipt recovery, later payments/consent and logical correction without automated messages or false churn. Check runtime timeouts and actual hosted performance. Verify owned fixtures are removed."
   ],
   "rollback": {
-    "pages": "Use the prior reviewed Academy Pages deployment at main f19c1ab64e068399d1c320b78d4acac14b28e71b.",
+    "pages": "Use the prior reviewed Academy Pages deployment at main 81985da6f8a9f3e10bd400cdf70bfa83bd4d4d88.",
     "edge": "Restore only the captured installed Academy source bundle and verify its source/runtime identity. Do not restore unrelated older repository modules.",
     "migration": "Retain uploaded sources, original records, financial/lifecycle evidence and immutable receipts. Correct an owned import only through reviewed logical recovery with compensating ledger entries; retain changed/used records for manual review. Forward-repair command definitions or keep new entry points unavailable if needed. Never delete customer records or undo unrelated/proctor schema changes as rollback."
   }
