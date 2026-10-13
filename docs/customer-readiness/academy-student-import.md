@@ -5,6 +5,9 @@ opening balance and join date from CSV/XLSX in one reviewed operation. A file
 parser alone does not complete this capability. This branch is a local draft;
 no importer changes have been deployed.
 
+The locally qualified atomic recovery and large-file performance milestone is
+recorded in [the 13 October qualification note](2026-10-13-student-import-recovery.md).
+
 The prior flow has one staging request per row, concurrently recomputes job
 counts, and can expose `ready` before the complete file arrives. Reads have no
 explicit page range and can hit the provider's default row cap. Commit writes
@@ -96,7 +99,7 @@ The transaction applies new contacts, unverified parents/pending relationships,
 memberships and exact opening balances with immutable effect snapshots, audit
 and one receipt. Replays cannot apply a second copy; changed previews/actors/keys
 are rejected. A late audit failure rolls back all business records, effect
-snapshots and lifecycle events. All ordinary contact/guardian identity writers
+snapshots and lifecycle events. All ordinary contact/guardian/group identity writers
 participate in bounded identity locks, and enrollment writers use the same
 locked capacity guard. Normal writes still publish lifecycle automation;
 historical imports retain their original date and suppress automation only
@@ -111,8 +114,10 @@ fixtures. It confirmed no payment, entitlement or communication event was
 created by import. This is compatibility evidence against a historical schema
 capture, not current hosted behavior or a deployed user flow.
 
-These are local draft checks. Recovery, API integration, the complete wizard,
-legacy importer fixes, current installed-source release qualification and
+Atomic recovery is now locally implemented and qualified, including preservation
+of later payments, consent, reused students and groups kept active for review.
+These remain local draft checks. API integration, the complete wizard,
+remaining legacy importer fixes, current installed-source release qualification and
 signed-in published qualification remain unfinished. Grant scopes and merged
 role authorities must be preserved before exposing the new endpoints.
 No importer migration or endpoint has been deployed.
