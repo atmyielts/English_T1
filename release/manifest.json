@@ -1,14 +1,19 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-room-calendar-and-atomic-generation",
+  "releaseId": "academy-student-import-and-retained-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261012110000_academy_room_timetable_snapshot.sql",
-    "20261012120000_academy_timetable_booking_integrity.sql"
+    "20261012160000_academy_student_import_staging.sql",
+    "20261012170000_academy_student_import_normalization.sql",
+    "20261012180000_academy_student_import_preview.sql",
+    "20261012190000_academy_student_import_commit.sql",
+    "20261012200000_academy_student_import_lifecycle.sql",
+    "20261012210000_academy_legacy_import_boundary.sql",
+    "20261012220000_academy_student_import_recovery.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -18,21 +23,27 @@
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261012110000_academy_room_timetable_snapshot.sql",
-    "migration:20261012120000_academy_timetable_booking_integrity.sql",
+    "migration:20261012160000_academy_student_import_staging.sql",
+    "migration:20261012170000_academy_student_import_normalization.sql",
+    "migration:20261012180000_academy_student_import_preview.sql",
+    "migration:20261012190000_academy_student_import_commit.sql",
+    "migration:20261012200000_academy_student_import_lifecycle.sql",
+    "migration:20261012210000_academy_legacy_import_boundary.sql",
+    "migration:20261012220000_academy_student_import_recovery.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these two reviewed migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply other repository migrations.",
-    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed reader/generation/access changes. Validate source differences, module closure, compiler and owned access scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
+    "Keep the PR draft until current per-grant/resource and transactional authorization, the combined API/wizard, and legacy atomic recovery/history are complete. Code qualification is not customer readiness. Reconcile concurrent proctor/shared-file work before merge or backend activation.",
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these seven reviewed import migrations using supabase db push --linked from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations.",
+    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [
-    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge suite, native generation contention/rollback tests, local schema-only qualification and complete browser suite. Inspect final desktop/phone captures. All local/synthetic evidence remains distinct from hosted customer readiness.",
-    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC identities, role grants, owned receptionist/branch-manager/teacher scopes, branch-local manual booking, timetable retries and dated teacher assignments. Check runtime timeouts and hosted performance before qualifying large timetable requests. Verify owned fixtures are removed."
+    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge/import suite, native 5,000-student PostgREST commit/recovery/replay and contention tests, frozen-source captured-schema qualification and complete browser suite. Inspect final desktop/phone importer states. All local/synthetic evidence remains distinct from hosted customer readiness.",
+    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC/source identities, direct-table/RPC grants and owned receptionist/branch-manager/finance grant scopes. Qualify upload resumption, changed review, exact opening balances, receipt recovery, later payments/consent and logical correction without automated messages or false churn. Check runtime timeouts and actual hosted performance. Verify owned fixtures are removed."
   ],
   "rollback": {
-    "pages": "Use the prior reviewed Academy Pages deployment at main 7bb038ecf3e72ff951af9ca7a8a835ebfbf3b224.",
+    "pages": "Use the prior reviewed Academy Pages deployment at main f19c1ab64e068399d1c320b78d4acac14b28e71b.",
     "edge": "Restore only the captured installed Academy source bundle and verify its source/runtime identity. Do not restore unrelated older repository modules.",
-    "migration": "Keep additive columns/readers/receipts and customer lessons. If required, restore the captured prior creation function and disable only the new booking trigger through a reviewed forward repair; existing room/classroom/teacher exclusion constraints remain. Never delete generated customer sessions as a rollback."
+    "migration": "Retain uploaded sources, original records, financial/lifecycle evidence and immutable receipts. Correct an owned import only through reviewed logical recovery with compensating ledger entries; retain changed/used records for manual review. Forward-repair command definitions or keep new entry points unavailable if needed. Never delete customer records or undo unrelated/proctor schema changes as rollback."
   }
 }
