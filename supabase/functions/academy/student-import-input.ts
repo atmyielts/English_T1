@@ -11,11 +11,11 @@ export function decodeStudentImportConfig(input:unknown):StudentImportConfig{
   if(!uuid(input.branch_id))return invalid('Choose a valid branch.');
   if(typeof input.source_filename!=='string'||!input.source_filename.trim()||input.source_filename.length>300)return invalid('Choose a valid source filename.');
   if(!Number.isInteger(input.expected_rows)||Number(input.expected_rows)<1||Number(input.expected_rows)>5000)return invalid('Import files are limited to 5,000 rows per job.');
-  if(!['credit_positive','debt_positive'].includes(String(input.balance_convention)))return invalid('Choose whether positive balances mean prepaid credit or debt.');
+  if(typeof input.balance_convention!=='string'||!['credit_positive','debt_positive'].includes(input.balance_convention))return invalid('Choose whether positive balances mean prepaid credit or debt.');
   if(typeof input.currency!=='string'||!/^[A-Z]{3}$/.test(input.currency))return invalid('Choose a valid import currency.');
-  if(!['iso','day_first','month_first'].includes(String(input.date_format)))return invalid('Choose the source date format.');
+  if(typeof input.date_format!=='string'||!['iso','day_first','month_first'].includes(input.date_format))return invalid('Choose the source date format.');
   if(typeof input.create_missing_groups!=='boolean')return invalid('Choose how missing groups are handled.');
-  if(!['reject','skip','reuse'].includes(String(input.duplicate_strategy)))return invalid('Choose how existing students are handled.');
+  if(typeof input.duplicate_strategy!=='string'||!['reject','skip','reuse'].includes(input.duplicate_strategy))return invalid('Choose how existing students are handled.');
   if(!record(input.column_mapping))return invalid('Map the source columns first.');
   const mapping:Record<string,string>={};
   for(const [field,heading] of Object.entries(input.column_mapping)){

@@ -6,9 +6,7 @@ create or replace function public.academy_validate_student_import(
 ) returns jsonb language plpgsql security definer set search_path=public
  set statement_timeout='30s' set lock_timeout='5s' as $$
 declare
- v_job public.academy_student_import_jobs%rowtype;v_row public.academy_student_import_rows%rowtype;
- v_normal jsonb;v_errors jsonb;v_contacts uuid[];v_contact uuid;v_groups uuid[];v_group uuid;
- v_guardians uuid[];v_guardian uuid;v_action text;v_currency text;v_summary jsonb;v_hash text;
+ v_job public.academy_student_import_jobs%rowtype;v_currency text;v_summary jsonb;v_hash text;
 begin
  if not exists(select 1 from public.users where id=p_actor_id and is_active) then raise exception 'An active account is required';end if;
  select * into v_job from public.academy_student_import_jobs where academy_id=p_academy_id and id=p_job_id for update;
@@ -19,67 +17,78 @@ begin
  -- Currency must match the Academy's actual configured ledger currency.
  select currency into v_currency from public.academy_localization_settings where academy_id=p_academy_id;
  if coalesce(v_currency,'UZS') is distinct from (v_job.settings->>'currency') then raise exception 'Import currency must match the Academy currency';end if;
- -- Normalize all source rows before duplicate detection, avoiding order-based
- -- guesses about which of two different people sharing a phone should win.
+ -- Resolve the complete file in one statement. Revalidation still recomputes
+ -- live references; only deterministic normalization is cached. Each source row
+ -- is updated once instead of issuing several queries and two writes per row.
  with base as materialized (
   select id,coalesce(normalization,public.academy_normalize_student_import_row(mapped_data,v_job.settings)) result
-   from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id
- ) update public.academy_student_import_rows r set normalization=b.result,normalized_data=b.result->'normalized',validation_errors=b.result->'errors'
-   from base b where r.academy_id=p_academy_id and r.job_id=p_job_id and r.id=b.id;
- -- A single statement finds repeated identity columns, rather than 5,000
- -- repeated scans of the entire upload. These ambiguous rows require correction.
- with repeated as (
+  from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id
+ ), normalized as materialized (
+  select id,result,result->'normalized' n,result->'errors' errors from base
+ ), repeated as materialized (
   select identity from (
-   select 'phone:'||(normalized_data->>'phone') identity from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id and normalized_data->>'phone' is not null
-   union all
-   select 'email:'||(normalized_data->>'email') from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id and normalized_data->>'email' is not null
+   select 'phone:'||(n->>'phone') identity from normalized where n->>'phone' is not null
+   union all select 'email:'||(n->>'email') from normalized where n->>'email' is not null
   ) identities group by identity having count(*)>1
- ) update public.academy_student_import_rows r set validation_errors=r.validation_errors||'"file_identity_ambiguous"'::jsonb
- where r.academy_id=p_academy_id and r.job_id=p_job_id and exists(select 1 from repeated d
-  where d.identity='phone:'||(r.normalized_data->>'phone') or d.identity='email:'||(r.normalized_data->>'email'));
- for v_row in select * from public.academy_student_import_rows where academy_id=p_academy_id and job_id=p_job_id order by row_number loop
-  v_normal:=v_row.normalized_data;v_errors:=v_row.validation_errors;v_action:='create';v_contact:=null;v_group:=null;v_guardian:=null;
-  select array_agg(distinct id order by id) into v_contacts from public.academy_contacts where academy_id=p_academy_id
-   and (phone_normalized=v_normal->>'phone' or (v_normal->>'email' is not null and lower(email)=v_normal->>'email'));
-  if coalesce(cardinality(v_contacts),0)>1 then v_errors:=v_errors||'"existing_identity_ambiguous"'::jsonb;
-  elsif coalesce(cardinality(v_contacts),0)=1 then
-   if not exists(select 1 from public.academy_contacts where academy_id=p_academy_id and id=v_contacts[1] and primary_branch_id=v_job.branch_id) then
-    v_errors:=v_errors||'"identity_unavailable_in_branch"'::jsonb;
-   elsif v_job.settings->>'duplicate_strategy'='reject' then v_errors:=v_errors||'"student_already_exists"'::jsonb;
-   elsif v_job.settings->>'duplicate_strategy'='skip' then v_action:='skip';
-   else
-    v_contact:=v_contacts[1];v_action:='reuse';
-    if not exists(select 1 from public.academy_contacts where academy_id=p_academy_id and id=v_contact and status in('active','trial')) then v_errors:=v_errors||'"existing_student_not_active"'::jsonb;end if;
-    if coalesce((v_normal->>'ledger_amount')::numeric,0)<>0 then v_errors:=v_errors||'"existing_balance_requires_reconciliation"'::jsonb;end if;
-   end if;
-  end if;
-  if v_action<>'skip' and v_normal->>'group_name' is not null then
-   select array_agg(id order by id) into v_groups from public.academy_classrooms where academy_id=p_academy_id and branch_id=v_job.branch_id and lower(trim(name))=lower(v_normal->>'group_name') and is_active;
-   if coalesce(cardinality(v_groups),0)>1 then v_errors:=v_errors||'"group_name_ambiguous"'::jsonb;
-   elsif coalesce(cardinality(v_groups),0)=1 then v_group:=v_groups[1];
-   elsif exists(select 1 from public.academy_classrooms where academy_id=p_academy_id and lower(trim(name))=lower(v_normal->>'group_name')) then v_errors:=v_errors||'"group_name_unavailable"'::jsonb;
-   elsif (v_job.settings->>'create_missing_groups')::boolean is distinct from true then v_errors:=v_errors||'"group_not_found"'::jsonb;
-   elsif p_can_create_groups is distinct from true then v_errors:=v_errors||'"group_creation_forbidden"'::jsonb;
-   else v_normal:=v_normal||jsonb_build_object('create_group',true);end if;
-  end if;
-  if v_action='reuse' and v_group is not null and exists(select 1 from public.academy_classroom_memberships
-   where academy_id=p_academy_id and classroom_id=v_group and contact_id=v_contact and (role<>'student' or status<>'active')) then
-   v_errors:=v_errors||'"existing_membership_requires_review"'::jsonb;end if;
-  if v_action<>'skip' and v_normal->>'parent_phone' is not null then
-   select array_agg(id order by id) into v_guardians from public.academy_guardians where academy_id=p_academy_id and phone_normalized=v_normal->>'parent_phone' and status<>'revoked';
-   if coalesce(cardinality(v_guardians),0)>1 then v_errors:=v_errors||'"parent_identity_ambiguous"'::jsonb;
-   elsif coalesce(cardinality(v_guardians),0)=1 then
-    v_guardian:=v_guardians[1];
-    if exists(select 1 from public.academy_guardians where academy_id=p_academy_id and id=v_guardian and status='suspended') then v_errors:=v_errors||'"parent_identity_suspended"'::jsonb;end if;
-   end if;
-  end if;
-  if v_contact is not null and v_guardian is not null and exists(select 1 from public.academy_student_guardian_relationships
-   where academy_id=p_academy_id and contact_id=v_contact and guardian_id=v_guardian
-    and (status not in('pending','active') or consent_status in('declined','revoked','expired'))) then
-   v_errors:=v_errors||'"existing_parent_relationship_requires_review"'::jsonb;end if;
-  v_normal:=v_normal||jsonb_build_object('disposition',v_action,'contact_id',v_contact,'classroom_id',v_group,'guardian_id',v_guardian);
-  update public.academy_student_import_rows set normalized_data=v_normal,validation_errors=v_errors where academy_id=p_academy_id and id=v_row.id;
- end loop;
+ ), resolved as materialized (
+  select b.*,coalesce(cardinality(c.ids),0) contact_count,c.ids[1] contact_id,c.in_branch,c.active,
+   coalesce(cardinality(g.ids),0) group_count,g.ids[1] classroom_id,g.any_group,
+   coalesce(cardinality(p.ids),0) guardian_count,p.ids[1] guardian_id,p.suspended,
+   coalesce('phone:'||(b.n->>'phone') in(select identity from repeated),false)
+    or coalesce('email:'||(b.n->>'email') in(select identity from repeated),false) file_ambiguous
+  from normalized b
+  cross join lateral (
+   select array_agg(c.id order by c.id) ids,bool_and(c.primary_branch_id=v_job.branch_id) in_branch,
+    bool_and(c.status in('active','trial')) active from (
+    select id,primary_branch_id,status from public.academy_contacts where academy_id=p_academy_id and phone_normalized=b.n->>'phone'
+    union select id,primary_branch_id,status from public.academy_contacts where academy_id=p_academy_id and lower(email)=b.n->>'email'
+   ) c
+  ) c
+  cross join lateral (
+   select array_agg(id order by id) filter(where branch_id=v_job.branch_id and is_active) ids,count(*)>0 any_group
+   from public.academy_classrooms where academy_id=p_academy_id and lower(trim(name))=lower(b.n->>'group_name')
+  ) g
+  cross join lateral (
+   select array_agg(id order by id) ids,bool_or(status='suspended') suspended
+   from public.academy_guardians where academy_id=p_academy_id and phone_normalized=b.n->>'parent_phone' and status<>'revoked'
+  ) p
+ ), actions as materialized (
+  select r.*,
+   case when contact_count=1 and in_branch and v_job.settings->>'duplicate_strategy'='skip' then 'skip'
+    when contact_count=1 and in_branch and v_job.settings->>'duplicate_strategy'='reuse' then 'reuse' else 'create' end disposition
+  from resolved r
+ ), checked as (
+  select a.id,a.result,
+   a.n||case when disposition<>'skip' and a.n->>'group_name' is not null and group_count=0 and not any_group
+    and (v_job.settings->>'create_missing_groups')::boolean and p_can_create_groups is true then jsonb_build_object('create_group',true) else '{}'::jsonb end
+    ||jsonb_build_object('disposition',disposition,'contact_id',case when disposition='reuse' then contact_id end,
+     'classroom_id',case when disposition<>'skip' and group_count=1 then classroom_id end,
+     'guardian_id',case when disposition<>'skip' and guardian_count=1 then guardian_id end) n,
+   a.errors||to_jsonb(array_remove(array[
+    case when file_ambiguous then 'file_identity_ambiguous' end,
+    case when contact_count>1 then 'existing_identity_ambiguous' end,
+    case when contact_count=1 and not in_branch then 'identity_unavailable_in_branch' end,
+    case when contact_count=1 and in_branch and v_job.settings->>'duplicate_strategy'='reject' then 'student_already_exists' end,
+    case when disposition='reuse' and not active then 'existing_student_not_active' end,
+    case when disposition='reuse' and coalesce((a.n->>'ledger_amount')::numeric,0)<>0 then 'existing_balance_requires_reconciliation' end,
+    case when disposition<>'skip' and a.n->>'group_name' is not null and group_count>1 then 'group_name_ambiguous' end,
+    case when disposition<>'skip' and a.n->>'group_name' is not null and group_count=0 and any_group then 'group_name_unavailable' end,
+    case when disposition<>'skip' and a.n->>'group_name' is not null and group_count=0 and not any_group
+     and (v_job.settings->>'create_missing_groups')::boolean is distinct from true then 'group_not_found' end,
+    case when disposition<>'skip' and a.n->>'group_name' is not null and group_count=0 and not any_group
+     and (v_job.settings->>'create_missing_groups')::boolean is true and p_can_create_groups is distinct from true then 'group_creation_forbidden' end,
+    case when disposition='reuse' and group_count=1 and exists(select 1 from public.academy_classroom_memberships
+     where academy_id=p_academy_id and classroom_id=a.classroom_id and contact_id=a.contact_id and (role<>'student' or status<>'active')) then 'existing_membership_requires_review' end,
+    case when disposition<>'skip' and a.n->>'parent_phone' is not null and guardian_count>1 then 'parent_identity_ambiguous' end,
+    case when disposition<>'skip' and a.n->>'parent_phone' is not null and guardian_count=1 and suspended then 'parent_identity_suspended' end,
+    case when disposition='reuse' and guardian_count=1 and exists(select 1 from public.academy_student_guardian_relationships
+     where academy_id=p_academy_id and contact_id=a.contact_id and guardian_id=a.guardian_id
+      and (status not in('pending','active') or consent_status in('declined','revoked','expired'))) then 'existing_parent_relationship_requires_review' end
+   ],null)) errors
+  from actions a
+ ) update public.academy_student_import_rows r set normalization=b.result,normalized_data=b.n,validation_errors=b.errors
+  from checked b where r.academy_id=p_academy_id and r.job_id=p_job_id and r.id=b.id
+   and row(r.normalization,r.normalized_data,r.validation_errors) is distinct from row(b.result,b.n,b.errors);
  -- Capacity includes every new active membership planned by this file. Existing
  -- active memberships being reused do not consume a second seat.
  with additions as (

@@ -52,7 +52,11 @@ try{
  let preview=await validate(job);
  eq(preview.status,'validated');eq(preview.validation.create_rows,1);eq(preview.validation.opening_credit,'800000');eq(preview.validation.opening_debt,'0');eq(preview.validation.requires_finance_approval,true);
  eq((await values(job))[0].normalized_data.classroom_id,id(10));
- const originalHash=preview.validation.preview_hash;eq((await validate(job)).validation.preview_hash,originalHash);
+ const originalHash=preview.validation.preview_hash;
+ await db.exec("create table preview_row_writes(n integer not null);insert into preview_row_writes values(0);create function count_preview_row_write() returns trigger language plpgsql as $$begin update preview_row_writes set n=n+1;return new;end;$$;create trigger count_preview_row_write after update on academy_student_import_rows for each row execute function count_preview_row_write();");
+ eq((await validate(job)).validation.preview_hash,originalHash);
+ eq((await query('select n from preview_row_writes'))[0].n,0); // Unchanged review must not rewrite an entire file.
+ await db.exec('drop trigger count_preview_row_write on academy_student_import_rows;');
  await reject(()=>query("update academy_student_import_rows set normalization='{}' where job_id=$1",[job.id]),/cannot be changed/);
  // Changed references are visible on a repeated preview, not frozen as trusted flags.
  await query('update academy_classrooms set student_capacity=0 where id=$1',[id(10)]);
@@ -95,6 +99,10 @@ try{
  const baseline=(await query('select (select count(*) from academy_contacts)::int contacts,(select count(*) from academy_guardians)::int guardians,(select count(*) from academy_classrooms)::int groups,(select count(*) from academy_classroom_memberships)::int memberships'))[0];
  eq(baseline,{contacts:5,guardians:4,groups:3,memberships:1});
  console.log('PASS: branch/identity/capacity/consent reference qualification');
+ // A center migration commonly runs against an already populated CRM. The
+ // large-file check must not get its speed only from empty reference tables.
+ await query("insert into academy_contacts(id,academy_id,primary_branch_id,first_name,status,phone,email) select gen_random_uuid(),$1::uuid,$2::uuid,'Existing '||n,'active',(940000000+n)::text,'existing-'||n||'@example.invalid' from generate_series(1,5000) n",[academy,branch]);
+ await query("insert into academy_guardians select gen_random_uuid(),$1::uuid,(950000000+n)::text,'invited' from generate_series(1,5000) n",[academy]);
  const large=Array.from({length:5000},(_,i)=>student({full_name:`Student ${i+1}`,phone:String(910000000+i),group_name:null,balance:'0'}));
  job=await stage(large);const started=performance.now();preview=await validate(job);
  eq(preview.validation.total_rows,5000);eq(preview.validation.create_rows,5000);eq(preview.validation.invalid_rows,0);

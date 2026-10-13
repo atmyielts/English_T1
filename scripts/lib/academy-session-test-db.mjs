@@ -14,22 +14,23 @@ export const bindSql = (source, params=[]) => source.replace(/\$(\d+)/g, (_, i) 
 
 // A new network-isolated local container. No ports, host mounts, hosted connection,
 // credentials, or access to any pre-existing database/container.
-export async function createNativeSessionDb() {
+export async function createNativeSessionDb({profile=false}={}) {
   const name = 'schood-session-' + randomUUID().slice(0,8);
   let owned=false, role=null,restName=null;
   const active = new Set();
-  function process(args) {
+  function process(args,includeStderr=false) {
     const child=spawn('docker',args,{windowsHide:true,stdio:['pipe','pipe','pipe']});
     active.add(child);
     let out='',err='';
-    const timer=setTimeout(()=>child.kill(),60000);
+    let timedOut=false;
+    const timer=setTimeout(()=>{timedOut=true;child.kill();},60000);
     const done=new Promise((resolve,reject)=>{
       child.stdout.on('data',chunk=>out+=chunk);
       child.stderr.on('data',chunk=>err+=chunk);
       child.on('error',error=>{clearTimeout(timer);active.delete(child);reject(error);});
       child.on('close',code=>{
         clearTimeout(timer);active.delete(child);
-        if(code===0)resolve(out.trim());else reject(new Error(err.trim()||'Owned database command failed'));
+        if(code===0)resolve((out+(includeStderr?err:'')).trim());else reject(new Error(timedOut?'Owned database command exceeded its 60-second observation budget':err.trim()||'Owned database command failed'));
       });
     });
     child.stdin.on('error',()=>{});
@@ -116,13 +117,27 @@ export async function createNativeSessionDb() {
     }
     throw new Error('Competing database connection did not reach the lock barrier');
   }
+  async function diagnostics(){
+    if(!owned)throw new Error('Diagnostics require the owned fixture');
+    assert.equal(await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']),label);
+    const p=process(['logs','--tail','80',name],true);p.child.stdin.end();
+    let result=await p.done;
+    if(restName){
+      assert.equal(await run(['inspect',restName,'--format','{{index .Config.Labels "schood.qa"}}']),label+'-rest');
+      const restLogs=process(['logs','--tail','30',restName],true);restLogs.child.stdin.end();result+='\nREST gateway:\n'+await restLogs.done;
+    }
+    return result;
+  }
   try {
     await run(['run','--detach','--name',name,'--network','none','--label','schood.qa='+label,'-e','POSTGRES_HOST_AUTH_METHOD=trust',image]);owned=true;
     assert.equal(await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']),label);
+    let ready=false;
     for(let attempt=0;attempt<100;attempt++){
-      try{await exec('select 1;');return {exec,query,close,holdTransaction,independent,waitForLock,startRestGateway};}catch{}
+      try{await exec('select 1;');ready=true;break;}catch{}
       await new Promise(resolve=>setTimeout(resolve,100));
     }
-    throw new Error('Owned scheduling database did not start');
+    if(!ready)throw new Error('Owned scheduling database did not start');
+    if(profile)await exec("alter database postgres set session_preload_libraries='auto_explain';alter database postgres set auto_explain.log_min_duration='500ms';alter database postgres set auto_explain.log_nested_statements=true;");
+    return {exec,query,close,holdTransaction,independent,waitForLock,startRestGateway,diagnostics};
   } catch(error){await close();throw error;}
 }

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {PGlite} from '@electric-sql/pglite';
 import {createNativeSessionDb,bindSql} from './lib/academy-session-test-db.mjs';
-const native=process.argv.includes('--native');
-const db=native?await createNativeSessionDb():new PGlite();let checks=0,sequence=0;
+import {qualifyStudentImportRecovery} from './lib/academy-student-import-recovery-checks.mjs';
+const native=process.argv.includes('--native'),recovery=process.argv.includes('--recovery');
+const rest=process.argv.includes('--rest');if(rest&&!native)throw new Error('REST qualification requires an isolated native database');
+const profile=process.argv.includes('--profile');
+const db=native?await createNativeSessionDb({profile}):new PGlite();let checks=0,sequence=0,suiteStage='fixture',restRpc=null;
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const academy=id(1),foreign=id(2),branch=id(3),other=id(4),actor=id(6),reviewer=id(7),classroom=id(10);
 const eq=(a,b)=>{assert.deepEqual(a,b);checks++;};
@@ -21,7 +24,10 @@ const stage=async(source,patch={})=>{
 const preview=async(job,groups=false)=>(await query('select academy_validate_student_import($1::uuid,$2::uuid,$3::uuid,$4::uuid[],$5::boolean,$6::boolean) as data',[academy,actor,job.id,[branch],false,groups]))[0].data.job;
 const commitSql='select academy_commit_student_import($1::uuid,$2::uuid,$3::uuid,$4,$5,$6::uuid[],$7::boolean,$8::boolean,$9::boolean) as data';
 const commitArgs=(job,patch={})=>[academy,patch.actor??actor,job.id,patch.key??'apply-'+job.id,patch.hash??job.validation.preview_hash,patch.scope===undefined?[branch]:patch.scope,patch.reviewAll??false,patch.groups??false,patch.finance??true];
-const commit=async(job,patch={})=>(await query(commitSql,commitArgs(job,patch)))[0].data;
+const commit=async(job,patch={})=>{
+ const args=commitArgs(job,patch);
+ return restRpc?await restRpc('academy_commit_student_import',Object.fromEntries(['p_academy_id','p_actor_id','p_job_id','p_key','p_preview_hash','p_branch_ids','p_can_review_all','p_can_create_groups','p_can_post_balances'].map((key,i)=>[key,args[i]]))):(await query(commitSql,args))[0].data;
+};
 const counts=async()=> (await query('select (select count(*) from academy_contacts)::int contacts,(select count(*) from academy_guardians)::int guardians,(select count(*) from academy_classroom_memberships)::int memberships,(select count(*) from academy_student_guardian_relationships)::int relationships,(select count(*) from academy_account_ledger_entries)::int balances,(select count(*) from academy_student_import_effects)::int effects,(select count(*) from academy_student_lifecycle_events)::int lifecycle,(select count(*) from domain_event_outbox)::int outbox,(select count(*) from academy_audit_events)::int audit'))[0];
 try{
  await db.exec(`create role anon;create role authenticated;create role service_role;
@@ -36,20 +42,26 @@ try{
   create table academy_classrooms(id uuid primary key default gen_random_uuid(),academy_id uuid not null,branch_id uuid not null,name text not null,is_active boolean default true,student_capacity integer,created_by uuid,metadata jsonb not null default '{}',unique(academy_id,id),unique(academy_id,name));
   create table academy_classroom_memberships(id uuid primary key default gen_random_uuid(),academy_id uuid not null,classroom_id uuid not null,contact_id uuid not null,role text not null,status text not null,joined_at timestamptz,started_at timestamptz,metadata jsonb not null default '{}',unique(classroom_id,contact_id),foreign key(academy_id,classroom_id) references academy_classrooms(academy_id,id),foreign key(academy_id,contact_id) references academy_contacts(academy_id,id));
   create index on academy_classroom_memberships(classroom_id);
+  create index on academy_classroom_memberships(contact_id);
   create table academy_guardians(id uuid primary key default gen_random_uuid(),academy_id uuid not null,full_name text not null,phone text,status text not null,created_by uuid,metadata jsonb not null default '{}',phone_normalized text generated always as(academy_normalize_phone(phone)) stored,unique(academy_id,id));
   create index on academy_guardians(academy_id,phone_normalized);
   create table academy_student_guardian_relationships(id uuid primary key default gen_random_uuid(),academy_id uuid not null,contact_id uuid not null,guardian_id uuid not null,relationship_type text,status text not null,consent_status text not null,is_financially_responsible boolean,is_primary_contact boolean,can_view_payments boolean,can_view_debt boolean,created_by uuid,metadata jsonb not null default '{}',unique(academy_id,id),foreign key(academy_id,contact_id) references academy_contacts(academy_id,id),foreign key(academy_id,guardian_id) references academy_guardians(academy_id,id));
   create table academy_account_ledger_entries(id uuid primary key default gen_random_uuid(),academy_id uuid not null,contact_id uuid not null,entry_type text not null,amount bigint not null check(amount<>0),currency text not null,effective_at timestamptz,reason text,idempotency_key text not null,created_by uuid,metadata jsonb not null default '{}',unique(academy_id,idempotency_key),foreign key(academy_id,contact_id) references academy_contacts(academy_id,id));
+  create index on academy_account_ledger_entries(academy_id,contact_id,currency,effective_at,id);
+  create index on academy_student_guardian_relationships(academy_id,contact_id);
+  create index on academy_student_guardian_relationships(academy_id,guardian_id);
   create table academy_audit_events(id uuid primary key default gen_random_uuid(),academy_id uuid not null,actor_user_id uuid,action text not null,target_type text not null,target_id text not null,metadata jsonb not null);
   create table academy_lead_conversions(academy_id uuid,contact_id uuid,lead_id uuid,converted_at timestamptz);
-  create table academy_student_lifecycle_events(id uuid primary key default gen_random_uuid(),academy_id uuid not null,branch_id uuid,lead_id uuid,contact_id uuid,classroom_id uuid,subscription_id uuid,guardian_relationship_id uuid,event_key text not null,actor_user_id uuid,source_table text,source_id uuid,idempotency_key text not null,evidence jsonb not null,occurred_at timestamptz not null default now(),unique(academy_id,idempotency_key));
+  create table academy_student_lifecycle_events(id uuid primary key default gen_random_uuid(),academy_id uuid not null,branch_id uuid,lead_id uuid,contact_id uuid,classroom_id uuid,subscription_id uuid,guardian_relationship_id uuid,event_key text not null,actor_user_id uuid,source_table text,source_id uuid,idempotency_key text not null,evidence jsonb not null,occurred_at timestamptz not null default now(),unique(academy_id,idempotency_key),unique(academy_id,id));
   create table domain_event_outbox(id uuid primary key default gen_random_uuid(),event_type text,event_version text,aggregate_type text,aggregate_id uuid,user_id uuid,occurred_at timestamptz,payload jsonb,status text,attempts integer,idempotency_key text unique);`);
+ await db.exec('create index on academy_student_lifecycle_events(academy_id,contact_id,occurred_at);');
  await db.exec(installedFunction('20260810190000_academy_business_os_phase_g.sql','academy_capture_student_lifecycle_event'));
  await db.exec(installedFunction('20260810230000_academy_lifecycle_automation_worker.sql','academy_publish_lifecycle_event'));
  await db.exec(`create trigger capture_membership after insert or update on academy_classroom_memberships for each row execute function academy_capture_student_lifecycle_event();
   create trigger capture_relationship after insert or update on academy_student_guardian_relationships for each row execute function academy_capture_student_lifecycle_event();
   create trigger publish_lifecycle after insert on academy_student_lifecycle_events for each row execute function academy_publish_lifecycle_event();`);
  for(const file of ['20261012160000_academy_student_import_staging.sql','20261012170000_academy_student_import_normalization.sql','20261012180000_academy_student_import_preview.sql','20261012190000_academy_student_import_commit.sql','20261012200000_academy_student_import_lifecycle.sql'])await db.exec(load(file));
+ if(recovery)await db.exec(load('20261012220000_academy_student_import_recovery.sql'));
  await query("insert into academy_classrooms(id,academy_id,branch_id,name,student_capacity) values($1,$2,$3,'IELTS A',20)",[classroom,academy,branch]);
  let job=await preview(await stage([student()]));eq(job.status,'validated');
  await reject(()=>commit(job,{finance:false}),/finance approval/);eq((await counts()).contacts,0);
@@ -101,6 +113,15 @@ try{
   eq((await query('select count(*)::int n from academy_classroom_memberships where classroom_id=$1',[id(12)]))[0].n,1);
   await query('update academy_classrooms set student_capacity=0 where id=$1',[id(12)]);
   await query("update academy_classroom_memberships set status='active' where classroom_id=$1",[id(12)]);checks++; // Idempotent status acknowledgement consumes no new seat.
+  // An ordinary group writer participates in the same identity fence. A group
+  // appearing while commit waits produces a changed review, never a duplicate.
+  const groupPreview=await preview(await stage([student({phone:'909121212',parent_phone:null,balance:'0',group_name:'Concurrent missing group'})],{create_missing_groups:true}),true);
+  const groupHolder=await db.holdTransaction(bindSql("insert into academy_classrooms(academy_id,branch_id,name,student_capacity,metadata) values($1::uuid,$2::uuid,'CONCURRENT MISSING GROUP',5,'{}')",[academy,branch]),'ordinary-group-holder');
+  const groupCommit=db.independent(bindSql(commitSql,commitArgs(groupPreview,{groups:true})),'group-import-contender');groupCommit.catch(()=>{});
+  try{await db.waitForLock('group-import-contender');checks++;await groupHolder.commit();assert.ok((await groupCommit).includes('"preview_changed": true'));checks++;}
+  catch(error){await groupHolder.rollback().catch(()=>{});await groupCommit.catch(()=>{});throw error;}
+  eq((await query("select count(*)::int n from academy_classrooms where academy_id=$1 and lower(name)='concurrent missing group'",[academy]))[0].n,1);
+  eq((await query("select count(*)::int n from academy_contacts where phone_normalized='+998909121212'"))[0].n,0);
  }
  // An ordinary enrollment still produces normal automation. A caller cannot
  // suppress it by attaching metadata for a completed historical import.
@@ -109,17 +130,40 @@ try{
  await query("insert into academy_classrooms(id,academy_id,branch_id,name,student_capacity) values($1,$2,$3,'Ordinary group',10)",[id(11),academy,branch]);
  await query("insert into academy_classroom_memberships(academy_id,classroom_id,contact_id,role,status,metadata) values($1,$2,$3,'student','active',$4::jsonb)",[academy,id(11),contact,JSON.stringify({student_import_job_id:applied.receipt.job_id,source_joined_on:'2020-01-01'})]);
  eq((await counts()).outbox,ordinaryOutbox+1);
+ const recoveryTools=recovery?await qualifyStudentImportRecovery({db,native,academy,branch,actor,reviewer,other,stage,preview,commit,student}):null;
  if(process.argv.includes('--large')){
   const records=Array.from({length:5000},(_,i)=>student({full_name:`Student ${i+1}`,phone:String(920000000+i),parent_phone:String(930000000+i),group_name:'Large group '+(i%50+1),balance:'100000'}));
   for(let group=1;group<=50;group++)await query('insert into academy_classrooms(id,academy_id,branch_id,name,student_capacity) values($1,$2,$3,$4,100)',[id(100+group),academy,branch,'Large group '+group]);
   console.log('Starting complete 5,000-student contact/parent/group/balance qualification.');
-  const before=await counts(),prepared=await preview(await stage(records)),started=performance.now();
+  // Enforce the entire caller's budget, rather than assuming a function-local
+  // setting can start a timer for an already-running outer SQL statement.
+  if(native)await db.exec("alter database postgres set statement_timeout='45s';");
+  const before=await counts();suiteStage='large upload';const uploadStarted=performance.now(),uploaded=await stage(records);
+  console.log(JSON.stringify({largeStagingMilliseconds:Math.round(performance.now()-uploadStarted)}));
+  suiteStage='large preview';const previewStarted=performance.now(),prepared=await preview(uploaded);
+  console.log(JSON.stringify({largePreviewMilliseconds:Math.round(performance.now()-previewStarted)}));
+  if(rest)restRpc=await db.startRestGateway();
+  suiteStage='large commit';const started=performance.now();
   eq(prepared.validation.create_rows,5000);eq(prepared.validation.invalid_rows,0);
   const complete=await commit(prepared),firstCommitWallMilliseconds=Math.round(performance.now()-started);eq(complete.receipt.applied_rows,5000);
   for(const field of ['contacts','guardians','relationships','memberships','opening_balance_entries'])eq(complete.receipt[field],5000);
   const after=await counts();eq(after.effects-before.effects,25000);eq(after.lifecycle-before.lifecycle,10000);eq(after.outbox,before.outbox);
   eq((await commit(prepared)).receipt,complete.receipt);
   console.log(JSON.stringify({largeCommitRows:5000,groups:50,firstCommitWallMilliseconds,qualificationIncludingReplayMilliseconds:Math.round(performance.now()-started),productionPerformanceUnproven:true}));
+  if(recoveryTools){
+   suiteStage='large recovery';const recoveryStarted=performance.now();
+   const recovered=restRpc?await restRpc('academy_recover_student_import',Object.fromEntries(['p_academy_id','p_actor_id','p_job_id','p_key','p_reason','p_branch_ids','p_can_review_all','p_can_post_balances'].map((key,i)=>[key,recoveryTools.args(complete.job)[i]]))):await recoveryTools.recover(complete.job);
+   eq(recovered.receipt.reversal_entries,5000);eq(recovered.receipt.manual_review_effects,0);eq(recovered.receipt.corrected_effects,25000);eq(recovered.job.status,'reversed');
+   eq((await counts()).outbox,before.outbox);
+   if(restRpc){
+    const replay=await restRpc('academy_recover_student_import',Object.fromEntries(['p_academy_id','p_actor_id','p_job_id','p_key','p_reason','p_branch_ids','p_can_review_all','p_can_post_balances'].map((key,i)=>[key,recoveryTools.args(complete.job)[i]])));
+    eq(replay.replayed,true);eq(replay.receipt,recovered.receipt);
+   }
+   console.log(JSON.stringify({largeRecoveryRows:5000,localRecoveryWallMilliseconds:Math.round(performance.now()-recoveryStarted),productionPerformanceUnproven:true}));
+  }
  }
- console.log(JSON.stringify({suite:'student-import-commit',database:native?'native PostgreSQL 17':'PGlite',checks,productionTouched:false,fullInstalledSchemaQualified:false}));
-}catch(error){console.error(JSON.stringify({suite:'student-import-commit',error:error.message,where:error.where??null}));process.exitCode=1;}finally{await db.close();}
+ console.log(JSON.stringify({suite:'student-import-commit',database:native?'native PostgreSQL 17':'PGlite',rest,checks,productionTouched:false,fullInstalledSchemaQualified:false}));
+}catch(error){
+ console.error(JSON.stringify({suite:'student-import-commit',stage:suiteStage,error:error.message,where:error.where??null,position:error.position??null,internalPosition:error.internalPosition??null}));process.exitCode=1;
+ if(native){mkdirSync('.temp/student-import',{recursive:true});writeFileSync('.temp/student-import/native-failure.log',await db.diagnostics());}
+}finally{if(profile&&native)console.log(await db.diagnostics());await db.close();}

@@ -12,7 +12,8 @@ Deno.test('import rows are derived from mapped source columns and cannot smuggle
   assertEquals(Object.hasOwn(selected,'__proto__'),true);assertEquals<unknown>(selected.constructor,'901234567');
 });
 Deno.test('complete identities and exact batch/file budgets are enforced before database access',()=>{
-  for(const patch of [{branch_id:branch+'junk'},{expected_rows:5001},{expected_rows:0},{currency:'usd'},{balance_convention:'guess'},{date_format:'guess'},{create_missing_groups:'false'}])assertThrows(()=>decodeStudentImportConfig({...input,...patch}),StudentImportInputError);
+  for(const patch of [{branch_id:branch+'junk'},{expected_rows:5001},{expected_rows:0},{currency:'usd'},{balance_convention:'guess'},{date_format:'guess'},{create_missing_groups:'false'},
+    {balance_convention:['credit_positive']},{date_format:['iso']},{duplicate_strategy:['reject']}])assertThrows(()=>decodeStudentImportConfig({...input,...patch}),StudentImportInputError);
   const config=decodeStudentImportConfig(input);
   assertThrows(()=>decodeStudentImportRows(Array(201).fill({}),config,0),StudentImportInputError,'200');
   assertThrows(()=>decodeStudentImportRows([{}],config,201),StudentImportInputError,'range');

@@ -18,6 +18,7 @@ coverage
 .vercel
 .cache
 **/.wrangler-dry-run/
+.temp/
 
 # Playwright artifacts
 test-results/
