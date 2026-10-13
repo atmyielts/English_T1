@@ -24,6 +24,7 @@ import {
   Sparkles,
   Store,
   UsersRound,
+  Upload,
 } from 'lucide-react';
 import {
   getMe,
@@ -143,6 +144,8 @@ const loadGuardianRelationshipsView = () => import('./components/office/Guardian
   .then((module) => ({ default: module.GuardianRelationshipsView }));
 const loadIntelligenceOperationsView = () => import('./components/office/IntelligenceOperationsView')
   .then((module) => ({ default: module.IntelligenceOperationsView }));
+const loadStudentImportView = () => import('./components/office/StudentImportView')
+  .then((module) => ({ default: module.StudentImportView }));
 const loadBusinessPlatformView = () => import('./components/office/BusinessPlatformView')
   .then((module) => ({ default: module.BusinessPlatformView }));
 const loadOperationalServicesView = () => import('./components/office/OperationalServicesView')
@@ -187,6 +190,7 @@ const AcademicOperationsView = lazy(loadAcademicOperationsView);
 const RoomTimetableView = lazy(loadRoomTimetableView);
 const GuardianRelationshipsView = lazy(loadGuardianRelationshipsView);
 const IntelligenceOperationsView = lazy(loadIntelligenceOperationsView);
+const StudentImportView = lazy(loadStudentImportView);
 const BusinessPlatformView = lazy(loadBusinessPlatformView);
 const OperationalServicesView = lazy(loadOperationalServicesView);
 const GuardianPortalView = lazy(loadGuardianPortalView);
@@ -232,7 +236,7 @@ type DirectoryWorkspaceAcademy = {
   student: TeacherStudioStudentDashboard['academies'][number] | null;
 };
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'rooms' | 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type OfficeView = 'imports' | 'rooms' | 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan' | 'assessments';
 
 const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
@@ -246,6 +250,7 @@ const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>
   rooms: loadRoomTimetableView,
   relationships: loadGuardianRelationshipsView,
   intelligence: loadIntelligenceOperationsView,
+  imports: loadStudentImportView,
   operations: loadOperationsFinanceView,
   os: loadEducationOSView,
   contacts: loadContactsView,
@@ -291,7 +296,7 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['rooms', 'today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
+const OFFICE_VIEWS: OfficeView[] = ['imports', 'rooms', 'today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
 const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan', 'assessments'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
@@ -319,6 +324,7 @@ const CLASSROOM_RESOURCE_FILTERS: Array<{ kind: 'all' | TeacherStudioClassroomRe
 ];
 
 const OFFICE_LABELS: Record<OfficeView, string> = {
+  imports: 'Import students',
   today: 'Today',
   academy: 'Academy',
   platform: 'Business Platform',
@@ -343,6 +349,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
 };
 
 const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
+  imports: 'importStudents',
   today: 'viewEducationOS',
   academy: 'viewAcademy',
   platform: 'viewBusinessIntelligence',
@@ -460,6 +467,7 @@ const buildFallbackAccess = (roleRaw: string, source: TeacherStudioAccessProfile
       viewStaffPerformance: ownerAdmin || centerAdmin || manager || branchManager,
       viewRisk: ops || parentLiaison,
       manageImports: ownerAdmin || centerAdmin || manager,
+      importStudents: false,
       manageLocalization: ownerAdmin || centerAdmin,
       useAcademyAI: ownerAdmin || centerAdmin || manager || branchManager,
       manageResources: classroomLms,
@@ -518,10 +526,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: ['rooms', 'today', 'contacts', 'classrooms', 'assessments', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
-  admin: ['rooms', 'today', 'contacts', 'classrooms', 'assessments', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
+  office: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
+  admin: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
   teacher: ['today', 'classrooms', 'assessments', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['rooms', 'today', 'academy', 'contacts', 'classrooms', 'assessments', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
+  center: ['rooms', 'today', 'academy', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
 };
 
 const hasOfficeRoutePermission = (
@@ -1414,6 +1422,7 @@ const App = () => {
       rooms: { title: 'Room timetable', caption: 'Lessons across physical rooms and branch-local dates' },
       relationships: { title: 'Guardians & Parents', caption: 'Consent, secure Telegram linking, visibility, messages, and notification delivery' },
       intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
+      imports: { title: 'Import students', caption: 'Upload, review and safely import your student spreadsheet' },
       platform: { title: 'Education Business Platform', caption: 'Student lifecycle, branch performance, unit economics, governed automation, and reviewable AI assistance' },
       services: { title: 'Service desk', caption: 'Student requests, staff changes, schedules, learning plans, and follow-through' },
       assessments: { title: 'Placement & exams', caption: 'Placement, exam days, reviewed reports, and academic progress' },
@@ -5292,6 +5301,7 @@ const App = () => {
         officeNavItem('academic', 'Academic operations', <CalendarDays size={17} />),
         officeNavItem('relationships', 'Guardians', <UsersRound size={17} />),
         officeNavItem('intelligence', 'Retention & insights', <BarChart3 size={17} />),
+        officeNavItem('imports', 'Import students', <Upload size={17} />),
         officeNavItem('platform', 'Business platform', <Sparkles size={17} />),
       ]),
     },
@@ -5460,6 +5470,9 @@ const App = () => {
 
           {officeView === 'intelligence' && officeCanOpen('intelligence') ? (
             <IntelligenceOperationsView academyId={academyId} formatDate={formatDate} />
+          ) : null}
+          {officeView === 'imports' && officeCanOpen('imports') && me?.user.id ? (
+            <StudentImportView key={`${academyId}:${me.user.id}`} academyId={academyId} actorId={me.user.id} />
           ) : null}
 
           {officeView === 'platform' && officeCanOpen('platform') ? (

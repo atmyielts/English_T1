@@ -53,6 +53,24 @@ five endpoint tests and five account-pinned browser transport checks. A guarded
 against an unchanged 45-second caller limit; preview took 8.7 seconds. These
 are isolated local timings, not hosted latency promises.
 
+The lazy student-import view now provides CSV/XLSX parsing, automatic column
+suggestions and manual mapping, explicit date and credit/debt conventions,
+branch-specific group discovery, bounded batches, partial-upload resumption,
+preview/finance gates, paginated rows, immutable receipts and logical correction.
+An account/Academy-specific tab stores only request keys, settings and the source
+fingerprint. The original spreadsheet and student/parent rows remain in memory.
+Reloads require the identical source file for an incomplete upload. Auth changes
+abort the current view and remove its retained intent. The navigation requires
+the server's dedicated importStudents bit; legacy-role fallbacks keep it false.
+The existing installed backend therefore cannot expose the new workflow early.
+
+Browser qualification covers desktop/phone layout, real Excel date cells,
+resumption with one upload identity, wrong-file refusal, lost commit response,
+changed-preview confirmation, financial approval, retained recovery records
+and the server feature gate. Uzbek/Russian translations, build and lint are
+checked separately. These browser tests use synthetic mocked API responses;
+they do not establish hosted backend or customer-workflow readiness.
+
 Remaining integration gates:
 
 - Existing multi-resource readers and writes still need capability-specific
@@ -60,9 +78,8 @@ Remaining integration gates:
   every legacy controller's highest-role permission or resource logic.
 - Qualify the complete current schema/source identities and owned hosted
   endpoint behavior before activation; local database tests are separate proof.
-- Finish and inspect the CSV/XLSX mapping, preview, resumption, receipt and
-  logical-recovery wizard with real permission boundaries before activating
-  the combined importer.
+- Qualify the rendered CSV/XLSX workflow against the hosted guarded API using
+  owned fixtures and real permission boundaries before enabling imports.
 
 The legacy boundary migration was released separately and is already installed.
 The draft release contains seven remaining import migrations. They must be

@@ -23,6 +23,21 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  // Import and scheduling errors arrive dynamically from the API/helpers.
+  'The timetable could not be created. Refresh the preview and try again.',
+  'Choose a valid date and time.',
+  'This local time does not exist because the clock changes. Choose another time.',
+  'This local time occurs twice because the clock changes. Choose an unambiguous time.',
+  'Active status must be yes or no.', 'Use exact integer text for an opening balance.',
+  'Opening balances must be non-zero whole units.', 'Opening balance is outside the supported range.',
+  'Group capacity must be a non-negative integer.', 'Mapped import columns are required.',
+  'Import row number must be an integer from 1 to 5,000.',
+  'Map columns','Review & import','Receipt','New students','Needs correction','Skipped',
+  'uploading','sealed','validated','committing','completed','failed','cancelled','reversing','reversed','recovery review',
+  'To resume this upload, select the same original file.', 'The original upload row count does not match.',
+  'Choose a CSV or XLSX file.', 'Choose the original file to upload.', 'Choose a branch.',
+  'Map student name and phone before uploading.', 'Map each source column to only one field.',
+  'A source row is too large to upload.',
   'The quiz attempt does not belong to this classroom.',
   'Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.',
   'Verification is temporarily unavailable. Try again later.',
@@ -312,6 +327,7 @@ for (const locale of ['uz', 'ru']) {
   const dictionary = JSON.parse(fs.readFileSync(path.join(localeRoot, `${locale}.json`), 'utf8'));
   const missing = sortedPhrases.filter((phrase) => !dictionary[phrase]);
   const extras = Object.keys(dictionary).filter((phrase) => !sourcePhrases.has(phrase));
+  if (process.argv.includes('--report')) console.log(JSON.stringify({locale,missing,extras}));
   const badPlaceholders = sortedPhrases.filter((phrase) => {
     if (!dictionary[phrase]) return false;
     return placeholderNames(phrase).join('|') !== placeholderNames(dictionary[phrase]).join('|');
