@@ -1164,7 +1164,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
         />
         {canTimetable && tool === 'term' ? (
           <form className="panel compact-form operations-form" onSubmit={submitTerm}>
-            <span className="eyebrow">{translate('Term boundary')}</span>
+            <span className="eyebrow">{translate('School term')}</span>
             <h3>{translate('Define the planning window')}</h3>
             <label>
               {translate('Term name')}
@@ -1385,7 +1385,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
         ) : null}
         {canTimetable && tool === 'generation' ? (
           <section className="panel operations-form">
-            <span className="eyebrow">{translate('Conflict gate')}</span>
+            <span className="eyebrow">{translate('Check for timetable clashes')}</span>
             <h3>{translate('Preview before creating lessons')}</h3>
             <p>
               {translate(
@@ -1473,7 +1473,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
             }}
           >
             <span className="eyebrow">{translate('Learning framework')}</span>
-            <h3>{translate('Define the capability model')}</h3>
+            <h3>{translate('Set up learning skills')}</h3>
             <div className="form-grid two-col">
               <label>
                 {translate('Code')}
@@ -1714,7 +1714,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
               );
             }}
           >
-            <h3>{translate('Record evidence')}</h3>
+            <h3>{translate('Save progress')}</h3>
             <label>
               {translate('Learning plan item')}
               <select
@@ -1786,7 +1786,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
               />
             </label>
             <button className="primary-btn" disabled={busy}>
-              {translate('Record evidence')}
+              {translate('Save progress')}
             </button>
           </form>
         ) : null}
@@ -2297,7 +2297,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
             <span className="eyebrow">
               <MessageSquareText size={14} /> {translate('Communication journey')}
             </span>
-            <h3>{translate('Build a governed follow-up')}</h3>
+            <h3>{translate('Create a follow-up task')}</h3>
             <label>
               {translate('Follow-up name')}
               <input

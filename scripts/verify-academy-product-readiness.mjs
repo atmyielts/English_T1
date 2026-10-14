@@ -588,7 +588,7 @@ addCheck(
     guardianSchemaContractTest.includes('active consented relationships'),
 );
 
-for (const signal of ['Retention, renewal, and owner intelligence','Versioned risk definition','Evaluate and explain','Open intervention','Intervention outcomes','Create renewal opportunity','Unified SLA-aware action queue','Permission-filtered global search','Governed CSV/XLSX migration','Column mapping','Source preview','Row validation evidence']) {
+for (const signal of ['Students and follow-ups','When to flag a student','Evaluate and explain','Add follow-up','Follow-up results','Create renewal opportunity','Tasks and deadlines','Permission-filtered global search','Import from Excel or CSV','Match columns','Source preview','Rows to review']) {
   addCheck(`Business OS Phase F intelligence UI signal: ${signal}`, intelligenceOperationsView.includes(signal));
 }
 addCheck(
@@ -615,12 +615,12 @@ for (const signal of storageSignals) {
 
 const financeSignals = [
   'Awaiting Click',
-  'Manual settlement',
+  'Cash or bank payment',
   'Needs attention',
   'Payment is recorded as paid. Check learning access separately.',
   'Canceled checkout',
-  'Duplicate callback',
-  'Grant mismatch',
+  'Repeated payment confirmation',
+  'Payment received, access needs review',
 ];
 for (const signal of financeSignals) {
   addCheck(`Payments view exposes finance signal: ${signal}`, paymentsView.includes(signal));

@@ -144,7 +144,7 @@ const workflowContracts = [
   {
     label: 'Owner finance reconciliation workflow',
     content: paymentsView,
-    tokens: ['Awaiting Click', 'Manual settlement', 'Needs attention', 'Payment is recorded as paid. Check learning access separately.', 'Canceled checkout', 'Duplicate callback', 'Grant mismatch', 'Provider'],
+    tokens: ['Awaiting Click', 'Cash or bank payment', 'Needs attention', 'Payment is recorded as paid. Check learning access separately.', 'Canceled checkout', 'Repeated payment confirmation', 'Payment received, access needs review', 'Provider'],
   },
   {
     label: 'Teacher LMS assignment drilldown workflow',
@@ -189,7 +189,7 @@ const workflowContracts = [
   {
     label: 'Explainable retention, renewal, owner KPI, unified action, search, and import workflow',
     content: `${intelligenceOperationsView}\n${academyClient}\n${academyEdge}`,
-    tokens: ['Versioned risk definition','Evaluate and explain','Open intervention','Intervention outcomes','Create renewal opportunity','Unified SLA-aware action queue','Permission-filtered global search','Governed CSV/XLSX migration','Column mapping','Source preview','business_intelligence','evaluate_retention_risk','commit_import_job'],
+    tokens: ['When to flag a student','Evaluate and explain','Add follow-up','Follow-up results','Create renewal opportunity','Tasks and deadlines','Permission-filtered global search','Import from Excel or CSV','Match columns','Source preview','business_intelligence','evaluate_retention_risk','commit_import_job'],
   },
   {
     label: 'Student daily classroom workflow',

@@ -1,4 +1,5 @@
 import { getLocaleTag, translate } from '../../i18n';
+import './IntelligenceOperationsView.css';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -38,6 +39,19 @@ type Tab =
 const s = (value: unknown) => String(value ?? "");
 const n = (value: unknown) => Number(value ?? 0);
 const label = (value: unknown) => translate(s(value).replaceAll("_", " "));
+const importTypeLabel = (value: unknown) => translate(({
+  contacts: 'Students and contacts', leads: 'Inquiries', guardians: 'Parents',
+  staff: 'Staff', classrooms: 'Groups', balances: 'Starting balances',
+  enrollments: 'Group enrollments', attendance: 'Attendance',
+} as Record<string,string>)[s(value)] ?? 'Other records');
+const importStatus = (value: unknown) => translate(({
+  draft: 'Not checked', ready: 'Ready to save', committing: 'Saving',
+  completed: 'Saved', failed: 'Needs review', pending: 'Not checked',
+  valid: 'Ready to save', invalid: 'Needs changes', duplicate: 'Already exists', committed: 'Saved',
+} as Record<string,string>)[s(value)] ?? 'Needs review');
+const importIssues = (value: unknown) => Array.isArray(value)
+  ? value.flatMap((item) => typeof item === 'string' ? [translate(item)] : []).join(' · ')
+  : '';
 const money = (value: unknown, currency = "UZS") =>
   `${new Intl.NumberFormat(getLocaleTag()).format(n(value))} ${currency}`;
 type ImportCell = string | number | boolean | Date | null;
@@ -299,8 +313,10 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
     setError("");
     setNotice("");
     try {
-      await work();
-      setNotice(message);
+      const result = await work();
+      const partial = result && typeof result === 'object' && 'failed_rows' in result && n(result.failed_rows) > 0;
+      const needsReview = result && typeof result === 'object' && 'manual_required' in result && n(result.manual_required) > 0;
+      setNotice(partial ? 'Some rows could not be saved. Review the rows below.' : needsReview ? 'Some records need staff review before their changes can be undone.' : message);
       await load();
     } catch (next) {
       setError(next instanceof Error ? next.message : "Operation failed.");
@@ -349,7 +365,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
     );
   const stageImport = async () => {
     if (!importRows.length || !importHeaders.length)
-      throw new Error("Load and preview a CSV or XLSX file before staging.");
+      throw new Error("Choose an Excel or CSV file first.");
     const fields = importFields[importForm.import_type] ?? [];
     const missing = fields
       .filter((field) => field.required && !columnMapping[field.key])
@@ -394,13 +410,13 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
       </section>
     );
   return (
-    <section className="commercial-core">
+    <section className="commercial-core intelligence-workspace">
       <div className="section-heading commercial-core__heading">
         <div>
-          <span className="eyebrow">{translate("Observe → explain → act → measure")}</span>
-          <h2>{translate("Retention, renewal, and owner intelligence")}</h2>
+          <span className="eyebrow">{translate("Keep students on track")}</span>
+          <h2>{translate("Students and follow-ups")}</h2>
           <p>
-            {translate("Versioned risk evidence feeds assigned interventions, renewal work, and one SLA-aware action queue.")}{' '}</p>
+            {translate("See who needs help, follow up on renewals, and keep track of tasks.")}{' '}</p>
         </div>
         <button
           className="ghost-btn"
@@ -427,17 +443,17 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
         </article>
         <article>
           <AlertTriangle size={18} />
-          <span>{translate("High-risk evaluations")}</span>
+          <span>{translate("Students needing attention")}</span>
           <strong>{n(owner.high_risk_evaluations)}</strong>
         </article>
         <article>
           <Target size={18} />
-          <span>{translate("Open interventions")}</span>
+          <span>{translate("Follow-ups to do")}</span>
           <strong>{n(owner.open_interventions)}</strong>
         </article>
         <article>
           <UserRoundCheck size={18} />
-          <span>{translate("Open renewals")}</span>
+          <span>{translate("Renewals to check")}</span>
           <strong>{n(owner.open_renewals)}</strong>
         </article>
       </div>
@@ -450,13 +466,15 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             ["dashboard", "Owner dashboard"],
             ["retention", "Retention"],
             ["renewals", "Renewals"],
-            ["actions", "Action queue"],
-            ["search", "Global search"],
+            ["actions", "Tasks"],
+            ["search", "Search"],
             ["imports", "Imports"],
           ] as Array<[Tab, string]>
         ).map(([id, text]) => (
           <button
             key={id}
+            type="button"
+            aria-pressed={tab === id}
             className={tab === id ? "is-active" : ""}
             onClick={() => setTab(id)}
           >
@@ -484,7 +502,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   {translate("conversions")}{' '}</span>
               </article>
               <article>
-                <strong>{translate("Action SLA")}</strong>
+                <strong>{translate("Follow-up deadlines")}</strong>
                 <span>
                   {n(owner.open_actions)} {translate("open ·")}{' '}{n(owner.overdue_actions)}{" "}
                   {translate("overdue")}{' '}</span>
@@ -540,11 +558,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     },
                     thresholds: { low: 25, medium: 50, high: 70, critical: 85 },
                   }),
-                "Versioned risk definition saved.",
+                "Student alert rule saved.",
               );
             }}
           >
-            <h3>{translate("Versioned risk definition")}</h3>
+            <h3>{translate("When to flag a student")}</h3>
             <label>
               {translate("Definition key")}{' '}<input
                 className="input"
@@ -646,7 +664,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               {translate("Evaluate and explain")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>{translate("Risk evidence")}</h3>
+            <h3>{translate("Students who may need help")}</h3>
             <div className="record-list">
               {data.risk_evaluations.map((item) => (
                 <article key={s(item.id)}>
@@ -667,7 +685,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                       })
                     }
                   >
-                    {translate("Use in intervention")}{' '}</button>
+                    {translate("Plan follow-up")}{' '}</button>
                 </article>
               ))}
             </div>
@@ -678,11 +696,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               e.preventDefault();
               void run(
                 () => teacherStudioCreateIntervention(academyId, intervention),
-                "Assigned intervention opened with SLA follow-up.",
+                "Follow-up task created with a due date.",
               );
             }}
           >
-            <h3>{translate("Open intervention")}</h3>
+            <h3>{translate("Add follow-up")}</h3>
             <label>
               {translate("Learner")}{' '}<select
                 className="input"
@@ -781,7 +799,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   "follow_up",
                   "note",
                 ].map((value) => (
-                  <option key={value}>{label(value)}</option>
+                  <option key={value}>{importTypeLabel(value)}</option>
                 ))}
               </select>
             </label>
@@ -812,7 +830,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               {translate("Record activity")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>{translate("Intervention outcomes")}</h3>
+            <h3>{translate("Follow-up results")}</h3>
             <div className="record-list">
               {data.interventions.map((item) => (
                 <article key={s(item.id)}>
@@ -847,7 +865,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                         )
                       }
                     >
-                      {translate("Resolve retained")}{' '}</button>
+                      {translate("Student is continuing")}{' '}</button>
                   ) : null}
                 </article>
               ))}
@@ -1007,7 +1025,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   "status_change",
                   "note",
                 ].map((value) => (
-                  <option key={value}>{label(value)}</option>
+                  <option key={value}>{importTypeLabel(value)}</option>
                 ))}
               </select>
             </label>
@@ -1064,7 +1082,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
       ) : null}
       {tab === "actions" ? (
         <section className="panel">
-          <h3>{translate("Unified SLA-aware action queue")}</h3>
+          <h3>{translate("Tasks and deadlines")}</h3>
           <div className="finance-table-wrap">
             <table className="finance-table">
               <thead>
@@ -1074,7 +1092,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   <th>{translate("Action")}</th>
                   <th>{translate("Learner")}</th>
                   <th>{translate("Assignee")}</th>
-                  <th>{translate("SLA")}</th>
+                  <th>{translate("Due date")}</th>
                   <th>{translate("Status")}</th>
                   <th>{translate("Outcome")}</th>
                 </tr>
@@ -1112,7 +1130,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                       "Completed in unified queue",
                                   },
                                 ),
-                              "Action completed with outcome evidence.",
+                              "Task completed and result saved.",
                             )
                           }
                         >
@@ -1183,15 +1201,15 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               event.preventDefault();
               void run(
                 stageImport,
-                "Import staged and validated; no records committed yet.",
+                "Rows checked. Review the results below before saving.",
               );
             }}
           >
             <div className="section-heading">
               <div>
-                <h3>{translate("Governed CSV/XLSX migration")}</h3>
+                <h3>{translate("Import from Excel or CSV")}</h3>
                 <p>
-                  {translate("Load a file, map its source columns, inspect the preview, then run server-side validation before any commit.")}{' '}</p>
+                  {translate("Choose your file, match its columns, and check the rows before saving.")}{' '}</p>
               </div>
             </div>
             <div className="form-grid two-col">
@@ -1207,13 +1225,13 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 >
                   {Object.keys(importFields).map((value) => (
                     <option key={value} value={value}>
-                      {label(value)}
+                      {importTypeLabel(value)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                {translate("Duplicate handling")}{' '}<select
+                {translate("If a record already exists")}{' '}<select
                   className="input"
                   value={importForm.duplicate_strategy}
                   onChange={(event) =>
@@ -1223,9 +1241,9 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     })
                   }
                 >
-                  <option value="reject">{translate("Reject duplicates")}</option>
-                  <option value="skip">{translate("Skip duplicates")}</option>
-                  <option value="update_safe_fields">{translate("Update safe fields")}</option>
+                  <option value="reject">{translate("Ask before adding existing records")}</option>
+                  <option value="skip">{translate("Skip existing records")}</option>
+                  <option value="update_safe_fields">{translate("Update existing details")}</option>
                 </select>
               </label>
               <label>
@@ -1247,7 +1265,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 />
               </label>
               <label>
-                {translate("Source filename")}{' '}<input
+                {translate("File name")}{' '}<input
                   className="input"
                   value={importForm.source_filename}
                   onChange={(event) =>
@@ -1291,7 +1309,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             </details>
             {importHeaders.length ? (
               <>
-                <h4>{translate("Column mapping")}</h4>
+                <h4>{translate("Match columns")}</h4>
                 <div className="import-mapping-grid">
                   {(importFields[importForm.import_type] ?? []).map((field) => (
                     <label key={field.key}>
@@ -1318,7 +1336,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                   ))}
                 </div>
                 <p className="muted-copy">
-                  {importRows.length} {translate("rows loaded. Required mappings are marked with *.")}{' '}</p>
+                  {importRows.length} {translate("rows loaded. Match the fields marked with *.")}{' '}</p>
               </>
             ) : null}
             {importRows.length ? (
@@ -1348,12 +1366,12 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
               className="primary-btn"
               disabled={busy || !importRows.length}
             >
-              <FileSpreadsheet size={16} /> {translate("Stage dry run and validate")}{' '}</button>
+              <FileSpreadsheet size={16} /> {translate("Check rows")}{' '}</button>
           </form>
           <section className="panel commercial-span">
-            <h3>{translate("Audited import jobs")}</h3>
+            <h3>{translate("Import history")}</h3>
             <div className="finance-table-wrap">
-              <table className="finance-table">
+              <table className="finance-table intelligence-import-jobs">
                 <thead>
                   <tr>
                     <th>{translate("File")}</th>
@@ -1362,21 +1380,21 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     <th>{translate("Total")}</th>
                     <th>{translate("Valid")}</th>
                     <th>{translate("Invalid")}</th>
-                    <th>{translate("Committed")}</th>
+                    <th>{translate("Saved")}</th>
                     <th>{translate("Action")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.import_jobs.map((item) => (
                     <tr key={s(item.id)}>
-                      <td>{s(item.source_filename)}</td>
-                      <td>{label(item.import_type)}</td>
-                      <td>{label(item.status)}</td>
-                      <td>{n(item.total_rows)}</td>
-                      <td>{n(item.valid_rows)}</td>
-                      <td>{n(item.invalid_rows)}</td>
-                      <td>{n(item.committed_rows)}</td>
-                      <td>
+                      <td data-label={translate("File")}>{s(item.source_filename)}</td>
+                      <td data-label={translate("Type")}>{importTypeLabel(item.import_type)}</td>
+                      <td data-label={translate("Status")}>{importStatus(item.status)}</td>
+                      <td data-label={translate("Total")}>{n(item.total_rows)}</td>
+                      <td data-label={translate("Valid")}>{n(item.valid_rows)}</td>
+                      <td data-label={translate("Invalid")}>{n(item.invalid_rows)}</td>
+                      <td data-label={translate("Saved")}>{n(item.committed_rows)}</td>
+                      <td data-label={translate("Action")}>
                         <div className="inline-actions">
                           {item.status === "ready" ? (
                             <button
@@ -1389,11 +1407,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                       import_job_id: item.id,
                                       confirm_commit: true,
                                     }),
-                                  "Validated import committed with row-level evidence.",
+                                  "Import saved.",
                                 )
                               }
                             >
-                              {translate("Commit valid rows")}{' '}</button>
+                              {translate("Save checked rows")}{' '}</button>
                           ) : null}
                           {["available", "partial", "manual_required"].includes(
                             s(item.rollback_status),
@@ -1409,11 +1427,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                       reason:
                                         "Operator-requested rollback from import workspace",
                                     }),
-                                  "Import rollback processed with per-effect evidence.",
+                                  "Import changes undone. Check the updated results below.",
                                 )
                               }
                             >
-                              {translate("Rollback")}{' '}</button>
+                              {translate("Undo import")}{' '}</button>
                           ) : null}
                         </div>
                       </td>
@@ -1424,7 +1442,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             </div>
           </section>
           <section className="panel commercial-span">
-            <h3>{translate("Row validation evidence")}</h3>
+            <h3>{translate("Rows to review")}</h3>
             <div className="record-list">
               {data.import_rows
                 .filter(
@@ -1436,11 +1454,11 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     <div>
                       <strong>
                         {translate("Row")}{' '}{s(item.row_number)} ·{" "}
-                        {label(item.validation_status)}
+                        {importStatus(item.validation_status)}
                       </strong>
-                      <p>{JSON.stringify(item.validation_errors)}</p>
+                      <p>{importIssues(item.validation_errors)}</p>
                     </div>
-                    <span>{s(item.target_id || "not committed")}</span>
+                    <span>{translate(item.validation_status === "committed" ? "Saved" : "Not saved")}</span>
                   </article>
                 ))}
             </div>
