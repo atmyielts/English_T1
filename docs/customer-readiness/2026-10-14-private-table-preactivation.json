@@ -1,16 +1,17 @@
 {
-  "recordedAt": "2026-10-14T06:30:45.500Z",
+  "recordedAt": "2026-10-14T06:41:05.827Z",
   "status": "qualified-not-activated",
   "migration": {
     "file": "20261014110000_academy_gateway_table_boundary.sql",
-    "sha256LF": "1c11fe4fad53ca20d1a27dce36f39d57ccf814cdd14dc5985ba6c42ea2d57299"
+    "sha256LF": "79d1bc5bb6b02fb79deefbbe6317b3855e3de279973e39962ab3c65477968642"
   },
   "regression": {
     "pgliteChecks": 90,
-    "nativeChecks": 90,
+    "nativeChecks": 99,
     "validTenantRole": "teacher",
     "installedRoleConstraintPreserved": true,
-    "reproducedExistingPeerRead": true
+    "reproducedExistingPeerRead": true,
+    "boundedCatalogLockWaitAndAtomicRollback": true
   },
   "capturedSchema": {
     "sha256": "f9a174a60eabc56014277ad87709176361641df1868949a550aec81fc98f19c5",

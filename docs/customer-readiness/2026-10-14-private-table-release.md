@@ -12,7 +12,7 @@ RLS definitions and schema fields. Shipped clients use the service API for these
 records. No frontend or Edge Function source changes are part of this release.
 
 The regression suite exercises the old peer-read exposure, inherited public
-column grants, both browser roles and service-role continuity (90 checks). The
+column grants, both browser roles and service-role continuity (90 PGlite / 99 native checks). The
 native suite runs in its own network-isolated database and removes only its
 verified owned container and anonymous volume.
 
@@ -25,3 +25,7 @@ as part of this release.
 This is one corrected exposure. Staff delegation, remaining scoped service
 actions and the wider customer-readiness acceptance list remain open. The
 unreleased importer stays in draft PR 248.
+
+Native contention also proves that a busy final ACL catalog row produces a
+five-second lock timeout and rolls back earlier table revocations atomically.
+The timeout is local to the migration transaction.

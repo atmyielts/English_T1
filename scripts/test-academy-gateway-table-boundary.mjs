@@ -35,7 +35,20 @@ try{
  // Explicit column/public grants test the paths which a table-only REVOKE
  // would miss. The installed frontend does not require either path.
  await db.exec('grant select(private_value),update(private_value) on academy_contacts to public;');
- await db.exec(readFileSync('supabase/migrations/20261014110000_academy_gateway_table_boundary.sql','utf8'));
+ const migration=readFileSync('supabase/migrations/20261014110000_academy_gateway_table_boundary.sql','utf8');
+ if(native){
+  // ACL writes contend on the catalog row, rather than normal record locks.
+  // Lock only this newly-created fixture table's catalog row, without editing it.
+  const held=await db.holdTransaction("select oid from pg_class where oid='academy_staff_branch_assignments'::regclass for update",'acl-busy-last-table');
+  try{
+   const blocked=db.independent(migration,'acl-bounded-migration');blocked.catch(()=>{});
+   await db.waitForLock('acl-bounded-migration');checks++;
+   await assert.rejects(()=>blocked,/lock timeout/i);checks++;
+  }finally{await held.rollback();}
+  // Earlier table revocations must roll back with the blocked final table.
+  for(const table of tables){assert.equal((await query("select has_table_privilege('authenticated',$1,'SELECT') allowed",['public.'+table]))[0].allowed,true);checks++;}
+ }
+ await db.exec(migration);
  for(const table of tables){
   for(const role of ['anon','authenticated']){
    for(const privilege of ['SELECT','INSERT','UPDATE','DELETE']){
