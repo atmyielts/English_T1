@@ -40,6 +40,8 @@
   .intelligence-workspace .commercial-core__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .intelligence-workspace .commercial-core__heading { flex-wrap: wrap; }
   .intelligence-workspace .form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 980px) {
   .intelligence-import-jobs { min-width: 0; }
   .intelligence-import-jobs thead { position: absolute; width: 1px; height: 1px; margin: -1px; clip-path: inset(50%); overflow: hidden; }
   .intelligence-import-jobs tbody { display: grid; gap: 12px; }
