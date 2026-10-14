@@ -1,33 +1,29 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-legacy-import-permission-boundary",
+  "releaseId": "academy-private-table-gateway-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
   "migrations": [
-    "20261012210000_academy_legacy_import_boundary.sql"
+    "20261014110000_academy_gateway_table_boundary.sql"
   ],
-  "edgeFunctions": [
-    "academy"
-  ],
+  "edgeFunctions": [],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261012210000_academy_legacy_import_boundary.sql",
-    "function:academy"
+    "migration:20261014110000_academy_gateway_table_boundary.sql"
   ],
   "manualFollowUps": [
-    "Capture the installed Academy source and compare the selected patch/module closure with current production. Run the legacy boundary tests on the captured schema before activation.",
-    "Apply only the reviewed 20261012210000 migration using supabase db push --linked from an isolated release containing installed history plus this migration. Its dry run must list exactly one pending migration. Preserve concurrent proctor and other schema/source work.",
-    "Deploy the verified source-preserving bundle with supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel after protected CI/merge; never deploy the dirty primary checkout. This release does not expose the new combined importer."
+    "After protected exact-head CI and merge, capture current migration history and apply only this ACL migration using supabase db push --linked from an isolated linked release. Its dry run must list exactly one pending migration. Never deploy the dirty primary checkout or unrelated proctor/importer migrations. No Edge Function or secret change is required."
   ],
   "verification": [
-    "verify:prod, verify:release, policy tests, actual handler denial-before-write tests, native PostgreSQL/PostgREST permissions, existing Edge contracts, captured-schema compatibility and installed source identity.",
-    "After activation verify owned manager forbidden staff/balance actions, allowed owner contact creation/retry, filtered history, browser raw-table denial and source/migration identity without customer writes or messages."
+    "Require verify:prod, verify:release, full CI, 90-check PGlite/native installed-policy regression and captured full-schema role/ACL qualification. No customer records are read during capture. Verify shipped clients use the service API for the seven private tables.",
+    "After activation verify table and column ACLs from read-only metadata, then use an owned confirmed QA account and isolated Academy to prove raw reads denied and supported service API contacts/classrooms/staff reads remain available. Remove owned fixtures and erase login personal data through installed retention. Do not send messages or read real customer data."
   ],
   "rollback": {
-    "edge": "Restore the captured pre-release Academy source only after evaluating the retained database guard; the migration preserves the previous creation/configuration protocol.",
-    "migration": "Retain import jobs, rows, effects, immutable request identities and all customer data. Forward-repair the function/trigger if needed. Keep browser table privileges restricted; no destructive schema rollback."
+    "pages": "No frontend source changes. Automatic Pages builds remain commit tracked.",
+    "edge": "No Edge source change or redeploy.",
+    "migration": "Retain all records and schema. Prefer a scoped forward repair if a supported service flow fails; restoring broad browser ACLs reopens the proved peer-read exposure. A reviewed ACL restoration must use the captured exact prior table/column ACLs and protected release path."
   }
 }
