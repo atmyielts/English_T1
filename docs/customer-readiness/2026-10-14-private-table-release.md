@@ -1,7 +1,7 @@
 # Academy private-table access release
 
 The installed contacts SELECT policy admits any active tenant member, including
-a student. It can expose other contacts in that Academy outside the scoped
+an unassigned teacher. It can expose other contacts in that Academy outside the scoped
 service API. An isolated fixture reproduces that policy from read-only production
 metadata with two synthetic peer records; no customer records are inspected.
 
