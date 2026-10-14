@@ -2759,5 +2759,14 @@
   "A source row is too large to upload.": "Manba qatori yuklash uchun juda katta.",
   "Contact verification is temporarily unavailable. Try again.": "Kontaktni tekshirish vaqtincha ishlamayapti. Qayta urinib ko‘ring.",
   "The email and phone belong to different contacts. Ask an administrator to resolve them.": "Email va telefon turli kontaktlarga tegishli. Ularni tekshirish uchun administratorga murojaat qiling.",
-  "This contact changed while you were saving. Refresh it before trying again.": "Saqlash paytida bu kontakt o‘zgardi. Qayta urinishdan oldin uni yangilang."
+  "This contact changed while you were saving. Refresh it before trying again.": "Saqlash paytida bu kontakt o‘zgardi. Qayta urinishdan oldin uni yangilang.",
+  "Limited student access": "O‘quvchilar bo‘yicha cheklangan kirish",
+  "Your current access does not cover these records.": "Joriy kirish huquqingiz bu yozuvlarga ruxsat bermaydi.",
+  "The directory is temporarily unavailable. Try again.": "Ro‘yxat vaqtincha ishlamayapti. Qayta urinib ko‘ring.",
+  "The directory returned an incomplete response. Try again.": "Ro‘yxat javobi to‘liq kelmadi. Qayta urinib ko‘ring.",
+  "Choose a valid directory page.": "Ro‘yxatning to‘g‘ri sahifasini tanlang.",
+  "Search is limited to 120 characters.": "Qidiruv 120 ta belgigacha bo‘lishi mumkin.",
+  "Choose a valid classroom.": "To‘g‘ri guruhni tanlang.",
+  "No branch assigned": "Filial biriktirilmagan",
+  "Ask an administrator to assign a branch before importing students.": "O‘quvchilarni import qilishdan oldin administratordan filial biriktirishni so‘rang."
 }

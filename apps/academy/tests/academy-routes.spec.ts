@@ -2221,6 +2221,17 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test('limited roster access is labelled without publishing a false member count',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{classrooms:{classrooms:[{...classroom,member_count:null,roster_visible:false}]}}});
+    await page.goto(`/academy/admin/classrooms?academy_id=${academyId}`);
+    await expect(page.getByText('Limited student access',{exact:true}).first()).toBeVisible();
+    await expect(page.getByText('0 members',{exact:true})).toHaveCount(0);
+  });
+  test('complete roster counts remain accurate when only a bounded member page is loaded',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{classrooms:{classrooms:[{...classroom,member_count:600,roster_visible:true}]}}});
+    await page.goto(`/academy/admin/classrooms?academy_id=${academyId}`);
+    await expect(page.getByText('600 members',{exact:true})).toBeVisible();
+  });
   test('manual lessons use the branch clock even when the operator is in another timezone',async({page})=>{
     const commands:Record<string,unknown>[]=[];
     await seedSessionCookie(page,'owner-user');

@@ -134,6 +134,7 @@ export function StudentImportView({academyId,actorId}:{academyId:string;actorId:
    else {setOptions(await request('options'));await refreshHistory();}
   })}><RefreshCw size={15}/>{t('Check status')}</button></div>:null}
   {notice?<p className="student-import__message" role="status">{notice}</p>:null}
+  {options&&!options.branches.length?<div className="student-import__panel"><h3>{t('No branch assigned')}</h3><p>{t('Ask an administrator to assign a branch before importing students.')}</p></div>:null}
   {intent&&!job?<button className="btn" disabled={!!busy} onClick={()=>void run(t('Cancelling upload'),async()=>{
    const found=await request<StudentImportResult&{found:boolean}>('lookup',{key:intent.uploadKey});
    if(found.found){await inspect(found.job.id);return;}

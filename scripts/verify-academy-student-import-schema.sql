@@ -26,6 +26,9 @@ begin
  preview:=public.academy_student_import_command(academy,actor,'preview',jsonb_build_object('job_id',job->>'id'))->'job';
  if preview->'validation'->>'ready'<>'true' then raise exception 'Actual schema import preview is not ready: %',preview->'validation';end if;
  committed:=public.academy_student_import_command(academy,actor,'commit',jsonb_build_object('job_id',job->>'id','key','owned-commit','preview_hash',preview->'validation'->>'preview_hash'))->'job';
+ if jsonb_array_length(public.academy_scoped_directory(academy,actor,'contacts')->'contacts')<>2 then raise exception 'Actual-schema directory contact scope differs';end if;
+ if (public.academy_scoped_directory(academy,actor,'classrooms')->'classrooms'->0->>'member_count')::integer<>2 then raise exception 'Actual-schema directory roster count differs';end if;
+ if jsonb_array_length(public.academy_scoped_directory(academy,actor,'classroom-memberships')->'classroom_memberships')<>2 then raise exception 'Actual-schema directory membership scope differs';end if;
  if committed->'receipt'->>'applied_rows'<>'2' or committed->'receipt'->>'guardians'<>'1' then raise exception 'Actual schema commit counts differ';end if;
  select count(*) into count_rows from public.academy_student_import_effects where academy_id=academy;
  if count_rows<>9 then raise exception 'Actual schema effects missing: %',count_rows;end if;

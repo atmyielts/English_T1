@@ -16,7 +16,7 @@ user reassignment cannot be overwritten by the stale invitation read. A role
 or scope changed before acceptance is taken from the returned current row.
 The loader retains all contributor entries for subsequent capability queries.
 
-Six policy tests and ten checks executing the actual loader cover narrow
+Six policy tests and thirteen checks executing the actual loader cover narrow
 administrative scope, independent capabilities, inactive/expired/malformed
 grants, confirmed email identity, foreign bound identities and invitation
 races. The complete existing Academy Edge/import suite and compiler passed
@@ -52,6 +52,36 @@ five endpoint tests and five account-pinned browser transport checks. A guarded
 5,000-student import with 10,000 existing contacts completed in 26.9 seconds
 against an unchanged 45-second caller limit; preview took 8.7 seconds. These
 are isolated local timings, not hosted latency promises.
+
+The locked identity/grant/staff/center reader now lives in a separate, private
+`academy_current_authorities` function. Import callers use a compatibility
+wrapper; directory protections do not depend on importing student data or its
+staging/effect tables. Bare teacher or branch roles retain empty resource sets,
+not academy-wide rights. The actual membership loader keeps direct child
+ownership when center delegation also exists, and only active center profiles
+establish delegation.
+
+Contacts, classrooms and classroom memberships now use a service-only scoped
+directory command and the verified Auth actor. Resource checks happen before
+sorting/page limits, preserve independent branch/classroom/student grants, and
+include eligible enrolled contacts which lack a primary branch. Student-only
+class access hides private class metadata and full roster counts; membership
+reads return only the assigned students. Full counts are computed in the database
+instead of inferred from a truncated membership page. The existing 300-record
+directory and 1,000-record roster defaults are preserved; bounded search and
+stable page cursors are available. The browser labels hidden counts as limited
+access and preserves the installed backend's legacy rendering until the new
+visibility marker arrives.
+
+Forty isolated directory checks, forty-six native PostgreSQL/PostgREST checks,
+six service tests and two UI tests cover this integration. Native contention
+qualifies both revocation orders. A selected-row delay and a nontransactional
+sequence marker prove read evaluation occurred before an expiring grant was
+rejected. The importer still passes 65 native authority checks after adopting
+the shared function. These results do not prove hosted activation. The updated
+complete-schema qualifier and rollback-only canary include directory definitions,
+ACLs and reads; rerun them against the current captured installation before
+release.
 
 The lazy student-import view now provides CSV/XLSX parsing, automatic column
 suggestions and manual mapping, explicit date and credit/debt conventions,
@@ -100,7 +130,7 @@ Remaining integration gates:
   owned fixtures and real permission boundaries before enabling imports.
 
 The legacy boundary migration was released separately and is already installed.
-The draft release contains seven remaining import migrations. They must be
+The draft release contains eight remaining authority/import migrations. They must be
 qualified against current installed state; an isolated migration dry run must
 list exactly those reviewed files. Since some timestamps precede the installed
 legacy boundary, use the explicitly reviewed isolated `--include-all` path

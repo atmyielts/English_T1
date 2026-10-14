@@ -21,7 +21,7 @@ const image='public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c
 const name='schood-student-import-schema-'+randomUUID().slice(0,8),label='student-import-installed-schema';
 const root='.temp/student-import';mkdirSync(root,{recursive:true});
 writeFileSync(root+'/installed-schema-owned-container.json',JSON.stringify({name,label,image,createdAt:new Date().toISOString()},null,2)+'\n');
-const migrations=['20261012160000_academy_student_import_staging.sql','20261012170000_academy_student_import_normalization.sql','20261012180000_academy_student_import_preview.sql','20261012190000_academy_student_import_commit.sql','20261012200000_academy_student_import_lifecycle.sql','20261012210000_academy_legacy_import_boundary.sql','20261012220000_academy_student_import_recovery.sql','20261013160000_academy_student_import_authority.sql'];
+const migrations=['20261012160000_academy_student_import_staging.sql','20261012170000_academy_student_import_normalization.sql','20261012180000_academy_student_import_preview.sql','20261012190000_academy_student_import_commit.sql','20261012200000_academy_student_import_lifecycle.sql','20261012210000_academy_legacy_import_boundary.sql','20261012220000_academy_student_import_recovery.sql','20261013155000_academy_current_authority_directory.sql','20261013160000_academy_student_import_authority.sql'];
 // Freeze tested sources before any asynchronous work. Evidence must describe the
 // bytes installed/tested, even if another edit arrives while qualification runs.
 const candidates=migrations.map(file=>({file,source:readFileSync('supabase/migrations/'+file,'utf8')}));
@@ -80,6 +80,8 @@ try{
     }
     assert.equal(await sql("select has_function_privilege('service_role','public.academy_student_import_command(uuid,uuid,text,jsonb)','EXECUTE');"),'t');
     assert.equal(await sql("select has_function_privilege('anon','public.academy_student_import_command(uuid,uuid,text,jsonb)','EXECUTE') or has_function_privilege('authenticated','public.academy_student_import_command(uuid,uuid,text,jsonb)','EXECUTE');"),'f');
+    assert.equal(await sql("select has_function_privilege('service_role','public.academy_scoped_directory(uuid,uuid,text,jsonb)','EXECUTE');"),'t');
+    assert.equal(await sql("select has_function_privilege('anon','public.academy_scoped_directory(uuid,uuid,text,jsonb)','EXECUTE') or has_function_privilege('authenticated','public.academy_scoped_directory(uuid,uuid,text,jsonb)','EXECUTE') or has_function_privilege('service_role','public.academy_current_authorities(uuid,uuid)','EXECUTE');"),'f');
   });
   await check('actual Auth, business triggers and foreign keys qualify commit and retained recovery',async()=>{
     assert.equal(await sql(canarySource,'postgres'),'student-import-captured-schema-ok');

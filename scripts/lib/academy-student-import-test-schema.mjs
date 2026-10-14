@@ -12,7 +12,7 @@ export async function createStudentImportTestSchema(db,{recovery=true}={}) {
  await db.exec(installedFunction('20260810190000_academy_business_os_phase_g.sql','academy_normalize_phone'));
  await db.exec(`create table academy_contacts(id uuid primary key default gen_random_uuid(),academy_id uuid not null,primary_branch_id uuid not null,first_name text not null,last_name text not null default '',status text not null,phone text,email text,user_id uuid,lifecycle_stage text,created_by uuid,metadata jsonb not null default '{}',created_at timestamptz default now(),updated_at timestamptz default now(),phone_normalized text generated always as(academy_normalize_phone(phone)) stored,unique(academy_id,id),unique(academy_id,phone));
   create index on academy_contacts(academy_id,phone_normalized);create unique index on academy_contacts(academy_id,lower(email));
-  create table academy_classrooms(id uuid primary key default gen_random_uuid(),academy_id uuid not null,branch_id uuid not null,name text not null,is_active boolean default true,student_capacity integer,created_by uuid,metadata jsonb not null default '{}',unique(academy_id,id),unique(academy_id,name));
+  create table academy_classrooms(id uuid primary key default gen_random_uuid(),academy_id uuid not null,branch_id uuid not null,name text not null,is_active boolean default true,student_capacity integer,created_at timestamptz not null default now(),updated_at timestamptz not null default now(),created_by uuid,metadata jsonb not null default '{}',unique(academy_id,id),unique(academy_id,name));
   create table academy_classroom_memberships(id uuid primary key default gen_random_uuid(),academy_id uuid not null,classroom_id uuid not null,contact_id uuid not null,role text not null,status text not null,joined_at timestamptz,started_at timestamptz,metadata jsonb not null default '{}',unique(classroom_id,contact_id),foreign key(academy_id,classroom_id) references academy_classrooms(academy_id,id),foreign key(academy_id,contact_id) references academy_contacts(academy_id,id));
   create index on academy_classroom_memberships(classroom_id);
   create index on academy_classroom_memberships(contact_id);
@@ -35,4 +35,5 @@ export async function createStudentImportTestSchema(db,{recovery=true}={}) {
   create trigger publish_lifecycle after insert on academy_student_lifecycle_events for each row execute function academy_publish_lifecycle_event();`);
  for(const file of ['20261012160000_academy_student_import_staging.sql','20261012170000_academy_student_import_normalization.sql','20261012180000_academy_student_import_preview.sql','20261012190000_academy_student_import_commit.sql','20261012200000_academy_student_import_lifecycle.sql'])await db.exec(studentImportMigration(file));
  if(recovery)await db.exec(studentImportMigration('20261012220000_academy_student_import_recovery.sql'));
+ await db.exec(studentImportMigration('20261013155000_academy_current_authority_directory.sql'));
 }

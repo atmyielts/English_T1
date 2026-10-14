@@ -13,72 +13,15 @@ $$;
 revoke all on function public.academy_student_import_role_has(text,text) from public,anon,authenticated,service_role;
 
 create or replace function public.academy_student_import_scope_ids(p_value jsonb)
-returns uuid[] language plpgsql immutable set search_path=public as $$
-begin
- if jsonb_typeof(p_value) is distinct from 'array' then return null;end if;
- if exists(select 1 from jsonb_array_elements(p_value) x
-  where jsonb_typeof(x) is distinct from 'string' or (x#>>'{}') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') then return null;end if;
- return array(select distinct (x#>>'{}')::uuid from jsonb_array_elements(p_value) x order by 1);
-end;$$;
+returns uuid[] language sql immutable set search_path=public as $$
+ select public.academy_authority_scope_ids(p_value);
+$$;
 revoke all on function public.academy_student_import_scope_ids(jsonb) from public,anon,authenticated,service_role;
 
 create or replace function public.academy_student_import_authorities(p_academy_id uuid,p_actor_id uuid)
-returns jsonb language plpgsql security definer set search_path=public set lock_timeout='5s' as $$
-declare v_email text;v_verified boolean;v_parent uuid;v_metadata jsonb;v_type text;v_now timestamptz;v_result jsonb;
-begin
- -- Auth-first matches the installed account-closure trigger's lock order.
- select lower(trim(email)),email_confirmed_at is not null into v_email,v_verified
-  from auth.users where id=p_actor_id and deleted_at is null
-   and (banned_until is null or banned_until<=clock_timestamp()) for share;
- if not found then raise exception using errcode='42501',message='Forbidden student import';end if;
- perform 1 from public.users where id=p_actor_id and is_active for share;
- if not found then raise exception using errcode='42501',message='Forbidden student import';end if;
- select type,metadata into v_type,v_metadata from public.tenants where id=p_academy_id;
- if not found or (v_type='team' or v_metadata->>'service_family'='academy' or v_metadata->>'academy_service'='true' or v_metadata->>'center_owned'='true') is distinct from true then
-  raise exception using errcode='42501',message='Forbidden student import';end if;
- if v_metadata->>'parent_center_id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then v_parent:=(v_metadata->>'parent_center_id')::uuid;end if;
- perform 1 from public.tenants where id=p_academy_id or id=v_parent order by id for share;
- perform 1 from public.tenant_memberships where user_id=p_actor_id and (tenant_id=p_academy_id or tenant_id=v_parent) order by id for share;
- perform 1 from public.partner_center_profiles where tenant_id=v_parent for share;
- -- Lock matching bindings even when inactive; a concurrent update must settle
- -- before the fresh status/time checks below establish authority.
- perform 1 from public.academy_role_grants where academy_id=p_academy_id
-  and (user_id=p_actor_id or(user_id is null and v_verified and lower(trim(email))=v_email)) order by id for share;
- perform 1 from public.academy_staff where academy_id=p_academy_id
-  and (user_id=p_actor_id or(user_id is null and v_verified and lower(trim(email))=v_email)) order by id for share;
- perform 1 from public.academy_staff_branch_assignments a where a.academy_id=p_academy_id and exists(
-  select 1 from public.academy_staff s where s.academy_id=p_academy_id and s.id=a.staff_id
-   and(s.user_id=p_actor_id or(s.user_id is null and v_verified and lower(trim(s.email))=v_email))) order by a.id for share;
- v_now:=clock_timestamp();
- with entries as (
-  select 'tenant' source,m.id source_id,m.role,'academy' scope_type,'{}'::uuid[] scope_ids,null::timestamptz expires_at
-   from public.tenant_memberships m where m.tenant_id=p_academy_id and m.user_id=p_actor_id and m.status='active'
-  union all
-  select 'center',m.id,'center_admin','academy','{}'::uuid[],null::timestamptz
-   from public.tenant_memberships m join public.partner_center_profiles cp on cp.tenant_id=m.tenant_id
-   join public.tenants t on t.id=p_academy_id
-   where m.tenant_id=v_parent and m.user_id=p_actor_id and m.status='active' and m.role in('owner','admin') and cp.status='active'
-    and t.metadata->>'parent_center_id'=v_parent::text and t.metadata->>'service_family'='academy'
-  union all
-  select 'grant',g.id,g.role,g.scope_type,public.academy_student_import_scope_ids(g.scope_ids),g.expires_at
-   from public.academy_role_grants g where g.academy_id=p_academy_id and g.status='active' and g.starts_at<=v_now and(g.expires_at is null or g.expires_at>v_now)
-    and(g.user_id=p_actor_id or(g.user_id is null and v_verified and lower(trim(g.email))=v_email))
-  union all
-  select 'staff',s.id,s.role,
-   case when s.role in('branch_manager','receptionist','salesperson','cashier','parent_liaison') then 'branches'
-    when s.role in('teacher','assistant') then 'classrooms' else 'academy' end,
-   case when s.role in('branch_manager','receptionist','salesperson','cashier','parent_liaison') then
-    array(select distinct a.branch_id from public.academy_staff_branch_assignments a join public.academy_branches b on b.academy_id=a.academy_id and b.id=a.branch_id
-     where a.academy_id=p_academy_id and a.staff_id=s.id and a.status='active' and b.is_active
-      and a.starts_on<=(v_now at time zone b.timezone)::date and(a.ends_on is null or a.ends_on>=(v_now at time zone b.timezone)::date) order by 1)
-    when s.role in('teacher','assistant') then public.academy_student_import_scope_ids(coalesce(to_jsonb(s.classroom_ids),'[]'::jsonb)) else '{}'::uuid[] end,null::timestamptz
-   from public.academy_staff s where s.academy_id=p_academy_id and s.is_active
-    and(s.user_id=p_actor_id or(s.user_id is null and v_verified and lower(trim(s.email))=v_email))
- ) select coalesce(jsonb_agg(jsonb_build_object('source',source,'source_id',source_id,'role',role,'scope_type',scope_type,'scope_ids',scope_ids,'expires_at',expires_at) order by source,source_id),'[]') into v_result
-  from entries where scope_ids is not null and scope_type in('academy','branches','classrooms','students')
-   and(scope_type<>'academy' or cardinality(scope_ids)=0) and(scope_type='academy' or cardinality(scope_ids)>0);
- return v_result;
-end;$$;
+returns jsonb language sql security definer set search_path=public as $$
+ select public.academy_current_authorities(p_academy_id,p_actor_id);
+$$;
 revoke all on function public.academy_student_import_authorities(uuid,uuid) from public,anon,authenticated,service_role;
 
 create or replace function public.academy_student_import_scope_covers(

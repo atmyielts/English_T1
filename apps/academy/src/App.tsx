@@ -3968,7 +3968,7 @@ const App = () => {
                     <h3>{classroom.name}</h3>
                     <p>{cardSummary}</p>
                     <div className="row between">
-                      <span className="small muted">{translate('Members: {count}', { count: classroom.member_count })}</span>
+                      <span className="small muted">{classroom.roster_visible === false ? translate('Limited student access') : translate('Members: {count}', { count: classroom.member_count ?? '—' })}</span>
                       <button
                         className="small-btn"
                         type="button"
@@ -4770,7 +4770,7 @@ const App = () => {
                     <h3>{classroom.name}</h3>
                     <p>{cardSummary}</p>
                     <div className="row between">
-                      <span className="small muted">{translate('Members: {count}', { count: classroom.member_count })}</span>
+                      <span className="small muted">{classroom.roster_visible === false ? translate('Limited student access') : translate('Members: {count}', { count: classroom.member_count ?? '—' })}</span>
                       <button
                         className="small-btn"
                         type="button"
@@ -5045,7 +5045,7 @@ const App = () => {
                             </td>
                             <td>{academyName}</td>
                             <td>{memberships[0]?.role ?? 'student'}</td>
-                            <td>{classroom.member_count ?? memberships.length}</td>
+                            <td>{classroom.roster_visible === false ? translate('Limited student access') : classroom.member_count ?? memberships.length}</td>
                             <td>
                               <button
                                 className="small-btn"

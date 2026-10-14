@@ -19,11 +19,11 @@ const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),academy=id(2),email='owned@example.invalid';
 const grant=(patch={})=>({id:id(3),academy_id:academy,user_id:null,email,role:'manager',status:'active',scope_type:'students',scope_ids:[id(4)],starts_at:'2020-01-01T00:00:00Z',expires_at:null,...patch});
 const plain=value=>JSON.parse(JSON.stringify(value));let checks=0;
-function fixture({grants=[],staff=[],beforeAcceptance,acceptanceError}={}){
- const data={academy_role_grants:plain(grants),academy_staff:plain(staff)},updates=[];
+function fixture({grants=[],staff=[],memberships=[],centers=[],tenants=[],beforeAcceptance,acceptanceError}={}){
+ const data={academy_role_grants:plain(grants),academy_staff:plain(staff),tenant_memberships:plain(memberships),partner_center_profiles:plain(centers),tenants:plain(tenants)},updates=[];
  return {updates,data,from(table){
   const filters=[];let patch;
-  const chain={select(){return this;},order(){return this;},limit(){return this;},eq(key,value){filters.push(row=>row[key]===value);return this;},is(key,value){filters.push(row=>row[key]===value);return this;},in(key,values){filters.push(row=>values.includes(row[key]));return this;},lte(key,value){filters.push(row=>row[key]!=null&&row[key]<=value);return this;},contains(){return this;},or(value){
+  const chain={select(){return this;},order(){return this;},limit(){return this;},eq(key,value){filters.push(row=>row[key]===value);return this;},is(key,value){filters.push(row=>row[key]===value);return this;},in(key,values){filters.push(row=>values.includes(row[key]));return this;},lte(key,value){filters.push(row=>row[key]!=null&&row[key]<=value);return this;},contains(key,value){filters.push(row=>Object.entries(value).every(([k,v])=>row[key]?.[k]===v));return this;},or(value){
    const key=value.startsWith('expires_at')?'expires_at':'ends_on',boundary=value.match(/\.(?:gt|gte)\.(.*)$/)?.[1];assert(boundary);
    filters.push(row=>row[key]==null||row[key]>boundary);return this;
   },update(value){patch=value;return this;},async maybeSingle(){const result=execute();return {...result,data:result.data?.[0]??null};},then(resolve,reject){return Promise.resolve(execute()).then(resolve,reject);}};
@@ -62,5 +62,19 @@ for(const principalEmail of [email,null]){
  const contacts=scope.resolveAcademyCapabilityScope(academy,rows[0].authority_entries,'manageContacts');
  assert.deepEqual(plain(contacts.branchIds),[id(6)]);assert.deepEqual(plain(contacts.classroomIds),[]);
  const grading=scope.resolveAcademyCapabilityScope(academy,rows[0].authority_entries,'gradeSubmissions');assert.deepEqual(plain(grading.classroomIds),[id(8)]);checks++;
+}
+for(const status of ['active','paused']){
+ const center=id(20),child={id:academy,type:'team',metadata:{service_family:'academy',parent_center_id:center}};
+ const memberships=[{tenant_id:center,user_id:actor,role:'owner',status:'active',tenants:{id:center,type:'personal',metadata:{}}},
+  {tenant_id:academy,user_id:actor,role:'owner',status:'active',tenants:child}];
+ const rows=plain(await loadMemberships(fixture({memberships,centers:[{tenant_id:center,status}],tenants:[child]}),actor,email));
+ assert.equal(rows.length,1);assert.equal(rows[0].role,'owner');
+ assert.equal(rows[0].authority_entries.some(row=>row.source==='tenant'),true);
+ assert.equal(rows[0].authority_entries.some(row=>row.source==='center'),status==='active');checks++;
+}
+{
+ const center=id(20),child={id:academy,type:'team',metadata:{service_family:'academy',parent_center_id:center}};
+ const rows=plain(await loadMemberships(fixture({memberships:[{tenant_id:center,user_id:actor,role:'owner',status:'active',tenants:{id:center,type:'personal',metadata:{}}}],centers:[{tenant_id:center,status:'paused'}],tenants:[child]}),actor,email));
+ assert.deepEqual(rows,[]);checks++;
 }
 console.log(JSON.stringify({suite:'actual-academy-authority-loader',checks,productionTouched:false}));

@@ -23,6 +23,10 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  'Your current access does not cover these records.',
+  'The directory is temporarily unavailable. Try again.',
+  'The directory returned an incomplete response. Try again.',
+  'Choose a valid directory page.', 'Search is limited to 120 characters.', 'Choose a valid classroom.',
   'Contact verification is temporarily unavailable. Try again.',
   'The email and phone belong to different contacts. Ask an administrator to resolve them.',
   'This contact changed while you were saving. Refresh it before trying again.',

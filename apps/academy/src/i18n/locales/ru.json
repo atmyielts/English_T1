@@ -2759,5 +2759,14 @@
   "A source row is too large to upload.": "Строка файла слишком большая для загрузки.",
   "Contact verification is temporarily unavailable. Try again.": "Проверка контакта временно недоступна. Попробуйте ещё раз.",
   "The email and phone belong to different contacts. Ask an administrator to resolve them.": "Email и телефон принадлежат разным контактам. Обратитесь к администратору для проверки.",
-  "This contact changed while you were saving. Refresh it before trying again.": "Контакт изменился во время сохранения. Обновите его перед повторной попыткой."
+  "This contact changed while you were saving. Refresh it before trying again.": "Контакт изменился во время сохранения. Обновите его перед повторной попыткой.",
+  "Limited student access": "Ограниченный доступ к ученикам",
+  "Your current access does not cover these records.": "Ваш текущий доступ не распространяется на эти записи.",
+  "The directory is temporarily unavailable. Try again.": "Список временно недоступен. Попробуйте ещё раз.",
+  "The directory returned an incomplete response. Try again.": "Получен неполный ответ списка. Попробуйте ещё раз.",
+  "Choose a valid directory page.": "Выберите допустимую страницу списка.",
+  "Search is limited to 120 characters.": "Поисковый запрос ограничен 120 символами.",
+  "Choose a valid classroom.": "Выберите допустимую группу.",
+  "No branch assigned": "Филиал не назначен",
+  "Ask an administrator to assign a branch before importing students.": "Попросите администратора назначить филиал перед импортом учеников."
 }

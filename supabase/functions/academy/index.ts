@@ -20,6 +20,7 @@ import {
 import * as academyAccessPolicy from "./access.ts";
 import {validateAcademyMutationBranches} from "./mutation-branches.ts";
 import {resolveAcademyContactSaveTarget,academyContactSavePayload,ContactSaveTargetError} from "./contact-save.ts";
+import {readAcademyScopedDirectory,ScopedDirectoryError} from "./scoped-directory.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
@@ -1062,11 +1063,12 @@ const loadMemberships = async (
   if (centerCandidateIds.length > 0) {
     const { data: centerProfiles, error: centerError } = await sb
       .from("partner_center_profiles")
-      .select("tenant_id")
+      .select("tenant_id,status")
       .in("tenant_id", centerCandidateIds);
     if (centerError) throw new Error(`Failed to load education center profiles: ${centerError.message}`);
 
-    for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null }>) {
+    for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null; status: string | null }>) {
+      if (center.status !== "active") continue;
       const centerTenantId = normalizeText(center.tenant_id, 64);
       if (centerTenantId) centerTenantIds.add(centerTenantId);
     }
@@ -1077,9 +1079,6 @@ const loadMemberships = async (
   for (const row of membershipRows) {
     const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
     if (!isAcademyTenantRow(tenant)) continue;
-    const metadata = toJsonObject(tenant?.metadata);
-    const parentCenterId = normalizeText(metadata.parent_center_id, 64);
-    if (parentCenterId && centerTenantIds.has(parentCenterId)) continue;
     accessRows.push({
       tenant_id: String(row.tenant_id ?? ""),
       role: normalizeAcademyRole(row.role),
@@ -2559,6 +2558,7 @@ const handleReadAction = async (
   searchLimitRaw: string | null = null,
   dateRaw: string | null = null,
   roomTimetableRaw: unknown = null,
+  directoryContext: {actorId:string;before_time?:unknown;before_id?:unknown}|null = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -2659,6 +2659,20 @@ const handleReadAction = async (
 
   const academyId = resolveAcademyId(memberships, academyIdRaw);
   const access = requireAcademyAccess(memberships, academyId);
+  if (action === "contacts" || action === "classrooms" || action === "classroom-memberships") {
+    if (!directoryContext) return json(403, {error: "Forbidden"});
+    try {
+      return json(200, await readAcademyScopedDirectory(sb as unknown as Parameters<typeof readAcademyScopedDirectory>[0], directoryContext.actorId, academyId, action, {
+        ...(searchQueryRaw ? {query: searchQueryRaw} : {}), ...(searchLimitRaw ? {limit: searchLimitRaw} : {}),
+        ...(classroomIdRaw ? {classroom_id: classroomIdRaw} : {}),
+        ...(directoryContext.before_time != null ? {before_time: directoryContext.before_time} : {}),
+        ...(directoryContext.before_id != null ? {before_id: directoryContext.before_id} : {}),
+      }));
+    } catch (error) {
+      if (error instanceof ScopedDirectoryError) return json(error.status, {error: error.message});
+      throw error;
+    }
+  }
   const scopedClassroomIds = academyAccessClassroomIds(access);
   const operationalBranchIds = academyAccessBranchIds(access);
 
@@ -2722,88 +2736,6 @@ const handleReadAction = async (
         open_alerts: alertsOpen ?? 0,
       },
     });
-  }
-
-  if (action === "contacts") {
-    requireAcademyPermission(access, "viewContacts");
-    const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
-    if (scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { contacts: [] });
-
-    let query = sb
-      .from("academy_contacts")
-      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at, updated_at")
-      .eq("academy_id", academyId)
-      .order("created_at", { ascending: false })
-      .limit(300);
-    if (scopedContactIds !== null) query = query.in("id", Array.from(scopedContactIds));
-    const { data, error } = await query;
-    if (error) return json(500, { error: "Failed to load contacts", detail: error.message });
-    return json(200, { contacts: data ?? [] });
-  }
-
-  if (action === "classrooms") {
-    requireAcademyPermission(access, "viewClassrooms");
-    if (scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { classrooms: [] });
-
-    let classroomQuery = sb
-      .from("academy_classrooms")
-      .select("id, academy_id, name, description, is_active, metadata, created_at, updated_at")
-      .eq("academy_id", academyId)
-      .order("created_at", { ascending: false })
-      .limit(300);
-    if (scopedClassroomIds !== null) classroomQuery = classroomQuery.in("id", scopedClassroomIds);
-    const { data, error } = await classroomQuery;
-    if (error) return json(500, { error: "Failed to load classrooms", detail: error.message });
-
-    let membershipQuery = sb
-      .from("academy_classroom_memberships")
-      .select("classroom_id")
-      .eq("academy_id", academyId)
-      .limit(5000);
-    if (scopedClassroomIds !== null) membershipQuery = membershipQuery.in("classroom_id", scopedClassroomIds);
-    const { data: membershipRows, error: membershipError } = await membershipQuery;
-    if (membershipError) {
-      return json(500, { error: "Failed to load classroom memberships", detail: membershipError.message });
-    }
-
-    const memberCountByClassroom = new Map<string, number>();
-    for (const row of (membershipRows ?? []) as Array<{ classroom_id: string | null }>) {
-      const classroomId = row.classroom_id ? String(row.classroom_id) : "";
-      if (!classroomId) continue;
-      memberCountByClassroom.set(classroomId, (memberCountByClassroom.get(classroomId) ?? 0) + 1);
-    }
-
-    const classrooms = ((data ?? []) as Array<Record<string, unknown>>).map((row) => {
-      const classroomId = String(row.id ?? "");
-      return {
-        ...row,
-        member_count: memberCountByClassroom.get(classroomId) ?? 0,
-      };
-    });
-
-    return json(200, { classrooms });
-  }
-
-  if (action === "classroom-memberships") {
-    requireAcademyPermission(access, "viewClassrooms");
-    const classroomId = normalizeText(classroomIdRaw, 64) || null;
-    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
-    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) {
-      return json(200, { classroom_memberships: [] });
-    }
-
-    let query = sb
-      .from("academy_classroom_memberships")
-      .select("id, academy_id, classroom_id, contact_id, role, status, joined_at, started_at, completed_at, paused_at, withdrawn_at, expires_at, metadata")
-      .eq("academy_id", academyId)
-      .order("joined_at", { ascending: false })
-      .limit(1000);
-
-    if (classroomId) query = query.eq("classroom_id", classroomId);
-    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
-    const { data, error } = await query;
-    if (error) return json(500, { error: "Failed to load classroom memberships", detail: error.message });
-    return json(200, { classroom_memberships: data ?? [] });
   }
 
   if (action === "conversations") {
@@ -7862,6 +7794,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(url.searchParams.get("limit"), 10) || null,
         normalizeText(url.searchParams.get("date"), 10) || null,
         { branch_id: url.searchParams.get("branch_id"), from: url.searchParams.get("from"), days: url.searchParams.get("days") ?? undefined },
+        {actorId:userId,before_time:url.searchParams.get("before_time"),before_id:url.searchParams.get("before_id")},
       );
       if (readResponse) return readResponse;
     }
@@ -7883,6 +7816,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(body?.limit, 10) || null,
         normalizeText(body?.date, 10) || null,
         { branch_id: body?.branch_id, from: body?.from, days: body?.days },
+        {actorId:userId,before_time:body?.before_time,before_id:body?.before_id},
       );
       if (readResponse) return readResponse;
 

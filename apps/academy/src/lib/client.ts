@@ -144,7 +144,8 @@ export type TeacherStudioClassroom = {
   metadata: Json;
   created_at: string;
   updated_at: string;
-  member_count: number;
+  member_count: number | null;
+  roster_visible?: boolean;
 };
 
 export type TeacherStudioClassroomMembership = {
