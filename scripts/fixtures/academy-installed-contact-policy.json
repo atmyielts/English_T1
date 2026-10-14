@@ -1,0 +1,52 @@
+{
+  "readOnly": true,
+  "customerRowsRead": false,
+  "source": "Read-only installed policy metadata, 2026-10-14; no records or credentials",
+  "catalog": {
+    "functions": [
+      {
+        "name": "is_academy_admin",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_academy_admin(target_academy_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE\nAS $function$\n  select exists (\n    select 1\n    from public.tenant_memberships m\n    where m.tenant_id = target_academy_id\n      and m.user_id = auth.uid()\n      and m.status = 'active'\n      and m.role in ('owner', 'admin')\n  );\n$function$\n"
+      },
+      {
+        "name": "is_academy_member",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_academy_member(target_academy_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE\nAS $function$\n  select exists (\n    select 1\n    from public.tenant_memberships m\n    where m.tenant_id = target_academy_id\n      and m.user_id = auth.uid()\n      and m.status = 'active'\n  );\n$function$\n"
+      }
+    ],
+    "policies": [
+      {
+        "tablename": "academy_contacts",
+        "policyname": "Academy contacts manage by admin",
+        "permissive": "PERMISSIVE",
+        "cmd": "ALL",
+        "roles": [
+          "public"
+        ],
+        "qual": "is_academy_admin(academy_id)",
+        "with_check": "is_academy_admin(academy_id)"
+      },
+      {
+        "tablename": "academy_contacts",
+        "policyname": "Academy contacts read by membership",
+        "permissive": "PERMISSIVE",
+        "cmd": "SELECT",
+        "roles": [
+          "public"
+        ],
+        "qual": "is_academy_member(academy_id)",
+        "with_check": null
+      },
+      {
+        "tablename": "academy_contacts",
+        "policyname": "account_open_required",
+        "permissive": "RESTRICTIVE",
+        "cmd": "ALL",
+        "roles": [
+          "authenticated"
+        ],
+        "qual": "( SELECT account_is_open() AS account_is_open)",
+        "with_check": "( SELECT account_is_open() AS account_is_open)"
+      }
+    ]
+  }
+}

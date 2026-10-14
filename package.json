@@ -83,7 +83,7 @@
     "test:academy:import:current-authority": "deno test --no-lock supabase/functions/academy/student-import-service.test.ts && node scripts/test-academy-student-import-authority.mjs && node scripts/test-academy-student-import-client.mjs",
     "test:academy:import:current-authority:native": "node scripts/test-academy-student-import-authority.mjs --native --rest --large",
     "test:academy:mutation-scope": "deno test --no-lock supabase/functions/academy/mutation-branches.test.ts supabase/functions/academy/contact-save.test.ts && node scripts/test-academy-contact-save-api.mjs",
-    "test:academy:directory": "deno test --no-lock supabase/functions/academy/scoped-directory.test.ts && node scripts/test-academy-scoped-directory.mjs",
+    "test:academy:directory": "node --test scripts/academy-read-action-contract.test.mjs && deno test --no-lock supabase/functions/academy/scoped-directory.test.ts && node scripts/test-academy-scoped-directory.mjs && node scripts/test-academy-gateway-table-boundary.mjs",
     "test:academy:directory:native": "node scripts/test-academy-scoped-directory.mjs --native --rest"
   },
   "devDependencies": {

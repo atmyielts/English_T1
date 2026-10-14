@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isFullAcademyRouteCommand } from './academy-route-command.mjs';
+import { academyDispatchedReadActions } from './lib/academy-read-action-contract.mjs';
 
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), 'utf8');
@@ -175,8 +176,8 @@ const migrationSql = existsSync(migrationsDir)
       .join('\n')
   : '';
 
-const hasReadAction = (action) =>
-  new RegExp(`if\\s*\\(\\s*action\\s*===\\s*"${action}"\\s*\\)`).test(academyEdge);
+const dispatchedReads = academyDispatchedReadActions(academyEdge);
+const hasReadAction = (action) => dispatchedReads.has(action);
 
 const hasStudentAction = (action) =>
   new RegExp(`requestedAction\\s*===\\s*"${action}"`).test(academyEdge);
