@@ -2800,7 +2800,6 @@
   "Not saved": "Not saved",
   "Choose a file and check its rows to see the results here.": "Choose a file and check its rows to see the results here.",
   "Use the group names shown below. Leave the group blank to add the student without a group. Parents must confirm before viewing student information.": "Use the group names shown below. Leave the group blank to add the student without a group. Parents must confirm before viewing student information.",
-  "Students needing attention": "Students needing attention",
   "Follow-ups to do": "Follow-ups to do",
   "Renewals to check": "Renewals to check",
   "Tasks": "Tasks",
@@ -2814,5 +2813,6 @@
   "Parents": "Parents",
   "Starting balances": "Starting balances",
   "Group enrollments": "Group enrollments",
-  "Other records": "Other records"
+  "Other records": "Other records",
+  "Student alerts (30 days)": "Student alerts (30 days)"
 }

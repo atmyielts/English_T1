@@ -394,7 +394,7 @@ export function IntelligenceOperationsView({ academyId, actorId, formatDate }: P
         </article>
         <article>
           <AlertTriangle size={18} />
-          <span>{translate("Students needing attention")}</span>
+          <span>{translate("Student alerts (30 days)")}</span>
           <strong>{n(owner.high_risk_evaluations)}</strong>
         </article>
         <article>

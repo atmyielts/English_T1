@@ -2800,7 +2800,6 @@
   "Not saved": "Saqlanmagan",
   "Choose a file and check its rows to see the results here.": "Natijalarni ko‘rish uchun fayl tanlang va satrlarni tekshiring.",
   "Use the group names shown below. Leave the group blank to add the student without a group. Parents must confirm before viewing student information.": "Quyidagi guruh nomlarini ishlating. O‘quvchini guruhsiz qo‘shish uchun guruhni bo‘sh qoldiring. Ma’lumotlarni ko‘rishdan oldin ota-onalar tasdiqlashi kerak.",
-  "Students needing attention": "E’tibor kerak bo‘lgan o‘quvchilar",
   "Follow-ups to do": "Bajariladigan vazifalar",
   "Renewals to check": "Davom ettirishni tekshirish",
   "Tasks": "Vazifalar",
@@ -2814,5 +2813,6 @@
   "Parents": "Ota-onalar",
   "Starting balances": "Boshlang‘ich balanslar",
   "Group enrollments": "Guruhga yozilishlar",
-  "Other records": "Boshqa yozuvlar"
+  "Other records": "Boshqa yozuvlar",
+  "Student alerts (30 days)": "O‘quvchi ogohlantirishlari (30 kun)"
 }

@@ -2800,7 +2800,6 @@
   "Not saved": "Не сохранено",
   "Choose a file and check its rows to see the results here.": "Выберите файл и проверьте строки, чтобы увидеть результаты здесь.",
   "Use the group names shown below. Leave the group blank to add the student without a group. Parents must confirm before viewing student information.": "Используйте названия групп ниже. Оставьте группу пустой, чтобы добавить ученика без группы. Родители должны подтвердить доступ к информации об ученике.",
-  "Students needing attention": "Ученики, которым нужно внимание",
   "Follow-ups to do": "Запланированная помощь",
   "Renewals to check": "Продления для проверки",
   "Tasks": "Задачи",
@@ -2814,5 +2813,6 @@
   "Parents": "Родители",
   "Starting balances": "Начальные балансы",
   "Group enrollments": "Записи в группы",
-  "Other records": "Другие записи"
+  "Other records": "Другие записи",
+  "Student alerts (30 days)": "Уведомления об учениках (30 дней)"
 }
