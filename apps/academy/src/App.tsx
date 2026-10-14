@@ -329,7 +329,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   academic: 'Academic Operations',
   rooms: 'Room timetable',
   relationships: 'Guardians & Parents',
-  intelligence: 'Intelligence',
+  intelligence: 'Follow-ups',
   operations: 'Operations Finance',
   os: 'Daily operations',
   contacts: 'Contacts',
