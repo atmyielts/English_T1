@@ -1,0 +1,74 @@
+{
+  "recordedAt": "2026-10-14T06:41:05.827Z",
+  "status": "qualified-not-activated",
+  "migration": {
+    "file": "20261014110000_academy_gateway_table_boundary.sql",
+    "sha256LF": "79d1bc5bb6b02fb79deefbbe6317b3855e3de279973e39962ab3c65477968642"
+  },
+  "regression": {
+    "pgliteChecks": 90,
+    "nativeChecks": 99,
+    "validTenantRole": "teacher",
+    "installedRoleConstraintPreserved": true,
+    "reproducedExistingPeerRead": true,
+    "boundedCatalogLockWaitAndAtomicRollback": true
+  },
+  "capturedSchema": {
+    "sha256": "f9a174a60eabc56014277ad87709176361641df1868949a550aec81fc98f19c5",
+    "tableCount": 413,
+    "publicTriggers": 334,
+    "authTriggers": 4,
+    "publicForeignKeys": 1253,
+    "customerRowsIncluded": false,
+    "rolesAndRelevantMembershipsMatched": true,
+    "applyAsNonSuperuserPostgres": true,
+    "authAndServiceAclCanaryPassed": true,
+    "cleanupVerified": true
+  },
+  "hostedBaseline": {
+    "checks": [
+      "owned confirmed actor created",
+      "owned actor signed in",
+      "owned Academy created",
+      "owned owner membership created",
+      "owned default branch created",
+      "owned contact created through service",
+      "owned classroom created through service",
+      "owned grant created through service",
+      "signed-in contact service retains owned contact",
+      "signed-in classroom service retains owned class",
+      "signed-in roster service remains available",
+      "signed-in staff service retains owned grant",
+      "preactivation owner raw access reproduced: academy_contacts",
+      "service access preserved: academy_contacts",
+      "preactivation owner raw access reproduced: academy_classrooms",
+      "service access preserved: academy_classrooms",
+      "preactivation owner raw access reproduced: academy_classroom_memberships",
+      "service access preserved: academy_classroom_memberships",
+      "preactivation owner raw access reproduced: academy_payments",
+      "service access preserved: academy_payments",
+      "preactivation owner raw access reproduced: academy_staff",
+      "service access preserved: academy_staff",
+      "preactivation owner raw access reproduced: academy_role_grants",
+      "service access preserved: academy_role_grants",
+      "preactivation owner raw access reproduced: academy_staff_branch_assignments",
+      "service access preserved: academy_staff_branch_assignments"
+    ],
+    "cleanupVerified": true,
+    "temporaryOwnedFixturesOnly": true,
+    "customerRecordsChanged": false,
+    "credentialValuesPersisted": false
+  },
+  "releaseDryRun": {
+    "installedMigrations": 195,
+    "pendingMigrations": [
+      "20261014110000_academy_gateway_table_boundary.sql"
+    ]
+  },
+  "remaining": [
+    "Protected CI and merge for final head",
+    "Selected migration activation and read-only installed ACL proof",
+    "Owned hosted postactivation raw-table/service compatibility proof and cleanup",
+    "Staff delegation and remaining all-service/feature acceptance work"
+  ]
+}

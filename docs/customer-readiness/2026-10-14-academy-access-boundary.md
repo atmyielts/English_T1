@@ -1,14 +1,14 @@
-# Academy access boundary: qualified locally, not released
+# Academy access boundary: deployed table boundary and pending importer
 
 Read-only production policy metadata captured on 2026-10-14 confirms that
 `is_academy_member` admits any active tenant membership. The installed contacts
 SELECT policy uses that helper. The account-open restriction is present, but it
-does not constrain a healthy student's access to unrelated contacts in the same
+does not constrain a healthy unassigned teacher's access to unrelated contacts in the same
 academy. No customer records were read to diagnose this boundary.
 
-A synthetic fixture reproduces the installed policy using a student membership
-and two unrelated contact records. Both PGlite and isolated native PostgreSQL
-passed 90 checks: the original peer read is reproduced, the proposed migration
+A synthetic fixture reproduces the installed policy using a valid teacher membership
+and two unrelated contact records. PGlite passed 90 checks and isolated native PostgreSQL
+passed 99 checks, including bounded catalog contention and atomic rollback: the original peer read is reproduced, the proposed migration
 removes table and column ACL paths for anonymous/authenticated roles on seven
 reviewed private tables, and service-role access and records remain intact.
 The test uses a healthy-account predicate; it does not claim account-erasure
@@ -22,9 +22,10 @@ Use `--capture=<fresh metadata file>` for an independent current-policy run.
 Searches of shipped apps/packages and the primary concurrent checkout found no
 direct frontend table queries or Academy table subscriptions for the seven
 targets. Supported clients use the Academy service API. The ACL migration does
-not change that API, schema shape, RLS definitions or stored records. Hosted
-compatibility and owned-account denial checks are still required before claiming
-the boundary deployed. Other tables and callable functions require their own
+not change that API, schema shape, RLS definitions or stored records. PR 250 deployed this ACL boundary after protected CI and captured-schema
+qualification. Its owned hosted baseline passed 26 checks and postactivation
+passed 36 checks, including owner/anonymous raw-table denial, service continuity
+and the unassigned teacher peer-read denial. Fixture cleanup was verified. Other tables and callable functions require their own
 review; this closes only the seven explicitly listed table/column ACL paths.
 
 The read-action readiness check now parses the actual `handleReadAction`
@@ -44,5 +45,5 @@ corrects the checker failure without weakening route-presence requirements.
 - The wider Academy feature, performance and visual acceptance work remains in
   scope. Concurrent proctor changes remain outside this worktree's ownership.
 
-PR 248 remains draft. No migration or code from this pending boundary/import
-release has been activated in production.
+PR 248 remains draft. The table ACL migration is installed; the importer and directory
+changes from this draft remain unactivated.

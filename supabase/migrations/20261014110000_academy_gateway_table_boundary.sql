@@ -4,6 +4,9 @@
 do $boundary$
 declare target text;columns text;
 begin
+ -- Fail the whole atomic block if a busy production table cannot be locked
+ -- promptly. This setting is local to the migration transaction.
+ perform set_config('lock_timeout','5s',true);
  foreach target in array array['academy_contacts','academy_classrooms','academy_classroom_memberships',
   'academy_payments','academy_staff','academy_role_grants','academy_staff_branch_assignments'] loop
   if to_regclass('public.'||target) is null then raise exception 'Missing reviewed Academy table: %',target;end if;

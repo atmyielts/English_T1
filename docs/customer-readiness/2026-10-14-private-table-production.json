@@ -1,0 +1,164 @@
+{
+  "recordedAt": "2026-10-14T06:53:18.515Z",
+  "status": "production-acl-and-owned-workflows-verified",
+  "pullRequest": "https://github.com/atmyielts/English_T1/pull/250",
+  "reviewedHead": "fd02fd0eb4455da00cdd75de4e9ceaa80dfdbdf1",
+  "mainCommit": "0f853d6263f46fba8179859cd4fdc39f6c8e762f",
+  "ci": {
+    "run": 38523671583,
+    "conclusion": "success"
+  },
+  "migration": {
+    "file": "20261014110000_academy_gateway_table_boundary.sql",
+    "sha256LF": "79d1bc5bb6b02fb79deefbbe6317b3855e3de279973e39962ab3c65477968642",
+    "installed": true,
+    "installedMigrationCount": 196
+  },
+  "installedAcl": {
+    "readOnlyMetadata": true,
+    "customerRowsRead": false,
+    "tables": [
+      {
+        "table": "academy_classroom_memberships",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_classrooms",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_contacts",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_payments",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_role_grants",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_staff",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      },
+      {
+        "table": "academy_staff_branch_assignments",
+        "anonTable": false,
+        "anonColumn": false,
+        "serviceDelete": true,
+        "serviceInsert": true,
+        "serviceSelect": true,
+        "serviceUpdate": true,
+        "authenticatedTable": false,
+        "authenticatedColumn": false
+      }
+    ]
+  },
+  "hosted": {
+    "checks": [
+      "owned confirmed actor created",
+      "owned actor signed in",
+      "owned Academy created",
+      "owned owner membership created",
+      "owned default branch created",
+      "owned contact created through service",
+      "owned classroom created through service",
+      "owned grant created through service",
+      "signed-in contact service retains owned contact",
+      "signed-in classroom service retains owned class",
+      "signed-in roster service remains available",
+      "signed-in staff service retains owned grant",
+      "activated signed-in raw access denied: academy_contacts",
+      "activated anonymous raw access denied: academy_contacts",
+      "service access preserved: academy_contacts",
+      "activated signed-in raw access denied: academy_classrooms",
+      "activated anonymous raw access denied: academy_classrooms",
+      "service access preserved: academy_classrooms",
+      "activated signed-in raw access denied: academy_classroom_memberships",
+      "activated anonymous raw access denied: academy_classroom_memberships",
+      "service access preserved: academy_classroom_memberships",
+      "activated signed-in raw access denied: academy_payments",
+      "activated anonymous raw access denied: academy_payments",
+      "service access preserved: academy_payments",
+      "activated signed-in raw access denied: academy_staff",
+      "activated anonymous raw access denied: academy_staff",
+      "service access preserved: academy_staff",
+      "activated signed-in raw access denied: academy_role_grants",
+      "activated anonymous raw access denied: academy_role_grants",
+      "service access preserved: academy_role_grants",
+      "activated signed-in raw access denied: academy_staff_branch_assignments",
+      "activated anonymous raw access denied: academy_staff_branch_assignments",
+      "service access preserved: academy_staff_branch_assignments",
+      "owned actor changed to unassigned teacher",
+      "unassigned teacher service does not return peer contact",
+      "unassigned teacher cannot bypass service through raw peer read"
+    ],
+    "passed": true,
+    "cleanupVerified": true,
+    "temporaryOwnedFixturesOnly": true,
+    "customerRecordsChanged": false,
+    "credentialValuesPersisted": false,
+    "closedPrincipalRetained": true
+  },
+  "httpSmoke": {
+    "academy": 200,
+    "schood": 200,
+    "scope": "HTML availability only"
+  },
+  "pages": {
+    "run": 38524249049,
+    "conclusion": "success"
+  },
+  "edge": {
+    "sourceChanged": false,
+    "deploymentRequired": false
+  },
+  "remaining": [
+    "Staff delegation and remaining legacy multi-resource authorization",
+    "Pending importer release and hosted acceptance",
+    "Remaining feature/design/performance finish checklist"
+  ]
+}

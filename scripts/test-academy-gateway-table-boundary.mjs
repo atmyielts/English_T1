@@ -15,6 +15,7 @@ try{
   create function account_is_open() returns boolean language sql stable as $$select true;$$;
   create table tenant_memberships(tenant_id uuid,user_id uuid,role text,status text);
   grant usage on schema auth to authenticated;grant select on tenant_memberships to authenticated;`);
+ assert.equal(typeof capture.tenantMembershipRoleCheck,'string');await db.exec('alter table tenant_memberships add constraint tenant_memberships_role_check '+capture.tenantMembershipRoleCheck);
  for(const table of tables)await db.exec(`create table ${table}(id uuid primary key default gen_random_uuid(),academy_id uuid not null,private_value text);alter table ${table} enable row level security;grant all on ${table} to anon,authenticated,service_role;`);
  for(const name of ['is_academy_member','is_academy_admin']){
   const f=capture.catalog.functions.find(f=>f.name===name);assert(f);await db.exec(f.definition);checks++;
@@ -25,16 +26,29 @@ try{
   const roles=p.roles.map(role=>'"'+role.replaceAll('"','""')+'"').join(',');
   await db.exec(`create policy "${p.policyname.replaceAll('"','""')}" on academy_contacts as ${p.permissive} for ${p.cmd} to ${roles}${p.qual?' using ('+p.qual+')':''}${p.with_check?' with check ('+p.with_check+')':''};`);
  }
- await query("insert into tenant_memberships values($1,$2,'student','active')",[academy,actor]);
+ await query("insert into tenant_memberships values($1,$2,'teacher','active')",[academy,actor]);
  await query("insert into academy_contacts(academy_id,private_value) values($1,'Unrelated peer contact'),($1,'Unrelated staff contact')",[academy]);
  // The native adapter opens a connection per command: bind identity, role and
  // assertion in the same connection so the test cannot lose its JWT context.
  await db.exec(`select set_config('request.jwt.claim.sub','${actor}',false);set role authenticated;
-  do $$begin if (select count(*) from academy_contacts)<>2 then raise exception 'Existing healthy student peer-read bypass not reproduced';end if;end;$$;reset role;`);checks++;
+  do $$begin if (select count(*) from academy_contacts)<>2 then raise exception 'Existing healthy teacher peer-read bypass not reproduced';end if;end;$$;reset role;`);checks++;
  // Explicit column/public grants test the paths which a table-only REVOKE
  // would miss. The installed frontend does not require either path.
  await db.exec('grant select(private_value),update(private_value) on academy_contacts to public;');
- await db.exec(readFileSync('supabase/migrations/20261014110000_academy_gateway_table_boundary.sql','utf8'));
+ const migration=readFileSync('supabase/migrations/20261014110000_academy_gateway_table_boundary.sql','utf8');
+ if(native){
+  // ACL writes contend on the catalog row, rather than normal record locks.
+  // Lock only this newly-created fixture table's catalog row, without editing it.
+  const held=await db.holdTransaction("select oid from pg_class where oid='academy_staff_branch_assignments'::regclass for update",'acl-busy-last-table');
+  try{
+   const blocked=db.independent(migration,'acl-bounded-migration');blocked.catch(()=>{});
+   await db.waitForLock('acl-bounded-migration');checks++;
+   await assert.rejects(()=>blocked,/lock timeout/i);checks++;
+  }finally{await held.rollback();}
+  // Earlier table revocations must roll back with the blocked final table.
+  for(const table of tables){assert.equal((await query("select has_table_privilege('authenticated',$1,'SELECT') allowed",['public.'+table]))[0].allowed,true);checks++;}
+ }
+ await db.exec(migration);
  for(const table of tables){
   for(const role of ['anon','authenticated']){
    for(const privilege of ['SELECT','INSERT','UPDATE','DELETE']){

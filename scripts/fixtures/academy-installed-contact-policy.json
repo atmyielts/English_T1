@@ -48,5 +48,6 @@
         "with_check": "( SELECT account_is_open() AS account_is_open)"
       }
     ]
-  }
+  },
+  "tenantMembershipRoleCheck": "CHECK ((\"role\" = ANY (ARRAY['owner'::\"text\", 'admin'::\"text\", 'member'::\"text\", 'teacher'::\"text\", 'counselor'::\"text\"])))"
 }
