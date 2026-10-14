@@ -4,6 +4,7 @@ import {PGlite} from '@electric-sql/pglite';
 import {createNativeSessionDb,bindSql} from './lib/academy-session-test-db.mjs';
 const native=process.argv.includes('--native'),rest=process.argv.includes('--rest');
 const invitations=process.argv.includes('--invitations');
+const legacyImport=process.argv.includes('--legacy-import');
 if(rest&&!native)throw Error('REST qualification requires an owned native database');
 const db=native?await createNativeSessionDb():new PGlite();let checks=0,serial=100,key=0,rpc;
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -43,6 +44,13 @@ try{
  const authority=readFileSync('supabase/migrations/20261013155000_academy_current_authority_directory.sql','utf8');
  await db.exec(authority.slice(0,authority.indexOf('create or replace function public.academy_directory_role_has')));
  await db.exec(migration);
+ if(legacyImport){
+  await db.exec(`create table academy_import_jobs(id uuid primary key default gen_random_uuid(),academy_id uuid not null,import_type text not null,source_filename text not null,status text not null default 'draft',column_mapping jsonb not null default '{}',total_rows integer not null default 0,valid_rows integer not null default 0,invalid_rows integer not null default 0,committed_rows integer not null default 0,error_summary jsonb not null default '[]',idempotency_key text not null,created_by uuid,committed_by uuid,created_at timestamptz default now(),completed_at timestamptz,import_mode text not null default 'dry_run',duplicate_strategy text not null default 'reject',rollback_status text not null default 'not_requested',rollback_reason text,rolled_back_by uuid,rolled_back_at timestamptz,unique(academy_id,id),unique(academy_id,idempotency_key));
+   create table academy_import_rows(id uuid primary key default gen_random_uuid(),academy_id uuid not null,import_job_id uuid not null,row_number integer not null,raw_data jsonb not null,mapped_data jsonb not null,validation_status text not null default 'pending',validation_errors jsonb not null default '[]',target_id uuid,target_table text,duplicate_key text,created_at timestamptz default now(),unique(academy_id,id),unique(academy_id,import_job_id,row_number),foreign key(academy_id,import_job_id) references academy_import_jobs(academy_id,id));
+   create table academy_import_effects(id uuid primary key default gen_random_uuid(),academy_id uuid not null,import_job_id uuid not null,import_row_id uuid not null,target_table text not null,target_id uuid not null,effect_type text not null,rollback_strategy text not null,before_snapshot jsonb,after_snapshot jsonb not null,rollback_status text not null default 'pending',rollback_reference_id uuid,rollback_error text,created_at timestamptz default now(),rolled_back_at timestamptz,unique(academy_id,id),unique(academy_id,import_row_id),foreign key(academy_id,import_job_id) references academy_import_jobs(academy_id,id),foreign key(academy_id,import_row_id) references academy_import_rows(academy_id,id));`);
+  await db.exec(readFileSync('supabase/migrations/20261012210000_academy_legacy_import_boundary.sql','utf8'));
+  await db.exec(readFileSync('supabase/migrations/20261014140000_academy_legacy_staff_import_commands.sql','utf8'));
+ }
  if(invitations){
   await db.exec(`create table academy_access_invitations(id uuid primary key default gen_random_uuid(),academy_id uuid not null,invite_kind text not null,email text not null,role text,contact_id uuid,classroom_id uuid,guardian_relationship_id uuid,token_hash text not null unique,token_expires_at timestamptz not null,status text not null default 'pending',delivery_status text not null default 'queued',delivery_error text,sent_at timestamptz,resend_count integer not null default 0,last_resent_at timestamptz,accepted_by uuid,accepted_at timestamptz,revoked_by uuid,revoked_at timestamptz,created_by uuid,created_at timestamptz default now(),updated_at timestamptz default now(),metadata jsonb not null default '{}',unique(academy_id,id));
    create unique index academy_access_invitations_active_target_uidx on academy_access_invitations(academy_id,invite_kind,email,coalesce(classroom_id,'00000000-0000-0000-0000-000000000000'::uuid),coalesce(guardian_relationship_id,'00000000-0000-0000-0000-000000000000'::uuid),coalesce(role,'')) where status='pending';`);
@@ -258,6 +266,110 @@ try{
    eq((await q('select status from academy_role_grants where id=$1',[revokeFirst.invitation.staff_grant_id]))[0].status,'revoked');
   }
  }
- console.log(JSON.stringify({suite:'atomic-staff-access-current-scope',native,rest,invitations,checks,productionTouched:false}));
+ if(legacyImport){
+  await q("update academy_role_grants set role='admin',status='active',expires_at=null where id=$1",[scopedGrant]);
+  const stage=async(mapped,duplicates='reject')=>{
+   const jobId=id(serial++),rowId=id(serial++);
+   await q("insert into academy_import_jobs(id,academy_id,import_type,source_filename,status,idempotency_key,created_by,import_mode,duplicate_strategy) values($1,$2,'staff','owned-staff.csv','draft',$3,$4,'dry_run',$5)",[jobId,academy,'legacy-job:'+jobId,owner,duplicates]);
+   await q("insert into academy_import_rows(id,academy_id,import_job_id,row_number,raw_data,mapped_data,validation_status) values($1,$2,$3,1,$4::jsonb,$4::jsonb,'valid')",[rowId,academy,jobId,JSON.stringify(mapped)]);
+   await q("update academy_import_jobs set status='ready',total_rows=1,valid_rows=1 where id=$1",[jobId]);return {jobId,rowId};
+  };
+  const commit=async(who,row,confirm=true)=>rpc?rpc('academy_legacy_staff_import_row',{p_academy_id:academy,p_actor_id:who,p_row_id:row,p_confirm:confirm}):
+   (await q('select academy_legacy_staff_import_row($1::uuid,$2::uuid,$3::uuid,$4) result',[academy,who,row,confirm]))[0].result;
+  const mapped={email:'owned-import-staff@example.invalid',role:'teacher',classroom_ids:[classA],display_name:'Imported teacher',is_active:true};
+  const first=await stage(mapped);await denied(()=>commit(scoped,first.rowId,false),/Confirm the reviewed|400 Bad Request/i);
+  const result=await commit(scoped,first.rowId);eq(result.committed,true);eq(result.replayed,false);eq(result.effect.target_table,'academy_staff');
+  eq(result.effect.after_snapshot.staff_profile.managed_grant_id,result.effect.after_snapshot.grant.id);
+  eq((await commit(scoped,first.rowId)).replayed,true);
+  eq((await q('select count(*)::int n from academy_import_effects where import_row_id=$1',[first.rowId]))[0].n,1);
+  await denied(()=>q("update academy_import_rows set mapped_data='{}' where id=$1",[first.rowId]),/committed import source/i);
+  await denied(()=>q("update academy_import_effects set after_snapshot='{}' where import_row_id=$1",[first.rowId]),/effect evidence is immutable/i);
+  const invalid=await stage({...mapped,email:'foreign-staff-import@example.invalid',classroom_ids:[classB]});
+  await denied(()=>commit(scoped,invalid.rowId));eq((await q("select count(*)::int n from academy_staff where email='foreign-staff-import@example.invalid'"))[0].n,0);
+  const escalation=await stage({...mapped,email:'wide-staff-import@example.invalid',role:'admin',classroom_ids:[],scope_type:'academy',scope_ids:[]});
+  await denied(()=>commit(scoped,escalation.rowId));eq((await q("select count(*)::int n from academy_role_grants where email='wide-staff-import@example.invalid'"))[0].n,0);
+  const duplicate=await stage({...mapped,display_name:'Same identity, renamed'},'update_safe_fields');
+  const changed=await commit(scoped,duplicate.rowId);eq(changed.effect.effect_type,'safe_update');eq(changed.effect.after_snapshot.staff_profile.id,result.effect.target_id);
+  eq(changed.effect.after_snapshot.grant.granted_by,scoped);eq(changed.effect.after_snapshot.grant.role,'teacher');
+  await db.exec("create function reject_legacy_effect() returns trigger language plpgsql as $$begin raise exception 'Owned effect failure';end;$$;create trigger reject_legacy_effect before insert on academy_import_effects for each row execute function reject_legacy_effect();");
+  const atomic=await stage({...mapped,email:'atomic-staff-import@example.invalid'});await denied(()=>commit(owner,atomic.rowId),/Owned effect failure|400 Bad Request|500 Internal Server Error/i);
+  eq((await q("select count(*)::int n from academy_staff where email='atomic-staff-import@example.invalid'"))[0].n,0);
+  eq((await q("select count(*)::int n from academy_role_grants where email='atomic-staff-import@example.invalid'"))[0].n,0);
+  eq((await q('select validation_status from academy_import_rows where id=$1',[atomic.rowId]))[0].validation_status,'valid');
+  eq((await q('select status from academy_import_jobs where id=$1',[atomic.jobId]))[0].status,'ready');
+  await db.exec('drop trigger reject_legacy_effect on academy_import_effects;');
+  const recover=async(who,effect)=>rpc?rpc('academy_legacy_staff_import_recover',{p_academy_id:academy,p_actor_id:who,p_effect_id:effect,p_reason:'Owned correction'}):
+   (await q('select academy_legacy_staff_import_recover($1::uuid,$2::uuid,$3::uuid,$4) result',[academy,who,effect,'Owned correction']))[0].result;
+  const finish=async(who,job,recovery=false)=>rpc?rpc('academy_legacy_staff_import_finish',{p_academy_id:academy,p_actor_id:who,p_job_id:job,p_recovery:recovery,p_reason:recovery?'Owned correction':null}):
+   (await q('select academy_legacy_staff_import_finish($1::uuid,$2::uuid,$3::uuid,$4,$5) result',[academy,who,job,recovery,recovery?'Owned correction':null]))[0].result;
+  const finalized=await finish(scoped,duplicate.jobId);eq(finalized.status,'completed');eq(finalized.committed_rows,1);eq(finalized.pending_rows,0);
+  eq((await recover(scoped,changed.effect.id)).manual_required,false);
+  eq((await q('select display_name from academy_staff where id=$1',[result.effect.target_id]))[0].display_name,mapped.display_name);
+  eq((await q('select managed_grant_id from academy_staff where id=$1',[result.effect.target_id]))[0].managed_grant_id,result.effect.after_snapshot.grant.id);
+  eq((await finish(scoped,duplicate.jobId,true)).rollback_status,'completed');
+  await denied(()=>finish(scoped,duplicate.jobId),/import state|409 Conflict/i);
+  await denied(()=>commit(scoped,duplicate.rowId),/entered recovery|409 Conflict/i);
+  eq((await recover(scoped,changed.effect.id)).replayed,true);
+  const fresh=await stage({...mapped,email:'unused-staff@example.invalid'});
+  const unused=await commit(scoped,fresh.rowId);await finish(scoped,fresh.jobId);
+  eq((await recover(scoped,unused.effect.id)).manual_required,false);
+  eq((await q('select status from academy_role_grants where id=$1',[unused.effect.after_snapshot.grant.id]))[0].status,'revoked');
+  eq((await q('select is_active from academy_staff where id=$1',[unused.effect.target_id]))[0].is_active,false);
+  eq((await q('select count(*)::int n from academy_staff where id=$1',[unused.effect.target_id]))[0].n,1);
+  eq((await finish(scoped,fresh.jobId,true)).completed,1);
+  const usedStage=await stage({...mapped,email:'used-staff@example.invalid'}),used=await commit(scoped,usedStage.rowId);
+  await q('update academy_role_grants set last_used_at=now() where id=$1',[used.effect.after_snapshot.grant.id]);
+  eq((await recover(scoped,used.effect.id)).manual_required,true);
+  eq((await q('select status from academy_role_grants where id=$1',[used.effect.after_snapshot.grant.id]))[0].status,'active');
+  eq((await finish(scoped,usedStage.jobId,true)).rollback_status,'manual_required');
+  const referenceStage=await stage({...mapped,email:'referenced-staff@example.invalid'}),referenced=await commit(scoped,referenceStage.rowId);
+  await db.exec('create table owned_teacher_payroll(academy_id uuid,staff_id uuid,foreign key(academy_id,staff_id) references academy_staff(academy_id,id));');
+  await q('insert into owned_teacher_payroll values($1,$2)',[academy,referenced.effect.target_id]);
+  eq((await recover(scoped,referenced.effect.id)).manual_required,true);
+  eq((await q('select is_active from academy_staff where id=$1',[referenced.effect.target_id]))[0].is_active,true);
+  const pausedStage=await stage({...mapped,email:'paused-import@example.invalid',is_active:'нет'}),pausedImport=await commit(scoped,pausedStage.rowId);
+  eq(pausedImport.effect.after_snapshot.grant.status,'suspended');eq(pausedImport.effect.after_snapshot.staff_profile.is_active,false);
+  eq((await q('select mapped_data from academy_import_rows where id=$1',[pausedStage.rowId]))[0].mapped_data.is_active,'нет');
+  const historic=await stage({...mapped,email:'historic-import@example.invalid'});
+  const historicEffect=id(serial++);
+  await q("insert into academy_import_effects(id,academy_id,import_job_id,import_row_id,target_table,target_id,effect_type,rollback_strategy,after_snapshot,rollback_status) values($1,$2,$3,$4,'academy_staff',$5,'insert','delete_if_unreferenced','{}','completed')",[historicEffect,academy,historic.jobId,historic.rowId,result.effect.target_id]);
+  await denied(()=>recover(scoped,historicEffect),/Academy-wide|401 Unauthorized/i);
+  eq((await recover(owner,historicEffect)).replayed,true);
+  eq((await q('select rollback_status from academy_import_effects where id=$1',[historicEffect]))[0].rollback_status,'completed');
+  const olderWriter=await stage({...mapped,email:'old-edge-writer@example.invalid'}),oldEffect=id(serial++);
+  await q("insert into academy_import_effects(id,academy_id,import_job_id,import_row_id,target_table,target_id,effect_type,rollback_strategy,after_snapshot) values($1,$2,$3,$4,'academy_staff',$5,'insert','delete_if_unreferenced','{}')",[oldEffect,academy,olderWriter.jobId,olderWriter.rowId,result.effect.target_id]);
+  await q("update academy_import_rows set validation_status='committed',target_table='academy_staff',target_id=$1 where id=$2",[result.effect.target_id,olderWriter.rowId]);
+  eq((await q('select validation_status from academy_import_rows where id=$1',[olderWriter.rowId]))[0].validation_status,'committed');
+  await denied(()=>q('delete from academy_import_rows where id=$1',[olderWriter.rowId]),/committed import source/i);
+  const removable=await stage({...mapped,email:'uncommitted-source@example.invalid'});
+  await q('delete from academy_import_rows where id=$1',[removable.rowId]);eq((await q('select count(*)::int n from academy_import_rows where id=$1',[removable.rowId]))[0].n,0);
+  const failureStage=await stage({...mapped,email:'recovery-audit@example.invalid'}),failure=await commit(scoped,failureStage.rowId);
+  await db.exec("create function reject_recovery_audit() returns trigger language plpgsql as $$begin if new.action='import.staff_row_recovered' then raise exception 'Owned recovery audit failure';end if;return new;end;$$;create trigger reject_recovery_audit before insert on academy_audit_events for each row execute function reject_recovery_audit();");
+  await denied(()=>recover(scoped,failure.effect.id),/Owned recovery audit failure|400 Bad Request|500 Internal Server Error/i);
+  eq((await q('select status from academy_role_grants where id=$1',[failure.effect.after_snapshot.grant.id]))[0].status,'active');
+  eq((await q('select rollback_status from academy_import_effects where id=$1',[failure.effect.id]))[0].rollback_status,'pending');
+  await db.exec('drop trigger reject_recovery_audit on academy_audit_events;');
+  const resumable=await stage({...mapped,email:'resume-staff@example.invalid'});
+  eq((await finish(scoped,resumable.jobId)).pending_rows,1);
+  eq((await commit(scoped,resumable.rowId)).committed,true);
+  eq((await finish(scoped,resumable.jobId)).status,'completed');
+  for(const role of ['anon','authenticated']){
+   await db.exec('set role '+role);await denied(()=>q('select academy_legacy_staff_import_recover($1::uuid,$2::uuid,$3::uuid,$4)',[academy,owner,failure.effect.id,'Owned correction']),/permission/i);await db.exec('reset role');
+  }
+  if(native){
+   // Edits first: the transaction may save staff temporarily but must roll it
+   // back when its exact reviewed source changes while it waits on the row.
+   const raced=await stage({...mapped,email:'source-race@example.invalid'});
+   const edit=await db.holdTransaction(bindSql("update academy_import_rows set mapped_data=mapped_data||'{\"display_name\":\"Changed review\"}'::jsonb where id=$1",[raced.rowId]),'legacy-edit-first');
+   const pending=db.independent(bindSql('select academy_legacy_staff_import_row($1::uuid,$2::uuid,$3::uuid,true)',[academy,scoped,raced.rowId]),'legacy-import-waiting');pending.catch(()=>{});
+   await db.waitForLock('legacy-import-waiting');checks++;await edit.commit();await denied(()=>pending,/source changed/i);
+   eq((await q("select count(*)::int n from academy_staff where email='source-race@example.invalid'"))[0].n,0);
+   eq((await q('select count(*)::int n from academy_import_effects where import_row_id=$1',[raced.rowId]))[0].n,0);
+   const accepted=await db.holdTransaction(bindSql('select academy_legacy_staff_import_row($1::uuid,$2::uuid,$3::uuid,true)',[academy,scoped,raced.rowId]),'legacy-import-first');
+   const lateEdit=db.independent(bindSql("update academy_import_rows set mapped_data='{}' where id=$1",[raced.rowId]),'legacy-late-edit');lateEdit.catch(()=>{});
+   await db.waitForLock('legacy-late-edit');checks++;await accepted.commit();await denied(()=>lateEdit,/committed import source/i);
+  }
+ }
+ console.log(JSON.stringify({suite:'atomic-staff-access-current-scope',native,rest,invitations,legacyImport,checks,productionTouched:false}));
 }catch(error){console.error(JSON.stringify({suite:'atomic-staff-access-current-scope',checks,message:error.message,code:error.code}));process.exitCode=1;}
 finally{await db.close();}

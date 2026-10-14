@@ -335,7 +335,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   academic: 'Academic Operations',
   rooms: 'Room timetable',
   relationships: 'Guardians & Parents',
-  intelligence: 'Intelligence',
+  intelligence: 'Follow-ups',
   operations: 'Operations Finance',
   os: 'Daily operations',
   contacts: 'Contacts',
@@ -5469,7 +5469,7 @@ const App = () => {
           ) : null}
 
           {officeView === 'intelligence' && officeCanOpen('intelligence') ? (
-            <IntelligenceOperationsView academyId={academyId} formatDate={formatDate} />
+            <IntelligenceOperationsView key={`${academyId}:${me?.user?.id ?? ''}`} academyId={academyId} actorId={me?.user?.id ?? ''} formatDate={formatDate} />
           ) : null}
           {officeView === 'imports' && officeCanOpen('imports') && me?.user.id ? (
             <StudentImportView key={`${academyId}:${me.user.id}`} academyId={academyId} actorId={me.user.id} />

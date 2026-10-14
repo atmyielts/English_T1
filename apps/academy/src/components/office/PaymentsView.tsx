@@ -96,8 +96,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (grantError) {
       return {
         key: 'grant_mismatch',
-        label: translate('Grant mismatch'),
-        detail: translate('Provider marked this paid, but the entitlement grant needs operator review.'),
+        label: translate('Payment received, access needs review'),
+        detail: translate('Payment was confirmed, but learning access needs a staff check.'),
         className: 'status status--bad',
       };
     }
@@ -132,8 +132,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (providerStage === 'complete_duplicate' || metadataHasValue(payment.metadata, 'duplicate_of_payment_id')) {
       return {
         key: 'duplicate',
-        label: translate('Duplicate callback'),
-        detail: translate('Click sent a duplicate completion signal. Keep the original payment as the source of truth.'),
+        label: translate('Repeated payment confirmation'),
+        detail: translate('Click confirmed the same payment again. Do not record a second payment.'),
         className: 'status status--pending',
       };
     }
@@ -141,8 +141,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     if (!payment.provider_transaction_id || !platformPaymentId) {
       return {
         key: 'needs_attention',
-        label: translate('Provider mismatch'),
-        detail: translate('Click checkout is missing a transaction link. Investigate before granting access.'),
+        label: translate('Payment details need review'),
+        detail: translate('This payment could not be matched to a Click transaction. Check it before giving access.'),
         className: 'status status--bad',
       };
     }
@@ -150,7 +150,7 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
     return {
       key: 'awaiting_provider',
       label: translate('Awaiting Click'),
-      detail: translate('Checkout exists. Access applies automatically after provider confirmation.'),
+      detail: translate('Waiting for Click to confirm payment. Access will open automatically after confirmation.'),
       className: 'status status--pending',
     };
   }
@@ -158,8 +158,8 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   if (status === 'pending') {
     return {
       key: 'manual',
-      label: translate('Manual settlement'),
-      detail: translate('Legacy or offline payment can be applied by finance staff.'),
+      label: translate('Cash or bank payment'),
+      detail: translate('Finance staff can confirm a cash or bank payment here.'),
       className: 'status status--pending',
     };
   }
@@ -167,7 +167,7 @@ const paymentReconciliation = (payment: TeacherStudioPayment): {
   return {
     key: 'needs_attention',
     label: translate('Needs review'),
-    detail: translate('Status does not match a known settlement path.'),
+    detail: translate('We could not confirm this payment’s status. Ask finance staff to check it.'),
     className: 'status status--bad',
   };
 };
@@ -294,9 +294,9 @@ export const PaymentsView = ({
             <div className="metric-row"><span>{translate("Failed")}</span><strong>{summary.failed}</strong></div>
             <div className="metric-row"><span>{translate("Canceled")}</span><strong>{summary.canceled}</strong></div>
             <div className="metric-row"><span>{translate("Awaiting Click")}</span><strong>{summary.awaitingProvider}</strong></div>
-            <div className="metric-row"><span>{translate("Manual settlement")}</span><strong>{summary.manual}</strong></div>
-            <div className="metric-row"><span>{translate("Duplicate callback")}</span><strong>{summary.duplicate}</strong></div>
-            <div className="metric-row"><span>{translate("Grant mismatch")}</span><strong>{summary.grantMismatch}</strong></div>
+            <div className="metric-row"><span>{translate("Cash or bank payment")}</span><strong>{summary.manual}</strong></div>
+            <div className="metric-row"><span>{translate("Repeated payment confirmation")}</span><strong>{summary.duplicate}</strong></div>
+            <div className="metric-row"><span>{translate("Payment received, access needs review")}</span><strong>{summary.grantMismatch}</strong></div>
             <div className="metric-row"><span>{translate("Needs attention")}</span><strong>{summary.needsAttention}</strong></div>
           </div>
           </details>
@@ -313,9 +313,9 @@ export const PaymentsView = ({
             <option value="failed">{translate("Failed")}</option>
             <option value="canceled">{translate("Canceled")}</option>
             <option value="awaiting_provider">{translate("Awaiting Click")}</option>
-            <option value="manual">{translate("Manual settlement")}</option>
-            <option value="duplicate">{translate("Duplicate callback")}</option>
-            <option value="grant_mismatch">{translate("Grant mismatch")}</option>
+            <option value="manual">{translate("Cash or bank payment")}</option>
+            <option value="duplicate">{translate("Repeated payment confirmation")}</option>
+            <option value="grant_mismatch">{translate("Payment received, access needs review")}</option>
             <option value="needs_attention">{translate("Needs attention")}</option>
           </select></label>
           <label><span className="sr-only">{translate("Payments from date")}</span><input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} /></label>

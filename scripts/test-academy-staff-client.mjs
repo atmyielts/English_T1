@@ -56,4 +56,15 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  const c=client(session(actor),undefined,()=>new Response('{"error":"Not found"}',{status:404}));
  await assert.rejects(()=>c.staffRequest(academy,'upsert_staff',{},actor),e=>e.status===503&&e.retryable);checks++;
 }
+{
+ const progress={import_job_id:id(4),status:'committing',rollback_status:'available',committed_rows:25,failed_rows:0,pending_rows:2,recovery_pending:25,completed:0,manual_required:0,failed:0};
+ let count=0;const c=client(session(actor),undefined,()=>new Response(JSON.stringify(count++===0?{...progress,import_job_id:id(5)}:progress),{status:207}));
+ const payload={import_job_id:id(4),confirm_commit:true};
+ await assert.rejects(()=>c.staffRequest(academy,'commit_import_job',payload,actor),e=>e.status===503&&e.retryable);
+ const saved=await c.staffRequest(academy,'commit_import_job',payload,actor);assert.equal(saved.pending_rows,2);
+ const first=JSON.parse(c.calls[0][1].body),second=JSON.parse(c.calls[1][1].body);
+ assert.equal(first.action,'staff_import_command');assert.equal(first.command,'commit_import_job');assert.equal(first.idempotency_key,second.idempotency_key);checks++;
+ const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify(progress));});
+ await assert.rejects(()=>switched.staffRequest(academy,'commit_import_job',payload,actor),e=>e.status===409);checks++;
+}
 console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks,productionTouched:false}));

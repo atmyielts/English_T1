@@ -1764,7 +1764,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       command?: string;
       academy_id?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command'].includes(postedBody.action??'')
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     options.actionLog?.push(action);
@@ -2198,7 +2198,7 @@ test.describe('Student importer workflow',()=>{
   const stored=await page.evaluate(()=>Object.values(sessionStorage).join(' '));expect(stored).not.toContain('+998911234567');expect(stored).not.toContain('Student 0');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await mkdir(resolve('.temp/student-import'),{recursive:true});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:resolve(`.temp/student-import/importer-${width}.png`),fullPage:true});
-  await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import receipt'})).toBeVisible();
+  await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();
   expect(calls.filter(b=>b.action==='student_import_commit')).toHaveLength(1);
  });
  test('student importer resumes partial upload after reload using the same request key',async({page})=>{
@@ -2217,11 +2217,11 @@ test.describe('Student importer workflow',()=>{
  });
  test('student importer resolves a lost commit response without a second commit',async({page})=>{
   const calls=await setup(page,{lostCommit:true});await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await page.getByRole('button',{name:'Confirm import',exact:true}).click();
-  await expect(page.getByRole('alert')).toContainText('response was lost');await page.getByRole('button',{name:'Check status',exact:true}).click();await expect(page.getByRole('heading',{name:'Import receipt'})).toBeVisible();expect(calls.filter(b=>b.action==='student_import_commit')).toHaveLength(1);
+  await expect(page.getByRole('alert')).toContainText('response was lost');await page.getByRole('button',{name:'Check status',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();expect(calls.filter(b=>b.action==='student_import_commit')).toHaveLength(1);
  });
  test('student importer requires another confirmation when the reviewed data changed',async({page})=>{
   const calls=await setup(page,{changedPreview:true});await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await page.getByRole('button',{name:'Confirm import',exact:true}).click();
-  await expect(page.getByRole('status')).toContainText('preview changed');await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import receipt'})).toBeVisible();
+  await expect(page.getByRole('status')).toContainText('preview changed');await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();
   const attempts=calls.filter(b=>b.action==='student_import_commit');expect(attempts.map(b=>b.preview_hash)).toEqual(['a'.repeat(64),'b'.repeat(64)]);expect(attempts[0].key).toBe(attempts[1].key);
  });
  test('student importer does not offer a financial commit without approval',async({page})=>{
@@ -4256,24 +4256,24 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
     await expect(
       page.getByRole("heading", {
-        name: "Retention, renewal, and owner intelligence",
+        name: "Students and follow-ups",
       }),
     ).toBeVisible();
     await expect(page.getByText("500,000 UZS").first()).toBeVisible();
     await page.getByRole("button", { name: "Retention", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Versioned risk definition" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Risk evidence" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "When to flag a student" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Students who may need help" })).toBeVisible();
     await expect(page.getByText(/Ali Karimov.*high.*74\/100/i)).toBeVisible();
-    await page.getByRole("button", { name: "Action queue" }).click();
-    await expect(page.getByRole("heading", { name: "Unified SLA-aware action queue" })).toBeVisible();
+    await page.getByRole("button", { name: "Tasks" }).click();
+    await expect(page.getByRole("heading", { name: "Tasks and deadlines" })).toBeVisible();
     await expect(page.getByText("Retention risk requires intervention")).toBeVisible();
     await page.getByRole("button", { name: "Imports" }).click();
-    await expect(page.getByRole("heading", { name: "Governed CSV/XLSX migration" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Import from Excel or CSV" })).toBeVisible();
     await page.getByText("Or paste CSV data").click();
     await page.getByRole("button", { name: "Load pasted CSV" }).click();
-    await expect(page.getByRole("heading", { name: "Column mapping" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Match columns" })).toBeVisible();
     await expect(page.getByText("Source preview — first five rows")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Row validation evidence" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Rows to review" })).toBeVisible();
   });
 
   test("manager import choices preserve staff and finance authority on a phone", async ({ page }) => {
@@ -4285,6 +4285,47 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads','guardians','classrooms','enrollments']);
     await expect(type).toHaveValue('contacts');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  });
+
+  test('staff import resumes batches and reports retained recovery records on desktop and phone',async({page})=>{
+    const jobId='00000000-0000-4000-8000-000000000903',commands:Record<string,unknown>[]=[];
+    let saved=0;
+    await seedSessionCookie(page,'owner-user');
+    await mockAcademyEdge(page,'owner',{respond:async body=>{
+      if(body.action==='business_intelligence')return {...businessIntelligence,access:ownerAccess,import_jobs:[{id:jobId,import_type:'staff',source_filename:'staff.csv',status:saved===0?'ready':saved===1?'committing':'completed',total_rows:27,valid_rows:27,invalid_rows:0,committed_rows:saved===0?0:saved===1?25:27,rollback_status:saved===0?'not_requested':'available'}],import_rows:[],import_effects:[]};
+      if(body.action==='commit_import_job'||body.action==='rollback_import_job'){
+        commands.push(body);if(body.action==='commit_import_job')saved++;
+        return {import_job_id:jobId,status:saved===1?'committing':'completed',rollback_status:body.action==='rollback_import_job'?'manual_required':'available',committed_rows:saved===1?25:27,failed_rows:0,pending_rows:saved===1?2:0,recovery_pending:body.action==='rollback_import_job'?0:27,completed:body.action==='rollback_import_job'?26:0,manual_required:body.action==='rollback_import_job'?1:0,failed:0};
+      }
+      return undefined;
+    }});
+    await page.setViewportSize({width:1440,height:1000});
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
+    await page.getByRole('button',{name:'Imports',exact:true}).click();
+    await page.getByRole('button',{name:'Save checked rows',exact:true}).click();
+    await expect(page.getByText('Staff import batch saved. Continue to import the remaining rows.',{exact:true})).toBeVisible();
+    await expect(page.getByText('Import saved.',{exact:true})).toHaveCount(0);
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toBeEnabled();
+    await page.screenshot({path:test.info().outputPath('staff-import-batch-desktop.png'),fullPage:true});
+    await page.setViewportSize({width:390,height:844});
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    for(const width of [320,768,1024,1440]){
+      await page.setViewportSize({width,height:1000});
+      const action=page.getByRole('button',{name:'Continue import',exact:true});
+      const box=await action.boundingBox();
+      expect(box).not.toBeNull();expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width);
+      expect(await action.evaluate(node=>node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    }
+    await page.setViewportSize({width:390,height:844});
+    await page.screenshot({path:test.info().outputPath('staff-import-batch-phone.png'),fullPage:true});
+    await page.getByRole('button',{name:'Continue import',exact:true}).click();
+    await expect(page.getByText('Import saved.',{exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toHaveCount(0);
+    await page.getByRole('button',{name:'Undo import',exact:true}).click();
+    await expect(page.getByText('Used or changed staff records were retained for review.',{exact:true})).toBeVisible();
+    expect(commands).toHaveLength(3);expect(commands.every(body=>body.import_job_id===jobId)).toBe(true);
   });
 
   test("owner retains all authorized import choices", async ({ page }) => {
