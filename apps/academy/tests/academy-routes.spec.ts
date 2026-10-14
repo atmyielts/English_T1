@@ -30,10 +30,68 @@ test('Academy imports use plain wording, hide internal IDs and keep phone action
   await expect(page.getByText('Import saved.',{exact:true})).toHaveCount(0);
 });
 
+test('staff edits preserve account identity, access resources and precise expiry on desktop and phone',async({page})=>{
+ const commands:Record<string,unknown>[]=[],staffId='00000000-0000-4000-8000-000000000901';
+ const person={id:staffId,academy_id:'academy-route-smoke',user_id:'teacher-user',email:'teacher-scope@example.test',display_name:'Scope teacher',
+  role:'teacher',source:'grant',is_active:true,status:'active',scope_type:'classrooms',scope_ids:['classroom-route-smoke'],classroom_ids:['classroom-route-smoke'],
+  expires_at:'2026-12-31T13:45:00.000Z',created_at:'2026-10-01T08:00:00Z'};
+ await seedSessionCookie(page,'owner-user');
+ await mockAcademyEdge(page,'owner',{actionOverrides:{staff:{staff:[person]}},respond:async body=>{
+  if(body.action==='upsert_staff'){commands.push(body);return {staff:{...person,role:body.staff_role,email:body.staff_email}};}
+  return undefined;
+ }});
+ await page.setViewportSize({width:1440,height:1000});
+ await page.goto('/academy/admin/os?academy_id=academy-route-smoke');
+ await page.getByRole('button',{name:/^More tools/}).click();
+ await page.getByRole('button',{name:'Growth',exact:true}).click();
+ const panel=page.locator('.panel').filter({has:page.getByRole('heading',{name:'Role grants',exact:true})});
+ await panel.getByRole('button',{name:'Edit',exact:true}).click();
+ await panel.getByRole('combobox',{name:'Role',exact:true}).selectOption('admin');
+ await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toHaveValue('classrooms');
+ await expect(panel.getByRole('checkbox',{name:'IELTS Evening A'})).toBeChecked();
+ await panel.getByLabel('Email',{exact:true}).fill('alias-scope@example.test');
+ await panel.screenshot({path:test.info().outputPath('staff-scope-desktop.png')});
+ await panel.getByRole('button',{name:'Update grant',exact:true}).click();
+ await expect.poll(()=>commands.length).toBe(1);
+ expect(commands[0]).toMatchObject({id:staffId,staff_email:'alias-scope@example.test',staff_role:'admin',scope_type:'classrooms',scope_ids:['classroom-route-smoke'],expires_at:person.expires_at});
+ expect(typeof commands[0].idempotency_key).toBe('string');
+ await page.setViewportSize({width:390,height:844});
+ await panel.getByRole('button',{name:'Edit',exact:true}).click();
+ await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await panel.screenshot({path:test.info().outputPath('staff-scope-phone.png')});
+});
+
 type StaffPersona = "owner" | "admin" | "center_admin" | "branch_manager" | "manager" | "counselor" | "receptionist" | "salesperson" | "cashier" | "accountant" | "payroll_officer" | "parent_liaison" | "teacher" | "assistant";
 type Persona = StaffPersona | "student" | "guardian";
 
 const academyId = "academy-route-smoke";
+
+test('staff invitation retry keeps its delivery identity and never reports an unconfirmed email as sent',async({page})=>{
+ const commands:Record<string,unknown>[]=[],invitationId='00000000-0000-4000-8000-000000000902';
+ await seedSessionCookie(page,'owner-user');
+ await mockAcademyEdge(page,'owner',{respond:async body=>{
+  if(body.action==='create_access_invitation'){
+   commands.push(body);
+   return {invitation:{id:invitationId,academy_id:academyId,invite_kind:'staff',email:'owned-invite@example.test',role:'teacher',status:'pending',delivery_status:commands.length===1?'failed':'sent'},retryable:commands.length===1};
+  }
+  return undefined;
+ }});
+ await page.goto(`/academy/admin/services?academy_id=${academyId}`);
+ await page.getByRole('button',{name:'Access Invitations and learner preview',exact:true}).click();
+ await page.getByRole('button',{name:'Send invitation',exact:true}).click();
+ const form=page.locator('form').filter({has:page.getByRole('button',{name:'Send invitation',exact:true})});
+ await form.getByRole('combobox',{name:'Invite for',exact:true}).selectOption('staff');
+ await form.getByRole('combobox',{name:'Assigned classroom',exact:true}).selectOption('classroom-route-smoke');
+ await form.getByLabel('Email',{exact:true}).fill('owned-invite@example.test');
+ await form.getByRole('button',{name:'Send invitation',exact:true}).click();
+ await expect(page.getByText('Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toHaveCount(0);
+ await form.getByRole('button',{name:'Send invitation',exact:true}).click();
+ await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toBeVisible();
+ expect(commands).toHaveLength(2);expect(commands[1].idempotency_key).toBe(commands[0].idempotency_key);
+ expect(commands[1]._delivery_token).toBe(commands[0]._delivery_token);expect(commands[1].classroom_ids).toEqual(['classroom-route-smoke']);
+});
 const classroomId = "classroom-route-smoke";
 const studentContactId = "contact-route-smoke";
 
@@ -1644,7 +1702,7 @@ const json = (body: unknown) => ({
 
 const seedSessionCookie = async (page: Page, userId: string) => {
   const session = {
-    access_token: "route-smoke-access-token",
+    access_token: `test.${Buffer.from(JSON.stringify({sub:userId})).toString('base64url')}.test`,
     token_type: "bearer",
     expires_in: 3600,
     expires_at: Math.floor(Date.now() / 1000) + 3600,
@@ -1729,10 +1787,13 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       );
     }
 
-    const body = route.request().postDataJSON() as {
+    const postedBody = route.request().postDataJSON() as {
       action?: string;
+      command?: string;
       academy_id?: string;
     } | null;
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command'].includes(postedBody.action??'')
+      ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     options.actionLog?.push(action);
     const customResponse = await options.respond?.(body ?? {});
@@ -2112,6 +2173,96 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
   });
 };
 
+test.describe('Student importer workflow',()=>{
+ const branchId='00000000-0000-4000-8000-000000000001';
+ const jobId='00000000-0000-4000-8000-000000000002';
+ type ImportBody={action?:string;key?:string;settings?:Record<string,unknown>;rows?:Record<string,unknown>[];offset?:number;seal?:boolean;reason?:string;preview_hash?:string};
+ const setup=async(page:Page,config:{partial?:boolean;lostCommit?:boolean;changedPreview?:boolean;finance?:boolean;enabled?:boolean}={})=>{
+  await seedSessionCookie(page,'receptionist-user');
+  const access=productionAccess('receptionist');
+  const enabled={...access,permissions:{...access.permissions,importStudents:config.enabled!==false}};
+  await mockAcademyEdge(page,'receptionist',{respond:async body=>{
+   if(body.action==='academies')return {academies:[{...academy('receptionist'),access:enabled}]};
+   if(body.action==='summary')return {academy_id:academyId,access:enabled,counts:{contacts:0,classrooms:0,offers:0,active_entitlements:0,open_alerts:0}};
+  }});
+  let job:Record<string,unknown>|null=null;let stageFailure=config.partial;let previewChanged=config.changedPreview;
+  const calls:ImportBody[]=[],source:Record<string,unknown>[]=[];
+  const result=()=>({job,permissions:{can_commit:job?.status==='validated'&&config.finance!==false,can_recover:job?.status==='completed'&&config.finance!==false,scope_valid:true,finance_approved:config.finance!==false},rows:source.slice(0,25).map((row,i)=>({row_number:i+1,source:row,mapped:{full_name:row.Name,phone:row.Phone,balance:row.Balance,group_name:row.Group},normalized:{full_name:row.Name,phone:row.Phone,group_name:row.Group,ledger_amount:'-800000'},errors:[],finance_approved:config.finance!==false})),has_more:source.length>25});
+  await page.route('**/functions/v1/academy?action=student_import_*',async route=>{
+   const body=route.request().postDataJSON() as ImportBody;calls.push(body);
+   if(body.action==='student_import_options')return route.fulfill(json({branches:[{id:branchId,name:'Central branch',timezone:'Asia/Tashkent',currency:'UZS',can_create_groups:false}],groups:[{id:'group-1',branch_id:branchId,name:'IELTS 1'}],limits:{rows:5000,batch_rows:200,batch_bytes:2097152}}));
+   if(body.action==='student_import_list')return route.fulfill(json({jobs:job?[job]:[],has_more:false,cursor:null}));
+   if(body.action==='student_import_lookup')return route.fulfill(json(job?{...result(),found:true}:{found:false}));
+   if(body.action==='student_import_stage'){
+    if(body.offset===200&&stageFailure){stageFailure=false;return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Upload connection interrupted.',retryable:true})});}
+    source.push(...body.rows!);
+    job={id:jobId,academy_id:academyId,branch_id:branchId,created_by:'receptionist-user',idempotency_key:body.key,settings:body.settings,expected_rows:body.settings!.expected_rows,staged_rows:source.length,status:body.seal?'sealed':'uploading',created_at:'2026-10-13T08:00:00Z'};
+   }
+   if(body.action==='student_import_preview')job={...job,status:'validated',validation:{total_rows:source.length,invalid_rows:0,create_rows:source.length,reuse_rows:0,skipped_rows:0,new_groups:0,balance_rows:source.length,opening_credit:'800000',opening_debt:'0',currency:'UZS',preview_hash:'a'.repeat(64),ready:true,requires_finance_approval:config.finance===false}};
+   if(body.action==='student_import_commit'){
+    if(previewChanged){previewChanged=false;job={...job,validation:{...(job!.validation as object),preview_hash:'b'.repeat(64)}};return route.fulfill(json({...result(),preview_changed:true}));}
+    job={...job,status:'completed',receipt:{applied_rows:source.length,skipped_rows:0,contacts:source.length,groups:0,memberships:source.length,guardians:0,parent_links:0,opening_balance_entries:source.length,messages_sent:0,payment_collected:false}};
+    if(config.lostCommit)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'The import response was lost.',retryable:true})});
+   }
+   if(body.action==='student_import_recover')job={...job,status:'recovery_review',recovery_receipt:{corrected_effects:2,manual_review_effects:1,missing_effects:0,reversal_entries:1}};
+   if(body.action==='student_import_cancel')job={...job,status:'cancelled'};
+   return route.fulfill(json(result()));
+  });
+  await page.goto(`/academy/office/imports?academy_id=${academyId}`);
+  return calls;
+ };
+ const file=(count=1)=>({name:'students.csv',mimeType:'text/csv',buffer:Buffer.from('Name,Phone,Parent Phone,Group,Balance,Join Date\n'+Array.from({length:count},(_,i)=>`Student ${i},+99890${String(i).padStart(7,'0')},+998911234567,IELTS 1,800000,2026-10-01`).join('\n'))});
+ for(const width of [1440,390])test(`student importer maps and reviews a spreadsheet at ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:1000});const calls=await setup(page);
+  await expect(page.locator('.student-import')).toBeVisible();
+  await page.locator('.student-import input[type=file]').setInputFiles(file());
+  await expect(page.locator('.student-import__mapping')).toBeVisible();
+  await expect(page.locator('.student-import__mapping').getByLabel(/Student phone/)).toHaveValue('Phone');
+  await page.getByRole('button',{name:'Upload & review',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();
+  await expect(page.locator('.student-import__balances .is-credit')).toContainText('800,000');
+  const staged=calls.find(b=>b.action==='student_import_stage')!;
+  expect(staged.settings).toMatchObject({branch_id:branchId,balance_convention:'credit_positive',create_missing_groups:false});
+  const stored=await page.evaluate(()=>Object.values(sessionStorage).join(' '));expect(stored).not.toContain('+998911234567');expect(stored).not.toContain('Student 0');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await mkdir(resolve('.temp/student-import'),{recursive:true});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:resolve(`.temp/student-import/importer-${width}.png`),fullPage:true});
+  await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();
+  expect(calls.filter(b=>b.action==='student_import_commit')).toHaveLength(1);
+ });
+ test('student importer resumes partial upload after reload using the same request key',async({page})=>{
+  const calls=await setup(page,{partial:true});await page.locator('.student-import input[type=file]').setInputFiles(file(201));await page.getByRole('button',{name:'Upload & review',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('Upload connection interrupted.');await page.reload();
+  await expect(page.getByRole('heading',{name:'Resume your upload'})).toBeVisible();
+  await page.locator('.student-import input[type=file]').setInputFiles(file(1));await expect(page.getByRole('alert')).toContainText('same original file');
+  await page.locator('.student-import input[type=file]').setInputFiles(file(201));await page.getByRole('button',{name:'Resume upload',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();
+  const batches=calls.filter(b=>b.action==='student_import_stage');expect(batches.map(b=>b.offset)).toEqual([0,200,200]);expect(new Set(batches.map(b=>b.key)).size).toBe(1);
+ });
+ test('student importer reads real Excel cells and converts dates before upload',async({page})=>{
+  const calls=await setup(page);await page.locator('.student-import input[type=file]').setInputFiles(resolve('tests/fixtures/student-import.xlsx'));
+  await expect(page.locator('.student-import__mapping')).toBeVisible();await page.getByRole('button',{name:'Upload & review',exact:true}).click();await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();
+  const staged=calls.find(b=>b.action==='student_import_stage')!;expect(staged.rows?.[0]).toMatchObject({Name:'Excel Student',Phone:'+998901234567','Join Date':'2026-10-01'});
+ });
+ test('student importer resolves a lost commit response without a second commit',async({page})=>{
+  const calls=await setup(page,{lostCommit:true});await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await page.getByRole('button',{name:'Confirm import',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('response was lost');await page.getByRole('button',{name:'Check status',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();expect(calls.filter(b=>b.action==='student_import_commit')).toHaveLength(1);
+ });
+ test('student importer requires another confirmation when the reviewed data changed',async({page})=>{
+  const calls=await setup(page,{changedPreview:true});await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await page.getByRole('button',{name:'Confirm import',exact:true}).click();
+  await expect(page.getByRole('status')).toContainText('preview changed');await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Confirm import',exact:true}).click();await expect(page.getByRole('heading',{name:'Import summary'})).toBeVisible();
+  const attempts=calls.filter(b=>b.action==='student_import_commit');expect(attempts.map(b=>b.preview_hash)).toEqual(['a'.repeat(64),'b'.repeat(64)]);expect(attempts[0].key).toBe(attempts[1].key);
+ });
+ test('student importer does not offer a financial commit without approval',async({page})=>{
+  const calls=await setup(page,{finance:false});await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await expect(page.getByRole('button',{name:'Confirm import',exact:true})).toBeDisabled();expect(calls.some(b=>b.action==='student_import_commit')).toBe(false);
+ });
+ test('student importer retains later-used records in its correction receipt',async({page})=>{
+  await setup(page);await page.locator('.student-import input[type=file]').setInputFiles(file());await page.getByRole('button',{name:'Upload & review',exact:true}).click();await page.getByRole('button',{name:'Confirm import',exact:true}).click();await page.getByRole('button',{name:'Correct this import',exact:true}).click();await page.getByLabel('Reason for correction',{exact:true}).fill('Owned test correction');await page.getByRole('button',{name:'Confirm correction',exact:true}).click();await expect(page.locator('.student-import__message')).toContainText('1 need manual review');
+ });
+ test('student importer remains hidden until the server enables its permission',async({page})=>{
+  const calls=await setup(page,{enabled:false});await expect(page.locator('.student-import')).toHaveCount(0);expect(calls).toHaveLength(0);await expect(page.locator('.workspace-nav').getByRole('button',{name:'Import students',exact:true})).toHaveCount(0);
+ });
+});
+
 test('returning Academy entry loads access alongside the profile and reads the profile once', async ({ page }) => {
   await seedSessionCookie(page, 'owner-user');
   const actionLog: string[] = [];
@@ -2159,6 +2310,17 @@ test('startup latency benchmark with fixed backend delays', async ({ page }) => 
 });
 
 test.describe("Academy routed workspaces with mocked Edge responses", () => {
+  test('limited roster access is labelled without publishing a false member count',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{classrooms:{classrooms:[{...classroom,member_count:null,roster_visible:false}]}}});
+    await page.goto(`/academy/admin/classrooms?academy_id=${academyId}`);
+    await expect(page.getByText('Limited student access',{exact:true}).first()).toBeVisible();
+    await expect(page.getByText('0 members',{exact:true})).toHaveCount(0);
+  });
+  test('complete roster counts remain accurate when only a bounded member page is loaded',async({page})=>{
+    await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{classrooms:{classrooms:[{...classroom,member_count:600,roster_visible:true}]}}});
+    await page.goto(`/academy/admin/classrooms?academy_id=${academyId}`);
+    await expect(page.getByText('600 members',{exact:true})).toBeVisible();
+  });
   test('manual lessons use the branch clock even when the operator is in another timezone',async({page})=>{
     const commands:Record<string,unknown>[]=[];
     await seedSessionCookie(page,'owner-user');
@@ -4140,6 +4302,72 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByRole("heading", { name: "Match columns" })).toBeVisible();
     await expect(page.getByText("Source preview — first five rows")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Rows to review" })).toBeVisible();
+  });
+
+  test("manager import choices preserve staff and finance authority on a phone", async ({ page }) => {
+    await page.setViewportSize({width:390,height:844});
+    await seedSessionCookie(page,"manager-user");await mockAcademyEdge(page,"manager");
+    await page.goto(`/academy/office/intelligence?academy_id=${academyId}`);
+    await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});await expect(type).toBeVisible();
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads','guardians','classrooms','enrollments']);
+    await expect(type).toHaveValue('contacts');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  });
+
+  test('staff import resumes batches and reports retained recovery records on desktop and phone',async({page})=>{
+    const jobId='00000000-0000-4000-8000-000000000903',commands:Record<string,unknown>[]=[];
+    let saved=0;
+    await seedSessionCookie(page,'owner-user');
+    await mockAcademyEdge(page,'owner',{respond:async body=>{
+      if(body.action==='business_intelligence')return {...businessIntelligence,access:ownerAccess,import_jobs:[{id:jobId,import_type:'staff',source_filename:'staff.csv',status:saved===0?'ready':saved===1?'committing':'completed',total_rows:27,valid_rows:27,invalid_rows:0,committed_rows:saved===0?0:saved===1?25:27,rollback_status:saved===0?'not_requested':'available'}],import_rows:[],import_effects:[]};
+      if(body.action==='commit_import_job'||body.action==='rollback_import_job'){
+        commands.push(body);if(body.action==='commit_import_job')saved++;
+        return {import_job_id:jobId,status:saved===1?'committing':'completed',rollback_status:body.action==='rollback_import_job'?'manual_required':'available',committed_rows:saved===1?25:27,failed_rows:0,pending_rows:saved===1?2:0,recovery_pending:body.action==='rollback_import_job'?0:27,completed:body.action==='rollback_import_job'?26:0,manual_required:body.action==='rollback_import_job'?1:0,failed:0};
+      }
+      return undefined;
+    }});
+    await page.setViewportSize({width:1440,height:1000});
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
+    await page.getByRole('button',{name:'Imports',exact:true}).click();
+    await page.getByRole('button',{name:'Save checked rows',exact:true}).click();
+    await expect(page.getByText('Staff import batch saved. Continue to import the remaining rows.',{exact:true})).toBeVisible();
+    await expect(page.getByText('Import saved.',{exact:true})).toHaveCount(0);
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toBeEnabled();
+    await page.screenshot({path:test.info().outputPath('staff-import-batch-desktop.png'),fullPage:true});
+    await page.setViewportSize({width:390,height:844});
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    for(const width of [320,768,1024,1440]){
+      await page.setViewportSize({width,height:1000});
+      const action=page.getByRole('button',{name:'Continue import',exact:true});
+      const box=await action.boundingBox();
+      expect(box).not.toBeNull();expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width);
+      expect(await action.evaluate(node=>node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    }
+    await page.setViewportSize({width:390,height:844});
+    await page.screenshot({path:test.info().outputPath('staff-import-batch-phone.png'),fullPage:true});
+    await page.getByRole('button',{name:'Continue import',exact:true}).click();
+    await expect(page.getByText('Import saved.',{exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Continue import',exact:true})).toHaveCount(0);
+    await page.getByRole('button',{name:'Undo import',exact:true}).click();
+    await expect(page.getByText('Used or changed staff records were retained for review.',{exact:true})).toBeVisible();
+    expect(commands).toHaveLength(3);expect(commands.every(body=>body.import_job_id===jobId)).toBe(true);
+  });
+
+  test("owner retains all authorized import choices", async ({ page }) => {
+    await seedSessionCookie(page,"owner-user");await mockAcademyEdge(page,"owner");
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads','guardians','staff','classrooms','balances','enrollments','attendance']);
+  });
+
+  test("import choices honor the server permission list", async ({ page }) => {
+    await seedSessionCookie(page,"owner-user");await mockAcademyEdge(page,"owner",{actionOverrides:{business_intelligence:{...businessIntelligence,access:ownerAccess,allowed_import_types:['contacts','leads']}}});
+    await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);await page.getByRole('button',{name:'Imports',exact:true}).click();
+    const type=page.getByRole('combobox',{name:'Import type',exact:true});
+    await expect.poll(()=>type.locator('option').evaluateAll(options=>options.map(option=>(option as HTMLOptionElement).value))).toEqual(['contacts','leads']);
   });
 
   test("owner can inspect the end-to-end business platform and governed controls", async ({ page }) => {

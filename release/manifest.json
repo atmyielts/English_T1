@@ -1,29 +1,57 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-private-table-gateway-boundary",
+  "releaseId": "academy-student-import-and-retained-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261014110000_academy_gateway_table_boundary.sql"
+  "frontends": [
+    "academy"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261012160000_academy_student_import_staging.sql",
+    "20261012170000_academy_student_import_normalization.sql",
+    "20261012180000_academy_student_import_preview.sql",
+    "20261012190000_academy_student_import_commit.sql",
+    "20261012200000_academy_student_import_lifecycle.sql",
+    "20261012220000_academy_student_import_recovery.sql",
+    "20261013155000_academy_current_authority_directory.sql",
+    "20261013160000_academy_student_import_authority.sql",
+    "20261014120000_academy_staff_access_commands.sql",
+    "20261014130000_academy_staff_invitation_commands.sql",
+    "20261014140000_academy_legacy_staff_import_commands.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261014110000_academy_gateway_table_boundary.sql"
+    "pages",
+    "migration:20261012160000_academy_student_import_staging.sql",
+    "migration:20261012170000_academy_student_import_normalization.sql",
+    "migration:20261012180000_academy_student_import_preview.sql",
+    "migration:20261012190000_academy_student_import_commit.sql",
+    "migration:20261012200000_academy_student_import_lifecycle.sql",
+    "migration:20261012220000_academy_student_import_recovery.sql",
+    "migration:20261013155000_academy_current_authority_directory.sql",
+    "migration:20261013160000_academy_student_import_authority.sql",
+    "migration:20261014120000_academy_staff_access_commands.sql",
+    "migration:20261014130000_academy_staff_invitation_commands.sql",
+    "migration:20261014140000_academy_legacy_staff_import_commands.sql",
+    "function:academy"
   ],
   "manualFollowUps": [
-    "After protected exact-head CI and merge, capture current migration history and apply only this ACL migration using supabase db push --linked from an isolated linked release. Its dry run must list exactly one pending migration. Never deploy the dirty primary checkout or unrelated proctor/importer migrations. No Edge Function or secret change is required."
+    "Keep PR 248 draft until student/guardian invitations, remaining legacy multi-resource authority, the other seven legacy import types' atomic recovery/history, captured installed-schema qualification and owned hosted API/browser acceptance pass. The student importer, staff editor, staff invitations and legacy staff row/recovery commands have local qualification only. Reconcile concurrent proctor/shared-file work before merge or backend activation. Frontend wording/layout is being released separately in PR 251. Versioned staff/invitation/import command aliases prevent older backends from interpreting new semantics as old mutations.",
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these eleven reviewed authority/import/staff/invitation migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
+    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [
-    "Require verify:prod, verify:release, full CI, 90-check PGlite/native installed-policy regression and captured full-schema role/ACL qualification. No customer records are read during capture. Verify shipped clients use the service API for the seven private tables.",
-    "After activation verify table and column ACLs from read-only metadata, then use an owned confirmed QA account and isolated Academy to prove raw reads denied and supported service API contacts/classrooms/staff reads remain available. Remove owned fixtures and erase login personal data through installed retention. Do not send messages or read real customer data."
+    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge/import suite, native 5,000-student PostgREST commit/recovery/replay and contention tests, frozen-source captured-schema qualification and complete browser suite. Inspect final desktop/phone importer states. All local/synthetic evidence remains distinct from hosted customer readiness.",
+    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC/source identities, direct-table/RPC grants and owned receptionist/branch-manager/finance grant scopes. Qualify upload resumption, changed review, exact opening balances, receipt recovery, later payments/consent and logical correction without automated messages or false churn. Check runtime timeouts and actual hosted performance. Verify owned fixtures are removed."
   ],
   "rollback": {
-    "pages": "No frontend source changes. Automatic Pages builds remain commit tracked.",
-    "edge": "No Edge source change or redeploy.",
-    "migration": "Retain all records and schema. Prefer a scoped forward repair if a supported service flow fails; restoring broad browser ACLs reopens the proved peer-read exposure. A reviewed ACL restoration must use the captured exact prior table/column ACLs and protected release path."
+    "pages": "Use the prior reviewed Academy Pages deployment at main 81985da6f8a9f3e10bd400cdf70bfa83bd4d4d88.",
+    "edge": "Restore only the captured installed Academy source bundle and verify its source/runtime identity. Do not restore unrelated older repository modules.",
+    "migration": "Retain uploaded sources, original records, financial/lifecycle evidence and immutable receipts. Correct an owned import only through reviewed logical recovery with compensating ledger entries; retain changed/used records for manual review. Forward-repair command definitions or keep new entry points unavailable if needed. Never delete customer records or undo unrelated/proctor schema changes as rollback."
   }
 }

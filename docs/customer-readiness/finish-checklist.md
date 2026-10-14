@@ -13,12 +13,33 @@ their entire implementation is absent.
   with owned hosted fixtures. Evidence: `2026-10-13-legacy-import-permissions.json`.
 - PR 248 remains draft. Import review/resumption/recovery, current authority,
   directory and browser improvements are locally qualified. CI for head
-  `9297cd9f3d3b44b099496595a564977ed8c546e3` is green. Its new importer and
-  authority migrations are not activated.
-- The private-table ACL fix is separated from the importer for independent
-  protected release. Activation/live proof remain pending at this record.
-- Known staff delegation, managed-profile provenance and remaining legacy
-  multi-resource authorization/recovery issues remain release gates.
+  `cb87e246ec58e59dc1b522ce0ace1ab661150f12` is green (run 38547247773).
+  Its new importer and authority migrations are not activated. Subsequent staff
+  changes require their own protected CI and qualification.
+- PR 250 shipped the seven-table/column ACL boundary; migration installation,
+  tracked Pages deploy and owned hosted checks/cleanup passed. Evidence:
+  `2026-10-14-private-table-production.json`.
+- Atomic staff saves/revocation/physical assignments, explicit managed-profile
+  provenance, scoped staff pagination and identity-preserving browser edits are
+  locally qualified candidates. They are not deployed. Evidence:
+  `2026-10-14-staff-access-candidate.md`.
+- Staff invitation preparation, acceptance/autoacceptance, withdrawal, leased
+  delivery evidence and filtered reads are now locally qualified candidates;
+  `2026-10-14-staff-invitations-candidate.md` records evidence and limits.
+- Legacy staff import/recovery and source/effect retention now have owned local
+  transactional qualification and a resumable phone/desktop candidate. Academy
+  imports, follow-ups and payments have task-oriented English/Uzbek/Russian
+  wording. Evidence: `2026-10-14-legacy-staff-import-candidate.md`.
+- Student/guardian invitation paths, hosted legacy staff acceptance, remaining
+  multi-resource authorization and final installed-schema/hosted acceptance
+  remain release gates. The scope above is still open, with no production
+  activation of the eleven pending importer/authority/staff/invitation migrations.
+- PR 251 shipped frontend-only customer wording and responsive import history.
+  Exact-head CI 38558843952 and tracked Pages run 38559622384 passed; main is
+  `86ccdaf7b048d4e03d2b151b614cca2314441ab2`. Anonymous route/asset checks confirm
+  the published copy and 980px history breakpoint. Evidence:
+  `2026-10-14-academy-customer-copy-production.json`. This is not a declaration
+  that every signed-in/provider workflow is qualified.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

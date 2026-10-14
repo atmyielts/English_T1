@@ -33,6 +33,7 @@ import { hasAccessPermission } from '../../lib/academyAccess';
 type Lane = 'access' | 'support' | 'teaching' | 'workforce' | 'communications';
 type Props = {
   academyId: string;
+  actorId: string;
   access: TeacherStudioAccessProfile | null;
   contacts: TeacherStudioContact[];
   classrooms: TeacherStudioClassroom[];
@@ -129,7 +130,7 @@ const RecordQueue = ({
   </section>
 );
 
-export function OperationalServicesView({ academyId, access, contacts, classrooms, formatDate }: Props) {
+export function OperationalServicesView({ academyId, actorId, access, contacts, classrooms, formatDate }: Props) {
   const [lane, setLane] = useState<Lane>('support');
   const [data, setData] = useState<AcademyOperationalData>({});
   const [loadErrors, setLoadErrors] = useState<Record<string, string>>({});
@@ -582,8 +583,8 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
           classroom_id: undefined,
         });
       void run(
-        () => teacherStudioOperationalCommand(academyId, 'create_access_invitation', body),
-        'Invitation sent and tracked.',
+        () => teacherStudioOperationalCommand(academyId, 'create_access_invitation', body,actorId),
+        'Invitation saved and tracked.',
       );
     };
     return (
@@ -840,8 +841,8 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
                           () =>
                             teacherStudioOperationalCommand(academyId, 'resend_access_invitation', {
                               invitation_id: item.id,
-                            }),
-                          'Invitation link rotated and resent.',
+                            },actorId),
+                          'Invitation saved and tracked.',
                         )
                       }
                     >
@@ -856,7 +857,7 @@ export function OperationalServicesView({ academyId, access, contacts, classroom
                           () =>
                             teacherStudioOperationalCommand(academyId, 'revoke_access_invitation', {
                               invitation_id: item.id,
-                            }),
+                            },actorId),
                           'Invitation revoked.',
                         )
                       }

@@ -18,10 +18,18 @@ import {
   type AcademyTeacherFlowAccess,
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
+import {validateAcademyMutationBranches} from "./mutation-branches.ts";
+import {resolveAcademyContactSaveTarget,academyContactSavePayload,ContactSaveTargetError} from "./contact-save.ts";
+import {readAcademyScopedDirectory,ScopedDirectoryError} from "./scoped-directory.ts";
+import {runAcademyStaffCommand,readAcademyStaffDirectory,staffAccessActions,StaffAccessError} from "./staff-access.ts";
+import {runStaffInvitation,acceptStaffAccess,readStaffInvitations,StaffInvitationError} from "./staff-invitations.ts";
+import {legacyStaffCommand,LegacyStaffImportError} from "./legacy-staff-import.ts";
+import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
 import { readAcademyRoomTimetable, readAcademyRoomBranches, RoomTimetableError } from "./room-timetable.ts";
 import { generateAcademyTimetable, publicTimetableRun, TimetableGenerationError } from "./timetable-generation.ts";
+import {studentImportActions,readStudentImportRequest,handleStudentImportService,StudentImportServiceError} from "./student-import-service.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -85,6 +93,7 @@ type AcademyAccessPermissions = {
   viewStaffPerformance: boolean;
   viewRisk: boolean;
   manageImports: boolean;
+  importStudents: boolean;
   manageLocalization: boolean;
   useAcademyAI: boolean;
   manageResources: boolean;
@@ -96,17 +105,7 @@ type AcademyAccessPermissions = {
   viewAudit: boolean;
 };
 
-type MembershipRow = {
-  tenant_id: string;
-  role: string;
-  status: string;
-  source?: AcademyAccessSource;
-  staff_id?: string | null;
-  grant_id?: string | null;
-  classroom_ids?: string[];
-  branch_ids?: string[];
-  center_tenant_id?: string | null;
-};
+type MembershipRow = academyAccessPolicy.MembershipRow;
 
 type StudioBody = {
   action?: string;
@@ -544,6 +543,7 @@ export const buildAcademyPermissions = academyAccessPolicy.buildAcademyPermissio
 const academyAccessProfile = academyAccessPolicy.academyAccessProfile;
 const academyAccessHas = academyAccessPolicy.academyAccessHas;
 const academyRoleGrantToMembership = academyAccessPolicy.academyRoleGrantToMembership;
+const academyRoleGrantCanAccess = academyAccessPolicy.academyRoleGrantCanAccess;
 const normalizeAcademyRoleGrantStatus = academyAccessPolicy.normalizeAcademyRoleGrantStatus;
 const requireAcademyPermission = academyAccessPolicy.requireAcademyPermission;
 
@@ -592,6 +592,7 @@ const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
       status: String(row.status ?? "active"),
       classroom_ids: toStringArray(row.classroom_ids),
       branch_ids: toStringArray(row.branch_ids),
+      authority_entries: row.authority_entries ?? [{...row, authority_entries: undefined}],
     };
     const existing = byAcademy.get(tenantId);
     if (!existing) {
@@ -607,6 +608,7 @@ const mergeAccessRows = (rows: MembershipRow[]): MembershipRow[] => {
       classroom_ids: classroomIds,
       branch_ids: branchIds,
       center_tenant_id: normalizedRow.center_tenant_id ?? existing.center_tenant_id ?? null,
+      authority_entries: [...(existing.authority_entries ?? []), ...(normalizedRow.authority_entries ?? [])],
     });
   }
   return Array.from(byAcademy.values()).sort((a, b) => academyRoleRank(b.role) - academyRoleRank(a.role));
@@ -1064,11 +1066,12 @@ const loadMemberships = async (
   if (centerCandidateIds.length > 0) {
     const { data: centerProfiles, error: centerError } = await sb
       .from("partner_center_profiles")
-      .select("tenant_id")
+      .select("tenant_id,status")
       .in("tenant_id", centerCandidateIds);
     if (centerError) throw new Error(`Failed to load education center profiles: ${centerError.message}`);
 
-    for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null }>) {
+    for (const center of (centerProfiles ?? []) as Array<{ tenant_id: string | null; status: string | null }>) {
+      if (center.status !== "active") continue;
       const centerTenantId = normalizeText(center.tenant_id, 64);
       if (centerTenantId) centerTenantIds.add(centerTenantId);
     }
@@ -1079,9 +1082,6 @@ const loadMemberships = async (
   for (const row of membershipRows) {
     const tenant = Array.isArray((row as any).tenants) ? (row as any).tenants[0] : (row as any).tenants;
     if (!isAcademyTenantRow(tenant)) continue;
-    const metadata = toJsonObject(tenant?.metadata);
-    const parentCenterId = normalizeText(metadata.parent_center_id, 64);
-    if (parentCenterId && centerTenantIds.has(parentCenterId)) continue;
     accessRows.push({
       tenant_id: String(row.tenant_id ?? ""),
       role: normalizeAcademyRole(row.role),
@@ -1118,8 +1118,8 @@ const loadMemberships = async (
 
   const normalizedEmail = normalizeEmail(userEmail);
   const nowIso = new Date().toISOString();
+  const principal = {userId,email:normalizedEmail || null,emailVerified:Boolean(normalizedEmail)};
   const grantRowsById = new Map<string, Record<string, unknown>>();
-  const invitedGrantIds: string[] = [];
   const usedGrantIds: string[] = [];
 
   const collectGrantRows = (rows: Array<Record<string, unknown>>): void => {
@@ -1160,35 +1160,40 @@ const loadMemberships = async (
     }
   }
 
-  for (const grant of grantRowsById.values()) {
+  for (let grant of grantRowsById.values()) {
+    if (!academyAuthorityIdentityMatches(grant,principal)) continue;
+    if (!academyRoleGrantCanAccess(grant,new Date(nowIso))) continue;
+    if (String(grant.status) === "invited") {
+      try {
+        const accepted = await acceptStaffAccess(sb,userId,{grantId:String(grant.id)});
+        grant = accepted.grant as Record<string,unknown>;
+      } catch (error) {
+        if(error instanceof StaffInvitationError && [403,404,409,410].includes(error.status)) continue;
+        throw new Error("Failed to accept academy access invitation");
+      }
+      if (!academyAuthorityIdentityMatches(grant,principal)) continue;
+    }
     const membership = academyRoleGrantToMembership(grant, new Date(nowIso));
     if (!membership) continue;
-    accessRows.push(membership as MembershipRow);
+    const authority = academyGrantAuthorityEntry(grant,principal);
+    if (!authority) continue;
+    accessRows.push({...membership,scope_type:authority.scope_type,scope_ids:authority.scope_ids,
+      starts_at:authority.starts_at,expires_at:authority.expires_at,authority_entries:[authority]} as MembershipRow);
     if (membership.grant_id) usedGrantIds.push(membership.grant_id);
-    if (membership.grant_id && String(grant.status ?? "invited") === "invited") invitedGrantIds.push(membership.grant_id);
-  }
-
-  const uniqueInvitedGrantIds = Array.from(new Set(invitedGrantIds.filter((id) => grantRowsById.has(id))));
-  if (grantsAvailable && uniqueInvitedGrantIds.length > 0) {
-    await sb
-      .from("academy_role_grants")
-      .update({ status: "active", user_id: userId, accepted_at: nowIso, updated_at: nowIso })
-      .in("id", uniqueInvitedGrantIds);
   }
   const uniqueUsedGrantIds = Array.from(new Set(usedGrantIds));
   if (grantsAvailable && uniqueUsedGrantIds.length > 0) {
     await sb
       .from("academy_role_grants")
       .update({ last_used_at: nowIso, updated_at: nowIso })
-      .in("id", uniqueUsedGrantIds);
+      .in("id", uniqueUsedGrantIds).eq("status","active").eq("user_id",userId);
   }
 
   const staffRowsById = new Map<string, Record<string, unknown>>();
   const { data: staffByUser, error: staffUserError } = await sb
     .from("academy_staff")
-    .select("id, academy_id, user_id, email, role, classroom_ids, is_active")
+    .select("id, academy_id, user_id, email, role, classroom_ids, is_active, managed_grant_id")
     .eq("user_id", userId)
-    .eq("is_active", true)
     .limit(1000);
   if (staffUserError) throw new Error(`Failed to load academy staff access: ${staffUserError.message}`);
   for (const row of (staffByUser ?? []) as Array<Record<string, unknown>>) {
@@ -1198,9 +1203,8 @@ const loadMemberships = async (
   if (normalizedEmail) {
     const { data: staffByEmail, error: staffEmailError } = await sb
       .from("academy_staff")
-      .select("id, academy_id, user_id, email, role, classroom_ids, is_active")
+      .select("id, academy_id, user_id, email, role, classroom_ids, is_active, managed_grant_id")
       .eq("email", normalizedEmail)
-      .eq("is_active", true)
       .limit(1000);
     if (staffEmailError) throw new Error(`Failed to load academy staff email access: ${staffEmailError.message}`);
     for (const row of (staffByEmail ?? []) as Array<Record<string, unknown>>) {
@@ -1209,20 +1213,41 @@ const loadMemberships = async (
   }
 
   const branchIdsByStaffId = new Map<string, string[]>();
+  if (uniqueUsedGrantIds.length > 0) {
+    const {data:linkedProfiles,error:linkedError} = await sb.from("academy_staff")
+      .select("id, academy_id, user_id, email, role, classroom_ids, is_active, managed_grant_id")
+      .in("managed_grant_id", uniqueUsedGrantIds).limit(2000);
+    if (linkedError) throw new Error("Failed to load linked academy staff identities");
+    for (const row of (linkedProfiles ?? []) as Array<Record<string, unknown>>) staffRowsById.set(String(row.id),row);
+  }
   const staffIds = Array.from(staffRowsById.keys()).filter(Boolean);
   if (staffIds.length > 0) {
     const { data: branchAssignments, error: branchAssignmentsError } = await sb
       .from("academy_staff_branch_assignments")
-      .select("staff_id,branch_id")
+      .select("academy_id,staff_id,branch_id,starts_on,ends_on,academy_branches(academy_id,id,timezone,is_active)")
       .in("staff_id", staffIds)
       .eq("status", "active")
-      .lte("starts_on", new Date().toISOString().slice(0, 10))
-      .or(`ends_on.is.null,ends_on.gte.${new Date().toISOString().slice(0, 10)}`)
       .limit(5000);
     if (branchAssignmentsError && !relationMissing(branchAssignmentsError)) {
       throw new Error(`Failed to load academy branch access: ${branchAssignmentsError.message}`);
     }
-    for (const assignment of (branchAssignments ?? []) as Array<{ staff_id: string; branch_id: string }>) {
+    for (const assignment of (branchAssignments ?? []) as Array<Record<string, unknown>>) {
+      const staff = staffRowsById.get(String(assignment.staff_id));
+      const relation = assignment.academy_branches;
+      const branch = (Array.isArray(relation) ? relation[0] : relation) as Record<string, unknown> | null;
+      if (!staff || !branch || branch.is_active !== true || assignment.academy_id !== staff.academy_id
+        || branch.academy_id !== staff.academy_id || branch.id !== assignment.branch_id) continue;
+      let localDay: string;
+      try {
+        if (typeof branch.timezone !== "string" || !branch.timezone) continue;
+        const parts = new Intl.DateTimeFormat("en-US", {timeZone:branch.timezone,year:"numeric",month:"2-digit",day:"2-digit"})
+          .formatToParts(new Date(nowIso));
+        const part = (type: string) => parts.find(value => value.type === type)?.value ?? "";
+        localDay = `${part("year")}-${part("month")}-${part("day")}`;
+      } catch { continue; }
+      const start = String(assignment.starts_on ?? ""), end = assignment.ends_on == null ? null : String(assignment.ends_on);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || start > localDay
+        || (end !== null && (!/^\d{4}-\d{2}-\d{2}$/.test(end) || end < localDay))) continue;
       const existing = branchIdsByStaffId.get(String(assignment.staff_id)) ?? [];
       existing.push(String(assignment.branch_id));
       branchIdsByStaffId.set(String(assignment.staff_id), Array.from(new Set(existing)));
@@ -1233,6 +1258,26 @@ const loadMemberships = async (
     const academyId = String(staff.academy_id ?? "");
     if (!academyId) continue;
     const staffId = staff.id ? String(staff.id) : "";
+    if (staff.managed_grant_id != null) {
+      // A linked profile supplies operational identity, never a second source
+      // of authority. Missing/revoked/expired grants cannot fall back to staff.
+      const grant = accessRows.find(row => row.source === "grant" && row.tenant_id === academyId
+        && row.grant_id === staff.managed_grant_id);
+      if (!grant) continue;
+      if (academyAuthorityIdentityMatches(staff,principal)) {
+        grant.staff_id = staffId;
+        grant.authority_entries = (grant.authority_entries ?? []).map(entry => ({...entry,staff_id:staffId}));
+      }
+      if (grant.scope_type === "branches") {
+        const assigned = new Set(branchIdsByStaffId.get(staffId) ?? []);
+        const effective = toStringArray(grant.scope_ids).filter(id => assigned.has(id));
+        grant.scope_ids = effective;
+        grant.branch_ids = effective;
+        grant.authority_entries = (grant.authority_entries ?? []).map(entry => ({...entry,scope_ids:effective.slice(),branch_ids:effective.slice()}));
+      }
+      continue;
+    }
+    if (staff.is_active !== true || !academyAuthorityIdentityMatches(staff,principal)) continue;
     accessRows.push({
       tenant_id: academyId,
       role: normalizeAcademyRole(staff.role),
@@ -2445,81 +2490,7 @@ const validateBranchScopedMutation = async (
   access: MembershipRow,
   body: StudioBody,
   action: string,
-): Promise<boolean> => {
-  const scopedBranches = academyAccessBranchIds(access);
-  if (scopedBranches === null) return true;
-  const directBranchId = normalizeText(body.branch_id ?? body.primary_branch_id, 64);
-  if (directBranchId) return accessCanUseBranch(access, directBranchId);
-  if (action === "create_workforce_request") return scopedBranches.length > 0;
-  const operationalLookup: Record<string, [string, unknown, string]> = {
-    upsert_timetable_term: ["academy_timetable_terms", body.id ?? body.term_id, "branch_id"],
-    generate_timetable: ["academy_timetable_terms", body.term_id, "branch_id"],
-    update_service_request: ["academy_service_requests", body.request_id ?? body.id, "branch_id"],
-    record_collection_attempt: ["academy_collection_cases", body.case_id, "branch_id"],
-    update_workforce_request: ["academy_staff_requests", body.request_id ?? body.id, "branch_id"],
-    update_sensitive_case: ["academy_sensitive_cases", body.case_id ?? body.id, "branch_id"],
-  };
-  const operationalTarget = operationalLookup[action];
-  if (operationalTarget) {
-    const [table, idRaw, branchColumn] = operationalTarget;
-    const id = normalizeText(idRaw, 64);
-    if (!id) return false;
-    const { data, error } = await sb.from(table).select(branchColumn).eq("academy_id", academyId).eq("id", id).maybeSingle();
-    return !error && !!data && accessCanUseBranch(access, (data as unknown as Record<string, unknown>)[branchColumn]);
-  }
-  const lookups: Array<[string, unknown, string]> = [
-    ["academy_contacts", body.contact_id, "primary_branch_id"],
-    ["academy_leads", body.lead_id, "branch_id"],
-    ["academy_classrooms", body.classroom_id, "branch_id"],
-    ["academy_subscriptions", body.subscription_id, "branch_id"],
-    ["academy_charges", body.charge_id, "branch_id"],
-    ["academy_trial_lessons", body.trial_id, "branch_id"],
-    ["academy_lesson_sessions", body.session_id, "branch_id"],
-    ["academy_cashboxes", body.cashbox_id, "branch_id"],
-    ["academy_expenses", body.expense_id, "branch_id"],
-    ["academy_debt_cases", body.debt_case_id, "branch_id"],
-    ["academy_automation_executions", body.execution_id, "branch_id"],
-    ["academy_automation_rule_versions", body.rule_version_id, "branch_id"],
-    ["academy_ai_assistance_requests", body.request_id, "branch_id"],
-    ["academy_action_items", body.action_id ?? body.action_item_id, "branch_id"],
-  ];
-  for (const [table, idRaw, branchColumn] of lookups) {
-    const id = normalizeText(idRaw, 64);
-    if (!id) continue;
-    const { data, error } = await sb.from(table).select(branchColumn).eq("academy_id",academyId).eq("id",id).maybeSingle();
-    if (error || !data) return false;
-    return accessCanUseBranch(access, (data as unknown as Record<string, unknown>)[branchColumn]);
-  }
-  const paymentId = normalizeText(body.payment_id, 64);
-  if (paymentId) {
-    const { data: payment } = await sb.from("academy_payments").select("contact_id").eq("academy_id",academyId).eq("id",paymentId).maybeSingle();
-    if (!payment?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",payment.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  const shiftId = normalizeText(body.shift_id, 64);
-  if (shiftId) {
-    const { data: shift } = await sb.from("academy_cashier_shifts").select("cashbox_id").eq("academy_id",academyId).eq("id",shiftId).maybeSingle();
-    if (!shift?.cashbox_id) return false;
-    const { data: cashbox } = await sb.from("academy_cashboxes").select("branch_id").eq("academy_id",academyId).eq("id",shift.cashbox_id).maybeSingle();
-    return !!cashbox && accessCanUseBranch(access, cashbox.branch_id);
-  }
-  const relationshipId = normalizeText(body.relationship_id, 64);
-  if (relationshipId) {
-    const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("contact_id").eq("academy_id",academyId).eq("id",relationshipId).maybeSingle();
-    if (!relationship?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",relationship.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  const conversationId = normalizeText(body.conversation_id, 64);
-  if (conversationId) {
-    const { data: conversation } = await sb.from("academy_conversations").select("contact_id").eq("academy_id",academyId).eq("id",conversationId).maybeSingle();
-    if (!conversation?.contact_id) return false;
-    const { data: contact } = await sb.from("academy_contacts").select("primary_branch_id").eq("academy_id",academyId).eq("id",conversation.contact_id).maybeSingle();
-    return !!contact && accessCanUseBranch(access, contact.primary_branch_id);
-  }
-  return false;
-};
+): Promise<boolean> => validateAcademyMutationBranches(sb as unknown as Parameters<typeof validateAcademyMutationBranches>[0], academyId, academyAccessBranchIds(access), body as unknown as Record<string, unknown>, action);
 
 const toNumber = (value: unknown): number | null => {
   const num = Number(value);
@@ -2625,6 +2596,7 @@ const handleReadAction = async (
   searchLimitRaw: string | null = null,
   dateRaw: string | null = null,
   roomTimetableRaw: unknown = null,
+  directoryContext: {actorId:string;before_time?:unknown;before_id?:unknown;after_source?:unknown;after_id?:unknown}|null = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -2725,6 +2697,20 @@ const handleReadAction = async (
 
   const academyId = resolveAcademyId(memberships, academyIdRaw);
   const access = requireAcademyAccess(memberships, academyId);
+  if (action === "contacts" || action === "classrooms" || action === "classroom-memberships") {
+    if (!directoryContext) return json(403, {error: "Forbidden"});
+    try {
+      return json(200, await readAcademyScopedDirectory(sb as unknown as Parameters<typeof readAcademyScopedDirectory>[0], directoryContext.actorId, academyId, action, {
+        ...(searchQueryRaw ? {query: searchQueryRaw} : {}), ...(searchLimitRaw ? {limit: searchLimitRaw} : {}),
+        ...(classroomIdRaw ? {classroom_id: classroomIdRaw} : {}),
+        ...(directoryContext.before_time != null ? {before_time: directoryContext.before_time} : {}),
+        ...(directoryContext.before_id != null ? {before_id: directoryContext.before_id} : {}),
+      }));
+    } catch (error) {
+      if (error instanceof ScopedDirectoryError) return json(error.status, {error: error.message});
+      throw error;
+    }
+  }
   const scopedClassroomIds = academyAccessClassroomIds(access);
   const operationalBranchIds = academyAccessBranchIds(access);
 
@@ -2788,88 +2774,6 @@ const handleReadAction = async (
         open_alerts: alertsOpen ?? 0,
       },
     });
-  }
-
-  if (action === "contacts") {
-    requireAcademyPermission(access, "viewContacts");
-    const scopedContactIds = await loadScopedContactIds(sb, academyId, scopedClassroomIds);
-    if (scopedContactIds !== null && scopedContactIds.size === 0) return json(200, { contacts: [] });
-
-    let query = sb
-      .from("academy_contacts")
-      .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, last_activity_at, placement_level, placement_score, lifecycle_stage, notify_enabled, metadata, created_at, updated_at")
-      .eq("academy_id", academyId)
-      .order("created_at", { ascending: false })
-      .limit(300);
-    if (scopedContactIds !== null) query = query.in("id", Array.from(scopedContactIds));
-    const { data, error } = await query;
-    if (error) return json(500, { error: "Failed to load contacts", detail: error.message });
-    return json(200, { contacts: data ?? [] });
-  }
-
-  if (action === "classrooms") {
-    requireAcademyPermission(access, "viewClassrooms");
-    if (scopedClassroomIds !== null && scopedClassroomIds.length === 0) return json(200, { classrooms: [] });
-
-    let classroomQuery = sb
-      .from("academy_classrooms")
-      .select("id, academy_id, name, description, is_active, metadata, created_at, updated_at")
-      .eq("academy_id", academyId)
-      .order("created_at", { ascending: false })
-      .limit(300);
-    if (scopedClassroomIds !== null) classroomQuery = classroomQuery.in("id", scopedClassroomIds);
-    const { data, error } = await classroomQuery;
-    if (error) return json(500, { error: "Failed to load classrooms", detail: error.message });
-
-    let membershipQuery = sb
-      .from("academy_classroom_memberships")
-      .select("classroom_id")
-      .eq("academy_id", academyId)
-      .limit(5000);
-    if (scopedClassroomIds !== null) membershipQuery = membershipQuery.in("classroom_id", scopedClassroomIds);
-    const { data: membershipRows, error: membershipError } = await membershipQuery;
-    if (membershipError) {
-      return json(500, { error: "Failed to load classroom memberships", detail: membershipError.message });
-    }
-
-    const memberCountByClassroom = new Map<string, number>();
-    for (const row of (membershipRows ?? []) as Array<{ classroom_id: string | null }>) {
-      const classroomId = row.classroom_id ? String(row.classroom_id) : "";
-      if (!classroomId) continue;
-      memberCountByClassroom.set(classroomId, (memberCountByClassroom.get(classroomId) ?? 0) + 1);
-    }
-
-    const classrooms = ((data ?? []) as Array<Record<string, unknown>>).map((row) => {
-      const classroomId = String(row.id ?? "");
-      return {
-        ...row,
-        member_count: memberCountByClassroom.get(classroomId) ?? 0,
-      };
-    });
-
-    return json(200, { classrooms });
-  }
-
-  if (action === "classroom-memberships") {
-    requireAcademyPermission(access, "viewClassrooms");
-    const classroomId = normalizeText(classroomIdRaw, 64) || null;
-    if (classroomId && !accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
-    if (!classroomId && scopedClassroomIds !== null && scopedClassroomIds.length === 0) {
-      return json(200, { classroom_memberships: [] });
-    }
-
-    let query = sb
-      .from("academy_classroom_memberships")
-      .select("id, academy_id, classroom_id, contact_id, role, status, joined_at, started_at, completed_at, paused_at, withdrawn_at, expires_at, metadata")
-      .eq("academy_id", academyId)
-      .order("joined_at", { ascending: false })
-      .limit(1000);
-
-    if (classroomId) query = query.eq("classroom_id", classroomId);
-    else if (scopedClassroomIds !== null) query = query.in("classroom_id", scopedClassroomIds);
-    const { data, error } = await query;
-    if (error) return json(500, { error: "Failed to load classroom memberships", detail: error.message });
-    return json(200, { classroom_memberships: data ?? [] });
   }
 
   if (action === "conversations") {
@@ -3548,33 +3452,10 @@ const handleReadAction = async (
   }
 
   if (action === "staff") {
-    if (!academyAccessHas(access, "manageStaff")) return json(403, { error: "Forbidden" });
-
-    const grantSelect =
-      "id, academy_id, user_id, email, display_name, role, scope_type, scope_ids, status, starts_at, expires_at, accepted_at, revoked_at, last_used_at, created_at, updated_at";
-    const { data: grants, error: grantError } = await sb.from("academy_role_grants")
-      .select(grantSelect)
-      .eq("academy_id", academyId)
-      .order("created_at", { ascending: false })
-      .limit(500);
-    if (!grantError) {
-      return json(200, { staff: ((grants ?? []) as Array<Record<string, unknown>>).map(formatRoleGrantAsStaff) });
-    }
-    if (!relationMissing(grantError)) return json(500, { error: "Failed to load role grants", detail: grantError.message });
-
-    const { data, error } = await sb.from("academy_staff")
-      .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
-      .eq("academy_id", academyId).order("created_at", { ascending: false }).limit(500);
-    if (error) return json(500, { error: "Failed to load staff", detail: error.message });
-    return json(200, {
-      staff: ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-        ...row,
-        status: row.is_active === false ? "suspended" : "active",
-        source: "staff",
-        scope_type: staffGrantScopeForRole(String(row.role ?? "teacher")),
-        scope_ids: staffGrantScopeForRole(String(row.role ?? "teacher")) === "classrooms" ? toStringArray(row.classroom_ids) : [],
-      })),
-    });
+    if (!directoryContext) throw new StaffAccessError(403,"Forbidden");
+    const result = await readAcademyStaffDirectory(sb,directoryContext.actorId,academyId,directoryContext);
+    return json(200,{...result,staff:(result.staff as Array<Record<string,unknown>>).map(row => row.source === "grant"
+      ? {...formatRoleGrantAsStaff(row),staff_id:row.staff_id ?? null} : row)});
   }
 
   if (action === "owner_dashboard") {
@@ -4149,8 +4030,10 @@ const handleReadAction = async (
     ].filter((kind): kind is string => Boolean(kind));
     const { data, error } = await sb.from("academy_access_invitations")
       .select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,accepted_by,accepted_at,revoked_by,revoked_at,created_by,created_at,updated_at,metadata")
-      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds).order("created_at", { ascending: false }).limit(500);
+      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds.filter(kind=>kind!=="staff")).order("created_at", { ascending: false }).limit(500);
     if (error) return json(500, { error: "Failed to load access invitations", detail: error.message });
+    if(!directoryContext)throw new StaffInvitationError(403,"Forbidden");
+    const staffPage = await readStaffInvitations(sb,directoryContext.actorId,academyId);
     const empty = Promise.resolve({ data: [], error: null });
     const [contacts, classrooms, guardianRelationships, guardians] = await Promise.all([
       academyAccessHas(access, "manageRoster")
@@ -4189,7 +4072,7 @@ const handleReadAction = async (
       if (row.invite_kind === "guardian") return relationshipRows.some((relationship) => String(relationship.id) === String(row.guardian_relationship_id));
       return true;
     });
-    return json(200, { invitations: invitationRows, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
+    return json(200, { invitations: [...invitationRows,...(staffPage.invitations as Array<Record<string,unknown>>)].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))), staff_has_more:staffPage.has_more, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
   }
 
   if (action === "timetable_planning") {
@@ -6833,16 +6716,23 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if (authError || !authData?.user) return json(401, { error: "Unauthorized" });
 
     const userId = authData.user.id;
-    const userEmail = authData.user.email ?? null;
+    const userEmail = authData.user.email_confirmed_at ? (authData.user.email ?? null) : null;
     const url = new URL(req.url);
     const actionQuery = normalizeText(url.searchParams.get("action"), 64).toLowerCase();
     const contentType = req.headers.get("content-type") ?? "";
     const body = req.method === "POST"
-      ? contentType.includes("multipart/form-data")
+      ? studentImportActions.has(actionQuery)
+        ? (await readStudentImportRequest(req)) as StudioBody
+        : contentType.includes("multipart/form-data")
         ? formDataToStudioBody(await req.formData())
         : (await req.json()) as StudioBody
       : null;
-    const actionBody = normalizeText(body?.action, 64).toLowerCase();
+    const rawActionBody = normalizeText(body?.action, 64).toLowerCase();
+    const nestedCommand=normalizeText(body?.command,64).toLowerCase();
+    if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
+    if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
+    if(rawActionBody==='staff_import_command'&&!['commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyStaffImportError(400,'Choose a valid staff import command.');
+    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -6881,6 +6771,11 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         .eq("token_hash", tokenHash).maybeSingle();
       if (error) return json(500, { error: "Failed to load invitation", detail: error.message });
       if (!invitation?.id) return json(404, { error: "Invitation not found" });
+      if (String(invitation.invite_kind) === "staff") {
+        const accepted = await acceptStaffAccess(sb,userId,{tokenHash});
+        return json(200,{invitation:accepted.invitation,replayed:accepted.replayed});
+      }
+
       if (String(invitation.status) !== "pending") return json(409, { error: `Invitation is ${String(invitation.status)}` });
       if (Date.parse(String(invitation.token_expires_at)) <= Date.now()) {
         await sb.from("academy_access_invitations").update({ status: "expired" }).eq("id", invitation.id).eq("status", "pending");
@@ -6906,15 +6801,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           ? await sb.from("academy_classroom_memberships").update({ user_id: userId, status: "active", joined_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", membership.id)
           : await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, user_id: userId, role: "student", status: "active", joined_at: new Date().toISOString(), metadata: { source: "access_invitation", invitation_id: invitation.id } });
         if (membershipResult.error) return json(500, { error: "Failed to activate classroom membership", detail: membershipResult.error.message });
-      } else if (kind === "staff") {
-        const role = normalizeAcademyRole(invitation.role);
-        const nowIso = new Date().toISOString();
-        const { data: grant, error: grantError } = await sb.from("academy_role_grants").update({ user_id: userId, status: "active", accepted_at: nowIso })
-          .eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email)).in("status", ["invited", "active"])
-          .select("id").maybeSingle();
-        if (grantError || !grant?.id) return json(409, { error: "Staff access grant is unavailable", detail: grantError?.message });
-        const { error: staffError } = await sb.from("academy_staff").update({ user_id: userId, role, is_active: true }).eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email));
-        if (staffError) return json(500, { error: "Failed to activate the staff profile", detail: staffError.message });
       } else if (kind === "guardian") {
         const relationshipId = String(invitation.guardian_relationship_id ?? "");
         const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id,status,consent_status")
@@ -7125,6 +7011,13 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     const memberships = await loadMemberships(sb, userId, userEmail);
+
+    if (studentImportActions.has(requestedAction)) {
+      if (req.method !== "POST") return json(405,{error:"Use POST for student imports."});
+      if (actionQuery !== requestedAction) return json(400,{error:"Use the bounded student import endpoint."});
+      try{return json(200,await handleStudentImportService(sb,requestedAction,body,userId));}
+      catch(error){if(error instanceof StudentImportServiceError)return json(error.status,{error:error.message,retryable:error.retryable});throw error;}
+    }
 
     if (assessmentActions.has(requestedAction)) {
       if (req.method !== 'POST') return json(405, { error: 'Use POST for assessment requests.' });
@@ -7919,6 +7812,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(url.searchParams.get("limit"), 10) || null,
         normalizeText(url.searchParams.get("date"), 10) || null,
         { branch_id: url.searchParams.get("branch_id"), from: url.searchParams.get("from"), days: url.searchParams.get("days") ?? undefined },
+        {actorId:userId,before_time:url.searchParams.get("before_time"),before_id:url.searchParams.get("before_id"),after_source:url.searchParams.get("after_source"),after_id:url.searchParams.get("after_id")},
       );
       if (readResponse) return readResponse;
     }
@@ -7940,6 +7834,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(body?.limit, 10) || null,
         normalizeText(body?.date, 10) || null,
         { branch_id: body?.branch_id, from: body?.from, days: body?.days },
+        {actorId:userId,before_time:body?.before_time,before_id:body?.before_id,after_source:body?.after_source,after_id:body?.after_id},
       );
       if (readResponse) return readResponse;
 
@@ -8016,11 +7911,35 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         const result = await finishAcademyTeacherLesson(sb, teacherFlowAccess, userId, body ?? {});
         return json(200, result);
       }
+      if (staffAccessActions.has(actionBody)) {
+        const result = await runAcademyStaffCommand(sb,userId,academyId,actionBody,body ?? {});
+        if (actionBody === "upsert_staff") return json(200,{staff:{...formatRoleGrantAsStaff(result.grant as Record<string,unknown>),staff_id:(result.staff_profile as Record<string,unknown>).id},replayed:result.replayed});
+        if (actionBody === "remove_staff") return json(200,{ok:true,replayed:result.replayed});
+        if (actionBody === "upsert_staff_branch_assignment") return json(200,{assignment:result.assignment,replayed:result.replayed});
+        throw new StaffAccessError(400,"Choose a valid staff command.");
+      }
+      if (["create_access_invitation", "resend_access_invitation", "revoke_access_invitation"].includes(actionBody)) {
+        let inviteKind=normalizeText(body?.invite_kind,20).toLowerCase();
+        if(actionBody!=="create_access_invitation"){
+          const {data:existing,error}=await sb.from("academy_access_invitations").select("invite_kind")
+            .eq("academy_id",academyId).eq("id",normalizeText(body?.invitation_id??body?.id,64)).maybeSingle();
+          if(error)throw new StaffInvitationError(503,"Invitation lookup is temporarily unavailable.",true);
+          if(!existing)throw new StaffInvitationError(404,"Invitation not found.");
+          inviteKind=String(existing.invite_kind);
+        }
+        if(inviteKind==="staff"){
+          const result=await runStaffInvitation(sb,userId,academyId,actionBody,body??{},async(email,redirectTo)=>{
+            const {error}=await authSb.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:true}});
+            return !error;
+          },academyInvitationRedirect);
+          return json(result.retryable===true?202:200,result);
+        }
+      }
       const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
       const explicitBranchId = normalizeText(body?.branch_id ?? body?.primary_branch_id, 64);
       if (explicitBranchId && !accessCanUseBranch(access, explicitBranchId)) return json(403, { error: "Forbidden" });
-      if (academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
+      if (actionBody !== "upsert_contact" && academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
         return json(403, { error: "A branch-scoped role may only mutate records in an assigned branch" });
       }
 
@@ -8081,16 +8000,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
             const { error } = await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, role: "student", status: "invited", metadata: { source: "access_invitation" } });
             if (error) return json(400, { error: "Failed to prepare classroom invitation", detail: error.message });
           }
-        }
-        if (invitationKind === "staff") {
-          if (!STAFF_GRANT_ROLES.includes(invitationRole)) return json(400, { error: "A valid staff role is required" });
-          const scopeType = staffGrantScopeForRole(invitationRole);
-          const requestedClassroomIds = Array.isArray(body?.classroom_ids) ? (body.classroom_ids as unknown[]).map((value) => normalizeText(value, 64)).filter(Boolean) : [];
-          if (scopeType === "classrooms" && requestedClassroomIds.length === 0) return json(400, { error: "Teacher and assistant invitations require at least one classroom" });
-          const { data: existingUser } = await sb.from("users").select("id").eq("email", invitationEmail).maybeSingle();
-          const { error: grantError } = await sb.from("academy_role_grants").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, scope_type: scopeType, scope_ids: scopeType === "classrooms" ? requestedClassroomIds : [], status: "invited", granted_by: userId, starts_at: new Date().toISOString(), accepted_at: null, revoked_at: null, metadata: { source: "access_invitation" } }, { onConflict: "academy_id,email" });
-          if (grantError) return json(400, { error: "Failed to prepare staff grant", detail: grantError.message });
-          await sb.from("academy_staff").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, classroom_ids: scopeType === "classrooms" ? requestedClassroomIds : [], is_active: true, created_by: userId }, { onConflict: "academy_id,email" });
         }
         if (invitationKind === "guardian") {
           if (!guardianRelationshipId) return json(400, { error: "guardian_relationship_id is required" });
@@ -8749,11 +8658,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         return json(200,{localization:settings,translations:saved});
       }
 
-      if (actionBody === "upsert_staff_branch_assignment") {
-        const staffId=normalizeText(body?.staff_id,64);const branchId=normalizeText(body?.branch_id,64);const assignmentRole=normalizeText(body?.assignment_role,40);
-        if(!staffId||!branchId||!assignmentRole)return json(400,{error:"staff_id, branch_id, and assignment_role are required"});
-        const {data,error}=await sb.from("academy_staff_branch_assignments").upsert({academy_id:academyId,staff_id:staffId,branch_id:branchId,assignment_role:assignmentRole,is_primary:body?.is_primary===true,starts_on:normalizeText(body?.starts_on,20)||new Date().toISOString().slice(0,10),ends_on:normalizeText(body?.ends_on,20)||null,status:normalizeText(body?.status,20)||"active",created_by:userId,updated_at:new Date().toISOString()},{onConflict:"academy_id,staff_id,branch_id,assignment_role,starts_on"}).select("*").single();if(error)return json(400,{error:"Failed to save staff branch assignment",detail:error.message});return json(200,{assignment:data});
-      }
 
       if (actionBody === "create_automation_version") {
         const triggerKey=normalizeText(body?.trigger_key,80).toLowerCase();const safeguardMode=normalizeText(body?.safeguard_mode,40).toLowerCase()||"standard";const conditionTree=isJsonObject(body?.condition_tree)?body.condition_tree:{all:[]};const actions=Array.isArray(body?.actions)?body.actions:[];const validationError=validateAutomationDefinition(conditionTree,actions,safeguardMode);if(validationError)return json(400,{error:validationError});
@@ -9170,23 +9074,37 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       if (actionBody === "commit_import_job") {
-        const jobId=normalizeText(body?.import_job_id,64);if(!jobId)return json(400,{error:'import_job_id is required'});const {data:job}=await sb.from('academy_import_jobs').select('*').eq('academy_id',academyId).eq('id',jobId).maybeSingle();if(!job?.id||job.status!=='ready')return json(400,{error:'Ready import job not found'});if(!canUseLegacyImport(access,job.import_type))return json(403,{error:'Forbidden'});if(job.import_mode==='dry_run'&&body?.confirm_commit!==true)return json(400,{error:'Dry run is ready. Set confirm_commit=true to perform the import.'});
-        let rowsQuery=sb.from('academy_import_rows').select('*').eq('academy_id',academyId).eq('import_job_id',jobId);rowsQuery=job.duplicate_strategy==='update_safe_fields'?rowsQuery.in('validation_status',['valid','duplicate']):rowsQuery.eq('validation_status','valid');const {data:rows}=await rowsQuery.order('row_number');try{for(const row of rows??[])row.mapped_data=normalizedLegacyImportMapped(String(job.import_type),row.mapped_data);}catch(error){if(error instanceof LegacyImportInputError)return json(400,{error:error.message});throw error;}let committed=0;let failed=0;let pipelineId='';let stageId='';if(job.import_type==='leads'){const {data:pipeline}=await sb.from('academy_sales_pipelines').select('id').eq('academy_id',academyId).eq('is_default',true).maybeSingle();pipelineId=String(pipeline?.id??'');if(pipelineId){const {data:stage}=await sb.from('academy_pipeline_stages').select('id').eq('academy_id',academyId).eq('pipeline_id',pipelineId).is('terminal_kind',null).order('position').limit(1).maybeSingle();stageId=String(stage?.id??'');}if(!pipelineId||!stageId)return json(400,{error:'Default admissions pipeline and initial stage are required'});}await sb.from('academy_import_jobs').update({status:'committing',import_mode:'commit'}).eq('academy_id',academyId).eq('id',jobId);
+        const jobId=normalizeText(body?.import_job_id,64);if(!jobId)return json(400,{error:'import_job_id is required'});const {data:job}=await sb.from('academy_import_jobs').select('*').eq('academy_id',academyId).eq('id',jobId).maybeSingle();if(!job?.id||(job.import_type==='staff'?!['ready','committing','failed','completed'].includes(String(job.status)):job.status!=='ready'))return json(400,{error:'Ready import job not found'});if(!canUseLegacyImport(access,job.import_type)||(body?.action==='staff_import_command'&&job.import_type!=='staff'))return json(403,{error:'Forbidden'});if(job.import_mode==='dry_run'&&body?.confirm_commit!==true)return json(400,{error:'Dry run is ready. Set confirm_commit=true to perform the import.'});
+        let rowsQuery=sb.from('academy_import_rows').select('*').eq('academy_id',academyId).eq('import_job_id',jobId);rowsQuery=job.duplicate_strategy==='update_safe_fields'?rowsQuery.in('validation_status',['valid','duplicate']):rowsQuery.eq('validation_status','valid');rowsQuery=rowsQuery.order('row_number');if(job.import_type==='staff')rowsQuery=rowsQuery.limit(25);const {data:rows,error:rowsError}=await rowsQuery;if(rowsError)return json(503,{error:'Import rows could not load. Retry the same job.',retryable:true});try{for(const row of rows??[])row.mapped_data=normalizedLegacyImportMapped(String(job.import_type),row.mapped_data);}catch(error){if(error instanceof LegacyImportInputError)return json(400,{error:error.message});throw error;}let committed=0;let failed=0;let pipelineId='';let stageId='';if(job.import_type==='leads'){const {data:pipeline}=await sb.from('academy_sales_pipelines').select('id').eq('academy_id',academyId).eq('is_default',true).maybeSingle();pipelineId=String(pipeline?.id??'');if(pipelineId){const {data:stage}=await sb.from('academy_pipeline_stages').select('id').eq('academy_id',academyId).eq('pipeline_id',pipelineId).is('terminal_kind',null).order('position').limit(1).maybeSingle();stageId=String(stage?.id??'');}if(!pipelineId||!stageId)return json(400,{error:'Default admissions pipeline and initial stage are required'});}if(job.import_type!=='staff')await sb.from('academy_import_jobs').update({status:'committing',import_mode:'commit'}).eq('academy_id',academyId).eq('id',jobId);
         for(const row of rows??[]){const mapped=(row.mapped_data??{}) as Record<string,unknown>;const duplicate=row.validation_status==='duplicate';let result:{data:any;error:any}={data:null,error:null};let targetTable='';let effectType:'insert'|'safe_update'|'ledger_opening_balance'=duplicate?'safe_update':'insert';let rollbackStrategy:'delete_if_unreferenced'|'restore_snapshot'|'append_reversal'='delete_if_unreferenced';let beforeSnapshot:Record<string,unknown>|null=null;
           if(job.import_type==='contacts'){targetTable='academy_contacts';const email=normalizeEmail(mapped.email);let existing:any=null;if(duplicate){let q=sb.from(targetTable).select('*').eq('academy_id',academyId);q=email?q.eq('email',email):q.eq('phone_normalized',normalizeAcademyPhone(mapped.phone));existing=(await q.maybeSingle()).data;beforeSnapshot=existing??null;}result=duplicate&&existing?await sb.from(targetTable).update({first_name:normalizeText(mapped.first_name,180),last_name:normalizeText(mapped.last_name,180),status:normalizeText(mapped.status,30)||existing.status}).eq('academy_id',academyId).eq('id',existing.id).select('*').single():await sb.from(targetTable).insert({academy_id:academyId,primary_branch_id:normalizeText(mapped.primary_branch_id??mapped.branch_id,64),first_name:normalizeText(mapped.first_name,180),last_name:normalizeText(mapped.last_name,180),email:email||null,phone:normalizeText(mapped.phone,80)||null,status:normalizeText(mapped.status,30)||'active',lifecycle_stage:normalizeText(mapped.lifecycle_stage,40)||'learning',created_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
           else if(job.import_type==='leads'){targetTable='academy_leads';const email=normalizeEmail(mapped.email);let existing:any=null;if(duplicate){let q=sb.from(targetTable).select('*').eq('academy_id',academyId);q=email?q.eq('email',email):q.eq('phone_normalized',normalizeAcademyPhone(mapped.phone));existing=(await q.maybeSingle()).data;beforeSnapshot=existing??null;}result=duplicate&&existing?await sb.from(targetTable).update({full_name:normalizeText(mapped.full_name,180),updated_by:userId}).eq('academy_id',academyId).eq('id',existing.id).select('*').single():await sb.from(targetTable).insert({academy_id:academyId,pipeline_id:pipelineId,current_stage_id:stageId,branch_id:normalizeText(mapped.branch_id,64),full_name:normalizeText(mapped.full_name,180),email:email||null,phone:normalizeText(mapped.phone,80)||null,status:'open',currency:normalizeText(mapped.currency,10).toUpperCase()||'UZS',idempotency_key:`import:${jobId}:${row.row_number}`,created_by:userId,updated_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
           else if(job.import_type==='guardians'){targetTable='academy_guardians';const email=normalizeEmail(mapped.email);let existing:any=null;if(duplicate){let q=sb.from(targetTable).select('*').eq('academy_id',academyId);q=email?q.eq('email',email):q.eq('phone_normalized',normalizeAcademyPhone(mapped.phone));existing=(await q.maybeSingle()).data;beforeSnapshot=existing??null;}result=duplicate&&existing?await sb.from(targetTable).update({full_name:normalizeText(mapped.full_name,180),locale:normalizeText(mapped.locale,10)||existing.locale,notes:normalizeText(mapped.notes,1000)||existing.notes}).eq('academy_id',academyId).eq('id',existing.id).select('*').single():await sb.from(targetTable).insert({academy_id:academyId,full_name:normalizeText(mapped.full_name,180),phone:normalizeText(mapped.phone,80)||null,email:email||null,telegram_user_id:normalizeText(mapped.telegram_user_id,80)||null,status:normalizeText(mapped.status,20)||'invited',locale:normalizeText(mapped.locale,10)||'uz',notes:normalizeText(mapped.notes,1000)||null,created_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
-          else if(job.import_type==='staff'){targetTable='academy_staff';const email=normalizeEmail(mapped.email);const existing=duplicate?(await sb.from(targetTable).select('*').eq('academy_id',academyId).eq('email',email).maybeSingle()).data:null;beforeSnapshot=existing??null;result=duplicate&&existing?await sb.from(targetTable).update({display_name:normalizeText(mapped.display_name??mapped.full_name,180)||existing.display_name,is_active:mapped.is_active!==false}).eq('academy_id',academyId).eq('id',existing.id).select('*').single():await sb.from(targetTable).insert({academy_id:academyId,email,display_name:normalizeText(mapped.display_name??mapped.full_name,180)||null,role:normalizeAcademyRole(mapped.role),classroom_ids:toStringArray(mapped.classroom_ids),is_active:mapped.is_active!==false,created_by:userId}).select('*').single();}
+          else if(job.import_type==='staff'){
+            const saved=await legacyStaffCommand(sb,userId,academyId,'commit',String(row.id),{confirm:body?.confirm_commit===true});
+            if(saved.committed===true)committed++;
+            continue; // The database already committed the row, both staff records and its effect evidence.
+          }
           else if(job.import_type==='classrooms'){targetTable='academy_classrooms';const branchId=normalizeText(mapped.branch_id,64);const name=normalizeText(mapped.name,180);const existing=duplicate?(await sb.from(targetTable).select('*').eq('academy_id',academyId).eq('branch_id',branchId).ilike('name',name).maybeSingle()).data:null;beforeSnapshot=existing??null;result=duplicate&&existing?await sb.from(targetTable).update({description:normalizeText(mapped.description,1000)||existing.description,student_capacity:mapped.student_capacity==null?existing.student_capacity:Number(mapped.student_capacity),is_active:mapped.is_active!==false}).eq('academy_id',academyId).eq('id',existing.id).select('*').single():await sb.from(targetTable).insert({academy_id:academyId,branch_id:branchId,name,description:normalizeText(mapped.description,1000)||null,student_capacity:mapped.student_capacity==null?null:Number(mapped.student_capacity),is_active:mapped.is_active!==false,created_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
           else if(job.import_type==='balances'){targetTable='academy_account_ledger_entries';effectType='ledger_opening_balance';rollbackStrategy='append_reversal';const amount=legacyImportAmount(mapped.amount);result=await sb.from(targetTable).insert({academy_id:academyId,contact_id:normalizeText(mapped.contact_id,64),entry_type:BigInt(amount)>0n?'debit_adjustment':'credit_adjustment',amount,currency:normalizeText(mapped.currency,10).toUpperCase()||'UZS',effective_at:normalizeText(mapped.effective_at,80)||new Date().toISOString(),reason:normalizeText(mapped.reason,300),idempotency_key:`import:${jobId}:${row.row_number}:opening-balance`,created_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id,opening_balance:true}}).select('id,academy_id,contact_id,subscription_id,charge_id,payment_id,entry_type,amount::text,currency,effective_at,reason,idempotency_key,created_by,metadata,created_at').single();}
           else if(job.import_type==='enrollments'){targetTable='academy_classroom_memberships';result=await sb.from(targetTable).insert({academy_id:academyId,classroom_id:normalizeText(mapped.classroom_id,64),contact_id:normalizeText(mapped.contact_id,64),role:'student',status:normalizeText(mapped.status,30)||'active',joined_at:normalizeText(mapped.joined_at,80)||new Date().toISOString(),started_at:normalizeText(mapped.started_at,80)||new Date().toISOString(),metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
           else if(job.import_type==='attendance'){targetTable='academy_attendance';result=await sb.from(targetTable).insert({academy_id:academyId,classroom_id:normalizeText(mapped.classroom_id,64),contact_id:normalizeText(mapped.contact_id,64),session_date:normalizeText(mapped.session_date,20),status:normalizeText(mapped.status,20)||'present',notes:normalizeText(mapped.notes,1000)||null,marked_by:userId,metadata:{import_job_id:jobId,import_row_id:row.id}}).select('*').single();}
           if(result.error||!result.data?.id){failed++;await sb.from('academy_import_rows').update({validation_status:'invalid',validation_errors:[result.error?.message??'Import failed']}).eq('academy_id',academyId).eq('id',row.id);continue;}const {error:effectError}=await sb.from('academy_import_effects').insert({academy_id:academyId,import_job_id:jobId,import_row_id:row.id,target_table:targetTable,target_id:result.data.id,effect_type:effectType,rollback_strategy:duplicate?'restore_snapshot':rollbackStrategy,before_snapshot:beforeSnapshot,after_snapshot:result.data});if(effectError){failed++;await sb.from('academy_import_rows').update({validation_status:'invalid',validation_errors:[`Effect evidence failed: ${effectError.message}`]}).eq('academy_id',academyId).eq('id',row.id);continue;}committed++;await sb.from('academy_import_rows').update({validation_status:'committed',target_table:targetTable,target_id:result.data.id}).eq('academy_id',academyId).eq('id',row.id);}
+        if(job.import_type==='staff'){
+          const saved=await legacyStaffCommand(sb,userId,academyId,'finish',jobId);
+          return json(Number(saved.failed_rows)>0||Number(saved.pending_rows)>0?207:200,saved);
+        }
         const finalStatus=failed?'failed':'completed';await sb.from('academy_import_jobs').update({status:finalStatus,committed_rows:committed,committed_by:userId,completed_at:new Date().toISOString(),rollback_status:committed?'available':'unavailable',error_summary:failed?[{failed_rows:failed}]:[]}).eq('academy_id',academyId).eq('id',jobId);await logAcademyAuditEvent(sb,{academyId,actorUserId:userId,actorRole:access.role,action:'import.committed',targetType:'academy_import_job',targetId:jobId,status:failed?'warning':'ok',metadata:{import_type:job.import_type,committed_rows:committed,failed_rows:failed}});return json(failed?207:200,{import_job_id:jobId,committed_rows:committed,failed_rows:failed,status:finalStatus});
       }
 
       if (actionBody === "rollback_import_job") {
-        const jobId=normalizeText(body?.import_job_id,64);const reason=normalizeText(body?.reason,1000);if(!jobId||!reason)return json(400,{error:'import_job_id and reason are required'});const {data:job}=await sb.from('academy_import_jobs').select('*').eq('academy_id',academyId).eq('id',jobId).maybeSingle();if(!job?.id||!['completed','failed'].includes(String(job.status))||!['available','partial','manual_required'].includes(String(job.rollback_status)))return json(400,{error:'Rollback-eligible import job not found'});if(!canUseLegacyImport(access,job.import_type))return json(403,{error:'Forbidden'});const {data:effects,error:effectsError}=await sb.from('academy_import_effects').select('*').eq('academy_id',academyId).eq('import_job_id',jobId).in('rollback_status',['pending','failed','manual_required']).order('created_at',{ascending:false});if(effectsError)return json(400,{error:'Failed to load import effects',detail:effectsError.message});await sb.from('academy_import_jobs').update({rollback_status:'in_progress',rollback_reason:reason,rolled_back_by:userId}).eq('academy_id',academyId).eq('id',jobId);let completed=0;let manual=0;let failed=0;const allowedDeleteTables=new Set(['academy_contacts','academy_leads','academy_guardians','academy_staff','academy_classrooms','academy_classroom_memberships','academy_attendance']);
+        const jobId=normalizeText(body?.import_job_id,64);const reason=normalizeText(body?.reason,1000);if(!jobId||!reason)return json(400,{error:'import_job_id and reason are required'});const {data:job}=await sb.from('academy_import_jobs').select('*').eq('academy_id',academyId).eq('id',jobId).maybeSingle();if(!job?.id||!(job.import_type==='staff'?['committing','completed','failed']:['completed','failed']).includes(String(job.status))||!(job.import_type==='staff'?['not_requested','available','in_progress','partial','manual_required','completed']:['available','partial','manual_required']).includes(String(job.rollback_status)))return json(400,{error:'Rollback-eligible import job not found'});if(!canUseLegacyImport(access,job.import_type)||(body?.action==='staff_import_command'&&job.import_type!=='staff'))return json(403,{error:'Forbidden'});let effectsQuery=sb.from('academy_import_effects').select('*').eq('academy_id',academyId).eq('import_job_id',jobId).in('rollback_status',['pending','failed']).order('created_at',{ascending:false});if(job.import_type==='staff')effectsQuery=effectsQuery.limit(25);else effectsQuery=sb.from('academy_import_effects').select('*').eq('academy_id',academyId).eq('import_job_id',jobId).in('rollback_status',['pending','failed','manual_required']).order('created_at',{ascending:false});const {data:effects,error:effectsError}=await effectsQuery;if(effectsError)return json(400,{error:'Failed to load import effects',detail:effectsError.message});if(job.import_type!=='staff')await sb.from('academy_import_jobs').update({rollback_status:'in_progress',rollback_reason:reason,rolled_back_by:userId}).eq('academy_id',academyId).eq('id',jobId);let completed=0;let manual=0;let failed=0;const allowedDeleteTables=new Set(['academy_contacts','academy_leads','academy_guardians','academy_staff','academy_classrooms','academy_classroom_memberships','academy_attendance']);
+        if(job.import_type==='staff'){
+          for(const effect of effects??[])await legacyStaffCommand(sb,userId,academyId,'recover',String(effect.id),{reason});
+          const saved=await legacyStaffCommand(sb,userId,academyId,'finish',jobId,{recovery:true,reason});
+          return json(200,saved);
+        }
+
         for(const effect of effects??[]){try{if(effect.rollback_strategy==='append_reversal'){const {data:entry,error:entryError}=await sb.from('academy_account_ledger_entries').select('id,academy_id,contact_id,amount::text,currency').eq('academy_id',academyId).eq('id',effect.target_id).maybeSingle();if(entryError||!entry?.id)throw new Error(entryError?.message??'Opening balance entry not found');const exactAmount=BigInt(legacyImportAmount(entry.amount));const {data:reversal,error:reversalError}=await sb.from('academy_account_ledger_entries').insert({academy_id:academyId,contact_id:entry.contact_id,entry_type:exactAmount>0n?'credit_adjustment':'debit_adjustment',amount:(-exactAmount).toString(),currency:entry.currency,effective_at:new Date().toISOString(),reason:`Import rollback: ${reason}`,idempotency_key:`rollback:${jobId}:${effect.id}`,created_by:userId,metadata:{reverses_import_effect_id:effect.id,reverses_ledger_entry_id:entry.id}}).select('id').single();if(reversalError)throw reversalError;await sb.from('academy_import_effects').update({rollback_status:'completed',rollback_reference_id:reversal.id,rolled_back_at:new Date().toISOString()}).eq('academy_id',academyId).eq('id',effect.id);completed++;}
           else if(effect.rollback_strategy==='delete_if_unreferenced'&&allowedDeleteTables.has(String(effect.target_table))){const {error:deleteError}=await sb.from(String(effect.target_table)).delete().eq('academy_id',academyId).eq('id',effect.target_id);if(deleteError){await sb.from('academy_import_effects').update({rollback_status:'manual_required',rollback_error:deleteError.message}).eq('academy_id',academyId).eq('id',effect.id);manual++;}else{await sb.from('academy_import_effects').update({rollback_status:'completed',rolled_back_at:new Date().toISOString()}).eq('academy_id',academyId).eq('id',effect.id);completed++;}}
           else{await sb.from('academy_import_effects').update({rollback_status:'manual_required',rollback_error:'Safe update restoration requires field-level operator review'}).eq('academy_id',academyId).eq('id',effect.id);manual++;}}
@@ -9756,75 +9674,47 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         if (!email && !phone) return json(400, { error: "email or phone is required" });
         if (!["active", "inactive", "trial", "paused"].includes(status)) return json(400, { error: "Invalid status" });
 
+        let target;
+        try {
+          target = await resolveAcademyContactSaveTarget(sb as unknown as Parameters<typeof resolveAcademyContactSaveTarget>[0], academyId, id, email, phone);
+        } catch (error) {
+          if (error instanceof ContactSaveTargetError) return json(error.status, {error: error.message});
+          throw error;
+        }
+        const assignedBranches = academyAccessBranchIds(access);
+        const selectedBranch = normalizeText(body?.primary_branch_id ?? body?.branch_id, 64)
+          || (!target && assignedBranches?.length === 1 ? assignedBranches[0] : null);
+        if (!(await validateBranchScopedMutation(sb, academyId, access, {
+          ...body, ...(target ? {contact_id: target.id} : {}),
+          ...(selectedBranch ? {primary_branch_id: selectedBranch} : {}),
+        }, actionBody))) return json(403, {error: "Forbidden"});
+        if (target && assignedBranches === null) await ensureContactInAccessScope(sb, academyId, access, target.id);
+
         let linkedUserId: string | null = null;
-        if (email) {
-          const { data: userRow } = await sb.from("users").select("id").eq("email", email).maybeSingle();
+        if (email && !target?.user_id) {
+          const {data: userRow, error: userError} = await sb.from("users").select("id").eq("email", email).maybeSingle();
+          if (userError) return json(503, {error: "Contact verification is temporarily unavailable. Try again."});
           linkedUserId = userRow?.id ? String(userRow.id) : null;
         }
-
-        const payload = {
-          academy_id: academyId,
-          user_id: linkedUserId,
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          phone,
-          telegram_id: telegramId,
-          status,
-          metadata,
-          created_by: userId,
-        };
-
-        if (id) {
-          const { data, error } = await sb
-            .from("academy_contacts")
-            .update(payload)
-            .eq("id", id)
-            .eq("academy_id", academyId)
-            .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-            .maybeSingle();
-          if (error) return json(500, { error: "Failed to update contact", detail: error.message });
-          return json(200, { contact: data });
+        const payload = academyContactSavePayload({
+          academy_id: academyId, first_name: firstName, last_name: lastName,
+          email, phone, telegram_id: telegramId, status, metadata,
+        }, target, userId, linkedUserId, selectedBranch);
+        const columns = "id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, primary_branch_id, metadata, created_at, updated_at";
+        if (target) {
+          let update = sb.from("academy_contacts").update(payload).eq("academy_id", academyId).eq("id", target.id);
+          // Do not overwrite a newly bound login or a record moved outside the
+          // reviewed scope while this request was resolving its identity.
+          update = target.user_id ? update.eq("user_id", target.user_id) : update.is("user_id", null);
+          update = target.primary_branch_id ? update.eq("primary_branch_id", target.primary_branch_id) : update.is("primary_branch_id", null);
+          const {data, error} = await update.select(columns).maybeSingle();
+          if (error) return json(error.code === "23505" ? 409 : 500, {error: "Failed to update contact"});
+          if (!data) return json(409, {error: "This contact changed while you were saving. Refresh it before trying again."});
+          return json(200, {contact: data, ...(id ? {} : {upserted: true})});
         }
-
-        let existing: { id: string } | null = null;
-        if (email) {
-          const { data } = await sb
-            .from("academy_contacts")
-            .select("id")
-            .eq("academy_id", academyId)
-            .eq("email", email)
-            .maybeSingle();
-          existing = (data as { id: string } | null) ?? null;
-        }
-        if (!existing && phone) {
-          const { data } = await sb
-            .from("academy_contacts")
-            .select("id")
-            .eq("academy_id", academyId)
-            .eq("phone", phone)
-            .maybeSingle();
-          existing = (data as { id: string } | null) ?? null;
-        }
-
-        if (existing?.id) {
-          const { data, error } = await sb
-            .from("academy_contacts")
-            .update(payload)
-            .eq("id", existing.id)
-            .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-            .maybeSingle();
-          if (error) return json(500, { error: "Failed to update contact", detail: error.message });
-          return json(200, { contact: data, upserted: true });
-        }
-
-        const { data, error } = await sb
-          .from("academy_contacts")
-          .insert(payload)
-          .select("id, academy_id, user_id, first_name, last_name, email, phone, telegram_id, status, metadata, created_at, updated_at")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to create contact", detail: error.message });
-        return json(200, { contact: data, created: true });
+        const {data, error} = await sb.from("academy_contacts").insert(payload).select(columns).maybeSingle();
+        if (error) return json(error.code === "23505" ? 409 : 500, {error: "Failed to create contact"});
+        return json(200, {contact: data, created: true});
       }
 
       if (actionBody === "create_classroom") {
@@ -11766,206 +11656,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         return json(200, { contact_id: contactId, level, score, suggested_classrooms: suggested });
       }
 
-      if (actionBody === "upsert_staff") {
-        const staffEmail = normalizeEmail(body?.staff_email ?? body?.email);
-        if (!staffEmail) return json(400, { error: "staff_email is required" });
-        const role = normalizeAcademyRole(body?.staff_role ?? body?.role ?? "teacher");
-        if (!STAFF_GRANT_ROLES.includes(role)) return json(400, { error: "Invalid role" });
-        const requestedStatus = normalizeAcademyRoleGrantStatus(body?.status);
-        const status = GRANT_STATUSES.includes(requestedStatus) ? requestedStatus : "invited";
-        const requestedClassroomIds = Array.isArray(body?.classroom_ids)
-          ? Array.from(new Set((body.classroom_ids as unknown[]).map((c) => normalizeText(c, 64)).filter(Boolean)))
-          : [];
-        const scopeType = staffGrantScopeForRole(role);
-        const classroomIds = scopeType === "classrooms" ? requestedClassroomIds : [];
-        if (["teacher", "assistant"].includes(role) && classroomIds.length === 0) {
-          return json(400, { error: "teacher and assistant roles require at least one classroom_id" });
-        }
-        const validClassroomIds = await loadValidAcademyClassroomIds(sb, academyId, classroomIds);
-        const invalidClassroomIds = classroomIds.filter((id) => !validClassroomIds.has(id));
-        if (invalidClassroomIds.length > 0) {
-          return json(400, { error: "Invalid classroom_ids", classroom_ids: invalidClassroomIds });
-        }
-
-        const { data: userRow } = await sb.from("users").select("id").eq("email", staffEmail).maybeSingle();
-        const startsAt = normalizeText(body?.starts_at, 80) || null;
-        const expiresAt = normalizeText(body?.expires_at, 80) || null;
-        const nowIso = new Date().toISOString();
-        const displayName = normalizeText(body?.name ?? body?.title, 160) || null;
-        const userIdForGrant = userRow?.id ? String(userRow.id) : null;
-
-        let previousGrant: Record<string, unknown> | null = null;
-        const { data: previousGrantRow, error: previousGrantError } = await sb
-          .from("academy_role_grants")
-          .select("id, status, role, scope_type, scope_ids, accepted_at")
-          .eq("academy_id", academyId)
-          .eq("email", staffEmail)
-          .maybeSingle();
-        if (previousGrantError && !relationMissing(previousGrantError)) {
-          return json(500, { error: "Failed to inspect existing role grant", detail: previousGrantError.message });
-        }
-        if (!previousGrantError) previousGrant = (previousGrantRow ?? null) as Record<string, unknown> | null;
-
-        const grantPayload = {
-          academy_id: academyId,
-          user_id: userIdForGrant,
-          email: staffEmail,
-          display_name: displayName,
-          role,
-          scope_type: scopeType,
-          scope_ids: classroomIds,
-          status,
-          granted_by: userId,
-          starts_at: startsAt ?? nowIso,
-          expires_at: expiresAt,
-          revoked_by: null,
-          revoked_at: null,
-          accepted_at: status === "active" && userIdForGrant ? (previousGrant?.accepted_at ?? nowIso) : previousGrant?.accepted_at ?? null,
-          metadata: { managed_from: "academy_staff_admin" },
-        };
-
-        let grantData: Record<string, unknown> | null = null;
-        const { data: savedGrant, error: grantError } = await sb.from("academy_role_grants")
-          .upsert(grantPayload, { onConflict: "academy_id,email" })
-          .select("id, academy_id, user_id, email, display_name, role, scope_type, scope_ids, status, starts_at, expires_at, accepted_at, revoked_at, last_used_at, created_at, updated_at")
-          .maybeSingle();
-        if (grantError && !relationMissing(grantError)) return json(500, { error: "Failed to save role grant", detail: grantError.message });
-        if (!grantError) {
-          grantData = (savedGrant ?? null) as Record<string, unknown> | null;
-          await insertRoleGrantAudit(sb, {
-            academy_id: academyId,
-            actor_user_id: userId,
-            target_user_id: userIdForGrant,
-            target_email: staffEmail,
-            action: previousGrant ? "role_grant_updated" : "role_grant_created",
-            role,
-            previous_status: previousGrant?.status ? String(previousGrant.status) : null,
-            next_status: status,
-            scope_type: scopeType,
-            scope_ids: classroomIds,
-            metadata: { previous_role: previousGrant?.role ?? null },
-          });
-        } else if (["admin", "center_admin"].includes(role)) {
-          return json(500, { error: "Role grants schema is required before admin grants can be saved" });
-        }
-
-        const payload = {
-          academy_id: academyId,
-          user_id: userIdForGrant,
-          email: staffEmail,
-          display_name: displayName,
-          role,
-          classroom_ids: classroomIds,
-          is_active: status === "active" || status === "invited",
-          created_by: userId,
-        };
-
-        const { data, error } = await sb.from("academy_staff")
-          .upsert(payload, { onConflict: "academy_id,email" })
-          .select("id, academy_id, user_id, email, display_name, role, classroom_ids, is_active, created_at")
-          .maybeSingle();
-        if (error && !relationMissing(error)) return json(500, { error: "Failed to save staff", detail: error.message });
-        await logAcademyAuditEvent(sb, {
-          academyId,
-          actorUserId: userId,
-          actorRole: access.role,
-          action: "staff.upserted",
-          targetType: grantData ? "academy_role_grants" : "academy_staff",
-          targetId: grantData?.id ? String(grantData.id) : data?.id ? String(data.id) : staffEmail,
-          status: "ok",
-          metadata: {
-            email: staffEmail,
-            role,
-            status,
-            scope_type: scopeType,
-            classroom_ids: classroomIds,
-            linked_user_id: userRow?.id ?? null,
-          },
-        });
-        return json(200, { staff: grantData ? formatRoleGrantAsStaff(grantData) : data });
-      }
-
-      if (actionBody === "remove_staff") {
-        const staffId = normalizeText(body?.id, 64);
-        if (!staffId) return json(400, { error: "id is required" });
-        const nowIso = new Date().toISOString();
-        const { data: grantRow, error: grantLoadError } = await sb.from("academy_role_grants")
-          .select("id, user_id, email, role, status, scope_type, scope_ids")
-          .eq("id", staffId)
-          .eq("academy_id", academyId)
-          .maybeSingle();
-        if (grantLoadError && !relationMissing(grantLoadError)) {
-          return json(500, { error: "Failed to inspect role grant", detail: grantLoadError.message });
-        }
-        if (!grantLoadError && grantRow?.id) {
-          const grant = grantRow as Record<string, unknown>;
-          const { error: revokeError } = await sb.from("academy_role_grants")
-            .update({ status: "revoked", revoked_by: userId, revoked_at: nowIso, updated_at: nowIso })
-            .eq("id", staffId)
-            .eq("academy_id", academyId);
-          if (revokeError) return json(500, { error: "Failed to revoke role grant", detail: revokeError.message });
-          await sb.from("academy_staff")
-            .update({ is_active: false })
-            .eq("academy_id", academyId)
-            .eq("email", String(grant.email ?? ""));
-          await insertRoleGrantAudit(sb, {
-            academy_id: academyId,
-            actor_user_id: userId,
-            target_user_id: grant.user_id ? String(grant.user_id) : null,
-            target_email: String(grant.email ?? ""),
-            action: "role_grant_revoked",
-            role: normalizeAcademyRole(grant.role),
-            previous_status: String(grant.status ?? "active"),
-            next_status: "revoked",
-            scope_type: String(grant.scope_type ?? "academy"),
-            scope_ids: toStringArray(grant.scope_ids),
-            metadata: {},
-          });
-          await logAcademyAuditEvent(sb, {
-            academyId,
-            actorUserId: userId,
-            actorRole: access.role,
-            action: "staff.removed",
-            targetType: "academy_role_grants",
-            targetId: staffId,
-            status: "ok",
-            metadata: {
-              email: grant.email ?? "",
-              role: grant.role ?? "",
-              previous_status: grant.status ?? "",
-              scope_type: grant.scope_type ?? "academy",
-              scope_ids: toStringArray(grant.scope_ids),
-            },
-          });
-          return json(200, { ok: true });
-        }
-
-        const { data: staffRow } = await sb.from("academy_staff")
-          .select("email, role, classroom_ids")
-          .eq("id", staffId)
-          .eq("academy_id", academyId)
-          .maybeSingle();
-        const { error } = await sb.from("academy_staff").update({ is_active: false }).eq("id", staffId).eq("academy_id", academyId);
-        if (error) return json(500, { error: "Failed to remove staff", detail: error.message });
-        if (staffRow?.email) {
-          await sb.from("academy_role_grants")
-            .update({ status: "revoked", revoked_by: userId, revoked_at: nowIso, updated_at: nowIso })
-            .eq("academy_id", academyId)
-            .eq("email", normalizeEmail(staffRow.email));
-        }
-        await logAcademyAuditEvent(sb, {
-          academyId,
-          actorUserId: userId,
-          actorRole: access.role,
-          action: "staff.removed",
-          targetType: "academy_staff",
-          targetId: staffId,
-          status: "ok",
-          metadata: staffRow ? { email: staffRow.email, role: staffRow.role, classroom_ids: staffRow.classroom_ids } : {},
-        });
-        return json(200, { ok: true });
-      }
-
       if (actionBody === "issue_academy_certificate") {
         const contactId = normalizeText(body?.contact_id, 64);
         const classroomId = normalizeText(body?.classroom_id, 64);
@@ -12120,6 +11810,10 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof LegacyStaffImportError)return json(err.status,{error:err.message,retryable:err.retryable});
+    if(err instanceof StaffInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
+    if(err instanceof StaffAccessError)return json(err.status,{error:err.message,retryable:err.retryable});
+    if(err instanceof StudentImportServiceError)return json(err.status,{error:err.message,retryable:err.retryable});
     const message = err instanceof Error ? err.message : "Unknown error";
     const status = message === "Unauthorized"
       ? 401

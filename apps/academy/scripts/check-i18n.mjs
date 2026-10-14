@@ -23,6 +23,42 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  // Staff invitation transport and gateway feedback.
+  "Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.",
+  "Staff controls are temporarily unavailable. Try again.",
+  "Your current account or access does not cover this invitation.",
+  "This invitation conflicts with the current staff identity or access. Refresh and review the staff grant.",
+  "Invitation or staff grant is no longer available.",
+  "Review the invitation role, resources and recipient.",
+  "We could not confirm this invitation request. Retry the same request.",
+  "The invitation service returned an incomplete response. Retry the same request.",
+  "Choose a valid invitation delivery identity.",
+  "We could not confirm this delivery attempt. Retry the same request.",
+  "We could not confirm staff activation. Refresh and try again.",
+  "The invitation directory returned an incomplete response.",
+
+  'Your current access does not cover these records.',
+  'The directory is temporarily unavailable. Try again.',
+  'The directory returned an incomplete response. Try again.',
+  'Choose a valid directory page.', 'Search is limited to 120 characters.', 'Choose a valid classroom.',
+  'Contact verification is temporarily unavailable. Try again.',
+  'The email and phone belong to different contacts. Ask an administrator to resolve them.',
+  'This contact changed while you were saving. Refresh it before trying again.',
+  // Import and scheduling errors arrive dynamically from the API/helpers.
+  'The timetable could not be created. Refresh the preview and try again.',
+  'Choose a valid date and time.',
+  'This local time does not exist because the clock changes. Choose another time.',
+  'This local time occurs twice because the clock changes. Choose an unambiguous time.',
+  'Active status must be yes or no.', 'Use exact integer text for an opening balance.',
+  'Opening balances must be non-zero whole units.', 'Opening balance is outside the supported range.',
+  'Group capacity must be a non-negative integer.', 'Mapped import columns are required.',
+  'Import row number must be an integer from 1 to 5,000.',
+  'Map columns','Review & import','Receipt','New students','Needs correction','Skipped',
+  'uploading','sealed','validated','committing','completed','failed','cancelled','reversing','reversed','recovery review',
+  'To resume this upload, select the same original file.', 'The original upload row count does not match.',
+  'Choose a CSV or XLSX file.', 'Choose the original file to upload.', 'Choose a branch.',
+  'Map student name and phone before uploading.', 'Map each source column to only one field.',
+  'A source row is too large to upload.',
   'The quiz attempt does not belong to this classroom.',
   'Your quiz answers cannot be saved in this browser tab. Keep the quiz open until you submit.',
   'Verification is temporarily unavailable. Try again later.',
@@ -312,6 +348,7 @@ for (const locale of ['uz', 'ru']) {
   const dictionary = JSON.parse(fs.readFileSync(path.join(localeRoot, `${locale}.json`), 'utf8'));
   const missing = sortedPhrases.filter((phrase) => !dictionary[phrase]);
   const extras = Object.keys(dictionary).filter((phrase) => !sourcePhrases.has(phrase));
+  if (process.argv.includes('--report')) console.log(JSON.stringify({locale,missing,extras}));
   const badPlaceholders = sortedPhrases.filter((phrase) => {
     if (!dictionary[phrase]) return false;
     return placeholderNames(phrase).join('|') !== placeholderNames(dictionary[phrase]).join('|');

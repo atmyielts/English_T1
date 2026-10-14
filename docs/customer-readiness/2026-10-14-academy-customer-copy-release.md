@@ -19,8 +19,12 @@ the larger scoped/atomic import candidate remains separate in draft PR 248.
 Local qualification: Academy build/lint, verify:prod, frontend-only manifest
 check, 822 readiness checks and 172 source smoke checks. Seven focused browser
 cases pass, including billing at 1440/817/390/320px, follow-up controls and import
-actions at 320/768/1024/1440px. Rendered phone output was inspected. Required
-exact-head CI and tracked Pages deployment remain the release gate.
+actions at 320/768/1024/1440px. Rendered phone output was inspected. Exact-head
+CI 38558843952 passed. PR 251 merged to main
+`86ccdaf7b048d4e03d2b151b614cca2314441ab2`; tracked Pages deployment
+38559622384 passed. Read-only anonymous root/route/asset checks confirm the
+published wording and responsive styles. See
+`2026-10-14-academy-customer-copy-production.json`.
 
 Rollback uses the prior tracked Academy Pages deployment. No manual backend
 activation is required. This release does not declare the full customer

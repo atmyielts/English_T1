@@ -32,6 +32,7 @@ import {
 
 type Props = {
   academyId: string;
+  actorId: string;
   formatDate: (value: string | null | undefined) => string;
 };
 type Tab =
@@ -54,13 +55,7 @@ const importIssues = (value: unknown) => Array.isArray(value)
   : '';
 const money = (value: unknown, currency = "UZS") =>
   `${new Intl.NumberFormat(getLocaleTag()).format(n(value))} ${currency}`;
-type ImportCell = string | number | boolean | Date | null;
-const normalizeImportCell = (value: unknown): ImportCell => {
-  if (value == null) return null;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value instanceof Date) return value;
-  return String(value);
-};
-type ImportRow = Record<string, ImportCell>;
+import {normalizeImportCell,normalizeImportHeading as normalizeHeading,importRowsFromMatrix as rowsFromMatrix,parseImportCsv as parseCsv,mappedImportCell,type ImportCell,type ImportRow} from "../../lib/importFile";
 const importFields: Record<
   string,
   Array<{ key: string; required?: boolean }>
@@ -125,64 +120,7 @@ const importFields: Record<
     { key: "notes" },
   ],
 };
-const normalizeHeading = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-const rowsFromMatrix = (
-  matrix: ImportCell[][],
-): { headers: string[]; rows: ImportRow[] } => {
-  if (matrix.length < 2)
-    throw new Error("The file needs a header and at least one data row.");
-  const headers = matrix[0].map((value) => s(value).trim());
-  if (headers.some((value) => !value))
-    throw new Error("Every source column needs a header.");
-  if (new Set(headers.map(normalizeHeading)).size !== headers.length)
-    throw new Error("Source headers must be unique.");
-  if (matrix.length > 5001)
-    throw new Error("Import files are limited to 5,000 rows per job.");
-  return {
-    headers,
-    rows: matrix
-      .slice(1)
-      .filter((row) => row.some((value) => s(value).trim()))
-      .map((row) =>
-        Object.fromEntries(
-          headers.map((header, index) => [header, row[index] ?? null]),
-        ),
-      ),
-  };
-};
-const parseCsv = (value: string): ImportCell[][] => {
-  const rows: ImportCell[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  for (let index = 0; index < value.length; index++) {
-    const character = value[index];
-    if (character === '"') {
-      if (quoted && value[index + 1] === '"') {
-        cell += '"';
-        index++;
-      } else quoted = !quoted;
-    } else if (character === "," && !quoted) {
-      row.push(cell.trim());
-      cell = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && value[index + 1] === "\n") index++;
-      row.push(cell.trim());
-      if (row.some((item) => item !== "")) rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += character;
-  }
-  if (quoted) throw new Error("CSV contains an unclosed quoted field.");
-  row.push(cell.trim());
-  if (row.some((item) => item !== "")) rows.push(row);
-  return rows;
-};
+const importCapabilities:Record<string,string>={contacts:'manageContacts',leads:'manageAdmissions',guardians:'manageGuardians',staff:'manageStaff',classrooms:'manageClassrooms',balances:'adjustFinance',enrollments:'manageRoster',attendance:'markAttendance'};
 const autoMapping = (headers: string[], type: string) =>
   Object.fromEntries(
     (importFields[type] ?? []).map((field) => {
@@ -193,8 +131,14 @@ const autoMapping = (headers: string[], type: string) =>
       ];
     }),
   );
-export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
+export function IntelligenceOperationsView({ academyId, actorId, formatDate }: Props) {
   const [data, setData] = useState<AcademyBusinessIntelligence | null>(null);
+  const permittedImportTypes=useMemo(()=>{
+    if(!data)return [];
+    const permissions=data.access.permissions as unknown as Record<string,boolean>;
+    const types=data.allowed_import_types??Object.keys(importFields).filter(type=>permissions.manageImports&&permissions[importCapabilities[type]]);
+    return types.filter(type=>Object.hasOwn(importFields,type));
+  },[data]);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -258,6 +202,14 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
     {},
   );
   const [selectedImport, setSelectedImport] = useState("");
+  useEffect(()=>{
+    if(permittedImportTypes.length&&!permittedImportTypes.includes(importForm.import_type)){
+      const type=permittedImportTypes[0];
+      setImportForm({...importForm,import_type:type});
+      setColumnMapping(autoMapping(importHeaders,type));
+      setSelectedImport('');
+    }
+  },[permittedImportTypes,importForm,importHeaders]);
   const load = useCallback(async () => {
     setError("");
     try {
@@ -308,7 +260,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
   useEffect(() => {
     void load();
   }, [load]);
-  const run = async (work: () => Promise<unknown>, message: string) => {
+  const run = async (work: () => Promise<unknown>, message: string | ((result: unknown) => string)) => {
     setBusy(true);
     setError("");
     setNotice("");
@@ -316,7 +268,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
       const result = await work();
       const partial = result && typeof result === 'object' && 'failed_rows' in result && n(result.failed_rows) > 0;
       const needsReview = result && typeof result === 'object' && 'manual_required' in result && n(result.manual_required) > 0;
-      setNotice(partial ? 'Some rows could not be saved. Review the rows below.' : needsReview ? 'Some records need staff review before their changes can be undone.' : message);
+      setNotice(partial ? 'Some rows could not be saved. Review the rows below.' : typeof message === 'function' ? message(result) : needsReview ? 'Some records need staff review before their changes can be undone.' : message);
       await load();
     } catch (next) {
       setError(next instanceof Error ? next.message : "Operation failed.");
@@ -366,6 +318,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
   const stageImport = async () => {
     if (!importRows.length || !importHeaders.length)
       throw new Error("Choose an Excel or CSV file first.");
+    if(!permittedImportTypes.includes(importForm.import_type)){setError(translate('Forbidden'));return;}
     const fields = importFields[importForm.import_type] ?? [];
     const missing = fields
       .filter((field) => field.required && !columnMapping[field.key])
@@ -388,7 +341,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
             fields.map((field) => [
               field.key,
               columnMapping[field.key]
-                ? (raw[columnMapping[field.key]] ?? "")
+                ? mappedImportCell(raw[columnMapping[field.key]] ?? null, field.key)
                 : "",
             ]),
           );
@@ -1223,7 +1176,7 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                     setColumnMapping(autoMapping(importHeaders, import_type));
                   }}
                 >
-                  {Object.keys(importFields).map((value) => (
+                  {permittedImportTypes.map((value) => (
                     <option key={value} value={value}>
                       {importTypeLabel(value)}
                     </option>
@@ -1387,16 +1340,16 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                 <tbody>
                   {data.import_jobs.map((item) => (
                     <tr key={s(item.id)}>
-                      <td data-label={translate("File")}>{s(item.source_filename)}</td>
-                      <td data-label={translate("Type")}>{importTypeLabel(item.import_type)}</td>
-                      <td data-label={translate("Status")}>{importStatus(item.status)}</td>
-                      <td data-label={translate("Total")}>{n(item.total_rows)}</td>
-                      <td data-label={translate("Valid")}>{n(item.valid_rows)}</td>
-                      <td data-label={translate("Invalid")}>{n(item.invalid_rows)}</td>
-                      <td data-label={translate("Saved")}>{n(item.committed_rows)}</td>
-                      <td data-label={translate("Action")}>
+                      <td data-label={translate('File')}>{s(item.source_filename)}</td>
+                      <td data-label={translate('Type')}>{importTypeLabel(item.import_type)}</td>
+                      <td data-label={translate('Status')}>{importStatus(item.status)}</td>
+                      <td data-label={translate('Total')}>{n(item.total_rows)}</td>
+                      <td data-label={translate('Valid')}>{n(item.valid_rows)}</td>
+                      <td data-label={translate('Invalid')}>{n(item.invalid_rows)}</td>
+                      <td data-label={translate('Saved')}>{n(item.committed_rows)}</td>
+                      <td data-label={translate('Action')}>
                         <div className="inline-actions">
-                          {item.status === "ready" ? (
+                          {(item.status === "ready" || (item.import_type === 'staff' && ['committing','failed'].includes(s(item.status)))) && !['in_progress','partial','manual_required','completed'].includes(s(item.rollback_status)) ? (
                             <button
                               className="small-btn"
                               disabled={busy}
@@ -1406,12 +1359,16 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                     teacherStudioCommitImportJob(academyId, {
                                       import_job_id: item.id,
                                       confirm_commit: true,
-                                    }),
-                                  "Import saved.",
+                                    }, item.import_type === 'staff' ? actorId : undefined),
+                                  (result) => n((result as Record<string,unknown>)?.pending_rows) > 0
+                                    ? 'Staff import batch saved. Continue to import the remaining rows.'
+                                    : n((result as Record<string,unknown>)?.failed_rows) > 0
+                                      ? 'Valid rows were saved. Review the invalid rows before continuing.'
+                                      : 'Import saved.',
                                 )
                               }
                             >
-                              {translate("Save checked rows")}{' '}</button>
+                              {translate(item.status === 'committing' ? 'Continue import' : 'Save checked rows')}{' '}</button>
                           ) : null}
                           {["available", "partial", "manual_required"].includes(
                             s(item.rollback_status),
@@ -1426,8 +1383,12 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                                       import_job_id: item.id,
                                       reason:
                                         "Operator-requested rollback from import workspace",
-                                    }),
-                                  "Import changes undone. Check the updated results below.",
+                                    }, item.import_type === 'staff' ? actorId : undefined),
+                                  (result) => n((result as Record<string,unknown>)?.recovery_pending) > 0
+                                    ? 'Staff recovery batch saved. Continue to recover the remaining rows.'
+                                    : n((result as Record<string,unknown>)?.manual_required) > 0
+                                      ? 'Used or changed staff records were retained for review.'
+                                      : 'Import changes undone. Check the updated results below.',
                                 )
                               }
                             >
@@ -1456,11 +1417,12 @@ export function IntelligenceOperationsView({ academyId, formatDate }: Props) {
                         {translate("Row")}{' '}{s(item.row_number)} ·{" "}
                         {importStatus(item.validation_status)}
                       </strong>
-                      <p>{importIssues(item.validation_errors)}</p>
+                      {importIssues(item.validation_errors) ? <p>{importIssues(item.validation_errors)}</p> : null}
                     </div>
-                    <span>{translate(item.validation_status === "committed" ? "Saved" : "Not saved")}</span>
+                    <span>{translate(item.validation_status === 'committed' ? 'Saved' : 'Not saved')}</span>
                   </article>
                 ))}
+              {!data.import_rows.length ? <p className="muted-copy">{translate('Choose a file and check its rows to see the results here.')}</p> : null}
             </div>
           </section>
         </div>
