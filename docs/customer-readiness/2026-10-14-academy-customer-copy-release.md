@@ -12,7 +12,8 @@ review no longer receive a full-success notice.
 
 The follow-up sections use selected/focused 44px buttons, spaced fields and
 existing mint/forest/lime tokens. Phone import history displays labeled rows
-with actions onscreen. Backend import behavior remains the installed behavior;
+with actions onscreen. The alert counter is labeled as 30-day alerts, preserving
+its meaning when one student has several evaluations. Backend import behavior remains the installed behavior;
 the larger scoped/atomic import candidate remains separate in draft PR 248.
 
 Local qualification: Academy build/lint, verify:prod, frontend-only manifest

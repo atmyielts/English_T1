@@ -2655,7 +2655,6 @@
   "Not saved": "Saqlanmagan",
   "Some rows could not be saved. Review the rows below.": "Ba’zi satrlarni saqlab bo‘lmadi. Quyidagi satrlarni tekshiring.",
   "Some records need staff review before their changes can be undone.": "Ba’zi yozuvlardagi o‘zgarishlarni bekor qilishdan oldin xodim tekshirishi kerak.",
-  "Students needing attention": "E’tibor kerak bo‘lgan o‘quvchilar",
   "Follow-ups to do": "Bajariladigan vazifalar",
   "Renewals to check": "Davom ettirishni tekshirish",
   "Tasks": "Vazifalar",
@@ -2669,5 +2668,6 @@
   "Parents": "Ota-onalar",
   "Starting balances": "Boshlang‘ich balanslar",
   "Group enrollments": "Guruhga yozilishlar",
-  "Other records": "Boshqa yozuvlar"
+  "Other records": "Boshqa yozuvlar",
+  "Student alerts (30 days)": "O‘quvchi ogohlantirishlari (30 kun)"
 }

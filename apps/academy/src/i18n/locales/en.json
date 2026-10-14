@@ -2655,7 +2655,6 @@
   "Not saved": "Not saved",
   "Some rows could not be saved. Review the rows below.": "Some rows could not be saved. Review the rows below.",
   "Some records need staff review before their changes can be undone.": "Some records need staff review before their changes can be undone.",
-  "Students needing attention": "Students needing attention",
   "Follow-ups to do": "Follow-ups to do",
   "Renewals to check": "Renewals to check",
   "Tasks": "Tasks",
@@ -2669,5 +2668,6 @@
   "Parents": "Parents",
   "Starting balances": "Starting balances",
   "Group enrollments": "Group enrollments",
-  "Other records": "Other records"
+  "Other records": "Other records",
+  "Student alerts (30 days)": "Student alerts (30 days)"
 }
