@@ -685,7 +685,14 @@ addCheck('Academy audit trail is visible in Education OS', educationOsView.inclu
 addCheck('Academy Edge supports storage-backed uploads', academyEdge.includes('uploadAcademyFile') && academyEdge.includes('signStorageRef') && academyEdge.includes('storagePlaceholderUrl'));
 addCheck('Academy Edge enforces upload limits', academyEdge.includes('ACADEMY_FILE_MAX_BYTES') && academyEdge.includes('File exceeds 50 MiB limit'));
 for (const action of auditActions) {
-  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action));
+  const staffCommands = read('supabase/migrations/20261014120000_academy_staff_access_commands.sql')
+    .replace(/--[^\n]*/g,'').replace(/\/\*[\s\S]*?\*\//g,'');
+  const staffAuditCase = staffCommands.match(/audit_action\s*:=\s*case\s+p_action\b[^;]+;/)?.[0] ?? '';
+  const atomicStaffAudit = ['staff.upserted','staff.removed'].includes(action)
+    && academyEdge.includes('await runAcademyStaffCommand(sb,userId,academyId,actionBody,body')
+    && staffAuditCase.includes(`'${action}'`)
+    && /insert into public\.academy_audit_events\([^;]+values\(p_academy_id,p_actor_id,audit_action,/.test(staffCommands);
+  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action)||atomicStaffAudit);
 }
 
 const runbookSections = [

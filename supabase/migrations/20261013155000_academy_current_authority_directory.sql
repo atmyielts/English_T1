@@ -53,7 +53,15 @@ begin
    where m.tenant_id=v_parent and m.user_id=p_actor_id and m.status='active' and m.role in('owner','admin') and cp.status='active'
     and t.metadata->>'parent_center_id'=v_parent::text and t.metadata->>'service_family'='academy'
   union all
-  select 'grant',g.id,g.role,g.scope_type,public.academy_authority_scope_ids(g.scope_ids),g.expires_at
+  select 'grant',g.id,g.role,g.scope_type,
+   case when g.scope_type='branches'
+    and exists(select 1 from public.academy_staff s where s.academy_id=p_academy_id and to_jsonb(s)->>'managed_grant_id'=g.id::text) then
+    array(select distinct a.branch_id from public.academy_staff s join public.academy_staff_branch_assignments a on a.academy_id=s.academy_id and a.staff_id=s.id
+     join public.academy_branches b on b.academy_id=a.academy_id and b.id=a.branch_id
+     where s.academy_id=p_academy_id and to_jsonb(s)->>'managed_grant_id'=g.id::text and a.status='active' and b.is_active
+      and g.scope_ids @> jsonb_build_array(b.id) and a.starts_on<=(v_now at time zone b.timezone)::date
+      and(a.ends_on is null or a.ends_on>=(v_now at time zone b.timezone)::date) order by 1)
+    else public.academy_authority_scope_ids(g.scope_ids) end,g.expires_at
    from public.academy_role_grants g where g.academy_id=p_academy_id and g.status='active' and g.starts_at<=v_now and(g.expires_at is null or g.expires_at>v_now)
     and(g.user_id=p_actor_id or(g.user_id is null and v_verified and lower(trim(g.email))=v_email))
   union all
@@ -65,7 +73,7 @@ begin
      where a.academy_id=p_academy_id and a.staff_id=s.id and a.status='active' and b.is_active
       and a.starts_on<=(v_now at time zone b.timezone)::date and(a.ends_on is null or a.ends_on>=(v_now at time zone b.timezone)::date) order by 1)
     when s.role in('teacher','assistant') then public.academy_authority_scope_ids(coalesce(to_jsonb(s.classroom_ids),'[]'::jsonb)) else '{}'::uuid[] end,null::timestamptz
-   from public.academy_staff s where s.academy_id=p_academy_id and s.is_active
+   from public.academy_staff s where s.academy_id=p_academy_id and s.is_active and to_jsonb(s)->>'managed_grant_id' is null
     and(s.user_id=p_actor_id or(s.user_id is null and v_verified and lower(trim(s.email))=v_email))
  ) select coalesce(jsonb_agg(jsonb_build_object('source',source,'source_id',source_id,'role',role,'scope_type',scope_type,'scope_ids',scope_ids,'expires_at',expires_at) order by source,source_id),'[]') into v_result
   from entries where scope_ids is not null and scope_type in('academy','branches','classrooms','students')

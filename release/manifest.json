@@ -14,7 +14,8 @@
     "20261012200000_academy_student_import_lifecycle.sql",
     "20261012220000_academy_student_import_recovery.sql",
     "20261013155000_academy_current_authority_directory.sql",
-    "20261013160000_academy_student_import_authority.sql"
+    "20261013160000_academy_student_import_authority.sql",
+    "20261014120000_academy_staff_access_commands.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -32,11 +33,12 @@
     "migration:20261012220000_academy_student_import_recovery.sql",
     "migration:20261013155000_academy_current_authority_directory.sql",
     "migration:20261013160000_academy_student_import_authority.sql",
+    "migration:20261014120000_academy_staff_access_commands.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "Keep the PR draft until legacy multi-resource capability resolution and legacy atomic recovery/history are complete. The new importer gateway and browser workflow are locally qualified; verify owned hosted API/browser acceptance before enabling the new entry. Code qualification is not customer readiness. Reconcile concurrent proctor/shared-file work before merge or backend activation.",
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these eight reviewed authority/import migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
+    "Keep the PR draft until legacy multi-resource capability resolution and legacy atomic recovery/history are complete. The new importer gateway and browser workflow are locally qualified; verify owned hosted API/browser acceptance before enabling the new entry. Code qualification is not customer readiness. Reconcile concurrent proctor/shared-file work before merge or backend activation. Atomic staff commands, managed profile provenance and scoped staff directory are candidate code only. Staff invitations, legacy staff import/recovery, complete rendered edit/role/scope acceptance and installed-schema qualification remain release gates.",
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these nine reviewed authority/import/staff migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
     "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [

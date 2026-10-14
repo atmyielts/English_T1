@@ -13,12 +13,18 @@ their entire implementation is absent.
   with owned hosted fixtures. Evidence: `2026-10-13-legacy-import-permissions.json`.
 - PR 248 remains draft. Import review/resumption/recovery, current authority,
   directory and browser improvements are locally qualified. CI for head
-  `9297cd9f3d3b44b099496595a564977ed8c546e3` is green. Its new importer and
-  authority migrations are not activated.
-- The private-table ACL fix is separated from the importer for independent
-  protected release. Activation/live proof remain pending at this record.
-- Known staff delegation, managed-profile provenance and remaining legacy
-  multi-resource authorization/recovery issues remain release gates.
+  `4a8f0f633875e0ba221495b15328d72c064f2e77` is green (run 38525186177).
+  Its new importer and authority migrations are not activated. Subsequent staff
+  changes require their own protected CI and qualification.
+- PR 250 shipped the seven-table/column ACL boundary; migration installation,
+  tracked Pages deploy and owned hosted checks/cleanup passed. Evidence:
+  `2026-10-14-private-table-production.json`.
+- Atomic staff saves/revocation/physical assignments, explicit managed-profile
+  provenance, scoped staff pagination and identity-preserving browser edits are
+  locally qualified candidates. They are not deployed. Evidence:
+  `2026-10-14-staff-access-candidate.md`.
+- Staff invitations, legacy staff import/recovery, remaining multi-resource
+  authorization and final installed-schema/hosted acceptance remain release gates.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import {staffRequest} from './staffRequest';
 import type {RoomBranch,RoomTimetable} from './roomTimetable';
 
 export type Json = Record<string, unknown> | unknown[];
@@ -832,6 +833,7 @@ export type TeacherDay = {
 
 export type TeacherStudioStaff = {
   id: string;
+  staff_id?: string | null;
   grant_id?: string | null;
   academy_id: string;
   user_id: string | null;
@@ -2352,7 +2354,7 @@ export const teacherStudioRollbackImportJob = (academyId:string,body:Record<stri
 export const teacherStudioConvertLeadFull = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{result:Record<string,unknown>}>(academyId,'convert_lead_full',body);
 export const teacherStudioUpsertCampaign = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{campaign:Record<string,unknown>}>(academyId,'upsert_campaign',body);
 export const teacherStudioUpsertLocalization = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{localization:Record<string,unknown>;translations:Array<Record<string,unknown>>}>(academyId,'upsert_localization',body);
-export const teacherStudioUpsertStaffBranchAssignment = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{assignment:Record<string,unknown>}>(academyId,'upsert_staff_branch_assignment',body);
+export const teacherStudioUpsertStaffBranchAssignment = (academyId:string,body:Record<string,unknown>) => staffRequest<{assignment:Record<string,unknown>}>(academyId,'upsert_staff_branch_assignment',body);
 export const teacherStudioCreateAutomationVersion = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{automation_version:Record<string,unknown>}>(academyId,'create_automation_version',body);
 export const teacherStudioExecuteAutomationEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'execute_automation_event',body);
 export const teacherStudioReviewAutomationExecution = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'review_automation_execution',body);
@@ -2652,8 +2654,18 @@ export const teacherStudioBulkInvites = async (
 };
 
 export const teacherStudioStaff = async (academyId: string): Promise<TeacherStudioStaff[]> => {
-  const data = await callTeacherStudio<{ staff: TeacherStudioStaff[] }>({ action: 'staff', academyId });
-  return data.staff ?? [];
+  const rows:TeacherStudioStaff[]=[],seen=new Set<string>();
+  let cursor:{after_source:string;after_id:string}|null=null;
+  do {
+    const data: {staff:TeacherStudioStaff[];has_more?:boolean;cursor?:{after_source:string;after_id:string}|null} = await callTeacherStudio({action: 'staff',academyId,body:cursor??{}});
+    if(!Array.isArray(data.staff))throw new Error('The staff directory returned an incomplete response.');
+    rows.push(...data.staff);
+    if(!data.has_more)return rows; // Compatible with the installed pre-pagination API.
+    const next=data.cursor,last=data.staff.at(-1),identity=JSON.stringify(next);
+    if(!next||!last||next.after_id!==last.id||next.after_source!==last.source||seen.has(identity))throw new Error('The staff directory could not continue. Refresh and try again.');
+    seen.add(identity);cursor=next;
+  }while(cursor);
+  return rows;
 };
 
 export const teacherStudioNotifications = async (academyId: string): Promise<TeacherStudioNotification[]> => {
@@ -2988,35 +3000,32 @@ export const teacherStudioRecordPlacement = async (
 export const teacherStudioUpsertStaff = async (
   academyId: string,
   body: {
+    id?: string;
     staff_email: string;
     name?: string;
     staff_role?: string;
     classroom_ids?: string[];
+    scope_type?: string;
+    scope_ids?: string[];
+    branch_ids?: string[];
+    idempotency_key?: string;
     is_active?: boolean;
     status?: string;
     starts_at?: string | null;
     expires_at?: string | null;
   },
+  expectedActor?: string,
 ): Promise<TeacherStudioStaff> => {
-  const data = await callTeacherStudio<{ staff: TeacherStudioStaff }>({
-    method: 'POST',
-    action: 'upsert_staff',
-    academyId,
-    body,
-  });
+  const data = await staffRequest<{ staff: TeacherStudioStaff }>(academyId,'upsert_staff',body,expectedActor);
   return data.staff;
 };
 
 export const teacherStudioRemoveStaff = async (
   academyId: string,
   id: string,
+  expectedActor?: string,
 ): Promise<{ ok: boolean }> => {
-  return callTeacherStudio<{ ok: boolean }>({
-    method: 'POST',
-    action: 'remove_staff',
-    academyId,
-    body: { id },
-  });
+  return staffRequest<{ok:boolean}>(academyId,'remove_staff',{id},expectedActor);
 };
 
 export const teacherStudioIssueAcademyCertificate = async (

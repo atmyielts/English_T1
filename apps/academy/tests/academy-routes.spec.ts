@@ -2,6 +2,38 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
+test('staff edits preserve account identity, access resources and precise expiry on desktop and phone',async({page})=>{
+ const commands:Record<string,unknown>[]=[],staffId='00000000-0000-4000-8000-000000000901';
+ const person={id:staffId,academy_id:'academy-route-smoke',user_id:'teacher-user',email:'teacher-scope@example.test',display_name:'Scope teacher',
+  role:'teacher',source:'grant',is_active:true,status:'active',scope_type:'classrooms',scope_ids:['classroom-route-smoke'],classroom_ids:['classroom-route-smoke'],
+  expires_at:'2026-12-31T13:45:00.000Z',created_at:'2026-10-01T08:00:00Z'};
+ await seedSessionCookie(page,'owner-user');
+ await mockAcademyEdge(page,'owner',{actionOverrides:{staff:{staff:[person]}},respond:async body=>{
+  if(body.action==='upsert_staff'){commands.push(body);return {staff:{...person,role:body.staff_role,email:body.staff_email}};}
+  return undefined;
+ }});
+ await page.setViewportSize({width:1440,height:1000});
+ await page.goto('/academy/admin/os?academy_id=academy-route-smoke');
+ await page.getByRole('button',{name:/^More tools/}).click();
+ await page.getByRole('button',{name:'Growth',exact:true}).click();
+ const panel=page.locator('.panel').filter({has:page.getByRole('heading',{name:'Role grants',exact:true})});
+ await panel.getByRole('button',{name:'Edit',exact:true}).click();
+ await panel.getByRole('combobox',{name:'Role',exact:true}).selectOption('admin');
+ await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toHaveValue('classrooms');
+ await expect(panel.getByRole('checkbox',{name:'IELTS Evening A'})).toBeChecked();
+ await panel.getByLabel('Email',{exact:true}).fill('alias-scope@example.test');
+ await panel.screenshot({path:test.info().outputPath('staff-scope-desktop.png')});
+ await panel.getByRole('button',{name:'Update grant',exact:true}).click();
+ await expect.poll(()=>commands.length).toBe(1);
+ expect(commands[0]).toMatchObject({id:staffId,staff_email:'alias-scope@example.test',staff_role:'admin',scope_type:'classrooms',scope_ids:['classroom-route-smoke'],expires_at:person.expires_at});
+ expect(typeof commands[0].idempotency_key).toBe('string');
+ await page.setViewportSize({width:390,height:844});
+ await panel.getByRole('button',{name:'Edit',exact:true}).click();
+ await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await panel.screenshot({path:test.info().outputPath('staff-scope-phone.png')});
+});
+
 type StaffPersona = "owner" | "admin" | "center_admin" | "branch_manager" | "manager" | "counselor" | "receptionist" | "salesperson" | "cashier" | "accountant" | "payroll_officer" | "parent_liaison" | "teacher" | "assistant";
 type Persona = StaffPersona | "student" | "guardian";
 

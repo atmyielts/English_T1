@@ -809,7 +809,6 @@
   "Classroom resource removed.": "O‘quv guruhi resursi olib tashlandi.",
   "Classroom resource saved.": "O‘quv guruhi resursi saqlandi.",
   "Classroom role": "O‘quv guruhidagi rol",
-  "Classroom scope": "O‘quv guruhi qamrovi",
   "Classroom sections": "O‘quv guruhi bo‘limlari",
   "Classroom unit economics": "O‘quv guruhi unit economics",
   "Classroom workspace": "O‘quv guruhi ish maydoni",
@@ -2304,7 +2303,6 @@
   "Teacher": "O‘qituvchi",
   "Teacher action queue": "O‘qituvchi vazifalari navbati",
   "Teacher and academy messages": "O‘qituvchi va akademiya xabarlari",
-  "Teacher and assistant roles require at least one assigned classroom.": "O‘qituvchi va assistent rollari uchun kamida bitta o‘quv guruhi biriktirilishi shart.",
   "Teacher cost": "O‘qituvchi xarajati",
   "Teacher cost appears only where a payroll component can be attributed to the classroom; unallocated fixed salary remains at branch level.": "O‘qituvchi xarajati faqatgina ish haqi komponentini o‘quv guruhiga bog‘lash mumkin bo‘lgan holatda ko‘rinadi; taqsimlanmagan doimiy oylik maosh filial darajasida qoladi.",
   "Teacher CTA label": "O‘qituvchi CTA tugmasi matni",
@@ -2768,5 +2766,11 @@
   "Search is limited to 120 characters.": "Qidiruv 120 ta belgigacha bo‘lishi mumkin.",
   "Choose a valid classroom.": "To‘g‘ri guruhni tanlang.",
   "No branch assigned": "Filial biriktirilmagan",
-  "Ask an administrator to assign a branch before importing students.": "O‘quvchilarni import qilishdan oldin administratordan filial biriktirishni so‘rang."
+  "Ask an administrator to assign a branch before importing students.": "O‘quvchilarni import qilishdan oldin administratordan filial biriktirishni so‘rang.",
+  "Access resources": "Kirish resurslari",
+  "Access scope": "Kirish doirasi",
+  "Branches": "Filiallar",
+  "Choose at least one access resource.": "Kamida bitta kirish resursini tanlang.",
+  "Sign in again to manage staff.": "Xodimlarni boshqarish uchun qayta kiring.",
+  "Whole Academy": "Butun akademiya"
 }

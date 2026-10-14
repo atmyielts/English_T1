@@ -809,7 +809,6 @@
   "Classroom resource removed.": "Ресурс учебной группы удалён.",
   "Classroom resource saved.": "Ресурс учебной группы сохранён.",
   "Classroom role": "Роль в учебной группе",
-  "Classroom scope": "Область видимости учебной группы",
   "Classroom sections": "Разделы учебной группы",
   "Classroom unit economics": "Юнит-экономика учебной группы",
   "Classroom workspace": "Рабочее пространство учебной группы",
@@ -2304,7 +2303,6 @@
   "Teacher": "Преподаватель",
   "Teacher action queue": "Очередь действий преподавателя",
   "Teacher and academy messages": "Сообщения преподавателя и академии",
-  "Teacher and assistant roles require at least one assigned classroom.": "Для ролей преподавателя и ассистента требуется назначить как минимум одну учебную группу.",
   "Teacher cost": "Расходы на преподавателя",
   "Teacher cost appears only where a payroll component can be attributed to the classroom; unallocated fixed salary remains at branch level.": "Расходы на преподавателя отображаются только там, где компонент расчёта заработной платы может быть отнесён к учебной группе; нераспределённый оклад остаётся на уровне филиала.",
   "Teacher CTA label": "Текст кнопки преподавателя",
@@ -2768,5 +2766,11 @@
   "Search is limited to 120 characters.": "Поисковый запрос ограничен 120 символами.",
   "Choose a valid classroom.": "Выберите допустимую группу.",
   "No branch assigned": "Филиал не назначен",
-  "Ask an administrator to assign a branch before importing students.": "Попросите администратора назначить филиал перед импортом учеников."
+  "Ask an administrator to assign a branch before importing students.": "Попросите администратора назначить филиал перед импортом учеников.",
+  "Access resources": "Доступные ресурсы",
+  "Access scope": "Область доступа",
+  "Branches": "Филиалы",
+  "Choose at least one access resource.": "Выберите хотя бы один ресурс для доступа.",
+  "Sign in again to manage staff.": "Войдите снова, чтобы управлять сотрудниками.",
+  "Whole Academy": "Вся академия"
 }
