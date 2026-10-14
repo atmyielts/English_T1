@@ -7914,7 +7914,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         const result = await runAcademyStaffCommand(sb,userId,academyId,actionBody,body ?? {});
         if (actionBody === "upsert_staff") return json(200,{staff:{...formatRoleGrantAsStaff(result.grant as Record<string,unknown>),staff_id:(result.staff_profile as Record<string,unknown>).id},replayed:result.replayed});
         if (actionBody === "remove_staff") return json(200,{ok:true,replayed:result.replayed});
-        return json(200,{assignment:result.assignment,replayed:result.replayed});
+        if (actionBody === "upsert_staff_branch_assignment") return json(200,{assignment:result.assignment,replayed:result.replayed});
+        throw new StaffAccessError(400,"Choose a valid staff command.");
       }
       const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
