@@ -266,7 +266,9 @@ export function IntelligenceOperationsView({ academyId, actorId, formatDate }: P
     setNotice("");
     try {
       const result = await work();
-      setNotice(typeof message === 'function' ? message(result) : message);
+      const partial = result && typeof result === 'object' && 'failed_rows' in result && n(result.failed_rows) > 0;
+      const needsReview = result && typeof result === 'object' && 'manual_required' in result && n(result.manual_required) > 0;
+      setNotice(partial ? 'Some rows could not be saved. Review the rows below.' : typeof message === 'function' ? message(result) : needsReview ? 'Some records need staff review before their changes can be undone.' : message);
       await load();
     } catch (next) {
       setError(next instanceof Error ? next.message : "Operation failed.");

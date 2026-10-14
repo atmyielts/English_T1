@@ -34,8 +34,12 @@ their entire implementation is absent.
   multi-resource authorization and final installed-schema/hosted acceptance
   remain release gates. The scope above is still open, with no production
   activation of the eleven pending importer/authority/staff/invitation migrations.
-- Frontend-only customer wording and responsive import layout are separated
-  into PR 251; its protected CI/deployment still need confirmation.
+- PR 251 shipped frontend-only customer wording and responsive import history.
+  Exact-head CI 38558843952 and tracked Pages run 38559622384 passed; main is
+  `86ccdaf7b048d4e03d2b151b614cca2314441ab2`. Anonymous route/asset checks confirm
+  the published copy and 980px history breakpoint. Evidence:
+  `2026-10-14-academy-customer-copy-production.json`. This is not a declaration
+  that every signed-in/provider workflow is qualified.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

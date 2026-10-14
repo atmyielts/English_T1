@@ -2,6 +2,34 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
+test('Academy imports use plain wording, hide internal IDs and keep phone actions onscreen',async({page})=>{
+  const internalId='00000000-0000-4000-8000-000000000904';
+  await seedSessionCookie(page,'owner-user');
+  await mockAcademyEdge(page,'owner',{respond:async body=>{
+    if(body.action==='business_intelligence')return {...businessIntelligence,access:ownerAccess,import_rows:[{id:'owned-row',import_job_id:'import-route-smoke',row_number:1,validation_status:'committed',validation_errors:[],target_id:internalId}]};
+    if(body.action==='commit_import_job')return {import_job_id:'import-route-smoke',committed_rows:1,failed_rows:1,status:'failed'};
+    return undefined;
+  }});
+  await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
+  await expect(page.getByRole('heading',{name:'Students and follow-ups',exact:true})).toBeVisible();
+  const imports=page.getByRole('button',{name:'Imports',exact:true});await imports.click();
+  await expect(imports).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('heading',{name:'Import from Excel or CSV',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Check rows',exact:true})).toBeVisible();
+  await expect(page.getByText(internalId,{exact:true})).toHaveCount(0);
+  await expect(page.getByText('[]',{exact:true})).toHaveCount(0);
+  for(const width of [320,768,1024,1440]){
+    await page.setViewportSize({width,height:1000});
+    const action=page.getByRole('button',{name:'Save checked rows',exact:true}),box=await action.boundingBox();
+    expect(box).not.toBeNull();expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(width);expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    await page.screenshot({path:test.info().outputPath(`customer-import-${width}.png`),fullPage:true});
+  }
+  await page.getByRole('button',{name:'Save checked rows',exact:true}).click();
+  await expect(page.getByText('Some rows could not be saved. Review the rows below.',{exact:true})).toBeVisible();
+  await expect(page.getByText('Import saved.',{exact:true})).toHaveCount(0);
+});
+
 test('staff edits preserve account identity, access resources and precise expiry on desktop and phone',async({page})=>{
  const commands:Record<string,unknown>[]=[],staffId='00000000-0000-4000-8000-000000000901';
  const person={id:staffId,academy_id:'academy-route-smoke',user_id:'teacher-user',email:'teacher-scope@example.test',display_name:'Scope teacher',
