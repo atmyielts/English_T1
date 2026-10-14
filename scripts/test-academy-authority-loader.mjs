@@ -10,12 +10,13 @@ const moduleOf=(file,dependencies={})=>{
  return module.exports;
 };
 const access=moduleOf('access.ts'),scope=moduleOf('capability-scope.ts',{'./access.ts':access});
+const invitations=moduleOf('staff-invitations.ts');
 const source=readFileSync(new URL('../supabase/functions/academy/index.ts',import.meta.url),'utf8');
 const section=(start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert(a>=0&&b>a);return source.slice(a,b);};
 const js=transformSync(section('const mergeAccessRows =','const relationMissing =')+section('const isAcademyTenantRow =','const resolveAcademyId =')+';({loadMemberships})',{loader:'ts',target:'es2022'}).code;
 const testNow='2026-10-13T21:30:00Z';
 class TestDate extends Date{constructor(value=testNow){super(value);}static now(){return Date.parse(testNow);}}
-const context={...access,...scope,Date:TestDate,crypto:webcrypto,normalizeText:(v,n=300)=>String(v??'').trim().slice(0,n),normalizeEmail:v=>String(v??'').trim().toLowerCase(),toStringArray:v=>Array.isArray(v)?[...new Set(v)]:[],toJsonObject:v=>v&&typeof v==='object'?v:{},relationMissing:()=>false};
+const context={...access,...scope,...invitations,Date:TestDate,crypto:webcrypto,normalizeText:(v,n=300)=>String(v??'').trim().slice(0,n),normalizeEmail:v=>String(v??'').trim().toLowerCase(),toStringArray:v=>Array.isArray(v)?[...new Set(v)]:[],toJsonObject:v=>v&&typeof v==='object'?v:{},relationMissing:()=>false};
 const {loadMemberships}=runInNewContext(js,context);
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),academy=id(2),email='owned@example.invalid';
@@ -23,7 +24,16 @@ const grant=(patch={})=>({id:id(3),academy_id:academy,user_id:null,email,role:'m
 const plain=value=>JSON.parse(JSON.stringify(value));let checks=0;
 function fixture({grants=[],staff=[],assignments=[],memberships=[],centers=[],tenants=[],beforeAcceptance,acceptanceError}={}){
  const data={academy_role_grants:plain(grants),academy_staff:plain(staff),academy_staff_branch_assignments:plain(assignments),tenant_memberships:plain(memberships),partner_center_profiles:plain(centers),tenants:plain(tenants)},updates=[];
- return {updates,data,from(table){
+ return {updates,data,async rpc(name,args){
+  assert.equal(name,'academy_staff_accept_access');assert.equal(args.p_actor_id,actor);
+  beforeAcceptance?.(data.academy_role_grants);
+  if(acceptanceError)return {data:null,error:{code:'XX000'}};
+  const current=data.academy_role_grants.find(row=>row.id===args.p_grant_id);
+  if(!current||!['active','invited'].includes(current.status)||current.expires_at&&Date.parse(current.expires_at)<=Date.parse(testNow))return {data:null,error:{code:'23505'}};
+  if(current.user_id!=null?current.user_id!==actor:current.email!==email)return {data:null,error:{code:'42501'}};
+  const patch={user_id:actor,status:'active',accepted_at:testNow};Object.assign(current,patch);updates.push({table:'academy_role_grants',patch,matched:1});
+  return {data:{grant:plain(current),replayed:false},error:null};
+ },from(table){
   const filters=[];let patch;
   const chain={select(){return this;},order(){return this;},limit(){return this;},eq(key,value){filters.push(row=>row[key]===value);return this;},is(key,value){filters.push(row=>row[key]===value);return this;},in(key,values){filters.push(row=>values.includes(row[key]));return this;},lte(key,value){filters.push(row=>row[key]!=null&&row[key]<=value);return this;},contains(key,value){filters.push(row=>Object.entries(value).every(([k,v])=>row[key]?.[k]===v));return this;},or(value){
    const key=value.startsWith('expires_at')?'expires_at':'ends_on',boundary=value.match(/\.(?:gt|gte)\.(.*)$/)?.[1];assert(boundary);

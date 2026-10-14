@@ -3184,7 +3184,8 @@ export const teacherStudioSensitiveCases = (academyId: string) => academyOperati
 export const teacherStudioCompetencyPlans = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['competencyPlans']>>(academyId, 'competency_plans');
 export const teacherStudioIntegrationEndpoints = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['integrations']>>(academyId, 'integration_endpoints');
 
-export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> => callTeacherStudio<T>({ method: 'POST', action, academyId, body });
+export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {},expectedActor?:string): Promise<T> =>
+  ['create_access_invitation','resend_access_invitation','revoke_access_invitation'].includes(action)?staffRequest<T>(academyId,action,body,expectedActor):callTeacherStudio<T>({ method: 'POST', action, academyId, body });
 
 export const teacherStudioInvitationStatus = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ action: 'invitation_status', params: { token } });
 export const teacherStudioAcceptAccessInvitation = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ method: 'POST', action: 'accept_access_invitation', body: { token } });

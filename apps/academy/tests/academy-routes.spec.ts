@@ -38,6 +38,32 @@ type StaffPersona = "owner" | "admin" | "center_admin" | "branch_manager" | "man
 type Persona = StaffPersona | "student" | "guardian";
 
 const academyId = "academy-route-smoke";
+
+test('staff invitation retry keeps its delivery identity and never reports an unconfirmed email as sent',async({page})=>{
+ const commands:Record<string,unknown>[]=[],invitationId='00000000-0000-4000-8000-000000000902';
+ await seedSessionCookie(page,'owner-user');
+ await mockAcademyEdge(page,'owner',{respond:async body=>{
+  if(body.action==='create_access_invitation'){
+   commands.push(body);
+   return {invitation:{id:invitationId,academy_id:academyId,invite_kind:'staff',email:'owned-invite@example.test',role:'teacher',status:'pending',delivery_status:commands.length===1?'failed':'sent'},retryable:commands.length===1};
+  }
+  return undefined;
+ }});
+ await page.goto(`/academy/admin/services?academy_id=${academyId}`);
+ await page.getByRole('button',{name:'Access Invitations and learner preview',exact:true}).click();
+ await page.getByRole('button',{name:'Send invitation',exact:true}).click();
+ const form=page.locator('form').filter({has:page.getByRole('button',{name:'Send invitation',exact:true})});
+ await form.getByRole('combobox',{name:'Invite for',exact:true}).selectOption('staff');
+ await form.getByRole('combobox',{name:'Assigned classroom',exact:true}).selectOption('classroom-route-smoke');
+ await form.getByLabel('Email',{exact:true}).fill('owned-invite@example.test');
+ await form.getByRole('button',{name:'Send invitation',exact:true}).click();
+ await expect(page.getByText('Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toHaveCount(0);
+ await form.getByRole('button',{name:'Send invitation',exact:true}).click();
+ await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toBeVisible();
+ expect(commands).toHaveLength(2);expect(commands[1].idempotency_key).toBe(commands[0].idempotency_key);
+ expect(commands[1]._delivery_token).toBe(commands[0]._delivery_token);expect(commands[1].classroom_ids).toEqual(['classroom-route-smoke']);
+});
 const classroomId = "classroom-route-smoke";
 const studentContactId = "contact-route-smoke";
 
@@ -1733,10 +1759,13 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       );
     }
 
-    const body = route.request().postDataJSON() as {
+    const postedBody = route.request().postDataJSON() as {
       action?: string;
+      command?: string;
       academy_id?: string;
     } | null;
+    const body=postedBody&&['staff_access_command','access_invitation_command'].includes(postedBody.action??'')
+      ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     options.actionLog?.push(action);
     const customResponse = await options.respond?.(body ?? {});

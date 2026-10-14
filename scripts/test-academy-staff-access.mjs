@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
 import {createNativeSessionDb,bindSql} from './lib/academy-session-test-db.mjs';
 const native=process.argv.includes('--native'),rest=process.argv.includes('--rest');
+const invitations=process.argv.includes('--invitations');
 if(rest&&!native)throw Error('REST qualification requires an owned native database');
 const db=native?await createNativeSessionDb():new PGlite();let checks=0,serial=100,key=0,rpc;
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
@@ -42,6 +43,14 @@ try{
  const authority=readFileSync('supabase/migrations/20261013155000_academy_current_authority_directory.sql','utf8');
  await db.exec(authority.slice(0,authority.indexOf('create or replace function public.academy_directory_role_has')));
  await db.exec(migration);
+ if(invitations){
+  await db.exec(`create table academy_access_invitations(id uuid primary key default gen_random_uuid(),academy_id uuid not null,invite_kind text not null,email text not null,role text,contact_id uuid,classroom_id uuid,guardian_relationship_id uuid,token_hash text not null unique,token_expires_at timestamptz not null,status text not null default 'pending',delivery_status text not null default 'queued',delivery_error text,sent_at timestamptz,resend_count integer not null default 0,last_resent_at timestamptz,accepted_by uuid,accepted_at timestamptz,revoked_by uuid,revoked_at timestamptz,created_by uuid,created_at timestamptz default now(),updated_at timestamptz default now(),metadata jsonb not null default '{}',unique(academy_id,id));
+   create unique index academy_access_invitations_active_target_uidx on academy_access_invitations(academy_id,invite_kind,email,coalesce(classroom_id,'00000000-0000-0000-0000-000000000000'::uuid),coalesce(guardian_relationship_id,'00000000-0000-0000-0000-000000000000'::uuid),coalesce(role,'')) where status='pending';`);
+  await db.exec('grant select on academy_access_invitations to anon,authenticated;grant select(email) on academy_access_invitations to public;');
+  eq((await q("select has_column_privilege('anon','academy_access_invitations','email','SELECT') allowed"))[0].allowed,true);
+  await db.exec(readFileSync('supabase/migrations/20261014130000_academy_staff_invitation_commands.sql','utf8'));
+  for(const role of ['anon','authenticated'])eq((await q("select has_table_privilege($1,'academy_access_invitations','SELECT') or has_column_privilege($1,'academy_access_invitations','email','SELECT') allowed",[role]))[0].allowed,false);
+ }
  await q('insert into tenants(id) values($1),($2)',[academy,foreign]);
  for(const who of [owner,scoped,branchAdmin,teacher,other,operator,legacy]){
   await q('insert into users values($1,true)',[who]);await q('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[who,who+'@example.invalid']);
@@ -161,6 +170,94 @@ try{
   const reverse=await db.holdTransaction(bindSql("update academy_role_grants set status='revoked' where id=$1::uuid",[scopedGrant]),'staff-revoke-first');
   const waiting=db.independent(statement,'staff-manager-waiting');waiting.catch(()=>{});await db.waitForLock('staff-manager-waiting');checks++;await reverse.commit();await denied(()=>waiting);
  }
- console.log(JSON.stringify({suite:'atomic-staff-access-current-scope',native,rest,checks,productionTouched:false}));
+ if(invitations){
+  const call=async(name,args)=>rpc?rpc(name,args):(await q('select '+name+'('+Object.entries(args).map((_,i)=>'$'+(i+1)).join(',')+') result',Object.values(args)))[0].result;
+  const prepare=(who,payload,hash,key_value,action='create_access_invitation')=>call('academy_staff_invitation_prepare',{p_academy_id:academy,p_actor_id:who,p_action:action,p_payload:JSON.stringify(payload),p_token_hash:hash,p_request_key:key_value});
+  const accept=(who,hash=null,gid=null)=>call('academy_staff_accept_access',{p_actor_id:who,p_grant_id:gid,p_token_hash:hash});
+  const revoke=(who,iv,key_value)=>call('academy_staff_invitation_revoke',{p_academy_id:academy,p_actor_id:who,p_invitation_id:iv,p_request_key:key_value});
+  // REST JSON must receive a JSON object, while SQL bindings use exact JSON text.
+  const prepareInvite=async(who,payload,hash,key_value,action='create_access_invitation')=>rpc?rpc('academy_staff_invitation_prepare',{p_academy_id:academy,p_actor_id:who,p_action:action,p_payload:payload,p_token_hash:hash,p_request_key:key_value}):prepare(who,payload,hash,key_value,action);
+  const delivery=(who,iv,hash,action,attempt=null,sent=null)=>call('academy_staff_invitation_delivery',{p_academy_id:academy,p_actor_id:who,p_invitation_id:iv,p_token_hash:hash,p_action:action,p_attempt_id:attempt,p_sent:sent});
+  const invitationPage=(who,payload={})=>rpc?rpc('academy_staff_invitation_directory',{p_academy_id:academy,p_actor_id:who,p_payload:payload}):call('academy_staff_invitation_directory',{p_academy_id:academy,p_actor_id:who,p_payload:JSON.stringify(payload)});
+  await q("update academy_role_grants set role='admin',status='active',expires_at=null where id=$1",[scopedGrant]);
+  for(const who of [id(70),id(71),id(72),id(73)]){await q('insert into users values($1,true)',[who]);await q('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[who,who+'@example.invalid']);}
+  const input={email:id(70)+'@example.invalid',role:'teacher',classroom_ids:[classA]};
+  await denied(()=>prepareInvite(scoped,{...input,email:'foreign-invite@example.invalid',classroom_ids:[classB]},'a'.repeat(64),'foreign-invite'));
+  eq((await q("select count(*)::int n from academy_role_grants where email='foreign-invite@example.invalid'"))[0].n,0);
+  const first=await prepareInvite(scoped,input,'a'.repeat(64),'owned-invite');eq(first.invitation.invite_kind,'staff');eq(first.deliver,true);
+  eq(Object.hasOwn(first.invitation,'token_hash'),false);eq(Object.hasOwn(first.invitation,'metadata'),false);
+  const again=await prepareInvite(scoped,input,'a'.repeat(64),'owned-invite');eq(again.replayed,true);eq(again.invitation.id,first.invitation.id);eq(again.invitation.resend_count,0);
+  eq((await invitationPage(scoped)).invitations.map(row=>row.id),[first.invitation.id]);
+  eq((await invitationPage(teacher)).invitations,[]);
+  const claimed=await delivery(scoped,first.invitation.id,'a'.repeat(64),'claim');eq(claimed.claimed,true);
+  eq((await delivery(scoped,first.invitation.id,'a'.repeat(64),'claim')).claimed,false);
+  await delivery(scoped,first.invitation.id,'a'.repeat(64),'finish',claimed.attempt_id,true);
+  eq((await delivery(scoped,first.invitation.id,'a'.repeat(64),'finish',claimed.attempt_id,true)).replayed,true);
+  await denied(()=>delivery(scoped,first.invitation.id,'a'.repeat(64),'finish',claimed.attempt_id,false),/conflicts|409 Conflict/i);
+  await denied(()=>delivery(owner,first.invitation.id,'a'.repeat(64),'finish',claimed.attempt_id,true),/another request|401 Unauthorized/i);
+  eq((await delivery(scoped,first.invitation.id,'a'.repeat(64),'claim')).claimed,false);
+  const resent=await prepareInvite(scoped,{invitation_id:first.invitation.id},'b'.repeat(64),'owned-resend','resend_access_invitation');eq(resent.invitation.resend_count,1);
+  eq(resent.invitation.staff_grant_id,first.invitation.staff_grant_id);
+  if(rest)await denied(()=>q('select academy_staff_accept_access($1::uuid,null,$2)',[id(70),'a'.repeat(64)]),/Invitation not found/i);
+  await denied(()=>accept(id(70),'a'.repeat(64)),/not found|404 Not Found|500 Internal Server Error/i);
+  await denied(()=>accept(id(71),'b'.repeat(64)),/another account|verified email|401 Unauthorized/i);
+  const accepted=await accept(id(70),'b'.repeat(64));eq(accepted.invitation.status,'accepted');eq(accepted.staff_profile.managed_grant_id,accepted.grant.id);
+  eq(accepted.grant.user_id,id(70));eq(accepted.staff_profile.user_id,id(70));eq((await current(id(70))).map(row=>row.source),['grant']);
+  eq((await accept(id(70),'b'.repeat(64))).replayed,true);
+  await denied(()=>prepareInvite(scoped,{invitation_id:first.invitation.id},'c'.repeat(64),'late-resend','resend_access_invitation'),/pending|409 Conflict/i);
+  await denied(()=>revoke(scoped,first.invitation.id,'accepted-revoke'),/pending|409 Conflict/i);
+  const pausedInv=await prepareInvite(owner,{email:id(71)+'@example.invalid',role:'teacher',classroom_ids:[classA]},'d'.repeat(64),'owned-withdraw');
+  const removed=await revoke(scoped,pausedInv.invitation.id,'withdraw');eq(removed.invitation.status,'revoked');
+  eq((await q('select status from academy_role_grants where id=$1',[pausedInv.invitation.staff_grant_id]))[0].status,'revoked');
+  eq((await q('select is_active from academy_staff where managed_grant_id=$1',[pausedInv.invitation.staff_grant_id]))[0].is_active,false);
+  eq((await revoke(scoped,pausedInv.invitation.id,'withdraw')).replayed,true);
+  await denied(()=>accept(id(71),'d'.repeat(64)),/revoked|409 Conflict/i);
+  const auto=await prepareInvite(owner,{email:id(72)+'@example.invalid',role:'teacher',classroom_ids:[classA]},'e'.repeat(64),'owned-auto');
+  const autoAccepted=await accept(id(72),null,auto.invitation.staff_grant_id);eq(autoAccepted.grant.status,'active');
+  eq((await q('select status from academy_access_invitations where id=$1',[auto.invitation.id]))[0].status,'accepted');
+  const exp=await prepareInvite(owner,{email:id(73)+'@example.invalid',role:'teacher',classroom_ids:[classA]},'f'.repeat(64),'owned-expired');
+  await q("update academy_access_invitations set token_expires_at=now()-interval '1 second' where id=$1",[exp.invitation.id]);
+  await denied(()=>accept(id(73),'f'.repeat(64)),/expired|400 Bad Request|500 Internal Server Error/i);
+  eq((await q('select status from academy_role_grants where id=$1',[exp.invitation.staff_grant_id]))[0].status,'invited');
+  for(const who of [id(74),id(77)]){await q('insert into users values($1,true)',[who]);await q('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[who,who+'@example.invalid']);}
+  const historicalGrant=await grant(id(74),'teacher','classrooms',[classA],{status:'invited'});
+  await q("insert into academy_staff(academy_id,user_id,email,role,classroom_ids,created_by) values($1,$2,$3,'teacher',$4::jsonb,$5)",[academy,id(74),id(74)+'@example.invalid',JSON.stringify([classA]),owner]);
+  const historicalAccepted=await accept(id(74),null,historicalGrant);eq(historicalAccepted.staff_profile.created_by,owner);eq(historicalAccepted.staff_profile.managed_grant_id,historicalGrant);
+  eq((await current(id(74))).map(row=>row.source),['grant']);
+  const conflictingGrant=await grant(id(77),'teacher','classrooms',[classA],{status:'invited'});
+  await q("insert into academy_staff(academy_id,user_id,email,role,classroom_ids,created_by) values($1,$2,$3,'admin','[]',$4)",[academy,id(77),id(77)+'@example.invalid',owner]);
+  await denied(()=>accept(id(77),null,conflictingGrant),/historical staff profile|409 Conflict/i);
+  eq((await q('select status from academy_role_grants where id=$1',[conflictingGrant]))[0].status,'invited');
+  await denied(()=>prepareInvite(owner,{...input,classroom_ids:[classB]},'8'.repeat(64),'move-invite'),/staff resources|409 Conflict/i);
+  await db.exec("create function reject_invitation_audit() returns trigger language plpgsql as $$begin if new.metadata->>'request_key'='invitation-rollback' then raise exception 'Owned invitation audit failure';end if;return new;end;$$;create trigger reject_invitation_audit before insert on academy_audit_events for each row execute function reject_invitation_audit();");
+  await denied(()=>prepareInvite(owner,{email:'rollback-invite@example.invalid',role:'teacher',classroom_ids:[classA]},'9'.repeat(64),'invitation-rollback'),/Owned invitation audit failure|400 Bad Request|500 Internal Server Error/i);
+  eq((await q("select count(*)::int n from academy_role_grants where email='rollback-invite@example.invalid'"))[0].n,0);
+  eq((await q("select count(*)::int n from academy_staff where email='rollback-invite@example.invalid'"))[0].n,0);
+  eq((await q("select count(*)::int n from academy_access_invitations where email='rollback-invite@example.invalid'"))[0].n,0);
+  eq((await q("select count(*)::int n from academy_staff_command_receipts where request_key='invitation-rollback' or request_key='invitation-grant:'||md5('invitation-rollback')"))[0].n,0);
+  await db.exec('drop trigger reject_invitation_audit on academy_audit_events;');
+  const foreignScoped=await prepareInvite(owner,{email:'branch-b-invite@example.invalid',role:'teacher',classroom_ids:[classB]},'0'.repeat(64),'owned-foreign-list');
+  eq((await invitationPage(scoped)).invitations.some(row=>row.id===foreignScoped.invitation.id),false);
+  eq((await invitationPage(owner)).invitations.some(row=>row.id===foreignScoped.invitation.id),true);
+  const one=await invitationPage(owner,{limit:1});eq(one.has_more,true);eq(one.invitations.length,1);
+  const two=await invitationPage(owner,{limit:1,...one.cursor});eq(two.invitations.length,1);eq(two.invitations[0].id===one.invitations[0].id,false);
+  for(const role of ['anon','authenticated']){
+   await db.exec('set role '+role);await denied(()=>q('select academy_staff_accept_access($1::uuid,$2::uuid,null)',[id(70),first.invitation.staff_grant_id]),/permission|403 Forbidden/i);await db.exec('reset role');
+  }
+  if(native){
+   for(const who of [id(75),id(76)]){await q('insert into users values($1,true)',[who]);await q('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[who,who+'@example.invalid']);}
+   const acceptFirst=await prepareInvite(owner,{email:id(75)+'@example.invalid',role:'teacher',classroom_ids:[classA]},'3'.repeat(64),'accept-first');
+   const heldAccept=await db.holdTransaction(bindSql('select academy_staff_accept_access($1::uuid,null,$2)',[id(75),'3'.repeat(64)]),'invitation-accept-first');
+   const revoker=db.independent(bindSql('select academy_staff_invitation_revoke($1::uuid,$2::uuid,$3::uuid,$4)',[academy,owner,acceptFirst.invitation.id,'race-revoke-after-accept']),'invitation-revoker-waiting');revoker.catch(()=>{});
+   await db.waitForLock('invitation-revoker-waiting');checks++;await heldAccept.commit();await denied(()=>revoker,/Only pending/i);
+   eq((await q('select status from academy_access_invitations where id=$1',[acceptFirst.invitation.id]))[0].status,'accepted');
+   const revokeFirst=await prepareInvite(owner,{email:id(76)+'@example.invalid',role:'teacher',classroom_ids:[classA]},'4'.repeat(64),'revoke-first');
+   const heldRevoke=await db.holdTransaction(bindSql('select academy_staff_invitation_revoke($1::uuid,$2::uuid,$3::uuid,$4)',[academy,owner,revokeFirst.invitation.id,'race-revoke-first']),'invitation-revoke-first');
+   const accepter=db.independent(bindSql('select academy_staff_accept_access($1::uuid,null,$2)',[id(76),'4'.repeat(64)]),'invitation-accepter-waiting');accepter.catch(()=>{});
+   await db.waitForLock('invitation-accepter-waiting');checks++;await heldRevoke.commit();await denied(()=>accepter,/revoked/i);
+   eq((await q('select status from academy_role_grants where id=$1',[revokeFirst.invitation.staff_grant_id]))[0].status,'revoked');
+  }
+ }
+ console.log(JSON.stringify({suite:'atomic-staff-access-current-scope',native,rest,invitations,checks,productionTouched:false}));
 }catch(error){console.error(JSON.stringify({suite:'atomic-staff-access-current-scope',checks,message:error.message,code:error.code}));process.exitCode=1;}
 finally{await db.close();}

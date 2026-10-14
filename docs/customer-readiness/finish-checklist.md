@@ -23,8 +23,13 @@ their entire implementation is absent.
   provenance, scoped staff pagination and identity-preserving browser edits are
   locally qualified candidates. They are not deployed. Evidence:
   `2026-10-14-staff-access-candidate.md`.
-- Staff invitations, legacy staff import/recovery, remaining multi-resource
-  authorization and final installed-schema/hosted acceptance remain release gates.
+- Staff invitation preparation, acceptance/autoacceptance, withdrawal, leased
+  delivery evidence and filtered reads are now locally qualified candidates;
+  `2026-10-14-staff-invitations-candidate.md` records evidence and limits.
+- Student/guardian invitation paths, legacy staff import/recovery, remaining
+  multi-resource authorization and final installed-schema/hosted acceptance
+  remain release gates. The scope above is still open, with no production
+  activation of the ten pending importer/authority/staff/invitation migrations.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

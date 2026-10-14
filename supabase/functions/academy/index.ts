@@ -22,6 +22,7 @@ import {validateAcademyMutationBranches} from "./mutation-branches.ts";
 import {resolveAcademyContactSaveTarget,academyContactSavePayload,ContactSaveTargetError} from "./contact-save.ts";
 import {readAcademyScopedDirectory,ScopedDirectoryError} from "./scoped-directory.ts";
 import {runAcademyStaffCommand,readAcademyStaffDirectory,staffAccessActions,StaffAccessError} from "./staff-access.ts";
+import {runStaffInvitation,acceptStaffAccess,readStaffInvitations,StaffInvitationError} from "./staff-invitations.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
@@ -1162,17 +1163,13 @@ const loadMemberships = async (
     if (!academyAuthorityIdentityMatches(grant,principal)) continue;
     if (!academyRoleGrantCanAccess(grant,new Date(nowIso))) continue;
     if (String(grant.status) === "invited") {
-      let acceptance = sb.from("academy_role_grants")
-        .update({status:"active",user_id:userId,accepted_at:nowIso,updated_at:nowIso})
-        .eq("id",grant.id).eq("status","invited").lte("starts_at",nowIso)
-        .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
-      acceptance = grant.user_id == null
-        ? acceptance.is("user_id",null).eq("email",normalizedEmail)
-        : acceptance.eq("user_id",userId);
-      const {data:accepted,error:acceptanceError} = await acceptance.select(grantSelect).maybeSingle();
-      if (acceptanceError) throw new Error("Failed to accept academy access invitation");
-      if (!accepted) continue; // Revocation, expiry or reassignment won the race.
-      grant = accepted;
+      try {
+        const accepted = await acceptStaffAccess(sb,userId,{grantId:String(grant.id)});
+        grant = accepted.grant as Record<string,unknown>;
+      } catch (error) {
+        if(error instanceof StaffInvitationError && [403,404,409,410].includes(error.status)) continue;
+        throw new Error("Failed to accept academy access invitation");
+      }
       if (!academyAuthorityIdentityMatches(grant,principal)) continue;
     }
     const membership = academyRoleGrantToMembership(grant, new Date(nowIso));
@@ -4032,8 +4029,10 @@ const handleReadAction = async (
     ].filter((kind): kind is string => Boolean(kind));
     const { data, error } = await sb.from("academy_access_invitations")
       .select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,accepted_by,accepted_at,revoked_by,revoked_at,created_by,created_at,updated_at,metadata")
-      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds).order("created_at", { ascending: false }).limit(500);
+      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds.filter(kind=>kind!=="staff")).order("created_at", { ascending: false }).limit(500);
     if (error) return json(500, { error: "Failed to load access invitations", detail: error.message });
+    if(!directoryContext)throw new StaffInvitationError(403,"Forbidden");
+    const staffPage = await readStaffInvitations(sb,directoryContext.actorId,academyId);
     const empty = Promise.resolve({ data: [], error: null });
     const [contacts, classrooms, guardianRelationships, guardians] = await Promise.all([
       academyAccessHas(access, "manageRoster")
@@ -4072,7 +4071,7 @@ const handleReadAction = async (
       if (row.invite_kind === "guardian") return relationshipRows.some((relationship) => String(relationship.id) === String(row.guardian_relationship_id));
       return true;
     });
-    return json(200, { invitations: invitationRows, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
+    return json(200, { invitations: [...invitationRows,...(staffPage.invitations as Array<Record<string,unknown>>)].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))), staff_has_more:staffPage.has_more, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
   }
 
   if (action === "timetable_planning") {
@@ -6727,7 +6726,11 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         ? formDataToStudioBody(await req.formData())
         : (await req.json()) as StudioBody
       : null;
-    const actionBody = normalizeText(body?.action, 64).toLowerCase();
+    const rawActionBody = normalizeText(body?.action, 64).toLowerCase();
+    const nestedCommand=normalizeText(body?.command,64).toLowerCase();
+    if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
+    if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
+    const actionBody = ['staff_access_command','access_invitation_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -6766,6 +6769,11 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         .eq("token_hash", tokenHash).maybeSingle();
       if (error) return json(500, { error: "Failed to load invitation", detail: error.message });
       if (!invitation?.id) return json(404, { error: "Invitation not found" });
+      if (String(invitation.invite_kind) === "staff") {
+        const accepted = await acceptStaffAccess(sb,userId,{tokenHash});
+        return json(200,{invitation:accepted.invitation,replayed:accepted.replayed});
+      }
+
       if (String(invitation.status) !== "pending") return json(409, { error: `Invitation is ${String(invitation.status)}` });
       if (Date.parse(String(invitation.token_expires_at)) <= Date.now()) {
         await sb.from("academy_access_invitations").update({ status: "expired" }).eq("id", invitation.id).eq("status", "pending");
@@ -6791,15 +6799,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           ? await sb.from("academy_classroom_memberships").update({ user_id: userId, status: "active", joined_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", membership.id)
           : await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, user_id: userId, role: "student", status: "active", joined_at: new Date().toISOString(), metadata: { source: "access_invitation", invitation_id: invitation.id } });
         if (membershipResult.error) return json(500, { error: "Failed to activate classroom membership", detail: membershipResult.error.message });
-      } else if (kind === "staff") {
-        const role = normalizeAcademyRole(invitation.role);
-        const nowIso = new Date().toISOString();
-        const { data: grant, error: grantError } = await sb.from("academy_role_grants").update({ user_id: userId, status: "active", accepted_at: nowIso })
-          .eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email)).in("status", ["invited", "active"])
-          .select("id").maybeSingle();
-        if (grantError || !grant?.id) return json(409, { error: "Staff access grant is unavailable", detail: grantError?.message });
-        const { error: staffError } = await sb.from("academy_staff").update({ user_id: userId, role, is_active: true }).eq("academy_id", academyId).eq("email", normalizeEmail(invitation.email));
-        if (staffError) return json(500, { error: "Failed to activate the staff profile", detail: staffError.message });
       } else if (kind === "guardian") {
         const relationshipId = String(invitation.guardian_relationship_id ?? "");
         const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id,status,consent_status")
@@ -7917,6 +7916,23 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         if (actionBody === "upsert_staff_branch_assignment") return json(200,{assignment:result.assignment,replayed:result.replayed});
         throw new StaffAccessError(400,"Choose a valid staff command.");
       }
+      if (["create_access_invitation", "resend_access_invitation", "revoke_access_invitation"].includes(actionBody)) {
+        let inviteKind=normalizeText(body?.invite_kind,20).toLowerCase();
+        if(actionBody!=="create_access_invitation"){
+          const {data:existing,error}=await sb.from("academy_access_invitations").select("invite_kind")
+            .eq("academy_id",academyId).eq("id",normalizeText(body?.invitation_id??body?.id,64)).maybeSingle();
+          if(error)throw new StaffInvitationError(503,"Invitation lookup is temporarily unavailable.",true);
+          if(!existing)throw new StaffInvitationError(404,"Invitation not found.");
+          inviteKind=String(existing.invite_kind);
+        }
+        if(inviteKind==="staff"){
+          const result=await runStaffInvitation(sb,userId,academyId,actionBody,body??{},async(email,redirectTo)=>{
+            const {error}=await authSb.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:true}});
+            return !error;
+          },academyInvitationRedirect);
+          return json(result.retryable===true?202:200,result);
+        }
+      }
       const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
       const explicitBranchId = normalizeText(body?.branch_id ?? body?.primary_branch_id, 64);
@@ -7982,16 +7998,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
             const { error } = await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, role: "student", status: "invited", metadata: { source: "access_invitation" } });
             if (error) return json(400, { error: "Failed to prepare classroom invitation", detail: error.message });
           }
-        }
-        if (invitationKind === "staff") {
-          if (!STAFF_GRANT_ROLES.includes(invitationRole)) return json(400, { error: "A valid staff role is required" });
-          const scopeType = staffGrantScopeForRole(invitationRole);
-          const requestedClassroomIds = Array.isArray(body?.classroom_ids) ? (body.classroom_ids as unknown[]).map((value) => normalizeText(value, 64)).filter(Boolean) : [];
-          if (scopeType === "classrooms" && requestedClassroomIds.length === 0) return json(400, { error: "Teacher and assistant invitations require at least one classroom" });
-          const { data: existingUser } = await sb.from("users").select("id").eq("email", invitationEmail).maybeSingle();
-          const { error: grantError } = await sb.from("academy_role_grants").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, scope_type: scopeType, scope_ids: scopeType === "classrooms" ? requestedClassroomIds : [], status: "invited", granted_by: userId, starts_at: new Date().toISOString(), accepted_at: null, revoked_at: null, metadata: { source: "access_invitation" } }, { onConflict: "academy_id,email" });
-          if (grantError) return json(400, { error: "Failed to prepare staff grant", detail: grantError.message });
-          await sb.from("academy_staff").upsert({ academy_id: academyId, user_id: existingUser?.id ?? null, email: invitationEmail, display_name: normalizeText(body?.display_name ?? body?.name, 160) || null, role: invitationRole, classroom_ids: scopeType === "classrooms" ? requestedClassroomIds : [], is_active: true, created_by: userId }, { onConflict: "academy_id,email" });
         }
         if (invitationKind === "guardian") {
           if (!guardianRelationshipId) return json(400, { error: "guardian_relationship_id is required" });
@@ -11788,6 +11794,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof StaffInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof StaffAccessError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof StudentImportServiceError)return json(err.status,{error:err.message,retryable:err.retryable});
     const message = err instanceof Error ? err.message : "Unknown error";

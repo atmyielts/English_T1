@@ -30,6 +30,7 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  await c.staffRequest(academy,'remove_staff',payload,actor);
  const bodies=c.calls.map(([,request])=>JSON.parse(request.body));assert.equal(bodies[0].idempotency_key,bodies[1].idempotency_key);
  assert.equal(bodies[1].academy_id,academy);assert.equal(bodies[1].id,id(4));checks++;
+ assert.equal(bodies[1].action,'staff_access_command');assert.equal(bodies[1].command,'remove_staff');checks++;
 }
 {
  const c=client(session(actor),undefined,()=>{c.switchTo(other);return new Response('{"ok":true}');});
@@ -41,5 +42,18 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  await assert.rejects(()=>c.staffRequest(academy,'remove_staff',payload,actor),e=>e.status===503&&e.retryable);
  await c.staffRequest(academy,'remove_staff',payload,actor);
  assert.equal(JSON.parse(c.calls[0][1].body).idempotency_key,JSON.parse(c.calls[1][1].body).idempotency_key);checks++;
+}
+{
+ let count=0;const c=client(session(actor),undefined,()=>new Response(JSON.stringify({invitation:{id:id(4),academy_id:academy},retryable:count++===0}),{status:count===1?202:200}));
+ const body={invite_kind:'staff',email:'owned@example.invalid',role:'teacher'};
+ await assert.rejects(()=>c.staffRequest(academy,'create_access_invitation',body,actor),e=>e.status===202&&e.retryable);
+ await c.staffRequest(academy,'create_access_invitation',body,actor);
+ const first=JSON.parse(c.calls[0][1].body),second=JSON.parse(c.calls[1][1].body);
+ assert.equal(first.idempotency_key,second.idempotency_key);assert.equal(first._delivery_token,second._delivery_token);assert.match(first._delivery_token,/^[a-f0-9]{64}$/);checks++;
+ assert.equal(first.action,'access_invitation_command');assert.equal(first.command,'create_access_invitation');checks++;
+}
+{
+ const c=client(session(actor),undefined,()=>new Response('{"error":"Not found"}',{status:404}));
+ await assert.rejects(()=>c.staffRequest(academy,'upsert_staff',{},actor),e=>e.status===503&&e.retryable);checks++;
 }
 console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks,productionTouched:false}));

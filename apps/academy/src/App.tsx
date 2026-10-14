@@ -5480,7 +5480,7 @@ const App = () => {
           ) : null}
 
           {officeView === 'services' && officeCanOpen('services') ? (
-            <OperationalServicesView key={academyId} academyId={academyId} access={selectedAcademyAccess} contacts={contacts} classrooms={classrooms} formatDate={formatDate} />
+            <OperationalServicesView key={`${academyId}:${me?.user.id??''}`} actorId={me?.user.id??''} academyId={academyId} access={selectedAcademyAccess} contacts={contacts} classrooms={classrooms} formatDate={formatDate} />
           ) : null}
 
           {officeView === 'operations' && officeCanOpen('operations') ? (

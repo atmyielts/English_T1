@@ -23,6 +23,20 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  // Staff invitation transport and gateway feedback.
+  "Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.",
+  "Staff controls are temporarily unavailable. Try again.",
+  "Your current account or access does not cover this invitation.",
+  "This invitation conflicts with the current staff identity or access. Refresh and review the staff grant.",
+  "Invitation or staff grant is no longer available.",
+  "Review the invitation role, resources and recipient.",
+  "We could not confirm this invitation request. Retry the same request.",
+  "The invitation service returned an incomplete response. Retry the same request.",
+  "Choose a valid invitation delivery identity.",
+  "We could not confirm this delivery attempt. Retry the same request.",
+  "We could not confirm staff activation. Refresh and try again.",
+  "The invitation directory returned an incomplete response.",
+
   'Your current access does not cover these records.',
   'The directory is temporarily unavailable. Try again.',
   'The directory returned an incomplete response. Try again.',
