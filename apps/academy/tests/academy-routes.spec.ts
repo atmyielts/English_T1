@@ -1780,6 +1780,14 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
   await page.route("**/functions/v1/**", async (route: Route) => {
     const url = new URL(route.request().url());
     const fn = url.pathname.split("/").pop();
+    // The profile and command must belong to the cookie's actual subject,
+    // including matrix accounts whose IDs differ from the persona label.
+    let actorId=`${persona}-user`;
+    try {
+      const token=route.request().headers().authorization?.replace(/^Bearer /,'');
+      const subject=JSON.parse(Buffer.from(token?.split('.')[1]??'','base64url').toString('utf8')).sub;
+      if(typeof subject==='string')actorId=subject;
+    } catch { /* Anonymous mocks keep their explicit persona fixture. */ }
 
     if (fn === "me") {
       if (options.meResponse) return route.fulfill(json(options.meResponse));
@@ -1787,7 +1795,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       return route.fulfill(
         json({
           user: {
-            id: `${persona}-user`,
+            id: actorId,
             email: `${persona}@example.test`,
             role,
           },
@@ -1832,7 +1840,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       if(postedBody?.action!=='guardian_portal_read_command'||!value||typeof value!=='object')return value;
       const record=value as Record<string,unknown>;
       const children=(record.children??[]) as Array<{relationship_id:string}>;
-      return {has_more:false,cursor:null,...record,actor_id:`${persona}-user`,
+      return {has_more:false,cursor:null,...record,actor_id:actorId,
         ...(action==='guardian_dashboard'?{selected_child:children.find(c=>c.relationship_id===postedBody.relationship_id)??children[0]??null}:{relationship_id:postedBody.relationship_id})};
     };
     options.actionLog?.push(action);
