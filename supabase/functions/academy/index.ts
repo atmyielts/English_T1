@@ -1,3 +1,4 @@
+import {dispatchGuardianNotification,sendParentTelegram} from './guardian-delivery.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as nodemailer from "https://esm.sh/nodemailer@7.0.6?target=denonext";
@@ -25,7 +26,7 @@ import {runAcademyStaffCommand,readAcademyStaffDirectory,staffAccessActions,Staf
 import {runStaffInvitation,acceptStaffAccess,readStaffInvitations,StaffInvitationError} from "./staff-invitations.ts";
 import {runLearnerInvitation,inspectLearnerInvitation,acceptLearnerInvitation,readLearnerInvitations,LearnerInvitationError} from "./learner-invitations.ts";
 import {legacyStaffCommand,LegacyStaffImportError} from "./legacy-staff-import.ts";
-import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,readLegacyGuardianRequests,claimGuardianFromTelegram,GuardianPortalError} from "./guardian-portal.ts";
+import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,readLegacyGuardianRequests,claimGuardianFromTelegram,writeGuardianPortal,guardianWriteActions,readGuardianHistory,GuardianPortalError} from "./guardian-portal.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
@@ -5989,7 +5990,7 @@ const dispatchQueuedNotifications = async (
     }).catch(() => undefined);
   }
   let q = sb.from("academy_notifications")
-    .select("id, academy_id, channel, type, title, body, target, attempts, scheduled_at, contact_id, user_id, category, dedupe_key, cta_url, academy_contacts(user_id)")
+    .select("id, academy_id, channel, type, title, body, target, attempts, scheduled_at, contact_id, metadata, guardian_id, relationship_id, user_id, category, dedupe_key, cta_url, academy_contacts(user_id)")
     .eq("status", "queued").lte("scheduled_at", new Date().toISOString())
     .order("scheduled_at", { ascending: true }).limit(200);
   if (academyId) q = q.eq("academy_id", academyId);
@@ -6001,6 +6002,25 @@ const dispatchQueuedNotifications = async (
   };
   for (const n of (queued ?? []) as Array<Record<string, unknown>>) {
     const id = String(n.id);
+    if((n.metadata as Record<string,unknown>|null)?.intended_audience==='guardian'&&(!n.guardian_id||!n.relationship_id)){
+      await sb.from('academy_notifications').update({status:'skipped',error:'Verified parent relationship is required'}).eq('id',id).eq('status','queued');
+      await recordAttempt(n,'skipped','Verified parent relationship is required');skipped++;continue;
+    }
+    if(n.guardian_id||n.relationship_id){
+      try{
+        const outcome=await dispatchGuardianNotification(sb,id,async claim=>{
+          if(claim.channel==='telegram')return await sendParentTelegram(getOptionalEnv('ACADEMY_TELEGRAM_BOT_TOKEN')??'',claim);
+          if(claim.channel==='email'){
+            if(!mailer||!smtpEmail||!claim.target)return {outcome:'unconfigured'};
+            const result=await mailer.sendMail({from:smtpEmail,to:claim.target,subject:claim.title||'Academy update',text:claim.body});
+            return {outcome:'sent',providerId:String(result.messageId??'')};
+          }
+          return {outcome:'unconfigured'};
+        });
+        if(outcome==='sent')sent++;else if(outcome==='failed'||outcome==='unknown')failed++;else skipped++;
+      }catch{failed++;}
+      continue;
+    }
     const target = normalizeText(n.target, 320);
     if (n.channel === "telegram") {
       if (!supabaseUrl || !serviceRole) { await sb.from("academy_notifications").update({ status: "skipped", error: "Notification gateway not configured" }).eq("id", id);await recordAttempt(n,'skipped','Notification gateway not configured'); skipped++; continue; }
@@ -6694,9 +6714,10 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
     if(rawActionBody==='staff_import_command'&&!['commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyStaffImportError(400,'Choose a valid staff import command.');
     if(rawActionBody==='invitation_link_command'&&!['invitation_status','accept_access_invitation'].includes(nestedCommand))throw new LearnerInvitationError(400,'Choose a valid invitation action.');
-    if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
+    if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests','guardian_history'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
     if(rawActionBody==='guardian_link_command'&&nestedCommand!=='guardian_claim_link')throw new GuardianPortalError(400,'Review and confirm the parent invitation.');
-    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    if(rawActionBody==='guardian_portal_write_command'&&!guardianWriteActions.has(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent command.');
+    const actionBody = ['guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -6858,12 +6879,16 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         : await readLegacyGuardianPortal(sb,userId));
     }
 
+    if (requestedAction === "guardian_history" && req.method === "POST") {
+      return json(200,await readGuardianHistory(sb,userId,body as Record<string,unknown>));
+    }
+
     if (requestedAction === "guardian_update_preferences" && req.method === "POST") {
-      const guardianId=normalizeText(body?.guardian_id,64);const eventType=normalizeText(body?.event_type,80).toLowerCase()||'*';if(!guardianId)return json(400,{error:"guardian_id is required"});const {data:guardian}=await sb.from('academy_guardians').select('id,academy_id').eq('id',guardianId).eq('user_id',userId).eq('status','verified').maybeSingle();if(!guardian?.id)return json(403,{error:"Forbidden"});const payload={academy_id:guardian.academy_id,guardian_id:guardianId,event_type:eventType,enabled:body?.enabled!==false,inapp_enabled:body?.inapp_enabled!==false,telegram_enabled:body?.telegram_enabled!==false,email_enabled:body?.email_enabled===true,sms_enabled:body?.sms_enabled===true,locale:normalizeText(body?.locale,10)||'uz',timezone:normalizeText(body?.timezone,80)||'Asia/Tashkent',quiet_hours_start:normalizeText(body?.quiet_hours_start,20)||null,quiet_hours_end:normalizeText(body?.quiet_hours_end,20)||null,allow_critical_override:body?.allow_critical_override!==false,updated_at:new Date().toISOString()};const {data,error}=await sb.from('academy_guardian_notification_preferences').upsert(payload,{onConflict:'academy_id,guardian_id,event_type'}).select('*').single();if(error)return json(400,{error:"Failed to update guardian preferences",detail:error.message});return json(200,{preference:data});
+      return json(200,await writeGuardianPortal(sb,userId,requestedAction,body as Record<string,unknown>,rawActionBody==='guardian_portal_write_command'));
     }
 
     if (requestedAction === "guardian_send_message" && req.method === "POST") {
-      const relationshipId=normalizeText(body?.relationship_id,64);const messageBody=normalizeText(body?.body,5000);if(!relationshipId||!messageBody)return json(400,{error:"relationship_id and body are required"});const {data:relationship}=await sb.from('academy_student_guardian_relationships').select('id,academy_id,guardian_id,contact_id,can_message_academy,status,consent_status').eq('id',relationshipId).maybeSingle();if(!relationship?.id||relationship.status!=='active'||relationship.consent_status!=='granted'||relationship.can_message_academy!==true)return json(403,{error:"Guardian messaging is not authorized"});const {data:guardian}=await sb.from('academy_guardians').select('id').eq('id',relationship.guardian_id).eq('user_id',userId).eq('status','verified').maybeSingle();if(!guardian?.id)return json(403,{error:"Forbidden"});const {data,error}=await sb.from('academy_guardian_messages').insert({academy_id:relationship.academy_id,relationship_id:relationshipId,direction:'guardian_to_academy',sender_user_id:userId,body:messageBody,status:'sent',channel:'inapp'}).select('*').single();if(error)return json(400,{error:"Failed to send guardian message",detail:error.message});await logAcademyAuditEvent(sb,{academyId:String(relationship.academy_id),actorUserId:userId,actorRole:'guardian',action:'guardian.message_sent',targetType:'academy_guardian_message',targetId:String(data.id),contactId:String(relationship.contact_id)});return json(200,{message:data});
+      return json(200,await writeGuardianPortal(sb,userId,requestedAction,body as Record<string,unknown>,rawActionBody==='guardian_portal_write_command'));
     }
 
     if (requestedAction === "guardian_service_requests") {
@@ -6873,30 +6898,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     if (requestedAction === "guardian_service_request_create" && req.method === "POST") {
-      const relationshipId = normalizeText(body?.relationship_id, 64);
-      const requestType = normalizeText(body?.request_type, 40).toLowerCase();
-      const allowedTypes = ["make_up", "freeze", "transfer", "refund", "schedule_change", "document", "support", "other"];
-      const subject = normalizeText(body?.subject, 200);
-      const details = normalizeText(body?.details, 5000);
-      if (!relationshipId || !allowedTypes.includes(requestType) || !subject || !details) return json(400, { error: "relationship_id, request_type, subject, and details are required" });
-      const { data: relationship } = await sb.from("academy_student_guardian_relationships")
-        .select("id,academy_id,guardian_id,contact_id,status,consent_status")
-        .eq("id", relationshipId).eq("status", "active").eq("consent_status", "granted").maybeSingle();
-      if (!relationship?.id) return json(403, { error: "Guardian relationship is not active" });
-      const { data: guardian } = await sb.from("academy_guardians").select("id").eq("academy_id", relationship.academy_id).eq("id", relationship.guardian_id).eq("user_id", userId).eq("status", "verified").maybeSingle();
-      if (!guardian?.id) return json(403, { error: "Forbidden" });
-      const { data: contact } = await sb.from("academy_contacts").select("id,primary_branch_id").eq("academy_id", relationship.academy_id).eq("id", relationship.contact_id).maybeSingle();
-      if (!contact?.id) return json(404, { error: "Student record not found" });
-      const classroomId = normalizeText(body?.classroom_id, 64) || null;
-      if (classroomId) {
-        const { data: membership } = await sb.from("academy_classroom_memberships").select("id").eq("academy_id", relationship.academy_id).eq("classroom_id", classroomId).eq("contact_id", relationship.contact_id).in("status", ["active", "paused", "completed"]).maybeSingle();
-        if (!membership?.id) return json(403, { error: "This classroom is not linked to the learner" });
-      }
-      const { data: request, error } = await sb.from("academy_service_requests").insert({ academy_id: relationship.academy_id, branch_id: contact.primary_branch_id ?? null, requester_kind: "guardian", requester_user_id: userId, contact_id: relationship.contact_id, guardian_id: relationship.guardian_id, classroom_id: classroomId, charge_id: normalizeText(body?.charge_id, 64) || null, request_type: requestType, subject, details, priority: "normal", desired_date: normalizeText(body?.desired_date, 20) || null, sla_due_at: new Date(Date.now() + 2 * 86_400_000).toISOString(), metadata: { source: "guardian_portal", relationship_id: relationshipId } }).select("*").single();
-      if (error) return json(400, { error: "Failed to submit guardian request", detail: error.message });
-      await sb.from("academy_service_request_events").insert({ academy_id: relationship.academy_id, request_id: request.id, event_type: "submitted", to_status: "submitted", actor_user_id: userId, note: "Submitted by guardian", visible_to_requester: true });
-      await logAcademyAuditEvent(sb, { academyId: String(relationship.academy_id), actorUserId: userId, actorRole: "guardian", action: "service_request.submitted", targetType: "academy_service_request", targetId: String(request.id), contactId: String(relationship.contact_id), metadata: { request_type: requestType } });
-      return json(200, { request });
+      return json(200,await writeGuardianPortal(sb,userId,requestedAction,body as Record<string,unknown>,rawActionBody==='guardian_portal_write_command'));
     }
 
     const memberships = await loadMemberships(sb, userId, userEmail);

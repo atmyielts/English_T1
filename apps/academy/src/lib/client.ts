@@ -2321,9 +2321,10 @@ export const teacherStudioGuardianDashboard = async (relationshipId?:string,acto
  }
  return {...first,children:[...children.values()],guardians:[...guardians.values()],preferences:[...preferences.values()]};
 };
+export const teacherStudioGuardianHistory = (relationshipId:string,section:string,after:Record<string,unknown>|null,actorId:string) => parentRequest<{relationship_id:string;section:string;records:Record<string,unknown>[];has_more:boolean;cursor:Record<string,unknown>|null}>('','guardian_history',{relationship_id:relationshipId,section,after},actorId);
 export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>,actorId?:string) => parentRequest<Record<string,unknown>>('','guardian_claim_link',body,actorId);
-export const teacherStudioGuardianUpdatePreferences = (body:Record<string,unknown>) => callTeacherStudio<{preference:Record<string,unknown>}>({method:'POST', action: 'guardian_update_preferences',body});
-export const teacherStudioGuardianSendMessage = (body:Record<string,unknown>) => callTeacherStudio<{message:Record<string,unknown>}>({method:'POST', action: 'guardian_send_message',body});
+export const teacherStudioGuardianUpdatePreferences = (body:Record<string,unknown>,actorId?:string) => parentRequest<{preference:Record<string,unknown>}>('','guardian_update_preferences',body,actorId);
+export const teacherStudioGuardianSendMessage = (body:Record<string,unknown>,actorId?:string) => parentRequest<{message:Record<string,unknown>}>('','guardian_send_message',body,actorId);
 export const teacherStudioBusinessIntelligence = async (academyId:string):Promise<AcademyBusinessIntelligence> => callTeacherStudio<AcademyBusinessIntelligence>({ action: 'business_intelligence', academyId });
 export const teacherStudioGlobalSearch = async (academyId:string,query:string):Promise<{results:Array<Record<string,unknown>>}> => callTeacherStudio<{results:Array<Record<string,unknown>>}>({ action: 'global_search', academyId, body:{query,limit:50} });
 
@@ -3240,7 +3241,7 @@ export const teacherStudioStudentServiceRequests = (academyId?: string | null) =
 export const teacherStudioCreateStudentServiceRequest = (academyId: string, body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'student_service_request_create', academyId, body });
 export const teacherStudioStudentLearningPlans = (academyId?: string | null) => callTeacherStudio<{ plans: AcademyOperationalRecord[]; items: AcademyOperationalRecord[]; evidence: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_learning_plans', academyId });
 export const teacherStudioGuardianServiceRequests = (relationshipId:string,actorId?:string) => parentRequest<{relationship_id:string;requests:AcademyServiceRequest[];events:AcademyOperationalRecord[];guardians:AcademyOperationalRecord[];history_has_more?:boolean}>('','guardian_service_requests',{relationship_id:relationshipId},actorId);
-export const teacherStudioCreateGuardianServiceRequest = (body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'guardian_service_request_create', body });
+export const teacherStudioCreateGuardianServiceRequest = (body:Record<string,unknown>,actorId?:string) => parentRequest<{request:AcademyServiceRequest}>('','guardian_service_request_create',body,actorId);
 export const teacherStudioSubmitSensitiveReport = (body: Record<string, unknown>) => callTeacherStudio<{ case: { id: string; case_number: number; status: string } }>({ method: 'POST', action: 'submit_sensitive_report', body });
 
 export const academyTelegramCreateStaffLink = async (academyId: string): Promise<{ url: string; expires_in_seconds: number }> => {

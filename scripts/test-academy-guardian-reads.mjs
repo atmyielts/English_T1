@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
 import {btree_gist} from '@electric-sql/pglite/contrib/btree_gist';
 import {pgcrypto} from '@electric-sql/pglite/contrib/pgcrypto';
-const files=['scripts/fixtures/academy-guardian-schema.sql','supabase/migrations/20261020120000_academy_guardian_portal_reads.sql','supabase/migrations/20261020121000_academy_guardian_binding_identity.sql','scripts/fixtures/academy-guardian-portal.sql'];
+const files=['scripts/fixtures/academy-guardian-schema.sql','supabase/migrations/20261020120000_academy_guardian_portal_reads.sql','supabase/migrations/20261020121000_academy_guardian_binding_identity.sql','supabase/migrations/20261020150000_academy_parent_write_commands.sql','supabase/migrations/20261020151000_academy_parent_history_paging.sql','supabase/migrations/20261020152000_academy_parent_delivery_claims.sql','scripts/fixtures/academy-guardian-portal.sql'];
 const sources=files.map(file=>({file,source:readFileSync(file,'utf8')}));
 const db=new PGlite({extensions:{btree_gist,pgcrypto}});
 try{
