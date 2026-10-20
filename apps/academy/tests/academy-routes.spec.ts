@@ -44,20 +44,20 @@ test('staff edits preserve account identity, access resources and precise expiry
  await page.goto('/academy/admin/os?academy_id=academy-route-smoke');
  await page.getByRole('button',{name:/^More tools/}).click();
  await page.getByRole('button',{name:'Growth',exact:true}).click();
- const panel=page.locator('.panel').filter({has:page.getByRole('heading',{name:'Role grants',exact:true})});
+ const panel=page.locator('.panel').filter({has:page.getByRole('heading',{name:'Staff access',exact:true})});
  await panel.getByRole('button',{name:'Edit',exact:true}).click();
  await panel.getByRole('combobox',{name:'Role',exact:true}).selectOption('admin');
- await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toHaveValue('classrooms');
+ await expect(panel.getByRole('combobox',{name:'Where they can work',exact:true})).toHaveValue('classrooms');
  await expect(panel.getByRole('checkbox',{name:'IELTS Evening A'})).toBeChecked();
  await panel.getByLabel('Email',{exact:true}).fill('alias-scope@example.test');
  await panel.screenshot({path:test.info().outputPath('staff-scope-desktop.png')});
- await panel.getByRole('button',{name:'Update grant',exact:true}).click();
+ await panel.getByRole('button',{name:'Save staff access',exact:true}).click();
  await expect.poll(()=>commands.length).toBe(1);
  expect(commands[0]).toMatchObject({id:staffId,staff_email:'alias-scope@example.test',staff_role:'admin',scope_type:'classrooms',scope_ids:['classroom-route-smoke'],expires_at:person.expires_at});
  expect(typeof commands[0].idempotency_key).toBe('string');
  await page.setViewportSize({width:390,height:844});
  await panel.getByRole('button',{name:'Edit',exact:true}).click();
- await expect(panel.getByRole('combobox',{name:'Access scope',exact:true})).toBeVisible();
+ await expect(panel.getByRole('combobox',{name:'Where they can work',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
  await panel.screenshot({path:test.info().outputPath('staff-scope-phone.png')});
 });
@@ -110,7 +110,7 @@ test('staff invitation retry keeps its delivery identity and never reports an un
   return undefined;
  }});
  await page.goto(`/academy/admin/services?academy_id=${academyId}`);
- await page.getByRole('button',{name:'Access Invitations and learner preview',exact:true}).click();
+ await page.getByRole('button',{name:'Access Invitations and student preview',exact:true}).click();
  await page.getByRole('button',{name:'Send invitation',exact:true}).click();
  const form=page.locator('form').filter({has:page.getByRole('button',{name:'Send invitation',exact:true})});
  await form.getByRole('combobox',{name:'Invite for',exact:true}).selectOption('staff');
@@ -118,9 +118,9 @@ test('staff invitation retry keeps its delivery identity and never reports an un
  await form.getByLabel('Email',{exact:true}).fill('owned-invite@example.test');
  await form.getByRole('button',{name:'Send invitation',exact:true}).click();
  await expect(page.getByText('Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.',{exact:true})).toBeVisible();
- await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toHaveCount(0);
+ await expect(page.getByText('Invitation saved. Check its delivery status below.',{exact:true})).toHaveCount(0);
  await form.getByRole('button',{name:'Send invitation',exact:true}).click();
- await expect(page.getByText('Invitation saved and tracked.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Invitation saved. Check its delivery status below.',{exact:true})).toBeVisible();
  expect(commands).toHaveLength(2);expect(commands[1].idempotency_key).toBe(commands[0].idempotency_key);
  expect(commands[1]._delivery_token).toBe(commands[0]._delivery_token);expect(commands[1].classroom_ids).toEqual(['classroom-route-smoke']);
 });
@@ -2369,7 +2369,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       return undefined;
     }});
     await page.goto(`/academy/admin/academic?academy_id=${academyId}`);
-    const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Create actual lesson session',exact:true})});
+    const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Schedule a lesson',exact:true})});
     await expect(form.getByText('Timezone: Asia/Kathmandu',{exact:true})).toBeVisible();
     await form.getByLabel('Starts',{exact:true}).fill('2026-10-12T14:00');
     await form.getByLabel('Ends',{exact:true}).fill('2026-10-12T15:00');
@@ -3796,7 +3796,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         name: "Sessions, attendance, capacity, and quality",
       }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Create actual lesson session" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Schedule a lesson" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Session register" })).toBeVisible();
     await expect(page.getByRole("table").getByRole("cell", { name: "Room 101" })).toBeVisible();
     await page.getByRole("button", { name: "Attendance & exceptions" }).click();

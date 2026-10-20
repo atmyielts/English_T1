@@ -418,7 +418,7 @@ export function OperationalServicesView({ academyId, actorId, access, contacts, 
     {
       id: 'access',
       label: 'Access',
-      detail: 'Invitations and learner preview',
+      detail: 'Invitations and student preview',
       icon: <KeyRound size={18} />,
       visible: canAccess,
       count: data.accessInvitations?.invitations.filter((item) => item.status === 'pending').length ?? 0,
@@ -584,7 +584,7 @@ export function OperationalServicesView({ academyId, actorId, access, contacts, 
         });
       void run(
         () => teacherStudioOperationalCommand(academyId, 'create_access_invitation', body,actorId),
-        'Invitation saved and tracked.',
+        'Invitation saved. Check its delivery status below.',
       );
     };
     return (
@@ -842,7 +842,7 @@ export function OperationalServicesView({ academyId, actorId, access, contacts, 
                             teacherStudioOperationalCommand(academyId, 'resend_access_invitation', {
                               invitation_id: item.id,
                             },actorId),
-                          'Invitation saved and tracked.',
+                          'Invitation saved. Check its delivery status below.',
                         )
                       }
                     >

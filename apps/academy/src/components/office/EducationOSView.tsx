@@ -1625,7 +1625,7 @@ export const EducationOSView = ({
                       <div className="small muted">{eventTypeLabel(item.source_type)}{item.due_at ? ` | due ${formatDate(item.due_at)}` : ''}</div>
                     </li>
                   ))}
-                  {actionQueue.length === 0 ? <li>{translate("No command actions in your role scope.")}</li> : null}
+                  {actionQueue.length === 0 ? <li>{translate("No tasks need your attention right now.")}</li> : null}
                 </ul>
               </div>
 
@@ -2110,8 +2110,8 @@ export const EducationOSView = ({
 
           {modeCanUse('manageStaff') ? (
             <div className="panel">
-              <h3>{translate("Role grants")}</h3>
-                <p className="small muted">{translate("Grant only the role and classroom scope this staff member needs.")}</p>
+              <h3>{translate("Staff access")}</h3>
+                <p className="small muted">{translate("Choose this person’s role and the groups they can work with.")}</p>
                 <form className="grid staff-form labeled-form" onSubmit={submitStaff}>
                   <label>{translate("Email")}<input className="input" type="email" autoComplete="email" value={staffForm.staff_email} onChange={(event) => setStaffForm((prev) => ({ ...prev, staff_email: event.target.value }))} required /></label>
                   <label>{translate("Display name")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" autoComplete="name" value={staffForm.name} onChange={(event) => setStaffForm((prev) => ({ ...prev, name: event.target.value }))} /></label>
@@ -2121,7 +2121,7 @@ export const EducationOSView = ({
                   }))}>
                     {STAFF_GRANT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
                   </select></label>
-                  <label>{translate("Access scope")}<select className="input" value={staffForm.scope_type} onChange={event=>setStaffForm(previous=>({...previous,scope_type:event.target.value,classroom_ids:[]}))}>
+                  <label>{translate("Where they can work")}<select className="input" value={staffForm.scope_type} onChange={event=>setStaffForm(previous=>({...previous,scope_type:event.target.value,classroom_ids:[]}))}>
                     <option value="classrooms">{translate("Classrooms")}</option><option value="branches">{translate("Branches")}</option>
                     <option value="students">{translate("Students")}</option><option value="academy">{translate("Whole Academy")}</option>
                   </select></label>
@@ -2156,7 +2156,7 @@ export const EducationOSView = ({
                   </div>
                   <div className="row gap">
                     <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesResourceScope && staffForm.classroom_ids.length === 0)}>
-                      {editingStaffId ? 'Update grant' : 'Create grant'}
+                      {translate(editingStaffId ? 'Save staff access' : 'Add staff access')}
                     </button>
                     {editingStaffId ? (
                       <button className="small-btn" type="button" onClick={() => {
@@ -2317,9 +2317,9 @@ export const EducationOSView = ({
             <div className="row between wrap">
               <div>
                 <h3>{translate("Audit trail")}</h3>
-                <p className="small muted">{translate("Recent owner, staff, finance, learning, and reporting actions recorded by the Academy Edge function.")}</p>
+                <p className="small muted">{translate("See who changed student records, payments and academy settings.")}</p>
               </div>
-              <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>{translate("Refresh audit")}</button>
+              <button className="ghost-btn" type="button" onClick={() => void loadOsData()} disabled={localBusy}>{translate("Refresh history")}</button>
             </div>
             <ul className="list audit-event-list">
               {auditEvents.map((event) => (
@@ -2337,7 +2337,7 @@ export const EducationOSView = ({
                   {auditMetadataSummary(event.metadata) ? <div className="small">{auditMetadataSummary(event.metadata)}</div> : null}
                 </li>
               ))}
-              {auditEvents.length === 0 ? <li>{translate("No audit events recorded yet.")}</li> : null}
+              {auditEvents.length === 0 ? <li>{translate("No activity recorded yet.")}</li> : null}
             </ul>
           </div>
         </section>

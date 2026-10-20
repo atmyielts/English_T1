@@ -506,7 +506,7 @@ const officeShellLabel = (
     return { title: 'Academy Admin', subtitle: 'Settings, finance, and access' };
   }
   if (intent === 'teacher') {
-    return { title: 'Teacher Workspace', subtitle: 'Classrooms, LMS, and student actions' };
+    return { title: 'Teacher Workspace', subtitle: 'Lessons, homework and student progress' };
   }
   if (hasAccessPermission(access, 'manageFinance')) {
     return { title: 'Academy Control', subtitle: 'Owner administration' };
@@ -514,7 +514,7 @@ const officeShellLabel = (
   if (hasAccessPermission(access, 'manageClassrooms')) {
     return { title: 'Academy LMS', subtitle: 'Operations control' };
   }
-  return { title: 'Academy Operations', subtitle: 'Role-scoped daily operations' };
+  return { title: 'Academy Operations', subtitle: 'Your daily work' };
 };
 
 const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undefined): OfficeRouteIntent => {
@@ -1408,17 +1408,17 @@ const App = () => {
   );
   const academyQuickTargets = useMemo(() => {
     const targetCopy: Partial<Record<OfficeView, { title: string; caption: string }>> = {
-      academy: { title: 'Academy settings', caption: 'Identity, branding, and public landing content' },
+      academy: { title: 'Academy settings', caption: 'Academy details, logo and public page' },
       classrooms: { title: 'Classroom LMS', caption: 'Gradebook, attendance, student actions, schedule' },
-      contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student records and lifecycle context' },
-      inbox: { title: 'Inbox', caption: 'Message students and families inside the academy scope' },
+      contacts: { title: 'Contacts', caption: canManageContacts ? 'Manage students and assistants' : 'Student details and enrollment history' },
+      inbox: { title: 'Inbox', caption: 'Message your students and their families' },
       announcements: { title: 'Announcements', caption: canSendGlobalAnnouncements ? 'Send academy-wide and classroom updates' : 'Send classroom updates' },
-      alerts: { title: 'Alerts', caption: 'Create and resolve student attention signals' },
+      alerts: { title: 'Alerts', caption: 'Follow up with students who need help' },
       offers: { title: 'Offers', caption: 'Define paid plans and packages' },
-      entitlements: { title: 'Access grants', caption: 'Review active LMS and classroom access' },
+      entitlements: { title: 'Student access', caption: 'See which courses and groups each student can open' },
       payments: { title: 'Payments', caption: 'Track Click payments and settlement' },
       commercial: { title: 'Commercial Core', caption: 'Plans, agreements, invoices, allocations, balances, and debt' },
-      academic: { title: 'Academic Operations', caption: 'Actual sessions, conflicts, attendance exceptions, capacity, and quality' },
+      academic: { title: 'Academic Operations', caption: 'Plan lessons, check attendance and review teaching' },
       rooms: { title: 'Room timetable', caption: 'Lessons across physical rooms and branch-local dates' },
       relationships: { title: 'Guardians & Parents', caption: 'Consent, secure Telegram linking, visibility, messages, and notification delivery' },
       intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
@@ -3239,7 +3239,7 @@ const App = () => {
       }));
       await loadAcademyData(academyId, selectedConversationId);
       if (!task.isCurrent()) return;
-      setNotice('Offer grant saved.');
+      setNotice('Offer access saved.');
     } catch (err) {
       if (task.isCurrent()) setError(normalizeError(err));
     } finally {
@@ -3282,7 +3282,7 @@ const App = () => {
       if (!task.isCurrent()) return;
       await loadAcademyData(academyId, selectedConversationId);
       if (!task.isCurrent()) return;
-      setNotice('Settlement applied and entitlements updated.');
+      setNotice('Payment confirmed. Student access updated.');
     } catch (err) {
       if (task.isCurrent()) setError(normalizeError(err));
     } finally {
@@ -3778,7 +3778,7 @@ const App = () => {
                           {hasBothRoles
                             ? translate("Choose whether you want to manage this academy or continue learning.")
                             : entry.staff
-                              ? translate(staffShell?.subtitle ?? 'Role-scoped Academy operations.')
+                              ? translate(staffShell?.subtitle ?? 'Manage your daily work.')
                               : translate("Classrooms, messages, tuition, and learning progress.")}
                         </p>
                         <div className="market-actions">

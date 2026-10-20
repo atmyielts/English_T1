@@ -179,7 +179,7 @@ const workflowContracts = [
   {
     label: 'Actual session, conflict, attendance exception, capacity, and quality workflow',
     content: `${academicOperationsView}\n${academyClient}\n${academyEdge}`,
-    tokens: ['Create actual lesson session','Controlled session status','Assign substitute','Academic calendar','Teacher or room availability','Record session attendance','Approve attendance exception','Make-up, transfer, extension, or credit','Quality observation','Available, occupied, unused, and peak periods','academic_operations','create_lesson_session'],
+    tokens: ['Schedule a lesson','Update a lesson','Assign substitute','Academic calendar','Teacher or room availability','Record session attendance','Approve attendance exception','Make-up, transfer, extension, or credit','Quality observation','Available, occupied, unused, and peak periods','academic_operations','create_lesson_session'],
   },
   {
     label: 'Guardian consent, secure linking, parent privacy, and notification evidence workflow',
