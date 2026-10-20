@@ -23,6 +23,8 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.",
+  "Unable to check learning access. Try again.",
   "Your current access does not cover this recording.",
   "The assignment or recording changed. Review its current status.",
   "Review the recording and its written response.",

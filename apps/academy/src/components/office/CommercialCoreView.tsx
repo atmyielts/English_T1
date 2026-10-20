@@ -1,3 +1,5 @@
+import {WalletPolicyPanel} from './WalletPolicyPanel';
+import {staffRequest} from '../../lib/staffRequest';
 import {financialMoney as money,financialTotals,exactUnits,sumCurrencies} from '../../lib/financialMoney';
 import {FinancialBranchSelector,type FinancialBranch} from './FinancialBranchSelector';
 import {hasPendingFinance} from '../../lib/staffRequest';
@@ -235,6 +237,7 @@ function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBran
 
       {activeTab === "overview" ? (
         <div className="commercial-grid">
+          {data?<WalletPolicyPanel data={data} disabled={busy||pending} canManage={canManageFinance} onSave={payload=>void run(()=>staffRequest(academyId,'set_wallet_policy',payload,actorId),translate('Wallet policy saved.'))}/>:null}
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>

@@ -3,7 +3,7 @@
   "release": "https://github.com/atmyielts/English_T1/pull/259",
   "reviewedCommit": "423711a24e53a7ecbc5bcafe57672c2e5b4a2a71",
   "main": "58e5377977bed91582c3eb9b49a1398d4e22803e",
-  "status": "deployed_api_verified_browser_refresh_repair_pending",
+  "status": "deployed_browser_refresh_repair_verified_in_pr260",
   "edgeVersion": 89,
   "installedMigrations": 227,
   "protectedCI": 39448969937,
@@ -135,8 +135,16 @@
   "realFundsUsed": false,
   "telegramEmailSmsDeliveriesAttempted": 0,
   "remaining": [
-    "Deploy and qualify the frontend audio refresh repair.",
-    "Complete published teacher feedback, microphone cancel/stop/upload and final-attempt playback.",
-    "Telegram bot voice transport and externally owned provider delivery/payment proof remain separate."
-  ]
+    "Pending stale-upload budget and cross-tab recovery follow-up.",
+    "Telegram bot voice transport and externally owned provider delivery/payment proof."
+  ],
+  "browserRepairRelease": {
+    "release": "https://github.com/atmyielts/English_T1/pull/260",
+    "main": "710c17ff35aed5caa68fc05d09fb74f47409ce36",
+    "edgeVersion": 90,
+    "proof": "2026-10-20-cash-handover-production.json",
+    "publishedBrowserChecks": 38,
+    "cleanupChecks": 60,
+    "passed": true
+  }
 }
