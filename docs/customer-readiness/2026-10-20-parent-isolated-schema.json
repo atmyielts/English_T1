@@ -1,0 +1,196 @@
+{
+  "recordedAt": "2026-10-20T09:15:20.250Z",
+  "passed": true,
+  "cleanupVerified": true,
+  "stage": "parent reads serialize with consent revocation and account closure under captured roles",
+  "count": 5,
+  "fixtureChecks": 57,
+  "checks": [
+    "restore complete installed Auth/public/Storage schema without customer rows",
+    "database role attributes and relevant memberships match installed metadata",
+    "frozen authority/import/invitation and parent read candidates install under captured production roles",
+    "actual Auth triggers, foreign keys and views qualify parent privacy and child selection",
+    "parent reads serialize with consent revocation and account closure under captured roles"
+  ],
+  "catalog": {
+    "tables": 413,
+    "authTriggers": 4,
+    "publicTriggers": 334,
+    "publicForeignKeys": 1253
+  },
+  "schema": {
+    "sha256": "4b82d5fb3d4f82a90d9a2b7999782cde6f935e154d219a5c24ae5fe1892bcad1",
+    "tableCount": 413,
+    "customerRowsIncluded": false
+  },
+  "runtimeCatalog": {
+    "capturedAt": "2026-10-20T08:01:37.0208374Z",
+    "sha256": "3854e0e37c24b7df7e9e681680a9187380070e66ae832e4172de95ce7c611b49",
+    "roles": [
+      {
+        "name": "anon",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticated",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticator",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_create_subscription",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_monitor",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_read_all_data",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_signal_backend",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "postgres",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "service_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_admin",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": true,
+        "createRole": true
+      },
+      {
+        "name": "supabase_auth_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "supabase_privileged_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_storage_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      }
+    ],
+    "extensions": [
+      {
+        "name": "btree_gist",
+        "schema": "public",
+        "version": "1.7"
+      },
+      {
+        "name": "pg_cron",
+        "schema": "pg_catalog",
+        "version": "1.6.4"
+      },
+      {
+        "name": "pg_net",
+        "schema": "extensions",
+        "version": "0.19.5"
+      },
+      {
+        "name": "pg_stat_statements",
+        "schema": "extensions",
+        "version": "1.11"
+      },
+      {
+        "name": "pgcrypto",
+        "schema": "extensions",
+        "version": "1.3"
+      },
+      {
+        "name": "plpgsql",
+        "schema": "pg_catalog",
+        "version": "1.0"
+      },
+      {
+        "name": "supabase_vault",
+        "schema": "vault",
+        "version": "0.3.1"
+      },
+      {
+        "name": "uuid-ossp",
+        "schema": "extensions",
+        "version": "1.1"
+      }
+    ]
+  },
+  "image": "public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426",
+  "migrations": [
+    {
+      "file": "20261020120000_academy_guardian_portal_reads.sql",
+      "sha256LF": "90bb9b0321ae3d15ac1e83977934c21797d490a7fe27e76c400084f5d8c8c9a7"
+    },
+    {
+      "file": "20261020121000_academy_guardian_binding_identity.sql",
+      "sha256LF": "21e55a972814002dd19caf88a5e6b6ba3a504136ae0f8b97df702d9bc3e51851"
+    }
+  ],
+  "canarySha256LF": "093e7122545b72899e8171f4f18c3f24106e604e5496f11449c3e588937ae2e1",
+  "productionChanged": false,
+  "limits": [
+    "Local complete-schema compatibility only; no installed lifecycle/provider activation proof.",
+    "Schema captures contain definitions, not production seed/catalogue/customer records.",
+    "The local PostgreSQL exercises real captured Auth triggers, not the live Auth service."
+  ]
+}

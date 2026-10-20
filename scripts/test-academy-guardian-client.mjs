@@ -10,7 +10,7 @@ const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),a={relationship_id:id(2),details_loaded:false,student:{name:'First child'}},b={relationship_id:id(3),details_loaded:false,student:{name:'Second child'}};
 function load(respond){
  const calls=[];
- const fn=runInNewContext(code+';teacherStudioGuardianDashboard',{staffRequest:async(...args)=>{calls.push(args);return respond(...args);},Map,Set,Error});
+ const fn=runInNewContext(code+';teacherStudioGuardianDashboard',{parentRequest:async(...args)=>{calls.push(args);return respond(...args);},Map,Set,Error});
  return {fn,calls};
 }
 let checks=0;

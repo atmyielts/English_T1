@@ -10,7 +10,8 @@ function compile(path,dependencies={}){
 }
 const telegram=compile('supabase/functions/_shared/telegram-init-data.ts');
 const service=compile('supabase/functions/academy/guardian-portal.ts',{'../_shared/telegram-init-data.ts':telegram});
-const source=readFileSync('supabase/functions/academy/index.ts','utf8');
+const overrideIndex=process.argv.indexOf('--edge-source');
+const source=readFileSync(overrideIndex<0?'supabase/functions/academy/index.ts':process.argv[overrideIndex+1],'utf8');
 const slice=(start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);};
 const decoder=slice('    const rawActionBody =','    if (requestedAction === "invitation_status")');
 const reads=slice('    if (requestedAction === "guardian_claim_link"','    if (requestedAction === "guardian_update_preferences"');

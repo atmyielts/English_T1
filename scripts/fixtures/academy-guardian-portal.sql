@@ -45,6 +45,17 @@ begin
    from unnest(array['student_absent','grade_published','upcoming_payment','overdue_payment','unknown_legacy_kind']) event;
  insert into public.academy_notifications(academy_id,contact_id,guardian_id,relationship_id,type,event_key,channel,body,status)
   values(academy,other_child,g,expired,'student_absent','student_absent','inapp','PRIVATE EXPIRED NOTICE','sent');
+ begin update public.academy_guardians set user_id=other_actor where id=g;raise exception 'Bound account overwritten';exception when insufficient_privilege then null;end;
+ perform pg_temp.guardian_check(true,'legacy invitation cannot overwrite established account');
+ begin update public.academy_student_guardian_relationships set contact_id=other_child where id=r;raise exception 'Relationship moved to other child';exception when insufficient_privilege then null;end;
+ perform pg_temp.guardian_check(true,'consent identity cannot move to another student');
+ begin update public.academy_student_guardian_relationships set guardian_id=gen_random_uuid() where id=r;raise exception 'Relationship moved to other parent';exception when insufficient_privilege then null;end;
+ perform pg_temp.guardian_check(true,'consent identity cannot move to another parent');
+ begin update public.academy_guardians set academy_id=gen_random_uuid() where id=g;raise exception 'Parent moved across academy';exception when insufficient_privilege then null;end;
+ perform pg_temp.guardian_check(true,'parent cannot move across academies');
+ update public.academy_guardians set user_id=null where id=g;
+ perform pg_temp.guardian_check((select user_id is null from public.academy_guardians where id=g),'retention can clear a closed login foreign key');
+ update public.academy_guardians set user_id=actor where id=g;
  x:=public.academy_guardian_portal_read(actor,jsonb_build_object('relationship_id',r));
  perform pg_temp.guardian_check(jsonb_array_length(x->'children')=1,'expired child filtered before payload');
  perform pg_temp.guardian_check(x->'selected_child'->'student'->>'id'=child_id::text,'selected child identity');

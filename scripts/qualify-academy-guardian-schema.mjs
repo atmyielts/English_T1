@@ -21,7 +21,7 @@ const image='public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c
 const name='schood-guardian-schema-'+randomUUID().slice(0,8),label='guardian-portal-installed-schema';
 const root=option('--output-dir')||'supabase/.temp/guardian-schema';mkdirSync(root,{recursive:true});
 writeFileSync(root+'/installed-schema-owned-container.json',JSON.stringify({name,label,image,createdAt:new Date().toISOString()},null,2)+'\n');
-const migrations=[...new Set([...JSON.parse(readFileSync('release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql'])];
+const migrations=[...new Set([...JSON.parse(readFileSync('release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql','20261020121000_academy_guardian_binding_identity.sql'])];
 // Freeze tested sources before any asynchronous work. Evidence must describe the
 // bytes installed/tested, even if another edit arrives while qualification runs.
 const candidates=migrations.map(file=>({file,source:readFileSync('supabase/migrations/'+file,'utf8')}));
@@ -89,7 +89,7 @@ try{
     const actual=JSON.parse(await sql(`select jsonb_build_object('authUsage',has_schema_privilege('postgres','auth','USAGE'),'authCreate',has_schema_privilege('postgres','auth','CREATE'),'authTrigger',has_table_privilege('postgres','auth.users','TRIGGER'),'authSelect',has_table_privilege('postgres','auth.users','SELECT'));`));
     assert.deepEqual(actual,runtime.postgresPrivileges);
   });
-  await check('frozen authority/import/invitation and parent read candidates install under captured production roles',async()=>{
+  await check('frozen reviewed migrations install under captured production roles',async()=>{
     for(const candidate of candidates)await sql(candidate.source,'postgres');
   });
   await check('actual Auth triggers, foreign keys and views qualify parent privacy and child selection',async()=>{

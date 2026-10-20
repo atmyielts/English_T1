@@ -190,7 +190,7 @@ const hasClientAction = (action) =>
   academyClient.includes(`academyId,'${action}'`) || academyClient.includes(`academyId, "${action}"`) ||
   (['guardian_dashboard','guardian_claim_link','guardian_service_requests'].includes(action) &&
     academyClient.includes(`>('','${action}',`) &&
-    safeRead('apps/academy/src/lib/staffRequest.ts').includes(action==='guardian_claim_link'?"'guardian_link_command'":"'guardian_portal_read_command'"));
+    safeRead('apps/academy/src/lib/parentRequest.ts').includes(action==='guardian_claim_link'?"'guardian_link_command'":"'guardian_portal_read_command'"));
 
 const hasClientWritePath = (action) => {
   if (action === 'create_payment') {

@@ -1,0 +1,108 @@
+{
+  "status": "prepared_not_deployed",
+  "preparedAt": "2026-10-20T09:22:19.027Z",
+  "productionChanged": false,
+  "reviewedCommit": "11da540713bca1b18d4f0c09563d40bf3c26327c",
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "previousVersion": 82,
+  "verifyJwt": false,
+  "retainedInstalledGateway": true,
+  "files": [
+    {
+      "path": "supabase/functions/academy/access.ts",
+      "sha256LF": "5b2a6836aa4705e645cf5817a067f715847cf745ea63be01de638d9d030e3112",
+      "baselineSha256LF": "5b2a6836aa4705e645cf5817a067f715847cf745ea63be01de638d9d030e3112",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/assessment-operations.ts",
+      "sha256LF": "f025e09b4444f83ff67fe2b6dc3c26fdfc1bfe4ef0e00320953b813797827065",
+      "baselineSha256LF": "f025e09b4444f83ff67fe2b6dc3c26fdfc1bfe4ef0e00320953b813797827065",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/assessment-services.ts",
+      "sha256LF": "bf406335ff5550afe2ec4189cf915cdb76b1ff8659f0b39434fdf01793386de8",
+      "baselineSha256LF": "bf406335ff5550afe2ec4189cf915cdb76b1ff8659f0b39434fdf01793386de8",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/index.ts",
+      "sha256LF": "6c21a72e98e0ffc657c63e4097ed19d954816de3cc4aa78dd5926cba69cb9059",
+      "baselineSha256LF": "dea80f3205c0d8e6a600353f66c6a43164bc2e6aaa25d959ebf6dec42732ea87",
+      "kind": "reviewed-parent-overlay"
+    },
+    {
+      "path": "supabase/functions/academy/legacy-import-policy.ts",
+      "sha256LF": "6c71a53c737c8e9fe5d6b08e0b45e9dad287bb70e6a0c2f6b3ed2d9406d6d001",
+      "baselineSha256LF": "6c71a53c737c8e9fe5d6b08e0b45e9dad287bb70e6a0c2f6b3ed2d9406d6d001",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/room-timetable.ts",
+      "sha256LF": "4e2c6a907f4282394972dd9e81e850a535702347ebedf6f255f2fe011830de43",
+      "baselineSha256LF": "4e2c6a907f4282394972dd9e81e850a535702347ebedf6f255f2fe011830de43",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/timetable-generation.ts",
+      "sha256LF": "bcdb41c0a6f5a9789360da6f0401288fb480c2f689d332550ca9fc573c8a6fb8",
+      "baselineSha256LF": "bcdb41c0a6f5a9789360da6f0401288fb480c2f689d332550ca9fc573c8a6fb8",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/academy-assessment-core.ts",
+      "sha256LF": "4b92b573ce9b84ce376fe8ee3ed19842dbbb950568758ed8441965b9753dee73",
+      "baselineSha256LF": "4b92b573ce9b84ce376fe8ee3ed19842dbbb950568758ed8441965b9753dee73",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/academy-curriculum.ts",
+      "sha256LF": "ea9c75927a312c508a954e097072ae440083807ed1e4e9df5f2b8862f28ba629",
+      "baselineSha256LF": "ea9c75927a312c508a954e097072ae440083807ed1e4e9df5f2b8862f28ba629",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/academy-diagnostic-starter.ts",
+      "sha256LF": "a2e880ef90880a308d151893a56d66ab8cb6810d457338da8edf657746156577",
+      "baselineSha256LF": "a2e880ef90880a308d151893a56d66ab8cb6810d457338da8edf657746156577",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/academy-scoring.ts",
+      "sha256LF": "c81fb4202591f5a20a0e9e89293cc48c395251bbd588664abb92e5577ef56bfe",
+      "baselineSha256LF": "c81fb4202591f5a20a0e9e89293cc48c395251bbd588664abb92e5577ef56bfe",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/academy-teacher-flow.ts",
+      "sha256LF": "282164c7dc88cd8c2326d601084b1a43f7c522d536174e09283f182ad2970ac1",
+      "baselineSha256LF": "282164c7dc88cd8c2326d601084b1a43f7c522d536174e09283f182ad2970ac1",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/ielts-ai.ts",
+      "sha256LF": "4103a6810d9e7840b11de72aeae9f2708035f185b10332178107cfc2d8c0c050",
+      "baselineSha256LF": "4103a6810d9e7840b11de72aeae9f2708035f185b10332178107cfc2d8c0c050",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/_shared/media-storage.ts",
+      "sha256LF": "fb51f8571bfb67aa5d751104debb63be3a48e6431851c50e557841f018273f1e",
+      "baselineSha256LF": "fb51f8571bfb67aa5d751104debb63be3a48e6431851c50e557841f018273f1e",
+      "kind": "retained-installed"
+    },
+    {
+      "path": "supabase/functions/academy/guardian-portal.ts",
+      "sha256LF": "84765782537add5af6a815705406a64809bf6c8aa7d7f5961a31aac3dd4f9e8c",
+      "baselineSha256LF": null,
+      "kind": "reviewed-parent-dependency"
+    },
+    {
+      "path": "supabase/functions/_shared/telegram-init-data.ts",
+      "sha256LF": "c494905d1797d744ab1a32bacc5787f705138e77b75ff847f674effe121f1769",
+      "baselineSha256LF": null,
+      "kind": "reviewed-parent-dependency"
+    }
+  ]
+}

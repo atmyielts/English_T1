@@ -1734,7 +1734,7 @@ const json = (body: unknown) => ({
 
 const seedSessionCookie = async (page: Page, userId: string) => {
   const session = {
-    access_token: `test.${Buffer.from(JSON.stringify({sub:userId})).toString('base64url')}.test`,
+    access_token: `owned.${Buffer.from(JSON.stringify({sub:userId})).toString('base64url')}.fixture`,
     token_type: "bearer",
     expires_in: 3600,
     expires_at: Math.floor(Date.now() / 1000) + 3600,
@@ -4328,7 +4328,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await seedSessionCookie(page,'guardian-user');let linked=false;const commands:Record<string,unknown>[]=[];
     await mockAcademyEdge(page,'guardian',{respond:async body=>{
       if(body.action==='guardian_dashboard')return linked?guardianDashboard:{guardians:[],children:[],preferences:[],notifications:[]};
-      if(body.action==='guardian_claim_link'){commands.push(body);linked=true;return {actor_id:'guardian-user',academy_id:'00000000-0000-4000-8000-000000000921',guardian:{id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'verified'},relationship:{guardian_id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'active',consent_status:'granted'}};}
+      if(body.action==='guardian_claim_link'){commands.push(body);linked=true;return {actor_id:'guardian-user',academy_id:'00000000-0000-4000-8000-000000000921',guardian:{id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'verified'},relationship:{id:'00000000-0000-4000-8000-000000000923',guardian_id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'active',consent_status:'granted'}};}
       return undefined;
     }});
     await page.goto('/academy/parent?token=owned-parent-token');
