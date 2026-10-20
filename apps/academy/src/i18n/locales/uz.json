@@ -1424,7 +1424,6 @@
   "Need to open a separate academy?": "Alohida akademiya ochmoqchimisiz?",
   "Needs a decision": "Qaror qabul qilinishi kerak",
   "Needs attention": "E’tibor talab qiladi",
-  "Needs grading": "Baholanishi kerak",
   "Needs retry": "Qayta yuborish kerak",
   "Needs review": "Tekshirish talab etiladi",
   "Net": "Neto",
@@ -2919,5 +2918,10 @@
   "Wallet policy": "Avans qoidasi",
   "Wallet policy saved.": "Avans qoidasi saqlandi.",
   "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.": "Joriy a’zolik yoki avans holati o‘qishga ruxsat bermayapti. Akademiyadan ruxsatni tekshirishni so‘rang.",
-  "Unable to check learning access. Try again.": "O‘qish ruxsatini tekshirib bo‘lmadi. Qayta urinib ko‘ring."
+  "Unable to check learning access. Try again.": "O‘qish ruxsatini tekshirib bo‘lmadi. Qayta urinib ko‘ring.",
+  "Your current access does not cover this operational workspace.": "Joriy ruxsatingiz bu ish bo‘limini qamrab olmaydi.",
+  "Unable to load this operational workspace. Try again.": "Bu ish bo‘limini yuklab bo‘lmadi. Qayta urinib ko‘ring.",
+  "Unable to confirm current operational access. Try again.": "Joriy ish ruxsatini tasdiqlab bo‘lmadi. Qayta urinib ko‘ring.",
+  "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Baholar jurnalining faqat bir qismi yuklangan. Topshirilmagan ishlar soni va o‘rtacha baholar to‘liq bo‘lmasligi mumkin.",
+  "Quiz attempts needing grading": "Baholash kerak bo‘lgan test urinishlari"
 }

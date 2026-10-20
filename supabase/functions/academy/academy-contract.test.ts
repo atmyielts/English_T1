@@ -22,7 +22,8 @@ Deno.test("Academy membership contact embeds name the tenant-safe relationship",
   ) ?? [];
 
   assertEquals(ambiguousEmbeds.length, 0);
-  assertEquals(tenantSafeEmbeds.length, 7);
+  // Gradebook now uses the private scoped SQL join, qualified against the full schema.
+  assertEquals(tenantSafeEmbeds.length, 6);
 });
 
 const accessForRole = (role: string) => ({

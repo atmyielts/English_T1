@@ -1,3 +1,4 @@
+import {runOperationalRead} from './operational-read.ts';
 import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
 import {financeActions,runFinanceCommand,runFinanceRead} from './finance-command.ts';
 import {staffGuardianCommand,staffGuardianActions} from './staff-guardian-command.ts';
@@ -34,7 +35,7 @@ import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,readLeg
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
-import { readAcademyRoomTimetable, readAcademyRoomBranches, RoomTimetableError } from "./room-timetable.ts";
+import {   RoomTimetableError } from "./room-timetable.ts";
 import { generateAcademyTimetable, publicTimetableRun, TimetableGenerationError } from "./timetable-generation.ts";
 import {studentImportActions,readStudentImportRequest,handleStudentImportService,StudentImportServiceError} from "./student-import-service.ts";
 
@@ -2694,14 +2695,8 @@ const handleReadAction = async (
   const operationalBranchIds = academyAccessBranchIds(access);
 
   if (action === "room_timetable" || action === "room_timetable_branches") {
-    try {
-      return json(200, action === "room_timetable_branches"
-        ? await readAcademyRoomBranches(sb, access)
-        : await readAcademyRoomTimetable(sb, access, roomTimetableRaw));
-    } catch (error) {
-      if (error instanceof RoomTimetableError) return json(error.status, { error: error.message });
-      throw error;
-    }
+    if(!directoryContext?.actorId)return json(403,{error:'Forbidden'});
+    return json(200,await runOperationalRead(sb,academyId,directoryContext.actorId,action,(roomTimetableRaw??{}) as Record<string,unknown>));
   }
 
   if (action === "teacher_day") {
@@ -3172,33 +3167,11 @@ const handleReadAction = async (
   }
 
   if (action === "gradebook") {
-    requireAcademyPermission(access, "gradeSubmissions");
-    const classroomId = normalizeText(classroomIdRaw, 64) || null;
-    if (!classroomId) return json(400, { error: "classroom_id is required for gradebook" });
-    if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
-
-    const [assignmentsResult, submissionsResult, membersResult, categoriesResult] = await Promise.all([
-      sb.from("academy_assignments")
-        .select("id, title, assignment_type, due_at, max_score, score_weight, grade_category_id, rubric_id, attempts_allowed, allow_late_submission, position, status")
-        .eq("academy_id", academyId).eq("classroom_id", classroomId).neq("status", "archived")
-        .order("position", { ascending: true }).limit(200),
-      sb.from("academy_submissions")
-        .select("id, assignment_id, contact_id, score, max_score, status, attempt_number, submitted_at, graded_at, notes, feedback, submission_content, submission_url, metadata")
-        .eq("academy_id", academyId).eq("classroom_id", classroomId).limit(5000),
-      sb.from("academy_classroom_memberships")
-        .select("contact_id, role, academy_contacts!academy_memberships_contact_tenant_fk(id, first_name, last_name, email, status)")
-        .eq("academy_id", academyId).eq("classroom_id", classroomId).in("role", ["student", "observer"])
-        .in("status", ["active", "completed"]).limit(500),
-      sb.from("academy_grade_categories")
-        .select("id, name, weight, position, drop_lowest")
-        .eq("academy_id", academyId).eq("classroom_id", classroomId).order("position", { ascending: true }).limit(100),
-    ]);
-
-    if (assignmentsResult.error) return json(500, { error: "Failed to load assignments", detail: assignmentsResult.error.message });
-    if (submissionsResult.error) return json(500, { error: "Failed to load submissions", detail: submissionsResult.error.message });
-    if (membersResult.error) return json(500, { error: "Failed to load members", detail: membersResult.error.message });
-    if (categoriesResult.error) return json(500, { error: "Failed to load grade categories", detail: categoriesResult.error.message });
-
+    if(!directoryContext?.actorId)return json(403,{error:'Forbidden'});
+    const classroomId=normalizeText(classroomIdRaw,64);if(!classroomId)return json(400,{error:'classroom_id is required for gradebook'});
+    const raw=await runOperationalRead(sb,academyId,directoryContext.actorId,'gradebook',{classroom_id:classroomId});
+    if(!['assignments','submissions','members','categories'].every(key=>Array.isArray(raw[key])))throw new LegacyImportCommandError(503,'Unable to load this operational workspace. Try again.');
+    const assignmentsResult={data:raw.assignments as Array<Record<string,unknown>>},submissionsResult={data:raw.submissions as Array<Record<string,unknown>>},membersResult={data:raw.members as Array<Record<string,unknown>>},categoriesResult={data:raw.categories as Array<Record<string,unknown>>};
     const submissionMap = new Map<string, Record<string, unknown>>();
     for (const s of (submissionsResult.data ?? []) as Array<Record<string, unknown>>) {
       submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, await attachSignedStorageUrl(sb, s, null));
@@ -3292,7 +3265,8 @@ const handleReadAction = async (
       };
     });
 
-    return json(200, { classroom_id: classroomId, assignments, grade_categories: gradeCategories, rows });
+    await runOperationalRead(sb,academyId,directoryContext.actorId,'gradebook_recheck',{classroom_id:classroomId,authority_hash:raw.authority_hash});
+    return json(200, { classroom_id: classroomId, assignments, grade_categories: gradeCategories, rows,has_more:raw.has_more });
   }
 
   // ── LMS: Student Progress ────────────────────────────────────────────────

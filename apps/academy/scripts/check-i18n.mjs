@@ -23,6 +23,9 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "Your current access does not cover this operational workspace.",
+  "Unable to load this operational workspace. Try again.",
+  "Unable to confirm current operational access. Try again.",
   "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.",
   "Unable to check learning access. Try again.",
   "Your current access does not cover this recording.",

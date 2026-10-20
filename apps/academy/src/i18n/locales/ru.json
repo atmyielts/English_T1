@@ -1424,7 +1424,6 @@
   "Need to open a separate academy?": "Хотите создать отдельную академию?",
   "Needs a decision": "Требуется решение",
   "Needs attention": "Требует внимания",
-  "Needs grading": "Требует оценки",
   "Needs retry": "Нужна повторная отправка",
   "Needs review": "Требует проверки",
   "Net": "Нет",
@@ -2919,5 +2918,10 @@
   "Wallet policy": "Правило аванса",
   "Wallet policy saved.": "Правило аванса сохранено.",
   "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.": "Обучение недоступно при текущем зачислении или авансе. Попросите академию проверить доступ.",
-  "Unable to check learning access. Try again.": "Не удалось проверить доступ к обучению. Попробуйте снова."
+  "Unable to check learning access. Try again.": "Не удалось проверить доступ к обучению. Попробуйте снова.",
+  "Your current access does not cover this operational workspace.": "Ваш текущий доступ не распространяется на этот рабочий раздел.",
+  "Unable to load this operational workspace. Try again.": "Не удалось загрузить этот рабочий раздел. Попробуйте снова.",
+  "Unable to confirm current operational access. Try again.": "Не удалось подтвердить текущий рабочий доступ. Попробуйте снова.",
+  "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Загружена только часть журнала. Число несданных работ и средние оценки могут быть неполными.",
+  "Quiz attempts needing grading": "Попытки тестов, ожидающие оценки"
 }

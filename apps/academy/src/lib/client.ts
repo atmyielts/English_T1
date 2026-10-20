@@ -750,6 +750,7 @@ export type TeacherStudioSubmission = {
 };
 
 export type TeacherStudioGradebook = {
+  has_more?:Record<string,boolean>;
   classroom_id: string;
   assignments: TeacherStudioAssignment[];
   grade_categories?: TeacherStudioGradeCategory[];

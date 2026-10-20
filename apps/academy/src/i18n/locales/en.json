@@ -1268,7 +1268,6 @@
   "Needs a decision": "Needs a decision",
   "Needs attention": "Needs attention",
   "Needs changes — prepare a new paper": "Needs changes — prepare a new paper",
-  "Needs grading": "Needs grading",
   "Needs retry": "Needs retry",
   "Needs review": "Needs review",
   "Net": "Net",
@@ -2920,5 +2919,10 @@
   "Wallet policy": "Wallet policy",
   "Wallet policy saved.": "Wallet policy saved.",
   "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.": "Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.",
-  "Unable to check learning access. Try again.": "Unable to check learning access. Try again."
+  "Unable to check learning access. Try again.": "Unable to check learning access. Try again.",
+  "Your current access does not cover this operational workspace.": "Your current access does not cover this operational workspace.",
+  "Unable to load this operational workspace. Try again.": "Unable to load this operational workspace. Try again.",
+  "Unable to confirm current operational access. Try again.": "Unable to confirm current operational access. Try again.",
+  "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.",
+  "Quiz attempts needing grading": "Quiz attempts needing grading"
 }
