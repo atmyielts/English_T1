@@ -1,29 +1,39 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-private-table-gateway-boundary",
+  "releaseId": "academy-parent-consent-and-private-reads",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261014110000_academy_gateway_table_boundary.sql"
+  "frontends": [
+    "academy"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261020120000_academy_guardian_portal_reads.sql",
+    "20261020121000_academy_guardian_binding_identity.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261014110000_academy_gateway_table_boundary.sql"
+    "pages",
+    "migration:20261020120000_academy_guardian_portal_reads.sql",
+    "migration:20261020121000_academy_guardian_binding_identity.sql",
+    "function:academy"
   ],
   "manualFollowUps": [
-    "After protected exact-head CI and merge, capture current migration history and apply only this ACL migration using supabase db push --linked from an isolated linked release. Its dry run must list exactly one pending migration. Never deploy the dirty primary checkout or unrelated proctor/importer migrations. No Edge Function or secret change is required."
+    "After protected CI and merge, recheck installed migration/source identities and apply only these two migrations from an isolated linked release. Dry run must list exactly these two pending migrations; never apply the importer/staff/proctor queue. Use supabase db push --linked only in this isolated reviewed release.",
+    "Overlay only reviewed parent gateway routes and guardian-portal.ts on the freshly captured installed Academy source. Preserve every unrelated installed module and proctor change; qualify the exact resulting bundle before deploying it. Retain the installed bundle for recovery. Deploy the qualified overlay with supabase functions deploy academy.",
+    "Telegram linking uses existing ACADEMY_TELEGRAM_BOT_TOKEN; verify its presence without exposing its value. Missing configuration must fail closed. Run owned signed-in parent/foreign/expired/revoked API checks and verify strict fixture cleanup without provider messages."
   ],
   "verification": [
-    "Require verify:prod, verify:release, full CI, 90-check PGlite/native installed-policy regression and captured full-schema role/ACL qualification. No customer records are read during capture. Verify shipped clients use the service API for the seven private tables.",
-    "After activation verify table and column ACLs from read-only metadata, then use an owned confirmed QA account and isolated Academy to prove raw reads denied and supported service API contacts/classrooms/staff reads remain available. Remove owned fixtures and erase login personal data through installed retention. Do not send messages or read real customer data."
+    "Require verify:prod, verify:release, Academy build/lint/localization and full protected CI. Run parent database, gateway, signed Telegram, client and affected browser checks.",
+    "Qualify these two migrations independently on the fresh installed schema and captured production roles, including consent revocation, account closure and expiry contention. Local fixtures do not establish live provider behavior."
   ],
   "rollback": {
-    "pages": "No frontend source changes. Automatic Pages builds remain commit tracked.",
-    "edge": "No Edge source change or redeploy.",
-    "migration": "Retain all records and schema. Prefer a scoped forward repair if a supported service flow fails; restoring broad browser ACLs reopens the proved peer-read exposure. A reviewed ACL restoration must use the captured exact prior table/column ACLs and protected release path."
+    "pages": "Restore the prior tracked Academy Pages deployment if the new UI fails, keeping other applications and proctor releases intact.",
+    "edge": "Prepare a reviewed forward repair using the captured installed modules while retaining the protected parent routes. Qualify the repaired bundle before deployment; a complete old-gateway restoration would reopen the confirmed consent and typed-identity defects.",
+    "migration": "Retain records and evidence. No schema/data deletion is required. Prefer a narrowly reviewed forward repair instead of restoring broad browser table grants."
   }
 }
