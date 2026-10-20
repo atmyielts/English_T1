@@ -1,5 +1,6 @@
 import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {AssignmentAudioPanel} from '../audio/AssignmentAudioPanel';
 import {
   teacherStudioAssignments,
   teacherStudioAttendance,
@@ -87,6 +88,7 @@ type EducationOSPermission = AccessPermissionKey;
 
 type EducationOSViewProps = {
   academyId: string;
+  actorId:string;
   classrooms: TeacherStudioClassroom[];
   contacts: TeacherStudioContact[];
   classroomMemberships: TeacherStudioClassroomMembership[];
@@ -249,6 +251,7 @@ const defaultBrandingForm = () => ({
 
 export const EducationOSView = ({
   academyId,
+  actorId,
   classrooms,
   contacts,
   classroomMemberships,
@@ -258,6 +261,7 @@ export const EducationOSView = ({
   statusClass,
 }: EducationOSViewProps) => {
   const [activeTab, setActiveTab] = useState<EducationOSTab>('today');
+  const [audioTarget,setAudioTarget]=useState<{assignment:string;submission:string;attempt:number;name:string}|null>(null);
   const [showAllSections, setShowAllSections] = useState(false);
   const [selectedClassroomId, setSelectedClassroomId] = useState(() => classrooms[0]?.id ?? '');
   const [actionBusy, setLocalBusy] = useState(false);
@@ -1926,14 +1930,18 @@ export const EducationOSView = ({
                           <td><span className={statusClass(submission?.status ?? 'missing')}>{submission?.status ?? 'missing'}</span></td>
                           <td>{typeof submission?.score === 'number' ? `${submission.score}/${submission.max_score ?? selectedAssignment.max_score ?? '-'}` : '-'}</td>
                           <td>{submission?.submitted_at ? formatDate(submission.submitted_at) : '-'}</td>
-                          <td>{submission?.signed_url ? <a href={submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : '-'}</td>
-                          <td>{submission?.notes || '-'}</td>
+                          <td>{submission?.metadata&&!Array.isArray(submission.metadata)&&submission.metadata.response_kind==='audio'?<p>{translate('Latest response is a recording. Attached files are from an earlier attempt.')}</p>:null}{submission?.signed_url ? <a href={submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : '-'}</td>
+                          <td>{submission?.notes || '-'}{submission?.id?<button type="button" className="small-btn" onClick={()=>setAudioTarget({assignment:selectedAssignment.id,submission:submission.id!,attempt:submission.attempt_number??1,name:`${row.first_name} ${row.last_name}`.trim()})}>{translate('Audio feedback')}</button>:null}</td>
                         </tr>
                       ))}
                       {assignmentDetailRows.length === 0 ? <tr><td colSpan={6}>{translate("No student rows for this assignment yet.")}</td></tr> : null}
                     </tbody>
                   </table>
                 </div>
+                {audioTarget?.assignment===selectedAssignment.id&&assignmentDetailRows.some(item=>item.submission?.id===audioTarget.submission)?<div>
+                  <button type="button" className="ghost-btn" onClick={()=>setAudioTarget(null)}>{translate('Close recordings')}</button>
+                  <AssignmentAudioPanel actorId={actorId} academyId={academyId} assignmentId={audioTarget.assignment} submissionId={audioTarget.submission} expectedAttempt={audioTarget.attempt} canRecord={assignmentDetailRows.some(item=>item.submission?.id===audioTarget.submission&&(item.submission.attempt_number??1)===audioTarget.attempt)} kind="feedback" title={`${translate('Audio feedback')} · ${audioTarget.name} · ${translate('Attempt')} ${audioTarget.attempt}`}/>
+                </div>:null}
               </div>
             ) : (
               <div className="empty-state">{translate("Create an assignment to see student-level submission detail.")}</div>

@@ -695,7 +695,11 @@ for (const action of auditActions) {
     && academyEdge.includes('await runAcademyStaffCommand(sb,userId,academyId,actionBody,body')
     && staffAuditCase.includes(`'${action}'`)
     && /insert into public\.academy_audit_events\([^;]+values\(p_academy_id,p_actor_id,audit_action,/.test(staffCommands);
-  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action)||atomicStaffAudit);
+  const assignmentCommands = read('supabase/migrations/20261020210000_academy_private_assignment_audio.sql');
+  const atomicAssignmentAudit = action === 'assignment.submitted'
+    && academyEdge.includes('sb.rpc("academy_assignment_written_command",')
+    && /insert into public\.academy_audit_events[^;]+'assignment\.submitted'/.test(assignmentCommands);
+  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action)||atomicStaffAudit||atomicAssignmentAudit);
 }
 
 const runbookSections = [

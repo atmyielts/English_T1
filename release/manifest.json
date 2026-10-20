@@ -1,30 +1,48 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-financial-private-table-and-view-boundary",
+  "releaseId": "academy-private-assignment-audio",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261020204000_academy_financial_table_boundary.sql"
+  "frontends": [
+    "academy"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261020210000_academy_private_assignment_audio.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [],
-  "manualFollowUps": [
-    "After protected exact-head CI and tracked Pages, run supabase db push --linked --include-all from the isolated 225-migration baseline. The dry run must list exactly this one ACL migration. No Edge source, secret, data deletion or unrelated migration is part of this activation.",
-    "Verify installed table and column privileges, unchanged v87 runtime hashes, service-only commands and owned mixed-branch browser/API acceptance. Preserve financial history and close owned QA fixtures."
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
   ],
-  "verification": [
-    "verify:prod and verify:release; native full captured-schema qualification with financial ACL assertions and all 21 financial actions; installed rollback-only fixture and owned browser/API acceptance."
-  ],
-  "rollback": {
-    "pages": "No frontend changes. Retain tracked Pages deployment at 0f0d0d43906a41b03e24b16e1b3273d2206ed956.",
-    "edge": "No Edge changes. Preserve installed Academy v87 and all 30 runtime modules.",
-    "migration": "Forward-repair a specific legitimate gateway consumer if required. Do not restore broad direct browser access or delete financial history."
-  },
   "rolloutOrder": [
     "pages",
-    "migration:20261020204000_academy_financial_table_boundary.sql"
-  ]
+    "migration:20261020210000_academy_private_assignment_audio.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:SITE_URL",
+    "function:academy"
+  ],
+  "manualFollowUps": [
+    "After exact-head protected CI and tracked Pages, use supabase db push --linked --include-all from an isolated verified 226-migration installed baseline. The dry run must list exactly this one reviewed migration. No unrelated migrations or customer data changes.",
+    "Create ACADEMY_AUDIO_ENCRYPTION_KEY once using 32 cryptographically random bytes encoded as unpadded base64url and set it directly in the CLI process environment. Never log, commit, export or rotate an existing key; retaining it is necessary to read saved recordings. Other named secrets are existing index dependencies and must remain unchanged.",
+    "Capture installed Academy v87 source and preserve all installed modules, changing only reviewed index hunks and adding assignment-audio.ts and audio-crypto.ts. Validate compiler/module hashes before supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. Never deploy the dirty primary checkout.",
+    "Verify installed RPC privileges, private encrypted storage, current-account student/teacher access, attempt serialization and retry receipts. Use only owned QA accounts, close them and archive their institution after hosted API/browser acceptance. No messages or real charges.",
+    "New key only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<runtime-generated-value> --project-ref bbjawctnqrufvnesdsel. Execute without echo, argument logging or a disk file. Reuse an existing installed key.",
+    "Existing optional dependencies are unchanged. supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-address>, supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>, and supabase secrets set SITE_URL=<verified-site-url> document their configuration syntax only. Do not replace or invent these values for audio activation; absent mail configuration remains a provider gate."
+  ],
+  "verification": [
+    "verify:prod, verify:release, verify:academy, lint/build, complete Edge/browser tests, fresh captured-schema fixture and actual lock-contention rollback checks. Hosted encrypted-byte and browser proof remains distinct from local mocks."
+  ],
+  "rollback": {
+    "pages": "Prior tracked Pages deployment on main 434976f12c0ab1fc8bec8f93f1a986812eaf371a.",
+    "edge": "Forward repair from freshly captured installed source; preserve unrelated modules and the audio encryption key. Keep private ciphertext and records retained.",
+    "migration": "Additive schema and service-only RPCs remain installed. Forward repair access/commands; do not delete recordings or restore broad browser grants."
+  }
 }

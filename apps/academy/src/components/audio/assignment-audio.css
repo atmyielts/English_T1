@@ -1,0 +1,4 @@
+.assignment-audio{min-width:0;overflow-wrap:anywhere}
+.assignment-audio button,.assignment-audio a{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.assignment-audio input[type=file]{display:block;width:100%;max-width:100%;min-width:0}
+.assignment-audio label{min-width:0}

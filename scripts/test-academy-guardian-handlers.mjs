@@ -13,7 +13,7 @@ const service=compile('supabase/functions/academy/guardian-portal.ts',{'../_shar
 const overrideIndex=process.argv.indexOf('--edge-source');
 const source=readFileSync(overrideIndex<0?'supabase/functions/academy/index.ts':process.argv[overrideIndex+1],'utf8');
 const slice=(start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);};
-const decoder=slice('    const rawActionBody =','    if (requestedAction === "invitation_status")');
+const decoder=slice('    const rawActionBody =',source.includes('    if(audioActions.has')?'    if(audioActions.has':'    if (requestedAction === "invitation_status")');
 const reads=slice('    if (requestedAction === "guardian_claim_link"','    if (requestedAction === "guardian_update_preferences"');
 const writes=slice('    if (requestedAction === "guardian_update_preferences"','    const memberships = await loadMemberships');
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;const actor=id(1),academy=id(2),guardian=id(3),relationship=id(4);

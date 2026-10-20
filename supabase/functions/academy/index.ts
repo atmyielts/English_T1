@@ -1,3 +1,4 @@
+import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
 import {financeActions,runFinanceCommand,runFinanceRead} from './finance-command.ts';
 import {staffGuardianCommand,staffGuardianActions} from './staff-guardian-command.ts';
 import {dispatchGuardianNotification,sendParentTelegram,sendParentSms} from './guardian-delivery.ts';
@@ -3224,6 +3225,7 @@ const handleReadAction = async (
         const key = `${String(asgn.id)}__${student.contact_id}`;
         const sub = submissionMap.get(key) ?? null;
         submissions[String(asgn.id)] = sub ? {
+          id: sub.id,
           score: sub.score ?? null,
           max_score: sub.max_score ?? asgn.max_score ?? null,
           status: sub.status,
@@ -6673,7 +6675,9 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     const actionQuery = normalizeText(url.searchParams.get("action"), 64).toLowerCase();
     const contentType = req.headers.get("content-type") ?? "";
     const body = req.method === "POST"
-      ? studentImportActions.has(actionQuery)
+      ? actionQuery==='audio_upload'
+        ? await readAudioUploadRequest(req) as StudioBody
+        : studentImportActions.has(actionQuery)
         ? (await readStudentImportRequest(req)) as StudioBody
         : contentType.includes("multipart/form-data")
         ? formDataToStudioBody(await req.formData())
@@ -6694,6 +6698,19 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='guardian_portal_write_command'&&!guardianWriteActions.has(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent command.');
     const actionBody = ['finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
+    if(audioActions.has(requestedAction)){
+      if(req.method!=='POST')return json(405,{error:'Method not allowed'});
+      const result=await runAssignmentAudio(sb,{
+        upload:async(key,file,mime)=>{const {error}=await sb.storage.from(audioBucket).upload(key,file,{contentType:mime,upsert:true,cacheControl:'0'});if(error)throw Error('Private audio upload unavailable');},
+        download:async key=>{const {data,error}=await sb.storage.from(audioBucket).download(key);if(error||!data)throw Error('Private audio download unavailable');return new Uint8Array(await data.arrayBuffer());},
+      },userId,requestedAction,body??{},Deno.env.get('ACADEMY_AUDIO_ENCRYPTION_KEY')??'');
+      if('bytes' in result&&result.bytes instanceof Uint8Array){
+        const headers=new Headers(json(200,{}).headers);headers.set('Content-Type',String(result.mime));headers.set('X-Schood-Actor',userId);headers.set('X-Schood-Audio',String(result.audio_id));
+        headers.set('Access-Control-Expose-Headers','X-Schood-Actor,X-Schood-Audio');headers.set('Cache-Control','private, no-store');headers.set('X-Content-Type-Options','nosniff');
+        return new Response(result.bytes,{status:200,headers});
+      }
+      return json(200,result);
+    }
 
     if (requestedAction === "invitation_status") {
       const invitationToken = normalizeText(req.method === "POST" ? body?.token : url.searchParams.get("token"), 240);
@@ -7452,7 +7469,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (!membership?.id) return json(403, { error: "Not enrolled in this classroom" });
 
       const { data: existingSubmission } = await sb.from("academy_submissions")
-        .select("id, attempt_number, status").eq("assignment_id", assignmentId).eq("contact_id", contactId).maybeSingle();
+        .select("id, attempt_number, status, metadata").eq("assignment_id", assignmentId).eq("contact_id", contactId).maybeSingle();
       const nextAttempt = existingSubmission?.id ? Number(existingSubmission.attempt_number ?? 1) + 1 : 1;
       if (nextAttempt > Number(asgn.attempts_allowed ?? 1)) return json(409, { error: "No assignment attempts remaining" });
       const isLate = Boolean(asgn.due_at && new Date(String(asgn.due_at)).getTime() < Date.now());
@@ -7460,7 +7477,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
       const submissionContent = normalizeText(body?.content ?? body?.submission_content, 10000) || null;
       const submissionUrl = normalizeText(body?.url ?? body?.submission_url, 2000) || null;
-      const submissionMetadata: Json = {};
+      const submissionMetadata: Json = { response_kind: body?.file instanceof File ? "file" : "text" };
       if (body?.file instanceof File) {
         try {
           const storage = await uploadAcademyFile("submission", String(asgn.academy_id), String(asgn.classroom_id), userId, body.file);
@@ -7486,22 +7503,11 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         ...(Object.keys(submissionMetadata).length > 0 ? { metadata: submissionMetadata } : {}),
       };
 
-      const { data, error } = await sb.from("academy_submissions")
-        .upsert(payload, { onConflict: "assignment_id,contact_id" })
-        .select("id, assignment_id, contact_id, score, max_score, status, attempt_number, submitted_at, notes, feedback, submission_content, submission_url, metadata, updated_at")
-        .maybeSingle();
-      if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
-      await logAcademyAuditEvent(sb, {
-        academyId: String(asgn.academy_id),
-        actorUserId: userId,
-        actorRole: "student",
-        action: "assignment.submitted",
-        targetType: "academy_submission",
-        targetId: data?.id ? String(data.id) : null,
-        contactId,
-        classroomId: String(asgn.classroom_id),
-        metadata: { assignment_id: assignmentId, attempt_number: nextAttempt, status: data?.status ?? payload.status },
+      const { data, error } = await sb.rpc("academy_assignment_written_command", {
+        p_academy: String(asgn.academy_id), p_actor: userId, p_assignment: assignmentId,
+        p_payload: payload,
       });
+      if (error) return json(error.code === "42501" ? 403 : error.code === "23505" ? 409 : 503, { error: error.code === "42501" ? "Current enrollment does not cover this assignment" : error.code === "23505" ? "No assignment attempts remaining" : "The response could not be confirmed. Check its current status before retrying." });
       const signedSubmission = data ? await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId) : data;
       return json(200, { submission: signedSubmission });
     }

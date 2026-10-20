@@ -5934,3 +5934,63 @@ test('financial server totals keep exact amounts and currencies separate on phon
  await expect(page.getByText('Lists show the latest 500 records. Totals include all permitted records.',{exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+
+test.describe('Private assignment audio',()=>{
+ const audioId='00000000-0000-4000-8000-000000000881',submissionId='00000000-0000-4000-8000-000000000882';
+ const wave=()=>{const bytes=Buffer.alloc(44+1600);bytes.write('RIFF',0);bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVE',8);bytes.write('fmt ',12);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(1,22);bytes.writeUInt32LE(8000,24);bytes.writeUInt32LE(16000,28);bytes.writeUInt16LE(2,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(1600,40);return bytes;};
+ const setup=async(page:Page,loseFirst=false)=>{
+  await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');
+  const uploads:Array<Record<string,unknown>>=[];let saved:Record<string,unknown>|null=null;
+  const actor=(authorization:string|undefined)=>{try{return JSON.parse(Buffer.from(authorization?.replace(/^Bearer /,'').split('.')[1]??'','base64url').toString('utf8')).sub;}catch{return '';}};
+  await page.route('**/functions/v1/academy',async route=>{
+   const request=route.request(),body=request.postDataJSON() as Record<string,unknown>,who=actor(request.headers().authorization);
+   if(body.action==='audio_list')return route.fulfill(json({actor_id:who,assignment_id:assignment.id,recordings:who==='student-user'&&saved?[saved]:[],has_more:false,cursor:null}));
+   if(body.action==='audio_playback')return route.fulfill({status:200,headers:{'Content-Type':'audio/wav','X-Schood-Actor':who,'X-Schood-Audio':audioId,'Access-Control-Expose-Headers':'X-Schood-Actor,X-Schood-Audio'},body:wave()});
+   return route.fallback();
+  });
+  await page.route('**/functions/v1/academy?action=audio_upload',async route=>{
+   const request=route.request(),form=await new Response(request.postDataBuffer(),{headers:{'Content-Type':request.headers()['content-type']}}).formData();
+   const blob=form.get('file') as File,bytes=Buffer.from(await blob.arrayBuffer());
+   uploads.push({actor:actor(request.headers().authorization),key:form.get('idempotency_key'),text:form.get('text_context'),assignment:form.get('assignment_id'),file:bytes.toString('base64')});
+   saved={id:audioId,academy_id:academyId,assignment_id:assignment.id,submission_id:submissionId,kind:'submission',text_context:form.get('text_context'),attempt_number:1,committed_at:'2026-10-20T12:00:00Z',mime_type:'audio/wav',size_bytes:bytes.length};
+   if(loseFirst&&uploads.length===1)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'The recording upload is not confirmed. Retry the same recording.',retryable:true})});
+   return route.fulfill(json({actor_id:'student-user',request_key:form.get('idempotency_key'),replayed:uploads.length>1,audio:saved}));
+  });
+  const open=async()=>{await page.goto('/academy/student/classrooms/'+classroomId+'?academy_id='+academyId);await page.getByRole('button',{name:'Assignments',exact:true}).click();await page.getByRole('button',{name:'Recordings and feedback',exact:true}).click();await expect(page.locator('.assignment-audio').getByLabel('Transcript or equivalent written response',{exact:true})).toBeVisible();};
+  await open();return {uploads,open};
+ };
+ test('audio draft and an uncertain upload survive reload with the original bytes, text and request key',async({page})=>{
+  const state=await setup(page,true),panel=page.locator('.assignment-audio');
+  await panel.getByLabel('Choose audio file',{exact:true}).setInputFiles({name:'owned-response.wav',mimeType:'audio/wav',buffer:wave()});
+  await panel.getByLabel('Transcript or equivalent written response',{exact:true}).fill('Owned equivalent written answer');
+  await panel.getByRole('button',{name:'Submit recording',exact:true}).click();await expect(panel.getByRole('button',{name:'Retry saved recording',exact:true})).toBeEnabled();
+  await expect(panel.getByLabel('Transcript or equivalent written response',{exact:true})).toBeDisabled();expect(state.uploads).toHaveLength(1);
+  await state.open();await expect(panel.getByRole('button',{name:'Retry saved recording',exact:true})).toBeEnabled();
+  await expect(panel.getByLabel('Transcript or equivalent written response',{exact:true})).toHaveValue('Owned equivalent written answer');
+  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await panel.getByRole('button',{name:'Retry saved recording',exact:true}).click();await expect(panel.getByRole('button',{name:'Retry saved recording',exact:true})).toHaveCount(0);await expect(panel.getByText('Owned equivalent written answer',{exact:true})).toBeVisible();
+  expect(state.uploads).toHaveLength(2);expect(state.uploads[1]).toEqual(state.uploads[0]);
+  await panel.getByRole('button',{name:'Open saved recording',exact:true}).click();await expect(panel.getByLabel('Student recording',{exact:true})).toHaveAttribute('src',/^blob:/);
+  await panel.screenshot({path:test.info().outputPath('private-audio-phone.png')});
+ });
+ test('saved audio drafts are isolated when another account opens the same assignment',async({page})=>{
+  const state=await setup(page),panel=page.locator('.assignment-audio');
+  await panel.getByLabel('Choose audio file',{exact:true}).setInputFiles({name:'owned-private-draft.wav',mimeType:'audio/wav',buffer:wave()});
+  await panel.getByLabel('Transcript or equivalent written response',{exact:true}).fill('Private draft for the first account');
+  await expect.poll(()=>page.evaluate(()=>new Promise<string>(resolve=>{const open=indexedDB.open('schood.academy.audio.v1');open.onsuccess=()=>{const request=open.result.transaction('drafts','readonly').objectStore('drafts').getAll();request.onsuccess=()=>{resolve(request.result.map(row=>row.text).join(' '));open.result.close();};};}))).toContain('Private draft for the first account');
+  await seedSessionCookie(page,'other-student-user');await state.open();
+  await expect(panel.getByLabel('Transcript or equivalent written response',{exact:true})).toHaveValue('');await expect(panel.getByLabel('Recording preview',{exact:true})).toHaveCount(0);expect(state.uploads).toHaveLength(0);
+ });
+ test('microphone recording can be cancelled, stopped and retained as a draft',async()=>{
+  const {chromium}=await import('@playwright/test');const recordingBrowser=await chromium.launch({args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});try{const context=await recordingBrowser.newContext({baseURL:'http://127.0.0.1:4177',viewport:{width:390,height:844}});const page=await context.newPage();
+  await setup(page);const panel=page.locator('.assignment-audio');
+  await panel.getByRole('button',{name:'Start recording',exact:true}).click();await expect(panel.getByRole('button',{name:'Stop recording',exact:true})).toBeEnabled();
+  await panel.getByRole('button',{name:'Cancel recording',exact:true}).click();await expect(panel.getByLabel('Recording preview',{exact:true})).toHaveCount(0);
+  await panel.getByRole('button',{name:'Start recording',exact:true}).click();await expect(panel.getByRole('button',{name:'Stop recording',exact:true})).toBeEnabled();
+  await expect(panel.locator('output')).toContainText('1 seconds');await panel.getByRole('button',{name:'Stop recording',exact:true}).click();await expect(panel.getByLabel('Recording preview',{exact:true})).toBeVisible();
+  await expect(panel.getByRole('link',{name:'Download recording draft',exact:true})).toBeVisible();
+  await panel.getByRole('button',{name:'Discard recording draft',exact:true}).click();await expect(panel.getByLabel('Recording preview',{exact:true})).toHaveCount(0);
+  }finally{await recordingBrowser.close();}
+ });
+});
