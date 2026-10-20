@@ -447,7 +447,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
             <h2>{translate('Payments and debt')}</h2>
             <p className="muted">
               {translate(
-                'Only account-facing charges and balances are shown. Provider reconciliation evidence remains private.',
+                'View your child’s charges, payments and balance here.',
               )}
             </p>
             <div className="finance-table-wrap">

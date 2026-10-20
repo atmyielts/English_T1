@@ -2171,7 +2171,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       return undefined;
     }});
     await page.goto(`/academy/admin/academic?academy_id=${academyId}`);
-    const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Create actual lesson session',exact:true})});
+    const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Schedule a lesson',exact:true})});
     await expect(form.getByText('Timezone: Asia/Kathmandu',{exact:true})).toBeVisible();
     await form.getByLabel('Starts',{exact:true}).fill('2026-10-12T14:00');
     await form.getByLabel('Ends',{exact:true}).fill('2026-10-12T15:00');
@@ -3598,7 +3598,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         name: "Sessions, attendance, capacity, and quality",
       }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Create actual lesson session" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Schedule a lesson" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Session register" })).toBeVisible();
     await expect(page.getByRole("table").getByRole("cell", { name: "Room 101" })).toBeVisible();
     await page.getByRole("button", { name: "Attendance & exceptions" }).click();
