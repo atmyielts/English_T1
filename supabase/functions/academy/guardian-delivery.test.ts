@@ -1,5 +1,5 @@
 import {assertEquals,assertRejects} from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import {dispatchGuardianNotification,sendParentTelegram} from './guardian-delivery.ts';
+import {dispatchGuardianNotification,sendParentTelegram,sendParentSms} from './guardian-delivery.ts';
 const claim={outcome:'send',notification_id:'owned-notice',claim_token:'owned-claim',channel:'telegram',target:'12345',title:'Owned title',body:'Owned body'};
 Deno.test('consent refusal and a competing claim never call a provider',async()=>{
  for(const outcome of ['skipped','deferred','unchanged']){
@@ -30,4 +30,14 @@ Deno.test('Telegram unconfigured, explicit refusal and ambiguous responses remai
  assertEquals(await sendParentTelegram('owned-token',claim,()=>transport({ok:false,error_code:429})),{outcome:'failed'});
  assertEquals(await sendParentTelegram('owned-token',claim,()=>transport({ok:true,result:{message_id:42}})),{outcome:'sent',providerId:'42'});
  assertEquals(await sendParentTelegram('owned-token',claim,()=>transport({unexpected:true})),{outcome:'unknown'});
+});
+
+Deno.test('SMS config, provider refusal, acceptance and ambiguity never trigger an automatic resend',async()=>{
+ const sms={...claim,target:'998900000000'};let calls=0;
+ const transport:typeof fetch=(_url,init)=>{calls++;assertEquals(JSON.parse(String(init?.body)).phone,sms.target);return Promise.resolve(new Response('{"id":"owned-provider-id"}',{status:202}));};
+ assertEquals(await sendParentSms('','',sms,transport),{outcome:'unconfigured'});assertEquals(calls,0);
+ assertEquals(await sendParentSms('http://example.invalid','owned-token',sms,transport),{outcome:'unconfigured'});assertEquals(calls,0);
+ assertEquals(await sendParentSms('https://sms.example.invalid','owned-token',sms,transport),{outcome:'sent',providerId:'owned-provider-id'});assertEquals(calls,1);
+ assertEquals(await sendParentSms('https://sms.example.invalid','owned-token',sms,()=>Promise.resolve(new Response('',{status:400}))),{outcome:'failed'});
+ assertEquals(await sendParentSms('https://sms.example.invalid','owned-token',sms,()=>Promise.resolve(new Response('',{status:503}))),{outcome:'unknown'});
 });

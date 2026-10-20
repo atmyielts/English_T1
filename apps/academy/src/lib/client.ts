@@ -2364,10 +2364,10 @@ export const teacherStudioRecordInterventionActivity = (academyId:string,body:Re
 export const teacherStudioUpsertRenewalOpportunity = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{renewal:Record<string,unknown>}>(academyId,'upsert_renewal_opportunity',body);
 export const teacherStudioRecordRenewalActivity = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{activity:Record<string,unknown>}>(academyId,'record_renewal_activity',body);
 export const teacherStudioUpdateOperationalAction = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{action_item:Record<string,unknown>}>(academyId,'update_operational_action',body);
-export const teacherStudioCreateImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_job:Record<string,unknown>}>(academyId,'create_import_job',body);
-export const teacherStudioAddImportRow = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_row:Record<string,unknown>}>(academyId,'add_import_row',body);
-export const teacherStudioCommitImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffActor!==undefined?staffRequest<Record<string,unknown>>(academyId,'commit_import_job',body,staffActor):academyOperationsCommand<Record<string,unknown>>(academyId,'commit_import_job',body);
-export const teacherStudioRollbackImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffActor!==undefined?staffRequest<Record<string,unknown>>(academyId,'rollback_import_job',body,staffActor):academyOperationsCommand<Record<string,unknown>>(academyId,'rollback_import_job',body);
+export const teacherStudioCreateImportJob = (academyId:string,body:Record<string,unknown>) => staffRequest<{import_job:Record<string,unknown>}>(academyId,'create_import_job',body);
+export const teacherStudioAddImportRow = (academyId:string,body:Record<string,unknown>) => staffRequest<{import_row:Record<string,unknown>}>(academyId,'add_import_row',body);
+export const teacherStudioCommitImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffRequest<Record<string,unknown>>(academyId,'commit_import_job',body,staffActor);
+export const teacherStudioRollbackImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffRequest<Record<string,unknown>>(academyId,'rollback_import_job',body,staffActor);
 export const teacherStudioConvertLeadFull = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{result:Record<string,unknown>}>(academyId,'convert_lead_full',body);
 export const teacherStudioUpsertCampaign = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{campaign:Record<string,unknown>}>(academyId,'upsert_campaign',body);
 export const teacherStudioUpsertLocalization = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{localization:Record<string,unknown>;translations:Array<Record<string,unknown>>}>(academyId,'upsert_localization',body);
@@ -2377,12 +2377,12 @@ export const teacherStudioExecuteAutomationEvent = (academyId:string,body:Record
 export const teacherStudioReviewAutomationExecution = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'review_automation_execution',body);
 export const teacherStudioRequestAiAssistance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{ai_request:Record<string,unknown>}>(academyId,'request_ai_assistance',body);
 export const teacherStudioReviewAiAssistance = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{ai_request:Record<string,unknown>;review:Record<string,unknown>}>(academyId,'review_ai_assistance',body);
-export const teacherStudioCreateGuardianRelationship = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{guardian:AcademyGuardian;relationship:AcademyGuardianRelationship}>(academyId,'create_guardian_relationship',body);
-export const teacherStudioIssueGuardianLink = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{link:Record<string,unknown>;telegram_link:string|null}>(academyId,'issue_guardian_link',body);
-export const teacherStudioRevokeGuardianRelationship = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{relationship:AcademyGuardianRelationship}>(academyId,'revoke_guardian_relationship',body);
-export const teacherStudioUpsertGuardianPreferences = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{preference:Record<string,unknown>}>(academyId,'upsert_guardian_preferences',body);
-export const teacherStudioQueueGuardianNotification = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{notification:Record<string,unknown>;deduplicated:boolean}>(academyId,'queue_guardian_notification',body);
-export const teacherStudioSendGuardianMessage = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{message:Record<string,unknown>}>(academyId,'send_guardian_message',body);
+export const teacherStudioCreateGuardianRelationship = (academyId:string,body:Record<string,unknown>) => staffRequest<{guardian:AcademyGuardian;relationship:AcademyGuardianRelationship}>(academyId,'create_guardian_relationship',body);
+export const teacherStudioIssueGuardianLink = (academyId:string,body:Record<string,unknown>) => staffRequest<{link:Record<string,unknown>;telegram_link:string|null}>(academyId,'issue_guardian_link',body);
+export const teacherStudioRevokeGuardianRelationship = (academyId:string,body:Record<string,unknown>) => staffRequest<{relationship:AcademyGuardianRelationship}>(academyId,'revoke_guardian_relationship',body);
+export const teacherStudioUpsertGuardianPreferences = (academyId:string,body:Record<string,unknown>) => staffRequest<{preference:Record<string,unknown>}>(academyId,'upsert_guardian_preferences',body);
+export const teacherStudioQueueGuardianNotification = (academyId:string,body:Record<string,unknown>) => staffRequest<{notification:Record<string,unknown>;deduplicated:boolean}>(academyId,'queue_guardian_notification',body);
+export const teacherStudioSendGuardianMessage = (academyId:string,body:Record<string,unknown>) => staffRequest<{message:Record<string,unknown>}>(academyId,'send_guardian_message',body);
 
 export const teacherStudioCreatePricingPlan = async (
   academyId: string,

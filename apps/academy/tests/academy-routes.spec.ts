@@ -7,7 +7,7 @@ test('Academy imports use plain wording, hide internal IDs and keep phone action
   await seedSessionCookie(page,'owner-user');
   await mockAcademyEdge(page,'owner',{respond:async body=>{
     if(body.action==='business_intelligence')return {...businessIntelligence,access:ownerAccess,import_rows:[{id:'owned-row',import_job_id:'import-route-smoke',row_number:1,validation_status:'committed',validation_errors:[],target_id:internalId}]};
-    if(body.action==='commit_import_job')return {import_job_id:'import-route-smoke',committed_rows:1,failed_rows:1,status:'failed'};
+    if(body.action==='commit_import_job')return {import_job_id:'import-route-smoke',committed_rows:1,failed_rows:1,pending_rows:0,recovery_pending:1,completed:0,manual_required:0,failed:0,status:'failed'};
     return undefined;
   }});
   await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
@@ -1833,7 +1833,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       academy_id?: string;
       relationship_id?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     const portalResponse = (value:unknown) => {
@@ -4459,7 +4459,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
     await page.getByRole('button',{name:'Imports',exact:true}).click();
     await page.getByRole('button',{name:'Save checked rows',exact:true}).click();
-    await expect(page.getByText('Staff import batch saved. Continue to import the remaining rows.',{exact:true})).toBeVisible();
+    await expect(page.getByText('Import batch saved. Continue to import the remaining rows.',{exact:true})).toBeVisible();
     await expect(page.getByText('Import saved.',{exact:true})).toHaveCount(0);
     await expect(page.getByRole('button',{name:'Continue import',exact:true})).toBeEnabled();
     await page.screenshot({path:test.info().outputPath('staff-import-batch-desktop.png'),fullPage:true});
@@ -4480,7 +4480,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByText('Import saved.',{exact:true})).toBeVisible();
     await expect(page.getByRole('button',{name:'Continue import',exact:true})).toHaveCount(0);
     await page.getByRole('button',{name:'Undo import',exact:true}).click();
-    await expect(page.getByText('Used or changed staff records were retained for review.',{exact:true})).toBeVisible();
+    await expect(page.getByText('Used or changed records were retained for review.',{exact:true})).toBeVisible();
     expect(commands).toHaveLength(3);expect(commands.every(body=>body.import_job_id===jobId)).toBe(true);
   });
 

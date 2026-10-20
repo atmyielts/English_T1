@@ -7,7 +7,7 @@ acceptance evidence. Source existence, a green build or an old status document
 alone does not close it. Unverified items remain open without implying that
 their entire implementation is absent.
 
-## Current verified release state
+## Initial bounded release state
 
 - PR 248 is live on main `50e63540b6a4ec0318184c7262d538f2bd9083b4`; reviewed head `a7e88496aab01cf252db03a92e1e28be2a8c7ee2`. Exact-head CI 39406012487, post-merge CI 39406869867, tracked Pages deployment 39406869695 and executed Academy live smoke 39407740750 succeeded.
 - The twelve importer/authority/staff/invitation migrations are installed: 210 total. Academy Edge v84 matches all 26 prepared modules; 14 installed modules remain unchanged. The deployed parent safeguards from PR 253 and unrelated/proctor source were preserved.
@@ -18,6 +18,21 @@ their entire implementation is absent.
 - Both test accounts were closed and the QA institution archived; 33 cleanup checks passed. Immutable institutional QA history and balanced financial evidence were retained. No customer records, real payments or provider messages were changed.
 - Prior releases 249/250/251/252/253 supplied legacy import permissions, private-table grants, plain language/responsive history and parent privacy/linking. Their dated evidence remains under this directory.
 - See `2026-10-20-academy-release-production.json` and `2026-10-20-release-closeout.md`. The user requested the autonomous goal stop after this release. Remaining acceptance below is a handoff, not authorization for continued feature work.
+
+## Resumed parent follow-up release
+
+The user resumed remaining work and authorized safe deployment on 2026-10-20.
+PR 254 is deployed on main `a1c1bdd784c2050f2c88c3671c92428f69da629c`,
+Academy v85, 213 installed migrations. Parent-originated writes/receipts, twelve
+history paging sections and current-consent Academy worker delivery claims are
+released. Required CI passed 175 browser cases (one optional benchmark skipped),
+post-merge CI/Pages/live smoke passed, and the 96 installed parent assertions
+rolled back all fixtures. Owned hosted acceptance passed 237 assertions;
+35 cleanup checks verified closed accounts and archived institutional evidence.
+Signed-in parent phone/desktop renders were inspected. No real provider delivery
+or charge was performed. See `2026-10-20-parent-commands-production.json`.
+This advances rows 5/6; their complete provider/payment acceptance and the other
+operational, authority, visual and performance rows below remain open.
 
 ## The 12 requested Academy additions
 
@@ -66,8 +81,6 @@ own source/runtime evidence; do not infer twelve completions from one suite.
 Each closed item records commit, relevant test/render/runtime evidence and any
 provider limitations. Required protected CI, tracked deployment, selected manual
 backend steps, owned hosted smoke and verified fixture cleanup must pass.
-The user froze scope and requested testing/release of existing changes, a
-remaining-work report and an end to autonomous work on 2026-10-20. Unclosed
-acceptance remains recorded here; it does not authorize continued discovery or
-feature work after the release closeout. Pause the goal without claiming the
-original all-service objective is complete.
+The initial release stopped at the user's request. The user subsequently resumed
+remaining work and authorized safe production deployment. The parent follow-up
+is recorded above; the original all-service objective is still incomplete.

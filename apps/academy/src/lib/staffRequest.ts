@@ -7,7 +7,8 @@ const url=String(import.meta.env.VITE_SUPABASE_URL??'').replace(/\/$/,''),anon=S
 const pending=new Map<string,string>();
 const tokens=new Map<string,string>();
 const invitationActions=new Set(['create_access_invitation','resend_access_invitation','revoke_access_invitation']);
-const importActions=new Set(['commit_import_job','rollback_import_job']);
+const guardianActions=new Set(['create_guardian_relationship','issue_guardian_link','revoke_guardian_relationship','upsert_guardian_preferences','send_guardian_message','queue_guardian_notification']);
+const importActions=new Set(['create_import_job','add_import_row','commit_import_job','rollback_import_job']);
 const linkActions=new Set(['invitation_status','accept_access_invitation']);
 const portalReadActions=new Set(['guardian_dashboard','guardian_service_requests']);
 async function sessionFor(actor?:string,refresh=false){
@@ -30,7 +31,7 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
   deliveryToken=tokens.get(identity)??[...crypto.getRandomValues(new Uint8Array(32))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
   tokens.set(identity,deliveryToken);
  }
- const body=JSON.stringify({...payload,action:action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'staff_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
+ const body=JSON.stringify({...payload,action:guardianActions.has(action)?'staff_guardian_command':action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'legacy_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
   academy_id:academyId,idempotency_key:requestKey,...(deliveryToken?{_delivery_token:deliveryToken}:{})});
  const confirmationError=portalReadActions.has(action)?'We could not load your parent portal. Try again.':linkActions.has(action)?'We could not confirm your account link. Open the invitation again.':'We could not confirm this change. Try the same change again.';
  if(new TextEncoder().encode(body).byteLength>65536)throw new StaffRequestError('There is too much information to save at once. Save fewer changes.',413);
@@ -47,9 +48,9 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
    throw new StaffRequestError(typeof value?.error==='string'?value.error:'Your changes could not be saved. Try again.',response.status,value?.retryable===true||response.status>=500);
   }
   if(!value||typeof value!=='object'||Array.isArray(value))throw new StaffRequestError(confirmationError,503,true);
-  const row=action==='guardian_claim_link'?value.guardian:invitationActions.has(action)||linkActions.has(action)?value.invitation:action==='upsert_staff'?value.staff:action==='upsert_staff_branch_assignment'?value.assignment:null;
+  const row=guardianActions.has(action)?value[action==='create_guardian_relationship'?'relationship':action==='issue_guardian_link'?'link':action==='revoke_guardian_relationship'?'relationship':action==='upsert_guardian_preferences'?'preference':action==='send_guardian_message'?'message':'notification']:action==='guardian_claim_link'?value.guardian:invitationActions.has(action)||linkActions.has(action)?value.invitation:action==='upsert_staff'?value.staff:action==='upsert_staff_branch_assignment'?value.assignment:null;
   const legacyRevoke=action==='revoke_access_invitation'&&row?.academy_id==null&&row?.id===(payload.invitation_id??payload.id);
-  const importValid=importActions.has(action)&&value.import_job_id===payload.import_job_id&&
+  const importValid=action==='create_import_job'?value.import_job?.academy_id===academyId&&value.import_job?.created_by===actor&&typeof value.import_job?.id==='string':action==='add_import_row'?value.import_row?.academy_id===academyId&&value.import_row?.import_job_id===payload.import_job_id&&typeof value.import_row?.id==='string':importActions.has(action)&&value.import_job_id===payload.import_job_id&&
    ['committed_rows','failed_rows','pending_rows','recovery_pending','completed','manual_required','failed'].every(key=>Number.isSafeInteger(value[key])&&value[key]>=0);
   const portalValid=portalReadActions.has(action)&&value.actor_id===actor&&(action==='guardian_dashboard'
    ? ['guardians','children','preferences','notifications'].every(key=>Array.isArray(value[key]))&&typeof value.has_more==='boolean'
@@ -65,7 +66,7 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
    &&(row.access_status==null||['invited','active','trial','paused','pending','stopped'].includes(row.access_status))
    &&(action!=='accept_access_invitation'||row.status==='accepted'&&row.accepted_by===actor)
    &&!['token_hash','metadata','delivery_attempt_id','delivery_lease_until','delivery_actor_id'].some(field=>Object.hasOwn(row,field));
-  if(action==='guardian_claim_link'?!guardianLinkValid:portalReadActions.has(action)?!portalValid:importActions.has(action)?!importValid:action==='remove_staff'?value.ok!==true:(!row||(!linkActions.has(action)&&row.academy_id!==academyId)||(linkActions.has(action)&&!linkValid)||typeof row.id!=='string'
+  if(guardianActions.has(action)?value.actor_id!==actor||!row||typeof row.id!=='string':action==='guardian_claim_link'?!guardianLinkValid:portalReadActions.has(action)?!portalValid:importActions.has(action)?!importValid:action==='remove_staff'?value.ok!==true:(!row||(!linkActions.has(action)&&row.academy_id!==academyId)||(linkActions.has(action)&&!linkValid)||typeof row.id!=='string'
     ||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.id))&&!legacyRevoke)
    throw new StaffRequestError(confirmationError,503,true);
   if(invitationActions.has(action)&&value.retryable===true)throw new StaffRequestError('Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.',202,true);

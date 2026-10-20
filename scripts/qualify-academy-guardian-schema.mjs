@@ -30,6 +30,7 @@ const commandFixtures=process.argv.includes('--release-commands')?[
   {file:'scripts/verify-academy-student-import-schema.sql',marker:'student-import-captured-schema-ok'},
   {file:'scripts/fixtures/academy-release-commands.sql',marker:'staff-and-learner-captured-schema-ok'},
 ].map(fixture=>({...fixture,source:readFileSync(fixture.file,'utf8')})):[];
+if(option('--command-fixture'))commandFixtures.push({file:option('--command-fixture'),marker:option('--command-marker'),source:readFileSync(option('--command-fixture'),'utf8')});
 const checks=[];let owned=false,cleanupVerified=false,passed=false,stage='start',catalog,fixtureChecks=0;const held=new Set();
 function run(args,input=''){
   return new Promise((resolve,reject)=>{
@@ -157,6 +158,27 @@ try{
     assert.equal(await sql("select count(*) from public.academy_parent_command_receipts where actor_id="+q(ctx.actor)+"::uuid and request_key='owned-contended-write';",'postgres'),'0');
   });
 
+  if(migrations.includes('20261020165000_academy_staff_guardian_commands.sql'))await check('legacy receipts and staff-parent writes serialize with current revocation and expiry',async()=>{
+    const ctx=JSON.parse(await sql("select jsonb_build_object('actor',g.user_id,'relationship',r.id,'academy',r.academy_id,'branch',c.primary_branch_id) from public.academy_student_guardian_relationships r join public.academy_guardians g on g.id=r.guardian_id join public.academy_contacts c on c.id=r.contact_id where g.user_id is not null order by r.id limit 1;",'postgres'));
+    await sql('insert into public.tenant_memberships(tenant_id,user_id,role,status) values('+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'owner','active');update public.academy_student_guardian_relationships set consent_status='granted',consent_expires_at=null where id="+q(ctx.relationship)+'::uuid;','postgres');
+    const call="public.academy_staff_guardian_command("+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'send_guardian_message',"+q(JSON.stringify({relationship_id:ctx.relationship,body:'Owned contended staff message'}))+"::jsonb,'owned-staff-revocation')";
+    const denied="do $$begin begin perform "+call+";raise exception 'Expected revoked staff-parent refusal';exception when insufficient_privilege then null;end;end;$$;";
+    const revocation=await hold("update public.academy_student_guardian_relationships set consent_status='revoked' where id="+q(ctx.relationship)+'::uuid','qa_staff_parent_revoke_first');
+    const blocked=sql("set application_name='qa_staff_parent_revoke_wait';"+denied,'postgres');blocked.catch(()=>{});
+    await waitForLock('qa_staff_parent_revoke_wait');await revocation.finish();await blocked;
+    await sql('update public.tenant_memberships set status=\'disabled\' where tenant_id='+q(ctx.academy)+'::uuid and user_id='+q(ctx.actor)+'::uuid;','postgres');
+    await sql("insert into public.academy_role_grants(academy_id,user_id,email,role,scope_type,scope_ids,status,starts_at,expires_at) values("+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'parent-"+ctx.actor+"@example.invalid','admin','academy','[]','active',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '30 minutes');",'postgres');
+    const create="public.academy_legacy_import_command("+q(ctx.academy)+'::uuid,'+q(ctx.actor)+'::uuid,';
+    const job=JSON.parse(await sql('select '+create+"'create',null,"+q(JSON.stringify({import_type:'contacts',source_filename:'owned-expiry.csv',import_mode:'commit',duplicate_strategy:'reject',idempotency_key:'owned-import-expiry'}))+"::jsonb);",'postgres')).import_job.id;
+    await sql('select '+create+"'stage',"+q(job)+'::uuid,'+q(JSON.stringify({row_number:1,mapped_data:{first_name:'Owned expiring import',email:'owned-expiry@example.invalid',branch_id:ctx.branch}}))+'::jsonb);','postgres');
+    const before=await sql('select count(*) from public.academy_contacts where academy_id='+q(ctx.academy)+'::uuid;','postgres');
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '2 seconds' where academy_id="+q(ctx.academy)+'::uuid and user_id='+q(ctx.actor)+'::uuid;','postgres');
+    const barrier=await hold('lock table public.academy_import_effects in access exclusive mode','qa_legacy_receipt_expiry_barrier');
+    const expires=sql("set application_name='qa_legacy_receipt_expiry_wait';do $$begin begin perform "+create+"'commit',"+q(job)+"::uuid,'{}');raise exception 'Expected expired import refusal';exception when insufficient_privilege then null;end;end;$$;",'postgres');expires.catch(()=>{});
+    await waitForLock('qa_legacy_receipt_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await expires;
+    assert.equal(await sql('select count(*) from public.academy_contacts where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before,'Expiry rolls back target and receipt together');
+    assert.equal(await sql('select count(*) from public.academy_import_effects where import_job_id='+q(job)+'::uuid;','postgres'),'0');
+  });
   passed=true;
 }finally{
   for(const handle of held)await handle.finish(false).catch(()=>{});

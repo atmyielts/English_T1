@@ -2820,5 +2820,8 @@
   "Your changes could not be saved. Try again.": "Your changes could not be saved. Try again.",
   "Your current access does not cover these records.": "Your current access does not cover these records.",
   "Your current account or access does not cover this invitation.": "Your current account or access does not cover this invitation.",
-  "Your past imports will appear here.": "Your past imports will appear here."
+  "Your past imports will appear here.": "Your past imports will appear here.",
+  "Import batch saved. Continue to import the remaining rows.": "Import batch saved. Continue to import the remaining rows.",
+  "Recovery batch saved. Continue to recover the remaining rows.": "Recovery batch saved. Continue to recover the remaining rows.",
+  "Used or changed records were retained for review.": "Used or changed records were retained for review."
 }

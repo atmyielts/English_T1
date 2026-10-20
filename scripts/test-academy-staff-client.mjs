@@ -63,7 +63,7 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  await assert.rejects(()=>c.staffRequest(academy,'commit_import_job',payload,actor),e=>e.status===503&&e.retryable);
  const saved=await c.staffRequest(academy,'commit_import_job',payload,actor);assert.equal(saved.pending_rows,2);
  const first=JSON.parse(c.calls[0][1].body),second=JSON.parse(c.calls[1][1].body);
- assert.equal(first.action,'staff_import_command');assert.equal(first.command,'commit_import_job');assert.equal(first.idempotency_key,second.idempotency_key);checks++;
+ assert.equal(first.action,'legacy_import_command');assert.equal(first.command,'commit_import_job');assert.equal(first.idempotency_key,second.idempotency_key);checks++;
  const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify(progress));});
  await assert.rejects(()=>switched.staffRequest(academy,'commit_import_job',payload,actor),e=>e.status===409);checks++;
 }

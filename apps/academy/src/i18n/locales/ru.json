@@ -2819,5 +2819,8 @@
   "We could not confirm your account link. Check the invitation again.": "Не удалось подтвердить привязку аккаунта. Проверьте приглашение снова.",
   "Choose a valid invitation list.": "Выберите нужный список приглашений.",
   "The invitation list did not finish loading. Refresh it.": "Список приглашений загрузился не полностью. Обновите его.",
-  "Where they can work": "Где сотрудник может работать"
+  "Where they can work": "Где сотрудник может работать",
+  "Import batch saved. Continue to import the remaining rows.": "Часть импорта сохранена. Продолжите импорт оставшихся строк.",
+  "Recovery batch saved. Continue to recover the remaining rows.": "Часть восстановления сохранена. Продолжите восстановление оставшихся строк.",
+  "Used or changed records were retained for review.": "Использованные или изменённые записи сохранены для проверки."
 }
