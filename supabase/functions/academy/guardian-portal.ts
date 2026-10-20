@@ -14,10 +14,37 @@ async function rpc(db:Db,name:string,args:Record<string,unknown>){
   if(response.error.code==='42501')throw new GuardianPortalError(403,'Parent access changed or expired. Ask the academy to review it.');
   if(response.error.code==='P0010')throw new GuardianPortalError(410,'Invitation has expired. Ask the academy for a new link.');
   if(response.error.code==='P0002')throw new GuardianPortalError(404,'Invitation or student record is no longer available.');
+  if(response.error.code==='23505')throw new GuardianPortalError(409,'This request changed. Refresh and review it before continuing.');
   if(response.error.code?.startsWith('22'))throw new GuardianPortalError(400,'Choose a student from your parent portal.');
   throw incomplete();
  }
  if(!object(response.data))throw incomplete();return response.data;
+}
+
+export const guardianWriteActions=new Set(['guardian_send_message','guardian_service_request_create','guardian_update_preferences']);
+export async function readGuardianHistory(db:Db,actor:string,input:Record<string,unknown>){
+ const section=String(input.section??'');
+ if(!isId(actor)||!isId(input.relationship_id)||!['attendance','grades','homework','schedule','charges','messages','announcements','resources','progress_reports','notifications','requests','request_events'].includes(section))throw new GuardianPortalError(400,'Choose a valid parent history.');
+ const result=await rpc(db,'academy_guardian_history_read',{p_actor_id:actor,p_relationship_id:input.relationship_id,p_section:section,p_after:input.after??null});
+ if(result.actor_id!==actor||result.relationship_id!==input.relationship_id||result.section!==section||!Array.isArray(result.records)||result.records.length>100||typeof result.has_more!=='boolean')throw incomplete();
+ result.records.forEach(publicRecord);
+ if(result.has_more&&(!object(result.cursor)||result.cursor.relationship_id!==input.relationship_id||result.cursor.section!==section||!isId(result.cursor.id)||typeof result.cursor.key!=='string'))throw incomplete();
+ return result;
+}
+export async function writeGuardianPortal(db:Db,actor:string,command:string,input:Record<string,unknown>,requireKey=true){
+ if(!isId(actor)||!guardianWriteActions.has(command))throw new GuardianPortalError(400,'Choose a valid parent command.');
+ const keys=command==='guardian_send_message'?['relationship_id','body']:command==='guardian_service_request_create'
+  ?['relationship_id','request_type','subject','details','classroom_id','charge_id','desired_date']
+  :['relationship_id','guardian_id','event_type','enabled','inapp_enabled','telegram_enabled','email_enabled','sms_enabled','locale','timezone','quiet_hours_start','quiet_hours_end','allow_critical_override'];
+ const payload=Object.fromEntries(keys.filter(key=>Object.hasOwn(input,key)).map(key=>[key,input[key]]));
+ // Previous deployed pages did not supply a key; retain one-deploy compatibility.
+ const key=input.idempotency_key??(requireKey?'':crypto.randomUUID());
+ if(typeof key!=='string'||!key.trim()||key.length>180)throw new GuardianPortalError(400,'A retry key is required. Reopen the parent portal.');
+ const result=await rpc(db,'academy_parent_write_command',{p_actor_id:actor,p_command:command,p_payload:payload,p_request_key:key});
+ const record=result[command==='guardian_send_message'?'message':command==='guardian_service_request_create'?'request':'preference'];
+ if(result.actor_id!==actor||!isId(result.relationship_id)||!object(record)||!isId(record.id)||typeof result.replayed!=='boolean'
+  ||(payload.relationship_id&&result.relationship_id!==payload.relationship_id))throw incomplete();
+ publicRecord(record);return result;
 }
 
 export async function claimGuardianFromTelegram(db:Db,actor:string,input:Record<string,unknown>,botToken:string){

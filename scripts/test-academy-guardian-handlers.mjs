@@ -15,9 +15,9 @@ const source=readFileSync(overrideIndex<0?'supabase/functions/academy/index.ts':
 const slice=(start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);};
 const decoder=slice('    const rawActionBody =','    if (requestedAction === "invitation_status")');
 const reads=slice('    if (requestedAction === "guardian_claim_link"','    if (requestedAction === "guardian_update_preferences"');
-const requests=slice('    if (requestedAction === "guardian_service_requests")','    if (requestedAction === "guardian_service_request_create"');
+const writes=slice('    if (requestedAction === "guardian_update_preferences"','    const memberships = await loadMemberships');
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;const actor=id(1),academy=id(2),guardian=id(3),relationship=id(4);
-const code=transformSync('async function dispatch(sb,body){const userId="'+actor+'",req={method:"POST"},url=new URL("https://owned.invalid"),actionQuery="";'+decoder+reads+requests+'}',{loader:'ts',target:'es2022'}).code;
+const code=transformSync('async function dispatch(sb,body){const userId="'+actor+'",req={method:"POST"},url=new URL("https://owned.invalid"),actionQuery="";'+decoder+reads+writes+'}',{loader:'ts',target:'es2022'}).code;
 const dispatch=runInNewContext(code+';dispatch',{...globals,...service,json:(status,body)=>({status,body}),normalizeText:(v,n=300)=>String(v??'').trim().slice(0,n),getOptionalEnv:()=> 'owned-parent-handler-bot'});
 let checks=0;
 const page={actor_id:actor,guardians:[],children:[],selected_child:null,preferences:[],notifications:[],has_more:false,cursor:null};
@@ -39,5 +39,12 @@ for(const raw of [false,true]){
  const calls=[];const sb={rpc:async(name,args)=>{calls.push({name,args});return {data:{actor_id:actor,academy_id:academy,guardian:{id:guardian,academy_id:academy,status:'verified'},relationship:{id:relationship,academy_id:academy,guardian_id:guardian,status:'active',consent_status:'granted'}},error:null};}};
  assert.equal((await dispatch(sb,{action:'guardian_link_command',command:'guardian_claim_link',token:'owned-token',init_data:init,confirm_access:true,telegram_user_id:'99999',telegram_chat_id:'99999',user_id:id(99)})).status,200);
  assert.equal(calls[0].args.p_user_id,actor);assert.equal(calls[0].args.p_telegram_user_id,'12345');assert.equal(calls[0].args.p_telegram_chat_id,'12345');checks+=4;
+}
+
+for(const command of ['guardian_send_message','guardian_service_request_create','guardian_update_preferences']){
+ const field=command==='guardian_send_message'?'message':command==='guardian_service_request_create'?'request':'preference';
+ const calls=[];const sb={from:()=>{throw Error('Parent writes must use current database consent');},rpc:async(name,args)=>{calls.push({name,args});return {data:{actor_id:actor,relationship_id:relationship,replayed:false,[field]:{id:id(20)}},error:null};}};
+ assert.equal((await dispatch(sb,{action:'guardian_portal_write_command',command,relationship_id:relationship,guardian_id:guardian,body:'Owned message',idempotency_key:'owned-key',actor_id:id(99)})).status,200);
+ assert.equal(calls[0].name,'academy_parent_write_command');assert.equal(calls[0].args.p_actor_id,actor);assert.equal(calls[0].args.p_request_key,'owned-key');assert.equal(calls[0].args.p_payload.actor_id,undefined);checks+=5;
 }
 console.log(JSON.stringify({suite:'actual-parent-gateway-dispatch',checks,productionTouched:false}));

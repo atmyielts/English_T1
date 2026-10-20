@@ -17,6 +17,7 @@ import {
 import {
   teacherStudioClaimGuardianLink,
   teacherStudioGuardianDashboard,
+  teacherStudioGuardianHistory,
   teacherStudioGuardianServiceRequests,
   teacherStudioCreateGuardianServiceRequest,
   teacherStudioGuardianSendMessage,
@@ -40,6 +41,8 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
   const [selectedRelationshipId, setSelectedRelationshipId] = useState('');
   const selectedRelationship = useRef('');
   const [busy, setBusy] = useState(false);
+  const [historyLoading,setHistoryLoading]=useState(false);
+  const historyLock=useRef(false);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const dashboardRequest = useRef(0);
   const requestsRequest = useRef(0);
@@ -49,6 +52,16 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
   const telegramInitData=window.Telegram?.WebApp?.initData||params.get('initData')||'';
   const [claimToken,setClaimToken]=useState(params.get('token')??'');
   const [confirmLink,setConfirmLink]=useState(false);
+  const actionLock=useRef(false);
+  const retryKeys=useRef(new Map<string,string>());
+  const write = async <T,>(command:string,payload:Record<string,unknown>,send:(body:Record<string,unknown>,actor:string)=>Promise<T>) => {
+    const identity=JSON.stringify([actorId,command,payload]);
+    const key=retryKeys.current.get(identity)??crypto.randomUUID();
+    retryKeys.current.set(identity,key);
+    const result=await send({...payload,idempotency_key:key},actorId);
+    retryKeys.current.delete(identity);
+    return result;
+  };
   const [message, setMessage] = useState('');
   const [requestResponse, setRequestResponse] = useState<{ relationshipId:string;requests:AcademyServiceRequest[];hasMore?:boolean } | null>(null);
   const [requestForm, setRequestForm] = useState({
@@ -102,7 +115,28 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
   const child = data?.children.find((item) => item.relationship_id === selectedRelationshipId) ?? data?.children[0];
   const guardianId = String(child?.guardian_id??data?.guardians.find((guardian) => guardian.academy_id === child?.academy_id)?.id ?? '');
   const requests = requestResponse && requestResponse.relationshipId === child?.relationship_id ? requestResponse.requests : [];
-  const actionBlocked = busy || dashboardLoading;
+  const actionBlocked = busy || dashboardLoading || historyLoading;
+  const loadHistory=async(section:string) => {
+    if(!child||actionBlocked||historyLock.current)return;
+    const relationship=child.relationship_id,generation=dashboardRequest.current;
+    const fields:Record<string,string>={attendance:'session_date',grades:'submitted_at',homework:'due_at',schedule:'starts_at',charges:'due_on',messages:'created_at',announcements:'created_at',resources:'sort_order',progress_reports:'created_at',notifications:'created_at',requests:'created_at'};
+    const records=section==='requests'?requests:section==='notifications'?data?.notifications.filter(n=>n.relationship_id===relationship)??[]:(child as unknown as Record<string,Record<string,unknown>[]>)[section]??[];
+    const last=records.at(-1);
+    const after=last?{relationship_id:relationship,section,key:String(last[fields[section]]??(section==='resources'?'0':'infinity')),id:last.id}:null;
+    historyLock.current=true;setHistoryLoading(true);setError('');
+    try{
+      const page=await teacherStudioGuardianHistory(relationship,section,after,actorId);
+      if(generation!==dashboardRequest.current||selectedRelationship.current!==relationship)return;
+      const merge=(old:Record<string,unknown>[])=>[...new Map([...old,...page.records].map(row=>[String(row.id),row])).values()];
+      if(section==='requests')setRequestResponse(current=>current?.relationshipId===relationship?{...current,requests:merge(current.requests) as AcademyServiceRequest[],hasMore:page.has_more}:current);
+      else setData(current=>current?{...current,
+        notifications:section==='notifications'?merge(current.notifications):current.notifications,
+        children:current.children.map(row=>row.relationship_id!==relationship?row:{...row,
+          ...(section==='notifications'?{}:{[section]:merge((row as unknown as Record<string,Record<string,unknown>[]>)[section]??[])}),
+          history_has_more:{...row.history_has_more,[section]:page.has_more}})}:current);
+    }catch(next){if(generation===dashboardRequest.current)setError(next instanceof Error?next.message:'Unable to load parent portal.');}
+    finally{historyLock.current=false;setHistoryLoading(false);}
+  };
   const selectChild = (relationshipId:string) => {
     dashboardRequest.current+=1;
     requestsRequest.current+=1;
@@ -117,7 +151,8 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
     void load(relationshipId);
   };
   const run = async (work: () => Promise<unknown>, messageText: string) => {
-    if (actionBlocked) return;
+    if (actionBlocked || actionLock.current) return;
+    actionLock.current=true;
     setBusy(true);
     setError('');
     setNotice('');
@@ -128,6 +163,7 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
     } catch (next) {
       setError(next instanceof Error ? next.message : 'Operation failed.');
     } finally {
+      actionLock.current=false;
       setBusy(false);
     }
   };
@@ -288,7 +324,11 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
           </div>
         </section>
         {dashboardLoading || child?.details_loaded===false ? <p className="info-banner" role="status">{translate('Updating student information...')}</p> : null}
-        {child?.history_has_more&&Object.values(child.history_has_more).some(Boolean) ? <p className="info-banner">{translate('Showing recent records. Ask the academy for earlier history.')}</p> : null}
+        <div className="market-actions" aria-live="polite">
+          {Object.entries({attendance:['attendance'],learning:['grades','homework','resources'],schedule:['schedule'],billing:['charges'],messages:['messages'],overview:['announcements','progress_reports','notifications'],requests:['requests']}).filter(([key])=>key===tab).flatMap(([,sections])=>sections).filter(section=>section==='requests'?requestResponse?.hasMore:child?.history_has_more?.[section]).map(section=>(
+            <button key={section} className="ghost-btn" disabled={actionBlocked} onClick={()=>void loadHistory(section)}>{translate('Load more')} · {label(section)}</button>
+          ))}
+        </div>
         {error ? <p className="form-error">{translate(error)}</p> : null}
         {notice ? <p className="form-success">{translate(notice)}</p> : null}
         <nav className="business-tabs" aria-label={translate('Parent portal sections')}>
@@ -472,10 +512,10 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
                   e.preventDefault();
                   void run(
                     async () => {
-                      await teacherStudioGuardianSendMessage({
+                      await write('message',{
                         relationship_id: child.relationship_id,
                         body: message,
-                      });
+                      },teacherStudioGuardianSendMessage);
                       setMessage('');
                     },
                     'Message sent to the academy.',
@@ -522,11 +562,11 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
                 event.preventDefault();
                 if (!child) return;
                 void run(async () => {
-                  await teacherStudioCreateGuardianServiceRequest({
+                  await write('request',{
                     academy_id: child.academy_id,
                     relationship_id: child.relationship_id,
                     ...requestForm,
-                  });
+                  },teacherStudioCreateGuardianServiceRequest);
                   setRequestForm({
                     request_type: 'support',
                     subject: '',
@@ -653,10 +693,11 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
                 if (!guardianId) return;
                 void run(
                   () =>
-                    teacherStudioGuardianUpdatePreferences({
+                    write('preferences',{
+                      relationship_id: child?.relationship_id,
                       guardian_id: guardianId,
                       ...preference,
-                    }),
+                    },teacherStudioGuardianUpdatePreferences),
                   'Notification preferences updated.',
                 );
               }}

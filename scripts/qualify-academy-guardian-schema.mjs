@@ -21,7 +21,7 @@ const image='public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c
 const name='schood-guardian-schema-'+randomUUID().slice(0,8),label='guardian-portal-installed-schema';
 const root=option('--output-dir')||'supabase/.temp/guardian-schema';mkdirSync(root,{recursive:true});
 writeFileSync(root+'/installed-schema-owned-container.json',JSON.stringify({name,label,image,createdAt:new Date().toISOString()},null,2)+'\n');
-const migrations=[...new Set([...JSON.parse(readFileSync('release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql','20261020121000_academy_guardian_binding_identity.sql'])];
+const migrations=[...new Set([...JSON.parse(readFileSync(option('--migration-manifest')||'release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql','20261020121000_academy_guardian_binding_identity.sql'])];
 // Freeze tested sources before any asynchronous work. Evidence must describe the
 // bytes installed/tested, even if another edit arrives while qualification runs.
 const candidates=migrations.map(file=>({file,source:readFileSync('supabase/migrations/'+file,'utf8')}));
@@ -136,6 +136,25 @@ try{
     await sql("update public.academy_student_guardian_relationships set consent_expires_at=clock_timestamp()+interval '2 seconds' where id="+q(context.relationship)+'::uuid;','postgres');
     const expiredRead=sql("set application_name='qa_parent_expiry_wait';"+deniedRead,'postgres');expiredRead.catch(()=>{});
     await waitForLock('qa_parent_expiry_wait');await sql('select pg_sleep(3);','postgres');await profile.finish();await expiredRead;
+  });
+
+  if(migrations.includes('20261020150000_academy_parent_write_commands.sql'))await check('parent writes serialize with revocation and roll back expiry after a blocked insert',async()=>{
+    const ctx=JSON.parse(await sql("select jsonb_build_object('actor',g.user_id,'relationship',r.id) from public.academy_student_guardian_relationships r join public.academy_guardians g on g.id=r.guardian_id where g.user_id is not null and r.status='active' order by r.id limit 1;",'postgres'));
+    await sql("update public.academy_student_guardian_relationships set consent_status='granted',consent_expires_at=null,can_message_academy=true where id="+q(ctx.relationship)+"::uuid;",'postgres');
+    const payload=q(JSON.stringify({relationship_id:ctx.relationship,body:'Owned contended parent message'}));
+    const call="public.academy_parent_write_command("+q(ctx.actor)+"::uuid,'guardian_send_message',"+payload+"::jsonb,'owned-contended-write')";
+    const denied="do $$begin begin perform "+call+";raise exception 'Expected parent write refusal';exception when insufficient_privilege then null;end;end;$$;";
+    const revoke="update public.academy_student_guardian_relationships set consent_status='revoked' where id="+q(ctx.relationship)+"::uuid";
+    const revocation=await hold(revoke,'qa_parent_write_revoke_first');
+    const blocked=sql("set application_name='qa_parent_write_wait';"+denied,'postgres');blocked.catch(()=>{});
+    await waitForLock('qa_parent_write_wait');await revocation.finish();await blocked;
+    await sql("update public.academy_student_guardian_relationships set consent_status='granted',consent_expires_at=clock_timestamp()+interval '2 seconds' where id="+q(ctx.relationship)+"::uuid;",'postgres');
+    const before=await sql("select count(*) from public.academy_guardian_messages where relationship_id="+q(ctx.relationship)+"::uuid;",'postgres');
+    const tableLock=await hold('lock table public.academy_guardian_messages in access exclusive mode','qa_parent_write_expiry_block');
+    const expires=sql("set application_name='qa_parent_write_expiry_wait';"+denied,'postgres');expires.catch(()=>{});
+    await waitForLock('qa_parent_write_expiry_wait');await sql('select pg_sleep(3);','postgres');await tableLock.finish();await expires;
+    assert.equal(await sql("select count(*) from public.academy_guardian_messages where relationship_id="+q(ctx.relationship)+"::uuid;",'postgres'),before,'Expired blocked write must roll back its message');
+    assert.equal(await sql("select count(*) from public.academy_parent_command_receipts where actor_id="+q(ctx.actor)+"::uuid and request_key='owned-contended-write';",'postgres'),'0');
   });
 
   passed=true;

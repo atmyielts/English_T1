@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "academy-parent-writes-history-and-delivery",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy"
+  ],
+  "migrations": [
+    "20261020150000_academy_parent_write_commands.sql",
+    "20261020151000_academy_parent_history_paging.sql",
+    "20261020152000_academy_parent_delivery_claims.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
+  "sharedEdgeConsumers": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261020150000_academy_parent_write_commands.sql",
+    "migration:20261020151000_academy_parent_history_paging.sql",
+    "migration:20261020152000_academy_parent_delivery_claims.sql",
+    "function:academy"
+  ],
+  "manualFollowUps": [
+    "After protected CI and tracked Pages deployment, apply only these three additive migrations through supabase db push --linked from a frozen SQL workdir matching the 210 installed migrations. Verify project bbjawctnqrufvnesdsel and pending filenames first.",
+    "Deploy supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel --use-api from a reviewed bundle over the freshly downloaded installed Academy source. Retain unrelated modules; do not deploy the entire repository gateway over installed source.",
+    "Preserve existing ACADEMY_TELEGRAM_BOT_TOKEN and Gmail SMTP configuration. Unconfigured or unverified channels are skipped. External delivery already in flight cannot be cancelled; unknown outcomes require review and are not automatically retried.",
+    "Legacy guardian messages already deferred in the central Telegram gateway require separate reconciliation before claiming universal dispatch-consent coverage. Real recipient/provider/payment qualification remains distinct from synthetic and rollback-only acceptance."
+  ],
+  "verification": [
+    "Run verify:prod, verify:release, complete Academy Edge/browser suites, lint/build/localization and the captured-schema command/lock-contention qualification.",
+    "After activation verify source hashes, migration count, rollback-only installed parent commands and owned signed-in API/browser flows. Verify customer records and real provider messages/payments remain untouched during fixture tests."
+  ],
+  "rollback": {
+    "pages": "Use prior reviewed Academy deployment at main 50e63540b6a4ec0318184c7262d538f2bd9083b4.",
+    "edge": "Forward-repair the freshly captured installed Academy bundle, preserving unrelated modules. Keep new parent commands unavailable rather than reverting deployed parent privacy guards.",
+    "migration": "Retain additive schema and receipts. Correct through a reviewed forward migration; never delete customer messages, request history or delivery evidence."
+  }
+}

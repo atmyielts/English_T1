@@ -1,30 +1,27 @@
-# Frozen Academy release scope
+# Academy release and stopped-goal handoff
 
-The user requested testing and release of existing work, a remaining-work report, and a stop to the autonomous goal. No additional product features are included.
+PR [248](https://github.com/atmyielts/English_T1/pull/248) is deployed on main `50e63540b6a4ec0318184c7262d538f2bd9083b4`. Academy Edge is v84; all twelve reviewed migrations are installed (210 total). The primary checkout and the other agent's unpublished proctor work were not included. Fourteen unrelated installed backend modules were retained unchanged.
 
-## Local release checks
+## Released
 
-- Complete Academy Edge suite passed.
-- Browser suite: 174 passed; one optional performance benchmark intentionally skipped.
-- Academy build, lint and 2,822 English/Uzbek/Russian phrase checks passed.
-- Product checks: 822 passed; local smoke: 174 passed. These are not hosted acceptance.
-- Gateway Deno typecheck and production/release checks passed.
-- Complete 413-table captured schema restored with actual roles, extensions, Auth/business triggers and foreign keys. All twelve pending migrations installed. Import commit/replay/retained correction, staff save/invite/accept, paused learner binding, parent consent/replay, 57 parent checks and independent revocation/account-close/expiry contention passed. The isolated database and its volume were removed. See 2026-10-20-final-candidate-schema.json.
-- The full-schema test caught the missing membership account column before production activation. The pending learner migration now adds the nullable user_id foreign key, retaining contact_id and compatibility with existing clients. Focused learner and parent suites passed again.
-- Both installed and pending identity guards refuse moving a parent relationship. Their different refusal codes are accepted by the compatibility fixture; the mutation must still fail.
+Mapped CSV/XLSX student imports, current scoped directories/authority, exact opening balances and memberships, retry-safe import receipts/resumption/retained correction, atomic managed staff changes and staff invitations/legacy staff commands, and reviewed student/parent invitation acceptance. Paused student access and deployed parent consent/account guards are preserved.
 
-## Production evidence and pending activation
+## Verified
 
-PR 253 is already live on main 377ca2b2811e7ad1527a7b96b5c2eb7408d4a905, Academy v83 and 198 migrations. Its Pages deployment, main CI and executed live smoke succeeded; 50 hosted checks and 35 retention-safe cleanup checks passed. See 2026-10-20-parent-production.md.
+Both CI runs, tracked Pages deployment and executed live smoke passed. Local Academy build/lint/localization and complete Edge/browser checks passed (174 browser cases; one optional performance benchmark skipped). Full captured-schema qualification caught and corrected the missing nullable membership account field before deployment. Installed production commands also passed rollback-only import, staff/learner invitation and 57 parent checks.
 
-The reconciled PR 248 still requires exact-head CI, tracked Pages deployment, only the twelve listed migrations, a source-preserving overlay on installed v83, and owned hosted acceptance. Until that evidence exists, its features are not described as live.
+The published API passed 32 checks with 201 synthetic students, exact balances/memberships, commit and correction replay, scoped staff saves/revocation, and private-table denials. The single observed import commit took 4.333 seconds. All 19 public service entrances returned 200, and published importer/parent assets were checked. This does not establish general browser performance.
 
-## Remaining work after this bounded release
+Both QA accounts are closed and the QA institution is archived. Thirty-three cleanup checks passed. Immutable institutional QA history and balanced ledger evidence remain under the approved retention policy; no customer records or real provider messages/payments were changed.
 
-- Finish the seven other legacy import types' atomic operations and retained correction; complete remaining shared-resource authorization and student email auto-linking.
-- Complete parent write/dispatch-time consent and full history paging; prove configured Telegram/SMS and Click renewal behavior with owned recipients.
-- Close end-to-end acceptance for the twelve requested Academy workflows. Most have existing implementation; this checklist does not claim they are all absent or fully customer-ready.
-- Complete signed-in visual acceptance across Academy landing, related pages and billing, the reported landing reload/CSP reproduction, and populated loading-time measurements.
-- Complete the remaining all-service audit. Concurrent assessment/proctor changes belong to the other agent and are excluded from this release.
+Evidence: `2026-10-20-academy-release-production.json`.
 
-After release verification and the final report, pause the goal at the user's request without marking the broader audit complete.
+## What remains
+
+1. Seven other legacy import types need atomic changes and retained correction. Finish the remaining shared-resource authorization and student email auto-linking checks.
+2. Finish parent write/dispatch-time consent and history paging; qualify configured Telegram/SMS/email delivery and actual Click renewals/signatures. No provider delivery or real charge was used for this release proof.
+3. Close the remaining real-user acceptance for room scheduling, wallet/pauses, quick leads, Telegram attendance, audio feedback, payroll, cashier handover, branch switching and retention analytics. These have existing implementation; see the exact acceptance rows in `finish-checklist.md`. The importer now has hosted 201-student API proof, with final signed-in file/UI acceptance still separate.
+4. Finish signed-in visual acceptance against the supplied reference, populated browser loading measurements, the reported landing reload/CSP reproduction, and the remaining all-service audit.
+5. Assessment/proctor development remains with the other agent.
+
+The original broad audit is not marked complete. Scope is frozen and the autonomous goal is paused at the user's explicit request after this bounded release.

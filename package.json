@@ -94,7 +94,7 @@
     "test:academy:legacy-staff-import:native": "node scripts/test-academy-staff-access.mjs --legacy-import --native --rest",
     "test:academy:learner-invitations": "deno test --no-lock supabase/functions/academy/learner-invitations.test.ts && node scripts/test-academy-staff-access.mjs --learner-invitations",
     "test:academy:learner-invitations:native": "node scripts/test-academy-staff-access.mjs --learner-invitations --native --rest",
-    "test:academy:guardian-portal": "deno test --no-lock supabase/functions/academy/guardian-portal.test.ts && node scripts/test-academy-guardian-reads.mjs && node scripts/test-academy-guardian-client.mjs && node scripts/test-academy-guardian-handlers.mjs && node scripts/test-academy-parent-client.mjs",
+    "test:academy:guardian-portal": "deno test --no-lock supabase/functions/academy/guardian-portal.test.ts supabase/functions/academy/guardian-delivery.test.ts && node scripts/test-academy-guardian-reads.mjs && node scripts/test-academy-guardian-client.mjs && node scripts/test-academy-guardian-handlers.mjs && node scripts/test-academy-parent-client.mjs",
     "test:ui:recovery": "node scripts/test-ui-recovery.mjs",
     "test:sat:foundations": "python scripts/test-sat-foundations-content.py && node scripts/test-sat-foundations.mjs"
   },

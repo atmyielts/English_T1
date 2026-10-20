@@ -50,4 +50,14 @@ await rejected({responses:[{error:'Access expired'}],status:403},'guardian_dashb
 await rejected({},'remove_staff',{},actor,400);
 assert.equal((await rejected({},'guardian_dashboard',{},'',401)).calls.length,0);checks++;
 assert.equal((await rejected({},'guardian_dashboard',{oversized:'x'.repeat(70000)},actor,413)).calls.length,0);checks++;
+
+{
+ const result={actor_id:actor,relationship_id:relationship,replayed:true,message:{id:id(9)}};
+ const c=client({responses:[{error:'Refresh required'},result],status:[401,200]});
+ await c.send('','guardian_send_message',{relationship_id:relationship,body:'Owned message',idempotency_key:'owned-key'},actor);
+ assert.equal(c.calls[0].body,c.calls[1].body);assert.equal(JSON.parse(c.calls[0].body).action,'guardian_portal_write_command');checks+=2;
+ const wrong={...result,relationship_id:other};await rejected({responses:[wrong]},'guardian_send_message',{relationship_id:relationship,idempotency_key:'owned-key'});
+ const switched=await rejected({sessions:[session(),session(other)]},'guardian_send_message',{relationship_id:relationship,idempotency_key:'owned-key'},actor,409);
+ assert.equal(switched.calls.length,0);checks++;
+}
 console.log(JSON.stringify({suite:'parent-account-pinned-transport',checks,productionTouched:false}));

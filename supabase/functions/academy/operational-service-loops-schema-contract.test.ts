@@ -98,6 +98,9 @@ Deno.test("every operational family has a role-scoped Edge read and a frontend c
     if(action==='guardian_service_requests') {
       assert(client.includes(">('','guardian_service_requests',{relationship_id:relationshipId},actorId)"),'Parent requests pin the account and selected child');
       assert(edge.includes('readGuardianRequests(sb,userId,body?.relationship_id)')&&edge.includes('readLegacyGuardianRequests(sb,userId,'),'Both parent requester routes use current database consent');
+    } else if(action==='guardian_service_request_create') {
+      assert(client.includes(">('','guardian_service_request_create',body,actorId)"),'Parent request writes pin the account');
+      assert(edge.includes('writeGuardianPortal(sb,userId,requestedAction,'),'Parent writes use the database consent transaction');
     } else if (action === 'invitation_status' || action === 'accept_access_invitation') {
       assert(client.includes(`>('','${action}',`), `${action} pinned-account frontend client`);
       assert(client.includes('{token},actorId') && client.includes('{token,review_hash:reviewHash},actorId'), 'Invitation reads and acceptance pin the account and reviewed details');
