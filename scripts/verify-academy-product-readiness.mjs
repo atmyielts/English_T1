@@ -561,7 +561,7 @@ addCheck(
     operationsSchemaContractTest.includes('without claiming profit'),
 );
 
-for (const signal of ['Sessions, attendance, capacity, and quality','Create actual lesson session','Controlled session status','Assign substitute','Academic calendar','Teacher or room availability','Record session attendance','Approve attendance exception','Make-up, transfer, extension, or credit','Quality observation','Available, occupied, unused, and peak periods']) {
+for (const signal of ['Sessions, attendance, capacity, and quality','Schedule a lesson','Update a lesson','Assign substitute','Academic calendar','Teacher or room availability','Record session attendance','Approve attendance exception','Make-up, transfer, extension, or credit','Quality observation','Available, occupied, unused, and peak periods']) {
   addCheck(`Business OS Phase D UI signal: ${signal}`, academicOperationsView.includes(signal));
 }
 addCheck(
