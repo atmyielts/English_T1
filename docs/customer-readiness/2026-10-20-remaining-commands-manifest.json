@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "academy-legacy-imports-and-staff-parent-authority",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy"
+  ],
+  "migrations": [
+    "20261020160000_academy_command_capabilities.sql",
+    "20261020161000_academy_legacy_import_transactions.sql",
+    "20261020162000_academy_legacy_import_commands.sql",
+    "20261020163000_academy_legacy_import_lifecycle.sql",
+    "20261020164000_academy_student_current_email_binding.sql",
+    "20261020165000_academy_staff_guardian_commands.sql",
+    "20261020170000_academy_parent_verified_sms.sql"
+  ],
+  "edgeFunctions": [
+    "academy"
+  ],
+  "sharedEdgeConsumers": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "manualFollowUps": [
+    "Only these seven reviewed additive migrations and the Academy gateway are authorized for this activation. Capture current installed source/version and migration history. Preserve all unrelated Academy/assessment/proctor modules and the independently released SAT publication. Use an isolated linked SQL checkout whose dry run matches exactly this list; never apply the full repository migration backlog.",
+    "After protected exact-head CI and tracked Pages deployment, run supabase db push --linked --include-all from the frozen isolated candidate, then deploy the reconciled source-preserving Academy bundle with supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel --use-api. Compare downloaded installed module hashes and run owned rollback-only/native and hosted browser/API acceptance.",
+    "ACADEMY_SMS_GATEWAY_URL and ACADEMY_SMS_GATEWAY_TOKEN are optional activation secrets documented by key only. The HTTPS gateway accepts JSON phone/message/reference and a 2xx is provider acceptance, not handset delivery. Dispatch requires the current confirmed Auth phone. Do not invent a phone or Telegram recipient, fabricate provider receipt, export hosted provider secrets or charge an unknown funding source. Actual SMTP/SMS setup, owned recipient delivery and real Click payment remain externally unproved."
+  ],
+  "verification": [
+    "verify:prod, verify:release, verify:academy; Academy build/lint/localization, complete Edge and browser suites; complete captured-schema fixture and native revocation/expiry contention with cleanup; installed rollback-only fixture; source readback; owned hosted import/parent commands and operational acceptance.",
+    "Recovery retains original sources and business records, compensates exact balances, and retains changed/used operational facts for audited review. Leads and attendance require explicit operational correction; never delete their evidence or treat manual_required as automatic recovery success."
+  ],
+  "rollback": {
+    "pages": "Use prior tracked Academy Pages deployment at df52acd1eac37fbf71cde9fe63584e6785cc82e4.",
+    "edge": "Forward-repair only owned modules using a fresh installed capture; preserve current parent/account guards and unrelated assessment/proctor code.",
+    "migration": "Keep additive schema, original source/effect and immutable business evidence. Correct through retained recovery or audited operational actions. Never delete records or reverse unrelated migrations."
+  },
+  "rolloutOrder": [
+    "pages",
+    "migration:20261020160000_academy_command_capabilities.sql",
+    "migration:20261020161000_academy_legacy_import_transactions.sql",
+    "migration:20261020162000_academy_legacy_import_commands.sql",
+    "migration:20261020163000_academy_legacy_import_lifecycle.sql",
+    "migration:20261020164000_academy_student_current_email_binding.sql",
+    "migration:20261020165000_academy_staff_guardian_commands.sql",
+    "migration:20261020170000_academy_parent_verified_sms.sql",
+    "function:academy"
+  ]
+}

@@ -254,6 +254,7 @@ export type TeacherStudioOfferGrant = {
 };
 
 export type TeacherStudioPayment = {
+  unallocated_amount?:number|string;
   id: string;
   academy_id: string;
   contact_id: string;
@@ -1566,7 +1567,9 @@ export type AcademyPaymentReconciliation = {
   payload_hash: string; received_at: string; metadata: Json;
 };
 
+export type AcademyFinancialTotals=Record<string,Array<{currency:string;[key:string]:string}>> & {open_shifts?:number};
 export type AcademyCommercialCore = {
+  totals?:AcademyFinancialTotals;has_more?:Record<string,boolean>;selected_branch_id?:string|null;
   generated_at: string; access?: TeacherStudioAccessProfile; pricing_plans: AcademyPricingPlan[];
   subscriptions: AcademySubscription[]; subscription_freezes: AcademySubscriptionFreeze[]; pricing_adjustments: AcademyPricingAdjustment[]; charges: AcademyCharge[];
   payments: TeacherStudioPayment[]; allocations: AcademyPaymentAllocation[]; ledger_entries: AcademyLedgerEntry[];
@@ -1587,6 +1590,7 @@ export type AcademyPayrollPeriod = { id:string; academy_id:string; branch_id:str
 export type AcademyPayrollRow = { id:string; academy_id:string; payroll_period_id:string; staff_id:string; branch_id:string|null; compensation_rule_id:string; lessons_delivered:number; minutes_delivered:number; relevant_students:number; generated_revenue:number; generated_amount:number; adjustment_amount:number; final_payable_amount:number; currency:string; rule_snapshot:Json; inputs_snapshot:Json };
 export type AcademyContribution = { academy_id:string; currency:string; generated_revenue:number; operating_expenses:number; contribution:number; branch_id?:string; branch_name?:string; classroom_id?:string; classroom_name?:string; teacher_cost?:number; attributed_teacher_cost?:number };
 export type AcademyOperationsFinance = {
+  totals?:AcademyFinancialTotals;has_more?:Record<string,boolean>;selected_branch_id?:string|null;
   generated_at:string; access:TeacherStudioAccessProfile; cashboxes:AcademyCashbox[]; cashier_shifts:AcademyCashierShift[];
   cash_movements:AcademyCashMovement[]; cash_reconciliations:Array<Record<string,unknown>>; expense_categories:AcademyExpenseCategory[];
   expenses:AcademyExpense[]; budgets:Array<Record<string,unknown>>; lesson_deliveries:Array<Record<string,unknown>>;
@@ -2295,11 +2299,9 @@ export const teacherStudioConvertLead = async (
 ): Promise<{ conversion: AcademyLeadConversion; contact?: TeacherStudioContact }> =>
   callTeacherStudio<{ conversion: AcademyLeadConversion; contact?: TeacherStudioContact }>({ action: 'convert_lead', academyId, body });
 
-export const teacherStudioCommercialCore = async (academyId: string): Promise<AcademyCommercialCore> =>
-  callTeacherStudio<AcademyCommercialCore>({ action: 'commercial_core', academyId });
+export const teacherStudioCommercialCore = async (academyId:string,actorId?:string,branchId?:string):Promise<AcademyCommercialCore> => staffRequest<AcademyCommercialCore>(academyId,'commercial_core',branchId?{branch_id:branchId}:{},actorId);
 
-export const teacherStudioOperationsFinance = async (academyId: string): Promise<AcademyOperationsFinance> =>
-  callTeacherStudio<AcademyOperationsFinance>({ action: 'operations_finance', academyId });
+export const teacherStudioOperationsFinance = async (academyId:string,actorId?:string,branchId?:string):Promise<AcademyOperationsFinance> => staffRequest<AcademyOperationsFinance>(academyId,'operations_finance',branchId?{branch_id:branchId}:{},actorId);
 
 export const teacherStudioAcademicOperations = async (academyId:string):Promise<AcademyAcademicOperations> => callTeacherStudio<AcademyAcademicOperations>({ action: 'academic_operations', academyId });
 export const teacherStudioRoomBranches=(academyId:string)=>callTeacherStudio<{branches:RoomBranch[];truncated:boolean}>({action:'room_timetable_branches',academyId});
@@ -2331,19 +2333,19 @@ export const teacherStudioGlobalSearch = async (academyId:string,query:string):P
 const academyOperationsCommand = <T>(academyId: string, action: string, body: Record<string, unknown>): Promise<T> =>
   callTeacherStudio<T>({ method: 'POST', action, academyId, body });
 
-export const teacherStudioCreateCashbox = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashbox:AcademyCashbox}>(academyId,'create_cashbox',body);
-export const teacherStudioOpenCashierShift = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashier_shift:AcademyCashierShift}>(academyId,'open_cashier_shift',body);
-export const teacherStudioRecordCashMovement = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cash_movement:AcademyCashMovement}>(academyId,'record_cash_movement',body);
-export const teacherStudioCloseCashierShift = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{cashier_shift:AcademyCashierShift}>(academyId,'close_cashier_shift',body);
-export const teacherStudioUpsertExpenseCategory = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{expense_category:AcademyExpenseCategory}>(academyId,'upsert_expense_category',body);
-export const teacherStudioRecordExpense = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{expense:AcademyExpense}>(academyId,'record_expense',body);
-export const teacherStudioUpsertBudget = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{budget:Record<string,unknown>}>(academyId,'upsert_budget',body);
-export const teacherStudioUpsertCompensationRule = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{compensation_rule:AcademyCompensationRule}>(academyId,'upsert_compensation_rule',body);
-export const teacherStudioRecordLessonDelivery = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{lesson_delivery:Record<string,unknown>}>(academyId,'record_lesson_delivery',body);
-export const teacherStudioCreatePayrollPeriod = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_period:AcademyPayrollPeriod}>(academyId,'create_payroll_period',body);
-export const teacherStudioCalculatePayroll = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{period:AcademyPayrollPeriod;row_count:number}>(academyId,'calculate_payroll',body);
-export const teacherStudioPostPayrollAdjustment = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_adjustment:Record<string,unknown>}>(academyId,'post_payroll_adjustment',body);
-export const teacherStudioTransitionPayroll = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{payroll_period:AcademyPayrollPeriod}>(academyId,'transition_payroll',body);
+export const teacherStudioCreateCashbox = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashbox:AcademyCashbox}>(academyId,'create_cashbox',body,actorId);
+export const teacherStudioOpenCashierShift = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashier_shift:AcademyCashierShift}>(academyId,'open_cashier_shift',body,actorId);
+export const teacherStudioRecordCashMovement = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cash_movement:AcademyCashMovement}>(academyId,'record_cash_movement',body,actorId);
+export const teacherStudioCloseCashierShift = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashier_shift:AcademyCashierShift}>(academyId,'close_cashier_shift',body,actorId);
+export const teacherStudioUpsertExpenseCategory = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{expense_category:AcademyExpenseCategory}>(academyId,'upsert_expense_category',body,actorId);
+export const teacherStudioRecordExpense = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{expense:AcademyExpense}>(academyId,'record_expense',body,actorId);
+export const teacherStudioUpsertBudget = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{budget:Record<string,unknown>}>(academyId,'upsert_budget',body,actorId);
+export const teacherStudioUpsertCompensationRule = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{compensation_rule:AcademyCompensationRule}>(academyId,'upsert_compensation_rule',body,actorId);
+export const teacherStudioRecordLessonDelivery = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{lesson_delivery:Record<string,unknown>}>(academyId,'record_lesson_delivery',body,actorId);
+export const teacherStudioCreatePayrollPeriod = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{payroll_period:AcademyPayrollPeriod}>(academyId,'create_payroll_period',body,actorId);
+export const teacherStudioCalculatePayroll = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{period:AcademyPayrollPeriod;row_count:number}>(academyId,'calculate_payroll',body,actorId);
+export const teacherStudioPostPayrollAdjustment = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{payroll_adjustment:Record<string,unknown>}>(academyId,'post_payroll_adjustment',body,actorId);
+export const teacherStudioTransitionPayroll = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{payroll_period:AcademyPayrollPeriod}>(academyId,'transition_payroll',body,actorId);
 export const teacherStudioUpsertAcademicCalendar = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{calendar:Record<string,unknown>}>(academyId,'upsert_academic_calendar',body);
 export const teacherStudioUpsertCalendarEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{calendar_event:Record<string,unknown>}>(academyId,'upsert_calendar_event',body);
 export const teacherStudioUpsertStaffAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_staff_availability',body);
@@ -2386,17 +2388,19 @@ export const teacherStudioSendGuardianMessage = (academyId:string,body:Record<st
 
 export const teacherStudioCreatePricingPlan = async (
   academyId: string,
-  body: Record<string, unknown> & { plan_key: string; name: string; pricing_model: string; base_amount: number; idempotency_key: string },
+  body: Record<string, unknown> & { plan_key: string; name: string; pricing_model: string; base_amount: number|string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademyPricingPlan> => {
-  const data = await callTeacherStudio<{ pricing_plan: AcademyPricingPlan }>({ action: 'create_pricing_plan', academyId, body });
+  const data = await staffRequest<{ pricing_plan: AcademyPricingPlan }>(academyId,'create_pricing_plan',body,actorId);
   return data.pricing_plan;
 };
 
 export const teacherStudioCreateSubscription = async (
   academyId: string,
   body: Record<string, unknown> & { contact_id: string; pricing_plan_id: string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademySubscription> => {
-  const data = await callTeacherStudio<{ subscription: AcademySubscription }>({ action: 'create_subscription', academyId, body });
+  const data = await staffRequest<{ subscription: AcademySubscription }>(academyId,'create_subscription',body,actorId);
   return data.subscription;
 };
 
@@ -2410,46 +2414,48 @@ export const teacherStudioManageSubscription = async (
     ends_on?: string | null;
     idempotency_key: string;
   },
-): Promise<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }> =>
-  callTeacherStudio<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }>({
-    action: 'manage_subscription', academyId, body,
-  });
+  actorId?:string,
+): Promise<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }> => staffRequest<{ subscription: AcademySubscription; freeze: AcademySubscriptionFreeze | null; renewal?: AcademySubscription | null }>(academyId,'manage_subscription',body,actorId);
 
 export const teacherStudioCreateCharge = async (
   academyId: string,
   body: Record<string, unknown> & { subscription_id: string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademyCharge> => {
-  const data = await callTeacherStudio<{ charge: AcademyCharge }>({ action: 'create_charge', academyId, body });
+  const data = await staffRequest<{ charge: AcademyCharge }>(academyId,'create_charge',body,actorId);
   return data.charge;
 };
 
 export const teacherStudioAllocatePayment = async (
   academyId: string,
-  body: { payment_id: string; charge_id: string; amount: number; idempotency_key: string },
+  body: { payment_id: string; charge_id: string; amount: number|string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademyPaymentAllocation> => {
-  const data = await callTeacherStudio<{ allocation: AcademyPaymentAllocation }>({ action: 'allocate_payment', academyId, body });
+  const data = await staffRequest<{ allocation: AcademyPaymentAllocation }>(academyId,'allocate_payment',body,actorId);
   return data.allocation;
 };
 
 export const teacherStudioPostAccountAdjustment = async (
   academyId: string,
-  body: Record<string, unknown> & { contact_id: string; entry_type: string; amount: number; reason: string; idempotency_key: string },
+  body: Record<string, unknown> & { contact_id: string; entry_type: string; amount: number|string; reason: string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademyLedgerEntry> => {
-  const data = await callTeacherStudio<{ ledger_entry: AcademyLedgerEntry }>({ action: 'post_account_adjustment', academyId, body });
+  const data = await staffRequest<{ ledger_entry: AcademyLedgerEntry }>(academyId,'post_account_adjustment',body,actorId);
   return data.ledger_entry;
 };
 
 export const teacherStudioRecordPaymentPromise = async (
   academyId: string,
-  body: Record<string, unknown> & { contact_id: string; amount: number; promised_for: string; idempotency_key: string },
-): Promise<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }> =>
-  callTeacherStudio<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }>({ action: 'record_payment_promise', academyId, body });
+  body: Record<string, unknown> & { contact_id: string; amount: number|string; promised_for: string; idempotency_key: string },
+  actorId?:string,
+): Promise<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }> => staffRequest<{ debt_case: AcademyDebtCase; promise: AcademyPaymentPromise }>(academyId,'record_payment_promise',body,actorId);
 
 export const teacherStudioRecordPaymentReconciliation = async (
   academyId: string,
   body: Record<string, unknown> & { provider: string; provider_transaction_id: string; provider_event_id: string; status: string; payload_hash: string; idempotency_key: string },
+  actorId?:string,
 ): Promise<AcademyPaymentReconciliation> => {
-  const data = await callTeacherStudio<{ reconciliation: AcademyPaymentReconciliation }>({ action: 'record_payment_reconciliation', academyId, body });
+  const data = await staffRequest<{ reconciliation: AcademyPaymentReconciliation }>(academyId,'record_payment_reconciliation',body,actorId);
   return data.reconciliation;
 };
 

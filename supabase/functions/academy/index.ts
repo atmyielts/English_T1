@@ -1,3 +1,4 @@
+import {financeActions,runFinanceCommand,runFinanceRead} from './finance-command.ts';
 import {staffGuardianCommand,staffGuardianActions} from './staff-guardian-command.ts';
 import {dispatchGuardianNotification,sendParentTelegram,sendParentSms} from './guardian-delivery.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
@@ -2662,6 +2663,12 @@ const handleReadAction = async (
   }
 
   const academyId = resolveAcademyId(memberships, academyIdRaw);
+  if(action==='commercial_core'||action==='operations_finance'){
+    if(!directoryContext?.actorId)return json(403,{error:'Forbidden'});
+    return json(200,await runFinanceRead(sb,academyId,directoryContext.actorId,action,{
+      ...((roomTimetableRaw as {branch_id?:unknown}|null)?.branch_id?{branch_id:(roomTimetableRaw as {branch_id:unknown}).branch_id}:{}),...(searchLimitRaw?{limit:searchLimitRaw}:{}),
+    }));
+  }
   const access = requireAcademyAccess(memberships, academyId);
   if (action === "contacts" || action === "classrooms" || action === "classroom-memberships") {
     if (!directoryContext) return json(403, {error: "Forbidden"});
@@ -6676,6 +6683,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     const nestedCommand=normalizeText(body?.command,64).toLowerCase();
     if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
+    if(rawActionBody==='finance_read_command'&&!['commercial_core','operations_finance'].includes(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial workspace.');
+    if(rawActionBody==='finance_command'&&!financeActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial action.');
     if(rawActionBody==='staff_guardian_command'&&!staffGuardianActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid parent action.');
     if(rawActionBody==='legacy_import_command'&&!['create_import_job','add_import_row','commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid import command.');
     if(rawActionBody==='staff_import_command'&&!['commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyStaffImportError(400,'Choose a valid staff import command.');
@@ -6683,7 +6692,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests','guardian_history'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
     if(rawActionBody==='guardian_link_command'&&nestedCommand!=='guardian_claim_link')throw new GuardianPortalError(400,'Review and confirm the parent invitation.');
     if(rawActionBody==='guardian_portal_write_command'&&!guardianWriteActions.has(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent command.');
-    const actionBody = ['guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    const actionBody = ['finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -7751,6 +7760,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
+      if(financeActions.has(actionBody))return json(200,await runFinanceCommand(sb,academyId,userId,actionBody,body??{}));
       const access = requireAcademyAccess(memberships, academyId);
       const teacherFlowAccess: AcademyTeacherFlowAccess = {
         ...access,

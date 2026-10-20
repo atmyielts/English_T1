@@ -1,4 +1,9 @@
-import { getLocaleTag, translate } from '../../i18n';
+import {financialMoney as money,financialTotals,exactUnits,sumCurrencies} from '../../lib/financialMoney';
+import {FinancialBranchSelector,type FinancialBranch} from './FinancialBranchSelector';
+import {hasPendingFinance} from '../../lib/staffRequest';
+import {useFinancialAction} from '../../lib/useFinancialAction';
+import {FinancialActionStatus} from './FinancialActionStatus';
+import { translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BadgeDollarSign, CalendarClock, CreditCard, FileClock, Landmark, RefreshCw, ReceiptText, Scale, ShieldCheck } from "lucide-react";
 import { teacherStudioAllocatePayment, teacherStudioCommercialCore, teacherStudioCreateCharge, teacherStudioCreatePricingPlan, teacherStudioCreateSubscription, teacherStudioManageSubscription, teacherStudioPostAccountAdjustment, teacherStudioRecordPaymentPromise, teacherStudioRecordPaymentReconciliation, type AcademyCommercialCore } from "../../lib/client";
@@ -6,25 +11,28 @@ import { teacherStudioAllocatePayment, teacherStudioCommercialCore, teacherStudi
 type CommercialTab = "overview" | "plans" | "billing" | "debt" | "ledger";
 type Props = {
   academyId: string;
+  actorId: string;
   formatDate: (value: string | null | undefined) => string;
 };
 
-const money = (value: number | string | null | undefined, currency = "UZS") => `${new Intl.NumberFormat(getLocaleTag()).format(Number(value ?? 0))} ${currency}`;
 const label = (value: unknown) => translate(String(value ?? "").replaceAll("_", " "));
-const today = () => new Date().toISOString().slice(0, 10);
+const localDate=(value:Date)=>`${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`;
+const today = () => localDate(new Date());
 const nextMonth = () => {
   const value = new Date();
   value.setMonth(value.getMonth() + 1);
-  return value.toISOString().slice(0, 10);
+  return localDate(value);
 };
 
-export function CommercialCoreView({ academyId, formatDate }: Props) {
+export function CommercialCoreView(props:Props){
+ const [branch,setBranch]=useState(''),[branches,setBranches]=useState<FinancialBranch[]>([]);
+ return <><FinancialBranchSelector branches={branches} value={branch} disabled={hasPendingFinance(props.academyId,props.actorId)} onChange={id=>{if(!hasPendingFinance(props.academyId,props.actorId))setBranch(id);}}/><CommercialCoreViewContent key={branch} {...props} branchId={branch} onBranches={setBranches}/></>;
+}
+function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBranches}:Props & {branchId:string;onBranches:(branches:FinancialBranch[])=>void}){
   const [data, setData] = useState<AcademyCommercialCore | null>(null);
   const [tab, setTab] = useState<CommercialTab>("overview");
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [loadError,setLoadError]=useState<string|null>(null);
   const [plan, setPlan] = useState({
     plan_key: "",
     name: "",
@@ -106,10 +114,10 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
-      const next = await teacherStudioCommercialCore(academyId);
-      setData(next);
+      const next = await teacherStudioCommercialCore(academyId,actorId,branchId);
+      setData(next);onBranches(next.branches);
       const contact = next.contacts[0];
       const pricingPlan = next.pricing_plans.find((item) => item.is_active);
       const activeSub = next.subscriptions.find((item) => ["active", "overdue", "paused"].includes(item.status));
@@ -119,7 +127,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
         ...previous,
         contact_id: previous.contact_id || contact?.id || "",
         pricing_plan_id: previous.pricing_plan_id || pricingPlan?.id || "",
-        branch_id: previous.branch_id || next.branches[0]?.id || "",
+        branch_id: previous.branch_id || (branchId||next.branches[0]?.id) || "",
       }));
       setSubscriptionAction((previous) => ({
         ...previous,
@@ -142,7 +150,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
         ...previous,
         contact_id: previous.contact_id || contact?.id || "",
         subscription_id: previous.subscription_id || activeSub?.id || "",
-        branch_id: previous.branch_id || next.branches[0]?.id || "",
+        branch_id: previous.branch_id || (branchId||next.branches[0]?.id) || "",
       }));
       setReconciliation((previous) => ({
         ...previous,
@@ -150,43 +158,22 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
         provider_transaction_id: previous.provider_transaction_id || paidPayment?.provider_transaction_id || "",
       }));
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to load the commercial core.");
+      setLoadError(nextError instanceof Error ? nextError.message : translate('Unable to load the commercial core.'));
     } finally {
       setLoading(false);
     }
-  }, [academyId]);
+  }, [academyId,actorId,branchId,onBranches]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const run = async (work: () => Promise<unknown>, message: string) => {
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    try {
-      await work();
-      setNotice(message);
-      await load();
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "The commercial operation failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
+  const action=useFinancialAction(academyId,actorId,load);const {busy,pending,run}=action;const error=action.error||loadError;
 
   const contactById = useMemo(() => new Map((data?.contacts ?? []).map((item) => [item.id, item])), [data?.contacts]);
   const planById = useMemo(() => new Map((data?.pricing_plans ?? []).map((item) => [item.id, item])), [data?.pricing_plans]);
-  const positiveBalance = (data?.account_balances ?? []).reduce((sum, item) => sum + Math.max(Number(item.balance), 0), 0);
-  const accountCredit = (data?.account_balances ?? []).reduce((sum, item) => sum + Math.max(-Number(item.balance), 0), 0);
-  const overdueCharges = (data?.charges ?? []).filter((item) => Number(item.outstanding_amount) > 0 && Number(item.days_overdue) > 0);
-  const overdueTotal = overdueCharges.reduce((sum, item) => sum + Number(item.outstanding_amount), 0);
-  const paidTotal = (data?.payments ?? []).filter((item) => item.status === "paid").reduce((sum, item) => sum + Number(item.amount), 0);
-  const allocatedByPayment = useMemo(() => {
-    const values = new Map<string, number>();
-    for (const item of data?.allocations ?? []) values.set(item.payment_id, (values.get(item.payment_id) ?? 0) + (item.allocation_kind === "application" ? Number(item.amount) : -Number(item.amount)));
-    return values;
-  }, [data?.allocations]);
+  const overdueCharges=(data?.charges??[]).filter(item=>exactUnits(item.outstanding_amount)>0n&&Number(item.days_overdue)>0);
+
 
   const canManageFinance = data?.access?.permissions.manageFinance === true;
   const canCollectFinance = data?.access?.permissions.collectFinance === true;
@@ -213,36 +200,29 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
         <button className="ghost-btn" type="button" onClick={() => void load()} disabled={loading || busy}>
           <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
       </div>
-      {error ? (
-        <p className="form-error" role="alert">
-          {translate(error)}
-        </p>
-      ) : null}
-      {notice ? (
-        <p className="form-success" role="status">
-          {translate(notice)}
-        </p>
-      ) : null}
+      {Object.values(data?.has_more??{}).some(Boolean)?<p role="status">{translate('Lists show the latest 500 records. Totals include all permitted records.')}</p>:null}
+      <FinancialActionStatus busy={busy} error={error??''} notice={action.notice} review={action.review} pending={pending} onRetry={action.retry}/>
+      <p>{translate('Wallet credit and receipts belong to the institution account. A branch filter selects its students; it does not attribute shared credit to branch revenue.')}</p>
       <div className="commercial-core__stats">
         <article>
           <ReceiptText size={18} />
           <span>{translate("Receivables")}</span>
-          <strong>{money(positiveBalance)}</strong>
+          <strong>{financialTotals(data?.totals?.account_balances,'balance')}</strong>
         </article>
         <article>
           <FileClock size={18} />
           <span>{translate("Overdue")}</span>
-          <strong>{money(overdueTotal)}</strong>
+          <strong>{financialTotals(data?.totals?.charges,'overdue_amount')}</strong>
         </article>
         <article>
           <CreditCard size={18} />
           <span>{translate("Payments received")}</span>
-          <strong>{money(paidTotal)}</strong>
+          <strong>{financialTotals(data?.totals?.payments,'paid_amount')}</strong>
         </article>
         <article>
           <Scale size={18} />
           <span>{translate("Account credit")}</span>
-          <strong>{money(accountCredit)}</strong>
+          <strong>{financialTotals(data?.totals?.account_balances,'available_credit')}</strong>
         </article>
       </div>
       <nav className="business-tabs" aria-label={translate("Commercial core sections")}>
@@ -280,7 +260,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     return (
                       <tr key={`${item.contact_id}-${item.currency}`}>
                         <td>{contact ? `${contact.first_name} ${contact.last_name}` : item.contact_id}</td>
-                        <td className={Number(item.balance) > 0 ? "amount-due" : "amount-credit"}>{money(item.balance, item.currency)}</td>
+                        <td className={exactUnits(item.balance) > 0 ? "amount-due" : "amount-credit"}>{money(item.balance, item.currency)}</td>
                         <td>{money(item.debits, item.currency)}</td>
                         <td>{money(item.credits, item.currency)}</td>
                         <td>{formatDate(item.last_entry_at)}</td>
@@ -305,11 +285,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
             </div>
             <div className="aging-list">
               {["1-7", "8-14", "15-30", "31-60", "60+"].map((bucket) => {
-                const amount = overdueCharges.filter((item) => item.aging_bucket === bucket).reduce((sum, item) => sum + Number(item.outstanding_amount), 0);
+                const amounts=sumCurrencies(overdueCharges.filter(item=>item.aging_bucket===bucket),'outstanding_amount');
                 return (
                   <div key={bucket}>
                     <span>{bucket} {translate("days")}</span>
-                    <strong>{money(amount)}</strong>
+                    <strong>{financialTotals(amounts,'amount')}</strong>
                   </div>
                 );
               })}
@@ -327,11 +307,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               void run(async () => {
                 await teacherStudioCreatePricingPlan(academyId, {
                   ...plan,
-                  base_amount: Number(plan.base_amount),
+                  base_amount: plan.base_amount,
                   branch_id: plan.branch_id || null,
                   classroom_id: plan.classroom_id || null,
                   idempotency_key: crypto.randomUUID(),
-                });
+                },actorId);
                 setPlan((previous) => ({
                   ...previous,
                   plan_key: "",
@@ -340,7 +320,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 }));
               }, "Pricing plan created.");
             }}
-          >
+          ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
             <div className="section-heading">
               <div>
                 <span className="eyebrow">{translate("Catalog")}</span>
@@ -427,9 +407,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 required
               />
             </label>
-            <button className="primary-btn" disabled={busy}>
+            <button className="primary-btn" disabled={busy||pending}>
               {translate("Create plan")}{' '}</button>
-          </form>
+          </fieldset></form>
           <form
             className="panel compact-form"
             onSubmit={(event: FormEvent) => {
@@ -437,16 +417,16 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
               void run(async () => {
                 await teacherStudioCreateSubscription(academyId, {
                   ...subscription,
-                  list_amount: subscription.list_amount ? Number(subscription.list_amount) : null,
-                  discount_amount: Number(subscription.discount_amount || 0),
+                  list_amount: subscription.list_amount ? subscription.list_amount : null,
+                  discount_amount: subscription.discount_amount || '0',
                   branch_id: subscription.branch_id || null,
                   classroom_id: subscription.classroom_id || null,
                   ends_on: subscription.ends_on || null,
                   idempotency_key: crypto.randomUUID(),
-                });
+                },actorId);
               }, "Commercial agreement created.");
             }}
-          >
+          ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
             <div className="section-heading">
               <div>
                 <span className="eyebrow">{translate("Agreement")}</span>
@@ -583,9 +563,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 }
               />{" "}
               {translate("Auto-renew")}{' '}</label>
-            <button className="primary-btn" disabled={busy}>
+            <button className="primary-btn" disabled={busy||pending}>
               {translate("Create agreement")}{' '}</button>
-          </form>
+          </fieldset></form>
           <form
             className="panel compact-form commercial-span"
             onSubmit={(event: FormEvent) => {
@@ -598,11 +578,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     starts_on: ["freeze", "renew"].includes(subscriptionAction.operation) ? subscriptionAction.starts_on : null,
                     ends_on: ["freeze", "renew"].includes(subscriptionAction.operation) ? subscriptionAction.ends_on : null,
                     idempotency_key: crypto.randomUUID(),
-                  }),
+                  },actorId),
                 `Agreement ${subscriptionAction.operation} recorded.`,
               );
             }}
-          >
+          ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
             <div className="section-heading">
               <div>
                 <span className="eyebrow">{translate("Lifecycle control")}</span>
@@ -700,9 +680,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 required={["freeze", "cancel"].includes(subscriptionAction.operation)}
               />
             </label>
-            <button className="primary-btn" disabled={busy}>
+            <button className="primary-btn" disabled={busy||pending}>
               {translate("Apply agreement operation")}{' '}</button>
-          </form>
+          </fieldset></form>
           <section className="panel commercial-span">
             <div className="section-heading">
               <div>
@@ -753,11 +733,11 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     teacherStudioCreateCharge(academyId, {
                       ...charge,
                       idempotency_key: crypto.randomUUID(),
-                    }),
+                    },actorId),
                   "Charge issued and posted to the ledger.",
                 );
               }}
-            >
+            ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">{translate("Invoice")}</span>
@@ -830,9 +810,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   }
                 />
               </label>
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={busy||pending}>
                 {translate("Issue charge")}{' '}</button>
-            </form>
+            </fieldset></form>
           ) : null}
           {canCollectFinance ? (
             <form
@@ -844,13 +824,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     teacherStudioAllocatePayment(academyId, {
                       payment_id: allocation.payment_id,
                       charge_id: allocation.charge_id,
-                      amount: Number(allocation.amount),
+                      amount: allocation.amount,
                       idempotency_key: crypto.randomUUID(),
-                    }),
+                    },actorId),
                   "Payment allocated without changing its original record.",
                 );
               }}
-            >
+            ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">{translate("Allocation")}</span>
@@ -871,10 +851,10 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   required
                 >
                   {data?.payments
-                    .filter((item) => item.status === "paid" && Number(item.amount) > (allocatedByPayment.get(item.id) ?? 0))
+                    .filter((item) => item.status === "paid" && exactUnits(item.unallocated_amount)>0n)
                     .map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.provider} · {money(Number(item.amount) - (allocatedByPayment.get(item.id) ?? 0), item.currency)} {translate("available")}{' '}</option>
+                        {item.provider} · {money(exactUnits(item.unallocated_amount), item.currency)} {translate("available")}{' '}</option>
                     ))}
                 </select>
               </label>
@@ -892,7 +872,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   required
                 >
                   {data?.charges
-                    .filter((item) => Number(item.outstanding_amount) > 0)
+                    .filter((item) => exactUnits(item.outstanding_amount) > 0)
                     .map((item) => {
                       const contact = contactById.get(item.contact_id);
                       return (
@@ -918,9 +898,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   required
                 />
               </label>
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={busy||pending}>
                 {translate("Allocate payment")}{' '}</button>
-            </form>
+            </fieldset></form>
           ) : null}
           <section className="panel commercial-span">
             <div className="section-heading">
@@ -983,15 +963,15 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 () =>
                   teacherStudioRecordPaymentPromise(academyId, {
                     ...promise,
-                    amount: Number(promise.amount),
+                    amount: promise.amount,
                     subscription_id: promise.subscription_id || null,
                     branch_id: promise.branch_id || null,
                     idempotency_key: crypto.randomUUID(),
-                  }),
+                  },actorId),
                 "Payment promise and collection history recorded.",
               );
             }}
-          >
+          ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
             <div className="section-heading">
               <div>
                 <span className="eyebrow">{translate("Collections")}</span>
@@ -1061,9 +1041,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                 }
               />
             </label>
-            <button className="primary-btn" disabled={busy}>
+            <button className="primary-btn" disabled={busy||pending}>
               {translate("Record promise")}{' '}</button>
-          </form>
+          </fieldset></form>
           <section className="panel">
             <div className="section-heading">
               <div>
@@ -1132,14 +1112,14 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   () =>
                     teacherStudioPostAccountAdjustment(academyId, {
                       ...adjustment,
-                      amount: Number(adjustment.amount),
+                      amount: adjustment.amount,
                       charge_id: adjustment.charge_id || null,
                       idempotency_key: crypto.randomUUID(),
-                    }),
+                    },actorId),
                   "Immutable account adjustment posted.",
                 );
               }}
-            >
+            ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">{translate("Controlled journal")}</span>
@@ -1251,9 +1231,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   required
                 />
               </label>
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={busy||pending}>
                 {translate("Post adjustment")}{' '}</button>
-            </form>
+            </fieldset></form>
           ) : null}
           {canReconcileFinance ? (
             <form
@@ -1265,13 +1245,13 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                     teacherStudioRecordPaymentReconciliation(academyId, {
                       ...reconciliation,
                       payment_id: reconciliation.payment_id || null,
-                      amount: reconciliation.amount ? Number(reconciliation.amount) : null,
+                      amount: reconciliation.amount ? reconciliation.amount : null,
                       idempotency_key: crypto.randomUUID(),
-                    }),
+                    },actorId),
                   "Provider reconciliation evidence recorded.",
                 );
               }}
-            >
+            ><fieldset disabled={busy||pending} style={{border:0,padding:0,margin:0,minWidth:0,display:"contents"}}>
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">{translate("Provider evidence")}</span>
@@ -1348,9 +1328,9 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                   required
                 />
               </label>
-              <button className="primary-btn" disabled={busy}>
+              <button className="primary-btn" disabled={busy||pending}>
                 {translate("Record reconciliation")}{' '}</button>
-            </form>
+            </fieldset></form>
           ) : null}
           <section className="panel commercial-span">
             <div className="section-heading">
@@ -1381,7 +1361,7 @@ export function CommercialCoreView({ academyId, formatDate }: Props) {
                         </td>
                         <td>{label(item.entry_type)}</td>
                         <td>{item.reason ?? "—"}</td>
-                        <td className={Number(item.amount) > 0 ? "amount-due" : "amount-credit"}>{money(item.amount, item.currency)}</td>
+                        <td className={exactUnits(item.amount) > 0 ? "amount-due" : "amount-credit"}>{money(item.amount, item.currency)}</td>
                       </tr>
                     );
                   })}
