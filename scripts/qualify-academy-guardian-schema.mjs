@@ -27,6 +27,7 @@ const migrations=[...new Set([...JSON.parse(readFileSync(option('--migration-man
 const candidates=migrations.map(file=>({file,source:readFileSync('supabase/migrations/'+file,'utf8')}));
 const canarySource=readFileSync('scripts/fixtures/academy-guardian-portal.sql','utf8');
 const audioFixtureSource=migrations.includes('20261020210000_academy_private_assignment_audio.sql')?readFileSync('scripts/fixtures/academy-private-audio.sql','utf8'):null;
+const handoverFixtureSource=migrations.includes('20261020220000_academy_cash_handover_continuity.sql')?readFileSync('scripts/fixtures/academy-cash-handover.sql','utf8'):null;
 const commandFixtures=process.argv.includes('--release-commands')?[
   {file:'scripts/verify-academy-student-import-schema.sql',marker:'student-import-captured-schema-ok'},
   {file:'scripts/fixtures/academy-release-commands.sql',marker:'staff-and-learner-captured-schema-ok'},
@@ -232,6 +233,34 @@ try{
     await waitForLock('qa_audio_commit_expiry_wait');await sql('select pg_sleep(3);','postgres');await commitBarrier.finish();await commitExpired;
     assert.equal(await sql('select state from public.academy_assignment_audio where id='+q(feedback.id)+'::uuid;','postgres'),'reserved');
     assert.equal(await sql("select count(*) from public.academy_audit_events where target_id="+q(feedback.id)+';','postgres'),'0');
+  });
+  if(handoverFixtureSource)await check('one receiver acquires cash custody; contended handover expiry and revocation roll back atomically',async()=>{
+    await sql(handoverFixtureSource.replace('rollback;','commit;'),'postgres');
+    const ctx=JSON.parse(await sql("select jsonb_build_object('academy',b.academy_id,'box',b.id,'owner',b.created_by,'receiver',g.user_id,'previous',s.id) from public.academy_cashboxes b join public.academy_cashier_shifts s on s.cashbox_id=b.id and s.shift_sequence=2 join public.academy_role_grants g on g.academy_id=b.academy_id and g.role='cashier' where b.name='A Owned handover box';",'postgres'));
+    const grants=' where academy_id='+q(ctx.academy)+'::uuid and user_id='+q(ctx.receiver)+'::uuid';
+    await sql("update public.academy_role_grants set status='active',expires_at=clock_timestamp()+interval '30 minutes'"+grants+';','postgres');
+    const payload={cashbox_id:ctx.box,previous_shift_id:ctx.previous,opening_balance:'985',accept_handover:true,note:'Owned concurrent custody acknowledgment'};
+    const call=(actor,key)=>'public.academy_finance_command('+q(ctx.academy)+'::uuid,'+q(actor)+"::uuid,'accept_cashier_handover',"+q(JSON.stringify(payload))+'::jsonb,'+q(key)+')';
+    const denied=(expression,code)=>"do $$begin begin perform "+expression+";raise exception 'Expected cashier handover refusal';exception when "+code+" then null;end;end;$$;";
+    const holder=await hold('select '+call(ctx.owner,'owned-custody-first'),'qa_cash_custody_first');
+    const receiver=sql("set application_name='qa_cash_custody_wait';"+denied(call(ctx.receiver,'owned-custody-contender'),'unique_violation'),'postgres');receiver.catch(()=>{});
+    await waitForLock('qa_cash_custody_wait');await holder.finish();await receiver;
+    assert.equal(await sql('select count(*) from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid and previous_shift_id='+q(ctx.previous)+'::uuid;','postgres'),'1');
+    const current=await sql('select id from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid and cashbox_id='+q(ctx.box)+"::uuid and status='open';",'postgres');
+    await sql('select public.academy_finance_command('+q(ctx.academy)+'::uuid,'+q(ctx.owner)+"::uuid,'close_cashier_shift',"+q(JSON.stringify({shift_id:current,counted_closing_balance:'985'}))+"::jsonb,'owned-custody-close');",'postgres');
+    payload.previous_shift_id=current;
+    const before=await sql('select count(*) from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid;','postgres');
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '2 seconds'"+grants+';','postgres');
+    const barrier=await hold('lock table public.academy_finance_command_receipts in share mode','qa_cash_expiry_receipt_barrier');
+    const expired=sql("set application_name='qa_cash_expiry_wait';"+denied(call(ctx.receiver,'owned-custody-expired'),'insufficient_privilege'),'postgres');expired.catch(()=>{});
+    await waitForLock('qa_cash_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await expired;
+    assert.equal(await sql('select count(*) from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
+    assert.equal(await sql('select count(*) from public.academy_finance_command_receipts where academy_id='+q(ctx.academy)+"::uuid and request_key='owned-custody-expired';",'postgres'),'0');
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '30 minutes'"+grants+';','postgres');
+    const revoke=await hold("update public.academy_role_grants set status='revoked'"+grants,'qa_cash_revoke_first');
+    const revoked=sql("set application_name='qa_cash_revoke_wait';"+denied(call(ctx.receiver,'owned-custody-revoked'),'insufficient_privilege'),'postgres');revoked.catch(()=>{});
+    await waitForLock('qa_cash_revoke_wait');await revoke.finish();await revoked;
+    assert.equal(await sql('select count(*) from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
   });
   passed=true;
 }finally{

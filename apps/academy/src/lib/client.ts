@@ -1581,8 +1581,8 @@ export type AcademyCommercialCore = {
   classrooms: Array<Pick<TeacherStudioClassroom, 'id' | 'name' | 'is_active'>>;
 };
 
-export type AcademyCashbox = { id:string; academy_id:string; branch_id:string; name:string; currency:string; is_active:boolean };
-export type AcademyCashierShift = { id:string; academy_id:string; cashbox_id:string; cashier_user_id:string; opened_at:string; closed_at:string|null; opening_balance:number; expected_closing_balance:number|null; counted_closing_balance:number|null; discrepancy:number|null; status:string };
+export type AcademyCashbox = { handover?:AcademyCashierShift|null; id:string; academy_id:string; branch_id:string; name:string; currency:string; is_active:boolean };
+export type AcademyCashierShift = { previous_shift_id?:string|null; shift_sequence?:number|null; handover_previous_count?:string|number|null; handover_difference?:string|number|null; handover_reason?:string|null; handover_accepted_by?:string|null; handover_accepted_at?:string|null; id:string; academy_id:string; cashbox_id:string; cashier_user_id:string; opened_at:string; closed_at:string|null; opening_balance:number; expected_closing_balance:number|null; counted_closing_balance:number|null; discrepancy:number|null; status:string };
 export type AcademyCashMovement = { id:string; academy_id:string; shift_id:string; direction:string; movement_type:string; payment_method:string; amount:number; currency:string; occurred_at:string; counterparty:string|null; reason:string };
 export type AcademyExpenseCategory = { id:string; academy_id:string; category_key:string; name:string; kind:string; is_active:boolean };
 export type AcademyExpense = { id:string; academy_id:string; branch_id:string|null; classroom_id:string|null; category_id:string; expense_date:string; amount:number; currency:string; vendor:string|null; description:string; payment_method:string; status:string; receipt_ref:string|null };
@@ -2335,6 +2335,7 @@ const academyOperationsCommand = <T>(academyId: string, action: string, body: Re
   callTeacherStudio<T>({ method: 'POST', action, academyId, body });
 
 export const teacherStudioCreateCashbox = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashbox:AcademyCashbox}>(academyId,'create_cashbox',body,actorId);
+export const teacherStudioAcceptCashierHandover = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashier_shift:AcademyCashierShift}>(academyId,'accept_cashier_handover',body,actorId);
 export const teacherStudioOpenCashierShift = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashier_shift:AcademyCashierShift}>(academyId,'open_cashier_shift',body,actorId);
 export const teacherStudioRecordCashMovement = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cash_movement:AcademyCashMovement}>(academyId,'record_cash_movement',body,actorId);
 export const teacherStudioCloseCashierShift = (academyId:string,body:Record<string,unknown>,actorId?:string) => staffRequest<{cashier_shift:AcademyCashierShift}>(academyId,'close_cashier_shift',body,actorId);

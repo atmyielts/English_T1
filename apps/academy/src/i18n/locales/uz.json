@@ -2892,5 +2892,14 @@
   "The saved recording changed. Reopen the recording panel.": "Saqlangan audio o‘zgargan. Audio oynasini qayta oching.",
   "Recordings are temporarily unavailable. Try again.": "Audio yozuvlar vaqtincha mavjud emas. Qayta urinib ko‘ring.",
   "Latest response is a recording. Attached files are from an earlier attempt.": "Oxirgi javob audio yozuvdir. Biriktirilgan fayllar oldingi urinishdan qolgan.",
-  "This response changed. Download or discard this draft, then reopen the current attempt.": "Bu javob o‘zgardi. Qoralamani yuklab oling yoki o‘chiring, so‘ng joriy urinishni qayta oching."
+  "This response changed. Download or discard this draft, then reopen the current attempt.": "Bu javob o‘zgardi. Qoralamani yuklab oling yoki o‘chiring, so‘ng joriy urinishni qayta oching.",
+  "Cash handover is temporarily unavailable. Refresh after the update.": "Naqd pul topshirish vaqtincha ishlamayapti. Yangilanishdan so‘ng sahifani yangilang.",
+  "This cashbox already has an open shift.": "Bu kassada allaqachon ochiq smena bor.",
+  "Previous closing count": "Oldingi smena yakunidagi sanalgan pul",
+  "I reviewed the previous count and accept custody of the cash received.": "Oldingi pul sanog‘ini ko‘rib chiqdim va olingan naqd pul uchun javobgarlikni qabul qilaman.",
+  "Count the received cash. Explain any difference from the previous closing count in the note.": "Olingan naqd pulni sanang. Oldingi smena yakunidagi summa bilan farq bo‘lsa, izohda tushuntiring.",
+  "Initial cash count for this cashbox.": "Bu kassadagi dastlabki naqd pul sanog‘i.",
+  "Handover": "Kassani topshirish",
+  "Handover difference": "Topshirishdagi farq",
+  "Legacy shift without recorded handover": "Pul topshirish qayd etilmagan eski smena"
 }

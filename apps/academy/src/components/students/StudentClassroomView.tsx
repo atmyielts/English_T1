@@ -759,7 +759,7 @@ export const StudentClassroomView = ({
           {assignments.filter(item=>item.id===audioTargetId).map(item=><div key={item.id}>
             <button type="button" className="ghost-btn" onClick={()=>setAudioTargetId('')}>{translate('Close recordings')}</button>
             <AssignmentAudioPanel actorId={actorId} academyId={classroom.academy_id} assignmentId={item.id} kind="submission" title={item.title}
-              canRecord={item.status==='active'&&(item.submission?.attempt_number??0)<(item.attempts_allowed??1)} onSaved={()=>{classroomData.invalidate(['assignments']);void loadClassroomLms();}}/>
+              canRecord={item.status==='active'&&(item.submission?.attempt_number??0)<(item.attempts_allowed??1)} onSaved={()=>{void loadClassroomLms().catch(()=>{});}}/>
           </div>)}
           <div className="panel">
             <h3>{submitTarget ? submitTarget.title : 'Submission'}</h3>
