@@ -1,0 +1,496 @@
+{
+  "recordedAt": "2026-10-20T09:50:19.644Z",
+  "pullRequest": "https://github.com/atmyielts/English_T1/pull/253",
+  "reviewedHead": "3a3ee0f629af11e1c44229f7be80504c9a2ec09a",
+  "main": "377ca2b2811e7ad1527a7b96b5c2eb7408d4a905",
+  "protectedCiRun": 39400457283,
+  "trackedPagesRun": 39401182196,
+  "runtime": {
+    "recordedAt": "2026-10-20T09:40:29.714Z",
+    "projectRef": "bbjawctnqrufvnesdsel",
+    "version": 83,
+    "verifyJwt": false,
+    "modules": 16,
+    "allPreparedRuntimeHashesMatch": true,
+    "retainedInstalledModules": 13,
+    "unrelatedGatewayPreserved": true,
+    "installedMigrationCount": 198,
+    "reviewedMigrationsInstalled": [
+      "20261020120000",
+      "20261020121000"
+    ],
+    "customerRowsRead": false
+  },
+  "hosted": {
+    "recordedAt": "2026-10-20T09:40:36.931Z",
+    "projectRef": "bbjawctnqrufvnesdsel",
+    "passed": true,
+    "cleanupVerified": true,
+    "checks": [
+      "owned confirmed account created",
+      "owned account signed in",
+      "owned confirmed account created",
+      "owned account signed in",
+      "owned fixture created: tenants",
+      "owned fixture created: academy_branches",
+      "owned fixture created: academy_contacts",
+      "owned fixture created: academy_guardians",
+      "owned fixture created: academy_student_guardian_relationships",
+      "owned fixture created: academy_classrooms",
+      "owned fixture created: academy_classroom_memberships",
+      "owned fixture created: academy_announcements",
+      "owned fixture created: academy_service_requests",
+      "live parent command pins verified actor",
+      "live parent command selects owned child",
+      "live announcement uses installed body and created_at schema",
+      "debt balance withheld without debt permission",
+      "live requester history stays on selected sibling",
+      "live requester history stays on selected sibling",
+      "legacy dashboard uses current protected database read",
+      "foreign account cannot select child even with forged actor",
+      "older invitation cannot overwrite established account binding",
+      "relationship consent cannot move to a sibling",
+      "owned consent expired for test",
+      "expired selected child denied",
+      "expired child filtered from live list",
+      "owned consent revoked for test",
+      "revoked selected child denied",
+      "revoked child requests denied",
+      "private browser table read denied: academy_guardians",
+      "private browser table read denied: academy_guardians",
+      "private browser table read denied: academy_student_guardian_relationships",
+      "private browser table read denied: academy_student_guardian_relationships",
+      "private browser table read denied: academy_guardian_consents",
+      "private browser table read denied: academy_guardian_consents",
+      "private browser table read denied: academy_guardian_link_tokens",
+      "private browser table read denied: academy_guardian_link_tokens",
+      "private browser table read denied: academy_guardian_notification_preferences",
+      "private browser table read denied: academy_guardian_notification_preferences",
+      "private browser table read denied: academy_guardian_messages",
+      "private browser table read denied: academy_guardian_messages",
+      "private browser table read denied: academy_notification_delivery_attempts",
+      "private browser table read denied: academy_notification_delivery_attempts",
+      "private browser table read denied: academy_notifications",
+      "private browser table read denied: academy_notifications",
+      "browser cannot impersonate a parent through RPC",
+      "forged Telegram identity refused before linking",
+      "owned principal deactivated",
+      "inactive principal cannot open parent data",
+      "owned principal restored for cleanup"
+    ],
+    "temporaryOwnedFixturesOnly": true,
+    "customerRecordsChanged": false,
+    "providerMessagesSent": false,
+    "credentialValuesPersisted": false,
+    "cleanupMode": "closed_accounts_personal_erasure_archived_immutable_institutional_history",
+    "allInstitutionalRowsDeleted": false,
+    "immutableQaInstitutionalHistoryRetained": true,
+    "ownedQueuedWorkCleared": true,
+    "providerDeliveryAttempts": 0,
+    "cleanupChecks": [
+      "exclusive journal-owned QA institution verified",
+      "QA institution has no foreign members",
+      "immutable history belongs only to owned fixture references",
+      "owned record archived: academy_student_guardian_relationships",
+      "owned record archived: academy_student_guardian_relationships",
+      "owned record archived: academy_guardians",
+      "owned record archived: academy_contacts",
+      "owned record archived: academy_contacts",
+      "owned record archived: academy_classrooms",
+      "owned branch marked closed",
+      "owned institution login memberships removed",
+      "QA institution archived without granting new ownership",
+      "owned QA account identity verified before closure",
+      "remaining created tenants are personal",
+      "personal QA scope is not shared",
+      "owned personal tenant removed",
+      "retention preflight permits owned QA account closure",
+      "owned Auth account closed through installed retention",
+      "QA login and personal identity removed",
+      "owned QA account identity verified before closure",
+      "remaining created tenants are personal",
+      "personal QA scope is not shared",
+      "owned personal tenant removed",
+      "retention preflight permits owned QA account closure",
+      "owned Auth account closed through installed retention",
+      "QA login and personal identity removed",
+      "retained lifecycle history is readable for scoped verification",
+      "queued work belongs to the owned lifecycle records",
+      "owned operational outbox entry removed",
+      "owned operational outbox entry removed",
+      "owned operational outbox entry removed",
+      "fixture created no parent delivery jobs",
+      "no provider delivery attempt was created",
+      "owned queued lifecycle work cleared",
+      "retained QA institution is closed and has no active customer access"
+    ],
+    "cleanupVerifiedAt": "2026-10-20T09:47:12.837Z"
+  },
+  "retentionCleanup": {
+    "recordedAt": "2026-10-20T09:47:12.838Z",
+    "passed": true,
+    "checks": [
+      "exclusive journal-owned QA institution verified",
+      "QA institution has no foreign members",
+      "immutable history belongs only to owned fixture references",
+      "owned record archived: academy_student_guardian_relationships",
+      "owned record archived: academy_student_guardian_relationships",
+      "owned record archived: academy_guardians",
+      "owned record archived: academy_contacts",
+      "owned record archived: academy_contacts",
+      "owned record archived: academy_classrooms",
+      "owned branch marked closed",
+      "owned institution login memberships removed",
+      "QA institution archived without granting new ownership",
+      "owned QA account identity verified before closure",
+      "remaining created tenants are personal",
+      "personal QA scope is not shared",
+      "owned personal tenant removed",
+      "retention preflight permits owned QA account closure",
+      "owned Auth account closed through installed retention",
+      "QA login and personal identity removed",
+      "owned QA account identity verified before closure",
+      "remaining created tenants are personal",
+      "personal QA scope is not shared",
+      "owned personal tenant removed",
+      "retention preflight permits owned QA account closure",
+      "owned Auth account closed through installed retention",
+      "QA login and personal identity removed",
+      "retained lifecycle history is readable for scoped verification",
+      "queued work belongs to the owned lifecycle records",
+      "owned operational outbox entry removed",
+      "owned operational outbox entry removed",
+      "owned operational outbox entry removed",
+      "fixture created no parent delivery jobs",
+      "no provider delivery attempt was created",
+      "owned queued lifecycle work cleared",
+      "retained QA institution is closed and has no active customer access"
+    ],
+    "immutableHistoryDeleted": false,
+    "securityGuardsBypassed": false
+  },
+  "frontend": {
+    "recordedAt": "2026-10-20T09:47:44.879Z",
+    "pr": 253,
+    "expectedSourceSha": "377ca2b2811e7ad1527a7b96b5c2eb7408d4a905",
+    "trackedPagesRun": 39401182196,
+    "protectedCiRun": 39400457283,
+    "anonymousHttpAndAssetChecksOnly": true,
+    "productionWrites": 0,
+    "phrases": [
+      "Connect with your child’s academy",
+      "Invitation code",
+      "No balance recorded",
+      "View your child’s charges and payments here.",
+      "Showing recent records. Ask the academy for earlier history."
+    ],
+    "sharedParentStylePresent": true,
+    "routes": [
+      {
+        "url": "https://academy.schood.online/",
+        "status": 200
+      },
+      {
+        "url": "https://academy.schood.online/academy/parent",
+        "status": 200
+      },
+      {
+        "url": "https://schood.online/",
+        "status": 200
+      }
+    ],
+    "assets": [
+      {
+        "url": "https://academy.schood.online/assets/index-By6c4Ldo-p69c871432604.js",
+        "status": 200,
+        "sha256": "bc5bbaddbf5d0a641abe321987468ab27d9a04b227fd836c862eb3b43add1e40"
+      },
+      {
+        "url": "https://academy.schood.online/assets/App-BLkpfEDY-p69c871432604.js",
+        "status": 200,
+        "sha256": "097b1e26890fa02db152850d6a922b1e0bd0e5cfc46e9fea35875ef1fc9470f3"
+      },
+      {
+        "url": "https://academy.schood.online/assets/GuardianPortalView-DatwiyeO-p69c871432604.js",
+        "status": 200,
+        "sha256": "45ee0e47419f350c6c073e3dcdc9f331304d96ecb68dc7b180ccb2199fea1265"
+      }
+    ],
+    "limits": [
+      "Does not establish signed-in browser appearance or browser performance. Expected source identity is linked by tracked deployment, not read from a page runtime variable."
+    ]
+  },
+  "publicEntries": {
+    "recordedAt": "2026-10-20T09:47:47.801Z",
+    "readOnly": true,
+    "credentialed": false,
+    "limits": [
+      "Public entry HTTP checks only; no authenticated flows, rendering or browser performance proof.",
+      "Elapsed times are a single observation from this machine, not an LCP benchmark."
+    ],
+    "results": [
+      {
+        "url": "https://schood.online",
+        "finalUrl": "https://schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 432,
+        "htmlBytes": 5937,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://ielts.schood.online",
+        "finalUrl": "https://ielts.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 479,
+        "htmlBytes": 5626,
+        "title": "IELTS Simulator by Schood | Timed Mock Tests and Band Insights",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://practice.ielts.schood.online",
+        "finalUrl": "https://practice.ielts.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 553,
+        "htmlBytes": 2776,
+        "title": "Schood IELTS Practice | Adaptive Reading, Listening, Writing",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://sat.schood.online",
+        "finalUrl": "https://sat.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 560,
+        "htmlBytes": 5152,
+        "title": "Digital SAT Simulator by Schood | Adaptive Practice and Review",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://practice.sat.schood.online",
+        "finalUrl": "https://practice.sat.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 441,
+        "htmlBytes": 964,
+        "title": "Schood SAT Practice Lab",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://playbook.sat.schood.online",
+        "finalUrl": "https://playbook.sat.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 422,
+        "htmlBytes": 2321,
+        "title": "Schood SAT Playbook | Strategy, Diagnostics, and Domain Guidance",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://toefl.schood.online",
+        "finalUrl": "https://toefl.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 449,
+        "htmlBytes": 5207,
+        "title": "TOEFL iBT Simulator by Schood | Practice, Timing, and Analytics",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://playbook.toefl.schood.online",
+        "finalUrl": "https://playbook.toefl.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 465,
+        "htmlBytes": 2347,
+        "title": "Schood TOEFL Playbook | Strategy, Diagnostics, and Skill Guidance",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://academy.schood.online",
+        "finalUrl": "https://academy.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 326,
+        "htmlBytes": 2961,
+        "title": "Academy | Schood",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://itep.schood.online",
+        "finalUrl": "https://itep.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 455,
+        "htmlBytes": 5146,
+        "title": "iTEP Simulator by Schood | Practice, Timing, and Analytics",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://english.schood.online",
+        "finalUrl": "https://english.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 453,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://docs.academy.schood.online",
+        "finalUrl": "https://docs.academy.schood.online",
+        "redirects": [],
+        "status": 200,
+        "elapsedMs": 483,
+        "htmlBytes": 1380,
+        "title": "Schood Academy Operations Guide",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://reading.english.schood.online",
+        "finalUrl": "https://english.schood.online/reading",
+        "redirects": [
+          {
+            "from": "https://reading.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/reading"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 567,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://writing.english.schood.online",
+        "finalUrl": "https://english.schood.online/writing",
+        "redirects": [
+          {
+            "from": "https://writing.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/writing"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 762,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://listening.english.schood.online",
+        "finalUrl": "https://english.schood.online/listening",
+        "redirects": [
+          {
+            "from": "https://listening.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/listening"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 566,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://speaking.english.schood.online",
+        "finalUrl": "https://english.schood.online/speaking",
+        "redirects": [
+          {
+            "from": "https://speaking.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/speaking"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 757,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://grammar.english.schood.online",
+        "finalUrl": "https://english.schood.online/grammar",
+        "redirects": [
+          {
+            "from": "https://grammar.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/grammar"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 540,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://immersion.english.schood.online",
+        "finalUrl": "https://english.schood.online/immersion",
+        "redirects": [
+          {
+            "from": "https://immersion.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/immersion"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 572,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      },
+      {
+        "url": "https://vocabulary.english.schood.online",
+        "finalUrl": "https://english.schood.online/vocabulary",
+        "redirects": [
+          {
+            "from": "https://vocabulary.english.schood.online",
+            "status": 301,
+            "to": "https://english.schood.online/vocabulary"
+          }
+        ],
+        "status": 200,
+        "elapsedMs": 744,
+        "htmlBytes": 3625,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "csp": "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+        "cache": "DYNAMIC"
+      }
+    ]
+  },
+  "customerRecordsChanged": false,
+  "remainingGates": [
+    "General email invitation atomicity and broader import/staff authority rollout.",
+    "Parent write transactions, dispatch-time consent and full history pagination.",
+    "Real configured Telegram/Click flows and complete signed-in rendered/performance acceptance.",
+    "The twelve Academy capabilities and all-service audit remain open."
+  ],
+  "limits": [
+    "The in-app browser could not open the public root because of a QUIC transport error; no live browser/CSP verdict is inferred from HTTP or mocked browser tests.",
+    "Immutable QA institutional history was archived under the approved retention rule, not deleted. Temporary logins and personal data were removed, access stopped and owned outbox work cleared."
+  ]
+}
