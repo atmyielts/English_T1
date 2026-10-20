@@ -1,0 +1,1607 @@
+{
+  "recordedAt": "2026-10-20T11:42:33.334Z",
+  "passed": true,
+  "scope": "Bounded reconciliation of this chat; stop after report",
+  "pullRequest": {
+    "headRefOid": "eedbdc20ce64f7d348dfff1ad501d6ece5823f56",
+    "mergeCommit": {
+      "oid": "df52acd1eac37fbf71cde9fe63584e6785cc82e4"
+    },
+    "mergedAt": "2026-10-20T11:30:48Z",
+    "state": "MERGED",
+    "url": "https://github.com/atmyielts/English_T1/pull/255"
+  },
+  "productionCommit": "df52acd1eac37fbf71cde9fe63584e6785cc82e4",
+  "prCi": {
+    "id": 39414792529,
+    "url": "https://github.com/atmyielts/English_T1/actions/runs/39414792529",
+    "headSha": "eedbdc20ce64f7d348dfff1ad501d6ece5823f56",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "build (platform-academy, apps/platform apps/academy apps/academy-docs apps/english-hub)",
+        "conclusion": "success"
+      },
+      {
+        "name": "build (simulators, apps/ielts-simulator apps/sat-simulator apps/toefl-ibt-simulator apps/itep-sim...",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (platform-workflows, test:platform:return test:marketplace test:peer-review:privacy test:sc...",
+        "conclusion": "success"
+      },
+      {
+        "name": "build (practice-and-playbooks, apps/ielts-practice apps/ielts-playbook apps/sat-practice apps/sat...",
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (guide)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (payments, test:payments)",
+        "conclusion": "success"
+      },
+      {
+        "name": "checks",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (account-security, test:parent-report:security test:account:retention test:candidate:securi...",
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (academy)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (learning-integrations, test:exam test:sat test:shared test:telegram test:sat:completion te...",
+        "conclusion": "success"
+      },
+      {
+        "name": "validate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "pages": {
+    "id": 39415483603,
+    "url": "https://github.com/atmyielts/English_T1/actions/runs/39415483603",
+    "headSha": "df52acd1eac37fbf71cde9fe63584e6785cc82e4",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "plan",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (english-hub, apps/english-hub, apps/english-hub/dist, schood-english)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (sat-practice, apps/sat-practice, apps/sat-practice/dist, schood-sat-practice)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (ielts-playbook, apps/ielts-playbook, apps/ielts-playbook/dist, schood-ielts-playbook)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (itep, apps/itep-simulator, apps/itep-simulator/dist, schood-itep)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (platform, apps/platform, apps/platform/dist, schood-platform)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (toefl, apps/toefl-ibt-simulator, apps/toefl-ibt-simulator/dist, schood-toefl)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (toefl-playbook, apps/toefl-playbook, apps/toefl-playbook/dist, schood-toefl-playbook)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (sat, apps/sat-simulator, apps/sat-simulator/dist, schood-sat)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (academy, apps/academy, apps/academy/dist, schood-academy)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (academy-docs, apps/academy-docs, apps/academy-docs/dist, schood-academy-docs)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (ielts-practice, apps/ielts-practice, apps/ielts-practice/dist, schood-ielts-practice)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (sat-playbook, apps/sat-playbook, apps/sat-playbook/dist, schood-sat-playbook)",
+        "conclusion": "success"
+      },
+      {
+        "name": "deploy (ielts, apps/ielts-simulator, apps/ielts-simulator/dist, schood-ielts)",
+        "conclusion": "success"
+      },
+      {
+        "name": "configure-itep-domain",
+        "conclusion": "skipped"
+      }
+    ]
+  },
+  "mainCi": {
+    "id": 39415483732,
+    "url": "https://github.com/atmyielts/English_T1/actions/runs/39415483732",
+    "headSha": "df52acd1eac37fbf71cde9fe63584e6785cc82e4",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "checks",
+        "conclusion": "success"
+      },
+      {
+        "name": "build (simulators, apps/ielts-simulator apps/sat-simulator apps/toefl-ibt-simulator apps/itep-sim...",
+        "conclusion": "success"
+      },
+      {
+        "name": "build (platform-academy, apps/platform apps/academy apps/academy-docs apps/english-hub)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (account-security, test:parent-report:security test:account:retention test:candidate:securi...",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (platform-workflows, test:platform:return test:marketplace test:peer-review:privacy test:sc...",
+        "conclusion": "success"
+      },
+      {
+        "name": "build (practice-and-playbooks, apps/ielts-practice apps/ielts-playbook apps/sat-practice apps/sat...",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (learning-integrations, test:exam test:sat test:shared test:telegram test:sat:completion te...",
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (guide)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (payments, test:payments)",
+        "conclusion": "success"
+      },
+      {
+        "name": "browser (academy)",
+        "conclusion": "success"
+      },
+      {
+        "name": "validate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "academyLiveSmoke": {
+    "id": 39416313729,
+    "url": "https://github.com/atmyielts/English_T1/actions/runs/39416313729",
+    "headSha": "df52acd1eac37fbf71cde9fe63584e6785cc82e4",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "live-smoke",
+        "conclusion": "success"
+      }
+    ],
+    "actualLiveSmokeStepExecuted": true
+  },
+  "reconciliation": {
+    "initialWorktreesInspected": 67,
+    "ownedHistoricalWorktrees": 14,
+    "otherAgentWorkExcluded": true,
+    "oldWorktreesResetDeletedOrSwitched": false,
+    "sourceReport": "docs/customer-readiness/2026-10-20-worktree-reconciliation.json"
+  },
+  "local": {
+    "uiRecovery": {
+      "checkedAt": "2026-10-20T11:08:26.564Z",
+      "mode": "isolated real production entrypoints with controlled render failure; non-local requests blocked",
+      "results": [
+        {
+          "app": "platform",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "academy",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "academy-docs",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "ielts-simulator",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "ielts-practice",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "ielts-playbook",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "sat-simulator",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "sat-practice",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "sat-playbook",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "toefl-ibt-simulator",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "toefl-playbook",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "itep-simulator",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "english-hub",
+          "status": "passed",
+          "widths": [
+            320,
+            390,
+            1280
+          ],
+          "privacy": true,
+          "reference": true,
+          "keyboard": true,
+          "reload": true,
+          "home": true,
+          "scopedAxe": true
+        },
+        {
+          "app": "platform",
+          "locale": "uz",
+          "status": "passed"
+        },
+        {
+          "app": "platform",
+          "locale": "ru",
+          "status": "passed"
+        },
+        {
+          "app": "sat-practice",
+          "storageDenied": true,
+          "queryLocale": "uz",
+          "status": "passed"
+        }
+      ]
+    },
+    "satContent": {
+      "questionCount": 27,
+      "domains": 9,
+      "editorialTiersPerDomain": 3,
+      "mathChoicesVerified": [
+        {
+          "slug": "algebra-easy-linear-equation",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "algebra-medium-system",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "algebra-hard-dependent-system",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "advanced-easy-quadratic-roots",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "advanced-medium-exponential-growth",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "advanced-hard-root-expression",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "data-easy-proportion",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "data-medium-combined-mean",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "data-hard-conditional-probability",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "geometry-easy-triangle-area",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "geometry-medium-trigonometric-ratio",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        },
+        {
+          "slug": "geometry-hard-circle-tangent",
+          "singleCorrectChoice": true,
+          "calculationVerified": true
+        }
+      ],
+      "structureVerified": true,
+      "published": false,
+      "limits": [
+        "RW semantic review is separate from this arithmetic check",
+        "Editorial difficulty is not empirical calibration",
+        "Database publication, private feedback and browser delivery remain unqualified"
+      ]
+    },
+    "satNative": {
+      "checkedAt": "2026-10-20T11:05:03.733Z",
+      "engine": "postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa",
+      "productionContacted": false,
+      "publishedInProduction": false,
+      "checks": [
+        {
+          "name": "Missing dedicated product fails before any original insert or legacy retirement",
+          "status": "passed"
+        },
+        {
+          "name": "All27 original prompts, choices, private keys and explanations match the verified source",
+          "status": "passed"
+        },
+        {
+          "name": "Only exact reviewed RW templates1..300 are retired; existing rows and keys survive",
+          "status": "passed"
+        },
+        {
+          "name": "Published foundations are prioritized and subject/domain filters stay exact",
+          "status": "passed"
+        },
+        {
+          "name": "Unrelated products cannot join the authorized bank by copying its format tag",
+          "status": "passed"
+        },
+        {
+          "name": "Completed receipts and frozen pending questions survive legacy retirement unchanged",
+          "status": "passed"
+        },
+        {
+          "name": "Original explanations/keys freeze at start despite later editorial revisions",
+          "status": "passed"
+        },
+        {
+          "name": "Unentitled and anonymous browsers cannot read paid original content or private answer material",
+          "status": "passed"
+        },
+        {
+          "name": "The entitled actor can read original exercises while all static answer keys remain private",
+          "status": "passed"
+        },
+        {
+          "name": "Reapplying an already-used publication identity fails without overwriting any content",
+          "status": "passed"
+        }
+      ]
+    },
+    "satInstalledSchemaTrial": {
+      "productionFixtureRowsCommitted": false,
+      "passed": true,
+      "providerMessagesSent": false,
+      "candidateSqlSha256": "f6507d6502ced6c7549eab292ddb20d11c0571ebb41dee868ad2438fba55463b",
+      "checks": 41,
+      "recordedAt": "2026-10-20T11:19:16.2122870Z",
+      "existingBankSourceUnchanged": true,
+      "baselineBodySha256": "47109f33c3d70cc7ee2b420c99f34f0fb75f16919b1d9942034e9bc902ae0d3a"
+    },
+    "paymentNativeCases": 183,
+    "academyReadinessChecks": 822,
+    "academyPhrasesPerLocale": 2821,
+    "academyLintAndBuildPassed": true,
+    "platformBuildPassed": true,
+    "englishMassReadinessPassed": true
+  },
+  "production": {
+    "satMetadata": {
+      "owner": "postgres",
+      "settings": [
+        "search_path=public, pg_temp"
+      ],
+      "bodySha256": "c38bebe15aaee55d3b0f0422760fe684fa82a45162d26e85271b8b077130a501",
+      "anonExecute": false,
+      "sourceSha256": "dbc08f9d32b8d7d30756498f9b2cae2a98cab6190c1d5b31b3c803b1b53bc7cc",
+      "originalCount": 27,
+      "serviceExecute": true,
+      "securityDefiner": true,
+      "exactTemplateCount": 300,
+      "migrationInstalled": true,
+      "newExperienceExists": true,
+      "authenticatedExecute": false,
+      "originalPrivateKeyCount": 27,
+      "retainedTemplateKeyCount": 300,
+      "retiredExactTemplateCount": 300
+    },
+    "satHosted": {
+      "recordedAt": "2026-10-20T11:40:16.735Z",
+      "passed": true,
+      "checks": [
+        {
+          "name": "create owned confirmed test account",
+          "passed": true
+        },
+        {
+          "name": "sign in owned test account",
+          "passed": true
+        },
+        {
+          "name": "owned account has no SAT access before test grant",
+          "passed": true
+        },
+        {
+          "name": "unentitled bank read remains forbidden",
+          "passed": true
+        },
+        {
+          "name": "test tenant is exclusively owned and personal",
+          "passed": true
+        },
+        {
+          "name": "grant ten-minute access only to owned fixture",
+          "passed": true
+        },
+        {
+          "name": "authorized live bank prioritizes all27 original questions",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: grammar-easy-subject-agreement",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: grammar-medium-independent-clauses",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: grammar-hard-modifier",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: transitions-easy-contrast",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: transitions-medium-consequence",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: transitions-hard-concession",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: rhetoric-easy-explicit-goal",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: rhetoric-medium-comparison",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: rhetoric-hard-evidence-boundary",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: vocabulary-easy-retained",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: vocabulary-medium-qualified",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: vocabulary-hard-provisional",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: evidence-easy-direct-support",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: evidence-medium-counterevidence",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: evidence-hard-proportional-inference",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: algebra-easy-linear-equation",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: algebra-medium-system",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: algebra-hard-dependent-system",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: advanced-easy-quadratic-roots",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: advanced-medium-exponential-growth",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: advanced-hard-root-expression",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: data-easy-proportion",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: data-medium-combined-mean",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: data-hard-conditional-probability",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: geometry-easy-triangle-area",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: geometry-medium-trigonometric-ratio",
+          "passed": true
+        },
+        {
+          "name": "published prompt and choices match reviewed source: geometry-hard-circle-tangent",
+          "passed": true
+        },
+        {
+          "name": "bank hides answer keys and private explanations",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: grammar",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: transitions",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: rhetoric",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: vocabulary_in_context",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: command_of_evidence",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: algebra",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: advanced_math",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: problem_solving_data_analysis",
+          "passed": true
+        },
+        {
+          "name": "live domain filtering: geometry_trig",
+          "passed": true
+        },
+        {
+          "name": "browser cannot directly obtain original answer keys",
+          "passed": true
+        },
+        {
+          "name": "browser cannot invoke service-only bank RPC",
+          "passed": true
+        },
+        {
+          "name": "all27 private publication keys exist",
+          "passed": true
+        },
+        {
+          "name": "private keys and explanations match reviewed source",
+          "passed": true
+        },
+        {
+          "name": "bank verification creates no immutable attempt receipts",
+          "passed": true
+        }
+      ],
+      "cleanupChecks": [
+        {
+          "name": "verify fixture ownership before cleanup",
+          "passed": true
+        },
+        {
+          "name": "entitlement cleanup is restricted to exact owned fixture",
+          "passed": true
+        },
+        {
+          "name": "remove owned temporary entitlement",
+          "passed": true
+        },
+        {
+          "name": "remaining owned tenants are personal",
+          "passed": true
+        },
+        {
+          "name": "fixture personal tenant has no foreign members",
+          "passed": true
+        },
+        {
+          "name": "remove owned empty personal tenant",
+          "passed": true
+        },
+        {
+          "name": "retention preflight permits owned account closure",
+          "passed": true
+        },
+        {
+          "name": "close owned fixture login through retention lifecycle",
+          "passed": true
+        },
+        {
+          "name": "owned personal identity and login removed",
+          "passed": true
+        },
+        {
+          "name": "no temporary grant remains",
+          "passed": true
+        }
+      ],
+      "cleanupVerified": true,
+      "customerRecordsChanged": false,
+      "providerMessagesSent": false,
+      "liveScoredAttemptsCreated": false,
+      "fixtureRun": "756de343-090c-4abd-800c-30020dda9b8f"
+    },
+    "publicRoots": {
+      "recordedAt": "2026-10-20T11:39:15.509Z",
+      "afterPublication": true,
+      "passed": true,
+      "results": [
+        {
+          "service": "platform",
+          "url": "https://schood.online",
+          "status": 200,
+          "finalUrl": "https://schood.online/",
+          "elapsedMs": 755,
+          "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+          "recoveryAsset": "https://schood.online/assets/index-DiEBWYni-p0d343da9f597.js",
+          "recoveryAssetSha256": "c1d8a1eb7b6bd9ccd804870548ab9de02254fb6808b99998b69157a0b98077e2",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "academy",
+          "url": "https://academy.schood.online",
+          "status": 200,
+          "finalUrl": "https://academy.schood.online/",
+          "elapsedMs": 518,
+          "title": "Academy | Schood",
+          "recoveryAsset": "https://academy.schood.online/assets/index-_u_cM5w8-p69c871432604.js",
+          "recoveryAssetSha256": "8f7e7155c7f8c736ac77f464aa06beb67d97577aa98e0c1632bfa038b5defe0c",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "academy-docs",
+          "url": "https://docs.academy.schood.online",
+          "status": 200,
+          "finalUrl": "https://docs.academy.schood.online/",
+          "elapsedMs": 649,
+          "title": "Schood Academy Operations Guide",
+          "recoveryAsset": "https://docs.academy.schood.online/assets/index-DP5Z3DdB-p69c871432604.js",
+          "recoveryAssetSha256": "50b483786d9edb752f23d83673fe4209e880c396129028ca7547d89cdeb881ca",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "ielts-simulator",
+          "url": "https://ielts.schood.online",
+          "status": 200,
+          "finalUrl": "https://ielts.schood.online/",
+          "elapsedMs": 631,
+          "title": "IELTS Simulator by Schood | Timed Mock Tests and Band Insights",
+          "recoveryAsset": "https://ielts.schood.online/assets/index-7X4h1ebn-p69c871432604.js",
+          "recoveryAssetSha256": "53f12111c627ed3a4f2eed9fb4907f4dc4a245560ec9fa7d72ffea8796a662cd",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "ielts-practice",
+          "url": "https://practice.ielts.schood.online",
+          "status": 200,
+          "finalUrl": "https://practice.ielts.schood.online/",
+          "elapsedMs": 499,
+          "title": "Schood IELTS Practice | Adaptive Reading, Listening, Writing",
+          "recoveryAsset": "https://practice.ielts.schood.online/assets/index-BV5lbgr--p69c871432604.js",
+          "recoveryAssetSha256": "d06b2f7b438aec06d0a505f05ae2f6004ca3712d5458a4bab91d1b0b6ee6d5e4",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "ielts-playbook",
+          "url": "https://playbook.ielts.schood.online",
+          "status": 200,
+          "finalUrl": "https://playbook.ielts.schood.online/",
+          "elapsedMs": 519,
+          "title": "Schood IELTS Playbook | Strategy, Diagnostics, and Official IELTS Guidance",
+          "recoveryAsset": "https://playbook.ielts.schood.online/assets/index-Cx7b4avF-p69c871432604.js",
+          "recoveryAssetSha256": "a0d495e960cc084e6283705ee5a16c0f75814b8f5e58582e57a1114d6ac2809f",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "sat-simulator",
+          "url": "https://sat.schood.online",
+          "status": 200,
+          "finalUrl": "https://sat.schood.online/",
+          "elapsedMs": 598,
+          "title": "Digital SAT Simulator by Schood | Adaptive Practice and Review",
+          "recoveryAsset": "https://sat.schood.online/assets/index-CfXberg0-p69c871432604.js",
+          "recoveryAssetSha256": "c32876aa182669fa89891ca2f6e19141883f2aa2cd7eb36dd78a227ba68568ce",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "sat-practice",
+          "url": "https://practice.sat.schood.online",
+          "status": 200,
+          "finalUrl": "https://practice.sat.schood.online/",
+          "elapsedMs": 574,
+          "title": "Schood SAT Practice Lab",
+          "recoveryAsset": "https://practice.sat.schood.online/assets/index-DlWBMMgJ-p69c871432604.js",
+          "recoveryAssetSha256": "c414d140caff96d73599b02b88d896bb2d10d8e14c263d077942b8fb5b3f6390",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "sat-playbook",
+          "url": "https://playbook.sat.schood.online",
+          "status": 200,
+          "finalUrl": "https://playbook.sat.schood.online/",
+          "elapsedMs": 607,
+          "title": "Schood SAT Playbook | Strategy, Diagnostics, and Domain Guidance",
+          "recoveryAsset": "https://playbook.sat.schood.online/assets/index-CZY8uIc4-p69c871432604.js",
+          "recoveryAssetSha256": "52fe7b808ef4d27b38dbfc94f00f109355832f3ef6f98ae1e4f64e4ff968185d",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "toefl-simulator",
+          "url": "https://toefl.schood.online",
+          "status": 200,
+          "finalUrl": "https://toefl.schood.online/",
+          "elapsedMs": 513,
+          "title": "TOEFL iBT Simulator by Schood | Practice, Timing, and Analytics",
+          "recoveryAsset": "https://toefl.schood.online/assets/index-C3lfoT1A-p69c871432604.js",
+          "recoveryAssetSha256": "a9684fc127efbc97940e52d7ddcc84d38e117c0a7a7c479a7ee2acfec1d86ec8",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "toefl-playbook",
+          "url": "https://playbook.toefl.schood.online",
+          "status": 200,
+          "finalUrl": "https://playbook.toefl.schood.online/",
+          "elapsedMs": 582,
+          "title": "Schood TOEFL Playbook | Strategy, Diagnostics, and Skill Guidance",
+          "recoveryAsset": "https://playbook.toefl.schood.online/assets/index-BPUbZBta-p69c871432604.js",
+          "recoveryAssetSha256": "28a32578e7d1ba0b62339601520861be93a5074df5290a43bb04c0bc7341b6da",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "itep-simulator",
+          "url": "https://itep.schood.online",
+          "status": 200,
+          "finalUrl": "https://itep.schood.online/",
+          "elapsedMs": 1005,
+          "title": "iTEP Simulator by Schood | Practice, Timing, and Analytics",
+          "recoveryAsset": "https://itep.schood.online/assets/index-Bn4R0TWA-p69c871432604.js",
+          "recoveryAssetSha256": "2a224c8a55cf37757e2f1dd8085fc790afc29185467acadc8dd8fa53cad47095",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "english-hub",
+          "url": "https://english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/",
+          "elapsedMs": 480,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+          "recoveryAsset": "https://english.schood.online/assets/index-BKjvyzM1-p69c871432604.js",
+          "recoveryAssetSha256": "d89810f8dd25bbc417352e81bd46df10bc3381220df3e496b11c6c59c04ed5f4",
+          "publishedRecoveryVerified": true
+        },
+        {
+          "service": "english-reading",
+          "url": "https://reading.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/reading",
+          "elapsedMs": 791,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-listening",
+          "url": "https://listening.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/listening",
+          "elapsedMs": 833,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-writing",
+          "url": "https://writing.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/writing",
+          "elapsedMs": 840,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-speaking",
+          "url": "https://speaking.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/speaking",
+          "elapsedMs": 610,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-grammar",
+          "url": "https://grammar.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/grammar",
+          "elapsedMs": 560,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-vocabulary",
+          "url": "https://vocabulary.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/vocabulary",
+          "elapsedMs": 677,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        },
+        {
+          "service": "english-immersion",
+          "url": "https://immersion.english.schood.online",
+          "status": 200,
+          "finalUrl": "https://english.schood.online/immersion",
+          "elapsedMs": 743,
+          "title": "Schood English | Unified Reading, Writing, Listening, Speaking"
+        }
+      ]
+    },
+    "healthyBrowser": {
+      "recordedAt": "2026-10-20T11:41:53.099Z",
+      "passed": true,
+      "readOnly": true,
+      "results": [
+        {
+          "label": "landing",
+          "width": 390,
+          "status": 200,
+          "finalUrl": "https://schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "auth",
+          "width": 390,
+          "status": 200,
+          "finalUrl": "https://schood.online/auth",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "sat-practice",
+          "width": 390,
+          "status": 200,
+          "finalUrl": "https://practice.sat.schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "academy",
+          "width": 390,
+          "status": 200,
+          "finalUrl": "https://academy.schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "landing",
+          "width": 1280,
+          "status": 200,
+          "finalUrl": "https://schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "auth",
+          "width": 1280,
+          "status": 200,
+          "finalUrl": "https://schood.online/auth",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "sat-practice",
+          "width": 1280,
+          "status": 200,
+          "finalUrl": "https://practice.sat.schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        },
+        {
+          "label": "academy",
+          "width": 1280,
+          "status": 200,
+          "finalUrl": "https://academy.schood.online/",
+          "rendered": true,
+          "noRecovery": true,
+          "noOverflow": true
+        }
+      ]
+    },
+    "healthyBrowserRetryNote": {
+      "recordedAt": "2026-10-20T11:42:13.300Z",
+      "initialAttempt": {
+        "passed": false,
+        "route": "https://academy.schood.online/",
+        "width": 1280,
+        "symptom": "DOM-readiness wait exceeded30 seconds after the previous seven route/viewport checks passed",
+        "causeConfirmed": false
+      },
+      "freshReadOnlyInspection": {
+        "loaded": true,
+        "url": "https://academy.schood.online/",
+        "title": "Academy | Schood",
+        "body": "Schood Academy\nLanguage\nEnglish\nUzbek\nRussian\nWorkspaces\nDaily workflow\nBack to platform\nSchood Academy\nRun your learning center from one connected workspace\n\nOrganize classes, guide teachers, assign IELTS and SAT practice, and keep attendance, homework and tuition records together.\n\nOpen Academy\nClasses & students\nTeacher workflow\nBilling & access\nExample workspace\nEverything is ready before class starts\n18:00\n19:30\nIELTS 6.5 · Group A17\nWriting · Problem and solution essays\n17 students · Room 12 · resources attached\nREADY\nStudents & classes\nRosters, schedules, attendance, and family contacts.\nBilling\nTuition plans, payment records, and student access.\nCommunication\nMessages, class updates, reminders, and Telegram delivery.\nTeaching\nCurriculum, resources, homework, grading, and mock tests.\nOne connected center\nThe right workspace for every person\n\nOwners see the whole center, teachers see today's classes, and students see their learning. Everyone works from the same schedule, roster, assignments, and payment records.\n\nCenter page\n\nTell the academy story, show the offer, and send families to the right classroom or office entry.\n\nStory · programs · contact paths\nStaff workspace\n\nRoute administrators, center operators, managers, counselors, teachers, and assistants to the tools for their role.\n\nDaily work · billing · student access\nClassroom home\n\nGive each classroom a living home with resources, modules, lessons, progress, and discussion.\n\nSyllabus · resources · classroom chat\nStudent workspace\n\nStudents see classes, homework, messages, test-prep access, and payments in one focused place.\n\nLearning · reminders · access history\nDaily rhythm\nBuilt around the real week of an academy\n\nThe flow follows how centers actually work: enroll a student, place them in a class, teach from the curriculum, keep families informed, collect tuition, and track progress.\n\n01\nPublish the offer\n\nCreate a clear academy page and classroom pages that families can understand before they sign in.\n\n02\nEnroll and place\n\nAdd contacts, create cohorts, assign students, and give each learner the right workspace.\n\n03\nTeach and track\n\nOpen the lesson plan, take attendance, record what was covered, and assign homework in one guided flow.\n\n04\nCollect and retain\n\nConnect tuition plans to student access, track payments, resolve concerns, and keep learners active.\n\nWhat you can run\nThe daily work, in one place\n\nAcademy connects Schood learning products to the people, classes, payments, and communication that keep a center moving.\n\n01\nCenter and classroom pages for families\n02\nStudent enrollment, class placement, and attendance\n03\nTuition plans, Click payments, and learning access\n04\nMessages, class updates, alerts, and Telegram delivery\n05\nCurriculum, lesson resources, homework, tests, and progress\nNext step\nGive your team one clear way to run every learning day.\nOpen Academy",
+        "events": []
+      },
+      "completeRepeat": {
+        "passed": true,
+        "scenarios": 8,
+        "proof": "healthy-browser-proof.json"
+      },
+      "applicationSourceChangedForRetry": false
+    },
+    "installedMigrations": 214,
+    "newMigrationCount": 1,
+    "edgeFunctionsDeployedByThisRelease": [],
+    "workersDeployedByThisRelease": [],
+    "secretsChanged": false,
+    "customerRecordsChanged": false
+  },
+  "withheld": {
+    "paymentRecoveryPr": "https://github.com/atmyielts/English_T1/pull/215",
+    "uninstalledPaymentMigrations": [
+      "20261010162000",
+      "20261010163000",
+      "20261010164000",
+      "20261010165000",
+      "20261010170000",
+      "20261010171000",
+      "20261010172000",
+      "20261010173000",
+      "20261010174000"
+    ],
+    "reason": "Valid signed Click callback and hosted legacy/client/provider compatibility remain unqualified; local signing secret unavailable. Preserve current installed provider sources; do not activate transaction backend or dependent recovery UI."
+  },
+  "historicalArtifactsAndSupersededDraftsRetained": true,
+  "activeGoalStatus": "paused",
+  "installedBackendSourceAudit": {
+    "recordedAt": "2026-10-20T10:54:24.353Z",
+    "projectRef": "bbjawctnqrufvnesdsel",
+    "readOnly": true,
+    "customerRowsRead": false,
+    "productionChanged": false,
+    "functions": [
+      {
+        "name": "billing",
+        "id": "7ea38c9d-bf11-40b6-83be-517e64239a24",
+        "version": 38,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/billing/index.ts",
+            "sha256LF": "ccbf6fed616bde53a94a891d3a3d71dbdabd8173cf5754951fc453c2ad6ab621",
+            "sameAsMain": false
+          }
+        ]
+      },
+      {
+        "name": "parent-report",
+        "id": "d64860c9-7033-41ee-af51-8a7a9adc1edb",
+        "version": 19,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/parent-report/handler.ts",
+            "sha256LF": "b011989633ec6c2d5addbc30381feda9cd03d28a72be93cb7421b84e8a66491a",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/parent-report/index.ts",
+            "sha256LF": "04faeaaa901f37227812ed4e8ddb9afa7bba68febc245a64db84213be2072f55",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/parent-report/public-boundary.ts",
+            "sha256LF": "3dc2e55265b9a5837f195e3ae3f93529c062914b49a6e8e8bbec4b0cee2b4bc2",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/parent-report/revoke.ts",
+            "sha256LF": "acca97523dab5659bdb57e749a7bb5826f506fb8238d80e6378f55c52fd57df9",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "peer-review",
+        "id": "5d4afd30-b758-4cc7-aecd-e6b8202f4302",
+        "version": 19,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/peer-review/handler.ts",
+            "sha256LF": "cff5d1a9cf78b71ae0f4d230713a0cddd53b0076a1158d81ffe2afe581180bbc",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/peer-review/index.ts",
+            "sha256LF": "13ba70134511a39f91e7448b2b7885952c0e5c0f01ee79663766a8076e864af5",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "sat-practice",
+        "id": "1cdcd924-eb76-4cd8-a874-2ee0e391fd5b",
+        "version": 23,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/sat-practice/access.ts",
+            "sha256LF": "1caae4cfe635e21208cd6a07b651a3bdb6c118c74261c0f1ca431756637c801e",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/sat-practice/bank.ts",
+            "sha256LF": "f792356e79b64f08ed622e4f02e68c1adac8ba003d36302bf9fc009862665b27",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/sat-practice/completion.ts",
+            "sha256LF": "1e9ba2a849b66c8025baf202c558679239f959ed377f0ab6c2fd3a5ae73efdce",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/sat-practice/index.ts",
+            "sha256LF": "8a4744e92e98adcfa123ce70d0503efd08a29de27e71ec4467bde646d85b2852",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/sat-practice/start.ts",
+            "sha256LF": "66f3f20e7cd6223be138f1a1dd1dbefb7ef8082a86a9a11776cca2a0c55ad350",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/sat-practice/tutor.ts",
+            "sha256LF": "9a9c489cfed4f8a78185deb8a95fa5979d5a36d9b63a5a2dde00a7bebe260364",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-addon.ts",
+            "sha256LF": "cd2584dc0d148e2913736d4a639b7a44254bffa09f80f135937d79e6267fe16b",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-response.ts",
+            "sha256LF": "82e55a4797ca0dc3db95fcd34f6e2a5caf92654ba3e8b168e40b69b108a44e9a",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-capacity.ts",
+            "sha256LF": "340bbba7306ebfc61f25caa6d8426e1640a0a9c352d13ce9bccffdac3259a3a7",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-handler.ts",
+            "sha256LF": "5e30417a07a11dc6264068476eb4b21a4245ff2449082b70f5cf193206e0543f",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/sat-ai.ts",
+            "sha256LF": "5da8dce31e044495ff807c95b5d39890443eaecb5b8fce634df9d4e180aaa51b",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/sat-practice-core.ts",
+            "sha256LF": "751d0252e9875841249e27c1c9463ff2200b7b7ec58a1ac2d73efbfeb5c4f983",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/sat-practice-plan-generator.ts",
+            "sha256LF": "9a3090d5cf81b5c792c44340c9854b809a73303159f4a3c4b8850731d43d831a",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "score-prediction",
+        "id": "6d27829c-6316-4712-bc92-4257a97373db",
+        "version": 17,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/score-prediction/index.ts",
+            "sha256LF": "ecb6592b8c6c63fca49b6d33eacde2cb214f075ce3e3d764cd65664748f4c5f0",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "speaking-coach",
+        "id": "ca97f86e-b1ad-4080-955f-6a784943eea1",
+        "version": 21,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/speaking-coach/grading.ts",
+            "sha256LF": "4007ecf419f36522dc980a3e2f6893c8052629b8c4232de09650a38f4ce6a683",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/speaking-coach/handler.ts",
+            "sha256LF": "f80430ca266faafe6983e04f8f958910062a6804f0a93c9626bc6f7f31dcadd2",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/speaking-coach/index.ts",
+            "sha256LF": "888768b7466d19f265a5bea26874a0d74969c5beea506ee1c05487839cc2aaf2",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-addon.ts",
+            "sha256LF": "cd2584dc0d148e2913736d4a639b7a44254bffa09f80f135937d79e6267fe16b",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-response.ts",
+            "sha256LF": "82e55a4797ca0dc3db95fcd34f6e2a5caf92654ba3e8b168e40b69b108a44e9a",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-capacity.ts",
+            "sha256LF": "340bbba7306ebfc61f25caa6d8426e1640a0a9c352d13ce9bccffdac3259a3a7",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-handler.ts",
+            "sha256LF": "5e30417a07a11dc6264068476eb4b21a4245ff2449082b70f5cf193206e0543f",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "teacher-marketplace",
+        "id": "02d9eac6-b066-433b-8534-2a29ea4c7527",
+        "version": 19,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/teacher-marketplace/handler.ts",
+            "sha256LF": "5c1cbc0497c0ecb507de6c3c482560bb4b9682f998f642590700a104880aaafb",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/teacher-marketplace/index.ts",
+            "sha256LF": "941b9e14a481d0b3b7bcf873a27a58ec2fe86d484704faa1deb1c050c9a2f68d",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "teacher-office",
+        "id": "cf0bd1e5-757a-4a74-8ca7-7305fc174941",
+        "version": 42,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/teacher-office/index.ts",
+            "sha256LF": "6dc0707e30126b0c80136c33785572e34e8936fb2b73b014cfc15ea0c548afaf",
+            "sameAsMain": false
+          }
+        ]
+      },
+      {
+        "name": "toefl-playbook",
+        "id": "c9d4269f-fabf-471b-b100-9306a8eac8cc",
+        "version": 17,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/toefl-playbook/index.ts",
+            "sha256LF": "91b4de9f1de406f137334734c89416d7669fc24eed2c15f02f3e8e54b4b57fe8",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/toefl-playbook.ts",
+            "sha256LF": "b40a95fbd8495335b6d784b88cdfac7e7e53265f59d46212a4fbb202500a1971",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "writing-tutor",
+        "id": "907d482f-8cab-4c93-bdb0-d50a3a29fffd",
+        "version": 20,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/writing-tutor/allowance.ts",
+            "sha256LF": "d7e3062c11060fa63a37f8afc8d6e9457bdb6ec38d724653c3168d3f7e604e02",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/writing-tutor/grading.ts",
+            "sha256LF": "ac87c9ee8ce81ae4add368ada8bfb99d1327f9629178d7a4a99d50d951f8988a",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/writing-tutor/handler.ts",
+            "sha256LF": "b689e4e1e7f43d07795ab3777a71052b001463a8356f3ea95c0f07a2ccf769f0",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/writing-tutor/index.ts",
+            "sha256LF": "0d9671b5bd4eaf0e47e6d85a26fe06219587b7810c51f6760319f497abfff596",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/writing-tutor/prompts.ts",
+            "sha256LF": "426a9a90b767e1a2220e6403a1e36ed6c772ee7b9994c69750c924f1a2521f48",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-addon.ts",
+            "sha256LF": "cd2584dc0d148e2913736d4a639b7a44254bffa09f80f135937d79e6267fe16b",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/ai-response.ts",
+            "sha256LF": "82e55a4797ca0dc3db95fcd34f6e2a5caf92654ba3e8b168e40b69b108a44e9a",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-capacity.ts",
+            "sha256LF": "340bbba7306ebfc61f25caa6d8426e1640a0a9c352d13ce9bccffdac3259a3a7",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/coaching-handler.ts",
+            "sha256LF": "5e30417a07a11dc6264068476eb4b21a4245ff2449082b70f5cf193206e0543f",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "admin-payments",
+        "id": "c922041a-4c8c-4f01-84dc-f1ec6c704c8c",
+        "version": 50,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/admin-payments/index.ts",
+            "sha256LF": "b30b9b5da432a79745e057051703692361cf82aab0a32368c1b04496f350462e",
+            "sameAsMain": false
+          },
+          {
+            "file": "supabase/functions/_shared/admin-access.ts",
+            "sha256LF": "5334bdf7584d3c53aab38d629bd14a0799ebc7b266f3fe6142de3078f704c419",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/payment-terms.ts",
+            "sha256LF": "f02548fc9ca3728638d431bfd316593cc7a7f1b4974b26a79a370bf5281fc6d2",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "click",
+        "id": "2119c917-f37b-43d2-8e27-54826f1757eb",
+        "version": 30,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/click/index.ts",
+            "sha256LF": "a97da6665a5c08f2ca6062c1b6ff7d8f13252bfa4e54c8208596aa4b5ac2a9fe",
+            "sameAsMain": false
+          },
+          {
+            "file": "supabase/functions/click/ops-alerts.ts",
+            "sha256LF": "663e4faf7877358f0e7e12dcd062e0dade05edeef253bc41be06e2f341155114",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/click/payment-safety.ts",
+            "sha256LF": "14ef61be593911c702df6706de36be1c5dd0c7a36d3be594c2e2417f5db2b816",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/click/webhook-security.ts",
+            "sha256LF": "dd0d2ae2cac0fddbe2067754500c99ee9095effbd231eb78a9cdc54aee23c96f",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/entitlements.ts",
+            "sha256LF": "84213492138fe2e16d7afed1c91568a5b37ad7f5e4e441af6002fe945ad232aa",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/payment-terms.ts",
+            "sha256LF": "f02548fc9ca3728638d431bfd316593cc7a7f1b4974b26a79a370bf5281fc6d2",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/_shared/pricing.ts",
+            "sha256LF": "b30a7725aaa0528aa700a7d078ef8492b56f3426ad7cec339a1e7ab869c85897",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "partner-office",
+        "id": "467bfb91-340a-4ee0-917c-86c1099d4d8a",
+        "version": 48,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/partner-office/index.ts",
+            "sha256LF": "66c866425a45c9ba02c310469ebf9293d205523e731843e5736412eb71a49331",
+            "sameAsMain": false
+          },
+          {
+            "file": "supabase/functions/_shared/media-storage.ts",
+            "sha256LF": "fb51f8571bfb67aa5d751104debb63be3a48e6431851c50e557841f018273f1e",
+            "sameAsMain": true
+          }
+        ]
+      },
+      {
+        "name": "voucher-redeem",
+        "id": "7cf009bb-23c8-40e2-ba20-8a2446f19ce4",
+        "version": 25,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/voucher-redeem/index.ts",
+            "sha256LF": "08a8dc90b132b0a67ef7b0e506334b2fc7837d787be00cf421d59499b8b0e139",
+            "sameAsMain": false
+          },
+          {
+            "file": "supabase/functions/_shared/media-storage.ts",
+            "sha256LF": "6740ec103aaab1ef280e11b968eeb4dc83e77d2533436f7643599732d2b516e2",
+            "sameAsMain": false
+          }
+        ]
+      },
+      {
+        "name": "candidate-entry",
+        "id": "f5ccb4aa-d5e7-4a5d-9d87-057bd2119934",
+        "version": 48,
+        "verifyJwt": false,
+        "files": [
+          {
+            "file": "supabase/functions/candidate-entry/auth.ts",
+            "sha256LF": "ae91db93d7bb1ac6451bb0bfe11236707325c34e8e2025e3aeb7fbcb067bf557",
+            "sameAsMain": false
+          },
+          {
+            "file": "supabase/functions/candidate-entry/handler.ts",
+            "sha256LF": "2875c1606e7d278a771ba82e9f31efc9e4410f621c9ebb5550e5dbb5727e0cbb",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/candidate-entry/index.ts",
+            "sha256LF": "922a62583cdae6522d349e181782fbb90cf5ccf4e692c1051539c3a8207f7bf6",
+            "sameAsMain": false
+          }
+        ]
+      },
+      {
+        "name": "account",
+        "id": "e047f301-24f1-4550-adfe-02af24e1c45b",
+        "version": 38,
+        "verifyJwt": true,
+        "files": [
+          {
+            "file": "supabase/functions/account/handler.ts",
+            "sha256LF": "4421d4806e1375a983ea9c9700cbed1fe6c6897d7e343ec59998fd70c82020cd",
+            "sameAsMain": true
+          },
+          {
+            "file": "supabase/functions/account/index.ts",
+            "sha256LF": "ccae6020d9e1abd1f3ba6c8e19f742ae759b59f4c778b192f5ac7122ee5540ba",
+            "sameAsMain": true
+          }
+        ]
+      }
+    ]
+  }
+}
