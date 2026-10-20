@@ -1,24 +1,15 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-student-import-and-retained-recovery",
+  "releaseId": "academy-parent-writes-history-and-delivery",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261012160000_academy_student_import_staging.sql",
-    "20261012170000_academy_student_import_normalization.sql",
-    "20261012180000_academy_student_import_preview.sql",
-    "20261012190000_academy_student_import_commit.sql",
-    "20261012200000_academy_student_import_lifecycle.sql",
-    "20261012220000_academy_student_import_recovery.sql",
-    "20261013155000_academy_current_authority_directory.sql",
-    "20261013160000_academy_student_import_authority.sql",
-    "20261014120000_academy_staff_access_commands.sql",
-    "20261014130000_academy_staff_invitation_commands.sql",
-    "20261014140000_academy_legacy_staff_import_commands.sql",
-    "20261014150000_academy_learner_invitation_commands.sql"
+    "20261020150000_academy_parent_write_commands.sql",
+    "20261020151000_academy_parent_history_paging.sql",
+    "20261020152000_academy_parent_delivery_claims.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -28,33 +19,24 @@
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261012160000_academy_student_import_staging.sql",
-    "migration:20261012170000_academy_student_import_normalization.sql",
-    "migration:20261012180000_academy_student_import_preview.sql",
-    "migration:20261012190000_academy_student_import_commit.sql",
-    "migration:20261012200000_academy_student_import_lifecycle.sql",
-    "migration:20261012220000_academy_student_import_recovery.sql",
-    "migration:20261013155000_academy_current_authority_directory.sql",
-    "migration:20261013160000_academy_student_import_authority.sql",
-    "migration:20261014120000_academy_staff_access_commands.sql",
-    "migration:20261014130000_academy_staff_invitation_commands.sql",
-    "migration:20261014140000_academy_legacy_staff_import_commands.sql",
-    "migration:20261014150000_academy_learner_invitation_commands.sql",
+    "migration:20261020150000_academy_parent_write_commands.sql",
+    "migration:20261020151000_academy_parent_history_paging.sql",
+    "migration:20261020152000_academy_parent_delivery_claims.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "Scope frozen at the user request on 2026-10-20. Release existing student importer, current authority/directory, atomic staff saves/invitations/legacy staff import, and learner invitations only after exact-head CI, captured-schema qualification, source-preserving gateway reconciliation and owned hosted acceptance. Seven other legacy import types, remaining shared-resource authority and broader all-service acceptance stay recorded as uncompleted work; do not add features to this release. Preserve concurrent proctor/shared-file work. Frontend wording/layout shipped separately in PRs 251 and 252. Versioned command aliases prevent older backends from interpreting new semantics as old mutations.",
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these twelve reviewed authority/import/staff/invitation migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
-    "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes.",
-    "Parent reads, private table/column grants, signed Telegram linking and binding/relationship guards are already deployed through PR 253 on main 377ca2b2811e7ad1527a7b96b5c2eb7408d4a905, Academy v83. Preserve those routes, modules and grants. This manifest excludes both installed parent migrations. Parent write and dispatch-time consent checks and full history pagination remain separate gates."
+    "After protected CI and tracked Pages deployment, apply only these three additive migrations through supabase db push --linked from a frozen SQL workdir matching the 210 installed migrations. Verify project bbjawctnqrufvnesdsel and pending filenames first.",
+    "Deploy supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel --use-api from a reviewed bundle over the freshly downloaded installed Academy source. Retain unrelated modules; do not deploy the entire repository gateway over installed source.",
+    "Preserve existing ACADEMY_TELEGRAM_BOT_TOKEN and Gmail SMTP configuration. Unconfigured or unverified channels are skipped. External delivery already in flight cannot be cancelled; unknown outcomes require review and are not automatically retried.",
+    "Legacy guardian messages already deferred in the central Telegram gateway require separate reconciliation before claiming universal dispatch-consent coverage. Real recipient/provider/payment qualification remains distinct from synthetic and rollback-only acceptance."
   ],
   "verification": [
-    "Run verify:prod, verify:release, verify:academy, Academy lint/build, complete Academy Edge/import suite, native 5,000-student PostgREST commit/recovery/replay and contention tests, frozen-source captured-schema qualification and complete browser suite. Inspect final desktop/phone importer states. All local/synthetic evidence remains distinct from hosted customer readiness.",
-    "After protected exact-head CI and tracked Pages deployment, verify installed migration/RPC/source identities, direct-table/RPC grants and owned receptionist/branch-manager/finance grant scopes. Qualify upload resumption, changed review, exact opening balances, receipt recovery, later payments/consent and logical correction without automated messages or false churn. Check runtime timeouts and actual hosted performance. Verify owned fixtures are removed."
+    "Run verify:prod, verify:release, complete Academy Edge/browser suites, lint/build/localization and the captured-schema command/lock-contention qualification.",
+    "After activation verify source hashes, migration count, rollback-only installed parent commands and owned signed-in API/browser flows. Verify customer records and real provider messages/payments remain untouched during fixture tests."
   ],
   "rollback": {
-    "pages": "Use the prior reviewed Academy Pages deployment at main 377ca2b2811e7ad1527a7b96b5c2eb7408d4a905.",
-    "edge": "Prepare a reviewed forward repair from the freshly captured installed Academy source, retaining the deployed parent protections and unrelated/proctor modules. Do not restore the old complete gateway or older repository modules.",
-    "migration": "Retain uploaded sources, original records, financial/lifecycle evidence and immutable receipts. Correct an owned import only through reviewed logical recovery with compensating ledger entries; retain changed/used records for manual review. Forward-repair command definitions or keep new entry points unavailable if needed. Never delete customer records or undo unrelated/proctor schema changes as rollback."
+    "pages": "Use prior reviewed Academy deployment at main 50e63540b6a4ec0318184c7262d538f2bd9083b4.",
+    "edge": "Forward-repair the freshly captured installed Academy bundle, preserving unrelated modules. Keep new parent commands unavailable rather than reverting deployed parent privacy guards.",
+    "migration": "Retain additive schema and receipts. Correct through a reviewed forward migration; never delete customer messages, request history or delivery evidence."
   }
 }

@@ -336,7 +336,7 @@ const guardianProfile = {
   updated_at: "2026-07-10T09:00:00.000Z",
 };
 const guardianRelationship = {
-  id: "guardian-relationship-route-smoke",
+  id: "00000000-0000-4000-8000-000000000004",
   academy_id: academyId,
   contact_id: studentContactId,
   guardian_id: guardianProfile.id,
@@ -1833,10 +1833,12 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       academy_id?: string;
       relationship_id?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     const portalResponse = (value:unknown) => {
+      if(postedBody?.action==='guardian_portal_write_command')return {...value as Record<string,unknown>,actor_id:actorId,relationship_id:postedBody.relationship_id??'00000000-0000-4000-8000-000000000004',replayed:false,
+        [action==='guardian_send_message'?'message':action==='guardian_service_request_create'?'request':'preference']:{id:'00000000-0000-4000-8000-000000000009'}};
       if(postedBody?.action!=='guardian_portal_read_command'||!value||typeof value!=='object')return value;
       const record=value as Record<string,unknown>;
       const children=(record.children??[]) as Array<{relationship_id:string}>;
@@ -2221,7 +2223,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
 
     if (action in (options.actionOverrides ?? {})) return route.fulfill(json(portalResponse(options.actionOverrides?.[action])));
     if (action in actionResponse) return route.fulfill(json(portalResponse(actionResponse[action])));
-    return route.fulfill(json({}));
+    return route.fulfill(json(portalResponse({})));
   });
 };
 
@@ -4257,7 +4259,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await seedSessionCookie(page, "guardian-user");
     const otherAcademy = "guardian-other-academy";
     const otherGuardian = "guardian-other";
-    const otherChild = { ...guardianDashboard.children[0], academy_id: otherAcademy, relationship_id: "relationship-other", student: { ...guardianDashboard.children[0].student, id: "other-student", name: "Other Child" } };
+    const otherChild = { ...guardianDashboard.children[0], academy_id: otherAcademy, relationship_id: "00000000-0000-4000-8000-000000000005", student: { ...guardianDashboard.children[0].student, id: "other-student", name: "Other Child" } };
     let dashboard = { ...guardianDashboard, guardians: [guardianProfile, { ...guardianProfile, id: otherGuardian, academy_id: otherAcademy }], children: [guardianDashboard.children[0], otherChild], preferences: [...guardianDashboard.preferences, { ...guardianDashboard.preferences[0], id: "preference-other", guardian_id: otherGuardian, quiet_hours_start: "19:00" }] };
     let releaseFirst!: () => void;
     const firstBlocked = new Promise<void>((resolve) => { releaseFirst = resolve; });
@@ -4351,7 +4353,8 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
   test("parent message failures retain the draft for a successful retry", async ({ page }) => {
     await seedSessionCookie(page, "guardian-user");
-    await mockAcademyEdge(page, "guardian", { failActionAttempts: { guardian_send_message: 1 } });
+    const sent:Record<string,unknown>[]=[];
+    await mockAcademyEdge(page, "guardian", { failActionAttempts: { guardian_send_message: 1 },respond:async body=>{if(body.action==='guardian_send_message')sent.push(body);return undefined;} });
     await page.goto("/academy/parent");
     await page.getByRole("button", { name: "Messages", exact: true }).click();
     const form = page.locator("form").filter({ has: page.getByRole("heading", { name: "Message academy", exact: true }) });
@@ -4363,6 +4366,28 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await form.getByRole("button", { name: "Send message", exact: true }).click();
     await expect(page.getByText("Message sent to the academy.", { exact: true })).toBeVisible();
     await expect(draft).toHaveValue("");
+    expect(sent).toHaveLength(2);expect(sent[0].idempotency_key).toBe(sent[1].idempotency_key);
+  });
+
+  test('parent can load earlier messages without changing child or repeating a boundary',async({page})=>{
+    await seedSessionCookie(page,'guardian-user');
+    const recent={id:'00000000-0000-4000-8000-000000000020',body:'Owned recent message',direction:'academy_to_guardian',created_at:'2026-01-02T00:00:00Z'};
+    const older={...recent,id:'00000000-0000-4000-8000-000000000021',body:'Owned earlier message',created_at:'2026-01-01T00:00:00Z'};
+    const history:Record<string,unknown>[]=[];
+    await mockAcademyEdge(page,'guardian',{respond:async body=>{
+      if(body.action==='guardian_dashboard')return {...guardianDashboard,children:[{...guardianDashboard.children[0],messages:[recent],history_has_more:{messages:true}}]};
+      if(body.action==='guardian_history'){history.push(body);return {section:'messages',records:[older],has_more:false,cursor:null};}
+      return undefined;
+    }});
+    await page.setViewportSize({width:390,height:844});await page.goto('/academy/parent');
+    await page.getByRole('button',{name:'Messages',exact:true}).click();
+    await page.getByRole('button',{name:/Load more.*messages/i}).click();
+    await expect(page.getByText(/Owned earlier message/)).toBeVisible();
+    await expect(page.getByText(/Owned recent message/)).toHaveCount(1);
+    await expect(page.getByRole('button',{name:/Load more.*messages/i})).toHaveCount(0);
+    expect(history).toHaveLength(1);expect(history[0].after).toMatchObject({id:recent.id,section:'messages',relationship_id:guardianDashboard.children[0].relationship_id});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:test.info().outputPath('parent-history-phone.png'),fullPage:true});
   });
 
   test("guardian sees only consented child information in the parent portal", async ({ page }) => {

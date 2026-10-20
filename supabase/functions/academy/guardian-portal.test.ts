@@ -1,5 +1,5 @@
 import {assertEquals,assertRejects} from 'https://deno.land/std@0.224.0/assert/mod.ts';
-import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,claimGuardianFromTelegram,GuardianPortalError} from './guardian-portal.ts';
+import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,claimGuardianFromTelegram,writeGuardianPortal,readGuardianHistory,GuardianPortalError} from './guardian-portal.ts';
 import {signTelegramInitDataForTest} from '../_shared/telegram-init-data.ts';
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),academy=id(2),guardian=id(3),relationship=id(4);
@@ -67,4 +67,22 @@ Deno.test('unverified, expired and unconfirmed Telegram linking never reaches th
  }
  await assertRejects(()=>claimGuardianFromTelegram(never,actor,{token:'owned',init_data:'forged',confirm_access:true},''),GuardianPortalError);
  assertEquals(calls,0);
+});
+
+Deno.test('parent writes pin actor, permit only command fields and validate receipt identity',async()=>{
+ let called:Record<string,unknown>={};
+ const result={actor_id:actor,relationship_id:relationship,replayed:false,message:{id:id(20),body:'Owned message'}};
+ const service={rpc:(name:string,args:Record<string,unknown>)=>{called={name,...args};return Promise.resolve({data:result,error:null});}};
+ await writeGuardianPortal(service,actor,'guardian_send_message',{relationship_id:relationship,body:'Owned message',idempotency_key:'owned-key',actor_id:id(99),guardian_id:id(99)});
+ assertEquals(called,{name:'academy_parent_write_command',p_actor_id:actor,p_command:'guardian_send_message',p_payload:{relationship_id:relationship,body:'Owned message'},p_request_key:'owned-key'});
+ await assertRejects(()=>writeGuardianPortal(db({...result,actor_id:id(99)}),actor,'guardian_send_message',{idempotency_key:'owned-key'}),GuardianPortalError);
+ await assertRejects(()=>writeGuardianPortal(service,actor,'guardian_send_message',{}),GuardianPortalError);
+});
+Deno.test('history adapter preserves child and section cursors and rejects private/provider fields',async()=>{
+ const after={relationship_id:relationship,section:'messages',key:'2026-01-01',id:id(21)};
+ const result={actor_id:actor,relationship_id:relationship,section:'messages',records:[{id:id(20),body:'Owned message'}],has_more:true,cursor:after};
+ let called:Record<string,unknown>={};
+ await readGuardianHistory({rpc:(name:string,args:Record<string,unknown>)=>{called={name,...args};return Promise.resolve({data:result,error:null});}},actor,{relationship_id:relationship,section:'messages',after,user_id:id(99)});
+ assertEquals(called,{name:'academy_guardian_history_read',p_actor_id:actor,p_relationship_id:relationship,p_section:'messages',p_after:after});
+ for(const bad of [{...result,relationship_id:id(99)},{...result,cursor:{...after,section:'charges'}},{...result,records:[{id:id(20),target:'PRIVATE'}]}])await assertRejects(()=>readGuardianHistory(db(bad),actor,{relationship_id:relationship,section:'messages'}),GuardianPortalError);
 });

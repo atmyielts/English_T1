@@ -92,10 +92,107 @@ begin
   select academy,r,'academy_to_guardian','Owned historical message '||n,'sent' from generate_series(1,220)n;
  y:=public.academy_guardian_portal_read(actor,jsonb_build_object('relationship_id',r));
  perform pg_temp.guardian_check(jsonb_array_length(y->'selected_child'->'messages')=200 and(y->'selected_child'->'history_has_more'->>'messages')::boolean,'bounded history explicitly reports continuation');
+
+
+ if to_regprocedure('public.academy_guardian_history_read(uuid,uuid,text,jsonb)') is not null then
+  foreach section in array array['attendance','grades','homework','schedule','charges','messages','announcements','resources','progress_reports','notifications','requests','request_events'] loop
+   x:=public.academy_guardian_history_read(actor,r,section);
+   perform pg_temp.guardian_check(x->>'relationship_id'=r::text and x->>'section'=section and x::text not like '%PRIVATE%','history projection: '||section);
+  end loop;
+  insert into public.academy_guardian_messages(academy_id,relationship_id,direction,body,status,created_at)
+   select academy,r,'academy_to_guardian','Owned historical message '||n,'sent','2020-01-01'::timestamptz from generate_series(1,251)n;
+  declare seen uuid[]:='{}';cursor_value jsonb;page_count integer:=0;item jsonb;begin
+   loop
+    x:=public.academy_guardian_history_read(actor,r,'messages',cursor_value);
+    for item in select value from jsonb_array_elements(x->'records') loop
+     if(item->>'id')::uuid=any(seen) then raise exception 'History duplicated a boundary record';end if;
+     seen:=array_append(seen,(item->>'id')::uuid);
+    end loop;
+    page_count:=page_count+1;exit when not(x->>'has_more')::boolean;
+    cursor_value:=x->'cursor';if page_count>5 then raise exception 'History cursor did not terminate';end if;
+   end loop;
+   perform pg_temp.guardian_check(cardinality(seen)=472 and page_count=5,'all history pages include tied timestamps once');
+   begin perform public.academy_guardian_history_read(actor,r,'attendance',cursor_value);raise exception 'Cross-section cursor accepted';exception when invalid_parameter_value then null;end;
+   perform pg_temp.guardian_check(true,'history cursor cannot move between domains');
+   update public.academy_student_guardian_relationships set can_view_messages=false where id=r;
+   x:=public.academy_guardian_history_read(actor,r,'messages',cursor_value);
+   perform pg_temp.guardian_check(jsonb_array_length(x->'records')=0 and not(x->>'has_more')::boolean,'next history page rechecks domain consent');
+   update public.academy_student_guardian_relationships set can_view_messages=true where id=r;
+  end;
+  begin perform public.academy_guardian_history_read(other_actor,r,'messages');raise exception 'Foreign history accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(true,'foreign parent history denied');
+  perform pg_temp.guardian_check(not has_function_privilege('authenticated','public.academy_guardian_history_read(uuid,uuid,text,jsonb)','EXECUTE'),'history RPC service-only');
+ end if;
+
+ if to_regprocedure('public.academy_guardian_delivery_claim(uuid)') is not null then
+  declare notice_id uuid;claim jsonb;done jsonb;begin
+   insert into public.academy_notifications(academy_id,contact_id,guardian_id,relationship_id,type,event_key,channel,body,status)
+    values(academy,child_id,g,r,'student_absent','student_absent','inapp','Owned current-consent notice','queued') returning id into notice_id;
+   claim:=public.academy_guardian_delivery_claim(notice_id);
+   perform pg_temp.guardian_check(claim->>'outcome'='send' and claim->>'notification_id'=notice_id::text,'dispatch claims current consent once');
+   x:=public.academy_guardian_delivery_claim(notice_id);
+   perform pg_temp.guardian_check(x->>'outcome'='unchanged','concurrent worker cannot send same notice');
+   done:=public.academy_guardian_delivery_complete(notice_id,(claim->>'claim_token')::uuid,'sent','owned-provider-receipt');
+   x:=public.academy_guardian_delivery_complete(notice_id,(claim->>'claim_token')::uuid,'sent','owned-provider-receipt');
+   perform pg_temp.guardian_check(done->>'status'='sent' and(x->>'replayed')::boolean,'delivery completion replays safely');
+   perform pg_temp.guardian_check((select count(*) from public.academy_notification_delivery_attempts where notification_id=notice_id)=1,'one retained provider attempt');
+   insert into public.academy_notifications(academy_id,contact_id,guardian_id,relationship_id,type,event_key,channel,body,status)
+    values(academy,child_id,g,r,'student_absent','student_absent','inapp','Owned revoked notice','queued') returning id into notice_id;
+   update public.academy_student_guardian_relationships set consent_expires_at=clock_timestamp()-interval '1 second' where id=r;
+   x:=public.academy_guardian_delivery_claim(notice_id);
+   perform pg_temp.guardian_check(x->>'outcome'='skipped' and not(x?'body'),'expired dispatch withheld without payload');
+   update public.academy_student_guardian_relationships set consent_expires_at=null where id=r;
+   insert into public.academy_guardian_notification_preferences(academy_id,guardian_id,event_type,enabled) values(academy,g,'student_absent',false);
+   insert into public.academy_notifications(academy_id,contact_id,guardian_id,relationship_id,type,event_key,channel,body,status)
+    values(academy,child_id,g,r,'student_absent','student_absent','telegram','Owned opted-out notice','queued') returning id into notice_id;
+   x:=public.academy_guardian_delivery_claim(notice_id);
+   perform pg_temp.guardian_check(x->>'outcome'='skipped','dispatch rechecks current event preferences');
+   update public.academy_guardian_notification_preferences set enabled=true where academy_guardian_notification_preferences.academy_id=academy and guardian_id=g and event_type='student_absent';
+   insert into public.academy_notifications(academy_id,contact_id,guardian_id,relationship_id,type,event_key,channel,body,status)
+    values(academy,child_id,g,r,'student_absent','student_absent','telegram','Owned unknown provider result','queued') returning id into notice_id;
+   claim:=public.academy_guardian_delivery_claim(notice_id);
+   perform pg_temp.guardian_check(claim->>'target'='12345','destination derives from verified guardian, never student');
+   x:=public.academy_guardian_delivery_complete(notice_id,(claim->>'claim_token')::uuid,'unknown');
+   perform pg_temp.guardian_check(x->>'status'='failed' and public.academy_guardian_delivery_claim(notice_id)->>'outcome'='unchanged' and (select(policy_decision->>'requires_review')::boolean from public.academy_notifications where id=notice_id),'ambiguous provider outcome never auto-resends');
+   perform pg_temp.guardian_check(not has_function_privilege('authenticated','public.academy_guardian_delivery_claim(uuid)','EXECUTE'),'dispatch claims service-only');
+  end;
+ end if;
+ -- Execute new write commands against the same captured tables and real parents.
+ if to_regprocedure('public.academy_parent_write_command(uuid,text,jsonb,text)') is not null then
+  x:=public.academy_parent_write_command(actor,'guardian_send_message',jsonb_build_object('relationship_id',r,'body','Owned retry-safe parent message'),'owned-message');
+  y:=public.academy_parent_write_command(actor,'guardian_send_message',jsonb_build_object('relationship_id',r,'body','Owned retry-safe parent message'),'owned-message');
+  perform pg_temp.guardian_check(x->'message'->>'id'=y->'message'->>'id' and(y->>'replayed')::boolean,'message replay returns one durable message');
+  begin perform public.academy_parent_write_command(actor,'guardian_send_message',jsonb_build_object('relationship_id',r,'body','Changed payload'),'owned-message');raise exception 'Changed retry payload accepted';exception when unique_violation then null;end;
+  perform pg_temp.guardian_check(true,'retry identity cannot change its payload');
+  begin perform public.academy_parent_write_command(other_actor,'guardian_send_message',jsonb_build_object('relationship_id',r,'body','Foreign message'),'foreign');raise exception 'Foreign message accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(true,'foreign parent write denied');
+  begin perform public.academy_parent_write_command(actor,'guardian_send_message',jsonb_build_object('relationship_id',expired,'body','Expired message'),'expired');raise exception 'Expired write accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(true,'expired consent write denied');
+  update public.academy_student_guardian_relationships set can_message_academy=false where id=r;
+  begin perform public.academy_parent_write_command(actor,'guardian_send_message',jsonb_build_object('relationship_id',r,'body','Owned retry-safe parent message'),'owned-message');raise exception 'Revoked capability replay accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(true,'replay rechecks current messaging capability');
+  update public.academy_student_guardian_relationships set can_message_academy=true where id=r;
+  x:=public.academy_parent_write_command(actor,'guardian_service_request_create',jsonb_build_object('relationship_id',r,'request_type','support','subject','Owned request','details','Owned details','classroom_id',k),'owned-request');
+  y:=public.academy_parent_write_command(actor,'guardian_service_request_create',jsonb_build_object('relationship_id',r,'request_type','support','subject','Owned request','details','Owned details','classroom_id',k),'owned-request');
+  perform pg_temp.guardian_check(x->'request'->>'id'=y->'request'->>'id' and(y->>'replayed')::boolean,'request replay preserves original request');
+  perform pg_temp.guardian_check((select count(*) from public.academy_service_request_events evt where evt.request_id=(x->'request'->>'id')::uuid)=1,'request event is atomic and unique');
+  begin perform public.academy_parent_write_command(actor,'guardian_service_request_create',jsonb_build_object('relationship_id',r,'request_type','refund','subject','Forged charge','details','Denied','charge_id',gen_random_uuid()),'forged-charge');raise exception 'Forged charge accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(not exists(select 1 from public.academy_parent_command_receipts where actor_id=actor and request_key='forged-charge'),'foreign charge refusal leaves no receipt');
+  x:=public.academy_parent_write_command(actor,'guardian_update_preferences',jsonb_build_object('relationship_id',r,'guardian_id',g,'event_type','*','telegram_enabled',false),'owned-preference');
+  perform pg_temp.guardian_check((x->'preference'->>'telegram_enabled')::boolean=false,'parent can opt out atomically');
+  begin perform public.academy_parent_write_command(actor,'guardian_update_preferences',jsonb_build_object('relationship_id',r,'guardian_id',g,'timezone','Not/AZone'),'invalid-zone');raise exception 'Invalid timezone accepted';exception when invalid_parameter_value then null;end;
+  perform pg_temp.guardian_check(true,'invalid timezone is rejected');
+  update public.academy_student_guardian_relationships set consent_expires_at=clock_timestamp()-interval '1 second' where id=r;
+  begin perform public.academy_parent_write_command(actor,'guardian_update_preferences',jsonb_build_object('relationship_id',r,'guardian_id',g),'expired-preference');raise exception 'Expired preferences accepted';exception when insufficient_privilege then null;end;
+  perform pg_temp.guardian_check(true,'expired preferences denied');
+  update public.academy_student_guardian_relationships set consent_expires_at=null where id=r;
+  perform pg_temp.guardian_check(not has_table_privilege('authenticated','public.academy_parent_command_receipts','SELECT'),'parent receipts private');
+  perform pg_temp.guardian_check(not has_function_privilege('authenticated','public.academy_parent_write_command(uuid,text,jsonb,text)','EXECUTE'),'parent writes service-only');
+ end if;
  update public.academy_student_guardian_relationships set can_view_grades=false,can_view_payments=false,can_view_messages=false where id=r;
  x:=public.academy_guardian_portal_read(actor,jsonb_build_object('relationship_id',r));
  perform pg_temp.guardian_check(jsonb_array_length(x->'selected_child'->'charges')=0 and jsonb_array_length(x->'selected_child'->'grades')=0 and jsonb_array_length(x->'selected_child'->'messages')=0,'domain denial removes datasets');
- perform pg_temp.guardian_check(jsonb_array_length(x->'notifications')=1 and x->'notifications'->0->>'event_key'='student_absent','notification history follows changed domain flags');
+ perform pg_temp.guardian_check(jsonb_array_length(x->'notifications')=case when to_regprocedure('public.academy_guardian_delivery_claim(uuid)') is null then 1 else 2 end and x->'notifications'->0->>'event_key'='student_absent','notification history follows changed domain flags');
  x:=public.academy_guardian_portal_read(actor,'{"list_only":true}');
  perform pg_temp.guardian_check((x->'children'->0->>'details_loaded')::boolean=false and x->'selected_child'='null'::jsonb,'list-only page does not load child datasets');
  begin perform public.academy_guardian_portal_read(other_actor,jsonb_build_object('relationship_id',r));raise exception 'Foreign child was accepted';exception when insufficient_privilege then null;end;
