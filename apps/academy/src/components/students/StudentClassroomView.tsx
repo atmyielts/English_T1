@@ -515,6 +515,7 @@ export const StudentClassroomView = ({
 
   return (
     <section className="grid student-classroom">
+      {commercialAccount?.wallet_policies?.filter(policy=>policy.classroom_id===classroom.id&&policy.low_credit).map(policy=><p className="panel" role="status" key={policy.id}>{translate(policy.learning_paused?'Prepaid learning is paused at zero credit. Add credit or ask your academy to review the wallet policy.':'Prepaid credit is at or below the alert level.')}</p>)}
       <div className="panel student-classroom-header">
         <div className="row between wrap">
           <div>

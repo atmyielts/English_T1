@@ -1,0 +1,145 @@
+{
+  "recordedAt": "2026-10-20T16:53:50.716030+00:00",
+  "release": "https://github.com/atmyielts/English_T1/pull/260",
+  "reviewedCommit": "5b74e31717970e436391aa5ff4b1b6cf735b25e2",
+  "main": "710c17ff35aed5caa68fc05d09fb74f47409ce36",
+  "status": "deployed_custody_payroll_and_repaired_audio_acceptance_verified",
+  "edgeVersion": 90,
+  "installedMigrations": 228,
+  "protectedCI": 39455351997,
+  "postMergeCI": 39456573370,
+  "pages": 39456573401,
+  "automaticLiveSmoke": 39457608965,
+  "manualPostActivationSmoke": 39461160311,
+  "manualPostActivationSmokeStatus": "success",
+  "sourceReadback": {
+    "recordedAt": "2026-10-20T16:31:45.231Z",
+    "passed": true,
+    "edgeVersion": 90,
+    "matchedModules": 32,
+    "unchangedInstalledModules": 31,
+    "verifyJwt": false,
+    "reviewedCommit": "5b74e31717970e436391aa5ff4b1b6cf735b25e2"
+  },
+  "installedCommands": {
+    "checks": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-cash-handover.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      }
+    ],
+    "providerMessagesSent": false,
+    "fixtureRowsCommitted": false,
+    "passed": true,
+    "recordedAt": "2026-10-20T16:32:18.3159822Z",
+    "customerRowsChanged": false,
+    "installedMigrations": 228
+  },
+  "secretsChanged": false,
+  "acceptance": {
+    "cashCustody": true,
+    "physicalCashVsInternalCardClickBookEntries": true,
+    "actualPublishedLostReplyReloadOriginalReceipt": true,
+    "oneCustodyReceiverAndRetainedDifference": true,
+    "revokedReceiptReplayRefused": true,
+    "populatedMonthlyPayrollUi390And1440": true,
+    "scopedCashierOfficeUi390": true,
+    "cashierPayrollAndExpenseControlsPrivate": true,
+    "repairedAudio": {
+      "publishedUploadLostReplyAndReload": true,
+      "studentAndTeacherPlaybackDecodeAndStart": true,
+      "teacherFeedbackPinnedToReviewedAttempt": true,
+      "syntheticMicrophoneCancelStopUpload": true,
+      "finalAttemptStopsNewRecordingControls": true,
+      "pageErrors": 0,
+      "overflow": false
+    },
+    "runs": {
+      "firstApi": {
+        "artifact": "hosted/hosted-proof.json",
+        "overallPassed": false,
+        "checks": 74,
+        "cleanupChecks": 42,
+        "cleanupVerified": true,
+        "failure": "locator.waitFor: Error: strict mode violation: locator('form').filter({ has: getByRole('heading', { name: 'Open cashier shift', exact: true }) }).getByText('Previous closing count') resolved to 2 elements:\n    1) <p>…</p> aka getByText('Previous closing count: 590 UZS · 10/20/2026, 9:35:25 PM')\n    2) <p class=\"small muted\">Count the received cash. Explain any difference f…</p> aka getByText('Count the received cash.')\n\nCall log:\n\u001b[2m  - waiting for locator('form').filter({ has: getByRole('heading', { name: 'Open cashier shift', exact: true }) }).getByText('Previous closing count') to be visible\u001b[22m\n",
+        "customerRecordsChanged": false
+      },
+      "ownerUi": {
+        "artifact": "hosted-ui-two/hosted-proof.json",
+        "overallPassed": false,
+        "checks": 83,
+        "cleanupChecks": 42,
+        "cleanupVerified": true,
+        "failure": "locator.waitFor: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Cashier, economics, and payroll', exact: true }) to be visible\u001b[22m\n",
+        "customerRecordsChanged": false
+      },
+      "cashierUi": {
+        "artifact": "cashier-ui-four/hosted-proof.json",
+        "overallPassed": true,
+        "checks": 24,
+        "cleanupChecks": 42,
+        "cleanupVerified": true,
+        "failure": null,
+        "customerRecordsChanged": false
+      },
+      "audioUi": {
+        "artifact": "audio-hosted-six/hosted-proof.json",
+        "overallPassed": true,
+        "checks": 38,
+        "cleanupChecks": 60,
+        "cleanupVerified": true,
+        "failure": null,
+        "customerRecordsChanged": false
+      }
+    }
+  },
+  "limits": [
+    "The owner run passed 83 checks before trying the administrator URL with a cashier-only account. A separate correct /academy/office/operations run passed all 24 checks. Do not add their assertion counts or present the source run as wholly passed.",
+    "An earlier 74-check API run stopped on an ambiguous browser text selector; its source evidence and cleanup remain retained.",
+    "All card/Click payments and payroll payouts here are owned internal book entries; no external payment instrument or funds were exercised.",
+    "Browser audio proof is synthetic media. Telegram bot voice transport and owned provider destination/funded Click proof remain separate.",
+    "Pending stale-upload budget and cross-tab draft recovery follow-up is being qualified.",
+    "Global branch-dependent workspaces, root scope wording and all-service/retention acceptance remain open."
+  ],
+  "allCompletedHostedQaAccountsClosed": true,
+  "allCompletedHostedInstitutionsArchived": true,
+  "customerRecordsChanged": false,
+  "telegramEmailSmsDeliveriesAttempted": 0,
+  "realFundsUsed": false
+}

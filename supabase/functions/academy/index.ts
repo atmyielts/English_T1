@@ -2498,6 +2498,7 @@ const loadStudentClassroomEnrollment = async (
   userEmail: string | null,
   academyIdRaw: unknown,
   classroomIdRaw: unknown,
+  checkWallet = true,
 ): Promise<{ academy_id: string; classroom_id: string; contact_id: string }> => {
   const academyId = normalizeText(academyIdRaw, 64);
   const classroomId = normalizeText(classroomIdRaw, 64);
@@ -2516,6 +2517,10 @@ const loadStudentClassroomEnrollment = async (
   if (error) throw new Error(`Failed to verify classroom enrollment: ${error.message}`);
   if (!membership?.id || !["active", "completed"].includes(String(membership.status ?? "active"))) {
     throw new Error("No active enrollment found for this classroom");
+  }
+  if(checkWallet){const {data,error}=await sb.rpc('academy_wallet_learning_context',{p_academy:academyId,p_actor:userId,p_contact:contactId,p_classroom:classroomId});
+    if(error)throw new LegacyImportCommandError(error.code==='42501'?403:503,error.code==='42501'?'Learning is unavailable with your current enrollment or prepaid balance. Ask your academy to review access.':'Unable to check learning access. Try again.',error.code!=='42501');
+    if(data?.actor_id!==userId||data.learning_allowed!==true)throw new LegacyImportCommandError(503,'Unable to check learning access. Try again.',true);
   }
   return { academy_id: academyId, classroom_id: classroomId, contact_id: contactId };
 };
@@ -7222,7 +7227,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     if (requestedAction === "submit_quiz" && req.method === "POST") {
-      const enrollment = await loadStudentClassroomEnrollment(sb, userId, userEmail, body?.academy_id, body?.classroom_id);
+      const enrollment = await loadStudentClassroomEnrollment(sb, userId, userEmail, body?.academy_id, body?.classroom_id, false);
       const attemptId = normalizeText(body?.attempt_id ?? body?.id, 64);
       if (!attemptId) return json(400, { error: "attempt_id is required" });
       if (!isJsonObject(body?.answers)) return json(400, { error: "answers object is required" });
@@ -7527,7 +7532,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       const academyIds = Array.from(new Set(scopedContacts.map((c) => String(c.academy_id)).filter(Boolean)));
       const contactIds = scopedContacts.map((c) => String(c.id));
 
-      const [membershipsRes, offersRes, entRes, paymentsRes, subscriptionsRes, chargesRes, ledgerRes, balancesRes] = await Promise.all([
+      const [membershipsRes, offersRes, entRes, paymentsRes, subscriptionsRes, chargesRes, ledgerRes, balancesRes, walletRes] = await Promise.all([
         sb.from("academy_classroom_memberships").select("classroom_id, contact_id, academy_id").in("contact_id", contactIds).in("status", ["active", "completed"]).limit(2000),
         sb.from("academy_offers").select("id, academy_id, classroom_id, name, price_amount, currency, duration_days, description, is_active").in("academy_id", academyIds).eq("is_active", true).not("classroom_id", "is", null).limit(1000),
         sb.from("academy_entitlements").select("contact_id, resource_id, status, expires_at, resource_type").in("contact_id", contactIds).eq("resource_type", "classroom").limit(2000),
@@ -7536,9 +7541,10 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         sb.from("academy_charge_balances").select("id, academy_id, contact_id, subscription_id, branch_id, classroom_id, charge_number, cycle_key, charge_type, service_period_start, service_period_end, issued_on, due_on, original_amount, discount_amount, net_amount, currency, status, description, metadata, created_at, updated_at, allocated_amount, adjustment_amount, effective_amount, outstanding_amount, calculated_status, days_overdue, aging_bucket").in("contact_id", contactIds).order("issued_on", { ascending: false }).limit(5000),
         sb.from("academy_account_ledger_entries").select("id, academy_id, contact_id, subscription_id, charge_id, payment_id, entry_type, amount, currency, effective_at, reason, metadata, created_at").in("contact_id", contactIds).order("effective_at", { ascending: false }).limit(5000),
         sb.from("academy_account_balances").select("academy_id, contact_id, currency, balance, debits, credits, last_entry_at").in("contact_id", contactIds),
+        sb.from("academy_wallet_policy_status").select("id,academy_id,contact_id,classroom_id,currency,mode,warning_credit,balance,available_credit,low_credit,learning_paused,updated_at").in("contact_id",contactIds),
       ]);
 
-      const commercialError = [subscriptionsRes, chargesRes, ledgerRes, balancesRes].find((result) => result.error)?.error;
+      const commercialError = [subscriptionsRes, chargesRes, ledgerRes, balancesRes, walletRes].find((result) => result.error)?.error;
       if (commercialError) return json(500, { error: "Failed to load student commercial account", detail: commercialError.message });
 
       const memberships = (membershipsRes.data ?? []) as Array<Record<string, unknown>>;
@@ -7582,6 +7588,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           subscriptions: (subscriptionsRes.data ?? []).filter((row) => String(row.academy_id) === contactAcademyId && String(row.contact_id) === contactId),
           charges: (chargesRes.data ?? []).filter((row) => String(row.academy_id) === contactAcademyId && String(row.contact_id) === contactId),
           ledger_entries: (ledgerRes.data ?? []).filter((row) => String(row.academy_id) === contactAcademyId && String(row.contact_id) === contactId),
+          wallet_policies: (walletRes.data ?? []).filter((row) => String(row.academy_id) === contactAcademyId && String(row.contact_id) === contactId),
           balances: (balancesRes.data ?? []).filter((row) => String(row.academy_id) === contactAcademyId && String(row.contact_id) === contactId),
         };
       });

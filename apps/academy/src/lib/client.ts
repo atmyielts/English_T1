@@ -520,7 +520,9 @@ export type TeacherStudioAssignment = {
   updated_at?: string;
 };
 
+export type AcademyWalletPolicy={id:string;academy_id:string;contact_id:string;classroom_id:string;currency:string;mode:'off'|'alert'|'freeze';warning_credit:string|number;balance:string;available_credit:string;low_credit:boolean;learning_paused:boolean;reason?:string;updated_at:string};
 export type TeacherStudioStudentCommercialAccount = {
+  wallet_policies?:AcademyWalletPolicy[];
   academy_id: string;
   contact_id: string;
   subscriptions: AcademySubscription[];
@@ -1570,6 +1572,7 @@ export type AcademyPaymentReconciliation = {
 
 export type AcademyFinancialTotals=Record<string,Array<{currency:string;[key:string]:string}>> & {open_shifts?:number};
 export type AcademyCommercialCore = {
+  wallet_policies?:AcademyWalletPolicy[];
   totals?:AcademyFinancialTotals;has_more?:Record<string,boolean>;selected_branch_id?:string|null;
   generated_at: string; access?: TeacherStudioAccessProfile; pricing_plans: AcademyPricingPlan[];
   subscriptions: AcademySubscription[]; subscription_freezes: AcademySubscriptionFreeze[]; pricing_adjustments: AcademyPricingAdjustment[]; charges: AcademyCharge[];

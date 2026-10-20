@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-recording-recovery-and-resubmitted-grading",
+  "releaseId": "academy-prepaid-wallet-learning-policy",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261020230000_academy_audio_pending_recovery.sql"
+    "20261020235000_academy_wallet_learning_policy.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -22,7 +22,7 @@
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261020230000_academy_audio_pending_recovery.sql",
+    "migration:20261020235000_academy_wallet_learning_policy.sql",
     "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
     "secret:GMAIL_SMTP_APP_PASSWORD",
     "secret:GMAIL_SMTP_EMAIL",
@@ -30,17 +30,17 @@
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI and tracked Pages pass, use supabase db push --linked --include-all from the isolated verified 228-migration installed baseline. The dry run must list only the reviewed audio recovery migration. Retain every recording, reservation, request key, audit and institutional snapshot.",
-    "Capture Academy v90, compare the installed academy_audio_command body with its verified reviewed baseline and preserve all 32 installed runtime modules. Apply only reviewed grading-state index.ts hunks, prove patch reversal recreates the installed source, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. No unrelated, financial or proctor module changes.",
-    "All listed secrets are existing dependencies of the changed gateway index. Do not rotate or recreate the audio key and do not invent SMTP values. Configuration syntax only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-email>; supabase secrets set SITE_URL=<verified-site>. No secret write is part of this rollout.",
-    "Verify installed rollback-only audio budget and existing command fixtures, unchanged key/runtime dependency hashes, real owned stale-pending recovery and published cross-tab/teacher grading behavior. Close all owned accounts and archive their institutions after acceptance."
+    "After exact-head protected CI and tracked Pages, capture current Academy v91 and the 229-entry installed migration catalogue. Prepare an isolated baseline preserving all installed schema and source. supabase db push --linked --include-all must dry-run exactly the one reviewed wallet migration; do not include unrelated Assessment/Proctor migrations.",
+    "Compare the installed finance command/read/exact-json, audio-context and pending-counter function bodies with their reviewed predecessors before replacement. Preserve all 32 installed runtime modules. Apply only the reviewed index.ts hunks and finance-command.ts action-set change; prove index patch reversal reproduces installed source. Then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel with existing verify_jwt=false and handler authentication. No secret changes.",
+    "All listed secrets are existing dependencies of the changed index. Do not rotate or recreate the recording key and do not invent SMTP values. Configuration syntax only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-email>; supabase secrets set SITE_URL=<verified-site>. No secret write is part of this rollout.",
+    "Verify source readback, installed rollback-only wallet/financial/audio/parent fixtures, owned real published configuration lost-reply/reload, correct-currency credit restoration, no default freeze of paid courses, current mixed-role branch denial and safe account/institution cleanup. Existing subscriptions and vacations must not be changed by enabling the migration."
   ],
   "verification": [
-    "Full captured-schema qualification retains obsolete rows, excludes obsolete/archived/unassigned reservations from the pending count, preserves the three-current-upload limit and denies revoked teachers. Browser regressions cover frozen pending contents across tabs, definitive conflict recovery, capture controls during refresh, and resubmitted/returned statistics. Complete required product, lint, build, localization, Edge and browser checks; distinct installed/hosted evidence follows deployment."
+    "Fifteen complete installed-schema stages passed, including zero balance without opt-in, explicit freeze, exact large alert threshold, separate currencies, credit restoration, alert-only, teacher grading, immutable retries, injected receipt failure rollback, mixed branch admin/cashier scope, revoked replay and real account-lock credit/debit contention. Full Academy Edge and typecheck passed. Full browser run passed 191 cases with one optional skip before bounded wallet-list rendering; final focused wallet cases and protected full CI validate that UI. Required local prod/release/product/lint/build/localization checks and later installed/hosted evidence are distinct."
   ],
   "rollback": {
-    "pages": "Prior tracked Pages on main 710c17ff35aed5caa68fc05d09fb74f47409ce36.",
-    "edge": "Forward repair from the installed 32-module source capture; preserve financial handover, private audio and the retained encryption key.",
-    "migration": "Keep reservations/recordings and the pending index. Forward-repair the private counter or command if necessary; do not delete media/history or grant direct browser access."
+    "pages": "Prior tracked Pages on main 7a5f6d2823d46f08c6327bc81f602a0aa436d31f.",
+    "edge": "Forward repair from the freshly captured installed source, preserving audio encryption, receipt, parent, cash handover and unrelated proctor behavior.",
+    "migration": "No existing policy is enabled by this migration. Disable an owned configured policy through its audited command if needed; retain policies, finance receipts, media and ledger history. Forward-repair current checkpoints; never delete customer evidence."
   }
 }

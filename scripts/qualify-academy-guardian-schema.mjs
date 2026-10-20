@@ -262,6 +262,21 @@ try{
     await waitForLock('qa_cash_revoke_wait');await revoke.finish();await revoked;
     assert.equal(await sql('select count(*) from public.academy_cashier_shifts where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
   });
+
+  if(migrations.includes('20261020235000_academy_wallet_learning_policy.sql'))await check('wallet learning checkpoints observe committed credit and debt after real account-lock contention',async()=>{
+    const fixture=commandFixtures.find(row=>row.file==='scripts/fixtures/academy-wallet-policy.sql');assert(fixture);
+    await sql(fixture.source.replace('rollback;','commit;'),'postgres');
+    const ctx=JSON.parse(await sql("select jsonb_build_object('academy',p.academy_id,'actor',p.updated_by,'student',c.user_id,'contact',p.contact_id,'classroom',p.classroom_id) from public.academy_wallet_policies p join public.academy_contacts c on c.id=p.contact_id where p.reason='Owned prepaid agreement';",'postgres'));
+    const command=(kind,payload,key)=>'public.academy_finance_command('+q(ctx.academy)+'::uuid,'+q(ctx.actor)+'::uuid,'+q(kind)+','+q(JSON.stringify(payload))+'::jsonb,'+q(key)+')';
+    await sql('select '+command('set_wallet_policy',{contact_id:ctx.contact,classroom_id:ctx.classroom,mode:'freeze',currency:'UZS',warning_credit:'0',reason:'Owned concurrent wallet policy',account_credit_acknowledged:true},'owned-concurrent-wallet-policy')+';','postgres');
+    const learning='public.academy_wallet_learning_context('+q(ctx.academy)+'::uuid,'+q(ctx.student)+'::uuid,'+q(ctx.contact)+'::uuid,'+q(ctx.classroom)+'::uuid)';
+    const credit={contact_id:ctx.contact,entry_type:'account_credit',amount:'101',currency:'UZS',reason:'Owned concurrent credit'};
+    const incoming=await hold('select '+command('post_account_adjustment',credit,'owned-concurrent-wallet-credit'),'qa_wallet_credit_first');
+    const resumes=sql("set application_name='qa_wallet_credit_wait';select "+learning+';','postgres');resumes.catch(()=>{});await waitForLock('qa_wallet_credit_wait');await incoming.finish();const resumed=JSON.parse(await resumes);assert.equal(resumed.learning_allowed,true);
+    const outgoing=await hold('select '+command('post_account_adjustment',{...credit,entry_type:'debit_adjustment'},'owned-concurrent-wallet-debit'),'qa_wallet_debit_first');
+    const pauses=sql("set application_name='qa_wallet_debit_wait';do $$begin begin perform "+learning+";raise exception 'Concurrent zero-credit checkpoint passed';exception when insufficient_privilege then null;end;end;$$;",'postgres');pauses.catch(()=>{});await waitForLock('qa_wallet_debit_wait');await outgoing.finish();await pauses;
+    assert.equal(await sql('select learning_paused from public.academy_wallet_policy_status where academy_id='+q(ctx.academy)+'::uuid;','postgres'),'t');
+  });
   passed=true;
 }finally{
   for(const handle of held)await handle.finish(false).catch(()=>{});
