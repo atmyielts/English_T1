@@ -7,6 +7,33 @@ const url=String(import.meta.env.VITE_SUPABASE_URL??'').replace(/\/$/,''),anon=S
 const pending=new Map<string,string>();
 const tokens=new Map<string,string>();
 const invitationActions=new Set(['create_access_invitation','resend_access_invitation','revoke_access_invitation']);
+const financeReads=new Set(['commercial_core','operations_finance']);
+const financeActions=new Set(['create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment','record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','record_cash_movement','close_cashier_shift','record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
+type FinanceReplay={identity:string;action:string;payload:Record<string,unknown>;actor:string};
+const financeReplays=new Map<string,FinanceReplay>();
+const financeSlot=(academy:string,actor:string)=>JSON.stringify([actor,academy]);
+const financeStorageKey=(slot:string)=>'schood.finance.pending.v1:'+slot;
+function restoreFinance(academy:string,actor:string){
+ const slot=financeSlot(academy,actor);if(financeReplays.has(slot)||typeof sessionStorage==='undefined')return;
+ try{const raw=sessionStorage.getItem(financeStorageKey(slot));if(!raw||raw.length>65536)return;const value=JSON.parse(raw) as FinanceReplay;
+  if(value.actor===actor&&financeActions.has(value.action)&&value.payload&&typeof value.payload.idempotency_key==='string'&&typeof value.identity==='string')financeReplays.set(slot,value);
+ }catch{/* Server authority remains mandatory; unreadable local data is not sent. */}
+}
+function saveFinance(slot:string,value:FinanceReplay){
+ if(typeof sessionStorage!=='undefined'){
+  try{sessionStorage.setItem(financeStorageKey(slot),JSON.stringify(value));}catch{throw new StaffRequestError('Your browser could not preserve this financial action. Enable session storage and retry.',400);}
+ }
+ financeReplays.set(slot,value);
+}
+function clearFinance(slot:string){financeReplays.delete(slot);if(typeof sessionStorage!=='undefined')try{sessionStorage.removeItem(financeStorageKey(slot));}catch{/* A retained completed receipt can safely replay. */}}
+export const hasPendingFinance=(academy:string,actor:string)=>{restoreFinance(academy,actor);return financeReplays.has(financeSlot(academy,actor));};
+export function pendingFinanceReview(academy:string,actor:string){restoreFinance(academy,actor);const value=financeReplays.get(financeSlot(academy,actor));return value?{action:value.action.replaceAll('_',' '),amount:value.payload.amount??value.payload.opening_balance??value.payload.counted_closing_balance,currency:String(value.payload.currency??'UZS')}:null;}
+export async function retryFinanceRequest(academy:string,actor:string){
+ restoreFinance(academy,actor);
+ const entry=financeReplays.get(financeSlot(academy,actor));
+ if(!entry)throw new StaffRequestError('There is no pending financial action. Refresh the records.',409);
+ return staffRequest<Record<string,unknown>>(academy,entry.action,entry.payload,actor);
+}
 const guardianActions=new Set(['create_guardian_relationship','issue_guardian_link','revoke_guardian_relationship','upsert_guardian_preferences','send_guardian_message','queue_guardian_notification']);
 const importActions=new Set(['create_import_job','add_import_row','commit_import_job','rollback_import_job']);
 const linkActions=new Set(['invitation_status','accept_access_invitation']);
@@ -23,18 +50,26 @@ async function sessionFor(actor?:string,refresh=false){
 export async function staffRequest<T>(academyId:string,action:string,payload:Record<string,unknown>,expectedActor?:string):Promise<T>{
  if(expectedActor==='')throw new StaffRequestError('Sign in again to continue.',401);
  const initial=await sessionFor(expectedActor),actor=initial.user.id;
+ if(financeActions.has(action))restoreFinance(academyId,actor);
  const identity=JSON.stringify([actor,academyId,action,payload]);
- const requestKey=typeof payload.idempotency_key==='string'?payload.idempotency_key:pending.get(identity)??crypto.randomUUID();
+ const requestKey=typeof payload.idempotency_key==='string'?payload.idempotency_key:(financeActions.has(action)?financeReplays.get(financeSlot(academyId,actor))?.payload.idempotency_key as string|undefined:undefined)??pending.get(identity)??crypto.randomUUID();
  pending.set(identity,requestKey);
  let deliveryToken:string|undefined;
  if(action==='create_access_invitation'||action==='resend_access_invitation'){
   deliveryToken=tokens.get(identity)??[...crypto.getRandomValues(new Uint8Array(32))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
   tokens.set(identity,deliveryToken);
  }
- const body=JSON.stringify({...payload,action:guardianActions.has(action)?'staff_guardian_command':action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'legacy_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
-  academy_id:academyId,idempotency_key:requestKey,...(deliveryToken?{_delivery_token:deliveryToken}:{})});
+ const body=JSON.stringify(Object.fromEntries(Object.entries({...payload,action:financeReads.has(action)?'finance_read_command':financeActions.has(action)?'finance_command':guardianActions.has(action)?'staff_guardian_command':action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'legacy_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
+  academy_id:academyId,idempotency_key:requestKey,...(deliveryToken?{_delivery_token:deliveryToken}:{})}).sort(([a],[b])=>a.localeCompare(b))));
  const confirmationError=portalReadActions.has(action)?'We could not load your parent portal. Try again.':linkActions.has(action)?'We could not confirm your account link. Open the invitation again.':'We could not confirm this change. Try the same change again.';
  if(new TextEncoder().encode(body).byteLength>65536)throw new StaffRequestError('There is too much information to save at once. Save fewer changes.',413);
+ const slot=financeSlot(academyId,actor);
+ if(financeActions.has(action)){
+  restoreFinance(academyId,actor);
+  const previous=financeReplays.get(slot);
+  if(previous&&(previous.action!==action||(payload.idempotency_key!=null&&payload.idempotency_key!==previous.payload.idempotency_key)||JSON.stringify({...previous.payload,idempotency_key:undefined})!==JSON.stringify({...payload,idempotency_key:undefined})))throw new StaffRequestError('Confirm the pending financial action before starting another.',409);
+  saveFinance(slot,{identity:previous?.identity??identity,action,payload:structuredClone({...payload,idempotency_key:requestKey}),actor});
+ }
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
  try{
   const send=async(refresh=false)=>{
@@ -66,16 +101,18 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
    &&(row.access_status==null||['invited','active','trial','paused','pending','stopped'].includes(row.access_status))
    &&(action!=='accept_access_invitation'||row.status==='accepted'&&row.accepted_by===actor)
    &&!['token_hash','metadata','delivery_attempt_id','delivery_lease_until','delivery_actor_id'].some(field=>Object.hasOwn(row,field));
-  if(guardianActions.has(action)?value.actor_id!==actor||!row||typeof row.id!=='string':action==='guardian_claim_link'?!guardianLinkValid:portalReadActions.has(action)?!portalValid:importActions.has(action)?!importValid:action==='remove_staff'?value.ok!==true:(!row||(!linkActions.has(action)&&row.academy_id!==academyId)||(linkActions.has(action)&&!linkValid)||typeof row.id!=='string'
+  if(financeReads.has(action)?value.actor_id!==actor||value.schema_version!==1||!value.totals||!value.has_more:financeActions.has(action)?value.actor_id!==actor||value.request_key!==requestKey||typeof value.replayed!=='boolean':guardianActions.has(action)?value.actor_id!==actor||!row||typeof row.id!=='string':action==='guardian_claim_link'?!guardianLinkValid:portalReadActions.has(action)?!portalValid:importActions.has(action)?!importValid:action==='remove_staff'?value.ok!==true:(!row||(!linkActions.has(action)&&row.academy_id!==academyId)||(linkActions.has(action)&&!linkValid)||typeof row.id!=='string'
     ||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(row.id))&&!legacyRevoke)
    throw new StaffRequestError(confirmationError,503,true);
   if(invitationActions.has(action)&&value.retryable===true)throw new StaffRequestError('Invitation is saved, but email delivery is unconfirmed. Retry the same invitation.',202,true);
   await sessionFor(actor); // Do not publish the previous account's result after a switch.
   pending.delete(identity);
+  if(financeActions.has(action)){pending.delete(financeReplays.get(slot)?.identity??identity);clearFinance(slot);}
   tokens.delete(identity);
   return value as T;
  }catch(error){
   if(error instanceof StaffRequestError){
+   if(financeActions.has(action)&&!error.retryable&&error.message!=='Your account changed. Reopen this page.'){pending.delete(financeReplays.get(slot)?.identity??identity);pending.delete(identity);clearFinance(slot);}
    if(invitationActions.has(action)&&!error.retryable){pending.delete(identity);tokens.delete(identity);}
    throw error;
   }

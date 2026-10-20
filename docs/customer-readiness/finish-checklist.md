@@ -34,6 +34,18 @@ or charge was performed. See `2026-10-20-parent-commands-production.json`.
 This advances rows 5/6; their complete provider/payment acceptance and the other
 operational, authority, visual and performance rows below remain open.
 
+## Resumed legacy and staff-parent release
+
+PR256 is deployed on main `9d7e15c0303cfa0063222651b252876883619951`, Academy
+v86, 221 installed migrations. Atomic non-staff legacy imports/retained recovery,
+current confirmed-email student binding, six staff-parent commands/receipts and optional
+verified-phone SMS transport are released. Required/main CI, tracked Pages and live
+smoke passed. Ten complete-schema stages and four installed rollback-only fixtures
+passed. Hosted acceptance passed 251 checks with 36 cleanup checks; both accounts
+are closed and institutional evidence archived. The complete local cross-service
+`npm test` passed. Real provider/payment acceptance remains open. Broader financial,
+operational and browser acceptance continues; see the release closeout's current list.
+
 ## The 12 requested Academy additions
 
 Final deployed acceptance is still open for each row. Close each row with its

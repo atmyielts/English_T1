@@ -5453,7 +5453,7 @@ const App = () => {
           ) : null}
 
           {officeView === 'commercial' && officeCanOpen('commercial') ? (
-            <CommercialCoreView academyId={academyId} formatDate={formatDate} />
+            <CommercialCoreView key={`${academyId}:${me?.user.id??''}`} actorId={me?.user.id??''} academyId={academyId} formatDate={formatDate} />
           ) : null}
 
           {officeView === 'academic' && officeCanOpen('academic') ? (
@@ -5484,7 +5484,7 @@ const App = () => {
           ) : null}
 
           {officeView === 'operations' && officeCanOpen('operations') ? (
-            <OperationsFinanceView academyId={academyId} formatDate={formatDate} />
+            <OperationsFinanceView key={`${academyId}:${me?.user.id??''}`} actorId={me?.user.id??''} academyId={academyId} formatDate={formatDate} />
           ) : null}
         </LazyRouteBoundary>
 

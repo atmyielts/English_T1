@@ -1832,11 +1832,14 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       command?: string;
       academy_id?: string;
       relationship_id?: string;
+      idempotency_key?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['finance_read_command','finance_command','staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     const portalResponse = (value:unknown) => {
+      if(postedBody?.action==='finance_read_command')return {schema_version:1,totals:{},has_more:{},...value as Record<string,unknown>,actor_id:actorId};
+      if(postedBody?.action==='finance_command')return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,replayed:false};
       if(postedBody?.action==='guardian_portal_write_command')return {...value as Record<string,unknown>,actor_id:actorId,relationship_id:postedBody.relationship_id??'00000000-0000-4000-8000-000000000004',replayed:false,
         [action==='guardian_send_message'?'message':action==='guardian_service_request_create'?'request':'preference']:{id:'00000000-0000-4000-8000-000000000009'}};
       if(postedBody?.action!=='guardian_portal_read_command'||!value||typeof value!=='object')return value;
@@ -5902,4 +5905,32 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     expect(geometry.overflow).toBeLessThanOrEqual(1);
     expect(Math.abs(geometry.fixedNavBottom - geometry.viewportBottom)).toBeLessThanOrEqual(1);
   });
+});
+
+
+test('financial pending action survives reload with its exact amount and original receipt key',async({page})=>{
+ const commands:Record<string,unknown>[]=[];await seedSessionCookie(page,'owner-user');
+ await mockAcademyEdge(page,'owner',{failActionAttempts:{open_cashier_shift:1},respond:async body=>{
+  if(body.action==='open_cashier_shift'){commands.push(body);if(commands.length>1)return {cashier_shift:{id:'owned-recovered-shift'}};}
+  return undefined;
+ }});
+ await page.goto('/academy/admin/operations?academy_id='+academyId);
+ const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Open cashier shift',exact:true})});
+ await form.getByLabel('Opening balance',{exact:true}).fill('9007199254740993');await form.getByRole('button',{name:'Open shift',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Retry pending action',exact:true})).toBeVisible();
+ await expect(form.getByLabel('Opening balance',{exact:true})).toBeDisabled();
+ await page.reload();await expect(page.getByRole('button',{name:'Retry pending action',exact:true})).toBeVisible();
+ await expect(page.getByText('open cashier shift · 9,007,199,254,740,993 UZS',{exact:true})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByRole('button',{name:'Retry pending action',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Retry pending action',exact:true})).toHaveCount(0);
+ expect(commands).toHaveLength(2);expect(commands[1]).toEqual(commands[0]);expect(commands[0].opening_balance).toBe('9007199254740993');
+});
+
+test('financial server totals keep exact amounts and currencies separate on phone',async({page})=>{
+ await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{commercial_core:{...commercialCore,totals:{account_balances:[{currency:'UZS',balance:'9007199254740993',available_credit:'0'},{currency:'USD',balance:'25',available_credit:'0'}]},has_more:{contacts:true}}}});
+ await page.setViewportSize({width:390,height:844});await page.goto('/academy/admin/commercial?academy_id='+academyId);
+ await expect(page.getByText('9,007,199,254,740,993 UZS · 25 USD',{exact:true})).toBeVisible();
+ await expect(page.getByText('Lists show the latest 500 records. Totals include all permitted records.',{exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

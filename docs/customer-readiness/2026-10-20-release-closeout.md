@@ -50,12 +50,47 @@ this does not reproduce the intermittent same-tab reload symptom.
 Evidence: `2026-10-20-parent-commands-production.json`; native qualification:
 `2026-10-20-parent-commands-schema.json`.
 
-## What remains
+## Resumed legacy and staff-parent release
 
-1. Seven other legacy import types need atomic changes and retained correction. Finish the remaining shared-resource authorization and student email auto-linking checks.
-2. Finish remaining staff-originated guardian writes/shared-resource authority and configured SMS delivery; qualify actual Telegram/email delivery and Click renewals/signatures. Parent-originated writes, history paging and the Academy worker delivery claim are released. No external provider delivery or real charge was used for either release proof.
-3. Close the remaining real-user acceptance for room scheduling, wallet/pauses, quick leads, Telegram attendance, audio feedback, payroll, cashier handover, branch switching and retention analytics. These have existing implementation; see the exact acceptance rows in `finish-checklist.md`. The importer now has hosted 201-student API proof, with final signed-in file/UI acceptance still separate.
-4. Finish signed-in visual acceptance against the supplied reference, populated browser loading measurements, the reported landing reload/CSP reproduction, and the remaining all-service audit.
-5. Assessment/proctor development remains with the other agent.
+PR [256](https://github.com/atmyielts/English_T1/pull/256) is live on main
+`9d7e15c0303cfa0063222651b252876883619951`, Academy Edge v86, with 221
+installed migrations. Seven non-staff legacy import types now have bounded atomic
+commit and retained recovery. Staff-parent creation, links, revocation, preferences,
+messages and notices have current authority/consent checks and durable receipts.
+Student auto-linking uses current confirmed Auth email under account locks.
+Optional SMS transport requires a current confirmed phone and configured gateway.
 
-The original broad audit remains incomplete. The earlier stop was superseded by the user's request to resume. The remaining items above have not been accepted as complete; assessment/proctor work retains its separate ownership.
+Required CI, post-merge CI, tracked Pages and executed live smoke passed. Downloaded
+production source matches all 29 prepared modules; 25 installed modules were retained.
+Ten complete-schema qualification stages passed, including native expiry/revocation
+contention, and four installed command fixtures passed with their transactions rolled
+back. Hosted acceptance passed 251 checks; 36 cleanup checks closed both QA accounts
+and archived the institution with immutable evidence retained. Signed-in parent phone
+and desktop renders were captured. The complete cross-service `npm test` command
+passed locally. These checks do not establish real provider delivery or payment.
+
+Evidence: `2026-10-20-remaining-commands-production.json` and the matching schema JSON.
+
+## Work continuing after this release
+
+1. Finish other shared-resource authority and financial commands. Payroll qualification
+   found that percentage compensation uses issued invoices rather than collected tuition;
+   a correction, base-plus-student rule and branch/receipt tests are being developed in
+   the isolated operational worktree. Legacy source/effect history is retained; changed,
+   used, older unproven effects and lead/attendance operational facts require explicit
+   audited review instead of deletion.
+2. Qualify actual Telegram/email/SMS receipt and Click renewals/signatures. Installed
+   secrets have Telegram/Click but no Academy SMS gateway or Gmail SMTP credentials.
+   Dummy accounts do not supply a real phone, Telegram chat or payment instrument.
+3. Complete all twelve requested operational rows in `finish-checklist.md`, including
+   real 200+ file/UI acceptance, room scheduling, wallet/vacation/zero-balance behavior,
+   quick leads, teacher attendance, voice recording/audio feedback, payroll, cashier,
+   branch isolation and retention semantics. Source existence alone is not acceptance.
+4. Finish populated signed-in performance/design and all-service navigation acceptance.
+   Public browser attempts reproduced intermittent transport failures before page load;
+   these have not been identified as CSP failures. No unsafe-eval workaround or global
+   Cloudflare protocol change was made.
+5. Assessment/proctor development remains with its other owner.
+
+The user explicitly requested continuation through the remaining work. This is an
+intermediate release record, not a stop or a claim that the full audit is complete.

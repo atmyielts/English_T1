@@ -1,0 +1,15 @@
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import {transformSync} from 'esbuild';
+import assert from 'node:assert/strict';
+const source=readFileSync(new URL('../apps/academy/src/lib/financialMoney.ts',import.meta.url),'utf8');
+const module={exports:{}};
+runInNewContext(transformSync(source,{loader:'ts',format:'cjs',target:'es2022'}).code,{module,exports:module.exports,Intl,require:()=>({getLocaleTag:()=> 'en-US'})});
+const {exactUnits,financialMoney,financialTotals,sumCurrencies}=module.exports;
+assert.equal(financialMoney('9007199254740993','UZS'),'9,007,199,254,740,993 UZS');
+assert.equal(financialMoney('-9007199254740993','UZS'),'-9,007,199,254,740,993 UZS');
+assert.equal(exactUnits('9007199254740993')-exactUnits('9007199254740992'),1n);
+assert.throws(()=>exactUnits(9007199254740992));
+assert.equal(financialTotals([{currency:'UZS',balance:'9007199254740993'},{currency:'USD',balance:'25'}],'balance'),'9,007,199,254,740,993 UZS · 25 USD');
+assert.equal(financialTotals(sumCurrencies([{currency:'UZS',amount:'9007199254740993'},{currency:'UZS',amount:'2'},{currency:'USD',amount:'25'}],'amount'),'amount'),'9,007,199,254,740,995 UZS · 25 USD');
+console.log(JSON.stringify({suite:'exact-institutional-money-and-currencies',checks:6,productionTouched:false}));

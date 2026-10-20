@@ -8,10 +8,10 @@ const compiled=transformSync(source,{loader:'ts',format:'cjs',target:'es2022',de
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),other=id(2),academy=id(3);
 const session=who=>({user:{id:who},access_token:'owned.'+Buffer.from(JSON.stringify({sub:who})).toString('base64url')+'.fixture'});
-function client(initial,refreshed=initial,respond=()=>new Response('{}')){
+function client(initial,refreshed=initial,respond=()=>new Response('{}'),sessionStorage=undefined){
  const calls=[],module={exports:{}};let current=initial;
  runInNewContext(compiled,{module,exports:module.exports,crypto:webcrypto,require:()=>({supabase:{auth:{getSession:async()=>({data:{session:current}}),refreshSession:async()=>({data:{session:refreshed}})}}}),
-  atob,TextEncoder,AbortController,setTimeout,clearTimeout,fetch:async(...args)=>{calls.push(args);return respond(...args);}});
+  sessionStorage,atob,TextEncoder,structuredClone,AbortController,setTimeout,clearTimeout,fetch:async(...args)=>{calls.push(args);return respond(...args);}});
  return {...module.exports,calls,switchTo:who=>{current=session(who);}};
 }
 let checks=0;
@@ -97,4 +97,32 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  const refreshed=client(session(actor),session(other),()=>new Response('{}',{status:401}));
  await assert.rejects(()=>refreshed.staffRequest('','guardian_dashboard',{},actor),e=>e.status===409);assert.equal(refreshed.calls.length,1);checks++;
 }
+
+{
+ let count=0;const c=client(session(actor),undefined,(_url,request)=>{
+  if(count++===0)throw Error('Owned financial response loss');const body=JSON.parse(request.body);return new Response(JSON.stringify({actor_id:actor,request_key:body.idempotency_key,replayed:true,cash_movement:{id:id(7)}}));
+ });
+ const payload={shift_id:id(4),direction:'outgoing',amount:500,idempotency_key:'owned-frozen-finance'};
+ await assert.rejects(()=>c.staffRequest(academy,'record_cash_movement',payload,actor),e=>e.status===503&&e.retryable);
+ assert.equal(c.hasPendingFinance(academy,actor),true);checks++;
+ await assert.rejects(()=>c.staffRequest(academy,'record_cash_movement',{...payload,amount:700},actor),e=>e.status===409);assert.equal(c.calls.length,1);checks++;
+ await assert.rejects(()=>c.staffRequest(academy,'record_cash_movement',{...payload,idempotency_key:'new-random-key'},actor),e=>e.status===409);assert.equal(c.calls.length,1);checks++;
+ await c.retryFinanceRequest(academy,actor);assert.deepEqual(JSON.parse(c.calls[1][1].body),JSON.parse(c.calls[0][1].body));assert.equal(c.hasPendingFinance(academy,actor),false);checks++;
+}
+{
+ const c=client(session(actor),undefined,()=>{throw Error('Owned uncertain action');});
+ await assert.rejects(()=>c.staffRequest(academy,'open_cashier_shift',{cashbox_id:id(4),opening_balance:100},actor));
+ c.switchTo(other);await assert.rejects(()=>c.retryFinanceRequest(academy,actor),e=>e.status===409);assert.equal(c.calls.length,1);checks++;
+}
 console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks,productionTouched:false}));
+
+{
+ const storage=new Map(),sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
+ const first=client(session(actor),undefined,()=>{throw Error('Owned lost response');},sessionStorage);
+ await assert.rejects(()=>first.staffRequest(academy,'open_cashier_shift',{cashbox_id:id(70),opening_balance:'9007199254740993'},actor));
+ const frozen=first.calls[0][1].body;
+ const reloaded=client(session(actor),undefined,(_url,request)=>{const body=JSON.parse(request.body);return new Response(JSON.stringify({actor_id:actor,request_key:body.idempotency_key,replayed:true}));},sessionStorage);
+ assert.equal(reloaded.hasPendingFinance(academy,actor),true);assert.equal(reloaded.hasPendingFinance(academy,other),false);
+ await reloaded.retryFinanceRequest(academy,actor);assert.equal(reloaded.calls[0][1].body,frozen);assert.equal(storage.size,0);checks++;
+}
+console.log(JSON.stringify({suite:'finance-reload-recovery',checks}));

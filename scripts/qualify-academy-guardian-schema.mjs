@@ -179,6 +179,23 @@ try{
     assert.equal(await sql('select count(*) from public.academy_contacts where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before,'Expiry rolls back target and receipt together');
     assert.equal(await sql('select count(*) from public.academy_import_effects where import_job_id='+q(job)+'::uuid;','postgres'),'0');
   });
+  if(migrations.includes('20261020201000_academy_financial_command_authority.sql'))await check('financial business rows and receipts roll back after blocked expiry and current revocation',async()=>{
+    const ctx=JSON.parse(await sql("select jsonb_build_object('actor',g.user_id,'academy',r.academy_id,'branch',c.primary_branch_id) from public.academy_student_guardian_relationships r join public.academy_guardians g on g.id=r.guardian_id join public.academy_contacts c on c.id=r.contact_id where g.user_id is not null and c.primary_branch_id is not null order by r.id limit 1;",'postgres'));
+    const grants=' where academy_id='+q(ctx.academy)+'::uuid and user_id='+q(ctx.actor)+'::uuid';
+    await sql("update public.academy_role_grants set status='active',expires_at=clock_timestamp()+interval '30 minutes'"+grants+';','postgres');
+    const call="public.academy_finance_command("+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'create_cashbox',"+q(JSON.stringify({branch_id:ctx.branch,name:'Owned contended finance box',currency:'UZS'}))+"::jsonb,'owned-finance-contention')";
+    const denied="do $$begin begin perform "+call+";raise exception 'Expected current finance refusal';exception when insufficient_privilege then null;end;end;$$;";
+    const revoke=await hold("update public.academy_role_grants set status='revoked'"+grants,'qa_finance_revoke_first');
+    const blocked=sql("set application_name='qa_finance_revoke_wait';"+denied,'postgres');blocked.catch(()=>{});
+    await waitForLock('qa_finance_revoke_wait');await revoke.finish();await blocked;
+    await sql("update public.academy_role_grants set status='active',expires_at=clock_timestamp()+interval '2 seconds'"+grants+';','postgres');
+    const before=await sql('select count(*) from public.academy_cashboxes where academy_id='+q(ctx.academy)+'::uuid;','postgres');
+    const barrier=await hold('lock table public.academy_finance_command_receipts in share mode','qa_finance_receipt_expiry_barrier');
+    const expires=sql("set application_name='qa_finance_receipt_expiry_wait';"+denied,'postgres');expires.catch(()=>{});
+    await waitForLock('qa_finance_receipt_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await expires;
+    assert.equal(await sql('select count(*) from public.academy_cashboxes where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
+    assert.equal(await sql('select count(*) from public.academy_finance_command_receipts where academy_id='+q(ctx.academy)+"::uuid and request_key='owned-finance-contention';",'postgres'),'0');
+  });
   passed=true;
 }finally{
   for(const handle of held)await handle.finish(false).catch(()=>{});
