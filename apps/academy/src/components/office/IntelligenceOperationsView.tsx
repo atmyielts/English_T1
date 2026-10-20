@@ -1361,7 +1361,7 @@ export function IntelligenceOperationsView({ academyId, actorId, formatDate }: P
                                       confirm_commit: true,
                                     }, actorId),
                                   (result) => n((result as Record<string,unknown>)?.pending_rows) > 0
-                                    ? 'Import batch saved. Continue to import the remaining rows.'
+                                    ? translate('Import batch saved. Continue to import the remaining rows.')
                                     : n((result as Record<string,unknown>)?.failed_rows) > 0
                                       ? 'Valid rows were saved. Review the invalid rows before continuing.'
                                       : 'Import saved.',
@@ -1385,9 +1385,9 @@ export function IntelligenceOperationsView({ academyId, actorId, formatDate }: P
                                         "Operator-requested rollback from import workspace",
                                     }, actorId),
                                   (result) => n((result as Record<string,unknown>)?.recovery_pending) > 0
-                                    ? 'Recovery batch saved. Continue to recover the remaining rows.'
+                                    ? translate('Recovery batch saved. Continue to recover the remaining rows.')
                                     : n((result as Record<string,unknown>)?.manual_required) > 0
-                                      ? 'Used or changed records were retained for review.'
+                                      ? translate('Used or changed records were retained for review.')
                                       : 'Import changes undone. Check the updated results below.',
                                 )
                               }

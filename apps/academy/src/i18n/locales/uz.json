@@ -2819,5 +2819,8 @@
   "We could not confirm your account link. Check the invitation again.": "Hisobingiz bog‘langanini tasdiqlay olmadik. Taklifni qayta tekshiring.",
   "Choose a valid invitation list.": "Kerakli takliflar ro‘yxatini tanlang.",
   "The invitation list did not finish loading. Refresh it.": "Takliflar ro‘yxati to‘liq yuklanmadi. Uni yangilang.",
-  "Where they can work": "Qayerda ishlashi mumkin"
+  "Where they can work": "Qayerda ishlashi mumkin",
+  "Import batch saved. Continue to import the remaining rows.": "Import qismi saqlandi. Qolgan qatorlarni import qilishni davom ettiring.",
+  "Recovery batch saved. Continue to recover the remaining rows.": "Qayta tiklash qismi saqlandi. Qolgan qatorlarni tiklashni davom ettiring.",
+  "Used or changed records were retained for review.": "Ishlatilgan yoki o‘zgartirilgan yozuvlar tekshirish uchun saqlandi."
 }

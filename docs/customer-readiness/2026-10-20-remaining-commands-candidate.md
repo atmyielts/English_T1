@@ -1,0 +1,15 @@
+# Remaining Academy commands: reviewed candidate
+
+The user resumed the complete remaining scope and authorized safe deployment. This candidate advances the import, current-identity and staff-parent gaps; broader acceptance continues after activation.
+
+Seven non-staff legacy import types use one service-only database command. Each bounded 25-row commit saves business state, immutable source/effects and audit together. Replays recheck current capabilities with their own grant scopes. Recovery never deletes records: unused contacts/parents/groups/enrollments are retired, safe fields restored, and exact opening balances compensated. Changed or used records, historical effects without provenance, and lead/attendance operational facts remain explicitly `manual_required` for audited correction.
+
+Staff parent creation, invitation, revocation, preferences, messaging and notification queueing hold current staff authority and child/parent locks through writes, audit and durable retry receipts. Shared parent preferences require academy-wide management. Student email linking reads the current confirmed Auth email under account locks; unconfirmed/closed accounts cannot bind historical students, and paused status remains intact.
+
+SMS dispatch supports an optional HTTPS gateway only for the current confirmed Auth phone matching the verified parent. The installed secret inventory has no Academy SMS or Gmail SMTP credentials. A successful SMS gateway response proves provider acceptance, not handset delivery. No external message or real payment is claimed from synthetic tests.
+
+Full captured-schema qualification passed ten stages, including all seven import types, receipt-failure rollback, 26-row resumption/recovery, later edits, exact values beyond JavaScript safe integers, all six staff-parent actions, current email binding, and native revocation/expiry contention. All owned containers and volumes were removed. The existing complete Edge suite passed. The browser suite passed 175 cases and exposed one outdated partial-result fixture; that fixture was corrected to supply the complete receipt, and its focused rerun passed. Required CI must pass the final complete suite.
+
+Release only through protected exact-head CI and tracked Pages, then seven reviewed migrations and the source-preserving Academy bundle. Installed Academy v85 was captured with all 27 runtime modules: 25 are preserved unchanged and two new owned modules produce a 29-module candidate. The isolated dry run contains exactly seven pending migrations above 214 installed migrations, including the separately published SAT migration. Do not apply unrelated payment/proctor backlog or overwrite other installed source.
+
+Rollback preserves additive schema and institutional history. Use the previous tracked Pages deployment or a source-preserving forward repair. Continue hosted acceptance for every requested operational row, populated browser performance and cross-service reload behavior; these are separate from local command qualification.

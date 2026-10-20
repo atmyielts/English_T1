@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "worktree-reconciliation-recovery-and-sat-foundations",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy",
+    "academy-docs",
+    "english-hub",
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "itep-simulator",
+    "platform",
+    "sat-playbook",
+    "sat-practice",
+    "sat-simulator",
+    "toefl-ibt-simulator",
+    "toefl-playbook"
+  ],
+  "migrations": [
+    "20261020183010_sat_original_foundations.sql"
+  ],
+  "edgeFunctions": [],
+  "sharedEdgeConsumers": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261020183010_sat_original_foundations.sql"
+  ],
+  "manualFollowUps": [
+    "Bounded reconciliation of this chat only. Preserve concurrent Academy closeout and Assessment/Proctor work, including dirty primary and the reassigned academy-frontdesk-expansion checkout. No new product scope, provider configuration, payment activation or Edge deployment.",
+    "After exact-head protected CI and tracked Pages deployment, apply only this SAT migration with supabase db push --linked --include-all from an isolated release folder whose history and dry run prove exactly one pending reviewed migration. Exclude all nine pending payment migrations and all concurrent-agent migrations. Recheck installed selector identity against the qualified source immediately before publication.",
+    "Keep payment recovery PR 215 in draft and the payment transaction layer inactive until valid signed Click callback, retained-source/legacy-client qualification and exact provider configuration are available. Local payment tests alone do not qualify a hosted financial release."
+  ],
+  "verification": [
+    "Production/release checks; Academy lint, localization and build; Platform build; English contracts; sixteen controlled-failure browser scenarios across thirteen actual app entrypoints with external requests blocked; all required CI test and full app-build groups.",
+    "SAT: independently verify twelve math answers and all twenty-seven items; nine isolated native integration cases; rollback-only installed-schema scoring/replay and private-grant qualification; verify source/data rollback; after publication verify installed migration, exact frozen content/private keys/feedback, authorized bank response with keys hidden, and existing history retained.",
+    "Inspect tracked Pages jobs and public roots; do not trigger faults in customer sessions. Save provider evidence and explicitly distinguish deployed, superseded, evidence-only, withheld and other-agent work."
+  ],
+  "rollback": {
+    "pages": "Restore the preceding successful tracked Pages deployment if the healthy route checks regress. Keep existing authenticated state; the shared boundary only changes render-failure recovery.",
+    "migration": "Forward repair or retire only the new original-foundations experience. Preserve original rows, private keys, frozen attempts and customer history. Restore the exact captured selector only after reviewing any intervening changes; never blanket rollback the schema or reactivate known placeholder questions."
+  }
+}

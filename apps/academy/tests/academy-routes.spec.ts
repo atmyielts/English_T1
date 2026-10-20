@@ -7,7 +7,7 @@ test('Academy imports use plain wording, hide internal IDs and keep phone action
   await seedSessionCookie(page,'owner-user');
   await mockAcademyEdge(page,'owner',{respond:async body=>{
     if(body.action==='business_intelligence')return {...businessIntelligence,access:ownerAccess,import_rows:[{id:'owned-row',import_job_id:'import-route-smoke',row_number:1,validation_status:'committed',validation_errors:[],target_id:internalId}]};
-    if(body.action==='commit_import_job')return {import_job_id:'import-route-smoke',committed_rows:1,failed_rows:1,status:'failed'};
+    if(body.action==='commit_import_job')return {import_job_id:'import-route-smoke',committed_rows:1,failed_rows:1,pending_rows:0,recovery_pending:1,completed:0,manual_required:0,failed:0,status:'failed'};
     return undefined;
   }});
   await page.goto(`/academy/admin/intelligence?academy_id=${academyId}`);
