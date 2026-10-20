@@ -186,7 +186,10 @@ const hasWriteAction = (action) =>
 
 const hasClientAction = (action) =>
   academyClient.includes(`action: '${action}'`) || academyClient.includes(`action: "${action}"`) ||
-  academyClient.includes(`academyId,'${action}'`) || academyClient.includes(`academyId, "${action}"`);
+  academyClient.includes(`academyId,'${action}'`) || academyClient.includes(`academyId, "${action}"`) ||
+  (['guardian_dashboard','guardian_claim_link','guardian_service_requests'].includes(action) &&
+    academyClient.includes(`>('','${action}',`) &&
+    safeRead('apps/academy/src/lib/parentRequest.ts').includes(action==='guardian_claim_link'?"'guardian_link_command'":"'guardian_portal_read_command'"));
 
 const hasClientWritePath = (action) => {
   if (action === 'create_payment') {
@@ -575,7 +578,7 @@ addCheck(
 for (const signal of ['Guardians, consent, and parent communication','Create pending relationship','Issue secure link','Revoke','Messages & preferences','Retry-safe notification outbox','Immutable delivery attempts']) {
   addCheck(`Business OS Phase E relationship UI signal: ${signal}`, guardianRelationshipsView.includes(signal));
 }
-for (const signal of ['Parent Portal','Account linking required','A Telegram username alone never grants student access','Grades & homework','Payments and debt','Your academy controls which information is shared with you.','Notification preferences']) {
+for (const signal of ['Parent Portal','An invitation is needed','Connect with your child’s academy','Grades & homework','Payments and debt','Your academy controls which information is shared with you.','Notification preferences']) {
   addCheck(`Business OS Phase E parent portal signal: ${signal}`, guardianPortalView.includes(signal));
 }
 addCheck(

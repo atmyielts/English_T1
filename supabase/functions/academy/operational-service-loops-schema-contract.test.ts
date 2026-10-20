@@ -95,10 +95,12 @@ Deno.test("every operational family has a role-scoped Edge read and a frontend c
     "submit_sensitive_report",
   ]) {
     assert(edge.includes(`requestedAction === "${action}"`), `${action} requester route`);
-    assert(
-      client.includes(`action: "${action}"`) || client.includes(`action: '${action}'`),
-      `${action} frontend client`,
-    );
+    if(action==='guardian_service_requests') {
+      assert(client.includes(">('','guardian_service_requests',{relationship_id:relationshipId},actorId)"),'Parent requests pin the account and selected child');
+      assert(edge.includes('readGuardianRequests(sb,userId,body?.relationship_id)')&&edge.includes('readLegacyGuardianRequests(sb,userId,'),'Both parent requester routes use current database consent');
+    } else {
+      assert(client.includes(`action: "${action}"`) || client.includes(`action: '${action}'`), `${action} frontend client`);
+    }
   }
 });
 

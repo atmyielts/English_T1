@@ -272,6 +272,7 @@ body:has(.ts-shell, .parent-workspace, .workspace-card) { background: #fafbfa; }
 .parent-workspace .business-tabs button.is-active:focus-visible { outline: 3px solid var(--panel); outline-offset: -5px; box-shadow: 0 0 0 2px var(--ink); }
 .parent-workspace .market-grid--wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .parent-workspace .market-grid .market-card { background: var(--panel); border: 1px solid var(--line); box-shadow: none; border-radius: 12px; }
+.parent-workspace .market-hero > .market-card { padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: none; align-self: start; }
 .parent-sharing-note { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; color: var(--muted-strong); font-size: 13px; }
 .parent-sharing-note svg { flex: 0 0 auto; margin-top: 2px; }
 body:has(.ts-shell) #root > .academy-language-switcher,

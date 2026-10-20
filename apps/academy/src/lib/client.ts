@@ -1,3 +1,4 @@
+import {parentRequest as staffRequest} from './parentRequest';
 import { supabase } from './supabase';
 import type {RoomBranch,RoomTimetable} from './roomTimetable';
 
@@ -1605,7 +1606,7 @@ export type AcademyAcademicOperations = {
 export type AcademyGuardian = {id:string;academy_id:string;user_id:string|null;full_name:string;phone:string|null;email:string|null;telegram_user_id:string|null;telegram_username:string|null;telegram_verified_at:string|null;status:string;locale:string;notes:string|null;created_at:string;updated_at:string};
 export type AcademyGuardianRelationship = {id:string;academy_id:string;contact_id:string;guardian_id:string;relationship_type:string;status:string;is_primary_contact:boolean;is_financially_responsible:boolean;is_emergency_contact:boolean;can_view_status:boolean;can_view_attendance:boolean;can_view_grades:boolean;can_view_homework:boolean;can_view_schedule:boolean;can_view_payments:boolean;can_view_debt:boolean;can_view_messages:boolean;can_view_progress_reports:boolean;can_view_resources:boolean;can_view_announcements:boolean;can_message_academy:boolean;consent_status:string;consented_at:string|null;revoked_at:string|null;revocation_reason:string|null;created_at:string;updated_at:string};
 export type AcademyGuardianRelationships = {generated_at:string;access:TeacherStudioAccessProfile;guardians:AcademyGuardian[];relationships:AcademyGuardianRelationship[];consents:Array<Record<string,unknown>>;link_tokens:Array<Record<string,unknown>>;preferences:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;delivery_attempts:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>;contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;phone:string|null;status:string}>};
-export type AcademyGuardianDashboard = {guardians:Array<Record<string,unknown>>;children:Array<{academy_id:string;relationship_id:string;relationship_type:string;is_primary_contact:boolean;is_financially_responsible:boolean;permissions:Record<string,boolean>;student:{id:string;name:string;status?:string;placement_level?:string|null;placement_score?:number|null};classrooms:Array<Record<string,unknown>>;attendance:Array<Record<string,unknown>>;grades:Array<Record<string,unknown>>;homework:Array<Record<string,unknown>>;schedule:Array<Record<string,unknown>>;charges:Array<Record<string,unknown>>;balances:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;announcements:Array<Record<string,unknown>>;resources:Array<Record<string,unknown>>;progress_reports:Array<Record<string,unknown>>}>;preferences:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>};
+export type AcademyGuardianDashboard = {guardians:Array<Record<string,unknown>>;children:Array<{academy_id:string;relationship_id:string;guardian_id?:string;details_loaded?:boolean;history_has_more?:Record<string,boolean>;relationship_type:string;is_primary_contact:boolean;is_financially_responsible:boolean;permissions:Record<string,boolean>;student:{id:string;name:string;status?:string;placement_level?:string|null;placement_score?:number|null};classrooms:Array<Record<string,unknown>>;attendance:Array<Record<string,unknown>>;grades:Array<Record<string,unknown>>;homework:Array<Record<string,unknown>>;schedule:Array<Record<string,unknown>>;charges:Array<Record<string,unknown>>;balances:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;announcements:Array<Record<string,unknown>>;resources:Array<Record<string,unknown>>;progress_reports:Array<Record<string,unknown>>}>;preferences:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>};
 export type AcademyBusinessIntelligence = {
   generated_at:string;access:TeacherStudioAccessProfile;owner:Record<string,unknown>;dashboard:Record<string,unknown>;
   branches:Array<Record<string,unknown>>;metric_definitions:Array<Record<string,unknown>>;marketing_attribution:Array<Record<string,unknown>>;
@@ -2300,8 +2301,23 @@ export const teacherStudioAcademicOperations = async (academyId:string):Promise<
 export const teacherStudioRoomBranches=(academyId:string)=>callTeacherStudio<{branches:RoomBranch[];truncated:boolean}>({action:'room_timetable_branches',academyId});
 export const teacherStudioRoomTimetable=(academyId:string,branchId:string,from:string,days:number)=>callTeacherStudio<RoomTimetable>({action:'room_timetable',academyId,params:{branch_id:branchId,from,days:String(days)}});
 export const teacherStudioGuardianRelationships = async (academyId:string):Promise<AcademyGuardianRelationships> => callTeacherStudio<AcademyGuardianRelationships>({ action: 'guardian_relationships', academyId });
-export const teacherStudioGuardianDashboard = async ():Promise<AcademyGuardianDashboard> => callTeacherStudio<AcademyGuardianDashboard>({ action: 'guardian_dashboard' });
-export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>) => callTeacherStudio<Record<string,unknown>>({method:'POST', action: 'guardian_claim_link',body});
+type GuardianPortalPage=AcademyGuardianDashboard&{selected_child:AcademyGuardianDashboard['children'][number]|null;has_more:boolean;cursor:{after_id:string}|null};
+export const teacherStudioGuardianDashboard = async (relationshipId?:string,actorId?:string):Promise<AcademyGuardianDashboard> => {
+ const first=await staffRequest<GuardianPortalPage>('','guardian_dashboard',relationshipId?{relationship_id:relationshipId}:{},actorId);
+ const children=new Map(first.children.map(row=>[row.relationship_id,row]));
+ if(first.selected_child)children.set(first.selected_child.relationship_id,first.selected_child);
+ const guardians=new Map(first.guardians.map(row=>[String(row.id),row])),preferences=new Map(first.preferences.map(row=>[String(row.id),row]));
+ let page=first;const cursors=new Set<string>();
+ while(page.has_more){
+  const cursor=page.cursor?.after_id;if(!cursor||cursors.has(cursor))throw new Error('We could not load your parent portal. Try again.');cursors.add(cursor);
+  page=await staffRequest<GuardianPortalPage>('','guardian_dashboard',{after_id:cursor,list_only:true},actorId);
+  for(const row of page.children)if(!children.has(row.relationship_id))children.set(row.relationship_id,row);
+  for(const row of page.guardians)guardians.set(String(row.id),row);
+  for(const row of page.preferences)preferences.set(String(row.id),row);
+ }
+ return {...first,children:[...children.values()],guardians:[...guardians.values()],preferences:[...preferences.values()]};
+};
+export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>,actorId?:string) => staffRequest<Record<string,unknown>>('','guardian_claim_link',body,actorId);
 export const teacherStudioGuardianUpdatePreferences = (body:Record<string,unknown>) => callTeacherStudio<{preference:Record<string,unknown>}>({method:'POST', action: 'guardian_update_preferences',body});
 export const teacherStudioGuardianSendMessage = (body:Record<string,unknown>) => callTeacherStudio<{message:Record<string,unknown>}>({method:'POST', action: 'guardian_send_message',body});
 export const teacherStudioBusinessIntelligence = async (academyId:string):Promise<AcademyBusinessIntelligence> => callTeacherStudio<AcademyBusinessIntelligence>({ action: 'business_intelligence', academyId });
@@ -3180,7 +3196,7 @@ export const teacherStudioAcceptAccessInvitation = (token: string) => callTeache
 export const teacherStudioStudentServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_service_requests', academyId });
 export const teacherStudioCreateStudentServiceRequest = (academyId: string, body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'student_service_request_create', academyId, body });
 export const teacherStudioStudentLearningPlans = (academyId?: string | null) => callTeacherStudio<{ plans: AcademyOperationalRecord[]; items: AcademyOperationalRecord[]; evidence: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_learning_plans', academyId });
-export const teacherStudioGuardianServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; guardians: AcademyOperationalRecord[] }>({ action: 'guardian_service_requests', academyId });
+export const teacherStudioGuardianServiceRequests = (relationshipId:string,actorId?:string) => staffRequest<{relationship_id:string;requests:AcademyServiceRequest[];events:AcademyOperationalRecord[];guardians:AcademyOperationalRecord[];history_has_more?:boolean}>('','guardian_service_requests',{relationship_id:relationshipId},actorId);
 export const teacherStudioCreateGuardianServiceRequest = (body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'guardian_service_request_create', body });
 export const teacherStudioSubmitSensitiveReport = (body: Record<string, unknown>) => callTeacherStudio<{ case: { id: string; case_number: number; status: string } }>({ method: 'POST', action: 'submit_sensitive_report', body });
 

@@ -3590,7 +3590,7 @@ const App = () => {
   }
 
   if (state === 'ready' && isGuardianWorkspaceRoute) {
-    return <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}><GuardianPortalView onSignOut={signOut} /></LazyRouteBoundary>;
+    return <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}><GuardianPortalView key={me?.user.id??''} actorId={me?.user.id??''} onSignOut={signOut} /></LazyRouteBoundary>;
   }
 
   if (state === 'ready' && isTeacherWorkspaceRoute && (requestedOfficeAcademyDenied || !hasOfficeWorkspaceAccess || allowedOfficeViews.length === 0)) {
