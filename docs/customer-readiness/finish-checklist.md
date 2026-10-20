@@ -9,59 +9,15 @@ their entire implementation is absent.
 
 ## Current verified release state
 
-- PR 249 is merged: legacy import type permissions were released and qualified
-  with owned hosted fixtures. Evidence: `2026-10-13-legacy-import-permissions.json`.
-- PR 248 remains draft. Import review/resumption/recovery, current authority,
-  directory and browser improvements are locally qualified. CI for head
-  `835e26206b9a2de8305dd63426d077948e724326` passed (run 39399202335).
-  The candidate has since reconciled deployed parent protections from main.
-  Its twelve importer/authority/staff/invitation migrations are not activated;
-  the reconciled head requires its own CI and deployment qualification.
-- PR 250 shipped the seven-table/column ACL boundary; migration installation,
-  tracked Pages deploy and owned hosted checks/cleanup passed. Evidence:
-  `2026-10-14-private-table-production.json`.
-- Atomic staff saves/revocation/physical assignments, explicit managed-profile
-  provenance, scoped staff pagination and identity-preserving browser edits are
-  locally qualified candidates. They are not deployed. Evidence:
-  `2026-10-14-staff-access-candidate.md`.
-- Staff invitation preparation, acceptance/autoacceptance, withdrawal, leased
-  delivery evidence and filtered reads are now locally qualified candidates;
-  `2026-10-14-staff-invitations-candidate.md` records evidence and limits.
-- Legacy staff import/recovery and source/effect retention now have owned local
-  transactional qualification and a resumable phone/desktop candidate. Academy
-  imports, follow-ups and payments have task-oriented English/Uzbek/Russian
-  wording. Evidence: `2026-10-14-legacy-staff-import-candidate.md`.
-- Student/guardian invitation paths, hosted legacy staff acceptance, remaining
-  multi-resource authorization and final installed-schema/hosted acceptance
-  remain release gates. The scope above is still open, with no production
-  activation of the twelve pending importer/authority/staff/invitation migrations.
-- PR 251 shipped frontend-only customer wording and responsive import history.
-  Exact-head CI 38558843952 and tracked Pages run 38559622384 passed; main is
-  `86ccdaf7b048d4e03d2b151b614cca2314441ab2`. Anonymous route/asset checks confirm
-  the published copy and 980px history breakpoint. Evidence:
-  `2026-10-14-academy-customer-copy-production.json`. This is not a declaration
-  that every signed-in/provider workflow is qualified.
-- PR 252 shipped additional plain English/Uzbek/Russian wording for staff access,
-  lesson scheduling, invitations and parent payments. Exact-head CI 39386967944
-  and tracked Pages deployment 39387583914 passed for main
-  `5051205bd5fe70fe721c2a49f0818476a9e768fe`. Eleven published wording checks,
-  four anonymous Academy routes and both service roots passed. Evidence:
-  `2026-10-20-academy-plain-language-production.json`.
-- Student/parent invitation atomicity, identity/consent review, preservation of
-  paused enrollment and filtering before page limits now have local candidate
-  implementation and tests. They remain undeployed; evidence and remaining
-  downstream-access gates: `2026-10-20-learner-invitations-candidate.md`.
-- PR 253 shipped parent dashboard/request privacy, signed Telegram linking and
-  account/relationship binding guards on main
-  `377ca2b2811e7ad1527a7b96b5c2eb7408d4a905`: Pages 39401182196, Academy
-  v83 and both parent migrations installed (198 total). Full-schema checks,
-  50 hosted checks, 35 retention-safe cleanup checks, post-merge CI and executed
-  live smoke passed. Immutable closed QA institutional history was retained;
-  customer records were untouched. See `2026-10-20-parent-production.md` and
-  `2026-10-20-parent-production.json`. Parent writes, dispatch-time consent,
-  complete history paging and live payment/provider acceptance remain open.
-- Concurrent proctor work belongs to the other agent; preserve its source and
-  deployed state when reconciling shared files or migrations.
+- PR 248 is live on main `50e63540b6a4ec0318184c7262d538f2bd9083b4`; reviewed head `a7e88496aab01cf252db03a92e1e28be2a8c7ee2`. Exact-head CI 39406012487, post-merge CI 39406869867, tracked Pages deployment 39406869695 and executed Academy live smoke 39407740750 succeeded.
+- The twelve importer/authority/staff/invitation migrations are installed: 210 total. Academy Edge v84 matches all 26 prepared modules; 14 installed modules remain unchanged. The deployed parent safeguards from PR 253 and unrelated/proctor source were preserved.
+- Full local Edge tests, build/lint, 2,822 localized phrases, 174 browser cases, 822 product checks and 174 local smoke checks passed. One optional browser performance benchmark was skipped. Complete-schema command and parent/privacy/contention checks passed and the owned local containers/volumes were removed.
+- The installed database also passed rollback-only import/recovery, staff/learner invitation and 57 parent checks. No fixture transactions from these database canaries were committed.
+- Published API acceptance passed 32 checks: a 201-student mapped upload in two batches, exact opening balances, membership creation, replay-safe commit and retained correction, current staff scope, revocation and browser table protections. The single observed 201-student commit took 4,333 ms; this is not a general performance benchmark.
+- All 19 public service entrances returned 200 through trusted HTTPS redirects; the published importer and parent wording/styles were found.
+- Both test accounts were closed and the QA institution archived; 33 cleanup checks passed. Immutable institutional QA history and balanced financial evidence were retained. No customer records, real payments or provider messages were changed.
+- Prior releases 249/250/251/252/253 supplied legacy import permissions, private-table grants, plain language/responsive history and parent privacy/linking. Their dated evidence remains under this directory.
+- See `2026-10-20-academy-release-production.json` and `2026-10-20-release-closeout.md`. The user requested the autonomous goal stop after this release. Remaining acceptance below is a handoff, not authorization for continued feature work.
 
 ## The 12 requested Academy additions
 
