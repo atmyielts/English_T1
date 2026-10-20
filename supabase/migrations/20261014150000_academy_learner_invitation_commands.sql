@@ -2,6 +2,12 @@
 begin;
 set local lock_timeout='5s';
 
+-- Existing production memberships identify students through contact_id. Keep
+-- that relationship and add the nullable account binding used by atomic invite
+-- acceptance; older clients continue using the same memberships unchanged.
+alter table public.academy_classroom_memberships
+ add column if not exists user_id uuid references public.users(id) on delete set null;
+
 create table public.academy_learner_invitation_receipts(
  academy_id uuid not null references public.tenants(id) on delete restrict,
  actor_id uuid not null references public.users(id) on delete restrict,
