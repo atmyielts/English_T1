@@ -13,6 +13,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
+  # Edge modules use explicit URL/npm imports. Keep Deno from resolving the
+  # unrelated frontend workspace ranges outside npm ci's reviewed lockfile.
+  # Deno's default minimum dependency age policy remains enabled.
+  DENO_NO_PACKAGE_JSON: '1'
   VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
   VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
   VITE_READING_PRODUCT_ID: ${{ secrets.VITE_READING_PRODUCT_ID }}

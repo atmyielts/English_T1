@@ -11,7 +11,7 @@ function AudioPanel({actorId,academyId,assignmentId,submissionId,expectedAttempt
  const key=audioDraftKey(actorId,academyId,assignmentId,kind,submissionId,expectedAttempt),[draft,setDraft]=useState<AudioDraft|null>(null),[text,setText]=useState(''),[preview,setPreview]=useState('');
  const [history,setHistory]=useState<AudioHistory|null>(null),[urls,setUrls]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const alive=useRef(true),url=useRef(''),playback=useRef<Record<string,string>>({}),inFlight=useRef(false),draftWrites=useRef<Promise<unknown>>(Promise.resolve());
- const persist=(value:AudioDraft)=>{const write=draftWrites.current.catch(()=>{}).then(()=>saveAudioDraft(key,value));draftWrites.current=write;return write;};
+ const persist=(value:AudioDraft,expectedPendingRevision?:number)=>{const write=draftWrites.current.catch(()=>{}).then(()=>saveAudioDraft(key,value,expectedPendingRevision));draftWrites.current=write;return write;};
  const showDraft=useCallback((value:AudioDraft|null)=>{if(url.current)URL.revokeObjectURL(url.current);url.current=value?URL.createObjectURL(value.file):'';setPreview(url.current);setDraft(value);setText(value?.text??'');},[]);
  const refresh=useCallback(async()=>{const result=await loadAssignmentAudio(actorId,academyId,assignmentId,submissionId);if(alive.current)setHistory(result);},[actorId,academyId,assignmentId,submissionId]);
  useEffect(()=>{
@@ -29,17 +29,17 @@ function AudioPanel({actorId,academyId,assignmentId,submissionId,expectedAttempt
  const locked=busy||draft?.pending===true||recorder.status!=='idle';
  const upload=async()=>{
   if(!draft||inFlight.current||!text.trim())return;inFlight.current=true;setBusy(true);setError('');setNotice('');
-  const wasPending=draft.pending,captured={...draft,text:draft.pending?draft.text:text.trim(),pending:true,revision:Date.now()};setDraft(captured);
+  const captured={...draft,text:draft.pending?draft.text:text.trim(),pending:true,revision:Date.now()};setDraft(captured);
   try{
    if(!await persist(captured))throw new AudioRequestError('The saved recording changed. Reopen the recording panel.',409,true);
    await uploadAssignmentAudio(actorId,academyId,assignmentId,kind,captured,submissionId,expectedAttempt);
-   await draftWrites.current.catch(()=>{});await removeAudioDraft(key,captured.requestKey).catch(()=>{});
-   if(alive.current){showDraft(null);setNotice(t('Recording saved.'));await refresh();onSaved?.();}
+   await draftWrites.current.catch(()=>{});const removed=await removeAudioDraft(key,captured.requestKey,captured.revision).catch(()=>false);const newer=removed?null:await readAudioDraft(key);
+   if(alive.current){showDraft(newer);setNotice(t('Recording saved.'));await refresh();onSaved?.();}
   }catch(next){if(alive.current){setError(next instanceof Error?t(next.message):t('The recording could not be confirmed. Retry the same recording.'));
-   if(next instanceof AudioRequestError&&!next.retryable&&!wasPending){const corrected={...captured,pending:false,revision:Date.now()};await persist(corrected).then(()=>{if(alive.current)setDraft(corrected);}).catch(()=>{});}
+   if(next instanceof AudioRequestError&&!next.retryable){const corrected={...captured,pending:false,revision:Date.now()};await persist(corrected,captured.revision).then(saved=>{if(saved&&alive.current)setDraft(corrected);}).catch(()=>{});}
   }}finally{inFlight.current=false;if(alive.current)setBusy(false);}
  };
- const discard=async()=>{if(draft?.pending||inFlight.current)return;await draftWrites.current.catch(()=>{});if(draft)await removeAudioDraft(key,draft.requestKey);showDraft(null);setNotice(t('Recording draft discarded.'));};
+ const discard=async()=>{if(draft?.pending||inFlight.current)return;await draftWrites.current.catch(()=>{});if(draft&&!await removeAudioDraft(key,draft.requestKey,draft.revision))throw Error('The saved recording changed. Reopen the recording panel.');showDraft(null);setNotice(t('Recording draft discarded.'));};
  const play=async(recording:AudioRecording)=>{try{const local=await assignmentAudioUrl(actorId,academyId,recording.id);if(alive.current){if(playback.current[recording.id])URL.revokeObjectURL(playback.current[recording.id]);playback.current[recording.id]=local;setUrls({...playback.current});}else URL.revokeObjectURL(local);}catch(next){if(alive.current)setError(next instanceof Error?t(next.message):t('Unable to open this recording. Try again.'));}};
  const more=async()=>{if(!history?.cursor)return;setBusy(true);try{const next=await loadAssignmentAudio(actorId,academyId,assignmentId,submissionId,history.cursor);if(alive.current)setHistory(previous=>({...next,recordings:[...(previous?.recordings??[]),...next.recordings]}));}catch(next){if(alive.current)setError(next instanceof Error?t(next.message):t('Unable to load recording history. Try again.'));}finally{if(alive.current)setBusy(false);}};
  return <section className="panel grid assignment-audio" aria-label={title??t('Recordings and feedback')}>
@@ -47,7 +47,7 @@ function AudioPanel({actorId,academyId,assignmentId,submissionId,expectedAttempt
   {error||recorder.error?<p className="form-error" role="alert">{error||t(recorder.error)}</p>:null}
   {notice?<p className="form-success" role="status">{notice}</p>:null}
   {!ready?<p role="status">{t('Loading saved recording…')}</p>:null}
-  {(canRecord||draft)&&ready?<>
+  {(canRecord||draft||recorder.status!=='idle')&&ready?<>
    <p className="small muted">{t('Record up to 3 minutes or choose an audio file under 20 MB. Include a transcript or equivalent written response.')}</p>
    {recorder.status==='idle'?<div className="row wrap"><button type="button" className="small-btn" disabled={locked||!!draft||!canRecord} onClick={()=>void recorder.start()}>{t('Start recording')}</button><label>{t('Choose audio file')}<input type="file" accept="audio/webm,audio/ogg,audio/mp4,audio/wav,audio/mpeg,.m4a" disabled={locked||!!draft||!canRecord} onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(file)receiveFile(file);}}/></label></div>
     :<div className="row wrap"><p role="status">{t(recorder.status==='requesting'?'Waiting for microphone permission…':'Recording in progress')} <output aria-live="off">{t('{seconds} seconds',{seconds:recorder.seconds})}</output></p><button type="button" className="small-btn" disabled={recorder.status!=='recording'} onClick={recorder.stop}>{t('Stop recording')}</button><button type="button" className="ghost-btn" onClick={recorder.cancel}>{t('Cancel recording')}</button></div>}

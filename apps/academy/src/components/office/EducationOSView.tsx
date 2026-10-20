@@ -635,7 +635,7 @@ export const EducationOSView = ({
       (acc, item) => {
         const status = item.submission?.status ?? 'missing';
         if (status === 'graded') acc.graded += 1;
-        else if (status === 'submitted') acc.submitted += 1;
+        else if (['submitted','resubmitted','returned'].includes(status)) acc.submitted += 1;
         else if (status === 'late') acc.late += 1;
         else acc.missing += 1;
         return acc;

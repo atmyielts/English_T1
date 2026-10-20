@@ -13,17 +13,21 @@ export async function readAudioDraft(key:string):Promise<AudioDraft|null>{
  if(!(row.file instanceof Blob)||row.file.size>20*1024*1024||typeof row.text!=='string'||typeof row.requestKey!=='string')throw Error('The saved audio draft could not be read.');
  return {...row,file:new File([row.file],row.name,{type:row.file.type,lastModified:row.lastModified})};
 }
-export async function saveAudioDraft(key:string,draft:AudioDraft){
+export async function saveAudioDraft(key:string,draft:AudioDraft,expectedPendingRevision?:number){
  const db=await open();try{return await new Promise<boolean>((resolve,reject)=>{
   const tx=db.transaction('drafts','readwrite'),store=tx.objectStore('drafts'),request=store.get(key);let saved=false;
   request.onsuccess=()=>{const old=request.result as StoredDraft|undefined;
    if(old&&old.requestKey!==draft.requestKey){tx.abort();return;}
+   if(old?.pending){
+    const frozen=old.text===draft.text&&old.name===draft.file.name&&old.lastModified===draft.file.lastModified&&old.file.size===draft.file.size&&old.file.type===draft.file.type;
+    if(!frozen||(!draft.pending&&expectedPendingRevision!==old.revision)){tx.abort();return;}
+   }
    if((old?.revision??0)>draft.revision)return;
    store.put({file:draft.file,name:draft.file.name,lastModified:draft.file.lastModified,text:draft.text,requestKey:draft.requestKey,pending:draft.pending,revision:draft.revision} satisfies StoredDraft,key);saved=true;
   };
   tx.oncomplete=()=>resolve(saved);tx.onabort=tx.onerror=()=>reject(tx.error??new Error('Confirm the pending recording before starting another.'));
  });}finally{db.close();}
 }
-export async function removeAudioDraft(key:string,requestKey:string){
- const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction('drafts','readwrite'),store=tx.objectStore('drafts'),request=store.get(key);request.onsuccess=()=>{if(request.result?.requestKey===requestKey)store.delete(key);};tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error);});}finally{db.close();}
+export async function removeAudioDraft(key:string,requestKey:string,expectedRevision:number){
+ const db=await open();try{return await new Promise<boolean>((resolve,reject)=>{const tx=db.transaction('drafts','readwrite'),store=tx.objectStore('drafts'),request=store.get(key);let removed=false;request.onsuccess=()=>{if(request.result===undefined){removed=true;return;}if(request.result?.requestKey===requestKey&&request.result.revision===expectedRevision){store.delete(key);removed=true;}};tx.oncomplete=()=>resolve(removed);tx.onabort=tx.onerror=()=>reject(tx.error);});}finally{db.close();}
 }

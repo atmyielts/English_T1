@@ -3240,13 +3240,13 @@ const handleReadAction = async (
           metadata: sub.metadata ?? {},
         } : { status: "missing", score: null };
 
+        if (sub && ["submitted", "resubmitted", "late", "graded", "returned"].includes(String(sub.status))) submittedCount++;
         if (sub && typeof sub.score === "number" && typeof (sub.max_score ?? asgn.max_score) === "number") {
           const maxS = Number(sub.max_score ?? asgn.max_score);
           if (maxS > 0) {
             const w = Number((asgn.score_weight as number) ?? 1);
             totalScore += (Number(sub.score) / maxS) * 100 * w;
             totalWeight += w;
-            submittedCount++;
             const categoryId = normalizeText(asgn.grade_category_id, 64) || "__uncategorized";
             const entries = categoryEntries.get(categoryId) ?? [];
             entries.push({ percentage: (Number(sub.score) / maxS) * 100, weight: w });
@@ -5082,7 +5082,7 @@ const loadAcademyClassroomLessonContext = async (
     lms: {
       average_score: averageRounded(scoreValues),
       graded_submissions: scoreValues.length,
-      submitted_submissions: submissions.filter((row) => ["submitted", "late", "graded"].includes(String(row.status))).length,
+      submitted_submissions: submissions.filter((row) => ["submitted", "resubmitted", "late", "graded", "returned"].includes(String(row.status))).length,
       missing_assignments: missingAssignments,
       attendance_rate: attendanceRate,
       recent_absences: recentAbsences,
@@ -5378,7 +5378,7 @@ const buildEducationOS = async (
   }
 
   for (const submission of submissions) {
-    if (!["submitted", "late"].includes(String(submission.status)) || typeof submission.score === "number") continue;
+    if (!["submitted", "resubmitted", "late"].includes(String(submission.status)) || typeof submission.score === "number") continue;
     const contact = contactById.get(String(submission.contact_id));
     const assignment = assignments.find((item) => String(item.id) === String(submission.assignment_id));
     gradingCandidates.push({
@@ -6278,7 +6278,7 @@ const queueAcademyMorningBrief = async (
     sb.from("tenants").select("name").eq("id", academyId).maybeSingle(),
     sb.from("academy_classroom_memberships").select("contact_id").eq("academy_id", academyId).in("role", ["student", "observer"]).limit(20000),
     sb.from("academy_alerts").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("resolved", false),
-    sb.from("academy_submissions").select("id", { count: "exact", head: true }).eq("academy_id", academyId).eq("status", "submitted").is("score", null),
+    sb.from("academy_submissions").select("id", { count: "exact", head: true }).eq("academy_id", academyId).in("status", ["submitted", "resubmitted", "late"]).is("score", null),
     sb.from("academy_attendance").select("contact_id").eq("academy_id", academyId).eq("status", "absent").gte("session_date", since).limit(20000),
     sb.from("sales_leads").select("id", { count: "exact", head: true }).eq("tenant_id", academyId).in("status", ["new", "contacted", "qualified", "demo_scheduled"]),
     sb.from("tenant_memberships").select("user_id,users(telegram_chat_id)").eq("tenant_id", academyId).eq("status", "active").in("role", ["owner", "admin"]),

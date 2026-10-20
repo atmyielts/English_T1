@@ -1,36 +1,46 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-cash-handover-continuity",
+  "releaseId": "academy-recording-recovery-and-resubmitted-grading",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261020220000_academy_cash_handover_continuity.sql"
+    "20261020230000_academy_audio_pending_recovery.sql"
   ],
   "edgeFunctions": [
     "academy"
   ],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261020220000_academy_cash_handover_continuity.sql",
+    "migration:20261020230000_academy_audio_pending_recovery.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:SITE_URL",
     "function:academy"
   ],
   "manualFollowUps": [
-    "After protected exact-head CI and tracked Pages pass, use supabase db push --linked --include-all from the isolated verified 227-migration installed baseline. The dry run must list exactly this one migration. Do not apply unrelated work or rewrite legacy history.",
-    "Capture installed Academy v89 and preserve its 32-module closure, including encrypted audio and all unrelated modules. Replace only the reviewed finance-command.ts module, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. Retain manual JWT verification and the existing audio encryption key. No secret configuration is required.",
-    "Verify exact handover fields, latest predecessor beyond the 500-row history bound, receiver acknowledgement, cash-only counts, discrepancy reason, current scopes/revocation and single-custody contention. Exercise owned published cashier workflows and close accounts/archive owned fixtures. Internal card/Click entries do not prove external provider receipts."
+    "After exact-head protected CI and tracked Pages pass, use supabase db push --linked --include-all from the isolated verified 228-migration installed baseline. The dry run must list only the reviewed audio recovery migration. Retain every recording, reservation, request key, audit and institutional snapshot.",
+    "Capture Academy v90, compare the installed academy_audio_command body with its verified reviewed baseline and preserve all 32 installed runtime modules. Apply only reviewed grading-state index.ts hunks, prove patch reversal recreates the installed source, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. No unrelated, financial or proctor module changes.",
+    "All listed secrets are existing dependencies of the changed gateway index. Do not rotate or recreate the audio key and do not invent SMTP values. Configuration syntax only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-email>; supabase secrets set SITE_URL=<verified-site>. No secret write is part of this rollout.",
+    "Verify installed rollback-only audio budget and existing command fixtures, unchanged key/runtime dependency hashes, real owned stale-pending recovery and published cross-tab/teacher grading behavior. Close all owned accounts and archive their institutions after acceptance."
   ],
   "verification": [
-    "verify:prod/release/academy, full Edge/browser tests, lint/build/localization; fresh full-schema qualification includes 14 stages, one winning concurrent receiver, receipt-failure rollback, expiry/revocation and verified owned container/volume cleanup. Installed and hosted proof follow activation."
+    "Full captured-schema qualification retains obsolete rows, excludes obsolete/archived/unassigned reservations from the pending count, preserves the three-current-upload limit and denies revoked teachers. Browser regressions cover frozen pending contents across tabs, definitive conflict recovery, capture controls during refresh, and resubmitted/returned statistics. Complete required product, lint, build, localization, Edge and browser checks; distinct installed/hosted evidence follows deployment."
   ],
   "rollback": {
-    "pages": "Use the preceding tracked Pages deployment at main 58e5377977bed91582c3eb9b49a1398d4e22803e if needed; old clients can create only the initial drawer count after the migration.",
-    "edge": "Forward-repair the financial module while preserving the 32-module installed gateway and audio encryption key. Do not restore a complete older function.",
-    "migration": "Retain shifts, counts, immutable receipts and accepted handovers. Correct mistakes with audited movements and forward repairs; never erase predecessor evidence or reopen arbitrary balances."
+    "pages": "Prior tracked Pages on main 710c17ff35aed5caa68fc05d09fb74f47409ce36.",
+    "edge": "Forward repair from the installed 32-module source capture; preserve financial handover, private audio and the retained encryption key.",
+    "migration": "Keep reservations/recordings and the pending index. Forward-repair the private counter or command if necessary; do not delete media/history or grant direct browser access."
   }
 }
