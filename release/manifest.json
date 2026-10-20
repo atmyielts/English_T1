@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-operational-read-grant-boundaries",
+  "releaseId": "academy-lead-and-teacher-command-receipts",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261021001000_academy_operational_read_authority.sql"
+    "20261021002000_academy_operational_command_receipts.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -22,7 +22,7 @@
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261021001000_academy_operational_read_authority.sql",
+    "migration:20261021002000_academy_operational_command_receipts.sql",
     "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
     "secret:GMAIL_SMTP_APP_PASSWORD",
     "secret:GMAIL_SMTP_EMAIL",
@@ -30,17 +30,17 @@
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI and tracked Pages pass, capture current Academy v92 and the installed 230-entry catalogue. Use only the isolated baseline plus the one reviewed operational-read migration. supabase db push --linked --include-all must dry-run exactly this migration. No unrelated Assessment/Proctor migration belongs to this release.",
-    "Preserve all 32 installed Academy bundle modules and existing verify_jwt=false with handler authentication. Verify installed timetable dependency body hashes against the qualified schema capture. Apply only reviewed index.ts hunks, prove patch reversal recreates installed source, add the new operational-read.ts module and validate its import closure. Then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from the isolated bundle. Do not replace other runtime sources.",
-    "All listed secrets are existing changed-index dependencies. Do not rotate the audio key or invent SMTP values. Configuration syntax only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-email>; supabase secrets set SITE_URL=<verified-site>. No secret write is part of this rollout.",
-    "After activation verify all bundle source hashes, installed rollback-only operational-read and prior command fixtures, actual owned mixed admin-B/cashier-A refusals, retained legitimate B/teacher/student-grant reads and published grading/room navigation. Repeat the baseline reproduction through the fixed API, verify expiry and account cleanup, and retain private evidence. Other legacy reads, writes and operational workflows continue separately."
+    "After exact-head protected CI and tracked Pages pass, capture the installed Academy v93 and 231-entry catalogue. Apply only the reviewed operational-command migration from an isolated baseline catalogue whose supabase db push --linked --include-all dry run names exactly this one pending migration. Do not apply unrelated Assessment/Proctor migrations.",
+    "Retain all 33 installed Academy modules and verify_jwt=false with verified Auth handler checks. Compare the installed ensure_academy_crm_defaults, academy_create_lead and three teacher composite command definitions with the qualified capture. Patch only reviewed index.ts hunks, prove exact reverse-patch baseline recovery, add operational-command.ts and qualify its module closure. Run supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from that isolated source-preserving bundle.",
+    "Listed secrets are unchanged dependencies of the gateway. No secret rotation or new provider configuration is included. Keep the audio key and existing secret values. Configuration syntax only, with no write required: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>. SMTP configuration, if later supplied, uses supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-email>; supabase secrets set SITE_URL=<verified-site>. Never invent provider credentials or test recipients.",
+    "Read back every deployed source hash, verify catalogue count and installed rollback-only commands, then use owned accounts for actual lead save/lost-response/reload, duplicate-phone review, current mixed-grant refusal and assigned teacher attendance/start/finish/reload. Close accounts, revoke grants and archive the owned institution while retaining immutable history. Telegram Mini App provider activation and other legacy commands remain separate work."
   ],
   "verification": [
-    "The owned v91 reproduction confirmed cross-branch timetable and gradebook access with four QA accounts; 19 reproduction checks and 58 cleanup checks passed. The fix has 17 complete-schema stages, including student-only row restriction, current role/grant denial, final identity recheck and blocked-read expiry; all owned containers removed. Four real adapter boundary/error tests passed. Required local Edge/typecheck, product, lint/build, localization and complete browser checks precede protected CI; installed and hosted acceptance follow separately."
+    "Nineteen full captured-schema stages passed with verified owned-container cleanup, including identical concurrent attendance retries, real blocked-receipt expiry rollback and staff revocation. Six adapter boundary/error tests passed. Run the complete Edge, browser, readiness, lint/build, localization and exact-head CI gates; local qualification is distinct from installed and owned hosted proof."
   ],
   "rollback": {
-    "pages": "Prior tracked Pages on main 82d38f3a316a32dfc21618ae824c7d3d82991b03.",
-    "edge": "Forward repair from the freshly captured installed bundle, retaining the private operational read boundary, financial, wallet, parent, audio and unrelated proctor source. Do not restore the former highest-role authorization path.",
-    "migration": "Keep the private RPC closed to browser roles. Forward repair its definition if necessary; no customer or immutable institutional rows are modified by this schema addition."
+    "pages": "Prior tracked Pages on main be183e69f2e6774947c03da877151a070dd57585.",
+    "edge": "Forward repair the freshly captured source-preserving bundle; retain current operational, financial, wallet, parent and audio authority. Never redeploy the entire old repository gateway.",
+    "migration": "Keep immutable receipts, audit and lead/lesson history. Forward repair definitions; do not delete customer records. The CRM default repair preserves an already selected branch."
   }
 }

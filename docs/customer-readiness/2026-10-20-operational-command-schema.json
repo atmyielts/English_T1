@@ -1,0 +1,368 @@
+{
+  "recordedAt": "2026-10-20T18:44:55.923Z",
+  "passed": true,
+  "cleanupVerified": true,
+  "stage": "operational writes serialize identical retries and roll back business rows after blocked expiry or staff revocation",
+  "count": 19,
+  "fixtureChecks": 96,
+  "checks": [
+    "restore complete installed Auth/public/Storage schema without customer rows",
+    "database role attributes and relevant memberships match installed metadata",
+    "frozen reviewed migrations install under captured production roles",
+    "production-schema command fixture: scripts/verify-academy-student-import-schema.sql",
+    "production-schema command fixture: scripts/fixtures/academy-release-commands.sql",
+    "production-schema command fixture: scripts/fixtures/academy-operational-acceptance.sql",
+    "production-schema command fixture: scripts/fixtures/academy-wallet-policy.sql",
+    "production-schema command fixture: scripts/fixtures/academy-operational-read.sql",
+    "production-schema command fixture: scripts/fixtures/academy-operational-commands.sql",
+    "actual Auth triggers, foreign keys and views qualify parent privacy and child selection",
+    "parent reads serialize with consent revocation and account closure under captured roles",
+    "parent writes serialize with revocation and roll back expiry after a blocked insert",
+    "legacy receipts and staff-parent writes serialize with current revocation and expiry",
+    "financial business rows and receipts roll back after blocked expiry and current revocation",
+    "audio and written attempts serialize; blocked audio expiry and revoked feedback leave no business write",
+    "one receiver acquires cash custody; contended handover expiry and revocation roll back atomically",
+    "wallet learning checkpoints observe committed credit and debt after real account-lock contention",
+    "operational snapshots revalidate grant expiry after a real blocked room read",
+    "operational writes serialize identical retries and roll back business rows after blocked expiry or staff revocation"
+  ],
+  "catalog": {
+    "tables": 413,
+    "authTriggers": 4,
+    "publicTriggers": 334,
+    "publicForeignKeys": 1253
+  },
+  "schema": {
+    "sha256": "4b82d5fb3d4f82a90d9a2b7999782cde6f935e154d219a5c24ae5fe1892bcad1",
+    "tableCount": 413,
+    "customerRowsIncluded": false
+  },
+  "runtimeCatalog": {
+    "capturedAt": "2026-10-20T08:01:37.0208374Z",
+    "sha256": "3854e0e37c24b7df7e9e681680a9187380070e66ae832e4172de95ce7c611b49",
+    "roles": [
+      {
+        "name": "anon",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticated",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticator",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_create_subscription",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_monitor",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_read_all_data",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_signal_backend",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "postgres",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "service_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_admin",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": true,
+        "createRole": true
+      },
+      {
+        "name": "supabase_auth_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "supabase_privileged_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_storage_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      }
+    ],
+    "extensions": [
+      {
+        "name": "btree_gist",
+        "schema": "public",
+        "version": "1.7"
+      },
+      {
+        "name": "pg_cron",
+        "schema": "pg_catalog",
+        "version": "1.6.4"
+      },
+      {
+        "name": "pg_net",
+        "schema": "extensions",
+        "version": "0.19.5"
+      },
+      {
+        "name": "pg_stat_statements",
+        "schema": "extensions",
+        "version": "1.11"
+      },
+      {
+        "name": "pgcrypto",
+        "schema": "extensions",
+        "version": "1.3"
+      },
+      {
+        "name": "plpgsql",
+        "schema": "pg_catalog",
+        "version": "1.0"
+      },
+      {
+        "name": "supabase_vault",
+        "schema": "vault",
+        "version": "0.3.1"
+      },
+      {
+        "name": "uuid-ossp",
+        "schema": "extensions",
+        "version": "1.1"
+      }
+    ]
+  },
+  "image": "public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426",
+  "migrations": [
+    {
+      "file": "20261012160000_academy_student_import_staging.sql",
+      "sha256LF": "b633fc8a207b0f845426d0c9fe33a542884ab124c7d5767bc0dfcb3b7cd20b30"
+    },
+    {
+      "file": "20261012170000_academy_student_import_normalization.sql",
+      "sha256LF": "376f5cc5567b86f08454a332ab3f584dc3eb38933feadb133a0385e17f69a1d5"
+    },
+    {
+      "file": "20261012180000_academy_student_import_preview.sql",
+      "sha256LF": "ccb8dcfe2856d18cd5a34a5b22ea43e422d4fffb0f34870e78d3023a518390b6"
+    },
+    {
+      "file": "20261012190000_academy_student_import_commit.sql",
+      "sha256LF": "b4d70034f6af9e1072281901be46bd40f312a36074d8b6782bb3083a60460c19"
+    },
+    {
+      "file": "20261012200000_academy_student_import_lifecycle.sql",
+      "sha256LF": "0acf19aa79616e1fd29379ad5ce42593d82693ccf84514391f492edd3db080bc"
+    },
+    {
+      "file": "20261012220000_academy_student_import_recovery.sql",
+      "sha256LF": "4819b5cbb6312b9aaba6c969fc028606130a0f43443817db43ba19b76cefb67f"
+    },
+    {
+      "file": "20261013155000_academy_current_authority_directory.sql",
+      "sha256LF": "ac01f7c4be22ce588a2c5d577c5ea0f5bbb0dc60409053cfb00404dc83e19a30"
+    },
+    {
+      "file": "20261013160000_academy_student_import_authority.sql",
+      "sha256LF": "64729c9db4ed031e7a88eb41f8de40738a66fc40bb35c7c923fa02027c26d18a"
+    },
+    {
+      "file": "20261014120000_academy_staff_access_commands.sql",
+      "sha256LF": "df53f648021b2134a48ac444549f4bb81cf3402efd987c80758c4231e7bad009"
+    },
+    {
+      "file": "20261014130000_academy_staff_invitation_commands.sql",
+      "sha256LF": "ab2f12b633142cfd9781ae8132ede7ee74eb5f453d9d35c015d95bf3e6c0f7c8"
+    },
+    {
+      "file": "20261014140000_academy_legacy_staff_import_commands.sql",
+      "sha256LF": "97652ba51b1f46e9e5f926889673ce9824d97f988ebb1463412832e33901d6f7"
+    },
+    {
+      "file": "20261014150000_academy_learner_invitation_commands.sql",
+      "sha256LF": "8679e4ef1d342ff9df55608d439f74946f0eecc876d23a0d86f6d5a9d1319784"
+    },
+    {
+      "file": "20261020150000_academy_parent_write_commands.sql",
+      "sha256LF": "1b4f11f135135f0299cc38d37cad846d3f6e5b6be6adb4f2970cf68fc90405f0"
+    },
+    {
+      "file": "20261020151000_academy_parent_history_paging.sql",
+      "sha256LF": "ad2644addddeaacd2ba8f98e0886a39926b7f4b0a59e5a614a21815376d4961a"
+    },
+    {
+      "file": "20261020152000_academy_parent_delivery_claims.sql",
+      "sha256LF": "7cea944f7b7535f83cd47484a8b8cd0a95a4af10db592aabf79ac36248027490"
+    },
+    {
+      "file": "20261020160000_academy_command_capabilities.sql",
+      "sha256LF": "a05687e391741d61b3f96e31ae46c1a80d6fb39adb8579cc42808e61cadae27d"
+    },
+    {
+      "file": "20261020161000_academy_legacy_import_transactions.sql",
+      "sha256LF": "64b216ff9cf0d7d7b4751eed9789a8d1b5f4a836a21b9f0d7d7db720683c6c9f"
+    },
+    {
+      "file": "20261020162000_academy_legacy_import_commands.sql",
+      "sha256LF": "09abf17658f88f22eca435d26da935c61dd9926705b713a06b6b9948a564b5be"
+    },
+    {
+      "file": "20261020163000_academy_legacy_import_lifecycle.sql",
+      "sha256LF": "c237539a44f3b0055383118c5d1ff1f309514999bb46383dbe8fbea733c8ddfb"
+    },
+    {
+      "file": "20261020164000_academy_student_current_email_binding.sql",
+      "sha256LF": "68203e057499ed040ec3d176457316d7a280ce453815bd561b5e08b43c0e725d"
+    },
+    {
+      "file": "20261020165000_academy_staff_guardian_commands.sql",
+      "sha256LF": "54da904e9a3a4aae4976fa75180d642faedc564a66a9c87f7182e2e15376e116"
+    },
+    {
+      "file": "20261020170000_academy_parent_verified_sms.sql",
+      "sha256LF": "50b63a910eddd8fc42ff026efd76329bf1b7334f08c13224bf0c6e92c194d37a"
+    },
+    {
+      "file": "20261020200000_academy_collected_tuition_payroll.sql",
+      "sha256LF": "57385cc04fc4b8e4c9078ebf6f9fbae1a69b70e88b26246f5decbf61e4c8e4cc"
+    },
+    {
+      "file": "20261020201000_academy_financial_command_authority.sql",
+      "sha256LF": "44750ee72be62725a7009787ec8e4122f5bfa038eaacf9e6ef98a1bcab0a4fca"
+    },
+    {
+      "file": "20261020202000_academy_scoped_financial_reads.sql",
+      "sha256LF": "68d358b196acf28379d4a2651323863d2e876fecb85aa088154133e711c9573a"
+    },
+    {
+      "file": "20261020203000_academy_vacation_paid_time.sql",
+      "sha256LF": "f94baaef44cc4ef6f6b8dcc85a2c72ff3acb6dc12f8622fdc337276151105bb9"
+    },
+    {
+      "file": "20261020204000_academy_financial_table_boundary.sql",
+      "sha256LF": "3913cd39607cf3d15a6e3ac1e6b05d0897ea02532de52b63625731368d19b1e2"
+    },
+    {
+      "file": "20261020210000_academy_private_assignment_audio.sql",
+      "sha256LF": "0904ab2ea43726ab6bc4339dc0e4b54179f98d9c05db62f0d7b2d63f8f9a732a"
+    },
+    {
+      "file": "20261020220000_academy_cash_handover_continuity.sql",
+      "sha256LF": "aa5a634b18d1e61cf585a9e290afe9d0cfbe6c49c30b5fedb97ad260e1dba1ba"
+    },
+    {
+      "file": "20261020230000_academy_audio_pending_recovery.sql",
+      "sha256LF": "30e79abf6685bea5c45a82190dcfa13ca428522735a37c5b7e294c93a8f91c5f"
+    },
+    {
+      "file": "20261020235000_academy_wallet_learning_policy.sql",
+      "sha256LF": "b3964b2ac9b33500971f92bed694767102f2cc027e8847670821fa17bb50c24b"
+    },
+    {
+      "file": "20261021001000_academy_operational_read_authority.sql",
+      "sha256LF": "f4c62018c70076a482513c2ae9c46db95d4986848540b31abcbb97ec2fc65091"
+    },
+    {
+      "file": "20261021002000_academy_operational_command_receipts.sql",
+      "sha256LF": "840a9a9939c721a19545579a600a47866967a42ca006bf9064f0ffcb1b215390"
+    },
+    {
+      "file": "20261020120000_academy_guardian_portal_reads.sql",
+      "sha256LF": "90bb9b0321ae3d15ac1e83977934c21797d490a7fe27e76c400084f5d8c8c9a7"
+    },
+    {
+      "file": "20261020121000_academy_guardian_binding_identity.sql",
+      "sha256LF": "21e55a972814002dd19caf88a5e6b6ba3a504136ae0f8b97df702d9bc3e51851"
+    }
+  ],
+  "canarySha256LF": "39f541929f8374f1847031380790c3ba868e1eacacdafb8e8858af5233be4237",
+  "productionChanged": false,
+  "limits": [
+    "Local complete-schema compatibility only; no installed lifecycle/provider activation proof.",
+    "Schema captures contain definitions, not production seed/catalogue/customer records.",
+    "The local PostgreSQL exercises real captured Auth triggers, not the live Auth service."
+  ],
+  "commandFixtures": [
+    {
+      "file": "scripts/verify-academy-student-import-schema.sql",
+      "sha256LF": "e3aa047451392679993620c9307a181a05c7286b5ef623604c2f6a5de03e4689"
+    },
+    {
+      "file": "scripts/fixtures/academy-release-commands.sql",
+      "sha256LF": "bebe3c9d887725a2f5900b6123753f2ca81ee8c21d53cd0f738e6da052964fdf"
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-acceptance.sql",
+      "sha256LF": "d455ab969f505410764802c4143922594c50c6a3a593c1f9c2ffc541cf22a2ce"
+    },
+    {
+      "file": "scripts/fixtures/academy-wallet-policy.sql",
+      "sha256LF": "dcbf52b9f8de793c2142173aa313c9a005ed4629daaab4af30c1ef279bad38b0"
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-read.sql",
+      "sha256LF": "f2dbfda9fa5193c30dbc1ab8e7eef2419abae1bda33a41f6f80e2ab2f603349f"
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-commands.sql",
+      "sha256LF": "d0a355be6ba8a3a51dfb760422b8fa30f46c1096be0905473b0e150df9640de0"
+    }
+  ]
+}

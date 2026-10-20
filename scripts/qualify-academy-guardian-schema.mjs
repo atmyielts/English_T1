@@ -291,6 +291,33 @@ try{
     const refused=sql("set application_name='qa_operational_room_expiry_wait';do $$begin begin perform "+call+";raise exception 'Expired room read returned data';exception when insufficient_privilege then null;end;end;$$;",'postgres');refused.catch(()=>{});
     await waitForLock('qa_operational_room_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await refused;
   });
+  if(migrations.includes('20261021002000_academy_operational_command_receipts.sql'))await check('operational writes serialize identical retries and roll back business rows after blocked expiry or staff revocation',async()=>{
+    const fixture=commandFixtures.find(row=>row.file==='scripts/fixtures/academy-operational-commands.sql');assert(fixture);
+    await sql(fixture.source.replace('rollback;','commit;'),'postgres');
+    const ctx=JSON.parse(await sql("select jsonb_build_object('academy',t.id,'owner',t.created_by,'actor',s.user_id,'staff',s.id,'classroom',l.classroom_id,'branch',l.branch_id,'contact',m.contact_id) from public.tenants t join public.academy_staff s on s.academy_id=t.id join public.academy_lesson_sessions l on l.academy_id=t.id and l.primary_staff_id=s.id join public.academy_classroom_memberships m on m.academy_id=t.id and m.classroom_id=l.classroom_id where t.name='Owned operational Academy' and s.display_name='Owned teacher' limit 1;",'postgres'));
+    ctx.session=randomUUID();ctx.grant=randomUUID();
+    await sql('insert into public.academy_role_grants(id,academy_id,user_id,email,role,scope_type,scope_ids,status,starts_at,expires_at) values('+[q(ctx.grant)+'::uuid',q(ctx.academy)+'::uuid',q(ctx.actor)+'::uuid',q(ctx.actor+'+operational-grant@example.invalid'),"'teacher'","'classrooms'",q(JSON.stringify([ctx.classroom]))+'::jsonb',"'active'","clock_timestamp()-interval '1 minute'","clock_timestamp()+interval '30 minutes'"].join(',')+');update public.academy_staff set managed_grant_id='+q(ctx.grant)+'::uuid where id='+q(ctx.staff)+'::uuid;insert into public.academy_lesson_sessions(id,academy_id,branch_id,classroom_id,primary_staff_id,title,delivery_mode,starts_at,ends_at,status,created_by,idempotency_key) values('+[q(ctx.session)+'::uuid',q(ctx.academy)+'::uuid',q(ctx.branch)+'::uuid',q(ctx.classroom)+'::uuid',q(ctx.staff)+'::uuid',"'Owned contended lesson'","'online'",'now()',"now()+interval '1 hour'","'scheduled'",q(ctx.owner)+'::uuid',"'owned-contended-session'"].join(',')+');','postgres');
+    const intent={session_id:ctx.session,records:[{contact_id:ctx.contact,status:'present',notes:'Owned contended attendance'}]};
+    const payload={intent,server_args:{p_academy_id:ctx.academy,p_actor_id:ctx.actor,p_session_id:ctx.session,p_staff_id:ctx.staff,p_records:intent.records}};
+    const command=key=>'public.academy_operational_command('+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'teacher_lesson_attendance',"+q(JSON.stringify(payload))+'::jsonb,'+q(key)+')';
+    const denied=expression=>"do $$begin begin perform "+expression+";raise exception 'Expected current operational refusal';exception when insufficient_privilege then null;end;end;$$;";
+    const writer=await hold('select '+command('owned-concurrent-attendance'),'qa_operational_attendance_first');
+    const retry=sql("set application_name='qa_operational_attendance_retry';select "+command('owned-concurrent-attendance')+';','postgres');retry.catch(()=>{});
+    await waitForLock('qa_operational_attendance_retry');await writer.finish();assert.equal(JSON.parse(await retry).replayed,true);
+    assert.equal(await sql('select count(*) from public.academy_attendance where academy_id='+q(ctx.academy)+'::uuid and session_id='+q(ctx.session)+'::uuid;','postgres'),'1');
+    const before=await sql('select count(*) from public.academy_audit_events where academy_id='+q(ctx.academy)+'::uuid;','postgres');
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '2 seconds' where id="+q(ctx.grant)+'::uuid;','postgres');
+    const barrier=await hold('lock table public.academy_operational_command_receipts in share mode','qa_operational_receipt_barrier');
+    const expired=sql("set application_name='qa_operational_attendance_expiry';"+denied(command('owned-expired-attendance')),'postgres');expired.catch(()=>{});
+    await waitForLock('qa_operational_attendance_expiry');await sql('select pg_sleep(3);','postgres');await barrier.finish();await expired;
+    assert.equal(await sql('select count(*) from public.academy_audit_events where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
+    assert.equal(await sql("select count(*) from public.academy_operational_command_receipts where request_key='owned-expired-attendance';",'postgres'),'0');
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '30 minutes' where id="+q(ctx.grant)+'::uuid;','postgres');
+    const revoker=await hold('update public.academy_staff set is_active=false where id='+q(ctx.staff)+'::uuid','qa_operational_staff_revoke');
+    const revoked=sql("set application_name='qa_operational_staff_revoked_wait';"+denied(command('owned-concurrent-attendance')),'postgres');revoked.catch(()=>{});
+    await waitForLock('qa_operational_staff_revoked_wait');await revoker.finish();await revoked;
+    assert.equal(await sql('select count(*) from public.academy_audit_events where academy_id='+q(ctx.academy)+'::uuid;','postgres'),before);
+  });
   passed=true;
 }finally{
   for(const handle of held)await handle.finish(false).catch(()=>{});

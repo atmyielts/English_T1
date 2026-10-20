@@ -1,3 +1,4 @@
+import {operationalActions,runOperationalCommand} from './operational-command.ts';
 import {runOperationalRead} from './operational-read.ts';
 import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
 import {financeActions,runFinanceCommand,runFinanceRead} from './finance-command.ts';
@@ -16,11 +17,7 @@ import {
   type AcademyQuizQuestionType,
 } from "../_shared/academy-curriculum.ts";
 import {
-  finishAcademyTeacherLesson,
   loadAcademyTeacherDay,
-  recordAcademyTeacherAttendance,
-  startAcademyTeacherLesson,
-  type AcademyTeacherFlowAccess,
 } from "../_shared/academy-teacher-flow.ts";
 import * as academyAccessPolicy from "./access.ts";
 import {validateAcademyMutationBranches} from "./mutation-branches.ts";
@@ -6667,6 +6664,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
     if(rawActionBody==='finance_read_command'&&!['commercial_core','operations_finance'].includes(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial workspace.');
+    if(rawActionBody==='operational_command'&&!operationalActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid inquiry or lesson action.');
     if(rawActionBody==='finance_command'&&!financeActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial action.');
     if(rawActionBody==='staff_guardian_command'&&!staffGuardianActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid parent action.');
     if(rawActionBody==='legacy_import_command'&&!['create_import_job','add_import_row','commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid import command.');
@@ -6675,7 +6673,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests','guardian_history'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
     if(rawActionBody==='guardian_link_command'&&nestedCommand!=='guardian_claim_link')throw new GuardianPortalError(400,'Review and confirm the parent invitation.');
     if(rawActionBody==='guardian_portal_write_command'&&!guardianWriteActions.has(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent command.');
-    const actionBody = ['finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    const actionBody = ['operational_command','finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
     if(audioActions.has(requestedAction)){
       if(req.method!=='POST')return json(405,{error:'Method not allowed'});
@@ -7747,24 +7745,9 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
+      if(operationalActions.has(actionBody))return json(200,await runOperationalCommand(sb,academyId,userId,actionBody,body??{}));
       if(financeActions.has(actionBody))return json(200,await runFinanceCommand(sb,academyId,userId,actionBody,body??{}));
       const access = requireAcademyAccess(memberships, academyId);
-      const teacherFlowAccess: AcademyTeacherFlowAccess = {
-        ...access,
-        permissions: academyAccessProfile(access).permissions as Record<string, boolean>,
-      };
-      if (actionBody === "teacher_lesson_start") {
-        const result = await startAcademyTeacherLesson(sb, teacherFlowAccess, userId, body ?? {});
-        return json(200, result);
-      }
-      if (actionBody === "teacher_lesson_attendance") {
-        const result = await recordAcademyTeacherAttendance(sb, teacherFlowAccess, userId, body ?? {});
-        return json(200, result);
-      }
-      if (actionBody === "teacher_lesson_finish") {
-        const result = await finishAcademyTeacherLesson(sb, teacherFlowAccess, userId, body ?? {});
-        return json(200, result);
-      }
       if (staffAccessActions.has(actionBody)) {
         const result = await runAcademyStaffCommand(sb,userId,academyId,actionBody,body ?? {});
         if (actionBody === "upsert_staff") return json(200,{staff:{...formatRoleGrantAsStaff(result.grant as Record<string,unknown>),staff_id:(result.staff_profile as Record<string,unknown>).id},replayed:result.replayed});
@@ -8509,48 +8492,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           metadata: { branch_id: branchId, room_key: roomKey, capacity },
         });
         return json(200, { room: data });
-      }
-
-      if (actionBody === "create_lead") {
-        const fullName = normalizeText(body?.full_name, 180);
-        const phone = normalizeText(body?.phone, 80);
-        const telegram = normalizeText(body?.telegram, 100);
-        const email = normalizeText(body?.email, 240).toLowerCase();
-        const idempotencyKey = normalizeText(body?.idempotency_key, 180);
-        if (!fullName) return json(400, { error: "full_name is required" });
-        if (!phone && !telegram && !email) return json(400, { error: "phone, Telegram, or email is required" });
-        if (!idempotencyKey) return json(400, { error: "idempotency_key is required" });
-        const payload = {
-          full_name: fullName,
-          phone: phone || null,
-          telegram: telegram || null,
-          email: email || null,
-          parent_name: normalizeText(body?.parent_name, 180) || null,
-          parent_phone: normalizeText(body?.parent_phone, 80) || null,
-          age: toIntOrNull(body?.age),
-          interested_course: normalizeText(body?.interested_course, 180) || null,
-          branch_id: normalizeText(body?.branch_id, 64) || null,
-          preferred_branch_id: normalizeText(body?.preferred_branch_id, 64) || null,
-          preferred_schedule: normalizeText(body?.preferred_schedule, 240) || null,
-          preferred_lesson_time: normalizeText(body?.preferred_lesson_time, 20) || null,
-          expected_price: toIntOrNull(body?.expected_price),
-          currency: normalizeText(body?.currency, 10).toUpperCase() || "UZS",
-          source_id: normalizeText(body?.source_id, 64) || null,
-          source_key: normalizeText(body?.source_key, 80).toLowerCase() || null,
-          campaign: normalizeText(body?.campaign, 180) || null,
-          referral_source: normalizeText(body?.referral_source, 180) || null,
-          notes: normalizeText(body?.notes, 3000) || null,
-          tags: Array.isArray(body?.tags) ? body?.tags : [],
-          assigned_user_id: normalizeText(body?.assigned_user_id, 64) || null,
-          responsible_user_id: normalizeText(body?.responsible_user_id, 64) || null,
-          estimated_probability: toIntOrNull(body?.estimated_probability),
-          next_follow_up_at: normalizeText(body?.next_follow_up_at, 80) || null,
-        };
-        const { data, error } = await sb.rpc("academy_create_lead", {
-          p_academy_id: academyId, p_actor_id: userId, p_payload: payload, p_idempotency_key: idempotencyKey,
-        });
-        if (error) return json(400, { error: "Failed to create lead", detail: error.message });
-        return json(200, { lead: data });
       }
 
       if (actionBody === "transition_lead") {

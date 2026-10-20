@@ -208,3 +208,9 @@ regression and is not closed by wallet/financial checks. The reproduction passed
 next isolated operational-authority worktree is repairing and qualifying those
 reads. Other legacy read/write paths, timetable/lead/attendance, retention cohorts
 and signed-in all-service/design/performance acceptance remain active work.
+
+## Operational read production closeout — PR 263
+
+Main `be183e69f2e6774947c03da877151a070dd57585`, Academy v93 and 231 installed migrations are verified. All 33 bundle modules match readback; 31 previous modules were retained unchanged. Protected CI, tracked Pages and both post-deploy live smoke runs passed. Eleven installed rollback-only command groups passed. The final owned published run passed 46 API/browser checks and 65 cleanup checks, including mixed admin-B/cashier-A refusals, populated legitimate B timetable refresh, teacher grading, student-specific row limits, revocation, and phone/desktop rendering. All four QA accounts are closed and the institution archived; no customer records or provider payments/messages changed. Earlier fixture/selector failures are retained separately and are not added to the successful totals.
+
+Evidence: `2026-10-20-operational-read-production.json`. Other legacy reads/writes, the misleading Academy-wide header, booking write acceptance, all-field large CSV acceptance and all-service signed-in acceptance remain open. Lead/teacher receipt code is being qualified in a separate feature branch; it is not yet installed.

@@ -1,3 +1,4 @@
+import {operationalRequest} from './operationalRequest';
 import {parentRequest} from './parentRequest';
 import { supabase } from './supabase';
 import {staffRequest} from './staffRequest';
@@ -2261,9 +2262,10 @@ export const teacherStudioUpsertRoom = async (
 export const teacherStudioCreateLead = async (
   academyId: string,
   body: Record<string, unknown> & { full_name: string; idempotency_key: string },
-): Promise<AcademyLead> => {
-  const data = await callTeacherStudio<{ lead: AcademyLead }>({ action: 'create_lead', academyId, body });
-  return data.lead;
+  expectedActor?: string,
+): Promise<AcademyLead & {duplicate_phone?:boolean}> => {
+  const data = await operationalRequest<{ lead: AcademyLead; duplicate_phone:boolean }>(academyId,'create_lead',body,expectedActor);
+  return {...data.lead, duplicate_phone:data.duplicate_phone};
 };
 
 export const teacherStudioTransitionLead = async (
@@ -2539,16 +2541,14 @@ export const teacherStudioTeacherDay = async (academyId: string, date?: string):
 export const teacherStudioStartTeacherLesson = async (
   academyId: string,
   body: { session_id: string; idempotency_key: string },
-): Promise<{ run: Json }> => callTeacherStudio<{ run: Json }>({
-  method: 'POST', action: 'teacher_lesson_start', academyId, body,
-});
+  expectedActor?: string,
+): Promise<{ run: Json }> => operationalRequest(academyId,'teacher_lesson_start',body,expectedActor);
 
 export const teacherStudioSaveTeacherAttendance = async (
   academyId: string,
   body: { session_id: string; records: Array<{ contact_id: string; status: string; notes?: string | null }>; idempotency_key: string },
-): Promise<{ saved: number; duplicate?: boolean }> => callTeacherStudio<{ saved: number; duplicate?: boolean }>({
-  method: 'POST', action: 'teacher_lesson_attendance', academyId, body,
-});
+  expectedActor?: string,
+): Promise<{ saved: number; duplicate?: boolean }> => operationalRequest(academyId,'teacher_lesson_attendance',body,expectedActor);
 
 export const teacherStudioFinishTeacherLesson = async (
   academyId: string,
@@ -2560,10 +2560,9 @@ export const teacherStudioFinishTeacherLesson = async (
     assign_homework: boolean;
     idempotency_key: string;
   },
+  expectedActor?: string,
 ): Promise<{ run: Json; assignment: Json | null; duplicate?: boolean }> =>
-  callTeacherStudio<{ run: Json; assignment: Json | null; duplicate?: boolean }>({
-    method: 'POST', action: 'teacher_lesson_finish', academyId, body,
-  });
+  operationalRequest(academyId,'teacher_lesson_finish',body,expectedActor);
 
 export const teacherStudioQuizzes = async (
   academyId: string,

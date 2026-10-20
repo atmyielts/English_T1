@@ -182,7 +182,7 @@ const hasReadAction = (action) => dispatchedReads.has(action);
 const hasStudentAction = (action) =>
   new RegExp(`requestedAction\\s*===\\s*"${action}"`).test(academyEdge);
 
-const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts')});
+const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts'),'./operational-command.ts':read('supabase/functions/academy/operational-command.ts')});
 const hasWriteAction = action=>dispatchedWrites.has(action);
 
 const hasClientAction = (action) =>

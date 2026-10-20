@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Plus } from 'lucide-react';
 import { translate } from '../../i18n';
 import { teacherStudioCreateLead, type AcademyBranch, type AcademyLead } from '../../lib/client';
+import {pendingOperational} from '../../lib/operationalRequest';
+import {StaffRequestError} from '../../lib/staffRequest';
 
 type Draft = { full_name: string; phone: string; interested_course: string; preferred_schedule: string; branch_id: string; source_key: string };
-type Props = { academyId: string; branches: AcademyBranch[]; preferredBranchId?: string; disabled: boolean; onSaved: (lead: AcademyLead) => Promise<void> };
+type Props = { academyId: string; actorId: string; branches: AcademyBranch[]; preferredBranchId?: string; disabled: boolean; onSaved: (lead: AcademyLead & {duplicate_phone?:boolean}) => Promise<void> };
 const empty = (): Draft => ({ full_name: '', phone: '', interested_course: '', preferred_schedule: '', branch_id: '', source_key: 'walk_in' });
 
-export function QuickLeadDialog({ academyId, branches, preferredBranchId, disabled, onSaved }: Props) {
+export function QuickLeadDialog({ academyId, actorId, branches, preferredBranchId, disabled, onSaved }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(empty);
   const [busy, setBusy] = useState(false);
@@ -34,6 +36,12 @@ export function QuickLeadDialog({ academyId, branches, preferredBranchId, disabl
   const close = () => { if (!mutex.current) setOpen(false); };
   const capture = () => {
     if (disabled) return;
+    const restored=pendingOperational(academyId,actorId);
+    if(restored&&restored.command!=='create_lead'){setError(translate('Confirm the pending inquiry or lesson change before starting another.'));setOpen(true);return;}
+    if(restored){
+      const payload=restored.payload as Draft & {idempotency_key:string};
+      pending.current=payload;setDraft(payload);setUncertain(true);
+    }else if(pending.current){pending.current=null;setDraft(empty());setUncertain(false);}
     opened.current = true;
     const branch = activeBranches.find(item => item.id === preferredBranchId) ?? activeBranches.find(item => item.is_default) ?? activeBranches[0];
     if (!pending.current) setDraft(previous => ({ ...previous, branch_id: previous.branch_id || branch?.id || '' }));
@@ -53,16 +61,13 @@ export function QuickLeadDialog({ academyId, branches, preferredBranchId, disabl
     pending.current = payload;
     setBusy(true); setError('');
     try {
-      const lead = await teacherStudioCreateLead(academyId, payload);
+      const lead = await teacherStudioCreateLead(academyId, payload,actorId);
       if (currentVisit !== visit.current) return;
       pending.current = null; setUncertain(false); setDraft(empty()); setOpen(false);
       await onSaved(lead);
     } catch (reason) {
       if (currentVisit !== visit.current) return;
-      const message = reason instanceof Error ? reason.message : String(reason);
-      // The existing lead command also maps database errors to 400; retain its
-      // identity so a concurrent/committed creation can be recovered by retry.
-      const definitiveRejection = /failed \((?:401|403|404|422)\)/.test(message);
+      const definitiveRejection = reason instanceof StaffRequestError&&!reason.retryable;
       if (definitiveRejection) pending.current = null;
       const saveUnconfirmed = !definitiveRejection && pending.current !== null;
       setUncertain(saveUnconfirmed);

@@ -5369,6 +5369,7 @@ const App = () => {
         {officeView === 'today' && officeCanOpen('today') && officeRouteIntent === 'teacher' && academyTeacherFlowV2Enabled ? (
           <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
             <TeacherDayView
+              actorId={me?.user.id??''}
               academyId={academyId}
               academyName={selectedOfficeAcademy?.name || academyId}
               onNavigate={(path) => navigate(academyScopedPath(path))}
@@ -5444,7 +5445,7 @@ const App = () => {
         ) : null}
         <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
           {officeView === 'business' && officeCanOpen('business') ? (
-            <BusinessFoundationView academyId={academyId} formatDate={formatDate} />
+            <BusinessFoundationView key={`${academyId}:${me?.user.id??''}`} actorId={me?.user.id??''} academyId={academyId} formatDate={formatDate} />
           ) : null}
 
           {officeView === 'assessments' && officeCanOpen('assessments') ? (

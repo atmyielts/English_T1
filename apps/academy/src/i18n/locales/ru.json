@@ -2923,5 +2923,8 @@
   "Unable to load this operational workspace. Try again.": "Не удалось загрузить этот рабочий раздел. Попробуйте снова.",
   "Unable to confirm current operational access. Try again.": "Не удалось подтвердить текущий рабочий доступ. Попробуйте снова.",
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Загружена только часть журнала. Число несданных работ и средние оценки могут быть неполными.",
-  "Quiz attempts needing grading": "Попытки тестов, ожидающие оценки"
+  "Quiz attempts needing grading": "Попытки тестов, ожидающие оценки",
+  "A saved change still needs confirmation.": "Сохранённое изменение ещё требует подтверждения.",
+  "Confirm the pending inquiry or lesson change before starting another.": "Подтвердите ожидающее изменение заявки или урока, прежде чем начинать новое.",
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Заявка сохранена. В этом филиале есть другая заявка с таким номером телефона. Проверьте обе перед объединением."
 }
