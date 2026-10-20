@@ -96,3 +96,43 @@ backend steps, owned hosted smoke and verified fixture cleanup must pass.
 The initial release stopped at the user's request. The user subsequently resumed
 remaining work and authorized safe production deployment. The parent follow-up
 is recorded above; the original all-service objective is still incomplete.
+
+## Current continuation through PR262
+
+The user explicitly resumed all remaining work and authorized safe production
+rollout. Current production is PR261 / main
+`7a5f6d2823d46f08c6327bc81f602a0aa436d31f`, Academy v91, 229 migrations.
+The release closeout now records PR257 finance/payroll, PR258 financial ACLs,
+PR259 private audio, PR260 custody handover/audio refresh, and PR261 pending/cross-tab
+recovery and resubmission counts. PR261 hosted acceptance passed 51 checks with
+60 cleanup checks and four closed accounts; installed nine command fixtures rolled
+back. Exact-head CI, tracked Pages, source readback and post-activation smoke passed.
+
+Row 9 has current native and populated hosted software evidence for the three
+requested monthly payroll rules, current inputs, approval/payout and immutable
+snapshots. Its scope is current active rosters and net paid allocations; historical
+as-of roster reconstruction and external bank settlement are not claimed. Row 10
+has current custody, discrepancy and cash/Click/card book evidence, including real
+concurrent receiver and lost-reply/reload checks. Linked student collection and
+provider movement remain to review. Row 8 has full browser recording, accessible
+text, playback and private storage/current-scope evidence; actual Telegram/bot
+provider voice remains unverified. Row 2 has a published real 201-row core-field
+CSV acceptance and retained correction; optional guardian mapping has separate
+native/API/mock evidence rather than this particular real file.
+
+PR262 supplies the missing opt-in wallet policy candidate for row 3. It remains
+under exact-head CI; production activation/hosted proof are pending. Rows 1, 4, 7,
+11 and 12 still require their listed actual operational acceptance. Rows 5/6 retain
+real provider/Click delivery or funding gates. Cross-service signed-in authority,
+performance and visual acceptance continue. This is an active continuation record,
+not a claim that the twelve rows or original audit are all complete.
+
+PR262's wallet software acceptance is now deployed: Academy v92, 230 migrations,
+53 owned hosted checks, 61 cleanup checks, four closed accounts and ten installed
+rollback-only fixtures. Exact-head CI, tracked Pages, source readback and the
+post-activation smoke passed. Row 3 now has explicit prepaid alert/freeze/current
+credit restoration software evidence alongside the earlier audited ledger and
+paid-time vacation evidence. No policy was enabled for existing students by the
+migration; funded Click/provider acceptance remains separate. The baseline mixed
+branch administrator/cashier test also confirmed that older timetable/gradebook
+reads still over-promoted scope. Their repair and the remaining rows are continuing.

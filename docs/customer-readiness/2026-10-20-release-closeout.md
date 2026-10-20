@@ -71,26 +71,140 @@ passed locally. These checks do not establish real provider delivery or payment.
 
 Evidence: `2026-10-20-remaining-commands-production.json` and the matching schema JSON.
 
-## Work continuing after this release
+## Collected payroll and financial command release
 
-1. Finish other shared-resource authority and financial commands. Payroll qualification
-   found that percentage compensation uses issued invoices rather than collected tuition;
-   a correction, base-plus-student rule and branch/receipt tests are being developed in
-   the isolated operational worktree. Legacy source/effect history is retained; changed,
-   used, older unproven effects and lead/attendance operational facts require explicit
-   audited review instead of deletion.
-2. Qualify actual Telegram/email/SMS receipt and Click renewals/signatures. Installed
-   secrets have Telegram/Click but no Academy SMS gateway or Gmail SMTP credentials.
-   Dummy accounts do not supply a real phone, Telegram chat or payment instrument.
-3. Complete all twelve requested operational rows in `finish-checklist.md`, including
-   real 200+ file/UI acceptance, room scheduling, wallet/vacation/zero-balance behavior,
-   quick leads, teacher attendance, voice recording/audio feedback, payroll, cashier,
-   branch isolation and retention semantics. Source existence alone is not acceptance.
-4. Finish populated signed-in performance/design and all-service navigation acceptance.
+PR [257](https://github.com/atmyielts/English_T1/pull/257) is deployed on main
+`0f0d0d43906a41b03e24b16e1b3273d2206ed956`, Academy v87, with 225 migrations.
+All 21 financial actions now enforce independent current capabilities, exact money,
+resource locks, atomic audit/receipts and retry recovery. Financial reads scope rows
+before bounds and return complete per-currency server totals. Payroll uses net paid
+allocations, delivered lessons and current active rosters; the three requested rule
+families, approval/payout history and immutable snapshots are qualified. Current-day
+vacation resume preserves elapsed paused days. Payroll does not claim a historical
+as-of roster, per-day proration or historical refund reconstruction.
+
+PR [258](https://github.com/atmyielts/English_T1/pull/258) adds the financial
+table/view and column ACL boundary on main `434976f12c0ab1fc8bec8f93f1a986812eaf371a`:
+226 migrations, v87 unchanged. All 30 runtime source hashes remain verified. Protected
+CI, post-merge CI, tracked Pages and executed live smoke passed for both releases.
+The fresh native qualification passed twelve stages; six installed rollback-only
+fixtures passed. No fixture transactions from those canaries were committed.
+
+Hosted acceptance verified all 21 financial actions and direct table/RPC refusals.
+The real published 201-row CSV workflow committed exactly 201 students, memberships
+and opening balances in two batches, then retained all records while correcting 603
+effects and writing 201 compensating balance reversals. The observed commit took
+4,464 ms (one sample). Optional guardian mapping has separate API/native/browser
+coverage; this specific CSV contained core student/contact/enrollment/balance fields.
+The file/API run passed 74 checks before its financial UI test hit an over-strict
+accessible-label selector. A separate published UI run passed 40 checks for owner
+and mixed branch admin/cashier, both branches and 390/1440px, with no page errors or
+horizontal overflow. These are separate evidence runs, not an invented combined
+assertion total. The earlier failed source runs remain retained.
+
+Both file and UI fixtures verified 42 cleanup checks each. All owned accounts are
+closed and institutions archived; immutable evidence and balanced reversals remain.
+Cash, Click and card acceptance here means internal book entries. No real payment
+instrument, bank movement or external provider delivery was exercised.
+
+Evidence: `2026-10-20-operational-finance-production.json`,
+`2026-10-20-financial-boundary-schema.json`; ignored owned hosted artifacts remain
+in the operational worktree under `supabase/.temp/operational-release/hosted-run-five`
+and `hosted-finance-ui`.
+
+## Work continuing after these releases
+
+1. Private browser recording/audio feedback is deployed through PR259 and its
+   refresh repair through PR260. Current runtime is Academy v90, 228 migrations,
+   all 32 source hashes verified, 31 prior runtime modules retained for PR260.
+   Eight installed command fixtures passed with their transactions rolled back.
+   Live API checks prove ciphertext, exact playback bytes, receipt replay and
+   student/teacher/peer scope. The repaired published browser run passed 38 checks:
+   actual lost-reply/reload recovery, student/teacher audio decoding and playback,
+   feedback for the reviewed attempt, synthetic microphone cancel/stop/upload and
+   the final-attempt limit. All four accounts are closed; 60 cleanup checks passed.
+   Stale pending-budget and cross-tab draft recovery remain a separate follow-up.
+2. PR [260](https://github.com/atmyielts/English_T1/pull/260) is deployed on main
+   `710c17ff35aed5caa68fc05d09fb74f47409ce36`. Exact-head protected CI, post-merge
+   CI and tracked Pages passed. Fourteen fresh complete-schema stages qualify one
+   winning handover receiver, receipt failure, blocked expiry/revocation and bounded
+   history. The published owner run passed 83 checks, including actual custody
+   lost-reply/reload, exact receiving difference, close/reconcile and populated
+   monthly payroll at 390/1440px, before using the wrong administrator URL for a
+   cashier. A separate correct office-route run passed all 24 checks, including
+   private payroll/expense controls and revoked handover replay. Each completed
+   fixture run verified 42 cleanup checks and closed both accounts. These are
+   separate evidence runs, not an invented combined total. All Click/card and
+   payout evidence is internal book data; no external funds were moved.
+   The configurable zero-balance alert/freeze policy is still open. Current manual
+   vacation/resume preserves paid time; future scheduling is not claimed.
+3. Qualify actual Telegram/email/SMS receipt and Click renewals/signatures. Installed
+   metadata has Telegram/Click but no Academy SMS gateway or Gmail SMTP credentials.
+   Dummy accounts do not supply an owned phone, Telegram chat or funded instrument.
+4. Complete the remaining rows of `finish-checklist.md`, especially actual timetable
+   clash/reload acceptance, quick leads, teacher attendance, global branch-dependent
+   views/actions, shared-resource authority and defined retention/churn cohorts.
+5. Finish populated signed-in performance/design and all-service navigation acceptance.
    Public browser attempts reproduced intermittent transport failures before page load;
-   these have not been identified as CSP failures. No unsafe-eval workaround or global
-   Cloudflare protocol change was made.
-5. Assessment/proctor development remains with its other owner.
+   no CSP cause was established. No unsafe-eval workaround or global Cloudflare protocol
+   change was made. A prior statement about guest evaluation refusal is not evidence
+   that the missing script-src directive prohibits evaluation.
+6. Assessment/proctor development remains with its other owner and is preserved.
 
-The user explicitly requested continuation through the remaining work. This is an
+The user explicitly requested continuation through all remaining work. This is an
 intermediate release record, not a stop or a claim that the full audit is complete.
+## Recording recovery deployed; wallet release in review
+
+PR [261](https://github.com/atmyielts/English_T1/pull/261) is deployed on main
+`7a5f6d2823d46f08c6327bc81f602a0aa436d31f`, Academy v91, 229 migrations.
+Protected CI 39464053751, post-merge CI 39465308861 and tracked Pages 39465308874
+passed. Post-activation live smoke 39466870917 passed. All 32 installed source
+hashes match the prepared bundle, with 31 modules retained. Nine installed command
+fixtures passed with their transactions rolled back. Hosted acceptance passed 51
+checks for obsolete reservations, cross-tab frozen drafts, original receipt/bytes
+on reload, current teacher feedback, actual audio decoding and resubmitted counts.
+All four owned accounts are closed; 60 cleanup checks passed. Original media and
+reservation history remain retained. No external provider message or funds moved.
+
+The prior cash handover post-activation smoke 39461160311 is also confirmed passed.
+Updated evidence is being published with the next reviewed release.
+
+PR [262](https://github.com/atmyielts/English_T1/pull/262), reviewed head
+`a94a06f88bb2a58d18674a3876e61eb065015dee`, adds explicit opt-in prepaid wallet
+alerts and learning controls. A zero balance alone never enables a policy or changes
+an existing subscription/vacation. Fifteen complete-schema stages passed, including
+real credit/debit contention, exact currency separation, mixed branch roles, revoked
+replay and receipt failure rollback. Full local Edge/typecheck, 191 browser cases
+(one optional benchmark skipped), three final focused wallet cases, 822 product
+checks, lint/build and 2,921 localized phrases passed. CI and production activation
+remain pending; this does not close the wallet row yet.
+
+Work continues through actual timetable/lead/teacher attendance acceptance,
+branch-dependent view/action scope, retention cohort definitions, legacy shared
+resource/payment authority and populated signed-in all-service/design/performance
+checks. Real Telegram/SMS/email delivery and Click funding still require usable
+owned recipients/provider configuration/payment access; dummy records are not
+provider receipts. Assessment/proctor work in the primary checkout is preserved.
+
+## Prepaid wallet production acceptance
+
+PR262 is deployed on main `82d38f3a316a32dfc21618ae824c7d3d82991b03`, Academy
+v92, 230 migrations. Protected CI 39467649978, post-merge CI 39468446875,
+tracked Pages 39468446861 and post-activation live smoke 39470015107 passed.
+All 32 installed source hashes match; 30 prior modules are unchanged. Ten installed
+command fixtures passed with all transactions rolled back. The published owned run
+passed 53 checks: exact policy settings and acknowledgement, real committed/lost
+reply/reload recovery, zero-credit restrictions, different currency refusal,
+correct-currency restoration, retained playback, teacher grading and alert-only
+behavior. All four accounts are closed; 61 cleanup checks passed. The migration
+itself enabled no policies and changed no existing subscription or vacation dates.
+Internal owned ledger adjustments supplied credit; no external funds were moved.
+
+A separate owned baseline test reproduced an operational permission bug: admin in
+branch B plus cashier in branch A could read A's room branches and gradebook through
+older endpoints, and its presentation said academy-wide. This is not a new wallet
+regression and is not closed by wallet/financial checks. The reproduction passed
+19 checks and verified 58 cleanup checks; all four owned accounts are closed. The
+next isolated operational-authority worktree is repairing and qualifying those
+reads. Other legacy read/write paths, timetable/lead/attendance, retention cohorts
+and signed-in all-service/design/performance acceptance remain active work.

@@ -33,7 +33,9 @@ const commandFixtures=process.argv.includes('--release-commands')?[
   {file:'scripts/fixtures/academy-release-commands.sql',marker:'staff-and-learner-captured-schema-ok'},
 ].map(fixture=>({...fixture,source:readFileSync(fixture.file,'utf8')})):[];
 if(option('--command-fixture'))commandFixtures.push({file:option('--command-fixture'),marker:option('--command-marker'),source:readFileSync(option('--command-fixture'),'utf8')});
-if(option('--extra-fixture'))commandFixtures.push({file:option('--extra-fixture'),marker:option('--extra-marker'),source:readFileSync(option('--extra-fixture'),'utf8')});
+const extras=process.argv.flatMap((arg,index)=>arg==='--extra-fixture'?[process.argv[index+1]]:[]),markers=process.argv.flatMap((arg,index)=>arg==='--extra-marker'?[process.argv[index+1]]:[]);
+assert.equal(extras.length,markers.length,'Each owned extra fixture requires its expected marker');
+for(let index=0;index<extras.length;index++)commandFixtures.push({file:extras[index],marker:markers[index],source:readFileSync(extras[index],'utf8')});
 const checks=[];let owned=false,cleanupVerified=false,passed=false,stage='start',catalog,fixtureChecks=0;const held=new Set();
 function run(args,input=''){
   return new Promise((resolve,reject)=>{
@@ -276,6 +278,18 @@ try{
     const outgoing=await hold('select '+command('post_account_adjustment',{...credit,entry_type:'debit_adjustment'},'owned-concurrent-wallet-debit'),'qa_wallet_debit_first');
     const pauses=sql("set application_name='qa_wallet_debit_wait';do $$begin begin perform "+learning+";raise exception 'Concurrent zero-credit checkpoint passed';exception when insufficient_privilege then null;end;end;$$;",'postgres');pauses.catch(()=>{});await waitForLock('qa_wallet_debit_wait');await outgoing.finish();await pauses;
     assert.equal(await sql('select learning_paused from public.academy_wallet_policy_status where academy_id='+q(ctx.academy)+'::uuid;','postgres'),'t');
+  });
+
+  if(migrations.includes('20261021001000_academy_operational_read_authority.sql'))await check('operational snapshots revalidate grant expiry after a real blocked room read',async()=>{
+    const fixture=commandFixtures.find(row=>row.file==='scripts/fixtures/academy-operational-read.sql');assert(fixture);
+    await sql(fixture.source.replace('rollback;','commit;'),'postgres');
+    const ctx=JSON.parse(await sql("select jsonb_build_object('academy',g.academy_id,'actor',g.user_id,'grant',g.id,'branch',g.scope_ids->>0) from public.academy_role_grants g where g.email like '%+admin-b@example.invalid' and g.scope_ids @> (select jsonb_build_array(id) from public.academy_branches where name='Owned scope branch B');",'postgres'));
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '2 seconds' where id="+q(ctx.grant)+'::uuid;','postgres');
+    const barrier=await hold('lock table public.academy_rooms in access exclusive mode','qa_operational_room_expiry_barrier');
+    const payload={branch_id:ctx.branch,from:new Date().toISOString().slice(0,10),days:7};
+    const call='public.academy_operational_read('+q(ctx.academy)+'::uuid,'+q(ctx.actor)+"::uuid,'room_timetable',"+q(JSON.stringify(payload))+'::jsonb)';
+    const refused=sql("set application_name='qa_operational_room_expiry_wait';do $$begin begin perform "+call+";raise exception 'Expired room read returned data';exception when insufficient_privilege then null;end;end;$$;",'postgres');refused.catch(()=>{});
+    await waitForLock('qa_operational_room_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await refused;
   });
   passed=true;
 }finally{

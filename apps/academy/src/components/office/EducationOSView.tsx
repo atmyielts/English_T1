@@ -1697,6 +1697,7 @@ export const EducationOSView = ({
 
       {visibleActiveTab === 'learning' ? (
         <section className="grid">
+          {Object.values(gradebook?.has_more??{}).some(Boolean)?<p className="info-banner" role="status">{translate('Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.')}</p>:null}
           <CurriculumView
             key={classroomScope}
             academyId={academyId}

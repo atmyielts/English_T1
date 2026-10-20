@@ -293,7 +293,7 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
           <article className="stat-card"><span>{translate("Modules")}</span><strong>{curriculum.modules.length}</strong></article>
           <article className="stat-card"><span>{translate("Lessons")}</span><strong>{curriculum.lessons.length}</strong></article>
           <article className="stat-card"><span>{translate("Quizzes")}</span><strong>{quizzes.length}</strong></article>
-          <article className="stat-card"><span>{translate("Needs grading")}</span><strong>{pendingAttempts.length}</strong></article>
+          <article className="stat-card"><span>{translate("Quiz attempts needing grading")}</span><strong>{pendingAttempts.length}</strong></article>
         </section>
       </div>
 
