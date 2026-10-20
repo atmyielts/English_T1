@@ -33,13 +33,23 @@ their entire implementation is absent.
 - Student/guardian invitation paths, hosted legacy staff acceptance, remaining
   multi-resource authorization and final installed-schema/hosted acceptance
   remain release gates. The scope above is still open, with no production
-  activation of the eleven pending importer/authority/staff/invitation migrations.
+  activation of the twelve pending importer/authority/staff/invitation migrations.
 - PR 251 shipped frontend-only customer wording and responsive import history.
   Exact-head CI 38558843952 and tracked Pages run 38559622384 passed; main is
   `86ccdaf7b048d4e03d2b151b614cca2314441ab2`. Anonymous route/asset checks confirm
   the published copy and 980px history breakpoint. Evidence:
   `2026-10-14-academy-customer-copy-production.json`. This is not a declaration
   that every signed-in/provider workflow is qualified.
+- PR 252 shipped additional plain English/Uzbek/Russian wording for staff access,
+  lesson scheduling, invitations and parent payments. Exact-head CI 39386967944
+  and tracked Pages deployment 39387583914 passed for main
+  `5051205bd5fe70fe721c2a49f0818476a9e768fe`. Eleven published wording checks,
+  four anonymous Academy routes and both service roots passed. Evidence:
+  `2026-10-20-academy-plain-language-production.json`.
+- Student/parent invitation atomicity, identity/consent review, preservation of
+  paused enrollment and filtering before page limits now have local candidate
+  implementation and tests. They remain undeployed; evidence and remaining
+  downstream-access gates: `2026-10-20-learner-invitations-candidate.md`.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

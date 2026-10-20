@@ -23,6 +23,7 @@ import {resolveAcademyContactSaveTarget,academyContactSavePayload,ContactSaveTar
 import {readAcademyScopedDirectory,ScopedDirectoryError} from "./scoped-directory.ts";
 import {runAcademyStaffCommand,readAcademyStaffDirectory,staffAccessActions,StaffAccessError} from "./staff-access.ts";
 import {runStaffInvitation,acceptStaffAccess,readStaffInvitations,StaffInvitationError} from "./staff-invitations.ts";
+import {runLearnerInvitation,inspectLearnerInvitation,acceptLearnerInvitation,readLearnerInvitations,LearnerInvitationError} from "./learner-invitations.ts";
 import {legacyStaffCommand,LegacyStaffImportError} from "./legacy-staff-import.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
@@ -2596,7 +2597,7 @@ const handleReadAction = async (
   searchLimitRaw: string | null = null,
   dateRaw: string | null = null,
   roomTimetableRaw: unknown = null,
-  directoryContext: {actorId:string;before_time?:unknown;before_id?:unknown;after_source?:unknown;after_id?:unknown}|null = null,
+  directoryContext: {actorId:string;before_time?:unknown;before_id?:unknown;after_source?:unknown;after_id?:unknown;reference_mode?:unknown}|null = null,
 ): Promise<Response | null> => {
   if (
     ![
@@ -4020,59 +4021,18 @@ const handleReadAction = async (
   }
 
   if (action === "access_invitations") {
-    if (!academyAccessHas(access, "manageRoster") && !academyAccessHas(access, "manageStaff") && !academyAccessHas(access, "manageGuardians")) {
-      return json(403, { error: "Forbidden" });
+    if(!directoryContext)throw new LearnerInvitationError(403,'Forbidden');
+    if(directoryContext.reference_mode){
+      if(directoryContext.reference_mode==='staff')return json(200,{mode:'staff',...await readStaffInvitations(sb,directoryContext.actorId,academyId,{before_time:directoryContext.before_time,before_id:directoryContext.before_id})});
+      const mode=String(directoryContext.reference_mode);
+      return json(200,{mode,...await readLearnerInvitations(sb,directoryContext.actorId,academyId,{mode,after_id:directoryContext.after_id})});
     }
-    const allowedInviteKinds = [
-      academyAccessHas(access, "manageRoster") ? "student" : null,
-      academyAccessHas(access, "manageStaff") ? "staff" : null,
-      academyAccessHas(access, "manageGuardians") ? "guardian" : null,
-    ].filter((kind): kind is string => Boolean(kind));
-    const { data, error } = await sb.from("academy_access_invitations")
-      .select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,accepted_by,accepted_at,revoked_by,revoked_at,created_by,created_at,updated_at,metadata")
-      .eq("academy_id", academyId).in("invite_kind", allowedInviteKinds.filter(kind=>kind!=="staff")).order("created_at", { ascending: false }).limit(500);
-    if (error) return json(500, { error: "Failed to load access invitations", detail: error.message });
-    if(!directoryContext)throw new StaffInvitationError(403,"Forbidden");
-    const staffPage = await readStaffInvitations(sb,directoryContext.actorId,academyId);
-    const empty = Promise.resolve({ data: [], error: null });
-    const [contacts, classrooms, guardianRelationships, guardians] = await Promise.all([
-      academyAccessHas(access, "manageRoster")
-        ? sb.from("academy_contacts").select("id,first_name,last_name,email,status,primary_branch_id").eq("academy_id", academyId).order("first_name").limit(2000)
-        : empty,
-      academyAccessHas(access, "manageRoster")
-        ? sb.from("academy_classrooms").select("id,name,is_active,branch_id").eq("academy_id", academyId).eq("is_active", true).order("name").limit(500)
-        : empty,
-      academyAccessHas(access, "manageGuardians")
-        ? sb.from("academy_student_guardian_relationships").select("id,contact_id,guardian_id,relationship_type,status").eq("academy_id", academyId).eq("status", "active").limit(2000)
-        : empty,
-      academyAccessHas(access, "manageGuardians")
-        ? sb.from("academy_guardians").select("id,full_name,email,status").eq("academy_id", academyId).order("full_name").limit(2000)
-        : empty,
-    ]);
-    const referenceFailure = [contacts, classrooms, guardianRelationships, guardians].find((result) => result.error);
-    if (referenceFailure?.error) return json(500, { error: "Failed to load invitation reference data", detail: referenceFailure.error.message });
-    const allowedBranches = new Set(operationalBranchIds ?? []);
-    const allowedClassrooms = new Set(scopedClassroomIds ?? []);
-    const scopedContacts = ((contacts.data ?? []) as Array<Record<string, unknown>>).filter((row) =>
-      operationalBranchIds === null || allowedBranches.has(String(row.primary_branch_id ?? ""))
-    );
-    const scopedClassrooms = ((classrooms.data ?? []) as Array<Record<string, unknown>>).filter((row) =>
-      (operationalBranchIds === null || allowedBranches.has(String(row.branch_id ?? ""))) &&
-      (scopedClassroomIds === null || allowedClassrooms.has(String(row.id)))
-    );
-    const contactIds = new Set(scopedContacts.map((row) => String(row.id)));
-    const relationshipRows = ((guardianRelationships.data ?? []) as Array<Record<string, unknown>>)
-      .filter((row) => contactIds.has(String(row.contact_id)));
-    const guardianIds = new Set(relationshipRows.map((row) => String(row.guardian_id)));
-    const guardianRows = ((guardians.data ?? []) as Array<Record<string, unknown>>)
-      .filter((row) => guardianIds.has(String(row.id)));
-    const classroomIds = new Set(scopedClassrooms.map((row) => String(row.id)));
-    const invitationRows = ((data ?? []) as Array<Record<string, unknown>>).filter((row) => {
-      if (row.invite_kind === "student") return contactIds.has(String(row.contact_id)) && classroomIds.has(String(row.classroom_id));
-      if (row.invite_kind === "guardian") return relationshipRows.some((relationship) => String(relationship.id) === String(row.guardian_relationship_id));
-      return true;
-    });
-    return json(200, { invitations: [...invitationRows,...(staffPage.invitations as Array<Record<string,unknown>>)].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))), staff_has_more:staffPage.has_more, access: academyAccessProfile(access), contacts: scopedContacts, classrooms: scopedClassrooms, guardian_relationships: relationshipRows, guardians: guardianRows });
+    const modes=['invitations','contacts','classrooms','relationships','guardians'] as const;
+    const [staffPage,...pages]=await Promise.all([readStaffInvitations(sb,directoryContext.actorId,academyId),...modes.map(mode=>readLearnerInvitations(sb,directoryContext.actorId,academyId,{mode}))]);
+    const [invites,contacts,classes,relationships,guardians]=pages;
+    return json(200,{invitations:[...(invites.invitations as Array<Record<string,unknown>>),...(staffPage.invitations as Array<Record<string,unknown>>)],
+      access:academyAccessProfile(access),contacts:contacts.contacts,classrooms:classes.classrooms,guardian_relationships:relationships.relationships,guardians:guardians.guardians,
+      reference_cursors:Object.fromEntries(modes.map((mode,index)=>[mode,pages[index].has_more?pages[index].cursor:null])),staff_cursor:staffPage.has_more?staffPage.cursor:null});
   }
 
   if (action === "timetable_planning") {
@@ -6732,7 +6692,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
     if(rawActionBody==='staff_import_command'&&!['commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyStaffImportError(400,'Choose a valid staff import command.');
-    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    if(rawActionBody==='invitation_link_command'&&!['invitation_status','accept_access_invitation'].includes(nestedCommand))throw new LearnerInvitationError(400,'Choose a valid invitation action.');
+    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -6740,10 +6701,17 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (!invitationToken) return json(400, { error: "token is required" });
       const tokenHash = await sha256Hex(invitationToken);
       const { data: invitation, error } = await sb.from("academy_access_invitations")
-        .select("id,academy_id,invite_kind,email,role,token_expires_at,status,delivery_status,created_at")
+        .select("id,academy_id,invite_kind,email,role,token_expires_at,status,delivery_status,created_at,accepted_by")
         .eq("token_hash", tokenHash).maybeSingle();
       if (error) return json(500, { error: "Failed to inspect invitation", detail: error.message });
       if (!invitation?.id) return json(404, { error: "Invitation not found" });
+      if (['student','guardian'].includes(String(invitation.invite_kind))) {
+        const result=await inspectLearnerInvitation(sb,userId,tokenHash);
+        const row=result.invitation as Record<string,unknown>;
+        const {data:academy}=await sb.from('tenants').select('id,name,slug').eq('id',row.academy_id).maybeSingle();
+        return json(200,{invitation:{...row,academy}});
+      }
+      if(invitation.status==='accepted'&&String(invitation.accepted_by)!==userId)throw new LearnerInvitationError(403,'This invitation belongs to another account.');
       const { data: academy } = await sb.from("tenants").select("id,name,slug").eq("id", invitation.academy_id).maybeSingle();
       const email = String(invitation.email ?? "");
       const [localPart, domain] = email.split("@");
@@ -6751,6 +6719,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       return json(200, {
         invitation: {
           id: invitation.id,
+          academy_id: invitation.academy_id,
           academy,
           invite_kind: invitation.invite_kind,
           role: invitation.role,
@@ -6776,52 +6745,8 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         return json(200,{invitation:accepted.invitation,replayed:accepted.replayed});
       }
 
-      if (String(invitation.status) !== "pending") return json(409, { error: `Invitation is ${String(invitation.status)}` });
-      if (Date.parse(String(invitation.token_expires_at)) <= Date.now()) {
-        await sb.from("academy_access_invitations").update({ status: "expired" }).eq("id", invitation.id).eq("status", "pending");
-        return json(410, { error: "Invitation has expired" });
-      }
-      if (!userEmail || normalizeEmail(userEmail) !== normalizeEmail(invitation.email)) {
-        return json(403, { error: "Sign in with the email address that received this invitation" });
-      }
-      const academyId = String(invitation.academy_id);
-      const kind = String(invitation.invite_kind);
-      if (kind === "student") {
-        const contactId = String(invitation.contact_id ?? "");
-        const classroomId = String(invitation.classroom_id ?? "");
-        if (!contactId || !classroomId) return json(409, { error: "Student invitation target is incomplete" });
-        const { data: contact } = await sb.from("academy_contacts").select("id,user_id").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
-        if (!contact?.id) return json(404, { error: "Student record not found" });
-        if (contact.user_id && String(contact.user_id) !== userId) return json(409, { error: "Student record is already linked to another account" });
-        const { error: contactError } = await sb.from("academy_contacts").update({ user_id: userId }).eq("academy_id", academyId).eq("id", contactId);
-        if (contactError) return json(500, { error: "Failed to link student account", detail: contactError.message });
-        const { data: membership } = await sb.from("academy_classroom_memberships").select("id,status")
-          .eq("academy_id", academyId).eq("classroom_id", classroomId).eq("contact_id", contactId).maybeSingle();
-        const membershipResult = membership?.id
-          ? await sb.from("academy_classroom_memberships").update({ user_id: userId, status: "active", joined_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", membership.id)
-          : await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, user_id: userId, role: "student", status: "active", joined_at: new Date().toISOString(), metadata: { source: "access_invitation", invitation_id: invitation.id } });
-        if (membershipResult.error) return json(500, { error: "Failed to activate classroom membership", detail: membershipResult.error.message });
-      } else if (kind === "guardian") {
-        const relationshipId = String(invitation.guardian_relationship_id ?? "");
-        const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id,status,consent_status")
-          .eq("academy_id", academyId).eq("id", relationshipId).maybeSingle();
-        if (!relationship?.id) return json(404, { error: "Guardian relationship not found" });
-        const { error: guardianError } = await sb.from("academy_guardians").update({ user_id: userId, status: "verified" })
-          .eq("academy_id", academyId).eq("id", relationship.guardian_id);
-        if (guardianError) return json(500, { error: "Failed to link guardian account", detail: guardianError.message });
-        const { error: relationshipError } = await sb.from("academy_student_guardian_relationships").update({ status: "active", consent_status: "granted", consent_granted_at: new Date().toISOString() })
-          .eq("academy_id", academyId).eq("id", relationshipId);
-        if (relationshipError) return json(500, { error: "Failed to activate guardian access", detail: relationshipError.message });
-      } else {
-        return json(409, { error: "Unsupported invitation type" });
-      }
-      const nowIso = new Date().toISOString();
-      const { data: accepted, error: acceptError } = await sb.from("academy_access_invitations")
-        .update({ status: "accepted", accepted_by: userId, accepted_at: nowIso })
-        .eq("id", invitation.id).eq("status", "pending").select("id,academy_id,invite_kind,status,accepted_at").maybeSingle();
-      if (acceptError || !accepted?.id) return json(409, { error: "Invitation was already used", detail: acceptError?.message });
-      await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: kind, action: "access.invitation_accepted", targetType: "academy_access_invitation", targetId: String(invitation.id), contactId: invitation.contact_id ? String(invitation.contact_id) : null, classroomId: invitation.classroom_id ? String(invitation.classroom_id) : null, metadata: { invite_kind: kind } });
-      return json(200, { invitation: accepted });
+      const accepted=await acceptLearnerInvitation(sb,userId,tokenHash,body?.review_hash);
+      return json(200,accepted);
     }
 
     if (requestedAction === "student_service_requests" || requestedAction === "student_learning_plans") {
@@ -7812,7 +7737,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(url.searchParams.get("limit"), 10) || null,
         normalizeText(url.searchParams.get("date"), 10) || null,
         { branch_id: url.searchParams.get("branch_id"), from: url.searchParams.get("from"), days: url.searchParams.get("days") ?? undefined },
-        {actorId:userId,before_time:url.searchParams.get("before_time"),before_id:url.searchParams.get("before_id"),after_source:url.searchParams.get("after_source"),after_id:url.searchParams.get("after_id")},
+        {actorId:userId,before_time:url.searchParams.get("before_time"),before_id:url.searchParams.get("before_id"),after_source:url.searchParams.get("after_source"),after_id:url.searchParams.get("after_id"),reference_mode:url.searchParams.get("reference_mode")},
       );
       if (readResponse) return readResponse;
     }
@@ -7834,7 +7759,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         normalizeText(body?.limit, 10) || null,
         normalizeText(body?.date, 10) || null,
         { branch_id: body?.branch_id, from: body?.from, days: body?.days },
-        {actorId:userId,before_time:body?.before_time,before_id:body?.before_id,after_source:body?.after_source,after_id:body?.after_id},
+        {actorId:userId,before_time:body?.before_time,before_id:body?.before_id,after_source:body?.after_source,after_id:body?.after_id,reference_mode:body?.reference_mode},
       );
       if (readResponse) return readResponse;
 
@@ -7934,6 +7859,12 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           },academyInvitationRedirect);
           return json(result.retryable===true?202:200,result);
         }
+        if(!['student','guardian'].includes(inviteKind))throw new LearnerInvitationError(400,'Choose a student, parent or staff invitation.');
+        const result=await runLearnerInvitation(sb,userId,academyId,actionBody,body??{},async(email,redirectTo)=>{
+          const {error}=await authSb.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:true}});
+          return !error;
+        },academyInvitationRedirect);
+        return json(result.retryable===true?202:200,result);
       }
       const requiredPermission = ACADEMY_ACTION_PERMISSIONS[actionBody as keyof typeof ACADEMY_ACTION_PERMISSIONS];
       if (requiredPermission) requireAcademyPermission(access, requiredPermission);
@@ -7941,121 +7872,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       if (explicitBranchId && !accessCanUseBranch(access, explicitBranchId)) return json(403, { error: "Forbidden" });
       if (actionBody !== "upsert_contact" && academyAccessBranchIds(access) !== null && !(await validateBranchScopedMutation(sb, academyId, access, body ?? {}, actionBody))) {
         return json(403, { error: "A branch-scoped role may only mutate records in an assigned branch" });
-      }
-
-      if (["create_access_invitation", "resend_access_invitation", "revoke_access_invitation"].includes(actionBody)) {
-        const invitationId = normalizeText(body?.invitation_id ?? body?.id, 64);
-        let invitationKind = normalizeText(body?.invite_kind, 30).toLowerCase();
-        let invitationEmail = normalizeEmail(body?.email);
-        let invitationRole = normalizeAcademyRole(body?.role);
-        let contactId = normalizeText(body?.contact_id, 64) || null;
-        let classroomId = normalizeText(body?.classroom_id, 64) || null;
-        let guardianRelationshipId = normalizeText(body?.guardian_relationship_id, 64) || null;
-        let existingResendCount = 0;
-        if (actionBody !== "create_access_invitation") {
-          if (!invitationId) return json(400, { error: "invitation_id is required" });
-          const { data: existing, error: existingError } = await sb.from("academy_access_invitations").select("*").eq("academy_id", academyId).eq("id", invitationId).maybeSingle();
-          if (existingError) return json(500, { error: "Failed to load invitation", detail: existingError.message });
-          if (!existing?.id) return json(404, { error: "Invitation not found" });
-          invitationKind = String(existing.invite_kind);
-          invitationEmail = normalizeEmail(existing.email);
-          invitationRole = normalizeAcademyRole(existing.role);
-          contactId = existing.contact_id ? String(existing.contact_id) : null;
-          classroomId = existing.classroom_id ? String(existing.classroom_id) : null;
-          guardianRelationshipId = existing.guardian_relationship_id ? String(existing.guardian_relationship_id) : null;
-          existingResendCount = Number(existing.resend_count ?? 0);
-          if (actionBody === "revoke_access_invitation") {
-            const allowed = invitationKind === "staff" ? academyAccessHas(access, "manageStaff") : invitationKind === "guardian" ? academyAccessHas(access, "manageGuardians") : academyAccessHas(access, "manageRoster");
-            if (!allowed) return json(403, { error: "Forbidden" });
-            const { data: revoked, error } = await sb.from("academy_access_invitations").update({ status: "revoked", revoked_by: userId, revoked_at: new Date().toISOString() }).eq("academy_id", academyId).eq("id", invitationId).eq("status", "pending").select("id,invite_kind,email,status,revoked_at").maybeSingle();
-            if (error) return json(500, { error: "Failed to revoke invitation", detail: error.message });
-            if (!revoked?.id) return json(409, { error: "Only pending invitations can be revoked" });
-            return json(200, { invitation: revoked });
-          }
-          if (String(existing.status) !== "pending") return json(409, { error: "Only pending invitations can be resent" });
-        }
-
-        if (!["student", "staff", "guardian"].includes(invitationKind) || !invitationEmail) {
-          return json(400, { error: "invite_kind and email are required" });
-        }
-        const permissionAllowed = invitationKind === "staff"
-          ? academyAccessHas(access, "manageStaff")
-          : invitationKind === "guardian"
-          ? academyAccessHas(access, "manageGuardians")
-          : academyAccessHas(access, "manageRoster");
-        if (!permissionAllowed) return json(403, { error: "Forbidden" });
-
-        if (invitationKind === "student") {
-          if (!contactId || !classroomId) return json(400, { error: "contact_id and classroom_id are required for a student invitation" });
-          await ensureContactInAccessScope(sb, academyId, access, contactId);
-          if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
-          const { data: contact } = await sb.from("academy_contacts").select("id,email").eq("academy_id", academyId).eq("id", contactId).maybeSingle();
-          const { data: classroom } = await sb.from("academy_classrooms").select("id").eq("academy_id", academyId).eq("id", classroomId).maybeSingle();
-          if (!contact?.id || !classroom?.id) return json(404, { error: "Student or classroom not found" });
-          if (contact.email && normalizeEmail(contact.email) !== invitationEmail) return json(409, { error: "Invitation email must match the student record" });
-          const { data: membership } = await sb.from("academy_classroom_memberships").select("id,status").eq("academy_id", academyId).eq("classroom_id", classroomId).eq("contact_id", contactId).maybeSingle();
-          if (membership?.id) {
-            await sb.from("academy_classroom_memberships").update({ status: membership.status === "active" ? "active" : "invited" }).eq("academy_id", academyId).eq("id", membership.id);
-          } else {
-            const { error } = await sb.from("academy_classroom_memberships").insert({ academy_id: academyId, classroom_id: classroomId, contact_id: contactId, role: "student", status: "invited", metadata: { source: "access_invitation" } });
-            if (error) return json(400, { error: "Failed to prepare classroom invitation", detail: error.message });
-          }
-        }
-        if (invitationKind === "guardian") {
-          if (!guardianRelationshipId) return json(400, { error: "guardian_relationship_id is required" });
-          const { data: relationship } = await sb.from("academy_student_guardian_relationships").select("id,guardian_id").eq("academy_id", academyId).eq("id", guardianRelationshipId).maybeSingle();
-          if (!relationship?.id) return json(404, { error: "Guardian relationship not found" });
-          const { data: guardian } = await sb.from("academy_guardians").select("id,email").eq("academy_id", academyId).eq("id", relationship.guardian_id).maybeSingle();
-          if (!guardian?.id || normalizeEmail(guardian.email) !== invitationEmail) return json(409, { error: "Invitation email must match the guardian record" });
-        }
-
-        const rawToken = createOpaqueToken();
-        const tokenHash = await sha256Hex(rawToken);
-        const expiresAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
-        const nowIso = new Date().toISOString();
-        const invitationPayload = {
-          academy_id: academyId,
-          invite_kind: invitationKind,
-          email: invitationEmail,
-          role: invitationKind === "staff" ? invitationRole : null,
-          contact_id: contactId,
-          classroom_id: classroomId,
-          guardian_relationship_id: guardianRelationshipId,
-          token_hash: tokenHash,
-          token_expires_at: expiresAt,
-          status: "pending",
-          delivery_status: "queued",
-          delivery_error: null,
-          created_by: userId,
-          updated_at: nowIso,
-          metadata: { source: "academy_workspace" },
-        };
-        let saved: Record<string, unknown> | null = null;
-        if (actionBody === "resend_access_invitation") {
-          const { data, error } = await sb.from("academy_access_invitations").update({ ...invitationPayload, resend_count: existingResendCount + 1, last_resent_at: nowIso }).eq("academy_id", academyId).eq("id", invitationId).select("*").single();
-          if (error) return json(400, { error: "Failed to rotate invitation", detail: error.message });
-          saved = data as Record<string, unknown>;
-        } else {
-          let pendingQuery = sb.from("academy_access_invitations").select("id,resend_count").eq("academy_id", academyId).eq("invite_kind", invitationKind).eq("email", invitationEmail).eq("status", "pending");
-          if (invitationKind === "student") pendingQuery = pendingQuery.eq("contact_id", contactId).eq("classroom_id", classroomId);
-          if (invitationKind === "staff") pendingQuery = pendingQuery.eq("role", invitationRole);
-          if (invitationKind === "guardian") pendingQuery = pendingQuery.eq("guardian_relationship_id", guardianRelationshipId);
-          const { data: pending, error: pendingError } = await pendingQuery.maybeSingle();
-          if (pendingError) return json(500, { error: "Failed to check pending invitations", detail: pendingError.message });
-          const result = pending?.id
-            ? await sb.from("academy_access_invitations").update({ ...invitationPayload, resend_count: Number(pending.resend_count ?? 0) + 1, last_resent_at: nowIso }).eq("academy_id", academyId).eq("id", pending.id).select("*").single()
-            : await sb.from("academy_access_invitations").insert(invitationPayload).select("*").single();
-          if (result.error) return json(400, { error: "Failed to save invitation", detail: result.error.message });
-          saved = result.data as Record<string, unknown>;
-        }
-        const redirectTo = academyInvitationRedirect(rawToken);
-        const { error: deliveryError } = await authSb.auth.signInWithOtp({ email: invitationEmail, options: { emailRedirectTo: redirectTo, shouldCreateUser: true } });
-        const deliveryPatch = deliveryError
-          ? { delivery_status: "failed", delivery_error: deliveryError.message }
-          : { delivery_status: "sent", delivery_error: null, sent_at: nowIso };
-        const { data: delivered } = await sb.from("academy_access_invitations").update(deliveryPatch).eq("academy_id", academyId).eq("id", saved.id).select("id,academy_id,invite_kind,email,role,contact_id,classroom_id,guardian_relationship_id,token_expires_at,status,delivery_status,delivery_error,sent_at,resend_count,last_resent_at,created_at").single();
-        await logAcademyAuditEvent(sb, { academyId, actorUserId: userId, actorRole: access.role, action: actionBody === "create_access_invitation" ? "access.invitation_created" : "access.invitation_resent", targetType: "academy_access_invitation", targetId: String(saved.id), contactId, classroomId, status: deliveryError ? "error" : "ok", metadata: { invite_kind: invitationKind, delivery_status: deliveryError ? "failed" : "sent" } });
-        return json(deliveryError ? 202 : 200, { invitation: delivered, acceptance_url: redirectTo });
       }
 
       if (actionBody === "student_preview") {
@@ -11810,6 +11626,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof LearnerInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof LegacyStaffImportError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof StaffInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof StaffAccessError)return json(err.status,{error:err.message,retryable:err.retryable});

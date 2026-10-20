@@ -3356,7 +3356,7 @@ const App = () => {
   if (isInvitationAccept) {
     return (
       <>
-        <InvitationAcceptView signedIn={state !== 'unauthenticated' && Boolean(me)} sessionLoading={state === 'loading'} signInUrl={toAuthUrl()} search={location.search} onContinue={(path) => navigate(path, { replace: true })} />
+        <InvitationAcceptView key={`${me?.user?.id ?? ''}:${location.search}`} actorId={me?.user?.id ?? ''} signedIn={state !== 'unauthenticated' && Boolean(me)} sessionLoading={state === 'loading'} signInUrl={toAuthUrl()} search={location.search} onContinue={(path) => navigate(path, { replace: true })} />
         <UpdatesButton />
       </>
     );

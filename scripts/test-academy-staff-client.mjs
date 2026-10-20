@@ -67,4 +67,18 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify(progress));});
  await assert.rejects(()=>switched.staffRequest(academy,'commit_import_job',payload,actor),e=>e.status===409);checks++;
 }
+{
+ const row={id:id(4),academy_id:academy,invite_kind:'guardian',status:'pending',review_hash:'a'.repeat(32),shared_sections:['Attendance']};
+ const c=client(session(actor),undefined,()=>new Response(JSON.stringify({invitation:row})));
+ await c.staffRequest('','invitation_status',{token:'owned-token'},actor);
+ const body=JSON.parse(c.calls[0][1].body);assert.equal(body.action,'invitation_link_command');assert.equal(body.command,'invitation_status');checks++;
+ const refreshed=client(session(actor),session(other),()=>new Response('{}',{status:401}));
+ await assert.rejects(()=>refreshed.staffRequest('','accept_access_invitation',{token:'owned-token',review_hash:'a'.repeat(32)},actor),e=>e.status===409);assert.equal(refreshed.calls.length,1);checks++;
+ for(const bad of [{...row,shared_sections:[{}]},{...row,review_hash:'bad'},{...row,status:'accepted',accepted_by:other}]){
+  const malformed=client(session(actor),undefined,()=>new Response(JSON.stringify({invitation:bad})));
+  await assert.rejects(()=>malformed.staffRequest('','accept_access_invitation',{token:'owned-token',review_hash:'a'.repeat(32)},actor),e=>e.status===503&&e.retryable);checks++;
+ }
+ const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify({invitation:{...row,status:'accepted',accepted_by:actor}}));});
+ await assert.rejects(()=>switched.staffRequest('','accept_access_invitation',{token:'owned-token',review_hash:'a'.repeat(32)},actor),e=>e.status===409);checks++;
+}
 console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks,productionTouched:false}));

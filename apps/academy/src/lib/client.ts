@@ -3118,6 +3118,11 @@ export type AcademyAccessInvitation = AcademyOperationalRecord & {
   token_expires_at: string;
   resend_count: number;
   academy?: { id: string; name: string; slug: string } | null;
+  review_hash?: string;
+  student_name?: string;
+  classroom_name?: string;
+  shared_sections?: string[];
+  access_status?: string;
 };
 export type AcademyServiceRequest = AcademyOperationalRecord & {
   contact_id: string | null;
@@ -3138,6 +3143,8 @@ export type AcademyOperationalData = {
     classrooms: AcademyOperationalRecord[];
     guardian_relationships: AcademyOperationalRecord[];
     guardians: AcademyOperationalRecord[];
+    reference_cursors?: Record<string,{after_id:string}|null>;
+    staff_cursor?: {before_time:string;before_id:string}|null;
   };
   timetable?: {
     terms: AcademyOperationalRecord[];
@@ -3174,7 +3181,31 @@ export type AcademyOperationalData = {
 
 const academyOperationalRead = <T>(academyId: string, action: string): Promise<T> => callTeacherStudio<T>({ action, academyId });
 
-export const teacherStudioAccessInvitations = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['accessInvitations']>>(academyId, 'access_invitations');
+export const teacherStudioAccessInvitations = async (academyId: string) => {
+  const data=await academyOperationalRead<NonNullable<AcademyOperationalData['accessInvitations']>>(academyId,'access_invitations');
+  const fields={invitations:'invitations',contacts:'contacts',classrooms:'classrooms',relationships:'guardian_relationships',guardians:'guardians'} as const;
+  await Promise.all(Object.entries(fields).map(async([mode,field])=>{
+    let cursor=data.reference_cursors?.[mode]??null;const seen=new Set<string>();
+    while(cursor){
+      const fingerprint=JSON.stringify(cursor);if(seen.has(fingerprint))throw new Error('The invitation list did not finish loading. Refresh it.');seen.add(fingerprint);
+      const page=await callTeacherStudio<Record<string,unknown>>({action:'access_invitations',academyId,body:{reference_mode:mode,...cursor}});
+      if(!Array.isArray(page[mode])||typeof page.has_more!=='boolean')throw new Error('The invitation list did not finish loading. Refresh it.');
+      (data[field] as AcademyOperationalRecord[]).push(...page[mode] as AcademyOperationalRecord[]);
+      cursor=page.has_more?page.cursor as {after_id:string}:null;
+      if(page.has_more&&!cursor?.after_id)throw new Error('The invitation list did not finish loading. Refresh it.');
+    }
+  }));
+  let cursor=data.staff_cursor??null;const seen=new Set<string>();
+  while(cursor){
+    const fingerprint=JSON.stringify(cursor);if(seen.has(fingerprint))throw new Error('The invitation list did not finish loading. Refresh it.');seen.add(fingerprint);
+    const page=await callTeacherStudio<{invitations:AcademyAccessInvitation[];has_more:boolean;cursor:typeof cursor}>({action:'access_invitations',academyId,body:{reference_mode:'staff',...cursor}});
+    if(!Array.isArray(page.invitations)||typeof page.has_more!=='boolean')throw new Error('The invitation list did not finish loading. Refresh it.');
+    data.invitations.push(...page.invitations);cursor=page.has_more?page.cursor:null;
+    if(page.has_more&&!cursor?.before_id)throw new Error('The invitation list did not finish loading. Refresh it.');
+  }
+  data.invitations.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+  return data;
+};
 export const teacherStudioTimetablePlanning = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['timetable']>>(academyId, 'timetable_planning');
 export const teacherStudioServiceRequests = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['serviceRequests']>>(academyId, 'service_requests');
 export const teacherStudioCommunicationJourneys = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['journeys']>>(academyId, 'communication_journeys');
@@ -3187,8 +3218,8 @@ export const teacherStudioIntegrationEndpoints = (academyId: string) => academyO
 export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {},expectedActor?:string): Promise<T> =>
   ['create_access_invitation','resend_access_invitation','revoke_access_invitation'].includes(action)?staffRequest<T>(academyId,action,body,expectedActor):callTeacherStudio<T>({ method: 'POST', action, academyId, body });
 
-export const teacherStudioInvitationStatus = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ action: 'invitation_status', params: { token } });
-export const teacherStudioAcceptAccessInvitation = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ method: 'POST', action: 'accept_access_invitation', body: { token } });
+export const teacherStudioInvitationStatus = (token: string,actorId:string) => staffRequest<{invitation:AcademyAccessInvitation}>('','invitation_status',{token},actorId);
+export const teacherStudioAcceptAccessInvitation = (token: string,reviewHash:string|undefined,actorId:string) => staffRequest<{invitation:AcademyAccessInvitation}>('','accept_access_invitation',{token,review_hash:reviewHash},actorId);
 export const teacherStudioStudentServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_service_requests', academyId });
 export const teacherStudioCreateStudentServiceRequest = (academyId: string, body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'student_service_request_create', academyId, body });
 export const teacherStudioStudentLearningPlans = (academyId?: string | null) => callTeacherStudio<{ plans: AcademyOperationalRecord[]; items: AcademyOperationalRecord[]; evidence: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_learning_plans', academyId });

@@ -17,7 +17,8 @@
     "20261013160000_academy_student_import_authority.sql",
     "20261014120000_academy_staff_access_commands.sql",
     "20261014130000_academy_staff_invitation_commands.sql",
-    "20261014140000_academy_legacy_staff_import_commands.sql"
+    "20261014140000_academy_legacy_staff_import_commands.sql",
+    "20261014150000_academy_learner_invitation_commands.sql"
   ],
   "edgeFunctions": [
     "academy"
@@ -38,11 +39,12 @@
     "migration:20261014120000_academy_staff_access_commands.sql",
     "migration:20261014130000_academy_staff_invitation_commands.sql",
     "migration:20261014140000_academy_legacy_staff_import_commands.sql",
+    "migration:20261014150000_academy_learner_invitation_commands.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "Keep PR 248 draft until student/guardian invitations, remaining legacy multi-resource authority, the other seven legacy import types' atomic recovery/history, captured installed-schema qualification and owned hosted API/browser acceptance pass. The student importer, staff editor, staff invitations and legacy staff row/recovery commands have local qualification only. Reconcile concurrent proctor/shared-file work before merge or backend activation. Frontend wording/layout is being released separately in PR 251. Versioned staff/invitation/import command aliases prevent older backends from interpreting new semantics as old mutations.",
-    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these eleven reviewed authority/import/staff/invitation migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
+    "Keep PR 248 draft until student/guardian invitations, remaining legacy multi-resource authority, the other seven legacy import types' atomic recovery/history, captured installed-schema qualification and owned hosted API/browser acceptance pass. The student importer, staff editor, staff invitations and legacy staff row/recovery commands have local qualification only. Reconcile concurrent proctor/shared-file work before merge or backend activation. Frontend wording/layout shipped separately in PRs 251 and 252. Versioned staff/invitation/import command aliases prevent older backends from interpreting new semantics as old mutations.",
+    "Compare current production schema/function/source identities and migration history. Qualify owned rollback-only fixtures before activation. Apply only these twelve reviewed authority/import/staff/invitation migrations using supabase db push --linked --include-all from an isolated linked release whose dry run proves exactly these migrations are pending; do not apply unrelated repository or proctor migrations. The gateway-table ACL boundary is already installed through PR 250 (main 0f853d6263f46fba8179859cd4fdc39f6c8e762f). Preserve it and do not redeploy it as a pending importer migration.",
     "Capture the installed Academy Edge source and prepare a source-preserving bundle containing only the reviewed importer/permission changes. Validate source differences, module closure, compiler and owned grant/resource scopes before supabase functions deploy academy --project-ref <verified-production-ref>. Do not deploy the dirty primary checkout or overwrite unrelated installed backend changes."
   ],
   "verification": [

@@ -67,6 +67,38 @@ type Persona = StaffPersona | "student" | "guardian";
 
 const academyId = "academy-route-smoke";
 
+test('family invitation requires reviewed consent on phone and desktop',async({page})=>{
+ const commands:Record<string,unknown>[]=[],review='b'.repeat(32);
+ const invitation={id:'00000000-0000-4000-8000-000000000911',academy_id:'00000000-0000-4000-8000-000000000912',invite_kind:'guardian',
+  email:'gu***@example.test',status:'pending',delivery_status:'sent',token_expires_at:'2099-01-01T00:00:00Z',review_hash:review,
+  student_name:'Ali Karimov',shared_sections:['Attendance','Payments'],access_status:'pending',academy:{name:'Route Smoke Academy'}};
+ await seedSessionCookie(page,'guardian-user');
+ await mockAcademyEdge(page,'guardian',{respond:async body=>{
+  if(body.action==='invitation_status')return {invitation};
+  if(body.action==='accept_access_invitation'){commands.push(body);return {invitation:{...invitation,status:'accepted',accepted_by:'guardian-user'}};}
+  return undefined;
+ }});
+ await page.setViewportSize({width:320,height:900});await page.goto('/invitations/accept?token=owned-parent-token');
+ await expect(page.getByText('Ali Karimov',{exact:false})).toBeVisible();
+ await expect(page.getByText('You can view: Attendance, Payments.',{exact:true})).toBeVisible();
+ const accept=page.getByRole('button',{name:'Confirm family access',exact:true});await expect(accept).toBeDisabled();
+ const consent=page.getByRole('checkbox',{name:'I agree to link my account for the student and access shown above.',exact:true});
+ await consent.check();await expect(accept).toBeEnabled();
+ for(const width of [320,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath(`family-invitation-${width}.png`),fullPage:true});}
+ await accept.click();await expect(page.getByRole('heading',{name:'Your account is linked',exact:true})).toBeVisible();
+ expect(commands).toHaveLength(1);expect(commands[0].review_hash).toBe(review);expect(commands[0].token).toBe('owned-parent-token');
+});
+
+test('stopped invitation withholds the join action',async({page})=>{
+ await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student',{actionOverrides:{invitation_status:{invitation:{
+  id:'00000000-0000-4000-8000-000000000913',academy_id:'00000000-0000-4000-8000-000000000912',invite_kind:'student',email:'st***@example.test',
+  status:'accepted',accepted_by:'student-user',access_status:'stopped',token_expires_at:'2099-01-01T00:00:00Z'}}}});
+ await page.goto('/invitations/accept?token=owned-stopped-token');
+ await expect(page.getByText('This access has been stopped. Ask the academy to review it.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Open my workspace',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Accept invitation',exact:true})).toHaveCount(0);
+});
+
 test('staff invitation retry keeps its delivery identity and never reports an unconfirmed email as sent',async({page})=>{
  const commands:Record<string,unknown>[]=[],invitationId='00000000-0000-4000-8000-000000000902';
  await seedSessionCookie(page,'owner-user');
@@ -1792,7 +1824,7 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       command?: string;
       academy_id?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command'].includes(postedBody.action??'')
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     options.actionLog?.push(action);
@@ -2007,8 +2039,8 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       },
       invitation_status: {
         invitation: {
-          id: "invitation-route-smoke",
-          academy_id: academyId,
+          id: "00000000-0000-4000-8000-000000000905",
+          academy_id: "00000000-0000-4000-8000-000000000906",
           invite_kind: "student",
           email: "in***@example.test",
           role: null,
@@ -2020,15 +2052,19 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
           delivery_error: null,
           token_expires_at: "2026-09-01T08:00:00.000Z",
           resend_count: 0,
+          review_hash: "a".repeat(32),
+          access_status: "invited",
+          student_name: "Ali Karimov",
           academy: { id: academyId, name: "Route Smoke Academy", slug: "route-smoke" },
         },
       },
       accept_access_invitation: {
         invitation: {
-          id: "invitation-route-smoke",
-          academy_id: academyId,
+          id: "00000000-0000-4000-8000-000000000905",
+          academy_id: "00000000-0000-4000-8000-000000000906",
           invite_kind: "student",
           status: "accepted",
+            accepted_by: "student-user",
           accepted_at: "2026-08-19T08:00:00.000Z",
         },
       },
@@ -3118,15 +3154,15 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
   });
 
   test("invitation link explains access before accepting and opens the correct workspace", async ({ page }) => {
-    await seedSessionCookie(page, "invited-student");
+    await seedSessionCookie(page, "student-user");
     await mockAcademyEdge(page, "student");
 
     await page.goto("/invitations/accept?token=valid-route-token");
-    await expect(page.getByRole("heading", { name: "Join your Academy workspace" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Accept your invitation" })).toBeVisible();
     await expect(page.getByText("Route Smoke Academy", { exact: true })).toBeVisible();
     await expect(page.getByText("Student learning access", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Accept and open workspace" }).click();
-    await expect(page.getByRole("heading", { name: "Your access is ready" })).toBeVisible();
+    await page.getByRole("button", { name: "Accept invitation" }).click();
+    await expect(page.getByRole("heading", { name: "Your account is linked" })).toBeVisible();
     await page.getByRole("button", { name: "Open my workspace" }).click();
     await expect(page).toHaveURL(/\/academy\/student\?academy_id=/);
   });

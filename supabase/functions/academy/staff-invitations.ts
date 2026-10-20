@@ -23,6 +23,7 @@ function invitation(value:unknown,academyId?:string):Invitation{
   throw new StaffInvitationError(503,'The invitation service returned an incomplete response. Retry the same request.',true);
  return value as Invitation;
 }
+export {invitation as parseAccessInvitation};
 export async function invitationTokenHash(raw:string){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw)))].map(byte=>byte.toString(16).padStart(2,'0')).join('');}
 export async function runStaffInvitation(db:Db,actorId:string,academyId:string,action:string,input:Record<string,unknown>,deliver:(email:string,url:string)=>Promise<boolean>,redirect:(token:string)=>string){
  if(!uuid.test(actorId)||!uuid.test(academyId)||!['create_access_invitation','resend_access_invitation','revoke_access_invitation'].includes(action))throw new StaffInvitationError(403,'Forbidden');
@@ -59,8 +60,10 @@ export async function acceptStaffAccess(db:Db,actorId:string,input:{grantId?:str
  if(input.tokenHash)invitation(result.invitation,String(result.grant.academy_id));
  return result;
 }
-export async function readStaffInvitations(db:Db,actorId:string,academyId:string){
- const result=await rpc(db,'academy_staff_invitation_directory',{p_academy_id:academyId,p_actor_id:actorId,p_payload:{limit:500}});
+export async function readStaffInvitations(db:Db,actorId:string,academyId:string,payload:{before_time?:unknown;before_id?:unknown}={}){
+ if((payload.before_time!=null)!==(payload.before_id!=null)||payload.before_id!=null&&(typeof payload.before_id!=='string'||!uuid.test(payload.before_id))
+  ||payload.before_time!=null&&(typeof payload.before_time!=='string'||!Number.isFinite(Date.parse(payload.before_time))))throw new StaffInvitationError(400,'Choose a valid invitation page.');
+ const result=await rpc(db,'academy_staff_invitation_directory',{p_academy_id:academyId,p_actor_id:actorId,p_payload:{limit:500,...(payload.before_id?{before_id:payload.before_id,before_time:payload.before_time}:{})}});
  if(!Array.isArray(result.invitations)||typeof result.has_more!=='boolean')throw new StaffInvitationError(503,'The invitation directory returned an incomplete response.');
  for(const row of result.invitations)invitation(row,academyId);
  return result;

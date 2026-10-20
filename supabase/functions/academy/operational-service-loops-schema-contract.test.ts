@@ -95,10 +95,12 @@ Deno.test("every operational family has a role-scoped Edge read and a frontend c
     "submit_sensitive_report",
   ]) {
     assert(edge.includes(`requestedAction === "${action}"`), `${action} requester route`);
-    assert(
-      client.includes(`action: "${action}"`) || client.includes(`action: '${action}'`),
-      `${action} frontend client`,
-    );
+    if (action === 'invitation_status' || action === 'accept_access_invitation') {
+      assert(client.includes(`>('','${action}',`), `${action} pinned-account frontend client`);
+      assert(client.includes('{token},actorId') && client.includes('{token,review_hash:reviewHash},actorId'), 'Invitation reads and acceptance pin the account and reviewed details');
+    } else {
+      assert(client.includes(`action: "${action}"`) || client.includes(`action: '${action}'`), `${action} frontend client`);
+    }
   }
 });
 
