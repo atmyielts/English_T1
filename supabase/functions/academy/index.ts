@@ -25,6 +25,7 @@ import {runAcademyStaffCommand,readAcademyStaffDirectory,staffAccessActions,Staf
 import {runStaffInvitation,acceptStaffAccess,readStaffInvitations,StaffInvitationError} from "./staff-invitations.ts";
 import {runLearnerInvitation,inspectLearnerInvitation,acceptLearnerInvitation,readLearnerInvitations,LearnerInvitationError} from "./learner-invitations.ts";
 import {legacyStaffCommand,LegacyStaffImportError} from "./legacy-staff-import.ts";
+import {readGuardianPortal,readGuardianRequests,readLegacyGuardianPortal,readLegacyGuardianRequests,claimGuardianFromTelegram,GuardianPortalError} from "./guardian-portal.ts";
 import {academyAuthorityIdentityMatches,academyGrantAuthorityEntry} from "./capability-scope.ts";
 import {canUseLegacyImport,allowedLegacyImportTypes,permittedLegacyImportHistory,normalizedLegacyImportMapped,legacyImportAmount,legacyImportRowNumber,LegacyImportInputError} from "./legacy-import-policy.ts";
 import { assessmentActions, handleAssessmentService } from "./assessment-services.ts";
@@ -6693,7 +6694,9 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
     if(rawActionBody==='staff_import_command'&&!['commit_import_job','rollback_import_job'].includes(nestedCommand))throw new LegacyStaffImportError(400,'Choose a valid staff import command.');
     if(rawActionBody==='invitation_link_command'&&!['invitation_status','accept_access_invitation'].includes(nestedCommand))throw new LearnerInvitationError(400,'Choose a valid invitation action.');
-    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
+    if(rawActionBody==='guardian_link_command'&&nestedCommand!=='guardian_claim_link')throw new GuardianPortalError(400,'Review and confirm the parent invitation.');
+    const actionBody = ['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
 
     if (requestedAction === "invitation_status") {
@@ -6846,40 +6849,13 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     if (requestedAction === "guardian_claim_link" && req.method === "POST") {
-      const linkToken=normalizeText(body?.token,200);const telegramUserId=normalizeText(body?.telegram_user_id,120);const telegramChatId=normalizeText(body?.telegram_chat_id,120);const telegramUsername=normalizeText(body?.telegram_username,120)||null;
-      if(!linkToken||!telegramUserId||!telegramChatId)return json(400,{error:"token, telegram_user_id, and telegram_chat_id are required"});
-      const {data,error}=await sb.rpc('academy_claim_guardian_link',{p_token:linkToken,p_user_id:userId,p_telegram_user_id:telegramUserId,p_telegram_chat_id:telegramChatId,p_telegram_username:telegramUsername});
-      if(error)return json(400,{error:"Failed to claim guardian link",detail:error.message});return json(200,data??{});
+      return json(200,await claimGuardianFromTelegram(sb,userId,body as Record<string,unknown>,getOptionalEnv('ACADEMY_TELEGRAM_BOT_TOKEN')??''));
     }
 
     if (requestedAction === "guardian_dashboard") {
-      const {data:guardianRows,error:guardianError}=await sb.from('academy_guardians').select('id,academy_id,full_name,status,locale,telegram_verified_at').eq('user_id',userId).eq('status','verified').limit(50);
-      if(guardianError)return json(500,{error:"Failed to load guardian profile",detail:guardianError.message});const guardians=(guardianRows??[]) as Array<Record<string,unknown>>;if(!guardians.length)return json(200,{guardians:[],children:[],preferences:[],notifications:[]});
-      const guardianIds=guardians.map(row=>String(row.id));const {data:relationshipRows,error:relationshipError}=await sb.from('academy_student_guardian_relationships').select('*').in('guardian_id',guardianIds).eq('status','active').eq('consent_status','granted').limit(500);
-      if(relationshipError)return json(500,{error:"Failed to load guardian relationships",detail:relationshipError.message});const relationships=(relationshipRows??[]) as Array<Record<string,unknown>>;
-      const children=await Promise.all(relationships.map(async(rel)=>{const academyId=String(rel.academy_id);const contactId=String(rel.contact_id);const relationshipId=String(rel.id);
-        const {data:contact,error:contactError}=await sb.from('academy_contacts').select('id,academy_id,first_name,last_name,status,placement_level,placement_score').eq('academy_id',academyId).eq('id',contactId).maybeSingle();if(contactError||!contact?.id)throw new Error('Authorized child record is unavailable');
-        const {data:membershipRows}=await sb.from('academy_classroom_memberships').select('classroom_id,status,academy_classrooms(id,name)').eq('academy_id',academyId).eq('contact_id',contactId).in('status',['active','paused','completed']).limit(200);const memberships=(membershipRows??[]) as Array<Record<string,unknown>>;const classroomIds=memberships.map(row=>String(row.classroom_id));
-        const none=Promise.resolve({data:[] as Array<Record<string,unknown>>,error:null});
-        const [attendanceResult,submissionsResult,assignmentsResult,sessionsResult,chargesResult,balancesResult,messagesResult,announcementsResult,resourcesResult,reportsResult]=await Promise.all([
-          rel.can_view_attendance?sb.from('academy_attendance').select('id,classroom_id,session_id,session_date,status,notes,marked_at').eq('academy_id',academyId).eq('contact_id',contactId).order('session_date',{ascending:false}).limit(200):none,
-          rel.can_view_grades?sb.from('academy_submissions').select('id,classroom_id,assignment_id,status,score,feedback,graded_at,submitted_at').eq('academy_id',academyId).eq('contact_id',contactId).order('submitted_at',{ascending:false}).limit(200):none,
-          rel.can_view_homework&&classroomIds.length?sb.from('academy_assignments').select('id,classroom_id,title,description,due_at,status,max_score').eq('academy_id',academyId).in('classroom_id',classroomIds).in('status',['active','closed']).order('due_at',{ascending:false}).limit(300):none,
-          rel.can_view_schedule&&classroomIds.length?sb.from('academy_lesson_sessions').select('id,classroom_id,title,session_type,delivery_mode,starts_at,ends_at,status').eq('academy_id',academyId).in('classroom_id',classroomIds).gte('ends_at',new Date(Date.now()-7*86400000).toISOString()).order('starts_at').limit(300):none,
-          rel.can_view_payments?sb.from('academy_charge_balances').select('id,charge_number,charge_type,due_on,currency,effective_amount,outstanding_amount,calculated_status,days_overdue,aging_bucket').eq('academy_id',academyId).eq('contact_id',contactId).order('due_on',{ascending:false}).limit(200):none,
-          rel.can_view_payments?sb.from('academy_account_balances').select('currency,balance,last_entry_at').eq('academy_id',academyId).eq('contact_id',contactId):none,
-          rel.can_view_messages?sb.from('academy_guardian_messages').select('id,direction,body,status,channel,created_at,delivered_at,read_at').eq('academy_id',academyId).eq('relationship_id',relationshipId).order('created_at',{ascending:false}).limit(200):none,
-          rel.can_view_announcements&&classroomIds.length?sb.from('academy_announcements').select('id,classroom_id,title,content,published_at,created_at').eq('academy_id',academyId).in('classroom_id',classroomIds).order('created_at',{ascending:false}).limit(200):none,
-          rel.can_view_resources&&classroomIds.length?sb.from('academy_classroom_resources').select('id,classroom_id,title,kind,description,sort_order,is_published,created_at').eq('academy_id',academyId).in('classroom_id',classroomIds).eq('is_published',true).order('created_at',{ascending:false}).limit(300):none,
-          rel.can_view_progress_reports?sb.from('parent_report_tokens').select('id,label,expires_at,last_viewed_at,view_count,is_active,created_at').eq('academy_id',academyId).eq('contact_id',contactId).eq('is_active',true).order('created_at',{ascending:false}).limit(50):none,
-        ]);const results=[attendanceResult,submissionsResult,assignmentsResult,sessionsResult,chargesResult,balancesResult,messagesResult,announcementsResult,resourcesResult,reportsResult];const failed=results.find(result=>result.error);if(failed?.error)throw new Error('Failed to load authorized guardian data');
-        return {academy_id:academyId,relationship_id:relationshipId,relationship_type:rel.relationship_type,is_primary_contact:rel.is_primary_contact,is_financially_responsible:rel.is_financially_responsible,
-          permissions:{status:rel.can_view_status,attendance:rel.can_view_attendance,grades:rel.can_view_grades,homework:rel.can_view_homework,schedule:rel.can_view_schedule,payments:rel.can_view_payments,debt:rel.can_view_debt,messages:rel.can_view_messages,progress_reports:rel.can_view_progress_reports,resources:rel.can_view_resources,announcements:rel.can_view_announcements,message_academy:rel.can_message_academy},
-          student:{id:contact.id,name:`${String(contact.first_name??'')} ${String(contact.last_name??'')}`.trim(),...(rel.can_view_status?{status:contact.status,placement_level:contact.placement_level,placement_score:contact.placement_score}:{})},classrooms:memberships,
-          attendance:attendanceResult.data??[],grades:submissionsResult.data??[],homework:assignmentsResult.data??[],schedule:sessionsResult.data??[],charges:chargesResult.data??[],balances:balancesResult.data??[],messages:messagesResult.data??[],announcements:announcementsResult.data??[],resources:resourcesResult.data??[],progress_reports:reportsResult.data??[]};
-      }));
-      const [preferencesResult,notificationsResult]=await Promise.all([sb.from('academy_guardian_notification_preferences').select('*').in('guardian_id',guardianIds).order('event_type'),sb.from('academy_notifications').select('id,academy_id,guardian_id,relationship_id,event_key,channel,type,title,body,status,error,scheduled_at,sent_at,created_at').in('guardian_id',guardianIds).order('created_at',{ascending:false}).limit(500)]);
-      if(preferencesResult.error||notificationsResult.error)return json(500,{error:"Failed to load guardian communications"});return json(200,{guardians,children,preferences:preferencesResult.data??[],notifications:notificationsResult.data??[]});
+      return json(200,rawActionBody==='guardian_portal_read_command'
+        ? await readGuardianPortal(sb,userId,body as Record<string,unknown>)
+        : await readLegacyGuardianPortal(sb,userId));
     }
 
     if (requestedAction === "guardian_update_preferences" && req.method === "POST") {
@@ -6891,21 +6867,9 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     }
 
     if (requestedAction === "guardian_service_requests") {
-      const academyId = normalizeText(req.method === "POST" ? body?.academy_id : url.searchParams.get("academy_id"), 64);
-      let guardianQuery = sb.from("academy_guardians").select("id,academy_id,full_name,status").eq("user_id", userId).eq("status", "verified");
-      if (academyId) guardianQuery = guardianQuery.eq("academy_id", academyId);
-      const { data: guardians, error: guardianError } = await guardianQuery.limit(50);
-      if (guardianError) return json(500, { error: "Failed to load guardian profile", detail: guardianError.message });
-      const guardianIds = ((guardians ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
-      if (!guardianIds.length) return json(200, { requests: [], events: [], guardians: [] });
-      const { data: requests, error } = await sb.from("academy_service_requests").select("*")
-        .eq("requester_user_id", userId).in("guardian_id", guardianIds).order("created_at", { ascending: false }).limit(200);
-      if (error) return json(500, { error: "Failed to load guardian requests", detail: error.message });
-      const ids = ((requests ?? []) as Array<Record<string, unknown>>).map((row) => String(row.id));
-      const events = ids.length
-        ? await sb.from("academy_service_request_events").select("*").in("request_id", ids).eq("visible_to_requester", true).order("created_at").limit(1000)
-        : { data: [], error: null };
-      return json(200, { requests: requests ?? [], events: events.data ?? [], guardians: guardians ?? [] });
+      return json(200,rawActionBody==='guardian_portal_read_command'
+        ? await readGuardianRequests(sb,userId,body?.relationship_id)
+        : await readLegacyGuardianRequests(sb,userId,normalizeText(req.method==='POST'?body?.academy_id:url.searchParams.get('academy_id'),64)||undefined));
     }
 
     if (requestedAction === "guardian_service_request_create" && req.method === "POST") {
@@ -11626,6 +11590,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof GuardianPortalError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof LearnerInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof LegacyStaffImportError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof StaffInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});

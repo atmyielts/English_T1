@@ -81,4 +81,20 @@ for(const value of [session(other),{...session(actor),access_token:session(other
  const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify({invitation:{...row,status:'accepted',accepted_by:actor}}));});
  await assert.rejects(()=>switched.staffRequest('','accept_access_invitation',{token:'owned-token',review_hash:'a'.repeat(32)},actor),e=>e.status===409);checks++;
 }
+{
+ const dashboard={actor_id:actor,guardians:[],children:[],preferences:[],notifications:[],has_more:false};
+ const c=client(session(actor),undefined,()=>new Response(JSON.stringify(dashboard)));
+ await c.staffRequest('','guardian_dashboard',{relationship_id:id(4)},actor);
+ assert.equal(JSON.parse(c.calls[0][1].body).action,'guardian_portal_read_command');checks++;
+ for(const data of [{...dashboard,actor_id:other},{...dashboard,children:null}]){
+  await assert.rejects(()=>client(session(actor),undefined,()=>new Response(JSON.stringify(data))).staffRequest('','guardian_dashboard',{},actor),e=>e.status===503&&e.retryable);checks++;
+ }
+ const request={actor_id:actor,relationship_id:id(4),requests:[],events:[]};
+ const bad=client(session(actor),undefined,()=>new Response(JSON.stringify({...request,relationship_id:id(5)})));
+ await assert.rejects(()=>bad.staffRequest('','guardian_service_requests',{relationship_id:id(4)},actor),e=>e.status===503);checks++;
+ const switched=client(session(actor),undefined,()=>{switched.switchTo(other);return new Response(JSON.stringify(dashboard));});
+ await assert.rejects(()=>switched.staffRequest('','guardian_dashboard',{},actor),e=>e.status===409);checks++;
+ const refreshed=client(session(actor),session(other),()=>new Response('{}',{status:401}));
+ await assert.rejects(()=>refreshed.staffRequest('','guardian_dashboard',{},actor),e=>e.status===409);assert.equal(refreshed.calls.length,1);checks++;
+}
 console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks,productionTouched:false}));

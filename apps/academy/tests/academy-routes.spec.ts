@@ -1823,13 +1823,21 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       action?: string;
       command?: string;
       academy_id?: string;
+      relationship_id?: string;
     } | null;
-    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['staff_access_command','access_invitation_command','staff_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
+    const portalResponse = (value:unknown) => {
+      if(postedBody?.action!=='guardian_portal_read_command'||!value||typeof value!=='object')return value;
+      const record=value as Record<string,unknown>;
+      const children=(record.children??[]) as Array<{relationship_id:string}>;
+      return {has_more:false,cursor:null,...record,actor_id:`${persona}-user`,
+        ...(action==='guardian_dashboard'?{selected_child:children.find(c=>c.relationship_id===postedBody.relationship_id)??children[0]??null}:{relationship_id:postedBody.relationship_id})};
+    };
     options.actionLog?.push(action);
     const customResponse = await options.respond?.(body ?? {});
-    if (customResponse !== undefined) return route.fulfill(json(customResponse));
+    if (customResponse !== undefined) return route.fulfill(json(portalResponse(customResponse)));
     const attempt = (actionAttempts.get(action) ?? 0) + 1;
     actionAttempts.set(action, attempt);
 
@@ -2203,8 +2211,8 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       },
     };
 
-    if (action in (options.actionOverrides ?? {})) return route.fulfill(json(options.actionOverrides?.[action]));
-    if (action in actionResponse) return route.fulfill(json(actionResponse[action]));
+    if (action in (options.actionOverrides ?? {})) return route.fulfill(json(portalResponse(options.actionOverrides?.[action])));
+    if (action in actionResponse) return route.fulfill(json(portalResponse(actionResponse[action])));
     return route.fulfill(json({}));
   });
 };
@@ -4252,9 +4260,9 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
         if (body.action === "guardian_dashboard") return dashboard;
         if (body.action === "guardian_update_preferences") { saved.push(body); return {}; }
         if (body.action !== "guardian_service_requests") return undefined;
-        const selected = String(body.academy_id);
-        if (selected === academyId) { firstRequested = true; await firstBlocked; }
-        return { requests: [{ id: `request-${selected}`, subject: selected === academyId ? "First academy request" : "Other academy request", status: "submitted", request_type: "support", created_at: "2026-01-01T00:00:00Z" }] };
+        const selected = String(body.relationship_id);
+        if (selected === guardianDashboard.children[0].relationship_id) { firstRequested = true; await firstBlocked; }
+        return { events:[], requests: [{ id: `request-${selected}`, subject: selected === guardianDashboard.children[0].relationship_id ? "First academy request" : "Other academy request", status: "submitted", request_type: "support", created_at: "2026-01-01T00:00:00Z" }] };
       },
     });
     await page.goto("/academy/parent");
@@ -4267,7 +4275,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.locator("form").filter({ has: page.getByRole("heading", { name: "Message academy", exact: true }) }).locator("textarea")).toHaveValue("");
     await page.getByRole("button", { name: "Ask for help", exact: true }).click();
     await expect(page.getByText("Other academy request", { exact: true })).toBeVisible();
-    const firstResponse = page.waitForResponse((response) => response.request().postDataJSON()?.action === "guardian_service_requests" && response.request().postDataJSON()?.academy_id === academyId);
+    const firstResponse = page.waitForResponse((response) => response.request().postDataJSON()?.command === "guardian_service_requests" && response.request().postDataJSON()?.relationship_id === guardianDashboard.children[0].relationship_id);
     releaseFirst();
     await firstResponse;
     await expect(page.getByText("First academy request", { exact: true })).toHaveCount(0);
@@ -4280,6 +4288,57 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     dashboard = { ...dashboard, children: [otherChild, guardianDashboard.children[0]] };
     await page.getByRole("button", { name: "Refresh", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Other Child", exact: true })).toBeVisible();
+  });
+
+  test('parent payment privacy and selected-child requests stay correct inside one academy',async({page})=>{
+    await seedSessionCookie(page,'guardian-user');
+    const nextLesson=new Date(Date.now()+86400000).toISOString();
+    const first={...guardianDashboard.children[0],permissions:{...guardianDashboard.children[0].permissions,debt:false},
+      schedule:[{id:'owned-past-lesson',starts_at:new Date(Date.now()-86400000).toISOString(),status:'completed'},
+        {id:'owned-cancelled-lesson',starts_at:new Date(Date.now()+3600000).toISOString(),status:'cancelled'},{id:'owned-next-lesson',starts_at:nextLesson,status:'scheduled'}],
+      charges:[{id:'owned-exact-charge',charge_number:'Owned charge',due_on:'2026-10-20',effective_amount:'9007199254740993',currency:'UZS'}],balances:[]};
+    const second={...first,relationship_id:'owned-second-relationship',student:{...first.student,id:'owned-second-student',name:'Second child'}};
+    await mockAcademyEdge(page,'guardian',{respond:async body=>{
+      if(body.action==='guardian_dashboard')return {...guardianDashboard,children:[first,second]};
+      if(body.action==='guardian_service_requests')return {requests:[{id:'request-'+String(body.relationship_id),subject:body.relationship_id===first.relationship_id?'First child request':'Second child request',status:'submitted',request_type:'support',created_at:'2026-10-20T08:00:00Z'}],events:[]};
+      return undefined;
+    }});
+    await page.goto('/academy/parent');await page.getByRole('button',{name:'Payments',exact:true}).click();
+    const nextTime=await page.evaluate(value=>new Date(value).toLocaleString('en-US'),nextLesson);
+    await expect(page.locator('.academy-command-grid article').filter({has:page.getByText('Next lesson',{exact:true})})).toContainText(nextTime);
+    await expect(page.getByText('9,007,199,254,740,993 UZS',{exact:true})).toBeVisible();
+    await expect(page.getByRole('columnheader',{name:'Outstanding',exact:true})).toHaveCount(0);
+    for(const width of [320,1440]){await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath(`parent-payment-${width}.png`),fullPage:true});}
+    await page.getByRole('combobox',{name:'Choose your child',exact:true}).selectOption({label:'Second child'});
+    await page.getByRole('button',{name:'Ask for help',exact:true}).click();
+    await expect(page.getByText('Second child request',{exact:true})).toBeVisible();await expect(page.getByText('First child request',{exact:true})).toHaveCount(0);
+    await page.getByRole('button',{name:'Refresh',exact:true}).click();await expect(page.getByRole('heading',{name:'Second child',exact:true})).toBeVisible();
+  });
+
+  test('parent linking uses a signed Telegram session without technical identity fields',async({page})=>{
+    await page.addInitScript(()=>{window.Telegram={WebApp:{initData:'owned-signed-init-data'}} as typeof window.Telegram;});
+    await seedSessionCookie(page,'guardian-user');let linked=false;const commands:Record<string,unknown>[]=[];
+    await mockAcademyEdge(page,'guardian',{respond:async body=>{
+      if(body.action==='guardian_dashboard')return linked?guardianDashboard:{guardians:[],children:[],preferences:[],notifications:[]};
+      if(body.action==='guardian_claim_link'){commands.push(body);linked=true;return {actor_id:'guardian-user',academy_id:'00000000-0000-4000-8000-000000000921',guardian:{id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'verified'},relationship:{guardian_id:'00000000-0000-4000-8000-000000000922',academy_id:'00000000-0000-4000-8000-000000000921',status:'active',consent_status:'granted'}};}
+      return undefined;
+    }});
+    await page.goto('/academy/parent?token=owned-parent-token');
+    await expect(page.getByRole('heading',{name:'Connect with your child’s academy',exact:true})).toBeVisible();
+    await expect(page.getByLabel('Verified Telegram user ID',{exact:true})).toHaveCount(0);await expect(page.getByLabel('Telegram chat ID',{exact:true})).toHaveCount(0);
+    const connect=page.getByRole('button',{name:'Connect family updates',exact:true});await expect(connect).toBeDisabled();
+    await page.getByRole('checkbox',{name:'I agree to connect this account to my child’s academy updates.',exact:true}).check();
+    await connect.click();await expect(page.getByRole('heading',{name:'Ali Karimov',exact:true})).toBeVisible();
+    expect(commands).toHaveLength(1);expect(commands[0]).toMatchObject({token:'owned-parent-token',init_data:'owned-signed-init-data',confirm_access:true});
+    expect(commands[0]).not.toHaveProperty('telegram_user_id');expect(commands[0]).not.toHaveProperty('telegram_chat_id');
+  });
+
+  test('web parent entry asks for the academy invitation',async({page})=>{
+    await seedSessionCookie(page,'guardian-user');await mockAcademyEdge(page,'guardian',{actionOverrides:{guardian_dashboard:{guardians:[],children:[],preferences:[],notifications:[]}}});
+    await page.setViewportSize({width:320,height:900});await page.goto('/academy/parent');
+    await expect(page.getByRole('heading',{name:'Ask your academy for an invitation',exact:true})).toBeVisible();
+    await expect(page.getByRole('textbox')).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:test.info().outputPath('parent-web-entry-320.png'),fullPage:true});
   });
 
   test("parent message failures retain the draft for a successful retry", async ({ page }) => {

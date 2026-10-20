@@ -26,15 +26,19 @@ import {
   type AcademyGuardianDashboard,
 } from '../../lib/client';
 
-type Props = { onSignOut: () => Promise<void> };
+type Props = { actorId:string;onSignOut: () => Promise<void> };
 type Tab = 'overview' | 'attendance' | 'learning' | 'schedule' | 'billing' | 'messages' | 'requests' | 'preferences';
 const label = (value: unknown) => translate(String(value ?? '').replaceAll('_', ' '));
-const money = (value: unknown, currency = 'UZS') =>
-  `${new Intl.NumberFormat(getLocaleTag()).format(Number(value ?? 0))} ${currency}`;
-export function GuardianPortalView({ onSignOut }: Props) {
+const money = (value: unknown, currency = 'UZS') => {
+  if(typeof value==='number'&&!Number.isSafeInteger(value))return '—';
+  const text=String(value??'');const amount=/^-?\d+$/.test(text)?BigInt(text):Number(value);
+  return `${new Intl.NumberFormat(getLocaleTag()).format(amount)} ${currency}`;
+};
+export function GuardianPortalView({ actorId,onSignOut }: Props) {
   const [data, setData] = useState<AcademyGuardianDashboard | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
   const [selectedRelationshipId, setSelectedRelationshipId] = useState('');
+  const selectedRelationship = useRef('');
   const [busy, setBusy] = useState(false);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const dashboardRequest = useRef(0);
@@ -42,14 +46,11 @@ export function GuardianPortalView({ onSignOut }: Props) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const params = new URLSearchParams(window.location.search);
-  const [claim, setClaim] = useState({
-    token: params.get('token') ?? '',
-    telegram_user_id: '',
-    telegram_chat_id: '',
-    telegram_username: '',
-  });
+  const telegramInitData=window.Telegram?.WebApp?.initData||params.get('initData')||'';
+  const [claimToken,setClaimToken]=useState(params.get('token')??'');
+  const [confirmLink,setConfirmLink]=useState(false);
   const [message, setMessage] = useState('');
-  const [requestResponse, setRequestResponse] = useState<{ academyId: string; requests: AcademyServiceRequest[] } | null>(null);
+  const [requestResponse, setRequestResponse] = useState<{ relationshipId:string;requests:AcademyServiceRequest[];hasMore?:boolean } | null>(null);
   const [requestForm, setRequestForm] = useState({
     request_type: 'support',
     subject: '',
@@ -74,13 +75,16 @@ export function GuardianPortalView({ onSignOut }: Props) {
     quiet_hours_end: '07:00',
     allow_critical_override: true,
   });
-  const load = useCallback(async () => {
+  const load = useCallback(async (relationshipId=selectedRelationship.current) => {
     const request = ++dashboardRequest.current;
     setDashboardLoading(true);
     setError('');
     try {
-      const response = await teacherStudioGuardianDashboard();
+      const response = await teacherStudioGuardianDashboard(relationshipId||undefined,actorId);
       if (request !== dashboardRequest.current) return;
+      const selection=relationshipId||response.children.find(c=>c.details_loaded)?.relationship_id||response.children[0]?.relationship_id||'';
+      selectedRelationship.current=selection;
+      setSelectedRelationshipId(selection);
       setData(response);
     } catch (next) {
       if (request === dashboardRequest.current) {
@@ -90,15 +94,28 @@ export function GuardianPortalView({ onSignOut }: Props) {
     } finally {
       if (request === dashboardRequest.current) setDashboardLoading(false);
     }
-  }, []);
+  }, [actorId]);
   useEffect(() => {
     void load();
     return () => { dashboardRequest.current += 1; };
   }, [load]);
   const child = data?.children.find((item) => item.relationship_id === selectedRelationshipId) ?? data?.children[0];
-  const guardianId = String(data?.guardians.find((guardian) => guardian.academy_id === child?.academy_id)?.id ?? '');
-  const requests = requestResponse && requestResponse.academyId === child?.academy_id ? requestResponse.requests : [];
+  const guardianId = String(child?.guardian_id??data?.guardians.find((guardian) => guardian.academy_id === child?.academy_id)?.id ?? '');
+  const requests = requestResponse && requestResponse.relationshipId === child?.relationship_id ? requestResponse.requests : [];
   const actionBlocked = busy || dashboardLoading;
+  const selectChild = (relationshipId:string) => {
+    dashboardRequest.current+=1;
+    requestsRequest.current+=1;
+    selectedRelationship.current=relationshipId;
+    setSelectedRelationshipId(relationshipId);
+    setDashboardLoading(true);
+    setMessage('');
+    setRequestForm({request_type:'support',subject:'',details:''});
+    setPrivateReport({case_type:'complaint',title:'',description:'',severity:'medium'});
+    setNotice('');
+    setTab('overview');
+    void load(relationshipId);
+  };
   const run = async (work: () => Promise<unknown>, messageText: string) => {
     if (actionBlocked) return;
     setBusy(true);
@@ -114,32 +131,26 @@ export function GuardianPortalView({ onSignOut }: Props) {
       setBusy(false);
     }
   };
-  const upcoming = useMemo(
+  const orderedSchedule = useMemo(
     () =>
       [...(child?.schedule ?? [])].sort((a, b) => Date.parse(String(a.starts_at)) - Date.parse(String(b.starts_at))),
     [child?.schedule],
   );
+  const nextLesson=orderedSchedule.find(lesson=>Date.parse(String(lesson.starts_at))>=Date.now()&&!['cancelled','completed','missed'].includes(String(lesson.status)));
   const loadRequests = useCallback(async () => {
     const request = ++requestsRequest.current;
-    if (!child?.academy_id) return;
+    if (!child?.relationship_id) return;
     try {
-      const response = await teacherStudioGuardianServiceRequests(child.academy_id);
-      if (request === requestsRequest.current) setRequestResponse({ academyId: child.academy_id, requests: response.requests ?? [] });
+      const response = await teacherStudioGuardianServiceRequests(child.relationship_id,actorId);
+      if (request === requestsRequest.current) setRequestResponse({ relationshipId:child.relationship_id,requests:response.requests??[],hasMore:response.history_has_more });
     } catch (next) {
       if (request === requestsRequest.current) setError(next instanceof Error ? next.message : 'Unable to load support requests.');
     }
-  }, [child?.academy_id]);
+  }, [child?.relationship_id,actorId]);
   useEffect(() => {
     void loadRequests();
     return () => { requestsRequest.current += 1; };
   }, [loadRequests]);
-  useEffect(() => {
-    setSelectedRelationshipId(child?.relationship_id ?? '');
-    setMessage('');
-    setRequestForm({ request_type: 'support', subject: '', details: '' });
-    setPrivateReport({ case_type: 'complaint', title: '', description: '', severity: 'medium' });
-    setNotice('');
-  }, [child?.relationship_id]);
   const savedPreference = data?.preferences.find((item) => item.guardian_id === guardianId && item.event_type === '*');
   useEffect(() => {
     setPreference({
@@ -161,17 +172,18 @@ export function GuardianPortalView({ onSignOut }: Props) {
       <div className="ts-loading">
         <div className="auth-card">
           <h2>{translate('Parent Portal')}</h2>
-          <p>{error || 'Loading securely authorized family access…'}</p>
-          {error ? <button className="primary-btn" disabled={dashboardLoading} onClick={() => void load()}>{translate('Retry')}</button> : null}
+          <p>{translate(error || 'Loading your parent portal...')}</p>
+          {error ? <button className="primary-btn" disabled={dashboardLoading} onClick={() => selectChild('')}>{translate('Retry')}</button> : null}
         </div>
       </div>
     );
   if (!data.children.length)
     return (
-      <div className="market-page">
+      <div className="market-page parent-workspace">
         <div className="market-wrap">
           <div className="market-nav">
             <span className="market-badge">{translate('Secure parent access')}</span>
+            <LanguageSwitcher inline />
             <UpdatesButton variant="inline" />
             <button className="ghost-btn" onClick={() => void onSignOut()}>
               <LogOut size={16} /> {translate('Sign out')}
@@ -180,63 +192,25 @@ export function GuardianPortalView({ onSignOut }: Props) {
           <section className="market-hero">
             <div className="market-copy">
               <div className="market-eyebrow">
-                <ShieldCheck size={14} /> {translate('Account linking required')}
+                <ShieldCheck size={14} /> {translate('An invitation is needed')}
               </div>
-              <h1>{translate('Connect an authorized guardian relationship')}</h1>
+              <h1>{translate('Connect with your child’s academy')}</h1>
               <p>
                 {translate(
-                  'Ask the academy for a one-time link. A Telegram username alone never grants student access.',
+                  'Your academy controls which information is shared with you.',
                 )}
               </p>
             </div>
-            <form
-              className="market-card compact-form"
-              onSubmit={(e: FormEvent) => {
-                e.preventDefault();
-                void run(() => teacherStudioClaimGuardianLink(claim), 'Guardian access verified and connected.');
-              }}
-            >
-              <label>
-                {translate('One-time token')}
-                <input
-                  className="input"
-                  value={claim.token}
-                  onChange={(e) => setClaim({ ...claim, token: e.target.value })}
-                  required
-                />
-              </label>
-              <label>
-                {translate('Verified Telegram user ID')}
-                <input
-                  className="input"
-                  value={claim.telegram_user_id}
-                  onChange={(e) => setClaim({ ...claim, telegram_user_id: e.target.value })}
-                  required
-                />
-              </label>
-              <label>
-                {translate('Telegram chat ID')}
-                <input
-                  className="input"
-                  value={claim.telegram_chat_id}
-                  onChange={(e) => setClaim({ ...claim, telegram_chat_id: e.target.value })}
-                  required
-                />
-              </label>
-              <label>
-                {translate('Telegram username (display only)')}
-                <input
-                  className="input"
-                  value={claim.telegram_username}
-                  onChange={(e) => setClaim({ ...claim, telegram_username: e.target.value })}
-                />
-              </label>
-              {error ? <p className="form-error">{translate(error)}</p> : null}
-              {notice ? <p className="form-success">{translate(notice)}</p> : null}
-              <button className="primary-btn" disabled={busy}>
-                {translate('Verify one-time link')}
-              </button>
-            </form>
+            {telegramInitData ? <form className="market-card compact-form" onSubmit={(event:FormEvent)=>{
+              event.preventDefault();void run(()=>teacherStudioClaimGuardianLink({token:claimToken,init_data:telegramInitData,confirm_access:confirmLink},actorId),'Guardian access verified and connected.');
+            }}>
+              <label>{translate('Invitation code')}<input className="input" value={claimToken} onChange={event=>setClaimToken(event.target.value)} required/></label>
+              <label className="check-row"><input type="checkbox" checked={confirmLink} onChange={event=>setConfirmLink(event.target.checked)}/>{translate('I agree to connect this account to my child’s academy updates.')}</label>
+              {error?<p className="form-error">{translate(error)}</p>:null}
+              {notice?<p className="form-success">{translate(notice)}</p>:null}
+              <button className="primary-btn" disabled={actionBlocked||!confirmLink}>{translate('Connect family updates')}</button>
+            </form> : <article className="market-card"><h2>{translate('Ask your academy for an invitation')}</h2><p>{translate('Open the parent invitation link sent by your academy. Sign in using the email they invited.')}</p><button className="ghost-btn" disabled={actionBlocked} onClick={()=>void load()}>{translate('Refresh')}</button></article>}
+
           </section>
         </div>
       </div>
@@ -258,7 +232,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
         <section className="market-hero">
           <div className="market-copy">
             <div className="market-eyebrow">
-              <ShieldCheck size={14} /> {translate('Consent-based family access')}
+              <ShieldCheck size={14} /> {translate('Your family dashboard')}
             </div>
             <h1>{child?.student.name}</h1>
             <p>
@@ -267,7 +241,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
             </p>
             <label className="parent-child-switcher">
             <span>{translate('Choose your child')}</span>
-            <select className="input" value={child?.relationship_id ?? ''} disabled={busy} onChange={(e) => { setSelectedRelationshipId(e.target.value); setTab('overview'); }}>
+            <select className="input" value={child?.relationship_id ?? ''} disabled={actionBlocked} onChange={(e) => selectChild(e.target.value)}>
               {data.children.map((item) => (
                 <option key={item.relationship_id} value={item.relationship_id}>
                   {item.student.name}
@@ -289,8 +263,8 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 <CalendarDays size={18} />
                 <strong>{translate('Next lesson')}</strong>
                 <span>
-                  {child?.permissions.schedule && upcoming[0]
-                    ? formatLocaleDateTime(String(upcoming[0].starts_at))
+                  {child?.permissions.schedule
+                    ? nextLesson?formatLocaleDateTime(String(nextLesson.starts_at)):translate('Not scheduled')
                     : translate('Not shared')}
                 </span>
               </article>
@@ -298,8 +272,8 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 <CreditCard size={18} />
                 <strong>{translate('Balance')}</strong>
                 <span>
-                  {child?.permissions.payments
-                    ? money(child.balances[0]?.balance, String(child.balances[0]?.currency ?? 'UZS'))
+                  {child?.permissions.payments && child.permissions.debt
+                    ? child.balances.length?money(child.balances[0]?.balance, String(child.balances[0]?.currency ?? 'UZS')):translate('No balance recorded')
                     : translate('Not shared')}
                 </span>
               </article>
@@ -307,12 +281,14 @@ export function GuardianPortalView({ onSignOut }: Props) {
                 <BellRing size={18} />
                 <strong>{translate('Updates')}</strong>
                 <span>
-                  {data.notifications.length} {translate('authorized notifications')}
+                  {data.notifications.filter(n=>n.relationship_id===child?.relationship_id).length}
                 </span>
               </article>
             </div>
           </div>
         </section>
+        {dashboardLoading || child?.details_loaded===false ? <p className="info-banner" role="status">{translate('Updating student information...')}</p> : null}
+        {child?.history_has_more&&Object.values(child.history_has_more).some(Boolean) ? <p className="info-banner">{translate('Showing recent records. Ask the academy for earlier history.')}</p> : null}
         {error ? <p className="form-error">{translate(error)}</p> : null}
         {notice ? <p className="form-success">{translate(notice)}</p> : null}
         <nav className="business-tabs" aria-label={translate('Parent portal sections')}>
@@ -405,7 +381,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                             score: String(item.score),
                           })}
                     </strong>
-                    <p>{String(item.feedback ?? label(item.status))}</p>
+                    <p>{typeof item.feedback==='string'&&item.feedback.trim()?item.feedback:label(item.status)}</p>
                   </article>
                 ))}
               </div>
@@ -431,7 +407,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
           <section className="market-card">
             <h2>{translate('Lesson schedule')}</h2>
             <div className="record-list">
-              {upcoming.map((item) => (
+              {orderedSchedule.map((item) => (
                 <article key={String(item.id)}>
                   <strong>{String(item.title)}</strong>
                   <p>
@@ -444,10 +420,10 @@ export function GuardianPortalView({ onSignOut }: Props) {
         ) : null}
         {tab === 'billing' ? (
           <section className="market-card">
-            <h2>{translate('Payments and debt')}</h2>
+            <h2>{translate(child?.permissions.debt?'Payments and debt':'Payments')}</h2>
             <p className="muted">
               {translate(
-                'View your child’s charges, payments and balance here.',
+                child?.permissions.debt?'View your child’s charges, payments and balance here.':'View your child’s charges and payments here.',
               )}
             </p>
             <div className="finance-table-wrap">
@@ -457,8 +433,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                     <th>{translate('Charge')}</th>
                     <th>{translate('Due')}</th>
                     <th>{translate('Amount')}</th>
-                    <th>{translate('Outstanding')}</th>
-                    <th>{translate('Status')}</th>
+                    {child?.permissions.debt?<><th>{translate('Outstanding')}</th><th>{translate('Status')}</th></>:null}
                   </tr>
                 </thead>
                 <tbody>
@@ -467,8 +442,7 @@ export function GuardianPortalView({ onSignOut }: Props) {
                       <td>{String(item.charge_number)}</td>
                       <td>{String(item.due_on)}</td>
                       <td>{money(item.effective_amount, String(item.currency))}</td>
-                      <td>{money(item.outstanding_amount, String(item.currency))}</td>
-                      <td>{label(item.calculated_status)}</td>
+                      {child?.permissions.debt?<><td>{money(item.outstanding_amount, String(item.currency))}</td><td>{label(item.calculated_status)}</td></>:null}
                     </tr>
                   ))}
                 </tbody>

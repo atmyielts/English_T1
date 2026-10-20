@@ -13,7 +13,7 @@ their entire implementation is absent.
   with owned hosted fixtures. Evidence: `2026-10-13-legacy-import-permissions.json`.
 - PR 248 remains draft. Import review/resumption/recovery, current authority,
   directory and browser improvements are locally qualified. CI for head
-  `cb87e246ec58e59dc1b522ce0ace1ab661150f12` is green (run 38547247773).
+  `cf6776c0bb7104f519547baf6a8ccce4b0a82342` is green (run 39389028895).
   Its new importer and authority migrations are not activated. Subsequent staff
   changes require their own protected CI and qualification.
 - PR 250 shipped the seven-table/column ACL boundary; migration installation,
@@ -33,7 +33,7 @@ their entire implementation is absent.
 - Student/guardian invitation paths, hosted legacy staff acceptance, remaining
   multi-resource authorization and final installed-schema/hosted acceptance
   remain release gates. The scope above is still open, with no production
-  activation of the twelve pending importer/authority/staff/invitation migrations.
+  activation of the thirteen pending importer/authority/staff/invitation/parent migrations.
 - PR 251 shipped frontend-only customer wording and responsive import history.
   Exact-head CI 38558843952 and tracked Pages run 38559622384 passed; main is
   `86ccdaf7b048d4e03d2b151b614cca2314441ab2`. Anonymous route/asset checks confirm
@@ -50,6 +50,13 @@ their entire implementation is absent.
   paused enrollment and filtering before page limits now have local candidate
   implementation and tests. They remain undeployed; evidence and remaining
   downstream-access gates: `2026-10-20-learner-invitations-candidate.md`.
+- Parent dashboard/request reads and signed legacy Telegram linking now have a
+  local candidate with independent debt permissions, current consent, child-bound
+  requests and a plain invitation page. A fresh 413-table capture qualifies all
+  thirteen migrations' installation and 52 parent checks, plus native revocation,
+  account-closure and expiry contention. See
+  `2026-10-20-guardian-portal-candidate.md` and
+  `2026-10-20-guardian-captured-schema.json`. These backend changes are not deployed.
 - Concurrent proctor work belongs to the other agent; preserve its source and
   deployed state when reconciling shared files or migrations.
 

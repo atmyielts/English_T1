@@ -23,6 +23,27 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  // Parent portal feedback and signed linking.
+  "An invitation is needed",
+  "Ask your academy for an invitation",
+  "Connect family updates",
+  "Connect with your child’s academy",
+  "I agree to connect this account to my child’s academy updates.",
+  "Invitation code",
+  "No balance recorded",
+  "Open the parent invitation link sent by your academy. Sign in using the email they invited.",
+  "Showing recent records. Ask the academy for earlier history.",
+  "Updating student information...",
+  "View your child’s charges and payments here.",
+  "Your family dashboard",
+  "Loading your parent portal...",
+  "We could not load your parent portal. Try again.",
+  "Parent access changed or expired. Ask the academy to review it.",
+  "Choose a student from your parent portal.",
+  "Choose a valid parent portal page.",
+  "Review and confirm the parent invitation.",
+  "Open the parent invitation inside Telegram.",
+  "Telegram linking is temporarily unavailable. Ask the academy for a parent invitation.",
   // Student and parent invitation feedback.
   "Accept invitation",
   "Accept your invitation",
