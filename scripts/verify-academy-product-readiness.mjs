@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isFullAcademyRouteCommand } from './academy-route-command.mjs';
-import { academyDispatchedReadActions } from './lib/academy-read-action-contract.mjs';
+import { academyDispatchedReadActions,academyDispatchedWriteActions } from './lib/academy-read-action-contract.mjs';
 
 const root = process.cwd();
 const read = (file) => readFileSync(join(root, file), 'utf8');
@@ -182,9 +182,8 @@ const hasReadAction = (action) => dispatchedReads.has(action);
 const hasStudentAction = (action) =>
   new RegExp(`requestedAction\\s*===\\s*"${action}"`).test(academyEdge);
 
-const hasWriteAction = (action) =>
-  new RegExp(`actionBody\\s*===\\s*"${action}"`).test(academyEdge) ||
-  (academyEdge.includes('staffGuardianActions.has(actionBody)') && read('supabase/functions/academy/staff-guardian-command.ts').includes("'"+action+"'"));
+const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts')});
+const hasWriteAction = action=>dispatchedWrites.has(action);
 
 const hasClientAction = (action) =>
   academyClient.includes(`action: '${action}'`) || academyClient.includes(`action: "${action}"`) ||

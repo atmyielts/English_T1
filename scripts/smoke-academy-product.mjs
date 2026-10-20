@@ -1,3 +1,4 @@
+import {academyDispatchedWriteActions} from './lib/academy-read-action-contract.mjs';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -338,8 +339,9 @@ const requiredEdgeActions = [
   'create_automation_version','execute_automation_event','review_automation_execution','request_ai_assistance','review_ai_assistance',
 ];
 
+const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts')});
 for (const action of requiredEdgeActions) {
-  addCheck(`Academy Edge action contract includes ${action}`, academyEdge.includes(`"${action}"`) || academyEdge.includes(`'${action}'`));
+  addCheck(`Academy Edge action contract includes ${action}`, dispatchedWrites.has(action)||academyEdge.includes(`"${action}"`)||academyEdge.includes(`'${action}'`));
 }
 
 const liveEdgeUrl = process.env.ACADEMY_EDGE_URL?.trim();
