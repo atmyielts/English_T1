@@ -492,5 +492,8 @@
   "limits": [
     "The in-app browser could not open the public root because of a QUIC transport error; no live browser/CSP verdict is inferred from HTTP or mocked browser tests.",
     "Immutable QA institutional history was archived under the approved retention rule, not deleted. Temporary logins and personal data were removed, access stopped and owned outbox work cleared."
-  ]
+  ],
+  "postMergeCiRun": 39401182119,
+  "automatedAcademyLiveSmokeRun": 39401949724,
+  "automatedLiveSmokeExecuted": true
 }

@@ -2,6 +2,9 @@
 
 PR 253 shipped through protected CI 39400457283 and tracked Pages deployment
 39401182196. Main is `377ca2b2811e7ad1527a7b96b5c2eb7408d4a905`.
+Post-merge CI 39401182119 and Academy Live Smoke 39401949724 also passed for
+that exact main. The live-smoke job validated its credentials and executed its
+live check step; this was not a skipped job.
 
 Only the two reviewed parent migrations were applied; the linked history now
 contains 198 migrations. Academy v83 has 16 runtime modules. A fresh published
