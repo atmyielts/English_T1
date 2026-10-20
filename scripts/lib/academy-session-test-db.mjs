@@ -97,8 +97,12 @@ export async function createNativeSessionDb({profile=false}={}) {
     if(!ready)throw new Error('Owned REST fixture did not start');
     const rpc=async(functionName,body)=>{
       assert.match(functionName,/^academy_[a-z_]+$/);
-      const result=await run(['exec',name,'wget','-q','-O','-','-T','55','--header=Content-Type: application/json',
-        '--post-data='+JSON.stringify(body),'http://127.0.0.1:3000/rpc/'+functionName]);
+      // Keep large valid batches off Windows' command-line length limit. The
+      // request file exists only inside this verified owned isolated container.
+      const requestFile='/tmp/schood-rpc-'+randomUUID()+'.json';
+      const result=await run(['exec','-i',name,'sh','-c',
+        'cat > "$1" && wget -q -O - -T 55 --header="Content-Type: application/json" --post-file="$1" "$2"; task_status=$?; rm -f -- "$1"; exit "$task_status"',
+        'owned-rpc',requestFile,'http://127.0.0.1:3000/rpc/'+functionName],JSON.stringify(body));
       return JSON.parse(result);
     };
     rpc.select=async(table,params)=>{

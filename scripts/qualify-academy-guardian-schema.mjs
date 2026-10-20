@@ -21,11 +21,15 @@ const image='public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c
 const name='schood-guardian-schema-'+randomUUID().slice(0,8),label='guardian-portal-installed-schema';
 const root=option('--output-dir')||'supabase/.temp/guardian-schema';mkdirSync(root,{recursive:true});
 writeFileSync(root+'/installed-schema-owned-container.json',JSON.stringify({name,label,image,createdAt:new Date().toISOString()},null,2)+'\n');
-const migrations=[...new Set([...JSON.parse(readFileSync('release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql'])];
+const migrations=[...new Set([...JSON.parse(readFileSync('release/manifest.json','utf8')).migrations,'20261020120000_academy_guardian_portal_reads.sql','20261020121000_academy_guardian_binding_identity.sql'])];
 // Freeze tested sources before any asynchronous work. Evidence must describe the
 // bytes installed/tested, even if another edit arrives while qualification runs.
 const candidates=migrations.map(file=>({file,source:readFileSync('supabase/migrations/'+file,'utf8')}));
 const canarySource=readFileSync('scripts/fixtures/academy-guardian-portal.sql','utf8');
+const commandFixtures=process.argv.includes('--release-commands')?[
+  {file:'scripts/verify-academy-student-import-schema.sql',marker:'student-import-captured-schema-ok'},
+  {file:'scripts/fixtures/academy-release-commands.sql',marker:'staff-and-learner-captured-schema-ok'},
+].map(fixture=>({...fixture,source:readFileSync(fixture.file,'utf8')})):[];
 const checks=[];let owned=false,cleanupVerified=false,passed=false,stage='start',catalog,fixtureChecks=0;const held=new Set();
 function run(args,input=''){
   return new Promise((resolve,reject)=>{
@@ -92,6 +96,10 @@ try{
   await check('frozen reviewed migrations install under captured production roles',async()=>{
     for(const candidate of candidates)await sql(candidate.source,'postgres');
   });
+  for(const fixture of commandFixtures)await check('production-schema command fixture: '+fixture.file,async()=>{
+    assert.equal(await sql(fixture.source,'postgres'),fixture.marker);
+    assert.equal(await sql('select count(*) from auth.users;'),'0');
+  });
   await check('actual Auth triggers, foreign keys and views qualify parent privacy and child selection',async()=>{
     const marker=await sql(canarySource,'postgres');assert.match(marker,/^guardian-captured-schema-ok:\d+$/);
     fixtureChecks=Number(marker.split(':')[1]);assert.ok(fixtureChecks>=36);
@@ -135,5 +143,6 @@ try{
   for(const handle of held)await handle.finish(false).catch(()=>{});
   if(owned){const marker=await run(['inspect',name,'--format','{{index .Config.Labels "schood.qa"}}']);assert.equal(marker,label);await run(['rm','--force','--volumes',name]);assert.equal(await run(['ps','--all','--filter','name=^/'+name+'$','--format','{{.ID}}']),'');cleanupVerified=true;}
   const proof={recordedAt:new Date().toISOString(),passed,cleanupVerified,stage,count:checks.length,fixtureChecks,checks,catalog,schema:{sha256,tableCount:runtime.tableCount,customerRowsIncluded:false},runtimeCatalog:{capturedAt:runtimeCapture.capturedAt,sha256:createHash('sha256').update(runtimeSource).digest('hex'),roles:runtime.roles,extensions:runtime.extensions},image,migrations:candidates.map(candidate=>({file:candidate.file,sha256LF:createHash('sha256').update(candidate.source.replaceAll('\r\n','\n')).digest('hex')})),canarySha256LF:createHash('sha256').update(canarySource.replaceAll('\r\n','\n')).digest('hex'),productionChanged:false,limits:['Local complete-schema compatibility only; no installed lifecycle/provider activation proof.','Schema captures contain definitions, not production seed/catalogue/customer records.','The local PostgreSQL exercises real captured Auth triggers, not the live Auth service.']};
+  proof.commandFixtures=commandFixtures.map(fixture=>({file:fixture.file,sha256LF:createHash('sha256').update(fixture.source.replaceAll('\r\n','\n')).digest('hex')}));
   writeFileSync(root+'/installed-schema-native-proof.json',JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify({passed,count:checks.length,cleanupVerified,stage}));
 }

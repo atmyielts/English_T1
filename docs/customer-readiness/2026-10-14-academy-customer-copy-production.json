@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-10-14T11:59:02.728Z",
+  "expected_source_sha": "86ccdaf7b048d4e03d2b151b614cca2314441ab2",
+  "tracked_deploy_run": "38559622384",
+  "anonymous_http_only": true,
+  "production_writes": 0,
+  "roots": [
+    {
+      "url": "https://academy.schood.online/",
+      "status": 200
+    },
+    {
+      "url": "https://schood.online/",
+      "status": 200
+    }
+  ],
+  "routes": [
+    {
+      "url": "https://academy.schood.online/academy/admin/intelligence",
+      "status": 200
+    },
+    {
+      "url": "https://academy.schood.online/academy/admin/payments",
+      "status": 200
+    },
+    {
+      "url": "https://academy.schood.online/academy/admin/services",
+      "status": 200
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://academy.schood.online/assets/index-lTwZC2VE-p69c871432604.js",
+      "status": 200,
+      "sha256": "9d01366b9bf57c339a7b1c014e77cdf26a356ee8ac2f66ca8d75f50a2bc2b7cf"
+    },
+    {
+      "url": "https://academy.schood.online/assets/App-DJvUDiL2-p69c871432604.js",
+      "status": 200,
+      "sha256": "4c30bc79825952cbd435063f6a5184c90d5a98ae343900cd64930bf39801e5cf"
+    },
+    {
+      "url": "https://academy.schood.online/assets/IntelligenceOperationsView-DXL4wS1D-p69c871432604.js",
+      "status": 200,
+      "sha256": "6b623a8fe79a5386a00f7083d27cec24560d6ce0aa14b997ab6fd808abd5d8b2"
+    },
+    {
+      "url": "https://academy.schood.online/assets/IntelligenceOperationsView-DFbb_lI5-p69c871432604.css",
+      "status": 200,
+      "sha256": "63ddd28c342182f4092a8451b1869950ebf083f9a55411298e239c6fe8f88dda"
+    }
+  ],
+  "copy_checks": 5,
+  "responsive_css": true
+}

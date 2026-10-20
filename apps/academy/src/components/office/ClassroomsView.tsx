@@ -147,7 +147,8 @@ export const ClassroomsView = ({
     const nextEvent = nextEventForClassroom(calendarEvents, classroom.id);
     return {
       classroom,
-      members: membershipsByClassroom.get(classroom.id)?.length ?? classroom.member_count ?? 0,
+      members: classroom.roster_visible === false ? null : classroom.roster_visible === true
+        ? classroom.member_count : membershipsByClassroom.get(classroom.id)?.length ?? classroom.member_count ?? 0,
       actions: classActions,
       urgent: classActions.filter(isUrgentAction).length,
       grading: classActions.filter((item) => item.source_type === 'grading_backlog').length,
@@ -236,7 +237,7 @@ export const ClassroomsView = ({
                       <button className="link-btn" type="button" onClick={() => onOpenClassroom(row.classroom.id)}>
                         {row.classroom.name}
                       </button>
-                      <div className="small muted">{row.members} {translate("members")}</div>
+                      <div className="small muted">{row.classroom.roster_visible === false ? translate('Limited student access') : <>{row.members} {translate("members")}</>}</div>
                     </td>
                     <td>{row.actions.length}</td>
                     <td>{row.urgent}</td>
@@ -318,7 +319,7 @@ export const ClassroomsView = ({
                       <div>{item.name}</div>
                       {item.description ? <div className="small muted">{item.description}</div> : null}
                     </td>
-                    <td>{operationRow?.members ?? item.member_count ?? 0}</td>
+                    <td>{item.roster_visible === false ? translate('Limited student access') : operationRow?.members ?? item.member_count ?? 0}</td>
                     <td><span className={`status ${item.is_active ? 'status--ok' : ''}`}>{item.is_active ? 'Active' : 'Inactive'}</span></td>
                     <td>
                       <strong>{operationRow?.actions.length ?? 0}</strong>

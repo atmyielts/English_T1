@@ -29,6 +29,7 @@ import {
   teacherStudioSchedule,
   teacherStudioSetLifecycleStage,
   teacherStudioStaff,
+  teacherStudioRoomBranches,
   teacherStudioSubmitAssignmentForContact,
   teacherStudioUpsertAutomationRule,
   teacherStudioUpsertBranding,
@@ -64,6 +65,8 @@ import {
   type OfficeRouteIntent,
 } from '../../lib/academyAccess';
 import { CurriculumView } from './CurriculumView';
+import type {RoomBranch} from '../../lib/roomTimetable';
+import {supabase} from '../../lib/supabase';
 
 type EducationOSTab =
   | 'today'
@@ -330,9 +333,27 @@ export const EducationOSView = ({
     staff_role: 'teacher',
     status: 'invited',
     expires_at: '',
+    scope_type:'classrooms',
     classroom_ids: [] as string[],
   });
   const [editingStaffId, setEditingStaffId] = useState('');
+  const editingStaffScope = useRef<{type:string;ids:string[];expires:string|null;expiryDate:string}|null>(null);
+  const [staffBranches,setStaffBranches]=useState<RoomBranch[]>([]);
+  const staffActor=useRef<string|null>(null);
+  useEffect(()=>{
+    let current=true;
+    const accept=(id:string|null)=>{
+      if(!current)return;
+      if(staffActor.current!==null&&staffActor.current!==id){
+        setStaffForm({staff_email:'',name:'',staff_role:'teacher',status:'invited',expires_at:'',scope_type:'classrooms',classroom_ids:[]});
+        setEditingStaffId('');editingStaffScope.current=null;setStaff([]);
+      }
+      staffActor.current=id;
+    };
+    void supabase.auth.getSession().then(result=>accept(result.data.session?.user.id??null));
+    const {data}=supabase.auth.onAuthStateChange((_event,session)=>accept(session?.user.id??null));
+    return()=>{current=false;staffActor.current=null;data.subscription.unsubscribe();};
+  },[academyId]);
   const [reportForm, setReportForm] = useState({ contact_id: '', label: 'Monthly progress report', expires_in_days: '180' });
   const [certificateForm, setCertificateForm] = useState({
     contact_id: '',
@@ -347,7 +368,17 @@ export const EducationOSView = ({
   const contactById = useMemo(() => new Map(contacts.map((contact) => [contact.id, contact])), [contacts]);
   const classroomById = useMemo(() => new Map(classrooms.map((classroom) => [classroom.id, classroom])), [classrooms]);
   const permissions = access?.permissions ?? EMPTY_PERMISSIONS;
-  const staffFormUsesClassroomScope = staffRoleUsesClassroomScope(staffForm.staff_role);
+  const staffFormUsesResourceScope = staffForm.scope_type!=='academy';
+  const staffResources = staffForm.scope_type==='branches'?staffBranches.map(row=>({id:row.id,label:row.name})):
+    staffForm.scope_type==='students'?contacts.map(row=>({id:row.id,label:contactName(row)})):
+    classrooms.map(row=>({id:row.id,label:row.name}));
+  useEffect(()=>{
+    if(!academyId||!permissions.manageStaff||staffForm.scope_type!=='branches')return;
+    let current=true;
+    void teacherStudioRoomBranches(academyId).then(result=>{if(current)setStaffBranches(result.branches);})
+      .catch(error=>{if(current)setLocalError(error instanceof Error?error.message:String(error));});
+    return ()=>{current=false;};
+  },[academyId,permissions.manageStaff,staffForm.scope_type]);
   const canUse = useCallback((permission: EducationOSPermission): boolean => permissions[permission] === true, [permissions]);
   const modeCanUse = useCallback(
     (permission: EducationOSPermission): boolean => permissionAllowedByMode(mode, permission) && canUse(permission),
@@ -1012,33 +1043,45 @@ export const EducationOSView = ({
   const submitStaff = async (event: FormEvent) => {
     event.preventDefault();
     if (!academyId || !staffForm.staff_email.trim() || !requireRoutePermission('manageStaff', 'Staff controls')) return;
-    if (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0) {
-      setLocalError('Teacher and assistant roles require at least one assigned classroom.');
+    const actor=staffActor.current;
+    if(!actor){setLocalError('Sign in again to manage staff.');return;}
+    if (staffFormUsesResourceScope && staffForm.classroom_ids.length === 0) {
+      setLocalError('Choose at least one access resource.');
       return;
     }
     await runAction('Staff member saved.', async () => {
+      const original=editingStaffScope.current;
+      const scopeType=staffForm.scope_type;
       await teacherStudioUpsertStaff(academyId, {
+        ...(editingStaffId?{id:editingStaffId}:{}),
         staff_email: staffForm.staff_email.trim(),
         name: staffForm.name.trim() || undefined,
         staff_role: staffForm.staff_role,
         status: staffForm.status,
-        expires_at: staffForm.expires_at ? new Date(`${staffForm.expires_at}T23:59:59`).toISOString() : null,
-        classroom_ids: staffFormUsesClassroomScope ? staffForm.classroom_ids : [],
-      });
-      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+        expires_at: original&&staffForm.expires_at===original.expiryDate?original.expires:
+          staffForm.expires_at ? new Date(`${staffForm.expires_at}T23:59:59`).toISOString() : null,
+        scope_type:scopeType,
+        scope_ids:scopeType==='academy'?[]:staffForm.classroom_ids,
+      },actor);
+      setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', scope_type:'classrooms', classroom_ids: [] });
       setEditingStaffId('');
+      editingStaffScope.current=null;
     });
   };
 
   const editStaff = (person: TeacherStudioStaff) => {
     const role = person.role || 'teacher';
+    const type=person.scope_type??(staffRoleUsesClassroomScope(role)?'classrooms':'academy');
+    editingStaffScope.current={type,ids:Array.isArray(person.scope_ids)?person.scope_ids.map(String):staffClassroomIds(person),
+      expires:person.expires_at??null,expiryDate:grantExpiryValue(person.expires_at)};
     setStaffForm({
       staff_email: person.email,
       name: person.display_name ?? '',
       staff_role: role,
       status: staffStatus(person) === 'revoked' ? 'invited' : staffStatus(person),
       expires_at: grantExpiryValue(person.expires_at),
-      classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
+      scope_type:type,
+      classroom_ids:editingStaffScope.current.ids,
     });
     setEditingStaffId(person.id);
   };
@@ -1046,22 +1089,28 @@ export const EducationOSView = ({
   const updateStaffStatus = async (person: TeacherStudioStaff, nextStatus: string) => {
     if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
     const role = person.role || 'teacher';
+    const actor=staffActor.current;
+    if(!actor){setLocalError('Sign in again to manage staff.');return;}
     await runAction(nextStatus === 'active' ? 'Staff access reactivated.' : 'Staff access suspended.', async () => {
       await teacherStudioUpsertStaff(academyId, {
+        id:person.id,
         staff_email: person.email,
         name: person.display_name ?? undefined,
         staff_role: role,
         status: nextStatus,
         expires_at: person.expires_at ?? null,
-        classroom_ids: staffRoleUsesClassroomScope(role) ? staffClassroomIds(person) : [],
-      });
+        ...(person.scope_type?{scope_type:person.scope_type,scope_ids:Array.isArray(person.scope_ids)?person.scope_ids.map(String):[]}:
+          {classroom_ids:staffClassroomIds(person)}),
+      },actor);
     });
   };
 
   const removeStaff = async (id: string) => {
+    const actor=staffActor.current;
+    if(!actor){setLocalError('Sign in again to manage staff.');return;}
     if (!academyId || !requireRoutePermission('manageStaff', 'Staff controls')) return;
     await runAction('Staff access revoked.', async () => {
-      await teacherStudioRemoveStaff(academyId, id);
+      await teacherStudioRemoveStaff(academyId, id,actor);
     });
   };
 
@@ -2069,17 +2118,20 @@ export const EducationOSView = ({
                   <label>{translate("Role")}<select className="input" value={staffForm.staff_role} onChange={(event) => setStaffForm((prev) => ({
                     ...prev,
                     staff_role: event.target.value,
-                    classroom_ids: staffRoleUsesClassroomScope(event.target.value) ? prev.classroom_ids : [],
                   }))}>
                     {STAFF_GRANT_ROLES.map((role) => <option key={role} value={role}>{role}</option>)}
+                  </select></label>
+                  <label>{translate("Where they can work")}<select className="input" value={staffForm.scope_type} onChange={event=>setStaffForm(previous=>({...previous,scope_type:event.target.value,classroom_ids:[]}))}>
+                    <option value="classrooms">{translate("Classrooms")}</option><option value="branches">{translate("Branches")}</option>
+                    <option value="students">{translate("Students")}</option><option value="academy">{translate("Whole Academy")}</option>
                   </select></label>
                   <label>{translate("Status")}<select className="input" value={staffForm.status} onChange={(event) => setStaffForm((prev) => ({ ...prev, status: event.target.value }))}>
                     {STAFF_GRANT_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
                   </select></label>
                   <label>{translate("Expires")}{' '}<span className="optional-label">{translate("Optional")}</span><input className="input" type="date" value={staffForm.expires_at} onChange={(event) => setStaffForm((prev) => ({ ...prev, expires_at: event.target.value }))} /></label>
-                  {staffFormUsesClassroomScope ? (
-                    <fieldset className="workspace-fieldset"><legend>{translate("Groups they can work with")}</legend><div className="chip-grid">
-                      {classrooms.map((classroom) => {
+                  {staffFormUsesResourceScope ? (
+                    <fieldset className="workspace-fieldset"><legend>{translate("Access resources")}</legend><div className="chip-grid">
+                      {staffResources.map((classroom) => {
                         const checked = staffForm.classroom_ids.includes(classroom.id);
                         return (
                           <label key={classroom.id} className="classroom-publish-toggle">
@@ -2093,7 +2145,7 @@ export const EducationOSView = ({
                                   : prev.classroom_ids.filter((id) => id !== classroom.id),
                               }))}
                             />
-                            {classroom.name}
+                            {classroom.label}
                           </label>
                         );
                       })}
@@ -2103,13 +2155,14 @@ export const EducationOSView = ({
                     {(STAFF_ACCESS_LANES[staffForm.staff_role] ?? []).map((lane) => <span key={lane}>{lane}</span>)}
                   </div>
                   <div className="row gap">
-                    <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesClassroomScope && staffForm.classroom_ids.length === 0)}>
+                    <button className="primary-btn" type="submit" disabled={localBusy || (staffFormUsesResourceScope && staffForm.classroom_ids.length === 0)}>
                       {translate(editingStaffId ? 'Save staff access' : 'Add staff access')}
                     </button>
                     {editingStaffId ? (
                       <button className="small-btn" type="button" onClick={() => {
-                        setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', classroom_ids: [] });
+                        setStaffForm({ staff_email: '', name: '', staff_role: 'teacher', status: 'invited', expires_at: '', scope_type:'classrooms', classroom_ids: [] });
                         setEditingStaffId('');
+                        editingStaffScope.current=null;
                       }}>
                         {translate("Clear")}{' '}</button>
                     ) : null}
@@ -2119,7 +2172,8 @@ export const EducationOSView = ({
                 <ul className="list">
                   {staff.map((person) => {
                     const status = staffStatus(person);
-                    const classroomScope = staffRoleUsesClassroomScope(person.role);
+                    const scopeType=person.scope_type??(staffRoleUsesClassroomScope(person.role)?'classrooms':'academy');
+                    const scopeIds=Array.isArray(person.scope_ids)?person.scope_ids:staffClassroomIds(person);
                     const lanes = STAFF_ACCESS_LANES[person.role] ?? [];
                     return (
                     <li key={person.id} className={status === 'revoked' ? 'muted' : ''}>
@@ -2131,7 +2185,7 @@ export const EducationOSView = ({
                         <span className={statusClass(status)}>{status}</span>
                       </div>
                       <div className="small muted">
-                        {person.role} | {classroomScope ? `${staffClassroomIds(person).length} classroom(s)` : 'academy-wide'}
+                        {person.role} | {scopeType==='academy'?translate('Whole Academy'):`${scopeIds.length} ${scopeType==='branches'?translate('Branches'):scopeType==='students'?translate('Students'):translate('Classrooms')}`}
                         {person.expires_at ? ` | expires ${formatDate(person.expires_at)}` : ''}
                         {person.last_used_at ? ` | last used ${formatDate(person.last_used_at)}` : ''}
                       </div>

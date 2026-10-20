@@ -1,0 +1,256 @@
+{
+  "recordedAt": "2026-10-20T10:09:02.349Z",
+  "passed": true,
+  "cleanupVerified": true,
+  "stage": "parent reads serialize with consent revocation and account closure under captured roles",
+  "count": 7,
+  "fixtureChecks": 57,
+  "checks": [
+    "restore complete installed Auth/public/Storage schema without customer rows",
+    "database role attributes and relevant memberships match installed metadata",
+    "frozen reviewed migrations install under captured production roles",
+    "production-schema command fixture: scripts/verify-academy-student-import-schema.sql",
+    "production-schema command fixture: scripts/fixtures/academy-release-commands.sql",
+    "actual Auth triggers, foreign keys and views qualify parent privacy and child selection",
+    "parent reads serialize with consent revocation and account closure under captured roles"
+  ],
+  "catalog": {
+    "tables": 413,
+    "authTriggers": 4,
+    "publicTriggers": 334,
+    "publicForeignKeys": 1253
+  },
+  "schema": {
+    "sha256": "4b82d5fb3d4f82a90d9a2b7999782cde6f935e154d219a5c24ae5fe1892bcad1",
+    "tableCount": 413,
+    "customerRowsIncluded": false
+  },
+  "runtimeCatalog": {
+    "capturedAt": "2026-10-20T08:01:37.0208374Z",
+    "sha256": "3854e0e37c24b7df7e9e681680a9187380070e66ae832e4172de95ce7c611b49",
+    "roles": [
+      {
+        "name": "anon",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticated",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "authenticator",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_create_subscription",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_monitor",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_read_all_data",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "pg_signal_backend",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "postgres",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "service_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": true,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_admin",
+        "inherit": true,
+        "createDb": true,
+        "bypassRls": true,
+        "superuser": true,
+        "createRole": true
+      },
+      {
+        "name": "supabase_auth_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      },
+      {
+        "name": "supabase_privileged_role",
+        "inherit": true,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": false
+      },
+      {
+        "name": "supabase_storage_admin",
+        "inherit": false,
+        "createDb": false,
+        "bypassRls": false,
+        "superuser": false,
+        "createRole": true
+      }
+    ],
+    "extensions": [
+      {
+        "name": "btree_gist",
+        "schema": "public",
+        "version": "1.7"
+      },
+      {
+        "name": "pg_cron",
+        "schema": "pg_catalog",
+        "version": "1.6.4"
+      },
+      {
+        "name": "pg_net",
+        "schema": "extensions",
+        "version": "0.19.5"
+      },
+      {
+        "name": "pg_stat_statements",
+        "schema": "extensions",
+        "version": "1.11"
+      },
+      {
+        "name": "pgcrypto",
+        "schema": "extensions",
+        "version": "1.3"
+      },
+      {
+        "name": "plpgsql",
+        "schema": "pg_catalog",
+        "version": "1.0"
+      },
+      {
+        "name": "supabase_vault",
+        "schema": "vault",
+        "version": "0.3.1"
+      },
+      {
+        "name": "uuid-ossp",
+        "schema": "extensions",
+        "version": "1.1"
+      }
+    ]
+  },
+  "image": "public.ecr.aws/supabase/postgres@sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426",
+  "migrations": [
+    {
+      "file": "20261012160000_academy_student_import_staging.sql",
+      "sha256LF": "b633fc8a207b0f845426d0c9fe33a542884ab124c7d5767bc0dfcb3b7cd20b30"
+    },
+    {
+      "file": "20261012170000_academy_student_import_normalization.sql",
+      "sha256LF": "376f5cc5567b86f08454a332ab3f584dc3eb38933feadb133a0385e17f69a1d5"
+    },
+    {
+      "file": "20261012180000_academy_student_import_preview.sql",
+      "sha256LF": "ccb8dcfe2856d18cd5a34a5b22ea43e422d4fffb0f34870e78d3023a518390b6"
+    },
+    {
+      "file": "20261012190000_academy_student_import_commit.sql",
+      "sha256LF": "b4d70034f6af9e1072281901be46bd40f312a36074d8b6782bb3083a60460c19"
+    },
+    {
+      "file": "20261012200000_academy_student_import_lifecycle.sql",
+      "sha256LF": "0acf19aa79616e1fd29379ad5ce42593d82693ccf84514391f492edd3db080bc"
+    },
+    {
+      "file": "20261012220000_academy_student_import_recovery.sql",
+      "sha256LF": "4819b5cbb6312b9aaba6c969fc028606130a0f43443817db43ba19b76cefb67f"
+    },
+    {
+      "file": "20261013155000_academy_current_authority_directory.sql",
+      "sha256LF": "ac01f7c4be22ce588a2c5d577c5ea0f5bbb0dc60409053cfb00404dc83e19a30"
+    },
+    {
+      "file": "20261013160000_academy_student_import_authority.sql",
+      "sha256LF": "64729c9db4ed031e7a88eb41f8de40738a66fc40bb35c7c923fa02027c26d18a"
+    },
+    {
+      "file": "20261014120000_academy_staff_access_commands.sql",
+      "sha256LF": "df53f648021b2134a48ac444549f4bb81cf3402efd987c80758c4231e7bad009"
+    },
+    {
+      "file": "20261014130000_academy_staff_invitation_commands.sql",
+      "sha256LF": "ab2f12b633142cfd9781ae8132ede7ee74eb5f453d9d35c015d95bf3e6c0f7c8"
+    },
+    {
+      "file": "20261014140000_academy_legacy_staff_import_commands.sql",
+      "sha256LF": "97652ba51b1f46e9e5f926889673ce9824d97f988ebb1463412832e33901d6f7"
+    },
+    {
+      "file": "20261014150000_academy_learner_invitation_commands.sql",
+      "sha256LF": "8679e4ef1d342ff9df55608d439f74946f0eecc876d23a0d86f6d5a9d1319784"
+    },
+    {
+      "file": "20261020120000_academy_guardian_portal_reads.sql",
+      "sha256LF": "90bb9b0321ae3d15ac1e83977934c21797d490a7fe27e76c400084f5d8c8c9a7"
+    },
+    {
+      "file": "20261020121000_academy_guardian_binding_identity.sql",
+      "sha256LF": "21e55a972814002dd19caf88a5e6b6ba3a504136ae0f8b97df702d9bc3e51851"
+    }
+  ],
+  "canarySha256LF": "fdd689aa22d2ed1f215d2c6d738648e0c062550e4c0e2f38b0f204eddc982ee7",
+  "productionChanged": false,
+  "limits": [
+    "Local complete-schema compatibility only; no installed lifecycle/provider activation proof.",
+    "Schema captures contain definitions, not production seed/catalogue/customer records.",
+    "The local PostgreSQL exercises real captured Auth triggers, not the live Auth service."
+  ],
+  "commandFixtures": [
+    {
+      "file": "scripts/verify-academy-student-import-schema.sql",
+      "sha256LF": "e3aa047451392679993620c9307a181a05c7286b5ef623604c2f6a5de03e4689"
+    },
+    {
+      "file": "scripts/fixtures/academy-release-commands.sql",
+      "sha256LF": "bebe3c9d887725a2f5900b6123753f2ca81ee8c21d53cd0f738e6da052964fdf"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "checked_at": "2026-10-20T07:42:31.430Z",
+  "expected_source_sha": "5051205bd5fe70fe721c2a49f0818476a9e768fe",
+  "tracked_deploy_run": 39387583914,
+  "ci_run": 39386967944,
+  "pr": 252,
+  "anonymous_http_only": true,
+  "production_writes": 0,
+  "roots": [
+    {
+      "url": "https://academy.schood.online/",
+      "status": 200
+    },
+    {
+      "url": "https://schood.online/",
+      "status": 200
+    }
+  ],
+  "routes": [
+    {
+      "url": "https://academy.schood.online/academy/admin/os",
+      "status": 200
+    },
+    {
+      "url": "https://academy.schood.online/academy/admin/academic",
+      "status": 200
+    },
+    {
+      "url": "https://academy.schood.online/academy/admin/services",
+      "status": 200
+    },
+    {
+      "url": "https://academy.schood.online/academy/parent",
+      "status": 200
+    }
+  ],
+  "checks": [
+    {
+      "component": "App",
+      "phrase": "Message your students and their families"
+    },
+    {
+      "component": "App",
+      "phrase": "See which courses and groups each student can open"
+    },
+    {
+      "component": "EducationOSView",
+      "phrase": "Staff access"
+    },
+    {
+      "component": "EducationOSView",
+      "phrase": "Save staff access"
+    },
+    {
+      "component": "EducationOSView",
+      "phrase": "Groups they can work with"
+    },
+    {
+      "component": "AcademicOperationsView",
+      "phrase": "Schedule a lesson"
+    },
+    {
+      "component": "AcademicOperationsView",
+      "phrase": "Update a lesson"
+    },
+    {
+      "component": "AcademicOperationsView",
+      "phrase": "Update lesson"
+    },
+    {
+      "component": "OperationalServicesView",
+      "phrase": "Invitation saved. Check its delivery status below."
+    },
+    {
+      "component": "OperationalServicesView",
+      "phrase": "Invitations and student preview"
+    },
+    {
+      "component": "GuardianPortalView",
+      "phrase": "View your child’s charges, payments and balance here."
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://academy.schood.online/assets/index-CiIdtBMa-p69c871432604.js",
+      "status": 200,
+      "sha256": "b976620ed61a27e97495a1d7aa6c2b57168dee8e25077a540e52b0148d2e297c"
+    },
+    {
+      "url": "https://academy.schood.online/assets/App-nG5ebwk7-p69c871432604.js",
+      "status": 200,
+      "sha256": "7175365f600a8d31ec1e2bd4671cf568158ecd7a51286af33b88782551052b88"
+    },
+    {
+      "url": "https://academy.schood.online/assets/EducationOSView-DQiUlytR-p69c871432604.js",
+      "status": 200,
+      "sha256": "b6d675c896edb53432a9f9e42d4d0294e2135b9b3b1c03561c97d6508f1a2861"
+    },
+    {
+      "url": "https://academy.schood.online/assets/AcademicOperationsView-Cr0dp7gn-p69c871432604.js",
+      "status": 200,
+      "sha256": "c0e2076dbbbd4677cbed4d21443cf71b244226d1cd93f3570fb1666cf1df3b20"
+    },
+    {
+      "url": "https://academy.schood.online/assets/OperationalServicesView-EXf1AilG-p69c871432604.js",
+      "status": 200,
+      "sha256": "4d54ec58943b854e6f1ef96fef4d4a5f74fdaa390a152545b3be3a659958d3e2"
+    },
+    {
+      "url": "https://academy.schood.online/assets/GuardianPortalView-I1HU22g4-p69c871432604.js",
+      "status": 200,
+      "sha256": "37d792ff8ae850016edb0980f8f9c967ce61fd4cd153ad2bc01ce49eb3eb962d"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
-import {parentRequest as staffRequest} from './parentRequest';
+import {parentRequest} from './parentRequest';
 import { supabase } from './supabase';
+import {staffRequest} from './staffRequest';
 import type {RoomBranch,RoomTimetable} from './roomTimetable';
 
 export type Json = Record<string, unknown> | unknown[];
@@ -78,6 +79,7 @@ export type TeacherStudioAccessProfile = {
     viewStaffPerformance?: boolean;
     viewRisk?: boolean;
     manageImports?: boolean;
+    importStudents?: boolean;
     manageLocalization?: boolean;
     useAcademyAI?: boolean;
     manageResources?: boolean;
@@ -144,7 +146,8 @@ export type TeacherStudioClassroom = {
   metadata: Json;
   created_at: string;
   updated_at: string;
-  member_count: number;
+  member_count: number | null;
+  roster_visible?: boolean;
 };
 
 export type TeacherStudioClassroomMembership = {
@@ -831,6 +834,7 @@ export type TeacherDay = {
 
 export type TeacherStudioStaff = {
   id: string;
+  staff_id?: string | null;
   grant_id?: string | null;
   academy_id: string;
   user_id: string | null;
@@ -1608,7 +1612,7 @@ export type AcademyGuardianRelationship = {id:string;academy_id:string;contact_i
 export type AcademyGuardianRelationships = {generated_at:string;access:TeacherStudioAccessProfile;guardians:AcademyGuardian[];relationships:AcademyGuardianRelationship[];consents:Array<Record<string,unknown>>;link_tokens:Array<Record<string,unknown>>;preferences:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;delivery_attempts:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>;contacts:Array<{id:string;first_name:string;last_name:string;email:string|null;phone:string|null;status:string}>};
 export type AcademyGuardianDashboard = {guardians:Array<Record<string,unknown>>;children:Array<{academy_id:string;relationship_id:string;guardian_id?:string;details_loaded?:boolean;history_has_more?:Record<string,boolean>;relationship_type:string;is_primary_contact:boolean;is_financially_responsible:boolean;permissions:Record<string,boolean>;student:{id:string;name:string;status?:string;placement_level?:string|null;placement_score?:number|null};classrooms:Array<Record<string,unknown>>;attendance:Array<Record<string,unknown>>;grades:Array<Record<string,unknown>>;homework:Array<Record<string,unknown>>;schedule:Array<Record<string,unknown>>;charges:Array<Record<string,unknown>>;balances:Array<Record<string,unknown>>;messages:Array<Record<string,unknown>>;announcements:Array<Record<string,unknown>>;resources:Array<Record<string,unknown>>;progress_reports:Array<Record<string,unknown>>}>;preferences:Array<Record<string,unknown>>;notifications:Array<Record<string,unknown>>};
 export type AcademyBusinessIntelligence = {
-  generated_at:string;access:TeacherStudioAccessProfile;owner:Record<string,unknown>;dashboard:Record<string,unknown>;
+  generated_at:string;access:TeacherStudioAccessProfile;allowed_import_types?:string[];owner:Record<string,unknown>;dashboard:Record<string,unknown>;
   branches:Array<Record<string,unknown>>;metric_definitions:Array<Record<string,unknown>>;marketing_attribution:Array<Record<string,unknown>>;
   unit_economics:Array<Record<string,unknown>>;teacher_performance:Array<Record<string,unknown>>;staff_performance:Array<Record<string,unknown>>;
   student_intelligence:Array<Record<string,unknown>>;lifecycle_events:Array<Record<string,unknown>>;
@@ -2303,21 +2307,21 @@ export const teacherStudioRoomTimetable=(academyId:string,branchId:string,from:s
 export const teacherStudioGuardianRelationships = async (academyId:string):Promise<AcademyGuardianRelationships> => callTeacherStudio<AcademyGuardianRelationships>({ action: 'guardian_relationships', academyId });
 type GuardianPortalPage=AcademyGuardianDashboard&{selected_child:AcademyGuardianDashboard['children'][number]|null;has_more:boolean;cursor:{after_id:string}|null};
 export const teacherStudioGuardianDashboard = async (relationshipId?:string,actorId?:string):Promise<AcademyGuardianDashboard> => {
- const first=await staffRequest<GuardianPortalPage>('','guardian_dashboard',relationshipId?{relationship_id:relationshipId}:{},actorId);
+ const first=await parentRequest<GuardianPortalPage>('','guardian_dashboard',relationshipId?{relationship_id:relationshipId}:{},actorId);
  const children=new Map(first.children.map(row=>[row.relationship_id,row]));
  if(first.selected_child)children.set(first.selected_child.relationship_id,first.selected_child);
  const guardians=new Map(first.guardians.map(row=>[String(row.id),row])),preferences=new Map(first.preferences.map(row=>[String(row.id),row]));
  let page=first;const cursors=new Set<string>();
  while(page.has_more){
   const cursor=page.cursor?.after_id;if(!cursor||cursors.has(cursor))throw new Error('We could not load your parent portal. Try again.');cursors.add(cursor);
-  page=await staffRequest<GuardianPortalPage>('','guardian_dashboard',{after_id:cursor,list_only:true},actorId);
+  page=await parentRequest<GuardianPortalPage>('','guardian_dashboard',{after_id:cursor,list_only:true},actorId);
   for(const row of page.children)if(!children.has(row.relationship_id))children.set(row.relationship_id,row);
   for(const row of page.guardians)guardians.set(String(row.id),row);
   for(const row of page.preferences)preferences.set(String(row.id),row);
  }
  return {...first,children:[...children.values()],guardians:[...guardians.values()],preferences:[...preferences.values()]};
 };
-export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>,actorId?:string) => staffRequest<Record<string,unknown>>('','guardian_claim_link',body,actorId);
+export const teacherStudioClaimGuardianLink = (body:Record<string,unknown>,actorId?:string) => parentRequest<Record<string,unknown>>('','guardian_claim_link',body,actorId);
 export const teacherStudioGuardianUpdatePreferences = (body:Record<string,unknown>) => callTeacherStudio<{preference:Record<string,unknown>}>({method:'POST', action: 'guardian_update_preferences',body});
 export const teacherStudioGuardianSendMessage = (body:Record<string,unknown>) => callTeacherStudio<{message:Record<string,unknown>}>({method:'POST', action: 'guardian_send_message',body});
 export const teacherStudioBusinessIntelligence = async (academyId:string):Promise<AcademyBusinessIntelligence> => callTeacherStudio<AcademyBusinessIntelligence>({ action: 'business_intelligence', academyId });
@@ -2361,12 +2365,12 @@ export const teacherStudioRecordRenewalActivity = (academyId:string,body:Record<
 export const teacherStudioUpdateOperationalAction = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{action_item:Record<string,unknown>}>(academyId,'update_operational_action',body);
 export const teacherStudioCreateImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_job:Record<string,unknown>}>(academyId,'create_import_job',body);
 export const teacherStudioAddImportRow = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_row:Record<string,unknown>}>(academyId,'add_import_row',body);
-export const teacherStudioCommitImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{import_job_id:string;committed_rows:number}>(academyId,'commit_import_job',body);
-export const teacherStudioRollbackImportJob = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'rollback_import_job',body);
+export const teacherStudioCommitImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffActor!==undefined?staffRequest<Record<string,unknown>>(academyId,'commit_import_job',body,staffActor):academyOperationsCommand<Record<string,unknown>>(academyId,'commit_import_job',body);
+export const teacherStudioRollbackImportJob = (academyId:string,body:Record<string,unknown>,staffActor?:string) => staffActor!==undefined?staffRequest<Record<string,unknown>>(academyId,'rollback_import_job',body,staffActor):academyOperationsCommand<Record<string,unknown>>(academyId,'rollback_import_job',body);
 export const teacherStudioConvertLeadFull = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{result:Record<string,unknown>}>(academyId,'convert_lead_full',body);
 export const teacherStudioUpsertCampaign = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{campaign:Record<string,unknown>}>(academyId,'upsert_campaign',body);
 export const teacherStudioUpsertLocalization = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{localization:Record<string,unknown>;translations:Array<Record<string,unknown>>}>(academyId,'upsert_localization',body);
-export const teacherStudioUpsertStaffBranchAssignment = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{assignment:Record<string,unknown>}>(academyId,'upsert_staff_branch_assignment',body);
+export const teacherStudioUpsertStaffBranchAssignment = (academyId:string,body:Record<string,unknown>) => staffRequest<{assignment:Record<string,unknown>}>(academyId,'upsert_staff_branch_assignment',body);
 export const teacherStudioCreateAutomationVersion = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{automation_version:Record<string,unknown>}>(academyId,'create_automation_version',body);
 export const teacherStudioExecuteAutomationEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'execute_automation_event',body);
 export const teacherStudioReviewAutomationExecution = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'review_automation_execution',body);
@@ -2666,8 +2670,18 @@ export const teacherStudioBulkInvites = async (
 };
 
 export const teacherStudioStaff = async (academyId: string): Promise<TeacherStudioStaff[]> => {
-  const data = await callTeacherStudio<{ staff: TeacherStudioStaff[] }>({ action: 'staff', academyId });
-  return data.staff ?? [];
+  const rows:TeacherStudioStaff[]=[],seen=new Set<string>();
+  let cursor:{after_source:string;after_id:string}|null=null;
+  do {
+    const data: {staff:TeacherStudioStaff[];has_more?:boolean;cursor?:{after_source:string;after_id:string}|null} = await callTeacherStudio({action: 'staff',academyId,body:cursor??{}});
+    if(!Array.isArray(data.staff))throw new Error('The staff directory returned an incomplete response.');
+    rows.push(...data.staff);
+    if(!data.has_more)return rows; // Compatible with the installed pre-pagination API.
+    const next=data.cursor,last=data.staff.at(-1),identity=JSON.stringify(next);
+    if(!next||!last||next.after_id!==last.id||next.after_source!==last.source||seen.has(identity))throw new Error('The staff directory could not continue. Refresh and try again.');
+    seen.add(identity);cursor=next;
+  }while(cursor);
+  return rows;
 };
 
 export const teacherStudioNotifications = async (academyId: string): Promise<TeacherStudioNotification[]> => {
@@ -3002,35 +3016,32 @@ export const teacherStudioRecordPlacement = async (
 export const teacherStudioUpsertStaff = async (
   academyId: string,
   body: {
+    id?: string;
     staff_email: string;
     name?: string;
     staff_role?: string;
     classroom_ids?: string[];
+    scope_type?: string;
+    scope_ids?: string[];
+    branch_ids?: string[];
+    idempotency_key?: string;
     is_active?: boolean;
     status?: string;
     starts_at?: string | null;
     expires_at?: string | null;
   },
+  expectedActor?: string,
 ): Promise<TeacherStudioStaff> => {
-  const data = await callTeacherStudio<{ staff: TeacherStudioStaff }>({
-    method: 'POST',
-    action: 'upsert_staff',
-    academyId,
-    body,
-  });
+  const data = await staffRequest<{ staff: TeacherStudioStaff }>(academyId,'upsert_staff',body,expectedActor);
   return data.staff;
 };
 
 export const teacherStudioRemoveStaff = async (
   academyId: string,
   id: string,
+  expectedActor?: string,
 ): Promise<{ ok: boolean }> => {
-  return callTeacherStudio<{ ok: boolean }>({
-    method: 'POST',
-    action: 'remove_staff',
-    academyId,
-    body: { id },
-  });
+  return staffRequest<{ok:boolean}>(academyId,'remove_staff',{id},expectedActor);
 };
 
 export const teacherStudioIssueAcademyCertificate = async (
@@ -3123,6 +3134,11 @@ export type AcademyAccessInvitation = AcademyOperationalRecord & {
   token_expires_at: string;
   resend_count: number;
   academy?: { id: string; name: string; slug: string } | null;
+  review_hash?: string;
+  student_name?: string;
+  classroom_name?: string;
+  shared_sections?: string[];
+  access_status?: string;
 };
 export type AcademyServiceRequest = AcademyOperationalRecord & {
   contact_id: string | null;
@@ -3143,6 +3159,8 @@ export type AcademyOperationalData = {
     classrooms: AcademyOperationalRecord[];
     guardian_relationships: AcademyOperationalRecord[];
     guardians: AcademyOperationalRecord[];
+    reference_cursors?: Record<string,{after_id:string}|null>;
+    staff_cursor?: {before_time:string;before_id:string}|null;
   };
   timetable?: {
     terms: AcademyOperationalRecord[];
@@ -3179,7 +3197,31 @@ export type AcademyOperationalData = {
 
 const academyOperationalRead = <T>(academyId: string, action: string): Promise<T> => callTeacherStudio<T>({ action, academyId });
 
-export const teacherStudioAccessInvitations = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['accessInvitations']>>(academyId, 'access_invitations');
+export const teacherStudioAccessInvitations = async (academyId: string) => {
+  const data=await academyOperationalRead<NonNullable<AcademyOperationalData['accessInvitations']>>(academyId,'access_invitations');
+  const fields={invitations:'invitations',contacts:'contacts',classrooms:'classrooms',relationships:'guardian_relationships',guardians:'guardians'} as const;
+  await Promise.all(Object.entries(fields).map(async([mode,field])=>{
+    let cursor=data.reference_cursors?.[mode]??null;const seen=new Set<string>();
+    while(cursor){
+      const fingerprint=JSON.stringify(cursor);if(seen.has(fingerprint))throw new Error('The invitation list did not finish loading. Refresh it.');seen.add(fingerprint);
+      const page=await callTeacherStudio<Record<string,unknown>>({action:'access_invitations',academyId,body:{reference_mode:mode,...cursor}});
+      if(!Array.isArray(page[mode])||typeof page.has_more!=='boolean')throw new Error('The invitation list did not finish loading. Refresh it.');
+      (data[field] as AcademyOperationalRecord[]).push(...page[mode] as AcademyOperationalRecord[]);
+      cursor=page.has_more?page.cursor as {after_id:string}:null;
+      if(page.has_more&&!cursor?.after_id)throw new Error('The invitation list did not finish loading. Refresh it.');
+    }
+  }));
+  let cursor=data.staff_cursor??null;const seen=new Set<string>();
+  while(cursor){
+    const fingerprint=JSON.stringify(cursor);if(seen.has(fingerprint))throw new Error('The invitation list did not finish loading. Refresh it.');seen.add(fingerprint);
+    const page=await callTeacherStudio<{invitations:AcademyAccessInvitation[];has_more:boolean;cursor:typeof cursor}>({action:'access_invitations',academyId,body:{reference_mode:'staff',...cursor}});
+    if(!Array.isArray(page.invitations)||typeof page.has_more!=='boolean')throw new Error('The invitation list did not finish loading. Refresh it.');
+    data.invitations.push(...page.invitations);cursor=page.has_more?page.cursor:null;
+    if(page.has_more&&!cursor?.before_id)throw new Error('The invitation list did not finish loading. Refresh it.');
+  }
+  data.invitations.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+  return data;
+};
 export const teacherStudioTimetablePlanning = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['timetable']>>(academyId, 'timetable_planning');
 export const teacherStudioServiceRequests = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['serviceRequests']>>(academyId, 'service_requests');
 export const teacherStudioCommunicationJourneys = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['journeys']>>(academyId, 'communication_journeys');
@@ -3189,14 +3231,15 @@ export const teacherStudioSensitiveCases = (academyId: string) => academyOperati
 export const teacherStudioCompetencyPlans = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['competencyPlans']>>(academyId, 'competency_plans');
 export const teacherStudioIntegrationEndpoints = (academyId: string) => academyOperationalRead<NonNullable<AcademyOperationalData['integrations']>>(academyId, 'integration_endpoints');
 
-export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> => callTeacherStudio<T>({ method: 'POST', action, academyId, body });
+export const teacherStudioOperationalCommand = <T = Record<string, unknown>>(academyId: string, action: string, body: Record<string, unknown> = {},expectedActor?:string): Promise<T> =>
+  ['create_access_invitation','resend_access_invitation','revoke_access_invitation'].includes(action)?staffRequest<T>(academyId,action,body,expectedActor):callTeacherStudio<T>({ method: 'POST', action, academyId, body });
 
-export const teacherStudioInvitationStatus = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ action: 'invitation_status', params: { token } });
-export const teacherStudioAcceptAccessInvitation = (token: string) => callTeacherStudio<{ invitation: AcademyAccessInvitation }>({ method: 'POST', action: 'accept_access_invitation', body: { token } });
+export const teacherStudioInvitationStatus = (token: string,actorId:string) => staffRequest<{invitation:AcademyAccessInvitation}>('','invitation_status',{token},actorId);
+export const teacherStudioAcceptAccessInvitation = (token: string,reviewHash:string|undefined,actorId:string) => staffRequest<{invitation:AcademyAccessInvitation}>('','accept_access_invitation',{token,review_hash:reviewHash},actorId);
 export const teacherStudioStudentServiceRequests = (academyId?: string | null) => callTeacherStudio<{ requests: AcademyServiceRequest[]; events: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_service_requests', academyId });
 export const teacherStudioCreateStudentServiceRequest = (academyId: string, body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'student_service_request_create', academyId, body });
 export const teacherStudioStudentLearningPlans = (academyId?: string | null) => callTeacherStudio<{ plans: AcademyOperationalRecord[]; items: AcademyOperationalRecord[]; evidence: AcademyOperationalRecord[]; contact: AcademyOperationalRecord }>({ action: 'student_learning_plans', academyId });
-export const teacherStudioGuardianServiceRequests = (relationshipId:string,actorId?:string) => staffRequest<{relationship_id:string;requests:AcademyServiceRequest[];events:AcademyOperationalRecord[];guardians:AcademyOperationalRecord[];history_has_more?:boolean}>('','guardian_service_requests',{relationship_id:relationshipId},actorId);
+export const teacherStudioGuardianServiceRequests = (relationshipId:string,actorId?:string) => parentRequest<{relationship_id:string;requests:AcademyServiceRequest[];events:AcademyOperationalRecord[];guardians:AcademyOperationalRecord[];history_has_more?:boolean}>('','guardian_service_requests',{relationship_id:relationshipId},actorId);
 export const teacherStudioCreateGuardianServiceRequest = (body: Record<string, unknown>) => callTeacherStudio<{ request: AcademyServiceRequest }>({ method: 'POST', action: 'guardian_service_request_create', body });
 export const teacherStudioSubmitSensitiveReport = (body: Record<string, unknown>) => callTeacherStudio<{ case: { id: string; case_number: number; status: string } }>({ method: 'POST', action: 'submit_sensitive_report', body });
 
