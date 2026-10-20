@@ -2893,5 +2893,14 @@
   "The saved recording changed. Reopen the recording panel.": "The saved recording changed. Reopen the recording panel.",
   "Recordings are temporarily unavailable. Try again.": "Recordings are temporarily unavailable. Try again.",
   "Latest response is a recording. Attached files are from an earlier attempt.": "Latest response is a recording. Attached files are from an earlier attempt.",
-  "This response changed. Download or discard this draft, then reopen the current attempt.": "This response changed. Download or discard this draft, then reopen the current attempt."
+  "This response changed. Download or discard this draft, then reopen the current attempt.": "This response changed. Download or discard this draft, then reopen the current attempt.",
+  "Cash handover is temporarily unavailable. Refresh after the update.": "Cash handover is temporarily unavailable. Refresh after the update.",
+  "This cashbox already has an open shift.": "This cashbox already has an open shift.",
+  "Previous closing count": "Previous closing count",
+  "I reviewed the previous count and accept custody of the cash received.": "I reviewed the previous count and accept custody of the cash received.",
+  "Count the received cash. Explain any difference from the previous closing count in the note.": "Count the received cash. Explain any difference from the previous closing count in the note.",
+  "Initial cash count for this cashbox.": "Initial cash count for this cashbox.",
+  "Handover": "Handover",
+  "Handover difference": "Handover difference",
+  "Legacy shift without recorded handover": "Legacy shift without recorded handover"
 }

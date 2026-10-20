@@ -1,48 +1,36 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-private-assignment-audio",
+  "releaseId": "academy-cash-handover-continuity",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261020210000_academy_private_assignment_audio.sql"
+    "20261020220000_academy_cash_handover_continuity.sql"
   ],
   "edgeFunctions": [
     "academy"
   ],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261020210000_academy_private_assignment_audio.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:SITE_URL",
+    "migration:20261020220000_academy_cash_handover_continuity.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI and tracked Pages, use supabase db push --linked --include-all from an isolated verified 226-migration installed baseline. The dry run must list exactly this one reviewed migration. No unrelated migrations or customer data changes.",
-    "Create ACADEMY_AUDIO_ENCRYPTION_KEY once using 32 cryptographically random bytes encoded as unpadded base64url and set it directly in the CLI process environment. Never log, commit, export or rotate an existing key; retaining it is necessary to read saved recordings. Other named secrets are existing index dependencies and must remain unchanged.",
-    "Capture installed Academy v87 source and preserve all installed modules, changing only reviewed index hunks and adding assignment-audio.ts and audio-crypto.ts. Validate compiler/module hashes before supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. Never deploy the dirty primary checkout.",
-    "Verify installed RPC privileges, private encrypted storage, current-account student/teacher access, attempt serialization and retry receipts. Use only owned QA accounts, close them and archive their institution after hosted API/browser acceptance. No messages or real charges.",
-    "New key only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<runtime-generated-value> --project-ref bbjawctnqrufvnesdsel. Execute without echo, argument logging or a disk file. Reuse an existing installed key.",
-    "Existing optional dependencies are unchanged. supabase secrets set GMAIL_SMTP_EMAIL=<operator-owned-address>, supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>, and supabase secrets set SITE_URL=<verified-site-url> document their configuration syntax only. Do not replace or invent these values for audio activation; absent mail configuration remains a provider gate."
+    "After protected exact-head CI and tracked Pages pass, use supabase db push --linked --include-all from the isolated verified 227-migration installed baseline. The dry run must list exactly this one migration. Do not apply unrelated work or rewrite legacy history.",
+    "Capture installed Academy v89 and preserve its 32-module closure, including encrypted audio and all unrelated modules. Replace only the reviewed finance-command.ts module, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. Retain manual JWT verification and the existing audio encryption key. No secret configuration is required.",
+    "Verify exact handover fields, latest predecessor beyond the 500-row history bound, receiver acknowledgement, cash-only counts, discrepancy reason, current scopes/revocation and single-custody contention. Exercise owned published cashier workflows and close accounts/archive owned fixtures. Internal card/Click entries do not prove external provider receipts."
   ],
   "verification": [
-    "verify:prod, verify:release, verify:academy, lint/build, complete Edge/browser tests, fresh captured-schema fixture and actual lock-contention rollback checks. Hosted encrypted-byte and browser proof remains distinct from local mocks."
+    "verify:prod/release/academy, full Edge/browser tests, lint/build/localization; fresh full-schema qualification includes 14 stages, one winning concurrent receiver, receipt-failure rollback, expiry/revocation and verified owned container/volume cleanup. Installed and hosted proof follow activation."
   ],
   "rollback": {
-    "pages": "Prior tracked Pages deployment on main 434976f12c0ab1fc8bec8f93f1a986812eaf371a.",
-    "edge": "Forward repair from freshly captured installed source; preserve unrelated modules and the audio encryption key. Keep private ciphertext and records retained.",
-    "migration": "Additive schema and service-only RPCs remain installed. Forward repair access/commands; do not delete recordings or restore broad browser grants."
+    "pages": "Use the preceding tracked Pages deployment at main 58e5377977bed91582c3eb9b49a1398d4e22803e if needed; old clients can create only the initial drawer count after the migration.",
+    "edge": "Forward-repair the financial module while preserving the 32-module installed gateway and audio encryption key. Do not restore a complete older function.",
+    "migration": "Retain shifts, counts, immutable receipts and accepted handovers. Correct mistakes with audited movements and forward repairs; never erase predecessor evidence or reopen arbitrary balances."
   }
 }

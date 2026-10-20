@@ -3,7 +3,7 @@
   "release": "https://github.com/atmyielts/English_T1/pull/257",
   "reviewedCommit": "a85d06d08068c3715f952a3ab799a320dab8c8dc",
   "main": "0f0d0d43906a41b03e24b16e1b3273d2206ed956",
-  "status": "deployed_hosted_boundary_followup_required",
+  "status": "deployed_with_acl_and_hosted_acceptance",
   "edgeVersion": 87,
   "installedMigrations": 225,
   "protectedCI": 39432138893,
@@ -56,12 +56,63 @@
   },
   "hosted": {
     "all21FinancialActionsExercised": true,
-    "fullAcceptancePassed": false,
-    "gate": "Direct financial-table ACL follow-up and fresh real-file/browser acceptance",
+    "fullAcceptancePassed": true,
+    "gate": null,
     "firstQaRunClosed": true,
     "cleanupChecks": 42,
     "customerRecordsChanged": false,
     "externalProviderDeliveriesAttempted": 0,
-    "realFundsUsed": false
+    "realFundsUsed": false,
+    "all21ActionsAndFinancialBranchReadAcceptancePassed": true,
+    "realFileRun": {
+      "passedChecksBeforeFinancialUiSelectorFailure": 74,
+      "overallRunPassed": false,
+      "failure": "locator.selectOption: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Financial branch', { exact: true })\u001b[22m\n",
+      "studentCount": 201,
+      "memberships": 201,
+      "openingBalances": 201,
+      "commitMilliseconds": 4464,
+      "retainedCorrectionEffects": 603,
+      "balanceReversals": 201,
+      "recordsDeleted": 0,
+      "cleanupVerified": true,
+      "cleanupChecks": 42
+    },
+    "publishedFinanceUi": {
+      "passed": true,
+      "checks": 40,
+      "cleanupChecks": 42,
+      "actors": [
+        "owner",
+        "branch B admin and branch A cashier"
+      ],
+      "branches": 2,
+      "widths": [
+        390,
+        1440
+      ],
+      "overflow": false,
+      "pageErrors": 0
+    },
+    "allOwnedAccountsClosed": true,
+    "allOwnedInstitutionsArchived": true,
+    "limits": [
+      "Cash/card/Click acceptance here uses internal book entries, not real external charges.",
+      "Explicit physical handover continuity and configurable zero-balance policy are separate releases.",
+      "Payroll snapshot uses current membership status and current net paid allocation evidence, not an as-of historical roster or refund reconstruction."
+    ]
+  },
+  "followupAcl": {
+    "release": "https://github.com/atmyielts/English_T1/pull/258",
+    "reviewedCommit": "746ec8ba1e65ee8e77e6f8a61d3bf7e7c3537612",
+    "main": "434976f12c0ab1fc8bec8f93f1a986812eaf371a",
+    "installedMigrations": 226,
+    "edgeVersion": 87,
+    "sourceUnchangedModules": 30,
+    "protectedCI": 39436154082,
+    "postMergeCI": 39437372375,
+    "pages": 39437372580,
+    "liveSmoke": 39438547111,
+    "installedRollbackOnlyFixtures": 6
   }
 }

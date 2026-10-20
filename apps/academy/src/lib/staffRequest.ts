@@ -8,7 +8,7 @@ const pending=new Map<string,string>();
 const tokens=new Map<string,string>();
 const invitationActions=new Set(['create_access_invitation','resend_access_invitation','revoke_access_invitation']);
 const financeReads=new Set(['commercial_core','operations_finance']);
-const financeActions=new Set(['create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment','record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','record_cash_movement','close_cashier_shift','record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
+const financeActions=new Set(['create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment','record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','accept_cashier_handover','record_cash_movement','close_cashier_shift','record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
 type FinanceReplay={identity:string;action:string;payload:Record<string,unknown>;actor:string};
 const financeReplays=new Map<string,FinanceReplay>();
 const financeSlot=(academy:string,actor:string)=>JSON.stringify([actor,academy]);

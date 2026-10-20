@@ -1022,6 +1022,7 @@ const operationsFinance = {
   cashboxes: [
     {
       id: "cashbox-main",
+      handover: {id:"shift-route",status:"open",counted_closing_balance:null},
       academy_id: academyId,
       branch_id: "branch-main",
       name: "Front desk",
@@ -5910,7 +5911,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
 test('financial pending action survives reload with its exact amount and original receipt key',async({page})=>{
  const commands:Record<string,unknown>[]=[];await seedSessionCookie(page,'owner-user');
- await mockAcademyEdge(page,'owner',{failActionAttempts:{open_cashier_shift:1},respond:async body=>{
+ await mockAcademyEdge(page,'owner',{actionOverrides:{operations_finance:{...operationsFinance,cashier_shifts:[],cashboxes:operationsFinance.cashboxes.map(box=>({...box,handover:null}))}},failActionAttempts:{open_cashier_shift:1},respond:async body=>{
   if(body.action==='open_cashier_shift'){commands.push(body);if(commands.length>1)return {cashier_shift:{id:'owned-recovered-shift'}};}
   return undefined;
  }});
@@ -5939,8 +5940,8 @@ test('financial server totals keep exact amounts and currencies separate on phon
 test.describe('Private assignment audio',()=>{
  const audioId='00000000-0000-4000-8000-000000000881',submissionId='00000000-0000-4000-8000-000000000882';
  const wave=()=>{const bytes=Buffer.alloc(44+1600);bytes.write('RIFF',0);bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVE',8);bytes.write('fmt ',12);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(1,22);bytes.writeUInt32LE(8000,24);bytes.writeUInt32LE(16000,28);bytes.writeUInt16LE(2,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(1600,40);return bytes;};
- const setup=async(page:Page,loseFirst=false)=>{
-  await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');
+ const setup=async(page:Page,loseFirst=false,classroomV2=false)=>{
+  await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student',{classroomV2});
   const uploads:Array<Record<string,unknown>>=[];let saved:Record<string,unknown>|null=null;
   const actor=(authorization:string|undefined)=>{try{return JSON.parse(Buffer.from(authorization?.replace(/^Bearer /,'').split('.')[1]??'','base64url').toString('utf8')).sub;}catch{return '';}};
   await page.route('**/functions/v1/academy',async route=>{
@@ -5957,7 +5958,7 @@ test.describe('Private assignment audio',()=>{
    if(loseFirst&&uploads.length===1)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'The recording upload is not confirmed. Retry the same recording.',retryable:true})});
    return route.fulfill(json({actor_id:'student-user',request_key:form.get('idempotency_key'),replayed:uploads.length>1,audio:saved}));
   });
-  const open=async()=>{await page.goto('/academy/student/classrooms/'+classroomId+'?academy_id='+academyId);await page.getByRole('button',{name:'Assignments',exact:true}).click();await page.getByRole('button',{name:'Recordings and feedback',exact:true}).click();await expect(page.locator('.assignment-audio').getByLabel('Transcript or equivalent written response',{exact:true})).toBeVisible();};
+  const open=async()=>{await page.goto('/academy/student/classrooms/'+classroomId+'?academy_id='+academyId);const menu=page.locator('.classroom-section-menu summary'),assignments=page.getByRole('button',{name:'Assignments',exact:true});await Promise.race([menu.waitFor({state:'visible'}),assignments.waitFor({state:'visible'})]);if(await menu.isVisible())await menu.click();await assignments.click();await page.getByRole('button',{name:'Recordings and feedback',exact:true}).click();await expect(page.locator('.assignment-audio').getByLabel('Transcript or equivalent written response',{exact:true})).toBeVisible();};
   await open();return {uploads,open};
  };
  test('audio draft and an uncertain upload survive reload with the original bytes, text and request key',async({page})=>{
@@ -5974,6 +5975,11 @@ test.describe('Private assignment audio',()=>{
   await panel.getByRole('button',{name:'Open saved recording',exact:true}).click();await expect(panel.getByLabel('Student recording',{exact:true})).toHaveAttribute('src',/^blob:/);
   await panel.screenshot({path:test.info().outputPath('private-audio-phone.png')});
  });
+ test('saved recording remains playable while refreshed assignment results are pending',async({page})=>{
+  await setup(page);let release!:()=>void,blocked=false;const refreshing=new Promise<void>(resolve=>{release=resolve;});await page.route('**/functions/v1/academy',async route=>{if(route.request().postDataJSON()?.action==='student_assignments'){blocked=true;await refreshing;}return route.fallback();});
+  try{const panel=page.locator('.assignment-audio');await panel.getByLabel('Choose audio file',{exact:true}).setInputFiles({name:'owned-refresh-response.wav',mimeType:'audio/wav',buffer:wave()});await panel.getByLabel('Transcript or equivalent written response',{exact:true}).fill('Owned playback survives its assignment refresh');await panel.getByRole('button',{name:'Submit recording',exact:true}).click();await expect.poll(()=>blocked).toBe(true);await panel.getByRole('button',{name:'Open saved recording',exact:true}).click();await expect(panel.getByLabel('Student recording',{exact:true})).toHaveAttribute('src',/^blob:/);release();await expect(panel.getByLabel('Student recording',{exact:true})).toHaveAttribute('src',/^blob:/);}finally{release();}
+ });
+ test('published classroom layout exposes recordings through its phone sections menu',async({page})=>{await page.setViewportSize({width:390,height:844});await setup(page,false,true);await expect(page.locator('.assignment-audio').getByRole('button',{name:'Start recording',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);});
  test('saved audio drafts are isolated when another account opens the same assignment',async({page})=>{
   const state=await setup(page),panel=page.locator('.assignment-audio');
   await panel.getByLabel('Choose audio file',{exact:true}).setInputFiles({name:'owned-private-draft.wav',mimeType:'audio/wav',buffer:wave()});
@@ -5993,4 +5999,17 @@ test.describe('Private assignment audio',()=>{
   await panel.getByRole('button',{name:'Discard recording draft',exact:true}).click();await expect(panel.getByLabel('Recording preview',{exact:true})).toHaveCount(0);
   }finally{await recordingBrowser.close();}
  });
+});
+
+test('cash handover acknowledgment and exact received amount survive an uncertain result and reload',async({page})=>{
+ const commands:Record<string,unknown>[]=[];const previous={...operationsFinance.cashier_shifts[0],id:'owned-closed-predecessor',status:'closed',closed_at:'2026-10-20T10:00:00Z',counted_closing_balance:9007199254740993n.toString(),expected_closing_balance:'9007199254740993',discrepancy:'0'};
+ await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionOverrides:{operations_finance:{...operationsFinance,cashier_shifts:[],cashboxes:operationsFinance.cashboxes.map(box=>({...box,handover:previous}))}},failActionAttempts:{accept_cashier_handover:1},respond:async body=>{if(body.action==='accept_cashier_handover'){commands.push(body);if(commands.length>1)return {cashier_shift:{id:'owned-next-shift',previous_shift_id:previous.id,opening_balance:'9007199254740990',handover_previous_count:'9007199254740993',handover_difference:'-3'}};}return undefined;}});
+ const open=async()=>{await page.goto('/academy/admin/operations?academy_id='+academyId);return page.locator('form').filter({has:page.getByRole('heading',{name:'Open cashier shift',exact:true})});};let form=await open();
+ await expect(form.getByText('9,007,199,254,740,993 UZS',{exact:true})).toBeVisible();await expect(form.getByRole('button',{name:'Open shift',exact:true})).toBeDisabled();await form.getByLabel('Opening balance',{exact:true}).fill('9007199254740990');await form.getByLabel('Note',{exact:true}).fill('Owned three-unit receiving difference');await form.getByRole('checkbox').check();await form.getByRole('button',{name:'Open shift',exact:true}).click();await expect(page.getByRole('button',{name:'Retry pending action',exact:true})).toBeVisible();
+ form=await open();await expect(form.getByRole('checkbox')).toBeDisabled();await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath('cash-handover-pending-390.png'),fullPage:true});await page.getByRole('button',{name:'Retry pending action',exact:true}).click();await expect(page.getByRole('button',{name:'Retry pending action',exact:true})).toHaveCount(0);
+ expect(commands).toHaveLength(2);expect(commands[1]).toEqual(commands[0]);expect(commands[0].opening_balance).toBe('9007199254740990');expect(commands[0].previous_shift_id).toBe(previous.id);expect(commands[0].accept_handover).toBe(true);
+});
+
+test('cash opening waits for reviewed handover metadata instead of submitting to an older backend',async({page})=>{
+ const boxes=operationsFinance.cashboxes.map(({handover:_,...box})=>box),actions:string[]=[];await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionLog:actions,actionOverrides:{operations_finance:{...operationsFinance,cashboxes:boxes}}});await page.goto('/academy/admin/operations?academy_id='+academyId);const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Open cashier shift',exact:true})});await expect(form.getByText('Cash handover is temporarily unavailable. Refresh after the update.',{exact:true})).toBeVisible();await expect(form.getByRole('button',{name:'Open shift',exact:true})).toBeDisabled();await form.evaluate((element:HTMLFormElement)=>element.requestSubmit());expect(actions.filter(action=>['open_cashier_shift','accept_cashier_handover'].includes(action))).toHaveLength(0);
 });

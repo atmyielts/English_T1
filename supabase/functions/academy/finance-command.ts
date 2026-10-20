@@ -1,7 +1,7 @@
 import {LegacyImportCommandError} from './legacy-import-command.ts';
 type Db={rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{data:unknown;error:{code?:string}|null}>};
 export const financeActions=new Set(['create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment',
- 'record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','record_cash_movement','close_cashier_shift',
+ 'record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','accept_cashier_handover','record_cash_movement','close_cashier_shift',
  'record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
 export async function runFinanceRead(db:Db,academyId:string,actorId:string,action:string,payload:Record<string,unknown>){
  if(!['commercial_core','operations_finance'].includes(action))throw new LegacyImportCommandError(400,'Choose a valid financial workspace.');

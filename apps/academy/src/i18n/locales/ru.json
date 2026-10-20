@@ -2892,5 +2892,14 @@
   "The saved recording changed. Reopen the recording panel.": "Сохранённая запись изменилась. Откройте панель записи заново.",
   "Recordings are temporarily unavailable. Try again.": "Записи временно недоступны. Попробуйте ещё раз.",
   "Latest response is a recording. Attached files are from an earlier attempt.": "Последний ответ — аудиозапись. Прикреплённые файлы относятся к предыдущей попытке.",
-  "This response changed. Download or discard this draft, then reopen the current attempt.": "Ответ изменился. Скачайте или удалите черновик, затем откройте текущую попытку заново."
+  "This response changed. Download or discard this draft, then reopen the current attempt.": "Ответ изменился. Скачайте или удалите черновик, затем откройте текущую попытку заново.",
+  "Cash handover is temporarily unavailable. Refresh after the update.": "Передача кассы временно недоступна. Обновите страницу после обновления системы.",
+  "This cashbox already has an open shift.": "В этой кассе уже есть открытая смена.",
+  "Previous closing count": "Сумма при закрытии предыдущей смены",
+  "I reviewed the previous count and accept custody of the cash received.": "Я проверил предыдущую сумму и принимаю ответственность за полученные наличные.",
+  "Count the received cash. Explain any difference from the previous closing count in the note.": "Пересчитайте полученные наличные. Объясните в примечании разницу с предыдущей суммой.",
+  "Initial cash count for this cashbox.": "Первоначальный пересчёт наличных в этой кассе.",
+  "Handover": "Передача кассы",
+  "Handover difference": "Разница при передаче",
+  "Legacy shift without recorded handover": "Старая смена без записи о передаче кассы"
 }

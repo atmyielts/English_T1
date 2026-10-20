@@ -1,0 +1,142 @@
+{
+  "recordedAt": "2026-10-20T16:04:58.696334+00:00",
+  "release": "https://github.com/atmyielts/English_T1/pull/259",
+  "reviewedCommit": "423711a24e53a7ecbc5bcafe57672c2e5b4a2a71",
+  "main": "58e5377977bed91582c3eb9b49a1398d4e22803e",
+  "status": "deployed_api_verified_browser_refresh_repair_pending",
+  "edgeVersion": 89,
+  "installedMigrations": 227,
+  "protectedCI": 39448969937,
+  "postMergeCI": 39449875702,
+  "pages": 39449875662,
+  "automaticLiveSmoke": 39450945036,
+  "sourceReadback": {
+    "recordedAt": "2026-10-20T15:48:45.876Z",
+    "passed": true,
+    "edgeVersion": 89,
+    "matchedModules": 32,
+    "unchangedInstalledModules": 29,
+    "verifyJwt": false,
+    "reviewedCommit": "423711a24e53a7ecbc5bcafe57672c2e5b4a2a71"
+  },
+  "installedCommands": {
+    "customerRowsChanged": false,
+    "providerMessagesSent": false,
+    "checks": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      }
+    ],
+    "installedMigrations": 227,
+    "fixtureRowsCommitted": false,
+    "passed": true,
+    "recordedAt": "2026-10-20T15:49:14.5762584Z"
+  },
+  "key": {
+    "configured": true,
+    "valueDisclosed": false,
+    "digestVerified": true,
+    "protectedWindowsCredentialRecoveryCopyVerified": true,
+    "intermediateVersion": 88,
+    "intermediateInstalledSourceUnchangedModules": 30
+  },
+  "hosted": {
+    "apiAndDocumentRunChecks": 41,
+    "apiRunAllChecksPassedBeforeUiNavigationFailure": true,
+    "privateStorageCiphertextVerified": true,
+    "decryptedPlaybackExactBytesVerified": true,
+    "scopeAndPrivateRpcDenialsVerified": true,
+    "actualBrowserUploadLostReplyAndReloadReplayVerified": true,
+    "browserPlaybackGate": "Refreshing assignments invalidates ready state and unmounts the just-opened audio player; preserve the panel during fresh reads and verify again.",
+    "phoneNavigation": "Use the deployed V2 classroom sections disclosure, waiting for the menu or legacy navigation; guessing immediately before the feature flag resolves caused earlier test-navigation timeouts.",
+    "allOwnedQaAccountsClosed": true,
+    "allOwnedQaInstitutionsArchived": true,
+    "runs": [
+      {
+        "artifact": "hosted/hosted-proof.json",
+        "passed": false,
+        "checks": 20,
+        "cleanupChecks": 59,
+        "cleanupVerified": true,
+        "failure": "stored bytes are an encrypted authenticated envelope",
+        "customerRecordsChanged": false
+      },
+      {
+        "artifact": "hosted-run-two/hosted-proof.json",
+        "passed": false,
+        "checks": 41,
+        "cleanupChecks": 60,
+        "cleanupVerified": true,
+        "failure": "locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Assignments', exact: true })\u001b[22m\n",
+        "customerRecordsChanged": false
+      },
+      {
+        "artifact": "hosted-ui-three/hosted-proof.json",
+        "passed": false,
+        "checks": 21,
+        "cleanupChecks": 59,
+        "cleanupVerified": true,
+        "failure": "locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Assignments', exact: true })\u001b[22m\n",
+        "customerRecordsChanged": false
+      },
+      {
+        "artifact": "hosted-ui-four/hosted-proof.json",
+        "passed": false,
+        "checks": 21,
+        "cleanupChecks": 59,
+        "cleanupVerified": true,
+        "failure": "locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Assignments', exact: true })\u001b[22m\n",
+        "customerRecordsChanged": false
+      },
+      {
+        "artifact": "hosted-ui-five/hosted-proof.json",
+        "passed": false,
+        "checks": 25,
+        "cleanupChecks": 60,
+        "cleanupVerified": true,
+        "failure": "locator.waitFor: Timeout 90000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.assignment-audio').locator('article').filter({ hasText: 'Owned browser transcript retained after reload' }).locator('audio')\u001b[22m\n",
+        "customerRecordsChanged": false
+      }
+    ]
+  },
+  "customerRecordsChanged": false,
+  "realFundsUsed": false,
+  "telegramEmailSmsDeliveriesAttempted": 0,
+  "remaining": [
+    "Deploy and qualify the frontend audio refresh repair.",
+    "Complete published teacher feedback, microphone cancel/stop/upload and final-attempt playback.",
+    "Telegram bot voice transport and externally owned provider delivery/payment proof remain separate."
+  ]
+}
