@@ -1,6 +1,6 @@
 # Shared customer recovery
 
-All deployed React roots use `RecoveryBoundary` and `recoveryRootOptions`.
+All thirteen React app entrypoints use `RecoveryBoundary` and `recoveryRootOptions`.
 The boundary owns reporting, so React's default caught-error logger cannot
 independently print the raw exception in production. Development keeps detail.
 An optional reporter is best-effort; failures cannot replace the fallback.
@@ -14,26 +14,22 @@ script/module initialization errors before mounting or all async/event errors.
 
 ## Local browser verification
 
-From the repository root, start `node scripts/recovery-preview.mjs --port=4289`.
-Wait for `Recovery preview ready`. This compiles each actual production entrypoint
-with its normal config and styles, replacing only App with a controlled render
-failure. Outputs stay under `output/playwright/recovery-builds`, outside app dist.
-Its backend configuration is synthetic, on the reserved `.invalid` domain.
+From the repository root, with the project dependencies and Playwright Chromium
+installed:
 
-In another terminal:
-
-```powershell
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=schood-recovery open http://127.0.0.1:4289/
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=schood-recovery snapshot
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=schood-recovery --raw run-code --filename scripts/recovery-browser-check.js
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=schood-recovery close
+```sh
+npm run test:ui:recovery
 ```
 
-Use a fresh named browser session for each full run: the final case deliberately
-denies localStorage. The check blocks every non-local request and verifies all 13
+The runner compiles each actual production entrypoint with its normal config and
+styles, replacing only App with a controlled render failure. Its backend settings
+are synthetic, on the reserved `.invalid` domain. It starts an owned local server
+on an available port and closes its browser/server in a finally block.
+
+The check blocks every non-local request and verifies all 13
 apps, reload/home actions, keyboard focus, safe diagnostics, storage retention,
 320/390/1280 layouts, scoped axe accessibility and language/storage-denial cases.
-It saves representative screenshots under `output/playwright`. The command must
-return a results object with 16 passing entries; an error is not a passing report.
-Stop the preview with Ctrl+C. This is a local regression check, not a deployment
-or hosted customer-journey check. Normal app builds must also pass separately.
+It saves fixtures, screenshots and proof under `supabase/.temp/ui-recovery`,
+outside app dist. The command must exit successfully with 16 passing scenarios.
+This is a local regression check, not a deployment or hosted customer-journey
+check. Normal app builds must also pass separately.
