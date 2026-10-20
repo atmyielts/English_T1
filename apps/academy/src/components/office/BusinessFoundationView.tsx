@@ -1,3 +1,4 @@
+import { OperationalPendingNotice } from './OperationalPendingNotice';
 import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Building2, CalendarClock, CheckCircle2, GitBranch, PhoneCall, Plus, RefreshCw, UsersRound } from "lucide-react";
@@ -8,6 +9,7 @@ type BusinessTab = "pipeline" | "followups" | "trials" | "branches";
 
 type Props = {
   academyId: string;
+  actorId: string;
   formatDate: (value: string | null | undefined) => string;
 };
 
@@ -68,7 +70,7 @@ const localDateTimeToIso = (value: string): string => {
 
 const money = (amount: number | null | undefined, currency = "UZS"): string => (amount == null ? "—" : `${new Intl.NumberFormat(getLocaleTag()).format(amount)} ${currency}`);
 
-export function BusinessFoundationView({ academyId, formatDate }: Props) {
+export function BusinessFoundationView({ academyId, actorId, formatDate }: Props) {
   const [data, setData] = useState<AcademyBusinessFoundation | null>(null);
   const [tab, setTab] = useState<BusinessTab>("pipeline");
   const [loading, setLoading] = useState(true);
@@ -221,7 +223,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
         expected_price: leadForm.expected_price ? Number(leadForm.expected_price) : null,
         next_follow_up_at: leadForm.next_follow_up_at ? localDateTimeToIso(leadForm.next_follow_up_at) : null,
         idempotency_key: crypto.randomUUID(),
-      });
+      },actorId);
       setLeadForm((previous) => ({
         ...emptyLead,
         branch_id: previous.branch_id,
@@ -387,6 +389,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
 
   return (
     <section className="business-os">
+      <OperationalPendingNotice academyId={academyId} actorId={actorId} onRecovered={load} />
       <div className="section-heading business-os__heading">
         <div>
           <span className="eyebrow">{translate("Growth + operations foundation")}</span>
@@ -394,7 +397,7 @@ export function BusinessFoundationView({ academyId, formatDate }: Props) {
           <p>{translate("Run the real path from first inquiry through trial, conversion, and group enrollment.")}</p>
         </div>
         <div className="row wrap">
-        {data?.access?.permissions.manageAdmissions ? <QuickLeadDialog key={academyId} academyId={academyId} branches={data.branches} preferredBranchId={leadFilters.branch_id} disabled={loading || busy} onSaved={async () => { setNotice('Lead captured and added to the admissions pipeline.'); await load(); }} /> : null}
+        {data?.access?.permissions.manageAdmissions ? <QuickLeadDialog key={`${actorId}:${academyId}`} actorId={actorId} academyId={academyId} branches={data.branches} preferredBranchId={leadFilters.branch_id} disabled={loading || busy} onSaved={async (lead) => { setNotice(lead.duplicate_phone ? 'Lead saved. Another inquiry in this branch uses this phone number; review both before merging.' : 'Lead captured and added to the admissions pipeline.'); await load(); }} /> : null}
         <button className="ghost-btn" type="button" onClick={() => void load()} disabled={loading || busy}>
           <RefreshCw size={16} /> {translate("Refresh")}{' '}</button>
         </div>

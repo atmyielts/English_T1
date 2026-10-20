@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatLocaleLongDate, translate } from '../../i18n';
+import {OperationalPendingNotice} from '../office/OperationalPendingNotice';
+import {pendingOperational} from '../../lib/operationalRequest';
 import {
   teacherStudioFinishTeacherLesson,
   teacherStudioSaveTeacherAttendance,
@@ -30,6 +32,7 @@ import {
 
 type TeacherDayViewProps = {
   academyId: string;
+  actorId: string;
   academyName: string;
   onNavigate: (path: string) => void;
 };
@@ -63,7 +66,9 @@ const sessionTone = (session: TeacherDaySession): string => {
   return 'is-next';
 };
 
-export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDayViewProps) => {
+export const TeacherDayView = ({ academyId, actorId, academyName, onNavigate }: TeacherDayViewProps) => {
+  const [pending,setPending]=useState(()=>Boolean(pendingOperational(academyId,actorId)));
+  useEffect(()=>{const sync=()=>setPending(Boolean(pendingOperational(academyId,actorId)));sync();window.addEventListener('schood-operational-pending',sync);return()=>window.removeEventListener('schood-operational-pending',sync);},[academyId,actorId]);
   const [date, setDate] = useState(localDate());
   const [dayResponse, setDayResponse] = useState<{ scope: string; data: TeacherDay } | null>(null);
   const dayScope = `${academyId}:${date}`;
@@ -125,7 +130,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
   }, [selected]);
 
   const runAction = async (key: string, task: () => Promise<void>) => {
-    if (busy || loading || !selected) return;
+    if (busy || loading || pending || !selected) return;
     setBusy(key); setError(''); setNotice('');
     try { await task(); } catch (actionError) { setError(actionError instanceof Error ? actionError.message : translate('The action could not be completed')); }
     finally { setBusy(''); }
@@ -140,13 +145,13 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
         notes: attendance[student.contact_id]?.notes || null,
       })),
       idempotency_key: makeKey(),
-    });
+    },actorId);
     setNotice(translate('Attendance saved for {count} students', { count: selected.roster.length }));
     await load(date);
   });
 
   const startLesson = () => selected && runAction('start', async () => {
-    await teacherStudioStartTeacherLesson(academyId, { session_id: selected.id, idempotency_key: makeKey() });
+    await teacherStudioStartTeacherLesson(academyId, { session_id: selected.id, idempotency_key: makeKey() },actorId);
     setNotice(translate('Lesson started. The plan and timer are now live.'));
     await load(date);
   });
@@ -161,7 +166,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
       homework: { ...homework, due_at: homework.due_at ? new Date(homework.due_at).toISOString() : '' },
       assign_homework: assignHomework,
       idempotency_key: makeKey(),
-    });
+    },actorId);
     setNotice(assignHomework
       ? translate('Lesson finished and homework assigned. Connected class groups will be notified automatically.')
       : translate('Lesson finished. Curriculum coverage has been saved.'));
@@ -174,6 +179,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
 
   return (
     <section className="teacher-day" aria-labelledby="teacher-day-title">
+      <OperationalPendingNotice academyId={academyId} actorId={actorId} onRecovered={()=>load(date)} />
       <header className="teacher-day__hero">
         <div>
           <span className="eyebrow">{academyName} · {translate('Teaching workspace')}</span>
@@ -186,7 +192,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
             <CalendarDays size={18} /><span>{date === localDate() ? translate('Today') : formatLocaleLongDate(new Date(`${date}T12:00:00`))}</span>
           </button>
           <button type="button" aria-label={translate('Next day')} disabled={Boolean(busy)} onClick={() => setDate((current) => moveDate(current, 1))}><ArrowRight size={17} /></button>
-          <button type="button" aria-label={translate('Refresh teaching day')} disabled={Boolean(busy) || loading} onClick={() => void load(date)}><RefreshCw size={17} /></button>
+          <button type="button" aria-label={translate('Refresh teaching day')} disabled={Boolean(busy) || pending || loading} onClick={() => void load(date)}><RefreshCw size={17} /></button>
         </div>
       </header>
 
@@ -202,7 +208,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
               <aside className="teacher-day__timeline" aria-label={translate("Today's classes")}>
                 <div className="section-heading"><div><span className="eyebrow">{translate('Schedule')}</span><h3>{translate('Classes')}</h3></div><span className="ledger-count">{day.sessions.length}</span></div>
                 {day.sessions.map((session) => (
-                  <button type="button" className={`teacher-session-card ${sessionTone(session)} ${selectedId === session.id ? 'is-selected' : ''}`} disabled={Boolean(busy) || loading} onClick={() => setSelectedId(session.id)} key={session.id}>
+                  <button type="button" className={`teacher-session-card ${sessionTone(session)} ${selectedId === session.id ? 'is-selected' : ''}`} disabled={Boolean(busy) || pending || loading} onClick={() => setSelectedId(session.id)} key={session.id}>
                     <span className="teacher-session-card__time">{timeLabel(session.starts_at)}</span>
                     <span className="teacher-session-card__rail"><i /></span>
                     <span className="teacher-session-card__copy">
@@ -241,7 +247,7 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
                     <div className="teacher-objectives">
                       {coverage.map((objective, index) => (
                         <label key={objective.id} className={objective.covered ? 'is-covered' : ''}>
-                          <input type="checkbox" checked={objective.covered} disabled={finished || Boolean(busy) || loading} onChange={(event) => setCoverage((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, covered: event.target.checked } : item))} />
+                          <input type="checkbox" checked={objective.covered} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setCoverage((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, covered: event.target.checked } : item))} />
                           <span>{objective.covered ? <CheckCircle2 size={18} /> : <Circle size={18} />}{objective.label}</span>
                         </label>
                       ))}
@@ -254,29 +260,29 @@ export const TeacherDayView = ({ academyId, academyName, onNavigate }: TeacherDa
                     <div className="teacher-attendance-list">
                       {selected.roster.map((student) => (
                         <div key={student.contact_id}>
-                          <label><span>{student.name}</span><select value={attendance[student.contact_id]?.status ?? 'present'} disabled={finished || Boolean(busy) || loading} onChange={(event) => setAttendance((current) => ({ ...current, [student.contact_id]: { status: event.target.value, notes: current[student.contact_id]?.notes ?? '' } }))}><option value="present">{translate('Present')}</option><option value="late">{translate('Late')}</option><option value="absent">{translate('Absent')}</option><option value="excused">{translate('Excused')}</option></select></label>
-                          {['late', 'absent', 'excused'].includes(attendance[student.contact_id]?.status) ? <input className="input" value={attendance[student.contact_id]?.notes ?? ''} disabled={finished || Boolean(busy) || loading} placeholder={translate('Optional note')} onChange={(event) => setAttendance((current) => ({ ...current, [student.contact_id]: { status: current[student.contact_id]?.status ?? 'present', notes: event.target.value } }))} /> : null}
+                          <label><span>{student.name}</span><select value={attendance[student.contact_id]?.status ?? 'present'} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setAttendance((current) => ({ ...current, [student.contact_id]: { status: event.target.value, notes: current[student.contact_id]?.notes ?? '' } }))}><option value="present">{translate('Present')}</option><option value="late">{translate('Late')}</option><option value="absent">{translate('Absent')}</option><option value="excused">{translate('Excused')}</option></select></label>
+                          {['late', 'absent', 'excused'].includes(attendance[student.contact_id]?.status) ? <input className="input" value={attendance[student.contact_id]?.notes ?? ''} disabled={finished || Boolean(busy) || pending || loading} placeholder={translate('Optional note')} onChange={(event) => setAttendance((current) => ({ ...current, [student.contact_id]: { status: current[student.contact_id]?.status ?? 'present', notes: event.target.value } }))} /> : null}
                         </div>
                       ))}
                       {!selected.roster.length ? <p>{translate('No active students are enrolled in this class.')}</p> : null}
                     </div>
-                    {!finished ? <button className="ghost-btn" type="button" disabled={Boolean(busy) || loading || !selected.roster.length} onClick={() => void saveAttendance()}>{busy === 'attendance' ? <LoaderCircle className="spin" size={17} /> : <ClipboardCheck size={17} />}{selected.attendance_saved ? translate('Update attendance') : translate('Save attendance')}</button> : null}
+                    {!finished ? <button className="ghost-btn" type="button" disabled={Boolean(busy) || pending || loading || !selected.roster.length} onClick={() => void saveAttendance()}>{busy === 'attendance' ? <LoaderCircle className="spin" size={17} /> : <ClipboardCheck size={17} />}{selected.attendance_saved ? translate('Update attendance') : translate('Save attendance')}</button> : null}
                   </section>
 
                   {!inProgress && !finished ? (
                     <section className="teacher-start-panel">
                       <div><Sparkles size={22} /><span><strong>{translate('Everything is ready')}</strong><small>{translate('The curriculum, roster, resources, and homework draft are already attached.')}</small></span></div>
-                      <button className="primary-btn" type="button" disabled={Boolean(busy) || loading} onClick={() => void startLesson()}>{busy === 'start' ? <LoaderCircle className="spin" size={17} /> : null}{translate('Start lesson')}</button>
+                      <button className="primary-btn" type="button" disabled={Boolean(busy) || pending || loading} onClick={() => void startLesson()}>{busy === 'start' ? <LoaderCircle className="spin" size={17} /> : null}{translate('Start lesson')}</button>
                     </section>
                   ) : null}
 
                   {(inProgress || finished) ? (
                     <section className="teacher-flow-card teacher-finish-card">
                       <div className="teacher-flow-card__heading"><span className="teacher-flow-card__icon"><CheckCircle2 size={20} /></span><div><span className="eyebrow">{translate('Step 4')}</span><h3>{translate('Finish lesson')}</h3></div><strong>{coveredCount}/{coverage.length}</strong></div>
-                      <label><span>{translate('Private teacher notes')}</span><textarea className="input" rows={3} value={teacherNotes} disabled={finished || Boolean(busy) || loading} onChange={(event) => setTeacherNotes(event.target.value)} placeholder={translate('What should you remember before the next lesson?')} /></label>
-                      <label className="teacher-homework-toggle"><input type="checkbox" checked={assignHomework} disabled={finished || Boolean(busy) || loading} onChange={(event) => setAssignHomework(event.target.checked)} /><span><strong>{translate('Assign proposed homework')}</strong><small>{selected.connected_group_count > 0 ? translate('The connected class group will be notified automatically.') : translate('The assignment will appear in the student workspace. Connect a class group to notify Telegram too.')}</small></span></label>
-                      {assignHomework ? <div className="teacher-homework-form"><label><span>{translate('Homework title')}</span><input className="input" value={homework.title} disabled={finished || Boolean(busy) || loading} onChange={(event) => setHomework((current) => ({ ...current, title: event.target.value }))} /></label><label><span>{translate('Instructions')}</span><textarea className="input" rows={4} value={homework.description} disabled={finished || Boolean(busy) || loading} onChange={(event) => setHomework((current) => ({ ...current, description: event.target.value }))} /></label><label><span>{translate('Due date')}</span><input className="input" type="datetime-local" value={homework.due_at} disabled={finished || Boolean(busy) || loading} onChange={(event) => setHomework((current) => ({ ...current, due_at: event.target.value }))} /></label></div> : null}
-                      {!finished ? <button className="primary-btn teacher-finish-button" type="button" disabled={Boolean(busy) || loading} onClick={() => void finishLesson()}>{busy === 'finish' ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}{translate('Finish lesson')}</button> : <div className="teacher-finished-message"><CheckCircle2 size={20} /><span><strong>{translate('Lesson complete')}</strong><small>{selected.run?.homework_assignment_id ? translate('Coverage and homework are saved. No separate Telegram message is needed.') : translate('Curriculum coverage and notes are saved.')}</small></span></div>}
+                      <label><span>{translate('Private teacher notes')}</span><textarea className="input" rows={3} value={teacherNotes} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setTeacherNotes(event.target.value)} placeholder={translate('What should you remember before the next lesson?')} /></label>
+                      <label className="teacher-homework-toggle"><input type="checkbox" checked={assignHomework} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setAssignHomework(event.target.checked)} /><span><strong>{translate('Assign proposed homework')}</strong><small>{selected.connected_group_count > 0 ? translate('The connected class group will be notified automatically.') : translate('The assignment will appear in the student workspace. Connect a class group to notify Telegram too.')}</small></span></label>
+                      {assignHomework ? <div className="teacher-homework-form"><label><span>{translate('Homework title')}</span><input className="input" value={homework.title} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setHomework((current) => ({ ...current, title: event.target.value }))} /></label><label><span>{translate('Instructions')}</span><textarea className="input" rows={4} value={homework.description} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setHomework((current) => ({ ...current, description: event.target.value }))} /></label><label><span>{translate('Due date')}</span><input className="input" type="datetime-local" value={homework.due_at} disabled={finished || Boolean(busy) || pending || loading} onChange={(event) => setHomework((current) => ({ ...current, due_at: event.target.value }))} /></label></div> : null}
+                      {!finished ? <button className="primary-btn teacher-finish-button" type="button" disabled={Boolean(busy) || pending || loading} onClick={() => void finishLesson()}>{busy === 'finish' ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}{translate('Finish lesson')}</button> : <div className="teacher-finished-message"><CheckCircle2 size={20} /><span><strong>{translate('Lesson complete')}</strong><small>{selected.run?.homework_assignment_id ? translate('Coverage and homework are saved. No separate Telegram message is needed.') : translate('Curriculum coverage and notes are saved.')}</small></span></div>}
                     </section>
                   ) : null}
 

@@ -2923,5 +2923,8 @@
   "Unable to load this operational workspace. Try again.": "Bu ish bo‘limini yuklab bo‘lmadi. Qayta urinib ko‘ring.",
   "Unable to confirm current operational access. Try again.": "Joriy ish ruxsatini tasdiqlab bo‘lmadi. Qayta urinib ko‘ring.",
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Baholar jurnalining faqat bir qismi yuklangan. Topshirilmagan ishlar soni va o‘rtacha baholar to‘liq bo‘lmasligi mumkin.",
-  "Quiz attempts needing grading": "Baholash kerak bo‘lgan test urinishlari"
+  "Quiz attempts needing grading": "Baholash kerak bo‘lgan test urinishlari",
+  "A saved change still needs confirmation.": "Saqlangan o‘zgarish hali tasdiqlanishi kerak.",
+  "Confirm the pending inquiry or lesson change before starting another.": "Yangi o‘zgarishdan oldin kutilayotgan murojaat yoki dars o‘zgarishini tasdiqlang.",
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Murojaat saqlandi. Bu filialdagi boshqa murojaatda ham shu telefon raqami bor. Birlashtirishdan oldin ikkalasini tekshiring."
 }

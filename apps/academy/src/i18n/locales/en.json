@@ -2924,5 +2924,8 @@
   "Unable to load this operational workspace. Try again.": "Unable to load this operational workspace. Try again.",
   "Unable to confirm current operational access. Try again.": "Unable to confirm current operational access. Try again.",
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.",
-  "Quiz attempts needing grading": "Quiz attempts needing grading"
+  "Quiz attempts needing grading": "Quiz attempts needing grading",
+  "A saved change still needs confirmation.": "A saved change still needs confirmation.",
+  "Confirm the pending inquiry or lesson change before starting another.": "Confirm the pending inquiry or lesson change before starting another.",
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Lead saved. Another inquiry in this branch uses this phone number; review both before merging."
 }

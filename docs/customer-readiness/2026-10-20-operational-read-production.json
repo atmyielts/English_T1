@@ -1,0 +1,229 @@
+{
+  "recordedAt": "2026-10-20T18:46:20.909Z",
+  "projectRef": "bbjawctnqrufvnesdsel",
+  "pr": 263,
+  "reviewedCommit": "408f891ec4c5d08dad0bb665e119c7a53ac2d879",
+  "mainCommit": "be183e69f2e6774947c03da877151a070dd57585",
+  "academyVersion": 93,
+  "installedMigrationCount": 231,
+  "ci": [
+    39471540623,
+    39472405723
+  ],
+  "pages": 39472405910,
+  "smoke": [
+    39473333736,
+    39475455457
+  ],
+  "source": {
+    "recordedAt": "2026-10-20T18:21:11.997Z",
+    "passed": true,
+    "edgeVersion": 93,
+    "matchedModules": 33,
+    "unchangedInstalledModules": 31,
+    "verifyJwt": false,
+    "reviewedCommit": "408f891ec4c5d08dad0bb665e119c7a53ac2d879"
+  },
+  "installed": {
+    "installedMigrations": 231,
+    "recordedAt": "2026-10-20T18:21:51.4491343Z",
+    "checks": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-cash-handover.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-audio-pending-recovery.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-wallet-policy.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-read.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      }
+    ],
+    "customerRowsChanged": false,
+    "fixtureRowsCommitted": false,
+    "providerMessagesSent": false,
+    "passed": true
+  },
+  "hosted": {
+    "recordedAt": "2026-10-20T18:44:10.834Z",
+    "reviewedCommit": "408f891ec4c5d08dad0bb665e119c7a53ac2d879",
+    "passed": true,
+    "checks": [
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned tenants",
+      "create owned tenant_memberships",
+      "create owned academy_branches",
+      "create owned academy_classrooms",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "create owned academy_staff",
+      "create owned academy_assignments",
+      "create owned academy_role_grants",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "create owned academy_submissions",
+      "create owned academy_submissions",
+      "create owned academy_submissions",
+      "create owned academy_staff",
+      "owned teacher identity exists",
+      "create owned academy_rooms",
+      "create owned academy_lesson_sessions",
+      "mixed-role room branches include only the current administrator branch",
+      "cashier-only branch cannot be forced through timetable request",
+      "legitimate branch timetable includes its owned physical room and session",
+      "mixed-role gradebook denies the cashier-only branch",
+      "assigned teacher cannot read another branch gradebook",
+      "assigned teacher keeps complete current own-class gradebook",
+      "administrator keeps legitimate B gradebook with exact current score",
+      "browser role cannot bypass verified-actor operational RPC",
+      "create owned academy_role_grants",
+      "student-specific grant includes only its learner and excludes classmates",
+      "revoke owned student grading grant",
+      "revoked student grading grant is denied on the next hosted read",
+      "owned session cookie chunks installed",
+      "published assigned teacher opens the scoped current grading view",
+      "published scoped teacher phone has no overflow",
+      "owned session cookie chunks installed",
+      "published mixed-role timetable offers only the permitted branch",
+      "permitted timetable survives actual refresh",
+      "published scoped room phone has no document overflow",
+      "published scoped read workspaces have no JavaScript page errors"
+    ],
+    "cleanupChecks": [
+      "verify exclusive QA institution before archive",
+      "QA institution contains no foreign members",
+      "archive owned academy_student_guardian_relationships",
+      "archive owned academy_guardians",
+      "archive owned academy_contacts",
+      "archive owned academy_lesson_sessions",
+      "archive owned academy_rooms",
+      "archive owned academy_classroom_memberships",
+      "archive owned academy_subscriptions",
+      "archive owned academy_pricing_plans",
+      "archive owned academy_cashboxes",
+      "archive owned academy_staff",
+      "archive owned academy_role_grants",
+      "verify exclusively owned archive targets academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "verify exclusively owned archive targets academy_branches",
+      "archive owned unique academy_branches",
+      "archive owned unique academy_branches",
+      "remove QA institution login memberships",
+      "archive institution and remove ownership",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "read exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "no configured external provider deliveries attempted",
+      "no active QA access: academy_role_grants",
+      "no active QA access: academy_staff",
+      "no active QA access: academy_contacts",
+      "no active QA access: academy_guardians",
+      "no active QA access: academy_student_guardian_relationships"
+    ],
+    "ownedStudentCount": 1,
+    "customerRecordsChanged": false,
+    "externalProviderDeliveriesAttempted": 0,
+    "immutableQaHistoryRetained": true,
+    "allInstitutionalRowsDeleted": false,
+    "cleanupVerified": true
+  },
+  "visualInspection": [
+    "populated teacher grading phone",
+    "populated branch B timetable desktop",
+    "populated branch B timetable phone"
+  ],
+  "limits": [
+    "Private operational read authority covers room branches, room timetable and gradebook only. Other legacy reads and writes remain under review.",
+    "Several earlier owned fixture/selector runs stopped before complete acceptance; each verified its cleanup. The final run has 46 passed checks and 65 cleanup checks; do not sum these with failed runs.",
+    "The legacy scope header still displays Academy-wide for a scoped administrator; this presentation issue is open.",
+    "No provider delivery, Telegram chat linking or Click funding was attempted."
+  ]
+}

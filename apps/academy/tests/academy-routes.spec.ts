@@ -1835,10 +1835,11 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       relationship_id?: string;
       idempotency_key?: string;
     } | null;
-    const body=postedBody&&['finance_read_command','finance_command','staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['operational_command','finance_read_command','finance_command','staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     const portalResponse = (value:unknown) => {
+      if(postedBody?.action==='operational_command')return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,command:postedBody.command,replayed:false};
       if(postedBody?.action==='finance_read_command')return {schema_version:1,totals:{},has_more:{},...value as Record<string,unknown>,actor_id:actorId};
       if(postedBody?.action==='finance_command')return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,replayed:false};
       if(postedBody?.action==='guardian_portal_write_command')return {...value as Record<string,unknown>,actor_id:actorId,relationship_id:postedBody.relationship_id??'00000000-0000-4000-8000-000000000004',replayed:false,
@@ -2866,6 +2867,31 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect.poll(() => actionLog.includes('education_os')).toBe(true);
   });
 
+  test('teacher attendance recovers the original captured rows and key after reload',async({page})=>{
+    await seedSessionCookie(page,'teacher-user');await mockAcademyEdge(page,'teacher');
+    const captures:Record<string,unknown>[]=[];
+    await page.route('**/functions/v1/academy',async route=>{
+      const body=route.request().postDataJSON() as Record<string,unknown>;
+      if(body.action!=='operational_command')return route.fallback();
+      captures.push(body);
+      if(captures.length===1)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Owned uncertain attendance',retryable:true})});
+      return route.fulfill(json({actor_id:'teacher-user',command:body.command,request_key:body.idempotency_key,replayed:true,saved:1}));
+    });
+    await page.goto(`/academy/teacher?academy_id=${academyId}`);
+    await page.locator('.teacher-attendance-list select').selectOption('absent');
+    await page.getByPlaceholder('Optional note',{exact:true}).fill('Owned retained absence');
+    await page.getByRole('button',{name:'Save attendance',exact:true}).click();
+    await expect(page.getByRole('alert')).toContainText('Owned uncertain attendance');
+    await expect(page.getByRole('button',{name:'Start lesson',exact:true})).toBeDisabled();
+    await page.reload();
+    await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toBeVisible();
+    await expect(page.locator('.teacher-attendance-list select')).toBeDisabled();
+    await page.getByRole('button',{name:'Retry saving',exact:true}).click();
+    await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toHaveCount(0);
+    expect(captures).toHaveLength(2);expect(captures[1]).toEqual(captures[0]);
+    expect(captures[0]).toMatchObject({command:'teacher_lesson_attendance',_expected_actor:'teacher-user',records:[{contact_id:studentContactId,status:'absent',notes:'Owned retained absence'}]});
+  });
+
   test("teaching dates hide obsolete lesson actions and ignore late day responses", async ({ page }) => {
     await seedSessionCookie(page, "teacher-user");
     let releaseMiddle!: () => void;
@@ -3476,7 +3502,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     });
   }
 
-  for (const responseStatus of [400, 503]) {
+  for (const responseStatus of [502, 503]) {
   test(`Quick lead keeps one immutable pending capture after an uncertain ${responseStatus} response`, async ({ page }) => {
     await seedSessionCookie(page, 'receptionist-user');
     await mockAcademyEdge(page, 'receptionist');
@@ -3485,10 +3511,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     const captures: Record<string, unknown>[] = [];
     await page.route('**/functions/v1/academy', async route => {
       const body = route.request().postDataJSON() as Record<string, unknown>;
-      if (body.action !== 'create_lead') return route.fallback();
+      if (body.command !== 'create_lead') return route.fallback();
       captures.push(body);
       if (captures.length === 1) { await blocked; return route.fulfill({ status: responseStatus, contentType: 'application/json', body: JSON.stringify({ error: 'Capture temporarily unavailable' }) }); }
-      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-retry-captured' } }));
+      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-retry-captured' }, actor_id:'receptionist-user',request_key:body.idempotency_key,command:'create_lead',replayed:true }));
     });
     await page.goto(`/academy/office/business?academy_id=${academyId}`);
     await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
@@ -3507,6 +3533,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(dialog.getByRole('alert')).toContainText('The save could not be confirmed. Retry to check it safely.');
     await expect(dialog.getByLabel('Full name', { exact: true })).toBeDisabled();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.reload();
     await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
     await expect(dialog.getByLabel('Full name', { exact: true })).toHaveValue('Retained Front Desk Learner');
     await dialog.getByRole('button', { name: 'Retry saving', exact: true }).click();
@@ -3543,10 +3570,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     const captures: Record<string, unknown>[] = [];
     await page.route('**/functions/v1/academy', async route => {
       const body = route.request().postDataJSON() as Record<string, unknown>;
-      if (body.action !== 'create_lead') return route.fallback();
+      if (body.command !== 'create_lead') return route.fallback();
       captures.push(body);
       if (captures.length === 1) return route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ error: 'Phone needs correction' }) });
-      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-corrected' } }));
+      return route.fulfill(json({ lead: { ...businessFoundation.leads[0], ...body, id: 'quick-corrected' },actor_id:'receptionist-user',request_key:body.idempotency_key,command:'create_lead',replayed:false }));
     });
     await page.goto(`/academy/office/business?academy_id=${academyId}`);
     await page.getByRole('button', { name: 'Quick lead', exact: true }).click();
