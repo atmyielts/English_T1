@@ -1,0 +1,67 @@
+{
+  "recordedAt": "2026-10-20T14:05:38.671Z",
+  "release": "https://github.com/atmyielts/English_T1/pull/257",
+  "reviewedCommit": "a85d06d08068c3715f952a3ab799a320dab8c8dc",
+  "main": "0f0d0d43906a41b03e24b16e1b3273d2206ed956",
+  "status": "deployed_hosted_boundary_followup_required",
+  "edgeVersion": 87,
+  "installedMigrations": 225,
+  "protectedCI": 39432138893,
+  "postMergeCI": 39433030921,
+  "pages": 39433031219,
+  "liveSmoke": 39434128433,
+  "sourceReadback": {
+    "recordedAt": "2026-10-20T13:53:38.945Z",
+    "passed": true,
+    "edgeVersion": 87,
+    "matchedModules": 30,
+    "unchangedInstalledModules": 28,
+    "verifyJwt": false,
+    "reviewedCommit": "a85d06d08068c3715f952a3ab799a320dab8c8dc"
+  },
+  "installedCommands": {
+    "passed": true,
+    "fixtureRowsCommitted": false,
+    "checks": [
+      {
+        "fixtureChangesRolledBack": true,
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "passed": true
+      },
+      {
+        "fixtureChangesRolledBack": true,
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "passed": true
+      },
+      {
+        "fixtureChangesRolledBack": true,
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "passed": true
+      },
+      {
+        "fixtureChangesRolledBack": true,
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "passed": true
+      },
+      {
+        "fixtureChangesRolledBack": true,
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "passed": true
+      }
+    ],
+    "customerRowsChanged": false,
+    "recordedAt": "2026-10-20T13:53:58.6372634Z",
+    "installedMigrations": 225,
+    "providerMessagesSent": false
+  },
+  "hosted": {
+    "all21FinancialActionsExercised": true,
+    "fullAcceptancePassed": false,
+    "gate": "Direct financial-table ACL follow-up and fresh real-file/browser acceptance",
+    "firstQaRunClosed": true,
+    "cleanupChecks": 42,
+    "customerRecordsChanged": false,
+    "externalProviderDeliveriesAttempted": 0,
+    "realFundsUsed": false
+  }
+}

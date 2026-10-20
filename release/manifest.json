@@ -1,43 +1,30 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-scoped-finance-collected-payroll-and-paid-vacation",
+  "releaseId": "academy-financial-private-table-and-view-boundary",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "academy"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261020200000_academy_collected_tuition_payroll.sql",
-    "20261020201000_academy_financial_command_authority.sql",
-    "20261020202000_academy_scoped_financial_reads.sql",
-    "20261020203000_academy_vacation_paid_time.sql"
+    "20261020204000_academy_financial_table_boundary.sql"
   ],
-  "edgeFunctions": [
-    "academy"
-  ],
+  "edgeFunctions": [],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "manualFollowUps": [
-    "After protected exact-head CI and tracked Pages, apply only these four additive migrations from the frozen isolated 221-migration baseline. A dry run must list exactly these four. Never apply unrelated payment or proctor backlog. Run supabase db push --linked --include-all from the isolated release directory.",
-    "Deploy a source-preserving Academy bundle based on a fresh v86 installed capture. Preserve the other 28 installed runtime modules. Compare installed source hashes and migration history after activation. Run supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel --use-api from its prepared bundle.",
-    "Run rollback-only installed financial commands and owned hosted acceptance, including actor/retry/branch restrictions, 201-student real file/UI, payroll/cash/vacation proof and cleanup. No provider receipt or real charge is implied by internal financial entries. Remaining provider, audio, wallet-policy and all-service acceptance continues separately."
+    "After protected exact-head CI and tracked Pages, run supabase db push --linked --include-all from the isolated 225-migration baseline. The dry run must list exactly this one ACL migration. No Edge source, secret, data deletion or unrelated migration is part of this activation.",
+    "Verify installed table and column privileges, unchanged v87 runtime hashes, service-only commands and owned mixed-branch browser/API acceptance. Preserve financial history and close owned QA fixtures."
   ],
   "verification": [
-    "verify:prod, verify:release, verify:academy; Academy lint/build/localization; complete Edge/browser suites and exact money/reload tests; fresh captured-schema qualification with real expiry/revocation contention and cleanup.",
-    "After activation, read back every module and migration; run installed rollback-only financial fixtures, owned hosted finance/browser acceptance and cleanup."
+    "verify:prod and verify:release; native full captured-schema qualification with financial ACL assertions and all 21 financial actions; installed rollback-only fixture and owned browser/API acceptance."
   ],
   "rollback": {
-    "pages": "Use previous tracked Pages deployment at 9d7e15c0303cfa0063222651b252876883619951.",
-    "edge": "Forward-repair owned routes/modules from a fresh production capture. Preserve other installed modules and protections.",
-    "migration": "Retain additive receipt tables, immutable source and financial/payout history. Use audited compensating entries. Do not recalculate paid payroll or delete financial records."
+    "pages": "No frontend changes. Retain tracked Pages deployment at 0f0d0d43906a41b03e24b16e1b3273d2206ed956.",
+    "edge": "No Edge changes. Preserve installed Academy v87 and all 30 runtime modules.",
+    "migration": "Forward-repair a specific legitimate gateway consumer if required. Do not restore broad direct browser access or delete financial history."
   },
   "rolloutOrder": [
     "pages",
-    "migration:20261020200000_academy_collected_tuition_payroll.sql",
-    "migration:20261020201000_academy_financial_command_authority.sql",
-    "migration:20261020202000_academy_scoped_financial_reads.sql",
-    "migration:20261020203000_academy_vacation_paid_time.sql",
-    "function:academy"
+    "migration:20261020204000_academy_financial_table_boundary.sql"
   ]
 }
