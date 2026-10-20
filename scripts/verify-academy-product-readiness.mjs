@@ -183,7 +183,8 @@ const hasStudentAction = (action) =>
   new RegExp(`requestedAction\\s*===\\s*"${action}"`).test(academyEdge);
 
 const hasWriteAction = (action) =>
-  new RegExp(`actionBody\\s*===\\s*"${action}"`).test(academyEdge);
+  new RegExp(`actionBody\\s*===\\s*"${action}"`).test(academyEdge) ||
+  (academyEdge.includes('staffGuardianActions.has(actionBody)') && read('supabase/functions/academy/staff-guardian-command.ts').includes("'"+action+"'"));
 
 const hasClientAction = (action) =>
   academyClient.includes(`action: '${action}'`) || academyClient.includes(`action: "${action}"`) ||
