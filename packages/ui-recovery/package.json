@@ -1,0 +1,12 @@
+{
+  "name": "@schood/ui-recovery",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/RecoveryBoundary.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  }
+}

@@ -1,3 +1,4 @@
+import { recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryBoundary';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -7,7 +8,7 @@ import { I18nProvider } from './i18n';
 
 const root = document.getElementById('root');
 if (root) {
-  createRoot(root).render(
+  createRoot(root, recoveryRootOptions).render(
     <StrictMode>
       <ErrorBoundary>
         <I18nProvider>

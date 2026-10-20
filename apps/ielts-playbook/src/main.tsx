@@ -1,3 +1,4 @@
+import { RecoveryBoundary, recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryBoundary';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -6,9 +7,9 @@ import './index.css';
 const root = document.getElementById('root');
 if (!root) throw new Error('Failed to find root element');
 
-createRoot(root).render(
+createRoot(root, recoveryRootOptions).render(
   <StrictMode>
-    <App />
+    <RecoveryBoundary app="ielts-playbook"><App /></RecoveryBoundary>
   </StrictMode>,
 );
 

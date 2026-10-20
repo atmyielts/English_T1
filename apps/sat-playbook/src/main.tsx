@@ -1,11 +1,12 @@
+import { RecoveryBoundary, recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryBoundary';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')!, recoveryRootOptions).render(
   <StrictMode>
-    <App />
+    <RecoveryBoundary app="sat-playbook"><App /></RecoveryBoundary>
   </StrictMode>,
 );
 import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';

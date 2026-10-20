@@ -1,0 +1,643 @@
+{
+  "recordedAt": "2026-10-20T11:20:27.191Z",
+  "scope": "Existing work owned by this chat only",
+  "initialWorktreesInspected": 67,
+  "baselineMain": "50e63540b6a4ec0318184c7262d538f2bd9083b4",
+  "ownedHistoricalWorktrees": [
+    {
+      "worktree": "academy-frontdesk-expansion",
+      "branch": "codex/academy-closeout-completion",
+      "head": "e89298bdd1f907e7164b104894bdad3dcdeeb5fa",
+      "dirtyEntries": [
+        " M apps/academy/src/components/guardians/GuardianPortalView.tsx",
+        " M apps/academy/src/lib/client.ts",
+        " M apps/academy/src/lib/parentRequest.ts",
+        " M scripts/fixtures/academy-guardian-portal.sql",
+        " M scripts/test-academy-guardian-reads.mjs",
+        " M supabase/functions/academy/guardian-portal.ts",
+        " M supabase/functions/academy/index.ts",
+        "?? supabase/migrations/20261020150000_academy_parent_write_commands.sql"
+      ],
+      "disposition": "PR 248 deployed earlier today; source26/installed14, twelve migrations and owned201-student hosted acceptance verified. Evidence-only e89298b pushed. Checkout subsequently reassigned to another agent: all current dirty closeout changes excluded.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "academy-import-permission-hotfix",
+      "branch": "codex/academy-parent-privacy",
+      "head": "e3559328e01c1625a5fdd57fc24b451c3eb7e324",
+      "dirtyEntries": [],
+      "disposition": "PR 253 parent privacy already deployed; no dirty files.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "admin-security",
+      "branch": "codex/payment-transaction-boundary",
+      "head": "1b0f5ae29a708a958455b3de84d3ae251c5ff8e9",
+      "dirtyEntries": [],
+      "disposition": "Payment recovery PR 215 remains draft, withheld pending nine backend migrations and valid signed/provider compatibility proof.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "ai-coaching-boundary",
+      "branch": "codex/ai-coaching-boundary",
+      "head": "9fef0e1fd761d3253dbc2ad4c76c6c7d522bbd09",
+      "dirtyEntries": [],
+      "disposition": "PR 223 merged; deployed writing/speaking sources match current main.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "ai-coaching-client",
+      "branch": "codex/ai-provider-capacity",
+      "head": "05a1c7408393ed49f43acab1a1625dba7a788c93",
+      "dirtyEntries": [],
+      "disposition": "PR 228 merged; current add-on/client/provider boundary supersedes audit prototypes.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "candidate-entry-security",
+      "branch": "codex/account-retention-ownership",
+      "head": "3b3655fd12d7af4dcdcb7a82f7ab6cda0e16f6b9",
+      "dirtyEntries": [],
+      "disposition": "PR 218 account retention/ownership merged; installed account source matches current main.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "ci-parallel-builds",
+      "branch": "codex/academy-room-timetable",
+      "head": "d0c67fe38e9abafdba3ef58f29f5a1cfe2e17c03",
+      "dirtyEntries": [],
+      "disposition": "PR 246 room timetable and prior CI changes merged; no dirty runtime files.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "customer-readiness-audit",
+      "branch": "codex/customer-readiness-audit",
+      "head": "1d713840d1b9639f16cca28081a9eab9ff538b05",
+      "dirtyEntries": [
+        " M .env.example",
+        " M .github/workflows/ci.yml",
+        " M .github/workflows/deploy-pages.yml",
+        " M .gitignore",
+        " M AGENTS.md",
+        " M apps/academy-docs/package.json",
+        " M apps/academy-docs/src/main.tsx",
+        " M apps/academy/package.json",
+        " M apps/academy/src/components/workspace/LazyRouteBoundary.tsx",
+        " M apps/academy/src/main.tsx",
+        " M apps/academy/tests/academy-routes.spec.ts",
+        " M apps/english-hub/package.json",
+        " M apps/english-hub/src/components/AppErrorBoundary.tsx",
+        " M apps/english-hub/src/main.tsx",
+        " M apps/english-hub/tests/module-shell-contract.test.ts",
+        " M apps/ielts-playbook/package.json",
+        " M apps/ielts-playbook/src/main.tsx",
+        " M apps/ielts-practice/package.json",
+        " M apps/ielts-practice/src/main.tsx",
+        " M apps/ielts-simulator/package.json",
+        " M apps/ielts-simulator/src/ErrorBoundary.tsx",
+        " M apps/ielts-simulator/src/main.tsx",
+        " M apps/ielts-simulator/src/pages/ExamPlayer.tsx",
+        " M apps/itep-simulator/package.json",
+        " M apps/itep-simulator/src/ErrorBoundary.tsx",
+        " M apps/itep-simulator/src/main.tsx",
+        " M apps/itep-simulator/src/pages/ExamPlayer.tsx",
+        " M apps/platform/package.json",
+        " M apps/platform/playwright.config.ts",
+        " M apps/platform/src/ErrorBoundary.tsx",
+        " M apps/platform/src/components/layout/SiteHeader.tsx",
+        " M apps/platform/src/i18n/locales/en.ts",
+        " M apps/platform/src/i18n/locales/ru.ts",
+        " M apps/platform/src/i18n/locales/uz.ts",
+        " M apps/platform/src/lib/platformClient.ts",
+        " M apps/platform/src/lib/returnTo.ts",
+        " M apps/platform/src/main.tsx",
+        " M apps/platform/src/pages/PeerReviewPage.tsx",
+        " M apps/platform/src/pages/SpeakingCoachPage.tsx",
+        " M apps/platform/src/pages/WritingTutorPage.tsx",
+        " M apps/sat-playbook/package.json",
+        " M apps/sat-playbook/src/components/PlaybookTopNav.tsx",
+        " M apps/sat-playbook/src/index.css",
+        " M apps/sat-playbook/src/main.tsx",
+        " M apps/sat-practice/package.json",
+        " M apps/sat-practice/src/components/DailyPlanCard.tsx",
+        " M apps/sat-practice/src/components/MistakeNotebookList.tsx",
+        " M apps/sat-practice/src/components/PracticeTopNav.tsx",
+        " M apps/sat-practice/src/components/QuestionCard.tsx",
+        " M apps/sat-practice/src/components/TutorPanel.tsx",
+        " M apps/sat-practice/src/index.css",
+        " M apps/sat-practice/src/lib/api.ts",
+        " M apps/sat-practice/src/main.tsx",
+        " M apps/sat-practice/src/pages/BankPage.tsx",
+        " M apps/sat-practice/src/pages/LabPage.tsx",
+        " M apps/sat-practice/src/pages/NotebookPage.tsx",
+        " M apps/sat-practice/src/pages/ReviewsDuePage.tsx",
+        " M apps/sat-practice/src/pages/SessionResultsPage.tsx",
+        " M apps/sat-practice/src/pages/TodaySessionPage.tsx",
+        " M apps/sat-practice/src/pages/TutorPage.tsx",
+        " M apps/sat-simulator/package.json",
+        " M apps/sat-simulator/src/ErrorBoundary.tsx",
+        " M apps/sat-simulator/src/main.tsx",
+        " M apps/sat-simulator/src/pages/ExamPlayer.tsx",
+        " M apps/sat-simulator/src/pages/LandingPage.tsx",
+        " M apps/toefl-ibt-simulator/package.json",
+        " M apps/toefl-ibt-simulator/src/ErrorBoundary.tsx",
+        " M apps/toefl-ibt-simulator/src/main.tsx",
+        " M apps/toefl-ibt-simulator/src/pages/ExamPlayer.tsx",
+        " M apps/toefl-playbook/package.json",
+        " M apps/toefl-playbook/src/App.tsx",
+        " M apps/toefl-playbook/src/components/PlaybookTopNav.tsx",
+        " M apps/toefl-playbook/src/components/platform/RequireProductEntitlement.tsx",
+        " M apps/toefl-playbook/src/index.css",
+        " M apps/toefl-playbook/src/lib/api.ts",
+        " M apps/toefl-playbook/src/lib/constants.ts",
+        " M apps/toefl-playbook/src/lib/useAccess.ts",
+        " M apps/toefl-playbook/src/main.tsx",
+        " M apps/toefl-playbook/src/pages/ContentPage.tsx",
+        " M apps/toefl-playbook/src/pages/DashboardPage.tsx",
+        " M apps/toefl-playbook/src/pages/DiagnosticPage.tsx",
+        " M apps/toefl-playbook/src/pages/OnboardingPage.tsx",
+        " M deno.lock",
+        " M package-lock.json",
+        " M package.json",
+        " M release/manifest.json",
+        " M scripts/verify-academy-product-readiness.mjs",
+        " M scripts/verify-production-readiness.mjs",
+        " M supabase/functions/_shared/sat-practice-core.ts",
+        " M supabase/functions/_shared/toefl-playbook.ts",
+        " M supabase/functions/billing/index.ts",
+        " M supabase/functions/parent-report/index.ts",
+        " M supabase/functions/peer-review/index.ts",
+        " M supabase/functions/sat-practice/index.ts",
+        " M supabase/functions/score-prediction/index.ts",
+        " M supabase/functions/speaking-coach/index.ts",
+        " M supabase/functions/teacher-marketplace/index.ts",
+        " M supabase/functions/teacher-office/index.ts",
+        " M supabase/functions/toefl-playbook/index.ts",
+        " M supabase/functions/writing-tutor/index.ts",
+        " M workers/schood-academy-bot/package.json",
+        " M workers/schood-bot/package.json",
+        " M workers/schood-online-bot/package.json",
+        "?? apps/exam-shared/",
+        "?? apps/platform/src/lib/returnToPolicy.ts",
+        "?? apps/platform/src/lib/useAiCoaching.ts",
+        "?? apps/platform/src/lib/useTranscriptDictation.ts",
+        "?? apps/platform/tests/peer-review.spec.ts",
+        "?? apps/platform/tests/return-to.test.ts",
+        "?? apps/sat-practice/src/lib/saved-feedback.ts",
+        "?? apps/sat-practice/src/lib/start-requests.ts",
+        "?? apps/sat-practice/tests/",
+        "?? apps/toefl-playbook/playwright.config.ts",
+        "?? apps/toefl-playbook/tests/",
+        "?? content/",
+        "?? docs/customer-readiness/",
+        "?? docs/playbook-responsive-menu-release.md",
+        "?? docs/sat-filtered-bank-release.md",
+        "?? docs/sat-original-scored-feedback-release.md",
+        "?? docs/simulator-save-recovery-release.md",
+        "?? packages/ui-recovery/",
+        "?? release/customer-readiness-notes.md",
+        "?? release/pages-projects.json",
+        "?? scripts/admin-production-browser.js",
+        "?? scripts/admin-production-smoke.mjs",
+        "?? scripts/audit-builds.mjs",
+        "?? scripts/audit-pages-release.mjs",
+        "?? scripts/audit-production-inventory.mjs",
+        "?? scripts/audit-public-services.mjs",
+        "?? scripts/audit-qa-services.mjs",
+        "?? scripts/audit-sat-content.mjs",
+        "?? scripts/build-sat-original-bank-migration.py",
+        "?? scripts/deploy-admin-reviewed-bundles.mjs",
+        "?? scripts/exam-save-production-storage-smoke.mjs",
+        "?? scripts/exam-save-published-ui-browser.js",
+        "?? scripts/exam-save-recovery-browser.js",
+        "?? scripts/pages-artifacts.mjs",
+        "?? scripts/pages-artifacts.test.mjs",
+        "?? scripts/pages-release-summary.mjs",
+        "?? scripts/pages-workflow.test.mjs",
+        "?? scripts/platform-menu-browser.js",
+        "?? scripts/playbook-catalog-live-browser.js",
+        "?? scripts/playbook-menu-browser.js",
+        "?? scripts/production-secret-rules.mjs",
+        "?? scripts/production-secret-rules.test.mjs",
+        "?? scripts/recovery-browser-check.js",
+        "?? scripts/recovery-preview.mjs",
+        "?? scripts/responsive-menu-production-browser.js",
+        "?? scripts/responsive-menu-production-page.js",
+        "?? scripts/sat-access-production-smoke.mjs",
+        "?? scripts/sat-answer-browser-check.js",
+        "?? scripts/sat-bank-browser-check.js",
+        "?? scripts/sat-bank-production-browser.js",
+        "?? scripts/sat-browser-production-session.mjs",
+        "?? scripts/sat-completion-browser-check.js",
+        "?? scripts/sat-completion-production-browser.js",
+        "?? scripts/sat-original-feedback-production-browser.js",
+        "?? scripts/sat-qa-interruption-cleanup.mjs",
+        "?? scripts/sat-review-recovery-browser.js",
+        "?? scripts/sat-saved-feedback-browser.js",
+        "?? scripts/sat-start-browser-check.js",
+        "?? scripts/sat-start-production-browser.js",
+        "?? scripts/sat-tutor-browser-check.js",
+        "?? scripts/speaking-coach-browser-check.js",
+        "?? scripts/test-ai-request-ledger.mjs",
+        "?? scripts/test-sat-attempt-completion.mjs",
+        "?? scripts/test-sat-attempt-start.mjs",
+        "?? scripts/test-sat-bank-selection.mjs",
+        "?? scripts/test-sat-original-content.mjs",
+        "?? scripts/verify-sat-draft-content.py",
+        "?? scripts/worker-local-smoke.mjs",
+        "?? scripts/writing-tutor-browser-check.js",
+        "?? supabase/functions/_shared/ai-addon.ts",
+        "?? supabase/functions/_shared/ai-response.ts",
+        "?? supabase/functions/_shared/coaching-handler.ts",
+        "?? supabase/functions/peer-review/handler.test.ts",
+        "?? supabase/functions/peer-review/handler.ts",
+        "?? supabase/functions/peer-review/migration.test.ts",
+        "?? supabase/functions/sat-practice/access.test.ts",
+        "?? supabase/functions/sat-practice/access.ts",
+        "?? supabase/functions/sat-practice/answers.test.ts",
+        "?? supabase/functions/sat-practice/bank.test.ts",
+        "?? supabase/functions/sat-practice/bank.ts",
+        "?? supabase/functions/sat-practice/completion.test.ts",
+        "?? supabase/functions/sat-practice/completion.ts",
+        "?? supabase/functions/sat-practice/results.test.ts",
+        "?? supabase/functions/sat-practice/start.test.ts",
+        "?? supabase/functions/sat-practice/start.ts",
+        "?? supabase/functions/sat-practice/tutor.test.ts",
+        "?? supabase/functions/sat-practice/tutor.ts",
+        "?? supabase/functions/score-prediction/analysis.test.ts",
+        "?? supabase/functions/score-prediction/analysis.ts",
+        "?? supabase/functions/score-prediction/evidence.ts",
+        "?? supabase/functions/score-prediction/exam-type.test.ts",
+        "?? supabase/functions/score-prediction/exam-type.ts",
+        "?? supabase/functions/score-prediction/handler.test.ts",
+        "?? supabase/functions/score-prediction/handler.ts",
+        "?? supabase/functions/score-prediction/migration.test.ts",
+        "?? supabase/functions/speaking-coach/grading.ts",
+        "?? supabase/functions/speaking-coach/handler.test.ts",
+        "?? supabase/functions/speaking-coach/handler.ts",
+        "?? supabase/functions/teacher-marketplace/migration.test.ts",
+        "?? supabase/functions/teacher-marketplace/permissions.test.ts",
+        "?? supabase/functions/teacher-marketplace/permissions.ts",
+        "?? supabase/functions/toefl-playbook/migration.test.ts",
+        "?? supabase/functions/toefl-playbook/recommendation.test.ts",
+        "?? supabase/functions/toefl-playbook/recommendation.ts",
+        "?? supabase/functions/writing-tutor/allowance.ts",
+        "?? supabase/functions/writing-tutor/grading.ts",
+        "?? supabase/functions/writing-tutor/handler.test.ts",
+        "?? supabase/functions/writing-tutor/handler.ts",
+        "?? supabase/functions/writing-tutor/prompts.ts",
+        "?? supabase/migrations/20261003120000_review_marketplace_command_boundary.sql",
+        "?? supabase/migrations/20261003130000_peer_review_consent_commands.sql",
+        "?? supabase/migrations/20261003140000_score_prediction_cache_privacy.sql",
+        "?? supabase/migrations/20261003150000_toefl_playbook_recommendation_command.sql",
+        "?? supabase/migrations/20261003160000_ai_request_ledger.sql",
+        "?? supabase/migrations/20261003170000_writing_tutor_atomic_result.sql",
+        "?? supabase/migrations/20261003180000_speaking_coach_atomic_result.sql",
+        "?? supabase/migrations/20261007090000_sat_tutor_atomic_result.sql",
+        "?? supabase/migrations/20261007100000_sat_attempt_atomic_completion.sql",
+        "?? supabase/migrations/20261008100000_sat_bank_filtered_selection.sql",
+        "?? supabase/migrations/20261008110000_sat_attempt_atomic_start.sql",
+        "?? supabase/migrations/20261008120000_sat_original_bank_content.sql"
+      ],
+      "disposition": "Reconcile the existing recovery package and SAT foundations draft in this release. Remaining older prototypes are superseded by merged hardened implementations; preserve draft files and evidence rather than overlaying stale code.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "marketplace-readiness",
+      "branch": "codex/marketplace-readiness",
+      "head": "53ff0bb16bc13c9e76665f2769aa5e11e5118c45",
+      "dirtyEntries": [
+        " M scripts/marketplace-production-browser.js",
+        " M scripts/marketplace-production-smoke.mjs",
+        "?? docs/customer-readiness/2026-10-09-marketplace-live-1280.png",
+        "?? docs/customer-readiness/2026-10-09-marketplace-live-390.png"
+      ],
+      "disposition": "PR 213 merged; dirty smoke helpers/screenshots are evidence only.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "parent-report-authority",
+      "branch": "codex/parent-report-authority",
+      "head": "1ef601953ce18657250375b8802d38b03ecc180f",
+      "dirtyEntries": [],
+      "disposition": "PR 219 merged; installed parent-report source matches current main.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "payment-backend-release",
+      "branch": "codex/payment-backend-release",
+      "head": "eab218d0f4fe722c820c6aec43a4c8162fb94c5a",
+      "dirtyEntries": [],
+      "disposition": "PR 220 merged in source; nine transaction migrations and payment functions are not activated. Preserve richer installed billing source. Withheld with PR 215.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "playbook-catalog-release",
+      "branch": "codex/playbook-catalog-recovery",
+      "head": "b81d98ab725ad2e606e9e96d49db5b528a2262b3",
+      "dirtyEntries": [],
+      "disposition": "PR 210 merged; newer catalogue implementation retained.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "responsive-menu-completion",
+      "branch": "codex/academy-learner-experience",
+      "head": "189ba34b66d2e67fe3fd0e1c43364ac6be5c0329",
+      "dirtyEntries": [],
+      "disposition": "PR 241 and prior responsive/learner releases merged; current main retained.",
+      "mutationPerformedByReconciliation": false
+    },
+    {
+      "worktree": "sat-access-release",
+      "branch": "codex/sat-tutor-customer-boundary",
+      "head": "43d00b068f7343b9a3f3c0dc9bdedcd8da4dd089",
+      "dirtyEntries": [
+        "?? docs/customer-readiness/2026-10-08-sat-bank-live-smoke.json",
+        "?? docs/customer-readiness/2026-10-08-sat-start-live-smoke.json",
+        "?? docs/customer-readiness/2026-10-08-score-cache-privacy-live.json",
+        "?? docs/customer-readiness/2026-10-08-toefl-playbook-menu-live-1440.png",
+        "?? docs/customer-readiness/2026-10-08-toefl-playbook-menu-live-390.png",
+        "?? docs/customer-readiness/2026-10-09-peer-review-live-1280.png",
+        "?? docs/customer-readiness/2026-10-09-peer-review-live-390.png",
+        "?? docs/customer-readiness/2026-10-09-peer-review-live-api.json",
+        "?? docs/customer-readiness/2026-10-09-peer-review-live-browser.json",
+        "?? docs/customer-readiness/2026-10-09-peer-review-pages.json",
+        "?? docs/customer-readiness/2026-10-09-peer-review-public.json",
+        "?? docs/customer-readiness/2026-10-09-peer-review-release.json"
+      ],
+      "disposition": "Merged SAT access/scoring/bank/start/tutor and peer-review work. Remaining dirty entries are read-only production evidence/screenshots.",
+      "mutationPerformedByReconciliation": false
+    }
+  ],
+  "otherHistoricalOrAgentWorktreesExcluded": [
+    {
+      "worktree": "English_T1",
+      "branch": "codex/academy-route-permission-parity",
+      "dirtyCount": 158
+    },
+    {
+      "worktree": "schood-academy-center-access",
+      "branch": "codex/academy-lms-scope-audit-2",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "1200",
+      "branch": "",
+      "dirtyCount": 9
+    },
+    {
+      "worktree": "5cfe",
+      "branch": "",
+      "dirtyCount": 28
+    },
+    {
+      "worktree": "a68e",
+      "branch": "",
+      "dirtyCount": 19
+    },
+    {
+      "worktree": "academy_aesthetic_polish",
+      "branch": "codex/academy-aesthetic-polish",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_assessment_services",
+      "branch": "codex/academy-assessment-docs",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_business_backend_release",
+      "branch": "codex/academy-business-backend-release",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_business_frontend_release",
+      "branch": "codex/academy-business-workspaces-release",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_card_title_wrap",
+      "branch": "codex/academy-card-title-wrap",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_docs_refresh",
+      "branch": "codex/enhance-academy-docs",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_entry_streamline",
+      "branch": "codex/academy-entry-streamline",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_live_smoke_hotfix",
+      "branch": "codex/fix-academy-live-smoke-scope",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_lms_competence",
+      "branch": "codex/academy-lms-competence",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_localization",
+      "branch": "codex/academy-localization",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_members_relationship",
+      "branch": "codex/fix-academy-members-relationship",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_operational_suite",
+      "branch": "codex/academy-operational-suite",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_role_entry_performance",
+      "branch": "codex/academy-role-entry-performance",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "academy_route_latency",
+      "branch": "codex/academy-route-latency",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "academy_teacher_flow",
+      "branch": "codex/wire-academy-teacher-flow-flag",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_telegram_operations",
+      "branch": "codex/academy-telegram-schema-fix",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_telegram_tenant_roles",
+      "branch": "codex/academy-telegram-tenant-role-guard",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy_ux_redesign",
+      "branch": "codex/academy-ux-redesign",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "account_startup_baseline",
+      "branch": "",
+      "dirtyCount": 5
+    },
+    {
+      "worktree": "account_startup_speed",
+      "branch": "codex/account-startup-speed",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "adaptive_onboarding",
+      "branch": "codex/adaptive-onboarding",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "adaptive_onboarding_ci",
+      "branch": "codex/adaptive-onboarding-ci",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "click_credentials_release",
+      "branch": "",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "click_dns_record",
+      "branch": "codex/configure-click-dns",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "click_launch_readiness",
+      "branch": "codex/click-launch-readiness",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "click_webhook_jwt_release",
+      "branch": "codex/click-webhook-jwt-release",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "close_platform_loops",
+      "branch": "codex/fix-platform-header-overflow",
+      "dirtyCount": 4
+    },
+    {
+      "worktree": "english_mass_readiness",
+      "branch": "codex/english-reading-markdown-fix",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "english_mass_workflow_gates",
+      "branch": "codex/english-mass-workflow-gates",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "google_home_oauth",
+      "branch": "codex/google-home-oauth",
+      "dirtyCount": 3
+    },
+    {
+      "worktree": "google_home_oauth_commit_verify",
+      "branch": "",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "google_home_oauth_verify",
+      "branch": "",
+      "dirtyCount": 6
+    },
+    {
+      "worktree": "learning_centre_home_feature",
+      "branch": "codex/learning-centre-home",
+      "dirtyCount": 2
+    },
+    {
+      "worktree": "platform_events_500",
+      "branch": "codex/fix-platform-events-500",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "start_session_auth_fix",
+      "branch": "codex/fix-start-session-auth-refresh",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "student_bot_incident",
+      "branch": "codex/student-bot-webhook-repair",
+      "dirtyCount": 1
+    },
+    {
+      "worktree": "student_center_classroom_v2",
+      "branch": "codex/student-center-classroom-v2",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "telegram-growth-release-ready",
+      "branch": "codex/telegram-growth-release-ready",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "telegram_google_auth",
+      "branch": "codex/auth-provider-verifier",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "trigger_error_log_rls",
+      "branch": "codex/fix-trigger-error-log-rls",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "spectacled-spear",
+      "branch": "",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy-access-grants",
+      "branch": "codex/academy-access-grants",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy-docs",
+      "branch": "codex/academy-soft-navigation-loading",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "academy-lms-role-system",
+      "branch": "codex/academy-lms-role-system",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "English_T1_prod_router",
+      "branch": "codex/patch-react-router-security",
+      "dirtyCount": 13
+    },
+    {
+      "worktree": "English_T1_prod_router_clean",
+      "branch": "codex/patch-react-router-audit",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "English_T1_prod_telegram",
+      "branch": "codex/secure-telegram-sender",
+      "dirtyCount": 0
+    },
+    {
+      "worktree": "English_T1_telegram_foothold",
+      "branch": "main",
+      "dirtyCount": 0
+    }
+  ],
+  "newReleaseCheckout": "schood-worktree-release-reconciliation",
+  "releaseManifest": "release/manifest.json",
+  "oldWorktreesResetOrDeleted": false,
+  "productionDeploymentVerified": false
+}
