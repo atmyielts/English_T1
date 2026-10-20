@@ -12,7 +12,8 @@ const workspace=realpathSync('.'),capture=realpathSync(captureOption),output=pat
 const reserved=path.join(workspace,'supabase','.temp','parent-release')+path.sep;
 assert(capture.startsWith(reserved)&&output.startsWith(reserved)&&!existsSync(output),'Use owned parent-release directories');
 let ancestor=path.dirname(output);while(!existsSync(ancestor))ancestor=path.dirname(ancestor);
-assert(realpathSync(ancestor).startsWith(reserved),'Output parent must remain in the owned release directory');
+const realAncestor=realpathSync(ancestor);
+assert(realAncestor===reserved.slice(0,-1)||realAncestor.startsWith(reserved),'Output parent must remain in the owned release directory');
 const hash=s=>createHash('sha256').update(s.replaceAll('\r\n','\n')).digest('hex');
 function command(name,args){const result=spawnSync(name,args,{encoding:'utf8',windowsHide:true,maxBuffer:16777216,timeout:30000});assert.equal(result.status,0,'Read-only release source/identity command failed');return result.stdout;}
 const reviewed=file=>command('git',['show',commit+':'+file]).replaceAll('\r\n','\n');

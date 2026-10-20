@@ -33,7 +33,7 @@
   ],
   "rollback": {
     "pages": "Restore the prior tracked Academy Pages deployment if the new UI fails, keeping other applications and proctor releases intact.",
-    "edge": "Restore only the captured installed Academy Edge bundle if a regression requires it. Keep the private read and binding protections, or ship a reviewed forward repair; do not reopen typed Telegram identity claims.",
+    "edge": "Prepare a reviewed forward repair using the captured installed modules while retaining the protected parent routes. Qualify the repaired bundle before deployment; a complete old-gateway restoration would reopen the confirmed consent and typed-identity defects.",
     "migration": "Retain records and evidence. No schema/data deletion is required. Prefer a narrowly reviewed forward repair instead of restoring broad browser table grants."
   }
 }

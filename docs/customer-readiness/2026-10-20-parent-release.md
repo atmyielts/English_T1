@@ -33,13 +33,17 @@ Local evidence:
   pagination checks and 28 account-pinned transport checks pass. The transport
   rejects changed accounts before sending and before displaying a response;
   refresh retries retain the original account.
-- Academy build, localization, product checks and built-product smoke pass.
-  Full Edge/browser suites and exact-head protected CI are required before merge.
+- Academy build/lint, localization, the complete Edge suite, product checks and
+  built-product smoke pass. Browser and exact-head protected CI are required
+  before merge.
 - The installed Academy source was captured read-only at version 82. The bundle
   preparation script verifies current provider identity and all captured hashes,
   preserves unrelated modules and reconstructs the original gateway by reversing
-  only the reviewed parent edits. A prepared bundle and hosted acceptance remain
-  required; a source capture is not a deployment.
+  only the reviewed parent edits. The 16-module prepared bundle (14 installed
+  modules plus two parent dependencies) passes Deno checking and 18 executions of
+  its actual gateway dispatch. Bundle evidence is
+  `2026-10-20-parent-prepared-bundle.json`. Hosted acceptance remains required;
+  this preparation is not a deployment.
 
 Activate only the two manifest migrations and the qualified parent overlay on
 the current installed Academy source. Never deploy the whole dirty checkout,
