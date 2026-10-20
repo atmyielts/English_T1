@@ -31,6 +31,7 @@ const commandFixtures=process.argv.includes('--release-commands')?[
   {file:'scripts/fixtures/academy-release-commands.sql',marker:'staff-and-learner-captured-schema-ok'},
 ].map(fixture=>({...fixture,source:readFileSync(fixture.file,'utf8')})):[];
 if(option('--command-fixture'))commandFixtures.push({file:option('--command-fixture'),marker:option('--command-marker'),source:readFileSync(option('--command-fixture'),'utf8')});
+if(option('--extra-fixture'))commandFixtures.push({file:option('--extra-fixture'),marker:option('--extra-marker'),source:readFileSync(option('--extra-fixture'),'utf8')});
 const checks=[];let owned=false,cleanupVerified=false,passed=false,stage='start',catalog,fixtureChecks=0;const held=new Set();
 function run(args,input=''){
   return new Promise((resolve,reject)=>{
