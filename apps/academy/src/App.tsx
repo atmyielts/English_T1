@@ -5429,8 +5429,9 @@ const App = () => {
         {officeView === 'os' && officeCanOpen('os') ? (
           <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
             <EducationOSView
-              key={`${academyId}:${officeRouteIntent}`}
+              key={`${academyId}:${me?.user.id??''}:${officeRouteIntent}`}
               academyId={academyId}
+              actorId={me?.user.id??''}
               classrooms={classrooms}
               contacts={contacts}
               classroomMemberships={classroomMemberships}

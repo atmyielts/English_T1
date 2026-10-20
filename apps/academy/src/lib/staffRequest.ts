@@ -47,6 +47,7 @@ async function sessionFor(actor?:string,refresh=false){
  if(subject!==session.user.id||(actor&&actor!==session.user.id))throw new StaffRequestError('Your account changed. Reopen this page.',409);
  return session;
 }
+export {sessionFor as academyActorSession};
 export async function staffRequest<T>(academyId:string,action:string,payload:Record<string,unknown>,expectedActor?:string):Promise<T>{
  if(expectedActor==='')throw new StaffRequestError('Sign in again to continue.',401);
  const initial=await sessionFor(expectedActor),actor=initial.user.id;

@@ -19,6 +19,7 @@ import {
 } from '../../lib/client';
 import { supabase } from '../../lib/supabase';
 import { StudentCurriculumView } from './StudentCurriculumView';
+import {AssignmentAudioPanel} from '../audio/AssignmentAudioPanel';
 import { useStudentClassroomData } from './useStudentClassroomData';
 
 type StudentClassroomViewProps = {
@@ -87,6 +88,7 @@ export const StudentClassroomView = ({
   const [notice, setNotice] = useState('');
   const [chatDraft, setChatDraft] = useState('');
   const [submitTarget, setSubmitTarget] = useState<TeacherStudioStudentAssignment | null>(null);
+  const [audioTargetId,setAudioTargetId]=useState('');
   const [submissionContent, setSubmissionContent] = useState('');
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submissionNotes, setSubmissionNotes] = useState('');
@@ -343,6 +345,7 @@ export const StudentClassroomView = ({
   }, [assignments, attendanceRate, billingItems, classroomCharges, completedResourceIds, formatDate, publishedResources]);
 
   const openSubmission = (assignment: TeacherStudioStudentAssignment) => {
+    setAudioTargetId('');
     setSubmitTarget(assignment);
     setSubmissionContent(assignment.submission?.submission_content ?? '');
     setSubmissionUrl(assignment.submission?.submission_url ?? '');
@@ -740,10 +743,12 @@ export const StudentClassroomView = ({
                   </div>
                   <div className="row wrap">
                     {assignment.experience_url ? <a className="small-btn" href={assignment.experience_url} target="_blank" rel="noreferrer">{translate("Open task")}</a> : null}
+                    {assignment.submission?.metadata&&!Array.isArray(assignment.submission.metadata)&&assignment.submission.metadata.response_kind==='audio'?<p>{translate('Latest response is a recording. Attached files are from an earlier attempt.')}</p>:null}
                     {assignment.submission?.signed_url ? <a className="small-btn" href={assignment.submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : null}
                     <button className="small-btn" type="button" onClick={() => openSubmission(assignment)}>
                       {assignment.submission ? 'Update submission' : 'Submit'}
                     </button>
+                    <button className="small-btn" type="button" onClick={()=>{setSubmitTarget(null);setAudioTargetId(assignment.id);}}>{translate('Recordings and feedback')}</button>
                   </div>
                 </li>
               ))}
@@ -751,6 +756,11 @@ export const StudentClassroomView = ({
             </ul>
           </div>
 
+          {assignments.filter(item=>item.id===audioTargetId).map(item=><div key={item.id}>
+            <button type="button" className="ghost-btn" onClick={()=>setAudioTargetId('')}>{translate('Close recordings')}</button>
+            <AssignmentAudioPanel actorId={actorId} academyId={classroom.academy_id} assignmentId={item.id} kind="submission" title={item.title}
+              canRecord={item.status==='active'&&(item.submission?.attempt_number??0)<(item.attempts_allowed??1)} onSaved={()=>{classroomData.invalidate(['assignments']);void loadClassroomLms();}}/>
+          </div>)}
           <div className="panel">
             <h3>{submitTarget ? submitTarget.title : 'Submission'}</h3>
             {submitTarget ? (

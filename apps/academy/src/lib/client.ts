@@ -723,6 +723,7 @@ export type AcademyLessonMedia = {
 };
 
 export type TeacherStudioSubmission = {
+  metadata?: Json;
   id: string;
   academy_id?: string;
   assignment_id: string;
@@ -757,7 +758,7 @@ export type TeacherStudioGradebook = {
     email: string | null;
     status: string;
     role: string;
-    submissions: Record<string, { score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; feedback?: Json; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
+    submissions: Record<string, { id?:string; attempt_number?:number; score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; feedback?: Json; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
     composite_score: number | null;
     category_scores?: Record<string, number>;
     submitted_count: number;

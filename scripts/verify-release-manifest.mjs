@@ -91,7 +91,7 @@ for (const functionName of edgeFunctions) {
   for (const file of changedFiles.filter((item) => item.startsWith(`supabase/functions/${functionName}/`) && /\.(?:ts|js|mjs)$/.test(item))) {
     if (!existsSync(file)) continue;
     const source = readFileSync(file, 'utf8');
-    for (const match of source.matchAll(/(?:env|getEnv)\(\s*["']([A-Z][A-Z0-9_]+)["']\s*\)/g)) {
+    for (const match of source.matchAll(/(?:Deno\.env\.get|env|getEnv)\(\s*["']([A-Z][A-Z0-9_]+)["']\s*\)/g)) {
       if (!standardEnv.has(match[1])) detectedSecrets.add(match[1]);
     }
   }

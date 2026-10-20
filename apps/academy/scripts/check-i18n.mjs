@@ -23,6 +23,15 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "Your current access does not cover this recording.",
+  "The assignment or recording changed. Review its current status.",
+  "Review the recording and its written response.",
+  "This recording is not confirmed. Retry the same recording.",
+  "The recording upload is not confirmed. Retry the same recording.",
+  "Unable to confirm the saved recording. Try again.",
+  "Confirm the pending recording before starting another.",
+  "The saved recording changed. Reopen the recording panel.",
+  "Recordings are temporarily unavailable. Try again.",
   // Parent portal feedback and signed linking.
   "An invitation is needed",
   "Ask your academy for an invitation",
